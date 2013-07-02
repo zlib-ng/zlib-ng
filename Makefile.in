@@ -45,6 +45,9 @@ TAR=tar
 SHELL=/bin/sh
 EXE=
 
+FILL_WINDOW_SSE_o= 
+FILL_WINDOW_SSE_lo=
+
 prefix = /usr/local
 exec_prefix = ${prefix}
 libdir = ${exec_prefix}/lib
@@ -54,11 +57,11 @@ mandir = ${prefix}/share/man
 man3dir = ${mandir}/man3
 pkgconfigdir = ${libdir}/pkgconfig
 
-OBJZ = adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
+OBJZ = adler32.o crc32.o ${FILL_WINDOW_SSE_o} deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
 OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo crc32.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo
+PIC_OBJZ = adler32.lo crc32.lo ${FILL_WINDOW_SSE_lo} deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo
 PIC_OBJG = compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
@@ -112,6 +115,14 @@ test64: all64
 	  echo '		*** zlib 64-bit test FAILED ***'; false; \
 	fi; \
 	rm -f $$TMP64
+
+fill_window_sse.lo: fill_window_sse.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) -msse2 -DPIC -c -o objs/$*.o $<
+	-@mv objs/$*.o $@
+
+fill_window_sse.o: fill_window_sse.c
+	${CC} ${CFLAGS} -msse2 -I. -c -o $@ fill_window_sse.c
 
 infcover.o: test/infcover.c zlib.h zconf.h
 	$(CC) $(CFLAGS) -I. -c -o $@ test/infcover.c

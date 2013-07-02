@@ -84,7 +84,7 @@ local block_state deflate_huff   OF((deflate_state *s, int flush));
 local void lm_init        OF((deflate_state *s));
 local void putShortMSB    OF((deflate_state *s, uInt b));
 local void flush_pending  OF((z_streamp strm));
-local int read_buf        OF((z_streamp strm, Bytef *buf, unsigned size));
+ZLIB_INTERNAL int read_buf        OF((z_streamp strm, Bytef *buf, unsigned size));
 #ifdef ASMV
       void match_init OF((void)); /* asm code initialization */
       uInt longest_match  OF((deflate_state *s, IPos cur_match));
@@ -158,14 +158,6 @@ struct static_tree_desc_s {int dummy;}; /* for buggy compilers */
 /* rank Z_BLOCK between Z_NO_FLUSH and Z_PARTIAL_FLUSH */
 #define RANK(f) (((f) << 1) - ((f) > 4 ? 9 : 0))
 
-/* ===========================================================================
- * Update a hash value with the given input byte
- * IN  assertion: all calls to to UPDATE_HASH are made with consecutive
- *    input characters, so that a running hash key can be computed from the
- *    previous key instead of complete recalculation each time.
- */
-#define UPDATE_HASH(s,h,c) (h = (((h)<<s->hash_shift) ^ (c)) & s->hash_mask)
-
 
 /* ===========================================================================
  * Insert string str in the dictionary and set match_head to the previous head
@@ -179,12 +171,12 @@ struct static_tree_desc_s {int dummy;}; /* for buggy compilers */
  */
 #ifdef FASTEST
 #define INSERT_STRING(s, str, match_head) \
-   (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
+   (UPDATE_HASH(s, s->ins_h, (str)), \
     match_head = s->head[s->ins_h], \
     s->head[s->ins_h] = (Pos)(str))
 #else
 #define INSERT_STRING(s, str, match_head) \
-   (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
+   (UPDATE_HASH(s, s->ins_h, (str)), \
     match_head = s->prev[(str) & s->w_mask] = s->head[s->ins_h], \
     s->head[s->ins_h] = (Pos)(str))
 #endif
@@ -196,6 +188,10 @@ struct static_tree_desc_s {int dummy;}; /* for buggy compilers */
 #define CLEAR_HASH(s) \
     s->head[s->hash_size-1] = NIL; \
     zmemzero((Bytef *)s->head, (unsigned)(s->hash_size-1)*sizeof(*s->head));
+
+#ifdef CHECK_SSE2
+#include "x86.h"
+#endif
 
 /* ========================================================================= */
 int ZEXPORT deflateInit_(strm, level, version, stream_size)
@@ -229,6 +225,10 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     /* We overlay pending_buf and d_buf+l_buf. This works since the average
      * output size for (length,distance) codes is <= 24 bits.
      */
+
+#ifdef CHECK_SSE2
+    x86_check_features();
+#endif
 
     if (version == Z_NULL || version[0] != my_version[0] ||
         stream_size != sizeof(z_stream)) {
@@ -365,7 +365,7 @@ int ZEXPORT deflateSetDictionary (strm, dictionary, dictLength)
         str = s->strstart;
         n = s->lookahead - (MIN_MATCH-1);
         do {
-            UPDATE_HASH(s, s->ins_h, s->window[str + MIN_MATCH-1]);
+            UPDATE_HASH(s, s->ins_h, str);
 #ifndef FASTEST
             s->prev[str & s->w_mask] = s->head[s->ins_h];
 #endif
@@ -1073,7 +1073,7 @@ int ZEXPORT deflateCopy (dest, source)
  * allocating a large strm->next_in buffer and copying from it.
  * (See also flush_pending()).
  */
-local int read_buf(strm, buf, size)
+ZLIB_INTERNAL int read_buf(strm, buf, size)
     z_streamp strm;
     Bytef *buf;
     unsigned size;
@@ -1171,10 +1171,31 @@ local void check_match(s, start, match, length)
  *    performed for at least two bytes (required for the zip translate_eol
  *    option -- not supported here).
  */
-local void fill_window(s)
+#ifdef HAVE_SSE2
+extern void fill_window_sse(deflate_state *s);
+#endif
+local void fill_window_c(deflate_state *s);
+
+local void fill_window(deflate_state *s)
+{
+#ifdef HAVE_SSE2
+#ifdef CHECK_SSE2
+    if (x86_cpu_has_sse2) {
+#endif
+        fill_window_sse(s);
+        return;
+#ifdef CHECK_SSE2
+    }
+#endif
+#endif
+    
+    fill_window_c(s);
+}
+
+local void fill_window_c(s)
     deflate_state *s;
 {
-    register unsigned n, m;
+    register unsigned n;
     register Posf *p;
     unsigned more;    /* Amount of free space at the end of the window. */
     uInt wsize = s->w_size;
@@ -1216,6 +1237,7 @@ local void fill_window(s)
             n = s->hash_size;
             p = &s->head[n];
             do {
+                unsigned m;
                 m = *--p;
                 *p = (Pos)(m >= wsize ? m-wsize : NIL);
             } while (--n);
@@ -1224,6 +1246,7 @@ local void fill_window(s)
 #ifndef FASTEST
             p = &s->prev[n];
             do {
+                unsigned m;
                 m = *--p;
                 *p = (Pos)(m >= wsize ? m-wsize : NIL);
                 /* If n is not on any hash chain, prev[n] is garbage but
@@ -1255,12 +1278,12 @@ local void fill_window(s)
         if (s->lookahead + s->insert >= MIN_MATCH) {
             uInt str = s->strstart - s->insert;
             s->ins_h = s->window[str];
-            UPDATE_HASH(s, s->ins_h, s->window[str + 1]);
+            UPDATE_HASH(s, s->ins_h, str + 1 - (MIN_MATCH-1));
 #if MIN_MATCH != 3
             Call UPDATE_HASH() MIN_MATCH-3 more times
 #endif
             while (s->insert) {
-                UPDATE_HASH(s, s->ins_h, s->window[str + MIN_MATCH-1]);
+                UPDATE_HASH(s, s->ins_h, str);
 #ifndef FASTEST
                 s->prev[str & s->w_mask] = s->head[s->ins_h];
 #endif
@@ -1478,7 +1501,7 @@ local block_state deflate_fast(s, flush)
                 s->strstart += s->match_length;
                 s->match_length = 0;
                 s->ins_h = s->window[s->strstart];
-                UPDATE_HASH(s, s->ins_h, s->window[s->strstart+1]);
+                UPDATE_HASH(s, s->ins_h, s->strstart+1 - (MIN_MATCH-1));
 #if MIN_MATCH != 3
                 Call UPDATE_HASH() MIN_MATCH-3 more times
 #endif

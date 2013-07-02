@@ -343,4 +343,12 @@ void ZLIB_INTERNAL _tr_stored_block OF((deflate_state *s, charf *buf,
               flush = _tr_tally(s, distance, length)
 #endif
 
+/* ===========================================================================
+ * Update a hash value with the given input byte
+ * IN  assertion: all calls to to UPDATE_HASH are made with consecutive
+ *    input characters, so that a running hash key can be computed from the
+ *    previous key instead of complete recalculation each time.
+ */
+#define UPDATE_HASH(s,h,i) (h = (((h)<<s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
+
 #endif /* DEFLATE_H */
