@@ -236,6 +236,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     const char *version;
     int stream_size;
 {
+    unsigned window_padding = 0;
     deflate_state *s;
     int wrap = 1;
     static const char my_version[] = ZLIB_VERSION;
@@ -310,7 +311,11 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     s->hash_mask = s->hash_size - 1;
     s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
 
-    s->window = (Bytef *) ZALLOC(strm, s->w_size, 2*sizeof(Byte));
+#if defined(USE_PCLMUL_CRC)
+    window_padding = 8;
+#endif
+
+    s->window = (Bytef *) ZALLOC(strm, s->w_size + window_padding, 2*sizeof(Byte));
     s->prev   = (Posf *)  ZALLOC(strm, s->w_size, sizeof(Pos));
     s->head   = (Posf *)  ZALLOC(strm, s->hash_size, sizeof(Pos));
 
@@ -487,6 +492,12 @@ int ZEXPORT deflateResetKeep (strm)
 #endif
         adler32(0L, Z_NULL, 0);
     s->last_flush = -2;
+
+#if defined(USE_PCLMUL_CRC)
+    if (x86_cpu_has_pclmul) {
+        crc_fold_init(s->crc0);
+    }
+#endif
 
     _tr_init(s);
 
@@ -1043,6 +1054,11 @@ int ZEXPORT deflate (strm, flush)
     /* Write the trailer */
 #ifdef GZIP
     if (s->wrap == 2) {
+#if defined(USE_PCLMUL_CRC)
+        if (x86_cpu_has_pclmul) {
+            s->strm->adler = crc_fold_512to32(s->crc0);
+        }
+#endif
         put_byte(s, (Byte)(strm->adler & 0xff));
         put_byte(s, (Byte)((strm->adler >> 8) & 0xff));
         put_byte(s, (Byte)((strm->adler >> 16) & 0xff));
@@ -1167,15 +1183,24 @@ local unsigned read_buf(strm, buf, size)
 
     strm->avail_in  -= len;
 
-    zmemcpy(buf, strm->next_in, len);
-    if (strm->state->wrap == 1) {
-        strm->adler = adler32(strm->adler, buf, len);
-    }
 #ifdef GZIP
-    else if (strm->state->wrap == 2) {
-        strm->adler = crc32(strm->adler, buf, len);
-    }
+    if (strm->state->wrap == 2) {
+#if defined(USE_PCLMUL_CRC)
+        if (x86_cpu_has_pclmul) {
+            crc_fold_copy(strm->state->crc0, buf, strm->next_in, len);
+        } else
 #endif
+        {
+            zmemcpy(buf, strm->next_in, len);
+            strm->adler = crc32(strm->adler, buf, len);
+        }
+    } else
+#endif
+    {
+        zmemcpy(buf, strm->next_in, len);
+        if (strm->state->wrap == 1)
+            strm->adler = adler32(strm->adler, buf, len);
+    }
     strm->next_in  += len;
     strm->total_in += len;
 
