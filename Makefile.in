@@ -47,6 +47,8 @@ EXE=
 
 FILL_WINDOW_SSE_o= 
 FILL_WINDOW_SSE_lo=
+CRC_FOLDING_o=
+CRC_FOLDING_lo=
 
 prefix = /usr/local
 exec_prefix = ${prefix}
@@ -57,11 +59,11 @@ mandir = ${prefix}/share/man
 man3dir = ${mandir}/man3
 pkgconfigdir = ${libdir}/pkgconfig
 
-OBJZ = adler32.o crc32.o ${FILL_WINDOW_SSE_o} deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
+OBJZ = adler32.o ${CRC_FOLDING_o} crc32.o ${FILL_WINDOW_SSE_o} deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
 OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo crc32.lo ${FILL_WINDOW_SSE_lo} deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo
+PIC_OBJZ = adler32.lo ${CRC_FOLDING_lo} crc32.lo ${FILL_WINDOW_SSE_lo} deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo
 PIC_OBJG = compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
@@ -123,6 +125,14 @@ fill_window_sse.lo: fill_window_sse.c
 
 fill_window_sse.o: fill_window_sse.c
 	${CC} ${CFLAGS} -msse2 -I. -c -o $@ fill_window_sse.c
+
+crc_folding.lo: crc_folding.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) -mpclmul -msse4 -DPIC -c -o objs/$*.o $<
+	-@mv objs/$*.o $@
+
+crc_folding.o: crc_folding.c
+	${CC} ${CFLAGS} -mpclmul -msse4 -I. -c -o $@ crc_folding.c
 
 infcover.o: test/infcover.c zlib.h zconf.h
 	$(CC) $(CFLAGS) -I. -c -o $@ test/infcover.c

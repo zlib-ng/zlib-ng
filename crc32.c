@@ -437,3 +437,45 @@ uLong ZEXPORT crc32_combine64(crc1, crc2, len2)
 {
     return crc32_combine_(crc1, crc2, len2);
 }
+
+#include "deflate.h"
+
+#ifdef HAVE_PCLMULQDQ
+#include "x86.h"
+extern void ZLIB_INTERNAL crc_fold_init(deflate_state *z_const s);
+extern void ZLIB_INTERNAL crc_fold_copy(deflate_state *z_const s,
+        unsigned char *dst, z_const unsigned char *src, long len);
+extern unsigned ZLIB_INTERNAL crc_fold_512to32(deflate_state *z_const s);
+#endif
+
+ZLIB_INTERNAL void crc_reset(deflate_state *const s)
+{
+#ifdef HAVE_PCLMULQDQ
+    if (x86_cpu_has_pclmulqdq) {
+        crc_fold_init(s);
+        return;
+    }
+#endif
+    s->strm->adler = crc32(0L, Z_NULL, 0);
+}
+
+ZLIB_INTERNAL void crc_finalize(deflate_state *const s)
+{
+#ifdef HAVE_PCLMULQDQ
+    if (x86_cpu_has_pclmulqdq)
+        s->strm->adler = crc_fold_512to32(s);
+#endif
+}
+
+ZLIB_INTERNAL void copy_with_crc(z_streamp strm, Bytef *dst, long size)
+{
+#ifdef HAVE_PCLMULQDQ
+    if (x86_cpu_has_pclmulqdq) {
+        crc_fold_copy(strm->state, dst, strm->next_in, size);
+        return;
+    }
+#endif
+    zmemcpy(dst, strm->next_in, size);
+    strm->adler = crc32(strm->adler, dst, size);
+}
+

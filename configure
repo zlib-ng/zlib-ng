@@ -777,6 +777,25 @@ else
     HAVE_SSE2_INTRIN=0
 fi
 
+# Check for PCLMULQDQ intrinsics
+cat > $test.c << EOF
+#include <immintrin.h>
+int main(void)
+{
+    __m128i a = _mm_setzero_si128();
+    __m128i b = _mm_setzero_si128();
+    __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+    return 0;
+}
+EOF
+if try ${CC} ${CFLAGS} -mpclmul $test.c; then
+    echo "Checking for PCLMULQDQ intrinsics ... Yes." | tee -a configure.log
+    HAVE_PCLMULQDQ_INTRIN=1
+else
+    echo "Checking for PCLMULQDQ intrinsics ... No." | tee -a configure.log
+    HAVE_PCLMULQDQ_INTRIN=0
+fi
+
 # Set ARCH specific FLAGS
 case "${ARCH}" in
     x86_64)
@@ -806,6 +825,18 @@ case "${ARCH}" in
 
         CFLAGS="${CFLAGS} -DUSE_SSE4_2_CRC_HASH"
         SFLAGS="${SFLAGS} -DUSE_SSE4_2_CRC_HASH"
+
+        if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
+            CFLAGS="${CFLAGS} -DHAVE_PCLMULQDQ"
+            SFLAGS="${SFLAGS} -DHAVE_PCLMULQDQ"
+            CRC_FOLDING_o="crc_folding.o"
+            CRC_FOLDING_lo="crc_folding.lo"
+            OBJS="${OBJS} ${CRC_FOLDING_o}"
+            PIC_OBJS="${PIC_OBJS} ${CRC_FOLDING_lo}"
+        else
+            CRC_FOLDING_o=""
+            CRC_FOLDING_lo=""
+        fi
     ;;
     i386 | i486 | i586 | i686)
         OBJC="${OBJC} x86.o"
@@ -834,6 +865,18 @@ case "${ARCH}" in
 
         CFLAGS="${CFLAGS} -DUSE_SSE4_2_CRC_HASH"
         SFLAGS="${SFLAGS} -DUSE_SSE4_2_CRC_HASH"
+
+        if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
+            CFLAGS="${CFLAGS} -DHAVE_PCLMULQDQ"
+            SFLAGS="${SFLAGS} -DHAVE_PCLMULQDQ"
+            CRC_FOLDING_o="crc_folding.o"
+            CRC_FOLDING_lo="crc_folding.lo"
+            OBJS="${OBJS} ${CRC_FOLDING_o}"
+            PIC_OBJS="${PIC_OBJS} ${CRC_FOLDING_lo}"
+        else
+            CRC_FOLDING_o=""
+            CRC_FOLDING_lo=""
+        fi
     ;;
 esac
 
@@ -870,6 +913,8 @@ echo sharedlibdir = $sharedlibdir >> configure.log
 echo uname = $uname >> configure.log
 echo FILL_WINDOW_SSE_o = ${FILL_WINDOW_SSE_o} >> configure.log
 echo FILL_WINDOW_SSE_lo= ${FILL_WINDOW_SSE_lo} >> configure.log
+echo CRC_FOLDING_o = ${CRC_FOLDING_o} >> configure.log
+echo CRC_FOLDING_lo= ${CRC_FOLDING_lo} >> configure.log
 
 # udpate Makefile with the configure results
 sed < Makefile.in "
@@ -901,6 +946,8 @@ sed < Makefile.in "
 /^test: */s#:.*#: $TEST#
 /^FILL_WINDOW_SSE_o *=/s#=.*#=$FILL_WINDOW_SSE_o#
 /^FILL_WINDOW_SSE_lo *=/s#=.*#=$FILL_WINDOW_SSE_lo#
+/^CRC_FOLDING_o *=/s#=.*#=$CRC_FOLDING_o#
+/^CRC_FOLDING_lo *=/s#=.*#=$CRC_FOLDING_lo#
 " > Makefile
 
 # create zlib.pc with the configure results

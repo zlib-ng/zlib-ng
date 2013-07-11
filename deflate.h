@@ -107,6 +107,10 @@ typedef struct internal_state {
     Byte  method;        /* can only be DEFLATED */
     int   last_flush;    /* value of flush param for previous deflate call */
 
+#ifdef HAVE_PCLMULQDQ
+    unsigned __attribute__((aligned(16))) crc0[4 * 5];
+#endif
+
                 /* used by deflate.c: */
 
     uInt  w_size;        /* LZ77 window size (32K by default) */
