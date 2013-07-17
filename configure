@@ -771,6 +771,9 @@ case "${ARCH}" in
 
         CFLAGS="${CFLAGS} -DUNALIGNED_OK"
         SFLAGS="${SFLAGS} -DUNALIGNED_OK"
+
+        CFLAGS="${CFLAGS} -DADLER32_UNROLL_LESS"
+        SFLAGS="${SFLAGS} -DADLER32_UNROLL_LESS"
     ;;
     i386 | i486 | i586 | i686)
         OBJC="${OBJC} x86.o"
@@ -781,6 +784,9 @@ case "${ARCH}" in
 
         CFLAGS="${CFLAGS} -DUNALIGNED_OK"
         SFLAGS="${SFLAGS} -DUNALIGNED_OK"
+
+        CFLAGS="${CFLAGS} -DADLER32_UNROLL_LESS"
+        SFLAGS="${SFLAGS} -DADLER32_UNROLL_LESS"
     ;;
 esac
 
