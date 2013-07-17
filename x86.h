@@ -17,6 +17,7 @@
 #ifdef ZLIB_X86
 
 #define UNALIGNED_OK
+#define ADLER32_UNROLL_LESS
 
 extern int x86_cpu_has_sse2;
 extern int x86_cpu_has_sse42;
