@@ -18,6 +18,7 @@
 
 #define UNALIGNED_OK
 #define ADLER32_UNROLL_LESS
+#define CRC32_UNROLL_LESS
 
 extern int x86_cpu_has_sse2;
 extern int x86_cpu_has_sse42;
