@@ -768,6 +768,9 @@ case "${ARCH}" in
 
         CFLAGS="${CFLAGS} -DX86_64"
         SFLAGS="${SFLAGS} -DX86_64"
+
+        CFLAGS="${CFLAGS} -DUNALIGNED_OK"
+        SFLAGS="${SFLAGS} -DUNALIGNED_OK"
     ;;
     i386 | i486 | i586 | i686)
         OBJC="${OBJC} x86.o"
@@ -775,6 +778,9 @@ case "${ARCH}" in
 
         CFLAGS="${CFLAGS} -DX86"
         SFLAGS="${SFLAGS} -DX86"
+
+        CFLAGS="${CFLAGS} -DUNALIGNED_OK"
+        SFLAGS="${SFLAGS} -DUNALIGNED_OK"
     ;;
 esac
 
