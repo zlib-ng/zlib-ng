@@ -51,6 +51,10 @@
 
 #include "deflate.h"
 
+#if defined(CHECK_SSE2) || defined(USE_SSE4_2_CRC_HASH) || defined(USE_QUICK)
+#include "x86.h"
+#endif
+
 const char deflate_copyright[] =
    " deflate 1.2.8 Copyright 1995-2013 Jean-loup Gailly and Mark Adler ";
 /*
@@ -63,12 +67,6 @@ const char deflate_copyright[] =
 /* ===========================================================================
  *  Function prototypes.
  */
-typedef enum {
-    need_more,      /* block not completed, need more input or more output */
-    block_done,     /* block flush performed */
-    finish_started, /* finish started, need only more output at next deflate */
-    finish_done     /* finish done, accept no more input or output */
-} block_state;
 
 typedef block_state (*compress_func) OF((deflate_state *s, int flush));
 /* Compression function. Returns the block state after the call. */
@@ -76,6 +74,7 @@ typedef block_state (*compress_func) OF((deflate_state *s, int flush));
 local void fill_window    OF((deflate_state *s));
 local block_state deflate_stored OF((deflate_state *s, int flush));
 local block_state deflate_fast   OF((deflate_state *s, int flush));
+block_state deflate_quick  OF((deflate_state *s, int flush));
 #ifndef FASTEST
 local block_state deflate_slow   OF((deflate_state *s, int flush));
 #endif
@@ -83,7 +82,7 @@ local block_state deflate_rle    OF((deflate_state *s, int flush));
 local block_state deflate_huff   OF((deflate_state *s, int flush));
 local void lm_init        OF((deflate_state *s));
 local void putShortMSB    OF((deflate_state *s, uInt b));
-local void flush_pending  OF((z_streamp strm));
+ZLIB_INTERNAL void flush_pending  OF((z_streamp strm));
 ZLIB_INTERNAL int read_buf        OF((z_streamp strm, Bytef *buf, unsigned size));
 #ifdef ASMV
       void match_init OF((void)); /* asm code initialization */
@@ -131,9 +130,15 @@ local const config configuration_table[2] = {
 local const config configuration_table[10] = {
 /*      good lazy nice chain */
 /* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
+#ifdef USE_QUICK
+/* 1 */ {4,    4,  8,    4, deflate_quick},
+/* 2 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
+/* 3 */ {4,    6, 32,   32, deflate_fast},
+#else
 /* 1 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
 /* 2 */ {4,    5, 16,    8, deflate_fast},
 /* 3 */ {4,    6, 32,   32, deflate_fast},
+#endif
 
 /* 4 */ {4,    4, 16,   16, deflate_slow},  /* lazy matches */
 /* 5 */ {8,   16, 32,   32, deflate_slow},
@@ -170,7 +175,6 @@ struct static_tree_desc_s {int dummy;}; /* for buggy compilers */
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
 #ifdef USE_SSE4_2_CRC_HASH
-#include "x86.h"
 local inline Pos insert_string_sse(deflate_state *z_const s, z_const Pos str)
 {
     Pos ret;
@@ -227,10 +231,6 @@ local inline Pos insert_string(deflate_state *z_const s, z_const Pos str)
 #define CLEAR_HASH(s) \
     s->head[s->hash_size-1] = NIL; \
     zmemzero((Bytef *)s->head, (unsigned)(s->hash_size-1)*sizeof(*s->head));
-
-#ifdef CHECK_SSE2
-#include "x86.h"
-#endif
 
 /* ========================================================================= */
 int ZEXPORT deflateInit_(strm, level, version, stream_size)
@@ -314,6 +314,12 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
         return Z_STREAM_ERROR;
     }
     if (windowBits == 8) windowBits = 9;  /* until 256-byte window bug fixed */
+
+#ifdef USE_QUICK
+    if (level == 1)
+        windowBits = 13;
+#endif
+
     s = (deflate_state *) ZALLOC(strm, 1, sizeof(deflate_state));
     if (s == Z_NULL) return Z_MEM_ERROR;
     strm->state = (struct internal_state FAR *)s;
@@ -689,7 +695,7 @@ local void putShortMSB (s, b)
  * to avoid allocating a large strm->next_out buffer and copying into it.
  * (See also read_buf()).
  */
-local void flush_pending(strm)
+ZLIB_INTERNAL void flush_pending(strm)
     z_streamp strm;
 {
     unsigned len;
@@ -950,7 +956,14 @@ int ZEXPORT deflate (strm, flush)
         (flush != Z_NO_FLUSH && s->status != FINISH_STATE)) {
         block_state bstate;
 
-        bstate = s->strategy == Z_HUFFMAN_ONLY ? deflate_huff(s, flush) :
+#ifdef USE_QUICK
+        if (s->level == 1 && !x86_cpu_has_sse42) 
+            bstate = s->strategy == Z_HUFFMAN_ONLY ? deflate_huff(s, flush) :
+                    (s->strategy == Z_RLE ? deflate_rle(s, flush) :
+                        deflate_fast(s, flush));
+        else
+#endif
+            bstate = s->strategy == Z_HUFFMAN_ONLY ? deflate_huff(s, flush) :
                     (s->strategy == Z_RLE ? deflate_rle(s, flush) :
                         (*(configuration_table[s->level].func))(s, flush));
 
@@ -1580,6 +1593,7 @@ local block_state deflate_fast(s, flush)
         FLUSH_BLOCK(s, 0);
     return block_done;
 }
+
 
 #ifndef FASTEST
 /* ===========================================================================

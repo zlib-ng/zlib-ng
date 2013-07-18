@@ -49,6 +49,8 @@ FILL_WINDOW_SSE_o=
 FILL_WINDOW_SSE_lo=
 CRC_FOLDING_o=
 CRC_FOLDING_lo=
+DEFLATE_QUICK_o=
+DEFLATE_QUICK_lo=
 
 prefix = /usr/local
 exec_prefix = ${prefix}
@@ -59,11 +61,11 @@ mandir = ${prefix}/share/man
 man3dir = ${mandir}/man3
 pkgconfigdir = ${libdir}/pkgconfig
 
-OBJZ = adler32.o ${CRC_FOLDING_o} crc32.o ${FILL_WINDOW_SSE_o} deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
+OBJZ = adler32.o ${CRC_FOLDING_o} ${DEFLATE_QUICK_o} crc32.o ${FILL_WINDOW_SSE_o} deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
 OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo ${CRC_FOLDING_lo} crc32.lo ${FILL_WINDOW_SSE_lo} deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo
+PIC_OBJZ = adler32.lo ${CRC_FOLDING_lo} ${DEFLATE_QUICK_lo} crc32.lo ${FILL_WINDOW_SSE_lo} deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo
 PIC_OBJG = compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
@@ -133,6 +135,14 @@ crc_folding.lo: crc_folding.c
 
 crc_folding.o: crc_folding.c
 	${CC} ${CFLAGS} -mpclmul -msse4 -I. -c -o $@ crc_folding.c
+
+deflate_quick.lo: deflate_quick.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) -msse4 -DPIC -c -o objs/$*.o $<
+	-@mv objs/$*.o $@
+
+deflate_quick.o: deflate_quick.c
+	${CC} ${CFLAGS} -msse4 -I. -c -o $@ $<
 
 infcover.o: test/infcover.c zlib.h zconf.h
 	$(CC) $(CFLAGS) -I. -c -o $@ test/infcover.c
@@ -292,7 +302,7 @@ adler32.o zutil.o: zutil.h zlib.h zconf.h
 gzclose.o gzlib.o gzread.o gzwrite.o: zlib.h zconf.h gzguts.h
 compress.o example.o minigzip.o uncompr.o: zlib.h zconf.h
 crc32.o: zutil.h zlib.h zconf.h crc32.h
-deflate.o: deflate.h zutil.h zlib.h zconf.h
+deflate.o: deflate.h zutil.h zlib.h zconf.h ${DEFLATE_QUICK_o}
 infback.o inflate.o: zutil.h zlib.h zconf.h inftrees.h inflate.h inffast.h inffixed.h
 inffast.o: zutil.h zlib.h zconf.h inftrees.h inflate.h inffast.h
 inftrees.o: zutil.h zlib.h zconf.h inftrees.h
@@ -302,7 +312,7 @@ adler32.lo zutil.lo: zutil.h zlib.h zconf.h
 gzclose.lo gzlib.lo gzread.lo gzwrite.lo: zlib.h zconf.h gzguts.h
 compress.lo example.lo minigzip.lo uncompr.lo: zlib.h zconf.h
 crc32.lo: zutil.h zlib.h zconf.h crc32.h
-deflate.lo: deflate.h zutil.h zlib.h zconf.h
+deflate.lo: deflate.h zutil.h zlib.h zconf.h ${DEFLATE_QUICK_lo}
 infback.lo inflate.lo: zutil.h zlib.h zconf.h inftrees.h inflate.h inffast.h inffixed.h
 inffast.lo: zutil.h zlib.h zconf.h inftrees.h inflate.h inffast.h
 inftrees.lo: zutil.h zlib.h zconf.h inftrees.h

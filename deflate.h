@@ -51,6 +51,9 @@
 #define Buf_size 16
 /* size of bit buffer in bi_buf */
 
+#define END_BLOCK 256
+/* end of block literal code */
+
 #define INIT_STATE    42
 #define EXTRA_STATE   69
 #define NAME_STATE    73
@@ -276,6 +279,13 @@ typedef struct internal_state {
 
 } FAR deflate_state;
 
+typedef enum {
+    need_more,      /* block not completed, need more input or more output */
+    block_done,     /* block flush performed */
+    finish_started, /* finish started, need only more output at next deflate */
+    finish_done     /* finish done, accept no more input or output */
+} block_state;
+
 /* Output a byte on the stream.
  * IN assertion: there is enough room in pending_buf.
  */
@@ -305,6 +315,7 @@ void ZLIB_INTERNAL _tr_flush_bits OF((deflate_state *s));
 void ZLIB_INTERNAL _tr_align OF((deflate_state *s));
 void ZLIB_INTERNAL _tr_stored_block OF((deflate_state *s, charf *buf,
                         ulg stored_len, int last));
+void ZLIB_INTERNAL bi_windup OF((deflate_state *s));
 
 #define d_code(dist) \
    ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
@@ -369,5 +380,69 @@ void ZLIB_INTERNAL _tr_stored_block OF((deflate_state *s, charf *buf,
 #else
 #define UPDATE_HASH(s,h,i) (h = (((h)<<s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
 #endif
+
+#ifndef DEBUG
+#  define send_code(s, c, tree) send_bits(s, tree[c].Code, tree[c].Len)
+   /* Send a code of the given tree. c and tree must not have side effects */
+
+#else /* DEBUG */
+#  define send_code(s, c, tree) \
+     { if (z_verbose>2) fprintf(stderr,"\ncd %3d ",(c)); \
+       send_bits(s, tree[c].Code, tree[c].Len); }
+#endif
+
+/* ===========================================================================
+ * Output a short LSB first on the stream.
+ * IN assertion: there is enough room in pendingBuf.
+ */
+#define put_short(s, w) { \
+    put_byte(s, (uch)((w) & 0xff)); \
+    put_byte(s, (uch)((ush)(w) >> 8)); \
+}
+
+#ifdef DEBUG
+/* ===========================================================================
+ * Send a value on a given number of bits.
+ * IN assertion: length <= 16 and value fits in length bits.
+ */
+local void send_bits(s, value, length)
+    deflate_state *s;
+    int value;  /* value to send */
+    int length; /* number of bits */
+{
+    Tracevv((stderr," l %2d v %4x ", length, value));
+    Assert(length > 0 && length <= 15, "invalid length");
+    s->bits_sent += (ulg)length;
+
+    /* If not enough room in bi_buf, use (valid) bits from bi_buf and
+     * (16 - bi_valid) bits from value, leaving (width - (16-bi_valid))
+     * unused bits in value.
+     */
+    if (s->bi_valid > (int)Buf_size - length) {
+        s->bi_buf |= (ush)value << s->bi_valid;
+        put_short(s, s->bi_buf);
+        s->bi_buf = (ush)value >> (Buf_size - s->bi_valid);
+        s->bi_valid += length - Buf_size;
+    } else {
+        s->bi_buf |= (ush)value << s->bi_valid;
+        s->bi_valid += length;
+    }
+}
+#else
+#define send_bits(s, value, length) \
+{ int len = length;\
+  if (s->bi_valid > (int)Buf_size - len) {\
+    int val = value;\
+    s->bi_buf |= (ush)val << s->bi_valid;\
+    put_short(s, s->bi_buf);\
+    s->bi_buf = (ush)val >> (Buf_size - s->bi_valid);\
+    s->bi_valid += len - Buf_size;\
+  } else {\
+    s->bi_buf |= (ush)(value) << s->bi_valid;\
+    s->bi_valid += len;\
+  }\
+}
+#endif
+
 
 #endif /* DEFLATE_H */
