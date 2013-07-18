@@ -803,6 +803,9 @@ case "${ARCH}" in
             FILL_WINDOW_SSE_o=""
             FILL_WINDOW_SSE_lo=""
         fi
+
+        CFLAGS="${CFLAGS} -DUSE_SSE4_2_CRC_HASH"
+        SFLAGS="${SFLAGS} -DUSE_SSE4_2_CRC_HASH"
     ;;
     i386 | i486 | i586 | i686)
         OBJC="${OBJC} x86.o"
@@ -828,6 +831,9 @@ case "${ARCH}" in
             FILL_WINDOW_SSE_o=""
             FILL_WINDOW_SSE_lo=""
         fi
+
+        CFLAGS="${CFLAGS} -DUSE_SSE4_2_CRC_HASH"
+        SFLAGS="${SFLAGS} -DUSE_SSE4_2_CRC_HASH"
     ;;
 esac
 

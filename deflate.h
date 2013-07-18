@@ -349,6 +349,21 @@ void ZLIB_INTERNAL _tr_stored_block OF((deflate_state *s, charf *buf,
  *    input characters, so that a running hash key can be computed from the
  *    previous key instead of complete recalculation each time.
  */
+#ifdef USE_SSE4_2_CRC_HASH
+#define UPDATE_HASH(s,h,i) (\
+    {\
+        if (s->level < 6) \
+            h = (3483 * (s->window[i]) +\
+                 23081* (s->window[i+1]) +\
+                 6954 * (s->window[i+2]) +\
+                 20947* (s->window[i+3])) & s->hash_mask;\
+        else\
+            h = (25881* (s->window[i]) +\
+                 24674* (s->window[i+1]) +\
+                 25811* (s->window[i+2])) & s->hash_mask;\
+    })
+#else
 #define UPDATE_HASH(s,h,i) (h = (((h)<<s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
+#endif
 
 #endif /* DEFLATE_H */

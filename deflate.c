@@ -169,17 +169,56 @@ struct static_tree_desc_s {int dummy;}; /* for buggy compilers */
  *    input characters and the first MIN_MATCH bytes of str are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
-#ifdef FASTEST
-#define INSERT_STRING(s, str, match_head) \
-   (UPDATE_HASH(s, s->ins_h, (str)), \
-    match_head = s->head[s->ins_h], \
-    s->head[s->ins_h] = (Pos)(str))
-#else
-#define INSERT_STRING(s, str, match_head) \
-   (UPDATE_HASH(s, s->ins_h, (str)), \
-    match_head = s->prev[(str) & s->w_mask] = s->head[s->ins_h], \
-    s->head[s->ins_h] = (Pos)(str))
+#ifdef USE_SSE4_2_CRC_HASH
+#include "x86.h"
+local inline Pos insert_string_sse(deflate_state *z_const s, z_const Pos str)
+{
+    Pos ret;
+    unsigned *ip, val, h = 0;
+
+    ip = (unsigned *)&s->window[str];
+    val = *ip;
+
+    if (s->level >= 6)
+        val &= 0xFFFFFF;
+
+    __asm__ __volatile__ (
+        "crc32 %1,%0\n\t"
+    : "+r" (h)
+    : "r" (val)
+    );
+
+    ret = s->head[h & s->hash_mask];
+    s->head[h & s->hash_mask] = str;
+    s->prev[str & s->w_mask] = ret;
+    return ret;
+}
 #endif
+
+local inline Pos insert_string_c(deflate_state *z_const s, z_const Pos str)
+{
+    Pos ret;
+
+    UPDATE_HASH(s, s->ins_h, str);
+#ifdef FASTEST
+    ret = s->head[s->ins_h];
+#else
+    ret = s->prev[str & s->w_mask] = s->head[s->ins_h];
+#endif
+    s->head[s->ins_h] = str;
+
+    return ret;
+}
+
+local inline Pos insert_string(deflate_state *z_const s, z_const Pos str)
+{
+#ifdef USE_SSE4_2_CRC_HASH
+    if (x86_cpu_has_sse42)
+        return insert_string_sse(s, str);
+#endif
+    return insert_string_c(s, str);
+}
+
 
 /* ===========================================================================
  * Initialize the hash table (avoiding 64K overflow for 16 bit systems).
@@ -226,7 +265,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
      * output size for (length,distance) codes is <= 24 bits.
      */
 
-#ifdef CHECK_SSE2
+#if defined(CHECK_SSE2) || defined(USE_SSE4_2_CRC_HASH)
     x86_check_features();
 #endif
 
@@ -285,7 +324,13 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     s->w_size = 1 << s->w_bits;
     s->w_mask = s->w_size - 1;
 
+#ifdef USE_SSE4_2_CRC_HASH
+    if (x86_cpu_has_sse42)
+        s->hash_bits = 15;
+    else
+#endif
     s->hash_bits = memLevel + 7;
+
     s->hash_size = 1 << s->hash_bits;
     s->hash_mask = s->hash_size - 1;
     s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
@@ -1278,7 +1323,8 @@ local void fill_window_c(s)
         if (s->lookahead + s->insert >= MIN_MATCH) {
             uInt str = s->strstart - s->insert;
             s->ins_h = s->window[str];
-            UPDATE_HASH(s, s->ins_h, str + 1 - (MIN_MATCH-1));
+            if (str >= 1)
+                UPDATE_HASH(s, s->ins_h, str + 1 - (MIN_MATCH-1));
 #if MIN_MATCH != 3
             Call UPDATE_HASH() MIN_MATCH-3 more times
 #endif
@@ -1458,7 +1504,7 @@ local block_state deflate_fast(s, flush)
          */
         hash_head = NIL;
         if (s->lookahead >= MIN_MATCH) {
-            INSERT_STRING(s, s->strstart, hash_head);
+            hash_head = insert_string(s, s->strstart);
         }
 
         /* Find the longest match, discarding those <= prev_length.
@@ -1489,7 +1535,7 @@ local block_state deflate_fast(s, flush)
                 s->match_length--; /* string at strstart already in table */
                 do {
                     s->strstart++;
-                    INSERT_STRING(s, s->strstart, hash_head);
+                    hash_head = insert_string(s, s->strstart);
                     /* strstart never exceeds WSIZE-MAX_MATCH, so there are
                      * always MIN_MATCH bytes ahead.
                      */
@@ -1501,7 +1547,7 @@ local block_state deflate_fast(s, flush)
                 s->strstart += s->match_length;
                 s->match_length = 0;
                 s->ins_h = s->window[s->strstart];
-                UPDATE_HASH(s, s->ins_h, s->strstart+1 - (MIN_MATCH-1));
+                UPDATE_HASH(s, s->ins_h, s->strstart+2 - (MIN_MATCH));
 #if MIN_MATCH != 3
                 Call UPDATE_HASH() MIN_MATCH-3 more times
 #endif
@@ -1561,7 +1607,7 @@ local block_state deflate_slow(s, flush)
          */
         hash_head = NIL;
         if (s->lookahead >= MIN_MATCH) {
-            INSERT_STRING(s, s->strstart, hash_head);
+            hash_head = insert_string(s, s->strstart);
         }
 
         /* Find the longest match, discarding those <= prev_length.
@@ -1612,7 +1658,7 @@ local block_state deflate_slow(s, flush)
             s->prev_length -= 2;
             do {
                 if (++s->strstart <= max_insert) {
-                    INSERT_STRING(s, s->strstart, hash_head);
+                    hash_head = insert_string(s, s->strstart);
                 }
             } while (--s->prev_length != 0);
             s->match_available = 0;
