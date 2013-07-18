@@ -841,8 +841,8 @@ case "${ARCH}" in
             CRC_FOLDING_lo=""
         fi
 
-        CFLAGS="${CFLAGS} -DUSE_QUICK"
-        SFLAGS="${SFLAGS} -DUSE_QUICK"
+        CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+        SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
 
         DEFLATE_QUICK_o="deflate_quick.o"
         DEFLATE_QUICK_lo="deflate_quick.lo"
@@ -887,8 +887,8 @@ case "${ARCH}" in
             CRC_FOLDING_lo=""
         fi
 
-        CFLAGS="${CFLAGS} -DUSE_QUICK"
-        SFLAGS="${SFLAGS} -DUSE_QUICK"
+        CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+        SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
 
         DEFLATE_QUICK_o="deflate_quick.o"
         DEFLATE_QUICK_lo="deflate_quick.lo"

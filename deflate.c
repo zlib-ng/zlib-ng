@@ -75,6 +75,7 @@ local void fill_window    OF((deflate_state *s));
 local block_state deflate_stored OF((deflate_state *s, int flush));
 local block_state deflate_fast   OF((deflate_state *s, int flush));
 block_state deflate_quick  OF((deflate_state *s, int flush));
+local block_state deflate_medium OF((deflate_state *s, int flush));
 #ifndef FASTEST
 local block_state deflate_slow   OF((deflate_state *s, int flush));
 #endif
@@ -140,9 +141,16 @@ local const config configuration_table[10] = {
 /* 3 */ {4,    6, 32,   32, deflate_fast},
 #endif
 
+#ifdef USE_MEDIUM
+/* 4 */ {4,    4, 16,   16, deflate_medium},  /* lazy matches */
+/* 5 */ {8,   16, 32,   32, deflate_medium},
+/* 6 */ {8,   16, 128, 128, deflate_medium},
+#else
 /* 4 */ {4,    4, 16,   16, deflate_slow},  /* lazy matches */
 /* 5 */ {8,   16, 32,   32, deflate_slow},
 /* 6 */ {8,   16, 128, 128, deflate_slow},
+#endif
+
 /* 7 */ {8,   32, 128, 256, deflate_slow},
 /* 8 */ {32, 128, 258, 1024, deflate_slow},
 /* 9 */ {32, 258, 258, 4096, deflate_slow}}; /* max compression */
@@ -1594,6 +1602,10 @@ local block_state deflate_fast(s, flush)
     return block_done;
 }
 
+
+#ifdef USE_MEDIUM
+#include "deflate_medium.c"
+#endif
 
 #ifndef FASTEST
 /* ===========================================================================
