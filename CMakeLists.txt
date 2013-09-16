@@ -103,6 +103,7 @@ set(ZLIB_PRIVATE_HDRS
     inflate.h
     inftrees.h
     trees.h
+    x86.h
     zutil.h
 )
 set(ZLIB_SRCS
@@ -120,6 +121,7 @@ set(ZLIB_SRCS
     inffast.c
     trees.c
     uncompr.c
+    x86.c
     zutil.c
 )
 

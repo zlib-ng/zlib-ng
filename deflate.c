@@ -282,6 +282,10 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
         strm->zfree = zcfree;
 #endif
 
+#if defined(ZLIB_X86)
+    x86_check_features();
+#endif
+
 #ifdef FASTEST
     if (level != 0) level = 1;
 #else

@@ -57,11 +57,11 @@ SRCDIR=
 ZINC=
 ZINCOUT=-I.
 
-OBJZ = adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o
+OBJZ = adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o trees.o x86.o zutil.o
 OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo crc32.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo
+PIC_OBJZ = adler32.lo crc32.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo x86.lo zutil.lo
 PIC_OBJG = compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
@@ -201,6 +201,9 @@ gzread.o: $(SRCDIR)gzread.c
 gzwrite.o: $(SRCDIR)gzwrite.c
 	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)gzwrite.c
 
+x86.o: $(SRCDIR)x86.c
+	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)x86.c
+
 
 adler32.lo: $(SRCDIR)adler32.c
 	-@mkdir objs 2>/dev/null || test -d objs
@@ -276,6 +279,11 @@ gzwrite.lo: $(SRCDIR)gzwrite.c
 	-@mkdir objs 2>/dev/null || test -d objs
 	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/gzwrite.o $(SRCDIR)gzwrite.c
 	-@mv objs/gzwrite.o $@
+
+x86.lo: $(SRCDIR)x86.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/x86.o $(SRCDIR)x86.c
+	-@mv objs/x86.o $@
 
 
 placebo $(SHAREDLIBV): $(PIC_OBJS) libz.a
@@ -398,6 +406,7 @@ infback.o inflate.o: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.
 inffast.o: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h $(SRCDIR)inflate.h $(SRCDIR)inffast.h
 inftrees.o: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h
 trees.o: $(SRCDIR)deflate.h $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)trees.h
+x86.o: $(SRCDIR)x86.h
 
 adler32.lo zutil.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h
 gzclose.lo gzlib.lo gzread.lo gzwrite.lo: $(SRCDIR)zlib.h zconf.h $(SRCDIR)gzguts.h
@@ -408,3 +417,4 @@ infback.lo inflate.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftree
 inffast.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h $(SRCDIR)inflate.h $(SRCDIR)inffast.h
 inftrees.lo: $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)inftrees.h
 trees.lo: $(SRCDIR)deflate.h $(SRCDIR)zutil.h $(SRCDIR)zlib.h zconf.h $(SRCDIR)trees.h
+x86.lo: $(SRCDIR)x86.h
