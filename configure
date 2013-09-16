@@ -763,15 +763,15 @@ fi
 # Set ARCH specific FLAGS
 case "${ARCH}" in
     x86_64)
-        OBJC="${OBJC}"
-        PIC_OBJC="${PIC_OBJC}"
+        OBJC="${OBJC} x86.o"
+        PIC_OBJC="${PIC_OBJC} x86.lo"
 
         CFLAGS="${CFLAGS} -DX86_64"
         SFLAGS="${SFLAGS} -DX86_64"
     ;;
     i386 | i486 | i586 | i686)
-        OBJC="${OBJC}"
-        PIC_OBJC="${PIC_OBJC}"
+        OBJC="${OBJC} x86.o"
+        PIC_OBJC="${PIC_OBJC} x86.lo"
 
         CFLAGS="${CFLAGS} -DX86"
         SFLAGS="${SFLAGS} -DX86"
