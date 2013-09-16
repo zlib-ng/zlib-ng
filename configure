@@ -22,7 +22,27 @@ date >> configure.log
 if [ -n "${CHOST}" ]; then
     uname="`echo "${CHOST}" | sed -e 's/^[^-]*-\([^-]*\)$/\1/' -e 's/^[^-]*-[^-]*-\([^-]*\)$/\1/' -e 's/^[^-]*-[^-]*-\([^-]*\)-.*$/\1/'`"
     CROSS_PREFIX="${CHOST}-"
+    ARCH="`echo "${CHOST}" | sed -e 's/-.*//'`"
+else
+    ARCH="`uname -m`"
 fi
+
+case "${ARCH}" in
+    x86_64)
+        case "${CFLAGS}" in
+            *-m32*)
+                ARCH=i686
+            ;;
+        esac
+    ;;
+    i386 | i486 | i586 | i686)
+        case "${CFLAGS}" in
+            *-m64*)
+                ARCH=x86_64
+            ;;
+        esac
+    ;;
+esac
 
 # destination name for static library
 STATICLIB=libz.a
@@ -739,6 +759,24 @@ EOF
     echo "Checking for attribute(visibility) support... No." | tee -a configure.log
   fi
 fi
+
+# Set ARCH specific FLAGS
+case "${ARCH}" in
+    x86_64)
+        OBJC="${OBJC}"
+        PIC_OBJC="${PIC_OBJC}"
+
+        CFLAGS="${CFLAGS} -DX86_64"
+        SFLAGS="${SFLAGS} -DX86_64"
+    ;;
+    i386 | i486 | i586 | i686)
+        OBJC="${OBJC}"
+        PIC_OBJC="${PIC_OBJC}"
+
+        CFLAGS="${CFLAGS} -DX86"
+        SFLAGS="${SFLAGS} -DX86"
+    ;;
+esac
 
 # show the results in the log
 echo >> configure.log
