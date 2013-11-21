@@ -176,8 +176,11 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
                 }
 
                 from = out - dist;
-                
                 if (len > dist) {
+                    zmemcpy(out, from, dist);
+                    out +=dist;
+                    from += dist;
+                    len -= dist;
                     while (len > 2) {
                         *out++ = *from++;
                         *out++ = *from++;
