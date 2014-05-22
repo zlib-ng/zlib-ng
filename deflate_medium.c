@@ -174,7 +174,7 @@ block_state deflate_medium(deflate_state *s, int flush)
     memset(&next_match, 0, sizeof(struct match));
 
     for (;;) {
-        IPos hash_head;       /* head of the hash chain */
+        IPos hash_head = 0;   /* head of the hash chain */
         int bflush;           /* set if current block must be flushed */
         
         /* Make sure that we always have enough lookahead, except
