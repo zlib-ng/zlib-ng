@@ -116,6 +116,12 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
     if (current->match_length <= 1)
             return;
 
+    if (zunlikely(current->match_length > 1 + next->match_start))
+        return;
+
+    if (zunlikely(current->match_length > 1 + next->strstart))
+        return;
+
     match = s->window - current->match_length + 1 + next->match_start ;
     orig  = s->window - current->match_length + 1 + next->strstart ;
     
