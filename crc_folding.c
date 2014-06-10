@@ -23,6 +23,7 @@
 
 #include <inttypes.h>
 #include <immintrin.h>
+#include <wmmintrin.h>
 
 #define CRC_LOAD(crc) \
     do { \
