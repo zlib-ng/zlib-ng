@@ -780,6 +780,7 @@ fi
 # Check for PCLMULQDQ intrinsics
 cat > $test.c << EOF
 #include <immintrin.h>
+#include <wmmintrin.h>
 int main(void)
 {
     __m128i a = _mm_setzero_si128();
