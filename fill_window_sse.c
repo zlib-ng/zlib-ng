@@ -13,6 +13,8 @@
 #include <immintrin.h>
 #include "deflate.h"
 
+extern int read_buf        OF((z_streamp strm, Bytef *buf, unsigned size));
+
 void fill_window_sse(deflate_state *s)
 {
     z_const __m128i xmm_wsize = _mm_set1_epi16(s->w_size);

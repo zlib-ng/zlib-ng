@@ -97,6 +97,10 @@ local  void check_match OF((deflate_state *s, IPos start, IPos match,
                             int length));
 #endif
 
+extern void crc_reset(deflate_state *const s);
+extern void crc_finalize(deflate_state *const s);
+extern void copy_with_crc(z_streamp strm, Bytef *dst, long size);
+
 /* ===========================================================================
  * Local data
  */
