@@ -29,6 +29,17 @@
 #  define PUP(a) *++(a)
 #endif
 
+/* Return the low n bits of the bit accumulator (n < 16) */
+#define BITS(n) \
+    ((unsigned)hold & ((1U << (n)) - 1))
+
+/* Remove n bits from the bit accumulator */
+#define DROPBITS(n) \
+    do { \
+        hold >>= (n); \
+        bits -= (unsigned)(n); \
+    } while (0)
+
 /*
    Decode literal, length, and distance codes and write out the resulting
    literal and match bytes until either not enough input or output is
@@ -126,9 +137,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
         }
         here = lcode[hold & lmask];
       dolen:
-        op = (unsigned)(here.bits);
-        hold >>= op;
-        bits -= op;
+        DROPBITS(here.bits);
         op = (unsigned)(here.op);
         if (op == 0) {                          /* literal */
             Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
@@ -144,9 +153,8 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
                     hold += (unsigned long)(PUP(in)) << bits;
                     bits += 8;
                 }
-                len += (unsigned)hold & ((1U << op) - 1);
-                hold >>= op;
-                bits -= op;
+                len += BITS(op);
+                DROPBITS(op);
             }
             Tracevv((stderr, "inflate:         length %u\n", len));
             if (bits < 15) {
@@ -157,9 +165,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
             }
             here = dcode[hold & dmask];
           dodist:
-            op = (unsigned)(here.bits);
-            hold >>= op;
-            bits -= op;
+            DROPBITS(here.bits);
             op = (unsigned)(here.op);
             if (op & 16) {                      /* distance base */
                 dist = (unsigned)(here.val);
@@ -172,7 +178,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
                         bits += 8;
                     }
                 }
-                dist += (unsigned)hold & ((1U << op) - 1);
+                dist += BITS(op);
 #ifdef INFLATE_STRICT
                 if (dist > dmax) {
                     strm->msg = (char *)"invalid distance too far back";
@@ -180,8 +186,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
                     break;
                 }
 #endif
-                hold >>= op;
-                bits -= op;
+                DROPBITS(op);
                 Tracevv((stderr, "inflate:         distance %u\n", dist));
                 op = (unsigned)(out - beg);     /* max distance in output */
                 if (dist > op) {                /* see if copy from window */
@@ -281,7 +286,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
                 }
             }
             else if ((op & 64) == 0) {          /* 2nd level distance code */
-                here = dcode[here.val + (hold & ((1U << op) - 1))];
+                here = dcode[here.val + BITS(op)];
                 goto dodist;
             }
             else {
@@ -291,7 +296,7 @@ unsigned start;         /* inflate()'s starting value for strm->avail_out */
             }
         }
         else if ((op & 64) == 0) {              /* 2nd level length code */
-            here = lcode[here.val + (hold & ((1U << op) - 1))];
+            here = lcode[here.val + BITS(op)];
             goto dolen;
         }
         else if (op & 32) {                     /* end-of-block */
