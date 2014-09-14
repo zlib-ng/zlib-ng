@@ -253,7 +253,7 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  pragma intrinsic(_byteswap_ulong)
 #  define ZSWAP32(q) _byteswap_ulong(q)
 
-#elif defined(__Clang__) || (defined(__GNUC__) &&
+#elif defined(__Clang__) || (defined(__GNUC__) && \
         (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2)))
 #  define ZSWAP32(q) __builtin_bswap32(q)
 
