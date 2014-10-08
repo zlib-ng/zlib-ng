@@ -241,8 +241,7 @@ __attribute__ ((always_inline)) local void
 bulk_insert_str(deflate_state *s, Pos startpos, uInt count) {
     uInt idx;
     for (idx = 0; idx < count; idx++) {
-        Posf dummy;
-        INSERT_STRING(s, startpos + idx, dummy);
+        insert_string(s, startpos + idx);
     }
 }
 #endif
