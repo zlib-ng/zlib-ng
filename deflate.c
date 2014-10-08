@@ -1330,6 +1330,7 @@ local void fill_window_c(s)
              */
             {
                 int i; 
+                unsigned m;
                 typeof(p) q = p - n;
                 for (i = 0; i < n; i++) {
                     Pos m = *q;
@@ -1338,14 +1339,6 @@ local void fill_window_c(s)
                 }
             }
             
-            /* The following three assignments are unnecessary as the variable
-             * p, n and m are dead at this point. The rationale for these
-             * statements is to ease the reader to verify the two loops are
-             * equivalent.
-             */
-            p = p - n;
-            n = 0;
-            m = *p;
 #endif /* NOT_TWEAK_COMPILER */
             n = wsize;
 #ifndef FASTEST
@@ -1362,6 +1355,7 @@ local void fill_window_c(s)
 #else
             {
                 int i; 
+                unsigned m;
                 typeof(p) q = p - n;
                 for (i = 0; i < n; i++) {
                     Pos m = *q;
