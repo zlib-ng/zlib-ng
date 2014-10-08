@@ -415,15 +415,6 @@ void ZLIB_INTERNAL bi_windup OF((deflate_state *s));
        send_bits(s, tree[c].Code, tree[c].Len); }
 #endif
 
-/* ===========================================================================
- * Output a short LSB first on the stream.
- * IN assertion: there is enough room in pendingBuf.
- */
-#define put_short(s, w) { \
-    put_byte(s, (uch)((w) & 0xff)); \
-    put_byte(s, (uch)((ush)(w) >> 8)); \
-}
-
 #ifdef DEBUG
 /* ===========================================================================
  * Send a value on a given number of bits.
