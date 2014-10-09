@@ -121,14 +121,6 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
   #pragma warn -8066
 #endif
 
-#if defined(__GNUC__)
-#   define zlikely(x)   __builtin_expect(!!(x), 1)
-#   define zunlikely(x) __builtin_expect(!!(x), 0)
-#else
-#   define zlikely(x)   x
-#   define zunlikely(x) x
-#endif
-
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(_WIN32) && \
     (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
@@ -234,5 +226,22 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #define ZSWAP32(q) ((((q) >> 24) & 0xff) + (((q) >> 8) & 0xff00) + \
                     (((q) & 0xff00) << 8) + (((q) & 0xff) << 24))
 #endif /* ZSWAP32 */
+
+/* Only enable likely/unlikely if the compiler is known to support it */
+#if defined(__GNUC__) && (__GNUC__ >= 3)
+#  ifndef likely
+#    define likely(x)      __builtin_expect(!!(x),1)
+#  endif
+#  ifndef unlikely
+#    define unlikely(x)    __builtin_expect(!!(x),0)
+#  endif
+#else
+#  ifndef likely
+#    define likely(x)      x
+#  endif
+#  ifndef unlikely
+#    define unlikely(x)    x
+#  endif
+#endif /* (un)likely */
 
 #endif /* ZUTIL_H */

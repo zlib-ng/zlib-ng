@@ -201,7 +201,7 @@ local unsigned std2_longest_match(deflate_state *z_const s, IPos cur_match)
 		 * is limited to the lookahead, so the output of deflate is not
 		 * affected by the uninitialized values.
 		 */
-		if (zlikely((*(unsigned short *)(match + best_len - 1) != scan_end)))
+		if (likely((*(unsigned short *)(match + best_len - 1) != scan_end)))
 			continue;
 		if (*(unsigned short *)match != scan_start)
 			continue;

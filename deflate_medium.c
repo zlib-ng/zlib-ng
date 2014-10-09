@@ -54,7 +54,7 @@ static int emit_match(deflate_state *s, struct match match, IPos hash_head)
 
 static void insert_match(deflate_state *s, struct match match)
 {
-    if (zunlikely(s->lookahead <= match.match_length + MIN_MATCH))
+    if (unlikely(s->lookahead <= match.match_length + MIN_MATCH))
         return;
 
         /* matches that are not long enough we need to emit as litterals */
@@ -80,7 +80,7 @@ static void insert_match(deflate_state *s, struct match match)
                 match.match_length--; /* string at strstart already in table */
                 do {
                         match.strstart++;
-                        if (zlikely(match.strstart >= match.orgstart)) {
+                        if (likely(match.strstart >= match.orgstart)) {
                             insert_string(s, match.strstart);
                         }
                     /* strstart never exceeds WSIZE-MAX_MATCH, so there are
@@ -118,7 +118,7 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
     orig  = s->window - current->match_length + 1 + next->strstart ;
     
     /* quick exit check.. if this fails then don't bother with anything else */
-    if (zlikely(*match != *orig))
+    if (likely(*match != *orig))
         return;
 
     /*
