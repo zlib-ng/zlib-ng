@@ -31,10 +31,6 @@ int ZEXPORT compress2 (dest, destLen, source, sourceLen, level)
 
     stream.next_in = (z_const Bytef *)source;
     stream.avail_in = (uInt)sourceLen;
-#ifdef MAXSEG_64K
-    /* Check for source > 64K on 16-bit machine: */
-    if ((uLong)stream.avail_in != sourceLen) return Z_BUF_ERROR;
-#endif
     stream.next_out = dest;
     stream.avail_out = (uInt)*destLen;
     if ((uLong)stream.avail_out != *destLen) return Z_BUF_ERROR;
