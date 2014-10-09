@@ -28,7 +28,7 @@
 #  endif /* !DYNAMIC_CRC_TABLE */
 #endif /* MAKECRCH */
 
-#include "zutil.h"      /* for STDC and FAR definitions */
+#include "zutil.h"      /* for STDC definitions */
 
 #define local static
 
@@ -38,9 +38,9 @@
 #endif
 #ifdef BYFOUR
    local unsigned long crc32_little OF((unsigned long,
-                        const unsigned char FAR *, unsigned));
+                        const unsigned char *, unsigned));
    local unsigned long crc32_big OF((unsigned long,
-                        const unsigned char FAR *, unsigned));
+                        const unsigned char *, unsigned));
 #  define TBLS 8
 #else
 #  define TBLS 1
@@ -56,10 +56,10 @@ local uLong crc32_combine_ OF((uLong crc1, uLong crc2, z_off64_t len2));
 #ifdef DYNAMIC_CRC_TABLE
 
 local volatile int crc_table_empty = 1;
-local z_crc_t FAR crc_table[TBLS][256];
+local z_crc_t crc_table[TBLS][256];
 local void make_crc_table OF((void));
 #ifdef MAKECRCH
-   local void write_table OF((FILE *, const z_crc_t FAR *));
+   local void write_table OF((FILE *, const z_crc_t *));
 #endif /* MAKECRCH */
 /*
   Generate tables for a byte-wise 32-bit CRC calculation on the polynomial:
@@ -146,7 +146,7 @@ local void make_crc_table()
         if (out == NULL) return;
         fprintf(out, "/* crc32.h -- tables for rapid CRC calculation\n");
         fprintf(out, " * Generated automatically by crc32.c\n */\n\n");
-        fprintf(out, "local const z_crc_t FAR ");
+        fprintf(out, "local const z_crc_t ");
         fprintf(out, "crc_table[TBLS][256] =\n{\n  {\n");
         write_table(out, crc_table[0]);
 #  ifdef BYFOUR
@@ -166,7 +166,7 @@ local void make_crc_table()
 #ifdef MAKECRCH
 local void write_table(out, table)
     FILE *out;
-    const z_crc_t FAR *table;
+    const z_crc_t *table;
 {
     int n;
 
@@ -187,13 +187,13 @@ local void write_table(out, table)
 /* =========================================================================
  * This function can be used by asm versions of crc32()
  */
-const z_crc_t FAR * ZEXPORT get_crc_table()
+const z_crc_t * ZEXPORT get_crc_table()
 {
 #ifdef DYNAMIC_CRC_TABLE
     if (crc_table_empty)
         make_crc_table();
 #endif /* DYNAMIC_CRC_TABLE */
-    return (const z_crc_t FAR *)crc_table;
+    return (const z_crc_t *)crc_table;
 }
 
 /* ========================================================================= */
@@ -204,7 +204,7 @@ const z_crc_t FAR * ZEXPORT get_crc_table()
 /* ========================================================================= */
 unsigned long ZEXPORT crc32(crc, buf, len)
     unsigned long crc;
-    const unsigned char FAR *buf;
+    const unsigned char *buf;
     uInt len;
 {
     if (buf == Z_NULL) return 0UL;
@@ -256,11 +256,11 @@ unsigned long ZEXPORT crc32(crc, buf, len)
 /* ========================================================================= */
 local unsigned long crc32_little(crc, buf, len)
     unsigned long crc;
-    const unsigned char FAR *buf;
+    const unsigned char *buf;
     unsigned len;
 {
     register z_crc_t c;
-    register const z_crc_t FAR *buf4;
+    register const z_crc_t *buf4;
 
     c = (z_crc_t)crc;
     c = ~c;
@@ -269,7 +269,7 @@ local unsigned long crc32_little(crc, buf, len)
         len--;
     }
 
-    buf4 = (const z_crc_t FAR *)(const void FAR *)buf;
+    buf4 = (const z_crc_t *)(const void *)buf;
 
 #ifndef CRC32_UNROLL_LESS
     while (len >= 32) {
@@ -282,7 +282,7 @@ local unsigned long crc32_little(crc, buf, len)
         DOLIT4;
         len -= 4;
     }
-    buf = (const unsigned char FAR *)buf4;
+    buf = (const unsigned char *)buf4;
 
     if (len) do {
         c = crc_table[0][(c ^ *buf++) & 0xff] ^ (c >> 8);
@@ -300,11 +300,11 @@ local unsigned long crc32_little(crc, buf, len)
 /* ========================================================================= */
 local unsigned long crc32_big(crc, buf, len)
     unsigned long crc;
-    const unsigned char FAR *buf;
+    const unsigned char *buf;
     unsigned len;
 {
     register z_crc_t c;
-    register const z_crc_t FAR *buf4;
+    register const z_crc_t *buf4;
 
     c = ZSWAP32((z_crc_t)crc);
     c = ~c;
@@ -313,7 +313,7 @@ local unsigned long crc32_big(crc, buf, len)
         len--;
     }
 
-    buf4 = (const z_crc_t FAR *)(const void FAR *)buf;
+    buf4 = (const z_crc_t *)(const void *)buf;
     buf4--;
     while (len >= 32) {
         DOBIG32;
@@ -324,7 +324,7 @@ local unsigned long crc32_big(crc, buf, len)
         len -= 4;
     }
     buf4++;
-    buf = (const unsigned char FAR *)buf4;
+    buf = (const unsigned char *)buf4;
 
     if (len) do {
         c = crc_table[4][(c >> 24) ^ *buf++] ^ (c << 8);
