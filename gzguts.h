@@ -58,18 +58,7 @@
 #  endif
 #endif
 
-#if defined(MSDOS) && defined(__BORLANDC__) && (BORLANDC > 0x410)
-#  ifndef HAVE_VSNPRINTF
-#    define HAVE_VSNPRINTF
-#  endif
-#endif
-
 #ifndef HAVE_VSNPRINTF
-#  ifdef MSDOS
-/* vsnprintf may exist on some MS-DOS compilers (DJGPP?),
-   but for now we just assume it doesn't. */
-#    define NO_vsnprintf
-#  endif
 #  ifdef __TURBOC__
 #    define NO_vsnprintf
 #  endif
@@ -82,15 +71,6 @@
 #    endif
 #  endif
 #  ifdef __SASC
-#    define NO_vsnprintf
-#  endif
-#  ifdef VMS
-#    define NO_vsnprintf
-#  endif
-#  ifdef __OS400__
-#    define NO_vsnprintf
-#  endif
-#  ifdef __MVS__
 #    define NO_vsnprintf
 #  endif
 #endif

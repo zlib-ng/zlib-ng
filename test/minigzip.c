@@ -9,8 +9,7 @@
  * full-featured gzip. No attempt is made to deal with file systems
  * limiting names to 14 or 8+3 characters, etc... Error checking is
  * very limited. So use minigzip only for testing; use gzip for the
- * real thing. On MSDOS, use only on file names without extension
- * or in pipe mode.
+ * real thing.
  */
 
 /* @(#) $Id$ */
@@ -29,7 +28,7 @@
 #  include <sys/stat.h>
 #endif
 
-#if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
+#if defined(WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
 #  include <io.h>
 #  ifdef UNDER_CE
@@ -44,10 +43,6 @@
 #  define snprintf _snprintf
 #endif
 
-#ifdef VMS
-#  define unlink delete
-#  define GZ_SUFFIX "-gz"
-#endif
 #ifdef RISCOS
 #  define unlink remove
 #  define GZ_SUFFIX "-gz"

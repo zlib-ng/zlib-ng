@@ -152,12 +152,6 @@
 
 #endif
 
-#if defined(__MSDOS__) && !defined(MSDOS)
-#  define MSDOS
-#endif
-#if (defined(OS_2) || defined(__OS2__)) && !defined(OS2)
-#  define OS2
-#endif
 #if defined(_WINDOWS) && !defined(WINDOWS)
 #  define WINDOWS
 #endif
@@ -165,24 +159,6 @@
 #  ifndef WIN32
 #    define WIN32
 #  endif
-#endif
-#if (defined(MSDOS) || defined(OS2) || defined(WINDOWS)) && !defined(WIN32)
-#  if !defined(__GNUC__) && !defined(__FLAT__) && !defined(__386__)
-#    ifndef SYS16BIT
-#      define SYS16BIT
-#    endif
-#  endif
-#endif
-
-/*
- * Compile with -DMAXSEG_64K if the alloc function cannot allocate more
- * than 64k bytes at a time (needed on systems with 16-bit int).
- */
-#ifdef SYS16BIT
-#  define MAXSEG_64K
-#endif
-#ifdef MSDOS
-#  define UNALIGNED_OK
 #endif
 
 #ifdef __STDC_VERSION__
@@ -201,14 +177,10 @@
 #if !defined(STDC) && (defined(__GNUC__) || defined(__BORLANDC__))
 #  define STDC
 #endif
-#if !defined(STDC) && (defined(MSDOS) || defined(WINDOWS) || defined(WIN32))
+#if !defined(STDC) && (defined(WINDOWS) || defined(WIN32))
 #  define STDC
 #endif
-#if !defined(STDC) && (defined(OS2) || defined(__HOS_AIX__))
-#  define STDC
-#endif
-
-#if defined(__OS400__) && !defined(STDC)    /* iSeries (formerly AS/400). */
+#if !defined(STDC) && defined(__HOS_AIX__)
 #  define STDC
 #endif
 
@@ -278,33 +250,6 @@
 #  endif
 #endif
 
-/* The following definitions for FAR are needed only for MSDOS mixed
- * model programming (small or medium model with some far allocations).
- * This was tested only with MSC; for other MSDOS compilers you may have
- * to define NO_MEMCPY in zutil.h.  If you don't need the mixed model,
- * just define FAR to be empty.
- */
-#ifdef SYS16BIT
-#  if defined(M_I86SM) || defined(M_I86MM)
-     /* MSC small or medium model */
-#    define SMALL_MEDIUM
-#    ifdef _MSC_VER
-#      define FAR _far
-#    else
-#      define FAR far
-#    endif
-#  endif
-#  if (defined(__SMALL__) || defined(__MEDIUM__))
-     /* Turbo C small or medium model */
-#    define SMALL_MEDIUM
-#    ifdef __BORLANDC__
-#      define FAR _far
-#    else
-#      define FAR far
-#    endif
-#  endif
-#endif
-
 #if defined(WINDOWS) || defined(WIN32)
    /* If building or using zlib as a DLL, define ZLIB_DLL.
     * This is not mandatory, but it offers a little performance increase.
@@ -323,9 +268,6 @@
     * Caution: the standard ZLIB1.DLL is NOT compiled using ZLIB_WINAPI.
     */
 #  ifdef ZLIB_WINAPI
-#    ifdef FAR
-#      undef FAR
-#    endif
 #    include <windows.h>
      /* No need for _export, use ZLIB.DEF instead. */
      /* For complete Windows compatibility, use WINAPI, not __stdcall. */
@@ -444,9 +386,6 @@ typedef uLong FAR uLongf;
 #  undef _LARGEFILE64_SOURCE
 #endif
 
-#if defined(__WATCOMC__) && !defined(Z_HAVE_UNISTD_H)
-#  define Z_HAVE_UNISTD_H
-#endif
 #ifndef Z_SOLO
 #  if defined(Z_HAVE_UNISTD_H) || defined(_LARGEFILE64_SOURCE)
 #    include <unistd.h>         /* for SEEK_*, off_t, and _LFS64_LARGEFILE */
@@ -489,23 +428,6 @@ typedef uLong FAR uLongf;
 #  else
 #    define z_off64_t z_off_t
 #  endif
-#endif
-
-/* MVS linker does not support external names larger than 8 bytes */
-#if defined(__MVS__)
-  #pragma map(deflateInit_,"DEIN")
-  #pragma map(deflateInit2_,"DEIN2")
-  #pragma map(deflateEnd,"DEEND")
-  #pragma map(deflateBound,"DEBND")
-  #pragma map(inflateInit_,"ININ")
-  #pragma map(inflateInit2_,"ININ2")
-  #pragma map(inflateEnd,"INEND")
-  #pragma map(inflateSync,"INSY")
-  #pragma map(inflateSetDictionary,"INSEDI")
-  #pragma map(compressBound,"CMBND")
-  #pragma map(inflate_table,"INTABL")
-  #pragma map(inflate_fast,"INFA")
-  #pragma map(inflate_copyright,"INCOPY")
 #endif
 
 #endif /* ZCONF_H */

@@ -1094,16 +1094,11 @@ int ZEXPORT deflateEnd (strm)
 
 /* =========================================================================
  * Copy the source state to the destination state.
- * To simplify the source, this is not supported for 16-bit MSDOS (which
- * doesn't have enough memory anyway to duplicate compression states).
  */
 int ZEXPORT deflateCopy (dest, source)
     z_streamp dest;
     z_streamp source;
 {
-#ifdef MAXSEG_64K
-    return Z_STREAM_ERROR;
-#else
     deflate_state *ds;
     deflate_state *ss;
     ushf *overlay;
@@ -1134,7 +1129,7 @@ int ZEXPORT deflateCopy (dest, source)
         deflateEnd (dest);
         return Z_MEM_ERROR;
     }
-    /* following zmemcpy do not work for 16-bit MSDOS */
+
     zmemcpy(ds->window, ss->window, ds->w_size * 2 * sizeof(Byte));
     zmemcpy((voidpf)ds->prev, (voidpf)ss->prev, ds->w_size * sizeof(Pos));
     zmemcpy((voidpf)ds->head, (voidpf)ss->head, ds->hash_size * sizeof(Pos));
@@ -1149,7 +1144,6 @@ int ZEXPORT deflateCopy (dest, source)
     ds->bl_desc.dyn_tree = ds->bl_tree;
 
     return Z_OK;
-#endif /* MAXSEG_64K */
 }
 
 /* ===========================================================================

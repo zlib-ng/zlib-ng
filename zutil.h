@@ -80,44 +80,6 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
         /* target dependencies */
 
-#if defined(MSDOS) || (defined(WINDOWS) && !defined(WIN32))
-#  define OS_CODE  0x00
-#  ifndef Z_SOLO
-#    if defined(__TURBOC__) || defined(__BORLANDC__)
-#      if (__STDC__ == 1) && (defined(__LARGE__) || defined(__COMPACT__))
-         /* Allow compilation with ANSI keywords only enabled */
-         void _Cdecl farfree( void *block );
-         void *_Cdecl farmalloc( unsigned long nbytes );
-#      else
-#        include <alloc.h>
-#      endif
-#    else /* MSC or DJGPP */
-#      include <malloc.h>
-#    endif
-#  endif
-#endif
-
-#ifdef AMIGA
-#  define OS_CODE  0x01
-#endif
-
-#if defined(VAXC) || defined(VMS)
-#  define OS_CODE  0x02
-#  define F_OPEN(name, mode) \
-     fopen((name), (mode), "mbc=60", "ctx=stm", "rfm=fix", "mrs=512")
-#endif
-
-#if defined(ATARI) || defined(atarist)
-#  define OS_CODE  0x05
-#endif
-
-#ifdef OS2
-#  define OS_CODE  0x06
-#  if defined(M_I86) && !defined(Z_SOLO)
-#    include <malloc.h>
-#  endif
-#endif
-
 #if defined(MACOS) || defined(TARGET_OS_MAC)
 #  define OS_CODE  0x07
 #  ifndef Z_SOLO
@@ -161,7 +123,7 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  endif
 #endif
 
-#if defined(__BORLANDC__) && !defined(MSDOS)
+#if defined(__BORLANDC__)
   #pragma warn -8004
   #pragma warn -8008
   #pragma warn -8066

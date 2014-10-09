@@ -144,15 +144,6 @@ typedef gz_header FAR *gz_headerp;
    If zlib is used in a multi-threaded application, zalloc and zfree must be
    thread safe.
 
-     On 16-bit systems, the functions zalloc and zfree must be able to allocate
-   exactly 65536 bytes, but will not be required to allocate more than this if
-   the symbol MAXSEG_64K is defined (see zconf.h).  WARNING: On MSDOS, pointers
-   returned by zalloc for objects of exactly 65536 bytes *must* have their
-   offset normalized to zero.  The default allocation function provided by this
-   library ensures this (see zutil.c).  To reduce memory requirements and avoid
-   any allocation of 64K objects, at the expense of compression ratio, compile
-   the library with -DMAX_WBITS=14 (see zconf.h).
-
      The fields total_in and total_out can be used for statistics or progress
    reports.  After compression, total_in holds the total size of the
    uncompressed data and may be saved for use in the decompressor (particularly
