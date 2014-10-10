@@ -31,7 +31,7 @@
 #  include <stddef.h>
 #endif
 
-#if defined(__TURBOC__) || defined(_MSC_VER) || defined(_WIN32)
+#if defined(_MSC_VER) || defined(_WIN32)
 #  include <io.h>
 #endif
 
@@ -46,22 +46,13 @@
 #  define NO_GZCOMPRESS
 #endif
 
-#if defined(STDC99) || (defined(__TURBOC__) && __TURBOC__ >= 0x550)
-#  ifndef HAVE_VSNPRINTF
-#    define HAVE_VSNPRINTF
-#  endif
-#endif
-
-#if defined(__CYGWIN__)
+#if defined(STDC99) || defined(__CYGWIN__)
 #  ifndef HAVE_VSNPRINTF
 #    define HAVE_VSNPRINTF
 #  endif
 #endif
 
 #ifndef HAVE_VSNPRINTF
-#  ifdef __TURBOC__
-#    define NO_vsnprintf
-#  endif
 #  ifdef WIN32
 /* In Win32, vsnprintf is available as the "non-ANSI" _vsnprintf. */
 #    if !defined(vsnprintf) && !defined(NO_vsnprintf)
@@ -69,9 +60,6 @@
 #         define vsnprintf _vsnprintf
 #      endif
 #    endif
-#  endif
-#  ifdef __SASC
-#    define NO_vsnprintf
 #  endif
 #endif
 
