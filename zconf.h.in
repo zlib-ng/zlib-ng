@@ -162,31 +162,10 @@
 #endif
 
 #ifdef __STDC_VERSION__
-#  ifndef STDC
-#    define STDC
-#  endif
 #  if __STDC_VERSION__ >= 199901L
 #    ifndef STDC99
 #      define STDC99
 #    endif
-#  endif
-#endif
-#if !defined(STDC) && (defined(__STDC__) || defined(__cplusplus))
-#  define STDC
-#endif
-#if !defined(STDC) && (defined(__GNUC__) || defined(__BORLANDC__))
-#  define STDC
-#endif
-#if !defined(STDC) && (defined(WINDOWS) || defined(WIN32))
-#  define STDC
-#endif
-#if !defined(STDC) && defined(__HOS_AIX__)
-#  define STDC
-#endif
-
-#ifndef STDC
-#  ifndef const /* cannot use !defined(STDC) && !defined(const) on Mac */
-#    define const       /* note: need a more gentle solution here */
 #  endif
 #endif
 
@@ -231,19 +210,11 @@
                         /* Type declarations */
 
 #ifndef OF /* function prototypes */
-#  ifdef STDC
-#    define OF(args)  args
-#  else
-#    define OF(args)  ()
-#  endif
+#  define OF(args)  args
 #endif
 
 #ifndef Z_ARG /* function prototypes for stdarg */
-#  if defined(STDC) || defined(Z_HAVE_STDARG_H)
-#    define Z_ARG(args)  args
-#  else
-#    define Z_ARG(args)  ()
-#  endif
+#  define Z_ARG(args)  args
 #endif
 
 #if defined(WINDOWS) || defined(WIN32)
@@ -306,17 +277,11 @@ typedef int   intf;
 typedef uInt  uIntf;
 typedef uLong uLongf;
 
-#ifdef STDC
-   typedef void const *voidpc;
-   typedef void       *voidpf;
-   typedef void       *voidp;
-#else
-   typedef Byte const *voidpc;
-   typedef Byte       *voidpf;
-   typedef Byte       *voidp;
-#endif
+typedef void const *voidpc;
+typedef void       *voidpf;
+typedef void       *voidp;
 
-#if !defined(Z_U4) && !defined(Z_SOLO) && defined(STDC)
+#if !defined(Z_U4) && !defined(Z_SOLO)
 #  include <limits.h>
 #  if (UINT_MAX == 0xffffffffUL)
 #    define Z_U4 unsigned
@@ -341,16 +306,9 @@ typedef uLong uLongf;
 #  define Z_HAVE_STDARG_H
 #endif
 
-#ifdef STDC
-#  ifndef Z_SOLO
-#    include <sys/types.h>      /* for off_t */
-#  endif
-#endif
-
-#if defined(STDC) || defined(Z_HAVE_STDARG_H)
-#  ifndef Z_SOLO
-#    include <stdarg.h>         /* for va_list */
-#  endif
+#ifndef Z_SOLO
+#  include <sys/types.h>      /* for off_t */
+#  include <stdarg.h>         /* for va_list */
 #endif
 
 #ifdef _WIN32

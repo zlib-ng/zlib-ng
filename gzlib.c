@@ -210,11 +210,7 @@ local gzFile gz_open(path, fd, mode)
             *(state->path) = 0;
     else
 #endif
-#if !defined(NO_snprintf) && !defined(NO_vsnprintf)
         snprintf(state->path, len + 1, "%s", (const char *)path);
-#else
-        strcpy(state->path, path);
-#endif
 
     /* compute the flags for open() */
     oflag =
@@ -290,11 +286,7 @@ gzFile ZEXPORT gzdopen(fd, mode)
 
     if (fd == -1 || (path = (char *)malloc(7 + 3 * sizeof(int))) == NULL)
         return NULL;
-#if !defined(NO_snprintf) && !defined(NO_vsnprintf)
     snprintf(path, 7 + 3 * sizeof(int), "<fd:%d>", fd); /* for debugging */
-#else
-    sprintf(path, "<fd:%d>", fd);   /* for debugging */
-#endif
     gz = gz_open(path, fd, mode);
     free(path);
     return gz;
@@ -603,14 +595,8 @@ void ZLIB_INTERNAL gz_error(state, err, msg)
         state->err = Z_MEM_ERROR;
         return;
     }
-#if !defined(NO_snprintf) && !defined(NO_vsnprintf)
     snprintf(state->msg, strlen(state->path) + strlen(msg) + 3,
              "%s%s%s", state->path, ": ", msg);
-#else
-    strcpy(state->msg, state->path);
-    strcat(state->msg, ": ");
-    strcat(state->msg, msg);
-#endif
     return;
 }
 

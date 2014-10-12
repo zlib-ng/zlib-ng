@@ -351,7 +351,7 @@ void ZLIB_INTERNAL bi_windup OF((deflate_state *s));
 #ifndef DEBUG
 /* Inline versions of _tr_tally for speed: */
 
-#if defined(GEN_TREES_H) || !defined(STDC)
+#if defined(GEN_TREES_H)
   extern uch ZLIB_INTERNAL _length_code[];
   extern uch ZLIB_INTERNAL _dist_code[];
 #else
