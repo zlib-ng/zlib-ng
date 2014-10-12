@@ -132,27 +132,24 @@ local static_tree_desc  static_bl_desc =
  * Local (static) routines in this file.
  */
 
-local void tr_static_init OF((void));
-local void init_block     OF((deflate_state *s));
-local void pqdownheap     OF((deflate_state *s, ct_data *tree, int k));
-local void gen_bitlen     OF((deflate_state *s, tree_desc *desc));
-local void gen_codes      OF((ct_data *tree, int max_code, ushf *bl_count));
-local void build_tree     OF((deflate_state *s, tree_desc *desc));
-local void scan_tree      OF((deflate_state *s, ct_data *tree, int max_code));
-local void send_tree      OF((deflate_state *s, ct_data *tree, int max_code));
-local int  build_bl_tree  OF((deflate_state *s));
-local void send_all_trees OF((deflate_state *s, int lcodes, int dcodes,
-                              int blcodes));
-local void compress_block OF((deflate_state *s, const ct_data *ltree,
-                              const ct_data *dtree));
-local int  detect_data_type OF((deflate_state *s));
-local unsigned bi_reverse OF((unsigned value, int length));
-local void bi_flush       OF((deflate_state *s));
-local void copy_block     OF((deflate_state *s, charf *buf, unsigned len,
-                              int header));
+local void tr_static_init (void);
+local void init_block     (deflate_state *s);
+local void pqdownheap     (deflate_state *s, ct_data *tree, int k);
+local void gen_bitlen     (deflate_state *s, tree_desc *desc);
+local void gen_codes      (ct_data *tree, int max_code, ushf *bl_count);
+local void build_tree     (deflate_state *s, tree_desc *desc);
+local void scan_tree      (deflate_state *s, ct_data *tree, int max_code);
+local void send_tree      (deflate_state *s, ct_data *tree, int max_code);
+local int  build_bl_tree  (deflate_state *s);
+local void send_all_trees (deflate_state *s, int lcodes, int dcodes, int blcodes);
+local void compress_block (deflate_state *s, const ct_data *ltree, const ct_data *dtree);
+local int  detect_data_type (deflate_state *s);
+local unsigned bi_reverse (unsigned value, int length);
+local void bi_flush       (deflate_state *s);
+local void copy_block     (deflate_state *s, charf *buf, unsigned len, int header);
 
 #ifdef GEN_TREES_H
-local void gen_trees_header OF((void));
+local void gen_trees_header (void);
 #endif
 
 /* ===========================================================================

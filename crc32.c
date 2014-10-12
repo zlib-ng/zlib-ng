@@ -37,29 +37,26 @@
 #  define BYFOUR
 #endif
 #ifdef BYFOUR
-   local unsigned long crc32_little OF((unsigned long,
-                        const unsigned char *, unsigned));
-   local unsigned long crc32_big OF((unsigned long,
-                        const unsigned char *, unsigned));
+   local unsigned long crc32_little (unsigned long, const unsigned char *, unsigned);
+   local unsigned long crc32_big (unsigned long, const unsigned char *, unsigned);
 #  define TBLS 8
 #else
 #  define TBLS 1
 #endif /* BYFOUR */
 
 /* Local functions for crc concatenation */
-local unsigned long gf2_matrix_times OF((unsigned long *mat,
-                                         unsigned long vec));
-local void gf2_matrix_square OF((unsigned long *square, unsigned long *mat));
-local uLong crc32_combine_ OF((uLong crc1, uLong crc2, z_off64_t len2));
+local unsigned long gf2_matrix_times (unsigned long *mat, unsigned long vec);
+local void gf2_matrix_square (unsigned long *square, unsigned long *mat);
+local uLong crc32_combine_ (uLong crc1, uLong crc2, z_off64_t len2);
 
 
 #ifdef DYNAMIC_CRC_TABLE
 
 local volatile int crc_table_empty = 1;
 local z_crc_t crc_table[TBLS][256];
-local void make_crc_table OF((void));
+local void make_crc_table (void);
 #ifdef MAKECRCH
-   local void write_table OF((FILE *, const z_crc_t *));
+   local void write_table (FILE *, const z_crc_t *);
 #endif /* MAKECRCH */
 /*
   Generate tables for a byte-wise 32-bit CRC calculation on the polynomial:

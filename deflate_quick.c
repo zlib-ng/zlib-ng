@@ -17,7 +17,7 @@
 #include <immintrin.h>
 
 extern void fill_window_sse(deflate_state *s);
-extern void flush_pending  OF((z_streamp strm));
+extern void flush_pending  (z_streamp strm);
 
 local inline long compare258(z_const unsigned char *z_const src0,
         z_const unsigned char *z_const src1)

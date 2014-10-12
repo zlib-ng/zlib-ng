@@ -213,6 +213,7 @@
 
                         /* Type declarations */
 
+/* OF() definition is kept for compatibility purposes */
 #ifndef OF /* function prototypes */
 #  define OF(args)  args
 #endif
