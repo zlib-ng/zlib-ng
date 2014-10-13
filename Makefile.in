@@ -277,10 +277,9 @@ clean:
 	   example64$(EXE) minigzip64$(EXE) \
 	   infcover \
 	   libz.* foo.gz so_locations \
-	   _match.s maketree contrib/infback9/*.o
+	   _match.s maketree
 	rm -rf objs
 	rm -f *.gcda *.gcno *.gcov
-	rm -f contrib/infback9/*.gcda contrib/infback9/*.gcno contrib/infback9/*.gcov
 
 maintainer-clean: distclean
 distclean: clean zconf zconf.h.cmakein docs
