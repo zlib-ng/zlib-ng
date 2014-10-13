@@ -19,6 +19,12 @@
 
 #define local static
 
+/* reallocf is BSD-specific */
+#ifndef reallocf
+#  define reallocf realloc
+#endif
+
+
 /* -- memory tracking routines -- */
 
 /*
