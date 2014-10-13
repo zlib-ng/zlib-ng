@@ -85,9 +85,6 @@ uLong ZEXPORT zlibCompileFlags()
 #ifdef PKZIP_BUG_WORKAROUND
     flags += 1L << 20;
 #endif
-#ifdef FASTEST
-    flags += 1L << 21;
-#endif
     return flags;
 }
 

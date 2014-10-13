@@ -76,9 +76,7 @@ local block_state deflate_stored (deflate_state *s, int flush);
 local block_state deflate_fast   (deflate_state *s, int flush);
 block_state deflate_quick  (deflate_state *s, int flush);
 local block_state deflate_medium (deflate_state *s, int flush);
-#ifndef FASTEST
 local block_state deflate_slow   (deflate_state *s, int flush);
-#endif
 local block_state deflate_rle    (deflate_state *s, int flush);
 local block_state deflate_huff   (deflate_state *s, int flush);
 local void lm_init        (deflate_state *s);
@@ -125,12 +123,6 @@ typedef struct config_s {
    compress_func func;
 } config;
 
-#ifdef FASTEST
-local const config configuration_table[2] = {
-/*      good lazy nice chain */
-/* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
-/* 1 */ {4,    4,  8,    4, deflate_fast}}; /* max speed, no lazy matches */
-#else
 local const config configuration_table[10] = {
 /*      good lazy nice chain */
 /* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
@@ -157,7 +149,6 @@ local const config configuration_table[10] = {
 /* 7 */ {8,   32, 128, 256, deflate_slow},
 /* 8 */ {32, 128, 258, 1024, deflate_slow},
 /* 9 */ {32, 258, 258, 4096, deflate_slow}}; /* max compression */
-#endif
 
 /* Note: the deflate() code requires max_lazy >= MIN_MATCH and max_chain >= 4
  * For deflate_fast() (levels <= 3) good is ignored and lazy has a different
@@ -179,8 +170,6 @@ struct static_tree_desc_s {int dummy;}; /* for buggy compilers */
  * Insert string str in the dictionary and set match_head to the previous head
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
- * If this file is compiled with -DFASTEST, the compression level is forced
- * to 1, and no hash chains are maintained.
  * IN  assertion: all calls to to INSERT_STRING are made with consecutive
  *    input characters and the first MIN_MATCH bytes of str are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
@@ -215,11 +204,7 @@ local inline Pos insert_string_c(deflate_state *z_const s, z_const Pos str)
     Pos ret;
 
     UPDATE_HASH(s, s->ins_h, str);
-#ifdef FASTEST
-    ret = s->head[s->ins_h];
-#else
     ret = s->prev[str & s->w_mask] = s->head[s->ins_h];
-#endif
     s->head[s->ins_h] = str;
 
     return ret;
@@ -313,11 +298,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
         strm->zfree = zcfree;
 #endif
 
-#ifdef FASTEST
-    if (level != 0) level = 1;
-#else
     if (level == Z_DEFAULT_COMPRESSION) level = 6;
-#endif
 
     if (windowBits < 0) { /* suppress zlib wrapper */
         wrap = 0;
@@ -443,9 +424,7 @@ int ZEXPORT deflateSetDictionary (strm, dictionary, dictLength)
         n = s->lookahead - (MIN_MATCH-1);
         do {
             UPDATE_HASH(s, s->ins_h, str);
-#ifndef FASTEST
             s->prev[str & s->w_mask] = s->head[s->ins_h];
-#endif
             s->head[s->ins_h] = (Pos)str;
             str++;
         } while (--n);
@@ -576,11 +555,7 @@ int ZEXPORT deflateParams(strm, level, strategy)
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
     s = strm->state;
 
-#ifdef FASTEST
-    if (level != 0) level = 1;
-#else
     if (level == Z_DEFAULT_COMPRESSION) level = 6;
-#endif
     if (level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED) {
         return Z_STREAM_ERROR;
     }
@@ -1204,10 +1179,8 @@ local void lm_init (s)
     s->match_length = s->prev_length = MIN_MATCH-1;
     s->match_available = 0;
     s->ins_h = 0;
-#ifndef FASTEST
 #ifdef ASMV
     match_init(); /* initialize the asm code */
-#endif
 #endif
 }
 
@@ -1343,7 +1316,6 @@ local void fill_window_c(s)
             
 #endif /* NOT_TWEAK_COMPILER */
             n = wsize;
-#ifndef FASTEST
             p = &s->prev[n];
 #ifdef NOT_TWEAK_COMPILER
             do {
@@ -1365,7 +1337,6 @@ local void fill_window_c(s)
                 }
             }
 #endif /* NOT_TWEAK_COMPILER */
-#endif
             more += wsize;
         }
         if (s->strm->avail_in == 0) break;
@@ -1397,9 +1368,7 @@ local void fill_window_c(s)
 #endif
             while (s->insert) {
                 UPDATE_HASH(s, s->ins_h, str);
-#ifndef FASTEST
                 s->prev[str & s->w_mask] = s->head[s->ins_h];
-#endif
                 s->head[s->ins_h] = (Pos)str;
                 str++;
                 s->insert--;
@@ -1596,7 +1565,6 @@ local block_state deflate_fast(s, flush)
             /* Insert new strings in the hash table only if the match length
              * is not too large. This saves time but degrades compression.
              */
-#ifndef FASTEST
             if (s->match_length <= s->max_insert_length &&
                 s->lookahead >= MIN_MATCH) {
                 s->match_length--; /* string at strstart already in table */
@@ -1609,7 +1577,6 @@ local block_state deflate_fast(s, flush)
                 } while (--s->match_length != 0);
                 s->strstart++;
             } else
-#endif
             {
                 s->strstart += s->match_length;
                 s->match_length = 0;
@@ -1646,7 +1613,6 @@ local block_state deflate_fast(s, flush)
 #include "deflate_medium.c"
 #endif
 
-#ifndef FASTEST
 /* ===========================================================================
  * Same as above, but achieves better compression. We use a lazy
  * evaluation for matches: a match is finally adopted only if there is
@@ -1792,7 +1758,6 @@ local block_state deflate_slow(s, flush)
         FLUSH_BLOCK(s, 0);
     return block_done;
 }
-#endif /* FASTEST */
 
 /* ===========================================================================
  * For Z_RLE, simply look for runs of bytes, generate matches only of distance

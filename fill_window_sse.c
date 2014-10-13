@@ -73,7 +73,6 @@ void fill_window_sse(deflate_state *s)
             } while (n > 0);
 
             n = wsize;
-#ifndef FASTEST
             p = &s->prev[n];
             p -= 8;
             do {
@@ -86,7 +85,6 @@ void fill_window_sse(deflate_state *s)
                 p -= 8;
                 n -= 8;
             } while (n > 0);
-#endif
             more += wsize;
         }
         if (s->strm->avail_in == 0) break;
@@ -118,9 +116,7 @@ void fill_window_sse(deflate_state *s)
 #endif
             while (s->insert) {
                 UPDATE_HASH(s, s->ins_h, str);
-#ifndef FASTEST
                 s->prev[str & s->w_mask] = s->head[s->ins_h];
-#endif
                 s->head[s->ins_h] = (Pos)str;
                 str++;
                 s->insert--;

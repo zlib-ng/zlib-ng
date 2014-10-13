@@ -12,12 +12,10 @@
 
 #include "deflate.h"
 
-#ifdef FASTEST
-#define longest_match fastest_longest_match
-#elif (defined(UNALIGNED_OK) && MAX_MATCH == 258)
-#define longest_match std2_longest_match
+#if (defined(UNALIGNED_OK) && MAX_MATCH == 258)
+#  define longest_match std2_longest_match
 #else
-#define longest_match std1_longest_match
+#  define longest_match std1_longest_match
 #endif
 
 /*
@@ -257,57 +255,4 @@ local unsigned std2_longest_match(deflate_state *z_const s, IPos cur_match)
 	if ((unsigned)best_len <= s->lookahead)
 		return best_len;
 	return s->lookahead;
-}
-
-/*
- * FASTEST-only longest_match
- *
- */
-local unsigned fastest_longest_match(deflate_state *z_const s, IPos cur_match)
-{
-	unsigned char *scan, *match, *strend;
-	int len;
-
-	/*
-	 * The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple 
-	 * of 16. It is easy to get rid of this optimization if necessary
-	 */
-	Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "Code too clever");
-
-	Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD,
-		"need lookahead");
-
-	Assert(cur_match < s->strstart, "no future");
-
-	match = s->window + cur_match;
-	scan = s->window + s->strstart;
-	strend = s->window + s->strstart + MAX_MATCH;
-
-	if (*match++ != *scan++ || *match++ != *scan++)
-		return MIN_MATCH-1;
-
-	/*
-	 * The check at best_len-1 can be removed because it will be made
-	 * again later. (This heuristic is not always a win.) It is not
-	 * necessary to compare scan[2] and match[2] since they are always
-	 * equal when the other bytes match, given that the hash keys are equal
-	 * and that HASH_BITS >= 8.
-	 */
-	Assert(*scan == *match, "match[2]?");
-
-	do {
-	} while (*++scan == *++match && *++scan == *++match &&
-		 *++scan == *++match && *++scan == *++match &&
-		 *++scan == *++match && *++scan == *++match &&
-		 *++scan == *++match && *++scan == *++match &&
-		 scan < strend);
-	
-	Assert(scan <= s->window+(unsigned int)(s->window_size-1), "wild scan");
-
-	len = MAX_MATCH - (long)(strend - scan);
-	if (len < MIN_MATCH)
-		return MIN_MATCH-1;
-	
-	s->match_start = cur_match;
-	return len <= s->lookahead ? len : s->lookahead;
 }
