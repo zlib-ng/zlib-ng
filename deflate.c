@@ -1333,7 +1333,6 @@ local void fill_window_c(s)
              */
             {
                 int i; 
-                unsigned m;
                 typeof(p) q = p - n;
                 for (i = 0; i < n; i++) {
                     Pos m = *q;
@@ -1358,16 +1357,12 @@ local void fill_window_c(s)
 #else
             {
                 int i; 
-                unsigned m;
                 typeof(p) q = p - n;
                 for (i = 0; i < n; i++) {
                     Pos m = *q;
                     Pos t = wsize;
                     *q++ = (Pos)(m >= t ? m-t: NIL);
                 }
-                p = p - n;
-                m = *p;
-                n = 0;
             }
 #endif /* NOT_TWEAK_COMPILER */
 #endif
