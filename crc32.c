@@ -438,7 +438,7 @@ uLong ZEXPORT crc32_combine64(crc1, crc2, len2)
 #include "deflate.h"
 
 #ifdef HAVE_PCLMULQDQ
-#include "x86.h"
+#include "arch/x86/x86.h"
 extern void ZLIB_INTERNAL crc_fold_init(deflate_state *z_const s);
 extern void ZLIB_INTERNAL crc_fold_copy(deflate_state *z_const s,
         unsigned char *dst, z_const unsigned char *src, long len);

@@ -52,7 +52,7 @@
 #include "deflate.h"
 
 #if defined(CHECK_SSE2) || defined(USE_SSE4_2_CRC_HASH) || defined(USE_QUICK)
-#include "x86.h"
+#include "arch/x86/x86.h"
 #endif
 
 const char deflate_copyright[] =

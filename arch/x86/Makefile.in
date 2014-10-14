@@ -1,0 +1,40 @@
+# Makefile for zlib
+# Copyright (C) 1995-2013 Jean-loup Gailly, Mark Adler
+# For conditions of distribution and use, see copyright notice in zlib.h
+
+CC=
+CFLAGS=
+SFLAGS=
+
+all: x86.o x86.lo fill_window_sse.o fill_window_sse.lo deflate_quick.o deflate_quick.lo crc_folding.o crc_folding.lo
+
+x86.o:
+	$(CC) $(CFLAGS) -I. -I../../ -c -o $@ x86.c
+
+x86.lo:
+	$(CC) $(CFLAGS) -fPIC -I. -I../../ -c -o $@ x86.c
+
+fill_window_sse.o:
+	$(CC) $(CFLAGS) -msse2 -I. -I../../ -c -o $@ fill_window_sse.c
+
+fill_window_sse.lo:
+	$(CC) $(SFLAGS) -msse2 -DPIC -I. -I../../ -c -o $@ fill_window_sse.c
+
+deflate_quick.o:
+	$(CC) $(CFLAGS) -msse4 -I. -I../../ -c -o $@ deflate_quick.c
+
+deflate_quick.lo:
+	$(CC) $(SFLAGS) -msse4 -DPIC -I. -I../../ -c -o $@ deflate_quick.c
+
+crc_folding.o:
+	$(CC) $(CFLAGS) -mpclmul -msse4 -I. -I../../ -c -o $@ crc_folding.c
+
+crc_folding.lo:
+	$(CC) $(SFLAGS) -mpclmul -msse4 -DPIC -I. -I../../ -c -o $@ crc_folding.c
+
+
+mostlyclean: clean
+clean:
+	rm -f *.o *.lo *~ \
+	rm -rf objs
+	rm -f *.gcda *.gcno *.gcov
