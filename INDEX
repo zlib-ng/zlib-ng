@@ -1,10 +1,11 @@
 CMakeLists.txt  cmake build file
-ChangeLog       history of changes
-FAQ             Frequently Asked Questions about zlib
+ChangeLog.zlib  history of changes up to the fork from zlib 1.2.8
+FAQ.zlib        Frequently Asked Questions about zlib, as distributed in zlib 1.2.8
 INDEX           this file
 Makefile        dummy Makefile that tells you to ./configure
 Makefile.in     template for Unix Makefile
 README          guess what
+README.zlib     Copy of the original README file distributed in zlib 1.2.8
 configure       configure script for Unix
 test/example.c  zlib usages examples for build testing
 test/minigzip.c minimal gzip-like functionality for build testing
@@ -19,8 +20,8 @@ zlib.pc.in      Template for pkg-config descriptor
 zlib.pc.cmakein zlib.pc template for cmake
 zlib2ansi       perl script to convert source files for C++ compilation
 
+arch/		architecture-specific code
 doc/            documentation for formats and algorithms
-qnx/            makefiles for QNX
 win32/          makefiles for Windows
 
                 zlib public header files (required for library use):
@@ -52,9 +53,3 @@ trees.h
 uncompr.c
 zutil.c
 zutil.h
-
-                source files for sample programs
-See examples/README.examples
-
-                unsupported contributions by third parties
-See contrib/README.contrib
