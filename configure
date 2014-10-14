@@ -92,6 +92,8 @@ cover=0
 zprefix=0
 zconst=0
 build64=0
+without_optimizations=0
+without_new_strategies=0
 gcc=0
 old_cc="$CC"
 old_cflags="$CFLAGS"
@@ -141,6 +143,8 @@ case "$1" in
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
     --localstatedir=*) echo "ignored option: --localstatedir" | tee -a configure.log; shift ;;
     -c* | --const) zconst=1; shift ;;
+    -noopt | --without-optimizations) without_optimizations=1; shift;;
+    -oldstrat | --without-new-strategies) without_new_strategies=1; shift;;
     *)
       echo "unknown option: $1" | tee -a configure.log
       echo "$0 --help for help" | tee -a configure.log
@@ -635,97 +639,60 @@ DEFLATE_QUICK_lo=""
 
 # Set ARCH specific FLAGS
 case "${ARCH}" in
-    x86_64)
-        OBJC="${OBJC} x86.o"
-        PIC_OBJC="${PIC_OBJC} x86.lo"
+    i386 | i486 | i586 | i686 | x86_64)
+        case "${ARCH}" in
+            x86_64)
+                CFLAGS="${CFLAGS} -DX86_64"
+                SFLAGS="${SFLAGS} -DX86_64"
+            ;;
+            i386 | i486 | i586 | i686)
+                CFLAGS="${CFLAGS} -DX86"
+                SFLAGS="${SFLAGS} -DX86"
+            ;;
+        esac
 
-        CFLAGS="${CFLAGS} -DX86_64"
-        SFLAGS="${SFLAGS} -DX86_64"
+        CFLAGS="${CFLAGS} -DUNALIGNED_OK -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS"
+        SFLAGS="${SFLAGS} -DUNALIGNED_OK -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS"
 
-        CFLAGS="${CFLAGS} -DUNALIGNED_OK"
-        SFLAGS="${SFLAGS} -DUNALIGNED_OK"
+	if test $without_optimizations -eq 0; then
+            OBJC="${OBJC} x86.o"
+            PIC_OBJC="${PIC_OBJC} x86.lo"
 
-        CFLAGS="${CFLAGS} -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS"
-        SFLAGS="${SFLAGS} -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS"
 
-        if test ${HAVE_SSE2_INTRIN} -eq 1; then
-            CFLAGS="${CFLAGS} -UCHECK_SSE2 -DHAVE_SSE2"
-            SFLAGS="${SFLAGS} -UCHECK_SSE2 -DHAVE_SSE2"
-            FILL_WINDOW_SSE_o="fill_window_sse.o"
-            FILL_WINDOW_SSE_lo="fill_window_sse.lo"
-            OBJS="${OBJS} ${FILL_WINDOW_SSE_o}"
-            PIC_OBJS="${PIC_OBJS} ${FILL_WINDOW_SSE_lo}"
-        else
-            FILL_WINDOW_SSE_o=""
-            FILL_WINDOW_SSE_lo=""
+            if test ${HAVE_SSE2_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -UCHECK_SSE2 -DHAVE_SSE2"
+                SFLAGS="${SFLAGS} -UCHECK_SSE2 -DHAVE_SSE2"
+                FILL_WINDOW_SSE_o="fill_window_sse.o"
+                FILL_WINDOW_SSE_lo="fill_window_sse.lo"
+                OBJS="${OBJS} ${FILL_WINDOW_SSE_o}"
+                PIC_OBJS="${PIC_OBJS} ${FILL_WINDOW_SSE_lo}"
+            else
+                FILL_WINDOW_SSE_o=""
+                FILL_WINDOW_SSE_lo=""
+            fi
+
+            CFLAGS="${CFLAGS} -DUSE_SSE4_2_CRC_HASH"
+            SFLAGS="${SFLAGS} -DUSE_SSE4_2_CRC_HASH"
+
+            if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DHAVE_PCLMULQDQ"
+                SFLAGS="${SFLAGS} -DHAVE_PCLMULQDQ"
+                CRC_FOLDING_o="crc_folding.o"
+                CRC_FOLDING_lo="crc_folding.lo"
+                OBJS="${OBJS} ${CRC_FOLDING_o}"
+                PIC_OBJS="${PIC_OBJS} ${CRC_FOLDING_lo}"
+            else
+               CRC_FOLDING_o=""
+               CRC_FOLDING_lo=""
+           fi
+	fi
+	if test $without_new_strategies -eq 0; then
+            CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+            SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+
+            DEFLATE_QUICK_o="deflate_quick.o"
+            DEFLATE_QUICK_lo="deflate_quick.lo"
         fi
-
-        CFLAGS="${CFLAGS} -DUSE_SSE4_2_CRC_HASH"
-        SFLAGS="${SFLAGS} -DUSE_SSE4_2_CRC_HASH"
-
-        if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
-            CFLAGS="${CFLAGS} -DHAVE_PCLMULQDQ"
-            SFLAGS="${SFLAGS} -DHAVE_PCLMULQDQ"
-            CRC_FOLDING_o="crc_folding.o"
-            CRC_FOLDING_lo="crc_folding.lo"
-            OBJS="${OBJS} ${CRC_FOLDING_o}"
-            PIC_OBJS="${PIC_OBJS} ${CRC_FOLDING_lo}"
-        else
-            CRC_FOLDING_o=""
-            CRC_FOLDING_lo=""
-        fi
-
-        CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
-        SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
-
-        DEFLATE_QUICK_o="deflate_quick.o"
-        DEFLATE_QUICK_lo="deflate_quick.lo"
-    ;;
-    i386 | i486 | i586 | i686)
-        OBJC="${OBJC} x86.o"
-        PIC_OBJC="${PIC_OBJC} x86.lo"
-
-        CFLAGS="${CFLAGS} -DX86"
-        SFLAGS="${SFLAGS} -DX86"
-
-        CFLAGS="${CFLAGS} -DUNALIGNED_OK"
-        SFLAGS="${SFLAGS} -DUNALIGNED_OK"
-
-        CFLAGS="${CFLAGS} -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS"
-        SFLAGS="${SFLAGS} -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS"
-
-        if test ${HAVE_SSE2_INTRIN} -eq 1; then
-            CFLAGS="${CFLAGS} -DCHECK_SSE2 -DHAVE_SSE2"
-            SFLAGS="${SFLAGS} -DCHECK_SSE2 -DHAVE_SSE2"
-            FILL_WINDOW_SSE_o="fill_window_sse.o"
-            FILL_WINDOW_SSE_lo="fill_window_sse.lo"
-            OBJS="${OBJS} ${FILL_WINDOW_SSE_o}"
-            PIC_OBJS="${PIC_OBJS} ${FILL_WINDOW_SSE_lo}"
-        else
-            FILL_WINDOW_SSE_o=""
-            FILL_WINDOW_SSE_lo=""
-        fi
-
-        CFLAGS="${CFLAGS} -DUSE_SSE4_2_CRC_HASH"
-        SFLAGS="${SFLAGS} -DUSE_SSE4_2_CRC_HASH"
-
-        if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
-            CFLAGS="${CFLAGS} -DHAVE_PCLMULQDQ"
-            SFLAGS="${SFLAGS} -DHAVE_PCLMULQDQ"
-            CRC_FOLDING_o="crc_folding.o"
-            CRC_FOLDING_lo="crc_folding.lo"
-            OBJS="${OBJS} ${CRC_FOLDING_o}"
-            PIC_OBJS="${PIC_OBJS} ${CRC_FOLDING_lo}"
-        else
-            CRC_FOLDING_o=""
-            CRC_FOLDING_lo=""
-        fi
-
-        CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
-        SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
-
-        DEFLATE_QUICK_o="deflate_quick.o"
-        DEFLATE_QUICK_lo="deflate_quick.lo"
     ;;
 esac
 
