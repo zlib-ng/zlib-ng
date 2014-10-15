@@ -6,10 +6,12 @@
 #ifndef CPU_H
 #define CPU_H
 
+#define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
+
 extern int x86_cpu_has_sse2;
 extern int x86_cpu_has_sse42;
 extern int x86_cpu_has_pclmulqdq;
 
-void x86_check_features(void);
+void ZLIB_INTERNAL x86_check_features(void);
 
 #endif

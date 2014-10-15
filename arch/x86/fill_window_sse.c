@@ -15,7 +15,7 @@
 
 extern int read_buf        (z_streamp strm, Bytef *buf, unsigned size);
 
-void fill_window_sse(deflate_state *s)
+ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
 {
     z_const __m128i xmm_wsize = _mm_set1_epi16(s->w_size);
 

@@ -157,7 +157,7 @@ local inline Pos quick_insert_string(deflate_state *z_const s, z_const Pos str)
     return ret;
 }
 
-block_state deflate_quick(deflate_state *s, int flush)
+ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush)
 {
     IPos hash_head;
     unsigned dist, match_len;

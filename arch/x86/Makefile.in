@@ -12,7 +12,7 @@ x86.o:
 	$(CC) $(CFLAGS) -I. -I../../ -c -o $@ x86.c
 
 x86.lo:
-	$(CC) $(CFLAGS) -fPIC -I. -I../../ -c -o $@ x86.c
+	$(CC) $(CFLAGS) -I. -I../../ -c -o $@ x86.c
 
 fill_window_sse.o:
 	$(CC) $(CFLAGS) -msse2 -I. -I../../ -c -o $@ fill_window_sse.c
