@@ -175,11 +175,6 @@
 #  define z_const
 #endif
 
-/* Some Mac compilers merge all .h files incorrectly: */
-#if defined(__MWERKS__)||defined(applec)||defined(THINK_C)||defined(__SC__)
-#  define NO_DUMMY_DECL
-#endif
-
 /* Maximum value for memLevel in deflateInit2 */
 #ifndef MAX_MEM_LEVEL
 #  define MAX_MEM_LEVEL 9
@@ -209,6 +204,7 @@
 
                         /* Type declarations */
 
+/* OF() definition is kept for compatibility purposes */
 #ifndef OF /* function prototypes */
 #  define OF(args)  args
 #endif

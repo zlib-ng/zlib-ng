@@ -161,10 +161,6 @@
 #  endif
 #endif
 
-#ifndef STDC
-#  define STDC
-#endif
-
 #ifdef __STDC_VERSION__
 #  if __STDC_VERSION__ >= 199901L
 #    ifndef STDC99
@@ -177,11 +173,6 @@
 #  define z_const const
 #else
 #  define z_const
-#endif
-
-/* Some Mac compilers merge all .h files incorrectly: */
-#if defined(__MWERKS__)||defined(applec)||defined(THINK_C)||defined(__SC__)
-#  define NO_DUMMY_DECL
 #endif
 
 /* Maximum value for memLevel in deflateInit2 */
