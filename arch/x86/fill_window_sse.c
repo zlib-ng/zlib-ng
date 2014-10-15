@@ -8,7 +8,7 @@
  *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-#ifdef HAVE_SSE2
+#ifdef X86_SSE2_FILL_WINDOW
 
 #include <immintrin.h>
 #include "deflate.h"

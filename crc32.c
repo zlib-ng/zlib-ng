@@ -437,7 +437,7 @@ uLong ZEXPORT crc32_combine64(crc1, crc2, len2)
 
 #include "deflate.h"
 
-#ifdef HAVE_PCLMULQDQ
+#ifdef X86_PCLMULQDQ_CRC
 #include "arch/x86/x86.h"
 extern void ZLIB_INTERNAL crc_fold_init(deflate_state *z_const s);
 extern void ZLIB_INTERNAL crc_fold_copy(deflate_state *z_const s,
@@ -447,7 +447,7 @@ extern unsigned ZLIB_INTERNAL crc_fold_512to32(deflate_state *z_const s);
 
 ZLIB_INTERNAL void crc_reset(deflate_state *const s)
 {
-#ifdef HAVE_PCLMULQDQ
+#ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq) {
         crc_fold_init(s);
         return;
@@ -458,7 +458,7 @@ ZLIB_INTERNAL void crc_reset(deflate_state *const s)
 
 ZLIB_INTERNAL void crc_finalize(deflate_state *const s)
 {
-#ifdef HAVE_PCLMULQDQ
+#ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq)
         s->strm->adler = crc_fold_512to32(s);
 #endif
@@ -466,7 +466,7 @@ ZLIB_INTERNAL void crc_finalize(deflate_state *const s)
 
 ZLIB_INTERNAL void copy_with_crc(z_streamp strm, Bytef *dst, long size)
 {
-#ifdef HAVE_PCLMULQDQ
+#ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq) {
         crc_fold_copy(strm->state, dst, strm->next_in, size);
         return;

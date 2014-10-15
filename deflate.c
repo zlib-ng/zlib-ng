@@ -51,7 +51,7 @@
 
 #include "deflate.h"
 
-#if defined(CHECK_SSE2) || defined(USE_SSE4_2_CRC_HASH) || defined(USE_QUICK)
+#if defined(X86_CPUID)
 #include "arch/x86/x86.h"
 #endif
 
@@ -126,17 +126,18 @@ typedef struct config_s {
 local const config configuration_table[10] = {
 /*      good lazy nice chain */
 /* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
-#ifdef USE_QUICK
+
+#ifdef X86_QUICK_STRATEGY
 /* 1 */ {4,    4,  8,    4, deflate_quick},
 /* 2 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
-/* 3 */ {4,    6, 32,   32, deflate_fast},
 #else
 /* 1 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
 /* 2 */ {4,    5, 16,    8, deflate_fast},
-/* 3 */ {4,    6, 32,   32, deflate_fast},
 #endif
 
-#ifdef USE_MEDIUM
+/* 3 */ {4,    6, 32,   32, deflate_fast},
+
+#ifdef MEDIUM_STRATEGY
 /* 4 */ {4,    4, 16,   16, deflate_medium},  /* lazy matches */
 /* 5 */ {8,   16, 32,   32, deflate_medium},
 /* 6 */ {8,   16, 128, 128, deflate_medium},
@@ -174,7 +175,7 @@ struct static_tree_desc_s {int dummy;}; /* for buggy compilers */
  *    input characters and the first MIN_MATCH bytes of str are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
-#ifdef USE_SSE4_2_CRC_HASH
+#ifdef X86_SSE4_2_CRC_HASH
 local inline Pos insert_string_sse(deflate_state *z_const s, z_const Pos str)
 {
     Pos ret;
@@ -212,7 +213,7 @@ local inline Pos insert_string_c(deflate_state *z_const s, z_const Pos str)
 
 local inline Pos insert_string(deflate_state *z_const s, z_const Pos str)
 {
-#ifdef USE_SSE4_2_CRC_HASH
+#ifdef X86_SSE4_2_CRC_HASH
     if (x86_cpu_has_sse42)
         return insert_string_sse(s, str);
 #endif
@@ -272,7 +273,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
      * output size for (length,distance) codes is <= 24 bits.
      */
 
-#if defined(CHECK_SSE2) || defined(USE_SSE4_2_CRC_HASH)
+#if defined(X86_SSE2_FILL_WINDOW) || defined(X86_SSE4_2_CRC_HASH)
     x86_check_features();
 #endif
 
@@ -317,7 +318,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     }
     if (windowBits == 8) windowBits = 9;  /* until 256-byte window bug fixed */
 
-#ifdef USE_QUICK
+#ifdef X86_QUICK_STRATEGY
     if (level == 1)
         windowBits = 13;
 #endif
@@ -333,7 +334,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     s->w_size = 1 << s->w_bits;
     s->w_mask = s->w_size - 1;
 
-#ifdef USE_SSE4_2_CRC_HASH
+#ifdef X86_SSE4_2_CRC_HASH
     if (x86_cpu_has_sse42)
         s->hash_bits = 15;
     else
@@ -344,7 +345,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     s->hash_mask = s->hash_size - 1;
     s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
 
-#ifdef HAVE_PCLMULQDQ
+#ifdef X86_PCLMULQDQ_CRC
     window_padding = 8;
 #endif
 
@@ -952,7 +953,7 @@ int ZEXPORT deflate (strm, flush)
         (flush != Z_NO_FLUSH && s->status != FINISH_STATE)) {
         block_state bstate;
 
-#ifdef USE_QUICK
+#ifdef X86_QUICK_STRATEGY
         if (s->level == 1 && !x86_cpu_has_sse42) 
             bstate = s->strategy == Z_HUFFMAN_ONLY ? deflate_huff(s, flush) :
                     (s->strategy == Z_RLE ? deflate_rle(s, flush) :
@@ -1224,21 +1225,21 @@ local void check_match(s, start, match, length)
  *    performed for at least two bytes (required for the zip translate_eol
  *    option -- not supported here).
  */
-#ifdef HAVE_SSE2
+#ifdef X86_SSE2_FILL_WINDOW
 extern void fill_window_sse(deflate_state *s);
 #endif
 local void fill_window_c(deflate_state *s);
 
 local void fill_window(deflate_state *s)
 {
-#ifdef HAVE_SSE2
-#ifdef CHECK_SSE2
+#ifdef X86_SSE2_FILL_WINDOW
+#ifndef X86_NOCHECK_SSE2
     if (x86_cpu_has_sse2) {
 #endif
         fill_window_sse(s);
         return;
-#ifdef CHECK_SSE2
-    }
+#ifndef X86_NOCHECK_SSE2
+  }
 #endif
 #endif
     
@@ -1609,7 +1610,7 @@ local block_state deflate_fast(s, flush)
 }
 
 
-#ifdef USE_MEDIUM
+#ifdef MEDIUM_STRATEGY
 #include "deflate_medium.c"
 #endif
 

@@ -110,7 +110,7 @@ typedef struct internal_state {
     Byte  method;        /* can only be DEFLATED */
     int   last_flush;    /* value of flush param for previous deflate call */
 
-#ifdef HAVE_PCLMULQDQ
+#ifdef X86_PCLMULQDQ_CRC
     unsigned __attribute__((aligned(16))) crc0[4 * 5];
 #endif
 
@@ -386,7 +386,7 @@ void ZLIB_INTERNAL bi_windup (deflate_state *s);
  *    input characters, so that a running hash key can be computed from the
  *    previous key instead of complete recalculation each time.
  */
-#ifdef USE_SSE4_2_CRC_HASH
+#ifdef X86_SSE4_2_CRC_HASH
 #define UPDATE_HASH(s,h,i) (\
     {\
         if (s->level < 6) \

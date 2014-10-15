@@ -634,6 +634,12 @@ else
     HAVE_PCLMULQDQ_INTRIN=0
 fi
 
+# Enable deflate_medium at level 4-6
+if test $without_new_strategies -eq 0; then
+    CFLAGS="${CFLAGS} -DMEDIUM_STRATEGY"
+    SFLAGS="${SFLAGS} -DMEDIUM_STRATEGY"
+fi
+
 ARCHDIR=""
 ARCH_STATIC_OBJS=""
 ARCH_SHARED_OBJS=""
@@ -645,8 +651,8 @@ case "${ARCH}" in
 
         case "${ARCH}" in
             x86_64)
-                CFLAGS="${CFLAGS} -DX86_64"
-                SFLAGS="${SFLAGS} -DX86_64"
+                CFLAGS="${CFLAGS} -DX86_64 -DX86_NOCHECK_SSE2"
+                SFLAGS="${SFLAGS} -DX86_64 -DX86_NOCHECK_SSE2"
             ;;
             i386 | i486 | i586 | i686)
                 CFLAGS="${CFLAGS} -DX86"
@@ -654,8 +660,8 @@ case "${ARCH}" in
             ;;
         esac
 
-        CFLAGS="${CFLAGS} -DUNALIGNED_OK -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS"
-        SFLAGS="${SFLAGS} -DUNALIGNED_OK -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS"
+        CFLAGS="${CFLAGS} -DUNALIGNED_OK -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS -DX86_CPUID"
+        SFLAGS="${SFLAGS} -DUNALIGNED_OK -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS -DX86_CPUID"
 
 	# Enable arch-specific optimizations?
 	if test $without_optimizations -eq 0; then
@@ -663,33 +669,35 @@ case "${ARCH}" in
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo"
 
             if test ${HAVE_SSE2_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -UCHECK_SSE2 -DHAVE_SSE2"
-                SFLAGS="${SFLAGS} -UCHECK_SSE2 -DHAVE_SSE2"
+                CFLAGS="${CFLAGS} -DX86_SSE2_FILL_WINDOW"
+                SFLAGS="${SFLAGS} -DX86_SSE2_FILL_WINDOW"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_sse.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_sse.lo"
             fi
 
-            CFLAGS="${CFLAGS} -DUSE_SSE4_2_CRC_HASH"
-            SFLAGS="${SFLAGS} -DUSE_SSE4_2_CRC_HASH"
+            CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_HASH"
+            SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_HASH"
 
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DHAVE_PCLMULQDQ"
-                SFLAGS="${SFLAGS} -DHAVE_PCLMULQDQ"
+                CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
+                SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo"
-           fi
-	fi
+            fi
 
-	# Enable deflate_quick at level 1?
-	if test $without_new_strategies -eq 0; then
-            CFLAGS="${CFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
-            SFLAGS="${SFLAGS} -DUSE_QUICK -DUSE_MEDIUM"
+	    # Enable deflate_quick at level 1?
+            if test $without_new_strategies -eq 0; then
+                CFLAGS="${CFLAGS} -DX86_QUICK_STRATEGY"
+                SFLAGS="${SFLAGS} -DX86_QUICK_STRATEGY"
 
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} deflate_quick.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} deflate_quick.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} deflate_quick.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} deflate_quick.lo"
+            fi
         fi
     ;;
 esac
+
+
 
 # show the results in the log
 echo >> configure.log
@@ -722,12 +730,9 @@ echo mandir = $mandir >> configure.log
 echo prefix = $prefix >> configure.log
 echo sharedlibdir = $sharedlibdir >> configure.log
 echo uname = $uname >> configure.log
-echo FILL_WINDOW_SSE_o = ${FILL_WINDOW_SSE_o} >> configure.log
-echo FILL_WINDOW_SSE_lo= ${FILL_WINDOW_SSE_lo} >> configure.log
-echo CRC_FOLDING_o = ${CRC_FOLDING_o} >> configure.log
-echo CRC_FOLDING_lo= ${CRC_FOLDING_lo} >> configure.log
-echo DEFLATE_QUICK_o=${DEFLATE_QUICK_o} >> configure.log
-echo DEFLATE_QUICK_lo=${DEFLATE_QUICK_lo} >> configure.log
+echo ARCHDIR = ${ARCHDIR} >> configure.log
+echo ARCH_STATIC_OBJS = ${ARCH_STATIC_OBJS} >> configure.log
+echo ARCH_SHARED_OBJS = ${ARCH_SHARED_OBJS} >> configure.log
 
 # udpate Makefile with the configure results
 sed < Makefile.in "

@@ -16,7 +16,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef HAVE_PCLMULQDQ
+#ifdef X86_PCLMULQDQ_CRC
 
 #include "deflate.h"
 
