@@ -1303,7 +1303,7 @@ local void fill_window_c(s)
              */
             {
                 int i; 
-                typeof(p) q = p - n;
+                Pos *q = p - n;
                 for (i = 0; i < n; i++) {
                     Pos m = *q;
                     Pos t = wsize;
@@ -1326,7 +1326,7 @@ local void fill_window_c(s)
 #else
             {
                 int i; 
-                typeof(p) q = p - n;
+                Pos *q = p - n;
                 for (i = 0; i < n; i++) {
                     Pos m = *q;
                     Pos t = wsize;
