@@ -82,7 +82,7 @@ local block_state deflate_huff   (deflate_state *s, int flush);
 local void lm_init        (deflate_state *s);
 local void putShortMSB    (deflate_state *s, uInt b);
 ZLIB_INTERNAL void flush_pending  (z_streamp strm);
-ZLIB_INTERNAL int read_buf        (z_streamp strm, Bytef *buf, unsigned size);
+ZLIB_INTERNAL int read_buf        (z_streamp strm, Byte *buf, unsigned size);
 #ifdef ASMV
       void match_init (void); /* asm code initialization */
       uInt longest_match  (deflate_state *s, IPos cur_match);
@@ -96,7 +96,7 @@ local  void check_match (deflate_state *s, IPos start, IPos match, int length);
 
 extern void crc_reset(deflate_state *const s);
 extern void crc_finalize(deflate_state *const s);
-extern void copy_with_crc(z_streamp strm, Bytef *dst, long size);
+extern void copy_with_crc(z_streamp strm, Byte *dst, long size);
 
 /* ===========================================================================
  * Local data
@@ -233,7 +233,7 @@ bulk_insert_str(deflate_state *s, Pos startpos, uInt count) {
  */
 #define CLEAR_HASH(s) \
     s->head[s->hash_size-1] = NIL; \
-    zmemzero((Bytef *)s->head, (unsigned)(s->hash_size-1)*sizeof(*s->head));
+    zmemzero((Byte *)s->head, (unsigned)(s->hash_size-1)*sizeof(*s->head));
 
 /* ========================================================================= */
 int ZEXPORT deflateInit_(strm, level, version, stream_size)
@@ -264,7 +264,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     int wrap = 1;
     static const char my_version[] = ZLIB_VERSION;
 
-    ushf *overlay;
+    ush *overlay;
     /* We overlay pending_buf and d_buf+l_buf. This works since the average
      * output size for (length,distance) codes is <= 24 bits.
      */
@@ -345,16 +345,16 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     window_padding = 8;
 #endif
 
-    s->window = (Bytef *) ZALLOC(strm, s->w_size + window_padding, 2*sizeof(Byte));
-    s->prev   = (Posf *)  ZALLOC(strm, s->w_size, sizeof(Pos));
-    s->head   = (Posf *)  ZALLOC(strm, s->hash_size, sizeof(Pos));
+    s->window = (Byte *) ZALLOC(strm, s->w_size + window_padding, 2*sizeof(Byte));
+    s->prev   = (Pos *)  ZALLOC(strm, s->w_size, sizeof(Pos));
+    s->head   = (Pos *)  ZALLOC(strm, s->hash_size, sizeof(Pos));
 
     s->high_water = 0;      /* nothing written to s->window yet */
 
     s->lit_bufsize = 1 << (memLevel + 6); /* 16K elements by default */
 
-    overlay = (ushf *) ZALLOC(strm, s->lit_bufsize, sizeof(ush)+2);
-    s->pending_buf = (uchf *) overlay;
+    overlay = (ush *) ZALLOC(strm, s->lit_bufsize, sizeof(ush)+2);
+    s->pending_buf = (uch *) overlay;
     s->pending_buf_size = (ulg)s->lit_bufsize * (sizeof(ush)+2L);
 
     if (s->window == Z_NULL || s->prev == Z_NULL || s->head == Z_NULL ||
@@ -377,7 +377,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
 /* ========================================================================= */
 int ZEXPORT deflateSetDictionary (strm, dictionary, dictLength)
     z_streamp strm;
-    const Bytef *dictionary;
+    const Byte *dictionary;
     uInt  dictLength;
 {
     deflate_state *s;
@@ -414,7 +414,7 @@ int ZEXPORT deflateSetDictionary (strm, dictionary, dictLength)
     avail = strm->avail_in;
     next = strm->next_in;
     strm->avail_in = dictLength;
-    strm->next_in = (z_const Bytef *)dictionary;
+    strm->next_in = (z_const Byte *)dictionary;
     fill_window(s);
     while (s->lookahead >= MIN_MATCH) {
         str = s->strstart;
@@ -524,7 +524,7 @@ int ZEXPORT deflatePrime (strm, bits, value)
 
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
     s = strm->state;
-    if ((Bytef *)(s->d_buf) < s->pending_out + ((Buf_size + 7) >> 3))
+    if ((Byte *)(s->d_buf) < s->pending_out + ((Buf_size + 7) >> 3))
         return Z_BUF_ERROR;
     do {
         put = Buf_size - s->bi_valid;
@@ -618,7 +618,7 @@ uLong ZEXPORT deflateBound(strm, sourceLen)
 {
     deflate_state *s;
     uLong complen, wraplen;
-    Bytef *str;
+    Byte *str;
 
     /* conservative upper bound for compressed data */
     complen = sourceLen +
@@ -1072,7 +1072,7 @@ int ZEXPORT deflateCopy (dest, source)
 {
     deflate_state *ds;
     deflate_state *ss;
-    ushf *overlay;
+    ush *overlay;
 
 
     if (source == Z_NULL || dest == Z_NULL || source->state == Z_NULL) {
@@ -1089,11 +1089,11 @@ int ZEXPORT deflateCopy (dest, source)
     zmemcpy((voidpf)ds, (voidpf)ss, sizeof(deflate_state));
     ds->strm = dest;
 
-    ds->window = (Bytef *) ZALLOC(dest, ds->w_size, 2*sizeof(Byte));
-    ds->prev   = (Posf *)  ZALLOC(dest, ds->w_size, sizeof(Pos));
-    ds->head   = (Posf *)  ZALLOC(dest, ds->hash_size, sizeof(Pos));
-    overlay = (ushf *) ZALLOC(dest, ds->lit_bufsize, sizeof(ush)+2);
-    ds->pending_buf = (uchf *) overlay;
+    ds->window = (Byte *) ZALLOC(dest, ds->w_size, 2*sizeof(Byte));
+    ds->prev   = (Pos *)  ZALLOC(dest, ds->w_size, sizeof(Pos));
+    ds->head   = (Pos *)  ZALLOC(dest, ds->hash_size, sizeof(Pos));
+    overlay = (ush *) ZALLOC(dest, ds->lit_bufsize, sizeof(ush)+2);
+    ds->pending_buf = (uch *) overlay;
 
     if (ds->window == Z_NULL || ds->prev == Z_NULL || ds->head == Z_NULL ||
         ds->pending_buf == Z_NULL) {
@@ -1126,7 +1126,7 @@ int ZEXPORT deflateCopy (dest, source)
  */
 ZLIB_INTERNAL int read_buf(strm, buf, size)
     z_streamp strm;
-    Bytef *buf;
+    Byte *buf;
     unsigned size;
 {
     unsigned len = strm->avail_in;
@@ -1246,7 +1246,7 @@ local void fill_window_c(s)
     deflate_state *s;
 {
     register unsigned n;
-    register Posf *p;
+    register Pos *p;
     unsigned more;    /* Amount of free space at the end of the window. */
     uInt wsize = s->w_size;
 
@@ -1423,8 +1423,8 @@ local void fill_window_c(s)
  */
 #define FLUSH_BLOCK_ONLY(s, last) { \
    _tr_flush_block(s, (s->block_start >= 0L ? \
-                   (charf *)&s->window[(unsigned)s->block_start] : \
-                   (charf *)Z_NULL), \
+                   (char *)&s->window[(unsigned)s->block_start] : \
+                   (char *)Z_NULL), \
                 (ulg)((long)s->strstart - s->block_start), \
                 (last)); \
    s->block_start = s->strstart; \
@@ -1767,7 +1767,7 @@ local block_state deflate_rle(s, flush)
 {
     int bflush;             /* set if current block must be flushed */
     uInt prev;              /* byte at distance one to match */
-    Bytef *scan, *strend;   /* scan goes up to strend for length of run */
+    Byte *scan, *strend;   /* scan goes up to strend for length of run */
 
     for (;;) {
         /* Make sure that we always have enough lookahead, except

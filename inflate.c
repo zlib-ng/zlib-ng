@@ -376,7 +376,7 @@ void makefixed()
  */
 local int updatewindow(strm, end, copy)
 z_streamp strm;
-const Bytef *end;
+const Byte *end;
 unsigned copy;
 {
     struct inflate_state *state;
@@ -1265,7 +1265,7 @@ z_streamp strm;
 
 int ZEXPORT inflateGetDictionary(strm, dictionary, dictLength)
 z_streamp strm;
-Bytef *dictionary;
+Byte *dictionary;
 uInt *dictLength;
 {
     struct inflate_state *state;
@@ -1288,7 +1288,7 @@ uInt *dictLength;
 
 int ZEXPORT inflateSetDictionary(strm, dictionary, dictLength)
 z_streamp strm;
-const Bytef *dictionary;
+const Byte *dictionary;
 uInt dictLength;
 {
     struct inflate_state *state;

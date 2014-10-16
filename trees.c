@@ -113,7 +113,7 @@ local int base_dist[D_CODES];
 
 struct static_tree_desc_s {
     const ct_data *static_tree;  /* static tree or NULL */
-    const intf *extra_bits;      /* extra bits for each code or NULL */
+    const int *extra_bits;      /* extra bits for each code or NULL */
     int     extra_base;          /* base index for extra_bits */
     int     elems;               /* max number of elements in the tree */
     int     max_length;          /* max bit length for the codes */
@@ -136,7 +136,7 @@ local void tr_static_init (void);
 local void init_block     (deflate_state *s);
 local void pqdownheap     (deflate_state *s, ct_data *tree, int k);
 local void gen_bitlen     (deflate_state *s, tree_desc *desc);
-local void gen_codes      (ct_data *tree, int max_code, ushf *bl_count);
+local void gen_codes      (ct_data *tree, int max_code, ush *bl_count);
 local void build_tree     (deflate_state *s, tree_desc *desc);
 local void scan_tree      (deflate_state *s, ct_data *tree, int max_code);
 local void send_tree      (deflate_state *s, ct_data *tree, int max_code);
@@ -146,7 +146,7 @@ local void compress_block (deflate_state *s, const ct_data *ltree, const ct_data
 local int  detect_data_type (deflate_state *s);
 local unsigned bi_reverse (unsigned value, int length);
 local void bi_flush       (deflate_state *s);
-local void copy_block     (deflate_state *s, charf *buf, unsigned len, int header);
+local void copy_block     (deflate_state *s, char *buf, unsigned len, int header);
 
 #ifdef GEN_TREES_H
 local void gen_trees_header (void);
@@ -416,7 +416,7 @@ local void gen_bitlen(s, desc)
     ct_data *tree        = desc->dyn_tree;
     int max_code         = desc->max_code;
     const ct_data *stree = desc->stat_desc->static_tree;
-    const intf *extra    = desc->stat_desc->extra_bits;
+    const int *extra     = desc->stat_desc->extra_bits;
     int base             = desc->stat_desc->extra_base;
     int max_length       = desc->stat_desc->max_length;
     int h;              /* heap index */
@@ -499,7 +499,7 @@ local void gen_bitlen(s, desc)
 local void gen_codes (tree, max_code, bl_count)
     ct_data *tree;             /* the tree to decorate */
     int max_code;              /* largest code with non zero frequency */
-    ushf *bl_count;            /* number of codes at each bit length */
+    ush *bl_count;            /* number of codes at each bit length */
 {
     ush next_code[MAX_BITS+1]; /* next code value for each bit length */
     ush code = 0;              /* running code value */
@@ -788,7 +788,7 @@ local void send_all_trees(s, lcodes, dcodes, blcodes)
  */
 void ZLIB_INTERNAL _tr_stored_block(s, buf, stored_len, last)
     deflate_state *s;
-    charf *buf;       /* input block */
+    char *buf;       /* input block */
     ulg stored_len;   /* length of input block */
     int last;         /* one if this is the last block for a file */
 {
@@ -830,7 +830,7 @@ void ZLIB_INTERNAL _tr_align(s)
  */
 void ZLIB_INTERNAL _tr_flush_block(s, buf, stored_len, last)
     deflate_state *s;
-    charf *buf;       /* input block, or NULL if too old */
+    char *buf;       /* input block, or NULL if too old */
     ulg stored_len;   /* length of input block */
     int last;         /* one if this is the last block for a file */
 {
@@ -1128,7 +1128,7 @@ ZLIB_INTERNAL void bi_windup(s)
  */
 local void copy_block(s, buf, len, header)
     deflate_state *s;
-    charf    *buf;    /* the input data */
+    char    *buf;    /* the input data */
     unsigned len;     /* its length */
     int      header;  /* true if block header must be written */
 {

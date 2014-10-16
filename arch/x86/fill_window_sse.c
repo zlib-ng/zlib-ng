@@ -13,14 +13,14 @@
 #include <immintrin.h>
 #include "deflate.h"
 
-extern int read_buf        (z_streamp strm, Bytef *buf, unsigned size);
+extern int read_buf        (z_streamp strm, Byte *buf, unsigned size);
 
 ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
 {
     z_const __m128i xmm_wsize = _mm_set1_epi16(s->w_size);
 
     register unsigned n;
-    register Posf *p;
+    register Pos *p;
     unsigned more;    /* Amount of free space at the end of the window. */
     uInt wsize = s->w_size;
 

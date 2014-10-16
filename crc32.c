@@ -464,7 +464,7 @@ ZLIB_INTERNAL void crc_finalize(deflate_state *const s)
 #endif
 }
 
-ZLIB_INTERNAL void copy_with_crc(z_streamp strm, Bytef *dst, long size)
+ZLIB_INTERNAL void copy_with_crc(z_streamp strm, Byte *dst, long size)
 {
 #ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq) {

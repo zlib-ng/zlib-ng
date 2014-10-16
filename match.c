@@ -25,7 +25,7 @@
 local unsigned std1_longest_match(deflate_state *z_const s, IPos cur_match)
 {
 	z_const unsigned wmask = s->w_mask;
-    z_const Posf *prev = s->prev;
+	z_const Pos *prev = s->prev;
 
 	unsigned chain_length;
 	IPos limit;
@@ -50,7 +50,7 @@ local unsigned std1_longest_match(deflate_state *z_const s, IPos cur_match)
 	 * Do not looks for matches beyond the end of the input. This is
 	 * necessary to make deflate deterministic
 	 */
-    nice_match = (uInt)s->nice_match > s->lookahead ? s->lookahead : s->nice_match;
+	nice_match = (uInt)s->nice_match > s->lookahead ? s->lookahead : s->nice_match;
 
 	/*
 	 * Stop when cur_match becomes <= limit. To simplify the code,
@@ -143,7 +143,7 @@ local unsigned std1_longest_match(deflate_state *z_const s, IPos cur_match)
 local unsigned std2_longest_match(deflate_state *z_const s, IPos cur_match)
 {
 	z_const unsigned wmask = s->w_mask;
-    z_const Posf *prev = s->prev;
+	z_const Pos *prev = s->prev;
 
 	unsigned short scan_start, scan_end;
 	unsigned chain_length;
@@ -169,7 +169,7 @@ local unsigned std2_longest_match(deflate_state *z_const s, IPos cur_match)
 	 * Do not looks for matches beyond the end of the input. This is
 	 * necessary to make deflate deterministic
 	 */
-    nice_match = (uInt)s->nice_match > s->lookahead ? s->lookahead : s->nice_match;
+	nice_match = (uInt)s->nice_match > s->lookahead ? s->lookahead : s->nice_match;
 
 	/*
 	 * Stop when cur_match becomes <= limit. To simplify the code,
