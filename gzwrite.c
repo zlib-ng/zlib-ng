@@ -12,8 +12,7 @@ local int gz_zero (gz_statep, z_off64_t);
 
 /* Initialize state for writing a gzip file.  Mark initialization by setting
    state->size to non-zero.  Return -1 on failure or 0 on success. */
-local int gz_init(state)
-    gz_statep state;
+local int gz_init(gz_statep state)
 {
     int ret;
     z_streamp strm = &(state->strm);
@@ -67,9 +66,7 @@ local int gz_init(state)
    then the deflate() state is reset to start a new gzip stream.  If gz->direct
    is true, then simply write to the output file without compressing, and
    ignore flush. */
-local int gz_comp(state, flush)
-    gz_statep state;
-    int flush;
+local int gz_comp(gz_statep state, int flush)
 {
     int ret, got;
     unsigned have;
@@ -130,9 +127,7 @@ local int gz_comp(state, flush)
 }
 
 /* Compress len zeros to output.  Return -1 on error, 0 on success. */
-local int gz_zero(state, len)
-    gz_statep state;
-    z_off64_t len;
+local int gz_zero(gz_statep state, z_off64_t len)
 {
     int first;
     unsigned n;

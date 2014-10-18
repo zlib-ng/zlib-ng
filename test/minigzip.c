@@ -61,8 +61,7 @@
    The strwinerror function does not change the current setting
    of GetLastError.  */
 
-static char *strwinerror (error)
-     DWORD error;
+static char *strwinerror (DWORD error)
 {
     static char buf[1024];
 
@@ -100,8 +99,7 @@ static char *strwinerror (error)
     return buf;
 }
 
-static void pwinerror (s)
-    const char *s;
+static void pwinerror (const char *s)
 {
     if (s && *s)
         fprintf(stderr, "%s: %s\n", s, strwinerror(GetLastError ()));
@@ -136,16 +134,13 @@ static void pwinerror (s)
 void *myalloc (void *, unsigned, unsigned);
 void myfree (void *, void *);
 
-void *myalloc(q, n, m)
-    void *q;
-    unsigned n, m;
+void *myalloc(void *q, unsigned n, unsigned m)
 {
     q = Z_NULL;
     return calloc(n, m);
 }
 
-void myfree(q, p)
-    void *q, *p;
+void myfree(void *q, void *p)
 {
     q = Z_NULL;
     free(p);
@@ -163,24 +158,17 @@ gzFile gzopen (const char *, const char *);
 gzFile gzdopen (int, const char *);
 gzFile gz_open (const char *, int, const char *);
 
-gzFile gzopen(path, mode)
-const char *path;
-const char *mode;
+gzFile gzopen(const char *path, const char *mode)
 {
     return gz_open(path, -1, mode);
 }
 
-gzFile gzdopen(fd, mode)
-int fd;
-const char *mode;
+gzFile gzdopen(int fd, const char *mode)
 {
     return gz_open(NULL, fd, mode);
 }
 
-gzFile gz_open(path, fd, mode)
-    const char *path;
-    int fd;
-    const char *mode;
+gzFile gz_open(const char *path, int fd, const char *mode)
 {
     gzFile gz;
     int ret;
@@ -217,10 +205,7 @@ gzFile gz_open(path, fd, mode)
 
 int gzwrite (gzFile, const void *, unsigned);
 
-int gzwrite(gz, buf, len)
-    gzFile gz;
-    const void *buf;
-    unsigned len;
+int gzwrite(gzFile gz, const void *buf, unsigned len)
 {
     z_stream *strm;
     unsigned char out[BUFLEN];
@@ -241,10 +226,7 @@ int gzwrite(gz, buf, len)
 
 int gzread (gzFile, void *, unsigned);
 
-int gzread(gz, buf, len)
-    gzFile gz;
-    void *buf;
-    unsigned len;
+int gzread(gzFile gz, void *buf, unsigned len)
 {
     int ret;
     unsigned got;
@@ -278,8 +260,7 @@ int gzread(gz, buf, len)
 
 int gzclose (gzFile);
 
-int gzclose(gz)
-    gzFile gz;
+int gzclose(gzFile gz)
 {
     z_stream *strm;
     unsigned char out[BUFLEN];
@@ -307,9 +288,7 @@ int gzclose(gz)
 
 const char *gzerror (gzFile, int *);
 
-const char *gzerror(gz, err)
-    gzFile gz;
-    int *err;
+const char *gzerror(gzFile gz, int *err)
 {
     *err = gz->err;
     return gz->msg;
@@ -332,8 +311,7 @@ int  main             (int argc, char *argv[]);
 /* ===========================================================================
  * Display error message and exit
  */
-void error(msg)
-    const char *msg;
+void error(const char *msg)
 {
     fprintf(stderr, "%s: %s\n", prog, msg);
     exit(1);
@@ -343,9 +321,7 @@ void error(msg)
  * Compress input to output then close both files.
  */
 
-void gz_compress(in, out)
-    FILE   *in;
-    gzFile out;
+void gz_compress(FILE   *in, gzFile out)
 {
     local char buf[BUFLEN];
     int len;
@@ -376,9 +352,7 @@ void gz_compress(in, out)
 /* Try compressing the input file at once using mmap. Return Z_OK if
  * if success, Z_ERRNO otherwise.
  */
-int gz_compress_mmap(in, out)
-    FILE   *in;
-    gzFile out;
+int gz_compress_mmap(FILE   *in, gzFile out)
 {
     int len;
     int err;
@@ -411,9 +385,7 @@ int gz_compress_mmap(in, out)
 /* ===========================================================================
  * Uncompress input to output then close both files.
  */
-void gz_uncompress(in, out)
-    gzFile in;
-    FILE   *out;
+void gz_uncompress(gzFile in, FILE   *out)
 {
     local char buf[BUFLEN];
     int len;
@@ -438,9 +410,7 @@ void gz_uncompress(in, out)
  * Compress the given file: create a corresponding .gz file and remove the
  * original.
  */
-void file_compress(file, mode)
-    char  *file;
-    char  *mode;
+void file_compress(char  *file, char  *mode)
 {
     local char outfile[MAX_NAME_LEN];
     FILE  *in;
@@ -472,8 +442,7 @@ void file_compress(file, mode)
 /* ===========================================================================
  * Uncompress the given file and remove the original.
  */
-void file_uncompress(file)
-    char  *file;
+void file_uncompress(char  *file)
 {
     local char buf[MAX_NAME_LEN];
     char *infile, *outfile;
@@ -524,9 +493,7 @@ void file_uncompress(file)
  *   -1 to -9 : compression level
  */
 
-int main(argc, argv)
-    int argc;
-    char *argv[];
+int main(int argc, char *argv[])
 {
     int copyout = 0;
     int uncompr = 0;

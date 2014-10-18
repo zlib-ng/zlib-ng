@@ -256,8 +256,7 @@ int value;
    used for threaded applications, since the rewriting of the tables and virgin
    may not be thread-safe.
  */
-local void fixedtables(state)
-struct inflate_state *state;
+local void fixedtables(struct inflate_state *state)
 {
 #ifdef BUILDFIXED
     static int virgin = 1;
@@ -374,10 +373,7 @@ void makefixed()
    output will fall in the output data, making match copies simpler and faster.
    The advantage may be dependent on the size of the processor's data caches.
  */
-local int updatewindow(strm, end, copy)
-z_streamp strm;
-const Byte *end;
-unsigned copy;
+local int updatewindow(z_streamp strm, const Byte *end, unsigned copy)
 {
     struct inflate_state *state;
     unsigned dist;
@@ -1349,10 +1345,7 @@ gz_headerp head;
    called again with more data and the *have state.  *have is initialized to
    zero for the first call.
  */
-local unsigned syncsearch(have, buf, len)
-unsigned *have;
-const unsigned char *buf;
-unsigned len;
+local unsigned syncsearch(unsigned *have, const unsigned char *buf, unsigned len)
 {
     unsigned got;
     unsigned next;

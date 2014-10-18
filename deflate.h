@@ -417,10 +417,9 @@ void ZLIB_INTERNAL bi_windup (deflate_state *s);
  * Send a value on a given number of bits.
  * IN assertion: length <= 16 and value fits in length bits.
  */
-local void send_bits(s, value, length)
-    deflate_state *s;
-    int value;  /* value to send */
-    int length; /* number of bits */
+local void send_bits(deflate_state *s,
+                     int value,  /* value to send */
+                     int length  /* number of bits */
 {
     Tracevv((stderr," l %2d v %4x ", length, value));
     Assert(length > 0 && length <= 15, "invalid length");

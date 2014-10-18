@@ -120,19 +120,14 @@ const char * ZEXPORT zError(err)
 
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 
-voidp ZLIB_INTERNAL zcalloc (opaque, items, size)
-    voidp opaque;
-    unsigned items;
-    unsigned size;
+voidp ZLIB_INTERNAL zcalloc (voidp opaque, unsigned items, unsigned size)
 {
     if (opaque) items += size - size; /* make compiler happy */
     return sizeof(uInt) > 2 ? (voidp)malloc(items * size) :
                               (voidp)calloc(items, size);
 }
 
-void ZLIB_INTERNAL zcfree (opaque, ptr)
-    voidp opaque;
-    voidp ptr;
+void ZLIB_INTERNAL zcfree (voidp opaque, voidp ptr)
 {
     free(ptr);
     if (opaque) return; /* make compiler happy */

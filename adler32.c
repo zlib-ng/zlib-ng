@@ -149,10 +149,7 @@ uLong ZEXPORT adler32(adler, buf, len)
 }
 
 /* ========================================================================= */
-local uLong adler32_combine_(adler1, adler2, len2)
-    uLong adler1;
-    uLong adler2;
-    z_off64_t len2;
+local uLong adler32_combine_(uLong adler1, uLong adler2, z_off64_t len2)
 {
     unsigned long sum1;
     unsigned long sum2;

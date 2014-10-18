@@ -287,8 +287,7 @@ local unsigned char *h2b(const char *hex, unsigned *len)
    header information is collected with inflateGetHeader().  If a zlib stream
    is looking for a dictionary, then an empty dictionary is provided.
    inflate() is run until all of the input data is consumed. */
-local void inf(char *hex, char *what, unsigned step, int win, unsigned len,
-               int err)
+local void inf(char *hex, char *what, unsigned step, int win, unsigned len, int err)
 {
     int ret;
     unsigned have;
