@@ -77,8 +77,8 @@ extern "C" {
   even in case of corrupted input.
 */
 
-typedef voidpf (*alloc_func) (voidpf opaque, uInt items, uInt size);
-typedef void   (*free_func)  (voidpf opaque, voidpf address);
+typedef voidp  (*alloc_func) (voidp opaque, uInt items, uInt size);
+typedef void   (*free_func)  (voidp opaque, voidp address);
 
 struct internal_state;
 
@@ -96,7 +96,7 @@ typedef struct z_stream_s {
 
     alloc_func zalloc;  /* used to allocate the internal state */
     free_func  zfree;   /* used to free the internal state */
-    voidpf     opaque;  /* private data object passed to zalloc and zfree */
+    voidp      opaque;  /* private data object passed to zalloc and zfree */
 
     int     data_type;  /* best guess about the data type: binary or text */
     uLong   adler;      /* adler32 value of the uncompressed data */
@@ -1101,7 +1101,7 @@ ZEXTERN uLong ZEXPORT zlibCompileFlags (void);
     Type sizes, two bits each, 00 = 16 bits, 01 = 32, 10 = 64, 11 = other:
      1.0: size of uInt
      3.2: size of uLong
-     5.4: size of voidpf (pointer)
+     5.4: size of voidp (pointer)
      7.6: size of z_off_t
 
     Compiler, assembler, and debug options:

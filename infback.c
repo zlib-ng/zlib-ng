@@ -46,7 +46,7 @@ int stream_size;
         return Z_STREAM_ERROR;
 #else
         strm->zalloc = zcalloc;
-        strm->opaque = (voidpf)0;
+        strm->opaque = (voidp)0;
 #endif
     }
     if (strm->zfree == (free_func)0)

@@ -45,7 +45,7 @@ uLong ZEXPORT zlibCompileFlags()
     case 8:     flags += 2 << 2;        break;
     default:    flags += 3 << 2;
     }
-    switch ((int)(sizeof(voidpf))) {
+    switch ((int)(sizeof(voidp))) {
     case 2:     break;
     case 4:     flags += 1 << 4;        break;
     case 8:     flags += 2 << 4;        break;
@@ -120,19 +120,19 @@ const char * ZEXPORT zError(err)
 
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 
-voidpf ZLIB_INTERNAL zcalloc (opaque, items, size)
-    voidpf opaque;
+voidp ZLIB_INTERNAL zcalloc (opaque, items, size)
+    voidp opaque;
     unsigned items;
     unsigned size;
 {
     if (opaque) items += size - size; /* make compiler happy */
-    return sizeof(uInt) > 2 ? (voidpf)malloc(items * size) :
-                              (voidpf)calloc(items, size);
+    return sizeof(uInt) > 2 ? (voidp)malloc(items * size) :
+                              (voidp)calloc(items, size);
 }
 
 void ZLIB_INTERNAL zcfree (opaque, ptr)
-    voidpf opaque;
-    voidpf ptr;
+    voidp opaque;
+    voidp ptr;
 {
     free(ptr);
     if (opaque) return; /* make compiler happy */

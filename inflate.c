@@ -194,7 +194,7 @@ int stream_size;
         return Z_STREAM_ERROR;
 #else
         strm->zalloc = zcalloc;
-        strm->opaque = (voidpf)0;
+        strm->opaque = (voidp)0;
 #endif
     }
     if (strm->zfree == (free_func)0)
@@ -1463,8 +1463,8 @@ z_streamp source;
     }
 
     /* copy state */
-    zmemcpy((voidpf)dest, (voidpf)source, sizeof(z_stream));
-    zmemcpy((voidpf)copy, (voidpf)state, sizeof(struct inflate_state));
+    zmemcpy((voidp)dest, (voidp)source, sizeof(z_stream));
+    zmemcpy((voidp)copy, (voidp)state, sizeof(struct inflate_state));
     if (state->lencode >= state->codes &&
         state->lencode <= state->codes + ENOUGH - 1) {
         copy->lencode = copy->codes + (state->lencode - state->codes);
