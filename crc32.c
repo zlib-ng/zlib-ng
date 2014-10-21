@@ -304,10 +304,14 @@ local unsigned long crc32_big(unsigned long crc, const unsigned char *buf, unsig
 
     buf4 = (const z_crc_t *)(const void *)buf;
     buf4--;
+
+#ifndef CRC32_UNROLL_LESS
     while (len >= 32) {
         DOBIG32;
         len -= 32;
     }
+#endif
+
     while (len >= 4) {
         DOBIG4;
         len -= 4;
