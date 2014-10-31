@@ -768,7 +768,7 @@ sed < Makefile.in "
 " > Makefile
 
 # Generate Makefile in arch dir if needed
-if [ ! -z $ARCHDIR ]
+if [ -n "$ARCHDIR" ]
 then
     sed < $ARCHDIR/Makefile.in "
     /^CC *=/s#=.*#=$CC#
