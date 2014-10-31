@@ -640,9 +640,9 @@ if test $without_new_strategies -eq 0; then
     SFLAGS="${SFLAGS} -DMEDIUM_STRATEGY"
 fi
 
-ARCHDIR=""
-ARCH_STATIC_OBJS=""
-ARCH_SHARED_OBJS=""
+ARCHDIR=''
+ARCH_STATIC_OBJS=''
+ARCH_SHARED_OBJS=''
 
 # Set ARCH specific FLAGS
 case "${ARCH}" in
@@ -767,11 +767,15 @@ sed < Makefile.in "
 /^ARCH_SHARED_OBJS *=/s#=.*#=$ARCH_SHARED_OBJS#
 " > Makefile
 
-sed < $ARCHDIR/Makefile.in "
-/^CC *=/s#=.*#=$CC#
-/^CFLAGS *=/s#=.*#=$CFLAGS#
-/^SFLAGS *=/s#=.*#=$SFLAGS#
-" > $ARCHDIR/Makefile
+# Generate Makefile in arch dir if needed
+if [ -n $ARCHDIR ]
+then
+    sed < $ARCHDIR/Makefile.in "
+    /^CC *=/s#=.*#=$CC#
+    /^CFLAGS *=/s#=.*#=$CFLAGS#
+    /^SFLAGS *=/s#=.*#=$SFLAGS#
+    " > $ARCHDIR/Makefile
+fi
 
 # create zlib.pc with the configure results
 sed < zlib.pc.in "
