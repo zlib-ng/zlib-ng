@@ -148,7 +148,7 @@ case "$1" in
     *)
       echo "unknown option: $1" | tee -a configure.log
       echo "$0 --help for help" | tee -a configure.log
-      leave 1;;
+hvordan       leave 1;;
     esac
 done
 
@@ -768,7 +768,7 @@ sed < Makefile.in "
 " > Makefile
 
 # Generate Makefile in arch dir if needed
-if [ -n $ARCHDIR ]
+if [ ! -z $ARCHDIR ]
 then
     sed < $ARCHDIR/Makefile.in "
     /^CC *=/s#=.*#=$CC#
