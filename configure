@@ -646,6 +646,8 @@ ARCH_SHARED_OBJS=''
 
 # Set ARCH specific FLAGS
 case "${ARCH}" in
+
+    # x86 and x86_64 specific optimizations
     i386 | i486 | i586 | i686 | x86_64)
 	ARCHDIR=arch/x86
 
@@ -695,9 +697,25 @@ case "${ARCH}" in
             fi
         fi
     ;;
+
+    # ARM specific optimizations
+    armv3l | armv4b | armv4l | armv4tl | armv5tel | armv5tejl | armv6l | armv6hl | armv7l | armv7hl | armv7hnl)
+	ARCHDIR=arch/arm
+
+        case "${ARCH}" in
+            armv6l | armv6hl)
+                # Tests done on Raspberry pi (armv6hl) indicate that UNALIGNED_OK and CRC32_UNROLL_LESS both
+                # provide performance improvements, totaling about 1.5% for the two.
+                CFLAGS="${CFLAGS} -DUNALIGNED_OK -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS"
+                SFLAGS="${SFLAGS} -DUNALIGNED_OK -DADLER32_UNROLL_LESS -DCRC32_UNROLL_LESS"
+            ;;
+        esac
+
+    ;;
 esac
 
-
+echo "ARCH: ${ARCH}"
+echo "Using arch directory: ${ARCHDIR}"
 
 # show the results in the log
 echo >> configure.log
