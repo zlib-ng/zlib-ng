@@ -50,6 +50,7 @@
 /* @(#) $Id$ */
 
 #include "deflate.h"
+#include "match.h"
 
 #if defined(X86_CPUID)
 #include "arch/x86/x86.h"
@@ -83,12 +84,6 @@ local void lm_init        (deflate_state *s);
 local void putShortMSB    (deflate_state *s, uInt b);
 ZLIB_INTERNAL void flush_pending  (z_streamp strm);
 ZLIB_INTERNAL int read_buf        (z_streamp strm, Byte *buf, unsigned size);
-#ifdef ASMV
-      void match_init (void); /* asm code initialization */
-      uInt longest_match  (deflate_state *s, IPos cur_match);
-#else
-local uInt longest_match  (deflate_state *s, IPos cur_match);
-#endif
 
 #ifdef DEBUG
 local  void check_match (deflate_state *s, IPos start, IPos match, int length);
@@ -1170,12 +1165,7 @@ local void lm_init (deflate_state *s)
     s->match_length = s->prev_length = MIN_MATCH-1;
     s->match_available = 0;
     s->ins_h = 0;
-#ifdef ASMV
-    match_init(); /* initialize the asm code */
-#endif
 }
-
-#include "match.c"
 
 #ifdef DEBUG
 /* ===========================================================================

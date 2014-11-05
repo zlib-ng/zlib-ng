@@ -13,16 +13,18 @@
 #include "deflate.h"
 
 #if (defined(UNALIGNED_OK) && MAX_MATCH == 258)
-#  define longest_match std2_longest_match
+#  define std2_longest_match
 #else
-#  define longest_match std1_longest_match
+#  define std1_longest_match
 #endif
+
+#ifdef std1_longest_match
 
 /*
  * Standard longest_match
  *
  */
-local unsigned std1_longest_match(deflate_state *z_const s, IPos cur_match)
+ZLIB_INTERNAL unsigned longest_match(deflate_state *z_const s, IPos cur_match)
 {
 	z_const unsigned wmask = s->w_mask;
 	z_const Pos *prev = s->prev;
@@ -135,12 +137,14 @@ local unsigned std1_longest_match(deflate_state *z_const s, IPos cur_match)
 		return best_len;
 	return s->lookahead;
 }
+#endif
 
+#ifdef std2_longest_match
 /*
  * UNALIGNED_OK longest_match
  *
  */
-local unsigned std2_longest_match(deflate_state *z_const s, IPos cur_match)
+ZLIB_INTERNAL unsigned longest_match(deflate_state *z_const s, IPos cur_match)
 {
 	z_const unsigned wmask = s->w_mask;
 	z_const Pos *prev = s->prev;
@@ -256,3 +260,4 @@ local unsigned std2_longest_match(deflate_state *z_const s, IPos cur_match)
 		return best_len;
 	return s->lookahead;
 }
+#endif

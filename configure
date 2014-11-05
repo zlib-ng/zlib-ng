@@ -176,7 +176,6 @@ EOF
 test -z "$CC" && echo Checking for ${CROSS_PREFIX}gcc... | tee -a configure.log
 cc=${CC-${CROSS_PREFIX}gcc}
 cflags=${CFLAGS-"-O3"}
-# to force the asm version use: CFLAGS="-O3 -DASMV" ./configure
 case "$cc" in
   *gcc*) gcc=1 ;;
   *clang*) gcc=1 ;;
@@ -429,20 +428,6 @@ else
   ALL="static shared"
   TEST="all teststatic testshared"
 fi
-
-# check for underscores in external names for use by assembler code
-CPP=${CPP-"$CC -E"}
-case $CFLAGS in
-  *ASMV*)
-    echo >> configure.log
-    show "$NM $test.o | grep _hello"
-    if test "`$NM $test.o | grep _hello | tee -a configure.log`" = ""; then
-      CPP="$CPP -DNO_UNDERLINE"
-      echo Checking for underline in external names... No. | tee -a configure.log
-    else
-      echo Checking for underline in external names... Yes. | tee -a configure.log
-    fi ;;
-esac
 
 echo >> configure.log
 
@@ -724,7 +709,6 @@ echo AR = $AR >> configure.log
 echo ARFLAGS = $ARFLAGS >> configure.log
 echo CC = $CC >> configure.log
 echo CFLAGS = $CFLAGS >> configure.log
-echo CPP = $CPP >> configure.log
 echo EXE = $EXE >> configure.log
 echo LDCONFIG = $LDCONFIG >> configure.log
 echo LDFLAGS = $LDFLAGS >> configure.log
@@ -759,7 +743,6 @@ sed < Makefile.in "
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
-/^CPP *=/s#=.*#=$CPP#
 /^STATICLIB *=/s#=.*#=$STATICLIB#
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#
@@ -796,7 +779,6 @@ sed < $ARCHDIR/Makefile.in "
 sed < zlib.pc.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
-/^CPP *=/s#=.*#=$CPP#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
 /^STATICLIB *=/s#=.*#=$STATICLIB#
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#

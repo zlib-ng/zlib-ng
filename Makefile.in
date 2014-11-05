@@ -7,10 +7,6 @@
 # Normally configure builds both a static and a shared library.
 # If you want to build just a static library, use: ./configure --static
 
-# To use the asm code, type:
-#    cp contrib/asm?86/match.S ./match.S
-#    make LOC=-DASMV OBJA=match.o
-
 # To install /usr/local/lib/libz.* and /usr/local/include/zlib.h, type:
 #    make install
 # To install in $HOME instead of /usr/local, use:
@@ -28,7 +24,6 @@ SFLAGS=-O
 LDFLAGS=
 TEST_LDFLAGS=-L. libz.a
 LDSHARED=$(CC)
-CPP=$(CC) -E
 
 STATICLIB=libz.a
 SHAREDLIB=libz.so
@@ -58,21 +53,17 @@ mandir = ${prefix}/share/man
 man3dir = ${mandir}/man3
 pkgconfigdir = ${libdir}/pkgconfig
 
-OBJZ = adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o $(ARCH_STATIC_OBJS)
+OBJZ = adler32.o crc32.o deflate.o match.o infback.o inffast.o inflate.o inftrees.o trees.o zutil.o $(ARCH_STATIC_OBJS)
 OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo crc32.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo $(ARCH_SHARED_OBJS)
+PIC_OBJZ = adler32.lo crc32.lo deflate.lo match.o infback.lo inffast.lo inflate.lo inftrees.lo trees.lo zutil.lo $(ARCH_SHARED_OBJS)
 PIC_OBJG = compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
-# to use the asm code: make OBJA=match.o, PIC_OBJA=match.lo
-OBJA =
-PIC_OBJA =
+OBJS = $(OBJC)
 
-OBJS = $(OBJC) $(OBJA)
-
-PIC_OBJS = $(PIC_OBJC) $(PIC_OBJA)
+PIC_OBJS = $(PIC_OBJC)
 
 all: $(ARCHDIR) static shared
 
@@ -140,18 +131,6 @@ cover: infcover
 libz.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
-
-match.o: match.S
-	$(CPP) match.S > _match.s
-	$(CC) -c _match.s
-	mv _match.o match.o
-	rm -f _match.s
-
-match.lo: match.S
-	$(CPP) match.S > _match.s
-	$(CC) -c -fPIC _match.s
-	mv _match.o match.lo
-	rm -f _match.s
 
 example.o: test/example.c zlib.h zconf.h
 	$(CC) $(CFLAGS) -I. -c -o $@ test/example.c
