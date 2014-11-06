@@ -582,6 +582,23 @@ EOF
   fi
 fi
 
+# Check for __builtin_ctzl() support in compiler
+cat > $test.c << EOF
+int main(void)
+{
+    unsigned int zero = 0;
+    long test = __builtin_ctzl(zero);
+    return 0;
+}
+EOF
+if try ${CC} ${CFLAGS} $test.c; then
+    echo "Checking for __builtin_ctzl ... Yes." | tee -a configure.log
+    CFLAGS="$CFLAGS -DHAVE_BUILTIN_CTZL"
+    SFLAGS="$SFLAGS -DHAVE_BUILTIN_CTZL"
+else
+    echo "Checking for __builtin_ztzl ... No." | tee -a configure.log
+fi
+
 # Check for SSE2 intrinsics
 cat > $test.c << EOF
 #include <immintrin.h>
