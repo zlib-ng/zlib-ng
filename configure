@@ -536,7 +536,7 @@ if try ${CC} ${CFLAGS} $test.c; then
     CFLAGS="$CFLAGS -DHAVE_BUILTIN_CTZL"
     SFLAGS="$SFLAGS -DHAVE_BUILTIN_CTZL"
 else
-    echo "Checking for __builtin_ztzl ... No." | tee -a configure.log
+    echo "Checking for __builtin_ctzl ... No." | tee -a configure.log
 fi
 
 # Check for SSE2 intrinsics
