@@ -269,66 +269,6 @@ else
              shared_ext='.sl'
              SHAREDLIB='libz.sl' ;;
          esac ;;
-  IRIX*)     SFLAGS=${CFLAGS-"-ansi -O2 -rpath ."}
-             CFLAGS=${CFLAGS-"-ansi -O2"}
-             LDSHARED=${LDSHARED-"cc -shared -Wl,-soname,libz.so.1"} ;;
-  OSF1\ V4*) SFLAGS=${CFLAGS-"-O -std1"}
-             CFLAGS=${CFLAGS-"-O -std1"}
-             LDFLAGS="${LDFLAGS} -Wl,-rpath,."
-             LDSHARED=${LDSHARED-"cc -shared  -Wl,-soname,libz.so -Wl,-msym -Wl,-rpath,$(libdir) -Wl,-set_version,${VER}:1.0"} ;;
-  OSF1*)     SFLAGS=${CFLAGS-"-O -std1"}
-             CFLAGS=${CFLAGS-"-O -std1"}
-             LDSHARED=${LDSHARED-"cc -shared -Wl,-soname,libz.so.1"} ;;
-  QNX*)      SFLAGS=${CFLAGS-"-4 -O"}
-             CFLAGS=${CFLAGS-"-4 -O"}
-             LDSHARED=${LDSHARED-"cc"}
-             RANLIB=${RANLIB-"true"}
-             AR="cc"
-             ARFLAGS="-A" ;;
-  SCO_SV\ 3.2*) SFLAGS=${CFLAGS-"-O3 -dy -KPIC "}
-             CFLAGS=${CFLAGS-"-O3"}
-             LDSHARED=${LDSHARED-"cc -dy -KPIC -G"} ;;
-  SunOS\ 5* | solaris*)
-         LDSHARED=${LDSHARED-"cc -G -h libz$shared_ext.$VER1"}
-         SFLAGS=${CFLAGS-"-fast -KPIC"}
-         CFLAGS=${CFLAGS-"-fast"}
-         if test $build64 -eq 1; then
-             # old versions of SunPRO/Workshop/Studio don't support -m64,
-             # but newer ones do.  Check for it.
-             flag64=`$CC -flags | egrep -- '^-m64'`
-             if test x"$flag64" != x"" ; then
-                 CFLAGS="${CFLAGS} -m64"
-                 SFLAGS="${SFLAGS} -m64"
-             else
-                 case `(uname -m || echo unknown) 2>/dev/null` in
-                   i86*)
-                     SFLAGS="$SFLAGS -xarch=amd64"
-                     CFLAGS="$CFLAGS -xarch=amd64" ;;
-                   *)
-                     SFLAGS="$SFLAGS -xarch=v9"
-                     CFLAGS="$CFLAGS -xarch=v9" ;;
-                 esac
-             fi
-         fi
-         ;;
-  SunOS\ 4*) SFLAGS=${CFLAGS-"-O2 -PIC"}
-             CFLAGS=${CFLAGS-"-O2"}
-             LDSHARED=${LDSHARED-"ld"} ;;
-  SunStudio\ 9*) SFLAGS=${CFLAGS-"-fast -xcode=pic32 -xtarget=ultra3 -xarch=v9b"}
-             CFLAGS=${CFLAGS-"-fast -xtarget=ultra3 -xarch=v9b"}
-             LDSHARED=${LDSHARED-"cc -xarch=v9b"} ;;
-  UNIX_System_V\ 4.2.0)
-             SFLAGS=${CFLAGS-"-KPIC -O"}
-             CFLAGS=${CFLAGS-"-O"}
-             LDSHARED=${LDSHARED-"cc -G"} ;;
-  UNIX_SV\ 4.2MP)
-             SFLAGS=${CFLAGS-"-Kconform_pic -O"}
-             CFLAGS=${CFLAGS-"-O"}
-             LDSHARED=${LDSHARED-"cc -G"} ;;
-  OpenUNIX\ 5)
-             SFLAGS=${CFLAGS-"-KPIC -O"}
-             CFLAGS=${CFLAGS-"-O"}
-             LDSHARED=${LDSHARED-"cc -G"} ;;
   AIX*)  # Courtesy of dbakker@arrayasolutions.com
              SFLAGS=${CFLAGS-"-O -qmaxmem=8192"}
              CFLAGS=${CFLAGS-"-O -qmaxmem=8192"}
