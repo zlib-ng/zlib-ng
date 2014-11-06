@@ -23,6 +23,10 @@
 #  define GZIP
 #endif
 
+#define NIL 0
+/* Tail of hash chains */
+
+
 /* ===========================================================================
  * Internal compression state.
  */
