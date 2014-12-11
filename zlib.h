@@ -1,5 +1,5 @@
-/* zlib.h -- interface of the 'zlib' general purpose compression library
-  version 1.2.8, April 28th, 2013
+/* zlib.h -- interface of the 'zlib-ng' compression library
+   Forked from and compatible with zlib 1.2.8
 
   Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
 
@@ -36,6 +36,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define ZLIBNG_VERSION "1.9.9"
+#define ZLIBNG_VERNUM 0x1990
+#define ZLIBNG_VER_MAJOR 1
+#define ZLIBNG_VER_MINOR 9
+#define ZLIBNG_VER_REVISION 9
+#define ZLIBNG_VER_SUBREVISION 0
 
 #define ZLIB_VERSION "1.2.8.zlib-ng"
 #define ZLIB_VERNUM 0x128f
