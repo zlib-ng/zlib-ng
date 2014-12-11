@@ -97,10 +97,15 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #endif
 
 /* provide prototypes for these when building zlib without LFS */
-#if !defined(_WIN32) && \
-    (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
+#if !defined(_WIN32) && (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
     ZEXTERN uLong ZEXPORT adler32_combine64 (uLong, uLong, z_off_t);
     ZEXTERN uLong ZEXPORT crc32_combine64 (uLong, uLong, z_off_t);
+#endif
+
+/* MS Visual Studio does not allow inline in C, only C++.
+   But it provides __inline instead, so use that. */
+#if defined(_MSC_VER) && !defined(inline)
+#  define inline __inline
 #endif
 
         /* common defaults */
