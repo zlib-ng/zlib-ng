@@ -22,6 +22,8 @@ z_const char * const z_errmsg[10] = {
 "incompatible version",/* Z_VERSION_ERROR (-6) */
 ""};
 
+const char zlibng_string[] =
+   " zlib-ng 1.9.9 forked from zlib 1.2.8 ";
 
 const char * ZEXPORT zlibVersion()
 {
