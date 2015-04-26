@@ -15,7 +15,7 @@ local int gz_zero (gz_statep, z_off64_t);
 local int gz_init(gz_statep state)
 {
     int ret;
-    z_streamp strm = &(state->strm);
+    z_stream *strm = &(state->strm);
 
     /* allocate input buffer */
     state->in = (unsigned char *)malloc(state->want);
@@ -70,7 +70,7 @@ local int gz_comp(gz_statep state, int flush)
 {
     int ret, got;
     unsigned have;
-    z_streamp strm = &(state->strm);
+    z_stream *strm = &(state->strm);
 
     /* allocate memory if this is the first time through */
     if (state->size == 0 && gz_init(state) == -1)
@@ -131,7 +131,7 @@ local int gz_zero(gz_statep state, z_off64_t len)
 {
     int first;
     unsigned n;
-    z_streamp strm = &(state->strm);
+    z_stream *strm = &(state->strm);
 
     /* consume whatever's left in the input buffer */
     if (strm->avail_in && gz_comp(state, Z_NO_FLUSH) == -1)
@@ -164,7 +164,7 @@ int ZEXPORT gzwrite(file, buf, len)
 {
     unsigned put = len;
     gz_statep state;
-    z_streamp strm;
+    z_stream *strm;
 
     /* get internal structure */
     if (file == NULL)
@@ -244,7 +244,7 @@ int ZEXPORT gzputc(file, c)
     unsigned have;
     unsigned char buf[1];
     gz_statep state;
-    z_streamp strm;
+    z_stream *strm;
 
     /* get internal structure */
     if (file == NULL)
@@ -305,7 +305,7 @@ int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va)
 {
     int size, len;
     gz_statep state;
-    z_streamp strm;
+    z_stream *strm;
 
     /* get internal structure */
     if (file == NULL)
@@ -398,7 +398,7 @@ int ZEXPORT gzsetparams(file, level, strategy)
     int strategy;
 {
     gz_statep state;
-    z_streamp strm;
+    z_stream *strm;
 
     /* get internal structure */
     if (file == NULL)

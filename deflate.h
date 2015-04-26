@@ -101,7 +101,7 @@ typedef unsigned IPos;
  */
 
 typedef struct internal_state {
-    z_streamp strm;      /* pointer back to this zlib stream */
+    z_stream *strm;      /* pointer back to this zlib stream */
     int   status;        /* as the name implies */
     Byte *pending_buf;  /* output still pending */
     ulg   pending_buf_size; /* size of pending_buf */

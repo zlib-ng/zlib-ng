@@ -73,7 +73,7 @@
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
-void ZLIB_INTERNAL inflate_fast(z_streamp strm, unsigned start)
+void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
 {
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;

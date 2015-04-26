@@ -26,7 +26,7 @@ local void fixedtables (struct inflate_state *state);
    window and output buffer that is 2**windowBits bytes.
  */
 int ZEXPORT inflateBackInit_(strm, windowBits, window, version, stream_size)
-z_streamp strm;
+z_stream *strm;
 int windowBits;
 unsigned char *window;
 const char *version;
@@ -247,7 +247,7 @@ local void fixedtables(struct inflate_state *state)
    are not correct, i.e. strm is Z_NULL or the state was not initialized.
  */
 int ZEXPORT inflateBack(strm, in, in_desc, out, out_desc)
-z_streamp strm;
+z_stream *strm;
 in_func in;
 void *in_desc;
 out_func out;
@@ -628,7 +628,7 @@ void *out_desc;
 }
 
 int ZEXPORT inflateBackEnd(strm)
-z_streamp strm;
+z_stream *strm;
 {
     if (strm == Z_NULL || strm->state == Z_NULL || strm->zfree == (free_func)0)
         return Z_STREAM_ERROR;

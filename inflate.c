@@ -93,14 +93,14 @@
 
 /* function prototypes */
 local void fixedtables (struct inflate_state *state);
-local int updatewindow (z_streamp strm, const unsigned char *end, unsigned copy);
+local int updatewindow (z_stream *strm, const unsigned char *end, unsigned copy);
 #ifdef BUILDFIXED
    void makefixed (void);
 #endif
 local unsigned syncsearch (unsigned *have, const unsigned char *buf, unsigned len);
 
 int ZEXPORT inflateResetKeep(strm)
-z_streamp strm;
+z_stream *strm;
 {
     struct inflate_state *state;
 
@@ -125,7 +125,7 @@ z_streamp strm;
 }
 
 int ZEXPORT inflateReset(strm)
-z_streamp strm;
+z_stream *strm;
 {
     struct inflate_state *state;
 
@@ -138,7 +138,7 @@ z_streamp strm;
 }
 
 int ZEXPORT inflateReset2(strm, windowBits)
-z_streamp strm;
+z_stream *strm;
 int windowBits;
 {
     int wrap;
@@ -176,7 +176,7 @@ int windowBits;
 }
 
 int ZEXPORT inflateInit2_(strm, windowBits, version, stream_size)
-z_streamp strm;
+z_stream *strm;
 int windowBits;
 const char *version;
 int stream_size;
@@ -218,7 +218,7 @@ int stream_size;
 }
 
 int ZEXPORT inflateInit_(strm, version, stream_size)
-z_streamp strm;
+z_stream *strm;
 const char *version;
 int stream_size;
 {
@@ -226,7 +226,7 @@ int stream_size;
 }
 
 int ZEXPORT inflatePrime(strm, bits, value)
-z_streamp strm;
+z_stream *strm;
 int bits;
 int value;
 {
@@ -373,7 +373,7 @@ void makefixed()
    output will fall in the output data, making match copies simpler and faster.
    The advantage may be dependent on the size of the processor's data caches.
  */
-local int updatewindow(z_streamp strm, const Byte *end, unsigned copy)
+local int updatewindow(z_stream *strm, const Byte *end, unsigned copy)
 {
     struct inflate_state *state;
     unsigned dist;
@@ -597,7 +597,7 @@ local int updatewindow(z_streamp strm, const Byte *end, unsigned copy)
  */
 
 int ZEXPORT inflate(strm, flush)
-z_streamp strm;
+z_stream *strm;
 int flush;
 {
     struct inflate_state *state;
@@ -1246,7 +1246,7 @@ int flush;
 }
 
 int ZEXPORT inflateEnd(strm)
-z_streamp strm;
+z_stream *strm;
 {
     struct inflate_state *state;
     if (strm == Z_NULL || strm->state == Z_NULL || strm->zfree == (free_func)0)
@@ -1260,7 +1260,7 @@ z_streamp strm;
 }
 
 int ZEXPORT inflateGetDictionary(strm, dictionary, dictLength)
-z_streamp strm;
+z_stream *strm;
 Byte *dictionary;
 uInt *dictLength;
 {
@@ -1283,7 +1283,7 @@ uInt *dictLength;
 }
 
 int ZEXPORT inflateSetDictionary(strm, dictionary, dictLength)
-z_streamp strm;
+z_stream *strm;
 const Byte *dictionary;
 uInt dictLength;
 {
@@ -1318,7 +1318,7 @@ uInt dictLength;
 }
 
 int ZEXPORT inflateGetHeader(strm, head)
-z_streamp strm;
+z_stream *strm;
 gz_headerp head;
 {
     struct inflate_state *state;
@@ -1366,7 +1366,7 @@ local unsigned syncsearch(unsigned *have, const unsigned char *buf, unsigned len
 }
 
 int ZEXPORT inflateSync(strm)
-z_streamp strm;
+z_stream *strm;
 {
     unsigned len;               /* number of bytes to look at or looked at */
     unsigned long in, out;      /* temporary to save total_in and total_out */
@@ -1417,7 +1417,7 @@ z_streamp strm;
    inflate is waiting for these length bytes.
  */
 int ZEXPORT inflateSyncPoint(strm)
-z_streamp strm;
+z_stream *strm;
 {
     struct inflate_state *state;
 
@@ -1427,8 +1427,8 @@ z_streamp strm;
 }
 
 int ZEXPORT inflateCopy(dest, source)
-z_streamp dest;
-z_streamp source;
+z_stream *dest;
+z_stream *source;
 {
     struct inflate_state *state;
     struct inflate_state *copy;
@@ -1474,7 +1474,7 @@ z_streamp source;
 }
 
 int ZEXPORT inflateUndermine(strm, subvert)
-z_streamp strm;
+z_stream *strm;
 int subvert;
 {
     struct inflate_state *state;
@@ -1491,7 +1491,7 @@ int subvert;
 }
 
 long ZEXPORT inflateMark(strm)
-z_streamp strm;
+z_stream *strm;
 {
     struct inflate_state *state;
 

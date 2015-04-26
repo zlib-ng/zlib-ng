@@ -47,7 +47,7 @@ local int gz_load(gz_statep state, unsigned char *buf, unsigned len, unsigned *h
 local int gz_avail(gz_statep state)
 {
     unsigned got;
-    z_streamp strm = &(state->strm);
+    z_stream *strm = &(state->strm);
 
     if (state->err != Z_OK && state->err != Z_BUF_ERROR)
         return -1;
@@ -80,7 +80,7 @@ local int gz_avail(gz_statep state)
    gz_look() will return 0 on success or -1 on failure. */
 local int gz_look(gz_statep state)
 {
-    z_streamp strm = &(state->strm);
+    z_stream *strm = &(state->strm);
 
     /* allocate read buffers and inflate memory */
     if (state->size == 0) {
@@ -167,7 +167,7 @@ local int gz_decomp(gz_statep state)
 {
     int ret = Z_OK;
     unsigned had;
-    z_streamp strm = &(state->strm);
+    z_stream *strm = &(state->strm);
 
     /* fill output buffer up to end of deflate stream */
     had = strm->avail_out;
@@ -218,7 +218,7 @@ local int gz_decomp(gz_statep state)
    end of the input file has been reached and all data has been processed.  */
 local int gz_fetch(gz_statep state)
 {
-    z_streamp strm = &(state->strm);
+    z_stream *strm = &(state->strm);
 
     do {
         switch(state->how) {
@@ -282,7 +282,7 @@ int ZEXPORT gzread(file, buf, len)
 {
     unsigned got, n;
     gz_statep state;
-    z_streamp strm;
+    z_stream *strm;
 
     /* get internal structure */
     if (file == NULL)
