@@ -280,7 +280,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
         return Z_STREAM_ERROR;
 #else
         strm->zalloc = zcalloc;
-        strm->opaque = (voidp)0;
+        strm->opaque = (void *)0;
 #endif
     }
     if (strm->zfree == (free_func)0)
@@ -1074,12 +1074,12 @@ int ZEXPORT deflateCopy (dest, source)
 
     ss = source->state;
 
-    memcpy((voidp)dest, (voidp)source, sizeof(z_stream));
+    memcpy((void *)dest, (void *)source, sizeof(z_stream));
 
     ds = (deflate_state *) ZALLOC(dest, 1, sizeof(deflate_state));
     if (ds == Z_NULL) return Z_MEM_ERROR;
     dest->state = (struct internal_state *) ds;
-    memcpy((voidp)ds, (voidp)ss, sizeof(deflate_state));
+    memcpy((void *)ds, (void *)ss, sizeof(deflate_state));
     ds->strm = dest;
 
     ds->window = (Byte *) ZALLOC(dest, ds->w_size, 2*sizeof(Byte));
@@ -1095,8 +1095,8 @@ int ZEXPORT deflateCopy (dest, source)
     }
 
     memcpy(ds->window, ss->window, ds->w_size * 2 * sizeof(Byte));
-    memcpy((voidp)ds->prev, (voidp)ss->prev, ds->w_size * sizeof(Pos));
-    memcpy((voidp)ds->head, (voidp)ss->head, ds->hash_size * sizeof(Pos));
+    memcpy((void *)ds->prev, (void *)ss->prev, ds->w_size * sizeof(Pos));
+    memcpy((void *)ds->head, (void *)ss->head, ds->hash_size * sizeof(Pos));
     memcpy(ds->pending_buf, ss->pending_buf, (uInt)ds->pending_buf_size);
 
     ds->pending_out = ds->pending_buf + (ss->pending_out - ss->pending_buf);

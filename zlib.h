@@ -84,8 +84,8 @@ extern "C" {
   even in case of corrupted input.
 */
 
-typedef voidp  (*alloc_func) (voidp opaque, uInt items, uInt size);
-typedef void   (*free_func)  (voidp opaque, voidp address);
+typedef void *(*alloc_func) (void *opaque, uInt items, uInt size);
+typedef void  (*free_func)  (void *opaque, void *address);
 
 struct internal_state;
 
@@ -103,7 +103,7 @@ typedef struct z_stream_s {
 
     alloc_func zalloc;  /* used to allocate the internal state */
     free_func  zfree;   /* used to free the internal state */
-    voidp      opaque;  /* private data object passed to zalloc and zfree */
+    void      *opaque;  /* private data object passed to zalloc and zfree */
 
     int     data_type;  /* best guess about the data type: binary or text */
     uLong   adler;      /* adler32 value of the uncompressed data */
@@ -1108,7 +1108,7 @@ ZEXTERN uLong ZEXPORT zlibCompileFlags (void);
     Type sizes, two bits each, 00 = 16 bits, 01 = 32, 10 = 64, 11 = other:
      1.0: size of uInt
      3.2: size of uLong
-     5.4: size of voidp (pointer)
+     5.4: size of void * (pointer)
      7.6: size of z_off_t
 
     Compiler, assembler, and debug options:
@@ -1308,7 +1308,7 @@ ZEXTERN int ZEXPORT gzsetparams (gzFile file, int level, int strategy);
    opened for writing.
 */
 
-ZEXTERN int ZEXPORT gzread (gzFile file, voidp buf, unsigned len);
+ZEXTERN int ZEXPORT gzread (gzFile file, void *buf, unsigned len);
 /*
      Reads the given number of uncompressed bytes from the compressed file.  If
    the input file is not in gzip format, gzread copies the given number of

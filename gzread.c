@@ -277,7 +277,7 @@ local int gz_skip(gz_statep state, z_off64_t len)
 /* -- see zlib.h -- */
 int ZEXPORT gzread(file, buf, len)
     gzFile file;
-    voidp buf;
+    void *buf;
     unsigned len;
 {
     unsigned got, n;
