@@ -228,7 +228,7 @@ bulk_insert_str(deflate_state *s, Pos startpos, uInt count) {
  */
 #define CLEAR_HASH(s) \
     s->head[s->hash_size-1] = NIL; \
-    zmemzero((Byte *)s->head, (unsigned)(s->hash_size-1)*sizeof(*s->head));
+    memzero((Byte *)s->head, 0, (unsigned)(s->hash_size-1)*sizeof(*s->head));
 
 /* ========================================================================= */
 int ZEXPORT deflateInit_(strm, level, version, stream_size)
@@ -692,7 +692,7 @@ ZLIB_INTERNAL void flush_pending(strm)
     if (len > strm->avail_out) len = strm->avail_out;
     if (len == 0) return;
 
-    zmemcpy(strm->next_out, s->pending_out, len);
+    memcpy(strm->next_out, s->pending_out, len);
     strm->next_out  += len;
     s->pending_out  += len;
     strm->total_out += len;
@@ -1074,12 +1074,12 @@ int ZEXPORT deflateCopy (dest, source)
 
     ss = source->state;
 
-    zmemcpy((voidp)dest, (voidp)source, sizeof(z_stream));
+    memcpy((voidp)dest, (voidp)source, sizeof(z_stream));
 
     ds = (deflate_state *) ZALLOC(dest, 1, sizeof(deflate_state));
     if (ds == Z_NULL) return Z_MEM_ERROR;
     dest->state = (struct internal_state *) ds;
-    zmemcpy((voidp)ds, (voidp)ss, sizeof(deflate_state));
+    memcpy((voidp)ds, (voidp)ss, sizeof(deflate_state));
     ds->strm = dest;
 
     ds->window = (Byte *) ZALLOC(dest, ds->w_size, 2*sizeof(Byte));
@@ -1094,10 +1094,10 @@ int ZEXPORT deflateCopy (dest, source)
         return Z_MEM_ERROR;
     }
 
-    zmemcpy(ds->window, ss->window, ds->w_size * 2 * sizeof(Byte));
-    zmemcpy((voidp)ds->prev, (voidp)ss->prev, ds->w_size * sizeof(Pos));
-    zmemcpy((voidp)ds->head, (voidp)ss->head, ds->hash_size * sizeof(Pos));
-    zmemcpy(ds->pending_buf, ss->pending_buf, (uInt)ds->pending_buf_size);
+    memcpy(ds->window, ss->window, ds->w_size * 2 * sizeof(Byte));
+    memcpy((voidp)ds->prev, (voidp)ss->prev, ds->w_size * sizeof(Pos));
+    memcpy((voidp)ds->head, (voidp)ss->head, ds->hash_size * sizeof(Pos));
+    memcpy(ds->pending_buf, ss->pending_buf, (uInt)ds->pending_buf_size);
 
     ds->pending_out = ds->pending_buf + (ss->pending_out - ss->pending_buf);
     ds->d_buf = overlay + ds->lit_bufsize/sizeof(ush);
@@ -1132,7 +1132,7 @@ ZLIB_INTERNAL int read_buf(z_streamp strm, Byte *buf, unsigned size)
     else 
 #endif
     {
-        zmemcpy(buf, strm->next_in, len);
+        memcpy(buf, strm->next_in, len);
         if (strm->state->wrap == 1)
             strm->adler = adler32(strm->adler, buf, len);
     }
@@ -1174,7 +1174,7 @@ local void lm_init (deflate_state *s)
 local void check_match(deflate_state *s, IPos start, IPos match, int length)
 {
     /* check that the match is indeed a match */
-    if (zmemcmp(s->window + match,
+    if (memcmp(s->window + match,
                 s->window + start, length) != EQUAL) {
         fprintf(stderr, " start %u, match %u, length %d\n",
                 start, match, length);
@@ -1240,7 +1240,7 @@ local void fill_window_c(deflate_state *s)
          */
         if (s->strstart >= wsize+MAX_DIST(s)) {
 
-            zmemcpy(s->window, s->window+wsize, (unsigned)wsize);
+            memcpy(s->window, s->window+wsize, (unsigned)wsize);
             s->match_start -= wsize;
             s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
             s->block_start -= (long) wsize;
@@ -1364,7 +1364,7 @@ local void fill_window_c(deflate_state *s)
             init = s->window_size - curr;
             if (init > WIN_INIT)
                 init = WIN_INIT;
-            zmemzero(s->window + curr, (unsigned)init);
+            memzero(s->window + curr, 0, (unsigned)init);
             s->high_water = curr + init;
         }
         else if (s->high_water < (ulg)curr + WIN_INIT) {
@@ -1375,7 +1375,7 @@ local void fill_window_c(deflate_state *s)
             init = (ulg)curr + WIN_INIT - s->high_water;
             if (init > s->window_size - s->high_water)
                 init = s->window_size - s->high_water;
-            zmemzero(s->window + s->high_water, (unsigned)init);
+            memzero(s->window + s->high_water, 0, (unsigned)init);
             s->high_water += init;
         }
     }

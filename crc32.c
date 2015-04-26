@@ -461,7 +461,7 @@ ZLIB_INTERNAL void copy_with_crc(z_streamp strm, Byte *dst, long size)
         return;
     }
 #endif
-    zmemcpy(dst, strm->next_in, size);
+    memcpy(dst, strm->next_in, size);
     strm->adler = crc32(strm->adler, dst, size);
 }
 

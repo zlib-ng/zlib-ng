@@ -112,10 +112,6 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
          /* functions */
 
-#define zmemcpy memcpy
-#define zmemcmp memcmp
-#define zmemzero(dest, len) memset(dest, 0, len)
-
 /* Diagnostic functions */
 #ifdef DEBUG
 #  include <stdio.h>
