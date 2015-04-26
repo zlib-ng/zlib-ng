@@ -22,9 +22,7 @@
 #include "zlib.h"
 
 #ifndef Z_SOLO
-#  if defined(_MSC_VER)
-#    include <stddef.h>
-#  endif
+#  include <stddef.h>
 #  include <string.h>
 #  include <stdlib.h>
 #endif

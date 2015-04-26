@@ -228,7 +228,7 @@ bulk_insert_str(deflate_state *s, Pos startpos, uInt count) {
  */
 #define CLEAR_HASH(s) \
     s->head[s->hash_size-1] = NIL; \
-    memzero((Byte *)s->head, 0, (unsigned)(s->hash_size-1)*sizeof(*s->head));
+    memset((Byte *)s->head, 0, (unsigned)(s->hash_size-1)*sizeof(*s->head));
 
 /* ========================================================================= */
 int ZEXPORT deflateInit_(strm, level, version, stream_size)
@@ -1364,7 +1364,7 @@ local void fill_window_c(deflate_state *s)
             init = s->window_size - curr;
             if (init > WIN_INIT)
                 init = WIN_INIT;
-            memzero(s->window + curr, 0, (unsigned)init);
+            memset(s->window + curr, 0, (unsigned)init);
             s->high_water = curr + init;
         }
         else if (s->high_water < (ulg)curr + WIN_INIT) {
@@ -1375,7 +1375,7 @@ local void fill_window_c(deflate_state *s)
             init = (ulg)curr + WIN_INIT - s->high_water;
             if (init > s->window_size - s->high_water)
                 init = s->window_size - s->high_water;
-            memzero(s->window + s->high_water, 0, (unsigned)init);
+            memset(s->window + s->high_water, 0, (unsigned)init);
             s->high_water += init;
         }
     }
