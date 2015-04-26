@@ -131,13 +131,13 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #endif
 
 #ifndef Z_SOLO
-   voidpf ZLIB_INTERNAL zcalloc (voidpf opaque, unsigned items, unsigned size);
-   void   ZLIB_INTERNAL zcfree  (voidpf opaque, voidpf ptr);
+   void ZLIB_INTERNAL *zcalloc (void *opaque, unsigned items, unsigned size);
+   void ZLIB_INTERNAL  zcfree  (void *opaque, void *ptr);
 #endif
 
 #define ZALLOC(strm, items, size) \
            (*((strm)->zalloc))((strm)->opaque, (items), (size))
-#define ZFREE(strm, addr)  (*((strm)->zfree))((strm)->opaque, (voidpf)(addr))
+#define ZFREE(strm, addr)  (*((strm)->zfree))((strm)->opaque, (void *)(addr))
 #define TRY_FREE(s, p) {if (p) ZFREE(s, p);}
 
 /* Reverse the bytes in a 32-bit value. Use compiler intrinsics when
