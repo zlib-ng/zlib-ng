@@ -1336,8 +1336,7 @@ ZEXTERN int ZEXPORT gzread (gzFile file, voidp buf, unsigned len);
    len for end of file, or -1 for error.
 */
 
-ZEXTERN int ZEXPORT gzwrite (gzFile file,
-                                voidpc buf, unsigned len);
+ZEXTERN int ZEXPORT gzwrite (gzFile file, void const *buf, unsigned len);
 /*
      Writes the given number of uncompressed bytes into the compressed file.
    gzwrite returns the number of uncompressed bytes written or 0 in case of

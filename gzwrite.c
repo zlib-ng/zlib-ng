@@ -159,7 +159,7 @@ local int gz_zero(gz_statep state, z_off64_t len)
 /* -- see zlib.h -- */
 int ZEXPORT gzwrite(file, buf, len)
     gzFile file;
-    voidpc buf;
+    void const *buf;
     unsigned len;
 {
     unsigned put = len;
