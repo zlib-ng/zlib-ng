@@ -45,7 +45,10 @@ test64:
 	fi; \
 	rm -f $$TMP64
 
-cvetests: testCVE-2003-0107
+cvetests: testCVE-2003-0107 testCVEinputs
+
+testCVEinputs:
+	@$(SRCDIR)/testCVEinputs.sh
 
 testCVE-2003-0107: CVE-2003-0107$(EXE)
 	@if ./CVE-2003-0107$(EXE); then \
