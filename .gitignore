@@ -21,6 +21,7 @@
 /minigzip64
 /minigzipsh
 /zlib.pc
+/CVE-2003-0107
 
 .DS_Store
 *.obj
