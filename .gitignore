@@ -31,3 +31,4 @@
 *.dll
 *.res
 foo.gz
+*.manifest
