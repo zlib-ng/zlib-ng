@@ -233,6 +233,7 @@ zconf: zconf.h.in
 
 mostlyclean: clean
 clean:
+	$(MAKE) -C $(ARCHDIR) clean
 	rm -f *.o *.lo *~ \
 	   example$(EXE) minigzip$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
 	   example64$(EXE) minigzip64$(EXE) \
@@ -244,6 +245,7 @@ clean:
 
 maintainer-clean: distclean
 distclean: clean zconf zconf.h.cmakein docs
+	$(MAKE) -C $(ARCHDIR) distclean
 	rm -f Makefile zlib.pc configure.log
 	-@rm -f .DS_Store
 	-@printf 'all:\n\t-@echo "Please use ./configure first.  Thank you."\n' > Makefile
