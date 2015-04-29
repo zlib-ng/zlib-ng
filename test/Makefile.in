@@ -19,7 +19,7 @@ teststatic:
 	if echo hello world | ../minigzip | ../minigzip -d && ../example $$TMPST ; then \
 	  echo '		*** zlib test OK ***'; \
 	else \
-	  echo '		*** zlib test FAILED ***'; false; \
+	  echo '		*** zlib test FAILED ***'; exit 1; \
 	fi; \
 	rm -f $$TMPST
 
@@ -32,7 +32,7 @@ testshared:
 	if echo hello world | ../minigzipsh | ../minigzipsh -d && ../examplesh $$TMPSH; then \
 	  echo '		*** zlib shared test OK ***'; \
 	else \
-	  echo '		*** zlib shared test FAILED ***'; false; \
+	  echo '		*** zlib shared test FAILED ***'; exit 1; \
 	fi; \
 	rm -f $$TMPSH
 
@@ -41,7 +41,7 @@ test64:
 	if echo hello world | ../minigzip64 | ../minigzip64 -d && ../example64 $$TMP64; then \
 	  echo '		*** zlib 64-bit test OK ***'; \
 	else \
-	  echo '		*** zlib 64-bit test FAILED ***'; false; \
+	  echo '		*** zlib 64-bit test FAILED ***'; exit 1; \
 	fi; \
 	rm -f $$TMP64
 
