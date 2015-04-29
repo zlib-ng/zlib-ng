@@ -99,38 +99,8 @@ $(ARCHDIR)/%.lo: $(SRCDIR)/$(ARCHDIR)/%.c
 %.lo: $(ARCHDIR)/%.lo
 	-cp $< $@
 
-test: all teststatic testshared
-
-teststatic: static
-	@TMPST=tmpst_$$; \
-	if echo hello world | ./minigzip | ./minigzip -d && ./example $$TMPST ; then \
-	  echo '		*** zlib test OK ***'; \
-	else \
-	  echo '		*** zlib test FAILED ***'; false; \
-	fi; \
-	rm -f $$TMPST
-
-testshared: shared
-	@LD_LIBRARY_PATH=`pwd`:$(LD_LIBRARY_PATH) ; export LD_LIBRARY_PATH; \
-	LD_LIBRARYN32_PATH=`pwd`:$(LD_LIBRARYN32_PATH) ; export LD_LIBRARYN32_PATH; \
-	DYLD_LIBRARY_PATH=`pwd`:$(DYLD_LIBRARY_PATH) ; export DYLD_LIBRARY_PATH; \
-	SHLIB_PATH=`pwd`:$(SHLIB_PATH) ; export SHLIB_PATH; \
-	TMPSH=tmpsh_$$; \
-	if echo hello world | ./minigzipsh | ./minigzipsh -d && ./examplesh $$TMPSH; then \
-	  echo '		*** zlib shared test OK ***'; \
-	else \
-	  echo '		*** zlib shared test FAILED ***'; false; \
-	fi; \
-	rm -f $$TMPSH
-
-test64: all64
-	@TMP64=tmp64_$$; \
-	if echo hello world | ./minigzip64 | ./minigzip64 -d && ./example64 $$TMP64; then \
-	  echo '		*** zlib 64-bit test OK ***'; \
-	else \
-	  echo '		*** zlib 64-bit test FAILED ***'; false; \
-	fi; \
-	rm -f $$TMP64
+test: all
+	$(MAKE) -C test
 
 infcover.o: $(SRCDIR)/test/infcover.c $(SRCDIR)/zlib.h zconf.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/infcover.c
@@ -284,6 +254,7 @@ zlib.3.pdf: $(SRCDIR)/zlib.3
 mostlyclean: clean
 clean:
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) clean; fi
+	@if [ -f test/Makefile ]; then $(MAKE) -C test clean; fi
 	rm -f *.o *.lo *~ \
 	   example$(EXE) minigzip$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
 	   example64$(EXE) minigzip64$(EXE) \
@@ -298,6 +269,7 @@ clean:
 maintainer-clean: distclean
 distclean: clean
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) distclean; fi
+	@if [ -f test/Makefile ]; then $(MAKE) -C test distclean; fi
 	rm -f zlib.pc configure.log zconf.h zconf.h.cmakein
 	-@rm -f .DS_Store
 # Reset Makefile if building inside source tree
@@ -315,8 +287,9 @@ distclean: clean
 	rm $$TEMPFILE ; fi
 # Cleanup these files if building outside source tree
 	@if [ ! -f zlib.3 ]; then rm -f zlib.3.pdf Makefile; fi
-# Remove arch directory if building outside source tree
+# Remove arch and test directory if building outside source tree
 	@if [ ! -f $(ARCHDIR)/Makefile.in ]; then rm -rf arch; fi
+	@if [ ! -f test/Makefile.in ]; then rm -rf test; fi
 
 tags:
 	etags $(SRCDIR)/*.[ch]

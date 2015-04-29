@@ -1,0 +1,51 @@
+# Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
+# Copyright 2015, Daniel Axtens, IBM Corporation
+# zlib license, see zlib.h
+
+CC=
+CFLAGS=
+EXE=
+SRCDIR=
+SRCTOP=
+INCLUDES=
+TEST_LDFLAGS=-L.. ../libz.a
+
+all: oldtests
+
+oldtests: #set by ../configure
+
+teststatic:
+	@TMPST=tmpst_$$; \
+	if echo hello world | ../minigzip | ../minigzip -d && ../example $$TMPST ; then \
+	  echo '		*** zlib test OK ***'; \
+	else \
+	  echo '		*** zlib test FAILED ***'; false; \
+	fi; \
+	rm -f $$TMPST
+
+testshared:
+	@LD_LIBRARY_PATH=`pwd`/..:$(LD_LIBRARY_PATH) ; export LD_LIBRARY_PATH; \
+	LD_LIBRARYN32_PATH=`pwd`/..:$(LD_LIBRARYN32_PATH) ; export LD_LIBRARYN32_PATH; \
+	DYLD_LIBRARY_PATH=`pwd`/..:$(DYLD_LIBRARY_PATH) ; export DYLD_LIBRARY_PATH; \
+	SHLIB_PATH=`pwd`/..:$(SHLIB_PATH) ; export SHLIB_PATH; \
+	TMPSH=tmpsh_$$; \
+	if echo hello world | ../minigzipsh | ../minigzipsh -d && ../examplesh $$TMPSH; then \
+	  echo '		*** zlib shared test OK ***'; \
+	else \
+	  echo '		*** zlib shared test FAILED ***'; false; \
+	fi; \
+	rm -f $$TMPSH
+
+test64:
+	@TMP64=tmp64_$$; \
+	if echo hello world | ../minigzip64 | ../minigzip64 -d && ../example64 $$TMP64; then \
+	  echo '		*** zlib 64-bit test OK ***'; \
+	else \
+	  echo '		*** zlib 64-bit test FAILED ***'; false; \
+	fi; \
+	rm -f $$TMP64
+
+clean:
+
+distclean:
+	rm -f Makefile
