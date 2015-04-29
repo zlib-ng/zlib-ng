@@ -1,7 +1,7 @@
 #!/bin/bash
 TESTDIR="$(dirname "$0")"
 
-CVEs="CVE-2002-0059"
+CVEs="CVE-2002-0059 CVE-2005-1849 CVE-2005-2096"
 
 for CVE in $CVEs; do
     fail=0
