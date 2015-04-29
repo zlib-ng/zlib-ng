@@ -38,3 +38,6 @@ clean:
 	rm -f *.o *.lo *~ \
 	rm -rf objs
 	rm -f *.gcda *.gcno *.gcov
+
+distclean:
+	rm -f Makefile
