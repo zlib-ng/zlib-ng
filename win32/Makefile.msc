@@ -4,10 +4,6 @@
 # Usage:
 #   nmake -f win32/Makefile.msc                          (standard build)
 #   nmake -f win32/Makefile.msc LOC=-DFOO                (nonstandard build)
-#   nmake -f win32/Makefile.msc LOC="-DASMV -DASMINF" \
-#         OBJA="inffas32.obj match686.obj"               (use ASM code, x86)
-#   nmake -f win32/Makefile.msc AS=ml64 LOC="-DASMV -DASMINF -I." \
-#         OBJA="inffasx64.obj gvmat64.obj inffas8664.obj"  (use ASM code, x64)
 
 # The toplevel directory of the source tree.
 #
@@ -22,34 +18,31 @@ SHAREDLIB = zlib1.dll
 IMPLIB    = zdll.lib
 
 CC = cl
-AS = ml
 LD = link
 AR = lib
 RC = rc
 CFLAGS  = -nologo -MD -W3 -O2 -Oy- -Zi -Fd"zlib" $(LOC)
 WFLAGS  = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
-ASFLAGS = -coff -Zi $(LOC)
-LDFLAGS = -nologo -debug -incremental:no -opt:ref
+LDFLAGS = -nologo -debug -incremental:no -opt:ref -manifest
 ARFLAGS = -nologo
 RCFLAGS = /dWIN32 /r
 
 OBJS = adler32.obj compress.obj crc32.obj deflate.obj gzclose.obj gzlib.obj gzread.obj \
-       gzwrite.obj infback.obj inflate.obj inftrees.obj inffast.obj trees.obj uncompr.obj zutil.obj
-OBJA =
+       gzwrite.obj infback.obj inflate.obj inftrees.obj inffast.obj match.obj trees.obj uncompr.obj zutil.obj
 
 
 # targets
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) \
      example.exe minigzip.exe example_d.exe minigzip_d.exe
 
-$(STATICLIB): $(OBJS) $(OBJA)
-	$(AR) $(ARFLAGS) -out:$@ $(OBJS) $(OBJA)
+$(STATICLIB): $(OBJS)
+	$(AR) $(ARFLAGS) -out:$@ $(OBJS)
 
 $(IMPLIB): $(SHAREDLIB)
 
-$(SHAREDLIB): $(TOP)/win32/zlib.def $(OBJS) $(OBJA) zlib1.res
+$(SHAREDLIB): $(TOP)/win32/zlib.def $(OBJS) zlib1.res
 	$(LD) $(LDFLAGS) -def:$(TOP)/win32/zlib.def -dll -implib:$(IMPLIB) \
-	  -out:$@ -base:0x5A4C0000 $(OBJS) $(OBJA) zlib1.res
+	  -out:$@ -base:0x5A4C0000 $(OBJS) zlib1.res
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;2
 
@@ -79,15 +72,6 @@ minigzip_d.exe: minigzip.obj $(IMPLIB)
 {$(TOP)/test}.c.obj:
 	$(CC) -c -I$(TOP) $(WFLAGS) $(CFLAGS) $<
 
-{$(TOP)/contrib/masmx64}.c.obj:
-	$(CC) -c $(WFLAGS) $(CFLAGS) $<
-
-{$(TOP)/contrib/masmx64}.asm.obj:
-	$(AS) -c $(ASFLAGS) $<
-
-{$(TOP)/contrib/masmx86}.asm.obj:
-	$(AS) -c $(ASFLAGS) $<
-
 adler32.obj: $(TOP)/adler32.c $(TOP)/zlib.h $(TOP)/zconf.h
 
 compress.obj: $(TOP)/compress.c $(TOP)/zlib.h $(TOP)/zconf.h
@@ -115,22 +99,13 @@ inflate.obj: $(TOP)/inflate.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)
 
 inftrees.obj: $(TOP)/inftrees.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/inftrees.h
 
+match.obj: $(TOP)/match.c $(TOP)/deflate.h
+
 trees.obj: $(TOP)/trees.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/deflate.h $(TOP)/trees.h
 
 uncompr.obj: $(TOP)/uncompr.c $(TOP)/zlib.h $(TOP)/zconf.h
 
 zutil.obj: $(TOP)/zutil.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h
-
-gvmat64.obj: $(TOP)/contrib\masmx64\gvmat64.asm
-
-inffasx64.obj: $(TOP)/contrib\masmx64\inffasx64.asm
-
-inffas8664.obj: $(TOP)/contrib\masmx64\inffas8664.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h \
-		$(TOP)/inftrees.h $(TOP)/inflate.h $(TOP)/inffast.h
-
-inffas32.obj: $(TOP)/contrib\masmx86\inffas32.asm
-
-match686.obj: $(TOP)/contrib\masmx86\match686.asm
 
 example.obj: $(TOP)/test/example.c $(TOP)/zlib.h $(TOP)/zconf.h
 

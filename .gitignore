@@ -23,3 +23,12 @@
 /zlib.pc
 
 .DS_Store
+*.obj
+*.exe
+*.pdb
+*.exp
+*.lib
+*.dll
+*.res
+foo.gz
+*.manifest

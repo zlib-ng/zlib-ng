@@ -98,6 +98,12 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  define inline __inline
 #endif
 
+#if defined(_MSC_VER)
+#  define alwaysinline __forceinline
+#else
+#  define alwaysinline __attribute__ ((always_inline))
+#endif
+
         /* common defaults */
 
 #ifndef OS_CODE
