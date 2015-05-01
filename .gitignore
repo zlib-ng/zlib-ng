@@ -37,3 +37,9 @@ CMakeCache.txt
 CMakeFiles
 Testing
 *.cmake
+
+configure.log
+
+/arch/arm/Makefile
+/arch/generic/Makefile
+/arch/x86/Makefile

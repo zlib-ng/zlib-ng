@@ -65,24 +65,27 @@ OBJS = $(OBJC)
 
 PIC_OBJS = $(PIC_OBJC)
 
-all: $(ARCHDIR) static shared
+all: static shared
 
-static: subdirs example$(EXE) minigzip$(EXE)
+static: example$(EXE) minigzip$(EXE)
 
-shared: subdirs examplesh$(EXE) minigzipsh$(EXE)
+shared: examplesh$(EXE) minigzipsh$(EXE)
 
-all64: subdirs example64$(EXE) minigzip64$(EXE)
+all64: example64$(EXE) minigzip64$(EXE)
 
 check: test
 
-.PHONY: subdirs $(ARCHDIR)
+$(ARCHDIR)/%.o: $(ARCHDIR)/%.c
+	$(MAKE) -C $(ARCHDIR) $(notdir $@)
 
-subdirs: $(ARCHDIR)
+$(ARCHDIR)/%.lo: $(ARCHDIR)/%.c
+	$(MAKE) -C $(ARCHDIR) $(notdir $@)
 
-$(ARCHDIR):
-	$(MAKE) -C $@
-	-mv $@/*.o .
-	-mv $@/*.lo .
+%.o : $(ARCHDIR)/%.o
+	-cp $< $@
+
+%.lo : $(ARCHDIR)/%.lo
+	-cp $< $@
 
 test: all teststatic testshared
 
