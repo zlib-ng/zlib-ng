@@ -27,6 +27,9 @@ local inline long compare258(z_const unsigned char *z_const src0,
 
     ax = 16;
     dx = 16;
+    /* set cx to something, otherwise gcc thinks it's used
+       uninitalised */
+    cx = 0;
 
     __asm__ __volatile__ (
     "1:"
