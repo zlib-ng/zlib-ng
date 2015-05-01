@@ -213,7 +213,7 @@ local inline Pos insert_string(deflate_state *z_const s, z_const Pos str)
 
 
 #ifndef NOT_TWEAK_COMPILER
-alwaysinline local void 
+local inline void
 bulk_insert_str(deflate_state *s, Pos startpos, uInt count) {
     uInt idx;
     for (idx = 0; idx < count; idx++) {
