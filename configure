@@ -528,6 +528,7 @@ int main(void)
 {
     unsigned int zero = 0;
     long test = __builtin_ctzl(zero);
+    (void)test;
     return 0;
 }
 EOF
@@ -545,6 +546,7 @@ cat > $test.c << EOF
 int main(void)
 {
     __m128i zero = _mm_setzero_si128();
+    (void)zero;
     return 0;
 }
 EOF
@@ -565,6 +567,7 @@ int main(void)
     __m128i a = _mm_setzero_si128();
     __m128i b = _mm_setzero_si128();
     __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+    (void)c;
     return 0;
 }
 EOF
