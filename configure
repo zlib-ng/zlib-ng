@@ -630,7 +630,8 @@ case "${ARCH}" in
             fi
 
 	    # Enable deflate_quick at level 1?
-            if test $without_new_strategies -eq 0; then
+	    # requires SSE2: code uses fill_window_sse
+            if test ${HAVE_SSE2_INTRIN} -eq 1 && test $without_new_strategies -eq 0; then
                 CFLAGS="${CFLAGS} -DX86_QUICK_STRATEGY"
                 SFLAGS="${SFLAGS} -DX86_QUICK_STRATEGY"
 
