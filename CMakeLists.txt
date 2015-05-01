@@ -5,9 +5,6 @@ project(zlib C)
 
 set(VERSION "1.2.8")
 
-option(ASM686 "Enable building i686 assembly implementation")
-option(AMD64 "Enable building amd64 assembly implementation")
-
 set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Installation directory for libraries")
 set(INSTALL_INC_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "Installation directory for headers")
@@ -118,6 +115,7 @@ set(ZLIB_SRCS
     infback.c
     inftrees.c
     inffast.c
+    match.c
     trees.c
     uncompr.c
     zutil.c
@@ -127,39 +125,6 @@ if(NOT MINGW)
     set(ZLIB_DLL_SRCS
         win32/zlib1.rc # If present will override custom build rule below.
     )
-endif()
-
-if(CMAKE_COMPILER_IS_GNUCC)
-    if(ASM686)
-        set(ZLIB_ASMS contrib/asm686/match.S)
-    elseif (AMD64)
-        set(ZLIB_ASMS contrib/amd64/amd64-match.S)
-    endif ()
-
-	if(ZLIB_ASMS)
-		add_definitions(-DASMV)
-		set_source_files_properties(${ZLIB_ASMS} PROPERTIES LANGUAGE C COMPILE_FLAGS -DNO_UNDERLINE)
-	endif()
-endif()
-
-if(MSVC)
-    if(ASM686)
-		ENABLE_LANGUAGE(ASM_MASM)
-        set(ZLIB_ASMS
-			contrib/masmx86/inffas32.asm
-			contrib/masmx86/match686.asm
-		)
-    elseif (AMD64)
-		ENABLE_LANGUAGE(ASM_MASM)
-        set(ZLIB_ASMS
-			contrib/masmx64/gvmat64.asm
-			contrib/masmx64/inffasx64.asm
-		)
-    endif()
-
-	if(ZLIB_ASMS)
-		add_definitions(-DASMV -DASMINF)
-	endif()
 endif()
 
 # parse the full version number from zlib.h and include in ZLIB_FULL_VERSION

@@ -32,3 +32,8 @@
 *.res
 foo.gz
 *.manifest
+
+CMakeCache.txt
+CMakeFiles
+Testing
+*.cmake
