@@ -188,7 +188,7 @@ show $cc -c $test.c
 if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
   echo ... using gcc >> configure.log
   CC="$cc"
-  CFLAGS="${CFLAGS--O3} ${ARCHS}"
+  CFLAGS="${CFLAGS--O3} ${ARCHS} -Wall -Werror"
   SFLAGS="${CFLAGS--O3} -fPIC"
   LDFLAGS="${LDFLAGS} ${ARCHS}"
   if test $build64 -eq 1; then
@@ -197,9 +197,9 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
   fi
   if test "${ZLIBGCCWARN}" = "YES"; then
     if test "$zconst" -eq 1; then
-      CFLAGS="${CFLAGS} -Wall -Wextra -Wcast-qual -pedantic -DZLIB_CONST"
+      CFLAGS="${CFLAGS} -Wextra -Wcast-qual -pedantic -DZLIB_CONST"
     else
-      CFLAGS="${CFLAGS} -Wall -Wextra -pedantic"
+      CFLAGS="${CFLAGS} -Wextra -pedantic"
     fi
   fi
   if test -z "$uname"; then
@@ -528,6 +528,7 @@ int main(void)
 {
     unsigned int zero = 0;
     long test = __builtin_ctzl(zero);
+    (void)test;
     return 0;
 }
 EOF
@@ -545,6 +546,7 @@ cat > $test.c << EOF
 int main(void)
 {
     __m128i zero = _mm_setzero_si128();
+    (void)zero;
     return 0;
 }
 EOF
@@ -565,6 +567,7 @@ int main(void)
     __m128i a = _mm_setzero_si128();
     __m128i b = _mm_setzero_si128();
     __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+    (void)c;
     return 0;
 }
 EOF
@@ -630,7 +633,8 @@ case "${ARCH}" in
             fi
 
 	    # Enable deflate_quick at level 1?
-            if test $without_new_strategies -eq 0; then
+	    # requires SSE2: code uses fill_window_sse
+            if test ${HAVE_SSE2_INTRIN} -eq 1 && test $without_new_strategies -eq 0; then
                 CFLAGS="${CFLAGS} -DX86_QUICK_STRATEGY"
                 SFLAGS="${SFLAGS} -DX86_QUICK_STRATEGY"
 
