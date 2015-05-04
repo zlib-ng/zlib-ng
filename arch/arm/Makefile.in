@@ -5,6 +5,10 @@
 CC=
 CFLAGS=
 SFLAGS=
+INCLUDES=
+
+SRCDIR=
+SRCTOP=
 
 all:
 

@@ -37,8 +37,10 @@ CMakeCache.txt
 CMakeFiles
 Testing
 *.cmake
+zconf.h.included
 
 configure.log
+a.out
 
 /arch/arm/Makefile
 /arch/generic/Makefile
