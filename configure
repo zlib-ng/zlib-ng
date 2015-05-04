@@ -18,6 +18,9 @@ echo -------------------- >> configure.log
 echo $0 $* >> configure.log
 date >> configure.log
 
+SRCDIR=$(cd $(dirname $0); pwd)
+BUILDDIR=$(pwd)
+
 # set command prefix for cross-compilation
 if [ -n "${CHOST}" ]; then
     uname="`echo "${CHOST}" | sed -e 's/^[^-]*-\([^-]*\)$/\1/' -e 's/^[^-]*-[^-]*-\([^-]*\)$/\1/' -e 's/^[^-]*-[^-]*-\([^-]*\)-.*$/\1/'`"
@@ -48,10 +51,10 @@ esac
 STATICLIB=libz.a
 
 # extract zlib version numbers from zlib.h
-VER=`sed -n -e '/ZLIB_VERSION "/s/.*"\(.*\)".*/\1/p' < zlib.h`
-VER3=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < zlib.h`
-VER2=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < zlib.h`
-VER1=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < zlib.h`
+VER=`sed -n -e '/ZLIB_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib.h`
+VER3=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib.h`
+VER2=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
+VER1=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
 
 # establish commands for library building
 if "${CROSS_PREFIX}ar" --version >/dev/null 2>/dev/null || test $? -lt 126; then
@@ -207,9 +210,9 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
   fi
   case "$uname" in
   Linux* | linux* | GNU | GNU/* | solaris*)
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,zlib.map"} ;;
+        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map"} ;;
   *BSD | *bsd* | DragonFly)
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,zlib.map"}
+        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map"}
         LDCONFIG="ldconfig -m" ;;
   CYGWIN* | Cygwin* | cygwin* | OS/2*)
         EXE='.exe' ;;
@@ -418,8 +421,11 @@ else
   echo "Checking for strerror... No." | tee -a configure.log
 fi
 
+# We need to remove zconf.h from source directory if building outside of it
+if [ "$SRCDIR" != "$BUILDDIR" ]; then rm -f $SRCDIR/zconf.h; fi
+
 # copy clean zconf.h for subsequent edits
-cp -p zconf.h.in zconf.h
+cp -p $SRCDIR/zconf.h.in zconf.h
 
 echo >> configure.log
 
@@ -682,6 +688,8 @@ echo SFLAGS = $SFLAGS >> configure.log
 echo SHAREDLIB = $SHAREDLIB >> configure.log
 echo SHAREDLIBM = $SHAREDLIBM >> configure.log
 echo SHAREDLIBV = $SHAREDLIBV >> configure.log
+echo SRCDIR = $SRCDIR >> configure.log
+echo BUILDDIR = $BUILDDIR >> configure.log
 echo STATICLIB = $STATICLIB >> configure.log
 echo TEST = $TEST >> configure.log
 echo VER = $VER >> configure.log
@@ -698,7 +706,7 @@ echo ARCH_STATIC_OBJS = ${ARCH_STATIC_OBJS} >> configure.log
 echo ARCH_SHARED_OBJS = ${ARCH_SHARED_OBJS} >> configure.log
 
 # update Makefile with the configure results
-sed < Makefile.in "
+sed < $SRCDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
@@ -720,6 +728,7 @@ sed < Makefile.in "
 /^sharedlibdir *=/s#=.*#=$sharedlibdir#
 /^includedir *=/s#=.*#=$includedir#
 /^mandir *=/s#=.*#=$mandir#
+/^SRCDIR *=/s#=.*#=$SRCDIR#
 /^OBJC *=/s#=.*#= $OBJC#
 /^PIC_OBJC *=/s#=.*#= $PIC_OBJC#
 /^all: */s#:.*#: $ALL#
@@ -730,14 +739,22 @@ sed < Makefile.in "
 " > Makefile
 
 # Generate Makefile in arch dir
-sed < $ARCHDIR/Makefile.in "
+mkdir -p $ARCHDIR
+
+ARCHINCLUDES="-I$SRCDIR/$ARCHDIR -I$SRCDIR"
+if [ "$SRCDIR" != "$BUILDDIR" ]; then ARCHINCLUDES="${ARCHINCLUDES} -I$BUILDDIR"; fi
+
+sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
+/^INCLUDES *=/s#=.*#=$ARCHINCLUDES#
+/^SRCDIR *=/s#=.*#=$SRCDIR/$ARCHDIR#
+/^SRCTOP *=/s#=.*#=$SRCDIR#
 " > $ARCHDIR/Makefile
 
 # create zlib.pc with the configure results
-sed < zlib.pc.in "
+sed < $SRCDIR/zlib.pc.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
