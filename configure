@@ -421,9 +421,6 @@ else
   echo "Checking for strerror... No." | tee -a configure.log
 fi
 
-# We need to remove zconf.h from source directory if building outside of it
-if [ "$SRCDIR" != "$BUILDDIR" ]; then rm -f $SRCDIR/zconf.h; fi
-
 # copy clean zconf.h for subsequent edits
 cp -p $SRCDIR/zconf.h.in zconf.h
 
@@ -464,6 +461,10 @@ if test $zprefix -eq 1; then
   echo >> configure.log
   echo "Using z_ prefix on all symbols." | tee -a configure.log
 fi
+
+# take out the error path that makes sure an out of tree build doesn't touch the source tree's zconf.h
+sed < zconf.h 's/#error.*//' > zconf.temp.h
+mv zconf.temp.h zconf.h
 
 # if --solo compilation was requested, save that in zconf.h and remove gz stuff from object lists
 if test $solo -eq 1; then
@@ -742,7 +743,7 @@ sed < $SRCDIR/Makefile.in "
 mkdir -p $ARCHDIR
 
 ARCHINCLUDES="-I$SRCDIR/$ARCHDIR -I$SRCDIR"
-if [ "$SRCDIR" != "$BUILDDIR" ]; then ARCHINCLUDES="${ARCHINCLUDES} -I$BUILDDIR"; fi
+if [ "$SRCDIR" != "$BUILDDIR" ]; then ARCHINCLUDES="-I$BUILDDIR ${ARCHINCLUDES}"; fi
 
 sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#

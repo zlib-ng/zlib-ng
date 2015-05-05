@@ -253,7 +253,7 @@ clean:
 	rm -f a.out
 
 maintainer-clean: distclean
-distclean: clean zconf zconf.h.cmakein docs
+distclean: clean zconf zconf.h.cmakein
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) distclean; fi
 	rm -f zlib.pc configure.log
 	-@rm -f .DS_Store

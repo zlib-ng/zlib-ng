@@ -5,6 +5,8 @@
 
 /* @(#) $Id$ */
 
+#error "Error: unprepared zconf.h included. Build system broken."
+
 #ifndef ZCONF_H
 #define ZCONF_H
 
