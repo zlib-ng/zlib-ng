@@ -76,7 +76,9 @@ local void fill_window    (deflate_state *s);
 local block_state deflate_stored (deflate_state *s, int flush);
 local block_state deflate_fast   (deflate_state *s, int flush);
 block_state deflate_quick  (deflate_state *s, int flush);
+#ifdef MEDIUM_STRATEGY
 local block_state deflate_medium (deflate_state *s, int flush);
+#endif
 local block_state deflate_slow   (deflate_state *s, int flush);
 local block_state deflate_rle    (deflate_state *s, int flush);
 local block_state deflate_huff   (deflate_state *s, int flush);
