@@ -21,6 +21,7 @@ CC = cl
 LD = link
 AR = lib
 RC = rc
+CP = copy /y
 CFLAGS  = -nologo -MD -W3 -O2 -Oy- -Zi -Fd"zlib" $(LOC)
 WFLAGS  = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
 LDFLAGS = -nologo -debug -incremental:no -opt:ref -manifest
@@ -71,6 +72,9 @@ minigzip_d.exe: minigzip.obj $(IMPLIB)
 
 {$(TOP)/test}.c.obj:
 	$(CC) -c -I$(TOP) $(WFLAGS) $(CFLAGS) $<
+
+$(TOP)/zconf.h: $(TOP)/zconf.h.in
+	$(CP) $(TOP)/zconf.h.in $@
 
 adler32.obj: $(TOP)/adler32.c $(TOP)/zlib.h $(TOP)/zconf.h
 
