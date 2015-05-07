@@ -38,7 +38,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *z_const s, IPos cur_match)
 
 	unsigned chain_length;
 	IPos limit;
-	int len, best_len, nice_match;
+	unsigned int len, best_len, nice_match;
 	unsigned char *scan, *match, *strend, scan_end, scan_end1;
 	
 	/*
@@ -159,7 +159,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *z_const s, IPos cur_match)
 	unsigned short scan_start, scan_end;
 	unsigned chain_length;
 	IPos limit;
-	int len, best_len, nice_match;
+	unsigned int len, best_len, nice_match;
 	unsigned char *scan, *strend;
 	
 	/*
@@ -339,9 +339,9 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *z_const s, IPos cur_match)
     unsigned chain_length = s->max_chain_length;/* max hash chain length */
     register Byte *scan = s->window + s->strstart; /* current string */
     register Byte *match;                       /* matched string */
-    register int len;                           /* length of current match */
-    int best_len = s->prev_length;              /* best match length so far */
-    int nice_match = s->nice_match;             /* stop if match long enough */
+    register unsigned int len;                  /* length of current match */
+    unsigned int best_len = s->prev_length;     /* best match length so far */
+    unsigned int nice_match = s->nice_match;    /* stop if match long enough */
     IPos limit = s->strstart > (IPos)MAX_DIST(s) ?
         s->strstart - (IPos)MAX_DIST(s) : NIL;
     /* Stop when cur_match becomes <= limit. To simplify the code,
