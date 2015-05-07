@@ -1,7 +1,8 @@
 # Makefile for zlib, derived from Makefile.dj2.
 # Modified for mingw32 by C. Spieler, 6/16/98.
 # Updated for zlib 1.2.x by Christian Spieler and Cosmin Truta, Mar-2003.
-# Last updated: Mar 2012.
+# Updated for zlib-ng by Mika Lindqvist
+# Last updated: May 2015.
 # Tested under Cygwin and MinGW.
 
 # Copyright (C) 1995-2003 Jean-loup Gailly.
@@ -10,10 +11,6 @@
 # To compile, or to compile and test, type from the top level zlib directory:
 #
 #   make -fwin32/Makefile.gcc;  make test testdll -fwin32/Makefile.gcc
-#
-# To use the asm code, type:
-#   cp contrib/asm?86/match.S ./match.S
-#   make LOC=-DASMV OBJA=match.o -fwin32/Makefile.gcc
 #
 # To install libz.a, zconf.h and zlib.h in the system directories, type:
 #
@@ -38,15 +35,11 @@ IMPLIB    = libz.dll.a
 #
 SHARED_MODE=0
 
-#LOC = -DASMV
 #LOC = -DDEBUG -g
 
 PREFIX =
 CC = $(PREFIX)gcc
 CFLAGS = $(LOC) -O3 -Wall
-
-AS = $(CC)
-ASFLAGS = $(LOC) -Wall
 
 LD = $(CC)
 LDFLAGS = $(LOC)
@@ -68,8 +61,7 @@ prefix ?= /usr/local
 exec_prefix = $(prefix)
 
 OBJS = adler32.o compress.o crc32.o deflate.o gzclose.o gzlib.o gzread.o \
-       gzwrite.o infback.o inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o
-OBJA =
+       gzwrite.o infback.o inffast.o inflate.o inftrees.o match.o trees.o uncompr.o zutil.o
 
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) example.exe minigzip.exe example_d.exe minigzip_d.exe
 
@@ -84,17 +76,14 @@ testdll: example_d.exe minigzip_d.exe
 .c.o:
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-.S.o:
-	$(AS) $(ASFLAGS) -c -o $@ $<
-
-$(STATICLIB): $(OBJS) $(OBJA)
-	$(AR) $(ARFLAGS) $@ $(OBJS) $(OBJA)
+$(STATICLIB): $(OBJS)
+	$(AR) $(ARFLAGS) $@ $(OBJS)
 
 $(IMPLIB): $(SHAREDLIB)
 
-$(SHAREDLIB): win32/zlib.def $(OBJS) $(OBJA) zlibrc.o
+$(SHAREDLIB): win32/zlib.def $(OBJS) zlibrc.o
 	$(CC) -shared -Wl,--out-implib,$(IMPLIB) $(LDFLAGS) \
-	-o $@ win32/zlib.def $(OBJS) $(OBJA) zlibrc.o
+	-o $@ win32/zlib.def $(OBJS) zlibrc.o
 	$(STRIP) $@
 
 example.exe: example.o $(STATICLIB)
@@ -164,6 +153,12 @@ clean:
 	-$(RM) *.o
 	-$(RM) *.exe
 	-$(RM) foo.gz
+
+distclean: clean
+	-$(CP) zconf.h.in zconf.h
+	@printf 'all:\n\t-@echo "Please use ./configure first.  Thank you."\n' > Makefile
+	@printf '\ndistclean:\n\tmake -f Makefile.in distclean\n' >> Makefile
+	@touch -r Makefile.in Makefile
 
 adler32.o: zlib.h zconf.h
 compress.o: zlib.h zconf.h
