@@ -1225,7 +1225,7 @@ local void fill_window_c(deflate_state *s)
              *       variable to avoid unncessary zero-extension.
              */
             {
-                unsigned int i; 
+                unsigned int i;
                 Pos *q = p - n;
                 for (i = 0; i < n; i++) {
                     Pos m = *q;
@@ -1248,7 +1248,7 @@ local void fill_window_c(deflate_state *s)
             } while (--n);
 #else
             {
-                unsigned int i; 
+                unsigned int i;
                 Pos *q = p - n;
                 for (i = 0; i < n; i++) {
                     Pos m = *q;

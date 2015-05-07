@@ -94,10 +94,10 @@ $(ARCHDIR)/%.o: $(SRCDIR)/$(ARCHDIR)/%.c
 $(ARCHDIR)/%.lo: $(SRCDIR)/$(ARCHDIR)/%.c
 	$(MAKE) -C $(ARCHDIR) $(notdir $@)
 
-%.o : $(ARCHDIR)/%.o
+%.o: $(ARCHDIR)/%.o
 	-cp $< $@
 
-%.lo : $(ARCHDIR)/%.lo
+%.lo: $(ARCHDIR)/%.lo
 	-cp $< $@
 
 test: all teststatic testshared
