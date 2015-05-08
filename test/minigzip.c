@@ -52,13 +52,6 @@
 #define BUFLEN      16384
 #define MAX_NAME_LEN 1024
 
-#ifdef MAXSEG_64K
-#  define local static
-   /* Needed for systems with limitation on stack size. */
-#else
-#  define local
-#endif
-
 #ifdef Z_SOLO
 /* for Z_SOLO, create simplified gz* functions using deflate and inflate */
 
@@ -258,7 +251,7 @@ void error(const char *msg)
 
 void gz_compress(FILE   *in, gzFile out)
 {
-    local char buf[BUFLEN];
+    char buf[BUFLEN];
     int len;
     int err;
 
@@ -322,7 +315,7 @@ int gz_compress_mmap(FILE   *in, gzFile out)
  */
 void gz_uncompress(gzFile in, FILE   *out)
 {
-    local char buf[BUFLEN];
+    char buf[BUFLEN];
     int len;
     int err;
 
@@ -347,7 +340,7 @@ void gz_uncompress(gzFile in, FILE   *out)
  */
 void file_compress(char  *file, char  *mode)
 {
-    local char outfile[MAX_NAME_LEN];
+    char outfile[MAX_NAME_LEN];
     FILE  *in;
     gzFile out;
 
@@ -379,7 +372,7 @@ void file_compress(char  *file, char  *mode)
  */
 void file_uncompress(char  *file)
 {
-    local char buf[MAX_NAME_LEN];
+    char buf[MAX_NAME_LEN];
     char *infile, *outfile;
     FILE  *out;
     gzFile in;
