@@ -92,7 +92,6 @@ shared_ext='.so'
 shared=1
 solo=0
 cover=0
-zprefix=0
 zconst=0
 build64=0
 without_optimizations=0
@@ -122,7 +121,7 @@ do
 case "$1" in
     -h* | --help)
       echo 'usage:' | tee -a configure.log
-      echo '  configure [--const] [--zprefix] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
+      echo '  configure [--const] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
       echo '    [--static] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
       echo '    [--includedir=INCLUDEDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
         exit 0 ;;
@@ -140,7 +139,6 @@ case "$1" in
     -t | --static) shared=0; shift ;;
     --solo) solo=1; shift ;;
     --cover) cover=1; shift ;;
-    -z* | --zprefix) zprefix=1; shift ;;
     -6* | --64) build64=1; shift ;;
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
@@ -455,14 +453,6 @@ if try $CC -c $CFLAGS $test.c; then
   echo "Checking for stdarg.h... Yes." | tee -a configure.log
 else
   echo "Checking for stdarg.h... No." | tee -a configure.log
-fi
-
-# if the z_ prefix was requested, save that in zconf.h
-if test $zprefix -eq 1; then
-  sed < zconf.h "/#ifdef Z_PREFIX.* may be/s/def Z_PREFIX\(.*\) may be/ 1\1 was/" > zconf.temp.h
-  mv zconf.temp.h zconf.h
-  echo >> configure.log
-  echo "Using z_ prefix on all symbols." | tee -a configure.log
 fi
 
 # if --solo compilation was requested, save that in zconf.h and remove gz stuff from object lists
