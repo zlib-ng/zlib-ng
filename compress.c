@@ -19,13 +19,13 @@
    memory, Z_BUF_ERROR if there was not enough room in the output buffer,
    Z_STREAM_ERROR if the level parameter is invalid.
 */
-int ZEXPORT compress2 (Byte *dest, uLong *destLen, const Byte *source,
+int ZEXPORT compress2 (unsigned char *dest, uLong *destLen, const unsigned char *source,
                         uLong sourceLen, int level)
 {
     z_stream stream;
     int err;
 
-    stream.next_in = (const Byte *)source;
+    stream.next_in = (const unsigned char *)source;
     stream.avail_in = (uInt)sourceLen;
     stream.next_out = dest;
     stream.avail_out = (uInt)*destLen;
@@ -51,7 +51,7 @@ int ZEXPORT compress2 (Byte *dest, uLong *destLen, const Byte *source,
 
 /* ===========================================================================
  */
-int ZEXPORT compress (Byte *dest, uLong *destLen, const Byte *source, uLong sourceLen)
+int ZEXPORT compress (unsigned char *dest, uLong *destLen, const unsigned char *source, uLong sourceLen)
 {
     return compress2(dest, destLen, source, sourceLen, Z_DEFAULT_COMPRESSION);
 }

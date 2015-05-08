@@ -13,7 +13,7 @@
 #include <immintrin.h>
 #include "deflate.h"
 
-extern int read_buf        (z_stream *strm, Byte *buf, unsigned size);
+extern int read_buf        (z_stream *strm, unsigned char *buf, unsigned size);
 
 ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
 {

@@ -60,7 +60,7 @@ static uint32_t adler32_combine_ (uint32_t adler1, uint32_t adler2, z_off64_t le
 #endif
 
 /* ========================================================================= */
-uint32_t ZEXPORT adler32(uint32_t adler, const Byte *buf, uInt len)
+uint32_t ZEXPORT adler32(uint32_t adler, const unsigned char *buf, uInt len)
 {
     uint32_t sum2;
     unsigned n;

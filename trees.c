@@ -1080,7 +1080,7 @@ local void bi_flush(deflate_state *s)
         s->bi_buf = 0;
         s->bi_valid = 0;
     } else if (s->bi_valid >= 8) {
-        put_byte(s, (Byte)s->bi_buf);
+        put_byte(s, (unsigned char)s->bi_buf);
         s->bi_buf >>= 8;
         s->bi_valid -= 8;
     }
@@ -1094,7 +1094,7 @@ ZLIB_INTERNAL void bi_windup(deflate_state *s)
     if (s->bi_valid > 8) {
         put_short(s, s->bi_buf);
     } else if (s->bi_valid > 0) {
-        put_byte(s, (Byte)s->bi_buf);
+        put_byte(s, (unsigned char)s->bi_buf);
     }
     s->bi_buf = 0;
     s->bi_valid = 0;

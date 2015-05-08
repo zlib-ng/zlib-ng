@@ -337,8 +337,8 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 {
     unsigned chain_length = s->max_chain_length;/* max hash chain length */
-    register Byte *scan = s->window + s->strstart; /* current string */
-    register Byte *match;                       /* matched string */
+    register unsigned char *scan = s->window + s->strstart; /* current string */
+    register unsigned char *match;                       /* matched string */
     register unsigned int len;                  /* length of current match */
     unsigned int best_len = s->prev_length;     /* best match length so far */
     unsigned int nice_match = s->nice_match;    /* stop if match long enough */
@@ -350,7 +350,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
     Pos *prev = s->prev;
     uInt wmask = s->w_mask;
 
-    register Byte *strend = s->window + s->strstart + MAX_MATCH;
+    register unsigned char *strend = s->window + s->strstart + MAX_MATCH;
     register unsigned short scan_start = *(unsigned short*)scan;
     register unsigned short scan_end   = *(unsigned short*)(scan+best_len-1);
 
@@ -381,7 +381,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
          * However the length of the match is limited to the lookahead, so
          * the output of deflate is not affected by the uninitialized values.
          */
-        Byte *win = s->window;
+        unsigned char *win = s->window;
         int cont = 1;
         do {
             match = win + cur_match;
