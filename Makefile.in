@@ -29,6 +29,13 @@ STATICLIB=libz.a
 SHAREDLIB=libz.so
 SHAREDLIBV=libz.so.1.2.8
 SHAREDLIBM=libz.so.1
+IMPORTLIB=
+ifneq ($(IMPORTLIB),)
+	SHAREDTARGET=$(SHAREDLIB)
+else
+	SHAREDTARGET=$(SHAREDLIBV)
+endif
+
 LIBS=$(STATICLIB) $(SHAREDLIBV)
 
 AR=ar
@@ -48,6 +55,7 @@ ARCH_SHARED_OBJS=
 
 prefix = /usr/local
 exec_prefix = ${prefix}
+bindir = ${exec_prefix}/bin
 libdir = ${exec_prefix}/lib
 sharedlibdir = ${libdir}
 includedir = ${prefix}/include
@@ -133,7 +141,7 @@ cover: infcover
 	./infcover
 	gcov inf*.c
 
-libz.a: $(OBJS)
+$(STATICLIB): $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
 
@@ -159,11 +167,13 @@ minigzip64.o: $(SRCDIR)/test/minigzip.c $(SRCDIR)/zlib.h zconf.h
 	$(CC) -I. -I$(SRCDIR) $(SFLAGS) -DPIC -c -o objs/$*.o $<
 	-@mv objs/$*.o $@
 
-placebo $(SHAREDLIBV): $(PIC_OBJS) libz.a
+placebo $(SHAREDTARGET): $(PIC_OBJS) $(STATICLIB)
 	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)
+ifeq ($(IMPORTLIB),)
 	rm -f $(SHAREDLIB) $(SHAREDLIBM)
 	ln -s $@ $(SHAREDLIB)
 	ln -s $@ $(SHAREDLIBM)
+endif
 	-@rmdir objs
 
 example$(EXE): example.o $(STATICLIB)
@@ -172,11 +182,11 @@ example$(EXE): example.o $(STATICLIB)
 minigzip$(EXE): minigzip.o $(STATICLIB)
 	$(CC) $(CFLAGS) -o $@ minigzip.o $(TEST_LDFLAGS)
 
-examplesh$(EXE): example.o $(SHAREDLIBV)
-	$(CC) $(CFLAGS) -o $@ example.o -L. $(SHAREDLIBV)
+examplesh$(EXE): example.o $(SHAREDTARGET)
+	$(CC) $(CFLAGS) -o $@ example.o -L. $(SHAREDTARGET)
 
-minigzipsh$(EXE): minigzip.o $(SHAREDLIBV)
-	$(CC) $(CFLAGS) -o $@ minigzip.o -L. $(SHAREDLIBV)
+minigzipsh$(EXE): minigzip.o $(SHAREDTARGET)
+	$(CC) $(CFLAGS) -o $@ minigzip.o -L. $(SHAREDTARGET)
 
 example64$(EXE): example64.o $(STATICLIB)
 	$(CC) $(CFLAGS) -o $@ example64.o $(TEST_LDFLAGS)
@@ -192,17 +202,28 @@ install-libs: $(LIBS)
 	-@if [ ! -d $(DESTDIR)$(pkgconfigdir) ]; then mkdir -p $(DESTDIR)$(pkgconfigdir); fi
 	cp $(STATICLIB) $(DESTDIR)$(libdir)
 	chmod 644 $(DESTDIR)$(libdir)/$(STATICLIB)
-	-@($(RANLIB) $(DESTDIR)$(libdir)/libz.a || true) >/dev/null 2>&1
-	-@if test -n "$(SHAREDLIBV)"; then \
-	  cp $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir); \
-	  echo "cp $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)"; \
-	  chmod 755 $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBV); \
-	  echo "chmod 755 $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBV)"; \
-	  rm -f $(DESTDIR)$(sharedlibdir)/$(SHAREDLIB) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBM); \
-	  ln -s $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIB); \
-	  ln -s $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBM); \
-	  ($(LDCONFIG) || true)  >/dev/null 2>&1; \
-	fi
+	-@($(RANLIB) $(DESTDIR)$(libdir)/$(STATICLIB) || true) >/dev/null 2>&1
+ifneq ($(SHAREDTARGET),)
+ifneq ($(IMPORTLIB),)
+	cp $(IMPORTLIB) $(DESTDIR)$(sharedlibdir)
+	echo "cp $(IMPORTLIB) $(DESTDIR)$(sharedlibdir)"
+	chmod 644 $(DESTDIR)$(sharedlibdir)/$(IMPORTLIB)
+	-@if [ ! -d $(DESTDIR)$(bindir) ]; then mkdir -p $(DESTDIR)$(bindir); fi
+	cp $(SHAREDTARGET) $(DESTDIR)$(bindir)
+	echo "cp $(SHAREDTARGET) $(DESTDIR)$(bindir)"
+	chmod 755 $(DESTDIR)$(bindir)/$(SHAREDTARGET)
+	echo "chmod 755 $(DESTDIR)$(bindir)/$(SHAREDTARGET)"
+else
+	cp $(SHAREDTARGET) $(DESTDIR)$(sharedlibdir)
+	echo "cp $(SHAREDTARGET) $(DESTDIR)$(sharedlibdir)"
+	chmod 644 $(DESTDIR)$(sharedlibdir)/$(SHAREDTARGET)
+	echo "chmod 644 $(DESTDIR)$(sharedlibdir)/$(SHAREDTARGET)"
+	rm -f $(DESTDIR)$(sharedlibdir)/$(SHAREDLIB) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBM)
+	ln -s $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIB)
+	ln -s $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBM)
+	($(LDCONFIG) || true)  >/dev/null 2>&1
+endif
+endif
 	cp $(SRCDIR)/zlib.3 $(DESTDIR)$(man3dir)
 	chmod 644 $(DESTDIR)$(man3dir)/zlib.3
 	cp zlib.pc $(DESTDIR)$(pkgconfigdir)
@@ -217,10 +238,20 @@ install: install-libs
 
 uninstall:
 	cd $(DESTDIR)$(includedir) && rm -f zlib.h zconf.h
-	cd $(DESTDIR)$(libdir) && rm -f libz.a; \
+	cd $(DESTDIR)$(libdir) && rm -f $(STATICLIB); \
 	if test -n "$(SHAREDLIBV)" -a -f $(SHAREDLIBV); then \
 	  rm -f $(SHAREDLIBV) $(SHAREDLIB) $(SHAREDLIBM); \
 	fi
+ifneq ($(IMPORTLIB),)
+	cd $(DESTDIR)$(sharedlibdir); \
+	if test -n "$(SHAREDLIB)" -a -f $(IMPORTLIB); then \
+	  rm -f $(IMPORTLIB); \
+	fi
+	cd $(DESTDIR)$(bindir); \
+	if test -n "$(SHAREDLIB)" -a -f $(SHAREDLIB); then \
+	  rm -f $(SHAREDLIB); \
+	fi
+endif
 	cd $(DESTDIR)$(man3dir) && rm -f zlib.3
 	cd $(DESTDIR)$(pkgconfigdir) && rm -f zlib.pc
 
@@ -236,6 +267,7 @@ clean:
 	   example$(EXE) minigzip$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
 	   example64$(EXE) minigzip64$(EXE) \
 	   infcover \
+	   $(STATICLIB) $(IMPORTLIB) $(SHAREDTARGET) $(SHAREDLIB) $(SHAREDLIBV) $(SHAREDLIBM) \
 	   libz.* foo.gz so_locations \
 	   _match.s maketree
 	rm -rf objs

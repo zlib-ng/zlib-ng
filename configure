@@ -50,6 +50,9 @@ esac
 # destination name for static library
 STATICLIB=libz.a
 
+# destination name for windows import library
+IMPORTLIB=
+
 # extract zlib version numbers from zlib.h
 VER=`sed -n -e '/ZLIB_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib.h`
 VER3=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib.h`
@@ -84,6 +87,7 @@ LDSHAREDLIBC="${LDSHAREDLIBC--lc}"
 ARCHS=
 prefix=${prefix-/usr/local}
 exec_prefix=${exec_prefix-'${prefix}'}
+bindir=${bindir-'${exec_prefix}/bin'}
 libdir=${libdir-'${exec_prefix}/lib'}
 sharedlibdir=${sharedlibdir-'${libdir}'}
 includedir=${includedir-'${prefix}/include'}
@@ -206,6 +210,8 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
   if test -z "$uname"; then
     uname=`(uname -s || echo unknown) 2>/dev/null`
   fi
+  # LFS
+  CFLAGS="${CFLAGS} -D_LARGEFILE_SOURCE -D_POSIX_C_SOURCE=200809L"
   case "$uname" in
   Linux* | linux* | GNU | GNU/* | solaris*)
         LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map"} ;;
@@ -213,14 +219,29 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
         LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map"}
         LDCONFIG="ldconfig -m" ;;
   CYGWIN* | Cygwin* | cygwin* | OS/2*)
+        SFLAGS="${CFLAGS}"
+        shared_ext='.dll'
+        SHAREDLIB=cygz$shared_ext
+        IMPORTLIB='libz.dll.a'
+        LDSHARED=${LDSHARED-"$cc -shared -Wl,--enable-auto-image-base -Wl,--out-implib=${IMPORTLIB}"}
+        LDSHAREDLIBC=''
+        EXE='.exe' ;;
+  MSYS* | msys*)
+        SFLAGS="${CFLAGS}"
+        shared_ext='.dll'
+        SHAREDLIB=msys-z$shared_ext
+        IMPORTLIB='libz.dll.a'
+        LDSHARED=${LDSHARED-"$cc -shared -Wl,--enable-auto-image-base -Wl,--out-implib=${IMPORTLIB}"}
+        LDSHAREDLIBC=''
         EXE='.exe' ;;
   MINGW* | mingw*)
-# temporary bypass
-        rm -f $test.[co] $test $test$shared_ext
-        echo "Please use win32/Makefile.gcc instead." | tee -a configure.log
-        leave 1
-        LDSHARED=${LDSHARED-"$cc -shared"}
-        LDSHAREDLIBC=""
+        CFLAGS="${CFLAGS} -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE=1"
+        SFLAGS="${CFLAGS}"
+        shared_ext='.dll'
+        SHAREDLIB=libz-$VER1$shared_ext
+        IMPORTLIB='libz.dll.a'
+        LDSHARED=${LDSHARED-"$cc -shared -Wl,--enable-auto-image-base -Wl,--out-implib=${IMPORTLIB}"}
+        LDSHAREDLIBC=''
         EXE='.exe' ;;
   QNX*)  # This is for QNX6. I suppose that the QNX rule below is for QNX2,QNX4
          # (alain.bonnefoy@icbt.com)
@@ -678,6 +699,7 @@ echo SFLAGS = $SFLAGS >> configure.log
 echo SHAREDLIB = $SHAREDLIB >> configure.log
 echo SHAREDLIBM = $SHAREDLIBM >> configure.log
 echo SHAREDLIBV = $SHAREDLIBV >> configure.log
+echo IMPORTLIB = $IMPORTLIB >> configure.log
 echo SRCDIR = $SRCDIR >> configure.log
 echo BUILDDIR = $BUILDDIR >> configure.log
 echo STATICLIB = $STATICLIB >> configure.log
@@ -706,6 +728,7 @@ sed < $SRCDIR/Makefile.in "
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#
 /^SHAREDLIBM *=/s#=.*#=$SHAREDLIBM#
+/^IMPORTLIB *=/s#=.*#=$IMPORTLIB#
 /^AR *=/s#=.*#=$AR#
 /^ARFLAGS *=/s#=.*#=$ARFLAGS#
 /^RANLIB *=/s#=.*#=$RANLIB#
@@ -714,6 +737,7 @@ sed < $SRCDIR/Makefile.in "
 /^EXE *=/s#=.*#=$EXE#
 /^prefix *=/s#=.*#=$prefix#
 /^exec_prefix *=/s#=.*#=$exec_prefix#
+/^bindir *=/s#=.*#=$bindir#
 /^libdir *=/s#=.*#=$libdir#
 /^sharedlibdir *=/s#=.*#=$sharedlibdir#
 /^includedir *=/s#=.*#=$includedir#
@@ -752,12 +776,14 @@ sed < $SRCDIR/zlib.pc.in "
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#
 /^SHAREDLIBM *=/s#=.*#=$SHAREDLIBM#
+/^IMPORTLIB *=/s#=.*#=$IMPORTLIB#
 /^AR *=/s#=.*#=$AR#
 /^ARFLAGS *=/s#=.*#=$ARFLAGS#
 /^RANLIB *=/s#=.*#=$RANLIB#
 /^EXE *=/s#=.*#=$EXE#
 /^prefix *=/s#=.*#=$prefix#
 /^exec_prefix *=/s#=.*#=$exec_prefix#
+/^bindir *=/s#=.*#=$bindir#
 /^libdir *=/s#=.*#=$libdir#
 /^sharedlibdir *=/s#=.*#=$sharedlibdir#
 /^includedir *=/s#=.*#=$includedir#
