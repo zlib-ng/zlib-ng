@@ -31,10 +31,10 @@
  * Standard longest_match
  *
  */
-ZLIB_INTERNAL unsigned longest_match(deflate_state *z_const s, IPos cur_match)
+ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 {
-	z_const unsigned wmask = s->w_mask;
-	z_const Pos *prev = s->prev;
+	const unsigned wmask = s->w_mask;
+	const Pos *prev = s->prev;
 
 	unsigned chain_length;
 	IPos limit;
@@ -151,10 +151,10 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *z_const s, IPos cur_match)
  * UNALIGNED_OK longest_match
  *
  */
-ZLIB_INTERNAL unsigned longest_match(deflate_state *z_const s, IPos cur_match)
+ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 {
-	z_const unsigned wmask = s->w_mask;
-	z_const Pos *prev = s->prev;
+	const unsigned wmask = s->w_mask;
+	const Pos *prev = s->prev;
 
 	unsigned short scan_start, scan_end;
 	unsigned chain_length;
@@ -334,7 +334,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *z_const s, IPos cur_match)
  *       -------------------------------------------------
  */
 
-ZLIB_INTERNAL unsigned longest_match(deflate_state *z_const s, IPos cur_match)
+ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 {
     unsigned chain_length = s->max_chain_length;/* max hash chain length */
     register Byte *scan = s->window + s->strstart; /* current string */

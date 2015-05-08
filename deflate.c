@@ -169,7 +169,7 @@ local const config configuration_table[10] = {
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
 #ifdef X86_SSE4_2_CRC_HASH
-local inline Pos insert_string_sse(deflate_state *z_const s, z_const Pos str)
+local inline Pos insert_string_sse(deflate_state *const s, const Pos str)
 {
     Pos ret;
     unsigned *ip, val, h = 0;
@@ -193,7 +193,7 @@ local inline Pos insert_string_sse(deflate_state *z_const s, z_const Pos str)
 }
 #endif
 
-local inline Pos insert_string_c(deflate_state *z_const s, z_const Pos str)
+local inline Pos insert_string_c(deflate_state *const s, const Pos str)
 {
     Pos ret;
 
@@ -204,7 +204,7 @@ local inline Pos insert_string_c(deflate_state *z_const s, z_const Pos str)
     return ret;
 }
 
-local inline Pos insert_string(deflate_state *z_const s, z_const Pos str)
+local inline Pos insert_string(deflate_state *const s, const Pos str)
 {
 #ifdef X86_SSE4_2_CRC_HASH
     if (x86_cpu_has_sse42)
@@ -216,7 +216,7 @@ local inline Pos insert_string(deflate_state *z_const s, z_const Pos str)
 
 #ifndef NOT_TWEAK_COMPILER
 local inline void
-bulk_insert_str(deflate_state *s, Pos startpos, uInt count) {
+bulk_insert_str(deflate_state *const s, Pos startpos, uInt count) {
     uInt idx;
     for (idx = 0; idx < count; idx++) {
         insert_string(s, startpos + idx);
@@ -358,7 +358,7 @@ int ZEXPORT deflateSetDictionary (z_stream *strm, const Byte *dictionary, uInt  
     uInt str, n;
     int wrap;
     unsigned avail;
-    z_const unsigned char *next;
+    const unsigned char *next;
 
     if (strm == Z_NULL || strm->state == Z_NULL || dictionary == Z_NULL)
         return Z_STREAM_ERROR;
@@ -388,7 +388,7 @@ int ZEXPORT deflateSetDictionary (z_stream *strm, const Byte *dictionary, uInt  
     avail = strm->avail_in;
     next = strm->next_in;
     strm->avail_in = dictLength;
-    strm->next_in = (z_const Byte *)dictionary;
+    strm->next_in = (const Byte *)dictionary;
     fill_window(s);
     while (s->lookahead >= MIN_MATCH) {
         str = s->strstart;
