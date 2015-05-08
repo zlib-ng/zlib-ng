@@ -2,4 +2,8 @@ language: c
 compiler:
   - gcc
   - clang
-script: ./configure && make && make check
+env:
+  - BUILDDIR=. SRCDIR=.
+  - BUILDDIR=../build SRCDIR=../zlib-ng
+script: mkdir -p $BUILDDIR && cd $BUILDDIR &&
+        $SRCDIR/configure && make && make check

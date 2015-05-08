@@ -152,11 +152,11 @@ minigzip64.o: $(SRCDIR)/test/minigzip.c $(SRCDIR)/zlib.h zconf.h
 .SUFFIXES: .lo
 
 %.o: $(SRCDIR)/%.c
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) -I. -I$(SRCDIR) $(CFLAGS) -c -o $@ $<
 
 %.lo: $(SRCDIR)/%.c
 	-@mkdir objs 2>/dev/null || test -d objs
-	$(CC) $(SFLAGS) -DPIC -c -o objs/$*.o $<
+	$(CC) -I. -I$(SRCDIR) $(SFLAGS) -DPIC -c -o objs/$*.o $<
 	-@mv objs/$*.o $@
 
 placebo $(SHAREDLIBV): $(PIC_OBJS) libz.a
