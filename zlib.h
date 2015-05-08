@@ -1343,7 +1343,7 @@ ZEXTERN int ZEXPORT gzwrite (gzFile file, void const *buf, unsigned len);
    error.
 */
 
-ZEXTERN int ZEXPORTVA gzprintf Z_ARG((gzFile file, const char *format, ...));
+ZEXTERN int ZEXPORTVA gzprintf (gzFile file, const char *format, ...);
 /*
      Converts, formats, and writes the arguments to the compressed file under
    control of the format string, as in fprintf.  gzprintf returns the number of
@@ -1738,7 +1738,7 @@ ZEXTERN int            ZEXPORT deflateResetKeep (z_stream *);
 ZEXTERN gzFile         ZEXPORT gzopen_w (const wchar_t *path, const char *mode);
 #endif
 #ifndef Z_SOLO
-ZEXTERN int            ZEXPORTVA gzvprintf Z_ARG((gzFile file, const char *format, va_list va));
+ZEXTERN int            ZEXPORTVA gzvprintf (gzFile file, const char *format, va_list va);
 #endif
 
 #ifdef __cplusplus

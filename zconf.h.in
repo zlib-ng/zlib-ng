@@ -61,10 +61,6 @@
                         /* Type declarations */
 
 
-#ifndef Z_ARG /* function prototypes for stdarg */
-#  define Z_ARG(args)  args
-#endif
-
 #if defined(WINDOWS) || defined(WIN32)
    /* If building or using zlib as a DLL, define ZLIB_DLL.
     * This is not mandatory, but it offers a little performance increase.
