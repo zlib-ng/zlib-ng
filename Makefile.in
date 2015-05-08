@@ -253,7 +253,7 @@ clean:
 	rm -f a.out
 
 maintainer-clean: distclean
-distclean: clean zconf zconf.h.cmakein
+distclean: clean
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) distclean; fi
 	rm -f zlib.pc configure.log
 	-@rm -f .DS_Store
@@ -262,6 +262,14 @@ distclean: clean zconf zconf.h.cmakein
 	printf 'all:\n\t-@echo "Please use ./configure first.  Thank you."\n' > Makefile ; \
 	printf '\ndistclean:\n\tmake -f Makefile.in distclean\n' >> Makefile ; \
 	touch -r $(SRCDIR)/Makefile.in Makefile ; fi
+# Reset zconf.h and zconf.h.cmakein if building inside source tree
+	@if [ -f zconf.h.in ]; then \
+	cp -p $(SRCDIR)/zconf.h.in zconf.h ; \
+	TEMPFILE=zconfh_$$ ; \
+	echo "/#define ZCONF_H/ a\\\\\n#cmakedefine Z_PREFIX\\\\\n#cmakedefine Z_HAVE_UNISTD_H\n" >> $$TEMPFILE &&\
+	sed -f $$TEMPFILE $(SRCDIR)/zconf.h.in > zconf.h.cmakein &&\
+	touch -r $(SRCDIR)/zconf.h.in zconf.h.cmakein &&\
+	rm $$TEMPFILE ; fi
 # Cleanup these files if building outside source tree
 	@if [ ! -f zlib.3 ]; then rm -f zlib.3.pdf Makefile zconf.h zconf.h.cmakein ; fi
 # Remove arch directory if building outside source tree
