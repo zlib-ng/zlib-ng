@@ -29,9 +29,6 @@
 #if defined(WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
 #  include <io.h>
-#  ifdef UNDER_CE
-#    include <stdlib.h>
-#  endif
 #  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
 #else
 #  define SET_BINARY_MODE(file)
@@ -46,68 +43,6 @@
   extern int unlink (const char *);
 #endif
 #endif
-
-#if defined(UNDER_CE)
-#  include <windows.h>
-#  define perror(s) pwinerror(s)
-
-/* Map the Windows error number in ERROR to a locale-dependent error
-   message string and return a pointer to it.  Typically, the values
-   for ERROR come from GetLastError.
-
-   The string pointed to shall not be modified by the application,
-   but may be overwritten by a subsequent call to strwinerror
-
-   The strwinerror function does not change the current setting
-   of GetLastError.  */
-
-static char *strwinerror (DWORD error)
-{
-    static char buf[1024];
-
-    wchar_t *msgbuf;
-    DWORD lasterr = GetLastError();
-    DWORD chars = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM
-        | FORMAT_MESSAGE_ALLOCATE_BUFFER,
-        NULL,
-        error,
-        0, /* Default language */
-        (LPVOID)&msgbuf,
-        0,
-        NULL);
-    if (chars != 0) {
-        /* If there is an \r\n appended, zap it.  */
-        if (chars >= 2
-            && msgbuf[chars - 2] == '\r' && msgbuf[chars - 1] == '\n') {
-            chars -= 2;
-            msgbuf[chars] = 0;
-        }
-
-        if (chars > sizeof (buf) - 1) {
-            chars = sizeof (buf) - 1;
-            msgbuf[chars] = 0;
-        }
-
-        wcstombs(buf, msgbuf, chars + 1);
-        LocalFree(msgbuf);
-    }
-    else {
-        sprintf(buf, "unknown win32 error (%ld)", error);
-    }
-
-    SetLastError(lasterr);
-    return buf;
-}
-
-static void pwinerror (const char *s)
-{
-    if (s && *s)
-        fprintf(stderr, "%s: %s\n", s, strwinerror(GetLastError ()));
-    else
-        fprintf(stderr, "%s\n", strwinerror(GetLastError ()));
-}
-
-#endif /* UNDER_CE */
 
 #ifndef GZ_SUFFIX
 #  define GZ_SUFFIX ".gz"

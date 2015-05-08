@@ -67,16 +67,11 @@
 /* compile with -Dlocal if your debugger can't find static symbols */
 
 /* get errno and strerror definition */
-#if defined UNDER_CE
-#  include <windows.h>
-#  define zstrerror() gz_strwinerror((DWORD)GetLastError())
+#ifndef NO_STRERROR
+#  include <errno.h>
+#  define zstrerror() strerror(errno)
 #else
-#  ifndef NO_STRERROR
-#    include <errno.h>
-#    define zstrerror() strerror(errno)
-#  else
-#    define zstrerror() "stdio error (consult errno)"
-#  endif
+#  define zstrerror() "stdio error (consult errno)"
 #endif
 
 /* provide prototypes for these when building zlib without LFS */
@@ -146,9 +141,6 @@ typedef gz_state *gz_statep;
 
 /* shared functions */
 void ZLIB_INTERNAL gz_error (gz_statep, int, const char *);
-#if defined UNDER_CE
-char ZLIB_INTERNAL *gz_strwinerror (DWORD error);
-#endif
 
 /* GT_OFF(x), where x is an unsigned value, is true if x > maximum z_off64_t
    value -- needed when comparing unsigned to z_off64_t, which is signed
