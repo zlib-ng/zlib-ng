@@ -229,16 +229,6 @@ docs: zlib.3.pdf
 zlib.3.pdf: $(SRCDIR)/zlib.3
 	groff -mandoc -f H -T ps $(SRCDIR)/zlib.3 | ps2pdf - zlib.3.pdf
 
-zconf.h.cmakein: $(SRCDIR)/zconf.h.in
-	-@ TEMPFILE=zconfh_$$; \
-	echo "/#define ZCONF_H/ a\\\\\n#cmakedefine Z_PREFIX\\\\\n#cmakedefine Z_HAVE_UNISTD_H\n" >> $$TEMPFILE &&\
-	sed -f $$TEMPFILE $(SRCDIR)/zconf.h.in > zconf.h.cmakein &&\
-	touch -r $(SRCDIR)/zconf.h.in zconf.h.cmakein &&\
-	rm $$TEMPFILE
-
-zconf: $(SRCDIR)/zconf.h.in
-	cp -p $(SRCDIR)/zconf.h.in zconf.h
-
 mostlyclean: clean
 clean:
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) clean; fi
@@ -255,7 +245,7 @@ clean:
 maintainer-clean: distclean
 distclean: clean
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) distclean; fi
-	rm -f zlib.pc configure.log
+	rm -f zlib.pc configure.log zconf.h zconf.h.cmakein
 	-@rm -f .DS_Store
 # Reset Makefile if building inside source tree
 	@if [ -f Makefile.in ]; then \
@@ -271,7 +261,7 @@ distclean: clean
 	touch -r $(SRCDIR)/zconf.h.in zconf.h.cmakein &&\
 	rm $$TEMPFILE ; fi
 # Cleanup these files if building outside source tree
-	@if [ ! -f zlib.3 ]; then rm -f zlib.3.pdf Makefile zconf.h zconf.h.cmakein ; fi
+	@if [ ! -f zlib.3 ]; then rm -f zlib.3.pdf Makefile; fi
 # Remove arch directory if building outside source tree
 	@if [ ! -f $(ARCHDIR)/Makefile.in ]; then rm -rf arch; fi
 

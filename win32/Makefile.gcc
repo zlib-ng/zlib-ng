@@ -155,7 +155,6 @@ clean:
 	-$(RM) foo.gz
 
 distclean: clean
-	-$(CP) zconf.h.in zconf.h
 	@printf 'all:\n\t-@echo "Please use ./configure first.  Thank you."\n' > Makefile
 	@printf '\ndistclean:\n\tmake -f Makefile.in distclean\n' >> Makefile
 	@touch -r Makefile.in Makefile

@@ -74,7 +74,7 @@ minigzip_d.exe: minigzip.obj $(IMPLIB)
 	$(CC) -c -I$(TOP) $(WFLAGS) $(CFLAGS) $<
 
 $(TOP)/zconf.h: $(TOP)/zconf.h.in
-	$(CP) $(TOP)/zconf.h.in $@
+	$(CP) $(TOP)\zconf.h.in $(TOP)\zconf.h
 
 adler32.obj: $(TOP)/adler32.c $(TOP)/zlib.h $(TOP)/zconf.h
 
@@ -140,3 +140,6 @@ clean:
 	-del *.pdb
 	-del *.manifest
 	-del foo.gz
+
+distclean: clean
+	-del zconf.h
