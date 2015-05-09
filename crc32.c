@@ -32,17 +32,8 @@
 
 #define local static
 
-/* Definitions for doing the crc four data bytes at a time. */
-#if !defined(NOBYFOUR) && defined(Z_U4)
-#  define BYFOUR
-#endif
-#ifdef BYFOUR
-   local unsigned long crc32_little (unsigned long, const unsigned char *, unsigned);
-   local unsigned long crc32_big (unsigned long, const unsigned char *, unsigned);
-#  define TBLS 8
-#else
-#  define TBLS 1
-#endif /* BYFOUR */
+local unsigned long crc32_little (unsigned long, const unsigned char *, unsigned);
+local unsigned long crc32_big (unsigned long, const unsigned char *, unsigned);
 
 /* Local functions for crc concatenation */
 local unsigned long gf2_matrix_times (unsigned long *mat, unsigned long vec);
@@ -53,7 +44,7 @@ local uLong crc32_combine_ (uLong crc1, uLong crc2, z_off64_t len2);
 #ifdef DYNAMIC_CRC_TABLE
 
 local volatile int crc_table_empty = 1;
-local z_crc_t crc_table[TBLS][256];
+local z_crc_t crc_table[8][256];
 local void make_crc_table (void);
 #ifdef MAKECRCH
    local void write_table (FILE *, const z_crc_t *);
@@ -112,7 +103,6 @@ local void make_crc_table()
             crc_table[0][n] = c;
         }
 
-#ifdef BYFOUR
         /* generate crc for each value followed by one, two, and three zeros,
            and then the byte reversal of those as well as the first table */
         for (n = 0; n < 256; n++) {
@@ -124,7 +114,6 @@ local void make_crc_table()
                 crc_table[k + 4][n] = ZSWAP32(c);
             }
         }
-#endif /* BYFOUR */
 
         crc_table_empty = 0;
     }
@@ -144,16 +133,12 @@ local void make_crc_table()
         fprintf(out, "/* crc32.h -- tables for rapid CRC calculation\n");
         fprintf(out, " * Generated automatically by crc32.c\n */\n\n");
         fprintf(out, "local const z_crc_t ");
-        fprintf(out, "crc_table[TBLS][256] =\n{\n  {\n");
+        fprintf(out, "crc_table[8][256] =\n{\n  {\n");
         write_table(out, crc_table[0]);
-#  ifdef BYFOUR
-        fprintf(out, "#ifdef BYFOUR\n");
         for (k = 1; k < 8; k++) {
             fprintf(out, "  },\n  {\n");
             write_table(out, crc_table[k]);
         }
-        fprintf(out, "#endif\n");
-#  endif /* BYFOUR */
         fprintf(out, "  }\n};\n");
         fclose(out);
     }
@@ -209,7 +194,6 @@ unsigned long ZEXPORT crc32(crc, buf, len)
         make_crc_table();
 #endif /* DYNAMIC_CRC_TABLE */
 
-#ifdef BYFOUR
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
         z_crc_t endian;
 
@@ -219,7 +203,6 @@ unsigned long ZEXPORT crc32(crc, buf, len)
         else
             return crc32_big(crc, buf, len);
     }
-#endif /* BYFOUR */
     crc = crc ^ 0xffffffffUL;
 
 #ifdef CRC32_UNROLL_LESS
@@ -240,7 +223,6 @@ unsigned long ZEXPORT crc32(crc, buf, len)
     return crc ^ 0xffffffffUL;
 }
 
-#ifdef BYFOUR
 
 /* ========================================================================= */
 #define DOLIT4 c ^= *buf4++; \
@@ -326,7 +308,6 @@ local unsigned long crc32_big(unsigned long crc, const unsigned char *buf, unsig
     return (unsigned long)(ZSWAP32(c));
 }
 
-#endif /* BYFOUR */
 
 #define GF2_DIM 32      /* dimension of GF(2) vectors (length of CRC) */
 

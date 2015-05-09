@@ -2,7 +2,7 @@
  * Generated automatically by crc32.c
  */
 
-local const z_crc_t crc_table[TBLS][256] =
+local const z_crc_t crc_table[8][256] =
 {
   {
     0x00000000UL, 0x77073096UL, 0xee0e612cUL, 0x990951baUL, 0x076dc419UL,
@@ -57,7 +57,6 @@ local const z_crc_t crc_table[TBLS][256] =
     0xcdd70693UL, 0x54de5729UL, 0x23d967bfUL, 0xb3667a2eUL, 0xc4614ab8UL,
     0x5d681b02UL, 0x2a6f2b94UL, 0xb40bbe37UL, 0xc30c8ea1UL, 0x5a05df1bUL,
     0x2d02ef8dUL
-#ifdef BYFOUR
   },
   {
     0x00000000UL, 0x191b3141UL, 0x32366282UL, 0x2b2d53c3UL, 0x646cc504UL,
@@ -436,6 +435,5 @@ local const z_crc_t crc_table[TBLS][256] =
     0x95e6b8b1UL, 0x7b490da3UL, 0x1e2eb11bUL, 0x483ed243UL, 0x2d596efbUL,
     0xc3f6dbe9UL, 0xa6916751UL, 0x1fa9b0ccUL, 0x7ace0c74UL, 0x9461b966UL,
     0xf10605deUL
-#endif
   }
 };
