@@ -49,6 +49,7 @@ EXE=
 
 SRCDIR=.
 BSDLIBS=
+INCLUDES=-I$(SRCDIR)
 
 ARCHDIR=arch/generic
 ARCH_STATIC_OBJS=
@@ -132,7 +133,7 @@ test64: all64
 	rm -f $$TMP64
 
 infcover.o: $(SRCDIR)/test/infcover.c $(SRCDIR)/zlib.h zconf.h
-	$(CC) $(CFLAGS) -I. -I$(SRCDIR) -c -o $@ $(SRCDIR)/test/infcover.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/infcover.c
 
 infcover: infcover.o libz.a
 	$(CC) $(CFLAGS) -o $@ infcover.o libz.a $(BSDLIBS)
@@ -147,25 +148,25 @@ $(STATICLIB): $(OBJS)
 	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
 
 example.o: $(SRCDIR)/test/example.c $(SRCDIR)/zlib.h zconf.h
-	$(CC) $(CFLAGS) -I. -I$(SRCDIR) -c -o $@ $(SRCDIR)/test/example.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
 
 minigzip.o: $(SRCDIR)/test/minigzip.c $(SRCDIR)/zlib.h zconf.h
-	$(CC) $(CFLAGS) -I. -I$(SRCDIR) -c -o $@ $(SRCDIR)/test/minigzip.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
 
 example64.o: $(SRCDIR)/test/example.c $(SRCDIR)/zlib.h zconf.h
-	$(CC) $(CFLAGS) -I. -I$(SRCDIR) -D_FILE_OFFSET_BITS=64 -c -o $@ $(SRCDIR)/test/example.c
+	$(CC) $(CFLAGS) $(INCLUDES) -D_FILE_OFFSET_BITS=64 -c -o $@ $(SRCDIR)/test/example.c
 
 minigzip64.o: $(SRCDIR)/test/minigzip.c $(SRCDIR)/zlib.h zconf.h
-	$(CC) $(CFLAGS) -I. -I$(SRCDIR) -D_FILE_OFFSET_BITS=64 -c -o $@ $(SRCDIR)/test/minigzip.c
+	$(CC) $(CFLAGS) $(INCLUDES) -D_FILE_OFFSET_BITS=64 -c -o $@ $(SRCDIR)/test/minigzip.c
 
 .SUFFIXES: .lo
 
 %.o: $(SRCDIR)/%.c
-	$(CC) -I. -I$(SRCDIR) $(CFLAGS) -c -o $@ $<
+	$(CC) $(INCLUDES) $(CFLAGS) -c -o $@ $<
 
 %.lo: $(SRCDIR)/%.c
 	-@mkdir objs 2>/dev/null || test -d objs
-	$(CC) -I. -I$(SRCDIR) $(SFLAGS) -DPIC -c -o objs/$*.o $<
+	$(CC) $(INCLUDES) $(SFLAGS) -DPIC -c -o objs/$*.o $<
 	-@mv objs/$*.o $@
 
 placebo $(SHAREDTARGET): $(PIC_OBJS) $(STATICLIB)
