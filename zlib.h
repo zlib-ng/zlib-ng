@@ -32,6 +32,7 @@
 #define ZLIB_H
 
 #include "zconf.h"
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -1594,7 +1595,7 @@ ZEXTERN uLong ZEXPORT adler32_combine (uLong adler1, uLong adler2,
    negative, the result has no meaning or utility.
 */
 
-ZEXTERN uLong ZEXPORT crc32   (uLong crc, const Byte *buf, uInt len);
+ZEXTERN uint32_t ZEXPORT crc32   (uint32_t crc, const Byte *buf, uInt len);
 /*
      Update a running CRC-32 with the bytes buf[0..len-1] and return the
    updated CRC-32.  If buf is Z_NULL, this function returns the required
@@ -1603,7 +1604,7 @@ ZEXTERN uLong ZEXPORT crc32   (uLong crc, const Byte *buf, uInt len);
 
    Usage example:
 
-     uLong crc = crc32(0L, Z_NULL, 0);
+     uint32_t crc = crc32(0L, Z_NULL, 0);
 
      while (read_buffer(buffer, length) != EOF) {
        crc = crc32(crc, buffer, length);
@@ -1612,7 +1613,7 @@ ZEXTERN uLong ZEXPORT crc32   (uLong crc, const Byte *buf, uInt len);
 */
 
 /*
-ZEXTERN uLong ZEXPORT crc32_combine (uLong crc1, uLong crc2, z_off_t len2);
+ZEXTERN uint32_t ZEXPORT crc32_combine (uint32_t crc1, uint32_t crc2, z_off_t len2);
 
      Combine two CRC-32 check values into one.  For two sequences of bytes,
    seq1 and seq2 with lengths len1 and len2, CRC-32 check values were
@@ -1684,7 +1685,7 @@ ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
    ZEXTERN z_off64_t ZEXPORT gztell64 (gzFile);
    ZEXTERN z_off64_t ZEXPORT gzoffset64 (gzFile);
    ZEXTERN uLong ZEXPORT adler32_combine64 (uLong, uLong, z_off64_t);
-   ZEXTERN uLong ZEXPORT crc32_combine64 (uLong, uLong, z_off64_t);
+   ZEXTERN uint32_t ZEXPORT crc32_combine64 (uint32_t, uint32_t, z_off64_t);
 #endif
 
 #if !defined(ZLIB_INTERNAL) && defined(Z_WANT64)
@@ -1709,7 +1710,7 @@ ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
      ZEXTERN z_off_t ZEXPORT gztell64 (gzFile);
      ZEXTERN z_off_t ZEXPORT gzoffset64 (gzFile);
      ZEXTERN uLong ZEXPORT adler32_combine64 (uLong, uLong, z_off_t);
-     ZEXTERN uLong ZEXPORT crc32_combine64 (uLong, uLong, z_off_t);
+     ZEXTERN uint32_t ZEXPORT crc32_combine64 (uint32_t, uint32_t, z_off_t);
 #  endif
 #else
    ZEXTERN gzFile ZEXPORT gzopen (const char *, const char *);
@@ -1717,7 +1718,7 @@ ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
    ZEXTERN z_off_t ZEXPORT gztell (gzFile);
    ZEXTERN z_off_t ZEXPORT gzoffset (gzFile);
    ZEXTERN uLong ZEXPORT adler32_combine (uLong, uLong, z_off_t);
-   ZEXTERN uLong ZEXPORT crc32_combine (uLong, uLong, z_off_t);
+   ZEXTERN uint32_t ZEXPORT crc32_combine (uint32_t, uint32_t, z_off_t);
 #endif
 
 #else /* Z_SOLO */
