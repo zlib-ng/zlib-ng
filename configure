@@ -193,7 +193,7 @@ show $cc -c $test.c
 if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
   echo ... using gcc >> configure.log
   CC="$cc"
-  CFLAGS="${CFLAGS--O3} ${ARCHS} -Wall -Werror"
+  CFLAGS="${CFLAGS--O3} ${ARCHS} -Wall"
   SFLAGS="${CFLAGS--O3} -fPIC"
   LDFLAGS="${LDFLAGS} ${ARCHS}"
   if test $build64 -eq 1; then
