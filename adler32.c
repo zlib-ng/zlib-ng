@@ -6,10 +6,9 @@
 /* @(#) $Id$ */
 
 #include "zutil.h"
+#include <stdint.h>
 
-#define local static
-
-static uLong adler32_combine_ (uLong adler1, uLong adler2, z_off64_t len2);
+static uint32_t adler32_combine_ (uint32_t adler1, uint32_t adler2, z_off64_t len2);
 
 #define BASE 65521      /* largest prime smaller than 65536 */
 #define NMAX 5552
@@ -28,8 +27,8 @@ static uLong adler32_combine_ (uLong adler1, uLong adler2, z_off64_t len2);
    (thank you to John Reiser for pointing this out) */
 #  define CHOP(a) \
     do { \
-        unsigned long tmp = a >> 16; \
-        a &= 0xffffUL; \
+        uint32_t tmp = a >> 16; \
+        a &= 0xffff; \
         a += (tmp << 4) - tmp; \
     } while (0)
 #  define MOD28(a) \
@@ -62,12 +61,12 @@ static uLong adler32_combine_ (uLong adler1, uLong adler2, z_off64_t len2);
 #endif
 
 /* ========================================================================= */
-uLong ZEXPORT adler32(adler, buf, len)
-    uLong adler;
+uint32_t ZEXPORT adler32(adler, buf, len)
+    uint32_t adler;
     const Byte *buf;
     uInt len;
 {
-    unsigned long sum2;
+    uint32_t sum2;
     unsigned n;
 
     /* split Adler-32 into component sums */
@@ -149,15 +148,15 @@ uLong ZEXPORT adler32(adler, buf, len)
 }
 
 /* ========================================================================= */
-static uLong adler32_combine_(uLong adler1, uLong adler2, z_off64_t len2)
+static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len2)
 {
-    unsigned long sum1;
-    unsigned long sum2;
+    uint32_t sum1;
+    uint32_t sum2;
     unsigned rem;
 
     /* for negative len, return invalid adler32 as a clue for debugging */
     if (len2 < 0)
-        return 0xffffffffUL;
+        return 0xffffffff;
 
     /* the derivation of this formula is left as an exercise for the reader */
     MOD63(len2);                /* assumes len2 >= 0 */
@@ -175,17 +174,17 @@ static uLong adler32_combine_(uLong adler1, uLong adler2, z_off64_t len2)
 }
 
 /* ========================================================================= */
-uLong ZEXPORT adler32_combine(adler1, adler2, len2)
-    uLong adler1;
-    uLong adler2;
+uint32_t ZEXPORT adler32_combine(adler1, adler2, len2)
+    uint32_t adler1;
+    uint32_t adler2;
     z_off_t len2;
 {
     return adler32_combine_(adler1, adler2, len2);
 }
 
-uLong ZEXPORT adler32_combine64(adler1, adler2, len2)
-    uLong adler1;
-    uLong adler2;
+uint32_t ZEXPORT adler32_combine64(adler1, adler2, len2)
+    uint32_t adler1;
+    uint32_t adler2;
     z_off64_t len2;
 {
     return adler32_combine_(adler1, adler2, len2);

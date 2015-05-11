@@ -107,7 +107,7 @@ typedef struct z_stream_s {
     void      *opaque;  /* private data object passed to zalloc and zfree */
 
     int     data_type;  /* best guess about the data type: binary or text */
-    uLong   adler;      /* adler32 value of the uncompressed data */
+    uint32_t   adler;      /* adler32 value of the uncompressed data */
     uLong   reserved;   /* reserved for future use */
 } z_stream;
 
@@ -1564,7 +1564,7 @@ ZEXTERN void ZEXPORT gzclearerr (gzFile file);
    library.
 */
 
-ZEXTERN uLong ZEXPORT adler32 (uLong adler, const Byte *buf, uInt len);
+ZEXTERN uint32_t ZEXPORT adler32 (uint32_t adler, const Byte *buf, uInt len);
 /*
      Update a running Adler-32 checksum with the bytes buf[0..len-1] and
    return the updated checksum.  If buf is Z_NULL, this function returns the
@@ -1575,7 +1575,7 @@ ZEXTERN uLong ZEXPORT adler32 (uLong adler, const Byte *buf, uInt len);
 
    Usage example:
 
-     uLong adler = adler32(0L, Z_NULL, 0);
+     uint32_t adler = adler32(0L, Z_NULL, 0);
 
      while (read_buffer(buffer, length) != EOF) {
        adler = adler32(adler, buffer, length);
@@ -1584,7 +1584,7 @@ ZEXTERN uLong ZEXPORT adler32 (uLong adler, const Byte *buf, uInt len);
 */
 
 /*
-ZEXTERN uLong ZEXPORT adler32_combine (uLong adler1, uLong adler2,
+ZEXTERN uint32_t ZEXPORT adler32_combine (uint32_t adler1, uint32_t adler2,
                                           z_off_t len2);
 
      Combine two Adler-32 checksums into one.  For two sequences of bytes, seq1
@@ -1684,7 +1684,7 @@ ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
    ZEXTERN z_off64_t ZEXPORT gzseek64 (gzFile, z_off64_t, int);
    ZEXTERN z_off64_t ZEXPORT gztell64 (gzFile);
    ZEXTERN z_off64_t ZEXPORT gzoffset64 (gzFile);
-   ZEXTERN uLong ZEXPORT adler32_combine64 (uLong, uLong, z_off64_t);
+   ZEXTERN uint32_t ZEXPORT adler32_combine64 (uint32_t, uint32_t, z_off64_t);
    ZEXTERN uint32_t ZEXPORT crc32_combine64 (uint32_t, uint32_t, z_off64_t);
 #endif
 
@@ -1709,7 +1709,7 @@ ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
      ZEXTERN z_off_t ZEXPORT gzseek64 (gzFile, z_off_t, int);
      ZEXTERN z_off_t ZEXPORT gztell64 (gzFile);
      ZEXTERN z_off_t ZEXPORT gzoffset64 (gzFile);
-     ZEXTERN uLong ZEXPORT adler32_combine64 (uLong, uLong, z_off_t);
+     ZEXTERN uint32_t ZEXPORT adler32_combine64 (uint32_t, uint32_t, z_off_t);
      ZEXTERN uint32_t ZEXPORT crc32_combine64 (uint32_t, uint32_t, z_off_t);
 #  endif
 #else
@@ -1717,7 +1717,7 @@ ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
    ZEXTERN z_off_t ZEXPORT gzseek (gzFile, z_off_t, int);
    ZEXTERN z_off_t ZEXPORT gztell (gzFile);
    ZEXTERN z_off_t ZEXPORT gzoffset (gzFile);
-   ZEXTERN uLong ZEXPORT adler32_combine (uLong, uLong, z_off_t);
+   ZEXTERN uint32_t ZEXPORT adler32_combine (uint32_t, uint32_t, z_off_t);
    ZEXTERN uint32_t ZEXPORT crc32_combine (uint32_t, uint32_t, z_off_t);
 #endif
 
