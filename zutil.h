@@ -20,16 +20,9 @@
 #endif
 
 #include "zlib.h"
-
-#ifndef Z_SOLO
-#  include <stddef.h>
-#  include <string.h>
-#  include <stdlib.h>
-#endif
-
-#ifdef Z_SOLO
-   typedef long ptrdiff_t;  /* guess -- will be caught if guess is wrong */
-#endif
+#include <stddef.h>
+#include <string.h>
+#include <stdlib.h>
 
 #ifndef local
 #  define local static
@@ -130,10 +123,8 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  define Tracecv(c,x)
 #endif
 
-#ifndef Z_SOLO
-   void ZLIB_INTERNAL *zcalloc (void *opaque, unsigned items, unsigned size);
-   void ZLIB_INTERNAL  zcfree  (void *opaque, void *ptr);
-#endif
+void ZLIB_INTERNAL *zcalloc (void *opaque, unsigned items, unsigned size);
+void ZLIB_INTERNAL  zcfree  (void *opaque, void *ptr);
 
 #define ZALLOC(strm, items, size) \
            (*((strm)->zalloc))((strm)->opaque, (items), (size))

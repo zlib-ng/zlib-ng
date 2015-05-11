@@ -52,8 +52,8 @@
 #define BUFLEN      16384
 #define MAX_NAME_LEN 1024
 
-#ifdef Z_SOLO
-/* for Z_SOLO, create simplified gz* functions using deflate and inflate */
+#ifndef WITH_GZFILEOP
+/* without WITH_GZFILEOP, create simplified gz* functions using deflate and inflate */
 
 #if defined(Z_HAVE_UNISTD_H) || defined(Z_LARGE)
 #  include <unistd.h>       /* for unlink() */
@@ -222,7 +222,7 @@ const char *gzerror(gzFile gz, int *err)
     return gz->msg;
 }
 
-#endif
+#endif 
 
 char *prog;
 

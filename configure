@@ -94,7 +94,8 @@ includedir=${includedir-'${prefix}/include'}
 mandir=${mandir-'${prefix}/share/man'}
 shared_ext='.so'
 shared=1
-solo=0
+gzfileops=0
+compat=0
 cover=0
 zconst=0
 build64=0
@@ -103,8 +104,8 @@ without_new_strategies=0
 gcc=0
 old_cc="$CC"
 old_cflags="$CFLAGS"
-OBJC='$(OBJZ) $(OBJG)'
-PIC_OBJC='$(PIC_OBJZ) $(PIC_OBJG)'
+OBJC='$(OBJZ)'
+PIC_OBJC='$(PIC_OBJZ)'
 
 # leave this script, optionally in a bad way
 leave()
@@ -125,7 +126,7 @@ do
 case "$1" in
     -h* | --help)
       echo 'usage:' | tee -a configure.log
-      echo '  configure [--const] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
+      echo '  configure [--const] [--zlib-compat] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
       echo '    [--static] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
       echo '    [--includedir=INCLUDEDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
         exit 0 ;;
@@ -141,7 +142,7 @@ case "$1" in
     -i* | --includedir) includedir="$2"; shift; shift ;;
     -s* | --shared | --enable-shared) shared=1; shift ;;
     -t | --static) shared=0; shift ;;
-    --solo) solo=1; shift ;;
+    --zlib-compat) compat=1; shift ;;
     --cover) cover=1; shift ;;
     -6* | --64) build64=1; shift ;;
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
@@ -476,15 +477,12 @@ else
   echo "Checking for stdarg.h... No." | tee -a configure.log
 fi
 
-# if --solo compilation was requested, save that in zconf.h and remove gz stuff from object lists
-if test $solo -eq 1; then
-  sed '/#define ZCONF_H/a\
-#define Z_SOLO
-
-' < zconf.h > zconf.temp.h
-  mv zconf.temp.h zconf.h
-OBJC='$(OBJZ)'
-PIC_OBJC='$(PIC_OBJZ)'
+# if --zlib-compat was requested
+if test $compat -eq 1; then
+  CFLAGS="${CFLAGS} -DZLIB_COMPAT -DWITH_GZFILEOP"
+  SFLAGS="${SFLAGS} -DZLIB_COMPAT -DWITH_GZFILEOP"
+  OBJC="${OBJC} \$(OBJG)"
+  PIC_OBJC="${PIC_OBJC} \$(PIC_OBJG)"
 fi
 
 # if code coverage testing was requested, use older gcc if defined, e.g. "gcc-4.2" on Mac OS X

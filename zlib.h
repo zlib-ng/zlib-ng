@@ -1144,7 +1144,6 @@ ZEXTERN uLong ZEXPORT zlibCompileFlags (void);
      27-31: 0 (reserved)
  */
 
-#ifndef Z_SOLO
 
                         /* utility functions */
 
@@ -1211,6 +1210,7 @@ ZEXTERN int ZEXPORT uncompress (Byte *dest,   uLong *destLen,
    buffer with the uncompressed data up to that point.
 */
 
+#ifdef WITH_GZFILEOP
                         /* gzip file access functions */
 
 /*
@@ -1554,7 +1554,7 @@ ZEXTERN void ZEXPORT gzclearerr (gzFile file);
    file that is being written concurrently.
 */
 
-#endif /* !Z_SOLO */
+#endif /* WITH_GZFILEOP */
 
                         /* checksum functions */
 
@@ -1649,7 +1649,7 @@ ZEXTERN int ZEXPORT inflateBackInit_ (z_stream *strm, int windowBits, unsigned c
         inflateBackInit_((strm), (windowBits), (window), \
                       ZLIB_VERSION, (int)sizeof(z_stream))
 
-#ifndef Z_SOLO
+#ifdef WITH_GZFILEOP
 
 /* gzgetc() macro and its supporting function and exposed data structure.  Note
  * that the real internal state is much larger than the exposed structure.
@@ -1721,12 +1721,12 @@ ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
    ZEXTERN uint32_t ZEXPORT crc32_combine (uint32_t, uint32_t, z_off_t);
 #endif
 
-#else /* Z_SOLO */
+#else /* !WITH_GZFILEOP */
 
    ZEXTERN uLong ZEXPORT adler32_combine (uLong, uLong, z_off_t);
    ZEXTERN uLong ZEXPORT crc32_combine (uLong, uLong, z_off_t);
 
-#endif /* !Z_SOLO */
+#endif /* WITH_GZFILEOP */
 
 /* undocumented functions */
 ZEXTERN const char   * ZEXPORT zError           (int);
@@ -1735,10 +1735,10 @@ ZEXTERN const z_crc_t * ZEXPORT get_crc_table   (void);
 ZEXTERN int            ZEXPORT inflateUndermine (z_stream *, int);
 ZEXTERN int            ZEXPORT inflateResetKeep (z_stream *);
 ZEXTERN int            ZEXPORT deflateResetKeep (z_stream *);
-#if defined(_WIN32) && !defined(Z_SOLO)
+#if defined(_WIN32) && defined(WITH_GZFILEOP)
 ZEXTERN gzFile         ZEXPORT gzopen_w (const wchar_t *path, const char *mode);
 #endif
-#ifndef Z_SOLO
+#ifdef WITH_GZFILEOP
 ZEXTERN int            ZEXPORTVA gzvprintf (gzFile file, const char *format, va_list va);
 #endif
 

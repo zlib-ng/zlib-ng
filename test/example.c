@@ -39,34 +39,10 @@ void test_dict_inflate  (Byte *compr, uLong comprLen, Byte *uncompr, uLong uncom
 int  main               (int argc, char *argv[]);
 
 
-#ifdef Z_SOLO
-
-void *myalloc (void *, unsigned, unsigned);
-void myfree (void *, void *);
-
-void *myalloc(void *q, unsigned n, unsigned m)
-{
-    q = Z_NULL;
-    return calloc(n, m);
-}
-
-void myfree(void *q, void *p)
-{
-    q = Z_NULL;
-    free(p);
-}
-
-static alloc_func zalloc = myalloc;
-static free_func zfree = myfree;
-
-#else /* !Z_SOLO */
-
 static alloc_func zalloc = (alloc_func)0;
 static free_func zfree = (free_func)0;
 
 void test_compress      (Byte *compr, uLong comprLen,
-                            Byte *uncompr, uLong uncomprLen);
-void test_gzio          (const char *fname,
                             Byte *uncompr, uLong uncomprLen);
 
 /* ===========================================================================
@@ -92,6 +68,10 @@ void test_compress(Byte *compr, uLong comprLen, Byte *uncompr, uLong uncomprLen)
         printf("uncompress(): %s\n", (char *)uncompr);
     }
 }
+
+#ifdef WITH_GZFILEOP
+void test_gzio          (const char *fname,
+                            Byte *uncompr, uLong uncomprLen);
 
 /* ===========================================================================
  * Test read/write of .gz files
@@ -174,7 +154,7 @@ void test_gzio(const char *fname, Byte *uncompr, uLong uncomprLen)
 #endif
 }
 
-#endif /* Z_SOLO */
+#endif /* WITH_GZFILEOP */
 
 /* ===========================================================================
  * Test deflate() with small buffers
@@ -536,11 +516,9 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-#ifdef Z_SOLO
-    argc = strlen(argv[0]);
-#else
     test_compress(compr, comprLen, uncompr, uncomprLen);
 
+#ifdef WITH_GZFILEOP
     test_gzio((argc > 1 ? argv[1] : TESTFILE),
               uncompr, uncomprLen);
 #endif
