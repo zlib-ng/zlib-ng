@@ -1727,7 +1727,7 @@ ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
 /* undocumented functions */
 ZEXTERN const char   * ZEXPORT zError           (int);
 ZEXTERN int            ZEXPORT inflateSyncPoint (z_stream *);
-ZEXTERN const z_crc_t * ZEXPORT get_crc_table   (void);
+ZEXTERN const uint32_t * ZEXPORT get_crc_table   (void);
 ZEXTERN int            ZEXPORT inflateUndermine (z_stream *, int);
 ZEXTERN int            ZEXPORT inflateResetKeep (z_stream *);
 ZEXTERN int            ZEXPORT deflateResetKeep (z_stream *);

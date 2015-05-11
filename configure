@@ -741,7 +741,6 @@ echo BUILDDIR = $BUILDDIR >> configure.log
 echo STATICLIB = $STATICLIB >> configure.log
 echo TEST = $TEST >> configure.log
 echo VER = $VER >> configure.log
-echo Z_U4 = $Z_U4 >> configure.log
 echo exec_prefix = $exec_prefix >> configure.log
 echo includedir = $includedir >> configure.log
 echo libdir = $libdir >> configure.log

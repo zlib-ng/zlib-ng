@@ -107,23 +107,6 @@ typedef void const *voidpc;
 typedef void       *voidpf;
 typedef void       *voidp;
 
-#if !defined(Z_U4)
-#  include <limits.h>
-#  if (UINT_MAX == 0xffffffffUL)
-#    define Z_U4 unsigned
-#  elif (ULONG_MAX == 0xffffffffUL)
-#    define Z_U4 unsigned long
-#  elif (USHRT_MAX == 0xffffffffUL)
-#    define Z_U4 unsigned short
-#  endif
-#endif
-
-#ifdef Z_U4
-   typedef Z_U4 z_crc_t;
-#else
-   typedef unsigned long z_crc_t;
-#endif
-
 #ifdef HAVE_UNISTD_H    /* may be set to #if 1 by ./configure */
 #  define Z_HAVE_UNISTD_H
 #endif
