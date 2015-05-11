@@ -44,27 +44,25 @@
 
 #include "zutil.h"
 
-#define local static
-
 #if BYTE_ORDER == LITTLE_ENDIAN
-local unsigned long crc32_little (unsigned long, const unsigned char *, unsigned);
+static unsigned long crc32_little (unsigned long, const unsigned char *, unsigned);
 #elif BYTE_ORDER == BIG_ENDIAN
-local unsigned long crc32_big (unsigned long, const unsigned char *, unsigned);
+static unsigned long crc32_big (unsigned long, const unsigned char *, unsigned);
 #endif
 
 /* Local functions for crc concatenation */
-local unsigned long gf2_matrix_times (unsigned long *mat, unsigned long vec);
-local void gf2_matrix_square (unsigned long *square, unsigned long *mat);
-local uLong crc32_combine_ (uLong crc1, uLong crc2, z_off64_t len2);
+static unsigned long gf2_matrix_times (unsigned long *mat, unsigned long vec);
+static void gf2_matrix_square (unsigned long *square, unsigned long *mat);
+static unsigned long crc32_combine_ (unsigned long crc1, unsigned long crc2, z_off64_t len2);
 
 
 #ifdef DYNAMIC_CRC_TABLE
 
-local volatile int crc_table_empty = 1;
-local z_crc_t crc_table[8][256];
-local void make_crc_table (void);
+static volatile int crc_table_empty = 1;
+static z_crc_t crc_table[8][256];
+static void make_crc_table (void);
 #ifdef MAKECRCH
-   local void write_table (FILE *, const z_crc_t *);
+   static void write_table (FILE *, const z_crc_t *);
 #endif /* MAKECRCH */
 /*
   Generate tables for a byte-wise 32-bit CRC calculation on the polynomial:
@@ -92,7 +90,7 @@ local void make_crc_table (void);
   allow for word-at-a-time CRC calculation for both big-endian and little-
   endian machines, where a word is four bytes.
 */
-local void make_crc_table()
+static void make_crc_table()
 {
     z_crc_t c;
     int n, k;
@@ -149,7 +147,7 @@ local void make_crc_table()
         if (out == NULL) return;
         fprintf(out, "/* crc32.h -- tables for rapid CRC calculation\n");
         fprintf(out, " * Generated automatically by crc32.c\n */\n\n");
-        fprintf(out, "local const z_crc_t ");
+        fprintf(out, "static const z_crc_t ");
         fprintf(out, "crc_table[8][256] =\n{\n  {\n");
         write_table(out, crc_table[0]);
         for (k = 1; k < 8; k++) {
@@ -163,7 +161,7 @@ local void make_crc_table()
 }
 
 #ifdef MAKECRCH
-local void write_table(FILE *out, const z_crc_t *table)
+static void write_table(FILE *out, const z_crc_t *table)
 {
     int n;
 
@@ -247,7 +245,7 @@ unsigned long ZEXPORT crc32(crc, buf, len)
 #define DOLIT32 DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4
 
 /* ========================================================================= */
-local unsigned long crc32_little(unsigned long crc, const unsigned char *buf, unsigned len)
+static unsigned long crc32_little(unsigned long crc, const unsigned char *buf, unsigned len)
 {
     register z_crc_t c;
     register const z_crc_t *buf4;
@@ -290,7 +288,7 @@ local unsigned long crc32_little(unsigned long crc, const unsigned char *buf, un
 #define DOBIG32 DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4
 
 /* ========================================================================= */
-local unsigned long crc32_big(unsigned long crc, const unsigned char *buf, unsigned len)
+static unsigned long crc32_big(unsigned long crc, const unsigned char *buf, unsigned len)
 {
     register z_crc_t c;
     register const z_crc_t *buf4;
@@ -331,7 +329,7 @@ local unsigned long crc32_big(unsigned long crc, const unsigned char *buf, unsig
 #define GF2_DIM 32      /* dimension of GF(2) vectors (length of CRC) */
 
 /* ========================================================================= */
-local unsigned long gf2_matrix_times(unsigned long *mat, unsigned long vec)
+static unsigned long gf2_matrix_times(unsigned long *mat, unsigned long vec)
 {
     unsigned long sum;
 
@@ -346,7 +344,7 @@ local unsigned long gf2_matrix_times(unsigned long *mat, unsigned long vec)
 }
 
 /* ========================================================================= */
-local void gf2_matrix_square(unsigned long *square, unsigned long *mat)
+static void gf2_matrix_square(unsigned long *square, unsigned long *mat)
 {
     int n;
 
@@ -355,7 +353,7 @@ local void gf2_matrix_square(unsigned long *square, unsigned long *mat)
 }
 
 /* ========================================================================= */
-local uLong crc32_combine_(uLong crc1, uLong crc2, z_off64_t len2)
+static unsigned long crc32_combine_(unsigned long crc1, unsigned long crc2, z_off64_t len2)
 {
     int n;
     unsigned long row;
@@ -408,17 +406,17 @@ local uLong crc32_combine_(uLong crc1, uLong crc2, z_off64_t len2)
 }
 
 /* ========================================================================= */
-uLong ZEXPORT crc32_combine(crc1, crc2, len2)
-    uLong crc1;
-    uLong crc2;
+unsigned long ZEXPORT crc32_combine(crc1, crc2, len2)
+    unsigned long crc1;
+    unsigned long crc2;
     z_off_t len2;
 {
     return crc32_combine_(crc1, crc2, len2);
 }
 
-uLong ZEXPORT crc32_combine64(crc1, crc2, len2)
-    uLong crc1;
-    uLong crc2;
+unsigned long ZEXPORT crc32_combine64(crc1, crc2, len2)
+    unsigned long crc1;
+    unsigned long crc2;
     z_off64_t len2;
 {
     return crc32_combine_(crc1, crc2, len2);
