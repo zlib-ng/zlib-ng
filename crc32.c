@@ -11,6 +11,20 @@
 
 /* @(#) $Id$ */
 
+#ifdef __MINGW32__
+# include <sys/param.h>
+#elif _WIN32
+# define LITTLE_ENDIAN 1234
+# define BIG_ENDIAN 4321
+# if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64)
+#  define BYTE_ORDER LITTLE_ENDIAN
+# else
+#  error Unknown endianness!
+# endif
+#else
+# include <endian.h>
+#endif
+
 /*
   Note on the use of DYNAMIC_CRC_TABLE: there is no mutex or semaphore
   protection on the static variables used to control the first-use generation
@@ -32,8 +46,11 @@
 
 #define local static
 
+#if BYTE_ORDER == LITTLE_ENDIAN
 local unsigned long crc32_little (unsigned long, const unsigned char *, unsigned);
+#elif BYTE_ORDER == BIG_ENDIAN
 local unsigned long crc32_big (unsigned long, const unsigned char *, unsigned);
+#endif
 
 /* Local functions for crc concatenation */
 local unsigned long gf2_matrix_times (unsigned long *mat, unsigned long vec);
@@ -195,13 +212,11 @@ unsigned long ZEXPORT crc32(crc, buf, len)
 #endif /* DYNAMIC_CRC_TABLE */
 
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
-        z_crc_t endian;
-
-        endian = 1;
-        if (*((unsigned char *)(&endian)))
-            return crc32_little(crc, buf, len);
-        else
-            return crc32_big(crc, buf, len);
+#if BYTE_ORDER == LITTLE_ENDIAN
+        return crc32_little(crc, buf, len);
+#elif BYTE_ORDER == BIG_ENDIAN
+        return crc32_big(crc, buf, len);
+#endif
     }
     crc = crc ^ 0xffffffffUL;
 
@@ -225,6 +240,7 @@ unsigned long ZEXPORT crc32(crc, buf, len)
 
 
 /* ========================================================================= */
+#if BYTE_ORDER == LITTLE_ENDIAN
 #define DOLIT4 c ^= *buf4++; \
         c = crc_table[3][c & 0xff] ^ crc_table[2][(c >> 8) & 0xff] ^ \
             crc_table[1][(c >> 16) & 0xff] ^ crc_table[0][c >> 24]
@@ -264,8 +280,10 @@ local unsigned long crc32_little(unsigned long crc, const unsigned char *buf, un
     c = ~c;
     return (unsigned long)c;
 }
+#endif /* BYTE_ORDER == LITTLE_ENDIAN */
 
 /* ========================================================================= */
+#if BYTE_ORDER == BIG_ENDIAN
 #define DOBIG4 c ^= *++buf4; \
         c = crc_table[4][c & 0xff] ^ crc_table[5][(c >> 8) & 0xff] ^ \
             crc_table[6][(c >> 16) & 0xff] ^ crc_table[7][c >> 24]
@@ -307,6 +325,7 @@ local unsigned long crc32_big(unsigned long crc, const unsigned char *buf, unsig
     c = ~c;
     return (unsigned long)(ZSWAP32(c));
 }
+#endif /* BYTE_ORDER == BIG_ENDIAN */
 
 
 #define GF2_DIM 32      /* dimension of GF(2) vectors (length of CRC) */
