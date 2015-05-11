@@ -37,6 +37,8 @@ CMakeCache.txt
 CMakeFiles
 Testing
 *.cmake
+zconf.h
+zconf.h.cmakein
 zconf.h.included
 
 configure.log

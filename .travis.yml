@@ -3,7 +3,9 @@ compiler:
   - gcc
   - clang
 env:
-  - BUILDDIR=. SRCDIR=.
-  - BUILDDIR=../build SRCDIR=../zlib-ng
+  - BUILDDIR=. TOOL="./configure"
+  - BUILDDIR=../build TOOL="../zlib-ng/configure"
+  - BUILDDIR=. TOOL="cmake ."
+  - BUILDDIR=../build TOOL="cmake ../zlib-ng"
 script: mkdir -p $BUILDDIR && cd $BUILDDIR &&
-        $SRCDIR/configure && make && make check
+        $TOOL && make && make test

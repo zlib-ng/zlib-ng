@@ -63,6 +63,16 @@ if(MSVC)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 endif()
 
+macro(generate_cmakein input output)
+    execute_process(COMMAND sed "/#define ZCONF_H/ a\\\n#cmakedefine Z_PREFIX\\n#cmakedefine Z_HAVE_UNISTD_H\n" -
+                    INPUT_FILE ${input}
+                    OUTPUT_FILE ${output}
+)
+
+endmacro(generate_cmakein)
+
+generate_cmakein( ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.in ${CMAKE_CURRENT_BINARY_DIR}/zconf.h.cmakein )
+
 if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     # If we're doing an out of source build and the user has a zconf.h
     # in their source tree...
@@ -72,13 +82,23 @@ if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
         message(STATUS "to 'zconf.h.included' because this file is included with zlib")
         message(STATUS "but CMake generates it automatically in the build directory.")
         file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.included)
-  endif()
+    endif()
+
+    # If we're doing an out of source build and the user has a zconf.h.cmakein
+    # in their source tree...
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakein)
+        message(STATUS "Renaming")
+        message(STATUS "    ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakein")
+        message(STATUS "to 'zconf.h.cmakeincluded' because this file is included with zlib")
+        message(STATUS "but CMake generates it automatically in the build directory.")
+        file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakein ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakeincluded)
+    endif()
 endif()
 
 set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/zlib.pc)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
 		${ZLIB_PC} @ONLY)
-configure_file(	${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakein
+configure_file(	${CMAKE_CURRENT_BINARY_DIR}/zconf.h.cmakein
 		${CMAKE_CURRENT_BINARY_DIR}/zconf.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
 
