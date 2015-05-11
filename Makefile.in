@@ -48,6 +48,7 @@ SHELL=/bin/sh
 EXE=
 
 SRCDIR=.
+BSDLIBS=
 
 ARCHDIR=arch/generic
 ARCH_STATIC_OBJS=
@@ -134,7 +135,7 @@ infcover.o: $(SRCDIR)/test/infcover.c $(SRCDIR)/zlib.h zconf.h
 	$(CC) $(CFLAGS) -I. -I$(SRCDIR) -c -o $@ $(SRCDIR)/test/infcover.c
 
 infcover: infcover.o libz.a
-	$(CC) $(CFLAGS) -o $@ infcover.o libz.a
+	$(CC) $(CFLAGS) -o $@ infcover.o libz.a $(BSDLIBS)
 
 cover: infcover
 	rm -f *.gcda
