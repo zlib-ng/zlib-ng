@@ -1723,8 +1723,8 @@ ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
 
 #else /* !WITH_GZFILEOP */
 
-   ZEXTERN uLong ZEXPORT adler32_combine (uLong, uLong, z_off_t);
-   ZEXTERN uLong ZEXPORT crc32_combine (uLong, uLong, z_off_t);
+   ZEXTERN uint32_t ZEXPORT adler32_combine (uint32_t, uint32_t, z_off_t);
+   ZEXTERN uint32_t ZEXPORT crc32_combine (uint32_t, uint32_t, z_off_t);
 
 #endif /* WITH_GZFILEOP */
 
