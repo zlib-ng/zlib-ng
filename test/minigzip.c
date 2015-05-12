@@ -100,6 +100,7 @@ gzFile gz_open(const char *path, int fd, const char *mode)
 {
     gzFile gz;
     int ret;
+    int level = Z_DEFAULT_COMPRESSION;
 
     gz = malloc(sizeof(struct gzFile_s));
     if (gz == NULL)
@@ -109,7 +110,7 @@ gzFile gz_open(const char *path, int fd, const char *mode)
     gz->strm.zfree = myfree;
     gz->strm.opaque = Z_NULL;
     if (gz->write)
-        ret = deflateInit2(&(gz->strm), -1, 8, 15 + 16, 8, 0);
+        ret = deflateInit2(&(gz->strm), level, 8, 15 + 16, 8, 0);
     else {
         gz->strm.next_in = 0;
         gz->strm.avail_in = Z_NULL;
