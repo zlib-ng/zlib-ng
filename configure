@@ -84,6 +84,11 @@ fi
 # set defaults before processing command line options
 LDCONFIG=${LDCONFIG-"ldconfig"}
 LDSHAREDLIBC="${LDSHAREDLIBC--lc}"
+DEFFILE=
+RC=
+RCFLAGS=
+RCOBJS=
+STRIP=
 ARCHS=
 prefix=${prefix-/usr/local}
 exec_prefix=${exec_prefix-'${prefix}'}
@@ -105,6 +110,8 @@ old_cc="$CC"
 old_cflags="$CFLAGS"
 OBJC='$(OBJZ)'
 PIC_OBJC='$(PIC_OBJZ)'
+INSTALLTARGETS="install-shared install-static"
+UNINSTALLTARGETS="uninstall-shared uninstall-static"
 
 # leave this script, optionally in a bad way
 leave()
@@ -205,38 +212,67 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
   if test -z "$uname"; then
     uname=`(uname -s || echo unknown) 2>/dev/null`
   fi
-  # LFS
-  CFLAGS="${CFLAGS} -D_LARGEFILE_SOURCE -D_POSIX_C_SOURCE=200809L"
   case "$uname" in
   Linux* | linux* | GNU | GNU/* | solaris*)
         LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map"} ;;
   *BSD | *bsd* | DragonFly)
         LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map"}
         LDCONFIG="ldconfig -m" ;;
-  CYGWIN* | Cygwin* | cygwin* | OS/2*)
+  CYGWIN* | Cygwin* | cygwin*)
+        ARFLAGS="rcs"
+        CFLAGS="${CFLAGS} -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
+        sharedlibdir='${bindir}'
         SHAREDLIB=cygz$shared_ext
+        SHAREDLIBM=''
+        SHAREDLIBV=''
+        SHAREDTARGET=$SHAREDLIB
         IMPORTLIB='libz.dll.a'
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,--enable-auto-image-base -Wl,--out-implib=${IMPORTLIB}"}
-        LDSHAREDLIBC=''
+        LDSHARED=${LDSHARED-"$cc -shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/zlib.map"}
+        LDSHAREDLIBC=""
+        DEFFILE='win32/zlib.def'
+        RC='windres'
+        RCFLAGS='--define GCC_WINDRES'
+        RCOBJS='zlibrc.o'
+        STRIP='strip'
         EXE='.exe' ;;
   MSYS* | msys*)
+        ARFLAGS="rcs"
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
+        sharedlibdir='${bindir}'
         SHAREDLIB=msys-z$shared_ext
+        SHAREDLIBM=''
+        SHAREDLIBV=''
+        SHAREDTARGET=$SHAREDLIB
         IMPORTLIB='libz.dll.a'
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,--enable-auto-image-base -Wl,--out-implib=${IMPORTLIB}"}
-        LDSHAREDLIBC=''
+        LDSHARED=${LDSHARED-"$cc -shared -Wl,--out-implib,${IMPORTLIB}"}
+        LDSHAREDLIBC=""
+        DEFFILE='win32/zlib.def'
+        RC='windres'
+        RCFLAGS='--define GCC_WINDRES'
+        RCOBJS='zlibrc.o'
+        STRIP='strip'
         EXE='.exe' ;;
   MINGW* | mingw*)
-        CFLAGS="${CFLAGS} -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE=1"
+        ARFLAGS="rcs"
+        CFLAGS="${CFLAGS} -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE=1"
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
+        sharedlibdir='${bindir}'
         SHAREDLIB=libz-$VER1$shared_ext
+        SHAREDLIBM=''
+        SHAREDLIBV=''
+        SHAREDTARGET=$SHAREDLIB
         IMPORTLIB='libz.dll.a'
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,--enable-auto-image-base -Wl,--out-implib=${IMPORTLIB}"}
-        LDSHAREDLIBC=''
+        LDSHARED=${LDSHARED-"$cc -shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/zlib.map"}
+        LDSHAREDLIBC=""
+        DEFFILE='win32/zlib.def'
+        RC='windres'
+        RCFLAGS='--define GCC_WINDRES'
+        RCOBJS='zlibrc.o'
+        STRIP='strip'
         EXE='.exe' ;;
   QNX*)  # This is for QNX6. I suppose that the QNX rule below is for QNX2,QNX4
          # (alain.bonnefoy@icbt.com)
@@ -256,6 +292,7 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
              SHAREDLIB=libz$shared_ext
              SHAREDLIBV=libz.$VER$shared_ext
              SHAREDLIBM=libz.$VER1$shared_ext
+             SHAREDTARGET=$SHAREDLIBV
              LDSHARED=${LDSHARED-"$cc -dynamiclib -install_name $libdir/$SHAREDLIBM -compatibility_version $VER1 -current_version $VER3"}
              if libtool -V 2>&1 | grep Apple > /dev/null; then
                  AR="libtool"
@@ -301,6 +338,7 @@ fi
 SHAREDLIB=${SHAREDLIB-"libz$shared_ext"}
 SHAREDLIBV=${SHAREDLIBV-"libz$shared_ext.$VER"}
 SHAREDLIBM=${SHAREDLIBM-"libz$shared_ext.$VER1"}
+SHAREDTARGET=${SHAREDTARGET-"libz$shared_ext.$VER"}
 
 echo >> configure.log
 
@@ -364,7 +402,7 @@ if test $shared -eq 1; then
   # we must test in two steps (cc then ld), required at least on SunOS 4.x
   if try $CC -w -c $SFLAGS $test.c &&
      try $LDSHARED $SFLAGS -o $test$shared_ext $test.o; then
-    echo Building shared library $SHAREDLIBV with $CC. | tee -a configure.log
+    echo Building shared library $SHAREDTARGET with $CC. | tee -a configure.log
   elif test -z "$old_cc" -a -z "$old_cflags"; then
     echo No shared library support. | tee -a configure.log
     shared=0;
@@ -380,6 +418,9 @@ if test $shared -eq 0; then
   SHAREDLIB=""
   SHAREDLIBV=""
   SHAREDLIBM=""
+  SHAREDTARGET=""
+  INSTALLTARGETS=install-static
+  UNINSTALLTARGETS=uninstall-static
   echo Building static library $STATICLIB version $VER with $CC. | tee -a configure.log
 else
   ALL="static shared"
@@ -477,6 +518,10 @@ if test $compat -eq 1; then
   SFLAGS="${SFLAGS} -DZLIB_COMPAT -DWITH_GZFILEOP"
   OBJC="${OBJC} \$(OBJG)"
   PIC_OBJC="${PIC_OBJC} \$(PIC_OBJG)"
+  case "$uname" in
+  CYGWIN* | Cygwin* | cygwin* | MSYS* | msys* | MINGW* | mingw*)
+    DEFFILE="win32/zlibcompat.def" ;;
+  esac
 fi
 
 # if code coverage testing was requested, use older gcc if defined, e.g. "gcc-4.2" on Mac OS X
@@ -727,6 +772,11 @@ echo LDCONFIG = $LDCONFIG >> configure.log
 echo LDFLAGS = $LDFLAGS >> configure.log
 echo LDSHARED = $LDSHARED >> configure.log
 echo LDSHAREDLIBC = $LDSHAREDLIBC >> configure.log
+echo DEFFILE = $DEFFILE >> configure.log
+echo RC = $RC >> configure.log
+echo RCFLAGS = $RCFLAGS >> configure.log
+echo RCOBJS = $RCOBJS >> configure.log
+echo STRIP = $STRIP >> configure.log
 echo BSDLIBS = $BSDLIBS >> configure.log
 echo OBJC = $OBJC >> configure.log
 echo PIC_OBJC = $PIC_OBJC >> configure.log
@@ -735,7 +785,10 @@ echo SFLAGS = $SFLAGS >> configure.log
 echo SHAREDLIB = $SHAREDLIB >> configure.log
 echo SHAREDLIBM = $SHAREDLIBM >> configure.log
 echo SHAREDLIBV = $SHAREDLIBV >> configure.log
+echo SHAREDTARGET = $SHAREDTARGET >> configure.log
 echo IMPORTLIB = $IMPORTLIB >> configure.log
+echo INSTALLTARGETS = $INSTALLTARGETS >> configure.log
+echo UNINSTALLTARGETS = $UNINSTALLTARGETS >> configure.log
 echo SRCDIR = $SRCDIR >> configure.log
 echo BUILDDIR = $BUILDDIR >> configure.log
 echo STATICLIB = $STATICLIB >> configure.log
@@ -743,6 +796,7 @@ echo TEST = $TEST >> configure.log
 echo VER = $VER >> configure.log
 echo exec_prefix = $exec_prefix >> configure.log
 echo includedir = $includedir >> configure.log
+echo bindir = $bindir >> configure.log
 echo libdir = $libdir >> configure.log
 echo mandir = $mandir >> configure.log
 echo prefix = $prefix >> configure.log
@@ -767,20 +821,26 @@ sed < $SRCDIR/Makefile.in "
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#
 /^SHAREDLIBM *=/s#=.*#=$SHAREDLIBM#
+/^SHAREDTARGET *=/s#=.*#=$SHAREDTARGET#
 /^IMPORTLIB *=/s#=.*#=$IMPORTLIB#
 /^AR *=/s#=.*#=$AR#
 /^ARFLAGS *=/s#=.*#=$ARFLAGS#
 /^RANLIB *=/s#=.*#=$RANLIB#
 /^LDCONFIG *=/s#=.*#=$LDCONFIG#
 /^LDSHAREDLIBC *=/s#=.*#=$LDSHAREDLIBC#
+/^DEFFILE *=/s#=.*#=$DEFFILE#
+/^RC *=/s#=.*#=$RC#
+/^RCFLAGS *=/s#=.*#=$RCFLAGS#
+/^RCOBJS *=/s#=.*#=$RCOBJS#
+/^STRIP *=/s#=.*#=$STRIP#
 /^EXE *=/s#=.*#=$EXE#
-/^prefix *=/s#=.*#=$prefix#
-/^exec_prefix *=/s#=.*#=$exec_prefix#
-/^bindir *=/s#=.*#=$bindir#
-/^libdir *=/s#=.*#=$libdir#
-/^sharedlibdir *=/s#=.*#=$sharedlibdir#
-/^includedir *=/s#=.*#=$includedir#
-/^mandir *=/s#=.*#=$mandir#
+/^prefix *=/s#=.*#= $prefix#
+/^exec_prefix *=/s#=.*#= $exec_prefix#
+/^bindir *=/s#=.*#= $bindir#
+/^libdir *=/s#=.*#= $libdir#
+/^sharedlibdir *=/s#=.*#= $sharedlibdir#
+/^includedir *=/s#=.*#= $includedir#
+/^mandir *=/s#=.*#= $mandir#
 /^SRCDIR *=/s#=.*#=$SRCDIR#
 /^BSDLIBS *=/s#=.*#=$BSDLIBS#
 /^INCLUDES *=/s#=.*#=$INCLUDES#
@@ -788,6 +848,8 @@ sed < $SRCDIR/Makefile.in "
 /^PIC_OBJC *=/s#=.*#= $PIC_OBJC#
 /^all: */s#:.*#: $ALL#
 /^test: */s#:.*#: $TEST#
+/^install-libs: */s#:.*#: $INSTALLTARGETS#
+/^uninstall-libs: */s#:.*#: $UNINSTALLTARGETS#
 /^ARCHDIR *=/s#=.*#=$ARCHDIR#
 /^ARCH_STATIC_OBJS *=/s#=.*#=$ARCH_STATIC_OBJS#
 /^ARCH_SHARED_OBJS *=/s#=.*#=$ARCH_SHARED_OBJS#
@@ -797,7 +859,7 @@ sed < $SRCDIR/Makefile.in "
 mkdir -p $ARCHDIR
 
 ARCHINCLUDES="-I$SRCDIR/$ARCHDIR -I$SRCDIR"
-if [ "$SRCDIR" != "$BUILDDIR" ]; then ARCHINCLUDES="${ARCHINCLUDES} -I$BUILDDIR"; fi
+if [ "$SRCDIR" != "$BUILDDIR" ]; then ARCHINCLUDES="-I$BUILDDIR ${ARCHINCLUDES}"; fi
 
 sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#

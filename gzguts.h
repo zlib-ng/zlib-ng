@@ -75,7 +75,7 @@
 #endif
 
 /* provide prototypes for these when building zlib without LFS */
-#if !defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0
+#if (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0) && defined(WITH_GZFILEOP)
     ZEXTERN gzFile ZEXPORT gzopen64 (const char *, const char *);
     ZEXTERN z_off64_t ZEXPORT gzseek64 (gzFile, z_off64_t, int);
     ZEXTERN z_off64_t ZEXPORT gztell64 (gzFile);
