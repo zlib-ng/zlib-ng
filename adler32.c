@@ -6,7 +6,6 @@
 /* @(#) $Id$ */
 
 #include "zutil.h"
-#include <stdint.h>
 
 static uint32_t adler32_combine_ (uint32_t adler1, uint32_t adler2, z_off64_t len2);
 

@@ -42,8 +42,7 @@
 #  endif /* !DYNAMIC_CRC_TABLE */
 #endif /* MAKECRCH */
 
-#include "zutil.h"
-#include <stdint.h>
+#include "deflate.h"
 
 #if BYTE_ORDER == LITTLE_ENDIAN
 static uint32_t crc32_little (uint32_t, const unsigned char *, unsigned);
@@ -423,7 +422,6 @@ uint32_t ZEXPORT crc32_combine64(crc1, crc2, len2)
     return crc32_combine_(crc1, crc2, len2);
 }
 
-#include "deflate.h"
 
 #ifdef X86_PCLMULQDQ_CRC
 #include "arch/x86/x86.h"
