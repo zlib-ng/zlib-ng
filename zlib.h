@@ -1735,7 +1735,7 @@ ZEXTERN const z_crc_t * ZEXPORT get_crc_table   (void);
 ZEXTERN int            ZEXPORT inflateUndermine (z_stream *, int);
 ZEXTERN int            ZEXPORT inflateResetKeep (z_stream *);
 ZEXTERN int            ZEXPORT deflateResetKeep (z_stream *);
-#if defined(_WIN32) && defined(WITH_GZFILEOP)
+#if (defined(_WIN32) || defined(__CYGWIN__)) && defined(WITH_GZFILEOP)
 ZEXTERN gzFile         ZEXPORT gzopen_w (const wchar_t *path, const char *mode);
 #endif
 #ifdef WITH_GZFILEOP

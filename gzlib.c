@@ -132,7 +132,7 @@ local gzFile gz_open(const void *path, int fd, const char *mode)
     }
 
     /* save the path name for error messages */
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
     if (fd == -2) {
         len = wcstombs(NULL, path, 0);
         if (len == (size_t)-1)
@@ -146,7 +146,7 @@ local gzFile gz_open(const void *path, int fd, const char *mode)
         free(state);
         return NULL;
     }
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
     if (fd == -2)
         if (len)
             wcstombs(state->path, path, len + 1);
@@ -181,6 +181,8 @@ local gzFile gz_open(const void *path, int fd, const char *mode)
     state->fd = fd > -1 ? fd : (
 #ifdef _WIN32
         fd == -2 ? _wopen(path, oflag, 0666) :
+#elif __CYGWIN__
+        fd == -2 ? open(state->path, oflag, 0666) :
 #endif
         open((const char *)path, oflag, 0666));
     if (state->fd == -1) {
