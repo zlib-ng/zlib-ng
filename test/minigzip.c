@@ -109,7 +109,7 @@ gzFile gz_open(const char *path, int fd, const char *mode)
     gz->strm.zalloc = myalloc;
     gz->strm.zfree = myfree;
     gz->strm.opaque = Z_NULL;
-    int level = Z_DEFAULT_COMPRESSION;
+
     const char *plevel = mode;
     while (*plevel) {
         if (*plevel >= '0' && *plevel <= '9') {
