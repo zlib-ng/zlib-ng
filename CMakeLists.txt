@@ -22,6 +22,23 @@ check_include_file(stdint.h    HAVE_STDINT_H)
 check_include_file(stddef.h    HAVE_STDDEF_H)
 
 #
+# Options parsing
+#
+
+option (ZLIB_COMPAT "Compile with zlib compatible API" OFF)
+if (ZLIB_COMPAT)
+    message(STATUS "ZLIB_COMPAT")
+    add_definitions(-DZLIB_COMPAT)
+    set (WITH_GZFILEOP ON)
+endif (ZLIB_COMPAT)
+
+option (WITH_GZFILEOP "Compile with support for gzFile related functions" OFF)
+if (WITH_GZFILEOP)
+    message(STATUS "WITH_GZFILEOP")
+    add_definitions(-DWITH_GZFILEOP)
+endif (WITH_GZFILEOP)
+
+#
 # Check to see if we have large file support
 #
 set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1)
@@ -127,10 +144,6 @@ set(ZLIB_SRCS
     compress.c
     crc32.c
     deflate.c
-    gzclose.c
-    gzlib.c
-    gzread.c
-    gzwrite.c
     inflate.c
     infback.c
     inftrees.c
@@ -140,6 +153,18 @@ set(ZLIB_SRCS
     uncompr.c
     zutil.c
 )
+if (WITH_GZFILEOP)
+    set(ZLIB_GZFILE_SRCS
+        gzclose.c
+        gzlib.c
+        gzread.c
+        gzwrite.c
+    )
+else (WITH_GZFILEOP)
+    set(ZLIB_GZFILE_SRCS
+    )
+endif (WITH_GZFILEOP)
+
 
 if(NOT MINGW)
     set(ZLIB_DLL_SRCS
@@ -168,8 +193,9 @@ if(MINGW)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif(MINGW)
 
-add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_GZFILE_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_GZFILE_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+
 set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
 set_target_properties(zlib PROPERTIES SOVERSION 1)
 
