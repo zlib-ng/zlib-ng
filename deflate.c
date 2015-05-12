@@ -233,11 +233,7 @@ bulk_insert_str(deflate_state *s, Pos startpos, uInt count) {
     memset((Byte *)s->head, 0, (unsigned)(s->hash_size-1)*sizeof(*s->head));
 
 /* ========================================================================= */
-int ZEXPORT deflateInit_(strm, level, version, stream_size)
-    z_stream *strm;
-    int level;
-    const char *version;
-    int stream_size;
+int ZEXPORT deflateInit_(z_stream *strm, int level, const char *version, int stream_size)
 {
     return deflateInit2_(strm, level, Z_DEFLATED, MAX_WBITS, DEF_MEM_LEVEL,
                          Z_DEFAULT_STRATEGY, version, stream_size);
@@ -245,16 +241,8 @@ int ZEXPORT deflateInit_(strm, level, version, stream_size)
 }
 
 /* ========================================================================= */
-int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
-                  version, stream_size)
-    z_stream *strm;
-    int  level;
-    int  method;
-    int  windowBits;
-    int  memLevel;
-    int  strategy;
-    const char *version;
-    int stream_size;
+int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
+                           int memLevel, int strategy, const char *version, int stream_size)
 {
     unsigned window_padding = 0;
     deflate_state *s;
@@ -364,10 +352,7 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
 }
 
 /* ========================================================================= */
-int ZEXPORT deflateSetDictionary (strm, dictionary, dictLength)
-    z_stream *strm;
-    const Byte *dictionary;
-    uInt  dictLength;
+int ZEXPORT deflateSetDictionary (z_stream *strm, const Byte *dictionary, uInt  dictLength)
 {
     deflate_state *s;
     uInt str, n;
@@ -431,8 +416,7 @@ int ZEXPORT deflateSetDictionary (strm, dictionary, dictLength)
 }
 
 /* ========================================================================= */
-int ZEXPORT deflateResetKeep (strm)
-    z_stream *strm;
+int ZEXPORT deflateResetKeep (z_stream *strm)
 {
     deflate_state *s;
 
@@ -466,8 +450,7 @@ int ZEXPORT deflateResetKeep (strm)
 }
 
 /* ========================================================================= */
-int ZEXPORT deflateReset (strm)
-    z_stream *strm;
+int ZEXPORT deflateReset (z_stream *strm)
 {
     int ret;
 
@@ -478,9 +461,7 @@ int ZEXPORT deflateReset (strm)
 }
 
 /* ========================================================================= */
-int ZEXPORT deflateSetHeader (strm, head)
-    z_stream *strm;
-    gz_headerp head;
+int ZEXPORT deflateSetHeader (z_stream *strm, gz_headerp head)
 {
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
     if (strm->state->wrap != 2) return Z_STREAM_ERROR;
@@ -489,10 +470,7 @@ int ZEXPORT deflateSetHeader (strm, head)
 }
 
 /* ========================================================================= */
-int ZEXPORT deflatePending (strm, pending, bits)
-    unsigned *pending;
-    int *bits;
-    z_stream *strm;
+int ZEXPORT deflatePending (z_stream *strm, unsigned *pending, int *bits)
 {
     if (strm == Z_NULL || strm->state == Z_NULL) return Z_STREAM_ERROR;
     if (pending != Z_NULL)
@@ -503,10 +481,7 @@ int ZEXPORT deflatePending (strm, pending, bits)
 }
 
 /* ========================================================================= */
-int ZEXPORT deflatePrime (strm, bits, value)
-    z_stream *strm;
-    int bits;
-    int value;
+int ZEXPORT deflatePrime (z_stream *strm, int bits, int value)
 {
     deflate_state *s;
     int put;
@@ -529,10 +504,7 @@ int ZEXPORT deflatePrime (strm, bits, value)
 }
 
 /* ========================================================================= */
-int ZEXPORT deflateParams(strm, level, strategy)
-    z_stream *strm;
-    int level;
-    int strategy;
+int ZEXPORT deflateParams(z_stream *strm, int level, int strategy)
 {
     deflate_state *s;
     compress_func func;
@@ -566,12 +538,8 @@ int ZEXPORT deflateParams(strm, level, strategy)
 }
 
 /* ========================================================================= */
-int ZEXPORT deflateTune(strm, good_length, max_lazy, nice_length, max_chain)
-    z_stream *strm;
-    int good_length;
-    int max_lazy;
-    int nice_length;
-    int max_chain;
+int ZEXPORT deflateTune(z_stream *strm, int good_length, int max_lazy,
+                         int nice_length, int max_chain)
 {
     deflate_state *s;
 
@@ -601,9 +569,7 @@ int ZEXPORT deflateTune(strm, good_length, max_lazy, nice_length, max_chain)
  * upper bound of about 14% expansion does not seem onerous for output buffer
  * allocation.
  */
-uLong ZEXPORT deflateBound(strm, sourceLen)
-    z_stream *strm;
-    uLong sourceLen;
+uLong ZEXPORT deflateBound(z_stream *strm, uLong sourceLen)
 {
     deflate_state *s;
     uLong complen, wraplen;
@@ -698,9 +664,7 @@ ZLIB_INTERNAL void flush_pending(strm)
 }
 
 /* ========================================================================= */
-int ZEXPORT deflate (strm, flush)
-    z_stream *strm;
-    int flush;
+int ZEXPORT deflate (z_stream *strm, int flush)
 {
     int old_flush; /* value of flush param for previous deflate call */
     deflate_state *s;
@@ -1020,8 +984,7 @@ int ZEXPORT deflate (strm, flush)
 }
 
 /* ========================================================================= */
-int ZEXPORT deflateEnd (strm)
-    z_stream *strm;
+int ZEXPORT deflateEnd (z_stream *strm)
 {
     int status;
 
@@ -1053,9 +1016,7 @@ int ZEXPORT deflateEnd (strm)
 /* =========================================================================
  * Copy the source state to the destination state.
  */
-int ZEXPORT deflateCopy (dest, source)
-    z_stream *dest;
-    z_stream *source;
+int ZEXPORT deflateCopy (z_stream *dest, z_stream *source)
 {
     deflate_state *ds;
     deflate_state *ss;

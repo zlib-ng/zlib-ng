@@ -207,25 +207,19 @@ local gzFile gz_open(const void *path, int fd, const char *mode)
 }
 
 /* -- see zlib.h -- */
-gzFile ZEXPORT gzopen(path, mode)
-    const char *path;
-    const char *mode;
+gzFile ZEXPORT gzopen(const char *path, const char *mode)
 {
     return gz_open(path, -1, mode);
 }
 
 /* -- see zlib.h -- */
-gzFile ZEXPORT gzopen64(path, mode)
-    const char *path;
-    const char *mode;
+gzFile ZEXPORT gzopen64(const char *path, const char *mode)
 {
     return gz_open(path, -1, mode);
 }
 
 /* -- see zlib.h -- */
-gzFile ZEXPORT gzdopen(fd, mode)
-    int fd;
-    const char *mode;
+gzFile ZEXPORT gzdopen(int fd, const char *mode)
 {
     char *path;         /* identifier for error messages */
     gzFile gz;
@@ -240,18 +234,14 @@ gzFile ZEXPORT gzdopen(fd, mode)
 
 /* -- see zlib.h -- */
 #if defined(_WIN32) || defined(__CYGWIN__)
-gzFile ZEXPORT gzopen_w(path, mode)
-    const wchar_t *path;
-    const char *mode;
+gzFile ZEXPORT gzopen_w(const wchar_t *path, const char *mode)
 {
     return gz_open(path, -2, mode);
 }
 #endif
 
 /* -- see zlib.h -- */
-int ZEXPORT gzbuffer(file, size)
-    gzFile file;
-    unsigned size;
+int ZEXPORT gzbuffer(gzFile file, unsigned size)
 {
     gz_statep state;
 
@@ -274,8 +264,7 @@ int ZEXPORT gzbuffer(file, size)
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzrewind(file)
-    gzFile file;
+int ZEXPORT gzrewind(gzFile file)
 {
     gz_statep state;
 
@@ -297,10 +286,7 @@ int ZEXPORT gzrewind(file)
 }
 
 /* -- see zlib.h -- */
-z_off64_t ZEXPORT gzseek64(file, offset, whence)
-    gzFile file;
-    z_off64_t offset;
-    int whence;
+z_off64_t ZEXPORT gzseek64(gzFile file, z_off64_t offset, int whence)
 {
     unsigned n;
     z_off64_t ret;
@@ -374,10 +360,7 @@ z_off64_t ZEXPORT gzseek64(file, offset, whence)
 }
 
 /* -- see zlib.h -- */
-z_off_t ZEXPORT gzseek(file, offset, whence)
-    gzFile file;
-    z_off_t offset;
-    int whence;
+z_off_t ZEXPORT gzseek(gzFile file, z_off_t offset, int whence)
 {
     z_off64_t ret;
 
@@ -386,8 +369,7 @@ z_off_t ZEXPORT gzseek(file, offset, whence)
 }
 
 /* -- see zlib.h -- */
-z_off64_t ZEXPORT gztell64(file)
-    gzFile file;
+z_off64_t ZEXPORT gztell64(gzFile file)
 {
     gz_statep state;
 
@@ -403,8 +385,7 @@ z_off64_t ZEXPORT gztell64(file)
 }
 
 /* -- see zlib.h -- */
-z_off_t ZEXPORT gztell(file)
-    gzFile file;
+z_off_t ZEXPORT gztell(gzFile file)
 {
     z_off64_t ret;
 
@@ -413,8 +394,7 @@ z_off_t ZEXPORT gztell(file)
 }
 
 /* -- see zlib.h -- */
-z_off64_t ZEXPORT gzoffset64(file)
-    gzFile file;
+z_off64_t ZEXPORT gzoffset64(gzFile file)
 {
     z_off64_t offset;
     gz_statep state;
@@ -436,8 +416,7 @@ z_off64_t ZEXPORT gzoffset64(file)
 }
 
 /* -- see zlib.h -- */
-z_off_t ZEXPORT gzoffset(file)
-    gzFile file;
+z_off_t ZEXPORT gzoffset(gzFile file)
 {
     z_off64_t ret;
 
@@ -446,8 +425,7 @@ z_off_t ZEXPORT gzoffset(file)
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzeof(file)
-    gzFile file;
+int ZEXPORT gzeof(gzFile file)
 {
     gz_statep state;
 
@@ -463,9 +441,7 @@ int ZEXPORT gzeof(file)
 }
 
 /* -- see zlib.h -- */
-const char * ZEXPORT gzerror(file, errnum)
-    gzFile file;
-    int *errnum;
+const char * ZEXPORT gzerror(gzFile file, int *errnum)
 {
     gz_statep state;
 
@@ -484,8 +460,7 @@ const char * ZEXPORT gzerror(file, errnum)
 }
 
 /* -- see zlib.h -- */
-void ZEXPORT gzclearerr(file)
-    gzFile file;
+void ZEXPORT gzclearerr(gzFile file)
 {
     gz_statep state;
 

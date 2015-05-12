@@ -197,10 +197,7 @@ const z_crc_t * ZEXPORT get_crc_table()
 #define DO4 DO1; DO1; DO1; DO1
 
 /* ========================================================================= */
-uint32_t ZEXPORT crc32(crc, buf, len)
-    uint32_t crc;
-    const unsigned char *buf;
-    uInt len;
+uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, uInt len)
 {
     if (buf == Z_NULL) return 0;
 
@@ -406,18 +403,12 @@ static uint32_t crc32_combine_(uint32_t crc1, uint32_t crc2, z_off64_t len2)
 }
 
 /* ========================================================================= */
-uint32_t ZEXPORT crc32_combine(crc1, crc2, len2)
-    uint32_t crc1;
-    uint32_t crc2;
-    z_off_t len2;
+uint32_t ZEXPORT crc32_combine(uint32_t crc1, uint32_t crc2, z_off_t len2)
 {
     return crc32_combine_(crc1, crc2, len2);
 }
 
-uint32_t ZEXPORT crc32_combine64(crc1, crc2, len2)
-    uint32_t crc1;
-    uint32_t crc2;
-    z_off64_t len2;
+uint32_t ZEXPORT crc32_combine64(uint32_t crc1, uint32_t crc2, z_off64_t len2)
 {
     return crc32_combine_(crc1, crc2, len2);
 }

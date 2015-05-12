@@ -21,11 +21,7 @@
    enough memory, Z_BUF_ERROR if there was not enough room in the output
    buffer, or Z_DATA_ERROR if the input data was corrupted.
 */
-int ZEXPORT uncompress (dest, destLen, source, sourceLen)
-    Byte *dest;
-    uLong *destLen;
-    const Byte *source;
-    uLong sourceLen;
+int ZEXPORT uncompress (Byte *dest, uLong *destLen, const Byte *source, uLong sourceLen)
 {
     z_stream stream;
     int err;
