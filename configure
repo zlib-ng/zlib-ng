@@ -760,6 +760,10 @@ echo ARCH_STATIC_OBJS = ${ARCH_STATIC_OBJS} >> configure.log
 echo ARCH_SHARED_OBJS = ${ARCH_SHARED_OBJS} >> configure.log
 
 # update Makefile with the configure results
+
+INCLUDES="-I$SRCDIR"
+if [ "$SRCDIR" != "$BUILDDIR" ]; then INCLUDES="-I$BUILDDIR ${INCLUDES}"; fi
+
 sed < $SRCDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
@@ -786,6 +790,7 @@ sed < $SRCDIR/Makefile.in "
 /^mandir *=/s#=.*#=$mandir#
 /^SRCDIR *=/s#=.*#=$SRCDIR#
 /^BSDLIBS *=/s#=.*#=$BSDLIBS#
+/^INCLUDES *=/s#=.*#=$INCLUDES#
 /^OBJC *=/s#=.*#= $OBJC#
 /^PIC_OBJC *=/s#=.*#= $PIC_OBJC#
 /^all: */s#:.*#: $ALL#
