@@ -101,6 +101,7 @@ gzFile gz_open(const char *path, int fd, const char *mode)
     gzFile gz;
     int ret;
     int level = Z_DEFAULT_COMPRESSION;
+    const char *plevel = mode;
 
     gz = malloc(sizeof(struct gzFile_s));
     if (gz == NULL)
@@ -110,7 +111,6 @@ gzFile gz_open(const char *path, int fd, const char *mode)
     gz->strm.zfree = myfree;
     gz->strm.opaque = Z_NULL;
 
-    const char *plevel = mode;
     while (*plevel) {
         if (*plevel >= '0' && *plevel <= '9') {
            level = *plevel - '0';
@@ -167,7 +167,7 @@ int gzread (gzFile, void *, unsigned);
 int gzread(gzFile gz, void *buf, unsigned len)
 {
     int ret;
-    unsigned got;
+    size_t got;
     unsigned char in[1];
     z_stream *strm;
 
