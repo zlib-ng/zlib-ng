@@ -219,7 +219,7 @@ uint32_t ZEXPORT crc32(crc, buf, len)
     }
     crc = crc ^ 0xffffffff;
 
-#ifdef CRC32_UNROLL_LESS
+#ifdef UNROLL_LESS
     while (len >= 4) {
         DO4;
         len -= 4;
@@ -260,7 +260,7 @@ static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, unsigned le
 
     buf4 = (const z_crc_t *)(const void *)buf;
 
-#ifndef CRC32_UNROLL_LESS
+#ifndef UNROLL_LESS
     while (len >= 32) {
         DOLIT32;
         len -= 32;
@@ -304,7 +304,7 @@ static uint32_t crc32_big(uint32_t crc, const unsigned char *buf, unsigned len)
     buf4 = (const z_crc_t *)(const void *)buf;
     buf4--;
 
-#ifndef CRC32_UNROLL_LESS
+#ifndef UNROLL_LESS
     while (len >= 32) {
         DOBIG32;
         len -= 32;
