@@ -22,7 +22,7 @@ extern void flush_pending  (z_stream *strm);
 local inline long compare258(const unsigned char *const src0,
         const unsigned char *const src1)
 {
-    long ax, dx, cx;
+    uintptr_t ax, dx, cx;
     __m128i xmm_src0;
 
     ax = 16;
@@ -152,7 +152,7 @@ local inline Pos quick_insert_string(deflate_state *const s, const Pos str)
         "crc32l (%[window], %[str], 1), %0\n\t"
     : "+r" (h)
     : [window] "r" (s->window),
-      [str] "r" ((long)str)
+      [str] "r" ((uintptr_t)str)
     );
 
     ret = s->head[h & s->hash_mask];
