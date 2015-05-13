@@ -33,7 +33,36 @@ EXPORTS
     compress2
     compressBound
     uncompress
+    gzopen
+    gzdopen
+    gzbuffer
+    gzsetparams
+    gzread
+    gzwrite
+    gzprintf
+    gzvprintf
+    gzputs
+    gzgets
+    gzputc
+    gzgetc
+    gzungetc
+    gzflush
+    gzseek
+    gzrewind
+    gztell
+    gzoffset
+    gzeof
+    gzdirect
+    gzclose
+    gzclose_r
+    gzclose_w
+    gzerror
+    gzclearerr
 ; large file functions
+    gzopen64
+    gzseek64
+    gztell64
+    gzoffset64
     adler32_combine64
     crc32_combine64
 ; checksum functions
@@ -47,9 +76,11 @@ EXPORTS
     inflateInit_
     inflateInit2_
     inflateBackInit_
+    gzgetc_
     zError
     inflateSyncPoint
     get_crc_table
     inflateUndermine
     inflateResetKeep
     deflateResetKeep
+    gzopen_w

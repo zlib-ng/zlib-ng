@@ -27,10 +27,16 @@ WFLAGS  = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
 LDFLAGS = -nologo -debug -incremental:no -opt:ref -manifest
 ARFLAGS = -nologo
 RCFLAGS = /dWIN32 /r
+DEFFILE = zlib.def
+WITH_GZFILEOP =
 
-OBJS = adler32.obj compress.obj crc32.obj deflate.obj gzclose.obj gzlib.obj gzread.obj \
-       gzwrite.obj infback.obj inflate.obj inftrees.obj inffast.obj match.obj trees.obj uncompr.obj zutil.obj
-
+OBJS = adler32.obj compress.obj crc32.obj deflate.obj \
+       infback.obj inflate.obj inftrees.obj inffast.obj match.obj trees.obj uncompr.obj zutil.obj
+!if "$(WITH_GZFILEOP)" != ""
+WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
+OBJS = $(OBJS) gzclose.obj gzlib.obj gzread.obj gzwrite.obj
+DEFFILE = zlibcompat.def
+!endif
 
 # targets
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) \
@@ -42,7 +48,7 @@ $(STATICLIB): $(OBJS)
 $(IMPLIB): $(SHAREDLIB)
 
 $(SHAREDLIB): $(TOP)/win32/zlib.def $(OBJS) zlib1.res
-	$(LD) $(LDFLAGS) -def:$(TOP)/win32/zlib.def -dll -implib:$(IMPLIB) \
+	$(LD) $(LDFLAGS) -def:$(TOP)/win32/$(DEFFILE) -dll -implib:$(IMPLIB) \
 	  -out:$@ -base:0x5A4C0000 $(OBJS) zlib1.res
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;2
