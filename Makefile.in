@@ -136,13 +136,13 @@ test64: all64
 infcover.o: $(SRCDIR)/test/infcover.c $(SRCDIR)/zlib.h zconf.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/infcover.c
 
-infcover: infcover.o $(STATICLIB)
+infcover$(EXE): infcover.o $(STATICLIB)
 	$(CC) $(CFLAGS) -o $@ infcover.o $(STATICLIB) $(BSDLIBS)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-cover: infcover
+cover: infcover$(EXE)
 	rm -f *.gcda
 	./infcover
 	gcov inf*.c
