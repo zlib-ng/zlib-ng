@@ -247,7 +247,7 @@ static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, unsigned le
     register uint32_t c;
     register const uint32_t *buf4;
 
-    c = (uint32_t)crc;
+    c = crc;
     c = ~c;
     while (len && ((ptrdiff_t)buf & 3)) {
         c = crc_table[0][(c ^ *buf++) & 0xff] ^ (c >> 8);
@@ -273,7 +273,7 @@ static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, unsigned le
         c = crc_table[0][(c ^ *buf++) & 0xff] ^ (c >> 8);
     } while (--len);
     c = ~c;
-    return (uint32_t)c;
+    return c;
 }
 #endif /* BYTE_ORDER == LITTLE_ENDIAN */
 
@@ -290,7 +290,7 @@ static uint32_t crc32_big(uint32_t crc, const unsigned char *buf, unsigned len)
     register uint32_t c;
     register const uint32_t *buf4;
 
-    c = ZSWAP32((uint32_t)crc);
+    c = ZSWAP32(crc);
     c = ~c;
     while (len && ((ptrdiff_t)buf & 3)) {
         c = crc_table[4][(c >> 24) ^ *buf++] ^ (c << 8);
@@ -318,7 +318,7 @@ static uint32_t crc32_big(uint32_t crc, const unsigned char *buf, unsigned len)
         c = crc_table[4][(c >> 24) ^ *buf++] ^ (c << 8);
     } while (--len);
     c = ~c;
-    return (uint32_t)(ZSWAP32(c));
+    return ZSWAP32(c);
 }
 #endif /* BYTE_ORDER == BIG_ENDIAN */
 
