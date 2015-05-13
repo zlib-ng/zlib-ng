@@ -266,7 +266,7 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
         SHAREDLIBV=''
         SHAREDTARGET=$SHAREDLIB
         IMPORTLIB='libz.dll.a'
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/zlib.map"}
+        LDSHARED=${LDSHARED-"$cc -shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/zlib.map"}
         LDSHAREDLIBC=""
         DEFFILE='win32/zlib.def'
         RC='windres'
