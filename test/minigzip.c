@@ -78,7 +78,7 @@ typedef struct gzFile_s {
     FILE *file;
     int write;
     int err;
-    char *msg;
+    const char *msg;
     z_stream strm;
 } *gzFile;
 
