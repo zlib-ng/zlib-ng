@@ -81,7 +81,7 @@ if(MSVC)
 endif()
 
 macro(generate_cmakein input output)
-    execute_process(COMMAND sed "/#define ZCONF_H/ a\\\n#cmakedefine Z_PREFIX\\n#cmakedefine Z_HAVE_UNISTD_H\n" -
+    execute_process(COMMAND sed "/#define ZCONF_H/ a\\\n#cmakedefine Z_HAVE_UNISTD_H\n" -
                     INPUT_FILE ${input}
                     OUTPUT_FILE ${output}
 )

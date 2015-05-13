@@ -366,11 +366,7 @@ int ZEXPORT gzread(gzFile file, void *buf, unsigned len)
 }
 
 /* -- see zlib.h -- */
-#ifdef Z_PREFIX_SET
-#  undef z_gzgetc
-#else
-#  undef gzgetc
-#endif
+#undef gzgetc
 int ZEXPORT gzgetc(gzFile file)
 {
     int ret;
