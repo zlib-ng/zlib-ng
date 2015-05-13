@@ -1678,8 +1678,6 @@ ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
    ZEXTERN z_off64_t ZEXPORT gzseek64 (gzFile, z_off64_t, int);
    ZEXTERN z_off64_t ZEXPORT gztell64 (gzFile);
    ZEXTERN z_off64_t ZEXPORT gzoffset64 (gzFile);
-   ZEXTERN uint32_t ZEXPORT adler32_combine64 (uint32_t, uint32_t, z_off64_t);
-   ZEXTERN uint32_t ZEXPORT crc32_combine64 (uint32_t, uint32_t, z_off64_t);
 #endif
 
 #if !defined(ZLIB_INTERNAL) && defined(Z_WANT64)
@@ -1687,31 +1685,44 @@ ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
 #    define gzseek gzseek64
 #    define gztell gztell64
 #    define gzoffset gzoffset64
-#    define adler32_combine adler32_combine64
-#    define crc32_combine crc32_combine64
 #  ifndef Z_LARGE64
      ZEXTERN gzFile ZEXPORT gzopen64 (const char *, const char *);
      ZEXTERN z_off_t ZEXPORT gzseek64 (gzFile, z_off_t, int);
      ZEXTERN z_off_t ZEXPORT gztell64 (gzFile);
      ZEXTERN z_off_t ZEXPORT gzoffset64 (gzFile);
-     ZEXTERN uint32_t ZEXPORT adler32_combine64 (uint32_t, uint32_t, z_off_t);
-     ZEXTERN uint32_t ZEXPORT crc32_combine64 (uint32_t, uint32_t, z_off_t);
 #  endif
 #else
    ZEXTERN gzFile ZEXPORT gzopen (const char *, const char *);
    ZEXTERN z_off_t ZEXPORT gzseek (gzFile, z_off_t, int);
    ZEXTERN z_off_t ZEXPORT gztell (gzFile);
    ZEXTERN z_off_t ZEXPORT gzoffset (gzFile);
+#endif
+#endif /* WITH_GZFILEOP */
+
+
+/* provide 64-bit offset functions if _LARGEFILE64_SOURCE defined, and/or
+ * change the regular functions to 64 bits if _FILE_OFFSET_BITS is 64 (if
+ * both are true, the application gets the *64 functions, and the regular
+ * functions are changed to 64 bits) -- in case these are set on systems
+ * without large file support, _LFS64_LARGEFILE must also be true
+ */
+#ifdef Z_LARGE64
+   ZEXTERN uint32_t ZEXPORT adler32_combine64 (uint32_t, uint32_t, z_off64_t);
+   ZEXTERN uint32_t ZEXPORT crc32_combine64 (uint32_t, uint32_t, z_off64_t);
+#endif
+
+#if !defined(ZLIB_INTERNAL) && defined(Z_WANT64)
+#    define adler32_combine adler32_combine64
+#    define crc32_combine crc32_combine64
+#  ifndef Z_LARGE64
+     ZEXTERN uint32_t ZEXPORT adler32_combine64 (uint32_t, uint32_t, z_off_t);
+     ZEXTERN uint32_t ZEXPORT crc32_combine64 (uint32_t, uint32_t, z_off_t);
+#  endif
+#else
    ZEXTERN uint32_t ZEXPORT adler32_combine (uint32_t, uint32_t, z_off_t);
    ZEXTERN uint32_t ZEXPORT crc32_combine (uint32_t, uint32_t, z_off_t);
 #endif
 
-#else /* !WITH_GZFILEOP */
-
-   ZEXTERN uint32_t ZEXPORT adler32_combine (uint32_t, uint32_t, z_off_t);
-   ZEXTERN uint32_t ZEXPORT crc32_combine (uint32_t, uint32_t, z_off_t);
-
-#endif /* WITH_GZFILEOP */
 
 /* undocumented functions */
 ZEXTERN const char   * ZEXPORT zError           (int);
@@ -1720,10 +1731,11 @@ ZEXTERN const z_crc_t * ZEXPORT get_crc_table   (void);
 ZEXTERN int            ZEXPORT inflateUndermine (z_stream *, int);
 ZEXTERN int            ZEXPORT inflateResetKeep (z_stream *);
 ZEXTERN int            ZEXPORT deflateResetKeep (z_stream *);
-#if (defined(_WIN32) || defined(__CYGWIN__)) && defined(WITH_GZFILEOP)
-ZEXTERN gzFile         ZEXPORT gzopen_w (const wchar_t *path, const char *mode);
-#endif
+
 #ifdef WITH_GZFILEOP
+# if (defined(_WIN32) || defined(__CYGWIN__))
+    ZEXTERN gzFile     ZEXPORT gzopen_w (const wchar_t *path, const char *mode);
+# endif
 ZEXTERN int            ZEXPORTVA gzvprintf (gzFile file, const char *format, va_list va);
 #endif
 
