@@ -97,7 +97,6 @@ shared=1
 gzfileops=0
 compat=0
 cover=0
-zconst=0
 build64=0
 without_optimizations=0
 without_new_strategies=0
@@ -126,7 +125,7 @@ do
 case "$1" in
     -h* | --help)
       echo 'usage:' | tee -a configure.log
-      echo '  configure [--const] [--zlib-compat] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
+      echo '  configure [--zlib-compat] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
       echo '    [--static] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
       echo '    [--includedir=INCLUDEDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
         exit 0 ;;
@@ -148,7 +147,6 @@ case "$1" in
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
     --localstatedir=*) echo "ignored option: --localstatedir" | tee -a configure.log; shift ;;
-    -c* | --const) zconst=1; shift ;;
     -noopt | --without-optimizations) without_optimizations=1; shift;;
     -oldstrat | --without-new-strategies) without_new_strategies=1; shift;;
     *)
@@ -202,11 +200,7 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
     SFLAGS="${SFLAGS} -m64"
   fi
   if test "${ZLIBGCCWARN}" = "YES"; then
-    if test "$zconst" -eq 1; then
-      CFLAGS="${CFLAGS} -Wextra -Wcast-qual -pedantic -DZLIB_CONST"
-    else
-      CFLAGS="${CFLAGS} -Wextra -pedantic"
-    fi
+    CFLAGS="${CFLAGS} -Wextra -pedantic"
   fi
   if test -z "$uname"; then
     uname=`(uname -s || echo unknown) 2>/dev/null`
