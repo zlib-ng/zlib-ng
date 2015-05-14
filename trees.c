@@ -858,14 +858,14 @@ void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, char *buf, ulg stored_len, 
         if (static_lenb <= opt_lenb) opt_lenb = static_lenb;
 
     } else {
-        Assert(buf != (char*)0, "lost buf");
+        Assert(buf != NULL, "lost buf");
         opt_lenb = static_lenb = stored_len + 5; /* force a stored block */
     }
 
 #ifdef FORCE_STORED
-    if (buf != (char*)0) { /* force stored block */
+    if (buf != NULL) { /* force stored block */
 #else
-    if (stored_len+4 <= opt_lenb && buf != (char*)0) {
+    if (stored_len+4 <= opt_lenb && buf != NULL) {
                        /* 4: two words for the lengths */
 #endif
         /* The test buf != NULL is only necessary if LIT_BUFSIZE > WSIZE.
