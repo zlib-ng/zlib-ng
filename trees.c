@@ -65,7 +65,7 @@ local const int extra_dbits[D_CODES] /* extra bits for each distance code */
 local const int extra_blbits[BL_CODES]/* extra bits for each bit length code */
    = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,7};
 
-local const uch bl_order[BL_CODES]
+local const uint8_t bl_order[BL_CODES]
    = {16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15};
 /* The lengths of the bit length codes are sent in order of decreasing
  * probability, to avoid transmitting the lengths for unused bit length codes.
@@ -92,13 +92,13 @@ local ct_data static_dtree[D_CODES];
  * 5 bits.)
  */
 
-uch _dist_code[DIST_CODE_LEN];
+uint8_t _dist_code[DIST_CODE_LEN];
 /* Distance codes. The first 256 values correspond to the distances
  * 3 .. 258, the last 256 values correspond to the top 8 bits of
  * the 15 bit distances.
  */
 
-uch _length_code[MAX_MATCH-MIN_MATCH+1];
+uint8_t _length_code[MAX_MATCH-MIN_MATCH+1];
 /* length code for each normalized match length (0 == MIN_MATCH) */
 
 local int base_length[LENGTH_CODES];
@@ -146,7 +146,7 @@ local void compress_block (deflate_state *s, const ct_data *ltree, const ct_data
 local int  detect_data_type (deflate_state *s);
 local unsigned bi_reverse (unsigned value, int length);
 local void bi_flush       (deflate_state *s);
-local void copy_block     (deflate_state *s, char *buf, unsigned len, int header);
+local void copy_block     (deflate_state *s, uint8_t *buf, unsigned len, int header);
 
 #ifdef GEN_TREES_H
 local void gen_trees_header (void);
@@ -183,7 +183,7 @@ local void tr_static_init()
     for (code = 0; code < LENGTH_CODES-1; code++) {
         base_length[code] = length;
         for (n = 0; n < (1<<extra_lbits[code]); n++) {
-            _length_code[length++] = (uch)code;
+            _length_code[length++] = (uint8_t)code;
         }
     }
     Assert (length == 256, "tr_static_init: length != 256");
@@ -191,14 +191,14 @@ local void tr_static_init()
      * in two different ways: code 284 + 5 bits or code 285, so we
      * overwrite length_code[255] to use the best encoding:
      */
-    _length_code[length-1] = (uch)code;
+    _length_code[length-1] = (uint8_t)code;
 
     /* Initialize the mapping dist (0..32K) -> dist code (0..29) */
     dist = 0;
     for (code = 0 ; code < 16; code++) {
         base_dist[code] = dist;
         for (n = 0; n < (1<<extra_dbits[code]); n++) {
-            _dist_code[dist++] = (uch)code;
+            _dist_code[dist++] = (uint8_t)code;
         }
     }
     Assert (dist == 256, "tr_static_init: dist != 256");
@@ -206,7 +206,7 @@ local void tr_static_init()
     for ( ; code < D_CODES; code++) {
         base_dist[code] = dist << 7;
         for (n = 0; n < (1<<(extra_dbits[code]-7)); n++) {
-            _dist_code[256 + dist++] = (uch)code;
+            _dist_code[256 + dist++] = (uint8_t)code;
         }
     }
     Assert (dist == 256, "tr_static_init: 256+dist != 512");
@@ -270,14 +270,14 @@ void gen_trees_header()
                 static_dtree[i].Len, SEPARATOR(i, D_CODES-1, 5));
     }
 
-    fprintf(header, "const uch ZLIB_INTERNAL _dist_code[DIST_CODE_LEN] = {\n");
+    fprintf(header, "const uint8_t ZLIB_INTERNAL _dist_code[DIST_CODE_LEN] = {\n");
     for (i = 0; i < DIST_CODE_LEN; i++) {
         fprintf(header, "%2u%s", _dist_code[i],
                 SEPARATOR(i, DIST_CODE_LEN-1, 20));
     }
 
     fprintf(header,
-        "const uch ZLIB_INTERNAL _length_code[MAX_MATCH-MIN_MATCH+1]= {\n");
+        "const uint8_t ZLIB_INTERNAL _length_code[MAX_MATCH-MIN_MATCH+1]= {\n");
     for (i = 0; i < MAX_MATCH-MIN_MATCH+1; i++) {
         fprintf(header, "%2u%s", _length_code[i],
                 SEPARATOR(i, MAX_MATCH-MIN_MATCH, 20));
@@ -591,7 +591,7 @@ local void build_tree(deflate_state *s, tree_desc *desc)
 
         /* Create a new node father of n and m */
         tree[node].Freq = tree[n].Freq + tree[m].Freq;
-        s->depth[node] = (uch)((s->depth[n] >= s->depth[m] ?
+        s->depth[node] = (uint8_t)((s->depth[n] >= s->depth[m] ?
                                 s->depth[n] : s->depth[m]) + 1);
         tree[n].Dad = tree[m].Dad = (ush)node;
 #ifdef DUMP_BL_TREE
@@ -777,7 +777,7 @@ local void send_all_trees(deflate_state *s, int lcodes, int dcodes, int blcodes)
  * Send a stored block
  */
 void ZLIB_INTERNAL _tr_stored_block(deflate_state *s,
-                                    char *buf,      /* input block */
+                                    uint8_t *buf,      /* input block */
                                     ulg stored_len, /* length of input block */
                                     int last)        /* one if this is the last block for a file */
 {
@@ -815,7 +815,7 @@ void ZLIB_INTERNAL _tr_align(deflate_state *s)
  * Determine the best encoding for the current block: dynamic trees, static
  * trees or store, and output the encoded block to the zip file.
  */
-void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, char *buf, ulg stored_len, int last)
+void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, uint8_t *buf, ulg stored_len, int last)
 {
     /* buf: input block, or NULL if too old */
     /* stored_len: length of input block */
@@ -858,14 +858,14 @@ void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, char *buf, ulg stored_len, 
         if (static_lenb <= opt_lenb) opt_lenb = static_lenb;
 
     } else {
-        Assert(buf != (char*)0, "lost buf");
+        Assert(buf != (uint8_t*)0, "lost buf");
         opt_lenb = static_lenb = stored_len + 5; /* force a stored block */
     }
 
 #ifdef FORCE_STORED
-    if (buf != (char*)0) { /* force stored block */
+    if (buf != (uint8_t*)0) { /* force stored block */
 #else
-    if (stored_len+4 <= opt_lenb && buf != (char*)0) {
+    if (stored_len+4 <= opt_lenb && buf != (uint8_t*)0) {
                        /* 4: two words for the lengths */
 #endif
         /* The test buf != NULL is only necessary if LIT_BUFSIZE > WSIZE.
@@ -922,7 +922,7 @@ int ZLIB_INTERNAL _tr_tally (deflate_state *s, unsigned dist, unsigned lc)
     /* dist: distance of matched string */
     /* lc: match length-MIN_MATCH or unmatched char (if dist==0) */
     s->d_buf[s->last_lit] = (ush)dist;
-    s->l_buf[s->last_lit++] = (uch)lc;
+    s->l_buf[s->last_lit++] = (uint8_t)lc;
     if (dist == 0) {
         /* lc is the unmatched char */
         s->dyn_ltree[lc].Freq++;
@@ -1080,7 +1080,7 @@ local void bi_flush(deflate_state *s)
         s->bi_buf = 0;
         s->bi_valid = 0;
     } else if (s->bi_valid >= 8) {
-        put_byte(s, (Byte)s->bi_buf);
+        put_byte(s, (uint8_t)s->bi_buf);
         s->bi_buf >>= 8;
         s->bi_valid -= 8;
     }
@@ -1094,7 +1094,7 @@ ZLIB_INTERNAL void bi_windup(deflate_state *s)
     if (s->bi_valid > 8) {
         put_short(s, s->bi_buf);
     } else if (s->bi_valid > 0) {
-        put_byte(s, (Byte)s->bi_buf);
+        put_byte(s, (uint8_t)s->bi_buf);
     }
     s->bi_buf = 0;
     s->bi_valid = 0;
@@ -1107,7 +1107,7 @@ ZLIB_INTERNAL void bi_windup(deflate_state *s)
  * Copy a stored block, storing first the length and its
  * one's complement if requested.
  */
-local void copy_block(deflate_state *s, char *buf, unsigned len, int header)
+local void copy_block(deflate_state *s, uint8_t *buf, unsigned len, int header)
 {
     /* buf: the input data */
     /* len: its length */
