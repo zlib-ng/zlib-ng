@@ -77,22 +77,22 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
 {
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
-    const unsigned char *in;      /* local strm->next_in */
-    const unsigned char *last;    /* have enough input while in < last */
-    unsigned char *out;     /* local strm->next_out */
-    unsigned char *beg;     /* inflate()'s initial strm->next_out */
-    unsigned char *end;     /* while out < end, enough space available */
+    const uint8_t *in;          /* local strm->next_in */
+    const uint8_t *last;        /* have enough input while in < last */
+    uint8_t *out;               /* local strm->next_out */
+    uint8_t *beg;               /* inflate()'s initial strm->next_out */
+    uint8_t *end;               /* while out < end, enough space available */
 #ifdef INFLATE_STRICT
     unsigned dmax;              /* maximum distance from zlib header */
 #endif
     unsigned wsize;             /* window size or zero if not using window */
     unsigned whave;             /* valid bytes in the window */
     unsigned wnext;             /* window write index */
-    unsigned char *window;  /* allocated sliding window, if wsize != 0 */
+    uint8_t *window;            /* allocated sliding window, if wsize != 0 */
     unsigned long hold;         /* local strm->hold */
     unsigned bits;              /* local strm->bits */
-    code const *lcode;      /* local strm->lencode */
-    code const *dcode;      /* local strm->distcode */
+    code const *lcode;          /* local strm->lencode */
+    code const *dcode;          /* local strm->distcode */
     unsigned lmask;             /* mask for first level of length codes */
     unsigned dmask;             /* mask for first level of distance codes */
     code here;                  /* retrieved table entry */
@@ -100,7 +100,7 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
                                 /*  window position, window bytes to copy */
     unsigned len;               /* match length, unused bytes */
     unsigned dist;              /* match distance */
-    unsigned char *from;    /* where to copy match from */
+    uint8_t *from;              /* where to copy match from */
 
     /* copy state to local variables */
     state = (struct inflate_state *)strm->state;
@@ -140,7 +140,7 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
             Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
                     "inflate:         literal '%c'\n" :
                     "inflate:         literal 0x%02x\n", here.val));
-            PUP(out) = (unsigned char)(here.val);
+            PUP(out) = (uint8_t)(here.val);
         }
         else if (op & 16) {                     /* length base */
             len = (unsigned)(here.val);
