@@ -91,11 +91,11 @@ typedef void  (*free_func)  (void *opaque, void *address);
 struct internal_state;
 
 typedef struct z_stream_s {
-    const Byte *next_in;     /* next input byte */
+    const uint8_t *next_in; /* next input byte */
     uInt     avail_in;  /* number of bytes available at next_in */
     uLong    total_in;  /* total number of input bytes read so far */
 
-    Byte    *next_out; /* next output byte should be put there */
+    uint8_t  *next_out; /* next output byte should be put there */
     uInt     avail_out; /* remaining free space at next_out */
     uLong    total_out; /* total number of bytes output so far */
 
@@ -122,12 +122,12 @@ typedef struct gz_header_s {
     uLong   time;       /* modification time */
     int     xflags;     /* extra flags (not used when writing a gzip file) */
     int     os;         /* operating system */
-    Byte   *extra;     /* pointer to extra field or Z_NULL if none */
+    uint8_t *extra;     /* pointer to extra field or Z_NULL if none */
     uInt    extra_len;  /* extra field length (valid if extra != Z_NULL) */
     uInt    extra_max;  /* space at extra (only when reading header) */
-    Byte   *name;      /* pointer to zero-terminated file name or Z_NULL */
+    uint8_t *name;      /* pointer to zero-terminated file name or Z_NULL */
     uInt    name_max;   /* space at name (only when reading header) */
-    Byte   *comment;   /* pointer to zero-terminated comment or Z_NULL */
+    uint8_t *comment;   /* pointer to zero-terminated comment or Z_NULL */
     uInt    comm_max;   /* space at comment (only when reading header) */
     int     hcrc;       /* true if there was or will be a header crc */
     int     done;       /* true when done reading gzip header (not used
@@ -816,7 +816,7 @@ ZEXTERN int ZEXPORT inflateInit2 (z_stream *strm,
 */
 
 ZEXTERN int ZEXPORT inflateSetDictionary (z_stream *strm,
-                                             const Byte *dictionary,
+                                             const uint8_t *dictionary,
                                              uInt  dictLength);
 /*
      Initializes the decompression dictionary from the given uncompressed byte
@@ -839,7 +839,7 @@ ZEXTERN int ZEXPORT inflateSetDictionary (z_stream *strm,
 */
 
 ZEXTERN int ZEXPORT inflateGetDictionary (z_stream *strm,
-                                             Byte *dictionary,
+                                             uint8_t *dictionary,
                                              uInt  *dictLength);
 /*
      Returns the sliding dictionary being maintained by inflate.  dictLength is
