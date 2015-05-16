@@ -113,10 +113,10 @@ extern void copy_with_crc(z_stream *strm, uint8_t *dst, long size);
  * found for specific files.
  */
 typedef struct config_s {
-   ush good_length; /* reduce lazy search above this match length */
-   ush max_lazy;    /* do not perform lazy search above this match length */
-   ush nice_length; /* quit search above this match length */
-   ush max_chain;
+   uint16_t good_length; /* reduce lazy search above this match length */
+   uint16_t max_lazy;    /* do not perform lazy search above this match length */
+   uint16_t nice_length; /* quit search above this match length */
+   uint16_t max_chain;
    compress_func func;
 } config;
 
@@ -249,7 +249,7 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
     int wrap = 1;
     static const char my_version[] = ZLIB_VERSION;
 
-    ush *overlay;
+    uint16_t *overlay;
     /* We overlay pending_buf and d_buf+l_buf. This works since the average
      * output size for (length,distance) codes is <= 24 bits.
      */
@@ -330,9 +330,9 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
 
     s->lit_bufsize = 1 << (memLevel + 6); /* 16K elements by default */
 
-    overlay = (ush *) ZALLOC(strm, s->lit_bufsize, sizeof(ush)+2);
+    overlay = (uint16_t *) ZALLOC(strm, s->lit_bufsize, sizeof(uint16_t)+2);
     s->pending_buf = (uint8_t *) overlay;
-    s->pending_buf_size = (ulg)s->lit_bufsize * (sizeof(ush)+2L);
+    s->pending_buf_size = (ulg)s->lit_bufsize * (sizeof(uint16_t)+2L);
 
     if (s->window == Z_NULL || s->prev == Z_NULL || s->head == Z_NULL ||
         s->pending_buf == Z_NULL) {
@@ -341,8 +341,8 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
         deflateEnd (strm);
         return Z_MEM_ERROR;
     }
-    s->d_buf = overlay + s->lit_bufsize/sizeof(ush);
-    s->l_buf = s->pending_buf + (1+sizeof(ush))*s->lit_bufsize;
+    s->d_buf = overlay + s->lit_bufsize/sizeof(uint16_t);
+    s->l_buf = s->pending_buf + (1+sizeof(uint16_t))*s->lit_bufsize;
 
     s->level = level;
     s->strategy = strategy;
@@ -494,7 +494,7 @@ int ZEXPORT deflatePrime (z_stream *strm, int bits, int value)
         put = Buf_size - s->bi_valid;
         if (put > bits)
             put = bits;
-        s->bi_buf |= (ush)((value & ((1 << put) - 1)) << s->bi_valid);
+        s->bi_buf |= (uint16_t)((value & ((1 << put) - 1)) << s->bi_valid);
         s->bi_valid += put;
         _tr_flush_bits(s);
         value >>= put;
@@ -1020,7 +1020,7 @@ int ZEXPORT deflateCopy (z_stream *dest, z_stream *source)
 {
     deflate_state *ds;
     deflate_state *ss;
-    ush *overlay;
+    uint16_t *overlay;
 
 
     if (source == Z_NULL || dest == Z_NULL || source->state == Z_NULL) {
@@ -1040,7 +1040,7 @@ int ZEXPORT deflateCopy (z_stream *dest, z_stream *source)
     ds->window = (uint8_t *) ZALLOC(dest, ds->w_size, 2*sizeof(uint8_t));
     ds->prev   = (Pos *)  ZALLOC(dest, ds->w_size, sizeof(Pos));
     ds->head   = (Pos *)  ZALLOC(dest, ds->hash_size, sizeof(Pos));
-    overlay = (ush *) ZALLOC(dest, ds->lit_bufsize, sizeof(ush)+2);
+    overlay = (uint16_t *) ZALLOC(dest, ds->lit_bufsize, sizeof(uint16_t)+2);
     ds->pending_buf = (uint8_t *) overlay;
 
     if (ds->window == Z_NULL || ds->prev == Z_NULL || ds->head == Z_NULL ||
@@ -1055,8 +1055,8 @@ int ZEXPORT deflateCopy (z_stream *dest, z_stream *source)
     memcpy(ds->pending_buf, ss->pending_buf, (uInt)ds->pending_buf_size);
 
     ds->pending_out = ds->pending_buf + (ss->pending_out - ss->pending_buf);
-    ds->d_buf = overlay + ds->lit_bufsize/sizeof(ush);
-    ds->l_buf = ds->pending_buf + (1+sizeof(ush))*ds->lit_bufsize;
+    ds->d_buf = overlay + ds->lit_bufsize/sizeof(uint16_t);
+    ds->l_buf = ds->pending_buf + (1+sizeof(uint16_t))*ds->lit_bufsize;
 
     ds->l_desc.dyn_tree = ds->dyn_ltree;
     ds->d_desc.dyn_tree = ds->dyn_dtree;

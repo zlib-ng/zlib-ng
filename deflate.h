@@ -71,12 +71,12 @@
 /* Data structure describing a single value and its code string. */
 typedef struct ct_data_s {
     union {
-        ush  freq;       /* frequency count */
-        ush  code;       /* bit string */
+        uint16_t  freq;       /* frequency count */
+        uint16_t  code;       /* bit string */
     } fc;
     union {
-        ush  dad;        /* father node in Huffman tree */
-        ush  len;        /* length of bit string */
+        uint16_t  dad;        /* father node in Huffman tree */
+        uint16_t  len;        /* length of bit string */
     } dl;
 } ct_data;
 
@@ -93,7 +93,7 @@ typedef struct tree_desc_s {
     static_tree_desc *stat_desc; /* the corresponding static tree */
 } tree_desc;
 
-typedef ush Pos;
+typedef uint16_t Pos;
 typedef unsigned IPos;
 
 /* A Pos is an index in the character window. We use short instead of int to
@@ -210,7 +210,7 @@ typedef struct internal_state {
     struct tree_desc_s d_desc;               /* desc. for distance tree */
     struct tree_desc_s bl_desc;              /* desc. for bit length tree */
 
-    ush bl_count[MAX_BITS+1];
+    uint16_t bl_count[MAX_BITS+1];
     /* number of codes at each bit length for an optimal tree */
 
     int heap[2*L_CODES+1];      /* heap used to build the Huffman trees */
@@ -248,7 +248,7 @@ typedef struct internal_state {
 
     uInt last_lit;      /* running index in l_buf */
 
-    ush *d_buf;
+    uint16_t *d_buf;
     /* Buffer for distances. To simplify the code, d_buf and l_buf have
      * the same number of elements. To use different lengths, an extra flag
      * array would be necessary.
@@ -264,7 +264,7 @@ typedef struct internal_state {
     ulg bits_sent;      /* bit length of compressed data sent mod 2^32 */
 #endif
 
-    ush bi_buf;
+    uint16_t bi_buf;
     /* Output buffer. bits are inserted starting at the bottom (least
      * significant bits).
      */
@@ -310,12 +310,12 @@ typedef enum {
  */
 #define put_short(s, w) { \
     s->pending += 2; \
-    *(ush*)(&s->pending_buf[s->pending - 2]) = (w) ; \
+    *(uint16_t*)(&s->pending_buf[s->pending - 2]) = (w) ; \
 }
 #else
 #define put_short(s, w) { \
     put_byte(s, (uint8_t)((w) & 0xff)); \
-    put_byte(s, (uint8_t)((ush)(w) >> 8)); \
+    put_byte(s, (uint8_t)((uint16_t)(w) >> 8)); \
 }
 #endif
 
@@ -369,7 +369,7 @@ void ZLIB_INTERNAL bi_windup (deflate_state *s);
    }
 # define _tr_tally_dist(s, distance, length, flush) \
   { uint8_t len = (length); \
-    ush dist = (distance); \
+    uint16_t dist = (distance); \
     s->d_buf[s->last_lit] = dist; \
     s->l_buf[s->last_lit++] = len; \
     dist--; \
@@ -434,12 +434,12 @@ local void send_bits(deflate_state *s,
      * unused bits in value.
      */
     if (s->bi_valid > (int)Buf_size - length) {
-        s->bi_buf |= (ush)value << s->bi_valid;
+        s->bi_buf |= (uint16_t)value << s->bi_valid;
         put_short(s, s->bi_buf);
-        s->bi_buf = (ush)value >> (Buf_size - s->bi_valid);
+        s->bi_buf = (uint16_t)value >> (Buf_size - s->bi_valid);
         s->bi_valid += length - Buf_size;
     } else {
-        s->bi_buf |= (ush)value << s->bi_valid;
+        s->bi_buf |= (uint16_t)value << s->bi_valid;
         s->bi_valid += length;
     }
 }
@@ -448,12 +448,12 @@ local void send_bits(deflate_state *s,
 { int len = length;\
   if (s->bi_valid > (int)Buf_size - len) {\
     int val = value;\
-    s->bi_buf |= (ush)val << s->bi_valid;\
+    s->bi_buf |= (uint16_t)val << s->bi_valid;\
     put_short(s, s->bi_buf);\
-    s->bi_buf = (ush)val >> (Buf_size - s->bi_valid);\
+    s->bi_buf = (uint16_t)val >> (Buf_size - s->bi_valid);\
     s->bi_valid += len - Buf_size;\
   } else {\
-    s->bi_buf |= (ush)(value) << s->bi_valid;\
+    s->bi_buf |= (uint16_t)(value) << s->bi_valid;\
     s->bi_valid += len;\
   }\
 }
