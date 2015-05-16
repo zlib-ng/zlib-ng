@@ -584,7 +584,7 @@ ZEXTERN int ZEXPORT deflateInit2 (z_stream *strm,
 */
 
 ZEXTERN int ZEXPORT deflateSetDictionary (z_stream *strm,
-                                             const Byte *dictionary,
+                                             const uint8_t *dictionary,
                                              uInt  dictLength);
 /*
      Initializes the compression dictionary from the given byte sequence
