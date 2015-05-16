@@ -1155,8 +1155,8 @@ ZEXTERN uLong ZEXPORT zlibCompileFlags (void);
    you need special options.
 */
 
-ZEXTERN int ZEXPORT compress (Byte *dest,   uLong *destLen,
-                                 const Byte *source, uLong sourceLen);
+ZEXTERN int ZEXPORT compress (uint8_t *dest, uLong *destLen,
+                                 const uint8_t *source, uLong sourceLen);
 /*
      Compresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
@@ -1169,8 +1169,8 @@ ZEXTERN int ZEXPORT compress (Byte *dest,   uLong *destLen,
    buffer.
 */
 
-ZEXTERN int ZEXPORT compress2 (Byte *dest,   uLong *destLen,
-                                  const Byte *source, uLong sourceLen,
+ZEXTERN int ZEXPORT compress2 (uint8_t *dest, uLong *destLen,
+                                  const uint8_t *source, uLong sourceLen,
                                   int level);
 /*
      Compresses the source buffer into the destination buffer.  The level
@@ -1192,8 +1192,8 @@ ZEXTERN uLong ZEXPORT compressBound (uLong sourceLen);
    compress() or compress2() call to allocate the destination buffer.
 */
 
-ZEXTERN int ZEXPORT uncompress (Byte *dest,   uLong *destLen,
-                                   const Byte *source, uLong sourceLen);
+ZEXTERN int ZEXPORT uncompress (uint8_t *dest, uLong *destLen,
+                                   const uint8_t *source, uLong sourceLen);
 /*
      Decompresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
