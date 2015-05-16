@@ -931,7 +931,7 @@ int ZEXPORT deflate (z_stream *strm, int flush)
             if (flush == Z_PARTIAL_FLUSH) {
                 _tr_align(s);
             } else if (flush != Z_BLOCK) { /* FULL_FLUSH or SYNC_FLUSH */
-                _tr_stored_block(s, (char*)0, 0L, 0);
+                _tr_stored_block(s, (uint8_t*)0, 0L, 0);
                 /* For a full flush, this empty block will be recognized
                  * as a special marker by inflate_sync().
                  */
@@ -1345,8 +1345,8 @@ local void fill_window_c(deflate_state *s)
  */
 #define FLUSH_BLOCK_ONLY(s, last) { \
    _tr_flush_block(s, (s->block_start >= 0L ? \
-                   (char *)&s->window[(unsigned)s->block_start] : \
-                   (char *)Z_NULL), \
+                   (uint8_t *)&s->window[(unsigned)s->block_start] : \
+                   (uint8_t *)Z_NULL), \
                 (ulg)((long)s->strstart - s->block_start), \
                 (last)); \
    s->block_start = s->strstart; \

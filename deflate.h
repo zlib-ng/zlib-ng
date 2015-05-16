@@ -336,10 +336,10 @@ typedef enum {
         /* in trees.c */
 void ZLIB_INTERNAL _tr_init (deflate_state *s);
 int ZLIB_INTERNAL _tr_tally (deflate_state *s, unsigned dist, unsigned lc);
-void ZLIB_INTERNAL _tr_flush_block (deflate_state *s, char *buf, ulg stored_len, int last);
+void ZLIB_INTERNAL _tr_flush_block (deflate_state *s, uint8_t *buf, ulg stored_len, int last);
 void ZLIB_INTERNAL _tr_flush_bits (deflate_state *s);
 void ZLIB_INTERNAL _tr_align (deflate_state *s);
-void ZLIB_INTERNAL _tr_stored_block (deflate_state *s, char *buf, ulg stored_len, int last);
+void ZLIB_INTERNAL _tr_stored_block (deflate_state *s, uint8_t *buf, ulg stored_len, int last);
 void ZLIB_INTERNAL bi_windup (deflate_state *s);
 
 #define d_code(dist) \
