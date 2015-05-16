@@ -45,9 +45,9 @@
 #include "deflate.h"
 
 #if BYTE_ORDER == LITTLE_ENDIAN
-static uint32_t crc32_little (uint32_t, const unsigned char *, unsigned);
+static uint32_t crc32_little (uint32_t, const uint8_t *, unsigned);
 #elif BYTE_ORDER == BIG_ENDIAN
-static uint32_t crc32_big (uint32_t, const unsigned char *, unsigned);
+static uint32_t crc32_big (uint32_t, const uint8_t *, unsigned);
 #endif
 
 /* Local functions for crc concatenation */
@@ -97,7 +97,7 @@ static void make_crc_table()
     uint32_t poly;                       /* polynomial exclusive-or pattern */
     /* terms of polynomial defining this crc (except x^32): */
     static volatile int first = 1;      /* flag to limit concurrent making */
-    static const unsigned char p[] = {0,1,2,4,5,7,8,10,11,12,16,22,23,26};
+    static const uint8_t p[] = {0,1,2,4,5,7,8,10,11,12,16,22,23,26};
 
     /* See if another task is already doing this (not thread-safe, but better
        than nothing -- significantly reduces duration of vulnerability in
@@ -107,7 +107,7 @@ static void make_crc_table()
 
         /* make exclusive-or pattern from polynomial (0xedb88320) */
         poly = 0;
-        for (n = 0; n < (int)(sizeof(p)/sizeof(unsigned char)); n++)
+        for (n = 0; n < (int)(sizeof(p)/sizeof(uint8_t)); n++)
             poly |= (uint32_t)1 << (31 - p[n]);
 
         /* generate a crc for every 8-bit value */
@@ -197,7 +197,7 @@ const uint32_t * ZEXPORT get_crc_table()
 #define DO4 DO1; DO1; DO1; DO1
 
 /* ========================================================================= */
-uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, uInt len)
+uint32_t ZEXPORT crc32(uint32_t crc, const uint8_t *buf, uInt len)
 {
     if (buf == Z_NULL) return 0;
 
@@ -242,7 +242,7 @@ uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, uInt len)
 #define DOLIT32 DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4
 
 /* ========================================================================= */
-static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, unsigned len)
+static uint32_t crc32_little(uint32_t crc, const uint8_t *buf, unsigned len)
 {
     register uint32_t c;
     register const uint32_t *buf4;
@@ -267,7 +267,7 @@ static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, unsigned le
         DOLIT4;
         len -= 4;
     }
-    buf = (const unsigned char *)buf4;
+    buf = (const uint8_t *)buf4;
 
     if (len) do {
         c = crc_table[0][(c ^ *buf++) & 0xff] ^ (c >> 8);
@@ -285,7 +285,7 @@ static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, unsigned le
 #define DOBIG32 DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4
 
 /* ========================================================================= */
-static uint32_t crc32_big(uint32_t crc, const unsigned char *buf, unsigned len)
+static uint32_t crc32_big(uint32_t crc, const uint8_t *buf, unsigned len)
 {
     register uint32_t c;
     register const uint32_t *buf4;
@@ -312,7 +312,7 @@ static uint32_t crc32_big(uint32_t crc, const unsigned char *buf, unsigned len)
         len -= 4;
     }
     buf4++;
-    buf = (const unsigned char *)buf4;
+    buf = (const uint8_t *)buf4;
 
     if (len) do {
         c = crc_table[4][(c >> 24) ^ *buf++] ^ (c << 8);
@@ -418,7 +418,7 @@ uint32_t ZEXPORT crc32_combine64(uint32_t crc1, uint32_t crc2, z_off64_t len2)
 #include "arch/x86/x86.h"
 extern void ZLIB_INTERNAL crc_fold_init(deflate_state *const s);
 extern void ZLIB_INTERNAL crc_fold_copy(deflate_state *const s,
-        unsigned char *dst, const unsigned char *src, long len);
+        uint8_t *dst, const uint8_t *src, long len);
 extern uint32_t ZLIB_INTERNAL crc_fold_512to32(deflate_state *const s);
 #endif
 
