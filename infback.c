@@ -25,7 +25,7 @@ local void fixedtables (struct inflate_state *state);
    windowBits is in the range 8..15, and window is a user-supplied
    window and output buffer that is 2**windowBits bytes.
  */
-int ZEXPORT inflateBackInit_(z_stream *strm, int windowBits, unsigned char *window,
+int ZEXPORT inflateBackInit_(z_stream *strm, int windowBits, uint8_t *window,
                               const char *version, int stream_size)
 {
     struct inflate_state *state;
@@ -238,13 +238,13 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
                          out_func out, void *out_desc)
 {
     struct inflate_state *state;
-    const unsigned char *next;    /* next input */
-    unsigned char *put;     /* next output */
+    const uint8_t *next;        /* next input */
+    uint8_t *put;               /* next output */
     unsigned have, left;        /* available input and output */
     unsigned long hold;         /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
     unsigned copy;              /* number of stored or match bytes to copy */
-    unsigned char *from;    /* where to copy match bytes from */
+    uint8_t *from;              /* where to copy match bytes from */
     code here;                  /* current decoding table entry */
     code last;                  /* parent table entry */
     unsigned len;               /* length to copy for repeats, bits to drop */
@@ -497,7 +497,7 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
                         "inflate:         literal '%c'\n" :
                         "inflate:         literal 0x%02x\n", here.val));
                 ROOM();
-                *put++ = (unsigned char)(state->length);
+                *put++ = (uint8_t)(state->length);
                 left--;
                 state->mode = LEN;
                 break;

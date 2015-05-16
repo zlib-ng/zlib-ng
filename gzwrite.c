@@ -18,7 +18,7 @@ local int gz_init(gz_statep state)
     z_stream *strm = &(state->strm);
 
     /* allocate input buffer */
-    state->in = (unsigned char *)malloc(state->want);
+    state->in = (uint8_t *)malloc(state->want);
     if (state->in == NULL) {
         gz_error(state, Z_MEM_ERROR, "out of memory");
         return -1;
@@ -27,7 +27,7 @@ local int gz_init(gz_statep state)
     /* only need output buffer and deflate state if compressing */
     if (!state->direct) {
         /* allocate output buffer */
-        state->out = (unsigned char *)malloc(state->want);
+        state->out = (uint8_t *)malloc(state->want);
         if (state->out == NULL) {
             free(state->in);
             gz_error(state, Z_MEM_ERROR, "out of memory");
@@ -237,7 +237,7 @@ int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len)
 int ZEXPORT gzputc(gzFile file, int c)
 {
     unsigned have;
-    unsigned char buf[1];
+    uint8_t buf[1];
     gz_statep state;
     z_stream *strm;
 

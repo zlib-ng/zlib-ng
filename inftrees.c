@@ -110,8 +110,8 @@ int ZLIB_INTERNAL inflate_table(codetype type, unsigned short *lens, unsigned co
         if (count[max] != 0) break;
     if (root > max) root = max;
     if (max == 0) {                     /* no symbols to code at all */
-        here.op = (unsigned char)64;    /* invalid code marker */
-        here.bits = (unsigned char)1;
+        here.op = (uint8_t)64;    /* invalid code marker */
+        here.bits = (uint8_t)1;
         here.val = (unsigned short)0;
         *(*table)++ = here;             /* make a table to force an error */
         *(*table)++ = here;
@@ -210,17 +210,17 @@ int ZLIB_INTERNAL inflate_table(codetype type, unsigned short *lens, unsigned co
     /* process all codes and make table entries */
     for (;;) {
         /* create table entry */
-        here.bits = (unsigned char)(len - drop);
+        here.bits = (uint8_t)(len - drop);
         if ((int)(work[sym]) < end) {
-            here.op = (unsigned char)0;
+            here.op = (uint8_t)0;
             here.val = work[sym];
         }
         else if ((int)(work[sym]) > end) {
-            here.op = (unsigned char)(extra[work[sym]]);
+            here.op = (uint8_t)(extra[work[sym]]);
             here.val = base[work[sym]];
         }
         else {
-            here.op = (unsigned char)(32 + 64);         /* end of block */
+            here.op = (uint8_t)(32 + 64);         /* end of block */
             here.val = 0;
         }
 
@@ -278,8 +278,8 @@ int ZLIB_INTERNAL inflate_table(codetype type, unsigned short *lens, unsigned co
 
             /* point entry in root table to sub-table */
             low = huff & mask;
-            (*table)[low].op = (unsigned char)curr;
-            (*table)[low].bits = (unsigned char)root;
+            (*table)[low].op = (uint8_t)curr;
+            (*table)[low].bits = (uint8_t)root;
             (*table)[low].val = (unsigned short)(next - *table);
         }
     }
@@ -288,8 +288,8 @@ int ZLIB_INTERNAL inflate_table(codetype type, unsigned short *lens, unsigned co
        at most one remaining entry, since if the code is incomplete, the
        maximum code length that was allowed to get this far is one bit) */
     if (huff != 0) {
-        here.op = (unsigned char)64;            /* invalid code marker */
-        here.bits = (unsigned char)(len - drop);
+        here.op = (uint8_t)64;            /* invalid code marker */
+        here.bits = (uint8_t)(len - drop);
         here.val = (unsigned short)0;
         next[huff] = here;
     }

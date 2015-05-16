@@ -1000,8 +1000,7 @@ ZEXTERN int ZEXPORT inflateGetHeader (z_stream *strm,
 */
 
 /*
-ZEXTERN int ZEXPORT inflateBackInit (z_stream *strm, int windowBits,
-                                        unsigned char *window);
+ZEXTERN int ZEXPORT inflateBackInit (z_stream *strm, int windowBits, uint8_t *window);
 
      Initialize the internal stream state for decompression using inflateBack()
    calls.  The fields zalloc, zfree and opaque in strm must be initialized
@@ -1021,9 +1020,8 @@ ZEXTERN int ZEXPORT inflateBackInit (z_stream *strm, int windowBits,
    the version of the header file.
 */
 
-typedef unsigned (*in_func) (void *,
-                                const unsigned char * *);
-typedef int (*out_func) (void *, unsigned char *, unsigned);
+typedef unsigned (*in_func) (void *, const uint8_t * *);
+typedef int (*out_func) (void *, uint8_t *, unsigned);
 
 ZEXTERN int ZEXPORT inflateBack (z_stream *strm,
                                     in_func in, void *in_desc,
@@ -1633,7 +1631,7 @@ ZEXTERN int ZEXPORT inflateInit_ (z_stream *strm, const char *version, int strea
 ZEXTERN int ZEXPORT deflateInit2_ (z_stream *strm, int  level, int  method, int windowBits, int memLevel,
                                    int strategy, const char *version, int stream_size);
 ZEXTERN int ZEXPORT inflateInit2_ (z_stream *strm, int  windowBits, const char *version, int stream_size);
-ZEXTERN int ZEXPORT inflateBackInit_ (z_stream *strm, int windowBits, unsigned char *window,
+ZEXTERN int ZEXPORT inflateBackInit_ (z_stream *strm, int windowBits, uint8_t *window,
                                       const char *version, int stream_size);
 #define deflateInit(strm, level) \
         deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))
@@ -1660,7 +1658,7 @@ ZEXTERN int ZEXPORT inflateBackInit_ (z_stream *strm, int windowBits, unsigned c
  */
 struct gzFile_s {
     unsigned have;
-    unsigned char *next;
+    uint8_t *next;
     z_off64_t pos;
 };
 ZEXTERN int ZEXPORT gzgetc_ (gzFile file);  /* backward compatibility */
