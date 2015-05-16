@@ -631,13 +631,13 @@ static void cover_trees(void)
 {
     int ret;
     unsigned bits;
-    unsigned short lens[16], work[16];
+    uint16_t lens[16], work[16];
     code *next, table[ENOUGH_DISTS];
 
     /* we need to call inflate_table() directly in order to manifest not-
        enough errors, since zlib insures that enough is always enough */
     for (bits = 0; bits < 15; bits++)
-        lens[bits] = (unsigned short)(bits + 1);
+        lens[bits] = (uint16_t)(bits + 1);
     lens[15] = 15;
     next = table;
     bits = 15;
