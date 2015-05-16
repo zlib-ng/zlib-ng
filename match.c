@@ -156,7 +156,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 	const unsigned wmask = s->w_mask;
 	const Pos *prev = s->prev;
 
-	unsigned short scan_start, scan_end;
+	uint16_t scan_start, scan_end;
 	unsigned chain_length;
 	IPos limit;
 	unsigned int len, best_len, nice_match;
@@ -190,8 +190,8 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 
 	scan = s->window + s->strstart;
 	strend = s->window + s->strstart + MAX_MATCH - 1;
-	scan_start = *(unsigned short *)scan;
-	scan_end = *(unsigned short *)(scan + best_len-1);
+	scan_start = *(uint16_t *)scan;
+	scan_end = *(uint16_t *)(scan + best_len-1);
 
 	Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD,
 		"need lookahead");
@@ -210,9 +210,9 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 		 * is limited to the lookahead, so the output of deflate is not
 		 * affected by the uninitialized values.
 		 */
-		if (likely((*(unsigned short *)(match + best_len - 1) != scan_end)))
+		if (likely((*(uint16_t *)(match + best_len - 1) != scan_end)))
 			continue;
-		if (*(unsigned short *)match != scan_start)
+		if (*(uint16_t *)match != scan_start)
 			continue;
 
 		/* It is not necessary to compare scan[2] and match[2] since
@@ -230,10 +230,10 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 		match++;
 
 		do {
-		} while (*(unsigned short *)(scan += 2)== *(unsigned short *)(match += 2)&&
-			 *(unsigned short *)(scan += 2)== *(unsigned short *)(match += 2)&&
-			 *(unsigned short *)(scan += 2)== *(unsigned short *)(match += 2)&&
-			 *(unsigned short *)(scan += 2)== *(unsigned short *)(match += 2)&&
+		} while (*(uint16_t *)(scan += 2)== *(uint16_t *)(match += 2)&&
+			 *(uint16_t *)(scan += 2)== *(uint16_t *)(match += 2)&&
+			 *(uint16_t *)(scan += 2)== *(uint16_t *)(match += 2)&&
+			 *(uint16_t *)(scan += 2)== *(uint16_t *)(match += 2)&&
 			 scan < strend);
 
 		/*
@@ -251,7 +251,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 			best_len = len;
 			if (len >= nice_match)
 				break;
-			scan_end = *(unsigned short *)(scan + best_len - 1);
+			scan_end = *(uint16_t *)(scan + best_len - 1);
 		} else {
 			/*
 			 * The probability of finding a match later if we here
@@ -351,8 +351,8 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
     uInt wmask = s->w_mask;
 
     register uint8_t *strend = s->window + s->strstart + MAX_MATCH;
-    register unsigned short scan_start = *(unsigned short*)scan;
-    register unsigned short scan_end   = *(unsigned short*)(scan+best_len-1);
+    register uint16_t scan_start = *(uint16_t*)scan;
+    register uint16_t scan_end   = *(uint16_t*)(scan+best_len-1);
 
     /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
      * It is easy to get rid of this optimization if necessary.
@@ -385,7 +385,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
         int cont = 1;
         do {
             match = win + cur_match;
-            if (likely(*(unsigned short*)(match+best_len-1) != scan_end)) {
+            if (likely(*(uint16_t*)(match+best_len-1) != scan_end)) {
                 if ((cur_match = prev[cur_match & wmask]) > limit
                     && --chain_length != 0) {
                     continue;
@@ -398,7 +398,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
         if (!cont)
             break;
 
-        if (*(unsigned short*)match != scan_start)
+        if (*(uint16_t*)match != scan_start)
             continue;
 
         /* It is not necessary to compare scan[2] and match[2] since they are
@@ -439,7 +439,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
             s->match_start = cur_match;
             best_len = len;
             if (len >= nice_match) break;
-            scan_end = *(unsigned short*)(scan+best_len-1);
+            scan_end = *(uint16_t*)(scan+best_len-1);
         } else {
             /*
              * The probability of finding a match later if we here
