@@ -220,11 +220,11 @@ typedef struct internal_state {
      * The same heap array is used to build all trees.
      */
 
-    uch depth[2*L_CODES+1];
+    uint8_t depth[2*L_CODES+1];
     /* Depth of each subtree used as tie breaker for trees of equal frequency
      */
 
-    uch *l_buf;          /* buffer for literals or lengths */
+    uint8_t *l_buf;          /* buffer for literals or lengths */
 
     uInt  lit_bufsize;
     /* Size of match buffer for literals/lengths.  There are 4 reasons for
@@ -314,8 +314,8 @@ typedef enum {
 }
 #else
 #define put_short(s, w) { \
-    put_byte(s, (uch)((w) & 0xff)); \
-    put_byte(s, (uch)((ush)(w) >> 8)); \
+    put_byte(s, (uint8_t)((w) & 0xff)); \
+    put_byte(s, (uint8_t)((ush)(w) >> 8)); \
 }
 #endif
 
@@ -353,22 +353,22 @@ void ZLIB_INTERNAL bi_windup (deflate_state *s);
 /* Inline versions of _tr_tally for speed: */
 
 #if defined(GEN_TREES_H)
-  extern uch ZLIB_INTERNAL _length_code[];
-  extern uch ZLIB_INTERNAL _dist_code[];
+  extern uint8_t ZLIB_INTERNAL _length_code[];
+  extern uint8_t ZLIB_INTERNAL _dist_code[];
 #else
-  extern const uch ZLIB_INTERNAL _length_code[];
-  extern const uch ZLIB_INTERNAL _dist_code[];
+  extern const uint8_t ZLIB_INTERNAL _length_code[];
+  extern const uint8_t ZLIB_INTERNAL _dist_code[];
 #endif
 
 # define _tr_tally_lit(s, c, flush) \
-  { uch cc = (c); \
+  { uint8_t cc = (c); \
     s->d_buf[s->last_lit] = 0; \
     s->l_buf[s->last_lit++] = cc; \
     s->dyn_ltree[cc].Freq++; \
     flush = (s->last_lit == s->lit_bufsize-1); \
    }
 # define _tr_tally_dist(s, distance, length, flush) \
-  { uch len = (length); \
+  { uint8_t len = (length); \
     ush dist = (distance); \
     s->d_buf[s->last_lit] = dist; \
     s->l_buf[s->last_lit++] = len; \

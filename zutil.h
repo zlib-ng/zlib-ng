@@ -30,7 +30,7 @@
 #endif
 /* compile with -Dlocal if your debugger can't find static symbols */
 
-typedef unsigned char  uch;
+typedef uint8_t uch;  /* Included for compatability with external code only */
 typedef unsigned short ush;
 typedef unsigned long  ulg;
 
