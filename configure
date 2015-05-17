@@ -199,6 +199,18 @@ show $cc -c $test.c
 if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
   echo ... using gcc >> configure.log
   CC="$cc"
+# Re-check arch if gcc is a cross-compiler
+  GCC_ARCH=`$CC -dumpmachine | sed 's/-.*//g'`
+  case $GCC_ARCH in
+    i386 | i486 | i586 | i686)
+# Honor user choice if gcc is multilib and 64-bit is requested 
+      if test $build64 -eq 1; then
+        ARCH=x86_64
+      else
+        ARCH=$GCC_ARCH 
+      fi ;;
+    x86_64) ARCH=$GCC_ARCH ;;
+  esac
   CFLAGS="${CFLAGS--O3} ${ARCHS} -Wall"
   SFLAGS="${CFLAGS--O3} -fPIC"
   LDFLAGS="${LDFLAGS} ${ARCHS}"
@@ -271,6 +283,11 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
         DEFFILE='win32/zlib.def'
         RC='windres'
         RCFLAGS='--define GCC_WINDRES'
+        if [ "$CC" == "mingw32-gcc" ]; then
+          case $ARCH in
+          i386 | i486 | i586 | i686) RCFLAGS="${RCFLAGS} -F pe-i386";;
+          esac;
+        fi
         RCOBJS='zlibrc.o'
         STRIP='strip'
         EXE='.exe' ;;
