@@ -77,22 +77,22 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
 {
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
-    const unsigned char *in;      /* local strm->next_in */
-    const unsigned char *last;    /* have enough input while in < last */
-    unsigned char *out;     /* local strm->next_out */
-    unsigned char *beg;     /* inflate()'s initial strm->next_out */
-    unsigned char *end;     /* while out < end, enough space available */
+    const unsigned char *in;    /* local strm->next_in */
+    const unsigned char *last;  /* have enough input while in < last */
+    unsigned char *out;         /* local strm->next_out */
+    unsigned char *beg;         /* inflate()'s initial strm->next_out */
+    unsigned char *end;         /* while out < end, enough space available */
 #ifdef INFLATE_STRICT
     unsigned dmax;              /* maximum distance from zlib header */
 #endif
     unsigned wsize;             /* window size or zero if not using window */
     unsigned whave;             /* valid bytes in the window */
     unsigned wnext;             /* window write index */
-    unsigned char *window;  /* allocated sliding window, if wsize != 0 */
-    unsigned long hold;         /* local strm->hold */
+    unsigned char *window;      /* allocated sliding window, if wsize != 0 */
+    uint32_t hold;              /* local strm->hold */
     unsigned bits;              /* local strm->bits */
-    code const *lcode;      /* local strm->lencode */
-    code const *dcode;      /* local strm->distcode */
+    code const *lcode;          /* local strm->lencode */
+    code const *dcode;          /* local strm->distcode */
     unsigned lmask;             /* mask for first level of length codes */
     unsigned dmask;             /* mask for first level of distance codes */
     code here;                  /* retrieved table entry */
@@ -127,9 +127,9 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
        input data or output space */
     do {
         if (bits < 15) {
-            hold += (unsigned long)(PUP(in)) << bits;
+            hold += (uint32_t)(PUP(in)) << bits;
             bits += 8;
-            hold += (unsigned long)(PUP(in)) << bits;
+            hold += (uint32_t)(PUP(in)) << bits;
             bits += 8;
         }
         here = lcode[hold & lmask];
@@ -147,7 +147,7 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
             op &= 15;                           /* number of extra bits */
             if (op) {
                 if (bits < op) {
-                    hold += (unsigned long)(PUP(in)) << bits;
+                    hold += (uint32_t)(PUP(in)) << bits;
                     bits += 8;
                 }
                 len += BITS(op);
@@ -155,9 +155,9 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
             }
             Tracevv((stderr, "inflate:         length %u\n", len));
             if (bits < 15) {
-                hold += (unsigned long)(PUP(in)) << bits;
+                hold += (uint32_t)(PUP(in)) << bits;
                 bits += 8;
-                hold += (unsigned long)(PUP(in)) << bits;
+                hold += (uint32_t)(PUP(in)) << bits;
                 bits += 8;
             }
             here = dcode[hold & dmask];
@@ -168,10 +168,10 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
                 dist = (unsigned)(here.val);
                 op &= 15;                       /* number of extra bits */
                 if (bits < op) {
-                    hold += (unsigned long)(PUP(in)) << bits;
+                    hold += (uint32_t)(PUP(in)) << bits;
                     bits += 8;
                     if (bits < op) {
-                        hold += (unsigned long)(PUP(in)) << bits;
+                        hold += (uint32_t)(PUP(in)) << bits;
                         bits += 8;
                     }
                 }

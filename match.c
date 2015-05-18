@@ -72,7 +72,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 	scan_end1 = scan[best_len-1];
 	scan_end = scan[best_len];
 
-	Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD,
+	Assert((size_t)s->strstart <= s->window_size - MIN_LOOKAHEAD,
 		"need lookahead");
 	do {
 		Assert(cur_match < s->strstart, "no future");
@@ -193,7 +193,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
 	scan_start = *(uint16_t *)scan;
 	scan_end = *(uint16_t *)(scan + best_len-1);
 
-	Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD,
+	Assert((size_t)s->strstart <= s->window_size - MIN_LOOKAHEAD,
 		"need lookahead");
 	do {
 		unsigned char *match;
@@ -368,7 +368,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
      */
     if ((uInt)nice_match > s->lookahead) nice_match = s->lookahead;
 
-    Assert((ulg)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
+    Assert((size_t)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
 
     do {
         Assert(cur_match < s->strstart, "no future");
@@ -413,17 +413,17 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match)
         scan += 2, match+=2;
         Assert(*scan == *match, "match[2]?");
         do {
-            unsigned long sv = *(unsigned long*)(void*)scan;
-            unsigned long mv = *(unsigned long*)(void*)match;
-            unsigned long xor = sv ^ mv;
+            uintptr_t sv = *(uintptr_t*)(void*)scan;
+            uintptr_t mv = *(uintptr_t*)(void*)match;
+            uintptr_t xor = sv ^ mv;
             if (xor) {
                 int match_byte = __builtin_ctzl(xor) / 8;
                 scan += match_byte;
                 match += match_byte;
                 break;
             } else {
-                scan += sizeof(unsigned long);
-                match += sizeof(unsigned long);
+                scan += sizeof(uintptr_t);
+                match += sizeof(uintptr_t);
             }
         } while (scan < strend);
 

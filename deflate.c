@@ -332,7 +332,7 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
 
     overlay = (uint16_t *) ZALLOC(strm, s->lit_bufsize, sizeof(uint16_t)+2);
     s->pending_buf = (unsigned char *) overlay;
-    s->pending_buf_size = (ulg)s->lit_bufsize * (sizeof(uint16_t)+2L);
+    s->pending_buf_size = (uint32_t)s->lit_bufsize * (sizeof(uint16_t)+2L);
 
     if (s->window == Z_NULL || s->prev == Z_NULL || s->head == Z_NULL ||
         s->pending_buf == Z_NULL) {
@@ -1101,7 +1101,7 @@ ZLIB_INTERNAL int read_buf(z_stream *strm, unsigned char *buf, unsigned size)
  */
 local void lm_init (deflate_state *s)
 {
-    s->window_size = (ulg)2L*s->w_size;
+    s->window_size = (uint32_t)2L*s->w_size;
 
     CLEAR_HASH(s);
 
@@ -1183,13 +1183,13 @@ local void fill_window_c(deflate_state *s)
 {
     register unsigned n;
     register Pos *p;
-    unsigned more;    /* Amount of free space at the end of the window. */
+    uint32_t more;    /* Amount of free space at the end of the window. */
     uInt wsize = s->w_size;
 
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
 
     do {
-        more = (unsigned)(s->window_size -(ulg)s->lookahead -(ulg)s->strstart);
+        more = (uint32_t)(s->window_size -(uint32_t)s->lookahead -(uint32_t)s->strstart);
 
         /* If the window is almost full and there is insufficient lookahead,
          * move the upper half to the lower one to make room in the upper half.
@@ -1310,8 +1310,8 @@ local void fill_window_c(deflate_state *s)
      * routines allow scanning to strstart + MAX_MATCH, ignoring lookahead.
      */
     if (s->high_water < s->window_size) {
-        ulg curr = s->strstart + (ulg)(s->lookahead);
-        ulg init;
+        uint32_t curr = s->strstart + (uint32_t)(s->lookahead);
+        uint32_t init;
 
         if (s->high_water < curr) {
             /* Previous high water mark below current data -- zero WIN_INIT
@@ -1323,12 +1323,12 @@ local void fill_window_c(deflate_state *s)
             memset(s->window + curr, 0, (unsigned)init);
             s->high_water = curr + init;
         }
-        else if (s->high_water < (ulg)curr + WIN_INIT) {
+        else if (s->high_water < curr + WIN_INIT) {
             /* High water mark at or above current data, but below current data
              * plus WIN_INIT -- zero out to current data plus WIN_INIT, or up
              * to end of window, whichever is less.
              */
-            init = (ulg)curr + WIN_INIT - s->high_water;
+            init = curr + WIN_INIT - s->high_water;
             if (init > s->window_size - s->high_water)
                 init = s->window_size - s->high_water;
             memset(s->window + s->high_water, 0, (unsigned)init);
@@ -1336,7 +1336,7 @@ local void fill_window_c(deflate_state *s)
         }
     }
 
-    Assert((ulg)s->strstart <= s->window_size - MIN_LOOKAHEAD,
+    Assert(s->strstart <= s->window_size - MIN_LOOKAHEAD,
            "not enough room for search");
 }
 
@@ -1348,7 +1348,7 @@ local void fill_window_c(deflate_state *s)
    _tr_flush_block(s, (s->block_start >= 0L ? \
                    (char *)&s->window[(unsigned)s->block_start] : \
                    (char *)Z_NULL), \
-                (ulg)((long)s->strstart - s->block_start), \
+                (uint16_t)((int32_t)s->strstart - s->block_start), \
                 (last)); \
    s->block_start = s->strstart; \
    flush_pending(s->strm); \
@@ -1375,8 +1375,8 @@ local block_state deflate_stored(deflate_state *s, int flush)
     /* Stored blocks are limited to 0xffff bytes, pending_buf is limited
      * to pending_buf_size, and each stored block has a 5 byte header:
      */
-    ulg max_block_size = 0xffff;
-    ulg max_start;
+    uint32_t max_block_size = 0xffff;
+    uint32_t max_start;
 
     if (max_block_size > s->pending_buf_size - 5) {
         max_block_size = s->pending_buf_size - 5;
@@ -1402,7 +1402,7 @@ local block_state deflate_stored(deflate_state *s, int flush)
 
         /* Emit a stored block if pending_buf will be full: */
         max_start = s->block_start + max_block_size;
-        if (s->strstart == 0 || (ulg)s->strstart >= max_start) {
+        if (s->strstart == 0 || s->strstart >= max_start) {
             /* strstart == 0 is possible when wraparound on 16-bit machine */
             s->lookahead = (uInt)(s->strstart - max_start);
             s->strstart = (uInt)max_start;

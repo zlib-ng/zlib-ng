@@ -19,15 +19,15 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
 {
     const __m128i xmm_wsize = _mm_set1_epi16(s->w_size);
 
-    register unsigned n;
+    register uint32_t n;
     register Pos *p;
-    unsigned more;    /* Amount of free space at the end of the window. */
+    uint32_t more;    /* Amount of free space at the end of the window. */
     uInt wsize = s->w_size;
 
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
 
     do {
-        more = (unsigned)(s->window_size -(ulg)s->lookahead -(ulg)s->strstart);
+        more = (uint32_t)(s->window_size -(uint32_t)s->lookahead -(uint32_t)s->strstart);
 
         /* Deal with !@#$% 64K limit: */
         if (sizeof(int) <= 2) {
@@ -138,8 +138,8 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
      * routines allow scanning to strstart + MAX_MATCH, ignoring lookahead.
      */
     if (s->high_water < s->window_size) {
-        ulg curr = s->strstart + (ulg)(s->lookahead);
-        ulg init;
+        uint32_t curr = s->strstart + (uint32_t)(s->lookahead);
+        uint32_t init;
 
         if (s->high_water < curr) {
             /* Previous high water mark below current data -- zero WIN_INIT
@@ -151,12 +151,12 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
             memset(s->window + curr, 0, (unsigned)init);
             s->high_water = curr + init;
         }
-        else if (s->high_water < (ulg)curr + WIN_INIT) {
+        else if (s->high_water < curr + WIN_INIT) {
             /* High water mark at or above current data, but below current data
              * plus WIN_INIT -- zero out to current data plus WIN_INIT, or up
              * to end of window, whichever is less.
              */
-            init = (ulg)curr + WIN_INIT - s->high_water;
+            init = curr + WIN_INIT - s->high_water;
             if (init > s->window_size - s->high_water)
                 init = s->window_size - s->high_water;
             memset(s->window + s->high_water, 0, (unsigned)init);
@@ -164,7 +164,7 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
         }
     }
 
-    Assert((ulg)s->strstart <= s->window_size - MIN_LOOKAHEAD,
+    Assert(s->strstart <= s->window_size - MIN_LOOKAHEAD,
            "not enough room for search");
 }
 #endif
