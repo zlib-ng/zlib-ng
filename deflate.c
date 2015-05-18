@@ -267,7 +267,7 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
     strm->msg = Z_NULL;
     if (strm->zalloc == (alloc_func)0) {
         strm->zalloc = zcalloc;
-        strm->opaque = (void *)0;
+        strm->opaque = NULL;
     }
     if (strm->zfree == (free_func)0)
         strm->zfree = zcfree;
