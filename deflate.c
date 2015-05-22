@@ -1487,7 +1487,7 @@ local block_state deflate_fast(deflate_state *s, int flush)
                 s->match_length--; /* string at strstart already in table */
                 do {
                     s->strstart++;
-                    hash_head = insert_string(s, s->strstart);
+                    insert_string(s, s->strstart);
                     /* strstart never exceeds WSIZE-MAX_MATCH, so there are
                      * always MIN_MATCH bytes ahead.
                      */
