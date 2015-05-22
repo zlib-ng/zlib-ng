@@ -1165,17 +1165,19 @@ local void fill_window_c(deflate_state *s);
 local void fill_window(deflate_state *s)
 {
 #ifdef X86_SSE2_FILL_WINDOW
-#ifndef X86_NOCHECK_SSE2
+# ifndef X86_NOCHECK_SSE2
     if (x86_cpu_has_sse2) {
-#endif
+# endif
         fill_window_sse(s);
-        return;
-#ifndef X86_NOCHECK_SSE2
-  }
-#endif
-#endif
-    
+# ifndef X86_NOCHECK_SSE2
+    }else{
+        fill_window_c(s);
+    }
+# endif
+
+#else
     fill_window_c(s);
+#endif
 }
 
 local void fill_window_c(deflate_state *s)
