@@ -382,7 +382,7 @@ void test_sync(unsigned char *compr, uLong comprLen, unsigned char *uncompr, uLo
     d_stream.next_out = uncompr;
     d_stream.avail_out = (uInt)uncomprLen;
 
-    inflate(&d_stream, Z_NO_FLUSH);
+    err = inflate(&d_stream, Z_NO_FLUSH);
     CHECK_ERR(err, "inflate");
 
     d_stream.avail_in = (uInt)comprLen-2;   /* read all compressed data */
