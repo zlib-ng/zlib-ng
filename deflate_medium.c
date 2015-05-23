@@ -28,7 +28,7 @@ static int tr_tally_lit(deflate_state *s, int c)
     return  _tr_tally(s, 0, c);
 }
 
-static int emit_match(deflate_state *s, struct match match, IPos hash_head)
+static int emit_match(deflate_state *s, struct match match)
 {
         int flush = 0;
         
@@ -276,7 +276,7 @@ block_state deflate_medium(deflate_state *s, int flush)
         }
         
         /* now emit the current match */
-        bflush = emit_match(s, current_match, hash_head);
+        bflush = emit_match(s, current_match);
         
         /* move the "cursor" forward */
         s->strstart += current_match.match_length;        
