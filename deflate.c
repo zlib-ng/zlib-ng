@@ -641,8 +641,7 @@ local void putShortMSB (deflate_state *s, uInt b)
  * to avoid allocating a large strm->next_out buffer and copying into it.
  * (See also read_buf()).
  */
-ZLIB_INTERNAL void flush_pending(strm)
-    z_stream *strm;
+ZLIB_INTERNAL void flush_pending(z_stream *strm)
 {
     unsigned len;
     deflate_state *s = strm->state;
