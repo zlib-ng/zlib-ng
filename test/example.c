@@ -71,7 +71,7 @@ void test_compress(unsigned char *compr, uLong comprLen, unsigned char *uncompr,
 
 #ifdef WITH_GZFILEOP
 void test_gzio          (const char *fname,
-                            Byte *uncompr, uLong uncomprLen);
+                            unsigned char *uncompr, uLong uncomprLen);
 
 /* ===========================================================================
  * Test read/write of .gz files
