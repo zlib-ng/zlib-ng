@@ -40,10 +40,6 @@
 #  define close _close
 #endif
 
-#ifdef NO_DEFLATE       /* for compatibility with old definition */
-#  define NO_GZCOMPRESS
-#endif
-
 /* In Win32, vsnprintf is available as the "non-ANSI" _vsnprintf. */
 #if !defined(STDC99) && !defined(__CYGWIN__) && defined(WIN32)
 #  if !defined(vsnprintf)
