@@ -160,7 +160,7 @@ void ZLIB_INTERNAL  zcfree  (void *opaque, void *ptr);
 #endif /* ZSWAP32 */
 
 /* Only enable likely/unlikely if the compiler is known to support it */
-#if defined(__GNUC__) && (__GNUC__ >= 3)
+#if (defined(__GNUC__) && (__GNUC__ >= 3)) || defined(__INTEL_COMPILER) || defined(__Clang__)
 #  ifndef likely
 #    define likely(x)      __builtin_expect(!!(x),1)
 #  endif
