@@ -1,3 +1,5 @@
+#ifndef DEFLATE_H_
+#define DEFLATE_H_
 /* deflate.h -- internal compression state
  * Copyright (C) 1995-2012 Jean-loup Gailly
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -9,9 +11,6 @@
  */
 
 /* @(#) $Id$ */
-
-#ifndef DEFLATE_H
-#define DEFLATE_H
 
 #include "zutil.h"
 
@@ -279,7 +278,6 @@ typedef struct internal_state {
      * longest match routines access bytes past the input.  This is then
      * updated to the new high water mark.
      */
-
 } deflate_state;
 
 typedef enum {
@@ -334,16 +332,15 @@ typedef enum {
    memory checker errors from longest match routines */
 
         /* in trees.c */
-void ZLIB_INTERNAL _tr_init (deflate_state *s);
-int ZLIB_INTERNAL _tr_tally (deflate_state *s, unsigned dist, unsigned lc);
-void ZLIB_INTERNAL _tr_flush_block (deflate_state *s, char *buf, uint16_t stored_len, int last);
-void ZLIB_INTERNAL _tr_flush_bits (deflate_state *s);
-void ZLIB_INTERNAL _tr_align (deflate_state *s);
-void ZLIB_INTERNAL _tr_stored_block (deflate_state *s, char *buf, uint16_t stored_len, int last);
-void ZLIB_INTERNAL bi_windup (deflate_state *s);
+void ZLIB_INTERNAL _tr_init(deflate_state *s);
+int ZLIB_INTERNAL _tr_tally(deflate_state *s, unsigned dist, unsigned lc);
+void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, char *buf, uint16_t stored_len, int last);
+void ZLIB_INTERNAL _tr_flush_bits(deflate_state *s);
+void ZLIB_INTERNAL _tr_align(deflate_state *s);
+void ZLIB_INTERNAL _tr_stored_block(deflate_state *s, char *buf, uint16_t stored_len, int last);
+void ZLIB_INTERNAL bi_windup(deflate_state *s);
 
-#define d_code(dist) \
-   ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
+#define d_code(dist) ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
 /* Mapping from a distance to a distance code. dist is the distance - 1 and
  * must not have side effects. _dist_code[256] and _dist_code[257] are never
  * used.
@@ -352,13 +349,13 @@ void ZLIB_INTERNAL bi_windup (deflate_state *s);
 #ifndef DEBUG
 /* Inline versions of _tr_tally for speed: */
 
-#if defined(GEN_TREES_H)
-  extern unsigned char ZLIB_INTERNAL _length_code[];
-  extern unsigned char ZLIB_INTERNAL _dist_code[];
-#else
-  extern const unsigned char ZLIB_INTERNAL _length_code[];
-  extern const unsigned char ZLIB_INTERNAL _dist_code[];
-#endif
+# if defined(GEN_TREES_H)
+    extern unsigned char ZLIB_INTERNAL _length_code[];
+    extern unsigned char ZLIB_INTERNAL _dist_code[];
+# else
+    extern const unsigned char ZLIB_INTERNAL _length_code[];
+    extern const unsigned char ZLIB_INTERNAL _dist_code[];
+# endif
 
 # define _tr_tally_lit(s, c, flush) \
   { unsigned char cc = (c); \
@@ -366,7 +363,7 @@ void ZLIB_INTERNAL bi_windup (deflate_state *s);
     s->l_buf[s->last_lit++] = cc; \
     s->dyn_ltree[cc].Freq++; \
     flush = (s->last_lit == s->lit_bufsize-1); \
-   }
+  }
 # define _tr_tally_dist(s, distance, length, flush) \
   { unsigned char len = (length); \
     uint16_t dist = (distance); \
@@ -378,8 +375,8 @@ void ZLIB_INTERNAL bi_windup (deflate_state *s);
     flush = (s->last_lit == s->lit_bufsize-1); \
   }
 #else
-# define _tr_tally_lit(s, c, flush) flush = _tr_tally(s, 0, c)
-# define _tr_tally_dist(s, distance, length, flush) \
+#   define _tr_tally_lit(s, c, flush) flush = _tr_tally(s, 0, c)
+#   define _tr_tally_dist(s, distance, length, flush) \
               flush = _tr_tally(s, distance, length)
 #endif
 
@@ -390,7 +387,7 @@ void ZLIB_INTERNAL bi_windup (deflate_state *s);
  *    previous key instead of complete recalculation each time.
  */
 #ifdef X86_SSE4_2_CRC_HASH
-#define UPDATE_HASH(s,h,i) (\
+#define UPDATE_HASH(s, h, i) (\
     {\
         if (s->level < 6) \
             h = (3483 * (s->window[i]) +\
@@ -403,17 +400,20 @@ void ZLIB_INTERNAL bi_windup (deflate_state *s);
                  25811* (s->window[i+2])) & s->hash_mask;\
     })
 #else
-#define UPDATE_HASH(s,h,i) (h = (((h)<<s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
+#   define UPDATE_HASH(s, h, i) (h = (((h) << s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
 #endif
 
 #ifndef DEBUG
 #  define send_code(s, c, tree) send_bits(s, tree[c].Code, tree[c].Len)
-   /* Send a code of the given tree. c and tree must not have side effects */
+/* Send a code of the given tree. c and tree must not have side effects */
 
 #else /* DEBUG */
 #  define send_code(s, c, tree) \
-     { if (z_verbose>2) fprintf(stderr,"\ncd %3d ",(c)); \
-       send_bits(s, tree[c].Code, tree[c].Len); }
+    {  if (z_verbose > 2) { \
+           fprintf(stderr, "\ncd %3d ", (c)); \
+       } \
+       send_bits(s, tree[c].Code, tree[c].Len); \
+     }
 #endif
 
 #ifdef DEBUG
@@ -421,11 +421,8 @@ void ZLIB_INTERNAL bi_windup (deflate_state *s);
  * Send a value on a given number of bits.
  * IN assertion: length <= 16 and value fits in length bits.
  */
-local void send_bits(deflate_state *s,
-                     int value,  /* value to send */
-                     int length  /* number of bits */
-{
-    Tracevv((stderr," l %2d v %4x ", length, value));
+local void send_bits(deflate_state *s, int value, int length) {
+    Tracevv((stderr, " l %2d v %4x ", length, value));
     Assert(length > 0 && length <= 15, "invalid length");
     s->bits_sent += (uint32_t)length;
 
@@ -459,4 +456,4 @@ local void send_bits(deflate_state *s,
 }
 #endif
 
-#endif /* DEFLATE_H */
+#endif /* DEFLATE_H_ */
