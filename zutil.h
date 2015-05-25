@@ -1,3 +1,5 @@
+#ifndef ZUTIL_H_
+#define ZUTIL_H_
 /* zutil.h -- internal interface and configuration of the compression library
  * Copyright (C) 1995-2013 Jean-loup Gailly.
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -10,20 +12,17 @@
 
 /* @(#) $Id$ */
 
-#ifndef ZUTIL_H
-#define ZUTIL_H
-
 #ifdef HAVE_HIDDEN
 #  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
 #else
 #  define ZLIB_INTERNAL
 #endif
 
-#include "zlib.h"
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include "zlib.h"
 
 #ifndef local
 #  define local static
@@ -39,8 +38,7 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
 #define ERR_MSG(err) z_errmsg[Z_NEED_DICT-(err)]
 
-#define ERR_RETURN(strm,err) \
-  return (strm->msg = ERR_MSG(err), (err))
+#define ERR_RETURN(strm, err) return (strm->msg = ERR_MSG(err), (err))
 /* To be used only when the state is known to be valid */
 
         /* common constants */
@@ -77,13 +75,13 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #endif
 
 #if (defined(_MSC_VER) && (_MSC_VER > 600))
-#  define fdopen(fd,type)  _fdopen(fd,type)
+#  define fdopen(fd, type)  _fdopen(fd, type)
 #endif
 
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(_WIN32) && (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
-    ZEXTERN uint32_t ZEXPORT adler32_combine64 (uint32_t, uint32_t, z_off_t);
-    ZEXTERN uint32_t ZEXPORT crc32_combine64 (uint32_t, uint32_t, z_off_t);
+    ZEXTERN uint32_t ZEXPORT adler32_combine64(uint32_t, uint32_t, z_off_t);
+    ZEXTERN uint32_t ZEXPORT crc32_combine64(uint32_t, uint32_t, z_off_t);
 #endif
 
 /* MS Visual Studio does not allow inline in C, only C++.
@@ -106,36 +104,34 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
 /* Diagnostic functions */
 #ifdef DEBUG
-#  include <stdio.h>
-   extern int ZLIB_INTERNAL z_verbose;
-   extern void ZLIB_INTERNAL z_error (char *m);
-#  define Assert(cond,msg) {if(!(cond)) z_error(msg);}
-#  define Trace(x) {if (z_verbose>=0) fprintf x ;}
-#  define Tracev(x) {if (z_verbose>0) fprintf x ;}
-#  define Tracevv(x) {if (z_verbose>1) fprintf x ;}
-#  define Tracec(c,x) {if (z_verbose>0 && (c)) fprintf x ;}
-#  define Tracecv(c,x) {if (z_verbose>1 && (c)) fprintf x ;}
+#   include <stdio.h>
+    extern int ZLIB_INTERNAL z_verbose;
+    extern void ZLIB_INTERNAL z_error(char *m);
+#   define Assert(cond, msg) {if(!(cond)) z_error(msg);}
+#   define Trace(x) {if (z_verbose >= 0) fprintf x;}
+#   define Tracev(x) {if (z_verbose > 0) fprintf x;}
+#   define Tracevv(x) {if (z_verbose > 1) fprintf x;}
+#   define Tracec(c, x) {if (z_verbose > 0 && (c)) fprintf x;}
+#   define Tracecv(c, x) {if (z_verbose > 1 && (c)) fprintf x;}
 #else
-#  define Assert(cond,msg)
-#  define Trace(x)
-#  define Tracev(x)
-#  define Tracevv(x)
-#  define Tracec(c,x)
-#  define Tracecv(c,x)
+#   define Assert(cond, msg)
+#   define Trace(x)
+#   define Tracev(x)
+#   define Tracevv(x)
+#   define Tracec(c, x)
+#   define Tracecv(c, x)
 #endif
 
-void ZLIB_INTERNAL *zcalloc (void *opaque, unsigned items, unsigned size);
-void ZLIB_INTERNAL  zcfree  (void *opaque, void *ptr);
+void ZLIB_INTERNAL *zcalloc(void *opaque, unsigned items, unsigned size);
+void ZLIB_INTERNAL   zcfree(void *opaque, void *ptr);
 
-#define ZALLOC(strm, items, size) \
-           (*((strm)->zalloc))((strm)->opaque, (items), (size))
-#define ZFREE(strm, addr)  (*((strm)->zfree))((strm)->opaque, (void *)(addr))
+#define ZALLOC(strm, items, size) (*((strm)->zalloc))((strm)->opaque, (items), (size))
+#define ZFREE(strm, addr)         (*((strm)->zfree))((strm)->opaque, (void *)(addr))
 #define TRY_FREE(s, p) {if (p) ZFREE(s, p);}
 
 /* Reverse the bytes in a 32-bit value. Use compiler intrinsics when
    possible to take advantage of hardware implementations. */
 #if defined(_WIN32) && (_MSC_VER >= 1300)
-#  include <stdlib.h>
 #  pragma intrinsic(_byteswap_ulong)
 #  define ZSWAP32(q) _byteswap_ulong(q)
 
@@ -162,10 +158,10 @@ void ZLIB_INTERNAL  zcfree  (void *opaque, void *ptr);
 /* Only enable likely/unlikely if the compiler is known to support it */
 #if (defined(__GNUC__) && (__GNUC__ >= 3)) || defined(__INTEL_COMPILER) || defined(__Clang__)
 #  ifndef likely
-#    define likely(x)      __builtin_expect(!!(x),1)
+#    define likely(x)      __builtin_expect(!!(x), 1)
 #  endif
 #  ifndef unlikely
-#    define unlikely(x)    __builtin_expect(!!(x),0)
+#    define unlikely(x)    __builtin_expect(!!(x), 0)
 #  endif
 #else
 #  ifndef likely
@@ -176,4 +172,4 @@ void ZLIB_INTERNAL  zcfree  (void *opaque, void *ptr);
 #  endif
 #endif /* (un)likely */
 
-#endif /* ZUTIL_H */
+#endif /* ZUTIL_H_ */
