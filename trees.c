@@ -356,7 +356,7 @@ local void init_block(deflate_state *s) {
  * the subtrees have equal frequency. This minimizes the worst case length.
  */
 #define smaller(tree, n, m, depth) \
-    (tree[n].Freq < tree[m].Freq ||
+    (tree[n].Freq < tree[m].Freq || \
     (tree[n].Freq == tree[m].Freq && depth[n] <= depth[m]))
 
 /* ===========================================================================
@@ -680,7 +680,7 @@ local void send_tree(deflate_state *s, ct_data *tree, int max_code) {
     int min_count = 4;         /* min repeat count */
 
     /* tree[max_code+1].Len = -1; */  /* guard already set */
-    if (nextlen == 0) {
+    if (nextlen == 0)
         max_count = 138, min_count = 3;
 
     for (n = 0; n <= max_code; n++) {
