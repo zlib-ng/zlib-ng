@@ -6,19 +6,18 @@
 #include "gzguts.h"
 
 /* Local functions */
-local int gz_load (gz_statep, unsigned char *, unsigned, unsigned *);
-local int gz_avail (gz_statep);
-local int gz_look (gz_statep);
-local int gz_decomp (gz_statep);
-local int gz_fetch (gz_statep);
-local int gz_skip (gz_statep, z_off64_t);
+local int gz_load(gz_statep, unsigned char *, unsigned, unsigned *);
+local int gz_avail(gz_statep);
+local int gz_look(gz_statep);
+local int gz_decomp(gz_statep);
+local int gz_fetch(gz_statep);
+local int gz_skip(gz_statep, z_off64_t);
 
 /* Use read() to load a buffer -- return -1 on error, otherwise 0.  Read from
    state->fd, and update state->eof, state->err, and state->msg as appropriate.
    This function needs to loop on read(), since read() is not guaranteed to
    read the number of bytes requested, depending on the type of descriptor. */
-local int gz_load(gz_statep state, unsigned char *buf, unsigned len, unsigned *have)
-{
+local int gz_load(gz_statep state, unsigned char *buf, unsigned len, unsigned *have) {
     int ret;
 
     *have = 0;
@@ -44,8 +43,7 @@ local int gz_load(gz_statep state, unsigned char *buf, unsigned len, unsigned *h
    If strm->avail_in != 0, then the current data is moved to the beginning of
    the input buffer, and then the remainder of the buffer is loaded with the
    available data from the input file. */
-local int gz_avail(gz_statep state)
-{
+local int gz_avail(gz_statep state) {
     unsigned got;
     z_stream *strm = &(state->strm);
 
@@ -60,8 +58,7 @@ local int gz_avail(gz_statep state)
                 *p++ = *q++;
             } while (--n);
         }
-        if (gz_load(state, state->in + strm->avail_in,
-                    state->size - strm->avail_in, &got) == -1)
+        if (gz_load(state, state->in + strm->avail_in, state->size - strm->avail_in, &got) == -1)
             return -1;
         strm->avail_in += got;
         strm->next_in = state->in;
@@ -78,8 +75,7 @@ local int gz_avail(gz_statep state)
    case, all further file reads will be directly to either the output buffer or
    a user buffer.  If decompressing, the inflate state will be initialized.
    gz_look() will return 0 on success or -1 on failure. */
-local int gz_look(gz_statep state)
-{
+local int gz_look(gz_statep state) {
     z_stream *strm = &(state->strm);
 
     /* allocate read buffers and inflate memory */
@@ -163,8 +159,7 @@ local int gz_look(gz_statep state)
    data.  If the gzip stream completes, state->how is reset to LOOK to look for
    the next gzip stream or raw data, once state->x.have is depleted.  Returns 0
    on success, -1 on failure. */
-local int gz_decomp(gz_statep state)
-{
+local int gz_decomp(gz_statep state) {
     int ret = Z_OK;
     unsigned had;
     z_stream *strm = &(state->strm);
@@ -183,8 +178,7 @@ local int gz_decomp(gz_statep state)
         /* decompress and handle errors */
         ret = inflate(strm, Z_NO_FLUSH);
         if (ret == Z_STREAM_ERROR || ret == Z_NEED_DICT) {
-            gz_error(state, Z_STREAM_ERROR,
-                     "internal error: inflate stream corrupt");
+            gz_error(state, Z_STREAM_ERROR, "internal error: inflate stream corrupt");
             return -1;
         }
         if (ret == Z_MEM_ERROR) {
@@ -192,8 +186,7 @@ local int gz_decomp(gz_statep state)
             return -1;
         }
         if (ret == Z_DATA_ERROR) {              /* deflate stream invalid */
-            gz_error(state, Z_DATA_ERROR,
-                     strm->msg == NULL ? "compressed data error" : strm->msg);
+            gz_error(state, Z_DATA_ERROR, strm->msg == NULL ? "compressed data error" : strm->msg);
             return -1;
         }
     } while (strm->avail_out && ret != Z_STREAM_END);
@@ -216,12 +209,11 @@ local int gz_decomp(gz_statep state)
    looked for to determine whether to copy or decompress.  Returns -1 on error,
    otherwise 0.  gz_fetch() will leave state->how as COPY or GZIP unless the
    end of the input file has been reached and all data has been processed.  */
-local int gz_fetch(gz_statep state)
-{
+local int gz_fetch(gz_statep state) {
     z_stream *strm = &(state->strm);
 
     do {
-        switch(state->how) {
+        switch (state->how) {
         case LOOK:      /* -> LOOK, COPY (only if never GZIP), or GZIP */
             if (gz_look(state) == -1)
                 return -1;
@@ -245,8 +237,7 @@ local int gz_fetch(gz_statep state)
 }
 
 /* Skip len uncompressed bytes of output.  Return -1 on error, 0 on success. */
-local int gz_skip(gz_statep state, z_off64_t len)
-{
+local int gz_skip(gz_statep state, z_off64_t len) {
     unsigned n;
 
     /* skip over len bytes or reach end-of-file, whichever comes first */
@@ -259,14 +250,11 @@ local int gz_skip(gz_statep state, z_off64_t len)
             state->x.next += n;
             state->x.pos += n;
             len -= n;
-        }
-
-        /* output buffer empty -- return if we're at the end of the input */
-        else if (state->eof && state->strm.avail_in == 0)
+        } else if (state->eof && state->strm.avail_in == 0) {
+            /* output buffer empty -- return if we're at the end of the input */
             break;
-
-        /* need more data to skip -- load up output buffer */
-        else {
+        } else {
+            /* need more data to skip -- load up output buffer */
             /* get more output, looking for header if required */
             if (gz_fetch(state) == -1)
                 return -1;
@@ -275,8 +263,7 @@ local int gz_skip(gz_statep state, z_off64_t len)
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzread(gzFile file, void *buf, unsigned len)
-{
+int ZEXPORT gzread(gzFile file, void *buf, unsigned len) {
     unsigned got, n;
     gz_statep state;
     z_stream *strm;
@@ -288,8 +275,7 @@ int ZEXPORT gzread(gzFile file, void *buf, unsigned len)
     strm = &(state->strm);
 
     /* check that we're reading and that there's no (serious) error */
-    if (state->mode != GZ_READ ||
-            (state->err != Z_OK && state->err != Z_BUF_ERROR))
+    if (state->mode != GZ_READ || (state->err != Z_OK && state->err != Z_BUF_ERROR))
         return -1;
 
     /* since an int is returned, make sure len fits in one, otherwise return
@@ -319,33 +305,24 @@ int ZEXPORT gzread(gzFile file, void *buf, unsigned len)
             memcpy(buf, state->x.next, n);
             state->x.next += n;
             state->x.have -= n;
-        }
-
-        /* output buffer empty -- return if we're at the end of the input */
-        else if (state->eof && strm->avail_in == 0) {
+        } else if (state->eof && strm->avail_in == 0) {
+            /* output buffer empty -- return if we're at the end of the input */
             state->past = 1;        /* tried to read past end */
             break;
-        }
-
-        /* need output data -- for small len or new stream load up our output
-           buffer */
-        else if (state->how == LOOK || len < (state->size << 1)) {
+        } else if (state->how == LOOK || len < (state->size << 1)) {
+            /* need output data -- for small len or new stream load up our output buffer */
             /* get more output, looking for header if required */
             if (gz_fetch(state) == -1)
                 return -1;
             continue;       /* no progress yet -- go back to copy above */
             /* the copy above assures that we will leave with space in the
                output buffer, allowing at least one gzungetc() to succeed */
-        }
-
-        /* large len -- read directly into user buffer */
-        else if (state->how == COPY) {      /* read directly */
+        } else if (state->how == COPY) {      /* read directly */
+            /* large len -- read directly into user buffer */
             if (gz_load(state, (unsigned char *)buf, len, &n) == -1)
                 return -1;
-        }
-
-        /* large len -- decompress directly into user buffer */
-        else {  /* state->how == GZIP */
+        } else {  /* state->how == GZIP */
+            /* large len -- decompress directly into user buffer */
             strm->avail_out = len;
             strm->next_out = (unsigned char *)buf;
             if (gz_decomp(state) == -1)
@@ -367,8 +344,7 @@ int ZEXPORT gzread(gzFile file, void *buf, unsigned len)
 
 /* -- see zlib.h -- */
 #undef gzgetc
-int ZEXPORT gzgetc(gzFile file)
-{
+int ZEXPORT gzgetc(gzFile file) {
     int ret;
     unsigned char buf[1];
     gz_statep state;
@@ -379,8 +355,7 @@ int ZEXPORT gzgetc(gzFile file)
     state = (gz_statep)file;
 
     /* check that we're reading and that there's no (serious) error */
-    if (state->mode != GZ_READ ||
-        (state->err != Z_OK && state->err != Z_BUF_ERROR))
+    if (state->mode != GZ_READ || (state->err != Z_OK && state->err != Z_BUF_ERROR))
         return -1;
 
     /* try output buffer (no need to check for skip request) */
@@ -395,14 +370,12 @@ int ZEXPORT gzgetc(gzFile file)
     return ret < 1 ? -1 : buf[0];
 }
 
-int ZEXPORT gzgetc_(gzFile file)
-{
+int ZEXPORT gzgetc_(gzFile file) {
     return gzgetc(file);
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzungetc(int c, gzFile file)
-{
+int ZEXPORT gzungetc(int c, gzFile file) {
     gz_statep state;
 
     /* get internal structure */
@@ -411,8 +384,7 @@ int ZEXPORT gzungetc(int c, gzFile file)
     state = (gz_statep)file;
 
     /* check that we're reading and that there's no (serious) error */
-    if (state->mode != GZ_READ ||
-        (state->err != Z_OK && state->err != Z_BUF_ERROR))
+    if (state->mode != GZ_READ || (state->err != Z_OK && state->err != Z_BUF_ERROR))
         return -1;
 
     /* process a skip request */
@@ -459,8 +431,7 @@ int ZEXPORT gzungetc(int c, gzFile file)
 }
 
 /* -- see zlib.h -- */
-char * ZEXPORT gzgets(gzFile file, char *buf, int len)
-{
+char * ZEXPORT gzgets(gzFile file, char *buf, int len) {
     unsigned left, n;
     char *str;
     unsigned char *eol;
@@ -472,8 +443,7 @@ char * ZEXPORT gzgets(gzFile file, char *buf, int len)
     state = (gz_statep)file;
 
     /* check that we're reading and that there's no (serious) error */
-    if (state->mode != GZ_READ ||
-        (state->err != Z_OK && state->err != Z_BUF_ERROR))
+    if (state->mode != GZ_READ || (state->err != Z_OK && state->err != Z_BUF_ERROR))
         return NULL;
 
     /* process a skip request */
@@ -520,13 +490,13 @@ char * ZEXPORT gzgets(gzFile file, char *buf, int len)
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzdirect(gzFile file)
-{
+int ZEXPORT gzdirect(gzFile file) {
     gz_statep state;
 
     /* get internal structure */
     if (file == NULL)
         return 0;
+
     state = (gz_statep)file;
 
     /* if the state is not known, but we can find out, then do so (this is
@@ -539,14 +509,14 @@ int ZEXPORT gzdirect(gzFile file)
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzclose_r(gzFile file)
-{
+int ZEXPORT gzclose_r(gzFile file) {
     int ret, err;
     gz_statep state;
 
     /* get internal structure */
     if (file == NULL)
         return Z_STREAM_ERROR;
+
     state = (gz_statep)file;
 
     /* check that we're reading */

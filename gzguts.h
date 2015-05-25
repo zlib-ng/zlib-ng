@@ -1,3 +1,5 @@
+#ifndef GZGUTS_H_
+#define GZGUTS_H_
 /* gzguts.h -- zlib internal header definitions for gz* operations
  * Copyright (C) 2004, 2005, 2010, 2011, 2012, 2013 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -19,11 +21,11 @@
 #endif
 
 #include <stdio.h>
-#include "zlib.h"
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <fcntl.h>
+#include "zlib.h"
 
 #ifdef _WIN32
 #  include <stddef.h>
@@ -72,10 +74,10 @@
 
 /* provide prototypes for these when building zlib without LFS */
 #if (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0) && defined(WITH_GZFILEOP)
-    ZEXTERN gzFile ZEXPORT gzopen64 (const char *, const char *);
-    ZEXTERN z_off64_t ZEXPORT gzseek64 (gzFile, z_off64_t, int);
-    ZEXTERN z_off64_t ZEXPORT gztell64 (gzFile);
-    ZEXTERN z_off64_t ZEXPORT gzoffset64 (gzFile);
+    ZEXTERN gzFile ZEXPORT gzopen64(const char *, const char *);
+    ZEXTERN z_off64_t ZEXPORT gzseek64(gzFile, z_off64_t, int);
+    ZEXTERN z_off64_t ZEXPORT gztell64(gzFile);
+    ZEXTERN z_off64_t ZEXPORT gzoffset64(gzFile);
 #endif
 
 /* default memLevel */
@@ -136,7 +138,7 @@ typedef struct {
 typedef gz_state *gz_statep;
 
 /* shared functions */
-void ZLIB_INTERNAL gz_error (gz_statep, int, const char *);
+void ZLIB_INTERNAL gz_error(gz_statep, int, const char *);
 
 /* GT_OFF(x), where x is an unsigned value, is true if x > maximum z_off64_t
    value -- needed when comparing unsigned to z_off64_t, which is signed
@@ -144,6 +146,8 @@ void ZLIB_INTERNAL gz_error (gz_statep, int, const char *);
 #ifdef INT_MAX
 #  define GT_OFF(x) (sizeof(int) == sizeof(z_off64_t) && (x) > INT_MAX)
 #else
-unsigned ZLIB_INTERNAL gz_intmax (void);
+unsigned ZLIB_INTERNAL gz_intmax(void);
 #  define GT_OFF(x) (sizeof(int) == sizeof(z_off64_t) && (x) > gz_intmax())
 #endif
+
+#endif /* GZGUTS_H_ */
