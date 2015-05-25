@@ -1,3 +1,6 @@
+#ifndef CRC32_H_
+#define CRC32_H_
+
 /* crc32.h -- tables for rapid CRC calculation
  * Generated automatically by crc32.c
  */
@@ -437,3 +440,5 @@ static const uint32_t crc_table[8][256] =
     0xf10605de
   }
 };
+
+#endif /* CRC32_H_ */
