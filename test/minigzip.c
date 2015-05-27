@@ -172,13 +172,9 @@ int gzread (gzFile, void *, unsigned);
 
 int gzread(gzFile gz, void *buf, unsigned len)
 {
-    int ret;
-    size_t got;
     z_stream *strm;
 
-    if (gz == NULL || gz->write)
-        return 0;
-    if (gz->err)
+    if (gz == NULL || gz->write || gz->err)
         return 0;
     strm = &(gz->strm);
     strm->next_out = buf;
@@ -186,20 +182,22 @@ int gzread(gzFile gz, void *buf, unsigned len)
     do {
         if (strm->avail_in == 0)
         {
-            got = fread(gz->buf, 1, BUFLEN, gz->file);
-            if (got == 0)
-                break;
             strm->next_in = gz->buf;
-            strm->avail_in = (uInt) got;
+            strm->avail_in = (uInt)fread(gz->buf, 1, BUFLEN, gz->file);
         }
-        ret = inflate(strm, Z_NO_FLUSH);
-        if (ret == Z_DATA_ERROR) {
-            gz->err = Z_DATA_ERROR;
-            gz->msg = strm->msg;
-            return 0;
+        if (strm->avail_in > 0)
+        {
+            int ret = inflate(strm, Z_NO_FLUSH);
+            if (ret == Z_DATA_ERROR) {
+                gz->err = ret;
+                gz->msg = strm->msg;
+                return 0;
+            }
+            else if (ret == Z_STREAM_END)
+                inflateReset(strm);
         }
-        if (ret == Z_STREAM_END)
-            inflateReset(strm);
+        else
+            break;
     } while (strm->avail_out);
     return len - strm->avail_out;
 }
