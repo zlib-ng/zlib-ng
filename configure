@@ -83,6 +83,7 @@ fi
 
 # set defaults before processing command line options
 LDCONFIG=${LDCONFIG-"ldconfig"}
+LDFLAGS=${LDFLAGS-"-L."}
 LDSHAREDLIBC="${LDSHAREDLIBC--lc}"
 DEFFILE=
 RC=
@@ -224,9 +225,13 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
         ARCH=$GCC_ARCH
       fi ;;
   esac
-  CFLAGS="${CFLAGS--O3} ${ARCHS} -Wall"
+  CFLAGS="${CFLAGS--O3}"
+  if test -n "${ARCHS}"; then
+    CFLAGS="${CFLAGS} ${ARCHS}"
+    LDFLAGS="${LDFLAGS} ${ARCHS}"
+  fi
+  CFLAGS="${CFLAGS} -Wall"
   SFLAGS="${CFLAGS--O3} -fPIC"
-  LDFLAGS="${LDFLAGS} ${ARCHS}"
   if test $build64 -eq 1; then
     CFLAGS="${CFLAGS} -m64"
     SFLAGS="${SFLAGS} -m64"
@@ -243,13 +248,14 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
   fi
   case "$uname" in
   Linux* | linux* | GNU | GNU/* | solaris*)
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map"} ;;
+        LDSHARED=${LDSHARED-"$cc"}
+        LDSHAREDFLAGS="-shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map" ;;
   *BSD | *bsd* | DragonFly)
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map"}
+        LDSHARED=${LDSHARED-"$cc"}
+        LDSHAREDFLAGS="-shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map"
         LDCONFIG="ldconfig -m" ;;
   CYGWIN* | Cygwin* | cygwin*)
         ARFLAGS="rcs"
-        CFLAGS="${CFLAGS} -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64"
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
         sharedlibdir='${bindir}'
@@ -258,7 +264,8 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
         SHAREDLIBV=''
         SHAREDTARGET=$SHAREDLIB
         IMPORTLIB='libz.dll.a'
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/zlib.map"}
+        LDSHARED=${LDSHARED-"$cc"}
+        LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/zlib.map"
         LDSHAREDLIBC=""
         DEFFILE='win32/zlib.def'
         RC='windres'
@@ -276,7 +283,8 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
         SHAREDLIBV=''
         SHAREDTARGET=$SHAREDLIB
         IMPORTLIB='libz.dll.a'
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,--out-implib,${IMPORTLIB}"}
+        LDSHARED=${LDSHARED-"$cc"}
+        LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB}"
         LDSHAREDLIBC=""
         DEFFILE='win32/zlib.def'
         RC='windres'
@@ -286,7 +294,7 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
         EXE='.exe' ;;
   MINGW* | mingw*)
         ARFLAGS="rcs"
-        CFLAGS="${CFLAGS} -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE=1"
+        CFLAGS="${CFLAGS} -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE=1"
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
         sharedlibdir='${bindir}'
@@ -295,7 +303,8 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
         SHAREDLIBV=''
         SHAREDTARGET=$SHAREDLIB
         IMPORTLIB='libz.dll.a'
-        LDSHARED=${LDSHARED-"$cc -shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/zlib.map"}
+        LDSHARED=${LDSHARED-"$cc"}
+        LDSHAREDFLAGS="-shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/zlib.map"
         LDSHAREDLIBC=""
         DEFFILE='win32/zlib.def'
         RC='windres'
@@ -310,9 +319,11 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
         EXE='.exe' ;;
   QNX*)  # This is for QNX6. I suppose that the QNX rule below is for QNX2,QNX4
          # (alain.bonnefoy@icbt.com)
-                 LDSHARED=${LDSHARED-"$cc -shared -Wl,-hlibz.so.1"} ;;
+                 LDSHARED=${LDSHARED-"$cc"}
+                 LDSHAREDFLAGS="-shared -Wl,-hlibz.so.1" ;;
   HP-UX*)
-         LDSHARED=${LDSHARED-"$cc -shared $SFLAGS"}
+         LDSHARED=${LDSHARED-"$cc"}
+         LDSHAREDFLAGS="-shared"
          case `(uname -m || echo unknown) 2>/dev/null` in
          ia64)
                  shared_ext='.so'
@@ -327,14 +338,16 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
              SHAREDLIBV=libz.$VER$shared_ext
              SHAREDLIBM=libz.$VER1$shared_ext
              SHAREDTARGET=$SHAREDLIBV
-             LDSHARED=${LDSHARED-"$cc -dynamiclib -install_name $libdir/$SHAREDLIBM -compatibility_version $VER1 -current_version $VER3"}
+             LDSHARED=${LDSHARED-"$cc"}
+             LDSHAREDFLAGS="-dynamiclib -install_name $libdir/$SHAREDLIBM -compatibility_version $VER1 -current_version $VER3"
              if libtool -V 2>&1 | grep Apple > /dev/null; then
                  AR="libtool"
              else
                  AR="/usr/bin/libtool"
              fi
              ARFLAGS="-o" ;;
-  *)             LDSHARED=${LDSHARED-"$cc -shared"} ;;
+  *)             LDSHARED=${LDSHARED-"$cc"}
+                 LDSHAREDFLAGS="-shared" ;;
   esac
 else
   # find system name and corresponding cc options
@@ -347,8 +360,8 @@ else
   case "$uname" in
   HP-UX*)    SFLAGS=${CFLAGS-"-O +z"}
              CFLAGS=${CFLAGS-"-O"}
-#            LDSHARED=${LDSHARED-"ld -b +vnocompatwarnings"}
-             LDSHARED=${LDSHARED-"ld -b"}
+             LDSHARED=${LDSHARED-"ld"}
+             LDSHAREDFLAGS="-b"
          case `(uname -m || echo unknown) 2>/dev/null` in
          ia64)
              shared_ext='.so'
@@ -360,11 +373,13 @@ else
   AIX*)  # Courtesy of dbakker@arrayasolutions.com
              SFLAGS=${CFLAGS-"-O -qmaxmem=8192"}
              CFLAGS=${CFLAGS-"-O -qmaxmem=8192"}
-             LDSHARED=${LDSHARED-"xlc -G"} ;;
+             LDSHARED=${LDSHARED-"xlc"}
+             LDSHAREDFLAGS="-G" ;;
   # send working options for other systems to zlib@gzip.org
   *)         SFLAGS=${CFLAGS-"-O"}
              CFLAGS=${CFLAGS-"-O"}
-             LDSHARED=${LDSHARED-"cc -shared"} ;;
+             LDSHARED=${LDSHARED-"cc"}
+             LDSHAREDFLAGS="-shared" ;;
   esac
 fi
 
@@ -435,7 +450,7 @@ if test $shared -eq 1; then
   echo Checking for shared library support... | tee -a configure.log
   # we must test in two steps (cc then ld), required at least on SunOS 4.x
   if try $CC -w -c $SFLAGS $test.c &&
-     try $LDSHARED $SFLAGS -o $test$shared_ext $test.o; then
+     try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o; then
     echo Building shared library $SHAREDTARGET with $CC. | tee -a configure.log
   elif test -z "$old_cc" -a -z "$old_cflags"; then
     echo No shared library support. | tee -a configure.log
@@ -447,6 +462,7 @@ if test $shared -eq 1; then
 fi
 if test $shared -eq 0; then
   LDSHARED="$CC"
+  LDSHAREDFLAGS=""
   ALL="static"
   SHAREDLIB=""
   SHAREDLIBV=""
@@ -805,6 +821,7 @@ echo EXE = $EXE >> configure.log
 echo LDCONFIG = $LDCONFIG >> configure.log
 echo LDFLAGS = $LDFLAGS >> configure.log
 echo LDSHARED = $LDSHARED >> configure.log
+echo LDSHAREDFLAGS = $LDSHAREDFLAGS >> configure.log
 echo LDSHAREDLIBC = $LDSHAREDLIBC >> configure.log
 echo DEFFILE = $DEFFILE >> configure.log
 echo RC = $RC >> configure.log
@@ -850,6 +867,7 @@ sed < $SRCDIR/Makefile.in "
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
+/^LDSHAREDFLAGS *=/s#=.*#=$LDSHAREDFLAGS#
 /^STATICLIB *=/s#=.*#=$STATICLIB#
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#
@@ -922,6 +940,7 @@ sed < $SRCDIR/zlib.pc.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
+/^LDSHAREDFLAGS *=/s#=.*#=$LDSHAREDFLAGS#
 /^STATICLIB *=/s#=.*#=$STATICLIB#
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#

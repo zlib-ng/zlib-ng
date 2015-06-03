@@ -21,9 +21,10 @@ CFLAGS=-O
 #           -Wstrict-prototypes -Wmissing-prototypes
 
 SFLAGS=-O
-LDFLAGS=
-TEST_LDFLAGS=-L. libz.a
+LDFLAGS=-L.
+TEST_LIBS=libz.a
 LDSHARED=$(CC)
+LDSHAREDFLAGS=-shared
 
 STATICLIB=libz.a
 SHAREDLIB=libz.so
@@ -108,7 +109,7 @@ infcover.o: $(SRCDIR)/test/infcover.c $(SRCDIR)/zlib.h zconf.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/infcover.c
 
 infcover$(EXE): infcover.o $(STATICLIB)
-	$(CC) $(CFLAGS) -o $@ infcover.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ infcover.o $(STATICLIB)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -129,10 +130,10 @@ minigzip.o: $(SRCDIR)/test/minigzip.c $(SRCDIR)/zlib.h zconf.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
 
 example64.o: $(SRCDIR)/test/example.c $(SRCDIR)/zlib.h zconf.h
-	$(CC) $(CFLAGS) $(INCLUDES) -D_FILE_OFFSET_BITS=64 -c -o $@ $(SRCDIR)/test/example.c
+	$(CC) $(CFLAGS) -D_FILE_OFFSET_BITS=64 $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
 
 minigzip64.o: $(SRCDIR)/test/minigzip.c $(SRCDIR)/zlib.h zconf.h
-	$(CC) $(CFLAGS) $(INCLUDES) -D_FILE_OFFSET_BITS=64 -c -o $@ $(SRCDIR)/test/minigzip.c
+	$(CC) $(CFLAGS) -D_FILE_OFFSET_BITS=64 $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
 
 zlibrc.o: win32/zlib1.rc
 	$(RC) $(RCFLAGS) -o $@ win32/zlib1.rc
@@ -140,14 +141,14 @@ zlibrc.o: win32/zlib1.rc
 .SUFFIXES: .lo
 
 %.o: $(SRCDIR)/%.c
-	$(CC) $(INCLUDES) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
 %.lo: $(SRCDIR)/%.c
-	$(CC) $(INCLUDES) $(SFLAGS) -DPIC -c -o $@ $<
+	$(CC) $(SFLAGS) -DPIC $(INCLUDES) -c -o $@ $<
 
 $(SHAREDTARGET): $(PIC_OBJS) $(DEFFILE) $(RCOBJS)
 ifneq ($(SHAREDTARGET),)
-	$(LDSHARED) $(SFLAGS) -o $@ $(DEFFILE) $(PIC_OBJS) $(RCOBJS) $(LDSHAREDLIBC) $(LDFLAGS)
+	$(LDSHARED) $(LDSHAREDFLAGS) $(LDFLAGS) -o $@ $(DEFFILE) $(PIC_OBJS) $(RCOBJS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -159,37 +160,37 @@ endif
 endif
 
 example$(EXE): example.o $(STATICLIB)
-	$(CC) $(CFLAGS) -o $@ example.o $(TEST_LDFLAGS)
+	$(CC) $(LDFLAGS) -o $@ example.o $(TEST_LIBS)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 minigzip$(EXE): minigzip.o $(STATICLIB)
-	$(CC) $(CFLAGS) -o $@ minigzip.o $(TEST_LDFLAGS)
+	$(CC) $(LDFLAGS) -o $@ minigzip.o $(TEST_LIBS)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 examplesh$(EXE): example.o $(SHAREDTARGET)
-	$(CC) $(CFLAGS) -o $@ example.o -L. $(SHAREDTARGET)
+	$(CC) $(LDFLAGS) -o $@ example.o $(SHAREDTARGET)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 minigzipsh$(EXE): minigzip.o $(SHAREDTARGET)
-	$(CC) $(CFLAGS) -o $@ minigzip.o -L. $(SHAREDTARGET)
+	$(CC) $(LDFLAGS) -o $@ minigzip.o $(SHAREDTARGET)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 example64$(EXE): example64.o $(STATICLIB)
-	$(CC) $(CFLAGS) -o $@ example64.o $(TEST_LDFLAGS)
+	$(CC) $(LDFLAGS) -o $@ example64.o $(TEST_LIBS)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 minigzip64$(EXE): minigzip64.o $(STATICLIB)
-	$(CC) $(CFLAGS) -o $@ minigzip64.o $(TEST_LDFLAGS)
+	$(CC) $(LDFLAGS) -o $@ minigzip64.o $(TEST_LIBS)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
