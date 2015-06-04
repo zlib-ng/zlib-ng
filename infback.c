@@ -16,7 +16,7 @@
 #include "inffast.h"
 
 /* function prototypes */
-local void fixedtables (struct inflate_state *state);
+local void fixedtables(struct inflate_state *state);
 
 /*
    strm provides memory allocation functions in zalloc and zfree, or
@@ -26,15 +26,12 @@ local void fixedtables (struct inflate_state *state);
    window and output buffer that is 2**windowBits bytes.
  */
 int ZEXPORT inflateBackInit_(z_stream *strm, int windowBits, unsigned char *window,
-                              const char *version, int stream_size)
-{
+                              const char *version, int stream_size) {
     struct inflate_state *state;
 
-    if (version == Z_NULL || version[0] != ZLIB_VERSION[0] ||
-        stream_size != (int)(sizeof(z_stream)))
+    if (version == Z_NULL || version[0] != ZLIB_VERSION[0] || stream_size != (int)(sizeof(z_stream)))
         return Z_VERSION_ERROR;
-    if (strm == Z_NULL || window == Z_NULL ||
-        windowBits < 8 || windowBits > 15)
+    if (strm == Z_NULL || window == Z_NULL || windowBits < 8 || windowBits > 15)
         return Z_STREAM_ERROR;
     strm->msg = Z_NULL;                 /* in case we return an error */
     if (strm->zalloc == (alloc_func)0) {
@@ -42,10 +39,10 @@ int ZEXPORT inflateBackInit_(z_stream *strm, int windowBits, unsigned char *wind
         strm->opaque = NULL;
     }
     if (strm->zfree == (free_func)0)
-    strm->zfree = zcfree;
-    state = (struct inflate_state *)ZALLOC(strm, 1,
-                                               sizeof(struct inflate_state));
-    if (state == Z_NULL) return Z_MEM_ERROR;
+        strm->zfree = zcfree;
+    state = (struct inflate_state *)ZALLOC(strm, 1, sizeof(struct inflate_state));
+    if (state == Z_NULL)
+        return Z_MEM_ERROR;
     Tracev((stderr, "inflate: allocated\n"));
     strm->state = (struct internal_state *)state;
     state->dmax = 32768U;
@@ -67,8 +64,7 @@ int ZEXPORT inflateBackInit_(z_stream *strm, int windowBits, unsigned char *wind
    used for threaded applications, since the rewriting of the tables and virgin
    may not be thread-safe.
  */
-local void fixedtables(struct inflate_state *state)
-{
+local void fixedtables(struct inflate_state *state) {
 #ifdef BUILDFIXED
     static int virgin = 1;
     static code *lenfix, *distfix;
@@ -234,9 +230,7 @@ local void fixedtables(struct inflate_state *state)
    inflateBack() can also return Z_STREAM_ERROR if the input parameters
    are not correct, i.e. strm is Z_NULL or the state was not initialized.
  */
-int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
-                         out_func out, void *out_desc)
-{
+int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc, out_func out, void *out_desc) {
     struct inflate_state *state;
     const unsigned char *next;  /* next input */
     unsigned char *put;         /* next output */
@@ -284,19 +278,16 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
             DROPBITS(1);
             switch (BITS(2)) {
             case 0:                             /* stored block */
-                Tracev((stderr, "inflate:     stored block%s\n",
-                        state->last ? " (last)" : ""));
+                Tracev((stderr, "inflate:     stored block%s\n", state->last ? " (last)" : ""));
                 state->mode = STORED;
                 break;
             case 1:                             /* fixed block */
                 fixedtables(state);
-                Tracev((stderr, "inflate:     fixed codes block%s\n",
-                        state->last ? " (last)" : ""));
+                Tracev((stderr, "inflate:     fixed codes block%s\n", state->last ? " (last)" : ""));
                 state->mode = LEN;              /* decode codes */
                 break;
             case 2:                             /* dynamic block */
-                Tracev((stderr, "inflate:     dynamic codes block%s\n",
-                        state->last ? " (last)" : ""));
+                Tracev((stderr, "inflate:     dynamic codes block%s\n", state->last ? " (last)" : ""));
                 state->mode = TABLE;
                 break;
             case 3:
@@ -316,8 +307,7 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
                 break;
             }
             state->length = (unsigned)hold & 0xffff;
-            Tracev((stderr, "inflate:       stored length %u\n",
-                    state->length));
+            Tracev((stderr, "inflate:       stored length %u\n", state->length));
             INITBITS();
 
             /* copy stored block from input to output */
@@ -325,8 +315,10 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
                 copy = state->length;
                 PULL();
                 ROOM();
-                if (copy > have) copy = have;
-                if (copy > left) copy = left;
+                if (copy > have)
+                    copy = have;
+                if (copy > left)
+                    copy = left;
                 memcpy(put, next, copy);
                 have -= copy;
                 next += copy;
@@ -368,8 +360,7 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
             state->next = state->codes;
             state->lencode = (code const *)(state->next);
             state->lenbits = 7;
-            ret = inflate_table(CODES, state->lens, 19, &(state->next),
-                                &(state->lenbits), state->work);
+            ret = inflate_table(CODES, state->lens, 19, &(state->next), &(state->lenbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid code lengths set";
                 state->mode = BAD;
@@ -382,14 +373,14 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
             while (state->have < state->nlen + state->ndist) {
                 for (;;) {
                     here = state->lencode[BITS(state->lenbits)];
-                    if ((unsigned)(here.bits) <= bits) break;
+                    if ((unsigned)(here.bits) <= bits)
+                        break;
                     PULLBYTE();
                 }
                 if (here.val < 16) {
                     DROPBITS(here.bits);
                     state->lens[state->have++] = here.val;
-                }
-                else {
+                } else {
                     if (here.val == 16) {
                         NEEDBITS(here.bits + 2);
                         DROPBITS(here.bits);
@@ -401,15 +392,13 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
                         len = (unsigned)(state->lens[state->have - 1]);
                         copy = 3 + BITS(2);
                         DROPBITS(2);
-                    }
-                    else if (here.val == 17) {
+                    } else if (here.val == 17) {
                         NEEDBITS(here.bits + 3);
                         DROPBITS(here.bits);
                         len = 0;
                         copy = 3 + BITS(3);
                         DROPBITS(3);
-                    }
-                    else {
+                    } else {
                         NEEDBITS(here.bits + 7);
                         DROPBITS(here.bits);
                         len = 0;
@@ -427,7 +416,8 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
             }
 
             /* handle error breaks in while */
-            if (state->mode == BAD) break;
+            if (state->mode == BAD)
+                break;
 
             /* check for end-of-block code (better have one) */
             if (state->lens[256] == 0) {
@@ -442,8 +432,7 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
             state->next = state->codes;
             state->lencode = (code const *)(state->next);
             state->lenbits = 9;
-            ret = inflate_table(LENS, state->lens, state->nlen, &(state->next),
-                                &(state->lenbits), state->work);
+            ret = inflate_table(LENS, state->lens, state->nlen, &(state->next), &(state->lenbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid literal/lengths set";
                 state->mode = BAD;
@@ -452,7 +441,7 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
             state->distcode = (code const *)(state->next);
             state->distbits = 6;
             ret = inflate_table(DISTS, state->lens + state->nlen, state->ndist,
-                            &(state->next), &(state->distbits), state->work);
+                                &(state->next), &(state->distbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid distances set";
                 state->mode = BAD;
@@ -475,7 +464,8 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
             /* get a literal, length, or end-of-block code */
             for (;;) {
                 here = state->lencode[BITS(state->lenbits)];
-                if ((unsigned)(here.bits) <= bits) break;
+                if ((unsigned)(here.bits) <= bits)
+                    break;
                 PULLBYTE();
             }
             if (here.op && (here.op & 0xf0) == 0) {
@@ -483,7 +473,8 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
                 for (;;) {
                     here = state->lencode[last.val +
                             (BITS(last.bits + last.op) >> last.bits)];
-                    if ((unsigned)(last.bits + here.bits) <= bits) break;
+                    if ((unsigned)(last.bits + here.bits) <= bits)
+                        break;
                     PULLBYTE();
                 }
                 DROPBITS(last.bits);
@@ -529,15 +520,16 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
             /* get distance code */
             for (;;) {
                 here = state->distcode[BITS(state->distbits)];
-                if ((unsigned)(here.bits) <= bits) break;
+                if ((unsigned)(here.bits) <= bits)
+                    break;
                 PULLBYTE();
             }
             if ((here.op & 0xf0) == 0) {
                 last = here;
                 for (;;) {
-                    here = state->distcode[last.val +
-                            (BITS(last.bits + last.op) >> last.bits)];
-                    if ((unsigned)(last.bits + here.bits) <= bits) break;
+                    here = state->distcode[last.val + (BITS(last.bits + last.op) >> last.bits)];
+                    if ((unsigned)(last.bits + here.bits) <= bits)
+                        break;
                     PULLBYTE();
                 }
                 DROPBITS(last.bits);
@@ -557,8 +549,7 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
                 state->offset += BITS(state->extra);
                 DROPBITS(state->extra);
             }
-            if (state->offset > state->wsize - (state->whave < state->wsize ?
-                                                left : 0)) {
+            if (state->offset > state->wsize - (state->whave < state->wsize ? left : 0)) {
                 strm->msg = (char *)"invalid distance too far back";
                 state->mode = BAD;
                 break;
@@ -572,12 +563,12 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
                 if (copy < left) {
                     from = put + copy;
                     copy = left - copy;
-                }
-                else {
+                } else {
                     from = put - state->offset;
                     copy = left;
                 }
-                if (copy > state->length) copy = state->length;
+                if (copy > state->length)
+                    copy = state->length;
                 state->length -= copy;
                 left -= copy;
                 do {
@@ -611,8 +602,7 @@ int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc,
     return ret;
 }
 
-int ZEXPORT inflateBackEnd(z_stream *strm)
-{
+int ZEXPORT inflateBackEnd(z_stream *strm) {
     if (strm == Z_NULL || strm->state == Z_NULL || strm->zfree == (free_func)0)
         return Z_STREAM_ERROR;
     ZFREE(strm, strm->state);

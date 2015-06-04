@@ -14,8 +14,7 @@ ZLIB_INTERNAL int x86_cpu_has_sse2;
 ZLIB_INTERNAL int x86_cpu_has_sse42;
 ZLIB_INTERNAL int x86_cpu_has_pclmulqdq;
 
-void ZLIB_INTERNAL x86_check_features(void)
-{
+void ZLIB_INTERNAL x86_check_features(void) {
     unsigned eax, ebx, ecx, edx;
 
     eax = 1;
@@ -33,6 +32,6 @@ void ZLIB_INTERNAL x86_check_features(void)
     );
 
     x86_cpu_has_sse2 = edx & 0x4000000;
-    x86_cpu_has_sse42= ecx & 0x100000;
+    x86_cpu_has_sse42 = ecx & 0x100000;
     x86_cpu_has_pclmulqdq = ecx & 0x2;
 }

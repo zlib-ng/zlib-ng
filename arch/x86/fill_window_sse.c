@@ -13,10 +13,9 @@
 #include <immintrin.h>
 #include "deflate.h"
 
-extern int read_buf        (z_stream *strm, unsigned char *buf, unsigned size);
+extern int read_buf(z_stream *strm, unsigned char *buf, unsigned size);
 
-ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
-{
+ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
     const __m128i xmm_wsize = _mm_set1_epi16(s->w_size);
 
     register uint32_t n;
@@ -46,7 +45,6 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
          * move the upper half to the lower one to make room in the upper half.
          */
         if (s->strstart >= wsize+MAX_DIST(s)) {
-
             memcpy(s->window, s->window+wsize, (unsigned)wsize);
             s->match_start -= wsize;
             s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
@@ -81,7 +79,7 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
                 value = _mm_loadu_si128((__m128i *)p);
                 result = _mm_subs_epu16(value, xmm_wsize);
                 _mm_storeu_si128((__m128i *)p, result);
-                
+
                 p -= 8;
                 n -= 8;
             } while (n > 0);
@@ -127,7 +125,6 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
         /* If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
          * but this is not important since only literal bytes will be emitted.
          */
-
     } while (s->lookahead < MIN_LOOKAHEAD && s->strm->avail_in != 0);
 
     /* If the WIN_INIT bytes after the end of the current data have never been
@@ -150,8 +147,7 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
                 init = WIN_INIT;
             memset(s->window + curr, 0, (unsigned)init);
             s->high_water = curr + init;
-        }
-        else if (s->high_water < curr + WIN_INIT) {
+        } else if (s->high_water < curr + WIN_INIT) {
             /* High water mark at or above current data, but below current data
              * plus WIN_INIT -- zero out to current data plus WIN_INIT, or up
              * to end of window, whichever is less.
@@ -164,7 +160,6 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s)
         }
     }
 
-    Assert(s->strstart <= s->window_size - MIN_LOOKAHEAD,
-           "not enough room for search");
+    Assert(s->strstart <= s->window_size - MIN_LOOKAHEAD, "not enough room for search");
 }
 #endif

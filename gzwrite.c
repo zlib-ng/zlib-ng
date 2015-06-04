@@ -3,17 +3,17 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#include <stdarg.h>
 #include "gzguts.h"
 
 /* Local functions */
-local int gz_init (gz_statep);
-local int gz_comp (gz_statep, int);
-local int gz_zero (gz_statep, z_off64_t);
+local int gz_init(gz_statep);
+local int gz_comp(gz_statep, int);
+local int gz_zero(gz_statep, z_off64_t);
 
 /* Initialize state for writing a gzip file.  Mark initialization by setting
    state->size to non-zero.  Return -1 on failure or 0 on success. */
-local int gz_init(gz_statep state)
-{
+local int gz_init(gz_statep state) {
     int ret;
     z_stream *strm = &(state->strm);
 
@@ -38,8 +38,7 @@ local int gz_init(gz_statep state)
         strm->zalloc = Z_NULL;
         strm->zfree = Z_NULL;
         strm->opaque = Z_NULL;
-        ret = deflateInit2(strm, state->level, Z_DEFLATED,
-                           MAX_WBITS + 16, DEF_MEM_LEVEL, state->strategy);
+        ret = deflateInit2(strm, state->level, Z_DEFLATED, MAX_WBITS + 16, DEF_MEM_LEVEL, state->strategy);
         if (ret != Z_OK) {
             free(state->out);
             free(state->in);
@@ -66,8 +65,7 @@ local int gz_init(gz_statep state)
    then the deflate() state is reset to start a new gzip stream.  If gz->direct
    is true, then simply write to the output file without compressing, and
    ignore flush. */
-local int gz_comp(gz_statep state, int flush)
-{
+local int gz_comp(gz_statep state, int flush) {
     int ret, got;
     unsigned have;
     z_stream *strm = &(state->strm);
@@ -92,11 +90,9 @@ local int gz_comp(gz_statep state, int flush)
     do {
         /* write out current buffer contents if full, or if flushing, but if
            doing Z_FINISH then don't write until we get to Z_STREAM_END */
-        if (strm->avail_out == 0 || (flush != Z_NO_FLUSH &&
-            (flush != Z_FINISH || ret == Z_STREAM_END))) {
+        if (strm->avail_out == 0 || (flush != Z_NO_FLUSH && (flush != Z_FINISH || ret == Z_STREAM_END))) {
             have = (unsigned)(strm->next_out - state->x.next);
-            if (have && ((got = write(state->fd, state->x.next, have)) < 0 ||
-                         (unsigned)got != have)) {
+            if (have && ((got = write(state->fd, state->x.next, have)) < 0 || (unsigned)got != have)) {
                 gz_error(state, Z_ERRNO, zstrerror());
                 return -1;
             }
@@ -111,8 +107,7 @@ local int gz_comp(gz_statep state, int flush)
         have = strm->avail_out;
         ret = deflate(strm, flush);
         if (ret == Z_STREAM_ERROR) {
-            gz_error(state, Z_STREAM_ERROR,
-                      "internal error: deflate stream corrupt");
+            gz_error(state, Z_STREAM_ERROR, "internal error: deflate stream corrupt");
             return -1;
         }
         have -= strm->avail_out;
@@ -127,8 +122,7 @@ local int gz_comp(gz_statep state, int flush)
 }
 
 /* Compress len zeros to output.  Return -1 on error, 0 on success. */
-local int gz_zero(gz_statep state, z_off64_t len)
-{
+local int gz_zero(gz_statep state, z_off64_t len) {
     int first;
     unsigned n;
     z_stream *strm = &(state->strm);
@@ -140,8 +134,7 @@ local int gz_zero(gz_statep state, z_off64_t len)
     /* compress len zeros (len guaranteed > 0) */
     first = 1;
     while (len) {
-        n = GT_OFF(state->size) || (z_off64_t)state->size > len ?
-            (unsigned)len : state->size;
+        n = GT_OFF(state->size) || (z_off64_t)state->size > len ? (unsigned)len : state->size;
         if (first) {
             memset(state->in, 0, n);
             first = 0;
@@ -157,8 +150,7 @@ local int gz_zero(gz_statep state, z_off64_t len)
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len)
-{
+int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len) {
     unsigned put = len;
     gz_statep state;
     z_stream *strm;
@@ -215,8 +207,7 @@ int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len)
             if (len && gz_comp(state, Z_NO_FLUSH) == -1)
                 return 0;
         } while (len);
-    }
-    else {
+    } else {
         /* consume whatever's left in the input buffer */
         if (strm->avail_in && gz_comp(state, Z_NO_FLUSH) == -1)
             return 0;
@@ -234,8 +225,7 @@ int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len)
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzputc(gzFile file, int c)
-{
+int ZEXPORT gzputc(gzFile file, int c) {
     unsigned have;
     unsigned char buf[1];
     gz_statep state;
@@ -280,8 +270,7 @@ int ZEXPORT gzputc(gzFile file, int c)
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzputs(gzFile file, const char *str)
-{
+int ZEXPORT gzputs(gzFile file, const char *str) {
     int ret;
     unsigned len;
 
@@ -291,11 +280,8 @@ int ZEXPORT gzputs(gzFile file, const char *str)
     return ret == 0 && len != 0 ? -1 : ret;
 }
 
-#include <stdarg.h>
-
 /* -- see zlib.h -- */
-int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va)
-{
+int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va) {
     int size, len;
     gz_statep state;
     z_stream *strm;
@@ -341,8 +327,7 @@ int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va)
     return len;
 }
 
-int ZEXPORTVA gzprintf(gzFile file, const char *format, ...)
-{
+int ZEXPORTVA gzprintf(gzFile file, const char *format, ...) {
     va_list va;
     int ret;
 
@@ -353,8 +338,7 @@ int ZEXPORTVA gzprintf(gzFile file, const char *format, ...)
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzflush(gzFile file, int flush)
-{
+int ZEXPORT gzflush(gzFile file, int flush) {
     gz_statep state;
 
     /* get internal structure */
@@ -383,8 +367,7 @@ int ZEXPORT gzflush(gzFile file, int flush)
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzsetparams(gzFile file, int level, int strategy)
-{
+int ZEXPORT gzsetparams(gzFile file, int level, int strategy) {
     gz_statep state;
     z_stream *strm;
 
@@ -422,8 +405,7 @@ int ZEXPORT gzsetparams(gzFile file, int level, int strategy)
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzclose_w(gzFile file)
-{
+int ZEXPORT gzclose_w(gzFile file) {
     int ret = Z_OK;
     gz_statep state;
 

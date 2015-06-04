@@ -8,8 +8,7 @@
 
 #define MAXBITS 15
 
-const char inflate_copyright[] =
-   " inflate 1.2.8.f Copyright 1995-2013 Mark Adler ";
+const char inflate_copyright[] = " inflate 1.2.8.f Copyright 1995-2013 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -30,8 +29,7 @@ const char inflate_copyright[] =
    longest code or if it is less than the shortest code.
  */
 int ZLIB_INTERNAL inflate_table(codetype type, uint16_t *lens, unsigned codes,
-                                code * *table, unsigned *bits, uint16_t  *work)
-{
+                                code * *table, unsigned *bits, uint16_t  *work) {
     unsigned len;               /* a code's length in bits */
     unsigned sym;               /* index of code symbols */
     unsigned min, max;          /* minimum and maximum code lengths */
@@ -214,12 +212,10 @@ int ZLIB_INTERNAL inflate_table(codetype type, uint16_t *lens, unsigned codes,
         if ((int)(work[sym]) < end) {
             here.op = (unsigned char)0;
             here.val = work[sym];
-        }
-        else if ((int)(work[sym]) > end) {
+        } else if ((int)(work[sym]) > end) {
             here.op = (unsigned char)(extra[work[sym]]);
             here.val = base[work[sym]];
-        }
-        else {
+        } else {
             here.op = (unsigned char)(32 + 64);         /* end of block */
             here.val = 0;
         }
@@ -240,14 +236,15 @@ int ZLIB_INTERNAL inflate_table(codetype type, uint16_t *lens, unsigned codes,
         if (incr != 0) {
             huff &= incr - 1;
             huff += incr;
-        }
-        else
+        } else {
             huff = 0;
+        }
 
         /* go to next symbol, update count, len */
         sym++;
         if (--(count[len]) == 0) {
-            if (len == max) break;
+            if (len == max)
+                break;
             len = lens[work[sym]];
         }
 
@@ -265,15 +262,15 @@ int ZLIB_INTERNAL inflate_table(codetype type, uint16_t *lens, unsigned codes,
             left = (int)(1 << curr);
             while (curr + drop < max) {
                 left -= count[curr + drop];
-                if (left <= 0) break;
+                if (left <= 0)
+                    break;
                 curr++;
                 left <<= 1;
             }
 
             /* check for enough space */
             used += 1U << curr;
-            if ((type == LENS && used > ENOUGH_LENS) ||
-                (type == DISTS && used > ENOUGH_DISTS))
+            if ((type == LENS && used > ENOUGH_LENS) || (type == DISTS && used > ENOUGH_DISTS))
                 return 1;
 
             /* point entry in root table to sub-table */

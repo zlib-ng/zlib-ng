@@ -3,8 +3,8 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifndef CPU_H
-#define CPU_H
+#ifndef CPU_H_
+#define CPU_H_
 
 #ifdef HAVE_HIDDEN
 # define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
@@ -18,4 +18,4 @@ extern int x86_cpu_has_pclmulqdq;
 
 void ZLIB_INTERNAL x86_check_features(void);
 
-#endif
+#endif /* CPU_H_ */

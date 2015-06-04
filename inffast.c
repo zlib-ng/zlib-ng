@@ -73,8 +73,7 @@
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
-void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
-{
+void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start) {
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
     const unsigned char *in;    /* local strm->next_in */
@@ -141,8 +140,7 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
                     "inflate:         literal '%c'\n" :
                     "inflate:         literal 0x%02x\n", here.val));
             PUP(out) = (unsigned char)(here.val);
-        }
-        else if (op & 16) {                     /* length base */
+        } else if (op & 16) {                     /* length base */
             len = (unsigned)(here.val);
             op &= 15;                           /* number of extra bits */
             if (op) {
@@ -190,8 +188,7 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
                     op = dist - op;             /* distance back in window */
                     if (op > whave) {
                         if (state->sane) {
-                            strm->msg =
-                                (char *)"invalid distance too far back";
+                            strm->msg = (char *)"invalid distance too far back";
                             state->mode = BAD;
                             break;
                         }
@@ -225,8 +222,7 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
                             } while (--op);
                             from = out - dist;  /* rest from output */
                         }
-                    }
-                    else if (wnext < op) {      /* wrap around window */
+                    } else if (wnext < op) {      /* wrap around window */
                         from += wsize + wnext - op;
                         op -= wnext;
                         if (op < len) {         /* some from end of window */
@@ -244,8 +240,7 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
                                 from = out - dist;      /* rest from output */
                             }
                         }
-                    }
-                    else {                      /* contiguous in window */
+                    } else {                      /* contiguous in window */
                         from += wnext - op;
                         if (op < len) {         /* some from window */
                             len -= op;
@@ -266,8 +261,7 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
                         if (len > 1)
                             PUP(out) = PUP(from);
                     }
-                }
-                else {
+                } else {
                     from = out - dist;          /* copy direct from output */
                     do {                        /* minimum length is three */
                         PUP(out) = PUP(from);
@@ -281,27 +275,22 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
                             PUP(out) = PUP(from);
                     }
                 }
-            }
-            else if ((op & 64) == 0) {          /* 2nd level distance code */
+            } else if ((op & 64) == 0) {          /* 2nd level distance code */
                 here = dcode[here.val + BITS(op)];
                 goto dodist;
-            }
-            else {
+            } else {
                 strm->msg = (char *)"invalid distance code";
                 state->mode = BAD;
                 break;
             }
-        }
-        else if ((op & 64) == 0) {              /* 2nd level length code */
+        } else if ((op & 64) == 0) {              /* 2nd level length code */
             here = lcode[here.val + BITS(op)];
             goto dolen;
-        }
-        else if (op & 32) {                     /* end-of-block */
+        } else if (op & 32) {                     /* end-of-block */
             Tracevv((stderr, "inflate:         end of block\n"));
             state->mode = TYPE;
             break;
-        }
-        else {
+        } else {
             strm->msg = (char *)"invalid literal/length code";
             state->mode = BAD;
             break;
@@ -318,8 +307,7 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start)
     strm->next_in = in + OFF;
     strm->next_out = out + OFF;
     strm->avail_in = (unsigned)(in < last ? 5 + (last - in) : 5 - (in - last));
-    strm->avail_out = (unsigned)(out < end ?
-                                 257 + (end - out) : 257 - (out - end));
+    strm->avail_out = (unsigned)(out < end ? 257 + (end - out) : 257 - (out - end));
     state->hold = hold;
     state->bits = bits;
     return;
