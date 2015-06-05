@@ -460,7 +460,7 @@ local int updatewindow(z_stream *strm, const unsigned char *end, unsigned copy) 
     do { \
         if (have == 0) goto inf_leave; \
         have--; \
-        hold += (uint32_t)(*next++) << bits; \
+        hold += (unsigned long)(*next++) << bits; \
         bits += 8; \
     } while (0)
 
@@ -575,13 +575,13 @@ local int updatewindow(z_stream *strm, const unsigned char *end, unsigned copy) 
 int ZEXPORT inflate(z_stream *strm, int flush) {
     struct inflate_state *state;
     const unsigned char *next;    /* next input */
-    unsigned char *put;         /* next output */
+    unsigned char *put;     /* next output */
     unsigned have, left;        /* available input and output */
-    uint32_t hold;              /* bit buffer */
+    unsigned long hold;         /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
     unsigned in, out;           /* save starting available input and output */
     unsigned copy;              /* number of stored or match bytes to copy */
-    unsigned char *from;        /* where to copy match bytes from */
+    unsigned char *from;    /* where to copy match bytes from */
     code here;                  /* current decoding table entry */
     code last;                  /* parent table entry */
     unsigned len;               /* length to copy for repeats, bits to drop */
@@ -1257,7 +1257,7 @@ int ZEXPORT inflateGetDictionary(z_stream *strm, unsigned char *dictionary, uInt
 
 int ZEXPORT inflateSetDictionary(z_stream *strm, const unsigned char *dictionary, uInt dictLength) {
     struct inflate_state *state;
-    uint32_t dictid;
+    unsigned long dictid;
     int ret;
 
     /* check state */
@@ -1335,7 +1335,7 @@ local unsigned syncsearch(unsigned *have, const unsigned char *buf, unsigned len
 
 int ZEXPORT inflateSync(z_stream *strm) {
     unsigned len;               /* number of bytes to look at or looked at */
-    size_t in, out;             /* temporary to save total_in and total_out */
+    unsigned long in, out;      /* temporary to save total_in and total_out */
     unsigned char buf[4];       /* to restore bit buffer to byte string */
     struct inflate_state *state;
 

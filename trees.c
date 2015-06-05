@@ -146,7 +146,7 @@ local void compress_block (deflate_state *s, const ct_data *ltree, const ct_data
 local int  detect_data_type (deflate_state *s);
 local unsigned bi_reverse (unsigned value, int length);
 local void bi_flush       (deflate_state *s);
-local void copy_block     (deflate_state *s, char *buf, uint16_t len, int header);
+local void copy_block     (deflate_state *s, char *buf, unsigned len, int header);
 
 #ifdef GEN_TREES_H
 local void gen_trees_header(void);
@@ -438,9 +438,9 @@ local void gen_bitlen(deflate_state *s, tree_desc *desc) {
         if (n >= base)
             xbits = extra[n-base];
         f = tree[n].Freq;
-        s->opt_len += (size_t)f * (bits + xbits);
+        s->opt_len += (ulg)f * (bits + xbits);
         if (stree)
-            s->static_len += (size_t)f * (stree[n].Len + xbits);
+            s->static_len += (ulg)f * (stree[n].Len + xbits);
     }
     if (overflow == 0)
         return;
@@ -784,16 +784,16 @@ local void send_all_trees(deflate_state *s, int lcodes, int dcodes, int blcodes)
 /* ===========================================================================
  * Send a stored block
  */
-void ZLIB_INTERNAL _tr_stored_block(deflate_state *s, char *buf, uint16_t stored_len, int last) {
+void ZLIB_INTERNAL _tr_stored_block(deflate_state *s, char *buf, ulg stored_len, int last) {
     /* buf: input block */
     /* stored_len: length of input block */
     /* last: one if this is the last block for a file */
     send_bits(s, (STORED_BLOCK << 1)+last, 3);    /* send block type */
 #ifdef DEBUG
-    s->compressed_len = (s->compressed_len + 3 + 7) & (uint32_t)~7L;
+    s->compressed_len = (s->compressed_len + 3 + 7) & (ulg)~7L;
     s->compressed_len += (stored_len + 4) << 3;
 #endif
-    copy_block(s, buf, stored_len, 1); /* with header */
+    copy_block(s, buf, (unsigned)stored_len, 1); /* with header */
 }
 
 /* ===========================================================================
@@ -820,11 +820,11 @@ void ZLIB_INTERNAL _tr_align(deflate_state *s) {
  * Determine the best encoding for the current block: dynamic trees, static
  * trees or store, and output the encoded block to the zip file.
  */
-void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, char *buf, uint16_t stored_len, int last) {
+void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, char *buf, ulg stored_len, int last) {
     /* buf: input block, or NULL if too old */
     /* stored_len: length of input block */
     /* last: one if this is the last block for a file */
-    uint16_t opt_lenb, static_lenb; /* opt_len and static_len in bytes */
+    ulg opt_lenb, static_lenb; /* opt_len and static_len in bytes */
     int max_blindex = 0;  /* index of last bit length code of non zero freq */
 
     /* Build the Huffman trees unless a stored block is forced */
@@ -938,11 +938,11 @@ int ZLIB_INTERNAL _tr_tally(deflate_state *s, unsigned dist, unsigned lc) {
     /* Try to guess if it is profitable to stop the current block here */
     if ((s->last_lit & 0x1fff) == 0 && s->level > 2) {
         /* Compute an upper bound for the compressed length */
-        size_t out_length = (size_t)s->last_lit*8L;
-        size_t in_length = (size_t)((long)s->strstart - s->block_start);
+        ulg out_length = (ulg)s->last_lit*8L;
+        ulg in_length = (ulg)((long)s->strstart - s->block_start);
         int dcode;
         for (dcode = 0; dcode < D_CODES; dcode++) {
-            out_length += (size_t)s->dyn_dtree[dcode].Freq * (5L+extra_dbits[dcode]);
+            out_length += (ulg)s->dyn_dtree[dcode].Freq * (5L+extra_dbits[dcode]);
         }
         out_length >>= 3;
         Tracev((stderr, "\nlast_lit %u, in %ld, out ~%ld(%ld%%) ",
@@ -1024,7 +1024,7 @@ local int detect_data_type(deflate_state *s) {
      * set bits 0..6, 14..25, and 28..31
      * 0xf3ffc07f = binary 11110011111111111100000001111111
      */
-    uint32_t black_mask = 0xf3ffc07fUL;
+    unsigned long black_mask = 0xf3ffc07fUL;
     int n;
 
     /* Check for non-textual ("black-listed") bytes. */
@@ -1096,7 +1096,7 @@ ZLIB_INTERNAL void bi_windup(deflate_state *s) {
  * Copy a stored block, storing first the length and its
  * one's complement if requested.
  */
-local void copy_block(deflate_state *s, char *buf, uint16_t len, int header) {
+local void copy_block(deflate_state *s, char *buf, unsigned len, int header) {
     /* buf: the input data */
     /* len: its length */
     /* header: true if block header must be written */
@@ -1110,7 +1110,7 @@ local void copy_block(deflate_state *s, char *buf, uint16_t len, int header) {
 #endif
     }
 #ifdef DEBUG
-    s->bits_sent += (uint32_t)len << 3;
+    s->bits_sent += (ulg)len << 3;
 #endif
     while (len--) {
         put_byte(s, *buf++);

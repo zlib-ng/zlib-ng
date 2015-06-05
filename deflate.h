@@ -100,17 +100,17 @@ typedef unsigned IPos;
  */
 
 typedef struct internal_state {
-    z_stream *strm;             /* pointer back to this zlib stream */
-    int   status;               /* as the name implies */
-    unsigned char *pending_buf; /* output still pending */
-    uint16_t pending_buf_size;  /* size of pending_buf */
-    unsigned char *pending_out; /* next pending byte to output to the stream */
-    uInt   pending;             /* nb of bytes in the pending buffer */
-    int   wrap;                 /* bit 0 true for zlib, bit 1 true for gzip */
-    gz_headerp  gzhead;         /* gzip header information to write */
-    uInt   gzindex;             /* where in extra, name, or comment */
-    unsigned char  method;      /* can only be DEFLATED */
-    int   last_flush;           /* value of flush param for previous deflate call */
+    z_stream *strm;      /* pointer back to this zlib stream */
+    int   status;        /* as the name implies */
+    unsigned char *pending_buf;  /* output still pending */
+    ulg   pending_buf_size; /* size of pending_buf */
+    unsigned char *pending_out;  /* next pending byte to output to the stream */
+    uInt   pending;      /* nb of bytes in the pending buffer */
+    int   wrap;          /* bit 0 true for zlib, bit 1 true for gzip */
+    gz_headerp  gzhead;  /* gzip header information to write */
+    uInt   gzindex;      /* where in extra, name, or comment */
+    unsigned char  method;        /* can only be DEFLATED */
+    int   last_flush;    /* value of flush param for previous deflate call */
 
 #ifdef X86_PCLMULQDQ_CRC
     unsigned __attribute__((aligned(16))) crc0[4 * 5];
@@ -132,7 +132,7 @@ typedef struct internal_state {
      * To do: use the user input buffer as sliding window.
      */
 
-    uint32_t window_size;
+    ulg window_size;
     /* Actual size of window: 2*wSize, except when the user input buffer
      * is directly used as sliding window.
      */
@@ -253,14 +253,14 @@ typedef struct internal_state {
      * array would be necessary.
      */
 
-    uint32_t opt_len;    /* bit length of current block with optimal trees */
-    uint32_t static_len; /* bit length of current block with static trees */
-    uInt matches;        /* number of string matches in current block */
-    uInt insert;         /* bytes at end of window left to insert */
+    ulg opt_len;        /* bit length of current block with optimal trees */
+    ulg static_len;     /* bit length of current block with static trees */
+    uInt matches;       /* number of string matches in current block */
+    uInt insert;        /* bytes at end of window left to insert */
 
 #ifdef DEBUG
-    uint32_t compressed_len; /* total bit length of compressed file mod 2^32 */
-    uint32_t bits_sent;      /* bit length of compressed data sent mod 2^32 */
+    ulg compressed_len; /* total bit length of compressed file mod 2^32 */
+    ulg bits_sent;      /* bit length of compressed data sent mod 2^32 */
 #endif
 
     uint16_t bi_buf;
@@ -272,7 +272,7 @@ typedef struct internal_state {
      * are always zero.
      */
 
-    uint32_t high_water;
+    ulg high_water;
     /* High water mark offset in window for initialized bytes -- bytes above
      * this are set to zero in order to avoid memory check warnings when
      * longest match routines access bytes past the input.  This is then
@@ -334,10 +334,10 @@ typedef enum {
         /* in trees.c */
 void ZLIB_INTERNAL _tr_init(deflate_state *s);
 int ZLIB_INTERNAL _tr_tally(deflate_state *s, unsigned dist, unsigned lc);
-void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, char *buf, uint16_t stored_len, int last);
+void ZLIB_INTERNAL _tr_flush_block(deflate_state *s, char *buf, ulg stored_len, int last);
 void ZLIB_INTERNAL _tr_flush_bits(deflate_state *s);
 void ZLIB_INTERNAL _tr_align(deflate_state *s);
-void ZLIB_INTERNAL _tr_stored_block(deflate_state *s, char *buf, uint16_t stored_len, int last);
+void ZLIB_INTERNAL _tr_stored_block(deflate_state *s, char *buf, ulg stored_len, int last);
 void ZLIB_INTERNAL bi_windup(deflate_state *s);
 
 #define d_code(dist) ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
@@ -424,7 +424,7 @@ void ZLIB_INTERNAL bi_windup(deflate_state *s);
 local void send_bits(deflate_state *s, int value, int length) {
     Tracevv((stderr, " l %2d v %4x ", length, value));
     Assert(length > 0 && length <= 15, "invalid length");
-    s->bits_sent += (uint32_t)length;
+    s->bits_sent += (ulg)length;
 
     /* If not enough room in bi_buf, use (valid) bits from bi_buf and
      * (16 - bi_valid) bits from value, leaving (width - (16-bi_valid))
