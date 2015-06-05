@@ -156,7 +156,7 @@ local void fixedtables(struct inflate_state *state) {
     do { \
         PULL(); \
         have--; \
-        hold += (uint32_t)(*next++) << bits; \
+        hold += (unsigned long)(*next++) << bits; \
         bits += 8; \
     } while (0)
 
@@ -232,13 +232,13 @@ local void fixedtables(struct inflate_state *state) {
  */
 int ZEXPORT inflateBack(z_stream *strm, in_func in, void *in_desc, out_func out, void *out_desc) {
     struct inflate_state *state;
-    const unsigned char *next;  /* next input */
-    unsigned char *put;         /* next output */
+    const unsigned char *next;    /* next input */
+    unsigned char *put;     /* next output */
     unsigned have, left;        /* available input and output */
-    uint32_t hold;              /* bit buffer */
+    unsigned long hold;         /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
     unsigned copy;              /* number of stored or match bytes to copy */
-    unsigned char *from;        /* where to copy match bytes from */
+    unsigned char *from;    /* where to copy match bytes from */
     code here;                  /* current decoding table entry */
     code last;                  /* parent table entry */
     unsigned len;               /* length to copy for repeats, bits to drop */
