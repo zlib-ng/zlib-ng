@@ -80,6 +80,7 @@ typedef struct gzFile_s {
     int err;
     const char *msg;
     z_stream strm;
+    unsigned char *buf;
 } *gzFile;
 
 gzFile gzopen (const char *, const char *);
@@ -110,6 +111,12 @@ gzFile gz_open(const char *path, int fd, const char *mode)
     gz->strm.zalloc = myalloc;
     gz->strm.zfree = myfree;
     gz->strm.opaque = Z_NULL;
+    gz->buf = malloc(BUFLEN);
+
+    if (gz->buf == NULL) {
+        free(gz);
+        return NULL;
+    }
 
     while (*plevel) {
         if (*plevel >= '0' && *plevel <= '9') {
@@ -146,7 +153,6 @@ int gzwrite (gzFile, const void *, unsigned);
 int gzwrite(gzFile gz, const void *buf, unsigned len)
 {
     z_stream *strm;
-    unsigned char out[BUFLEN];
 
     if (gz == NULL || !gz->write)
         return 0;
@@ -154,10 +160,10 @@ int gzwrite(gzFile gz, const void *buf, unsigned len)
     strm->next_in = (void *)buf;
     strm->avail_in = len;
     do {
-        strm->next_out = out;
+        strm->next_out = gz->buf;
         strm->avail_out = BUFLEN;
         (void)deflate(strm, Z_NO_FLUSH);
-        fwrite(out, 1, BUFLEN - strm->avail_out, gz->file);
+        fwrite(gz->buf, 1, BUFLEN - strm->avail_out, gz->file);
     } while (strm->avail_out == 0);
     return len;
 }
@@ -168,7 +174,6 @@ int gzread(gzFile gz, void *buf, unsigned len)
 {
     int ret;
     size_t got;
-    unsigned char in[1];
     z_stream *strm;
 
     if (gz == NULL || gz->write)
@@ -176,14 +181,17 @@ int gzread(gzFile gz, void *buf, unsigned len)
     if (gz->err)
         return 0;
     strm = &(gz->strm);
-    strm->next_out = (void *)buf;
+    strm->next_out = buf;
     strm->avail_out = len;
     do {
-        got = fread(in, 1, 1, gz->file);
-        if (got == 0)
-            break;
-        strm->next_in = in;
-        strm->avail_in = 1;
+        if (strm->avail_in == 0)
+        {
+            got = fread(gz->buf, 1, BUFLEN, gz->file);
+            if (got == 0)
+                break;
+            strm->next_in = gz->buf;
+            strm->avail_in = got;
+        }
         ret = inflate(strm, Z_NO_FLUSH);
         if (ret == Z_DATA_ERROR) {
             gz->err = Z_DATA_ERROR;
@@ -201,7 +209,6 @@ int gzclose (gzFile);
 int gzclose(gzFile gz)
 {
     z_stream *strm;
-    unsigned char out[BUFLEN];
 
     if (gz == NULL)
         return Z_STREAM_ERROR;
@@ -210,15 +217,16 @@ int gzclose(gzFile gz)
         strm->next_in = Z_NULL;
         strm->avail_in = 0;
         do {
-            strm->next_out = out;
+            strm->next_out = gz->buf;
             strm->avail_out = BUFLEN;
             (void)deflate(strm, Z_FINISH);
-            fwrite(out, 1, BUFLEN - strm->avail_out, gz->file);
+            fwrite(gz->buf, 1, BUFLEN - strm->avail_out, gz->file);
         } while (strm->avail_out == 0);
         deflateEnd(strm);
     }
     else
         inflateEnd(strm);
+    free(gz->buf);
     fclose(gz->file);
     free(gz);
     return Z_OK;
