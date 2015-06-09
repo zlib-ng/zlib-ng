@@ -50,3 +50,5 @@ a.out
 /arch/arm/Makefile
 /arch/generic/Makefile
 /arch/x86/Makefile
+.kdev4
+*.kdev4
