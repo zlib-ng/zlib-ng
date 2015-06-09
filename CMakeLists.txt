@@ -13,9 +13,11 @@ set(INSTALL_MAN_DIR "${CMAKE_INSTALL_PREFIX}/share/man" CACHE PATH "Installation
 set(INSTALL_PKGCONFIG_DIR "${CMAKE_INSTALL_PREFIX}/share/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
 
 include(CheckTypeSize)
+include(CheckSymbolExists)
 include(CheckFunctionExists)
 include(CheckIncludeFile)
 include(CheckCSourceCompiles)
+include(FeatureSummary)
 enable_testing()
 
 check_include_file(sys/types.h HAVE_SYS_TYPES_H)
@@ -25,19 +27,27 @@ check_include_file(stddef.h    HAVE_STDDEF_H)
 #
 # Options parsing
 #
+set(ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
+message(STATUS "Architecture: ${ARCH}")
 
 option (ZLIB_COMPAT "Compile with zlib compatible API" OFF)
 if (ZLIB_COMPAT)
-    message(STATUS "ZLIB_COMPAT")
     add_definitions(-DZLIB_COMPAT)
     set (WITH_GZFILEOP ON)
 endif (ZLIB_COMPAT)
 
 option (WITH_GZFILEOP "Compile with support for gzFile related functions" OFF)
 if (WITH_GZFILEOP)
-    message(STATUS "WITH_GZFILEOP")
     add_definitions(-DWITH_GZFILEOP)
 endif (WITH_GZFILEOP)
+
+option(WITH_OPTIM "Build with optimisation" ON)
+option(WITH_NEW_STRATEGIES "Use new strategies" ON)
+
+add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Provide a zlib-compatible API")
+add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile-related functions")
+add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
+add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
 
 #
 # Check to see if we have large file support
@@ -67,15 +77,19 @@ endif()
 set(CMAKE_REQUIRED_DEFINITIONS) # clear variable
 
 #
-# Check for fseeko
+# Check for fseeko and other optional functions
 #
 check_function_exists(fseeko HAVE_FSEEKO)
 if(NOT HAVE_FSEEKO)
     add_definitions(-DNO_FSEEKO)
 endif()
+check_function_exists(strerror HAVE_STRERROR)
+if(NOT HAVE_STRERROR)
+    add_definitions(-DNO_STRERROR)
+endif()
 
 #
-# Check for unistd.h
+# Check for unistd.h and stdarg.h
 #
 check_include_file(unistd.h Z_HAVE_UNISTD_H)
 check_include_file(stdarg.h Z_HAVE_STDARG_H)
@@ -119,10 +133,99 @@ if(MSVC)
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+else()
+    #
+    # not MSVC, so we need to check if we have the MS-style SSE etc. intrinsics
+    #
+    check_c_source_compiles(
+        "#include <immintrin.h>
+        int main(void)
+        {
+            __m128i zero = _mm_setzero_si128();
+            (void)zero;
+            return 0;
+        }"
+        HAVE_SSE2_INTRIN
+    )
+    check_c_source_compiles(
+        "int main(void)
+        {
+            unsigned val = 0, h = 0;
+            __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
+            return (int) h;
+        }"
+        HAVE_SSE42_INTRIN
+    )
+    check_c_source_compiles(
+        "#include <immintrin.h>
+        #include <wmmintrin.h>
+        int main(void)
+        {
+            __m128i a = _mm_setzero_si128();
+            __m128i b = _mm_setzero_si128();
+            __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+            (void)c;
+            return 0;
+        }"
+        HAVE_PCLMULQDQ_INTRIN
+    )
 endif()
 
+#
+# Enable deflate_medium at level 4-6
+#
+if(WITH_NEW_STRATEGIES)
+    add_definitions(-DMEDIUM_STRATEGY)
+endif()
+
+set(ZLIB_ARCH_SRCS)
+set(ARCHDIR "arch/generic")
+if(${ARCH} MATCHES "x86_64" OR ${ARCH} MATCHES "AMD64")
+    set(ARCHDIR "arch/x86")
+    add_definitions(-DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK -DUNROLL_LESS -DX86_CPUID)
+    add_feature_info(SSE2 1 "Use the SSE2 instruction set")
+else()
+    string(FIND ${ARCH} "arm" ARMPOS)
+    if(${ARMPOS} LESS 0)
+        set(ARCHDIR "arch/x86")
+        add_definitions(-DX86 -DUNALIGNED_OK -DUNROLL_LESS -DX86_CPUID)
+        add_feature_info(SSE2 1 "Support the SSE2 instruction set")
+    else()
+        set(ARCHDIR "arch/arm")
+        add_definitions(-DUNALIGNED_OK -DUNROLL_LESS)
+    endif()
+endif()
+if(WITH_OPTIM)
+    set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/x86.c)
+    if(HAVE_SSE42_INTRIN)
+        add_definitions(-DX86_SSE4_2_CRC_HASH)
+        add_feature_info(SSE4_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set")
+        add_intrinsics_option(${SSE4FLAG})
+        if(WITH_NEW_STRATEGIES)
+            add_definitions(-DX86_QUICK_STRATEGY)
+            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/deflate_quick.c)
+            add_feature_info(SSE4DEFLATE 1 "Support SSE4.2-accelerated quick decompression")
+        endif()
+    endif()
+    if(HAVE_SSE2_INTRIN)
+        add_definitions(-DX86_SSE2_FILL_WINDOW)
+        set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/fill_window_sse.c)
+        add_intrinsics_option(${SSE2FLAG})
+    endif()
+    if(HAVE_PCLMULQDQ_INTRIN)
+        add_definitions(-DX86_PCLMULQDQ_CRC)
+        set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc_folding.c)
+        add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ")
+    endif()
+endif()
+message(STATUS "Architecture-specific source files: ${ZLIB_ARCH_SRCS}")
+
+#============================================================================
+# zconf.h
+#============================================================================
+
 macro(generate_cmakein input output)
-    execute_process(COMMAND sed "/#define ZCONF_H/ a\\\n#cmakedefine Z_HAVE_UNISTD_H\n" -
+    execute_process(COMMAND sed "/#define ZCONF_H/ a\\\n#cmakedefine Z_HAVE_UNISTD_H\\\n#cmakedefine Z_HAVE_STDARG_H\n"
                     INPUT_FILE ${input}
                     OUTPUT_FILE ${output}
 )
@@ -237,8 +340,8 @@ if(MINGW OR MSYS)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif(MINGW OR MSYS)
 
-add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_GZFILE_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_GZFILE_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_GZFILE_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_GZFILE_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 
 set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
 set_target_properties(zlib PROPERTIES SOVERSION 1)
@@ -305,3 +408,5 @@ if(HAVE_OFF64_T)
     target_link_libraries(minigzip64 zlib)
     set_target_properties(minigzip64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
 endif()
+
+FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
