@@ -21,6 +21,8 @@
 # else
 #  error Unknown endianness!
 # endif
+#elif __APPLE__
+# include <machine/endian.h>
 #else
 # include <endian.h>
 #endif
