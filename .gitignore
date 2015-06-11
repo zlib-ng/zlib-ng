@@ -33,6 +33,12 @@
 *.res
 foo.gz
 *.manifest
+*.opensdf
+*.sln
+*.sdf
+*.vcxproj
+*.vcxproj.filters
+.vs
 
 CMakeCache.txt
 CMakeFiles
@@ -47,8 +53,16 @@ ztest*
 configure.log
 a.out
 
+/Makefile
 /arch/arm/Makefile
 /arch/generic/Makefile
 /arch/x86/Makefile
 .kdev4
 *.kdev4
+
+/Debug
+/example.dir
+/minigzip.dir
+/zlib.dir
+/zlibstatic.dir
+/win32/Debug
