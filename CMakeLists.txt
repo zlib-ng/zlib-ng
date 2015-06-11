@@ -17,6 +17,7 @@ include(CheckSymbolExists)
 include(CheckFunctionExists)
 include(CheckIncludeFile)
 include(CheckCSourceCompiles)
+include(CheckCSourceRuns)
 include(FeatureSummary)
 
 # make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
@@ -219,7 +220,7 @@ else()
     else()
         set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
     endif()
-    check_c_source_compiles(
+    check_c_source_runs(
         "#include <immintrin.h>
         int main(void)
         {
@@ -235,7 +236,7 @@ else()
         # use the generic SSE4 enabler option to check for the SSE4.2 instruction we require:
         set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
     endif()
-    check_c_source_compiles(
+    check_c_source_runs(
         "int main(void)
         {
             unsigned val = 0, h = 0;
@@ -250,7 +251,7 @@ else()
         # the PCLMUL instruction we use also requires an SSE4.1 instruction check for both
         set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG} ${PCLMULFLAG}")
     endif()
-    check_c_source_compiles(
+    check_c_source_runs(
         "#include <immintrin.h>
         #include <smmintrin.h>
         #include <wmmintrin.h>
