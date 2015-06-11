@@ -386,13 +386,8 @@ int ZEXPORT deflateSetDictionary(z_stream *strm, const unsigned char *dictionary
     while (s->lookahead >= MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (MIN_MATCH-1);
-        do {
-            UPDATE_HASH(s, s->ins_h, str);
-            s->prev[str & s->w_mask] = s->head[s->ins_h];
-            s->head[s->ins_h] = (Pos)str;
-            str++;
-        } while (--n);
-        s->strstart = str;
+        bulk_insert_str(s, str, n);
+        s->strstart = str + n;
         s->lookahead = MIN_MATCH-1;
         fill_window(s);
     }
