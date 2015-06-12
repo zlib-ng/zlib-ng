@@ -18,6 +18,18 @@ include(CheckFunctionExists)
 include(CheckIncludeFile)
 include(CheckCSourceCompiles)
 include(FeatureSummary)
+
+# make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
+# this should select the maximum generic optimisation on the current platform (i.e. -O3 for gcc/clang)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+        "Choose the type of build, standard options are: Debug Release RelWithDebInfo MinSizeRel."
+        FORCE)
+    add_feature_info(CMAKE_BUILD_TYPE 1 "Build type: ${CMAKE_BUILD_TYPE} (default)")
+else()
+    add_feature_info(CMAKE_BUILD_TYPE 1 "Build type: ${CMAKE_BUILD_TYPE} (selected)")
+endif()
+
 enable_testing()
 
 check_include_file(sys/types.h HAVE_SYS_TYPES_H)
@@ -43,26 +55,70 @@ endif (WITH_GZFILEOP)
 
 option(WITH_OPTIM "Build with optimisation" ON)
 option(WITH_NEW_STRATEGIES "Use new strategies" ON)
+option(WITH_NATIVE_INSTRUCTIONS
+    "Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native)" OFF)
 
-if(MSVC)
-    # TODO
-else()
-    execute_process(COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE COMPILER_VERSION)
-    if(NOT SSE2FLAG)
-        if("${COMPILER_VERSION}" MATCHES "gcc" OR "${COMPILER_VERSION}" MATCHES "clang")
+if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${CMAKE_C_COMPILER} MATCHES "icl")
+    if(WITH_NATIVE_INSTRUCTIONS)
+        message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
+    endif()
+    if(CMAKE_HOST_UNIX)
+        if(NOT SSE2FLAG)
             set(SSE2FLAG "-msse2")
         endif()
-    endif()
-    if(NOT SSE4FLAG)
-        if("${COMPILER_VERSION}" MATCHES "gcc" OR "${COMPILER_VERSION}" MATCHES "clang")
-            set(SSE4FLAG "-msse4")
+        if(NOT SSE4FLAG)
+            set(SSE4FLAG "-msse4.2")
+        endif()
+    else()
+        if(NOT SSE2FLAG)
+            set(SSE2FLAG "/arch:SSE2")
+        endif()
+        if(NOT SSE4FLAG)
+            set(SSE4FLAG "/arch:SSE4.2")
         endif()
     endif()
-    if(NOT PCLMULFLAG)
-        if("${COMPILER_VERSION}" MATCHES "gcc" OR "${COMPILER_VERSION}" MATCHES "clang")
-            set(PCLMULFLAG "-mpclmul")
+elseif(MSVC)
+    # TODO. ICC can be used through MSVC. I'm not sure if we'd ever see that combination
+    # (who'd use cmake from an IDE...) but checking for ICC before checking for MSVC should
+    # avoid mistakes.
+    # /Oi ?
+    set(SSE2FLAG "/arch:SSE2")
+    if(WITH_NATIVE_INSTRUCTIONS)
+        message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
+    endif()
+else()
+    execute_process(COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE COMPILER_VERSION)
+    if("${COMPILER_VERSION}" MATCHES "gcc" OR "${COMPILER_VERSION}" MATCHES "clang")
+        set(__GNUC__ ON)
+    endif()
+    if(WITH_NATIVE_INSTRUCTIONS)
+        if(__GNUC__)
+            set(NATIVEFLAG "-march=native")
+        else()
+            message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not implemented yet on this configuration")
         endif()
     endif()
+    if(NOT NATIVEFLAG)
+        if(NOT SSE2FLAG)
+            if(__GNUC__)
+                set(SSE2FLAG "-msse2")
+            endif()
+        endif()
+        if(NOT SSE4FLAG)
+            if(__GNUC__)
+                set(SSE4FLAG "-msse4")
+            endif()
+        endif()
+        if(NOT PCLMULFLAG)
+            if(__GNUC__)
+                set(PCLMULFLAG "-mpclmul")
+            endif()
+        endif()
+    else(NOT NATIVEFLAG)
+        set(SSE2FLAG ${NATIVEFLAG})
+        set(SSE4FLAG ${NATIVEFLAG})
+        set(PCLMULFLAG ${NATIVEFLAG})
+    endif(NOT NATIVEFLAG)
 endif()
 
 add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Provide a zlib-compatible API")
@@ -158,7 +214,11 @@ else()
     #
     # not MSVC, so we need to check if we have the MS-style SSE etc. intrinsics
     #
-    set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
+    if(WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+    else()
+        set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
+    endif()
     check_c_source_compiles(
         "#include <immintrin.h>
         int main(void)
@@ -169,8 +229,12 @@ else()
         }"
         HAVE_SSE2_INTRIN
     )
-    # use the generic SSE4 enabler option to check for the SSE4.2 instruction we require:
-    set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
+    if(WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+    else()
+        # use the generic SSE4 enabler option to check for the SSE4.2 instruction we require:
+        set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
+    endif()
     check_c_source_compiles(
         "int main(void)
         {
@@ -180,8 +244,12 @@ else()
         }"
         HAVE_SSE42_INTRIN
     )
-    # the PCLMUL instruction we use also requires an SSE4.1 instruction check for both
-    set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG} ${PCLMULFLAG}")
+    if(WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+    else()
+        # the PCLMUL instruction we use also requires an SSE4.1 instruction check for both
+        set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG} ${PCLMULFLAG}")
+    endif()
     check_c_source_compiles(
         "#include <immintrin.h>
         #include <smmintrin.h>
@@ -205,6 +273,23 @@ endif()
 if(WITH_NEW_STRATEGIES)
     add_definitions(-DMEDIUM_STRATEGY)
 endif()
+
+#
+# macro to add either the given intrinsics option to the global compiler options,
+# or ${NATIVEFLAG} (-march=native) if that is appropriate and possible. Should
+# probably avoid adding the same option multiple times if add_compile_options doesn't
+# already take care of that.
+# An alternative version of this macro would take a file argument, and set ${flag}
+# only for that file as opposed to ${NATIVEFLAG} globally, to limit side-effect of
+# using ${flag} globally.
+#
+macro(add_intrinsics_option flag)
+    if(WITH_NATIVE_INSTRUCTIONS AND NATIVEFLAG)
+        add_compile_options(${NATIVEFLAG})
+    else()
+        add_compile_options(${flag})
+    endif()
+endmacro(add_intrinsics_option)
 
 set(ZLIB_ARCH_SRCS)
 set(ARCHDIR "arch/generic")
@@ -243,7 +328,11 @@ if(WITH_OPTIM)
     if(HAVE_PCLMULQDQ_INTRIN)
         add_definitions(-DX86_PCLMULQDQ_CRC)
         set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc_folding.c)
-        add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ")
+        add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${SSE4FLAG} ${PCLMULFLAG}\"")
+        add_intrinsics_option(${PCLMULFLAG})
+        if(NOT HAVE_SSE42_INTRIN)
+            add_intrinsics_option(${SSE4FLAG})
+        endif()
     endif()
 endif()
 message(STATUS "Architecture-specific source files: ${ZLIB_ARCH_SRCS}")
