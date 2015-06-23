@@ -1444,17 +1444,24 @@ local block_state deflate_fast(deflate_state *s, int flush) {
             /* Insert new strings in the hash table only if the match length
              * is not too large. This saves time but degrades compression.
              */
-            if (s->match_length <= s->max_insert_length &&
-                s->lookahead >= MIN_MATCH) {
+            if (s->match_length <= s->max_insert_length && s->lookahead >= MIN_MATCH) {
                 s->match_length--; /* string at strstart already in table */
+                s->strstart++;
+#ifdef NOT_TWEAK_COMPILER
                 do {
-                    s->strstart++;
                     insert_string(s, s->strstart);
+                    s->strstart++;
                     /* strstart never exceeds WSIZE-MAX_MATCH, so there are
                      * always MIN_MATCH bytes ahead.
                      */
                 } while (--s->match_length != 0);
-                s->strstart++;
+#else
+                {
+                    bulk_insert_str(s, s->strstart, s->match_length);
+                    s->strstart += s->match_length;
+                    s->match_length = 0;
+                }
+#endif
             } else {
                 s->strstart += s->match_length;
                 s->match_length = 0;
