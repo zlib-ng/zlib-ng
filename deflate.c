@@ -168,57 +168,66 @@ local const config configuration_table[10] = {
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
 #ifdef X86_SSE4_2_CRC_HASH
-local inline Pos insert_string_sse(deflate_state *const s, const Pos str) {
-    Pos ret;
+local inline Pos insert_string_sse(deflate_state *const s, const Pos str, uInt count) {
+    Pos ret = 0;
+    uInt idx;
     unsigned *ip, val, h = 0;
 
-    ip = (unsigned *)&s->window[str];
-    val = *ip;
+    for (idx = 0; idx < count; idx++) {
+        ip = (unsigned *)&s->window[str+idx];
+        val = *ip;
+        h = 0;
 
-    if (s->level >= 6)
-        val &= 0xFFFFFF;
+        if (s->level >= 6)
+            val &= 0xFFFFFF;
 
-    __asm__ __volatile__ (
-        "crc32 %1,%0\n\t"
-        : "+r" (h)
-        : "r" (val)
-    );
+        __asm__ __volatile__ (
+            "crc32 %1,%0\n\t"
+            : "+r" (h)
+            : "r" (val)
+        );
 
-    ret = s->head[h & s->hash_mask];
-    s->head[h & s->hash_mask] = str;
-    s->prev[str & s->w_mask] = ret;
+        ret = s->head[h & s->hash_mask];
+        s->head[h & s->hash_mask] = str+idx;
+        s->prev[(str+idx) & s->w_mask] = ret;
+    }
     return ret;
 }
 #endif
 
-local inline Pos insert_string_c(deflate_state *const s, const Pos str) {
+local inline Pos insert_string_c(deflate_state *const s, const Pos str, uInt count) {
     Pos ret;
+    uInt idx;
 
-    UPDATE_HASH(s, s->ins_h, str);
-    ret = s->prev[str & s->w_mask] = s->head[s->ins_h];
-    s->head[s->ins_h] = str;
-
+    for (idx = 0; idx < count; idx++) {
+        UPDATE_HASH(s, s->ins_h, str+idx);
+        ret = s->prev[(str+idx) & s->w_mask] = s->head[s->ins_h];
+        s->head[s->ins_h] = str+idx;
+    }
     return ret;
 }
 
 local inline Pos insert_string(deflate_state *const s, const Pos str) {
 #ifdef X86_SSE4_2_CRC_HASH
     if (x86_cpu_has_sse42)
-        return insert_string_sse(s, str);
+        return insert_string_sse(s, str, 1);
 #endif
-    return insert_string_c(s, str);
+    return insert_string_c(s, str, 1);
 }
 
 
 #ifndef NOT_TWEAK_COMPILER
-local inline void
-bulk_insert_str(deflate_state *const s, Pos startpos, uInt count) {
-    uInt idx;
-    for (idx = 0; idx < count; idx++) {
-        insert_string(s, startpos + idx);
+local inline void bulk_insert_str(deflate_state *const s, Pos startpos, uInt count) {
+# ifdef X86_SSE4_2_CRC_HASH
+    if (x86_cpu_has_sse42) {
+        insert_string_sse(s, startpos, count);
+    } else
+# endif
+    {
+        insert_string_c(s, startpos, count);
     }
 }
-#endif
+#endif /* NOT_TWEAK_COMPILER */
 
 /* ===========================================================================
  * Initialize the hash table (avoiding 64K overflow for 16 bit systems).
