@@ -57,6 +57,7 @@ static void insert_match(deflate_state *s, struct match match) {
 
         /* matches that are not long enough we need to emit as litterals */
         if (match.match_length < MIN_MATCH) {
+#ifdef NOT_TWEAK_COMPILER
             while (match.match_length) {
                     match.strstart++;
                     match.match_length--;
@@ -67,6 +68,17 @@ static void insert_match(deflate_state *s, struct match match) {
                         }
                     }
             }
+#else
+            match.strstart++;
+            match.match_length--;
+            if (match.match_length > 0) {
+                if (match.strstart >= match.orgstart) {
+                    bulk_insert_str(s, match.strstart, match.match_length);
+                }
+                match.strstart += match.match_length;
+                match.match_length = 0;
+            }
+#endif
             return;
         }
 
@@ -75,16 +87,24 @@ static void insert_match(deflate_state *s, struct match match) {
          */
         if (match.match_length <= 16* s->max_insert_length && s->lookahead >= MIN_MATCH) {
                 match.match_length--; /* string at strstart already in table */
+                match.strstart++;
+#ifdef NOT_TWEAK_COMPILER
                 do {
-                        match.strstart++;
-                        if (likely(match.strstart >= match.orgstart)) {
-                            insert_string(s, match.strstart);
-                        }
+                    if (likely(match.strstart >= match.orgstart)) {
+                        insert_string(s, match.strstart);
+                    }
+                    match.strstart++;
                     /* strstart never exceeds WSIZE-MAX_MATCH, so there are
                      * always MIN_MATCH bytes ahead.
                      */
                 } while (--match.match_length != 0);
-                match.strstart++;
+#else
+                if (likely(match.strstart >= match.orgstart)) {
+                    bulk_insert_str(s, match.strstart, match.match_length);
+                }
+                match.strstart += match.match_length;
+                match.match_length = 0;
+#endif
         } else {
                 match.strstart += match.match_length;
                 match.match_length = 0;
