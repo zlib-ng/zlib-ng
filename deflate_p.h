@@ -51,9 +51,8 @@ local inline Pos insert_string_sse(deflate_state *const s, const Pos str, uInt c
             : "r" (val)
         );
 
-        ret = s->head[h & s->hash_mask];
+        ret = s->prev[(str+idx) & s->w_mask] = s->head[h & s->hash_mask];
         s->head[h & s->hash_mask] = str+idx;
-        s->prev[(str+idx) & s->w_mask] = ret;
     }
     return ret;
 }
