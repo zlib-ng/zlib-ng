@@ -150,7 +150,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
              * is pretty low, so for performance it's best to
              * outright stop here for the lower compression levels
              */
-            if (s->level < 6)
+            if (s->level < TRIGGER_LEVEL)
                 break;
         }
     } while ((cur_match = prev[cur_match & wmask]) > limit && --chain_length);
@@ -271,7 +271,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
              * is pretty low, so for performance it's best to
              * outright stop here for the lower compression levels
              */
-            if (s->level < 6)
+            if (s->level < TRIGGER_LEVEL)
                 break;
         }
     } while (--chain_length && (cur_match = prev[cur_match & wmask]) > limit);
@@ -459,7 +459,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
              * is pretty low, so for performance it's best to
              * outright stop here for the lower compression levels
              */
-            if (s->level < 6)
+            if (s->level < TRIGGER_LEVEL)
                 break;
         }
     } while ((cur_match = prev[cur_match & wmask]) > limit && --chain_length != 0);

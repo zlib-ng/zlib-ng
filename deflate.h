@@ -386,10 +386,17 @@ void ZLIB_INTERNAL bi_windup(deflate_state *s);
  *    input characters, so that a running hash key can be computed from the
  *    previous key instead of complete recalculation each time.
  */
+
+#ifdef NOT_TWEAK_COMPILER
+#define TRIGGER_LEVEL 6
+#else
+#define TRIGGER_LEVEL 5
+#endif
+
 #ifdef X86_SSE4_2_CRC_HASH
 #define UPDATE_HASH(s, h, i) \
     do {\
-        if (s->level < 6) \
+        if (s->level < TRIGGER_LEVEL) \
             h = (3483 * (s->window[i]) +\
                  23081* (s->window[i+1]) +\
                  6954 * (s->window[i+2]) +\

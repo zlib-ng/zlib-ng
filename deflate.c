@@ -131,7 +131,7 @@ static const config configuration_table[10] = {
 /* 6 */ {8,   16, 128, 128, deflate_slow},
 #endif
 
-/* 7 */ {8,   32, 128, 256, deflate_slow},
+/* 7 */ {8,   32, 128,  256, deflate_slow},
 /* 8 */ {32, 128, 258, 1024, deflate_slow},
 /* 9 */ {32, 258, 258, 4096, deflate_slow}}; /* max compression */
 
@@ -645,9 +645,9 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
 
             if (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2)
                 level_flags = 0;
-            else if (s->level < 6)
+            else if (s->level < TRIGGER_LEVEL)
                 level_flags = 1;
-            else if (s->level == 6)
+            else if (s->level == TRIGGER_LEVEL)
                 level_flags = 2;
             else
                 level_flags = 3;
