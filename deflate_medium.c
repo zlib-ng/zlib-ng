@@ -7,7 +7,10 @@
  *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
+#ifdef MEDIUM_STRATEGY
 #include "deflate.h"
+#include "deflate_p.h"
+#include "match.h"
 
 struct match {
     uInt match_start;
@@ -287,3 +290,4 @@ block_state deflate_medium(deflate_state *s, int flush) {
 
     return block_done;
 }
+#endif
