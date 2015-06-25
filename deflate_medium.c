@@ -204,7 +204,8 @@ block_state deflate_medium(deflate_state *s, int flush) {
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
                 return need_more;
             }
-            if (s->lookahead == 0) break; /* flush the current block */
+            if (s->lookahead == 0)
+                break; /* flush the current block */
             next_match.match_length = 0;
         }
         s->prev_length = 2;
