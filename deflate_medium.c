@@ -69,9 +69,12 @@ static void insert_match(deflate_state *s, struct match match) {
                     }
             }
 #else
-            match.strstart++;
-            match.match_length--;
-            if (match.match_length > 0) {
+            if (likely(match.match_length == 1)) {
+                match.strstart++;
+                match.match_length = 0;
+            }else{
+                match.strstart++;
+                match.match_length--;
                 if (match.strstart >= match.orgstart) {
                     bulk_insert_str(s, match.strstart, match.match_length);
                 }
