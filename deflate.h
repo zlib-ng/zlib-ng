@@ -261,7 +261,7 @@ typedef struct internal_state {
     unsigned int matches;         /* number of string matches in current block */
     unsigned int insert;          /* bytes at end of window left to insert */
 
-#ifdef DEBUG
+#ifdef ZLIB_DEBUG
     unsigned long compressed_len; /* total bit length of compressed file mod 2^32 */
     unsigned long bits_sent;      /* bit length of compressed data sent mod 2^32 */
 #endif
@@ -349,7 +349,7 @@ void ZLIB_INTERNAL bi_windup(deflate_state *s);
  * used.
  */
 
-#ifndef DEBUG
+#ifndef ZLIB_DEBUG
 /* Inline versions of _tr_tally for speed: */
 
 # if defined(GEN_TREES_H)
@@ -413,11 +413,11 @@ void ZLIB_INTERNAL bi_windup(deflate_state *s);
 #   define UPDATE_HASH(s, h, i) (h = (((h) << s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
 #endif
 
-#ifndef DEBUG
+#ifndef ZLIB_DEBUG
 #  define send_code(s, c, tree) send_bits(s, tree[c].Code, tree[c].Len)
 /* Send a code of the given tree. c and tree must not have side effects */
 
-#else /* DEBUG */
+#else /* ZLIB_DEBUG */
 #  define send_code(s, c, tree) \
     {  if (z_verbose > 2) { \
            fprintf(stderr, "\ncd %3d ", (c)); \
@@ -426,7 +426,7 @@ void ZLIB_INTERNAL bi_windup(deflate_state *s);
      }
 #endif
 
-#ifdef DEBUG
+#ifdef ZLIB_DEBUG
 void send_bits(deflate_state *s, int value, int length);
 #else
 #define send_bits(s, value, length) \

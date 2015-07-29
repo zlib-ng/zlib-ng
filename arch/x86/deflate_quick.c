@@ -19,7 +19,7 @@
 #endif
 #include "deflate.h"
 
-#ifdef DEBUG
+#ifdef ZLIB_DEBUG
 #include <ctype.h>
 #endif
 

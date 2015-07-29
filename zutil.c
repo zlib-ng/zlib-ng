@@ -60,7 +60,7 @@ unsigned long ZEXPORT zlibCompileFlags(void)
     case 8:     flags += 2 << 6;        break;
     default:    flags += 3 << 6;
     }
-#ifdef DEBUG
+#ifdef ZLIB_DEBUG
     flags += 1 << 8;
 #endif
 #ifdef ZLIB_WINAPI
@@ -84,7 +84,7 @@ unsigned long ZEXPORT zlibCompileFlags(void)
     return flags;
 }
 
-#ifdef DEBUG
+#ifdef ZLIB_DEBUG
 
 #  ifndef verbose
 #    define verbose 0

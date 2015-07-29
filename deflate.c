@@ -1125,7 +1125,7 @@ static void lm_init(deflate_state *s) {
     s->ins_h = 0;
 }
 
-#ifdef DEBUG
+#ifdef ZLIB_DEBUG
 #define EQUAL 0
 /* result of memcmp for equal strings */
 
@@ -1150,7 +1150,7 @@ void check_match(deflate_state *s, IPos start, IPos match, int length) {
 }
 #else
 #  define check_match(s, start, match, length)
-#endif /* DEBUG */
+#endif /* ZLIB_DEBUG */
 
 /* ===========================================================================
  * Fill the window when the lookahead becomes insufficient.
@@ -1576,7 +1576,7 @@ static block_state deflate_huff(deflate_state *s, int flush) {
     return block_done;
 }
 
-#ifdef DEBUG
+#ifdef ZLIB_DEBUG
 /* ===========================================================================
  * Send a value on a given number of bits.
  * IN assertion: length <= 16 and value fits in length bits.
