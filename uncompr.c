@@ -25,7 +25,7 @@
 int ZEXPORT uncompress(unsigned char *dest, uLong *destLen, const unsigned char *source, uLong sourceLen) {
     z_stream stream;
     int err;
-    const uInt max = -1;
+    const uInt max = (uInt)0 - 1;
     uLong left;
     Byte buf[1];    /* for detection of incomplete stream when *destLen == 0 */
 
