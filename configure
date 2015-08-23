@@ -102,6 +102,7 @@ shared=1
 gzfileops=0
 compat=0
 cover=0
+build32=0
 build64=0
 without_optimizations=0
 without_new_strategies=0
@@ -133,7 +134,7 @@ case "$1" in
     -h* | --help)
       echo 'usage:' | tee -a configure.log
       echo '  configure [--zlib-compat] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
-      echo '    [--static] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
+      echo '    [--static] [--32] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
       echo '    [--includedir=INCLUDEDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=`echo $1 | sed 's/.*=//'`; shift ;;
@@ -150,6 +151,7 @@ case "$1" in
     -t | --static) shared=0; shift ;;
     --zlib-compat) compat=1; shift ;;
     --cover) cover=1; shift ;;
+    -3* | --32) build32=1; shift ;;
     -6* | --64) build64=1; shift ;;
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
@@ -209,7 +211,11 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
       else
         ARCH=$GCC_ARCH 
       fi ;;
-    x86_64) ARCH=$GCC_ARCH ;;
+# Honor user choice if gcc is multilib and 32-bit is requested
+    x86_64)
+      if test $build32 -ne 1; then
+        ARCH=$GCC_ARCH
+      fi ;;
   esac
   CFLAGS="${CFLAGS--O3} ${ARCHS} -Wall"
   SFLAGS="${CFLAGS--O3} -fPIC"
