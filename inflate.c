@@ -1337,7 +1337,8 @@ long Z_EXPORT PREFIX(inflateMark)(PREFIX3(stream) *strm) {
         return -65536;
     INFLATE_MARK_HOOK(strm);  /* hook for IBM Z DFLTCC */
     state = (struct inflate_state *)strm->state;
-    return ((long)(state->back) << 16) + (state->mode == COPY ? state->length :
+    return (long)(((unsigned long)((long)state->back)) << 16) + 
+        (state->mode == COPY ? state->length :
             (state->mode == MATCH ? state->was - state->length : 0));
 }
 
