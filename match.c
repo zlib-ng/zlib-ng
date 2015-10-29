@@ -17,6 +17,8 @@
 #  if defined(__GNUC__) && defined(HAVE_BUILTIN_CTZL) && ((__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__) \
         || defined(__LITTLE_ENDIAN__))
 #    define std3_longest_match
+#  elif(defined(_MSC_VER) && defined(_WIN32))
+#    define std3_longest_match
 #  else
 #    define std2_longest_match
 #  endif
@@ -266,6 +268,17 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
 #endif
 
 #ifdef std3_longest_match
+
+#ifdef _MSC_VER
+#include <intrin.h>
+/* This only works correctly if value != 0 */
+static __forceinline unsigned long __builtin_ctzl(unsigned long value)
+{
+	unsigned long trailing_zero = 0;
+	_BitScanForward(&trailing_zero, value);
+	return trailing_zero;
+}
+#endif
 
 /* longest_match() with minor change to improve performance (in terms of
  * execution time).
