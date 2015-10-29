@@ -14,6 +14,22 @@ ZLIB_INTERNAL int x86_cpu_has_sse2;
 ZLIB_INTERNAL int x86_cpu_has_sse42;
 ZLIB_INTERNAL int x86_cpu_has_pclmulqdq;
 
+#ifdef _MSC_VER
+#include <intrin.h>
+#define CPU_PROCINFO_AND_FEATUREBITS 1
+
+void ZLIB_INTERNAL x86_check_features(void) {
+	unsigned int registers[4];
+	__cpuid(registers, CPU_PROCINFO_AND_FEATUREBITS);
+
+	unsigned int ecx = registers[2];
+	unsigned int edx = registers[3];
+
+	x86_cpu_has_sse2 = edx & 0x4000000;
+	x86_cpu_has_sse42 = ecx & 0x100000;
+	x86_cpu_has_pclmulqdq = ecx & 0x2;
+}
+#else
 void ZLIB_INTERNAL x86_check_features(void) {
     unsigned eax, ebx, ecx, edx;
 
@@ -30,8 +46,8 @@ void ZLIB_INTERNAL x86_check_features(void) {
     : "+a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx)
 #endif
     );
-
     x86_cpu_has_sse2 = edx & 0x4000000;
     x86_cpu_has_sse42 = ecx & 0x100000;
     x86_cpu_has_pclmulqdq = ecx & 0x2;
 }
+#endif
