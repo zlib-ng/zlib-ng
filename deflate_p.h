@@ -45,11 +45,15 @@ local inline Pos insert_string_sse(deflate_state *const s, const Pos str, uInt c
         if (s->level >= 6)
             val &= 0xFFFFFF;
 
+#ifdef _MSC_VER
+        h = _mm_crc32_u32(h, val);
+#else
         __asm__ __volatile__ (
             "crc32 %1,%0\n\t"
             : "+r" (h)
             : "r" (val)
         );
+#endif
 
         ret = s->prev[(str+idx) & s->w_mask] = s->head[h & s->hash_mask];
         s->head[h & s->hash_mask] = str+idx;
