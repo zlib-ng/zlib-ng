@@ -50,11 +50,8 @@
 /* @(#) $Id$ */
 
 #include "deflate.h"
+#include "deflate_p.h"
 #include "match.h"
-
-#if defined(X86_CPUID)
-# include "arch/x86/x86.h"
-#endif
 
 const char deflate_copyright[] = " deflate 1.2.8.f Copyright 1995-2013 Jean-loup Gailly and Mark Adler ";
 /*
@@ -71,24 +68,20 @@ const char deflate_copyright[] = " deflate 1.2.8.f Copyright 1995-2013 Jean-loup
 typedef block_state (*compress_func) (deflate_state *s, int flush);
 /* Compression function. Returns the block state after the call. */
 
-local void fill_window           (deflate_state *s);
+void fill_window                 (deflate_state *s);
 local block_state deflate_stored (deflate_state *s, int flush);
-local block_state deflate_fast   (deflate_state *s, int flush);
+block_state deflate_fast         (deflate_state *s, int flush);
 block_state deflate_quick        (deflate_state *s, int flush);
 #ifdef MEDIUM_STRATEGY
-local block_state deflate_medium (deflate_state *s, int flush);
+block_state deflate_medium       (deflate_state *s, int flush);
 #endif
-local block_state deflate_slow   (deflate_state *s, int flush);
+block_state deflate_slow         (deflate_state *s, int flush);
 local block_state deflate_rle    (deflate_state *s, int flush);
 local block_state deflate_huff   (deflate_state *s, int flush);
 local void lm_init               (deflate_state *s);
 local void putShortMSB           (deflate_state *s, uInt b);
 ZLIB_INTERNAL void flush_pending(z_stream *strm);
 ZLIB_INTERNAL int read_buf(z_stream *strm, unsigned char *buf, unsigned size);
-
-#ifdef DEBUG
-local  void check_match(deflate_state *s, IPos start, IPos match, int length);
-#endif
 
 extern void crc_reset(deflate_state *const s);
 extern void crc_finalize(deflate_state *const s);
@@ -100,11 +93,6 @@ extern void copy_with_crc(z_stream *strm, unsigned char *dst, long size);
 
 #define NIL 0
 /* Tail of hash chains */
-
-#ifndef TOO_FAR
-#  define TOO_FAR 4096
-#endif
-/* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
 
 /* Values for max_lazy_match, good_match and max_chain_length, depending on
  * the desired pack level (0..9). The values given below have been tuned to
@@ -158,67 +146,6 @@ local const config configuration_table[10] = {
 /* rank Z_BLOCK between Z_NO_FLUSH and Z_PARTIAL_FLUSH */
 #define RANK(f) (((f) << 1) - ((f) > 4 ? 9 : 0))
 
-
-/* ===========================================================================
- * Insert string str in the dictionary and set match_head to the previous head
- * of the hash chain (the most recent string with same hash key). Return
- * the previous length of the hash chain.
- * IN  assertion: all calls to to INSERT_STRING are made with consecutive
- *    input characters and the first MIN_MATCH bytes of str are valid
- *    (except for the last MIN_MATCH-1 bytes of the input file).
- */
-#ifdef X86_SSE4_2_CRC_HASH
-local inline Pos insert_string_sse(deflate_state *const s, const Pos str) {
-    Pos ret;
-    unsigned *ip, val, h = 0;
-
-    ip = (unsigned *)&s->window[str];
-    val = *ip;
-
-    if (s->level >= 6)
-        val &= 0xFFFFFF;
-
-    __asm__ __volatile__ (
-        "crc32 %1,%0\n\t"
-        : "+r" (h)
-        : "r" (val)
-    );
-
-    ret = s->head[h & s->hash_mask];
-    s->head[h & s->hash_mask] = str;
-    s->prev[str & s->w_mask] = ret;
-    return ret;
-}
-#endif
-
-local inline Pos insert_string_c(deflate_state *const s, const Pos str) {
-    Pos ret;
-
-    UPDATE_HASH(s, s->ins_h, str);
-    ret = s->prev[str & s->w_mask] = s->head[s->ins_h];
-    s->head[s->ins_h] = str;
-
-    return ret;
-}
-
-local inline Pos insert_string(deflate_state *const s, const Pos str) {
-#ifdef X86_SSE4_2_CRC_HASH
-    if (x86_cpu_has_sse42)
-        return insert_string_sse(s, str);
-#endif
-    return insert_string_c(s, str);
-}
-
-
-#ifndef NOT_TWEAK_COMPILER
-local inline void
-bulk_insert_str(deflate_state *const s, Pos startpos, uInt count) {
-    uInt idx;
-    for (idx = 0; idx < count; idx++) {
-        insert_string(s, startpos + idx);
-    }
-}
-#endif
 
 /* ===========================================================================
  * Initialize the hash table (avoiding 64K overflow for 16 bit systems).
@@ -1095,7 +1022,7 @@ local void lm_init(deflate_state *s) {
 /* ===========================================================================
  * Check that the match at match_start is indeed a match.
  */
-local void check_match(deflate_state *s, IPos start, IPos match, int length) {
+void check_match(deflate_state *s, IPos start, IPos match, int length) {
     /* check that the match is indeed a match */
     if (memcmp(s->window + match, s->window + start, length) != EQUAL) {
         fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
@@ -1128,9 +1055,9 @@ local void check_match(deflate_state *s, IPos start, IPos match, int length) {
 #ifdef X86_SSE2_FILL_WINDOW
 extern void fill_window_sse(deflate_state *s);
 #endif
-local void fill_window_c(deflate_state *s);
+void fill_window_c(deflate_state *s);
 
-local void fill_window(deflate_state *s) {
+void fill_window(deflate_state *s) {
 #ifdef X86_SSE2_FILL_WINDOW
 # ifndef X86_NOCHECK_SSE2
     if (x86_cpu_has_sse2) {
@@ -1147,7 +1074,7 @@ local void fill_window(deflate_state *s) {
 #endif
 }
 
-local void fill_window_c(deflate_state *s) {
+void fill_window_c(deflate_state *s) {
     register unsigned n;
     register Pos *p;
     unsigned more;    /* Amount of free space at the end of the window. */
@@ -1306,27 +1233,6 @@ local void fill_window_c(deflate_state *s) {
 }
 
 /* ===========================================================================
- * Flush the current block, with given end-of-file flag.
- * IN assertion: strstart is set to the end of the current match.
- */
-#define FLUSH_BLOCK_ONLY(s, last) { \
-    _tr_flush_block(s, (s->block_start >= 0L ? \
-                   (char *)&s->window[(unsigned)s->block_start] : \
-                   (char *)Z_NULL), \
-                (ulg)((long)s->strstart - s->block_start), \
-                (last)); \
-    s->block_start = s->strstart; \
-    flush_pending(s->strm); \
-    Tracev((stderr, "[FLUSH]")); \
-}
-
-/* Same but force premature exit if necessary. */
-#define FLUSH_BLOCK(s, last) { \
-    FLUSH_BLOCK_ONLY(s, last); \
-    if (s->strm->avail_out == 0) return (last) ? finish_started : need_more; \
-}
-
-/* ===========================================================================
  * Copy without compression as much as possible from the input stream, return
  * the current block state.
  * This function does not insert new strings in the dictionary since
@@ -1389,250 +1295,6 @@ local block_state deflate_stored(deflate_state *s, int flush) {
     return block_done;
 }
 
-/* ===========================================================================
- * Compress as much as possible from the input stream, return the current
- * block state.
- * This function does not perform lazy evaluation of matches and inserts
- * new strings in the dictionary only for unmatched strings or for short
- * matches. It is used only for the fast compression options.
- */
-local block_state deflate_fast(deflate_state *s, int flush) {
-    IPos hash_head;       /* head of the hash chain */
-    int bflush;           /* set if current block must be flushed */
-
-    for (;;) {
-        /* Make sure that we always have enough lookahead, except
-         * at the end of the input file. We need MAX_MATCH bytes
-         * for the next match, plus MIN_MATCH bytes to insert the
-         * string following the next match.
-         */
-        if (s->lookahead < MIN_LOOKAHEAD) {
-            fill_window(s);
-            if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
-                return need_more;
-            }
-            if (s->lookahead == 0)
-                break; /* flush the current block */
-        }
-
-        /* Insert the string window[strstart .. strstart+2] in the
-         * dictionary, and set hash_head to the head of the hash chain:
-         */
-        hash_head = NIL;
-        if (s->lookahead >= MIN_MATCH) {
-            hash_head = insert_string(s, s->strstart);
-        }
-
-        /* Find the longest match, discarding those <= prev_length.
-         * At this point we have always match_length < MIN_MATCH
-         */
-        if (hash_head != NIL && s->strstart - hash_head <= MAX_DIST(s)) {
-            /* To simplify the code, we prevent matches with the string
-             * of window index 0 (in particular we have to avoid a match
-             * of the string with itself at the start of the input file).
-             */
-            s->match_length = longest_match(s, hash_head);
-            /* longest_match() sets match_start */
-        }
-        if (s->match_length >= MIN_MATCH) {
-            check_match(s, s->strstart, s->match_start, s->match_length);
-
-            _tr_tally_dist(s, s->strstart - s->match_start, s->match_length - MIN_MATCH, bflush);
-
-            s->lookahead -= s->match_length;
-
-            /* Insert new strings in the hash table only if the match length
-             * is not too large. This saves time but degrades compression.
-             */
-            if (s->match_length <= s->max_insert_length &&
-                s->lookahead >= MIN_MATCH) {
-                s->match_length--; /* string at strstart already in table */
-                do {
-                    s->strstart++;
-                    insert_string(s, s->strstart);
-                    /* strstart never exceeds WSIZE-MAX_MATCH, so there are
-                     * always MIN_MATCH bytes ahead.
-                     */
-                } while (--s->match_length != 0);
-                s->strstart++;
-            } else {
-                s->strstart += s->match_length;
-                s->match_length = 0;
-                s->ins_h = s->window[s->strstart];
-                UPDATE_HASH(s, s->ins_h, s->strstart+2 - (MIN_MATCH));
-#if MIN_MATCH != 3
-                Call UPDATE_HASH() MIN_MATCH-3 more times
-#endif
-                /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
-                 * matter since it will be recomputed at next deflate call.
-                 */
-            }
-        } else {
-            /* No match, output a literal byte */
-            Tracevv((stderr, "%c", s->window[s->strstart]));
-            _tr_tally_lit(s, s->window[s->strstart], bflush);
-            s->lookahead--;
-            s->strstart++;
-        }
-        if (bflush)
-            FLUSH_BLOCK(s, 0);
-    }
-    s->insert = s->strstart < MIN_MATCH-1 ? s->strstart : MIN_MATCH-1;
-    if (flush == Z_FINISH) {
-        FLUSH_BLOCK(s, 1);
-        return finish_done;
-    }
-    if (s->last_lit)
-        FLUSH_BLOCK(s, 0);
-    return block_done;
-}
-
-
-#ifdef MEDIUM_STRATEGY
-#include "deflate_medium.c"
-#endif
-
-/* ===========================================================================
- * Same as above, but achieves better compression. We use a lazy
- * evaluation for matches: a match is finally adopted only if there is
- * no better match at the next window position.
- */
-local block_state deflate_slow(deflate_state *s, int flush) {
-    IPos hash_head;          /* head of hash chain */
-    int bflush;              /* set if current block must be flushed */
-
-    /* Process the input block. */
-    for (;;) {
-        /* Make sure that we always have enough lookahead, except
-         * at the end of the input file. We need MAX_MATCH bytes
-         * for the next match, plus MIN_MATCH bytes to insert the
-         * string following the next match.
-         */
-        if (s->lookahead < MIN_LOOKAHEAD) {
-            fill_window(s);
-            if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
-                return need_more;
-            }
-            if (s->lookahead == 0)
-                break; /* flush the current block */
-        }
-
-        /* Insert the string window[strstart .. strstart+2] in the
-         * dictionary, and set hash_head to the head of the hash chain:
-         */
-        hash_head = NIL;
-        if (s->lookahead >= MIN_MATCH) {
-            hash_head = insert_string(s, s->strstart);
-        }
-
-        /* Find the longest match, discarding those <= prev_length.
-         */
-        s->prev_length = s->match_length, s->prev_match = s->match_start;
-        s->match_length = MIN_MATCH-1;
-
-        if (hash_head != NIL && s->prev_length < s->max_lazy_match && s->strstart - hash_head <= MAX_DIST(s)) {
-            /* To simplify the code, we prevent matches with the string
-             * of window index 0 (in particular we have to avoid a match
-             * of the string with itself at the start of the input file).
-             */
-            s->match_length = longest_match(s, hash_head);
-            /* longest_match() sets match_start */
-
-            if (s->match_length <= 5 && (s->strategy == Z_FILTERED
-#if TOO_FAR <= 32767
-                || (s->match_length == MIN_MATCH && s->strstart - s->match_start > TOO_FAR)
-#endif
-                )) {
-
-                /* If prev_match is also MIN_MATCH, match_start is garbage
-                 * but we will ignore the current match anyway.
-                 */
-                s->match_length = MIN_MATCH-1;
-            }
-        }
-        /* If there was a match at the previous step and the current
-         * match is not better, output the previous match:
-         */
-        if (s->prev_length >= MIN_MATCH && s->match_length <= s->prev_length) {
-            uInt max_insert = s->strstart + s->lookahead - MIN_MATCH;
-            /* Do not insert strings in hash table beyond this. */
-
-            check_match(s, s->strstart-1, s->prev_match, s->prev_length);
-
-            _tr_tally_dist(s, s->strstart -1 - s->prev_match, s->prev_length - MIN_MATCH, bflush);
-
-            /* Insert in hash table all strings up to the end of the match.
-             * strstart-1 and strstart are already inserted. If there is not
-             * enough lookahead, the last two strings are not inserted in
-             * the hash table.
-             */
-            s->lookahead -= s->prev_length-1;
-
-#ifdef NOT_TWEAK_COMPILER
-            s->prev_length -= 2;
-            do {
-                if (++s->strstart <= max_insert) {
-                    hash_head = insert_string(s, s->strstart);
-                }
-            } while (--s->prev_length != 0);
-            s->match_available = 0;
-            s->match_length = MIN_MATCH-1;
-            s->strstart++;
-#else
-            {
-                uInt mov_fwd = s->prev_length - 2;
-                uInt insert_cnt = mov_fwd;
-                if (unlikely(insert_cnt > max_insert - s->strstart))
-                    insert_cnt = max_insert - s->strstart;
-
-                bulk_insert_str(s, s->strstart + 1, insert_cnt);
-                s->prev_length = 0;
-                s->match_available = 0;
-                s->match_length = MIN_MATCH-1;
-                s->strstart += mov_fwd + 1;
-            }
-#endif /*NOT_TWEAK_COMPILER*/
-
-            if (bflush) FLUSH_BLOCK(s, 0);
-
-        } else if (s->match_available) {
-            /* If there was no match at the previous position, output a
-             * single literal. If there was a match but the current match
-             * is longer, truncate the previous match to a single literal.
-             */
-            Tracevv((stderr, "%c", s->window[s->strstart-1]));
-            _tr_tally_lit(s, s->window[s->strstart-1], bflush);
-            if (bflush) {
-                FLUSH_BLOCK_ONLY(s, 0);
-            }
-            s->strstart++;
-            s->lookahead--;
-            if (s->strm->avail_out == 0)
-                return need_more;
-        } else {
-            /* There is no previous match to compare with, wait for
-             * the next step to decide.
-             */
-            s->match_available = 1;
-            s->strstart++;
-            s->lookahead--;
-        }
-    }
-    Assert(flush != Z_NO_FLUSH, "no flush?");
-    if (s->match_available) {
-        Tracevv((stderr, "%c", s->window[s->strstart-1]));
-        _tr_tally_lit(s, s->window[s->strstart-1], bflush);
-        s->match_available = 0;
-    }
-    s->insert = s->strstart < MIN_MATCH-1 ? s->strstart : MIN_MATCH-1;
-    if (flush == Z_FINISH) {
-        FLUSH_BLOCK(s, 1);
-        return finish_done;
-    }
-    if (s->last_lit)
-        FLUSH_BLOCK(s, 0);
-    return block_done;
-}
 
 /* ===========================================================================
  * For Z_RLE, simply look for runs of bytes, generate matches only of distance
