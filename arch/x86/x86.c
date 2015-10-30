@@ -16,11 +16,10 @@ ZLIB_INTERNAL int x86_cpu_has_pclmulqdq;
 
 #ifdef _MSC_VER
 #include <intrin.h>
-#define CPU_PROCINFO_AND_FEATUREBITS 1
 
 void ZLIB_INTERNAL x86_check_features(void) {
 	unsigned int registers[4];
-	__cpuid(registers, CPU_PROCINFO_AND_FEATUREBITS);
+	__cpuid(registers, 1 /*CPU_PROCINFO_AND_FEATUREBITS*/);
 
 	unsigned int ecx = registers[2];
 	unsigned int edx = registers[3];
