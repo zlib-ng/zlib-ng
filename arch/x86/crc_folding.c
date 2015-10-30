@@ -190,7 +190,7 @@ local void fold_4(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, 
     *xmm_crc3 = _mm_castps_si128(ps_res3);
 }
 
-local const unsigned __attribute__((aligned(32))) pshufb_shf_table[60] = {
+local const unsigned ALIGNED_(32) pshufb_shf_table[60] = {
     0x84838281, 0x88878685, 0x8c8b8a89, 0x008f8e8d, /* shl 15 (16 - 1)/shr1 */
     0x85848382, 0x89888786, 0x8d8c8b8a, 0x01008f8e, /* shl 14 (16 - 3)/shr2 */
     0x86858483, 0x8a898887, 0x8e8d8c8b, 0x0201008f, /* shl 13 (16 - 4)/shr3 */
@@ -378,7 +378,7 @@ done:
     CRC_SAVE(s)
 }
 
-local const unsigned __attribute__((aligned(16))) crc_k[] = {
+local const unsigned ALIGNED_(16) crc_k[] = {
     0xccaa009e, 0x00000000, /* rk1 */
     0x751997d0, 0x00000001, /* rk2 */
     0xccaa009e, 0x00000000, /* rk5 */
@@ -387,11 +387,11 @@ local const unsigned __attribute__((aligned(16))) crc_k[] = {
     0xdb710640, 0x00000001  /* rk8 */
 };
 
-local const unsigned __attribute__((aligned(16))) crc_mask[4] = {
+local const unsigned ALIGNED_(16) crc_mask[4] = {
     0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000
 };
 
-local const unsigned __attribute__((aligned(16))) crc_mask2[4] = {
+local const unsigned ALIGNED_(16) crc_mask2[4] = {
     0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
 };
 

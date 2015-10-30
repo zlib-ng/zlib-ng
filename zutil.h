@@ -172,4 +172,12 @@ void ZLIB_INTERNAL   zcfree(void *opaque, void *ptr);
 #  endif
 #endif /* (un)likely */
 
+#if defined(_MSC_VER)
+#define ALIGNED_(x) __declspec(align(x))
+#else
+#if defined(__GNUC__)
+#define ALIGNED_(x) __attribute__ ((aligned(x)))
+#endif
+#endif
+
 #endif /* ZUTIL_H_ */
