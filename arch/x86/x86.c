@@ -4,7 +4,7 @@
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
  * Author:
  *  Jim Kukunas
- * 
+ *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -18,36 +18,37 @@ ZLIB_INTERNAL int x86_cpu_has_pclmulqdq;
 #include <intrin.h>
 #define CPU_PROCINFO_AND_FEATUREBITS 1
 
-void ZLIB_INTERNAL x86_check_features(void) {
+static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
 	unsigned int registers[4];
-	__cpuid(registers, CPU_PROCINFO_AND_FEATUREBITS);
+	__cpuid(registers, info);
 
-	unsigned int ecx = registers[2];
-	unsigned int edx = registers[3];
+	*eax = registers[0];
+	*ebx = registers[1];
+	*ecx = registers[2];
+	*edx = registers[3];
+}
+#else
+// Newer versions of GCC and clang come with cpuid.h
+#include <cpuid.h>
+
+static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
+	unsigned int _eax;
+	unsigned int _ebx;
+	unsigned int _ecx;
+	unsigned int _edx;
+	__cpuid(info, _eax, _ebx, _ecx, _edx);
+	*eax = _eax;
+	*ebx = _ebx;
+	*ecx = _ecx;
+	*edx = _edx;
+}
+#endif
+
+void ZLIB_INTERNAL x86_check_features(void) {
+	unsigned eax, ebx, ecx, edx;
+	cpuid(1 /*CPU_PROCINFO_AND_FEATUREBITS*/, &eax, &ebx, &ecx, &edx);
 
 	x86_cpu_has_sse2 = edx & 0x4000000;
 	x86_cpu_has_sse42 = ecx & 0x100000;
 	x86_cpu_has_pclmulqdq = ecx & 0x2;
 }
-#else
-void ZLIB_INTERNAL x86_check_features(void) {
-    unsigned eax, ebx, ecx, edx;
-
-    eax = 1;
-    __asm__ __volatile__ (
-#ifdef X86
-        "xchg %%ebx, %1\n\t"
-#endif
-        "cpuid\n\t"
-#ifdef X86
-        "xchg %1, %%ebx\n\t"
-    : "+a" (eax), "=S" (ebx), "=c" (ecx), "=d" (edx)
-#else
-    : "+a" (eax), "=b" (ebx), "=c" (ecx), "=d" (edx)
-#endif
-    );
-    x86_cpu_has_sse2 = edx & 0x4000000;
-    x86_cpu_has_sse42 = ecx & 0x100000;
-    x86_cpu_has_pclmulqdq = ecx & 0x2;
-}
-#endif
