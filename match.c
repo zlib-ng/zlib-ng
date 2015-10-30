@@ -271,10 +271,12 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
 
 #ifdef _MSC_VER
 #include <intrin.h>
-/* This only works correctly if value != 0 */
+/* This is not a general purpose replacement for __builtin_ctzl. The function expects that value is != 0
+ * Because of that assumption trailing_zero is not initialized and the return value of _BitScanForward is not checked
+ */
 static __forceinline unsigned long __builtin_ctzl(unsigned long value)
 {
-	unsigned long trailing_zero = 0;
+	unsigned long trailing_zero;
 	_BitScanForward(&trailing_zero, value);
 	return trailing_zero;
 }
