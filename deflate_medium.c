@@ -1,5 +1,4 @@
-/*
- * The deflate_medium deflate strategy
+/* deflate_medium.c -- The deflate_medium deflate strategy
  *
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
  * Authors:
@@ -7,7 +6,10 @@
  *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
+#ifdef MEDIUM_STRATEGY
 #include "deflate.h"
+#include "deflate_p.h"
+#include "match.h"
 
 struct match {
     uInt match_start;
@@ -27,74 +29,97 @@ static int tr_tally_lit(deflate_state *s, int c) {
 }
 
 static int emit_match(deflate_state *s, struct match match) {
-        int flush = 0;
+    int flush = 0;
 
-        /* matches that are not long enough we need to emit as litterals */
-        if (match.match_length < MIN_MATCH) {
-            while (match.match_length) {
-                    flush += tr_tally_lit(s, s->window[match.strstart]);
-                    s->lookahead--;
-                    match.strstart++;
-                    match.match_length--;
-            }
-            return flush;
+    /* matches that are not long enough we need to emit as litterals */
+    if (match.match_length < MIN_MATCH) {
+        while (match.match_length) {
+            flush += tr_tally_lit(s, s->window[match.strstart]);
+            s->lookahead--;
+            match.strstart++;
+            match.match_length--;
         }
-
-        check_match(s, match.strstart, match.match_start, match.match_length);
-
-        flush += tr_tally_dist(s, match.strstart - match.match_start, match.match_length - MIN_MATCH);
-
-        s->lookahead -= match.match_length;
         return flush;
+    }
+
+    check_match(s, match.strstart, match.match_start, match.match_length);
+
+    flush += tr_tally_dist(s, match.strstart - match.match_start, match.match_length - MIN_MATCH);
+
+    s->lookahead -= match.match_length;
+    return flush;
 }
 
 static void insert_match(deflate_state *s, struct match match) {
     if (unlikely(s->lookahead <= match.match_length + MIN_MATCH))
         return;
 
-        /* matches that are not long enough we need to emit as litterals */
-        if (match.match_length < MIN_MATCH) {
-            while (match.match_length) {
-                    match.strstart++;
-                    match.match_length--;
+    /* matches that are not long enough we need to emit as litterals */
+    if (match.match_length < MIN_MATCH) {
+#ifdef NOT_TWEAK_COMPILER
+        while (match.match_length) {
+            match.strstart++;
+            match.match_length--;
 
-                    if (match.match_length) {
-                        if (match.strstart >= match.orgstart) {
-                            insert_string(s, match.strstart);
-                        }
-                    }
+            if (match.match_length) {
+                if (match.strstart >= match.orgstart) {
+                    insert_string(s, match.strstart);
+                }
             }
-            return;
         }
+#else
+        if (likely(match.match_length == 1)) {
+            match.strstart++;
+            match.match_length = 0;
+        }else{
+            match.strstart++;
+            match.match_length--;
+            if (match.strstart >= match.orgstart) {
+                bulk_insert_str(s, match.strstart, match.match_length);
+            }
+            match.strstart += match.match_length;
+            match.match_length = 0;
+        }
+#endif
+        return;
+    }
 
-        /* Insert new strings in the hash table only if the match length
-         * is not too large. This saves time but degrades compression.
-         */
-        if (match.match_length <= 16* s->max_insert_length && s->lookahead >= MIN_MATCH) {
-                match.match_length--; /* string at strstart already in table */
-                do {
-                        match.strstart++;
-                        if (likely(match.strstart >= match.orgstart)) {
-                            insert_string(s, match.strstart);
-                        }
-                    /* strstart never exceeds WSIZE-MAX_MATCH, so there are
-                     * always MIN_MATCH bytes ahead.
-                     */
-                } while (--match.match_length != 0);
-                match.strstart++;
-        } else {
-                match.strstart += match.match_length;
-                match.match_length = 0;
-                s->ins_h = s->window[match.strstart];
-                if (match.strstart >= 1)
-                    UPDATE_HASH(s, s->ins_h, match.strstart+2-MIN_MATCH);
+    /* Insert new strings in the hash table only if the match length
+     * is not too large. This saves time but degrades compression.
+     */
+    if (match.match_length <= 16* s->max_insert_length && s->lookahead >= MIN_MATCH) {
+        match.match_length--; /* string at strstart already in table */
+        match.strstart++;
+#ifdef NOT_TWEAK_COMPILER
+        do {
+            if (likely(match.strstart >= match.orgstart)) {
+                insert_string(s, match.strstart);
+            }
+            match.strstart++;
+            /* strstart never exceeds WSIZE-MAX_MATCH, so there are
+             * always MIN_MATCH bytes ahead.
+             */
+        } while (--match.match_length != 0);
+#else
+        if (likely(match.strstart >= match.orgstart)) {
+            bulk_insert_str(s, match.strstart, match.match_length);
+        }
+        match.strstart += match.match_length;
+        match.match_length = 0;
+#endif
+    } else {
+        match.strstart += match.match_length;
+        match.match_length = 0;
+        s->ins_h = s->window[match.strstart];
+        if (match.strstart >= 1)
+            UPDATE_HASH(s, s->ins_h, match.strstart+2-MIN_MATCH);
 #if MIN_MATCH != 3
 #warning Call UPDATE_HASH() MIN_MATCH-3 more times
 #endif
-        /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
-         * matter since it will be recomputed at next deflate call.
-         */
-        }
+    /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
+     * matter since it will be recomputed at next deflate call.
+     */
+    }
 }
 
 static void fizzle_matches(deflate_state *s, struct match *current, struct match *next) {
@@ -105,7 +130,7 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
     /* step zero: sanity checks */
 
     if (current->match_length <= 1)
-            return;
+        return;
 
     match = s->window - current->match_length + 1 + next->match_start;
     orig  = s->window - current->match_length + 1 + next->strstart;
@@ -114,12 +139,11 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
     if (likely(*match != *orig))
         return;
 
-    /*
-     * check the overlap case and just give up. We can do better in theory,
-     * but unlikely to be worth it 
+    /* check the overlap case and just give up. We can do better in theory,
+     * but unlikely to be worth it
      */
     if (next->match_start + next->match_length >= current->strstart)
-            return;
+        return;
 
     c = *current;
     n = *next;
@@ -181,7 +205,8 @@ block_state deflate_medium(deflate_state *s, int flush) {
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
                 return need_more;
             }
-            if (s->lookahead == 0) break; /* flush the current block */
+            if (s->lookahead == 0)
+                break; /* flush the current block */
             next_match.match_length = 0;
         }
         s->prev_length = 2;
@@ -250,9 +275,10 @@ block_state deflate_medium(deflate_state *s, int flush) {
                  */
                 next_match.match_length = longest_match(s, hash_head);
                 next_match.match_start = s->match_start;
-                if (next_match.match_start >= next_match.strstart)
+                if (next_match.match_start >= next_match.strstart) {
                     /* this can happen due to some restarts */
                     next_match.match_length = 1;
+                }
                 if (next_match.match_length < MIN_MATCH)
                     next_match.match_length = 1;
                 else
@@ -287,3 +313,4 @@ block_state deflate_medium(deflate_state *s, int flush) {
 
     return block_done;
 }
+#endif

@@ -144,6 +144,9 @@ set(ZLIB_SRCS
     compress.c
     crc32.c
     deflate.c
+    deflate_fast.c
+    deflate_medium.c
+    deflate_slow.c
     inflate.c
     infback.c
     inftrees.c

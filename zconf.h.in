@@ -92,8 +92,8 @@
 #endif
 
 /* Fallback for something that includes us. */
-#define Byte unsigned char
-#define Bytef unsigned char
+typedef unsigned char Byte;
+typedef Byte Bytef;
 
 typedef unsigned int   uInt;  /* 16 bits or more */
 typedef unsigned long  uLong; /* 32 bits or more */
