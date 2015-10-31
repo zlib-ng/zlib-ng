@@ -15,9 +15,14 @@ ZLIB_INTERNAL int x86_cpu_has_sse42;
 ZLIB_INTERNAL int x86_cpu_has_pclmulqdq;
 
 #ifdef _MSC_VER
-#include <intrin.h>
+#  include <intrin.h>
+#else
+// Newer versions of GCC and clang come with cpuid.h
+#  include <cpuid.h>
+#endif
 
 static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
+#ifdef _MSC_VER
 	unsigned int registers[4];
 	__cpuid(registers, info);
 
@@ -25,12 +30,7 @@ static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigne
 	*ebx = registers[1];
 	*ecx = registers[2];
 	*edx = registers[3];
-}
 #else
-// Newer versions of GCC and clang come with cpuid.h
-#include <cpuid.h>
-
-static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
 	unsigned int _eax;
 	unsigned int _ebx;
 	unsigned int _ecx;
@@ -40,8 +40,8 @@ static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigne
 	*ebx = _ebx;
 	*ecx = _ecx;
 	*edx = _edx;
-}
 #endif
+}
 
 void ZLIB_INTERNAL x86_check_features(void) {
 	unsigned eax, ebx, ecx, edx;
