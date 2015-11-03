@@ -38,11 +38,11 @@ int ZEXPORT uncompress(unsigned char *dest, uLong *destLen, const unsigned char 
         dest = buf;
     }
 
-    stream.next_in = (z_const Bytef *)source;
+    stream.next_in = (const unsigned char *)source;
     stream.avail_in = 0;
     stream.zalloc = (alloc_func)0;
     stream.zfree = (free_func)0;
-    stream.opaque = (voidpf)0;
+    stream.opaque = (void *)0;
 
     err = inflateInit(&stream);
     if (err != Z_OK) return err;
