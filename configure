@@ -759,7 +759,6 @@ echo RC = $RC >> configure.log
 echo RCFLAGS = $RCFLAGS >> configure.log
 echo RCOBJS = $RCOBJS >> configure.log
 echo STRIP = $STRIP >> configure.log
-echo BSDLIBS = $BSDLIBS >> configure.log
 echo OBJC = $OBJC >> configure.log
 echo PIC_OBJC = $PIC_OBJC >> configure.log
 echo RANLIB = $RANLIB >> configure.log
@@ -824,7 +823,6 @@ sed < $SRCDIR/Makefile.in "
 /^includedir *=/s#=.*#= $includedir#
 /^mandir *=/s#=.*#= $mandir#
 /^SRCDIR *=/s#=.*#=$SRCDIR#
-/^BSDLIBS *=/s#=.*#=$BSDLIBS#
 /^INCLUDES *=/s#=.*#=$INCLUDES#
 /^OBJC *=/s#=.*#= $OBJC#
 /^PIC_OBJC *=/s#=.*#= $PIC_OBJC#
