@@ -6,11 +6,7 @@
 /* to use, do: ./configure --cover && make cover */
 
 #include <stdio.h>
-#ifdef HAVE_BSD_STDLIB
-#  include <bsd/stdlib.h>
-#else
-#  include <stdlib.h>
-#endif
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include "zlib.h"
@@ -20,18 +16,6 @@
 #define ZLIB_INTERNAL
 #include "inftrees.h"
 #include "inflate.h"
-
-/* reallocf is BSD-specific */
-#ifndef reallocf
-static void *reallocf(void *ptr, size_t size)
-{
-    void *ret = realloc(ptr, size);
-    if ((ret == NULL) && (ptr != NULL) && (size != 0))
-        free(ptr);
-    return ret;
-}
-#endif
-
 
 /* -- memory tracking routines -- */
 
@@ -251,14 +235,14 @@ static void mem_done(z_stream *strm, char *prefix)
 
 /* Decode a hexadecimal string, set *len to length, in[] to the bytes.  This
    decodes liberally, in that hex digits can be adjacent, in which case two in
-   a row writes a byte.  Or they can delimited by any non-hex character, where
-   the delimiters are ignored except when a single hex digit is followed by a
-   delimiter in which case that single digit writes a byte.  The returned
-   data is allocated and must eventually be freed.  NULL is returned if out of
-   memory.  If the length is not needed, then len can be NULL. */
+   a row writes a byte.  Or they can be delimited by any non-hex character,
+   where the delimiters are ignored except when a single hex digit is followed
+   by a delimiter, where that single digit writes a byte.  The returned data is
+   allocated and must eventually be freed.  NULL is returned if out of memory.
+   If the length is not needed, then len can be NULL. */
 static unsigned char *h2b(const char *hex, unsigned *len)
 {
-    unsigned char *in;
+    unsigned char *in, *re;
     unsigned next, val;
 
     in = malloc((strlen(hex) + 1) >> 1);
@@ -282,8 +266,8 @@ static unsigned char *h2b(const char *hex, unsigned *len)
     } while (*hex++);       /* go through the loop with the terminating null */
     if (len != NULL)
         *len = next;
-    in = reallocf(in, next);
-    return in;
+    re = realloc(in, next);
+    return re == NULL ? in : re;
 }
 
 /* generic inflate() run, where hex is the hexadecimal input data, what is the

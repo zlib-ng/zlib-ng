@@ -601,47 +601,6 @@ EOF
   fi
 fi
 
-# check where reallocf is defined
-cat > $test.c << EOF
-#include <stdlib.h>
-
-int main()
-{
-   void *p = reallocf(NULL, 255);
-   return p != NULL;
-}
-EOF
-if try $CC -c $CFLAGS -Werror $test.c; then
-  echo "Checking where reallocf is defined... stdlib.h" | tee -a configure.log
-else
-cat > $test.c << EOF
-#include <bsd/stdlib.h>
-
-int main()
-{
-   void *p = reallocf(NULL, 255);
-   return p != NULL;
-}
-EOF
-if try $CC -c $CFLAGS -Werror $test.c; then
-  echo "Checking where reallocf is defined... bsd/stdlib.h" | tee -a configure.log
-  CFLAGS="$CFLAGS -DHAVE_BSD_STDLIB"
-else
-  echo "Checking where reallocf is defined... Not found!" | tee -a configure.log
-fi;
-fi;
-
-# check if we need -lbsd for reallocf
-BSDLIBS=
-if ($CC $CFLAGS -o $test $test.c) 2>> configure.log ; then
-  echo "Checking for reallocf... Yes." | tee -a configure.log
-elif ($CC $CFLAGS -o $test $test.c -lbsd) 2>> configure.log ; then
-  BSDLIBS=-lbsd
-  echo "Checking for reallocf... -lbsd" | tee -a configure.log
-else
-  echo "Checking for reallocf... No." | tee -a configure.log
-fi;
-
 # Check for __builtin_ctzl() support in compiler
 cat > $test.c << EOF
 int main(void)
