@@ -17,8 +17,8 @@ local int gz_init(gz_statep state) {
     int ret;
     z_stream *strm = &(state->strm);
 
-    /* allocate input buffer */
-    state->in = (unsigned char *)malloc(state->want);
+    /* allocate input buffer (double size for gzprintf) */
+    state->in = (unsigned char *)malloc(state->want << 1);
     if (state->in == NULL) {
         gz_error(state, Z_MEM_ERROR, "out of memory");
         return -1;
@@ -283,7 +283,8 @@ int ZEXPORT gzputs(gzFile file, const char *str) {
 
 /* -- see zlib.h -- */
 int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va) {
-    int size, len;
+    int len, left;
+    char *next;
     gz_statep state;
     z_stream *strm;
 
@@ -308,24 +309,32 @@ int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va) {
             return 0;
     }
 
-    /* consume whatever's left in the input buffer */
-    if (strm->avail_in && gz_comp(state, Z_NO_FLUSH) == -1)
-        return 0;
-
-    /* do the printf() into the input buffer, put length in len */
-    size = (int)(state->size);
-    state->in[size - 1] = 0;
-    len = vsnprintf((char *)(state->in), size, format, va);
+    /* do the printf() into the input buffer, put length in len -- the input
+       buffer is double-sized just for this function, so there is guaranteed to
+       be state->size bytes available after the current contents */
+    if (strm->avail_in == 0)
+        strm->next_in = state->in;
+    next = (char *)(strm->next_in + strm->avail_in);
+    next[state->size - 1] = 0;
+    len = vsnprintf(next, state->size, format, va);
 
     /* check that printf() results fit in buffer */
-    if (len <= 0 || len >= (int)size || state->in[size - 1] != 0)
+    if (len == 0 || len >= state->size || next[state->size - 1] != 0)
         return 0;
 
-    /* update buffer and position, defer compression until needed */
-    strm->avail_in = (unsigned)len;
-    strm->next_in = state->in;
+    /* update buffer and position, compress first half if past that */
+    strm->avail_in += len;
     state->x.pos += len;
-    return len;
+    if (strm->avail_in >= state->size) {
+        left = strm->avail_in - state->size;
+        strm->avail_in = state->size;
+        if (gz_comp(state, Z_NO_FLUSH) == -1)
+            return 0;
+        memcpy(state->in, state->in + state->size, left);
+        strm->next_in = state->in;
+        strm->avail_in = left;
+    }
+    return (int)len;
 }
 
 int ZEXPORTVA gzprintf(gzFile file, const char *format, ...) {
