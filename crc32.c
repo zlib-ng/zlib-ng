@@ -194,7 +194,7 @@ const uint32_t * ZEXPORT get_crc_table(void) {
 #define DO4 DO1; DO1; DO1; DO1
 
 /* ========================================================================= */
-uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, uInt len) {
+uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, unsigned int len) {
     if (buf == Z_NULL) return 0;
 
 #ifdef DYNAMIC_CRC_TABLE

@@ -12,10 +12,10 @@
 #include "match.h"
 
 struct match {
-    uInt match_start;
-    uInt match_length;
-    uInt strstart;
-    uInt orgstart;
+    unsigned int match_start;
+    unsigned int match_length;
+    unsigned int strstart;
+    unsigned int orgstart;
 };
 
 #define MAX_DIST2  ((1 << MAX_WBITS) - MIN_LOOKAHEAD)

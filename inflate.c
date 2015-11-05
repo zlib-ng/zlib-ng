@@ -1237,7 +1237,7 @@ int ZEXPORT inflateEnd(z_stream *strm) {
     return Z_OK;
 }
 
-int ZEXPORT inflateGetDictionary(z_stream *strm, unsigned char *dictionary, uInt *dictLength) {
+int ZEXPORT inflateGetDictionary(z_stream *strm, unsigned char *dictionary, unsigned int *dictLength) {
     struct inflate_state *state;
 
     /* check state */
@@ -1255,7 +1255,7 @@ int ZEXPORT inflateGetDictionary(z_stream *strm, unsigned char *dictionary, uInt
     return Z_OK;
 }
 
-int ZEXPORT inflateSetDictionary(z_stream *strm, const unsigned char *dictionary, uInt dictLength) {
+int ZEXPORT inflateSetDictionary(z_stream *strm, const unsigned char *dictionary, unsigned int dictLength) {
     struct inflate_state *state;
     unsigned long dictid;
     int ret;

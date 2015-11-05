@@ -79,7 +79,7 @@ block_state deflate_slow(deflate_state *s, int flush) {
          * match is not better, output the previous match:
          */
         if (s->prev_length >= MIN_MATCH && s->match_length <= s->prev_length) {
-            uInt max_insert = s->strstart + s->lookahead - MIN_MATCH;
+            unsigned int max_insert = s->strstart + s->lookahead - MIN_MATCH;
             /* Do not insert strings in hash table beyond this. */
 
             check_match(s, s->strstart-1, s->prev_match, s->prev_length);
@@ -105,8 +105,8 @@ block_state deflate_slow(deflate_state *s, int flush) {
             s->strstart++;
 #else
             {
-                uInt mov_fwd = s->prev_length - 2;
-                uInt insert_cnt = mov_fwd;
+                unsigned int mov_fwd = s->prev_length - 2;
+                unsigned int insert_cnt = mov_fwd;
                 if (unlikely(insert_cnt > max_insert - s->strstart))
                     insert_cnt = max_insert - s->strstart;
 

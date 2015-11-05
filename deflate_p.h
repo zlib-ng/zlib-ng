@@ -32,9 +32,9 @@ void flush_pending(z_stream *strm);
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
 #ifdef X86_SSE4_2_CRC_HASH
-local inline Pos insert_string_sse(deflate_state *const s, const Pos str, uInt count) {
+local inline Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count) {
     Pos ret = 0;
-    uInt idx;
+    unsigned int idx;
     unsigned *ip, val, h = 0;
 
     for (idx = 0; idx < count; idx++) {
@@ -62,9 +62,9 @@ local inline Pos insert_string_sse(deflate_state *const s, const Pos str, uInt c
 }
 #endif
 
-local inline Pos insert_string_c(deflate_state *const s, const Pos str, uInt count) {
+local inline Pos insert_string_c(deflate_state *const s, const Pos str, unsigned int count) {
     Pos ret;
-    uInt idx;
+    unsigned int idx;
 
     for (idx = 0; idx < count; idx++) {
         UPDATE_HASH(s, s->ins_h, str+idx);
@@ -83,7 +83,7 @@ local inline Pos insert_string(deflate_state *const s, const Pos str) {
 }
 
 #ifndef NOT_TWEAK_COMPILER
-local inline void bulk_insert_str(deflate_state *const s, Pos startpos, uInt count) {
+local inline void bulk_insert_str(deflate_state *const s, Pos startpos, unsigned int count) {
 # ifdef X86_SSE4_2_CRC_HASH
     if (x86_cpu_has_sse42) {
         insert_string_sse(s, startpos, count);
@@ -103,7 +103,7 @@ local inline void bulk_insert_str(deflate_state *const s, Pos startpos, uInt cou
     _tr_flush_block(s, (s->block_start >= 0L ? \
                    (char *)&s->window[(unsigned)s->block_start] : \
                    (char *)Z_NULL), \
-                   (ulg)((long)s->strstart - s->block_start), \
+                   (unsigned long)((long)s->strstart - s->block_start), \
                    (last)); \
     s->block_start = s->strstart; \
     flush_pending(s->strm); \

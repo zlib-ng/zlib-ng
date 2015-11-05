@@ -190,7 +190,7 @@ int gzread(gzFile gz, void *buf, unsigned len)
             if (got == 0)
                 break;
             strm->next_in = gz->buf;
-            strm->avail_in = (uInt) got;
+            strm->avail_in = (unsigned int) got;
         }
         ret = inflate(strm, Z_NO_FLUSH);
         if (ret == Z_DATA_ERROR) {
