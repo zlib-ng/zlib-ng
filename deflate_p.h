@@ -59,7 +59,7 @@ local inline Pos insert_string_sse(deflate_state *const s, const Pos str, uInt c
 #endif
 
 local inline Pos insert_string_c(deflate_state *const s, const Pos str, uInt count) {
-    Pos ret;
+    Pos ret = 0;
     uInt idx;
 
     for (idx = 0; idx < count; idx++) {
