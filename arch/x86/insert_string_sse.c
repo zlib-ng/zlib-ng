@@ -16,7 +16,7 @@
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
 #ifdef X86_SSE4_2_CRC_HASH
-extern inline Pos insert_string_sse(deflate_state *const s, const Pos str, uInt count) {
+Pos insert_string_sse(deflate_state *const s, const Pos str, uInt count) {
     Pos ret = 0;
     uInt idx;
     unsigned *ip, val, h = 0;
