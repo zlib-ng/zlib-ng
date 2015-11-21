@@ -92,11 +92,11 @@ struct internal_state;
 typedef struct z_stream_s {
     const unsigned char   *next_in;   /* next input byte */
     uint32_t              avail_in;   /* number of bytes available at next_in */
-    uint32_t              total_in;   /* total number of input bytes read so far */
+    size_t                total_in;   /* total number of input bytes read so far */
 
     unsigned char         *next_out;  /* next output byte should be put there */
     uint32_t              avail_out;  /* remaining free space at next_out */
-    uint32_t              total_out;  /* total number of bytes output so far */
+    size_t                total_out;  /* total number of bytes output so far */
 
     const char            *msg;       /* last error message, NULL if no error */
     struct internal_state *state;     /* not visible by applications */
@@ -1148,7 +1148,7 @@ ZEXTERN unsigned long ZEXPORT zlibCompileFlags(void);
    you need special options.
 */
 
-ZEXTERN int ZEXPORT compress(unsigned char *dest, unsigned long *destLen, const unsigned char *source, unsigned long sourceLen);
+ZEXTERN int ZEXPORT compress(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen);
 /*
      Compresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
@@ -1162,8 +1162,8 @@ ZEXTERN int ZEXPORT compress(unsigned char *dest, unsigned long *destLen, const 
    buffer.
 */
 
-ZEXTERN int ZEXPORT compress2(unsigned char *dest, unsigned long *destLen, const unsigned char *source,
-                              unsigned long sourceLen, int level);
+ZEXTERN int ZEXPORT compress2(unsigned char *dest, size_t *destLen, const unsigned char *source,
+                              size_t sourceLen, int level);
 /*
      Compresses the source buffer into the destination buffer.  The level
    parameter has the same meaning as in deflateInit.  sourceLen is the byte
@@ -1177,14 +1177,14 @@ ZEXTERN int ZEXPORT compress2(unsigned char *dest, unsigned long *destLen, const
    Z_STREAM_ERROR if the level parameter is invalid.
 */
 
-ZEXTERN unsigned long ZEXPORT compressBound(unsigned long sourceLen);
+ZEXTERN size_t ZEXPORT compressBound(size_t sourceLen);
 /*
      compressBound() returns an upper bound on the compressed size after
    compress() or compress2() on sourceLen bytes.  It would be used before a
    compress() or compress2() call to allocate the destination buffer.
 */
 
-ZEXTERN int ZEXPORT uncompress(unsigned char *dest, unsigned long *destLen, const unsigned char *source, unsigned long sourceLen);
+ZEXTERN int ZEXPORT uncompress(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen);
 /*
      Decompresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
