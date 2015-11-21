@@ -240,7 +240,7 @@ const char *gzerror(gzFile gz, int *err)
     return gz->msg;
 }
 
-#endif 
+#endif
 
 char *prog;
 

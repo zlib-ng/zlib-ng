@@ -304,7 +304,7 @@ typedef enum {
  *  - no instructions for extracting bytes from short.
  *  - needs less registers
  *  - stores to adjacent bytes are merged into a single store, albeit at the
- *    cost of penalty of potentially unaligned access. 
+ *    cost of penalty of potentially unaligned access.
  */
 #define put_short(s, w) { \
     s->pending += 2; \

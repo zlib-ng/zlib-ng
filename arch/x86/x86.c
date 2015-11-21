@@ -4,7 +4,7 @@
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
  * Author:
  *  Jim Kukunas
- * 
+ *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
