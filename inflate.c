@@ -1337,7 +1337,7 @@ local unsigned syncsearch(unsigned *have, const unsigned char *buf, unsigned len
 
 int ZEXPORT inflateSync(z_stream *strm) {
     unsigned len;               /* number of bytes to look at or looked at */
-    unsigned long in, out;      /* temporary to save total_in and total_out */
+    size_t in, out;             /* temporary to save total_in and total_out */
     unsigned char buf[4];       /* to restore bit buffer to byte string */
     struct inflate_state *state;
 

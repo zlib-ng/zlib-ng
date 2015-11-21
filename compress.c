@@ -19,12 +19,12 @@
    memory, Z_BUF_ERROR if there was not enough room in the output buffer,
    Z_STREAM_ERROR if the level parameter is invalid.
 */
-int ZEXPORT compress2(unsigned char *dest, unsigned long *destLen, const unsigned char *source,
-                        unsigned long sourceLen, int level) {
+int ZEXPORT compress2(unsigned char *dest, size_t *destLen, const unsigned char *source,
+                        size_t sourceLen, int level) {
     z_stream stream;
     int err;
     const unsigned int max = (unsigned int)0 - 1;
-    unsigned long left;
+    size_t left;
 
     left = *destLen;
     *destLen = 0;
@@ -61,7 +61,7 @@ int ZEXPORT compress2(unsigned char *dest, unsigned long *destLen, const unsigne
 
 /* ===========================================================================
  */
-int ZEXPORT compress(unsigned char *dest, unsigned long *destLen, const unsigned char *source, unsigned long sourceLen) {
+int ZEXPORT compress(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen) {
     return compress2(dest, destLen, source, sourceLen, Z_DEFAULT_COMPRESSION);
 }
 
@@ -69,7 +69,6 @@ int ZEXPORT compress(unsigned char *dest, unsigned long *destLen, const unsigned
      If the default memLevel or windowBits for deflateInit() is changed, then
    this function needs to be updated.
  */
-unsigned long ZEXPORT compressBound(unsigned long sourceLen) {
-    return sourceLen + (sourceLen >> 12) + (sourceLen >> 14) +
-           (sourceLen >> 25) + 13;
+size_t ZEXPORT compressBound(size_t sourceLen) {
+    return sourceLen + (sourceLen >> 12) + (sourceLen >> 14) + (sourceLen >> 25) + 13;
 }

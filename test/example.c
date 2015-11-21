@@ -28,30 +28,30 @@ const char hello[] = "hello, hello!";
 const char dictionary[] = "hello";
 unsigned long dictId; /* Adler32 value of the dictionary */
 
-void test_deflate       (unsigned char *compr, unsigned long comprLen);
-void test_inflate       (unsigned char *compr, unsigned long comprLen, unsigned char *uncompr, unsigned long uncomprLen);
-void test_large_deflate (unsigned char *compr, unsigned long comprLen, unsigned char *uncompr, unsigned long uncomprLen);
-void test_large_inflate (unsigned char *compr, unsigned long comprLen, unsigned char *uncompr, unsigned long uncomprLen);
-void test_flush         (unsigned char *compr, unsigned long *comprLen);
-void test_sync          (unsigned char *compr, unsigned long comprLen, unsigned char *uncompr, unsigned long uncomprLen);
-void test_dict_deflate  (unsigned char *compr, unsigned long comprLen);
-void test_dict_inflate  (unsigned char *compr, unsigned long comprLen, unsigned char *uncompr, unsigned long uncomprLen);
+void test_deflate       (unsigned char *compr, size_t comprLen);
+void test_inflate       (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
+void test_large_deflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
+void test_large_inflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
+void test_flush         (unsigned char *compr, size_t *comprLen);
+void test_sync          (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
+void test_dict_deflate  (unsigned char *compr, size_t comprLen);
+void test_dict_inflate  (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
 int  main               (int argc, char *argv[]);
 
 
 static alloc_func zalloc = (alloc_func)0;
 static free_func zfree = (free_func)0;
 
-void test_compress      (unsigned char *compr, unsigned long comprLen,
-                            unsigned char *uncompr, unsigned long uncomprLen);
+void test_compress      (unsigned char *compr, size_t comprLen,
+                            unsigned char *uncompr, size_t uncomprLen);
 
 /* ===========================================================================
  * Test compress() and uncompress()
  */
-void test_compress(unsigned char *compr, unsigned long comprLen, unsigned char *uncompr, unsigned long uncomprLen)
+void test_compress(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen)
 {
     int err;
-    unsigned long len = (unsigned long)strlen(hello)+1;
+    size_t len = strlen(hello)+1;
 
     err = compress(compr, &comprLen, (const unsigned char*)hello, len);
     CHECK_ERR(err, "compress");
@@ -159,7 +159,7 @@ void test_gzio(const char *fname, unsigned char *uncompr, unsigned long uncomprL
 /* ===========================================================================
  * Test deflate() with small buffers
  */
-void test_deflate(unsigned char *compr, unsigned long comprLen)
+void test_deflate(unsigned char *compr, size_t comprLen)
 {
     z_stream c_stream; /* compression stream */
     int err;
@@ -195,7 +195,7 @@ void test_deflate(unsigned char *compr, unsigned long comprLen)
 /* ===========================================================================
  * Test inflate() with small buffers
  */
-void test_inflate(unsigned char *compr, unsigned long comprLen, unsigned char *uncompr, unsigned long uncomprLen)
+void test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen)
 {
     int err;
     z_stream d_stream; /* decompression stream */
@@ -234,7 +234,7 @@ void test_inflate(unsigned char *compr, unsigned long comprLen, unsigned char *u
 /* ===========================================================================
  * Test deflate() with large buffers and dynamic change of compression level
  */
-void test_large_deflate(unsigned char *compr, unsigned long comprLen, unsigned char *uncompr, unsigned long uncomprLen)
+void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen)
 {
     z_stream c_stream; /* compression stream */
     int err;
@@ -287,7 +287,7 @@ void test_large_deflate(unsigned char *compr, unsigned long comprLen, unsigned c
 /* ===========================================================================
  * Test inflate() with large buffers
  */
-void test_large_inflate(unsigned char *compr, unsigned long comprLen, unsigned char *uncompr, unsigned long uncomprLen)
+void test_large_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen)
 {
     int err;
     z_stream d_stream; /* decompression stream */
@@ -316,7 +316,7 @@ void test_large_inflate(unsigned char *compr, unsigned long comprLen, unsigned c
     CHECK_ERR(err, "inflateEnd");
 
     if (d_stream.total_out != 2*uncomprLen + comprLen/2) {
-        fprintf(stderr, "bad large inflate: %ld\n", d_stream.total_out);
+        fprintf(stderr, "bad large inflate: %zu\n", d_stream.total_out);
         exit(1);
     } else {
         printf("large_inflate(): OK\n");
@@ -326,7 +326,7 @@ void test_large_inflate(unsigned char *compr, unsigned long comprLen, unsigned c
 /* ===========================================================================
  * Test deflate() with full flush
  */
-void test_flush(unsigned char *compr, unsigned long *comprLen)
+void test_flush(unsigned char *compr, size_t *comprLen)
 {
     z_stream c_stream; /* compression stream */
     int err;
@@ -362,7 +362,7 @@ void test_flush(unsigned char *compr, unsigned long *comprLen)
 /* ===========================================================================
  * Test inflateSync()
  */
-void test_sync(unsigned char *compr, unsigned long comprLen, unsigned char *uncompr, unsigned long uncomprLen)
+void test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen)
 {
     int err;
     z_stream d_stream; /* decompression stream */
@@ -404,7 +404,7 @@ void test_sync(unsigned char *compr, unsigned long comprLen, unsigned char *unco
 /* ===========================================================================
  * Test deflate() with preset dictionary
  */
-void test_dict_deflate(unsigned char *compr, unsigned long comprLen)
+void test_dict_deflate(unsigned char *compr, size_t comprLen)
 {
     z_stream c_stream; /* compression stream */
     int err;
@@ -439,7 +439,7 @@ void test_dict_deflate(unsigned char *compr, unsigned long comprLen)
 /* ===========================================================================
  * Test inflate() with a preset dictionary
  */
-void test_dict_inflate(unsigned char *compr, unsigned long comprLen, unsigned char *uncompr, unsigned long uncomprLen)
+void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen)
 {
     int err;
     z_stream d_stream; /* decompression stream */
@@ -491,8 +491,8 @@ void test_dict_inflate(unsigned char *compr, unsigned long comprLen, unsigned ch
 int main(int argc, char *argv[])
 {
     unsigned char *compr, *uncompr;
-    unsigned long comprLen = 10000*sizeof(int); /* don't overflow on MSDOS */
-    unsigned long uncomprLen = comprLen;
+    size_t comprLen = 10000*sizeof(int); /* don't overflow on MSDOS */
+    size_t uncomprLen = comprLen;
     static const char* myVersion = ZLIB_VERSION;
 
     if (zlibVersion()[0] != myVersion[0]) {

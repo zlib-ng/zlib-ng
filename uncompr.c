@@ -22,12 +22,12 @@
    buffer, or Z_DATA_ERROR if the input data was corrupted, including if the
    input data is an incomplete zlib stream.
 */
-int ZEXPORT uncompress(unsigned char *dest, unsigned long *destLen, const unsigned char *source, unsigned long sourceLen) {
+int ZEXPORT uncompress(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen) {
     z_stream stream;
     int err;
-    const uInt max = (uInt)0 - 1;
-    uLong left;
-    Byte buf[1];    /* for detection of incomplete stream when *destLen == 0 */
+    const unsigned int max = (unsigned int)0 - 1;
+    size_t left;
+    unsigned char buf[1];    /* for detection of incomplete stream when *destLen == 0 */
 
     if (*destLen) {
         left = *destLen;
