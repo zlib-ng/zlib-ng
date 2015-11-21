@@ -35,6 +35,10 @@
 #  include <io.h>
 #endif
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+#  define WIDECHAR
+#endif
+
 #ifdef WINAPI_FAMILY
 #  define open _open
 #  define read _read
@@ -114,7 +118,7 @@ typedef struct {
     char *path;             /* path or fd for error messages */
     unsigned size;          /* buffer size, zero if not allocated yet */
     unsigned want;          /* requested buffer size, default is GZBUFSIZE */
-    unsigned char *in;      /* input buffer */
+    unsigned char *in;      /* input buffer (double-sized when writing) */
     unsigned char *out;     /* output buffer (double-sized when reading) */
     int direct;             /* 0 if processing gzip, 1 if transparent */
         /* just for reading */

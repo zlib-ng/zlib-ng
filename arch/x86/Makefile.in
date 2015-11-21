@@ -10,7 +10,7 @@ INCLUDES=
 SRCDIR=
 SRCTOP=
 
-all: x86.o x86.lo fill_window_sse.o fill_window_sse.lo deflate_quick.o deflate_quick.lo crc_folding.o crc_folding.lo
+all: x86.o x86.lo fill_window_sse.o fill_window_sse.lo deflate_quick.o deflate_quick.lo insert_string_sse.o insert_string_sse.lo crc_folding.o crc_folding.lo
 
 x86.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86.c
@@ -29,6 +29,12 @@ deflate_quick.o:
 
 deflate_quick.lo:
 	$(CC) $(SFLAGS) -msse4 -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/deflate_quick.c
+
+insert_string_sse.o:
+	$(CC) $(CFLAGS) -msse4 $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
+
+insert_string_sse.lo:
+	$(CC) $(SFLAGS) -msse4 -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
 
 crc_folding.o:
 	$(CC) $(CFLAGS) -mpclmul -msse4 $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c

@@ -131,7 +131,7 @@ local gzFile gz_open(const void *path, int fd, const char *mode) {
     }
 
     /* save the path name for error messages */
-#if defined(_WIN32) || defined(__CYGWIN__)
+#ifdef WIDECHAR
     if (fd == -2) {
         len = wcstombs(NULL, path, 0);
         if (len == (size_t)-1)
@@ -144,7 +144,7 @@ local gzFile gz_open(const void *path, int fd, const char *mode) {
         free(state);
         return NULL;
     }
-#if defined(_WIN32) || defined(__CYGWIN__)
+#ifdef WIDECHAR
     if (fd == -2)
         if (len) {
             wcstombs(state->path, path, len + 1);
@@ -189,8 +189,10 @@ local gzFile gz_open(const void *path, int fd, const char *mode) {
         free(state);
         return NULL;
     }
-    if (state->mode == GZ_APPEND)
+    if (state->mode == GZ_APPEND) {
+        LSEEK(state->fd, 0, SEEK_END);  /* so gzoffset() is correct */
         state->mode = GZ_WRITE;         /* simplify later checks */
+    }
 
     /* save the current position for rewinding (only if reading) */
     if (state->mode == GZ_READ) {
@@ -229,7 +231,7 @@ gzFile ZEXPORT gzdopen(int fd, const char *mode) {
 }
 
 /* -- see zlib.h -- */
-#if defined(_WIN32) || defined(__CYGWIN__)
+#ifdef WIDECHAR
 gzFile ZEXPORT gzopen_w(const wchar_t *path, const char *mode) {
     return gz_open(path, -2, mode);
 }
@@ -251,6 +253,8 @@ int ZEXPORT gzbuffer(gzFile file, unsigned size) {
         return -1;
 
     /* check and set requested size */
+    if ((size << 1) < size)
+        return -1;              /* need to be able to double it */
     if (size < 2)
         size = 2;               /* need two bytes to check magic header */
     state->want = size;

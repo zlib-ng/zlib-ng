@@ -14,12 +14,51 @@
  */
 
 #include <immintrin.h>
+#ifdef _MSC_VER
+#  include <nmmintrin.h>
+#endif
 #include "deflate.h"
 
 extern void fill_window_sse(deflate_state *s);
 extern void flush_pending(z_stream *strm);
 
 local inline long compare258(const unsigned char *const src0, const unsigned char *const src1) {
+#ifdef _MSC_VER
+    long cnt;
+
+    cnt = 0;
+    do {
+#define mode  _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY
+
+        int ret;
+        __m128i xmm_src0, xmm_src1;
+
+        xmm_src0 = _mm_loadu_si128((__m128i *)(src0 + cnt));
+        xmm_src1 = _mm_loadu_si128((__m128i *)(src1 + cnt));
+        ret = _mm_cmpestri(xmm_src0, 16, xmm_src1, 16, mode);
+        if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, mode)) {
+            cnt += ret;
+	    break;
+        }
+        cnt += 16;
+
+        xmm_src0 = _mm_loadu_si128((__m128i *)(src0 + cnt));
+        xmm_src1 = _mm_loadu_si128((__m128i *)(src1 + cnt));
+        ret = _mm_cmpestri(xmm_src0, 16, xmm_src1, 16, mode);
+        if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, mode)) {
+            cnt += ret;
+	    break;
+        }
+        cnt += 16;
+    } while (cnt < 256);
+
+    if (*(unsigned short *)(src0 + cnt) == *(unsigned short *)(src1 + cnt)) {
+        cnt += 2;
+    } else if (*(src0 + cnt) == *(src1 + cnt)) {
+        cnt++;
+    }
+    return cnt;
+#else
     uintptr_t ax, dx, cx;
     __m128i xmm_src0;
 
@@ -69,6 +108,7 @@ local inline long compare258(const unsigned char *const src0, const unsigned cha
     : "cc"
     );
     return ax - 16;
+#endif
 }
 
 local const unsigned quick_len_codes[MAX_MATCH-MIN_MATCH+1];
@@ -136,12 +176,16 @@ local inline Pos quick_insert_string(deflate_state *const s, const Pos str) {
     Pos ret;
     unsigned h = 0;
 
+#ifdef _MSC_VER
+    h = _mm_crc32_u32(h, *(unsigned *)(s->window + str));
+#else
     __asm__ __volatile__ (
         "crc32l (%[window], %[str], 1), %0\n\t"
     : "+r" (h)
     : [window] "r" (s->window),
       [str] "r" ((uintptr_t)str)
     );
+#endif
 
     ret = s->head[h & s->hash_mask];
     s->head[h & s->hash_mask] = str;
@@ -196,7 +240,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     if (flush == Z_FINISH) {
         static_emit_end_block(s, 1);
         if (s->strm->avail_out == 0)
-            return finish_started;
+            return s->strm->avail_in == 0 ? finish_started : need_more;
         else
             return finish_done;
     }

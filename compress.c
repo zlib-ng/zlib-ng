@@ -1,5 +1,5 @@
 /* compress.c -- compress a memory buffer
- * Copyright (C) 1995-2005 Jean-loup Gailly.
+ * Copyright (C) 1995-2005, 2014 Jean-loup Gailly, Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -23,13 +23,11 @@ int ZEXPORT compress2(unsigned char *dest, unsigned long *destLen, const unsigne
                         unsigned long sourceLen, int level) {
     z_stream stream;
     int err;
+    const unsigned int max = (unsigned int)0 - 1;
+    unsigned long left;
 
-    stream.next_in = (const unsigned char *)source;
-    stream.avail_in = (unsigned int)sourceLen;
-    stream.next_out = dest;
-    stream.avail_out = (unsigned int)*destLen;
-    if ((unsigned long)stream.avail_out != *destLen)
-        return Z_BUF_ERROR;
+    left = *destLen;
+    *destLen = 0;
 
     stream.zalloc = (alloc_func)0;
     stream.zfree = (free_func)0;
@@ -39,15 +37,26 @@ int ZEXPORT compress2(unsigned char *dest, unsigned long *destLen, const unsigne
     if (err != Z_OK)
         return err;
 
-    err = deflate(&stream, Z_FINISH);
-    if (err != Z_STREAM_END) {
-        deflateEnd(&stream);
-        return err == Z_OK ? Z_BUF_ERROR : err;
-    }
-    *destLen = stream.total_out;
+    stream.next_out = dest;
+    stream.avail_out = 0;
+    stream.next_in = (const unsigned char *)source;
+    stream.avail_in = 0;
 
-    err = deflateEnd(&stream);
-    return err;
+    do {
+        if (stream.avail_out == 0) {
+            stream.avail_out = left > (unsigned long)max ? max : (unsigned int)left;
+            left -= stream.avail_out;
+        }
+        if (stream.avail_in == 0) {
+            stream.avail_in = sourceLen > (unsigned long)max ? max : (unsigned int)sourceLen;
+            sourceLen -= stream.avail_in;
+        }
+        err = deflate(&stream, sourceLen ? Z_NO_FLUSH : Z_FINISH);
+    } while (err == Z_OK);
+
+    *destLen = stream.total_out;
+    deflateEnd(&stream);
+    return err == Z_STREAM_END ? Z_OK : err;
 }
 
 /* ===========================================================================
