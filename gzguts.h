@@ -35,7 +35,7 @@
 #  include <io.h>
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW__)
 #  define WIDECHAR
 #endif
 
@@ -47,7 +47,7 @@
 #endif
 
 /* In Win32, vsnprintf is available as the "non-ANSI" _vsnprintf. */
-#if !defined(STDC99) && !defined(__CYGWIN__) && defined(WIN32)
+#if !defined(STDC99) && !defined(__CYGWIN__) && !defined(__MINGW__) && defined(WIN32)
 #  if !defined(vsnprintf)
 #    if !defined(_MSC_VER) || ( defined(_MSC_VER) && _MSC_VER < 1500 )
 #       define vsnprintf _vsnprintf
