@@ -293,7 +293,7 @@ clean:
 	   _match.s maketree
 	rm -rf objs
 	rm -f *.gcda *.gcno *.gcov
-	rm -f a.out
+	rm -f a.out a.exe
 
 maintainer-clean: distclean
 distclean: clean
