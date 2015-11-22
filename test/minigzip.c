@@ -49,7 +49,8 @@
 #endif
 #define SUFFIX_LEN (sizeof(GZ_SUFFIX)-1)
 
-#define BUFLEN      16384
+#define BUFLEN      16384        /* read buffer size */
+#define BUFLENW     (BUFLEN * 3) /* write buffer size */
 #define MAX_NAME_LEN 1024
 
 #ifndef WITH_GZFILEOP
@@ -111,7 +112,7 @@ gzFile gz_open(const char *path, int fd, const char *mode)
     gz->strm.zalloc = myalloc;
     gz->strm.zfree = myfree;
     gz->strm.opaque = Z_NULL;
-    gz->buf = malloc(BUFLEN);
+    gz->buf = malloc(gz->write ? BUFLENW : BUFLEN);
 
     if (gz->buf == NULL) {
         free(gz);
@@ -161,9 +162,9 @@ int gzwrite(gzFile gz, const void *buf, unsigned len)
     strm->avail_in = len;
     do {
         strm->next_out = gz->buf;
-        strm->avail_out = BUFLEN;
+        strm->avail_out = BUFLENW;
         (void)deflate(strm, Z_NO_FLUSH);
-        fwrite(gz->buf, 1, BUFLEN - strm->avail_out, gz->file);
+        fwrite(gz->buf, 1, BUFLENW - strm->avail_out, gz->file);
     } while (strm->avail_out == 0);
     return len;
 }
@@ -216,9 +217,9 @@ int gzclose(gzFile gz)
         strm->avail_in = 0;
         do {
             strm->next_out = gz->buf;
-            strm->avail_out = BUFLEN;
+            strm->avail_out = BUFLENW;
             (void)deflate(strm, Z_FINISH);
-            fwrite(gz->buf, 1, BUFLEN - strm->avail_out, gz->file);
+            fwrite(gz->buf, 1, BUFLENW - strm->avail_out, gz->file);
         } while (strm->avail_out == 0);
         deflateEnd(strm);
     }
@@ -331,7 +332,7 @@ int gz_compress_mmap(FILE   *in, gzFile out)
  */
 void gz_uncompress(gzFile in, FILE   *out)
 {
-    char buf[BUFLEN];
+    char buf[BUFLENW];
     int len;
     int err;
 
