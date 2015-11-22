@@ -52,11 +52,11 @@ int ZEXPORT uncompress(unsigned char *dest, size_t *destLen, const unsigned char
 
     do {
         if (stream.avail_out == 0) {
-            stream.avail_out = left > (uLong)max ? max : (uInt)left;
+            stream.avail_out = left > (unsigned long)max ? max : (unsigned int)left;
             left -= stream.avail_out;
         }
         if (stream.avail_in == 0) {
-            stream.avail_in = sourceLen > (uLong)max ? max : (uInt)sourceLen;
+            stream.avail_in = sourceLen > (unsigned long)max ? max : (unsigned int)sourceLen;
             sourceLen -= stream.avail_in;
         }
         err = inflate(&stream, Z_NO_FLUSH);
