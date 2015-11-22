@@ -16,11 +16,11 @@
 #endif
 
 /* Local functions */
-local void gz_reset(gz_statep);
-local gzFile gz_open(const void *, int, const char *);
+static void gz_reset(gz_statep);
+static gzFile gz_open(const void *, int, const char *);
 
 /* Reset gzip file state */
-local void gz_reset(gz_statep state) {
+static void gz_reset(gz_statep state) {
     state->x.have = 0;              /* no output data available */
     if (state->mode == GZ_READ) {   /* for reading ... */
         state->eof = 0;             /* not at end of file */
@@ -34,7 +34,7 @@ local void gz_reset(gz_statep state) {
 }
 
 /* Open a gzip file either by name or file descriptor. */
-local gzFile gz_open(const void *path, int fd, const char *mode) {
+static gzFile gz_open(const void *path, int fd, const char *mode) {
     gz_statep state;
     size_t len;
     int oflag;

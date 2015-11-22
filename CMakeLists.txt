@@ -78,6 +78,39 @@ endif()
 # Check for unistd.h
 #
 check_include_file(unistd.h Z_HAVE_UNISTD_H)
+check_include_file(stdarg.h Z_HAVE_STDARG_H)
+
+#
+# Check if we can hide zlib internal symbols that are linked between separate source files
+#
+check_c_source_compiles(
+    "#define ZLIB_INTERNAL __attribute__((visibility (\"hidden\")))
+    int ZLIB_INTERNAL foo;
+    int main()
+    {
+      return 0;
+    }"
+    HAVE_ATTRIBUTE_VISIBILITY_HIDDEN FAIL_REGEX "not supported")
+if(HAVE_ATTRIBUTE_VISIBILITY_HIDDEN)
+    add_definitions(-DHAVE_HIDDEN)
+endif()
+
+#
+# check for __builtin_ctzl() support in the compiler
+#
+check_c_source_compiles(
+    "int main(void)
+    {
+        unsigned int zero = 0;
+        long test = __builtin_ctzl(zero);
+        (void)test;
+        return 0;
+    }"
+    HAVE_BUILTIN_CTZL
+)
+if(HAVE_BUILTIN_CTZL)
+    add_definitions(-DHAVE_BUILTIN_CTZL)
+endif()
 
 if(MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")

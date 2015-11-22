@@ -69,17 +69,17 @@ typedef block_state (*compress_func) (deflate_state *s, int flush);
 /* Compression function. Returns the block state after the call. */
 
 void fill_window                 (deflate_state *s);
-local block_state deflate_stored (deflate_state *s, int flush);
+static block_state deflate_stored (deflate_state *s, int flush);
 block_state deflate_fast         (deflate_state *s, int flush);
 block_state deflate_quick        (deflate_state *s, int flush);
 #ifdef MEDIUM_STRATEGY
 block_state deflate_medium       (deflate_state *s, int flush);
 #endif
 block_state deflate_slow         (deflate_state *s, int flush);
-local block_state deflate_rle    (deflate_state *s, int flush);
-local block_state deflate_huff   (deflate_state *s, int flush);
-local void lm_init               (deflate_state *s);
-local void putShortMSB           (deflate_state *s, uint16_t b);
+static block_state deflate_rle   (deflate_state *s, int flush);
+static block_state deflate_huff  (deflate_state *s, int flush);
+static void lm_init              (deflate_state *s);
+static void putShortMSB          (deflate_state *s, uint16_t b);
 ZLIB_INTERNAL void flush_pending (z_stream *strm);
 ZLIB_INTERNAL int read_buf       (z_stream *strm, unsigned char *buf, unsigned size);
 
@@ -107,7 +107,7 @@ typedef struct config_s {
     compress_func func;
 } config;
 
-local const config configuration_table[10] = {
+static const config configuration_table[10] = {
 /*      good lazy nice chain */
 /* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
 
@@ -541,7 +541,7 @@ unsigned long ZEXPORT deflateBound(z_stream *strm, unsigned long sourceLen) {
  * IN assertion: the stream state is correct and there is enough room in
  * pending_buf.
  */
-local void putShortMSB(deflate_state *s, uint16_t b) {
+static void putShortMSB(deflate_state *s, uint16_t b) {
     put_byte(s, (unsigned char)(b >> 8));
     put_byte(s, (unsigned char)(b & 0xff));
 }
@@ -997,7 +997,7 @@ ZLIB_INTERNAL int read_buf(z_stream *strm, unsigned char *buf, unsigned size) {
 /* ===========================================================================
  * Initialize the "longest match" routines for a new zlib stream
  */
-local void lm_init(deflate_state *s) {
+static void lm_init(deflate_state *s) {
     s->window_size = (unsigned long)2L*s->w_size;
 
     CLEAR_HASH(s);
@@ -1241,7 +1241,7 @@ void fill_window_c(deflate_state *s) {
  * NOTE: this function should be optimized to avoid extra copying from
  * window to pending_buf.
  */
-local block_state deflate_stored(deflate_state *s, int flush) {
+static block_state deflate_stored(deflate_state *s, int flush) {
     /* Stored blocks are limited to 0xffff bytes, pending_buf is limited
      * to pending_buf_size, and each stored block has a 5 byte header:
      */
@@ -1301,7 +1301,7 @@ local block_state deflate_stored(deflate_state *s, int flush) {
  * one.  Do not maintain a hash table.  (It will be regenerated if this run of
  * deflate switches away from Z_RLE.)
  */
-local block_state deflate_rle(deflate_state *s, int flush) {
+static block_state deflate_rle(deflate_state *s, int flush) {
     int bflush;                     /* set if current block must be flushed */
     unsigned int prev;              /* byte at distance one to match */
     unsigned char *scan, *strend;   /* scan goes up to strend for length of run */
@@ -1373,7 +1373,7 @@ local block_state deflate_rle(deflate_state *s, int flush) {
  * For Z_HUFFMAN_ONLY, do not look for matches.  Do not maintain a hash table.
  * (It will be regenerated if this run of deflate switches away from Huffman.)
  */
-local block_state deflate_huff(deflate_state *s, int flush) {
+static block_state deflate_huff(deflate_state *s, int flush) {
     int bflush;             /* set if current block must be flushed */
 
     for (;;) {

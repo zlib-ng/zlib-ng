@@ -22,7 +22,7 @@
 extern void fill_window_sse(deflate_state *s);
 extern void flush_pending(z_stream *strm);
 
-local inline long compare258(const unsigned char *const src0, const unsigned char *const src1) {
+static inline long compare258(const unsigned char *const src0, const unsigned char *const src1) {
 #ifdef _MSC_VER
     long cnt;
 
@@ -111,10 +111,10 @@ local inline long compare258(const unsigned char *const src0, const unsigned cha
 #endif
 }
 
-local const unsigned quick_len_codes[MAX_MATCH-MIN_MATCH+1];
-local const unsigned quick_dist_codes[8192];
+static const unsigned quick_len_codes[MAX_MATCH-MIN_MATCH+1];
+static const unsigned quick_dist_codes[8192];
 
-local inline void quick_send_bits(deflate_state *const s, const int value, const int length) {
+static inline void quick_send_bits(deflate_state *const s, const int value, const int length) {
     unsigned code, out, w, b;
 
     out = s->bi_buf;
@@ -135,7 +135,7 @@ local inline void quick_send_bits(deflate_state *const s, const int value, const
     s->bi_valid = w - (b << 3);
 }
 
-local inline void static_emit_ptr(deflate_state *const s, const int lc, const unsigned dist) {
+static inline void static_emit_ptr(deflate_state *const s, const int lc, const unsigned dist) {
     unsigned code, len;
 
     code = quick_len_codes[lc] >> 8;
@@ -149,12 +149,12 @@ local inline void static_emit_ptr(deflate_state *const s, const int lc, const un
 
 const ct_data static_ltree[L_CODES+2];
 
-local inline void static_emit_lit(deflate_state *const s, const int lit) {
+static inline void static_emit_lit(deflate_state *const s, const int lit) {
     quick_send_bits(s, static_ltree[lit].Code, static_ltree[lit].Len);
     Tracecv(isgraph(lit), (stderr, " '%c' ", lit));
 }
 
-local void static_emit_tree(deflate_state *const s, const int flush) {
+static void static_emit_tree(deflate_state *const s, const int flush) {
     unsigned last;
 
     last = flush == Z_FINISH ? 1 : 0;
@@ -162,7 +162,7 @@ local void static_emit_tree(deflate_state *const s, const int flush) {
 }
 
 
-local void static_emit_end_block(deflate_state *const s, int last) {
+static void static_emit_end_block(deflate_state *const s, int last) {
     send_code(s, END_BLOCK, static_ltree);
 
     if (last)
@@ -172,7 +172,7 @@ local void static_emit_end_block(deflate_state *const s, int last) {
     flush_pending(s->strm);
 }
 
-local inline Pos quick_insert_string(deflate_state *const s, const Pos str) {
+static inline Pos quick_insert_string(deflate_state *const s, const Pos str) {
     Pos ret;
     unsigned h = 0;
 
@@ -252,7 +252,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     return block_done;
 }
 
-local const unsigned quick_len_codes[MAX_MATCH-MIN_MATCH+1] = {
+static const unsigned quick_len_codes[MAX_MATCH-MIN_MATCH+1] = {
     0x00004007, 0x00002007, 0x00006007, 0x00001007,
     0x00005007, 0x00003007, 0x00007007, 0x00000807,
     0x00004808, 0x0000c808, 0x00002808, 0x0000a808,
@@ -319,7 +319,7 @@ local const unsigned quick_len_codes[MAX_MATCH-MIN_MATCH+1] = {
     0x001c230d, 0x001d230d, 0x001e230d, 0x0000a308,
 };
 
-local const unsigned quick_dist_codes[8192] = {
+static const unsigned quick_dist_codes[8192] = {
     0x00000005, 0x00001005, 0x00000805, 0x00001805,
     0x00000406, 0x00002406, 0x00001406, 0x00003406,
     0x00000c07, 0x00002c07, 0x00004c07, 0x00006c07,

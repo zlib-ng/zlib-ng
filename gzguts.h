@@ -64,11 +64,6 @@
 #  define snprintf _snprintf
 #endif
 
-#ifndef local
-#  define local static
-#endif
-/* compile with -Dlocal if your debugger can't find static symbols */
-
 /* get errno and strerror definition */
 #ifndef NO_STRERROR
 #  include <errno.h>

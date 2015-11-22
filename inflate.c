@@ -92,12 +92,12 @@
 #endif
 
 /* function prototypes */
-local void fixedtables(struct inflate_state *state);
-local int updatewindow(z_stream *strm, const unsigned char *end, uint32_t copy);
+static void fixedtables(struct inflate_state *state);
+static int updatewindow(z_stream *strm, const unsigned char *end, uint32_t copy);
 #ifdef BUILDFIXED
     void makefixed(void);
 #endif
-local uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len);
+static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len);
 
 int ZEXPORT inflateResetKeep(z_stream *strm) {
     struct inflate_state *state;
@@ -232,7 +232,7 @@ int ZEXPORT inflatePrime(z_stream *strm, int bits, int value) {
    used for threaded applications, since the rewriting of the tables and virgin
    may not be thread-safe.
  */
-local void fixedtables(struct inflate_state *state) {
+static void fixedtables(struct inflate_state *state) {
 #ifdef BUILDFIXED
     static int virgin = 1;
     static code *lenfix, *distfix;
@@ -350,7 +350,7 @@ void makefixed(void) {
    output will fall in the output data, making match copies simpler and faster.
    The advantage may be dependent on the size of the processor's data caches.
  */
-local int updatewindow(z_stream *strm, const unsigned char *end, uint32_t copy) {
+static int updatewindow(z_stream *strm, const unsigned char *end, uint32_t copy) {
     struct inflate_state *state;
     uint32_t dist;
 
@@ -1316,7 +1316,7 @@ int ZEXPORT inflateGetHeader(z_stream *strm, gz_headerp head) {
    called again with more data and the *have state.  *have is initialized to
    zero for the first call.
  */
-local unsigned syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len) {
+static unsigned syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len) {
     uint32_t got;
     uint32_t next;
 

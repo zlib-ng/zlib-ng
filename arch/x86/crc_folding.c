@@ -54,7 +54,7 @@ ZLIB_INTERNAL void crc_fold_init(deflate_state *const s) {
     s->strm->adler = 0;
 }
 
-local void fold_1(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
+static void fold_1(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold4 = _mm_set_epi32(
             0x00000001, 0x54442bd4,
             0x00000001, 0xc6e41596);
@@ -77,7 +77,7 @@ local void fold_1(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, 
     *xmm_crc3 = _mm_castps_si128(ps_res);
 }
 
-local void fold_2(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
+static void fold_2(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold4 = _mm_set_epi32(
             0x00000001, 0x54442bd4,
             0x00000001, 0xc6e41596);
@@ -108,7 +108,7 @@ local void fold_2(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, 
     *xmm_crc3 = _mm_castps_si128(ps_res31);
 }
 
-local void fold_3(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
+static void fold_3(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold4 = _mm_set_epi32(
             0x00000001, 0x54442bd4,
             0x00000001, 0xc6e41596);
@@ -145,7 +145,7 @@ local void fold_3(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, 
     *xmm_crc3 = _mm_castps_si128(ps_res32);
 }
 
-local void fold_4(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
+static void fold_4(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold4 = _mm_set_epi32(
             0x00000001, 0x54442bd4,
             0x00000001, 0xc6e41596);
@@ -190,7 +190,7 @@ local void fold_4(deflate_state *const s, __m128i *xmm_crc0, __m128i *xmm_crc1, 
     *xmm_crc3 = _mm_castps_si128(ps_res3);
 }
 
-local const unsigned ALIGNED_(32) pshufb_shf_table[60] = {
+static const unsigned ALIGNED_(32) pshufb_shf_table[60] = {
     0x84838281, 0x88878685, 0x8c8b8a89, 0x008f8e8d, /* shl 15 (16 - 1)/shr1 */
     0x85848382, 0x89888786, 0x8d8c8b8a, 0x01008f8e, /* shl 14 (16 - 3)/shr2 */
     0x86858483, 0x8a898887, 0x8e8d8c8b, 0x0201008f, /* shl 13 (16 - 4)/shr3 */
@@ -208,7 +208,7 @@ local const unsigned ALIGNED_(32) pshufb_shf_table[60] = {
     0x0201008f, 0x06050403, 0x0a090807, 0x0e0d0c0b  /* shl  1 (16 -15)/shr15*/
 };
 
-local void partial_fold(deflate_state *const s, const size_t len, __m128i *xmm_crc0, __m128i *xmm_crc1,
+static void partial_fold(deflate_state *const s, const size_t len, __m128i *xmm_crc0, __m128i *xmm_crc1,
         __m128i *xmm_crc2, __m128i *xmm_crc3, __m128i *xmm_crc_part) {
 
     const __m128i xmm_fold4 = _mm_set_epi32(
@@ -378,7 +378,7 @@ done:
     CRC_SAVE(s)
 }
 
-local const unsigned ALIGNED_(16) crc_k[] = {
+static const unsigned ALIGNED_(16) crc_k[] = {
     0xccaa009e, 0x00000000, /* rk1 */
     0x751997d0, 0x00000001, /* rk2 */
     0xccaa009e, 0x00000000, /* rk5 */
@@ -387,11 +387,11 @@ local const unsigned ALIGNED_(16) crc_k[] = {
     0xdb710640, 0x00000001  /* rk8 */
 };
 
-local const unsigned ALIGNED_(16) crc_mask[4] = {
+static const unsigned ALIGNED_(16) crc_mask[4] = {
     0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000
 };
 
-local const unsigned ALIGNED_(16) crc_mask2[4] = {
+static const unsigned ALIGNED_(16) crc_mask2[4] = {
     0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
 };
 

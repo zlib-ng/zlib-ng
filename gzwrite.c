@@ -7,13 +7,13 @@
 #include "gzguts.h"
 
 /* Local functions */
-local int gz_init(gz_statep);
-local int gz_comp(gz_statep, int);
-local int gz_zero(gz_statep, z_off64_t);
+static int gz_init(gz_statep);
+static int gz_comp(gz_statep, int);
+static int gz_zero(gz_statep, z_off64_t);
 
 /* Initialize state for writing a gzip file.  Mark initialization by setting
    state->size to non-zero.  Return -1 on failure or 0 on success. */
-local int gz_init(gz_statep state) {
+static int gz_init(gz_statep state) {
     int ret;
     z_stream *strm = &(state->strm);
 
@@ -66,7 +66,7 @@ local int gz_init(gz_statep state) {
    then the deflate() state is reset to start a new gzip stream.  If gz->direct
    is true, then simply write to the output file without compressing, and
    ignore flush. */
-local int gz_comp(gz_statep state, int flush) {
+static int gz_comp(gz_statep state, int flush) {
     int ret, got;
     unsigned have;
     z_stream *strm = &(state->strm);
@@ -126,7 +126,7 @@ local int gz_comp(gz_statep state, int flush) {
 }
 
 /* Compress len zeros to output.  Return -1 on error, 0 on success. */
-local int gz_zero(gz_statep state, z_off64_t len) {
+static int gz_zero(gz_statep state, z_off64_t len) {
     int first;
     unsigned n;
     z_stream *strm = &(state->strm);
