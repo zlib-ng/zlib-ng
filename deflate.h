@@ -100,17 +100,17 @@ typedef unsigned IPos;
  */
 
 typedef struct internal_state {
-    z_stream *strm;      /* pointer back to this zlib stream */
-    int   status;        /* as the name implies */
-    unsigned char *pending_buf;  /* output still pending */
-    unsigned long   pending_buf_size; /* size of pending_buf */
-    unsigned char *pending_out;  /* next pending byte to output to the stream */
-    unsigned int   pending;      /* nb of bytes in the pending buffer */
-    int   wrap;          /* bit 0 true for zlib, bit 1 true for gzip */
-    gz_headerp  gzhead;  /* gzip header information to write */
-    unsigned int   gzindex;      /* where in extra, name, or comment */
-    unsigned char  method;        /* can only be DEFLATED */
-    int   last_flush;    /* value of flush param for previous deflate call */
+    z_stream      *strm;             /* pointer back to this zlib stream */
+    int            status;           /* as the name implies */
+    unsigned char *pending_buf;      /* output still pending */
+    unsigned long  pending_buf_size; /* size of pending_buf */
+    unsigned char *pending_out;      /* next pending byte to output to the stream */
+    unsigned int   pending;          /* nb of bytes in the pending buffer */
+    int            wrap;             /* bit 0 true for zlib, bit 1 true for gzip */
+    gz_headerp     gzhead;           /* gzip header information to write */
+    unsigned int   gzindex;          /* where in extra, name, or comment */
+    unsigned char  method;           /* can only be DEFLATED */
+    int   last_flush;                /* value of flush param for previous deflate call */
 
 #ifdef X86_PCLMULQDQ_CRC
     unsigned ALIGNED_(16) crc0[4 * 5];
@@ -162,12 +162,12 @@ typedef struct internal_state {
      * negative when the window is moved backwards.
      */
 
-    unsigned int match_length;           /* length of best match */
-    IPos prev_match;             /* previous match */
-    int match_available;         /* set if previous match exists */
-    unsigned int strstart;               /* start of string to insert */
-    unsigned int match_start;            /* start of matching string */
-    unsigned int lookahead;              /* number of valid bytes ahead in window */
+    unsigned int match_length;    /* length of best match */
+    IPos         prev_match;      /* previous match */
+    int          match_available; /* set if previous match exists */
+    unsigned int strstart;        /* start of string to insert */
+    unsigned int match_start;     /* start of matching string */
+    unsigned int lookahead;       /* number of valid bytes ahead in window */
 
     unsigned int prev_length;
     /* Length of the best match at previous step. Matches not greater than this
@@ -253,8 +253,8 @@ typedef struct internal_state {
      * array would be necessary.
      */
 
-    unsigned long opt_len;        /* bit length of current block with optimal trees */
-    unsigned long static_len;     /* bit length of current block with static trees */
+    unsigned long opt_len;      /* bit length of current block with optimal trees */
+    unsigned long static_len;   /* bit length of current block with static trees */
     unsigned int matches;       /* number of string matches in current block */
     unsigned int insert;        /* bytes at end of window left to insert */
 
