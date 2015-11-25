@@ -49,7 +49,6 @@ SHELL=/bin/sh
 EXE=
 
 SRCDIR=.
-BSDLIBS=
 INCLUDES=-I$(SRCDIR)
 
 ARCHDIR=arch/generic
@@ -137,7 +136,7 @@ infcover.o: $(SRCDIR)/test/infcover.c $(SRCDIR)/zlib.h zconf.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/infcover.c
 
 infcover$(EXE): infcover.o $(STATICLIB)
-	$(CC) $(CFLAGS) -o $@ infcover.o $(STATICLIB) $(BSDLIBS)
+	$(CC) $(CFLAGS) -o $@ infcover.o $(STATICLIB)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif

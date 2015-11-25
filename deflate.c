@@ -144,7 +144,7 @@ local const config configuration_table[10] = {
 /* result of memcmp for equal strings */
 
 /* rank Z_BLOCK between Z_NO_FLUSH and Z_PARTIAL_FLUSH */
-#define RANK(f) (((f) << 1) - ((f) > 4 ? 9 : 0))
+#define RANK(f) (((f) * 2) - ((f) > 4 ? 9 : 0))
 
 
 /* ===========================================================================
@@ -433,7 +433,7 @@ int ZEXPORT deflateParams(z_stream *strm, int level, int strategy) {
     }
     func = configuration_table[s->level].func;
 
-    if ((strategy != s->strategy || func != configuration_table[level].func) && strm->total_in != 0) {
+    if ((strategy != s->strategy || func != configuration_table[level].func)) {
         /* Flush the last buffer: */
         err = deflate(strm, Z_BLOCK);
         if (err == Z_BUF_ERROR && s->pending == 0)
@@ -584,7 +584,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
     }
     s = strm->state;
 
-    if (strm->next_out == Z_NULL || (strm->next_in == Z_NULL && strm->avail_in != 0) ||
+    if (strm->next_out == Z_NULL || (strm->avail_in != 0 && strm->next_in == Z_NULL) ||
         (s->status == FINISH_STATE && flush != Z_FINISH)) {
         ERR_RETURN(strm, Z_STREAM_ERROR);
     }

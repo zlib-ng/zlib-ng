@@ -217,7 +217,7 @@ int ZEXPORT inflatePrime(z_stream *strm, int bits, int value) {
     if (bits > 16 || state->bits + bits > 32)
         return Z_STREAM_ERROR;
     value &= (1L << bits) - 1;
-    state->hold += value << state->bits;
+    state->hold += (unsigned)value << state->bits;
     state->bits += bits;
     return Z_OK;
 }
@@ -613,6 +613,8 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
             NEEDBITS(16);
 #ifdef GUNZIP
             if ((state->wrap & 2) && hold == 0x8b1f) {  /* gzip header */
+                if (state->wbits == 0)
+                    state->wbits = 15;
                 state->check = crc32(0L, Z_NULL, 0);
                 CRC2(state->check, hold);
                 INITBITS();
@@ -1445,8 +1447,8 @@ int ZEXPORT inflateUndermine(z_stream *strm, int subvert) {
     if (strm == Z_NULL || strm->state == Z_NULL)
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
-    state->sane = !subvert;
 #ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+    state->sane = !subvert;
     return Z_OK;
 #else
     state->sane = 1;

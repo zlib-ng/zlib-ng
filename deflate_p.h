@@ -31,31 +31,9 @@ void flush_pending(z_stream *strm);
  *    input characters and the first MIN_MATCH bytes of str are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
+
 #ifdef X86_SSE4_2_CRC_HASH
-local inline Pos insert_string_sse(deflate_state *const s, const Pos str, uInt count) {
-    Pos ret = 0;
-    uInt idx;
-    unsigned *ip, val, h = 0;
-
-    for (idx = 0; idx < count; idx++) {
-        ip = (unsigned *)&s->window[str+idx];
-        val = *ip;
-        h = 0;
-
-        if (s->level >= 6)
-            val &= 0xFFFFFF;
-
-        __asm__ __volatile__ (
-            "crc32 %1,%0\n\t"
-            : "+r" (h)
-            : "r" (val)
-        );
-
-        ret = s->prev[(str+idx) & s->w_mask] = s->head[h & s->hash_mask];
-        s->head[h & s->hash_mask] = str+idx;
-    }
-    return ret;
-}
+extern Pos insert_string_sse(deflate_state *const s, const Pos str, uInt count);
 #endif
 
 local inline Pos insert_string_c(deflate_state *const s, const Pos str, uInt count) {
