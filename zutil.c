@@ -30,18 +30,18 @@ const char * ZEXPORT zlibVersion(void)
     return ZLIB_VERSION;
 }
 
-uLong ZEXPORT zlibCompileFlags(void)
+unsigned long ZEXPORT zlibCompileFlags(void)
 {
-    uLong flags;
+    unsigned long flags;
 
     flags = 0;
-    switch ((int)(sizeof(uInt))) {
+    switch ((int)(sizeof(unsigned int))) {
     case 2:     break;
     case 4:     flags += 1;     break;
     case 8:     flags += 2;     break;
     default:    flags += 3;
     }
-    switch ((int)(sizeof(uLong))) {
+    switch ((int)(sizeof(unsigned long))) {
     case 2:     break;
     case 4:     flags += 1 << 2;        break;
     case 8:     flags += 2 << 2;        break;
@@ -111,7 +111,7 @@ const char * ZEXPORT zError(int err)
 void ZLIB_INTERNAL *zcalloc (void *opaque, unsigned items, unsigned size)
 {
     (void)opaque;
-    return sizeof(uInt) > 2 ? (void *)malloc(items * size) :
+    return sizeof(unsigned int) > 2 ? (void *)malloc(items * size) :
                               (void *)calloc(items, size);
 }
 

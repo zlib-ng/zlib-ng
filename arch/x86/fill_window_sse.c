@@ -21,12 +21,12 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
     register unsigned n;
     register Pos *p;
     unsigned more;    /* Amount of free space at the end of the window. */
-    uInt wsize = s->w_size;
+    unsigned int wsize = s->w_size;
 
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
 
     do {
-        more = (unsigned)(s->window_size -(ulg)s->lookahead -(ulg)s->strstart);
+        more = (unsigned)(s->window_size -(unsigned long)s->lookahead -(unsigned long)s->strstart);
 
         /* Deal with !@#$% 64K limit: */
         if (sizeof(int) <= 2) {
@@ -105,7 +105,7 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
 
         /* Initialize the hash value now that we have some input: */
         if (s->lookahead + s->insert >= MIN_MATCH) {
-            uInt str = s->strstart - s->insert;
+            unsigned int str = s->strstart - s->insert;
             s->ins_h = s->window[str];
             if (str >= 1)
                 UPDATE_HASH(s, s->ins_h, str + 1 - (MIN_MATCH-1));
@@ -135,8 +135,8 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
      * routines allow scanning to strstart + MAX_MATCH, ignoring lookahead.
      */
     if (s->high_water < s->window_size) {
-        ulg curr = s->strstart + (ulg)(s->lookahead);
-        ulg init;
+        unsigned long curr = s->strstart + (unsigned long)(s->lookahead);
+        unsigned long init;
 
         if (s->high_water < curr) {
             /* Previous high water mark below current data -- zero WIN_INIT
@@ -147,12 +147,12 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
                 init = WIN_INIT;
             memset(s->window + curr, 0, (unsigned)init);
             s->high_water = curr + init;
-        } else if (s->high_water < (ulg)curr + WIN_INIT) {
+        } else if (s->high_water < (unsigned long)curr + WIN_INIT) {
             /* High water mark at or above current data, but below current data
              * plus WIN_INIT -- zero out to current data plus WIN_INIT, or up
              * to end of window, whichever is less.
              */
-            init = (ulg)curr + WIN_INIT - s->high_water;
+            init = (unsigned long)curr + WIN_INIT - s->high_water;
             if (init > s->window_size - s->high_water)
                 init = s->window_size - s->high_water;
             memset(s->window + s->high_water, 0, (unsigned)init);
@@ -160,6 +160,6 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
         }
     }
 
-    Assert((ulg)s->strstart <= s->window_size - MIN_LOOKAHEAD, "not enough room for search");
+    Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD, "not enough room for search");
 }
 #endif

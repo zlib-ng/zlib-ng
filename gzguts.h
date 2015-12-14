@@ -27,11 +27,11 @@
 #include <fcntl.h>
 #include "zlib.h"
 
-#ifdef _WIN32
+#ifdef WIN32
 #  include <stddef.h>
 #endif
 
-#if defined(_MSC_VER) || defined(_WIN32)
+#if defined(_MSC_VER) || defined(WIN32)
 #  include <io.h>
 #endif
 

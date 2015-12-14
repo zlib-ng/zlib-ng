@@ -79,7 +79,7 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #endif
 
 /* provide prototypes for these when building zlib without LFS */
-#if !defined(_WIN32) && (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
+#if !defined(WIN32) && (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
     ZEXTERN uint32_t ZEXPORT adler32_combine64(uint32_t, uint32_t, z_off_t);
     ZEXTERN uint32_t ZEXPORT crc32_combine64(uint32_t, uint32_t, z_off_t);
 #endif
@@ -131,7 +131,7 @@ void ZLIB_INTERNAL   zcfree(void *opaque, void *ptr);
 
 /* Reverse the bytes in a 32-bit value. Use compiler intrinsics when
    possible to take advantage of hardware implementations. */
-#if defined(_WIN32) && (_MSC_VER >= 1300)
+#if defined(WIN32) && (_MSC_VER >= 1300)
 #  pragma intrinsic(_byteswap_ulong)
 #  define ZSWAP32(q) _byteswap_ulong(q)
 

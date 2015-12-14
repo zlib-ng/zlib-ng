@@ -184,7 +184,7 @@ int gzread(gzFile gz, void *buf, unsigned len)
         if (strm->avail_in == 0)
         {
             strm->next_in = gz->buf;
-            strm->avail_in = (uInt)fread(gz->buf, 1, BUFLEN, gz->file);
+            strm->avail_in = (uint32_t)fread(gz->buf, 1, BUFLEN, gz->file);
         }
         if (strm->avail_in > 0)
         {

@@ -13,7 +13,7 @@
 
 #ifdef __MINGW32__
 # include <sys/param.h>
-#elif _WIN32
+#elif defined(WIN32) || defined(_WIN32)
 # define LITTLE_ENDIAN 1234
 # define BIG_ENDIAN 4321
 # if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64)
@@ -49,9 +49,9 @@
 #include "deflate.h"
 
 #if BYTE_ORDER == LITTLE_ENDIAN
-static uint32_t crc32_little(uint32_t, const unsigned char *, unsigned);
+static uint32_t crc32_little(uint32_t, const unsigned char *, z_off64_t);
 #elif BYTE_ORDER == BIG_ENDIAN
-static uint32_t crc32_big(uint32_t, const unsigned char *, unsigned);
+static uint32_t crc32_big(uint32_t, const unsigned char *, z_off64_t);
 #endif
 
 /* Local functions for crc concatenation */
@@ -196,7 +196,7 @@ const uint32_t * ZEXPORT get_crc_table(void) {
 #define DO4 DO1; DO1; DO1; DO1
 
 /* ========================================================================= */
-uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, uInt len) {
+uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, z_off64_t len) {
     if (buf == Z_NULL) return 0;
 
 #ifdef DYNAMIC_CRC_TABLE
@@ -240,7 +240,7 @@ uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, uInt len) {
 #define DOLIT32 DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4
 
 /* ========================================================================= */
-static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, unsigned len) {
+static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, z_off64_t len) {
     register uint32_t c;
     register const uint32_t *buf4;
 
@@ -282,7 +282,7 @@ static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, unsigned le
 #define DOBIG32 DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4
 
 /* ========================================================================= */
-static uint32_t crc32_big(uint32_t crc, const unsigned char *buf, unsigned len) {
+static uint32_t crc32_big(uint32_t crc, const unsigned char *buf, z_off64_t len) {
     register uint32_t c;
     register const uint32_t *buf4;
 

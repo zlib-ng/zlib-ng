@@ -1,5 +1,5 @@
 /* uncompr.c -- decompress a memory buffer
- * Copyright (C) 1995-2003, 2010, 2014 Jean-loup Gailly, Mark Adler
+ * Copyright (C) 1995-2003, 2010, 2014 Jean-loup Gailly, Mark Adler.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -22,12 +22,12 @@
    buffer, or Z_DATA_ERROR if the input data was corrupted, including if the
    input data is an incomplete zlib stream.
 */
-int ZEXPORT uncompress(unsigned char *dest, uLong *destLen, const unsigned char *source, uLong sourceLen) {
+int ZEXPORT uncompress(unsigned char *dest, unsigned long *destLen, const unsigned char *source, unsigned long sourceLen) {
     z_stream stream;
     int err;
-    const uInt max = (uInt)0 - 1;
-    uLong left;
-    Byte buf[1];    /* for detection of incomplete stream when *destLen == 0 */
+    const unsigned int max = (unsigned int)0 - 1;
+    unsigned long left;
+    unsigned char buf[1];    /* for detection of incomplete stream when *destLen == 0 */
 
     if (*destLen) {
         left = *destLen;
@@ -42,7 +42,7 @@ int ZEXPORT uncompress(unsigned char *dest, uLong *destLen, const unsigned char 
     stream.avail_in = 0;
     stream.zalloc = (alloc_func)0;
     stream.zfree = (free_func)0;
-    stream.opaque = (void *)0;
+    stream.opaque = NULL;
 
     err = inflateInit(&stream);
     if (err != Z_OK) return err;
