@@ -93,28 +93,28 @@ struct inflate_state {
     gz_headerp head;            /* where to save gzip header information */
         /* sliding window */
     unsigned wbits;             /* log base 2 of requested window size */
-    unsigned wsize;             /* window size or zero if not using window */
-    unsigned whave;             /* valid bytes in the window */
-    unsigned wnext;             /* window write index */
-    unsigned char *window;  /* allocated sliding window, if needed */
+    uint32_t wsize;             /* window size or zero if not using window */
+    uint32_t whave;             /* valid bytes in the window */
+    uint32_t wnext;             /* window write index */
+    unsigned char *window;      /* allocated sliding window, if needed */
         /* bit accumulator */
-    unsigned long hold;         /* input bit accumulator */
+    uint32_t hold;              /* input bit accumulator */
     unsigned bits;              /* number of bits in "in" */
         /* for string and stored block copying */
-    unsigned length;            /* literal or length of data to copy */
+    uint32_t length;            /* literal or length of data to copy */
     unsigned offset;            /* distance back to copy string from */
         /* for table and code decoding */
     unsigned extra;             /* extra bits needed */
         /* fixed and dynamic code tables */
-    code const *lencode;    /* starting table for length/literal codes */
-    code const *distcode;   /* starting table for distance codes */
+    code const *lencode;        /* starting table for length/literal codes */
+    code const *distcode;       /* starting table for distance codes */
     unsigned lenbits;           /* index bits for lencode */
     unsigned distbits;          /* index bits for distcode */
         /* dynamic table building */
     unsigned ncode;             /* number of code length code lengths */
     unsigned nlen;              /* number of length code lengths */
     unsigned ndist;             /* number of distance code lengths */
-    unsigned have;              /* number of code lengths in lens[] */
+    uint32_t have;              /* number of code lengths in lens[] */
     code *next;                 /* next available space in codes[] */
     uint16_t lens[320];         /* temporary storage for code lengths */
     uint16_t work[288];         /* work area for code table building */

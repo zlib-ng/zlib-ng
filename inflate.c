@@ -93,11 +93,11 @@
 
 /* function prototypes */
 local void fixedtables(struct inflate_state *state);
-local int updatewindow(z_stream *strm, const unsigned char *end, unsigned copy);
+local int updatewindow(z_stream *strm, const unsigned char *end, uint32_t copy);
 #ifdef BUILDFIXED
     void makefixed(void);
 #endif
-local unsigned syncsearch(unsigned *have, const unsigned char *buf, unsigned len);
+local uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len);
 
 int ZEXPORT inflateResetKeep(z_stream *strm) {
     struct inflate_state *state;
@@ -350,9 +350,9 @@ void makefixed(void) {
    output will fall in the output data, making match copies simpler and faster.
    The advantage may be dependent on the size of the processor's data caches.
  */
-local int updatewindow(z_stream *strm, const unsigned char *end, unsigned copy) {
+local int updatewindow(z_stream *strm, const unsigned char *end, uint32_t copy) {
     struct inflate_state *state;
-    unsigned dist;
+    uint32_t dist;
 
     state = (struct inflate_state *)strm->state;
 
@@ -460,7 +460,7 @@ local int updatewindow(z_stream *strm, const unsigned char *end, unsigned copy) 
     do { \
         if (have == 0) goto inf_leave; \
         have--; \
-        hold += (unsigned long)(*next++) << bits; \
+        hold += (*next++ << bits); \
         bits += 8; \
     } while (0)
 
@@ -474,7 +474,7 @@ local int updatewindow(z_stream *strm, const unsigned char *end, unsigned copy) 
 
 /* Return the low n bits of the bit accumulator (n < 16) */
 #define BITS(n) \
-    ((unsigned)hold & ((1U << (n)) - 1))
+    (hold & ((1U << (n)) - 1))
 
 /* Remove n bits from the bit accumulator */
 #define DROPBITS(n) \
@@ -574,14 +574,14 @@ local int updatewindow(z_stream *strm, const unsigned char *end, unsigned copy) 
 
 int ZEXPORT inflate(z_stream *strm, int flush) {
     struct inflate_state *state;
-    const unsigned char *next;    /* next input */
-    unsigned char *put;     /* next output */
+    const unsigned char *next;  /* next input */
+    unsigned char *put;         /* next output */
     unsigned have, left;        /* available input and output */
-    unsigned long hold;         /* bit buffer */
+    uint32_t hold;              /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
-    unsigned in, out;           /* save starting available input and output */
+    uint32_t in, out;           /* save starting available input and output */
     unsigned copy;              /* number of stored or match bytes to copy */
-    unsigned char *from;    /* where to copy match bytes from */
+    unsigned char *from;        /* where to copy match bytes from */
     code here;                  /* current decoding table entry */
     code last;                  /* parent table entry */
     unsigned len;               /* length to copy for repeats, bits to drop */
@@ -694,9 +694,9 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
         case EXLEN:
             if (state->flags & 0x0400) {
                 NEEDBITS(16);
-                state->length = (unsigned)(hold);
+                state->length = (uint16_t)hold;
                 if (state->head != Z_NULL)
-                    state->head->extra_len = (unsigned)hold;
+                    state->head->extra_len = (uint16_t)hold;
                 if (state->flags & 0x0200)
                     CRC2(state->check, hold);
                 INITBITS();
@@ -842,7 +842,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                 state->mode = BAD;
                 break;
             }
-            state->length = (unsigned)hold & 0xffff;
+            state->length = (uint16_t)hold;
             Tracev((stderr, "inflate:       stored length %u\n", state->length));
             INITBITS();
             state->mode = COPY_;
@@ -909,7 +909,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
             while (state->have < state->nlen + state->ndist) {
                 for (;;) {
                     here = state->lencode[BITS(state->lenbits)];
-                    if ((unsigned)(here.bits) <= bits) break;
+                    if (here.bits <= bits) break;
                     PULLBYTE();
                 }
                 if (here.val < 16) {
@@ -1000,7 +1000,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
             state->back = 0;
             for (;;) {
                 here = state->lencode[BITS(state->lenbits)];
-                if ((unsigned)(here.bits) <= bits)
+                if (here.bits <= bits)
                     break;
                 PULLBYTE();
             }
@@ -1008,7 +1008,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                 last = here;
                 for (;;) {
                     here = state->lencode[last.val + (BITS(last.bits + last.op) >> last.bits)];
-                    if ((unsigned)(last.bits + here.bits) <= bits)
+                    if ((unsigned)last.bits + (unsigned)here.bits <= bits)
                         break;
                     PULLBYTE();
                 }
@@ -1017,7 +1017,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
             }
             DROPBITS(here.bits);
             state->back += here.bits;
-            state->length = (unsigned)here.val;
+            state->length = here.val;
             if ((int)(here.op) == 0) {
                 Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
                         "inflate:         literal '%c'\n" :
@@ -1036,7 +1036,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                 state->mode = BAD;
                 break;
             }
-            state->extra = (unsigned)(here.op) & 15;
+            state->extra = (here.op & 15);
             state->mode = LENEXT;
         case LENEXT:
             if (state->extra) {
@@ -1051,7 +1051,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
         case DIST:
             for (;;) {
                 here = state->distcode[BITS(state->distbits)];
-                if ((unsigned)(here.bits) <= bits)
+                if (here.bits <= bits)
                     break;
                 PULLBYTE();
             }
@@ -1059,7 +1059,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                 last = here;
                 for (;;) {
                     here = state->distcode[last.val + (BITS(last.bits + last.op) >> last.bits)];
-                    if ((unsigned)(last.bits + here.bits) <= bits)
+                    if ((unsigned)last.bits + (unsigned)here.bits <= bits)
                         break;
                     PULLBYTE();
                 }
@@ -1073,8 +1073,8 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                 state->mode = BAD;
                 break;
             }
-            state->offset = (unsigned)here.val;
-            state->extra = (unsigned)(here.op) & 15;
+            state->offset = here.val;
+            state->extra = (here.op & 15);
             state->mode = DISTEXT;
         case DISTEXT:
             if (state->extra) {
@@ -1239,7 +1239,7 @@ int ZEXPORT inflateEnd(z_stream *strm) {
     return Z_OK;
 }
 
-int ZEXPORT inflateGetDictionary(z_stream *strm, unsigned char *dictionary, uInt *dictLength) {
+int ZEXPORT inflateGetDictionary(z_stream *strm, unsigned char *dictionary, unsigned int *dictLength) {
     struct inflate_state *state;
 
     /* check state */
@@ -1257,7 +1257,7 @@ int ZEXPORT inflateGetDictionary(z_stream *strm, unsigned char *dictionary, uInt
     return Z_OK;
 }
 
-int ZEXPORT inflateSetDictionary(z_stream *strm, const unsigned char *dictionary, uInt dictLength) {
+int ZEXPORT inflateSetDictionary(z_stream *strm, const unsigned char *dictionary, unsigned int dictLength) {
     struct inflate_state *state;
     unsigned long dictid;
     int ret;
@@ -1316,9 +1316,9 @@ int ZEXPORT inflateGetHeader(z_stream *strm, gz_headerp head) {
    called again with more data and the *have state.  *have is initialized to
    zero for the first call.
  */
-local unsigned syncsearch(unsigned *have, const unsigned char *buf, unsigned len) {
-    unsigned got;
-    unsigned next;
+local unsigned syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len) {
+    uint32_t got;
+    uint32_t next;
 
     got = *have;
     next = 0;
@@ -1337,7 +1337,7 @@ local unsigned syncsearch(unsigned *have, const unsigned char *buf, unsigned len
 
 int ZEXPORT inflateSync(z_stream *strm) {
     unsigned len;               /* number of bytes to look at or looked at */
-    unsigned long in, out;      /* temporary to save total_in and total_out */
+    size_t in, out;             /* temporary to save total_in and total_out */
     unsigned char buf[4];       /* to restore bit buffer to byte string */
     struct inflate_state *state;
 

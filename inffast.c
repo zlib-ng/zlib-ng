@@ -29,7 +29,7 @@
 
 /* Return the low n bits of the bit accumulator (n < 16) */
 #define BITS(n) \
-    ((unsigned)hold & ((1U << (n)) - 1))
+    (hold & ((1U << (n)) - 1))
 
 /* Remove n bits from the bit accumulator */
 #define DROPBITS(n) \
@@ -73,25 +73,25 @@
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
-void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start) {
+void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned long start) {
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
-    const unsigned char *in;      /* local strm->next_in */
-    const unsigned char *last;    /* have enough input while in < last */
-    unsigned char *out;     /* local strm->next_out */
-    unsigned char *beg;     /* inflate()'s initial strm->next_out */
-    unsigned char *end;     /* while out < end, enough space available */
+    const unsigned char *in;    /* local strm->next_in */
+    const unsigned char *last;  /* have enough input while in < last */
+    unsigned char *out;         /* local strm->next_out */
+    unsigned char *beg;         /* inflate()'s initial strm->next_out */
+    unsigned char *end;         /* while out < end, enough space available */
 #ifdef INFLATE_STRICT
     unsigned dmax;              /* maximum distance from zlib header */
 #endif
     unsigned wsize;             /* window size or zero if not using window */
     unsigned whave;             /* valid bytes in the window */
     unsigned wnext;             /* window write index */
-    unsigned char *window;  /* allocated sliding window, if wsize != 0 */
-    unsigned long hold;         /* local strm->hold */
+    unsigned char *window;      /* allocated sliding window, if wsize != 0 */
+    uint32_t hold;              /* local strm->hold */
     unsigned bits;              /* local strm->bits */
-    code const *lcode;      /* local strm->lencode */
-    code const *dcode;      /* local strm->distcode */
+    code const *lcode;          /* local strm->lencode */
+    code const *dcode;          /* local strm->distcode */
     unsigned lmask;             /* mask for first level of length codes */
     unsigned dmask;             /* mask for first level of distance codes */
     code here;                  /* retrieved table entry */
@@ -99,7 +99,7 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start) {
                                 /*  window position, window bytes to copy */
     unsigned len;               /* match length, unused bytes */
     unsigned dist;              /* match distance */
-    unsigned char *from;    /* where to copy match from */
+    unsigned char *from;        /* where to copy match from */
 
     /* copy state to local variables */
     state = (struct inflate_state *)strm->state;
@@ -126,26 +126,26 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start) {
        input data or output space */
     do {
         if (bits < 15) {
-            hold += (unsigned long)(PUP(in)) << bits;
+            hold += (PUP(in) << bits);
             bits += 8;
-            hold += (unsigned long)(PUP(in)) << bits;
+            hold += (PUP(in) << bits);
             bits += 8;
         }
         here = lcode[hold & lmask];
       dolen:
         DROPBITS(here.bits);
-        op = (unsigned)(here.op);
+        op = here.op;
         if (op == 0) {                          /* literal */
             Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
                     "inflate:         literal '%c'\n" :
                     "inflate:         literal 0x%02x\n", here.val));
             PUP(out) = (unsigned char)(here.val);
         } else if (op & 16) {                     /* length base */
-            len = (unsigned)(here.val);
+            len = here.val;
             op &= 15;                           /* number of extra bits */
             if (op) {
                 if (bits < op) {
-                    hold += (unsigned long)(PUP(in)) << bits;
+                    hold += (PUP(in) << bits);
                     bits += 8;
                 }
                 len += BITS(op);
@@ -153,23 +153,23 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned start) {
             }
             Tracevv((stderr, "inflate:         length %u\n", len));
             if (bits < 15) {
-                hold += (unsigned long)(PUP(in)) << bits;
+                hold += (PUP(in) << bits);
                 bits += 8;
-                hold += (unsigned long)(PUP(in)) << bits;
+                hold += (PUP(in) << bits);
                 bits += 8;
             }
             here = dcode[hold & dmask];
           dodist:
             DROPBITS(here.bits);
-            op = (unsigned)(here.op);
+            op = here.op;
             if (op & 16) {                      /* distance base */
-                dist = (unsigned)(here.val);
+                dist = here.val;
                 op &= 15;                       /* number of extra bits */
                 if (bits < op) {
-                    hold += (unsigned long)(PUP(in)) << bits;
+                    hold += (PUP(in) << bits);
                     bits += 8;
                     if (bits < op) {
-                        hold += (unsigned long)(PUP(in)) << bits;
+                        hold += (PUP(in) << bits);
                         bits += 8;
                     }
                 }
