@@ -68,7 +68,6 @@ const char deflate_copyright[] = " deflate 1.2.8.f Copyright 1995-2013 Jean-loup
 typedef block_state (*compress_func) (deflate_state *s, int flush);
 /* Compression function. Returns the block state after the call. */
 
-void fill_window                 (deflate_state *s);
 static block_state deflate_stored (deflate_state *s, int flush);
 block_state deflate_fast         (deflate_state *s, int flush);
 block_state deflate_quick        (deflate_state *s, int flush);

@@ -85,9 +85,13 @@ block_state deflate_fast(deflate_state *s, int flush) {
                 s->strstart += s->match_length;
                 s->match_length = 0;
                 s->ins_h = s->window[s->strstart];
-                UPDATE_HASH(s, s->ins_h, s->strstart+2 - (MIN_MATCH));
+#ifndef NOT_TWEAK_COMPILER
+                bulk_insert_str(s, s->strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
+#else
+                insert_string(s, s->strstart + 2 - MIN_MATCH);
 #if MIN_MATCH != 3
-                Call UPDATE_HASH() MIN_MATCH-3 more times
+#warning        Call insert_string() MIN_MATCH-3 more times
+#endif
 #endif
                 /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
                  * matter since it will be recomputed at next deflate call.
