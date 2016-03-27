@@ -51,26 +51,13 @@ static inline Pos insert_string_c(deflate_state *const s, const Pos str, uInt co
     return ret;
 }
 
-static inline Pos insert_string(deflate_state *const s, const Pos str) {
+static inline Pos insert_string(deflate_state *const s, const Pos str, uInt count) {
 #ifdef X86_SSE4_2_CRC_HASH
     if (x86_cpu_has_sse42)
-        return insert_string_sse(s, str, 1);
+        return insert_string_sse(s, str, count);
 #endif
-    return insert_string_c(s, str, 1);
+    return insert_string_c(s, str, count);
 }
-
-#ifndef NOT_TWEAK_COMPILER
-static inline void bulk_insert_str(deflate_state *const s, Pos startpos, uInt count) {
-# ifdef X86_SSE4_2_CRC_HASH
-    if (x86_cpu_has_sse42) {
-        insert_string_sse(s, startpos, count);
-    } else
-# endif
-    {
-        insert_string_c(s, startpos, count);
-    }
-}
-#endif /* NOT_TWEAK_COMPILER */
 
 /* ===========================================================================
  * Flush the current block, with given end-of-file flag.

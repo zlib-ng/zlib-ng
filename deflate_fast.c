@@ -39,7 +39,7 @@ block_state deflate_fast(deflate_state *s, int flush) {
          */
         hash_head = NIL;
         if (s->lookahead >= MIN_MATCH) {
-            hash_head = insert_string(s, s->strstart);
+            hash_head = insert_string(s, s->strstart, 1);
         }
 
         /* Find the longest match, discarding those <= prev_length.
@@ -68,7 +68,7 @@ block_state deflate_fast(deflate_state *s, int flush) {
                 s->strstart++;
 #ifdef NOT_TWEAK_COMPILER
                 do {
-                    insert_string(s, s->strstart);
+                    insert_string(s, s->strstart, 1);
                     s->strstart++;
                     /* strstart never exceeds WSIZE-MAX_MATCH, so there are
                      * always MIN_MATCH bytes ahead.
@@ -76,7 +76,7 @@ block_state deflate_fast(deflate_state *s, int flush) {
                 } while (--s->match_length != 0);
 #else
                 {
-                    bulk_insert_str(s, s->strstart, s->match_length);
+                    insert_string(s, s->strstart, s->match_length);
                     s->strstart += s->match_length;
                     s->match_length = 0;
                 }
@@ -86,9 +86,9 @@ block_state deflate_fast(deflate_state *s, int flush) {
                 s->match_length = 0;
                 s->ins_h = s->window[s->strstart];
 #ifndef NOT_TWEAK_COMPILER
-                bulk_insert_str(s, s->strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
+                insert_string(s, s->strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
 #else
-                insert_string(s, s->strstart + 2 - MIN_MATCH);
+                insert_string(s, s->strstart + 2 - MIN_MATCH, 1);
 #if MIN_MATCH != 3
 #warning        Call insert_string() MIN_MATCH-3 more times
 #endif

@@ -63,7 +63,7 @@ static void insert_match(deflate_state *s, struct match match) {
 
             if (match.match_length) {
                 if (match.strstart >= match.orgstart) {
-                    insert_string(s, match.strstart);
+                    insert_string(s, match.strstart, 1);
                 }
             }
         }
@@ -93,7 +93,7 @@ static void insert_match(deflate_state *s, struct match match) {
 #ifdef NOT_TWEAK_COMPILER
         do {
             if (likely(match.strstart >= match.orgstart)) {
-                insert_string(s, match.strstart);
+                insert_string(s, match.strstart, 1);
             }
             match.strstart++;
             /* strstart never exceeds WSIZE-MAX_MATCH, so there are
@@ -113,9 +113,9 @@ static void insert_match(deflate_state *s, struct match match) {
         s->ins_h = s->window[match.strstart];
         if (match.strstart >= 1)
 #ifndef NOT_TWEAK_COMPILER
-            bulk_insert_str(s, match.strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
+            insert_string(s, match.strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
 #else
-            insert_string(s, match.strstart + 2 - MIN_MATCH);
+            insert_string(s, match.strstart + 2 - MIN_MATCH, 1);
 #if MIN_MATCH != 3
 #warning    Call insert_string() MIN_MATCH-3 more times
 #endif
@@ -233,7 +233,7 @@ block_state deflate_medium(deflate_state *s, int flush) {
         } else {
             hash_head = 0;
             if (s->lookahead >= MIN_MATCH) {
-                hash_head = insert_string(s, s->strstart);
+                hash_head = insert_string(s, s->strstart, 1);
             }
 
             /* set up the initial match to be a 1 byte literal */
@@ -267,7 +267,7 @@ block_state deflate_medium(deflate_state *s, int flush) {
         /* now, look ahead one */
         if (s->lookahead > MIN_LOOKAHEAD) {
             s->strstart = current_match.strstart + current_match.match_length;
-            hash_head = insert_string(s, s->strstart);
+            hash_head = insert_string(s, s->strstart, 1);
 
             /* set up the initial match to be a 1 byte literal */
             next_match.match_start = 0;
