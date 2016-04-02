@@ -105,6 +105,7 @@ compat=0
 cover=0
 build32=0
 build64=0
+buildacle=0
 native=0
 sse2flag="-msse2"
 sse4flag="-msse4"
@@ -145,6 +146,7 @@ case "$1" in
       echo '  configure [--zlib-compat] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
       echo '    [--static] [--32] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
       echo '    [--includedir=INCLUDEDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
+      echo '    [--acle]' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=`echo $1 | sed 's/.*=//'`; shift ;;
     -e*=* | --eprefix=*) exec_prefix=`echo $1 | sed 's/.*=//'`; shift ;;
@@ -162,6 +164,7 @@ case "$1" in
     --cover) cover=1; shift ;;
     -3* | --32) build32=1; shift ;;
     -6* | --64) build64=1; shift ;;
+    --acle) buildacle=1; shift ;;
     -n | --native) native=1; shift ;;
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
@@ -195,7 +198,7 @@ show()
 # check for gcc vs. cc and set compile and link flags based on the system identified by uname
 cat > $test.c <<EOF
 extern int getchar();
-int hello() {return getchar();}
+int main() {return getchar();}
 EOF
 
 test -z "$CC" && echo Checking for ${CROSS_PREFIX}gcc... | tee -a configure.log
@@ -239,6 +242,17 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
     x86_64)
       if test $build32 -ne 1; then
         ARCH=$GCC_ARCH
+      fi ;;
+    arm)
+      if test "${uname}" = "eabi"; then
+        uname=arm
+      fi
+      if test $buildacle -eq 1; then
+        if test $native -eq 0; then
+          ARCH=armv8-a+crc
+        else
+          ARCH=native
+        fi
       fi ;;
   esac
   CFLAGS="${CFLAGS--O3}"
@@ -808,7 +822,7 @@ case "${ARCH}" in
     ;;
 
     # ARM specific optimizations
-    armv3l | armv4b | armv4l | armv4tl | armv5tel | armv5tejl | armv6l | armv6hl | armv7l | armv7hl | armv7hnl)
+    arm | armv3l | armv4b | armv4l | armv4tl | armv5tel | armv5tejl | armv6l | armv6hl | armv7l | armv7hl | armv7hnl | armv8-a | armv8-a+crc | armv8.1-a)
 	ARCHDIR=arch/arm
 
         case "${ARCH}" in
@@ -817,6 +831,14 @@ case "${ARCH}" in
                 # provide performance improvements, totaling about 1.5% for the two.
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+            ;;
+            armv8-a+crc | armv8.1-a)
+                CFLAGS="-march=${ARCH} ${CFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
+                SFLAGS="-march=${ARCH} ${SFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
+
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+
             ;;
         esac
 
