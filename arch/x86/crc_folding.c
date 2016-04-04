@@ -22,7 +22,7 @@
 #include <immintrin.h>
 #include <wmmintrin.h>
 
-#include "deflate.h"
+#include "crc_folding.h"
 
 
 #define CRC_LOAD(s) \
