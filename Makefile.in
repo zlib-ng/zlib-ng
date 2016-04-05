@@ -160,37 +160,37 @@ endif
 endif
 
 example$(EXE): example.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ example.o $(TEST_LIBS)
+	$(CC) $(LDFLAGS) -o $@ example.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 minigzip$(EXE): minigzip.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ minigzip.o $(TEST_LIBS)
+	$(CC) $(LDFLAGS) -o $@ minigzip.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 examplesh$(EXE): example.o $(SHAREDTARGET)
-	$(CC) $(LDFLAGS) -o $@ example.o $(SHAREDTARGET)
+	$(CC) $(LDFLAGS) -o $@ example.o $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 minigzipsh$(EXE): minigzip.o $(SHAREDTARGET)
-	$(CC) $(LDFLAGS) -o $@ minigzip.o $(SHAREDTARGET)
+	$(CC) $(LDFLAGS) -o $@ minigzip.o $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 example64$(EXE): example64.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ example64.o $(TEST_LIBS)
+	$(CC) $(LDFLAGS) -o $@ example64.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 minigzip64$(EXE): minigzip64.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ minigzip64.o $(TEST_LIBS)
+	$(CC) $(LDFLAGS) -o $@ minigzip64.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -323,6 +323,8 @@ inffast.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRC
 inftrees.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h
 trees.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/trees.h
 zutil.o: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib.h zconf.h
+arch/aarch64/crc32_acle.o: zconf.h
+arch/aarch64/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/arm/crc32_acle.o: zconf.h
 arch/arm/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/crc_folding.o: $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
@@ -344,6 +346,8 @@ inffast.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SR
 inftrees.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h
 trees.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/trees.h
 zutil.lo: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib.h zconf.h
+arch/aarch64/crc32_acle.lo: zconf.h
+arch/aarch64/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/arm/crc32_acle.lo: zconf.h
 arch/arm/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/crc_folding.lo: $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
