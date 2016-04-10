@@ -1,4 +1,4 @@
-/* fill_window_arm.c -- Optimized hash table shifting for ARM
+/* fill_window_arm.c -- Optimized hash table shifting for ARM with support for NEON instructions
  * Copyright (C) 2017 Mika T. Lindqvist
  *
  * Authors:
@@ -13,6 +13,10 @@
 #include "deflate_p.h"
 
 extern ZLIB_INTERNAL int read_buf        (z_stream *strm, unsigned char *buf, unsigned size);
+
+#if __ARM_NEON
+#include <arm_neon.h>
+#endif
 
 void fill_window_arm(deflate_state *s) {
     register unsigned n;
@@ -41,24 +45,38 @@ void fill_window_arm(deflate_state *s) {
                later. (Using level 0 permanently is not an optimal usage of
                zlib, so we don't care about this pathological case.)
              */
-            {
-                n = s->hash_size;
-                for (i = 0; i < n; i++) {
-                    if (s->head[i] >= wsize)
-                        s->head[i] -= wsize;
-                    else
-                        s->head[i] = NIL;
-                }
+
+            n = s->hash_size;
+#if __ARM_NEON
+            uint16x8_t neon_wsize = vdupq_n_u16(wsize);
+            uint16_t * p = s->head;
+            for (i = 0; i < n; i+=8) {
+                uint16x8_t h = vld1q_u16(p);
+                vst1q_u16(p, vqsubq_u16(h, neon_wsize));
+                p += 8;
             }
 
-            {
-                for (i = 0; i < wsize; i++) {
-                    if (s->prev[i] >= wsize)
-                        s->prev[i] -= wsize;
-                    else
-                        s->prev[i] = NIL;
-                }
+            p = s->prev;
+            for (i = 0; i < wsize; i+=8) {
+                uint16x8_t h = vld1q_u16(p);
+                vst1q_u16(p, vqsubq_u16(h, neon_wsize));
+                p+= 8;
             }
+#else
+            for (i = 0; i < n; i++) {
+                if (s->head[i] >= wsize)
+                    s->head[i] -= wsize;
+                else
+                    s->head[i] = NIL;
+            }
+
+            for (i = 0; i < wsize; i++) {
+                if (s->prev[i] >= wsize)
+                    s->prev[i] -= wsize;
+                else
+                    s->prev[i] = NIL;
+            }
+#endif
             more += wsize;
         }
         if (s->strm->avail_in == 0)

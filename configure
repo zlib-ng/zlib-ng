@@ -106,6 +106,7 @@ cover=0
 build32=0
 build64=0
 buildacle=0
+buildneon=0
 native=0
 sse2flag="-msse2"
 sse4flag="-msse4"
@@ -146,7 +147,7 @@ case "$1" in
       echo '  configure [--zlib-compat] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
       echo '    [--static] [--32] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
       echo '    [--includedir=INCLUDEDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
-      echo '    [--acle]' | tee -a configure.log
+      echo '    [--acle] [--neon]' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=`echo $1 | sed 's/.*=//'`; shift ;;
     -e*=* | --eprefix=*) exec_prefix=`echo $1 | sed 's/.*=//'`; shift ;;
@@ -165,6 +166,7 @@ case "$1" in
     -3* | --32) build32=1; shift ;;
     -6* | --64) build64=1; shift ;;
     --acle) buildacle=1; shift ;;
+    --neon) buildneon=1; shift ;;
     -n | --native) native=1; shift ;;
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
@@ -829,7 +831,7 @@ case "${ARCH}" in
     ;;
 
     # ARM specific optimizations
-    arm | armv3l | armv4b | armv4l | armv4tl | armv5tel | armv5tejl | armv6l | armv6hl | armv7l | armv7hl | armv7hnl | armv8-a | armv8-a+crc | armv8.1-a)
+    arm | armv[3467]l | armv4b | armv4tl | armv5tel | armv5tejl | armv[67]hl | armv7hnl | armv[78]-a | armv8-a+* | armv8.[12]-a)
 	ARCHDIR=arch/arm
 	ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
 	ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
@@ -841,7 +843,16 @@ case "${ARCH}" in
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
             ;;
-            armv8-a+crc | armv8.1-a)
+            arm | armv7* | armv8-a | armv8-a+simd)
+                CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+                SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+
+                if test $buildneon -eq 1; then
+                    CFLAGS="${CFLAGS} -mfloat-abi=softfp -mfpu=neon"
+                    SFLAGS="${SFLAGS} -mfloat-abi=softfp -mfpu=neon"
+                fi
+            ;;
+            armv8-a+crc | armv8-a+crc+simd | armv8.[12]-a)
                 CFLAGS="-march=${ARCH} ${CFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="-march=${ARCH} ${SFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
 
@@ -858,14 +869,25 @@ case "${ARCH}" in
     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
 
+    if test $native -eq 0; then
+      ARCH="armv8-a"
+    else
+      ARCH="native"
+    fi
     if test $buildacle -eq 1; then
-       CFLAGS="-march=armv8-a+crc ${CFLAGS} -DARM_ACLE_CRC_HASH"
-       SFLAGS="-march=armv8-a+crc ${SFLAGS} -DARM_ACLE_CRC_HASH"
+       if test $native -eq 0; then
+         ARCH="${ARCH}+crc"
+       fi
+       CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
+       SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
     fi
-    CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
-    SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+    if test $buildneon -eq 1 && test $native -eq 0; then
+        ARCH="${ARCH}+simd"
+    fi
+    CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+    SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
     ;;
 esac
 

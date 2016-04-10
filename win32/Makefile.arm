@@ -30,6 +30,9 @@ RCFLAGS = /dARM /r
 DEFFILE = zlib.def
 WITH_GZFILEOP =
 WITH_ACLE =
+WITH_NEON =
+WITH_VFPV3 =
+NEON_ARCH = /arch:VFPv4
 
 OBJS = adler32.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_slow.obj \
        infback.obj inflate.obj inftrees.obj inffast.obj match.obj trees.obj uncompr.obj zutil.obj fill_window_arm.obj
@@ -41,6 +44,13 @@ DEFFILE = zlibcompat.def
 !if "$(WITH_ACLE)" != ""
 WFLAGS = $(WFLAGS) -DARM_ACLE_CRC_HASH
 OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj
+!endif
+!if "$(WITH_VFPV3)" != ""
+NEON_ARCH = /arch:VFPv3
+!endif
+!if "$(WITH_NEON)" != ""
+CFLAGS = $(CFLAGS) $(NEON_ARCH)
+WFLAGS = $(WFLAGS) -D__ARM_NEON__=1
 !endif
 
 # targets
