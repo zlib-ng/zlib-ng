@@ -324,8 +324,10 @@ inftrees.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h
 trees.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/trees.h
 zutil.o: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib.h zconf.h
 arch/aarch64/crc32_acle.o: zconf.h
+arch/aarch64/fill_window_arm.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/aarch64/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/arm/crc32_acle.o: zconf.h
+arch/arm/fill_window_arm.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/arm/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/crc_folding.o: $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/crc_pclmulqdq.o: $(SRCDIR)/arch/x86/x86.h $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
@@ -347,8 +349,10 @@ inftrees.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h
 trees.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/trees.h
 zutil.lo: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib.h zconf.h
 arch/aarch64/crc32_acle.lo: zconf.h
+arch/aarch64/fill_window_arm.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/aarch64/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/arm/crc32_acle.lo: zconf.h
+arch/arm/fill_window_arm.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/arm/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/crc_folding.lo: $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/crc_pclmulqdq.lo: $(SRCDIR)/arch/x86/x86.h $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h

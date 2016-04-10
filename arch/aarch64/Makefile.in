@@ -11,13 +11,19 @@ SRCDIR=.
 SRCTOP=../..
 TOPDIR=$(SRCTOP)
 
-all: crc32_acle.o crc32_acle.lo insert_string_acle.o insert_string_acle.lo
+all: crc32_acle.o crc32_acle.lo fill_window_arm.o fill_window_arm.lo insert_string_acle.o insert_string_acle.lo
 
 crc32_acle.o: $(SRCDIR)/crc32_acle.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
 
 crc32_acle.lo: $(SRCDIR)/crc32_acle.c
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
+
+fill_window_arm.o: ${SRCDIR}/fill_window_arm.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/fill_window_arm.c
+
+fill_window_arm.lo: ${SRCDIR}/fill_window_arm.c
+	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/fill_window_arm.c
 
 insert_string_acle.o: $(SRCDIR)/insert_string_acle.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_acle.c
@@ -43,7 +49,9 @@ depend:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 crc32_acle.o: $(TOPDIR)/zconf.h
+fill_window_arm.o: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 insert_string_acle.o: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 
 crc32_acle.lo: $(TOPDIR)/zconf.h
+fill_window_arm.lo: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 insert_string_acle.lo: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h

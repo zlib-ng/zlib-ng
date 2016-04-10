@@ -831,6 +831,8 @@ case "${ARCH}" in
     # ARM specific optimizations
     arm | armv3l | armv4b | armv4l | armv4tl | armv5tel | armv5tejl | armv6l | armv6hl | armv7l | armv7hl | armv7hnl | armv8-a | armv8-a+crc | armv8.1-a)
 	ARCHDIR=arch/arm
+	ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
+	ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
 
         case "${ARCH}" in
             armv6l | armv6hl)
@@ -853,6 +855,9 @@ case "${ARCH}" in
     # 64-bit ARM specific optimizations
     aarch64)
     ARCHDIR=arch/aarch64
+    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
+    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
+
     if test $buildacle -eq 1; then
        CFLAGS="-march=armv8-a+crc ${CFLAGS} -DARM_ACLE_CRC_HASH"
        SFLAGS="-march=armv8-a+crc ${SFLAGS} -DARM_ACLE_CRC_HASH"
