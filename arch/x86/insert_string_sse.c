@@ -19,7 +19,7 @@
 Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count) {
     Pos ret = 0;
     unsigned int idx;
-    unsigned *ip, val, h = 0;
+    unsigned *ip, val, h;
 
     for (idx = 0; idx < count; idx++) {
         ip = (unsigned *)&s->window[str+idx];
