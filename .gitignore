@@ -37,6 +37,7 @@ CMakeCache.txt
 CMakeFiles
 Testing
 *.cmake
+*.stackdump
 zconf.h
 zconf.h.cmakein
 zconf.h.included

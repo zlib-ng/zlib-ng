@@ -455,6 +455,9 @@ echo >> configure.log
 # check for large file support, and if none, check for fseeko()
 cat > $test.c <<EOF
 #include <sys/types.h>
+#ifdef __MSYS__
+#  define off64_t _off64_t
+#endif
 off64_t dummy = 0;
 EOF
 if try $CC -c $CFLAGS -D_LARGEFILE64_SOURCE=1 $test.c; then
