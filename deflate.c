@@ -295,10 +295,9 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
     if (windowBits == 8) windowBits = 9;  /* until 256-byte window bug fixed */
 
 #ifdef USE_QUICK
-    if (level == 1)
+    if (level == 1 && windowBits > 13)
         windowBits = 13;
 #endif
-
     s = (deflate_state *) ZALLOC(strm, 1, sizeof(deflate_state));
     if (s == Z_NULL) return Z_MEM_ERROR;
     strm->state = (struct internal_state FAR *)s;
