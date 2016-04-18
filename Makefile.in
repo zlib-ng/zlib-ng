@@ -302,7 +302,7 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-adler32.o zutil.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+adler32.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 gzclose.o gzlib.o gzread.o gzwrite.o: $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/gzguts.h
 compress.o example.o minigzip.o uncompr.o: $(SRCDIR)/zlib.h zconf.h
 crc32.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/crc32.h
@@ -314,8 +314,9 @@ infback.o inflate.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftre
 inffast.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h
 inftrees.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h
 trees.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/trees.h
+zutil.o: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib.h zconf.h
 
-adler32.lo zutil.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+adler32.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 gzclose.lo gzlib.lo gzread.lo gzwrite.lo: $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/gzguts.h
 compress.lo example.lo minigzip.lo uncompr.lo: $(SRCDIR)/zlib.h zconf.h
 crc32.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/crc32.h
@@ -327,3 +328,4 @@ infback.lo inflate.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inft
 inffast.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h
 inftrees.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h
 trees.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/trees.h
+zutil.lo: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib.h zconf.h
