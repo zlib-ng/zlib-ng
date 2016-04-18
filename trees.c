@@ -255,6 +255,9 @@ void gen_trees_header() {
     int i;
 
     Assert(header != NULL, "Can't open trees.h");
+    fprintf(header, "#ifndef TREES_H_\n");
+    fprintf(header, "#define TREES_H_\n\n");
+
     fprintf(header, "/* header created automatically with -DGEN_TREES_H */\n\n");
 
     fprintf(header, "ZLIB_INTERNAL const ct_data static_ltree[L_CODES+2] = {\n");
@@ -287,6 +290,7 @@ void gen_trees_header() {
         fprintf(header, "%5d%s", base_dist[i], SEPARATOR(i, D_CODES-1, 10));
     }
 
+    fprintf(header, "#endif /* TREES_H_ */\n");
     fclose(header);
 }
 #endif /* GEN_TREES_H */
