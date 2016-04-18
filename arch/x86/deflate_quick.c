@@ -19,6 +19,10 @@
 #endif
 #include "deflate.h"
 
+#ifdef DEBUG
+#include <ctype.h>
+#endif
+
 extern void fill_window_sse(deflate_state *s);
 extern void flush_pending(z_stream *strm);
 
