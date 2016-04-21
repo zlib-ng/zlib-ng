@@ -295,8 +295,8 @@ tags:
 	etags $(SRCDIR)/*.[ch]
 
 depend:
-	makedepend -- $(CFLAGS) -- $(SRCDIR)/*.[ch]
-	makedepend -a -o.lo -- $(SFLAGS) -- $(SRCDIR)/*.[ch]
+	makedepend -Y -- $(CFLAGS) -- $(SRCDIR)/*.c
+	makedepend -Y -a -o.lo -- $(SFLAGS) -- $(SRCDIR)/*.c
 	@sed "s=^$(SRCDIR)/\([a-zA-Z0-9_]*\.\(lo\|o\):\)=\1=g" < Makefile > Makefile.tmp
 	@mv -f Makefile.tmp Makefile
 
