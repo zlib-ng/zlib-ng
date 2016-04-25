@@ -118,9 +118,7 @@ typedef void       *voidp;
 #include <sys/types.h>      /* for off_t */
 #include <stdarg.h>         /* for va_list */
 
-#ifdef WIN32
-#  include <stddef.h>         /* for wchar_t */
-#endif
+#include <stddef.h>         /* for wchar_t and NULL */
 
 /* a little trick to accommodate both "#define _LARGEFILE64_SOURCE" and
  * "#define _LARGEFILE64_SOURCE 1" as requesting 64-bit operations, (even

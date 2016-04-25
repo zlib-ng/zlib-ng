@@ -111,7 +111,7 @@ gzFile gz_open(const char *path, int fd, const char *mode)
     gz->write = strchr(mode, 'w') != NULL;
     gz->strm.zalloc = myalloc;
     gz->strm.zfree = myfree;
-    gz->strm.opaque = Z_NULL;
+    gz->strm.opaque = NULL;
     gz->buf = malloc(gz->write ? BUFLENW : BUFLEN);
 
     if (gz->buf == NULL) {
@@ -129,8 +129,8 @@ gzFile gz_open(const char *path, int fd, const char *mode)
     if (gz->write)
         ret = deflateInit2(&(gz->strm), level, 8, 15 + 16, 8, 0);
     else {
-        gz->strm.next_in = 0;
-        gz->strm.avail_in = Z_NULL;
+        gz->strm.next_in = NULL;
+        gz->strm.avail_in = 0;
         ret = inflateInit2(&(gz->strm), 15 + 16);
     }
     if (ret != Z_OK) {
@@ -213,7 +213,7 @@ int gzclose(gzFile gz)
         return Z_STREAM_ERROR;
     strm = &(gz->strm);
     if (gz->write) {
-        strm->next_in = Z_NULL;
+        strm->next_in = NULL;
         strm->avail_in = 0;
         do {
             strm->next_out = gz->buf;

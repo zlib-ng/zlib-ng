@@ -177,18 +177,18 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
     x86_check_features();
 #endif
 
-    if (version == Z_NULL || version[0] != my_version[0] || stream_size != sizeof(z_stream)) {
+    if (version == NULL || version[0] != my_version[0] || stream_size != sizeof(z_stream)) {
         return Z_VERSION_ERROR;
     }
-    if (strm == Z_NULL)
+    if (strm == NULL)
         return Z_STREAM_ERROR;
 
-    strm->msg = Z_NULL;
-    if (strm->zalloc == (alloc_func)0) {
+    strm->msg = NULL;
+    if (strm->zalloc == NULL) {
         strm->zalloc = zcalloc;
         strm->opaque = NULL;
     }
-    if (strm->zfree == (free_func)0)
+    if (strm->zfree == NULL)
         strm->zfree = zcfree;
 
     if (level == Z_DEFAULT_COMPRESSION)
@@ -216,13 +216,13 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
 #endif
 
     s = (deflate_state *) ZALLOC(strm, 1, sizeof(deflate_state));
-    if (s == Z_NULL)
+    if (s == NULL)
         return Z_MEM_ERROR;
     strm->state = (struct internal_state *)s;
     s->strm = strm;
 
     s->wrap = wrap;
-    s->gzhead = Z_NULL;
+    s->gzhead = NULL;
     s->w_bits = windowBits;
     s->w_size = 1 << s->w_bits;
     s->w_mask = s->w_size - 1;
@@ -254,8 +254,8 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
     s->pending_buf = (unsigned char *) overlay;
     s->pending_buf_size = (unsigned long)s->lit_bufsize * (sizeof(uint16_t)+2L);
 
-    if (s->window == Z_NULL || s->prev == Z_NULL || s->head == Z_NULL ||
-        s->pending_buf == Z_NULL) {
+    if (s->window == NULL || s->prev == NULL || s->head == NULL ||
+        s->pending_buf == NULL) {
         s->status = FINISH_STATE;
         strm->msg = ERR_MSG(Z_MEM_ERROR);
         deflateEnd(strm);
@@ -279,7 +279,7 @@ int ZEXPORT deflateSetDictionary(z_stream *strm, const unsigned char *dictionary
     uint32_t avail;
     const unsigned char *next;
 
-    if (strm == Z_NULL || strm->state == Z_NULL || dictionary == Z_NULL)
+    if (strm == NULL || strm->state == NULL || dictionary == NULL)
         return Z_STREAM_ERROR;
     s = strm->state;
     wrap = s->wrap;
@@ -333,12 +333,12 @@ int ZEXPORT deflateSetDictionary(z_stream *strm, const unsigned char *dictionary
 int ZEXPORT deflateResetKeep(z_stream *strm) {
     deflate_state *s;
 
-    if (strm == Z_NULL || strm->state == Z_NULL || strm->zalloc == (alloc_func)0 || strm->zfree == (free_func)0) {
+    if (strm == NULL || strm->state == NULL || strm->zalloc == NULL || strm->zfree == NULL) {
         return Z_STREAM_ERROR;
     }
 
     strm->total_in = strm->total_out = 0;
-    strm->msg = Z_NULL; /* use zfree if we ever allocate msg dynamically */
+    strm->msg = NULL; /* use zfree if we ever allocate msg dynamically */
     strm->data_type = Z_UNKNOWN;
 
     s = (deflate_state *)strm->state;
@@ -350,9 +350,9 @@ int ZEXPORT deflateResetKeep(z_stream *strm) {
     }
     s->status = s->wrap ? INIT_STATE : BUSY_STATE;
 #ifdef GZIP
-    strm->adler = s->wrap == 2 ? crc32(0L, Z_NULL, 0) : adler32(0L, Z_NULL, 0);
+    strm->adler = s->wrap == 2 ? crc32(0L, NULL, 0) : adler32(0L, NULL, 0);
 #else
-    strm->adler = adler32(0L, Z_NULL, 0);
+    strm->adler = adler32(0L, NULL, 0);
 #endif
     s->last_flush = Z_NO_FLUSH;
 
@@ -373,7 +373,7 @@ int ZEXPORT deflateReset(z_stream *strm) {
 
 /* ========================================================================= */
 int ZEXPORT deflateSetHeader(z_stream *strm, gz_headerp head) {
-    if (strm == Z_NULL || strm->state == Z_NULL)
+    if (strm == NULL || strm->state == NULL)
         return Z_STREAM_ERROR;
     if (strm->state->wrap != 2)
         return Z_STREAM_ERROR;
@@ -383,11 +383,11 @@ int ZEXPORT deflateSetHeader(z_stream *strm, gz_headerp head) {
 
 /* ========================================================================= */
 int ZEXPORT deflatePending(z_stream *strm, uint32_t *pending, int *bits) {
-    if (strm == Z_NULL || strm->state == Z_NULL)
+    if (strm == NULL || strm->state == NULL)
         return Z_STREAM_ERROR;
-    if (pending != Z_NULL)
+    if (pending != NULL)
         *pending = strm->state->pending;
-    if (bits != Z_NULL)
+    if (bits != NULL)
         *bits = strm->state->bi_valid;
     return Z_OK;
 }
@@ -397,7 +397,7 @@ int ZEXPORT deflatePrime(z_stream *strm, int bits, int value) {
     deflate_state *s;
     int put;
 
-    if (strm == Z_NULL || strm->state == Z_NULL)
+    if (strm == NULL || strm->state == NULL)
         return Z_STREAM_ERROR;
     s = strm->state;
     if ((unsigned char *)(s->d_buf) < s->pending_out + ((Buf_size + 7) >> 3))
@@ -421,7 +421,7 @@ int ZEXPORT deflateParams(z_stream *strm, int level, int strategy) {
     compress_func func;
     int err = Z_OK;
 
-    if (strm == Z_NULL || strm->state == Z_NULL)
+    if (strm == NULL || strm->state == NULL)
         return Z_STREAM_ERROR;
     s = strm->state;
 
@@ -453,7 +453,7 @@ int ZEXPORT deflateParams(z_stream *strm, int level, int strategy) {
 int ZEXPORT deflateTune(z_stream *strm, int good_length, int max_lazy, int nice_length, int max_chain) {
     deflate_state *s;
 
-    if (strm == Z_NULL || strm->state == Z_NULL)
+    if (strm == NULL || strm->state == NULL)
         return Z_STREAM_ERROR;
     s = strm->state;
     s->good_match = good_length;
@@ -489,7 +489,7 @@ unsigned long ZEXPORT deflateBound(z_stream *strm, unsigned long sourceLen) {
     complen = sourceLen + ((sourceLen + 7) >> 3) + ((sourceLen + 63) >> 6) + 5;
 
     /* if can't get parameters, return conservative bound plus zlib wrapper */
-    if (strm == Z_NULL || strm->state == Z_NULL)
+    if (strm == NULL || strm->state == NULL)
         return complen + 6;
 
     /* compute wrapper length */
@@ -503,18 +503,18 @@ unsigned long ZEXPORT deflateBound(z_stream *strm, unsigned long sourceLen) {
         break;
     case 2:                                 /* gzip wrapper */
         wraplen = 18;
-        if (s->gzhead != Z_NULL) {          /* user-supplied gzip header */
-            if (s->gzhead->extra != Z_NULL) {
+        if (s->gzhead != NULL) {            /* user-supplied gzip header */
+            if (s->gzhead->extra != NULL) {
                 wraplen += 2 + s->gzhead->extra_len;
             }
             str = s->gzhead->name;
-            if (str != Z_NULL) {
+            if (str != NULL) {
                 do {
                     wraplen++;
                 } while (*str++);
             }
             str = s->gzhead->comment;
-            if (str != Z_NULL) {
+            if (str != NULL) {
                 do {
                     wraplen++;
                 } while (*str++);
@@ -578,12 +578,12 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
     int old_flush; /* value of flush param for previous deflate call */
     deflate_state *s;
 
-    if (strm == Z_NULL || strm->state == Z_NULL || flush > Z_BLOCK || flush < 0) {
+    if (strm == NULL || strm->state == NULL || flush > Z_BLOCK || flush < 0) {
         return Z_STREAM_ERROR;
     }
     s = strm->state;
 
-    if (strm->next_out == Z_NULL || (strm->avail_in != 0 && strm->next_in == Z_NULL) ||
+    if (strm->next_out == NULL || (strm->avail_in != 0 && strm->next_in == NULL) ||
         (s->status == FINISH_STATE && flush != Z_FINISH)) {
         ERR_RETURN(strm, Z_STREAM_ERROR);
     }
@@ -602,7 +602,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
             put_byte(s, 31);
             put_byte(s, 139);
             put_byte(s, 8);
-            if (s->gzhead == Z_NULL) {
+            if (s->gzhead == NULL) {
                 put_byte(s, 0);
                 put_byte(s, 0);
                 put_byte(s, 0);
@@ -616,9 +616,9 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
             } else {
                 put_byte(s, (s->gzhead->text ? 1 : 0) +
                             (s->gzhead->hcrc ? 2 : 0) +
-                            (s->gzhead->extra == Z_NULL ? 0 : 4) +
-                            (s->gzhead->name == Z_NULL ? 0 : 8) +
-                            (s->gzhead->comment == Z_NULL ? 0 : 16) );
+                            (s->gzhead->extra == NULL ? 0 : 4) +
+                            (s->gzhead->name == NULL ? 0 : 8) +
+                            (s->gzhead->comment == NULL ? 0 : 16) );
                 put_byte(s, (unsigned char)(s->gzhead->time & 0xff));
                 put_byte(s, (unsigned char)((s->gzhead->time >> 8) & 0xff));
                 put_byte(s, (unsigned char)((s->gzhead->time >> 16) & 0xff));
@@ -627,7 +627,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
                             (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ?
                              4 : 0));
                 put_byte(s, s->gzhead->os & 0xff);
-                if (s->gzhead->extra != Z_NULL) {
+                if (s->gzhead->extra != NULL) {
                     put_byte(s, s->gzhead->extra_len & 0xff);
                     put_byte(s, (s->gzhead->extra_len >> 8) & 0xff);
                 }
@@ -663,12 +663,12 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
                 putShortMSB(s, (uint16_t)(strm->adler >> 16));
                 putShortMSB(s, (uint16_t)strm->adler);
             }
-            strm->adler = adler32(0L, Z_NULL, 0);
+            strm->adler = adler32(0L, NULL, 0);
         }
     }
 #ifdef GZIP
     if (s->status == EXTRA_STATE) {
-        if (s->gzhead->extra != Z_NULL) {
+        if (s->gzhead->extra != NULL) {
             uint32_t beg = s->pending;  /* start of bytes to update crc */
 
             while (s->gzindex < (s->gzhead->extra_len & 0xffff)) {
@@ -694,7 +694,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
         }
     }
     if (s->status == NAME_STATE) {
-        if (s->gzhead->name != Z_NULL) {
+        if (s->gzhead->name != NULL) {
             uint32_t beg = s->pending;  /* start of bytes to update crc */
             int val;
 
@@ -723,7 +723,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
         }
     }
     if (s->status == COMMENT_STATE) {
-        if (s->gzhead->comment != Z_NULL) {
+        if (s->gzhead->comment != NULL) {
             uint32_t beg = s->pending;  /* start of bytes to update crc */
             int val;
 
@@ -756,7 +756,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
             if (s->pending + 2 <= s->pending_buf_size) {
                 put_byte(s, (unsigned char)(strm->adler & 0xff));
                 put_byte(s, (unsigned char)((strm->adler >> 8) & 0xff));
-                strm->adler = crc32(0L, Z_NULL, 0);
+                strm->adler = crc32(0L, NULL, 0);
                 s->status = BUSY_STATE;
             }
         } else {
@@ -884,7 +884,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
 int ZEXPORT deflateEnd(z_stream *strm) {
     int status;
 
-    if (strm == Z_NULL || strm->state == Z_NULL)
+    if (strm == NULL || strm->state == NULL)
         return Z_STREAM_ERROR;
 
     status = strm->state->status;
@@ -905,7 +905,7 @@ int ZEXPORT deflateEnd(z_stream *strm) {
     TRY_FREE(strm, strm->state->window);
 
     ZFREE(strm, strm->state);
-    strm->state = Z_NULL;
+    strm->state = NULL;
 
     return status == BUSY_STATE ? Z_DATA_ERROR : Z_OK;
 }
@@ -918,7 +918,7 @@ int ZEXPORT deflateCopy(z_stream *dest, z_stream *source) {
     deflate_state *ss;
     uint16_t *overlay;
 
-    if (source == Z_NULL || dest == Z_NULL || source->state == Z_NULL) {
+    if (source == NULL || dest == NULL || source->state == NULL) {
         return Z_STREAM_ERROR;
     }
 
@@ -927,7 +927,7 @@ int ZEXPORT deflateCopy(z_stream *dest, z_stream *source) {
     memcpy((void *)dest, (void *)source, sizeof(z_stream));
 
     ds = (deflate_state *) ZALLOC(dest, 1, sizeof(deflate_state));
-    if (ds == Z_NULL)
+    if (ds == NULL)
         return Z_MEM_ERROR;
     dest->state = (struct internal_state *) ds;
     memcpy((void *)ds, (void *)ss, sizeof(deflate_state));
@@ -939,7 +939,7 @@ int ZEXPORT deflateCopy(z_stream *dest, z_stream *source) {
     overlay = (uint16_t *) ZALLOC(dest, ds->lit_bufsize, sizeof(uint16_t)+2);
     ds->pending_buf = (unsigned char *) overlay;
 
-    if (ds->window == Z_NULL || ds->prev == Z_NULL || ds->head == Z_NULL || ds->pending_buf == Z_NULL) {
+    if (ds->window == NULL || ds->prev == NULL || ds->head == NULL || ds->pending_buf == NULL) {
         deflateEnd(dest);
         return Z_MEM_ERROR;
     }

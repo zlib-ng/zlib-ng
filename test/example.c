@@ -40,8 +40,8 @@ void test_dict_inflate  (unsigned char *compr, size_t comprLen, unsigned char *u
 int  main               (int argc, char *argv[]);
 
 
-static alloc_func zalloc = (alloc_func)0;
-static free_func zfree = (free_func)0;
+static alloc_func zalloc = NULL;
+static free_func zfree = NULL;
 
 void test_compress      (unsigned char *compr, size_t comprLen,
                             unsigned char *uncompr, size_t uncomprLen);
@@ -512,7 +512,7 @@ int main(int argc, char *argv[])
     /* compr and uncompr are cleared to avoid reading uninitialized
      * data and to ensure that uncompr compresses well.
      */
-    if (compr == Z_NULL || uncompr == Z_NULL) {
+    if (compr == NULL || uncompr == NULL) {
         printf("out of memory\n");
         exit(1);
     }

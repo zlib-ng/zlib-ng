@@ -29,8 +29,8 @@ int ZEXPORT compress2(unsigned char *dest, size_t *destLen, const unsigned char 
     left = *destLen;
     *destLen = 0;
 
-    stream.zalloc = (alloc_func)0;
-    stream.zfree = (free_func)0;
+    stream.zalloc = NULL;
+    stream.zfree = NULL;
     stream.opaque = NULL;
 
     err = deflateInit(&stream, level);

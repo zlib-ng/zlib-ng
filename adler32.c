@@ -80,7 +80,7 @@ uint32_t ZEXPORT adler32(uint32_t adler, const unsigned char *buf, uint32_t len)
     }
 
     /* initial Adler-32 value (deferred check for len == 1 speed) */
-    if (buf == Z_NULL)
+    if (buf == NULL)
         return 1L;
 
     /* in case short lengths are provided, keep it somewhat fast */

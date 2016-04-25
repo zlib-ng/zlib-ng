@@ -212,7 +212,7 @@ const uint32_t * ZEXPORT get_crc_table(void) {
 
 /* ========================================================================= */
 uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, z_off64_t len) {
-    if (buf == Z_NULL) return 0;
+    if (buf == NULL) return 0;
 
 #ifdef DYNAMIC_CRC_TABLE
     if (crc_table_empty)

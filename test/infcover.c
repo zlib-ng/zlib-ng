@@ -45,7 +45,7 @@
                             allocated, then "msg" and information about the
                             problem is printed to stderr.  If everything is
                             normal, nothing is printed. mem_done resets the
-                            strm members to Z_NULL to use the default memory
+                            strm members to NULL to use the default memory
                             allocation routines on the next zlib initialization
                             using strm.
  */
@@ -226,9 +226,9 @@ static void mem_done(z_stream *strm, char *prefix)
 
     /* free the zone and delete from the stream */
     free(zone);
-    strm->opaque = Z_NULL;
-    strm->zalloc = Z_NULL;
-    strm->zfree = Z_NULL;
+    strm->opaque = NULL;
+    strm->zalloc = NULL;
+    strm->zfree = NULL;
 }
 
 /* -- inflate test routines -- */
@@ -289,7 +289,7 @@ static void inf(char *hex, char *what, unsigned step, int win, unsigned len, int
 
     mem_setup(&strm);
     strm.avail_in = 0;
-    strm.next_in = Z_NULL;
+    strm.next_in = NULL;
     ret = inflateInit2(&strm, win);
     if (ret != Z_OK) {
         mem_done(&strm, what);
@@ -351,12 +351,12 @@ static void cover_support(void)
 
     mem_setup(&strm);
     strm.avail_in = 0;
-    strm.next_in = Z_NULL;
+    strm.next_in = NULL;
     ret = inflateInit(&strm);                   assert(ret == Z_OK);
     mem_used(&strm, "inflate init");
     ret = inflatePrime(&strm, 5, 31);           assert(ret == Z_OK);
     ret = inflatePrime(&strm, -1, 0);           assert(ret == Z_OK);
-    ret = inflateSetDictionary(&strm, Z_NULL, 0);
+    ret = inflateSetDictionary(&strm, NULL, 0);
                                                 assert(ret == Z_STREAM_ERROR);
     ret = inflateEnd(&strm);                    assert(ret == Z_OK);
     mem_done(&strm, "prime");
@@ -369,13 +369,13 @@ static void cover_support(void)
 
     mem_setup(&strm);
     strm.avail_in = 0;
-    strm.next_in = Z_NULL;
+    strm.next_in = NULL;
     ret = inflateInit_(&strm, ZLIB_VERSION + 1, (int)sizeof(z_stream));
                                                 assert(ret == Z_VERSION_ERROR);
     mem_done(&strm, "wrong version");
 
     strm.avail_in = 0;
-    strm.next_in = Z_NULL;
+    strm.next_in = NULL;
     ret = inflateInit(&strm);                   assert(ret == Z_OK);
     ret = inflateEnd(&strm);                    assert(ret == Z_OK);
     fputs("inflate built-in memory routines\n", stderr);
@@ -388,9 +388,9 @@ static void cover_wrap(void)
     z_stream strm, copy;
     unsigned char dict[257];
 
-    ret = inflate(Z_NULL, 0);                   assert(ret == Z_STREAM_ERROR);
-    ret = inflateEnd(Z_NULL);                   assert(ret == Z_STREAM_ERROR);
-    ret = inflateCopy(Z_NULL, Z_NULL);          assert(ret == Z_STREAM_ERROR);
+    ret = inflate(NULL, 0);                     assert(ret == Z_STREAM_ERROR);
+    ret = inflateEnd(NULL);                     assert(ret == Z_STREAM_ERROR);
+    ret = inflateCopy(NULL, NULL);              assert(ret == Z_STREAM_ERROR);
     fputs("inflate bad parameters\n", stderr);
 
     inf("1f 8b 0 0", "bad gzip method", 0, 31, 0, Z_DATA_ERROR);
@@ -409,7 +409,7 @@ static void cover_wrap(void)
 
     mem_setup(&strm);
     strm.avail_in = 0;
-    strm.next_in = Z_NULL;
+    strm.next_in = NULL;
     ret = inflateInit2(&strm, -8);
     strm.avail_in = 2;
     strm.next_in = (void *)"\x63";
@@ -447,12 +447,12 @@ static unsigned pull(void *desc, const unsigned char **buf)
     static unsigned char dat[] = {0x63, 0, 2, 0};
     struct inflate_state *state;
 
-    if (desc == Z_NULL) {
+    if (desc == NULL) {
         next = 0;
         return 0;   /* no input (already provided at next_in) */
     }
     state = (void *)((z_stream *)desc)->state;
-    if (state != Z_NULL)
+    if (state != NULL)
         state->mode = SYNC;     /* force an otherwise impossible situation */
     return next < sizeof(dat) ? (*buf = dat + next++, 1) : 0;
 }
@@ -460,7 +460,7 @@ static unsigned pull(void *desc, const unsigned char **buf)
 static int push(void *desc, unsigned char *buf, unsigned len)
 {
     buf += len;
-    return desc != Z_NULL;      /* force error if desc not null */
+    return desc != NULL;        /* force error if desc not null */
 }
 
 /* cover inflateBack() up to common deflate data cases and after those */
@@ -470,27 +470,27 @@ static void cover_back(void)
     z_stream strm;
     unsigned char win[32768];
 
-    ret = inflateBackInit_(Z_NULL, 0, win, 0, 0);
+    ret = inflateBackInit_(NULL, 0, win, 0, 0);
                                                 assert(ret == Z_VERSION_ERROR);
-    ret = inflateBackInit(Z_NULL, 0, win);      assert(ret == Z_STREAM_ERROR);
-    ret = inflateBack(Z_NULL, Z_NULL, Z_NULL, Z_NULL, Z_NULL);
+    ret = inflateBackInit(NULL, 0, win);        assert(ret == Z_STREAM_ERROR);
+    ret = inflateBack(NULL, NULL, NULL, NULL, NULL);
                                                 assert(ret == Z_STREAM_ERROR);
-    ret = inflateBackEnd(Z_NULL);               assert(ret == Z_STREAM_ERROR);
+    ret = inflateBackEnd(NULL);                 assert(ret == Z_STREAM_ERROR);
     fputs("inflateBack bad parameters\n", stderr);
 
     mem_setup(&strm);
     ret = inflateBackInit(&strm, 15, win);      assert(ret == Z_OK);
     strm.avail_in = 2;
     strm.next_in = (void *)"\x03";
-    ret = inflateBack(&strm, pull, Z_NULL, push, Z_NULL);
+    ret = inflateBack(&strm, pull, NULL, push, NULL);
                                                 assert(ret == Z_STREAM_END);
         /* force output error */
     strm.avail_in = 3;
     strm.next_in = (void *)"\x63\x00";
-    ret = inflateBack(&strm, pull, Z_NULL, push, &strm);
+    ret = inflateBack(&strm, pull, NULL, push, &strm);
                                                 assert(ret == Z_BUF_ERROR);
         /* force mode error by mucking with state */
-    ret = inflateBack(&strm, pull, &strm, push, Z_NULL);
+    ret = inflateBack(&strm, pull, &strm, push, NULL);
                                                 assert(ret == Z_STREAM_ERROR);
     ret = inflateBackEnd(&strm);                assert(ret == Z_OK);
     mem_done(&strm, "inflateBack bad state");
@@ -527,7 +527,7 @@ static int try(char *hex, char *id, int err)
     strcat(prefix, "-late");
     mem_setup(&strm);
     strm.avail_in = 0;
-    strm.next_in = Z_NULL;
+    strm.next_in = NULL;
     ret = inflateInit2(&strm, err < 0 ? 47 : -15);
     assert(ret == Z_OK);
     strm.avail_in = len;
@@ -556,7 +556,7 @@ static int try(char *hex, char *id, int err)
         assert(ret == Z_OK);
         strm.avail_in = len;
         strm.next_in = in;
-        ret = inflateBack(&strm, pull, Z_NULL, push, Z_NULL);
+        ret = inflateBack(&strm, pull, NULL, push, NULL);
         assert(ret != Z_STREAM_ERROR);
         if (err) {
             assert(ret == Z_DATA_ERROR);
