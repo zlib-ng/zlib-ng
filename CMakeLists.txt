@@ -1,6 +1,5 @@
-cmake_minimum_required(VERSION 2.4.4)
+cmake_minimum_required(VERSION 2.8.4)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
-set(CMAKE_LEGACY_CYGWIN_WIN32 0) # Remove when CMake >= 2.8.4 is required
 
 project(zlib C)
 
@@ -277,18 +276,20 @@ endif()
 
 #
 # macro to add either the given intrinsics option to the global compiler options,
-# or ${NATIVEFLAG} (-march=native) if that is appropriate and possible. Should
-# probably avoid adding the same option multiple times if add_compile_options doesn't
-# already take care of that.
+# or ${NATIVEFLAG} (-march=native) if that is appropriate and possible.
 # An alternative version of this macro would take a file argument, and set ${flag}
 # only for that file as opposed to ${NATIVEFLAG} globally, to limit side-effect of
 # using ${flag} globally.
 #
 macro(add_intrinsics_option flag)
     if(WITH_NATIVE_INSTRUCTIONS AND NATIVEFLAG)
-        add_compile_options(${NATIVEFLAG})
+        if (NOT "${CMAKE_C_FLAGS} " MATCHES ".*${NATIVEFLAG} .*")
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NATIVEFLAG}")
+        endif()
     else()
-        add_compile_options(${flag})
+        if (NOT "${CMAKE_C_FLAGS} " MATCHES ".*${flag} .*")
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}")
+        endif()
     endif()
 endmacro(add_intrinsics_option)
 
@@ -313,6 +314,7 @@ if(WITH_OPTIM)
     set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/x86.c)
     if(HAVE_SSE42_INTRIN)
         add_definitions(-DX86_SSE4_2_CRC_HASH)
+        set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
         add_feature_info(SSE4_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set, using \"${SSE4FLAG}\"")
         add_intrinsics_option(${SSE4FLAG})
         if(WITH_NEW_STRATEGIES)
