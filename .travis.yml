@@ -4,7 +4,7 @@ compiler:
   - clang
 env:
   - BUILDDIR=. TOOL="./configure --zlib-compat"
-  - BUILDDIR=../build TOOL="../zlib-ng/configure"
+  - BUILDDIR=../build TOOL="../zlib-ng/configure --zlib-compat"
   - BUILDDIR=. TOOL="cmake ."
   - BUILDDIR=../build TOOL="cmake ../zlib-ng"
 script: mkdir -p $BUILDDIR && cd $BUILDDIR &&
