@@ -881,6 +881,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 mkdir -p test
 TESTINCLUDES="-I$SRCDIR"
 if [ "$SRCDIR" != "$BUILDDIR" ]; then TESTINCLUDES="${TESTINCLUDES} -I$BUILDDIR"; fi
+if test $compat -eq 1; then COMPATTESTS="compattests"; fi
 sed < $SRCDIR/test/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
@@ -889,6 +890,7 @@ sed < $SRCDIR/test/Makefile.in "
 /^INCLUDES *=/s#=.*#=$TESTINCLUDES#
 /^SRCDIR *=/s#=.*#=$SRCDIR/test#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
+/^COMPATTESTS *=/s#=.*#=$COMPATTESTS#
 " > test/Makefile
 
 # create zlib.pc with the configure results

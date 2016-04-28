@@ -10,7 +10,9 @@ SRCTOP=
 INCLUDES=
 TEST_LDFLAGS=-L.. ../libz.a
 
-all: oldtests cvetests
+COMPATTESTS =
+
+all: oldtests cvetests $(COMPATTESTS)
 
 oldtests: #set by ../configure
 
@@ -45,7 +47,10 @@ test64:
 	fi; \
 	rm -f $$TMP64
 
-cvetests: testCVE-2003-0107 testCVEinputs
+cvetests: testCVEinputs
+
+# Tests requiring zlib-ng to be built with --zlib-compat
+compattests: testCVE-2003-0107
 
 testCVEinputs:
 	@$(SRCDIR)/testCVEinputs.sh
