@@ -172,7 +172,7 @@ check_include_file(unistd.h Z_HAVE_UNISTD_H)
 check_include_file(stdarg.h Z_HAVE_STDARG_H)
 
 #
-# Check if we can hide zlib internal symbols that are linked between separate source files
+# Check if we can hide zlib internal symbols that are linked between separate source files using hidden
 #
 check_c_source_compiles(
     "#define ZLIB_INTERNAL __attribute__((visibility (\"hidden\")))
@@ -184,6 +184,21 @@ check_c_source_compiles(
     HAVE_ATTRIBUTE_VISIBILITY_HIDDEN FAIL_REGEX "not supported")
 if(HAVE_ATTRIBUTE_VISIBILITY_HIDDEN)
     add_definitions(-DHAVE_HIDDEN)
+endif()
+
+#
+# Check if we can hide zlib internal symbols that are linked between separate source files using internal
+#
+check_c_source_compiles(
+    "#define ZLIB_INTERNAL __attribute__((visibility (\"internal\")))
+    int ZLIB_INTERNAL foo;
+    int main()
+    {
+      return 0;
+    }"
+    HAVE_ATTRIBUTE_VISIBILITY_INTERNAL FAIL_REGEX "not supported")
+if(HAVE_ATTRIBUTE_VISIBILITY_INTERNAL)
+    add_definitions(-DHAVE_INTERNAL)
 endif()
 
 #
