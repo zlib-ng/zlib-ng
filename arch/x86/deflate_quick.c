@@ -220,6 +220,9 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
                     if (match_len > s->lookahead)
                         match_len = s->lookahead;
 
+                    if (match_len > MAX_MATCH)
+                        match_len = MAX_MATCH;
+
                     static_emit_ptr(s, match_len - MIN_MATCH, s->strstart - hash_head);
                     s->lookahead -= match_len;
                     s->strstart += match_len;
