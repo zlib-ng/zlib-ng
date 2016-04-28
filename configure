@@ -582,7 +582,7 @@ else
   leave 1
 fi
 
-# see if we can hide zlib internal symbols that are linked between separate source files
+# see if we can hide zlib internal symbols that are linked between separate source files using hidden
 if test "$gcc" -eq 1; then
   echo >> configure.log
   cat > $test.c <<EOF
@@ -597,10 +597,32 @@ EOF
     CFLAGS="$CFLAGS -DHAVE_HIDDEN"
     SFLAGS="$SFLAGS -DHAVE_HIDDEN"
     echo >> configure.log
-    echo "Checking for attribute(visibility) support... Yes." | tee -a configure.log
+    echo "Checking for attribute(visibility(hidden)) support... Yes." | tee -a configure.log
   else
     echo >> configure.log
-    echo "Checking for attribute(visibility) support... No." | tee -a configure.log
+    echo "Checking for attribute(visibility(hidden)) support... No." | tee -a configure.log
+  fi
+fi
+
+# see if we can hide zlib internal symbols that are linked between separate source files using internal
+if test "$gcc" -eq 1; then
+  echo >> configure.log
+  cat > $test.c <<EOF
+#define ZLIB_INTERNAL __attribute__((visibility ("internal")))
+int ZLIB_INTERNAL foo;
+int main()
+{
+  return 0;
+}
+EOF
+  if tryboth $CC -c $CFLAGS $test.c; then
+    CFLAGS="$CFLAGS -DHAVE_INTERNAL"
+    SFLAGS="$SFLAGS -DHAVE_INTERNAL"
+    echo >> configure.log
+    echo "Checking for attribute(visibility(internal)) support... Yes." | tee -a configure.log
+  else
+    echo >> configure.log
+    echo "Checking for attribute(visibility(internal)) support... No." | tee -a configure.log
   fi
 fi
 

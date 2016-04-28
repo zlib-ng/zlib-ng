@@ -12,7 +12,9 @@
 
 /* @(#) $Id$ */
 
-#ifdef HAVE_HIDDEN
+#if defined(HAVE_INTERNAL)
+#  define ZLIB_INTERNAL __attribute__((visibility ("internal")))
+#elif defined(HAVE_HIDDEN)
 #  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
 #else
 #  define ZLIB_INTERNAL
