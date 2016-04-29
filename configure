@@ -917,6 +917,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^INCLUDES *=/s#=.*#=$ARCHINCLUDES#
 /^SRCDIR *=/s#=.*#=$SRCDIR/$ARCHDIR#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
+/^TOPDIR *=/s#=.*#=$BUILDDIR#
 " > $ARCHDIR/Makefile
 
 # Generate Makefile in test dir
