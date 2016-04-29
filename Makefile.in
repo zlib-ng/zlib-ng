@@ -87,6 +87,8 @@ all64: example64$(EXE) minigzip64$(EXE)
 
 check: test
 
+.SECONDARY:
+
 $(ARCHDIR)/%.o: $(SRCDIR)/$(ARCHDIR)/%.c
 	$(MAKE) -C $(ARCHDIR) $(notdir $@)
 
