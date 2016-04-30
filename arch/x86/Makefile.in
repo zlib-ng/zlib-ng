@@ -7,6 +7,10 @@ CFLAGS=
 SFLAGS=
 INCLUDES=
 
+SSE2FLAG=-msse2
+SSE4FLAG=-msse4
+PCLMULFLAG=-mpclmul
+
 SRCDIR=.
 SRCTOP=../..
 TOPDIR=$(SRCTOP)
@@ -20,28 +24,28 @@ x86.lo: $(SRCDIR)/x86.c
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86.c
 
 fill_window_sse.o: $(SRCDIR)/fill_window_sse.c
-	$(CC) $(CFLAGS) -msse2 $(INCLUDES) -c -o $@ $(SRCDIR)/fill_window_sse.c
+	$(CC) $(CFLAGS) $(SSE2FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/fill_window_sse.c
 
 fill_window_sse.lo: $(SRCDIR)/fill_window_sse.c
-	$(CC) $(SFLAGS) -msse2 -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/fill_window_sse.c
+	$(CC) $(SFLAGS) $(SSE2FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/fill_window_sse.c
 
 deflate_quick.o: $(SRCDIR)/deflate_quick.c
-	$(CC) $(CFLAGS) -msse4 $(INCLUDES) -c -o $@ $(SRCDIR)/deflate_quick.c
+	$(CC) $(CFLAGS) $(SSE4FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/deflate_quick.c
 
 deflate_quick.lo: $(SRCDIR)/deflate_quick.c
-	$(CC) $(SFLAGS) -msse4 -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/deflate_quick.c
+	$(CC) $(SFLAGS) $(SSE4FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/deflate_quick.c
 
 insert_string_sse.o: $(SRCDIR)/insert_string_sse.c
-	$(CC) $(CFLAGS) -msse4 $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
+	$(CC) $(CFLAGS) $(SSE4FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
 
 insert_string_sse.lo: $(SRCDIR)/insert_string_sse.c
-	$(CC) $(SFLAGS) -msse4 -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
+	$(CC) $(SFLAGS) $(SSE4FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
 
 crc_folding.o: $(SRCDIR)/crc_folding.c
-	$(CC) $(CFLAGS) -mpclmul -msse4 $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
+	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE4FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
 
 crc_folding.lo: $(SRCDIR)/crc_folding.c
-	$(CC) $(SFLAGS) -mpclmul -msse4 -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
+	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE4FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
 
 crc_pclmulqdq.o: $(SRCDIR)/crc_pclmulqdq.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc_pclmulqdq.c

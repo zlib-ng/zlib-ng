@@ -105,6 +105,10 @@ compat=0
 cover=0
 build32=0
 build64=0
+native=0
+sse2flag="-msse2"
+sse4flag="-msse4"
+pclmulflag="-mpclmul"
 without_optimizations=0
 without_new_strategies=0
 gcc=0
@@ -158,6 +162,7 @@ case "$1" in
     --cover) cover=1; shift ;;
     -3* | --32) build32=1; shift ;;
     -6* | --64) build64=1; shift ;;
+    -n | --native) native=1; shift ;;
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
     --localstatedir=*) echo "ignored option: --localstatedir" | tee -a configure.log; shift ;;
@@ -235,6 +240,10 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
   if test $build64 -eq 1; then
     CFLAGS="${CFLAGS} -m64"
     SFLAGS="${SFLAGS} -m64"
+  fi
+  if test $native -eq 1; then
+    CFLAGS="${CFLAGS} -march=native"
+    SFLAGS="${SFLAGS} -march=native"
   fi
   if test "$warn" -eq 1; then
     CFLAGS="${CFLAGS} -Wextra -pedantic"
@@ -692,7 +701,7 @@ int main(void)
     return 0;
 }
 EOF
-if try ${CC} ${CFLAGS} -msse2 $test.c; then
+if try ${CC} ${CFLAGS} ${sse2flag} $test.c; then
     echo "Checking for SSE2 intrinsics ... Yes." | tee -a configure.log
     HAVE_SSE2_INTRIN=1
 else
@@ -713,7 +722,7 @@ int main(void)
     return 0;
 }
 EOF
-if try ${CC} ${CFLAGS} -mpclmul $test.c; then
+if try ${CC} ${CFLAGS} ${pclmulflag} $test.c; then
     echo "Checking for PCLMULQDQ intrinsics ... Yes." | tee -a configure.log
     HAVE_PCLMULQDQ_INTRIN=1
 else
@@ -852,6 +861,9 @@ echo mandir = $mandir >> configure.log
 echo prefix = $prefix >> configure.log
 echo sharedlibdir = $sharedlibdir >> configure.log
 echo uname = $uname >> configure.log
+echo sse2flag = $sse2flag >> configure.log
+echo sse4flag = $sse4flag >> configure.log
+echo pclmulflag = $pclmulflag >> configure.log
 echo ARCHDIR = ${ARCHDIR} >> configure.log
 echo ARCH_STATIC_OBJS = ${ARCH_STATIC_OBJS} >> configure.log
 echo ARCH_SHARED_OBJS = ${ARCH_SHARED_OBJS} >> configure.log
@@ -918,6 +930,9 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SRCDIR *=/s#=.*#=$SRCDIR/$ARCHDIR#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^TOPDIR *=/s#=.*#=$BUILDDIR#
+/^SSE2FLAG *=/s#=.*#=$sse2flag#
+/^SSE4FLAG *=/s#=.*#=$sse4flag#
+/^PCLMULFLAG *=/s#=.*#=$pclmulflag#
 " > $ARCHDIR/Makefile
 
 # Generate Makefile in test dir

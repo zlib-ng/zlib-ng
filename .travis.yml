@@ -9,6 +9,9 @@ matrix:
       env: BUILDDIR=. TOOL="./configure"
     - os: linux
       compiler: gcc
+      env: BUILDDIR=. TOOL="./configure --zlib-compat --native"
+    - os: linux
+      compiler: gcc
       env: BUILDDIR=../build TOOL="../zlib-ng/configure --zlib-compat"
     - os: linux
       compiler: gcc
