@@ -431,7 +431,6 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
             if (xor) {
                 int match_byte = __builtin_ctzl(xor) / 8;
                 scan += match_byte;
-                match += match_byte;
                 break;
             } else {
                 scan += sizeof(unsigned long);
