@@ -456,9 +456,6 @@ echo >> configure.log
 # check for large file support, and if none, check for fseeko()
 cat > $test.c <<EOF
 #include <sys/types.h>
-#ifdef __MSYS__
-#  define off64_t _off64_t
-#endif
 off64_t dummy = 0;
 EOF
 if try $CC -c $CFLAGS -D_LARGEFILE64_SOURCE=1 $test.c; then
@@ -470,6 +467,21 @@ if try $CC -c $CFLAGS -D_LARGEFILE64_SOURCE=1 $test.c; then
   echo "Checking for fseeko... Yes." | tee -a configure.log
 else
   echo "Checking for off64_t... No." | tee -a configure.log
+  echo >> configure.log
+  cat > $test.c <<EOF
+#include <sys/types.h>
+int main() {
+  _off64_t dummy = 0;
+  return 0;
+}
+EOF
+  if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
+    echo "Checking for _off64_t... Yes." | tee -a configure.log
+    ALL="${ALL} all64"
+    TEST="${TEST} test64"
+  else
+    echo "Checking for _off64_t... No." | tee -a configure.log
+  fi
   echo >> configure.log
   cat > $test.c <<EOF
 #include <stdio.h>
