@@ -82,7 +82,9 @@ elseif(MSVC)
     # (who'd use cmake from an IDE...) but checking for ICC before checking for MSVC should
     # avoid mistakes.
     # /Oi ?
-    set(SSE2FLAG "/arch:SSE2")
+    if(NOT ${ARCH} MATCHES "AMD64")
+        set(SSE2FLAG "/arch:SSE2")
+    endif()
     if(WITH_NATIVE_INSTRUCTIONS)
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
     endif()
@@ -224,7 +226,6 @@ if(MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 else()
     #
     # not MSVC, so we need to check if we have the MS-style SSE etc. intrinsics
@@ -274,9 +275,8 @@ else()
             __m128i a = _mm_setzero_si128();
             __m128i b = _mm_setzero_si128();
             __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-            unsigned int d = _mm_extract_epi32(c, 2);
-            (void)c;
-            return (int) d;
+            int d = _mm_extract_epi32(c, 2);
+            return d;
         }"
         HAVE_PCLMULQDQ_INTRIN
     )
@@ -310,22 +310,20 @@ endmacro(add_intrinsics_option)
 
 set(ZLIB_ARCH_SRCS)
 set(ARCHDIR "arch/generic")
-if(${ARCH} MATCHES "x86_64" OR ${ARCH} MATCHES "AMD64")
+if("${ARCH}" MATCHES "x86_64" OR "${ARCH}" MATCHES "AMD64")
     set(ARCHDIR "arch/x86")
     add_definitions(-DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK -DUNROLL_LESS -DX86_CPUID)
     add_feature_info(SSE2 1 "Use the SSE2 instruction set, using \"${SSE2FLAG}\"")
+elseif("${ARCH}" MATCHES "arm")
+    set(ARCHDIR "arch/arm")
+    add_definitions(-DUNALIGNED_OK -DUNROLL_LESS)
 else()
-    string(FIND ${ARCH} "arm" ARMPOS)
-    if(${ARMPOS} LESS 0)
-        set(ARCHDIR "arch/x86")
-        add_definitions(-DX86 -DUNALIGNED_OK -DUNROLL_LESS -DX86_CPUID)
-        add_feature_info(SSE2 1 "Support the SSE2 instruction set, using \"${SSE2FLAG}\"")
-    else()
-        set(ARCHDIR "arch/arm")
-        add_definitions(-DUNALIGNED_OK -DUNROLL_LESS)
-    endif()
+    set(ARCHDIR "arch/x86")
+    add_definitions(-DX86 -DUNALIGNED_OK -DUNROLL_LESS)
+    add_feature_info(SSE2 1 "Support the SSE2 instruction set, using \"${SSE2FLAG}\"")
 endif()
-if(WITH_OPTIM)
+
+if("${ARCHDIR}" MATCHES "arch/x86" AND WITH_OPTIM)
     set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/x86.c)
     if(HAVE_SSE42_INTRIN)
         add_definitions(-DX86_SSE4_2_CRC_HASH)
@@ -341,7 +339,9 @@ if(WITH_OPTIM)
     if(HAVE_SSE2_INTRIN)
         add_definitions(-DX86_SSE2_FILL_WINDOW)
         set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/fill_window_sse.c)
-        add_intrinsics_option(${SSE2FLAG})
+        if(NOT ${ARCH} MATCHES "x86_64")
+            add_intrinsics_option(${SSE2FLAG})
+        endif()
     endif()
     if(HAVE_PCLMULQDQ_INTRIN)
         add_definitions(-DX86_PCLMULQDQ_CRC)
@@ -396,7 +396,7 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
 		${ZLIB_PC} @ONLY)
 configure_file(	${CMAKE_CURRENT_BINARY_DIR}/zconf.h.cmakein
 		${CMAKE_CURRENT_BINARY_DIR}/zconf.h @ONLY)
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 
 #============================================================================
