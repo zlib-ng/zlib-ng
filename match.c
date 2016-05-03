@@ -30,15 +30,9 @@
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #include <intrin.h>
-/* This is not a general purpose replacement for __builtin_ctzl. The function expects that value is != 0
- * Because of that assumption trailing_zero is not initialized and the return value of _BitScanForward is not checked
- */
-static __forceinline unsigned long __builtin_ctzl(unsigned long value)
-{
-	unsigned long trailing_zero;
-	_BitScanForward(&trailing_zero, value);
-	return trailing_zero;
-}
+# ifdef X86_CPUID
+#  include "arch/x86/x86.h"
+# endif
 #endif
 
 
@@ -283,6 +277,23 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
 #endif
 
 #ifdef std3_longest_match
+
+#if defined(_MSC_VER) && !defined(__clang__)
+/* This is not a general purpose replacement for __builtin_ctzl. The function expects that value is != 0
+ * Because of that assumption trailing_zero is not initialized and the return value of _BitScanForward is not checked
+ */
+static __forceinline unsigned long __builtin_ctzl(unsigned long value)
+{
+#ifdef X86_CPUID
+	if (x86_cpu_has_tzcnt)
+		return _tzcnt_u32(value);
+#endif
+	unsigned long trailing_zero;
+	_BitScanForward(&trailing_zero, value);
+	return trailing_zero;
+}
+#endif
+
 /* longest_match() with minor change to improve performance (in terms of
  * execution time).
  *

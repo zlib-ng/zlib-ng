@@ -236,7 +236,7 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
      * output size for (length,distance) codes is <= 24 bits.
      */
 
-#if defined(X86_SSE2_FILL_WINDOW) || defined(X86_SSE4_2_CRC_HASH)
+#ifdef X86_CPUID
     x86_check_features();
 #endif
 
