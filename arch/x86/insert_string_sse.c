@@ -26,7 +26,7 @@ Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count)
         val = *ip;
         h = 0;
 
-        if (s->level >= 6)
+        if (s->level >= TRIGGER_LEVEL)
             val &= 0xFFFFFF;
 
 #ifdef _MSC_VER
