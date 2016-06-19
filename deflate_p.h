@@ -42,9 +42,12 @@ local inline Pos insert_string_c(deflate_state *const s, const Pos str, uInt cou
 
     for (idx = 0; idx < count; idx++) {
         UPDATE_HASH(s, s->ins_h, str+idx);
-        ret = s->prev[(str+idx) & s->w_mask] = s->head[s->ins_h];
-        s->head[s->ins_h] = str+idx;
+        if (s->head[s->ins_h] != str+idx) {
+            s->prev[(str+idx) & s->w_mask] = s->head[s->ins_h];
+            s->head[s->ins_h] = str+idx;
+        }
     }
+    ret = s->prev[(str+count-1) & s->w_mask];
     return ret;
 }
 
