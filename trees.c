@@ -977,7 +977,7 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
     unsigned dist;      /* distance of matched string */
     int lc;             /* match length or unmatched char (if dist == 0) */
     unsigned lx = 0;    /* running index in l_buf */
-    unsigned code;      /* the code to send */
+    int code;           /* the code to send */
     int extra;          /* number of extra bits to send */
 
     if (s->last_lit != 0) {
