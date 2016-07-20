@@ -181,7 +181,7 @@ int ZEXPORT inflateInit2_(z_stream *strm, int windowBits, const char *version, i
     strm->msg = Z_NULL;                 /* in case we return an error */
     if (strm->zalloc == (alloc_func)0) {
         strm->zalloc = zcalloc;
-        strm->opaque = NULL;
+        strm->opaque = Z_NULL;
     }
     if (strm->zfree == (free_func)0)
         strm->zfree = zcfree;
