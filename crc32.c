@@ -63,6 +63,11 @@
 
 #include "deflate.h"
 
+#ifdef __ARM_FEATURE_CRC32
+#  define ARM_CRC32_INTRINSIC
+#  include <arm_acle.h>
+#endif
+
 #if BYTE_ORDER == LITTLE_ENDIAN
 static uint32_t crc32_little(uint32_t, const unsigned char *, z_off64_t);
 #elif BYTE_ORDER == BIG_ENDIAN
@@ -256,6 +261,46 @@ uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, z_off64_t len) {
 
 /* ========================================================================= */
 static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, z_off64_t len) {
+#ifdef ARM_CRC32_INTRINSIC
+    register uint32_t c;
+    register const uint32_t *buf4;
+
+    c = crc;
+    c = ~c;
+    while (len && ((ptrdiff_t)buf & 3)) {
+        c = __crc32b(c, *buf++);
+        len--;
+    }
+
+    buf4 = (const uint32_t *)(const void *) buf;
+
+#ifndef UNROLL_LESS
+    while (len >= 32) {
+        c = __crc32w(c, *buf4++);
+        c = __crc32w(c, *buf4++);
+        c = __crc32w(c, *buf4++);
+        c = __crc32w(c, *buf4++);
+        c = __crc32w(c, *buf4++);
+        c = __crc32w(c, *buf4++);
+        c = __crc32w(c, *buf4++);
+        c = __crc32w(c, *buf4++);
+        len -= 32;
+    }
+#endif
+
+    while (len >= 4) {
+        c = __crc32w(c, *buf4++);
+        len -= 4;
+    }
+
+    buf = (const unsigned char *)buf4;
+    if (len) do {
+      c = __crc32b(c, *buf++);
+    } while (--len);
+
+    c = ~c;
+    return c;
+#else /* ARM_CRC32_INTRINSIC */
     register uint32_t c;
     register const uint32_t *buf4;
 
@@ -286,6 +331,7 @@ static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, z_off64_t l
     } while (--len);
     c = ~c;
     return c;
+#endif
 }
 #endif /* BYTE_ORDER == LITTLE_ENDIAN */
 
