@@ -149,7 +149,7 @@ int ZEXPORT inflateReset2(z_stream *strm, int windowBits) {
         wrap = 0;
         windowBits = -windowBits;
     } else {
-        wrap = (windowBits >> 4) + 1;
+        wrap = (windowBits >> 4) + 5;
 #ifdef GUNZIP
         if (windowBits < 48)
             windowBits &= 15;
@@ -669,7 +669,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
             }
             if (state->head != NULL)
                 state->head->text = (int)((hold >> 8) & 1);
-            if (state->flags & 0x0200)
+            if ((state->flags & 0x0200) && (state->wrap & 4))
                 CRC2(state->check, hold);
             INITBITS();
             state->mode = TIME;
@@ -677,7 +677,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
             NEEDBITS(32);
             if (state->head != NULL)
                 state->head->time = hold;
-            if (state->flags & 0x0200)
+            if ((state->flags & 0x0200) && (state->wrap & 4))
                 CRC4(state->check, hold);
             INITBITS();
             state->mode = OS;
@@ -687,7 +687,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                 state->head->xflags = (int)(hold & 0xff);
                 state->head->os = (int)(hold >> 8);
             }
-            if (state->flags & 0x0200)
+            if ((state->flags & 0x0200) && (state->wrap & 4))
                 CRC2(state->check, hold);
             INITBITS();
             state->mode = EXLEN;
@@ -697,7 +697,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                 state->length = (uint16_t)hold;
                 if (state->head != NULL)
                     state->head->extra_len = (uint16_t)hold;
-                if (state->flags & 0x0200)
+                if ((state->flags & 0x0200) && (state->wrap & 4))
                     CRC2(state->check, hold);
                 INITBITS();
             } else if (state->head != NULL) {
@@ -717,7 +717,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                                 len + copy > state->head->extra_max ?
                                 state->head->extra_max - len : copy);
                     }
-                    if (state->flags & 0x0200)
+                    if ((state->flags & 0x0200) && (state->wrap & 4))
                         state->check = crc32(state->check, next, copy);
                     have -= copy;
                     next += copy;
@@ -737,7 +737,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                     if (state->head != NULL && state->head->name != NULL && state->length < state->head->name_max)
                         state->head->name[state->length++] = len;
                 } while (len && copy < have);
-                if (state->flags & 0x0200)
+                if ((state->flags & 0x0200) && (state->wrap & 4))
                     state->check = crc32(state->check, next, copy);
                 have -= copy;
                 next += copy;
@@ -758,7 +758,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                         && state->length < state->head->comm_max)
                         state->head->comment[state->length++] = len;
                 } while (len && copy < have);
-                if (state->flags & 0x0200)
+                if ((state->flags & 0x0200) && (state->wrap & 4))
                     state->check = crc32(state->check, next, copy);
                 have -= copy;
                 next += copy;
@@ -771,7 +771,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
         case HCRC:
             if (state->flags & 0x0200) {
                 NEEDBITS(16);
-                if (hold != (state->check & 0xffff)) {
+                if ((state->wrap & 4) && hold != (state->check & 0xffff)) {
                     strm->msg = (char *)"header crc mismatch";
                     state->mode = BAD;
                     break;
@@ -1155,10 +1155,10 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                 out -= left;
                 strm->total_out += out;
                 state->total += out;
-                if (out)
+                if ((state->wrap & 4) && out)
                     strm->adler = state->check = UPDATE(state->check, put - out, out);
                 out = left;
-                if ((
+                if ((state->wrap & 4) && (
 #ifdef GUNZIP
                      state->flags ? hold :
 #endif
@@ -1217,7 +1217,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
     strm->total_in += in;
     strm->total_out += out;
     state->total += out;
-    if (state->wrap && out)
+    if ((state->wrap & 4) && out)
         strm->adler = state->check = UPDATE(state->check, strm->next_out - out, out);
     strm->data_type = state->bits + (state->last ? 64 : 0) +
                       (state->mode == TYPE ? 128 : 0) + (state->mode == LEN_ || state->mode == COPY_ ? 256 : 0);
@@ -1454,6 +1454,18 @@ int ZEXPORT inflateUndermine(z_stream *strm, int subvert) {
     state->sane = 1;
     return Z_DATA_ERROR;
 #endif
+}
+
+int ZEXPORT inflateValidate(z_stream *strm, int check) {
+    struct inflate_state *state;
+
+    if (strm == NULL || strm->state == NULL) return Z_STREAM_ERROR;
+    state = (struct inflate_state *)strm->state;
+    if (check)
+        state->wrap |= 4;
+    else
+        state->wrap &= ~4;
+    return Z_OK;
 }
 
 long ZEXPORT inflateMark(z_stream *strm) {
