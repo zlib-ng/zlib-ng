@@ -47,7 +47,7 @@ int ZLIB_INTERNAL inflate_table(codetype type, uint16_t *lens, unsigned codes,
     code *next;                 /* next available space in table */
     const uint16_t *base;       /* base value table to use */
     const uint16_t *extra;      /* extra bits table to use */
-    int end;                    /* use base and extra for symbol > end */
+    unsigned match;             /* use base and extra for symbol >= match */
     uint16_t count[MAXBITS+1];  /* number of codes of each length */
     uint16_t offs[MAXBITS+1];   /* offsets in table for each length */
     static const uint16_t lbase[31] = { /* Length codes 257..285 base */
@@ -174,19 +174,17 @@ int ZLIB_INTERNAL inflate_table(codetype type, uint16_t *lens, unsigned codes,
     switch (type) {
     case CODES:
         base = extra = work;    /* dummy value--not used */
-        end = 19;
+        match = 20;
         break;
     case LENS:
         base = lbase;
-        base -= 257;
         extra = lext;
-        extra -= 257;
-        end = 256;
+        match = 257;
         break;
     default:            /* DISTS */
         base = dbase;
         extra = dext;
-        end = -1;
+        match = 0;
     }
 
     /* initialize state for loop */
@@ -209,12 +207,12 @@ int ZLIB_INTERNAL inflate_table(codetype type, uint16_t *lens, unsigned codes,
     for (;;) {
         /* create table entry */
         here.bits = (unsigned char)(len - drop);
-        if ((int)(work[sym]) < end) {
+        if (work[sym] + 1 < match) {
             here.op = (unsigned char)0;
             here.val = work[sym];
-        } else if ((int)(work[sym]) > end) {
-            here.op = (unsigned char)(extra[work[sym]]);
-            here.val = base[work[sym]];
+        } else if (work[sym] >= match) {
+            here.op = (unsigned char)(extra[work[sym] - match]);
+            here.val = base[work[sym] - match];
         } else {
             here.op = (unsigned char)(32 + 64);         /* end of block */
             here.val = 0;
