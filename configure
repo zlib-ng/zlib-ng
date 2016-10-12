@@ -107,6 +107,7 @@ build64=0
 without_optimizations=0
 without_new_strategies=0
 gcc=0
+warn=0
 old_cc="$CC"
 old_cflags="$CFLAGS"
 OBJC='$(OBJZ)'
@@ -160,6 +161,7 @@ case "$1" in
     --localstatedir=*) echo "ignored option: --localstatedir" | tee -a configure.log; shift ;;
     -noopt | --without-optimizations) without_optimizations=1; shift;;
     -oldstrat | --without-new-strategies) without_new_strategies=1; shift;;
+    -w* | --warn) warn=1; shift ;;
     *)
       echo "unknown option: $1" | tee -a configure.log
       echo "$0 --help for help" | tee -a configure.log
@@ -226,7 +228,7 @@ if test "$gcc" -eq 1 && ($cc -c $test.c) >> configure.log 2>&1; then
     CFLAGS="${CFLAGS} -m64"
     SFLAGS="${SFLAGS} -m64"
   fi
-  if test "${ZLIBGCCWARN}" = "YES"; then
+  if test "$warn" -eq 1; then
     CFLAGS="${CFLAGS} -Wextra -pedantic"
   fi
   if test -z "$uname"; then
