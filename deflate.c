@@ -80,7 +80,7 @@ static block_state deflate_huff  (deflate_state *s, int flush);
 static void lm_init              (deflate_state *s);
 static void putShortMSB          (deflate_state *s, uint16_t b);
 ZLIB_INTERNAL void flush_pending (z_stream *strm);
-ZLIB_INTERNAL int read_buf       (z_stream *strm, unsigned char *buf, unsigned size);
+ZLIB_INTERNAL unsigned read_buf  (z_stream *strm, unsigned char *buf, unsigned size);
 
 extern void crc_reset(deflate_state *const s);
 extern void crc_finalize(deflate_state *const s);
@@ -223,16 +223,16 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
 
     s->wrap = wrap;
     s->gzhead = NULL;
-    s->w_bits = windowBits;
+    s->w_bits = (unsigned int)windowBits;
     s->w_size = 1 << s->w_bits;
     s->w_mask = s->w_size - 1;
 
 #ifdef X86_SSE4_2_CRC_HASH
     if (x86_cpu_has_sse42)
-        s->hash_bits = 15;
+        s->hash_bits = (unsigned int)15;
     else
 #endif
-        s->hash_bits = memLevel + 7;
+        s->hash_bits = (unsigned int)memLevel + 7;
 
     s->hash_size = 1 << s->hash_bits;
     s->hash_mask = s->hash_size - 1;
@@ -456,10 +456,10 @@ int ZEXPORT deflateTune(z_stream *strm, int good_length, int max_lazy, int nice_
     if (strm == NULL || strm->state == NULL)
         return Z_STREAM_ERROR;
     s = strm->state;
-    s->good_match = good_length;
-    s->max_lazy_match = max_lazy;
+    s->good_match = (unsigned int)good_length;
+    s->max_lazy_match = (unsigned int)max_lazy;
     s->nice_match = nice_length;
-    s->max_chain_length = max_chain;
+    s->max_chain_length = (unsigned int)max_chain;
     return Z_OK;
 }
 
@@ -967,7 +967,7 @@ int ZEXPORT deflateCopy(z_stream *dest, z_stream *source) {
  * allocating a large strm->next_in buffer and copying from it.
  * (See also flush_pending()).
  */
-ZLIB_INTERNAL int read_buf(z_stream *strm, unsigned char *buf, unsigned size) {
+ZLIB_INTERNAL unsigned read_buf(z_stream *strm, unsigned char *buf, unsigned size) {
     uint32_t len = strm->avail_in;
 
     if (len > size)
@@ -990,7 +990,7 @@ ZLIB_INTERNAL int read_buf(z_stream *strm, unsigned char *buf, unsigned size) {
     strm->next_in  += len;
     strm->total_in += len;
 
-    return (int)len;
+    return len;
 }
 
 /* ===========================================================================
@@ -1270,7 +1270,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
         s->lookahead = 0;
 
         /* Emit a stored block if pending_buf will be full: */
-        max_start = s->block_start + max_block_size;
+        max_start = max_block_size + (unsigned long)s->block_start;
         if (s->strstart == 0 || (unsigned long)s->strstart >= max_start) {
             /* strstart == 0 is possible when wraparound on 16-bit machine */
             s->lookahead = (unsigned int)(s->strstart - max_start);
@@ -1332,7 +1332,7 @@ static block_state deflate_rle(deflate_state *s, int flush) {
                          prev == *++scan && prev == *++scan &&
                          prev == *++scan && prev == *++scan &&
                          scan < strend);
-                s->match_length = MAX_MATCH - (int)(strend - scan);
+                s->match_length = MAX_MATCH - (unsigned int)(strend - scan);
                 if (s->match_length > s->lookahead)
                     s->match_length = s->lookahead;
             }

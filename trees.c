@@ -442,9 +442,9 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
         if (n >= base)
             xbits = extra[n-base];
         f = tree[n].Freq;
-        s->opt_len += (unsigned long)f * (bits + xbits);
+        s->opt_len += (unsigned long)f * (unsigned int)(bits + xbits);
         if (stree)
-            s->static_len += (unsigned long)f * (stree[n].Len + xbits);
+            s->static_len += (unsigned long)f * (unsigned int)(stree[n].Len + xbits);
     }
     if (overflow == 0)
         return;
@@ -479,7 +479,7 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
                 continue;
             if (tree[m].Len != bits) {
                 Trace((stderr, "code %d bits %d->%u\n", m, tree[m].Len, bits));
-                s->opt_len += (long)((bits - tree[m].Len) * tree[m].Freq);
+                s->opt_len += (unsigned long)((bits - tree[m].Len) * tree[m].Freq);
                 tree[m].Len = (uint16_t)bits;
             }
             n--;
@@ -500,7 +500,7 @@ static void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
     /* max_code: largest code with non zero frequency */
     /* bl_count: number of codes at each bit length */
     uint16_t next_code[MAX_BITS+1];  /* next code value for each bit length */
-    uint16_t code = 0;               /* running code value */
+    unsigned int code = 0;           /* running code value */
     int bits;                        /* bit index */
     int n;                           /* code index */
 
@@ -508,7 +508,8 @@ static void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
      * without bit reversal.
      */
     for (bits = 1; bits <= MAX_BITS; bits++) {
-        next_code[bits] = code = (code + bl_count[bits-1]) << 1;
+        code = (code + bl_count[bits-1]) << 1;
+        next_code[bits] = (uint16_t)code;
     }
     /* Check that the bit counts in bl_count are consistent. The last code
      * must be all ones.
@@ -521,7 +522,7 @@ static void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
         if (len == 0)
             continue;
         /* Now reverse the bits */
-        tree[n].Code = bi_reverse(next_code[len]++, len);
+        tree[n].Code = (uint16_t)bi_reverse(next_code[len]++, len);
 
         Tracecv(tree != static_ltree, (stderr, "\nn %3d %c l %2d c %4x (%x) ",
              n, (isgraph(n) ? n : ' '), len, tree[n].Code, next_code[len]-1));
@@ -752,7 +753,7 @@ static int build_bl_tree(deflate_state *s) {
             break;
     }
     /* Update opt_len to include the bit length tree and counts */
-    s->opt_len += 3*(max_blindex+1) + 5+5+4;
+    s->opt_len += 3*((unsigned long)max_blindex+1) + 5+5+4;
     Tracev((stderr, "\ndyn trees: dyn %lu, stat %lu", s->opt_len, s->static_len));
 
     return max_blindex;
@@ -997,7 +998,7 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
                 send_code(s, code, dtree);       /* send the distance code */
                 extra = extra_dbits[code];
                 if (extra != 0) {
-                    dist -= base_dist[code];
+                    dist -= (unsigned int)base_dist[code];
                     send_bits(s, dist, extra);   /* send the extra distance bits */
                 }
             } /* literal or match pair ? */

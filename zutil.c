@@ -11,16 +11,17 @@
 #endif
 
 const char * const z_errmsg[10] = {
-"need dictionary",     /* Z_NEED_DICT       2  */
-"stream end",          /* Z_STREAM_END      1  */
-"",                    /* Z_OK              0  */
-"file error",          /* Z_ERRNO         (-1) */
-"stream error",        /* Z_STREAM_ERROR  (-2) */
-"data error",          /* Z_DATA_ERROR    (-3) */
-"insufficient memory", /* Z_MEM_ERROR     (-4) */
-"buffer error",        /* Z_BUF_ERROR     (-5) */
-"incompatible version",/* Z_VERSION_ERROR (-6) */
-""};
+    (const char *)"need dictionary",     /* Z_NEED_DICT       2  */
+    (const char *)"stream end",          /* Z_STREAM_END      1  */
+    (const char *)"",                    /* Z_OK              0  */
+    (const char *)"file error",          /* Z_ERRNO         (-1) */
+    (const char *)"stream error",        /* Z_STREAM_ERROR  (-2) */
+    (const char *)"data error",          /* Z_DATA_ERROR    (-3) */
+    (const char *)"insufficient memory", /* Z_MEM_ERROR     (-4) */
+    (const char *)"buffer error",        /* Z_BUF_ERROR     (-5) */
+    (const char *)"incompatible version",/* Z_VERSION_ERROR (-6) */
+    (const char *)""
+};
 
 const char zlibng_string[] =
    " zlib-ng 1.9.9 forked from zlib 1.2.8 ";

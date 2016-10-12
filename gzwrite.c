@@ -67,7 +67,8 @@ static int gz_init(gz_statep state) {
    is true, then simply write to the output file without compressing, and
    ignore flush. */
 static int gz_comp(gz_statep state, int flush) {
-    int ret, got;
+    int ret;
+    ssize_t got;
     unsigned have;
     z_stream *strm = &(state->strm);
 
@@ -93,7 +94,7 @@ static int gz_comp(gz_statep state, int flush) {
            doing Z_FINISH then don't write until we get to Z_STREAM_END */
         if (strm->avail_out == 0 || (flush != Z_NO_FLUSH && (flush != Z_FINISH || ret == Z_STREAM_END))) {
             have = (unsigned)(strm->next_out - state->x.next);
-            if (have && ((got = write(state->fd, state->x.next, have)) < 0 || (unsigned)got != have)) {
+            if (have && ((got = write(state->fd, state->x.next, (unsigned long)have)) < 0 || (unsigned)got != have)) {
                 gz_error(state, Z_ERRNO, zstrerror());
                 return -1;
             }
@@ -256,7 +257,7 @@ int ZEXPORT gzputc(gzFile file, int c) {
             strm->next_in = state->in;
         have = (unsigned)((strm->next_in + strm->avail_in) - state->in);
         if (have < state->size) {
-            state->in[have] = c;
+            state->in[have] = (unsigned char)c;
             strm->avail_in++;
             state->x.pos++;
             return c & 0xff;
@@ -264,7 +265,7 @@ int ZEXPORT gzputc(gzFile file, int c) {
     }
 
     /* no room in buffer or not initialized, use gz_write() */
-    buf[0] = c;
+    buf[0] = (unsigned char)c;
     if (gzwrite(file, buf, 1) != 1)
         return -1;
     return c & 0xff;
@@ -283,7 +284,8 @@ int ZEXPORT gzputs(gzFile file, const char *str) {
 
 /* -- see zlib.h -- */
 int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va) {
-    int len, left;
+    int len;
+    unsigned left;
     char *next;
     gz_statep state;
     z_stream *strm;
@@ -314,16 +316,16 @@ int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va) {
        be state->size bytes available after the current contents */
     if (strm->avail_in == 0)
         strm->next_in = state->in;
-    next = (char *)(strm->next_in + strm->avail_in);
+    next = (char *)(state->in + (strm->next_in - state->in) + strm->avail_in);
     next[state->size - 1] = 0;
     len = vsnprintf(next, state->size, format, va);
 
     /* check that printf() results fit in buffer */
-    if (len == 0 || len >= state->size || next[state->size - 1] != 0)
+    if (len == 0 || (unsigned)len >= state->size || next[state->size - 1] != 0)
         return 0;
 
     /* update buffer and position, compress first half if past that */
-    strm->avail_in += len;
+    strm->avail_in += (unsigned)len;
     state->x.pos += len;
     if (strm->avail_in >= state->size) {
         left = strm->avail_in - state->size;
@@ -334,7 +336,7 @@ int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va) {
         strm->next_in = state->in;
         strm->avail_in = left;
     }
-    return (int)len;
+    return len;
 }
 
 int ZEXPORTVA gzprintf(gzFile file, const char *format, ...) {

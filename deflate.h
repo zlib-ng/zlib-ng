@@ -290,7 +290,7 @@ typedef enum {
 /* Output a byte on the stream.
  * IN assertion: there is enough room in pending_buf.
  */
-#define put_byte(s, c) {s->pending_buf[s->pending++] = (c);}
+#define put_byte(s, c) {s->pending_buf[s->pending++] = (unsigned char)(c);}
 
 /* ===========================================================================
  * Output a short LSB first on the stream.
@@ -365,8 +365,8 @@ void ZLIB_INTERNAL bi_windup(deflate_state *s);
     flush = (s->last_lit == s->lit_bufsize-1); \
   }
 # define _tr_tally_dist(s, distance, length, flush) \
-  { unsigned char len = (length); \
-    uint16_t dist = (distance); \
+  { unsigned char len = (unsigned char)(length); \
+    uint16_t dist = (uint16_t)(distance); \
     s->d_buf[s->last_lit] = dist; \
     s->l_buf[s->last_lit++] = len; \
     dist--; \
@@ -429,7 +429,7 @@ void send_bits(deflate_state *s, int value, int length);
 #define send_bits(s, value, length) \
 { int len = length;\
   if (s->bi_valid > (int)Buf_size - len) {\
-    int val = value;\
+    int val = (int)value;\
     s->bi_buf |= (uint16_t)val << s->bi_valid;\
     put_short(s, s->bi_buf);\
     s->bi_buf = (uint16_t)val >> (Buf_size - s->bi_valid);\

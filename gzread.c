@@ -18,14 +18,14 @@ static int gz_skip(gz_statep, z_off64_t);
    This function needs to loop on read(), since read() is not guaranteed to
    read the number of bytes requested, depending on the type of descriptor. */
 static int gz_load(gz_statep state, unsigned char *buf, unsigned len, unsigned *have) {
-    int ret;
+    ssize_t ret;
 
     *have = 0;
     do {
         ret = read(state->fd, buf + *have, len - *have);
         if (ret <= 0)
             break;
-        *have += ret;
+        *have += (unsigned)ret;
     } while (*have < len);
     if (ret < 0) {
         gz_error(state, Z_ERRNO, zstrerror());
@@ -402,7 +402,7 @@ int ZEXPORT gzungetc(int c, gzFile file) {
     if (state->x.have == 0) {
         state->x.have = 1;
         state->x.next = state->out + (state->size << 1) - 1;
-        state->x.next[0] = c;
+        state->x.next[0] = (unsigned char)c;
         state->x.pos--;
         state->past = 0;
         return c;
@@ -424,7 +424,7 @@ int ZEXPORT gzungetc(int c, gzFile file) {
     }
     state->x.have++;
     state->x.next--;
-    state->x.next[0] = c;
+    state->x.next[0] = (unsigned char)c;
     state->x.pos--;
     state->past = 0;
     return c;
