@@ -1647,7 +1647,7 @@ struct gzFile_s {
     z_off64_t pos;
 };
 ZEXTERN int ZEXPORT gzgetc_(gzFile file);  /* backward compatibility */
-#  define gzgetc(g) ((g)->have ? ((g)->have--, (g)->pos++, *((g)->next)++) : gzgetc(g))
+#  define gzgetc(g) ((g)->have ? ((g)->have--, (g)->pos++, *((g)->next)++) : (gzgetc)(g))
 
 /* provide 64-bit offset functions if _LARGEFILE64_SOURCE defined, and/or
  * change the regular functions to 64 bits if _FILE_OFFSET_BITS is 64 (if
