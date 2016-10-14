@@ -21,13 +21,13 @@
     } \
 }
 
-const char hello[] = "hello, hello!";
+static const char hello[] = "hello, hello!";
 /* "hello world" would be more standard, but the repeated "hello"
  * stresses the compression code better, sorry...
  */
 
-const char dictionary[] = "hello";
-unsigned long dictId; /* Adler32 value of the dictionary */
+static const char dictionary[] = "hello";
+static unsigned long dictId; /* Adler32 value of the dictionary */
 
 void test_deflate       (unsigned char *compr, size_t comprLen);
 void test_inflate       (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
