@@ -936,7 +936,8 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
     if (strm->avail_in != 0 || s->lookahead != 0 || (flush != Z_NO_FLUSH && s->status != FINISH_STATE)) {
         block_state bstate;
 
-        bstate = s->strategy == Z_HUFFMAN_ONLY ? deflate_huff(s, flush) :
+        bstate = s->level == 0 ? deflate_stored(s, flush) :
+                 s->strategy == Z_HUFFMAN_ONLY ? deflate_huff(s, flush) :
                  s->strategy == Z_RLE ? deflate_rle(s, flush) :
 #ifdef X86_QUICK_STRATEGY
                  (s->level == 1 && !x86_cpu_has_sse42) ? deflate_fast(s, flush) :
