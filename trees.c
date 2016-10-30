@@ -146,7 +146,6 @@ static void compress_block   (deflate_state *s, const ct_data *ltree, const ct_d
 static int  detect_data_type (deflate_state *s);
 static unsigned bi_reverse   (unsigned value, int length);
 static void bi_flush         (deflate_state *s);
-static void copy_block       (deflate_state *s, char *buf, unsigned len, int header);
 
 #ifdef GEN_TREES_H
 static void gen_trees_header (void);
@@ -794,11 +793,17 @@ void ZLIB_INTERNAL _tr_stored_block(deflate_state *s, char *buf, unsigned long s
     /* stored_len: length of input block */
     /* last: one if this is the last block for a file */
     send_bits(s, (STORED_BLOCK << 1)+last, 3);    /* send block type */
+    bi_windup(s);        /* align on byte boundary */
+    put_short(s, (uint16_t)stored_len);
+    put_short(s, (uint16_t)~stored_len);
+    memcpy(s->pending_buf + s->pending, buf, stored_len);
+    s->pending += stored_len;
 #ifdef DEBUG
     s->compressed_len = (s->compressed_len + 3 + 7) & (unsigned long)~7L;
     s->compressed_len += (stored_len + 4) << 3;
+    s->bits_sent += 2*16;
+    s->bits_sent += stored_len<<3;
 #endif
-    copy_block(s, buf, (unsigned)stored_len, 1); /* with header */
 }
 
 /* ===========================================================================
@@ -1096,29 +1101,3 @@ ZLIB_INTERNAL void bi_windup(deflate_state *s) {
     s->bits_sent = (s->bits_sent+7) & ~7;
 #endif
 }
-
-/* ===========================================================================
- * Copy a stored block, storing first the length and its
- * one's complement if requested.
- */
-static void copy_block(deflate_state *s, char *buf, unsigned len, int header) {
-    /* buf: the input data */
-    /* len: its length */
-    /* header: true if block header must be written */
-    bi_windup(s);        /* align on byte boundary */
-
-    if (header) {
-        put_short(s, (uint16_t)len);
-        put_short(s, (uint16_t)~len);
-#ifdef DEBUG
-        s->bits_sent += 2*16;
-#endif
-    }
-#ifdef DEBUG
-    s->bits_sent += (unsigned long)len << 3;
-#endif
-    while (len--) {
-        put_byte(s, *buf++);
-    }
-}
-
