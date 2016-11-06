@@ -281,6 +281,9 @@ static int deflateStateCheck (z_stream *strm) {
         return 1;
     s = strm->state;
     if (s == NULL || s->strm != strm || (s->status != INIT_STATE &&
+#ifdef GZIP
+                                           s->status != GZIP_STATE &&
+#endif
                                            s->status != EXTRA_STATE &&
                                            s->status != NAME_STATE &&
                                            s->status != COMMENT_STATE &&
@@ -368,7 +371,12 @@ int ZEXPORT deflateResetKeep(z_stream *strm) {
     if (s->wrap < 0) {
         s->wrap = -s->wrap; /* was made negative by deflate(..., Z_FINISH); */
     }
-    s->status = s->wrap ? INIT_STATE : BUSY_STATE;
+    s->status =
+#ifdef GZIP
+        s->wrap == 2 ? GZIP_STATE :
+#endif
+        s->wrap ? INIT_STATE : BUSY_STATE;
+
 #ifdef GZIP
     strm->adler = s->wrap == 2 ? crc32(0L, NULL, 0) : adler32(0L, NULL, 0);
 #else
@@ -501,7 +509,6 @@ int ZEXPORT deflateTune(z_stream *strm, int good_length, int max_lazy, int nice_
 unsigned long ZEXPORT deflateBound(z_stream *strm, unsigned long sourceLen) {
     deflate_state *s;
     unsigned long complen, wraplen;
-    unsigned char *str;
 
     /* conservative upper bound for compressed data */
     complen = sourceLen + ((sourceLen + 7) >> 3) + ((sourceLen + 63) >> 6) + 5;
@@ -519,9 +526,11 @@ unsigned long ZEXPORT deflateBound(z_stream *strm, unsigned long sourceLen) {
     case 1:                                 /* zlib wrapper */
         wraplen = 6 + (s->strstart ? 4 : 0);
         break;
+#ifdef GZIP
     case 2:                                 /* gzip wrapper */
         wraplen = 18;
         if (s->gzhead != NULL) {            /* user-supplied gzip header */
+            unsigned char *str;
             if (s->gzhead->extra != NULL) {
                 wraplen += 2 + s->gzhead->extra_len;
             }
@@ -541,6 +550,7 @@ unsigned long ZEXPORT deflateBound(z_stream *strm, unsigned long sourceLen) {
                 wraplen += 2;
         }
         break;
+#endif
     default:                                /* for compiler happiness */
         wraplen = 6;
     }
@@ -584,12 +594,21 @@ ZLIB_INTERNAL void flush_pending(z_stream *strm) {
     strm->next_out  += len;
     s->pending_out  += len;
     strm->total_out += len;
-    strm->avail_out  -= len;
-    s->pending -= len;
+    strm->avail_out -= len;
+    s->pending      -= len;
     if (s->pending == 0) {
         s->pending_out = s->pending_buf;
     }
 }
+
+/* ===========================================================================
+ * Update the header CRC with the bytes s->pending_buf[beg..s->pending - 1].
+ */
+#define HCRC_UPDATE(beg) \
+    do { \
+        if (s->gzhead->hcrc && s->pending > (beg)) \
+            strm->adler = crc32(strm->adler, s->pending_buf + (beg), s->pending - (beg)); \
+    } while (0)
 
 /* ========================================================================= */
 int ZEXPORT deflate(z_stream *strm, int flush) {
@@ -608,180 +627,8 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
     if (strm->avail_out == 0)
         ERR_RETURN(strm, Z_BUF_ERROR);
 
-    s->strm = strm; /* just in case */
     old_flush = s->last_flush;
     s->last_flush = flush;
-
-    /* Write the header */
-    if (s->status == INIT_STATE) {
-#ifdef GZIP
-        if (s->wrap == 2) {
-            crc_reset(s);
-            put_byte(s, 31);
-            put_byte(s, 139);
-            put_byte(s, 8);
-            if (s->gzhead == NULL) {
-                put_byte(s, 0);
-                put_byte(s, 0);
-                put_byte(s, 0);
-                put_byte(s, 0);
-                put_byte(s, 0);
-                put_byte(s, s->level == 9 ? 2 :
-                            (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ?
-                            4 : 0));
-                put_byte(s, OS_CODE);
-                s->status = BUSY_STATE;
-            } else {
-                put_byte(s, (s->gzhead->text ? 1 : 0) +
-                            (s->gzhead->hcrc ? 2 : 0) +
-                            (s->gzhead->extra == NULL ? 0 : 4) +
-                            (s->gzhead->name == NULL ? 0 : 8) +
-                            (s->gzhead->comment == NULL ? 0 : 16) );
-                put_byte(s, (unsigned char)(s->gzhead->time & 0xff));
-                put_byte(s, (unsigned char)((s->gzhead->time >> 8) & 0xff));
-                put_byte(s, (unsigned char)((s->gzhead->time >> 16) & 0xff));
-                put_byte(s, (unsigned char)((s->gzhead->time >> 24) & 0xff));
-                put_byte(s, s->level == 9 ? 2 :
-                            (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ?
-                             4 : 0));
-                put_byte(s, s->gzhead->os & 0xff);
-                if (s->gzhead->extra != NULL) {
-                    put_byte(s, s->gzhead->extra_len & 0xff);
-                    put_byte(s, (s->gzhead->extra_len >> 8) & 0xff);
-                }
-                if (s->gzhead->hcrc)
-                    strm->adler = crc32(strm->adler, s->pending_buf, s->pending);
-                s->gzindex = 0;
-                s->status = EXTRA_STATE;
-            }
-        } else
-#endif
-        {
-            unsigned int header = (Z_DEFLATED + ((s->w_bits-8) << 4)) << 8;
-            unsigned int level_flags;
-
-            if (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2)
-                level_flags = 0;
-            else if (s->level < TRIGGER_LEVEL)
-                level_flags = 1;
-            else if (s->level == TRIGGER_LEVEL)
-                level_flags = 2;
-            else
-                level_flags = 3;
-            header |= (level_flags << 6);
-            if (s->strstart != 0)
-                header |= PRESET_DICT;
-            header += 31 - (header % 31);
-
-            s->status = BUSY_STATE;
-            putShortMSB(s, header);
-
-            /* Save the adler32 of the preset dictionary: */
-            if (s->strstart != 0) {
-                putShortMSB(s, (uint16_t)(strm->adler >> 16));
-                putShortMSB(s, (uint16_t)strm->adler);
-            }
-            strm->adler = adler32(0L, NULL, 0);
-        }
-    }
-#ifdef GZIP
-    if (s->status == EXTRA_STATE) {
-        if (s->gzhead->extra != NULL) {
-            uint32_t beg = s->pending;  /* start of bytes to update crc */
-
-            while (s->gzindex < (s->gzhead->extra_len & 0xffff)) {
-                if (s->pending == s->pending_buf_size) {
-                    if (s->gzhead->hcrc && s->pending > beg)
-                        strm->adler = crc32(strm->adler, s->pending_buf + beg, s->pending - beg);
-                    flush_pending(strm);
-                    beg = s->pending;
-                    if (s->pending == s->pending_buf_size)
-                        break;
-                }
-                put_byte(s, s->gzhead->extra[s->gzindex]);
-                s->gzindex++;
-            }
-            if (s->gzhead->hcrc && s->pending > beg)
-                strm->adler = crc32(strm->adler, s->pending_buf + beg, s->pending - beg);
-            if (s->gzindex == s->gzhead->extra_len) {
-                s->gzindex = 0;
-                s->status = NAME_STATE;
-            }
-        } else {
-            s->status = NAME_STATE;
-        }
-    }
-    if (s->status == NAME_STATE) {
-        if (s->gzhead->name != NULL) {
-            uint32_t beg = s->pending;  /* start of bytes to update crc */
-            int val;
-
-            do {
-                if (s->pending == s->pending_buf_size) {
-                    if (s->gzhead->hcrc && s->pending > beg)
-                        strm->adler = crc32(strm->adler, s->pending_buf + beg, s->pending - beg);
-                    flush_pending(strm);
-                    beg = s->pending;
-                    if (s->pending == s->pending_buf_size) {
-                        val = 1;
-                        break;
-                    }
-                }
-                val = s->gzhead->name[s->gzindex++];
-                put_byte(s, val);
-            } while (val != 0);
-            if (s->gzhead->hcrc && s->pending > beg)
-                strm->adler = crc32(strm->adler, s->pending_buf + beg, s->pending - beg);
-            if (val == 0) {
-                s->gzindex = 0;
-                s->status = COMMENT_STATE;
-            }
-        } else {
-            s->status = COMMENT_STATE;
-        }
-    }
-    if (s->status == COMMENT_STATE) {
-        if (s->gzhead->comment != NULL) {
-            uint32_t beg = s->pending;  /* start of bytes to update crc */
-            int val;
-
-            do {
-                if (s->pending == s->pending_buf_size) {
-                    if (s->gzhead->hcrc && s->pending > beg)
-                        strm->adler = crc32(strm->adler, s->pending_buf + beg, s->pending - beg);
-                    flush_pending(strm);
-                    beg = s->pending;
-                    if (s->pending == s->pending_buf_size) {
-                        val = 1;
-                        break;
-                    }
-                }
-                val = s->gzhead->comment[s->gzindex++];
-                put_byte(s, val);
-            } while (val != 0);
-            if (s->gzhead->hcrc && s->pending > beg)
-                strm->adler = crc32(strm->adler, s->pending_buf + beg, s->pending - beg);
-            if (val == 0)
-                s->status = HCRC_STATE;
-        } else {
-            s->status = HCRC_STATE;
-        }
-    }
-    if (s->status == HCRC_STATE) {
-        if (s->gzhead->hcrc) {
-            if (s->pending + 2 > s->pending_buf_size)
-                flush_pending(strm);
-            if (s->pending + 2 <= s->pending_buf_size) {
-                put_byte(s, (unsigned char)(strm->adler & 0xff));
-                put_byte(s, (unsigned char)((strm->adler >> 8) & 0xff));
-                strm->adler = crc32(0L, NULL, 0);
-                s->status = BUSY_STATE;
-            }
-        } else {
-            s->status = BUSY_STATE;
-        }
-    }
-#endif
 
     /* Flush as much pending output as possible */
     if (s->pending != 0) {
@@ -801,7 +648,8 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
      * flushes. For repeated and useless calls with Z_FINISH, we keep
      * returning Z_STREAM_END instead of Z_BUF_ERROR.
      */
-    } else if (strm->avail_in == 0 && RANK(flush) <= RANK(old_flush) && flush != Z_FINISH) {
+    } else if (strm->avail_in == 0 && RANK(flush) <= RANK(old_flush) &&
+               flush != Z_FINISH) {
         ERR_RETURN(strm, Z_BUF_ERROR);
     }
 
@@ -809,6 +657,185 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
     if (s->status == FINISH_STATE && strm->avail_in != 0) {
         ERR_RETURN(strm, Z_BUF_ERROR);
     }
+
+    /* Write the header */
+    if (s->status == INIT_STATE) {
+        /* zlib header */
+        unsigned int header = (Z_DEFLATED + ((s->w_bits-8)<<4)) << 8;
+        unsigned int level_flags;
+
+        if (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2)
+            level_flags = 0;
+        else if (s->level < 6)
+            level_flags = 1;
+        else if (s->level == 6)
+            level_flags = 2;
+        else
+            level_flags = 3;
+        header |= (level_flags << 6);
+        if (s->strstart != 0) header |= PRESET_DICT;
+        header += 31 - (header % 31);
+
+        putShortMSB(s, header);
+
+        /* Save the adler32 of the preset dictionary: */
+        if (s->strstart != 0) {
+            putShortMSB(s, (uint16_t)(strm->adler >> 16));
+            putShortMSB(s, (uint16_t)(strm->adler));
+        }
+        strm->adler = adler32(0L, NULL, 0);
+        s->status = BUSY_STATE;
+
+        /* Compression must start with an empty pending buffer */
+        flush_pending(strm);
+        if (s->pending != 0) {
+            s->last_flush = -1;
+            return Z_OK;
+        }
+    }
+#ifdef GZIP
+    if (s->status == GZIP_STATE) {
+        /* gzip header */
+        strm->adler = crc32(0L, NULL, 0);
+        put_byte(s, 31);
+        put_byte(s, 139);
+        put_byte(s, 8);
+        if (s->gzhead == NULL) {
+            put_byte(s, 0);
+            put_byte(s, 0);
+            put_byte(s, 0);
+            put_byte(s, 0);
+            put_byte(s, 0);
+            put_byte(s, s->level == 9 ? 2 :
+                     (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ? 4 : 0));
+            put_byte(s, OS_CODE);
+            s->status = BUSY_STATE;
+
+            /* Compression must start with an empty pending buffer */
+            flush_pending(strm);
+            if (s->pending != 0) {
+                s->last_flush = -1;
+                return Z_OK;
+            }
+        }
+        else {
+            put_byte(s, (s->gzhead->text ? 1 : 0) +
+                     (s->gzhead->hcrc ? 2 : 0) +
+                     (s->gzhead->extra == NULL ? 0 : 4) +
+                     (s->gzhead->name == NULL ? 0 : 8) +
+                     (s->gzhead->comment == NULL ? 0 : 16)
+                     );
+            put_byte(s, (unsigned char)(s->gzhead->time & 0xff));
+            put_byte(s, (unsigned char)((s->gzhead->time >> 8) & 0xff));
+            put_byte(s, (unsigned char)((s->gzhead->time >> 16) & 0xff));
+            put_byte(s, (unsigned char)((s->gzhead->time >> 24) & 0xff));
+            put_byte(s, s->level == 9 ? 2 :
+                     (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ? 4 : 0));
+            put_byte(s, s->gzhead->os & 0xff);
+            if (s->gzhead->extra != NULL) {
+                put_byte(s, s->gzhead->extra_len & 0xff);
+                put_byte(s, (s->gzhead->extra_len >> 8) & 0xff);
+            }
+            if (s->gzhead->hcrc)
+                strm->adler = crc32(strm->adler, s->pending_buf, s->pending);
+            s->gzindex = 0;
+            s->status = EXTRA_STATE;
+        }
+    }
+    if (s->status == EXTRA_STATE) {
+        if (s->gzhead->extra != Z_NULL) {
+            uint32_t beg = s->pending;   /* start of bytes to update crc */
+            uint32_t left = (s->gzhead->extra_len & 0xffff) - s->gzindex;
+
+            while (s->pending + left > s->pending_buf_size) {
+                uint32_t copy = s->pending_buf_size - s->pending;
+                memcpy(s->pending_buf + s->pending, s->gzhead->extra + s->gzindex, copy);
+                s->pending = s->pending_buf_size;
+                HCRC_UPDATE(beg);
+                s->gzindex += copy;
+                flush_pending(strm);
+                if (s->pending != 0) {
+                    s->last_flush = -1;
+                    return Z_OK;
+                }
+                beg = 0;
+                left -= copy;
+            }
+            memcpy(s->pending_buf + s->pending, s->gzhead->extra + s->gzindex, left);
+            s->pending += left;
+            HCRC_UPDATE(beg);
+            s->gzindex = 0;
+        }
+        s->status = NAME_STATE;
+    }
+    if (s->status == NAME_STATE) {
+        if (s->gzhead->name != NULL) {
+            uint32_t beg = s->pending;   /* start of bytes to update crc */
+            int val;
+
+            do {
+                if (s->pending == s->pending_buf_size) {
+                    HCRC_UPDATE(beg);
+                    flush_pending(strm);
+                    if (s->pending != 0) {
+                        s->last_flush = -1;
+                        return Z_OK;
+                    }
+                    beg = 0;
+                }
+                val = s->gzhead->name[s->gzindex++];
+                put_byte(s, val);
+            } while (val != 0);
+            HCRC_UPDATE(beg);
+            s->gzindex = 0;
+        }
+        s->status = COMMENT_STATE;
+    }
+    if (s->status == COMMENT_STATE) {
+        if (s->gzhead->comment != NULL) {
+            uint32_t beg = s->pending;  /* start of bytes to update crc */
+            int val;
+
+            do {
+                if (s->pending == s->pending_buf_size) {
+                    HCRC_UPDATE(beg);
+                    flush_pending(strm);
+                    if (s->pending != 0) {
+                        s->last_flush = -1;
+                        return Z_OK;
+                    }
+                    beg = 0;
+                }
+                val = s->gzhead->comment[s->gzindex++];
+                put_byte(s, val);
+            } while (val != 0);
+            HCRC_UPDATE(beg);
+        }
+        s->status = HCRC_STATE;
+    }
+    if (s->status == HCRC_STATE) {
+        if (s->gzhead->hcrc) {
+            if (s->pending + 2 > s->pending_buf_size) {
+                flush_pending(strm);
+                if (s->pending != 0) {
+                    s->last_flush = -1;
+                    return Z_OK;
+                }
+            }
+            put_byte(s, (unsigned char)(strm->adler & 0xff));
+            put_byte(s, (unsigned char)((strm->adler >> 8) & 0xff));
+            strm->adler = crc32(0L, NULL, 0);
+        }
+        s->status = BUSY_STATE;
+
+        /* Compression must start with an empty pending buffer */
+        flush_pending(strm);
+        if (s->pending != 0) {
+            s->last_flush = -1;
+            return Z_OK;
+        }
+    }
+#endif
 
     /* Start a new block or continue the current one.
      */

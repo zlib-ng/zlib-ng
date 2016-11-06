@@ -57,13 +57,16 @@
 #define END_BLOCK 256
 /* end of block literal code */
 
-#define INIT_STATE    42
-#define EXTRA_STATE   69
-#define NAME_STATE    73
-#define COMMENT_STATE 91
-#define HCRC_STATE   103
-#define BUSY_STATE   113
-#define FINISH_STATE 666
+#define INIT_STATE    42    /* zlib header -> BUSY_STATE */
+#ifdef GZIP
+#  define GZIP_STATE  57    /* gzip header -> BUSY_STATE | EXTRA_STATE */
+#endif
+#define EXTRA_STATE   69    /* gzip extra block -> NAME_STATE */
+#define NAME_STATE    73    /* gzip file name -> COMMENT_STATE */
+#define COMMENT_STATE 91    /* gzip comment -> HCRC_STATE */
+#define HCRC_STATE   103    /* gzip header CRC -> BUSY_STATE */
+#define BUSY_STATE   113    /* deflate -> FINISH_STATE */
+#define FINISH_STATE 666    /* stream complete */
 /* Stream status */
 
 
@@ -105,10 +108,10 @@ typedef struct internal_state {
     unsigned char *pending_buf;      /* output still pending */
     unsigned long pending_buf_size;  /* size of pending_buf */
     unsigned char *pending_out;      /* next pending byte to output to the stream */
-    unsigned int  pending;           /* nb of bytes in the pending buffer */
+    uint32_t      pending;           /* nb of bytes in the pending buffer */
     int           wrap;              /* bit 0 true for zlib, bit 1 true for gzip */
     gz_headerp    gzhead;            /* gzip header information to write */
-    unsigned int  gzindex;           /* where in extra, name, or comment */
+    uint32_t      gzindex;           /* where in extra, name, or comment */
     unsigned char method;            /* can only be DEFLATED */
     int           last_flush;        /* value of flush param for previous deflate call */
 
