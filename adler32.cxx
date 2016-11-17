@@ -11,10 +11,6 @@
 
 #include <immintrin.h>
 
-//#include <stdio.h>
-
-#define local static
-
 static uLong adler32_combine_ OF((uLong adler1, uLong adler2, z_off64_t len2));
 
 #define BASE 65521      /* largest prime smaller than 65536 */
@@ -199,7 +195,6 @@ uLong ZEXPORT adler32_vec(uLong adler, const Bytef *buf, uInt len)
     char __attribute__ ((aligned(16))) shift[16] = {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     __m128i shiftv = _mm_load_si128((__m128i*)shift);
     while (len >= 16) {
-       //printf("Starting iteration with length %d\n", len);
        __m128i vs1 = _mm_load_si128((__m128i*)s1);
        __m128i vs2 = _mm_load_si128((__m128i*)s2);
        __m128i vs1_0 = vs1;
@@ -217,20 +212,14 @@ uLong ZEXPORT adler32_vec(uLong adler, const Bytef *buf, uInt len)
               We could rewrite the below to use 256-bit instructions instead of 128-bit.
            */
            __m128i vbuf = _mm_loadu_si128((__m128i*)buf);
-           //printf("vbuf: [%d, %d, %d, %d; %d, %d, %d, %d; %d, %d, %d, %d; %d, %d, %d, %d]\n", buf[0], (unsigned char)buf[1], (unsigned char)buf[2], (unsigned char)buf[3], buf[4], buf[5], buf[6], buf[7], buf[8], buf[9], buf[10], buf[11], buf[12], buf[13], buf[14], buf[15]);
            buf += 16;
            k -= 16;
            __m128i v_short_sum1 = _mm_maddubs_epi16(vbuf, dot1v); // multiply-add, resulting in 8 shorts.
-           //{short __attribute__((aligned(16))) test[8]; _mm_store_si128((__m128i*)test, v_short_sum1); printf("v_short_sum1: [%d, %d, %d, %d; %d, %d, %d, %d]\n", test[0], test[1], test[2], test[3], test[4], test[5], test[6], test[7]);}
            __m128i vsum1 = _mm_madd_epi16(v_short_sum1, dot3v);  // sum 8 shorts to 4 int32_t;
-           //{uint32_t __attribute__((aligned(16))) t2[4]; _mm_store_si128((__m128i*)t2, vsum1); printf("vsum1: [%d, %d, %d, %d]\n", t2[0], t2[1], t2[2], t2[3]);}
            __m128i v_short_sum2 = _mm_maddubs_epi16(vbuf, dot2v);
-           //{short __attribute__((aligned(16))) test[8]; _mm_store_si128((__m128i*)test, v_short_sum2); printf("v_short_sum2: [%d, %d, %d, %d; %d, %d, %d, %d]\n", test[0], test[1], test[2], test[3], test[4], test[5], test[6], test[7]);}
            vs1 = _mm_add_epi32(vsum1, vs1);
            __m128i vsum2 = _mm_madd_epi16(v_short_sum2, dot3v);
-           //{uint32_t __attribute__((aligned(16))) t2[4]; _mm_store_si128((__m128i*)t2, vsum2); printf("vsum2: [%d, %d, %d, %d]\n", t2[0], t2[1], t2[2], t2[3]);}
            vs1_0 = _mm_sll_epi32(vs1_0, shiftv);
-           //{uint32_t __attribute__((aligned(16))) t2[4]; _mm_store_si128((__m128i*)t2, vs1_0); printf("16*vs1_0: [%d, %d, %d, %d]\n", t2[0], t2[1], t2[2], t2[3]);}
            vsum2 = _mm_add_epi32(vsum2, vs2);
            vs2   = _mm_add_epi32(vsum2, vs1_0);
            vs1_0 = vs1;
@@ -240,7 +229,6 @@ uLong ZEXPORT adler32_vec(uLong adler, const Bytef *buf, uInt len)
        uint32_t __attribute__((aligned(16))) s1_unpack[4];
        uint32_t __attribute__((aligned(16))) s2_unpack[4];
        _mm_store_si128((__m128i*)s1_unpack, vs1);
-       //{uint32_t __attribute__((aligned(16))) t2[4]; _mm_store_si128((__m128i*)t2, vs1); printf("vs1: [%d, %d, %d, %d]\n", t2[0], t2[1], t2[2], t2[3]);}
        _mm_store_si128((__m128i*)s2_unpack, vs2);
        adler = (s1_unpack[0] % BASE) + (s1_unpack[1] % BASE) + (s1_unpack[2] % BASE) + (s1_unpack[3] % BASE);
        MOD(adler);
@@ -251,7 +239,6 @@ uLong ZEXPORT adler32_vec(uLong adler, const Bytef *buf, uInt len)
     }
 
     while (len--) {
-       //printf("Handling tail end.\n");
        adler += *buf++;
        sum2 += adler;
     }
@@ -312,7 +299,6 @@ uLong ZEXPORT adler32_avx(uLong adler, const Bytef *buf, uInt len)
     char __attribute__ ((aligned(16))) shift[16] = {5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     __m128i shiftv = _mm_load_si128((__m128i*)shift);
     while (len >= 32) {
-       //printf("Starting iteration with length %d\n", len);
        __m256i vs1 = _mm256_load_si256((__m256i*)s1);
        __m256i vs2 = _mm256_load_si256((__m256i*)s2);
        __m256i vs1_0 = vs1;
@@ -325,20 +311,14 @@ uLong ZEXPORT adler32_avx(uLong adler, const Bytef *buf, uInt len)
               vs2 = sum2 + 16 vs1 + sum( (16-i+1) c[i] )
            */
            __m256i vbuf = _mm256_loadu_si256((__m256i*)buf);
-           //printf("vbuf: [%d, %d, %d, %d; %d, %d, %d, %d; %d, %d, %d, %d; %d, %d, %d, %d]\n", buf[0], (unsigned char)buf[1], (unsigned char)buf[2], (unsigned char)buf[3], buf[4], buf[5], buf[6], buf[7], buf[8], buf[9], buf[10], buf[11], buf[12], buf[13], buf[14], buf[15]);
            buf += 32;
            k -= 32;
            __m256i v_short_sum1 = _mm256_maddubs_epi16(vbuf, dot1v); // multiply-add, resulting in 8 shorts.
-           //{short __attribute__((aligned(16))) test[8]; _mm_store_si128((__m128i*)test, v_short_sum1); printf("v_short_sum1: [%d, %d, %d, %d; %d, %d, %d, %d]\n", test[0], test[1], test[2], test[3], test[4], test[5], test[6], test[7]);}
            __m256i vsum1 = _mm256_madd_epi16(v_short_sum1, dot3v);  // sum 8 shorts to 4 int32_t;
-           //{uint32_t __attribute__((aligned(16))) t2[4]; _mm_store_si128((__m128i*)t2, vsum1); printf("vsum1: [%d, %d, %d, %d]\n", t2[0], t2[1], t2[2], t2[3]);}
            __m256i v_short_sum2 = _mm256_maddubs_epi16(vbuf, dot2v);
-           //{short __attribute__((aligned(16))) test[8]; _mm_store_si128((__m128i*)test, v_short_sum2); printf("v_short_sum2: [%d, %d, %d, %d; %d, %d, %d, %d]\n", test[0], test[1], test[2], test[3], test[4], test[5], test[6], test[7]);}
            vs1 = _mm256_add_epi32(vsum1, vs1);
            __m256i vsum2 = _mm256_madd_epi16(v_short_sum2, dot3v);
-           //{uint32_t __attribute__((aligned(16))) t2[4]; _mm_store_si128((__m128i*)t2, vsum2); printf("vsum2: [%d, %d, %d, %d]\n", t2[0], t2[1], t2[2], t2[3]);}
            vs1_0 = _mm256_sll_epi32(vs1_0, shiftv);
-           //{uint32_t __attribute__((aligned(16))) t2[4]; _mm_store_si128((__m128i*)t2, vs1_0); printf("16*vs1_0: [%d, %d, %d, %d]\n", t2[0], t2[1], t2[2], t2[3]);}
            vsum2 = _mm256_add_epi32(vsum2, vs2);
            vs2   = _mm256_add_epi32(vsum2, vs1_0);
            vs1_0 = vs1;
@@ -348,7 +328,6 @@ uLong ZEXPORT adler32_avx(uLong adler, const Bytef *buf, uInt len)
        uint32_t __attribute__((aligned(32))) s1_unpack[8];
        uint32_t __attribute__((aligned(32))) s2_unpack[8];
        _mm256_store_si256((__m256i*)s1_unpack, vs1);
-       //{uint32_t __attribute__((aligned(16))) t2[4]; _mm_store_si128((__m128i*)t2, vs1); printf("vs1: [%d, %d, %d, %d]\n", t2[0], t2[1], t2[2], t2[3]);}
        _mm256_store_si256((__m256i*)s2_unpack, vs2);
        adler = (s1_unpack[0] % BASE) + (s1_unpack[1] % BASE) + (s1_unpack[2] % BASE) + (s1_unpack[3] % BASE) + (s1_unpack[4] % BASE) + (s1_unpack[5] % BASE) + (s1_unpack[6] % BASE) + (s1_unpack[7] % BASE);
        MOD(adler);
@@ -359,7 +338,6 @@ uLong ZEXPORT adler32_avx(uLong adler, const Bytef *buf, uInt len)
     }
 
     while (len--) {
-       //printf("Handling tail end.\n");
        adler += *buf++;
        sum2 += adler;
     }
@@ -374,7 +352,6 @@ uLong ZEXPORT adler32_avx(uLong adler, const Bytef *buf, uInt len)
 __attribute__ ((target ("default")))
 static uLong adler32_impl(uLong adler, const Bytef *buf, uInt len)
 {
-    //printf("Using default version\n");
     return adler32_serial(adler, buf, len);
 }
 
@@ -382,14 +359,12 @@ __attribute__ ((target ("sse4.2")))
 //__attribute__ ((target ("mmx")))
 static uLong adler32_impl(uLong adler, const Bytef *buf, uInt len)
 {
-    //printf("Using SSE4.2 version\n");
     return adler32_vec(adler, buf, len);
 }
 
 __attribute__ ((target ("avx2")))
 static uLong adler32_impl(uLong adler, const Bytef *buf, uInt len)
 {
-    //printf("Using AVX2 version\n");
     return adler32_avx(adler, buf, len);
 }
 
