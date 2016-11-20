@@ -449,7 +449,7 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
     if (overflow == 0)
         return;
 
-    Trace((stderr, "\nbit length overflow\n"));
+    Tracev((stderr, "\nbit length overflow\n"));
     /* This happens for example on obj2 and pic of the Calgary corpus */
 
     /* Find the first bit length which could increase: */
@@ -478,7 +478,7 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
             if (m > max_code)
                 continue;
             if (tree[m].Len != bits) {
-                Trace((stderr, "code %d bits %d->%u\n", m, tree[m].Len, bits));
+                Tracev((stderr, "code %d bits %d->%u\n", m, tree[m].Len, bits));
                 s->opt_len += (unsigned long)(bits * tree[m].Freq);
                 s->opt_len -= (unsigned long)(tree[m].Len * tree[m].Freq);
                 tree[m].Len = (uint16_t)bits;
