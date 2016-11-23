@@ -446,7 +446,6 @@ int ZEXPORT deflatePrime(z_stream *strm, int bits, int value) {
 int ZEXPORT deflateParams(z_stream *strm, int level, int strategy) {
     deflate_state *s;
     compress_func func;
-    int err = Z_OK;
 
     if (deflateStateCheck(strm))
         return Z_STREAM_ERROR;
@@ -461,9 +460,11 @@ int ZEXPORT deflateParams(z_stream *strm, int level, int strategy) {
 
     if ((strategy != s->strategy || func != configuration_table[level].func)) {
         /* Flush the last buffer: */
-        err = deflate(strm, Z_BLOCK);
-        if (err == Z_BUF_ERROR && s->pending == 0)
-            err = Z_OK;
+        int err = deflate(strm, Z_BLOCK);
+        if (err == Z_STREAM_ERROR)
+            return err;
+        if (strm->avail_out == 0)
+            return Z_BUF_ERROR;
     }
     if (s->level != level) {
         s->level = level;
@@ -473,7 +474,7 @@ int ZEXPORT deflateParams(z_stream *strm, int level, int strategy) {
         s->max_chain_length = configuration_table[level].max_chain;
     }
     s->strategy = strategy;
-    return err;
+    return Z_OK;
 }
 
 /* ========================================================================= */
