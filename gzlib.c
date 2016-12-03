@@ -496,7 +496,6 @@ void ZLIB_INTERNAL gz_error(gz_statep state, int err, const char *msg) {
         return;
     }
     snprintf(state->msg, strlen(state->path) + strlen(msg) + 3, "%s%s%s", state->path, ": ", msg);
-    return;
 }
 
 #ifndef INT_MAX
