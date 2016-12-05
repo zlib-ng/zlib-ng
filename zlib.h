@@ -1392,6 +1392,17 @@ ZEXTERN int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len);
    error.
 */
 
+ZEXTERN size_t ZEXPORT gzfwrite(void const *buf, size_t size, size_t nitems, gzFile file);
+/*
+     gzfwrite() writes nitems items of size size from buf to file, duplicating
+   the interface of stdio's fwrite(), with size_t request and return types.
+
+     gzfwrite() returns the number of full items written of size size, or zero
+   if there was an error.  If the multiplication of size and nitems overflows,
+   i.e. the product does not fit in a size_t, then nothing is written, zero
+   is returned, and the error state is set to Z_STREAM_ERROR.
+*/
+
 ZEXTERN int ZEXPORTVA gzprintf(gzFile file, const char *format, ...);
 /*
      Converts, formats, and writes the arguments to the compressed file under

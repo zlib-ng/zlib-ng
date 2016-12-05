@@ -10,6 +10,7 @@
 static int gz_init(gz_statep);
 static int gz_comp(gz_statep, int);
 static int gz_zero(gz_statep, z_off64_t);
+static size_t gz_write(gz_statep, void const *, size_t);
 
 /* Initialize state for writing a gzip file.  Mark initialization by setting
    state->size to non-zero.  Return -1 on a memory allocation failure, or 0 on
@@ -153,28 +154,10 @@ static int gz_zero(gz_statep state, z_off64_t len) {
     return 0;
 }
 
-/* -- see zlib.h -- */
-int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len) {
-    unsigned put = len;
-    gz_statep state;
-    z_stream *strm;
-
-    /* get internal structure */
-    if (file == NULL)
-        return 0;
-    state = (gz_statep)file;
-    strm = &(state->strm);
-
-    /* check that we're writing and that there's no error */
-    if (state->mode != GZ_WRITE || state->err != Z_OK)
-        return 0;
-
-    /* since an int is returned, make sure len fits in one, otherwise return
-       with an error (this avoids the flaw in the interface) */
-    if ((int)len < 0) {
-        gz_error(state, Z_DATA_ERROR, "requested length does not fit in int");
-        return 0;
-    }
+/* Write len bytes from buf to file.  Return the number of bytes written.  If
+   the returned value is less than len, then there was an error. */
+static size_t gz_write(gz_statep state, void const *buf, size_t len) {
+    size_t put = len;
 
     /* if len is zero, avoid unnecessary operations */
     if (len == 0)
@@ -197,14 +180,15 @@ int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len) {
         do {
             unsigned have, copy;
 
-            if (strm->avail_in == 0)
-                strm->next_in = state->in;
-            have = (unsigned)((strm->next_in + strm->avail_in) - state->in);
+            if (state->strm.avail_in == 0)
+                state->strm.next_in = state->in;
+            have = (unsigned)((state->strm.next_in + state->strm.avail_in) -
+                              state->in);
             copy = state->size - have;
             if (copy > len)
                 copy = len;
             memcpy(state->in + have, buf, copy);
-            strm->avail_in += copy;
+            state->strm.avail_in += copy;
             state->x.pos += copy;
             buf = (const char *)buf + copy;
             len -= copy;
@@ -213,19 +197,74 @@ int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len) {
         } while (len);
     } else {
         /* consume whatever's left in the input buffer */
-        if (strm->avail_in && gz_comp(state, Z_NO_FLUSH) == -1)
+        if (state->strm.avail_in && gz_comp(state, Z_NO_FLUSH) == -1)
             return 0;
 
         /* directly compress user buffer to file */
-        strm->avail_in = len;
-        strm->next_in = (const unsigned char *)buf;
-        state->x.pos += len;
-        if (gz_comp(state, Z_NO_FLUSH) == -1)
-            return 0;
+        state->strm.next_in = (const unsigned char *)buf;
+        do {
+            unsigned n = -1;
+            if (n > len)
+                n = len;
+            state->strm.avail_in = n;
+            state->x.pos += n;
+            if (gz_comp(state, Z_NO_FLUSH) == -1)
+                return 0;
+            len -= n;
+        } while (len);
     }
 
-    /* input was all buffered or compressed (put will fit in int) */
-    return (int)put;
+    /* input was all buffered or compressed */
+    return put;
+}
+
+/* -- see zlib.h -- */
+int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len) {
+    gz_statep state;
+
+    /* get internal structure */
+    if (file == NULL)
+        return 0;
+    state = (gz_statep)file;
+
+    /* check that we're writing and that there's no error */
+    if (state->mode != GZ_WRITE || state->err != Z_OK)
+        return 0;
+
+    /* since an int is returned, make sure len fits in one, otherwise return
+       with an error (this avoids a flaw in the interface) */
+    if ((int)len < 0) {
+        gz_error(state, Z_DATA_ERROR, "requested length does not fit in int");
+        return 0;
+    }
+
+    /* write len bytes from buf (the return value will fit in an int) */
+    return (int)gz_write(state, buf, len);
+}
+
+/* -- see zlib.h -- */
+size_t ZEXPORT gzfwrite(void const *buf, size_t size, size_t nitems, gzFile file) {
+    size_t len;
+    gz_statep state;
+
+    /* get internal structure */
+    if (file == NULL)
+        return 0;
+    state = (gz_statep)file;
+
+    /* check that we're writing and that there's no error */
+    if (state->mode != GZ_WRITE || state->err != Z_OK)
+        return 0;
+
+    /* compute bytes to read -- error on overflow */
+    len = nitems * size;
+    if (size && len / size != nitems) {
+        gz_error(state, Z_STREAM_ERROR, "request does not fit in a size_t");
+        return 0;
+    }
+
+    /* write len bytes to buf, return the number of full items written */
+    return len ? gz_write(state, buf, len) / size : 0;
 }
 
 /* -- see zlib.h -- */
@@ -268,7 +307,7 @@ int ZEXPORT gzputc(gzFile file, int c) {
 
     /* no room in buffer or not initialized, use gz_write() */
     buf[0] = (unsigned char)c;
-    if (gzwrite(file, buf, 1) != 1)
+    if (gz_write(state, buf, 1) != 1)
         return -1;
     return c & 0xff;
 }
@@ -276,11 +315,21 @@ int ZEXPORT gzputc(gzFile file, int c) {
 /* -- see zlib.h -- */
 int ZEXPORT gzputs(gzFile file, const char *str) {
     int ret;
-    unsigned len;
+    size_t len;
+    gz_statep state;
+
+    /* get internal structure */
+    if (file == NULL)
+        return -1;
+    state = (gz_statep)file;
+
+    /* check that we're writing and that there's no error */
+    if (state->mode != GZ_WRITE || state->err != Z_OK)
+        return -1;
 
     /* write string */
-    len = (unsigned)strlen(str);
-    ret = gzwrite(file, str, len);
+    len = strlen(str);
+    ret = gz_write(state, str, len);
     return ret == 0 && len != 0 ? -1 : ret;
 }
 
