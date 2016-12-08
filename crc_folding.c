@@ -269,12 +269,11 @@ ZLIB_INTERNAL void crc_fold_copy(unsigned crc[4 * 5],
 {
     unsigned long algn_diff;
     __m128i xmm_t0, xmm_t1, xmm_t2, xmm_t3;
+    char zalign(16) partial_buf[16] = { 0 };
 
     CRC_LOAD(crc)
 
     if (len < 16) {
-        char zalign(16) partial_buf[16] = { 0 };
-
         if (len == 0)
             return;
 
@@ -386,7 +385,9 @@ ZLIB_INTERNAL void crc_fold_copy(unsigned crc[4 * 5],
         xmm_crc_part = _mm_load_si128((__m128i *)src);
     }
 
-    _mm_storeu_si128((__m128i *)dst, xmm_crc_part);
+    _mm_storeu_si128((__m128i *)partial_buf, xmm_crc_part);
+    memcpy(dst, partial_buf, len);
+
 partial:
     partial_fold(len, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3,
         &xmm_crc_part);
