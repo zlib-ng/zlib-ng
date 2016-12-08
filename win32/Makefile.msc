@@ -29,9 +29,10 @@ LDFLAGS = -nologo -debug -incremental:no -opt:ref
 ARFLAGS = -nologo
 RCFLAGS = /dWIN32 /r
 
-OBJS = adler32.obj crc_folding.obj compress.obj crc32.obj deflate_quick.obj deflate.obj \
-       gzclose.obj gzlib.obj gzread.obj gzwrite.obj infback.obj inflate.obj inftrees.obj\
-       inffast.obj slide_sse.obj trees.obj uncompr.obj x86.obj zutil.obj
+OBJS = adler32.obj crc_folding.obj compress.obj crc32.obj deflate_quick.obj \
+       deflate_medium.obj deflate.obj gzclose.obj gzlib.obj gzread.obj gzwrite.obj \
+       infback.obj inflate.obj inftrees.obj inffast.obj slide_sse.obj trees.obj \
+       uncompr.obj x86.obj zutil.obj
 OBJA =
 
 
@@ -123,6 +124,8 @@ slide_sse.obj: $(TOP)/slide_sse.c $(TOP)/deflate.h
 crc_folding.obj: $(TOP)/crc_folding.c
 
 deflate_quick.obj: $(TOP)/deflate_quick.c
+
+deflate_medium.obj: $(TOP)/deflate_medium.c $(TOP)/deflate.h
 
 zutil.obj: $(TOP)/zutil.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h
 

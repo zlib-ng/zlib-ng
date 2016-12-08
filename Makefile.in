@@ -57,11 +57,11 @@ SRCDIR=
 ZINC=
 ZINCOUT=-I.
 
-OBJZ = adler32.o crc32.o crc_folding.o deflate_quick.o deflate.o infback.o inffast.o inflate.o inftrees.o slide_sse.o trees.o x86.o  zutil.o
+OBJZ = adler32.o crc32.o crc_folding.o deflate_quick.o deflate_medium.o deflate.o infback.o inffast.o inflate.o inftrees.o slide_sse.o trees.o x86.o  zutil.o
 OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo crc32.lo crc_folding.lo deflate_quick.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo slide_sse.lo trees.lo x86.lo zutil.lo
+PIC_OBJZ = adler32.lo crc32.lo crc_folding.lo deflate_quick.lo deflate_medium.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo slide_sse.lo trees.lo x86.lo zutil.lo
 PIC_OBJG = compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
@@ -213,6 +213,9 @@ crc_folding.o: $(SRCDIR)crc_folding.c
 deflate_quick.o: $(SRCDIR)deflate_quick.c
 	$(CC) $(CFLAGS) $(ZINC) -msse4 -c -o $@ $(SRCDIR)deflate_quick.c
 
+deflate_medium.o: $(SRCDIR)deflate_medium.c
+	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)deflate_medium.c
+
 adler32.lo: $(SRCDIR)adler32.c
 	-@mkdir objs 2>/dev/null || test -d objs
 	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/adler32.o $(SRCDIR)adler32.c
@@ -307,6 +310,11 @@ deflate_quick.lo: $(SRCDIR)deflate_quick.c
 	-@mkdir objs 2>/dev/null || test -d objs
 	$(CC) $(SFLAGS) $(ZINC) -msse4 -DPIC -c -o objs/deflate_quick.o $(SRCDIR)deflate_quick.c
 	-@mv objs/deflate_quick.o $@
+
+deflate_medium.lo: $(SRCDIR)deflate_medium.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/deflate_medium.o $(SRCDIR)deflate_medium.c
+	-@mv objs/deflate_medium.o $@
 
 placebo $(SHAREDLIBV): $(PIC_OBJS) libz.a
 	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)

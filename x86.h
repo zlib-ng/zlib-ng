@@ -22,6 +22,7 @@
 #define USE_SSE_SLIDE
 #define USE_CRC_HASH
 #define USE_PCLMUL_CRC
+#define USE_MEDIUM
 
 extern int x86_cpu_has_sse2;
 extern int x86_cpu_has_sse42;
