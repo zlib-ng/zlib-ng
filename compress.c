@@ -23,7 +23,7 @@ int ZEXPORT compress2(unsigned char *dest, size_t *destLen, const unsigned char 
                         size_t sourceLen, int level) {
     z_stream stream;
     int err;
-    const unsigned int max = (unsigned int)0 - 1;
+    const unsigned int max = (unsigned int)-1;
     size_t left;
 
     left = *destLen;
