@@ -1,5 +1,5 @@
 # Makefile for zlib
-# Copyright (C) 1995-2013 Jean-loup Gailly, Mark Adler
+# Copyright (C) 1995-2016 Jean-loup Gailly, Mark Adler
 # For conditions of distribution and use, see copyright notice in zlib.h
 
 # To compile and test, type:
@@ -27,10 +27,10 @@ LDSHARED=$(CC)
 
 STATICLIB=libz.a
 SHAREDLIB=libz.so
-SHAREDLIBV=libz.so.1.2.8
+SHAREDLIBV=libz.so.1.2.9
 SHAREDLIBM=libz.so.1
 IMPORTLIB=
-SHAREDTARGET=libz.so.1.2.8
+SHAREDTARGET=libz.so.1.2.9
 
 LIBS=$(STATICLIB) $(SHAREDTARGET)
 
