@@ -1661,6 +1661,11 @@ ZEXTERN uint32_t ZEXPORT adler32(uint32_t adler, const unsigned char *buf, uint3
      if (adler != original_adler) error();
 */
 
+ZEXTERN uint32_t ZEXPORT adler32_z (uint32_t adler, const unsigned char *buf, size_t len);
+/*
+     Same as adler32(), but with a size_t length.
+*/
+
 /*
 ZEXTERN uint32_t ZEXPORT adler32_combine(uint32_t adler1, uint32_t adler2, z_off_t len2);
 
@@ -1672,7 +1677,7 @@ ZEXTERN uint32_t ZEXPORT adler32_combine(uint32_t adler1, uint32_t adler2, z_off
    negative, the result has no meaning or utility.
 */
 
-ZEXTERN uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, z_off64_t len);
+ZEXTERN uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, uint32_t len);
 /*
      Update a running CRC-32 with the bytes buf[0..len-1] and return the
    updated CRC-32.  If buf is NULL, this function returns the required
@@ -1687,6 +1692,11 @@ ZEXTERN uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, z_off64_t
        crc = crc32(crc, buffer, length);
      }
      if (crc != original_crc) error();
+*/
+
+ZEXTERN uint32_t ZEXPORT crc32_z (uint32_t crc, const unsigned char *buf, size_t len);
+/*
+     Same as crc32(), but with a size_t length.
 */
 
 /*

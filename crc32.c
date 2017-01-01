@@ -64,9 +64,9 @@
 #include "deflate.h"
 
 #if BYTE_ORDER == LITTLE_ENDIAN
-static uint32_t crc32_little(uint32_t, const unsigned char *, z_off64_t);
+static uint32_t crc32_little(uint32_t, const unsigned char *, size_t);
 #elif BYTE_ORDER == BIG_ENDIAN
-static uint32_t crc32_big(uint32_t, const unsigned char *, z_off64_t);
+static uint32_t crc32_big(uint32_t, const unsigned char *, size_t);
 #endif
 
 /* Local functions for crc concatenation */
@@ -211,7 +211,7 @@ const uint32_t * ZEXPORT get_crc_table(void) {
 #define DO4 DO1; DO1; DO1; DO1
 
 /* ========================================================================= */
-uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, z_off64_t len) {
+uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len) {
     if (buf == NULL) return 0;
 
 #ifdef DYNAMIC_CRC_TABLE
@@ -246,6 +246,9 @@ uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, z_off64_t len) {
     return crc ^ 0xffffffff;
 }
 
+uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, uint32_t len) {
+    return crc32_z(crc, buf, len);
+}
 
 /*
    This BYFOUR code accesses the passed unsigned char * buffer with a 32-bit
@@ -267,7 +270,7 @@ uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, z_off64_t len) {
 #define DOLIT32 DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4
 
 /* ========================================================================= */
-static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, z_off64_t len) {
+static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, size_t len) {
     register uint32_t c;
     register const uint32_t *buf4;
 
@@ -309,7 +312,7 @@ static uint32_t crc32_little(uint32_t crc, const unsigned char *buf, z_off64_t l
 #define DOBIG32 DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4
 
 /* ========================================================================= */
-static uint32_t crc32_big(uint32_t crc, const unsigned char *buf, z_off64_t len) {
+static uint32_t crc32_big(uint32_t crc, const unsigned char *buf, size_t len) {
     register uint32_t c;
     register const uint32_t *buf4;
 
