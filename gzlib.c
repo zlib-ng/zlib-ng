@@ -153,7 +153,7 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
         }
     else
 #endif
-        snprintf(state->path, len + 1, "%s", (const char *)path);
+        (void)snprintf(state->path, len + 1, "%s", (const char *)path);
 
     /* compute the flags for open() */
     oflag =
@@ -224,7 +224,7 @@ gzFile ZEXPORT gzdopen(int fd, const char *mode) {
 
     if (fd == -1 || (path = (char *)malloc(7 + 3 * sizeof(int))) == NULL)
         return NULL;
-    snprintf(path, 7 + 3 * sizeof(int), "<fd:%d>", fd); /* for debugging */
+    (void)snprintf(path, 7 + 3 * sizeof(int), "<fd:%d>", fd); /* for debugging */
     gz = gz_open(path, fd, mode);
     free(path);
     return gz;
@@ -495,7 +495,7 @@ void ZLIB_INTERNAL gz_error(gz_statep state, int err, const char *msg) {
         state->err = Z_MEM_ERROR;
         return;
     }
-    snprintf(state->msg, strlen(state->path) + strlen(msg) + 3, "%s%s%s", state->path, ": ", msg);
+    (void)snprintf(state->msg, strlen(state->path) + strlen(msg) + 3, "%s%s%s", state->path, ": ", msg);
 }
 
 #ifndef INT_MAX
