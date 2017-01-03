@@ -103,6 +103,7 @@ static int gz_comp(gz_statep state, int flush) {
             if (strm->avail_out == 0) {
                 strm->avail_out = state->size;
                 strm->next_out = state->out;
+                state->x.next = state->out;
             }
             state->x.next = strm->next_out;
         }
