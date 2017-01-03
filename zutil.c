@@ -96,7 +96,7 @@ unsigned long ZEXPORT PREFIX(zlibCompileFlags)(void)
 }
 
 #ifdef ZLIB_DEBUG
-
+#include <stdlib.h>
 #  ifndef verbose
 #    define verbose 0
 #  endif
