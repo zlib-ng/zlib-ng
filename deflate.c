@@ -1347,21 +1347,19 @@ static block_state deflate_stored(deflate_state *s, int flush) {
             len = left + s->strm->avail_in;     /* limit len to the input */
         if (len > have)
             len = have;                         /* limit len to the output */
-        if (left > len)
-            left = len;                         /* limit window pull to len */
 
         /* If the stored block would be less than min_block in length, or if
          * unable to copy all of the available input when flushing, then try
          * copying to the window and the pending buffer instead. Also don't
          * write an empty block when flushing -- deflate() does that.
          */
-        if (len < min_block && ((len == 0 && flush != Z_FINISH) || flush == Z_NO_FLUSH || len - left != s->strm->avail_in))
+        if (len < min_block && ((len == 0 && flush != Z_FINISH) || flush == Z_NO_FLUSH || len != left + s->strm->avail_in))
             break;
 
         /* Make a dummy stored block in pending to get the header bytes,
          * including any pending bits. This also updates the debugging counts.
          */
-        last = flush == Z_FINISH && len - left == s->strm->avail_in ? 1 : 0;
+        last = flush == Z_FINISH && len == left + s->strm->avail_in ? 1 : 0;
         _tr_stored_block(s, (char *)0, 0L, last);
 
         /* Replace the lengths in the dummy stored block with len. */
@@ -1373,14 +1371,16 @@ static block_state deflate_stored(deflate_state *s, int flush) {
         /* Write the stored block header bytes. */
         flush_pending(s->strm);
 
-        /* Update debugging counts for the data about to be copied. */
 #ifdef ZLIB_DEBUG
+        /* Update debugging counts for the data about to be copied. */
         s->compressed_len += len << 3;
         s->bits_sent += len << 3;
 #endif
 
         /* Copy uncompressed bytes from the window to next_out. */
         if (left) {
+            if (left > len)
+                left = len;
             memcpy(s->strm->next_out, s->window + s->block_start, left);
             s->strm->next_out += left;
             s->strm->avail_out -= left;
