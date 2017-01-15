@@ -1,5 +1,5 @@
 /* zutil.c -- target dependent utility functions for the compression library
- * Copyright (C) 1995-2005, 2010, 2011, 2012, 2016 Jean-loup Gailly
+ * Copyright (C) 1995-2017 Jean-loup Gailly
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -24,7 +24,7 @@ const char * const z_errmsg[10] = {
 };
 
 const char zlibng_string[] =
-   " zlib-ng 1.9.9 forked from zlib 1.2.8 ";
+   " zlib-ng 1.9.9 forked from zlib 1.2.11 ";
 
 const char * ZEXPORT zlibVersion(void)
 {

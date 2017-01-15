@@ -1,7 +1,7 @@
 #ifndef ZLIB_H_
 #define ZLIB_H_
 /* zlib.h -- interface of the 'zlib-ng' compression library
-   Forked from and compatible with zlib 1.2.9
+   Forked from and compatible with zlib 1.2.11
 
   Copyright (C) 1995-2016 Jean-loup Gailly and Mark Adler
 
@@ -44,11 +44,11 @@ extern "C" {
 #define ZLIBNG_VER_REVISION 9
 #define ZLIBNG_VER_SUBREVISION 0
 
-#define ZLIB_VERSION "1.2.9.zlib-ng"
-#define ZLIB_VERNUM 0x129f
+#define ZLIB_VERSION "1.2.11.zlib-ng"
+#define ZLIB_VERNUM 0x12bf
 #define ZLIB_VER_MAJOR 1
 #define ZLIB_VER_MINOR 2
-#define ZLIB_VER_REVISION 9
+#define ZLIB_VER_REVISION 11
 #define ZLIB_VER_SUBREVISION 0
 
 /*

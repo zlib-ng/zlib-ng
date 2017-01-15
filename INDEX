@@ -1,11 +1,11 @@
 CMakeLists.txt  cmake build file
-ChangeLog.zlib  history of changes up to the fork from zlib 1.2.8
-FAQ.zlib        Frequently Asked Questions about zlib, as distributed in zlib 1.2.8
+ChangeLog.zlib  history of changes up to the fork from zlib 1.2.11
+FAQ.zlib        Frequently Asked Questions about zlib, as distributed in zlib 1.2.11
 INDEX           this file
 Makefile        dummy Makefile that tells you to ./configure
 Makefile.in     template for Unix Makefile
 README          guess what
-README.zlib     Copy of the original README file distributed in zlib 1.2.8
+README.zlib     Copy of the original README file distributed in zlib 1.2.11
 configure       configure script for Unix
 test/example.c  zlib usages examples for build testing
 test/minigzip.c minimal gzip-like functionality for build testing
