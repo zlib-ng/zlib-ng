@@ -1430,6 +1430,8 @@ static block_state deflate_stored(deflate_state *s, int flush) {
         s->block_start = s->strstart;
         s->insert += MIN(used, s->w_size - s->insert);
     }
+    if (s->high_water < s->strstart)
+        s->high_water = s->strstart;
 
     /* If the last block was written to next_out, then done. */
     if (last)
@@ -1457,6 +1459,8 @@ static block_state deflate_stored(deflate_state *s, int flush) {
         read_buf(s->strm, s->window + s->strstart, have);
         s->strstart += have;
     }
+    if (s->high_water < s->strstart)
+        s->high_water = s->strstart;
 
     /* There was not enough avail_out to write a complete worthy or flushed
      * stored block to next_out. Write a stored block to pending instead, if we
