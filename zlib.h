@@ -1835,7 +1835,7 @@ ZEXTERN unsigned long    ZEXPORT inflateCodesUsed (z_stream *);
 ZEXTERN int              ZEXPORT inflateResetKeep (z_stream *);
 ZEXTERN int              ZEXPORT deflateResetKeep (z_stream *);
 
-#if (defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW__))
+#if (defined(WIN32) || defined(__MINGW__))
     ZEXTERN gzFile ZEXPORT gzopen_w(const wchar_t *path, const char *mode);
 #endif
 ZEXTERN int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va);

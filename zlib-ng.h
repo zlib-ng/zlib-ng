@@ -1828,7 +1828,7 @@ ZEXTERN int              ZEXPORT zng_inflateResetKeep (zng_stream *);
 ZEXTERN int              ZEXPORT zng_deflateResetKeep (zng_stream *);
 
 #ifdef WITH_GZFILEOP
-# if (defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW__))
+# if (defined(WIN32) || defined(__MINGW__))
     ZEXTERN gzFile ZEXPORT zng_gzopen_w(const wchar_t *path, const char *mode);
 # endif
 ZEXTERN int ZEXPORTVA zng_gzvprintf(gzFile file, const char *format, va_list va);
