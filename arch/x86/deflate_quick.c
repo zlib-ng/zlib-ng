@@ -10,6 +10,10 @@
  *     Erdinc Ozturk   <erdinc.ozturk@intel.com>
  *  Jim Kukunas     <james.t.kukunas@linux.intel.com>
  *
+ * Portions are Copyright (C) 2016 12Sided Technology, LLC.
+ * Author:
+ *  Phil Vachon     <pvachon@12sidedtech.com>
+ *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -119,24 +123,22 @@ static const unsigned quick_len_codes[MAX_MATCH-MIN_MATCH+1];
 static const unsigned quick_dist_codes[8192];
 
 static inline void quick_send_bits(deflate_state *const s, const int value, const int length) {
-    unsigned code, out, w, b;
+    unsigned code, out, width, bytes_out;
 
-    out = s->bi_buf;
-    w = s->bi_valid;
+    /* Concatenate the new bits with the bits currently in the buffer */
+    out = s->bi_buf | (value << s->bi_valid);
+    width = s->bi_valid + length;
 
-    code = value << s->bi_valid;
-    out |= code;
-    w += length;
-
-    if (s->pending + 4 >= s->pending_buf_size)
-        flush_pending(s->strm);
-
+    /* Taking advantage of the fact that LSB comes first, write to output buffer */
     *(unsigned *)(s->pending_buf + s->pending) = out;
 
-    b = w >> 3;
-    s->pending += b;
-    s->bi_buf =  out >> (b << 3);
-    s->bi_valid = w - (b << 3);
+    bytes_out = width / 8;
+
+    s->pending += bytes_out;
+
+    /* Shift out the valid LSBs written out */
+    s->bi_buf =  out >> (bytes_out * 8);
+    s->bi_valid = width - (bytes_out * 8);
 }
 
 static inline void static_emit_ptr(deflate_state *const s, const int lc, const unsigned dist) {
@@ -162,12 +164,13 @@ static void static_emit_tree(deflate_state *const s, const int flush) {
     unsigned last;
 
     last = flush == Z_FINISH ? 1 : 0;
+    Tracev((stderr, "\n--- Emit Tree: Last: %u\n", last));
     send_bits(s, (STATIC_TREES << 1)+ last, 3);
 }
 
-
 static void static_emit_end_block(deflate_state *const s, int last) {
     send_code(s, END_BLOCK, static_ltree);
+    Tracev((stderr, "\n+++ Emit End Block: Last: %u Pending: %u Total Out: %u\n", last, s->pending, s->strm->total_out));
 
     if (last)
         bi_windup(s);
@@ -200,9 +203,16 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     IPos hash_head;
     unsigned dist, match_len;
 
-    static_emit_tree(s, flush);
+    if (s->strm->total_out == 2) {
+        static_emit_tree(s, flush);
+    }
 
     do {
+        if (s->pending + 4 >= s->pending_buf_size) {
+            flush_pending(s->strm);
+            return need_more;
+        }
+
         if (s->lookahead < MIN_LOOKAHEAD) {
             fill_window_sse(s);
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
