@@ -330,6 +330,7 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
     s->level = level;
     s->strategy = strategy;
     s->method = (unsigned char)method;
+    s->block_open = 0;
 
     return deflateReset(strm);
 }
