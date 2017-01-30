@@ -75,7 +75,7 @@ static void insert_match(deflate_state *s, struct match match) {
             match.strstart++;
             match.match_length--;
             if (match.strstart >= match.orgstart) {
-                bulk_insert_str(s, match.strstart, match.match_length);
+                insert_string(s, match.strstart, match.match_length);
             }
             match.strstart += match.match_length;
             match.match_length = 0;
@@ -102,7 +102,7 @@ static void insert_match(deflate_state *s, struct match match) {
         } while (--match.match_length != 0);
 #else
         if (likely(match.strstart >= match.orgstart)) {
-            bulk_insert_str(s, match.strstart, match.match_length);
+            insert_string(s, match.strstart, match.match_length);
         }
         match.strstart += match.match_length;
         match.match_length = 0;
