@@ -177,6 +177,7 @@ static void static_emit_end_block(deflate_state *const s, int last) {
 
     s->block_start = s->strstart;
     flush_pending(s->strm);
+    s->block_open = 0;
 }
 
 static inline Pos quick_insert_string(deflate_state *const s, const Pos str) {
@@ -203,8 +204,9 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     IPos hash_head;
     unsigned dist, match_len;
 
-    if (s->strm->total_out == 2) {
+    if (s->block_open == 0) {
         static_emit_tree(s, flush);
+        s->block_open = 1;
     }
 
     do {

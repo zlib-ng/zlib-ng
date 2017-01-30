@@ -281,6 +281,12 @@ typedef struct internal_state {
      * longest match routines access bytes past the input.  This is then
      * updated to the new high water mark.
      */
+    int block_open;
+    /* Whether or not a block is currently open for the QUICK deflation scheme.
+     * This is set to 1 if there is an active block, or 0 if the block was just
+     * closed.
+     */
+
 } deflate_state;
 
 typedef enum {
