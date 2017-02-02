@@ -378,10 +378,11 @@ int ZEXPORT deflateResetKeep(z_stream *strm) {
         s->wrap ? INIT_STATE : BUSY_STATE;
 
 #ifdef GZIP
-    strm->adler = s->wrap == 2 ? crc32(0L, NULL, 0) : adler32(0L, NULL, 0);
-#else
-    strm->adler = adler32(0L, NULL, 0);
+    if (s->wrap == 2)
+        crc_reset(s);
+    else
 #endif
+        strm->adler = adler32(0L, NULL, 0);
     s->last_flush = Z_NO_FLUSH;
 
     _tr_init(s);
@@ -696,7 +697,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
 #ifdef GZIP
     if (s->status == GZIP_STATE) {
         /* gzip header */
-        strm->adler = crc32(0L, NULL, 0);
+        crc_reset(s);
         put_byte(s, 31);
         put_byte(s, 139);
         put_byte(s, 8);
@@ -824,7 +825,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
             }
             put_byte(s, (unsigned char)(strm->adler & 0xff));
             put_byte(s, (unsigned char)((strm->adler >> 8) & 0xff));
-            strm->adler = crc32(0L, NULL, 0);
+            crc_reset(s);
         }
         s->status = BUSY_STATE;
 
