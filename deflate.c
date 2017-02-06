@@ -416,6 +416,23 @@ int ZEXPORT deflateSetDictionary(z_stream *strm, const unsigned char *dictionary
 }
 
 /* ========================================================================= */
+int ZEXPORT deflateGetDictionary (z_stream *strm, unsigned char *dictionary, unsigned int  *dictLength) {
+    deflate_state *s;
+
+    if (deflateStateCheck(strm))
+        return Z_STREAM_ERROR;
+    s = strm->state;
+    unsigned int len = s->strstart + s->lookahead;
+    if (len > s->w_size)
+        len = s->w_size;
+    if (dictionary != NULL && len)
+        memcpy(dictionary, s->window + s->strstart + s->lookahead - len, len);
+    if (dictLength != NULL)
+        *dictLength = len;
+    return Z_OK;
+}
+
+/* ========================================================================= */
 int ZEXPORT deflateResetKeep(z_stream *strm) {
     deflate_state *s;
 
