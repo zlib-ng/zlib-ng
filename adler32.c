@@ -7,6 +7,7 @@
 
 #include "zutil.h"
 
+uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
 extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
@@ -64,11 +65,7 @@ static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len
 #endif
 
 /* ========================================================================= */
-uint32_t ZEXPORT adler32_z(uint32_t adler, const unsigned char *buf, size_t len) {
-#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
-    return adler32_neon(adler, buf, len);
-#endif
-
+uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
     uint32_t sum2;
     unsigned n;
 
@@ -148,6 +145,14 @@ uint32_t ZEXPORT adler32_z(uint32_t adler, const unsigned char *buf, size_t len)
 
     /* return recombined sums */
     return adler | (sum2 << 16);
+}
+
+uint32_t ZEXPORT adler32_z(uint32_t adler, const unsigned char *buf, size_t len) {
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+    return adler32_neon(adler, buf, len);
+#else
+    return adler32_c(adler, buf, len);
+#endif
 }
 
 /* ========================================================================= */

@@ -850,6 +850,9 @@ case "${ARCH}" in
                 if test $buildneon -eq 1; then
                     CFLAGS="${CFLAGS} -mfloat-abi=softfp -mfpu=neon"
                     SFLAGS="${SFLAGS} -mfloat-abi=softfp -mfpu=neon"
+
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
                 fi
             ;;
             armv8-a+crc | armv8-a+crc+simd | armv8.[12]-a)
@@ -859,6 +862,13 @@ case "${ARCH}" in
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
 
+                if test $buildneon -eq 1; then
+                    CFLAGS="${CFLAGS} -mfloat-abi=softfp -mfpu=neon"
+                    SFLAGS="${SFLAGS} -mfloat-abi=softfp -mfpu=neon"
+
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+                fi
             ;;
         esac
 
@@ -883,8 +893,12 @@ case "${ARCH}" in
        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
     fi
-    if test $buildneon -eq 1 && test $native -eq 0; then
+    if test $buildneon -eq 1; then
+      if test $native -eq 0; then
         ARCH="${ARCH}+simd"
+      fi
+      ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+      ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
     fi
     CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
     SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
