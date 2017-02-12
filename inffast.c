@@ -203,7 +203,7 @@ void ZLIB_INTERNAL inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
     code const *dcode;          /* local strm->distcode */
     unsigned lmask;             /* mask for first level of length codes */
     unsigned dmask;             /* mask for first level of distance codes */
-    code here;                  /* retrieved table entry */
+    const code *here;           /* retrieved table entry */
     unsigned op;                /* code bits, operation, extra bits, or */
                                 /*  window position, window bytes to copy */
     unsigned len;               /* match length, unused bytes */
@@ -243,17 +243,17 @@ void ZLIB_INTERNAL inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
             in += 6;
             bits += 48;
         }
-        here = lcode[hold & lmask];
+        here = lcode + (hold & lmask);
       dolen:
-        DROPBITS(here.bits);
-        op = here.op;
+        DROPBITS(here->bits);
+        op = here->op;
         if (op == 0) {                          /* literal */
-            Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
+            Tracevv((stderr, here->val >= 0x20 && here->val < 0x7f ?
                     "inflate:         literal '%c'\n" :
-                    "inflate:         literal 0x%02x\n", here.val));
-            *out++ = (unsigned char)(here.val);
+                    "inflate:         literal 0x%02x\n", here->val));
+            *out++ = (unsigned char)(here->val);
         } else if (op & 16) {                     /* length base */
-            len = here.val;
+            len = here->val;
             op &= 15;                           /* number of extra bits */
             if (op) {
                 if (bits < op) {
@@ -270,12 +270,12 @@ void ZLIB_INTERNAL inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
                 in += 6;
                 bits += 48;
             }
-            here = dcode[hold & dmask];
+            here = dcode + (hold & dmask);
           dodist:
-            DROPBITS(here.bits);
-            op = here.op;
+            DROPBITS(here->bits);
+            op = here->op;
             if (op & 16) {                      /* distance base */
-                dist = here.val;
+                dist = here->val;
                 op &= 15;                       /* number of extra bits */
                 if (bits < op) {
                     hold |= load_64_bits(in, bits);
@@ -422,7 +422,7 @@ void ZLIB_INTERNAL inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
 #endif
                 }
             } else if ((op & 64) == 0) {          /* 2nd level distance code */
-                here = dcode[here.val + BITS(op)];
+                here = dcode + here->val + BITS(op);
                 goto dodist;
             } else {
                 strm->msg = (char *)"invalid distance code";
@@ -430,7 +430,7 @@ void ZLIB_INTERNAL inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
                 break;
             }
         } else if ((op & 64) == 0) {              /* 2nd level length code */
-            here = lcode[here.val + BITS(op)];
+            here = lcode + here->val + BITS(op);
             goto dolen;
         } else if (op & 32) {                     /* end-of-block */
             Tracevv((stderr, "inflate:         end of block\n"));
