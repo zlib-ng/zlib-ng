@@ -51,8 +51,8 @@ teststatic: check_cross_dep
 	  echo '		*** zlib test OK ***'; \
 	else \
 	  echo '		*** zlib test FAILED ***'; exit 1; \
-	fi; \
-	rm -f $$TMPST
+	fi
+	@rm -f tmpst_$$
 
 testshared: check_cross_dep
 	@LD_LIBRARY_PATH=`pwd`/..:$(LD_LIBRARY_PATH) ; export LD_LIBRARY_PATH; \
@@ -64,8 +64,8 @@ testshared: check_cross_dep
 	  echo '		*** zlib shared test OK ***'; \
 	else \
 	  echo '		*** zlib shared test FAILED ***'; exit 1; \
-	fi; \
-	rm -f $$TMPSH
+	fi
+	@rm -f tmpsh_$$
 
 test64: check_cross_dep
 	@TMP64=tmp64_$$; \
@@ -73,8 +73,8 @@ test64: check_cross_dep
 	  echo '		*** zlib 64-bit test OK ***'; \
 	else \
 	  echo '		*** zlib 64-bit test FAILED ***'; exit 1; \
-	fi; \
-	rm -f $$TMP64
+	fi
+	@rm -f tmp64_$$
 
 cvetests: testCVEinputs
 
