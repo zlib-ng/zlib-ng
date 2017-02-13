@@ -552,10 +552,11 @@ int ZEXPORT deflateParams(z_stream *strm, int level, int strategy) {
     }
     if (s->level != level) {
         if (s->level == 0 && s->matches != 0) {
-            if (s->matches == 1)
+            if (s->matches == 1) {
                 slide_hash(s);
-            else
+            } else {
                 CLEAR_HASH(s);
+            }
             s->matches = 0;
         }
         s->level = level;
