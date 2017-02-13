@@ -1,7 +1,6 @@
 language: c
 cache: ccache
 dist: trusty
-osx_image: xcode8.2
 
 matrix:
   include:
