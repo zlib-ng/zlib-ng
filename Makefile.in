@@ -197,6 +197,7 @@ endif
 install-shared: $(SHAREDTARGET)
 ifneq ($(SHAREDTARGET),)
 	-@if [ ! -d $(DESTDIR)$(sharedlibdir) ]; then mkdir -p $(DESTDIR)$(sharedlibdir); fi
+	rm -f $(DESTDIR)$(sharedlibdir)/$(SHAREDTARGET)
 	cp $(SHAREDTARGET) $(DESTDIR)$(sharedlibdir)
 	chmod 644 $(DESTDIR)$(sharedlibdir)/$(SHAREDTARGET)
 ifneq ($(SHAREDLIB),$(SHAREDTARGET))
@@ -214,6 +215,7 @@ endif
 
 install-static: $(STATICLIB)
 	-@if [ ! -d $(DESTDIR)$(libdir)       ]; then mkdir -p $(DESTDIR)$(libdir); fi
+	rm -f $(DESTDIR)$(libdir)/$(STATICLIB)
 	cp $(STATICLIB) $(DESTDIR)$(libdir)
 	chmod 644 $(DESTDIR)$(libdir)/$(STATICLIB)
 	-@($(RANLIB) $(DESTDIR)$(libdir)/$(STATICLIB) || true) >/dev/null 2>&1
@@ -222,13 +224,16 @@ install-static: $(STATICLIB)
 install-libs: install-shared install-static
 	-@if [ ! -d $(DESTDIR)$(man3dir)      ]; then mkdir -p $(DESTDIR)$(man3dir); fi
 	-@if [ ! -d $(DESTDIR)$(pkgconfigdir) ]; then mkdir -p $(DESTDIR)$(pkgconfigdir); fi
+	rm -f $(DESTDIR)$(man3dir)/zlib.3
 	cp $(SRCDIR)/zlib.3 $(DESTDIR)$(man3dir)
 	chmod 644 $(DESTDIR)$(man3dir)/zlib.3
+	rm -f $(DESTDIR)$(pkgconfigdir)/zlib.pc
 	cp zlib.pc $(DESTDIR)$(pkgconfigdir)
 	chmod 644 $(DESTDIR)$(pkgconfigdir)/zlib.pc
 
 install: install-libs
 	-@if [ ! -d $(DESTDIR)$(includedir)   ]; then mkdir -p $(DESTDIR)$(includedir); fi
+	rm -f $(DESTDIR)$(includedir)/zlib.h $(DESTDIR)$(includedir)/zconf.h
 	cp $(SRCDIR)/zlib.h zconf.h $(DESTDIR)$(includedir)
 	chmod 644 $(DESTDIR)$(includedir)/zlib.h $(DESTDIR)$(includedir)/zconf.h
 
