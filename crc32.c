@@ -442,7 +442,7 @@ uint32_t ZEXPORT crc32_combine64(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
 
 #ifndef X86_PCLMULQDQ_CRC
 ZLIB_INTERNAL void crc_reset(deflate_state *const s) {
-    s->strm->adler = crc32(0L, Z_NULL, 0);
+    s->strm->adler = crc32(0L, NULL, 0);
 }
 
 ZLIB_INTERNAL void copy_with_crc(z_stream *strm, unsigned char *dst, unsigned long size) {
