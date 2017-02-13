@@ -3,6 +3,7 @@ compiler:
   - gcc
   - clang
 env:
+  - BUILDDIR=. TOOL="./configure"
   - BUILDDIR=. TOOL="./configure --zlib-compat"
   - BUILDDIR=../build TOOL="../zlib-ng/configure --zlib-compat"
   - BUILDDIR=. TOOL="./configure --zlib-compat --without-optimizations --without-new-strategies"

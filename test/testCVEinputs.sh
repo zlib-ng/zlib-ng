@@ -9,7 +9,7 @@ for CVE in $CVEs; do
 	../minigzip -d < "$testcase"
 	# we expect that a 1 error code is OK
 	# for a vulnerable failure we'd expect 134 or similar
-	if [ $? -ne 1 ]; then
+	if [ $? -ne 1 ] && [ $? -ne 0 ]; then
 	    fail=1
 	fi
     done
