@@ -29,16 +29,9 @@
 
 
 #if defined(_MSC_VER) && !defined(__clang__)
-#include <intrin.h>
-/* This is not a general purpose replacement for __builtin_ctzl. The function expects that value is != 0
- * Because of that assumption trailing_zero is not initialized and the return value of _BitScanForward is not checked
- */
-static __forceinline unsigned long __builtin_ctzl(unsigned long value)
-{
-	unsigned long trailing_zero;
-	_BitScanForward(&trailing_zero, value);
-	return trailing_zero;
-}
+# if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64)
+#  include "arch/x86/ctzl.h"
+# endif
 #endif
 
 

@@ -733,11 +733,14 @@ case "${ARCH}" in
             ;;
         esac
 
-        CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS -DX86_CPUID"
-        SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS -DX86_CPUID"
+        CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+        SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
 
 	# Enable arch-specific optimizations?
 	if test $without_optimizations -eq 0; then
+            CFLAGS="${CFLAGS} -DX86_CPUID"
+            SFLAGS="${SFLAGS} -DX86_CPUID"
+
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo"
 
@@ -756,8 +759,8 @@ case "${ARCH}" in
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o crc_pclmulqdq.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo crc_pclmulqdq.lo"
             fi
 
 	    # Enable deflate_quick at level 1?

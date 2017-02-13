@@ -20,6 +20,7 @@
 ZLIB_INTERNAL int x86_cpu_has_sse2;
 ZLIB_INTERNAL int x86_cpu_has_sse42;
 ZLIB_INTERNAL int x86_cpu_has_pclmulqdq;
+ZLIB_INTERNAL int x86_cpu_has_tzcnt;
 
 static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
 #ifdef _MSC_VER
@@ -50,4 +51,8 @@ void ZLIB_INTERNAL x86_check_features(void) {
 	x86_cpu_has_sse2 = edx & 0x4000000;
 	x86_cpu_has_sse42 = ecx & 0x100000;
 	x86_cpu_has_pclmulqdq = ecx & 0x2;
+
+	cpuid(7, &eax, &ebx, &ecx, &edx);
+
+	x86_cpu_has_tzcnt = ecx & 0x8;
 }
