@@ -836,7 +836,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
         }
     }
     if (s->status == EXTRA_STATE) {
-        if (s->gzhead->extra != Z_NULL) {
+        if (s->gzhead->extra != NULL) {
             uint32_t beg = s->pending;   /* start of bytes to update crc */
             uint32_t left = (s->gzhead->extra_len & 0xffff) - s->gzindex;
 

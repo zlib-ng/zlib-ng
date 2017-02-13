@@ -14,7 +14,7 @@ ZLIB_INTERNAL void crc_reset(deflate_state *const s) {
         crc_fold_init(s);
         return;
     }
-    s->strm->adler = crc32(0L, Z_NULL, 0);
+    s->strm->adler = crc32(0L, NULL, 0);
 }
 
 ZLIB_INTERNAL void crc_finalize(deflate_state *const s) {
