@@ -33,12 +33,12 @@ void flush_pending(z_stream *strm);
  */
 
 #ifdef X86_SSE4_2_CRC_HASH
-extern Pos insert_string_sse(deflate_state *const s, const Pos str, uInt count);
+extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
 #endif
 
-static inline Pos insert_string_c(deflate_state *const s, const Pos str, uInt count) {
+static inline Pos insert_string_c(deflate_state *const s, const Pos str, unsigned int count) {
     Pos ret = 0;
-    uInt idx;
+    unsigned int idx;
 
     for (idx = 0; idx < count; idx++) {
         UPDATE_HASH(s, s->ins_h, str+idx);
@@ -51,7 +51,7 @@ static inline Pos insert_string_c(deflate_state *const s, const Pos str, uInt co
     return ret;
 }
 
-static inline Pos insert_string(deflate_state *const s, const Pos str, uInt count) {
+static inline Pos insert_string(deflate_state *const s, const Pos str, unsigned int count) {
 #ifdef X86_SSE4_2_CRC_HASH
     if (x86_cpu_has_sse42)
         return insert_string_sse(s, str, count);
@@ -67,7 +67,7 @@ static inline Pos insert_string(deflate_state *const s, const Pos str, uInt coun
     _tr_flush_block(s, (s->block_start >= 0L ? \
                    (char *)&s->window[(unsigned)s->block_start] : \
                    NULL), \
-                   (ulg)((long)s->strstart - s->block_start), \
+                   (unsigned long)((long)s->strstart - s->block_start), \
                    (last)); \
     s->block_start = s->strstart; \
     flush_pending(s->strm); \

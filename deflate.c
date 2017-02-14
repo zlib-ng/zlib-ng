@@ -163,7 +163,7 @@ static const config configuration_table[10] = {
 static void slide_hash(deflate_state *s) {
     unsigned n;
     Pos *p;
-    uInt wsize = s->w_size;
+    unsigned int wsize = s->w_size;
 
     n = s->hash_size;
     p = &s->head[n];
@@ -1347,7 +1347,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
             /* maximum stored block length that will fit in avail_out: */
         have = s->strm->avail_out - have;
         left = s->strstart - s->block_start;    /* bytes left in window */
-        if (len > (ulg)left + s->strm->avail_in)
+        if (len > (unsigned long)left + s->strm->avail_in)
             len = left + s->strm->avail_in;     /* limit len to the input */
         if (len > have)
             len = have;                         /* limit len to the output */
