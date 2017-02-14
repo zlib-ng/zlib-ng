@@ -1484,7 +1484,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
         len = MIN(left, have);
         last = flush == Z_FINISH && s->strm->avail_in == 0 &&
                len == left ? 1 : 0;
-        _tr_stored_block(s, (charf *)s->window + s->block_start, len, last);
+        _tr_stored_block(s, (char *)s->window + s->block_start, len, last);
         s->block_start += len;
         flush_pending(s->strm);
     }
