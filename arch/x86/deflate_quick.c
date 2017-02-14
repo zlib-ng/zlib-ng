@@ -123,7 +123,7 @@ static const unsigned quick_len_codes[MAX_MATCH-MIN_MATCH+1];
 static const unsigned quick_dist_codes[8192];
 
 static inline void quick_send_bits(deflate_state *const s, const int value, const int length) {
-    unsigned code, out, width, bytes_out;
+    unsigned out, width, bytes_out;
 
     /* Concatenate the new bits with the bits currently in the buffer */
     out = s->bi_buf | (value << s->bi_valid);
