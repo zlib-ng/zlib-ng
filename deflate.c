@@ -1253,14 +1253,12 @@ void fill_window_c(deflate_state *s) {
             unsigned int str = s->strstart - s->insert;
             s->ins_h = s->window[str];
             if (str >= 1)
-                UPDATE_HASH(s, s->ins_h, str + 1 - (MIN_MATCH-1));
+                insert_string(s, str + 2 - MIN_MATCH, 1);
 #if MIN_MATCH != 3
-            Call UPDATE_HASH() MIN_MATCH-3 more times
+#warning    Call insert_string() MIN_MATCH-3 more times
 #endif
             while (s->insert) {
-                UPDATE_HASH(s, s->ins_h, str);
-                s->prev[str & s->w_mask] = s->head[s->ins_h];
-                s->head[s->ins_h] = (Pos)str;
+                insert_string(s, str, 1);
                 str++;
                 s->insert--;
                 if (s->lookahead + s->insert < MIN_MATCH)
