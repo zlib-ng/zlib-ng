@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.4)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
+set(CMAKE_MACOSX_RPATH 1)
 
 project(zlib C)
 
@@ -90,7 +91,7 @@ elseif(MSVC)
     endif()
 else()
     execute_process(COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE COMPILER_VERSION)
-    if("${COMPILER_VERSION}" MATCHES "gcc" OR "${COMPILER_VERSION}" MATCHES "clang")
+    if("${COMPILER_VERSION}" MATCHES "gcc" OR "${COMPILER_VERSION}" MATCHES "GCC" OR "${COMPILER_VERSION}" MATCHES "clang")
         set(__GNUC__ ON)
     endif()
     if(WITH_NATIVE_INSTRUCTIONS)
@@ -131,7 +132,7 @@ add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
 #
 # Check to see if we have large file support
 #
-set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1)
+set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
 # We add these other definitions here because CheckTypeSize.cmake
 # in CMake 2.4.x does not automatically do so and we want
 # compatibility with CMake 2.4.x.
@@ -146,11 +147,13 @@ if(HAVE_STDDEF_H)
 endif()
 check_type_size(off64_t OFF64_T)
 if(HAVE_OFF64_T)
-   add_definitions(-D_LARGEFILE64_SOURCE=1)
+   add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
 else()
    check_type_size(_off64_t _OFF64_T)
    if (HAVE__OFF64_T)
-      add_definitions(-D_LARGEFILE64_SOURCE=1)
+      add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
+   else()
+      check_type_size(__off64_t __OFF64_T)
    endif()
 endif()
 set(CMAKE_REQUIRED_DEFINITIONS) # clear variable
@@ -263,20 +266,18 @@ else()
     if(WITH_NATIVE_INSTRUCTIONS)
         set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
     else()
-        # the PCLMUL instruction we use also requires an SSE4.1 instruction check for both
-        set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG} ${PCLMULFLAG}")
+        set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
     endif()
     check_c_source_runs(
         "#include <immintrin.h>
-        #include <smmintrin.h>
         #include <wmmintrin.h>
         int main(void)
         {
             __m128i a = _mm_setzero_si128();
             __m128i b = _mm_setzero_si128();
             __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-            int d = _mm_extract_epi32(c, 2);
-            return d;
+            (void)c;
+            return 0;
         }"
         HAVE_PCLMULQDQ_INTRIN
     )
@@ -347,9 +348,11 @@ if("${ARCHDIR}" MATCHES "arch/x86" AND WITH_OPTIM)
     if(HAVE_PCLMULQDQ_INTRIN)
         add_definitions(-DX86_PCLMULQDQ_CRC)
         set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc_folding.c ${ARCHDIR}/crc_pclmulqdq.c)
-        add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${SSE4FLAG} ${PCLMULFLAG}\"")
         add_intrinsics_option(${PCLMULFLAG})
-        if(NOT HAVE_SSE42_INTRIN)
+        if(HAVE_SSE42_INTRIN)
+            add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG}\"")
+        else()
+            add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG} ${SSE4FLAG}\"")
             add_intrinsics_option(${SSE4FLAG})
         endif()
     endif()
