@@ -18,7 +18,7 @@ oldtests: #set by ../configure
 
 teststatic:
 	@TMPST=tmpst_$$; \
-	if echo hello world | ../minigzip | ../minigzip -d && ../example $$TMPST ; then \
+	if echo hello world | ../minigzip$(EXE) | ../minigzip$(EXE) -d && ../example$(EXE) $$TMPST ; then \
 	  echo '		*** zlib test OK ***'; \
 	else \
 	  echo '		*** zlib test FAILED ***'; exit 1; \
@@ -31,7 +31,7 @@ testshared:
 	DYLD_LIBRARY_PATH=`pwd`/..:$(DYLD_LIBRARY_PATH) ; export DYLD_LIBRARY_PATH; \
 	SHLIB_PATH=`pwd`/..:$(SHLIB_PATH) ; export SHLIB_PATH; \
 	TMPSH=tmpsh_$$; \
-	if echo hello world | ../minigzipsh | ../minigzipsh -d && ../examplesh $$TMPSH; then \
+	if echo hello world | ../minigzipsh$(EXE) | ../minigzipsh$(EXE) -d && ../examplesh$(EXE) $$TMPSH; then \
 	  echo '		*** zlib shared test OK ***'; \
 	else \
 	  echo '		*** zlib shared test FAILED ***'; exit 1; \
@@ -40,7 +40,7 @@ testshared:
 
 test64:
 	@TMP64=tmp64_$$; \
-	if echo hello world | ../minigzip64 | ../minigzip64 -d && ../example64 $$TMP64; then \
+	if echo hello world | ../minigzip64$(EXE) | ../minigzip64$(EXE) -d && ../example64$(EXE) $$TMP64; then \
 	  echo '		*** zlib 64-bit test OK ***'; \
 	else \
 	  echo '		*** zlib 64-bit test FAILED ***'; exit 1; \
@@ -53,7 +53,7 @@ cvetests: testCVEinputs
 compattests: testCVE-2003-0107
 
 testCVEinputs:
-	@$(SRCDIR)/testCVEinputs.sh
+	@EXE=$(EXE) $(SRCDIR)/testCVEinputs.sh
 
 testCVE-2003-0107: CVE-2003-0107$(EXE)
 	@if ./CVE-2003-0107$(EXE); then \

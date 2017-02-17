@@ -6,7 +6,7 @@ CVEs="CVE-2002-0059 CVE-2004-0797 CVE-2005-1849 CVE-2005-2096"
 for CVE in $CVEs; do
     fail=0
     for testcase in ${TESTDIR}/${CVE}/*.gz; do
-	../minigzip -d < "$testcase"
+	../minigzip${EXE} -d < "$testcase"
 	# we expect that a 1 error code is OK
 	# for a vulnerable failure we'd expect 134 or similar
 	if [ $? -ne 1 ] && [ $? -ne 0 ]; then
