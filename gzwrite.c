@@ -7,15 +7,15 @@
 #include "gzguts.h"
 
 /* Local functions */
-static int gz_init(gz_statep);
-static int gz_comp(gz_statep, int);
-static int gz_zero(gz_statep, z_off64_t);
-static size_t gz_write(gz_statep, void const *, size_t);
+static int gz_init(gz_state *);
+static int gz_comp(gz_state *, int);
+static int gz_zero(gz_state *, z_off64_t);
+static size_t gz_write(gz_state *, void const *, size_t);
 
 /* Initialize state for writing a gzip file.  Mark initialization by setting
    state->size to non-zero.  Return -1 on a memory allocation failure, or 0 on
    success. */
-static int gz_init(gz_statep state) {
+static int gz_init(gz_state *state) {
     int ret;
     z_stream *strm = &(state->strm);
 
@@ -68,7 +68,7 @@ static int gz_init(gz_statep state) {
    deflate() flush value.  If flush is Z_FINISH, then the deflate() state is
    reset to start a new gzip stream.  If gz->direct is true, then simply write
    to the output file without compressing, and ignore flush. */
-static int gz_comp(gz_statep state, int flush) {
+static int gz_comp(gz_state *state, int flush) {
     int ret;
     ssize_t got;
     unsigned have;
@@ -128,7 +128,7 @@ static int gz_comp(gz_statep state, int flush) {
 
 /* Compress len zeros to output.  Return -1 on a write error or memory
    allocation failure by gz_comp(), or 0 on success. */
-static int gz_zero(gz_statep state, z_off64_t len) {
+static int gz_zero(gz_state *state, z_off64_t len) {
     int first;
     unsigned n;
     z_stream *strm = &(state->strm);
@@ -157,7 +157,7 @@ static int gz_zero(gz_statep state, z_off64_t len) {
 
 /* Write len bytes from buf to file.  Return the number of bytes written.  If
    the returned value is less than len, then there was an error. */
-static size_t gz_write(gz_statep state, void const *buf, size_t len) {
+static size_t gz_write(gz_state *state, void const *buf, size_t len) {
     size_t put = len;
 
     /* if len is zero, avoid unnecessary operations */
@@ -221,12 +221,12 @@ static size_t gz_write(gz_statep state, void const *buf, size_t len) {
 
 /* -- see zlib.h -- */
 int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len) {
-    gz_statep state;
+    gz_state *state;
 
     /* get internal structure */
     if (file == NULL)
         return 0;
-    state = (gz_statep)file;
+    state = (gz_state *)file;
 
     /* check that we're writing and that there's no error */
     if (state->mode != GZ_WRITE || state->err != Z_OK)
@@ -246,12 +246,12 @@ int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len) {
 /* -- see zlib.h -- */
 size_t ZEXPORT gzfwrite(void const *buf, size_t size, size_t nitems, gzFile file) {
     size_t len;
-    gz_statep state;
+    gz_state *state;
 
     /* get internal structure */
     if (file == NULL)
         return 0;
-    state = (gz_statep)file;
+    state = (gz_state *)file;
 
     /* check that we're writing and that there's no error */
     if (state->mode != GZ_WRITE || state->err != Z_OK)
@@ -272,13 +272,13 @@ size_t ZEXPORT gzfwrite(void const *buf, size_t size, size_t nitems, gzFile file
 int ZEXPORT gzputc(gzFile file, int c) {
     unsigned have;
     unsigned char buf[1];
-    gz_statep state;
+    gz_state *state;
     z_stream *strm;
 
     /* get internal structure */
     if (file == NULL)
         return -1;
-    state = (gz_statep)file;
+    state = (gz_state *)file;
     strm = &(state->strm);
 
     /* check that we're writing and that there's no error */
@@ -317,12 +317,12 @@ int ZEXPORT gzputc(gzFile file, int c) {
 int ZEXPORT gzputs(gzFile file, const char *str) {
     int ret;
     size_t len;
-    gz_statep state;
+    gz_state *state;
 
     /* get internal structure */
     if (file == NULL)
         return -1;
-    state = (gz_statep)file;
+    state = (gz_state *)file;
 
     /* check that we're writing and that there's no error */
     if (state->mode != GZ_WRITE || state->err != Z_OK)
@@ -339,13 +339,13 @@ int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va) {
     int len;
     unsigned left;
     char *next;
-    gz_statep state;
+    gz_state *state;
     z_stream *strm;
 
     /* get internal structure */
     if (file == NULL)
         return Z_STREAM_ERROR;
-    state = (gz_statep)file;
+    state = (gz_state *)file;
     strm = &(state->strm);
 
     /* check that we're writing and that there's no error */
@@ -403,12 +403,12 @@ int ZEXPORTVA gzprintf(gzFile file, const char *format, ...) {
 
 /* -- see zlib.h -- */
 int ZEXPORT gzflush(gzFile file, int flush) {
-    gz_statep state;
+    gz_state *state;
 
     /* get internal structure */
     if (file == NULL)
         return Z_STREAM_ERROR;
-    state = (gz_statep)file;
+    state = (gz_state *)file;
 
     /* check that we're writing and that there's no error */
     if (state->mode != GZ_WRITE || state->err != Z_OK)
@@ -432,13 +432,13 @@ int ZEXPORT gzflush(gzFile file, int flush) {
 
 /* -- see zlib.h -- */
 int ZEXPORT gzsetparams(gzFile file, int level, int strategy) {
-    gz_statep state;
+    gz_state *state;
     z_stream *strm;
 
     /* get internal structure */
     if (file == NULL)
         return Z_STREAM_ERROR;
-    state = (gz_statep)file;
+    state = (gz_state *)file;
     strm = &(state->strm);
 
     /* check that we're writing and that there's no error */
@@ -471,12 +471,12 @@ int ZEXPORT gzsetparams(gzFile file, int level, int strategy) {
 /* -- see zlib.h -- */
 int ZEXPORT gzclose_w(gzFile file) {
     int ret = Z_OK;
-    gz_statep state;
+    gz_state *state;
 
     /* get internal structure */
     if (file == NULL)
         return Z_STREAM_ERROR;
-    state = (gz_statep)file;
+    state = (gz_state *)file;
 
     /* check that we're writing */
     if (state->mode != GZ_WRITE)
