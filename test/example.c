@@ -72,12 +72,12 @@ void test_compress(unsigned char *compr, size_t comprLen, unsigned char *uncompr
 
 #ifdef WITH_GZFILEOP
 void test_gzio          (const char *fname,
-                            unsigned char *uncompr, unsigned long uncomprLen);
+                            unsigned char *uncompr, size_t uncomprLen);
 
 /* ===========================================================================
  * Test read/write of .gz files
  */
-void test_gzio(const char *fname, unsigned char *uncompr, unsigned long uncomprLen)
+void test_gzio(const char *fname, unsigned char *uncompr, size_t uncomprLen)
 {
 #ifdef NO_GZCOMPRESS
     fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
