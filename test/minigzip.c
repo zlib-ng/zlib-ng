@@ -435,7 +435,7 @@ void file_uncompress(char  *file)
  *   -f : compress with Z_FILTERED
  *   -h : compress with Z_HUFFMAN_ONLY
  *   -r : compress with Z_RLE
- *   -1 to -9 : compression level
+ *   -0 to -9 : compression level
  */
 
 int main(int argc, char *argv[])
@@ -471,7 +471,7 @@ int main(int argc, char *argv[])
         outmode[3] = 'h';
       else if (strcmp(*argv, "-r") == 0)
         outmode[3] = 'R';
-      else if ((*argv)[0] == '-' && (*argv)[1] >= '1' && (*argv)[1] <= '9' &&
+      else if ((*argv)[0] == '-' && (*argv)[1] >= '0' && (*argv)[1] <= '9' &&
                (*argv)[2] == 0)
         outmode[2] = (*argv)[1];
       else
