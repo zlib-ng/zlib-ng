@@ -307,7 +307,7 @@ typedef enum {
  * Output a short LSB first on the stream.
  * IN assertion: there is enough room in pendingBuf.
  */
-#if defined(__x86_64) || defined(__i386_)
+#ifdef UNALIGNED_OK
 /* Compared to the else-clause's implementation, there are few advantages:
  *  - s->pending is loaded only once (else-clause's implementation needs to
  *    load s->pending twice due to the alias between s->pending and
@@ -318,8 +318,8 @@ typedef enum {
  *    cost of penalty of potentially unaligned access. 
  */
 #define put_short(s, w) { \
+    *(uint16_t*)(&s->pending_buf[s->pending]) = (w) ; \
     s->pending += 2; \
-    *(uint16_t*)(&s->pending_buf[s->pending - 2]) = (w) ; \
 }
 #else
 #define put_short(s, w) { \
