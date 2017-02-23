@@ -107,6 +107,7 @@ build32=0
 build64=0
 buildacle=0
 buildneon=0
+floatabi=
 native=0
 sse2flag="-msse2"
 sse4flag="-msse4"
@@ -832,9 +833,17 @@ case "${ARCH}" in
 
     # ARM specific optimizations
     arm | armv[3467]l | armv4b | armv4tl | armv5tel | armv5tejl | armv[67]hl | armv7hnl | armv[78]-a | armv8-a+* | armv8.[12]-a)
-	ARCHDIR=arch/arm
-	ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
-	ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
+        ARCHDIR=arch/arm
+        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
+        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
+
+        GCC_MACHINE=$(${CC} -dumpmachine)
+        case "${GCC_MACHINE}" in
+            *gnueabihf)
+                floatabi="-mfloat-abi=hard" ;;
+            *gnueabi)
+                floatabi="-mfloat-abi=softfp" ;;
+        esac
 
         case "${ARCH}" in
             armv6l | armv6hl)
@@ -848,8 +857,8 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
 
                 if test $buildneon -eq 1; then
-                    CFLAGS="${CFLAGS} -mfloat-abi=softfp -mfpu=neon"
-                    SFLAGS="${SFLAGS} -mfloat-abi=softfp -mfpu=neon"
+                    CFLAGS="${CFLAGS} ${floatabi} -mfpu=neon"
+                    SFLAGS="${SFLAGS} ${floatabi} -mfpu=neon"
 
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
@@ -863,8 +872,8 @@ case "${ARCH}" in
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
 
                 if test $buildneon -eq 1; then
-                    CFLAGS="${CFLAGS} -mfloat-abi=softfp -mfpu=neon"
-                    SFLAGS="${SFLAGS} -mfloat-abi=softfp -mfpu=neon"
+                    CFLAGS="${CFLAGS} ${floatabi} -mfpu=neon"
+                    SFLAGS="${SFLAGS} ${floatabi} -mfpu=neon"
 
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
