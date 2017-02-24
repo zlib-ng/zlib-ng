@@ -532,7 +532,7 @@ endif()
 
 add_executable(example test/example.c)
 target_link_libraries(example zlib)
-add_test(example example)
+add_test(example example${CMAKE_EXECUTABLE_SUFFIX})
 
 add_executable(minigzip test/minigzip.c)
 target_link_libraries(minigzip zlib)
@@ -541,7 +541,7 @@ if(HAVE_OFF64_T)
     add_executable(example64 test/example.c)
     target_link_libraries(example64 zlib)
     set_target_properties(example64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
-    add_test(example64 example64)
+    add_test(example64 example64${CMAKE_EXECUTABLE_SUFFIX})
 
     add_executable(minigzip64 test/minigzip.c)
     target_link_libraries(minigzip64 zlib)
