@@ -244,16 +244,21 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned long start) {
                     }
                 } else {
                     from = out - dist;          /* copy direct from output */
-                    do {                        /* minimum length is three */
-                        *out++ = *from++;
-                        *out++ = *from++;
-                        *out++ = *from++;
-                        len -= 3;
-                    } while (len > 2);
-                    if (len) {
-                        *out++ = *from++;
-                        if (len > 1)
+                    if (dist == 1) {
+                        memset (out, *from, len);
+                        out += len;
+                    } else {
+                        do {                        /* minimum length is three */
                             *out++ = *from++;
+                            *out++ = *from++;
+                            *out++ = *from++;
+                            len -= 3;
+                        } while (len > 2);
+                        if (len) {
+                            *out++ = *from++;
+                            if (len > 1)
+                                *out++ = *from++;
+                        }
                     }
                 }
             } else if ((op & 64) == 0) {          /* 2nd level distance code */
