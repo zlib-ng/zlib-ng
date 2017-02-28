@@ -1,0 +1,64 @@
+Overview
+========
+
+There are several methods for compiling and installing zlib-ng, depending
+on your favorite operating system and development toolkits.
+This document will attempt to give a general overview of some of them.
+
+PS: We do not recommend running 'make install' unless you know what you
+    are doing, as this can override the system default zlib library, and
+    any wrong configuration or incompatability of zlib-ng can make the
+    whole system unusable.
+
+On linux distros, an alternative way to use zlib-ng instead of zlib
+for specific programs exist, use LD_PRELOAD.
+If the program is dynamically linked with zlib, then zlib-ng can take
+its place without risking system-wide instability. Ex:
+LD_PRELOAD=/opt/zlib-ng/libz.so.1.2.11.zlib-ng /usr/bin/program
+
+
+Configure
+=========
+
+Using the configure script is currently the main method of setting up the
+makefiles and preparing for compilation. Configure will attempt to detect
+the specifics of your system, and enable some of the relevant options for you.
+
+Configure accepts several command-line options, some of the most important
+ones are detailed below.
+
+--zlib-compat
+ This enables options that will ensure that zlib-ng is compiled with all the
+ functions that a standard zlib library contains, you will need to use this
+ if you are going to be using zlib-ng as a drop-in replacement for zlib.
+
+--without-optimizations
+ This will disable zlib-ng specific optimizations (does not disable strategies).
+
+--without-new-strategies
+ This will disable specially optimized strategies, such as deflate_quick and
+ deflate_medium.
+
+Run configure like this:
+./configure --zlib-compat
+
+Then you can compile using make:
+make
+make test
+
+
+Cmake
+=====
+
+Cmake is an alternative to configure, basically letting you do the same thing,
+but with different tools and user interfaces.
+
+Start by initializing cmake:
+cmake .
+
+Then you can start the configuration tui to set the wanted options
+ccmake .
+
+You can now compile using make:
+make
+make test
