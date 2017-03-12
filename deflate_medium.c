@@ -154,12 +154,6 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
     if (likely(*match != *orig))
         return;
 
-    /* check the overlap case and just give up. We can do better in theory,
-     * but unlikely to be worth it
-     */
-    if (next->match_start + next->match_length >= current->strstart)
-        return;
-
     c = *current;
     n = *next;
 
