@@ -31,7 +31,7 @@ static int tr_tally_lit(deflate_state *s, int c) {
 static int emit_match(deflate_state *s, struct match match) {
     int flush = 0;
 
-    /* matches that are not long enough we need to emit as litterals */
+    /* matches that are not long enough we need to emit as literals */
     if (match.match_length < MIN_MATCH) {
         while (match.match_length) {
             flush += tr_tally_lit(s, s->window[match.strstart]);
@@ -54,7 +54,7 @@ static void insert_match(deflate_state *s, struct match match) {
     if (unlikely(s->lookahead <= match.match_length + MIN_MATCH))
         return;
 
-    /* matches that are not long enough we need to emit as litterals */
+    /* matches that are not long enough we need to emit as literals */
     if (match.match_length < MIN_MATCH) {
 #ifdef NOT_TWEAK_COMPILER
         while (match.match_length) {

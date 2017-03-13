@@ -279,7 +279,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
 /* longest_match() with minor change to improve performance (in terms of
  * execution time).
  *
- * The pristine longest_match() function is sketched bellow (strip the
+ * The pristine longest_match() function is sketched below (strip the
  * then-clause of the "#ifdef UNALIGNED_OK"-directive)
  *
  * ------------------------------------------------------------
