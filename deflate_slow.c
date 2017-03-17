@@ -7,6 +7,7 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "match.h"
+#include "functable.h"
 
 /* ===========================================================================
  * Local data
@@ -34,7 +35,7 @@ block_state deflate_slow(deflate_state *s, int flush) {
          * string following the next match.
          */
         if (s->lookahead < MIN_LOOKAHEAD) {
-            fill_window(s);
+            func_table.fill_window(s);
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
                 return need_more;
             }
@@ -47,7 +48,7 @@ block_state deflate_slow(deflate_state *s, int flush) {
          */
         hash_head = NIL;
         if (s->lookahead >= MIN_MATCH) {
-            hash_head = insert_string(s, s->strstart, 1);
+            hash_head = func_table.insert_string(s, s->strstart, 1);
         }
 
         /* Find the longest match, discarding those <= prev_length.
@@ -97,7 +98,7 @@ block_state deflate_slow(deflate_state *s, int flush) {
             s->prev_length -= 2;
             do {
                 if (++s->strstart <= max_insert) {
-                    insert_string(s, s->strstart, 1);
+                    func_table.insert_string(s, s->strstart, 1);
                 }
             } while (--s->prev_length != 0);
             s->match_available = 0;
@@ -110,7 +111,7 @@ block_state deflate_slow(deflate_state *s, int flush) {
                 if (unlikely(insert_cnt > max_insert - s->strstart))
                     insert_cnt = max_insert - s->strstart;
 
-                insert_string(s, s->strstart + 1, insert_cnt);
+                func_table.insert_string(s, s->strstart + 1, insert_cnt);
                 s->prev_length = 0;
                 s->match_available = 0;
                 s->match_length = MIN_MATCH-1;

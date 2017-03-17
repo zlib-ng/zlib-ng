@@ -10,6 +10,7 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "match.h"
+#include "functable.h"
 
 struct match {
     unsigned int match_start;
@@ -63,7 +64,7 @@ static void insert_match(deflate_state *s, struct match match) {
 
             if (match.match_length) {
                 if (match.strstart >= match.orgstart) {
-                    insert_string(s, match.strstart, 1);
+                    func_table.insert_string(s, match.strstart, 1);
                 }
             }
         }
@@ -73,9 +74,9 @@ static void insert_match(deflate_state *s, struct match match) {
         if (match.match_length > 0) {
             if (match.strstart >= match.orgstart) {
                 if (match.strstart + match.match_length - 1 >= match.orgstart) {
-                    insert_string(s, match.strstart, match.match_length);
+                    func_table.insert_string(s, match.strstart, match.match_length);
                 } else {
-                    insert_string(s, match.strstart, match.orgstart - match.strstart + 1);
+                    func_table.insert_string(s, match.strstart, match.orgstart - match.strstart + 1);
                 }
                 match.strstart += match.match_length;
                 match.match_length = 0;
@@ -94,7 +95,7 @@ static void insert_match(deflate_state *s, struct match match) {
 #ifdef NOT_TWEAK_COMPILER
         do {
             if (likely(match.strstart >= match.orgstart)) {
-                insert_string(s, match.strstart, 1);
+                func_table.insert_string(s, match.strstart, 1);
             }
             match.strstart++;
             /* strstart never exceeds WSIZE-MAX_MATCH, so there are
@@ -104,9 +105,9 @@ static void insert_match(deflate_state *s, struct match match) {
 #else
         if (likely(match.strstart >= match.orgstart)) {
             if (likely(match.strstart + match.match_length - 1 >= match.orgstart)) {
-                insert_string(s, match.strstart, match.match_length);
+                func_table.insert_string(s, match.strstart, match.match_length);
             } else {
-                insert_string(s, match.strstart, match.orgstart - match.strstart + 1);
+                func_table.insert_string(s, match.strstart, match.orgstart - match.strstart + 1);
             }
         }
         match.strstart += match.match_length;
@@ -118,9 +119,9 @@ static void insert_match(deflate_state *s, struct match match) {
         s->ins_h = s->window[match.strstart];
         if (match.strstart >= (MIN_MATCH - 2))
 #ifndef NOT_TWEAK_COMPILER
-            insert_string(s, match.strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
+            func_table.insert_string(s, match.strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
 #else
-            insert_string(s, match.strstart + 2 - MIN_MATCH, 1);
+            func_table.insert_string(s, match.strstart + 2 - MIN_MATCH, 1);
 #if MIN_MATCH != 3
 #warning    Call insert_string() MIN_MATCH-3 more times
 #endif
@@ -210,7 +211,7 @@ block_state deflate_medium(deflate_state *s, int flush) {
          * string following the next current_match.
          */
         if (s->lookahead < MIN_LOOKAHEAD) {
-            fill_window(s);
+            func_table.fill_window(s);
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
                 return need_more;
             }
@@ -232,7 +233,7 @@ block_state deflate_medium(deflate_state *s, int flush) {
         } else {
             hash_head = 0;
             if (s->lookahead >= MIN_MATCH) {
-                hash_head = insert_string(s, s->strstart, 1);
+                hash_head = func_table.insert_string(s, s->strstart, 1);
             }
 
             /* set up the initial match to be a 1 byte literal */
@@ -266,7 +267,7 @@ block_state deflate_medium(deflate_state *s, int flush) {
         /* now, look ahead one */
         if (s->lookahead > MIN_LOOKAHEAD && (current_match.strstart + current_match.match_length) < (s->window_size - MIN_LOOKAHEAD)) {
             s->strstart = current_match.strstart + current_match.match_length;
-            hash_head = insert_string(s, s->strstart, 1);
+            hash_head = func_table.insert_string(s, s->strstart, 1);
 
             /* set up the initial match to be a 1 byte literal */
             next_match.match_start = 0;

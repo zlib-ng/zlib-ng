@@ -20,7 +20,6 @@ void check_match(deflate_state *s, IPos start, IPos match, int length);
 #else
 #define check_match(s, start, match, length)
 #endif
-void fill_window(deflate_state *s);
 void flush_pending(z_stream *strm);
 
 /* ===========================================================================
@@ -31,10 +30,6 @@ void flush_pending(z_stream *strm);
  *    input characters and the first MIN_MATCH bytes of str are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
-
-#ifdef X86_SSE4_2_CRC_HASH
-extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
-#endif
 
 static inline Pos insert_string_c(deflate_state *const s, const Pos str, unsigned int count) {
     Pos ret = 0;
@@ -49,14 +44,6 @@ static inline Pos insert_string_c(deflate_state *const s, const Pos str, unsigne
     }
     ret = s->prev[(str+count-1) & s->w_mask];
     return ret;
-}
-
-static inline Pos insert_string(deflate_state *const s, const Pos str, unsigned int count) {
-#ifdef X86_SSE4_2_CRC_HASH
-    if (x86_cpu_has_sse42)
-        return insert_string_sse(s, str, count);
-#endif
-    return insert_string_c(s, str, count);
 }
 
 /* ===========================================================================

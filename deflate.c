@@ -52,6 +52,7 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "match.h"
+#include "functable.h"
 
 const char deflate_copyright[] = " deflate 1.2.11.f Copyright 1995-2016 Jean-loup Gailly and Mark Adler ";
 /*
@@ -240,6 +241,8 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
     x86_check_features();
 #endif
 
+    functableInit();
+
     if (version == NULL || version[0] != my_version[0] || stream_size != sizeof(z_stream)) {
         return Z_VERSION_ERROR;
     }
@@ -399,14 +402,14 @@ int ZEXPORT deflateSetDictionary(z_stream *strm, const unsigned char *dictionary
     next = strm->next_in;
     strm->avail_in = dictLength;
     strm->next_in = (const unsigned char *)dictionary;
-    fill_window(s);
+    func_table.fill_window(s);
     while (s->lookahead >= MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (MIN_MATCH-1);
-        insert_string(s, str, n);
+        func_table.insert_string(s, str, n);
         s->strstart = str + n;
         s->lookahead = MIN_MATCH-1;
-        fill_window(s);
+        func_table.fill_window(s);
     }
     s->strstart += s->lookahead;
     s->block_start = (long)s->strstart;
@@ -1186,27 +1189,6 @@ void check_match(deflate_state *s, IPos start, IPos match, int length) {
  *    performed for at least two bytes (required for the zip translate_eol
  *    option -- not supported here).
  */
-#ifdef X86_SSE2_FILL_WINDOW
-extern void fill_window_sse(deflate_state *s);
-#endif
-void fill_window_c(deflate_state *s);
-
-void fill_window(deflate_state *s) {
-#ifdef X86_SSE2_FILL_WINDOW
-# ifndef X86_NOCHECK_SSE2
-    if (x86_cpu_has_sse2) {
-# endif
-        fill_window_sse(s);
-# ifndef X86_NOCHECK_SSE2
-    } else {
-        fill_window_c(s);
-    }
-# endif
-
-#else
-    fill_window_c(s);
-#endif
-}
 
 void fill_window_c(deflate_state *s) {
     unsigned n;
@@ -1254,11 +1236,11 @@ void fill_window_c(deflate_state *s) {
             unsigned int str = s->strstart - s->insert;
             s->ins_h = s->window[str];
             if (str >= 1)
-                insert_string(s, str + 2 - MIN_MATCH, 1);
+                func_table.insert_string(s, str + 2 - MIN_MATCH, 1);
 #if MIN_MATCH != 3
 #error Call insert_string() MIN_MATCH-3 more times
             while (s->insert) {
-                insert_string(s, str, 1);
+                func_table.insert_string(s, str, 1);
                 str++;
                 s->insert--;
                 if (s->lookahead + s->insert < MIN_MATCH)
@@ -1271,7 +1253,7 @@ void fill_window_c(deflate_state *s) {
             }else{
                 count = s->insert;
             }
-            insert_string(s,str,count);
+            func_table.insert_string(s,str,count);
             s->insert -= count;
 #endif
         }
@@ -1518,7 +1500,7 @@ static block_state deflate_rle(deflate_state *s, int flush) {
          * for the longest run, plus one for the unrolled loop.
          */
         if (s->lookahead <= MAX_MATCH) {
-            fill_window(s);
+            func_table.fill_window(s);
             if (s->lookahead <= MAX_MATCH && flush == Z_NO_FLUSH) {
                 return need_more;
             }
@@ -1585,7 +1567,7 @@ static block_state deflate_huff(deflate_state *s, int flush) {
     for (;;) {
         /* Make sure that we have a literal to write. */
         if (s->lookahead == 0) {
-            fill_window(s);
+            func_table.fill_window(s);
             if (s->lookahead == 0) {
                 if (flush == Z_NO_FLUSH)
                     return need_more;

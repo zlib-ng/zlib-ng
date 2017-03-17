@@ -7,6 +7,7 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "match.h"
+#include "functable.h"
 
 /* ===========================================================================
  * Compress as much as possible from the input stream, return the current
@@ -26,7 +27,7 @@ block_state deflate_fast(deflate_state *s, int flush) {
          * string following the next match.
          */
         if (s->lookahead < MIN_LOOKAHEAD) {
-            fill_window(s);
+            func_table.fill_window(s);
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
                 return need_more;
             }
@@ -39,7 +40,7 @@ block_state deflate_fast(deflate_state *s, int flush) {
          */
         hash_head = NIL;
         if (s->lookahead >= MIN_MATCH) {
-            hash_head = insert_string(s, s->strstart, 1);
+            hash_head = func_table.insert_string(s, s->strstart, 1);
         }
 
         /* Find the longest match, discarding those <= prev_length.
@@ -68,7 +69,7 @@ block_state deflate_fast(deflate_state *s, int flush) {
                 s->strstart++;
 #ifdef NOT_TWEAK_COMPILER
                 do {
-                    insert_string(s, s->strstart, 1);
+                    func_table.insert_string(s, s->strstart, 1);
                     s->strstart++;
                     /* strstart never exceeds WSIZE-MAX_MATCH, so there are
                      * always MIN_MATCH bytes ahead.
@@ -76,7 +77,7 @@ block_state deflate_fast(deflate_state *s, int flush) {
                 } while (--s->match_length != 0);
 #else
                 {
-                    insert_string(s, s->strstart, s->match_length);
+                    func_table.insert_string(s, s->strstart, s->match_length);
                     s->strstart += s->match_length;
                     s->match_length = 0;
                 }
@@ -86,9 +87,9 @@ block_state deflate_fast(deflate_state *s, int flush) {
                 s->match_length = 0;
                 s->ins_h = s->window[s->strstart];
 #ifndef NOT_TWEAK_COMPILER
-                insert_string(s, s->strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
+                func_table.insert_string(s, s->strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
 #else
-                insert_string(s, s->strstart + 2 - MIN_MATCH, 1);
+                func_table.insert_string(s, s->strstart + 2 - MIN_MATCH, 1);
 #if MIN_MATCH != 3
 #warning        Call insert_string() MIN_MATCH-3 more times
 #endif
