@@ -1256,8 +1256,7 @@ void fill_window_c(deflate_state *s) {
             if (str >= 1)
                 insert_string(s, str + 2 - MIN_MATCH, 1);
 #if MIN_MATCH != 3
-#warning    Call insert_string() MIN_MATCH-3 more times
-#endif
+#error Call insert_string() MIN_MATCH-3 more times
             while (s->insert) {
                 insert_string(s, str, 1);
                 str++;
@@ -1265,6 +1264,16 @@ void fill_window_c(deflate_state *s) {
                 if (s->lookahead + s->insert < MIN_MATCH)
                     break;
             }
+#else
+            unsigned int count;
+            if (unlikely(s->lookahead == 1)){
+                count = s->insert - 1;
+            }else{
+                count = s->insert;
+            }
+            insert_string(s,str,count);
+            s->insert -= count;
+#endif
         }
         /* If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
          * but this is not important since only literal bytes will be emitted.
