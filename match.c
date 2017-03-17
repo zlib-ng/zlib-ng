@@ -84,7 +84,9 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
 
     Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     do {
-        Assert(cur_match < s->strstart, "no future");
+        if (cur_match >= s->strstart) {
+          break;
+        }
         match = s->window + cur_match;
 
         /*
@@ -203,7 +205,9 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
     Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     do {
         unsigned char *match;
-        Assert(cur_match < s->strstart, "no future");
+        if (cur_match >= s->strstart) {
+          break;
+        }
         match = s->window + cur_match;
 
         /*
@@ -375,7 +379,9 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
     Assert((unsigned long)s->strstart <= s->window_size-MIN_LOOKAHEAD, "need lookahead");
 
     do {
-        Assert(cur_match < s->strstart, "no future");
+        if (cur_match >= s->strstart) {
+          break;
+        }
 
         /* Skip to next match if the match length cannot increase
          * or if the match length is less than 2.  Note that the checks below
