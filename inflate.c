@@ -373,11 +373,10 @@ static int updatewindow(z_stream *strm, const unsigned char *end, uint32_t copy)
     if (state->window == NULL) {
 #ifdef INFFAST_CHUNKSIZE
         unsigned wsize = 1U << state->wbits;
-        state->window = (unsigned char FAR *)
-                        ZALLOC(strm, wsize + INFFAST_CHUNKSIZE,
-                               sizeof(unsigned char));
-        if (state->window == Z_NULL) return 1;
-        zmemzero(state->window + wsize, INFFAST_CHUNKSIZE);
+        state->window = (unsigned char *) ZALLOC(strm, wsize + INFFAST_CHUNKSIZE, sizeof(unsigned char));
+        if (state->window == Z_NULL)
+            return 1;
+        memset(state->window + wsize, 0, INFFAST_CHUNKSIZE);
 #else
         state->window = (unsigned char *) ZALLOC(strm, 1U << state->wbits, sizeof(unsigned char));
         if (state->window == NULL)

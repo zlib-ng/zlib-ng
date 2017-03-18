@@ -50,9 +50,7 @@ static inline void storechunk(unsigned char* d, inffast_chunk_t c) {
    without iteration, which will hopefully make the branch prediction more
    reliable.
  */
-static inline unsigned char* chunkcopy(unsigned char FAR *out,
-                                       unsigned char const FAR *from,
-                                       unsigned len) {
+static inline unsigned char* chunkcopy(unsigned char *out, unsigned char const *from, unsigned len) {
     --len;
     storechunk(out, loadchunk(from));
     out += (len % INFFAST_CHUNKSIZE) + 1;
@@ -69,10 +67,8 @@ static inline unsigned char* chunkcopy(unsigned char FAR *out,
 /*
    Behave like chunkcopy, but avoid writing beyond of legal output.
  */
-static inline unsigned char* chunkcopysafe(unsigned char FAR *out,
-                                           unsigned char const FAR *from,
-                                           unsigned len,
-                                           unsigned char FAR *safe) {
+static inline unsigned char* chunkcopysafe(unsigned char *out, unsigned char const *from, unsigned len,
+                                           unsigned char *safe) {
     if (out > safe) {
         while (len-- > 0) {
           *out++ = *from++;
@@ -86,16 +82,14 @@ static inline unsigned char* chunkcopysafe(unsigned char FAR *out,
    Perform short copies until distance can be rewritten as being at least
    INFFAST_CHUNKSIZE.
 
-   This assumes that it's OK to overwrite at least th first 2*INFFAST_CHUNKSIZE
-   bytes of output even if the copy is shorter than this.  This assumption
-   holds because inflate_fast() starts every iteration with at least 258 bytes
-   of output space available (258 being the maximum length output from a single
-   token; see inflate_fast()'s assumptions below).
+   This assumes that it's OK to overwrite at least the first
+   2*INFFAST_CHUNKSIZE bytes of output even if the copy is shorter than this.
+   This assumption holds because inflate_fast() starts every iteration with at
+   least 258 bytes of output space available (258 being the maximum length
+   output from a single token; see inflate_fast()'s assumptions below).
  */
-static inline unsigned char* chunkunroll(unsigned char FAR *out,
-                                         unsigned *dist,
-                                         unsigned *len) {
-    unsigned char const FAR *from = out - *dist;
+static inline unsigned char* chunkunroll(unsigned char *out, unsigned *dist, unsigned *len) {
+    unsigned char const *from = out - *dist;
     while (*dist < *len && *dist < INFFAST_CHUNKSIZE) {
         storechunk(out, loadchunk(from));
         out += *dist;
