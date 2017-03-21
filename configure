@@ -211,14 +211,24 @@ case `$cc -v 2>&1` in
 esac
 
 if test $build32 -eq 1; then
-  CFLAGS="${CFLAGS} -m32"
-  SFLAGS="${SFLAGS} -m32"
-  LDFLAGS="${LDFLAGS} -m32"
+  case "${ARCH}" in
+    i686 | x86_64)
+      # x86 specific gcc option
+      CFLAGS="${CFLAGS} -m32"
+      SFLAGS="${SFLAGS} -m32"
+      LDFLAGS="${LDFLAGS} -m32"
+      ;;
+  esac
 fi
 if test $build64 -eq 1; then
-  CFLAGS="${CFLAGS} -m64"
-  SFLAGS="${SFLAGS} -m64"
-  LDFLAGS="${LDFLAGS} -m64"
+  case "${ARCH}" in
+    i686 | x86_64)
+      # x86 specific gcc option
+      CFLAGS="${CFLAGS} -m64"
+      SFLAGS="${SFLAGS} -m64"
+      LDFLAGS="${LDFLAGS} -m64"
+      ;;
+  esac
 fi
 
 show $cc -c $test.c
@@ -240,6 +250,14 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       if test $build32 -ne 1; then
         ARCH=$GCC_ARCH
       fi ;;
+    arm*)
+      ARCH=$GCC_ARCH
+      neonflag="-mfpu=neon"
+      ;;
+    aarch64)
+      ARCH=$GCC_ARCH
+      neonflag=""
+      ;;
   esac
   CFLAGS="${CFLAGS--O3}"
   if test -n "${ARCHS}"; then
@@ -737,6 +755,30 @@ else
     HAVE_PCLMULQDQ_INTRIN=0
 fi
 
+# start of arm specific
+case $ARCH in
+    arm* | aarch64)
+    # Check for NEON intrinsics
+    cat > $test.c << EOF
+#include <arm_neon.h>
+int main(void)
+{
+    static float32x4_t A[2], SUMM;
+    SUMM = vmlaq_f32(SUMM, A[0], A[1]);
+    return 0;
+}
+EOF
+    if try ${CC} ${CFLAGS} ${neonflag} $test.c; then
+        echo "Checking for ARM NEON intrinsics ... Yes." | tee -a configure.log
+        HAVE_NEON_INTRIN=1
+    else
+        echo "Checking for ARM NEON intrinsics ... No." | tee -a configure.log
+        HAVE_NEON_INTRIN=0
+    fi
+    ;;
+esac
+# END of arm specific
+
 # Enable deflate_medium at level 4-6
 if test $without_new_strategies -eq 0; then
     CFLAGS="${CFLAGS} -DMEDIUM_STRATEGY"
@@ -808,17 +850,24 @@ case "${ARCH}" in
     ;;
 
     # ARM specific optimizations
-    armv3l | armv4b | armv4l | armv4tl | armv5tel | armv5tejl | armv6l | armv6hl | armv7l | armv7hl | armv7hnl)
+    arm | armv3l | armv4b | armv4l | armv4tl | armv5tel | armv5tejl | armv6l | armv6hl | armv7l | armv7hl | armv7hnl | aarch64)
 	ARCHDIR=arch/arm
 
         case "${ARCH}" in
-            armv6l | armv6hl)
+            armv6l | armv6hl | aarch64)
                 # Tests done on Raspberry pi (armv6hl) indicate that UNALIGNED_OK and UNROLL_LESS both
                 # provide performance improvements, totaling about 1.5% for the two.
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
             ;;
         esac
+
+        if test ${HAVE_NEON_INTRIN} -eq 1; then
+            CFLAGS="${CFLAGS} ${neonflag} -DARM_NEON_FILL_WINDOW"
+            SFLAGS="${SFLAGS} ${neonflag} -DARM_NEON_FILL_WINDOW"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_neon.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_neon.lo"
+        fi
 
     ;;
 esac
