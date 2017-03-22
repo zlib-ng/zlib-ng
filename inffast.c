@@ -19,6 +19,87 @@
         bits -= (unsigned)(n); \
     } while (0)
 
+#ifdef INFFAST_CHUNKSIZE
+/*
+   Ask the compiler to perform a wide, unaligned load with an machine
+   instruction appropriate for the inffast_chunk_t type.
+ */
+static inline inffast_chunk_t loadchunk(unsigned char const* s) {
+    inffast_chunk_t c;
+    __builtin_memcpy(&c, s, sizeof(c));
+    return c;
+}
+
+/*
+   Ask the compiler to perform a wide, unaligned store with an machine
+   instruction appropriate for the inffast_chunk_t type.
+ */
+static inline void storechunk(unsigned char* d, inffast_chunk_t c) {
+    __builtin_memcpy(d, &c, sizeof(c));
+}
+
+/*
+   Behave like memcpy, but assume that it's OK to overwrite at least
+   INFFAST_CHUNKSIZE bytes of output even if the length is shorter than this,
+   that the length is non-zero, and that `from` lags `out` by at least
+   INFFAST_CHUNKSIZE bytes (or that they don't overlap at all or simply that
+   the distance is less than the length of the copy).
+
+   Aside from better memory bus utilisation, this means that short copies
+   (INFFAST_CHUNKSIZE bytes or fewer) will fall straight through the loop
+   without iteration, which will hopefully make the branch prediction more
+   reliable.
+ */
+static inline unsigned char* chunkcopy(unsigned char *out, unsigned char const *from, unsigned len) {
+    --len;
+    storechunk(out, loadchunk(from));
+    out += (len % INFFAST_CHUNKSIZE) + 1;
+    from += (len % INFFAST_CHUNKSIZE) + 1;
+    len /= INFFAST_CHUNKSIZE;
+    while (len-- > 0) {
+        storechunk(out, loadchunk(from));
+        out += INFFAST_CHUNKSIZE;
+        from += INFFAST_CHUNKSIZE;
+    }
+    return out;
+}
+
+/*
+   Behave like chunkcopy, but avoid writing beyond of legal output.
+ */
+static inline unsigned char* chunkcopysafe(unsigned char *out, unsigned char const *from, unsigned len,
+                                           unsigned char *safe) {
+    if (out > safe) {
+        while (len-- > 0) {
+          *out++ = *from++;
+        }
+        return out;
+    }
+    return chunkcopy(out, from, len);
+}
+
+/*
+   Perform short copies until distance can be rewritten as being at least
+   INFFAST_CHUNKSIZE.
+
+   This assumes that it's OK to overwrite at least the first
+   2*INFFAST_CHUNKSIZE bytes of output even if the copy is shorter than this.
+   This assumption holds because inflate_fast() starts every iteration with at
+   least 258 bytes of output space available (258 being the maximum length
+   output from a single token; see inflate_fast()'s assumptions below).
+ */
+static inline unsigned char* chunkunroll(unsigned char *out, unsigned *dist, unsigned *len) {
+    unsigned char const *from = out - *dist;
+    while (*dist < *len && *dist < INFFAST_CHUNKSIZE) {
+        storechunk(out, loadchunk(from));
+        out += *dist;
+        *len -= *dist;
+        *dist += *dist;
+    }
+    return out;
+}
+#endif
+
 /*
    Decode literal, length, and distance codes and write out the resulting
    literal and match bytes until either not enough input or output is
@@ -62,6 +143,9 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned long start) {
     unsigned char *out;         /* local strm->next_out */
     unsigned char *beg;         /* inflate()'s initial strm->next_out */
     unsigned char *end;         /* while out < end, enough space available */
+#ifdef INFFAST_CHUNKSIZE
+    unsigned char *safe;        /* can use chunkcopy provided out < safe */
+#endif
 #ifdef INFLATE_STRICT
     unsigned dmax;              /* maximum distance from zlib header */
 #endif
@@ -89,6 +173,10 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned long start) {
     out = strm->next_out;
     beg = out - (start - strm->avail_out);
     end = out + (strm->avail_out - 257);
+
+#ifdef INFFAST_CHUNKSIZE
+    safe = out + (strm->avail_out - INFFAST_CHUNKSIZE);
+#endif
 #ifdef INFLATE_STRICT
     dmax = state->dmax;
 #endif
@@ -193,6 +281,34 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned long start) {
                         }
 #endif
                     }
+#ifdef INFFAST_CHUNKSIZE
+                    from = window;
+                    if (wnext == 0) {           /* very common case */
+                        from += wsize - op;
+                    } else if (wnext >= op) {   /* contiguous in window */
+                        from += wnext - op;
+                    } else {                    /* wrap around window */
+                        op -= wnext;
+                        from += wsize - op;
+                        if (op < len) {         /* some from end of window */
+                            len -= op;
+                            out = chunkcopysafe(out, from, op, safe);
+                            from = window;      /* more from start of window */
+                            op = wnext;
+                            /* This (rare) case can create a situation where
+                               the first chunkcopy below must be checked.
+                             */
+                        }
+                    }
+                    if (op < len) {             /* still need some from output */
+                        len -= op;
+                        out = chunkcopysafe(out, from, op, safe);
+                        out = chunkunroll(out, &dist, &len);
+                        out = chunkcopysafe(out, out - dist, len, safe);
+                    } else {
+                        out = chunkcopysafe(out, from, len, safe);
+                    }
+#else
                     from = window;
                     if (wnext == 0) {           /* very common case */
                         from += wsize - op;
@@ -242,7 +358,18 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned long start) {
                         if (len > 1)
                             *out++ = *from++;
                     }
+#endif
                 } else {
+#ifdef INFFAST_CHUNKSIZE
+                    /* Whole reference is in range of current output.  No
+                       range checks are necessary because we start with room
+                       for at least 258 bytes of output, so unroll and roundoff
+                       operations can write beyond `out+len` so long as they
+                       stay within 258 bytes of `out`.
+                     */
+                    out = chunkunroll(out, &dist, &len);
+                    out = chunkcopy(out, out - dist, len);
+#else
                     from = out - dist;          /* copy direct from output */
                     if (dist == 1) {
                         memset (out, *from, len);
@@ -260,6 +387,7 @@ void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned long start) {
                                 *out++ = *from++;
                         }
                     }
+#endif
                 }
             } else if ((op & 64) == 0) {          /* 2nd level distance code */
                 here = dcode[here.val + BITS(op)];
