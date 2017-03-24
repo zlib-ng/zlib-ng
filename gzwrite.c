@@ -248,6 +248,10 @@ size_t ZEXPORT gzfwrite(void const *buf, size_t size, size_t nitems, gzFile file
     size_t len;
     gz_state *state;
 
+    /* Exit early if size is zero, also prevents potential division by zero */
+    if (size == 0)
+        return 0;
+
     /* get internal structure */
     if (file == NULL)
         return 0;
