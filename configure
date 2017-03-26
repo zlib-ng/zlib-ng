@@ -91,6 +91,7 @@ cover=0
 build32=0
 build64=0
 buildacle=1
+buildaltivec=1
 buildneon=1
 builddfltccdeflate=0
 builddfltccinflate=0
@@ -110,6 +111,7 @@ acleflag=
 neonflag=
 noltoflag="-fno-lto"
 vgfmaflag="-march=z13"
+vmxflag="-maltivec"
 without_optimizations=0
 without_new_strategies=0
 reducedmem=0
@@ -155,6 +157,7 @@ case "$1" in
       echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
       echo '    [--without-acle]            Compiles without ARM C Language Extensions' | tee -a configure.log
       echo '    [--without-neon]            Compiles without ARM Neon SIMD instruction set' | tee -a configure.log
+      echo '    [--without-altivec]         Compiles without PPC AltiVec support' | tee -a configure.log
       echo '    [--with-dfltcc-deflate]     Use DEFLATE CONVERSION CALL instruction for compression on IBM Z' | tee -a configure.log
       echo '    [--with-dfltcc-inflate]     Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z' | tee -a configure.log
       echo '    [--without-crc32-vx]        Build without vectorized CRC32 on IBM Z' | tee -a configure.log
@@ -183,6 +186,7 @@ case "$1" in
     -6* | --64) build64=1; shift ;;
     --without-acle) buildacle=0; shift ;;
     --without-neon) buildneon=0; shift ;;
+    --without-altivec) buildaltivec=0 ; shift ;;
     --with-dfltcc-deflate) builddfltccdeflate=1; shift ;;
     --with-dfltcc-inflate) builddfltccinflate=1; shift ;;
     --without-crc32-vx) buildcrc32vx=0; shift ;;
@@ -1061,6 +1065,43 @@ EOF
     fi
 }
 
+check_ppc_intrinsics() {
+        cat > $test.c << EOF
+#include <altivec.h>
+int main(void)
+{
+    vector int a = vec_splats(0);
+    vector int b = vec_splats(0);
+    a = vec_add(a, b);
+    return 0;
+}
+EOF
+        if test $buildaltivec -eq 1 && try ${CC} ${CFLAGS} -maltivec $test.c; then
+            echo "Checking for AltiVec intrinsics ... Yes." | tee -a configure.log
+            HAVE_ALTIVEC_INTRIN=1
+        else
+            echo "Checking for AltiVec intrinsics ... No." | tee -a configure.log
+            HAVE_ALTIVEC_INTRIN=0
+        fi
+        if test $buildaltivec -eq 1 && try ${CC} ${CFLAGS} -maltivec -mno-vsx $test.c; then
+            echo "Checking if -mno-vsx is supported ... Yes." | tee -a configure.log
+            vmxflag="$vmxflag -mno-vsx"
+        else
+            echo "Checking if -mno-vsx is supported ... No." | tee -a configure.log
+        fi
+        cat > $test.c << EOF
+#include <sys/auxv.h>
+int main() { return (getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC); }
+EOF
+        if try $CC -c $CFLAGS -maltivec $test.c; then
+            HAVE_VMX=1
+            echo "Check whether VMX instructions are available ... Yes." | tee -a configure.log
+        else
+            HAVE_VMX=0
+            echo "Check whether VMX instructions are available ... No." | tee -a configure.log
+        fi
+}
+
 check_power8_intrinsics() {
     # Check whether features needed by POWER optimisations are available
     cat > $test.c << EOF
@@ -1581,14 +1622,30 @@ EOF
 
         if test $without_optimizations -eq 0; then
 
+            check_ppc_intrinsics
             check_power8_intrinsics
 
+            if test $HAVE_VMX -eq 1; then
+                CFLAGS="${CFLAGS} -DPPC_FEATURES"
+                SFLAGS="${SFLAGS} -DPPC_FEATURES"
+            fi
+            if test $HAVE_VMX -eq 1 -o $HAVE_POWER8_INTRIN -eq 1; then
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power.lo"
+            fi
+            if test $HAVE_VMX -eq 1 -a $HAVE_ALTIVEC_INTRIN -eq 1; then
+                CFLAGS="${CFLAGS} -DPPC_VMX_ADLER32 -DPPC_VMX_SLIDEHASH"
+                SFLAGS="${SFLAGS} -DPPC_VMX_ADLER32 -DPPC_VMX_SLIDEHASH"
+
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_vmx.o slide_hash_vmx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_vmx.lo slide_hash_vmx.lo"
+            fi
             if test $HAVE_POWER8_INTRIN -eq 1; then
                 CFLAGS="${CFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_CHUNKSET -DPOWER8_VSX_SLIDEHASH"
                 SFLAGS="${SFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_CHUNKSET -DPOWER8_VSX_SLIDEHASH"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power.o adler32_power8.o chunkset_power8.o slide_hash_power8.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power.lo adler32_power8.lo chunkset_power8.lo slide_hash_power8.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_power8.o chunkset_power8.o slide_hash_power8.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_power8.lo chunkset_power8.lo slide_hash_power8.lo"
             fi
         fi
     ;;
@@ -1829,6 +1886,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^NEONFLAG *=/s#=.*#=$neonflag#
 /^NOLTOFLAG *=/s#=.*#=$noltoflag#
 /^VGFMAFLAG *=/s#=.*#=$vgfmaflag#
+/^PPCFLAGS *=/s#=.*#=$vmxflag#
 " > $ARCHDIR/Makefile
 
 # Append header files dependences.

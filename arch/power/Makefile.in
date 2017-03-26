@@ -1,5 +1,6 @@
 # Makefile for POWER-specific files
 # Copyright (C) 2020 Matheus Castanho <msc@linux.ibm.com>, IBM
+# Copyright (C) 2021 Mika T. Lindqvist <postmaster@raasu.org>
 # For conditions of distribution and use, see copyright notice in zlib.h
 
 CC=
@@ -9,6 +10,7 @@ INCLUDES=
 SUFFIX=
 
 P8FLAGS=-mcpu=power8
+PPCFLAGS=-maltivec
 NOLTOFLAG=
 
 SRCDIR=.
@@ -19,10 +21,14 @@ all: power.o \
      power.lo \
      adler32_power8.o \
      adler32_power8.lo \
+     adler32_vmx.o \
+     adler32_vmx.lo \
      chunkset_power8.o \
      chunkset_power8.lo \
      slide_hash_power8.o \
-     slide_hash_power8.lo
+     slide_hash_power8.lo \
+     slide_hash_vmx.o \
+     slide_hash_vmx.lo
 
 power.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/power.c
@@ -36,6 +42,12 @@ adler32_power8.o:
 adler32_power8.lo:
 	$(CC) $(SFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_power8.c
 
+adler32_vmx.o:
+	$(CC) $(CFLAGS) $(PPCFLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_vmx.c
+
+adler32_vmx.lo:
+	$(CC) $(SFLAGS) $(PPCFLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_vmx.c
+
 chunkset_power8.o:
 	$(CC) $(CFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_power8.c
 
@@ -47,6 +59,12 @@ slide_hash_power8.o:
 
 slide_hash_power8.lo:
 	$(CC) $(SFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_power8.c
+
+slide_hash_vmx.o:
+	$(CC) $(CFLAGS) ${PPCFLAGS} $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_vmx.c
+
+slide_hash_vmx.lo:
+	$(CC) $(SFLAGS) ${PPCFLAGS} $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_vmx.c
 
 mostlyclean: clean
 clean:
