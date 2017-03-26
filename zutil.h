@@ -250,7 +250,7 @@ void Z_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #  include "arch/x86/x86.h"
 #elif defined(ARM_FEATURES)
 #  include "arch/arm/arm.h"
-#elif defined(POWER_FEATURES)
+#elif defined(PPC_FEATURES) || defined(POWER_FEATURES)
 #  include "arch/power/power.h"
 #elif defined(S390_FEATURES)
 #  include "arch/s390/s390.h"
