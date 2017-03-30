@@ -1503,7 +1503,7 @@ int ZEXPORT PREFIX(inflateValidate)(PREFIX3(stream) *strm, int check) {
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
-    if (check)
+    if (check && state->wrap)
         state->wrap |= 4;
     else
         state->wrap &= ~4;
