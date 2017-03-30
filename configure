@@ -111,6 +111,7 @@ sse4flag="-msse4"
 pclmulflag="-mpclmul"
 without_optimizations=0
 without_new_strategies=0
+use_distant_search=0
 gcc=0
 warn=0
 debug=0
@@ -145,6 +146,7 @@ case "$1" in
       echo '  configure [--zlib-compat] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
       echo '    [--static] [--32] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
       echo '    [--includedir=INCLUDEDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
+      echo '    [--without-new-strategies] [--use_distant_search]' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=`echo $1 | sed 's/.*=//'`; shift ;;
     -e*=* | --eprefix=*) exec_prefix=`echo $1 | sed 's/.*=//'`; shift ;;
@@ -168,6 +170,7 @@ case "$1" in
     --localstatedir=*) echo "ignored option: --localstatedir" | tee -a configure.log; shift ;;
     -noopt | --without-optimizations) without_optimizations=1; shift;;
     -oldstrat | --without-new-strategies) without_new_strategies=1; shift;;
+    -distant | --use_distant_search) use_distant_search=1; shift;;
     -w* | --warn) warn=1; shift ;;
     -d* | --debug) debug=1; shift ;;
     *)
@@ -741,6 +744,12 @@ fi
 if test $without_new_strategies -eq 0; then
     CFLAGS="${CFLAGS} -DMEDIUM_STRATEGY"
     SFLAGS="${SFLAGS} -DMEDIUM_STRATEGY"
+fi
+
+# Enable distant_search for deflate_slow
+if test $use_distant_search -eq 1; then
+    CFLAGS="${CFLAGS} -DUSE_DISTANT_SEARCH"
+    SFLAGS="${SFLAGS} -DUSE_DISTANT_SEARCH"
 fi
 
 ARCHDIR='arch/generic'
