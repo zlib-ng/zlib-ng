@@ -318,8 +318,9 @@ deflate.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)
 deflate_fast.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 deflate_medium.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 deflate_slow.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-infback.o inflate.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h
-inffast.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h
+infback.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h
+inffast.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/memcopy.h
+inflate.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h $(SRCDIR)/memcopy.h
 inftrees.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h
 trees.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/trees.h
 zutil.o: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib.h zconf.h
@@ -343,8 +344,9 @@ deflate.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR
 deflate_fast.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 deflate_medium.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 deflate_slow.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-infback.lo inflate.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h
-inffast.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h
+infback.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h
+inffast.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/memcopy.h
+inflate.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h $(SRCDIR)/memcopy.h
 inftrees.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h
 trees.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/trees.h
 zutil.lo: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib.h zconf.h

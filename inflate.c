@@ -84,6 +84,7 @@
 #include "inftrees.h"
 #include "inflate.h"
 #include "inffast.h"
+#include "memcopy.h"
 
 #ifdef MAKEFIXED
 #  ifndef BUILDFIXED
@@ -1149,17 +1150,27 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                 }
                 if (copy > state->length)
                     copy = state->length;
+                if (copy > left)
+                    copy = left;
+                left -= copy;
+                state->length -= copy;
+                if (copy >= sizeof(uint64_t))
+                    put = chunk_memcpy(put, from, copy);
+                else
+                    put = copy_bytes(put, from, copy);
             } else {                             /* copy from output */
-                from = put - state->offset;
+                unsigned offset = state->offset;
+                from = put - offset;
                 copy = state->length;
+                if (copy > left)
+                    copy = left;
+                left -= copy;
+                state->length -= copy;
+                if (copy >= sizeof(uint64_t))
+                    put = chunk_memset(put, from, offset, copy);
+                else
+                    put = set_bytes(put, from, offset, copy);
             }
-            if (copy > left)
-                copy = left;
-            left -= copy;
-            state->length -= copy;
-            do {
-                *put++ = *from++;
-            } while (--copy);
             if (state->length == 0)
                 state->mode = LEN;
             break;
