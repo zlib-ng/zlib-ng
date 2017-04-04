@@ -7,7 +7,7 @@
 
 #include "zutil.h"
 
-#ifdef __ARM_NEON__
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
 #include "neon_adler32.h"
 #endif
 
