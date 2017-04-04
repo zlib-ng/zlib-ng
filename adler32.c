@@ -65,9 +65,8 @@ static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len
 
 /* ========================================================================= */
 uint32_t ZEXPORT adler32_z(uint32_t adler, const unsigned char *buf, size_t len) {
-#ifdef __ARM_NEON__
-    if (len > 31)
-        return NEON_adler32(adler, buf, len);
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+    return NEON_adler32(adler, buf, len);
 #endif
 
     uint32_t sum2;
