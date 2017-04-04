@@ -16,7 +16,7 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#include "neon_adler32.h"
+#include "adler32_neon.h"
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
 #include <arm_neon.h>
 
