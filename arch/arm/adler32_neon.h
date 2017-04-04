@@ -20,7 +20,7 @@
 #define __NEON_ADLER32__
 
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
-unsigned long NEON_adler32(unsigned long adler,
+unsigned long adler32_neon(unsigned long adler,
                            const unsigned char* buf,
                            const unsigned int len);
 #endif

@@ -83,7 +83,7 @@ static void NEON_handle_tail(uint32_t *pair, const unsigned char *buf,
     }
 }
 
-unsigned long NEON_adler32(unsigned long adler, const unsigned char *buf,
+unsigned long adler32_neon(unsigned long adler, const unsigned char *buf,
                            const unsigned int len)
 {
     /* The largest prime smaller than 65536. */

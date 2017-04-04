@@ -8,7 +8,7 @@
 #include "zutil.h"
 
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
-#include "neon_adler32.h"
+#include "adler32_neon.h"
 #endif
 
 static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len2);
@@ -66,7 +66,7 @@ static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len
 /* ========================================================================= */
 uint32_t ZEXPORT adler32_z(uint32_t adler, const unsigned char *buf, size_t len) {
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
-    return NEON_adler32(adler, buf, len);
+    return adler32_neon(adler, buf, len);
 #endif
 
     uint32_t sum2;
