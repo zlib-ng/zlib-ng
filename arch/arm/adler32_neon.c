@@ -21,7 +21,7 @@
 #include <arm_neon.h>
 
 static void NEON_accum32(uint32_t *s, const unsigned char *buf,
-                         unsigned int len)
+                         size_t len)
 {
     static const uint8_t taps[32] = {
         32, 31, 30, 29, 28, 27, 26, 25,
@@ -73,7 +73,7 @@ static void NEON_accum32(uint32_t *s, const unsigned char *buf,
 }
 
 static void NEON_handle_tail(uint32_t *pair, const unsigned char *buf,
-                             unsigned int len)
+                             size_t len)
 {
     /* Oldie K&R code integration. */
     unsigned int i;
@@ -83,15 +83,15 @@ static void NEON_handle_tail(uint32_t *pair, const unsigned char *buf,
     }
 }
 
-unsigned long adler32_neon(unsigned long adler, const unsigned char *buf,
-                           const unsigned int len)
+uint32_t adler32_neon(uint32_t adler, const unsigned char *buf,
+                      size_t len)
 {
     /* The largest prime smaller than 65536. */
     const uint32_t M_BASE = 65521;
     /* This is the threshold where doing accumulation may overflow. */
     const int M_NMAX = 5552;
 
-    unsigned long sum2;
+    uint32_t sum2;
     uint32_t pair[2];
     int n = M_NMAX;
     unsigned int done = 0;
