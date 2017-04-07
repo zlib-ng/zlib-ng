@@ -19,10 +19,9 @@ static inline void slide_hash_neon(Pos *table, int entries, uint16_t window_size
     register size_t n;
 
     size_t size = entries*sizeof(table[0]);
-    if ((size % sizeof(int16x8_t) * 8 != 0))
-        Assert(1 > 0, "hash table size err");
+    Assert((size % sizeof(int16x8_t) * 8 == 0), "hash table size err");
 
-    Assert(sizeof(Pos) == 2, "Wrong Posf size");
+    Assert(sizeof(Pos) == 2, "Wrong Pos size");
     v = vdupq_n_u16(window_size);
 
     p = (uint16x8_t *)table;
