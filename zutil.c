@@ -9,6 +9,9 @@
 #ifdef WITH_GZFILEOP
 #  include "gzguts.h"
 #endif
+#ifndef UNALIGNED_OK
+#  include "malloc.h"
+#endif
 
 const char * const z_errmsg[10] = {
     (const char *)"need dictionary",     /* Z_NEED_DICT       2  */
@@ -119,8 +122,12 @@ const char * ZEXPORT PREFIX(zError)(int err)
 void ZLIB_INTERNAL *zcalloc (void *opaque, unsigned items, unsigned size)
 {
     (void)opaque;
+#ifndef UNALIGNED_OK
+    return memalign(16, items * size);
+#else
     return sizeof(unsigned int) > 2 ? (void *)malloc(items * size) :
                               (void *)calloc(items, size);
+#endif
 }
 
 void ZLIB_INTERNAL zcfree (void *opaque, void *ptr)
