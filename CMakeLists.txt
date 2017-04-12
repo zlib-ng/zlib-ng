@@ -40,7 +40,7 @@ check_include_file(stddef.h    HAVE_STDDEF_H)
 #
 # Options parsing
 #
-set(ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
+set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
 message(STATUS "Architecture: ${ARCH}")
 
 option (ZLIB_COMPAT "Compile with zlib compatible API" OFF)
