@@ -1189,6 +1189,9 @@ void check_match(deflate_state *s, IPos start, IPos match, int length) {
 #ifdef X86_SSE2_FILL_WINDOW
 extern void fill_window_sse(deflate_state *s);
 #endif
+#ifdef ARM_NEON_FILL_WINDOW
+extern void fill_window_neon(deflate_state *s);
+#endif
 void fill_window_c(deflate_state *s);
 
 void fill_window(deflate_state *s) {
@@ -1203,6 +1206,8 @@ void fill_window(deflate_state *s) {
     }
 # endif
 
+#elif defined(ARM_NEON_FILL_WINDOW)
+    fill_window_neon(s);
 #else
     fill_window_c(s);
 #endif

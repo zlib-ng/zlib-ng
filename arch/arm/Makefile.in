@@ -11,11 +11,29 @@ SRCDIR=.
 SRCTOP=../..
 TOPDIR=$(SRCTOP)
 
-all:
+all: fill_window_neon.o fill_window_neon.lo
 
+fill_window_neon.o: $(SRCDIR)/fill_window_neon.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/fill_window_neon.c
+
+fill_window_neon.lo: $(SRCDIR)/fill_window_neon.c
+	$(CC) $(SFLAGS) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/fill_window_neon.c
 
 mostlyclean: clean
 clean:
 	rm -f *.o *.lo *~ \
 	rm -rf objs
 	rm -f *.gcda *.gcno *.gcov
+
+distclean:
+	rm -f Makefile
+
+depend:
+	makedepend -Y -- $(CFLAGS) -- $(SRCDIR)/*.c
+	makedepend -Y -a -o.lo -- $(SFLAGS) -- $(SRCDIR)/*.c
+	@sed "s=^$(SRCDIR)/\([a-zA-Z0-9_]*\.\(lo\|o\):\)=\1=g" < Makefile > Makefile.tmp
+	@mv -f Makefile.tmp Makefile
+
+# DO NOT DELETE THIS LINE -- make depend depends on it.
+
+fill_window_neon.o: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
