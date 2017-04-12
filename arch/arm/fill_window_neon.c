@@ -1,7 +1,7 @@
 /*
  * Fill Window with NEON-optimized hash shifting
  *
- * Copyright (C) 2017 ARM Corporation
+ * Copyright (C) 2017 ARM Ltd.
  * Author:
  *  Jun He    <jun.he@arm.com>
  *
