@@ -19,13 +19,13 @@ extern ZLIB_INTERNAL int read_buf        (z_stream *strm, unsigned char *buf, un
 #include <arm_neon.h>
 
 /* SIMD version of hash_chain rebase */
-static inline void slide_hash_chain(Pos *table, int entries, uint16_t window_size)
+static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t window_size)
 {
     register uint16x8_t v, *p;
     register size_t n;
 
     size_t size = entries*sizeof(table[0]);
-    Assert((size % sizeof(int16x8_t) * 8 == 0), "hash table size err");
+    Assert((size % sizeof(uint16x8_t) * 8 == 0), "hash table size err");
 
     Assert(sizeof(Pos) == 2, "Wrong Pos size");
     v = vdupq_n_u16(window_size);
@@ -46,16 +46,12 @@ static inline void slide_hash_chain(Pos *table, int entries, uint16_t window_siz
 }
 #else
 /* generic version for hash rebase */
-static inline void slide_hash_chain(Pos *table, int entries, uint16_t window_size)
+static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t window_size)
 {
-    int n = entries;
-    Pos *p = &table[n];
-    unsigned m;
-
-    do {
-        m = *--p;
-        *p = (Pos)(m >= window_size ? m-window_size : NIL);
-    } while (--n);
+    unsigned int i;
+    for (i = 0; i < entries; i++) {
+        table[i] = (table[i] >= window_size) ? (table[i] - window_size) : NIL;
+    }
 }
 #endif
 
@@ -73,8 +69,6 @@ void fill_window_arm(deflate_state *s) {
          * move the upper half to the lower one to make room in the upper half.
          */
         if (s->strstart >= wsize+MAX_DIST(s)) {
-            unsigned int i;
-
             memcpy(s->window, s->window+wsize, wsize);
             s->match_start -= wsize;
             s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
@@ -87,10 +81,8 @@ void fill_window_arm(deflate_state *s) {
                zlib, so we don't care about this pathological case.)
              */
 
-            n = s->hash_size;
-            slide_hash_chain(s->head, n, wsize);
-            n = wsize;
-            slide_hash_chain(s->prev, n, wsize);
+            slide_hash_chain(s->head, s->hash_size, wsize);
+            slide_hash_chain(s->prev, wsize, wsize);
             more += wsize;
         }
         if (s->strm->avail_in == 0)
