@@ -11,7 +11,13 @@ SRCDIR=.
 SRCTOP=../..
 TOPDIR=$(SRCTOP)
 
-all: crc32_acle.o crc32_acle.lo fill_window_arm.o fill_window_arm.lo insert_string_acle.o insert_string_acle.lo
+all: adler32_neon.o adler32_neon.lo crc32_acle.o crc32_acle.lo fill_window_arm.o fill_window_arm.lo insert_string_acle.o insert_string_acle.lo
+
+adler32_neon.o: $(SRCDIR)/adler32_neon.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_neon.c
+
+adler32_neon.lo: $(SRCDIR)/adler32_neon.c
+	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_neon.c
 
 crc32_acle.o: $(SRCDIR)/crc32_acle.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
@@ -48,10 +54,13 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
+adler32_neon.o: $(SRCDIR)/adler32_neon.h
 crc32_acle.o: $(TOPDIR)/zconf.h
 fill_window_arm.o: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 insert_string_acle.o: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 
+adler32_neon.lo: $(SRCDIR)/adler32_neon.h
 crc32_acle.lo: $(TOPDIR)/zconf.h
 fill_window_arm.lo: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 insert_string_acle.lo: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
+
