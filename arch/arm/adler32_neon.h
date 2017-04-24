@@ -16,8 +16,8 @@
  *    misrepresented as being the original software.
  * 3. This notice may not be removed or altered from any source distribution.
  */
-#ifndef __NEON_ADLER32__
-#define __NEON_ADLER32__
+#ifndef __ADLER32_NEON__
+#define __ADLER32_NEON__
 
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
 // Depending on the compiler flavor, size_t may be defined in one or the other header. See:
