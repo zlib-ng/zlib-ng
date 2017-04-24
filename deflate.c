@@ -382,7 +382,7 @@ int ZEXPORT deflateSetDictionary(z_stream *strm, const unsigned char *dictionary
 
     /* when using zlib wrappers, compute Adler-32 for provided dictionary */
     if (wrap == 1)
-        strm->adler = adler32(strm->adler, dictionary, dictLength);
+        strm->adler = functable.adler32(strm->adler, dictionary, dictLength);
     s->wrap = 0;                    /* avoid computing Adler-32 in read_buf */
 
     /* if dictionary would fill window, just replace the history */
@@ -471,7 +471,7 @@ int ZEXPORT deflateResetKeep(z_stream *strm) {
         crc_reset(s);
     else
 #endif
-        strm->adler = adler32(0L, NULL, 0);
+        strm->adler = functable.adler32(0L, NULL, 0);
     s->last_flush = Z_NO_FLUSH;
 
     _tr_init(s);
@@ -782,7 +782,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
             putShortMSB(s, (uint16_t)(strm->adler >> 16));
             putShortMSB(s, (uint16_t)(strm->adler));
         }
-        strm->adler = adler32(0L, NULL, 0);
+        strm->adler = functable.adler32(0L, NULL, 0);
         s->status = BUSY_STATE;
 
         /* Compression must start with an empty pending buffer */
@@ -1120,7 +1120,7 @@ ZLIB_INTERNAL unsigned read_buf(z_stream *strm, unsigned char *buf, unsigned siz
     {
         memcpy(buf, strm->next_in, len);
         if (strm->state->wrap == 1)
-            strm->adler = adler32(strm->adler, buf, len);
+            strm->adler = functable.adler32(strm->adler, buf, len);
     }
     strm->next_in  += len;
     strm->total_in += len;

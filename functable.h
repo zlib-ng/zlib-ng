@@ -8,11 +8,17 @@
 
 #include "deflate.h"
 
+uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
+
 void functableInit();
 
 struct functable_s {
     void     (* fill_window)    (deflate_state *s);
     Pos      (* insert_string)  (deflate_state *const s, const Pos str, unsigned int count);
-} functable;
+    uint32_t (* adler32)        (uint32_t adler, const unsigned char *buf, size_t len);
+};
+
+extern struct functable_s functable;
+
 
 #endif

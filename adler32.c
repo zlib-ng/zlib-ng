@@ -6,12 +6,9 @@
 /* @(#) $Id$ */
 
 #include "zutil.h"
+#include "functable.h"
 
 uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
-#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
-extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
-#endif
-
 static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len2);
 
 #define BASE 65521U     /* largest prime smaller than 65536 */
@@ -148,16 +145,16 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
 }
 
 uint32_t ZEXPORT adler32_z(uint32_t adler, const unsigned char *buf, size_t len) {
-#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
-    return adler32_neon(adler, buf, len);
-#else
-    return adler32_c(adler, buf, len);
-#endif
+    if (functable.adler32 == NULL)
+        functableInit();
+    return functable.adler32(adler, buf, len);
 }
 
 /* ========================================================================= */
 uint32_t ZEXPORT adler32(uint32_t adler, const unsigned char *buf, uint32_t len) {
-    return adler32_z(adler, buf, len);
+    if (functable.adler32 == NULL)
+        functableInit();
+    return functable.adler32(adler, buf, len);
 }
 
 /* ========================================================================= */

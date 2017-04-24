@@ -11,6 +11,7 @@
 # include "arch/x86/x86.h"
 #endif
 
+
 #ifdef X86_SSE4_2_CRC_HASH
 extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
 #elif defined(ARM_ACLE_CRC_HASH)
@@ -23,13 +24,23 @@ extern void fill_window_sse(deflate_state *s);
 extern void fill_window_arm(deflate_state *s);
 #endif
 
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
+#endif
+
+
 /* =========================================================================
  * Initialize functable
  */
+
+struct functable_s functable = {NULL,NULL,NULL};
+
+
 ZLIB_INTERNAL void functableInit() {
     // Initialize defaults
     functable.insert_string=&insert_string_c;
     functable.fill_window=&fill_window_c;
+    functable.adler32=&adler32_c;
 
     // insert_string
     #ifdef X86_SSE4_2_CRC_HASH
@@ -47,5 +58,10 @@ ZLIB_INTERNAL void functableInit() {
         functable.fill_window=&fill_window_sse;
     #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM)
         functable.fill_window=&fill_window_arm;
+    #endif
+
+    // adler32
+    #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+        functable.adler32=&adler32_neon;
     #endif
 }
