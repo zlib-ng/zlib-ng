@@ -12,6 +12,7 @@
 
 #include "deflate.h"
 #include "deflate_p.h"
+#include "functable.h"
 
 extern ZLIB_INTERNAL int read_buf        (z_stream *strm, unsigned char *buf, unsigned size);
 
@@ -122,7 +123,7 @@ void fill_window_arm(deflate_state *s) {
             }
             if (insert_cnt > 0)
             {
-                insert_string(s, str, insert_cnt);
+                functable.insert_string(s, str, insert_cnt);
                 s->insert -= slen;
             }
         }
