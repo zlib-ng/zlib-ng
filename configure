@@ -231,18 +231,18 @@ show $cc -c $test.c
 if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   echo ... using gcc >> configure.log
   CC="$cc"
-# Re-check arch if gcc is a cross-compiler
+  # Re-check arch if gcc is a cross-compiler
   GCC_ARCH=`$CC -dumpmachine | sed 's/-.*//g'`
   case $GCC_ARCH in
     i386 | i486 | i586 | i686)
-# Honor user choice if gcc is multilib and 64-bit is requested 
+      # Honor user choice if gcc is multilib and 64-bit is requested
       if test $build64 -eq 1; then
         ARCH=x86_64
       else
-        ARCH=$GCC_ARCH 
+        ARCH=$GCC_ARCH
       fi ;;
-# Honor user choice if gcc is multilib and 32-bit is requested
     x86_64)
+      # Honor user choice if gcc is multilib and 32-bit is requested
       if test $build32 -ne 1; then
         ARCH=$GCC_ARCH
       fi ;;
@@ -643,8 +643,7 @@ cat > $test.c <<EOF
 #include <stdio.h>
 #include <stdarg.h>
 #include "zconf.h"
-int main()
-{
+int main() {
 #ifdef STDC
   return 0;
 #endif
@@ -666,10 +665,7 @@ if test "$gcc" -eq 1; then
   cat > $test.c <<EOF
 #define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
 int ZLIB_INTERNAL foo;
-int main()
-{
-  return 0;
-}
+int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then
     CFLAGS="$CFLAGS -DHAVE_HIDDEN"
@@ -688,10 +684,7 @@ if test "$gcc" -eq 1; then
   cat > $test.c <<EOF
 #define ZLIB_INTERNAL __attribute__((visibility ("internal")))
 int ZLIB_INTERNAL foo;
-int main()
-{
-  return 0;
-}
+int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then
     CFLAGS="$CFLAGS -DHAVE_INTERNAL"
@@ -706,8 +699,7 @@ fi
 
 # Check for __builtin_ctzl() support in compiler
 cat > $test.c << EOF
-int main(void)
-{
+int main(void) {
     unsigned int zero = 0;
     long test = __builtin_ctzl(zero);
     (void)test;
@@ -725,8 +717,7 @@ fi
 # Check for SSE2 intrinsics
 cat > $test.c << EOF
 #include <immintrin.h>
-int main(void)
-{
+int main(void) {
     __m128i zero = _mm_setzero_si128();
     (void)zero;
     return 0;
@@ -744,8 +735,7 @@ fi
 cat > $test.c << EOF
 #include <immintrin.h>
 #include <wmmintrin.h>
-int main(void)
-{
+int main(void) {
     __m128i a = _mm_setzero_si128();
     __m128i b = _mm_setzero_si128();
     __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
@@ -773,10 +763,9 @@ ARCH_SHARED_OBJS=''
 
 # Set ARCH specific FLAGS
 case "${ARCH}" in
-
     # x86 and x86_64 specific optimizations
     i386 | i486 | i586 | i686 | x86_64)
-	ARCHDIR=arch/x86
+	    ARCHDIR=arch/x86
 
         case "${ARCH}" in
             x86_64)
@@ -792,8 +781,8 @@ case "${ARCH}" in
         CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
         SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
 
-	# Enable arch-specific optimizations?
-	if test $without_optimizations -eq 0; then
+    	# Enable arch-specific optimizations?
+	    if test $without_optimizations -eq 0; then
             CFLAGS="${CFLAGS} -DX86_CPUID"
             SFLAGS="${SFLAGS} -DX86_CPUID"
 
@@ -884,33 +873,33 @@ case "${ARCH}" in
     ;;
     # 64-bit ARM specific optimizations
     aarch64)
-    ARCHDIR=arch/aarch64
-    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
-    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
+        ARCHDIR=arch/aarch64
+        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
+        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
 
-    if test $native -eq 0; then
-      ARCH="armv8-a"
-    else
-      ARCH="native"
-    fi
-    if test $buildacle -eq 1; then
-       if test $native -eq 0; then
-         ARCH="${ARCH}+crc"
-       fi
-       CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
-       SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
-       ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
-       ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
-    fi
-    if test $buildneon -eq 1; then
-      if test $native -eq 0; then
-        ARCH="${ARCH}+simd"
-      fi
-      ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
-      ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
-    fi
-    CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
-    SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+        if test $native -eq 0; then
+          ARCH="armv8-a"
+        else
+          ARCH="native"
+        fi
+        if test $buildacle -eq 1; then
+           if test $native -eq 0; then
+             ARCH="${ARCH}+crc"
+           fi
+            CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
+            SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+        fi
+        if test $buildneon -eq 1; then
+            if test $native -eq 0; then
+                ARCH="${ARCH}+simd"
+            fi
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+        fi
+        CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+        SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
     ;;
 esac
 
