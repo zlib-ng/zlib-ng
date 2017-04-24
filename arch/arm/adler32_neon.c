@@ -20,9 +20,7 @@
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
 #include <arm_neon.h>
 
-static void NEON_accum32(uint32_t *s, const unsigned char *buf,
-                         size_t len)
-{
+static void NEON_accum32(uint32_t *s, const unsigned char *buf, size_t len) {
     static const uint8_t taps[32] = {
         32, 31, 30, 29, 28, 27, 26, 25,
         24, 23, 22, 21, 20, 19, 18, 17,
@@ -72,9 +70,7 @@ static void NEON_accum32(uint32_t *s, const unsigned char *buf,
     s[1] = vget_lane_u32(as, 1);
 }
 
-static void NEON_handle_tail(uint32_t *pair, const unsigned char *buf,
-                             size_t len)
-{
+static void NEON_handle_tail(uint32_t *pair, const unsigned char *buf, size_t len) {
     /* Oldie K&R code integration. */
     unsigned int i;
     for (i = 0; i < len; ++i) {
@@ -83,9 +79,7 @@ static void NEON_handle_tail(uint32_t *pair, const unsigned char *buf,
     }
 }
 
-uint32_t adler32_neon(uint32_t adler, const unsigned char *buf,
-                      size_t len)
-{
+uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len) {
     if (!buf)
         return 1L;
 

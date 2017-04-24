@@ -14,14 +14,13 @@
 #include "deflate_p.h"
 #include "functable.h"
 
-extern ZLIB_INTERNAL int read_buf        (z_stream *strm, unsigned char *buf, unsigned size);
+extern ZLIB_INTERNAL int read_buf(z_stream *strm, unsigned char *buf, unsigned size);
 
 #if __ARM_NEON__
 #include <arm_neon.h>
 
 /* SIMD version of hash_chain rebase */
-static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t window_size)
-{
+static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t window_size) {
     register uint16x8_t v, *p;
     register size_t n;
 
@@ -47,8 +46,7 @@ static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t w
 }
 #else
 /* generic version for hash rebase */
-static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t window_size)
-{
+static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t window_size) {
     unsigned int i;
     for (i = 0; i < entries; i++) {
         table[i] = (table[i] >= window_size) ? (table[i] - window_size) : NIL;
@@ -166,6 +164,5 @@ void fill_window_arm(deflate_state *s) {
         }
     }
 
-    Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD,
-           "not enough room for search");
+    Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD, "not enough room for search");
 }
