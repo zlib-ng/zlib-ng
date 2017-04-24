@@ -73,11 +73,11 @@ depend:
 crc_folding.o: $(SRCDIR)/crc_folding.h $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 crc_pclmulqdq.o: $(SRCDIR)/x86.h $(SRCDIR)/crc_folding.h $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 deflate_quick.o: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
-fill_window_sse.o: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
+fill_window_sse.o: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/functable.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 x86.o: $(SRCDIR)/x86.h
 
 crc_folding.lo: $(SRCDIR)/crc_folding.h $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 crc_pclmulqdq.lo: $(SRCDIR)/x86.h $(SRCDIR)/crc_folding.h $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 deflate_quick.lo: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
-fill_window_sse.lo: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
+fill_window_sse.lo: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/functable.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
 x86.lo: $(SRCDIR)/x86.h
