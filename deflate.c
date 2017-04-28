@@ -241,8 +241,6 @@ int ZEXPORT deflateInit2_(z_stream *strm, int level, int method, int windowBits,
     x86_check_features();
 #endif
 
-    functableInit();
-
     if (version == NULL || version[0] != my_version[0] || stream_size != sizeof(z_stream)) {
         return Z_VERSION_ERROR;
     }
