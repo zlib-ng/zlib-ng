@@ -145,15 +145,11 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
 }
 
 uint32_t ZEXPORT adler32_z(uint32_t adler, const unsigned char *buf, size_t len) {
-    if (functable.adler32 == NULL)
-        functableInit();
     return functable.adler32(adler, buf, len);
 }
 
 /* ========================================================================= */
 uint32_t ZEXPORT adler32(uint32_t adler, const unsigned char *buf, uint32_t len) {
-    if (functable.adler32 == NULL)
-        functableInit();
     return functable.adler32(adler, buf, len);
 }
 

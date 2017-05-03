@@ -187,8 +187,6 @@ int ZEXPORT inflateInit2_(z_stream *strm, int windowBits, const char *version, i
     int ret;
     struct inflate_state *state;
 
-    functableInit();
-
     if (version == NULL || version[0] != ZLIB_VERSION[0] || stream_size != (int)(sizeof(z_stream)))
         return Z_VERSION_ERROR;
     if (strm == NULL)
