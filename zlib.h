@@ -109,6 +109,9 @@ typedef struct z_stream_s {
     int                   data_type;  /* best guess about the data type: binary or text
                                          for deflate, or the decoding state for inflate */
     uint32_t              adler;      /* Adler-32 or CRC-32 value of the uncompressed data */
+#if defined(ZLIB_COMPAT) && defined(X86_64)
+    uint32_t              padding;    /* pad out to the same size as the zlib struct */
+#endif
     unsigned long         reserved;   /* reserved for future use */
 } z_stream;
 
