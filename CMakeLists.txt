@@ -40,7 +40,12 @@ check_include_file(stddef.h    HAVE_STDDEF_H)
 #
 # Options parsing
 #
-set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
+if(CMAKE_OSX_ARCHITECTURES)
+    # if multiple architectures are requested (universal build), pick only the first
+    list(GET CMAKE_OSX_ARCHITECTURES 0 ARCH)
+else()
+    set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
+endif()
 message(STATUS "Architecture: ${ARCH}")
 
 option (ZLIB_COMPAT "Compile with zlib compatible API" OFF)
@@ -98,8 +103,8 @@ elseif(MSVC)
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
     endif()
 else()
-    execute_process(COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE COMPILER_VERSION)
-    if("${COMPILER_VERSION}" MATCHES "gcc" OR "${COMPILER_VERSION}" MATCHES "GCC" OR "${COMPILER_VERSION}" MATCHES "clang")
+    # catch all GNU C compilers as well as Clang and AppleClang
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         set(__GNUC__ ON)
     endif()
     if(WITH_NATIVE_INSTRUCTIONS)
@@ -313,19 +318,24 @@ else()
     else()
         set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
     endif()
-    check_c_source_compile_or_run(
-        "#include <immintrin.h>
-        #include <wmmintrin.h>
-        int main(void)
-        {
-            __m128i a = _mm_setzero_si128();
-            __m128i b = _mm_setzero_si128();
-            __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-            (void)c;
-            return 0;
-        }"
-        HAVE_PCLMULQDQ_INTRIN
-    )
+    if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
+        # the pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
+        check_c_source_compile_or_run(
+            "#include <immintrin.h>
+            #include <wmmintrin.h>
+            int main(void)
+            {
+                __m128i a = _mm_setzero_si128();
+                __m128i b = _mm_setzero_si128();
+                __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+                (void)c;
+                return 0;
+            }"
+            HAVE_PCLMULQDQ_INTRIN
+        )
+    else()
+        set(HAVE_PCLMULQDQ_INTRIN NO)
+    endif()
 endif()
 
 #
@@ -411,7 +421,7 @@ if(WITH_OPTIM)
             add_definitions(-DX86_SSE4_2_CRC_HASH)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
             add_feature_info(SSE4_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set, using \"${SSE4FLAG}\"")
-            add_intrinsics_option(${SSE4FLAG})
+            add_intrinsics_option("${SSE4FLAG}")
             if(WITH_NEW_STRATEGIES)
                 add_definitions(-DX86_QUICK_STRATEGY)
                 set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/deflate_quick.c)
@@ -422,13 +432,13 @@ if(WITH_OPTIM)
             add_definitions(-DX86_SSE2_FILL_WINDOW)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/fill_window_sse.c)
             if(NOT ${ARCH} MATCHES "x86_64")
-                add_intrinsics_option(${SSE2FLAG})
+                add_intrinsics_option("${SSE2FLAG}")
             endif()
         endif()
         if(HAVE_PCLMULQDQ_INTRIN)
             add_definitions(-DX86_PCLMULQDQ_CRC)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc_folding.c ${ARCHDIR}/crc_pclmulqdq.c)
-            add_intrinsics_option(${PCLMULFLAG})
+            add_intrinsics_option("${PCLMULFLAG}")
             if(HAVE_SSE42_INTRIN)
                 add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG}\"")
             else()
