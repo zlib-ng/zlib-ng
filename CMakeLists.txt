@@ -40,7 +40,12 @@ check_include_file(stddef.h    HAVE_STDDEF_H)
 #
 # Options parsing
 #
-set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
+if(CMAKE_OSX_ARCHITECTURES)
+    # if multiple architectures are requested (universal build), pick only the first
+    list(GET CMAKE_OSX_ARCHITECTURES 0 ARCH)
+else()
+    set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
+endif()
 message(STATUS "Architecture: ${ARCH}")
 
 option (ZLIB_COMPAT "Compile with zlib compatible API" OFF)
@@ -98,6 +103,7 @@ elseif(MSVC)
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
     endif()
 else()
+    # catch all GNU C compilers as well as Clang and AppleClang
     if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         set(__GNUC__ ON)
     endif()
@@ -312,19 +318,24 @@ else()
     else()
         set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
     endif()
-    check_c_source_compile_or_run(
-        "#include <immintrin.h>
-        #include <wmmintrin.h>
-        int main(void)
-        {
-            __m128i a = _mm_setzero_si128();
-            __m128i b = _mm_setzero_si128();
-            __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-            (void)c;
-            return 0;
-        }"
-        HAVE_PCLMULQDQ_INTRIN
-    )
+    if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
+        # the pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
+        check_c_source_compile_or_run(
+            "#include <immintrin.h>
+            #include <wmmintrin.h>
+            int main(void)
+            {
+                __m128i a = _mm_setzero_si128();
+                __m128i b = _mm_setzero_si128();
+                __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+                (void)c;
+                return 0;
+            }"
+            HAVE_PCLMULQDQ_INTRIN
+        )
+    else()
+        set(HAVE_PCLMULQDQ_INTRIN NO)
+    endif()
 endif()
 
 #
