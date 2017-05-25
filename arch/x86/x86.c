@@ -54,5 +54,7 @@ void ZLIB_INTERNAL x86_check_features(void) {
 
 	cpuid(7, &eax, &ebx, &ecx, &edx);
 
-	x86_cpu_has_tzcnt = ecx & 0x8;
+	// check BMI1 bit
+	// Reference: https://software.intel.com/sites/default/files/article/405250/how-to-detect-new-instruction-support-in-the-4th-generation-intel-core-processor-family.pdf
+	x86_cpu_has_tzcnt = ebx & 0x8;
 }
