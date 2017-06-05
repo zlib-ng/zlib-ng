@@ -373,17 +373,17 @@ static int updatewindow(z_stream *strm, const unsigned char *end, uint32_t copy)
 
     /* if it hasn't been done already, allocate space for the window */
     if (state->window == NULL) {
-#ifdef INFFAST_CHUNKSIZE
         unsigned wsize = 1U << state->wbits;
-        state->window = (unsigned char *) ZALLOC(strm, wsize + INFFAST_CHUNKSIZE, sizeof(unsigned char));
+        state->window = (unsigned char *) ZALLOC(strm, wsize + COPYCHUNKSIZE, sizeof(unsigned char));
         if (state->window == Z_NULL)
             return 1;
-        memset(state->window + wsize, 0, INFFAST_CHUNKSIZE);
-#else
-        state->window = (unsigned char *) ZALLOC(strm, 1U << state->wbits, sizeof(unsigned char));
-        if (state->window == NULL)
-            return 1;
-#endif
+        /* Copies from the overflow portion of this buffer are undefined and
+           may cause analysis tools to raise a warning if we don't initialize
+           it.  However, this undefined data overwrites other undefined data
+           and is subsequently either overwritten or left deliberately
+           'undefined' at the end of decode.
+         */
+        memset(state->window + wsize, 0, COPYCHUNKSIZE);
     }
 
     /* if window not in use yet, initialize */
@@ -1153,25 +1153,17 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                     copy = state->length;
                 if (copy > left)
                     copy = left;
-                left -= copy;
                 state->length -= copy;
-                if (copy >= sizeof(uint64_t))
-                    put = chunk_memcpy(put, from, copy);
-                else
-                    put = copy_bytes(put, from, copy);
+                put = chunkcopy_safe(put, from, copy, put + left);
             } else {                             /* copy from output */
                 unsigned offset = state->offset;
-                from = put - offset;
                 copy = state->length;
                 if (copy > left)
                     copy = left;
-                left -= copy;
                 state->length -= copy;
-                if (copy >= sizeof(uint64_t))
-                    put = chunk_memset(put, from, offset, copy);
-                else
-                    put = set_bytes(put, from, offset, copy);
+                put = chunkcopy_lapped_safe(put, offset, copy, put + left);
             }
+            left -= copy;
             if (state->length == 0)
                 state->mode = LEN;
             break;

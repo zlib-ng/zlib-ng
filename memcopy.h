@@ -11,33 +11,53 @@
 #define MEMCPY memcpy
 #define MEMSET memset
 #endif
-
-/* Load a short from IN and place the bytes at offset BITS in the result. */
-static inline uint32_t load_short(const unsigned char *in, unsigned bits) {
-    union {
-        uint16_t a;
-        uint8_t b[2];
-    } chunk;
-    MEMCPY(&chunk, in, sizeof(uint16_t));
-
-#if BYTE_ORDER == LITTLE_ENDIAN
-    uint32_t res = chunk.a;
-    return res << bits;
+#if __STDC_VERSION__ >= 199901L
+#define RESTRICT restrict
 #else
-    uint32_t c0 = chunk.b[0];
-    uint32_t c1 = chunk.b[1];
-    c0 <<= bits;
-    c1 <<= bits + 8;
-    return c0 + c1;
+#define RESTRICT
 #endif
+
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+#  include <arm_neon.h>
+typedef uint8x16_t copychunk_t;
+#else
+#  include <stdint.h>
+typedef uint64_t copychunk_t;
+#endif
+
+#define COPYCHUNKSIZE sizeof(copychunk_t)
+#define COPYCHUNK_UNROLL 8
+
+/*
+   Ask the compiler to perform a wide, unaligned load with a machine
+   instruction appropriate for the copychunk_t type.
+ */
+static inline copychunk_t loadchunk(const unsigned char *s) {
+    copychunk_t c;
+    MEMCPY(&c, s, sizeof(c));
+    return c;
 }
 
-static inline unsigned char *copy_1_bytes(unsigned char *out, unsigned char *from) {
+/*
+   Ask the compiler to perform a wide, unaligned store with a machine
+   instruction appropriate for the copychunk_t type.
+ */
+static inline void storechunk(unsigned char *d, copychunk_t c) {
+    MEMCPY(d, &c, sizeof(c));
+}
+
+static inline void copychunk(unsigned char **d, const unsigned char **s) {
+    storechunk(*d, loadchunk(*s));
+    *d += COPYCHUNKSIZE;
+    *s += COPYCHUNKSIZE;
+}
+
+static inline unsigned char *copy_1_bytes(unsigned char * RESTRICT out, const unsigned char * RESTRICT from) {
     *out++ = *from;
     return out;
 }
 
-static inline unsigned char *copy_2_bytes(unsigned char *out, unsigned char *from) {
+static inline unsigned char *copy_2_bytes(unsigned char * RESTRICT out, const unsigned char * RESTRICT from) {
     uint16_t chunk;
     unsigned sz = sizeof(chunk);
     MEMCPY(&chunk, from, sz);
@@ -45,12 +65,12 @@ static inline unsigned char *copy_2_bytes(unsigned char *out, unsigned char *fro
     return out + sz;
 }
 
-static inline unsigned char *copy_3_bytes(unsigned char *out, unsigned char *from) {
+static inline unsigned char *copy_3_bytes(unsigned char * RESTRICT out, const unsigned char * RESTRICT from) {
     out = copy_1_bytes(out, from);
     return copy_2_bytes(out, from + 1);
 }
 
-static inline unsigned char *copy_4_bytes(unsigned char *out, unsigned char *from) {
+static inline unsigned char *copy_4_bytes(unsigned char * RESTRICT out, const unsigned char * RESTRICT from) {
     uint32_t chunk;
     unsigned sz = sizeof(chunk);
     MEMCPY(&chunk, from, sz);
@@ -58,22 +78,22 @@ static inline unsigned char *copy_4_bytes(unsigned char *out, unsigned char *fro
     return out + sz;
 }
 
-static inline unsigned char *copy_5_bytes(unsigned char *out, unsigned char *from) {
+static inline unsigned char *copy_5_bytes(unsigned char * RESTRICT out, const unsigned char * RESTRICT from) {
     out = copy_1_bytes(out, from);
     return copy_4_bytes(out, from + 1);
 }
 
-static inline unsigned char *copy_6_bytes(unsigned char *out, unsigned char *from) {
+static inline unsigned char *copy_6_bytes(unsigned char * RESTRICT out, const unsigned char * RESTRICT from) {
     out = copy_2_bytes(out, from);
     return copy_4_bytes(out, from + 2);
 }
 
-static inline unsigned char *copy_7_bytes(unsigned char *out, unsigned char *from) {
+static inline unsigned char *copy_7_bytes(unsigned char * RESTRICT out, const unsigned char * RESTRICT from) {
     out = copy_3_bytes(out, from);
     return copy_4_bytes(out, from + 3);
 }
 
-static inline unsigned char *copy_8_bytes(unsigned char *out, unsigned char *from) {
+static inline unsigned char *copy_8_bytes(unsigned char * RESTRICT out, const unsigned char * RESTRICT from) {
     uint64_t chunk;
     unsigned sz = sizeof(chunk);
     MEMCPY(&chunk, from, sz);
@@ -82,8 +102,9 @@ static inline unsigned char *copy_8_bytes(unsigned char *out, unsigned char *fro
 }
 
 /* Copy LEN bytes (7 or fewer) from FROM into OUT. Return OUT + LEN. */
-static inline unsigned char *copy_bytes(unsigned char *out, unsigned char *from, unsigned len) {
-    Assert(len < 8, "copy_bytes should be called with less than 8 bytes");
+static inline unsigned char *copy_bytes(unsigned char * RESTRICT out, const unsigned char * RESTRICT from,
+                                        unsigned len) {
+    Assert(len < COPYCHUNKSIZE, "copy_bytes should be called for fewer than COPYCHUNKSIZE bytes");
 
 #ifndef UNALIGNED_OK
     while (len--) {
@@ -91,6 +112,11 @@ static inline unsigned char *copy_bytes(unsigned char *out, unsigned char *from,
     }
     return out;
 #else
+    while (len > 8) {
+        out = copy_8_bytes(out, from);
+        from += 8;
+        len -= 8;
+    }
     switch (len) {
     case 7:
         return copy_7_bytes(out, from);
@@ -116,9 +142,10 @@ static inline unsigned char *copy_bytes(unsigned char *out, unsigned char *from,
 #endif /* UNALIGNED_OK */
 }
 
-/* Copy LEN bytes (7 or fewer) from FROM into OUT. Return OUT + LEN. */
-static inline unsigned char *set_bytes(unsigned char *out, unsigned char *from, unsigned dist, unsigned len) {
-    Assert(len < 8, "set_bytes should be called with less than 8 bytes");
+/* Copy LEN bytes (7 or fewer) from OUT-DIST into OUT. Return OUT + LEN. */
+static inline unsigned char *copytail_lapped(unsigned char *out, unsigned dist, unsigned len) {
+    const unsigned char *from = out - dist;
+    Assert(len < 2 * COPYCHUNKSIZE, "copytail_lapped should be called for fewer than 2 * COPYCHUNKSIZE bytes");
 
 #ifndef UNALIGNED_OK
     while (len--) {
@@ -126,6 +153,16 @@ static inline unsigned char *set_bytes(unsigned char *out, unsigned char *from, 
     }
     return out;
 #else
+    if (len >= 8) {
+        /* TODO: remove this and extend the pattern below to handle lengths up
+         * to 2 * COPYCHUNKSIZE bytes */
+        while (len-- > 0) {
+            *out = *(out - dist);
+            out++;
+        }
+        return out;
+    }
+
     if (dist >= len)
         return copy_bytes(out, from, len);
 
@@ -174,8 +211,7 @@ static inline unsigned char *set_bytes(unsigned char *out, unsigned char *from, 
             out = copy_4_bytes(out, from);
             return out;
         case 5:
-            out = copy_2_bytes(out, from);
-            out = copy_1_bytes(out, from);
+            out = copy_3_bytes(out, from);
             return out;
         case 4:
             out = copy_2_bytes(out, from);
@@ -219,87 +255,80 @@ static inline unsigned char *set_bytes(unsigned char *out, unsigned char *from, 
 #endif /* UNALIGNED_OK */
 }
 
-/* Byte by byte semantics: copy LEN bytes from OUT + DIST and write them to OUT. Return OUT + LEN. */
-static inline unsigned char *chunk_memcpy(unsigned char *out, unsigned char *from, unsigned len) {
-    unsigned sz = sizeof(uint64_t);
-    Assert(len >= sz, "chunk_memcpy should be called on larger chunks");
+/*
+   Perform a memcpy-like operation, but assume that length is non-zero and that
+   it's OK to overwrite at least COPYCHUNKSIZE bytes of output even if the
+   length is shorter than this.
 
-    /* Copy a few bytes to make sure the loop below has a multiple of SZ bytes to be copied. */
-    copy_8_bytes(out, from);
+   It also guarantees that it will properly unroll the data if the distance
+   between `out` and `from` is at least CHUNKCOPYSIZE, which we rely on in
+   chunkcopy_relaxed().
 
-    unsigned rem = len % sz;
-    len /= sz;
-    out += rem;
-    from += rem;
+   Aside from better memory bus utilisation, this means that short copies
+   (COPYCHUNKSIZE bytes or fewer) will fall straight through the loop without
+   iteration, which will hopefully make the branch prediction more reliable.
+ */
 
-    unsigned by8 = len % sz;
-    len -= by8;
-    switch (by8) {
-    case 7:
-        out = copy_8_bytes(out, from);
-        from += sz;
-    case 6:
-        out = copy_8_bytes(out, from);
-        from += sz;
-    case 5:
-        out = copy_8_bytes(out, from);
-        from += sz;
-    case 4:
-        out = copy_8_bytes(out, from);
-        from += sz;
-    case 3:
-        out = copy_8_bytes(out, from);
-        from += sz;
-    case 2:
-        out = copy_8_bytes(out, from);
-        from += sz;
-    case 1:
-        out = copy_8_bytes(out, from);
-        from += sz;
+static inline unsigned char *chunk_memcpy(unsigned char *out, const unsigned char *from, unsigned len) {
+    --len;
+    storechunk(out, loadchunk(from));
+    out += (len % COPYCHUNKSIZE) + 1;
+    from += (len % COPYCHUNKSIZE) + 1;
+    len /= COPYCHUNKSIZE;
+#if defined(COPYCHUNK_UNROLL)
+    Assert(COPYCHUNK_UNROLL <= 8, "Unroll code needs more unrolling");
+    switch (len % COPYCHUNK_UNROLL) {
+    case 7: copychunk(&out, &from);
+        /*FALLTHRU*/
+    case 6: copychunk(&out, &from);
+        /*FALLTHRU*/
+    case 5: copychunk(&out, &from);
+        /*FALLTHRU*/
+    case 4: copychunk(&out, &from);
+        /*FALLTHRU*/
+    case 3: copychunk(&out, &from);
+        /*FALLTHRU*/
+    case 2: copychunk(&out, &from);
+        /*FALLTHRU*/
+    case 1: copychunk(&out, &from);
     }
-
-    while (len) {
-        out = copy_8_bytes(out, from);
-        from += sz;
-        out = copy_8_bytes(out, from);
-        from += sz;
-        out = copy_8_bytes(out, from);
-        from += sz;
-        out = copy_8_bytes(out, from);
-        from += sz;
-        out = copy_8_bytes(out, from);
-        from += sz;
-        out = copy_8_bytes(out, from);
-        from += sz;
-        out = copy_8_bytes(out, from);
-        from += sz;
-        out = copy_8_bytes(out, from);
-        from += sz;
-
-        len -= 8;
+    len /= COPYCHUNK_UNROLL;
+    while (len > 0) {
+        if (COPYCHUNK_UNROLL >= 1) copychunk(&out, &from);
+        if (COPYCHUNK_UNROLL >= 2) copychunk(&out, &from);
+        if (COPYCHUNK_UNROLL >= 3) copychunk(&out, &from);
+        if (COPYCHUNK_UNROLL >= 4) copychunk(&out, &from);
+        if (COPYCHUNK_UNROLL >= 5) copychunk(&out, &from);
+        if (COPYCHUNK_UNROLL >= 6) copychunk(&out, &from);
+        if (COPYCHUNK_UNROLL >= 7) copychunk(&out, &from);
+        if (COPYCHUNK_UNROLL >= 8) copychunk(&out, &from);
+        len--;
     }
-
+#else
+    while (len-- > 0) {
+        storechunk(out, loadchunk(from));
+        out += COPYCHUNKSIZE;
+        from += COPYCHUNKSIZE;
+    }
+#endif
     return out;
 }
 
-/* Memset LEN bytes in OUT with the value at OUT - 1. Return OUT + LEN. */
-static inline unsigned char *byte_memset(unsigned char *out, unsigned len) {
-    unsigned sz = sizeof(uint64_t);
-    Assert(len >= sz, "byte_memset should be called on larger chunks");
 
-    unsigned char *from = out - 1;
-    unsigned char c = *from;
+/* Memset LEN bytes in OUT with the value at OUT - 1. Return OUT + LEN.
+   Assume, regardless of len, that the output has enough room to write at least
+   COPYCHUNKSIZE bytes. */
+static inline unsigned char *chunkfill1_relaxed(unsigned char *out, unsigned len) {
+    unsigned sz = COPYCHUNKSIZE;
+    unsigned char c = out[-1];
 
     /* First, deal with the case when LEN is not a multiple of SZ. */
     MEMSET(out, c, sz);
     unsigned rem = len % sz;
     len /= sz;
     out += rem;
-    from += rem;
 
-    unsigned by8 = len % 8;
-    len -= by8;
-    switch (by8) {
+    switch (len % COPYCHUNK_UNROLL) {
     case 7:
         MEMSET(out, c, sz);
         out += sz;
@@ -322,8 +351,9 @@ static inline unsigned char *byte_memset(unsigned char *out, unsigned len) {
         MEMSET(out, c, sz);
         out += sz;
     }
+    len /= COPYCHUNK_UNROLL;
 
-    while (len) {
+    while (len > 0) {
         /* When sz is a constant, the compiler replaces __builtin_memset with an
            inline version that does not incur a function call overhead. */
         MEMSET(out, c, sz);
@@ -342,53 +372,107 @@ static inline unsigned char *byte_memset(unsigned char *out, unsigned len) {
         out += sz;
         MEMSET(out, c, sz);
         out += sz;
-        len -= 8;
+        len--;
     }
 
     return out;
 }
 
-/* Copy DIST bytes from OUT - DIST into OUT + DIST * k, for 0 <= k < LEN/DIST. Return OUT + LEN. */
-static inline unsigned char *chunk_memset(unsigned char *out, unsigned char *from, unsigned dist, unsigned len) {
-    if (dist >= len)
-        return chunk_memcpy(out, from, len);
+/*
+   Perform a memcpy-like operation, but assume that length is non-zero and that
+   it's OK to overwrite at least COPYCHUNKSIZE bytes of output even if the
+   length is shorter than this.
 
-    Assert(len >= sizeof(uint64_t), "chunk_memset should be called on larger chunks");
+   Unlike chunk_memcpy() above, no guarantee is made regarding the behaviour of
+   overlapping buffers, regardless of the distance between the pointers.  This
+   is reflected in the `restrict`-qualified pointers, allowing the compiler to
+   reorder loads and stores.
 
-    /* Double up the size of the memset pattern until reaching the largest pattern of size less than SZ. */
-    unsigned sz = sizeof(uint64_t);
-    while (dist < len && dist < sz) {
-        copy_8_bytes(out, from);
-
-        out += dist;
-        len -= dist;
-        dist += dist;
-
-        /* Make sure the next memcpy has at least SZ bytes to be copied.  */
-        if (len < sz)
-            /* Finish up byte by byte when there are not enough bytes left. */
-            return set_bytes(out, from, dist, len);
-    }
-
+   Aside from better memory bus utilisation, this means that short copies
+   (COPYCHUNKSIZE bytes or fewer) will fall straight through the loop without
+   iteration, which will hopefully make the branch prediction more reliable.
+ */
+static inline unsigned char *chunkcopy_relaxed(unsigned char * RESTRICT out, const unsigned char * RESTRICT from,
+                                                unsigned len) {
     return chunk_memcpy(out, from, len);
 }
 
-/* Byte by byte semantics: copy LEN bytes from FROM and write them to OUT. Return OUT + LEN. */
-static inline unsigned char *chunk_copy(unsigned char *out, unsigned char *from, int dist, unsigned len) {
-    if (len < sizeof(uint64_t)) {
-        if (dist > 0)
-            return set_bytes(out, from, dist, len);
+/*
+   Like chunkcopy_relaxed, but avoid writing beyond of legal output.
 
+   Accepts an additional pointer to the end of safe output.  A generic safe
+   copy would use (out + len), but it's normally the case that the end of the
+   output buffer is beyond the end of the current copy, and this can still be
+   exploited.
+ */
+static inline unsigned char *chunkcopy_safe(unsigned char *out, const unsigned char * RESTRICT from, unsigned len,
+                                           unsigned char *limit) {
+    Assert(out + len <= limit, "chunk copy exceeds safety limit");
+    if (limit - out < COPYCHUNKSIZE) {
+        /* Output buffer is too small to write a whole COPYCHUNKSIZE chunk, so
+           do things slowly and carefully. */
         return copy_bytes(out, from, len);
     }
-
-    if (dist == 1)
-        return byte_memset(out, len);
-
-    if (dist > 0)
-        return chunk_memset(out, from, dist, len);
-
     return chunk_memcpy(out, from, len);
 }
+
+/*
+   Perform short copies until distance can be rewritten as being at least
+   COPYCHUNKSIZE.
+
+   This assumes that it's OK to overwrite at least the first 2*COPYCHUNKSIZE
+   bytes of output even if the copy is shorter than this.  This assumption
+   holds because inflate_fast() starts every iteration with at least 258 bytes
+   of output space available (258 being the maximum length output from a single
+   token; see inflate_fast()'s assumptions below).
+ */
+static inline unsigned char *chunkunroll_relaxed(unsigned char *out, unsigned *dist, unsigned *len) {
+    const unsigned char *from = out - *dist;
+    while (*dist < *len && *dist < COPYCHUNKSIZE) {
+        storechunk(out, loadchunk(from));
+        out += *dist;
+        *len -= *dist;
+        *dist += *dist;
+    }
+    return out;
+}
+
+/*
+   Perform chunky copy within the same buffer, where the source and destination
+   may potentially overlap.
+
+   Assumes that len > 0 on entry, and that it's safe to write at least
+   COPYCHUNKSIZE * 3 bytes to the output.
+ */
+
+static inline unsigned char *chunkcopy_lapped_relaxed(unsigned char *out, unsigned dist, unsigned len) {
+    out = chunkunroll_relaxed(out, &dist, &len);
+    return chunkcopy_relaxed(out, out - dist, len);
+}
+
+/*
+   Behave like chunkcopy_lapped_relaxed, but avoid writing beyond of legal output.
+
+   Accepts an additional pointer to the end of safe output.  A generic safe
+   copy would use (out + len), but it's normally the case that the end of the
+   output buffer is beyond the end of the current copy, and this can still be
+   exploited.
+ */
+static inline unsigned char *chunkcopy_lapped_safe(unsigned char *out, unsigned dist, unsigned len,
+                                                        unsigned char *limit) {
+    Assert(out + len <= limit, "chunk copy exceeds safety limit");
+    if (limit - out < COPYCHUNKSIZE * 2) {
+        return copytail_lapped(out, dist, len);
+    }
+    out = chunkunroll_relaxed(out, &dist, &len);
+    if (limit - out < COPYCHUNKSIZE) {
+        return copy_bytes(out, out - dist, len);
+    }
+    return chunk_memcpy(out, out - dist, len);
+}
+
+#undef MEMCPY
+#undef MEMSET
+#undef RESTRICT
 
 #endif /* MEMCOPY_H_ */
