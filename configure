@@ -284,10 +284,10 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/zlib.map"
         LDSHAREDLIBC=""
         DEFFILE='win32/zlib.def'
-        RC='windres'
+        RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         RCOBJS='zlibrc.o'
-        STRIP='strip'
+        STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
   MSYS* | msys*)
         ARFLAGS="rcs"
@@ -303,10 +303,10 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB}"
         LDSHAREDLIBC=""
         DEFFILE='win32/zlib.def'
-        RC='windres'
+        RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         RCOBJS='zlibrc.o'
-        STRIP='strip'
+        STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
   MINGW* | mingw*)
         ARFLAGS="rcs"
@@ -323,7 +323,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHAREDFLAGS="-shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/zlib.map"
         LDSHAREDLIBC=""
         DEFFILE='win32/zlib.def'
-        RC='windres'
+        RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         if [ "$CC" == "mingw32-gcc" ]; then
           case $ARCH in
@@ -331,7 +331,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
           esac;
         fi
         RCOBJS='zlibrc.o'
-        STRIP='strip'
+        STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
   QNX*)  # This is for QNX6. I suppose that the QNX rule below is for QNX2,QNX4
          # (alain.bonnefoy@icbt.com)
