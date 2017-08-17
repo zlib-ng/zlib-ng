@@ -13,7 +13,6 @@
 
 
 /* insert_string */
-ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count);
 #ifdef X86_SSE4_2_CRC_HASH
 extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
 #elif defined(ARM_ACLE_CRC_HASH)
@@ -21,7 +20,6 @@ extern Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned in
 #endif
 
 /* fill_window */
-ZLIB_INTERNAL void fill_window_stub(deflate_state *s);
 #ifdef X86_SSE2_FILL_WINDOW
 extern void fill_window_sse(deflate_state *s);
 #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM)
@@ -29,13 +27,19 @@ extern void fill_window_arm(deflate_state *s);
 #endif
 
 /* adler32 */
-ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len);
+extern uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON))
 extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
 
+/* stub definitions */
+ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count);
+ZLIB_INTERNAL void fill_window_stub(deflate_state *s);
+ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len);
 
-struct functable_s functable = {fill_window_stub,insert_string_stub,adler32_stub};
+/* functable init */
+ZLIB_INTERNAL struct functable_s functable = {fill_window_stub,insert_string_stub,adler32_stub};
+
 
 /* stub functions */
 ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count) {

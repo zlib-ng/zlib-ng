@@ -16,7 +16,7 @@
  * new strings in the dictionary only for unmatched strings or for short
  * matches. It is used only for the fast compression options.
  */
-block_state deflate_fast(deflate_state *s, int flush) {
+ZLIB_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
     IPos hash_head;       /* head of the hash chain */
     int bflush;           /* set if current block must be flushed */
 

@@ -23,7 +23,7 @@
  * evaluation for matches: a match is finally adopted only if there is
  * no better match at the next window position.
  */
-block_state deflate_slow(deflate_state *s, int flush) {
+ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     IPos hash_head;          /* head of hash chain */
     int bflush;              /* set if current block must be flushed */
 

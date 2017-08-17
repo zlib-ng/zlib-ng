@@ -195,7 +195,7 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
     }
 }
 
-block_state deflate_medium(deflate_state *s, int flush) {
+ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
     struct match current_match, next_match;
 
     memset(&current_match, 0, sizeof(struct match));

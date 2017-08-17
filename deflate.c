@@ -72,12 +72,12 @@ typedef block_state (*compress_func) (deflate_state *s, int flush);
 static int deflateStateCheck      (z_stream *strm);
 static void slide_hash            (deflate_state *s);
 static block_state deflate_stored (deflate_state *s, int flush);
-block_state deflate_fast         (deflate_state *s, int flush);
-block_state deflate_quick        (deflate_state *s, int flush);
+ZLIB_INTERNAL block_state deflate_fast         (deflate_state *s, int flush);
+ZLIB_INTERNAL block_state deflate_quick        (deflate_state *s, int flush);
 #ifdef MEDIUM_STRATEGY
-block_state deflate_medium       (deflate_state *s, int flush);
+ZLIB_INTERNAL block_state deflate_medium       (deflate_state *s, int flush);
 #endif
-block_state deflate_slow         (deflate_state *s, int flush);
+ZLIB_INTERNAL block_state deflate_slow         (deflate_state *s, int flush);
 static block_state deflate_rle   (deflate_state *s, int flush);
 static block_state deflate_huff  (deflate_state *s, int flush);
 static void lm_init              (deflate_state *s);
@@ -1188,7 +1188,7 @@ void check_match(deflate_state *s, IPos start, IPos match, int length) {
  *    option -- not supported here).
  */
 
-void fill_window_c(deflate_state *s) {
+void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
     unsigned n;
     unsigned more;    /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;

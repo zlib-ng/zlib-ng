@@ -343,7 +343,7 @@ typedef enum {
    memory checker errors from longest match routines */
 
 
-void fill_window_c(deflate_state *s);
+void ZLIB_INTERNAL fill_window_c(deflate_state *s);
 
         /* in trees.c */
 void ZLIB_INTERNAL _tr_init(deflate_state *s);
