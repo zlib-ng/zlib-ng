@@ -40,9 +40,11 @@ static inline Pos insert_string_c(deflate_state *const s, const Pos str, unsigne
         if (s->head[s->ins_h] != str+idx) {
             s->prev[(str+idx) & s->w_mask] = s->head[s->ins_h];
             s->head[s->ins_h] = str+idx;
+            if (idx == count-1) {
+                ret = s->prev[(str+idx) & s->w_mask];
+            }
         }
     }
-    ret = s->prev[(str+count-1) & s->w_mask];
     return ret;
 }
 
