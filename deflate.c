@@ -52,6 +52,7 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "match.h"
+#include "functable.h"
 
 const char deflate_copyright[] = " deflate 1.2.11.f Copyright 1995-2016 Jean-loup Gailly and Mark Adler ";
 /*
@@ -71,12 +72,12 @@ typedef block_state (*compress_func) (deflate_state *s, int flush);
 static int deflateStateCheck      (z_stream *strm);
 static void slide_hash            (deflate_state *s);
 static block_state deflate_stored (deflate_state *s, int flush);
-block_state deflate_fast         (deflate_state *s, int flush);
-block_state deflate_quick        (deflate_state *s, int flush);
+ZLIB_INTERNAL block_state deflate_fast         (deflate_state *s, int flush);
+ZLIB_INTERNAL block_state deflate_quick        (deflate_state *s, int flush);
 #ifdef MEDIUM_STRATEGY
-block_state deflate_medium       (deflate_state *s, int flush);
+ZLIB_INTERNAL block_state deflate_medium       (deflate_state *s, int flush);
 #endif
-block_state deflate_slow         (deflate_state *s, int flush);
+ZLIB_INTERNAL block_state deflate_slow         (deflate_state *s, int flush);
 static block_state deflate_rle   (deflate_state *s, int flush);
 static block_state deflate_huff  (deflate_state *s, int flush);
 static void lm_init              (deflate_state *s);
@@ -379,7 +380,7 @@ int ZEXPORT deflateSetDictionary(z_stream *strm, const unsigned char *dictionary
 
     /* when using zlib wrappers, compute Adler-32 for provided dictionary */
     if (wrap == 1)
-        strm->adler = adler32(strm->adler, dictionary, dictLength);
+        strm->adler = functable.adler32(strm->adler, dictionary, dictLength);
     s->wrap = 0;                    /* avoid computing Adler-32 in read_buf */
 
     /* if dictionary would fill window, just replace the history */
@@ -399,14 +400,14 @@ int ZEXPORT deflateSetDictionary(z_stream *strm, const unsigned char *dictionary
     next = strm->next_in;
     strm->avail_in = dictLength;
     strm->next_in = (const unsigned char *)dictionary;
-    fill_window(s);
+    functable.fill_window(s);
     while (s->lookahead >= MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (MIN_MATCH-1);
-        insert_string(s, str, n);
+        functable.insert_string(s, str, n);
         s->strstart = str + n;
         s->lookahead = MIN_MATCH-1;
-        fill_window(s);
+        functable.fill_window(s);
     }
     s->strstart += s->lookahead;
     s->block_start = (long)s->strstart;
@@ -468,7 +469,7 @@ int ZEXPORT deflateResetKeep(z_stream *strm) {
         crc_reset(s);
     else
 #endif
-        strm->adler = adler32(0L, NULL, 0);
+        strm->adler = functable.adler32(0L, NULL, 0);
     s->last_flush = Z_NO_FLUSH;
 
     _tr_init(s);
@@ -779,7 +780,7 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
             putShortMSB(s, (uint16_t)(strm->adler >> 16));
             putShortMSB(s, (uint16_t)(strm->adler));
         }
-        strm->adler = adler32(0L, NULL, 0);
+        strm->adler = functable.adler32(0L, NULL, 0);
         s->status = BUSY_STATE;
 
         /* Compression must start with an empty pending buffer */
@@ -1117,7 +1118,7 @@ ZLIB_INTERNAL unsigned read_buf(z_stream *strm, unsigned char *buf, unsigned siz
     {
         memcpy(buf, strm->next_in, len);
         if (strm->state->wrap == 1)
-            strm->adler = adler32(strm->adler, buf, len);
+            strm->adler = functable.adler32(strm->adler, buf, len);
     }
     strm->next_in  += len;
     strm->total_in += len;
@@ -1186,29 +1187,8 @@ void check_match(deflate_state *s, IPos start, IPos match, int length) {
  *    performed for at least two bytes (required for the zip translate_eol
  *    option -- not supported here).
  */
-#ifdef X86_SSE2_FILL_WINDOW
-extern void fill_window_sse(deflate_state *s);
-#endif
-void fill_window_c(deflate_state *s);
 
-void fill_window(deflate_state *s) {
-#ifdef X86_SSE2_FILL_WINDOW
-# ifndef X86_NOCHECK_SSE2
-    if (x86_cpu_has_sse2) {
-# endif
-        fill_window_sse(s);
-# ifndef X86_NOCHECK_SSE2
-    } else {
-        fill_window_c(s);
-    }
-# endif
-
-#else
-    fill_window_c(s);
-#endif
-}
-
-void fill_window_c(deflate_state *s) {
+void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
     unsigned n;
     unsigned more;    /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;
@@ -1254,17 +1234,26 @@ void fill_window_c(deflate_state *s) {
             unsigned int str = s->strstart - s->insert;
             s->ins_h = s->window[str];
             if (str >= 1)
-                insert_string(s, str + 2 - MIN_MATCH, 1);
+                functable.insert_string(s, str + 2 - MIN_MATCH, 1);
 #if MIN_MATCH != 3
-#warning    Call insert_string() MIN_MATCH-3 more times
-#endif
+#error Call insert_string() MIN_MATCH-3 more times
             while (s->insert) {
-                insert_string(s, str, 1);
+                functable.insert_string(s, str, 1);
                 str++;
                 s->insert--;
                 if (s->lookahead + s->insert < MIN_MATCH)
                     break;
             }
+#else
+            unsigned int count;
+            if (unlikely(s->lookahead == 1)){
+                count = s->insert - 1;
+            }else{
+                count = s->insert;
+            }
+            functable.insert_string(s,str,count);
+            s->insert -= count;
+#endif
         }
         /* If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
          * but this is not important since only literal bytes will be emitted.
@@ -1509,7 +1498,7 @@ static block_state deflate_rle(deflate_state *s, int flush) {
          * for the longest run, plus one for the unrolled loop.
          */
         if (s->lookahead <= MAX_MATCH) {
-            fill_window(s);
+            functable.fill_window(s);
             if (s->lookahead <= MAX_MATCH && flush == Z_NO_FLUSH) {
                 return need_more;
             }
@@ -1576,7 +1565,7 @@ static block_state deflate_huff(deflate_state *s, int flush) {
     for (;;) {
         /* Make sure that we have a literal to write. */
         if (s->lookahead == 0) {
-            fill_window(s);
+            functable.fill_window(s);
             if (s->lookahead == 0) {
                 if (flush == Z_NO_FLUSH)
                     return need_more;

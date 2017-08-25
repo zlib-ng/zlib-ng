@@ -16,12 +16,14 @@
 #elif defined(WIN32) || defined(_WIN32)
 # define LITTLE_ENDIAN 1234
 # define BIG_ENDIAN 4321
-# if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64)
+# if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64) || defined (_M_ARM)
 #  define BYTE_ORDER LITTLE_ENDIAN
 # else
 #  error Unknown endianness!
 # endif
-#elif __APPLE__
+#elif defined(__linux__)
+# include <endian.h>
+#elif defined(__APPLE__) || defined(__arm__) || defined(__aarch64__)
 # include <machine/endian.h>
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__) || defined(__DragonFly__)
 # include <sys/endian.h>
@@ -64,6 +66,10 @@
 #include "deflate.h"
 
 ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, z_off64_t);
+
+#ifdef __ARM_FEATURE_CRC32
+extern uint32_t crc32_acle(uint32_t, const unsigned char *, z_off64_t);
+#endif
 
 #if BYTE_ORDER == LITTLE_ENDIAN
 ZLIB_INTERNAL uint32_t crc32_little(uint32_t, const unsigned char *, size_t);
@@ -217,7 +223,11 @@ uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len) {
 
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
 #if BYTE_ORDER == LITTLE_ENDIAN
+#  if __ARM_FEATURE_CRC32
+        return crc32_acle(crc, buf, len);
+#  else
         return crc32_little(crc, buf, len);
+#  endif
 #elif BYTE_ORDER == BIG_ENDIAN
         return crc32_big(crc, buf, len);
 #endif

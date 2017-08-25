@@ -1,56 +1,77 @@
-/*
- * Fill Window with SSE2-optimized hash shifting
+/* fill_window_arm.c -- Optimized hash table shifting for ARM with support for NEON instructions
+ * Copyright (C) 2017 Mika T. Lindqvist
  *
- * Copyright (C) 2013 Intel Corporation
  * Authors:
- *  Arjan van de Ven    <arjan@linux.intel.com>
- *  Jim Kukunas         <james.t.kukunas@linux.intel.com>
+ * Mika T. Lindqvist <postmaster@raasu.org>
+ * Jun He <jun.he@arm.com>
  *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-#ifdef X86_SSE2_FILL_WINDOW
 
-#include <immintrin.h>
+/* @(#) $Id$ */
+
 #include "deflate.h"
 #include "deflate_p.h"
 #include "functable.h"
 
-extern int read_buf(z_stream *strm, unsigned char *buf, unsigned size);
+extern ZLIB_INTERNAL int read_buf(z_stream *strm, unsigned char *buf, unsigned size);
 
-ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
-    const __m128i xmm_wsize = _mm_set1_epi16(s->w_size);
+#if __ARM_NEON__
+#include <arm_neon.h>
 
+/* SIMD version of hash_chain rebase */
+static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t window_size) {
+    register uint16x8_t v, *p;
+    register size_t n;
+
+    size_t size = entries*sizeof(table[0]);
+    Assert((size % sizeof(uint16x8_t) * 8 == 0), "hash table size err");
+
+    Assert(sizeof(Pos) == 2, "Wrong Pos size");
+    v = vdupq_n_u16(window_size);
+
+    p = (uint16x8_t *)table;
+    n = size / (sizeof(uint16x8_t) * 8);
+    do {
+        p[0] = vqsubq_u16(p[0], v);
+        p[1] = vqsubq_u16(p[1], v);
+        p[2] = vqsubq_u16(p[2], v);
+        p[3] = vqsubq_u16(p[3], v);
+        p[4] = vqsubq_u16(p[4], v);
+        p[5] = vqsubq_u16(p[5], v);
+        p[6] = vqsubq_u16(p[6], v);
+        p[7] = vqsubq_u16(p[7], v);
+        p += 8;
+    } while (--n);
+}
+#else
+/* generic version for hash rebase */
+static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t window_size) {
+    unsigned int i;
+    for (i = 0; i < entries; i++) {
+        table[i] = (table[i] >= window_size) ? (table[i] - window_size) : NIL;
+    }
+}
+#endif
+
+void fill_window_arm(deflate_state *s) {
     register unsigned n;
-    register Pos *p;
-    unsigned more;    /* Amount of free space at the end of the window. */
+    unsigned long more;  /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;
 
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
 
     do {
-        more = (unsigned)(s->window_size -(unsigned long)s->lookahead -(unsigned long)s->strstart);
-
-        /* Deal with !@#$% 64K limit: */
-        if (sizeof(int) <= 2) {
-            if (more == 0 && s->strstart == 0 && s->lookahead == 0) {
-                more = wsize;
-
-            } else if (more == (unsigned)(-1)) {
-                /* Very unlikely, but possible on 16 bit machine if
-                 * strstart == 0 && lookahead == 1 (input done a byte at time)
-                 */
-                more--;
-            }
-        }
+        more = s->window_size - s->lookahead - s->strstart;
 
         /* If the window is almost full and there is insufficient lookahead,
          * move the upper half to the lower one to make room in the upper half.
          */
         if (s->strstart >= wsize+MAX_DIST(s)) {
-            memcpy(s->window, s->window+wsize, (unsigned)wsize);
+            memcpy(s->window, s->window+wsize, wsize);
             s->match_start -= wsize;
             s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
-            s->block_start -= (long) wsize;
+            s->block_start -= wsize;
 
             /* Slide the hash table (could be avoided with 32 bit values
                at the expense of memory usage). We slide even when level == 0
@@ -58,36 +79,13 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
                later. (Using level 0 permanently is not an optimal usage of
                zlib, so we don't care about this pathological case.)
              */
-            n = s->hash_size;
-            p = &s->head[n];
-            p -= 8;
-            do {
-                __m128i value, result;
 
-                value = _mm_loadu_si128((__m128i *)p);
-                result = _mm_subs_epu16(value, xmm_wsize);
-                _mm_storeu_si128((__m128i *)p, result);
-
-                p -= 8;
-                n -= 8;
-            } while (n > 0);
-
-            n = wsize;
-            p = &s->prev[n];
-            p -= 8;
-            do {
-                __m128i value, result;
-
-                value = _mm_loadu_si128((__m128i *)p);
-                result = _mm_subs_epu16(value, xmm_wsize);
-                _mm_storeu_si128((__m128i *)p, result);
-
-                p -= 8;
-                n -= 8;
-            } while (n > 0);
+            slide_hash_chain(s->head, s->hash_size, wsize);
+            slide_hash_chain(s->prev, wsize, wsize);
             more += wsize;
         }
-        if (s->strm->avail_in == 0) break;
+        if (s->strm->avail_in == 0)
+            break;
 
         /* If there was no sliding:
          *    strstart <= WSIZE+MAX_DIST-1 && lookahead <= MIN_LOOKAHEAD - 1 &&
@@ -108,28 +106,24 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
         /* Initialize the hash value now that we have some input: */
         if (s->lookahead + s->insert >= MIN_MATCH) {
             unsigned int str = s->strstart - s->insert;
+            unsigned int insert_cnt = s->insert;
+            unsigned int slen;
+
             s->ins_h = s->window[str];
-            if (str >= 1)
-                functable.insert_string(s, str + 2 - MIN_MATCH, 1);
-#if MIN_MATCH != 3
-#error Call insert_string() MIN_MATCH-3 more times
-            while (s->insert) {
-                functable.insert_string(s, str, 1);
-                str++;
-                s->insert--;
-                if (s->lookahead + s->insert < MIN_MATCH)
-                    break;
+
+            if (unlikely(s->lookahead < MIN_MATCH))
+                insert_cnt += s->lookahead - MIN_MATCH;
+            slen = insert_cnt;
+            if (str >= (MIN_MATCH - 2))
+            {
+                str += 2 - MIN_MATCH;
+                insert_cnt += MIN_MATCH - 2;
             }
-#else
-            unsigned int count;
-            if (unlikely(s->lookahead == 1)){
-                count = s->insert - 1;
-            }else{
-                count = s->insert;
+            if (insert_cnt > 0)
+            {
+                functable.insert_string(s, str, insert_cnt);
+                s->insert -= slen;
             }
-            functable.insert_string(s, str, count);
-            s->insert -= count;
-#endif
         }
         /* If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
          * but this is not important since only literal bytes will be emitted.
@@ -144,7 +138,7 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
      * routines allow scanning to strstart + MAX_MATCH, ignoring lookahead.
      */
     if (s->high_water < s->window_size) {
-        unsigned long curr = s->strstart + (unsigned long)(s->lookahead);
+        unsigned long curr = s->strstart + (unsigned long)s->lookahead;
         unsigned long init;
 
         if (s->high_water < curr) {
@@ -154,21 +148,21 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
             init = s->window_size - curr;
             if (init > WIN_INIT)
                 init = WIN_INIT;
-            memset(s->window + curr, 0, (unsigned)init);
+            memset(s->window + curr, 0, init);
             s->high_water = curr + init;
-        } else if (s->high_water < (unsigned long)curr + WIN_INIT) {
+        } else if (s->high_water < curr + WIN_INIT) {
             /* High water mark at or above current data, but below current data
              * plus WIN_INIT -- zero out to current data plus WIN_INIT, or up
              * to end of window, whichever is less.
              */
-            init = (unsigned long)curr + WIN_INIT - s->high_water;
-            if (init > s->window_size - s->high_water)
-                init = s->window_size - s->high_water;
-            memset(s->window + s->high_water, 0, (unsigned)init);
+            init = curr + WIN_INIT;
+            if (init > s->window_size)
+                init = s->window_size;
+            init -= s->high_water;
+            memset(s->window + s->high_water, 0, init);
             s->high_water += init;
         }
     }
 
     Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD, "not enough room for search");
 }
-#endif

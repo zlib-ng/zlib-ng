@@ -66,11 +66,11 @@ mandir = ${prefix}/share/man
 man3dir = ${mandir}/man3
 pkgconfigdir = ${libdir}/pkgconfig
 
-OBJZ = adler32.o compress.o crc32.o deflate.o deflate_fast.o deflate_medium.o deflate_slow.o match.o infback.o inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o $(ARCH_STATIC_OBJS)
+OBJZ = adler32.o compress.o crc32.o deflate.o deflate_fast.o deflate_medium.o deflate_slow.o functable.o match.o infback.o inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o $(ARCH_STATIC_OBJS)
 OBJG = gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo compress.lo crc32.lo deflate.lo deflate_fast.lo deflate_medium.lo deflate_slow.lo match.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo uncompr.lo zutil.lo $(ARCH_SHARED_OBJS)
+PIC_OBJZ = adler32.lo compress.lo crc32.lo deflate.lo deflate_fast.lo deflate_medium.lo deflate_slow.lo functable.lo match.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo uncompr.lo zutil.lo $(ARCH_SHARED_OBJS)
 PIC_OBJG = gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
@@ -160,37 +160,37 @@ endif
 endif
 
 example$(EXE): example.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ example.o $(TEST_LIBS)
+	$(CC) $(LDFLAGS) -o $@ example.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 minigzip$(EXE): minigzip.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ minigzip.o $(TEST_LIBS)
+	$(CC) $(LDFLAGS) -o $@ minigzip.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 examplesh$(EXE): example.o $(SHAREDTARGET)
-	$(CC) $(LDFLAGS) -o $@ example.o $(SHAREDTARGET)
+	$(CC) $(LDFLAGS) -o $@ example.o $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 minigzipsh$(EXE): minigzip.o $(SHAREDTARGET)
-	$(CC) $(LDFLAGS) -o $@ minigzip.o $(SHAREDTARGET)
+	$(CC) $(LDFLAGS) -o $@ minigzip.o $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 example64$(EXE): example64.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ example64.o $(TEST_LIBS)
+	$(CC) $(LDFLAGS) -o $@ example64.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 minigzip64$(EXE): minigzip64.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ minigzip64.o $(TEST_LIBS)
+	$(CC) $(LDFLAGS) -o $@ minigzip64.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -310,40 +310,60 @@ depend:
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
-adler32.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+adler32.o: $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+functable.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 gzclose.o gzlib.o gzread.o gzwrite.o: $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/gzguts.h
 compress.o example.o minigzip.o uncompr.o: $(SRCDIR)/zlib.h zconf.h
 crc32.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/crc32.h
-deflate.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-deflate_fast.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-deflate_medium.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-deflate_slow.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-infback.o inflate.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h
-inffast.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h
+deflate.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+deflate_fast.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+deflate_medium.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+deflate_slow.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+infback.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h
+inffast.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/memcopy.h
+inflate.o: $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h $(SRCDIR)/memcopy.h
 inftrees.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h
 trees.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/trees.h
 zutil.o: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib.h zconf.h
+arch/aarch64/adler32_neon.o: $(SRCDIR)/arch/aarch64/adler32_neon.h
+arch/aarch64/crc32_acle.o: zconf.h
+arch/aarch64/fill_window_arm.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+arch/aarch64/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+arch/arm/adler32_neon.o: $(SRCDIR)/arch/arm/adler32_neon.h
+arch/arm/crc32_acle.o: zconf.h
+arch/arm/fill_window_arm.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+arch/arm/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/crc_folding.o: $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/crc_pclmulqdq.o: $(SRCDIR)/arch/x86/x86.h $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/deflate_quick.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-arch/x86/fill_window_sse.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+arch/x86/fill_window_sse.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/x86.o: $(SRCDIR)/arch/x86/x86.h
 
-adler32.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+adler32.lo: $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+functable.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 gzclose.lo gzlib.lo gzread.lo gzwrite.lo: $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/gzguts.h
 compress.lo example.lo minigzip.lo uncompr.lo: $(SRCDIR)/zlib.h zconf.h
 crc32.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/crc32.h
-deflate.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-deflate_fast.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-deflate_medium.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-deflate_slow.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-infback.lo inflate.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h
-inffast.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h
+deflate.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+deflate_fast.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+deflate_medium.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+deflate_slow.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/match.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+infback.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h
+inffast.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/memcopy.h
+inflate.lo: $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/inffixed.h $(SRCDIR)/memcopy.h
 inftrees.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/inftrees.h
 trees.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h $(SRCDIR)/trees.h
 zutil.lo: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib.h zconf.h
+arch/aarch64/adler32_neon.lo: $(SRCDIR)/arch/aarch64/adler32_neon.h
+arch/aarch64/crc32_acle.lo: zconf.h
+arch/aarch64/fill_window_arm.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+arch/aarch64/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+arch/arm/adler32_neon.lo: $(SRCDIR)/arch/arm/adler32_neon.h
+arch/arm/crc32_acle.lo: zconf.h
+arch/arm/fill_window_arm.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+arch/arm/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/crc_folding.lo: $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/crc_pclmulqdq.lo: $(SRCDIR)/arch/x86/x86.h $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/deflate_quick.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
-arch/x86/fill_window_sse.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
+arch/x86/fill_window_sse.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib.h zconf.h
 arch/x86/x86.lo: $(SRCDIR)/arch/x86/x86.h

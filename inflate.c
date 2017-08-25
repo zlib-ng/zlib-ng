@@ -84,6 +84,8 @@
 #include "inftrees.h"
 #include "inflate.h"
 #include "inffast.h"
+#include "memcopy.h"
+#include "functable.h"
 
 #ifdef MAKEFIXED
 #  ifndef BUILDFIXED
@@ -371,9 +373,17 @@ static int updatewindow(z_stream *strm, const unsigned char *end, uint32_t copy)
 
     /* if it hasn't been done already, allocate space for the window */
     if (state->window == NULL) {
+#ifdef INFFAST_CHUNKSIZE
+        unsigned wsize = 1U << state->wbits;
+        state->window = (unsigned char *) ZALLOC(strm, wsize + INFFAST_CHUNKSIZE, sizeof(unsigned char));
+        if (state->window == Z_NULL)
+            return 1;
+        memset(state->window + wsize, 0, INFFAST_CHUNKSIZE);
+#else
         state->window = (unsigned char *) ZALLOC(strm, 1U << state->wbits, sizeof(unsigned char));
         if (state->window == NULL)
             return 1;
+#endif
     }
 
     /* if window not in use yet, initialize */
@@ -414,9 +424,9 @@ static int updatewindow(z_stream *strm, const unsigned char *end, uint32_t copy)
 /* check function to use adler32() for zlib or crc32() for gzip */
 #ifdef GUNZIP
 #  define UPDATE(check, buf, len) \
-    (state->flags ? crc32(check, buf, len) : adler32(check, buf, len))
+    (state->flags ? crc32(check, buf, len) : functable.adler32(check, buf, len))
 #else
-#  define UPDATE(check, buf, len) adler32(check, buf, len)
+#  define UPDATE(check, buf, len) functable.adler32(check, buf, len)
 #endif
 
 /* check macros for header crc */
@@ -662,7 +672,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
             }
             state->dmax = 1U << len;
             Tracev((stderr, "inflate:   zlib header ok\n"));
-            strm->adler = state->check = adler32(0L, NULL, 0);
+            strm->adler = state->check = functable.adler32(0L, NULL, 0);
             state->mode = hold & 0x200 ? DICTID : TYPE;
             INITBITS();
             break;
@@ -809,7 +819,7 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                 RESTORE();
                 return Z_NEED_DICT;
             }
-            strm->adler = state->check = adler32(0L, NULL, 0);
+            strm->adler = state->check = functable.adler32(0L, NULL, 0);
             state->mode = TYPE;
         case TYPE:
             if (flush == Z_BLOCK || flush == Z_TREES)
@@ -1141,17 +1151,27 @@ int ZEXPORT inflate(z_stream *strm, int flush) {
                 }
                 if (copy > state->length)
                     copy = state->length;
+                if (copy > left)
+                    copy = left;
+                left -= copy;
+                state->length -= copy;
+                if (copy >= sizeof(uint64_t))
+                    put = chunk_memcpy(put, from, copy);
+                else
+                    put = copy_bytes(put, from, copy);
             } else {                             /* copy from output */
-                from = put - state->offset;
+                unsigned offset = state->offset;
+                from = put - offset;
                 copy = state->length;
+                if (copy > left)
+                    copy = left;
+                left -= copy;
+                state->length -= copy;
+                if (copy >= sizeof(uint64_t))
+                    put = chunk_memset(put, from, offset, copy);
+                else
+                    put = set_bytes(put, from, offset, copy);
             }
-            if (copy > left)
-                copy = left;
-            left -= copy;
-            state->length -= copy;
-            do {
-                *put++ = *from++;
-            } while (--copy);
             if (state->length == 0)
                 state->mode = LEN;
             break;
@@ -1284,8 +1304,8 @@ int ZEXPORT inflateSetDictionary(z_stream *strm, const unsigned char *dictionary
 
     /* check for correct dictionary identifier */
     if (state->mode == DICT) {
-        dictid = adler32(0L, NULL, 0);
-        dictid = adler32(dictid, dictionary, dictLength);
+        dictid = functable.adler32(0L, NULL, 0);
+        dictid = functable.adler32(dictid, dictionary, dictLength);
         if (dictid != state->check)
             return Z_DATA_ERROR;
     }

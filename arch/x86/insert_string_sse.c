@@ -16,7 +16,7 @@
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
 #ifdef X86_SSE4_2_CRC_HASH
-Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count) {
+ZLIB_INTERNAL Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count) {
     Pos ret = 0;
     unsigned int idx;
     unsigned *ip, val, h;
@@ -42,9 +42,11 @@ Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count)
         if (s->head[h & s->hash_mask] != str+idx) {
             s->prev[(str+idx) & s->w_mask] = s->head[h & s->hash_mask];
             s->head[h & s->hash_mask] = str+idx;
+            if (idx == count-1) {
+                ret = s->prev[(str+idx) & s->w_mask];
+            }
         }
     }
-    ret = s->prev[(str+count-1) & s->w_mask];
     return ret;
 }
 #endif

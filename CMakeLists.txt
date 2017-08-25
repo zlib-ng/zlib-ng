@@ -40,7 +40,12 @@ check_include_file(stddef.h    HAVE_STDDEF_H)
 #
 # Options parsing
 #
-set(ARCH ${CMAKE_HOST_SYSTEM_PROCESSOR})
+if(CMAKE_OSX_ARCHITECTURES)
+    # if multiple architectures are requested (universal build), pick only the first
+    list(GET CMAKE_OSX_ARCHITECTURES 0 ARCH)
+else()
+    set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
+endif()
 message(STATUS "Architecture: ${ARCH}")
 
 option (ZLIB_COMPAT "Compile with zlib compatible API" OFF)
@@ -58,6 +63,10 @@ option(WITH_OPTIM "Build with optimisation" ON)
 option(WITH_NEW_STRATEGIES "Use new strategies" ON)
 option(WITH_NATIVE_INSTRUCTIONS
     "Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native)" OFF)
+if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
+    option(WITH_ACLE "Build with ACLE CRC" OFF)
+    option(WITH_NEON "Build with NEON intrinsics" OFF)
+endif()
 
 if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${CMAKE_C_COMPILER} MATCHES "icl")
     if(WITH_NATIVE_INSTRUCTIONS)
@@ -86,12 +95,16 @@ elseif(MSVC)
     if(NOT ${ARCH} MATCHES "AMD64")
         set(SSE2FLAG "/arch:SSE2")
     endif()
+    if("${ARCH}" MATCHES "arm")
+        add_definitions("-D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1")
+        set(NEONFLAG "/arch:VFPv4")
+    endif()
     if(WITH_NATIVE_INSTRUCTIONS)
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
     endif()
 else()
-    execute_process(COMMAND ${CMAKE_C_COMPILER} --version OUTPUT_VARIABLE COMPILER_VERSION)
-    if("${COMPILER_VERSION}" MATCHES "gcc" OR "${COMPILER_VERSION}" MATCHES "GCC" OR "${COMPILER_VERSION}" MATCHES "clang")
+    # catch all GNU C compilers as well as Clang and AppleClang
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         set(__GNUC__ ON)
     endif()
     if(WITH_NATIVE_INSTRUCTIONS)
@@ -99,6 +112,15 @@ else()
             set(NATIVEFLAG "-march=native")
         else()
             message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not implemented yet on this configuration")
+        endif()
+    endif()
+    if(__GNUC__ AND "${ARCH}" MATCHES "arm")
+        execute_process(COMMAND "${CC}" "-dumpmachine"
+                        OUTPUT_VARIABLE GCC_MACHINE)
+        if ("${GCC_MACHINE}" MATCHES "eabihf")
+            set(FLOATABI "-mfloat-abi=hard")
+        else()
+            set(FLOATABI "-mfloat-abi=softfp")
         endif()
     endif()
     if(NOT NATIVEFLAG)
@@ -117,10 +139,24 @@ else()
                 set(PCLMULFLAG "-mpclmul")
             endif()
         endif()
+        if("${ARCH}" MATCHES "arm")
+            set(ACLEFLAG "-march=armv8-a+crc")
+            set(NEONFLAG "${FLOATABI} -mfpu=neon")
+        elseif("${ARCH}" MATCHES "aarch64")
+            set(ACLEFLAG "-march=armv8-a+crc")
+            set(NEONFLAG "-march=armv8-a+crc+simd")
+        endif()
     else(NOT NATIVEFLAG)
         set(SSE2FLAG ${NATIVEFLAG})
         set(SSE4FLAG ${NATIVEFLAG})
         set(PCLMULFLAG ${NATIVEFLAG})
+        if("${ARCH}" MATCHES "arm")
+            set(ACLEFLAG "${NATIVEFLAG}")
+            set(NEONFLAG "${FLOATABI} -mfpu=neon")
+        elseif("${ARCH}" MATCHES "aarch64")
+            set(ACLEFLAG "${NATIVEFLAG}")
+            set(NEONFLAG "${NATIVEFLAG}")
+        endif()
     endif(NOT NATIVEFLAG)
 endif()
 
@@ -128,6 +164,10 @@ add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Provide a zlib-compatible API")
 add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile-related functions")
 add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
 add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
+if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
+    add_feature_info(WITH_ACLE WITH_ACLE "Build with ACLE CRC")
+    add_feature_info(WITH_NEON WITH_NEON "Build with NEON intrinsics")
+endif()
 
 #
 # Check to see if we have large file support
@@ -223,6 +263,16 @@ if(HAVE_BUILTIN_CTZL)
     add_definitions(-DHAVE_BUILTIN_CTZL)
 endif()
 
+# Macro to check if source compiles when cross-compiling
+# or runs when compiling natively
+macro(check_c_source_compile_or_run source flag)
+    if(CMAKE_CROSSCOMPILING)
+        check_c_source_compiles("${source}" ${flag})
+    else()
+        check_c_source_runs("${source}" ${flag})
+    endif()
+endmacro(check_c_source_compile_or_run)
+
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DZLIB_DEBUG")
 
 if(MSVC)
@@ -238,7 +288,7 @@ else()
     else()
         set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
     endif()
-    check_c_source_runs(
+    check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void)
         {
@@ -254,7 +304,7 @@ else()
         # use the generic SSE4 enabler option to check for the SSE4.2 instruction we require:
         set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
     endif()
-    check_c_source_runs(
+    check_c_source_compile_or_run(
         "int main(void)
         {
             unsigned val = 0, h = 0;
@@ -268,19 +318,24 @@ else()
     else()
         set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
     endif()
-    check_c_source_runs(
-        "#include <immintrin.h>
-        #include <wmmintrin.h>
-        int main(void)
-        {
-            __m128i a = _mm_setzero_si128();
-            __m128i b = _mm_setzero_si128();
-            __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-            (void)c;
-            return 0;
-        }"
-        HAVE_PCLMULQDQ_INTRIN
-    )
+    if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
+        # the pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
+        check_c_source_compile_or_run(
+            "#include <immintrin.h>
+            #include <wmmintrin.h>
+            int main(void)
+            {
+                __m128i a = _mm_setzero_si128();
+                __m128i b = _mm_setzero_si128();
+                __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+                (void)c;
+                return 0;
+            }"
+            HAVE_PCLMULQDQ_INTRIN
+        )
+    else()
+        set(HAVE_PCLMULQDQ_INTRIN NO)
+    endif()
 endif()
 
 #
@@ -318,42 +373,77 @@ if("${ARCH}" MATCHES "x86_64" OR "${ARCH}" MATCHES "AMD64")
 elseif("${ARCH}" MATCHES "arm")
     set(ARCHDIR "arch/arm")
     add_definitions(-DUNALIGNED_OK -DUNROLL_LESS)
+elseif("${ARCH}" MATCHES "aarch64")
+    set(ARCHDIR "arch/aarch64")
+    add_definitions(-DUNALIGNED_OK -DUNROLL_LESS)
 else()
     set(ARCHDIR "arch/x86")
     add_definitions(-DX86 -DUNALIGNED_OK -DUNROLL_LESS)
     add_feature_info(SSE2 1 "Support the SSE2 instruction set, using \"${SSE2FLAG}\"")
 endif()
-
-if("${ARCHDIR}" MATCHES "arch/x86" AND WITH_OPTIM)
-    add_definitions("-DX86_CPUID")
-    set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/x86.c)
-    if(HAVE_SSE42_INTRIN)
-        add_definitions(-DX86_SSE4_2_CRC_HASH)
-        set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
-        add_feature_info(SSE4_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set, using \"${SSE4FLAG}\"")
-        add_intrinsics_option(${SSE4FLAG})
-        if(WITH_NEW_STRATEGIES)
-            add_definitions(-DX86_QUICK_STRATEGY)
-            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/deflate_quick.c)
-            add_feature_info(SSE4DEFLATE 1 "Support SSE4.2-accelerated quick decompression")
+if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
+    set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/fill_window_arm.c)
+endif()
+if(WITH_OPTIM)
+    if("${ARCH}" MATCHES "arm")
+        if(WITH_ACLE)
+            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ACLEFLAG}")
+            add_definitions("-DARM_ACLE_CRC_HASH")
+            add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using \"${ACLEFLAG}\"")
         endif()
-    endif()
-    if(HAVE_SSE2_INTRIN)
-        add_definitions(-DX86_SSE2_FILL_WINDOW)
-        set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/fill_window_sse.c)
-        if(NOT ${ARCH} MATCHES "x86_64")
-            add_intrinsics_option(${SSE2FLAG})
+        if(WITH_NEON)
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NEONFLAG}")
+            if(MSVC)
+                add_definitions("-D__ARM_NEON__=1")
+            endif(MSVC)
+            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/adler32_neon.c)
+            add_feature_info(NEON_FILLWINDOW 1 "Support NEON instructions in fill_window_arm, using \"${NEONFLAG}\"")
         endif()
-    endif()
-    if(HAVE_PCLMULQDQ_INTRIN)
-        add_definitions(-DX86_PCLMULQDQ_CRC)
-        set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc_folding.c ${ARCHDIR}/crc_pclmulqdq.c)
-        add_intrinsics_option(${PCLMULFLAG})
+    elseif("${ARCH}" MATCHES "aarch64")
+        if(WITH_ACLE)
+            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
+            add_definitions("-DARM_ACLE_CRC_HASH")
+            add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using \"${ACLEFLAG}\"")
+        endif()
+        # We need to check WITH_NEON first
+        if(WITH_NEON)
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NEONFLAG}")
+            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/adler32_neon.c)
+            add_feature_info(NEON_FILLWINDOW 1 "Support NEON instructions in fill_window_arm, using \"${NEONFLAG}\"")
+        elseif(WITH_ACLE)
+            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ACLEFLAG}")
+        endif()
+    elseif("${ARCHDIR}" MATCHES "arch/x86")
+        add_definitions("-DX86_CPUID")
+        set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/x86.c)
         if(HAVE_SSE42_INTRIN)
-            add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG}\"")
-        else()
-            add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG} ${SSE4FLAG}\"")
-            add_intrinsics_option(${SSE4FLAG})
+            add_definitions(-DX86_SSE4_2_CRC_HASH)
+            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
+            add_feature_info(SSE4_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set, using \"${SSE4FLAG}\"")
+            add_intrinsics_option("${SSE4FLAG}")
+            if(WITH_NEW_STRATEGIES)
+                add_definitions(-DX86_QUICK_STRATEGY)
+                set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/deflate_quick.c)
+                add_feature_info(SSE4DEFLATE 1 "Support SSE4.2-accelerated quick decompression")
+            endif()
+        endif()
+        if(HAVE_SSE2_INTRIN)
+            add_definitions(-DX86_SSE2_FILL_WINDOW)
+            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/fill_window_sse.c)
+            if(NOT ${ARCH} MATCHES "x86_64")
+                add_intrinsics_option("${SSE2FLAG}")
+            endif()
+        endif()
+        if(HAVE_PCLMULQDQ_INTRIN)
+            add_definitions(-DX86_PCLMULQDQ_CRC)
+            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc_folding.c ${ARCHDIR}/crc_pclmulqdq.c)
+            add_intrinsics_option("${PCLMULFLAG}")
+            if(HAVE_SSE42_INTRIN)
+                add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG}\"")
+            else()
+                add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG} ${SSE4FLAG}\"")
+            endif()
         endif()
     endif()
 endif()
@@ -414,6 +504,7 @@ set(ZLIB_PUBLIC_HDRS
 set(ZLIB_PRIVATE_HDRS
     crc32.h
     deflate.h
+    functable.h
     gzguts.h
     inffast.h
     inffixed.h
@@ -430,6 +521,7 @@ set(ZLIB_SRCS
     deflate_fast.c
     deflate_medium.c
     deflate_slow.c
+    functable.c
     inflate.c
     infback.c
     inftrees.c

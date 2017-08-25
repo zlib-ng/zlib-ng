@@ -105,6 +105,9 @@ compat=0
 cover=0
 build32=0
 build64=0
+buildacle=0
+buildneon=0
+floatabi=
 native=0
 sse2flag="-msse2"
 sse4flag="-msse4"
@@ -145,6 +148,7 @@ case "$1" in
       echo '  configure [--zlib-compat] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
       echo '    [--static] [--32] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
       echo '    [--includedir=INCLUDEDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
+      echo '    [--acle] [--neon]' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=`echo $1 | sed 's/.*=//'`; shift ;;
     -e*=* | --eprefix=*) exec_prefix=`echo $1 | sed 's/.*=//'`; shift ;;
@@ -162,6 +166,8 @@ case "$1" in
     --cover) cover=1; shift ;;
     -3* | --32) build32=1; shift ;;
     -6* | --64) build64=1; shift ;;
+    --acle) buildacle=1; shift ;;
+    --neon) buildneon=1; shift ;;
     -n | --native) native=1; shift ;;
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
@@ -195,7 +201,7 @@ show()
 # check for gcc vs. cc and set compile and link flags based on the system identified by uname
 cat > $test.c <<EOF
 extern int getchar();
-int hello() {return getchar();}
+int main() {return getchar();}
 EOF
 
 test -z "$CC" && echo Checking for ${CROSS_PREFIX}gcc... | tee -a configure.log
@@ -225,20 +231,35 @@ show $cc -c $test.c
 if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   echo ... using gcc >> configure.log
   CC="$cc"
-# Re-check arch if gcc is a cross-compiler
+  # Re-check arch if gcc is a cross-compiler
   GCC_ARCH=`$CC -dumpmachine | sed 's/-.*//g'`
   case $GCC_ARCH in
     i386 | i486 | i586 | i686)
-# Honor user choice if gcc is multilib and 64-bit is requested 
+      # Honor user choice if gcc is multilib and 64-bit is requested
       if test $build64 -eq 1; then
         ARCH=x86_64
       else
-        ARCH=$GCC_ARCH 
+        ARCH=$GCC_ARCH
       fi ;;
-# Honor user choice if gcc is multilib and 32-bit is requested
     x86_64)
+      # Honor user choice if gcc is multilib and 32-bit is requested
       if test $build32 -ne 1; then
         ARCH=$GCC_ARCH
+      fi ;;
+    arm)
+      if test "${uname}" = "eabi"; then
+        uname=arm
+      fi
+      if test $buildacle -eq 1; then
+        if test $native -eq 0; then
+          ARCH=armv8-a+crc
+        else
+          ARCH=native
+        fi
+      fi ;;
+    aarch64)
+      if test "${uname}" = "elf"; then
+        uname=aarch64
       fi ;;
   esac
   CFLAGS="${CFLAGS--O3}"
@@ -253,7 +274,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
     SFLAGS="${SFLAGS} -march=native"
   fi
   if test "$warn" -eq 1; then
-    CFLAGS="${CFLAGS} -Wextra -pedantic"
+    CFLAGS="${CFLAGS} -Wextra -Wpedantic"
   fi
   if test $debug -eq 1; then
     CFLAGS="${CFLAGS} -DZLIB_DEBUG"
@@ -284,10 +305,10 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/zlib.map"
         LDSHAREDLIBC=""
         DEFFILE='win32/zlib.def'
-        RC='windres'
+        RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         RCOBJS='zlibrc.o'
-        STRIP='strip'
+        STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
   MSYS* | msys*)
         ARFLAGS="rcs"
@@ -303,10 +324,10 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB}"
         LDSHAREDLIBC=""
         DEFFILE='win32/zlib.def'
-        RC='windres'
+        RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         RCOBJS='zlibrc.o'
-        STRIP='strip'
+        STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
   MINGW* | mingw*)
         ARFLAGS="rcs"
@@ -323,7 +344,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHAREDFLAGS="-shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/zlib.map"
         LDSHAREDLIBC=""
         DEFFILE='win32/zlib.def'
-        RC='windres'
+        RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         if [ "$CC" == "mingw32-gcc" ]; then
           case $ARCH in
@@ -331,7 +352,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
           esac;
         fi
         RCOBJS='zlibrc.o'
-        STRIP='strip'
+        STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
   QNX*)  # This is for QNX6. I suppose that the QNX rule below is for QNX2,QNX4
          # (alain.bonnefoy@icbt.com)
@@ -362,6 +383,9 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
                  AR="/usr/bin/libtool"
              fi
              ARFLAGS="-o" ;;
+  aarch64)   LDSHARED=${LDSHARED-"$cc"}
+             LDSHAREDFLAGS="-shared -Wl,-soname,libz.so.1 -Wl,--version-script,${SRCDIR}/zlib.map"
+             LDSHAREDLIBC="-Wl,--start-group -lc -lrdimon -Wl,--end-group" ;;
   *)             LDSHARED=${LDSHARED-"$cc"}
                  LDSHAREDFLAGS="-shared" ;;
   esac
@@ -466,7 +490,7 @@ if test $shared -eq 1; then
   echo Checking for shared library support... | tee -a configure.log
   # we must test in two steps (cc then ld), required at least on SunOS 4.x
   if try $CC -w -c $SFLAGS $test.c &&
-     try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o; then
+     try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
     echo Building shared library $SHAREDTARGET with $CC. | tee -a configure.log
   elif test -z "$old_cc" -a -z "$old_cflags"; then
     echo No shared library support. | tee -a configure.log
@@ -531,7 +555,7 @@ int main(void) {
   return 0;
 }
 EOF
-  if try $CC $CFLAGS -o $test $test.c; then
+  if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
     echo "Checking for fseeko... Yes." | tee -a configure.log
   else
     CFLAGS="${CFLAGS} -DNO_FSEEKO"
@@ -548,7 +572,7 @@ cat > $test.c <<EOF
 #include <errno.h>
 int main() { return strlen(strerror(errno)); }
 EOF
-if try $CC $CFLAGS -o $test $test.c; then
+if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
   echo "Checking for strerror... Yes." | tee -a configure.log
 else
   CFLAGS="${CFLAGS} -DNO_STRERROR"
@@ -619,8 +643,7 @@ cat > $test.c <<EOF
 #include <stdio.h>
 #include <stdarg.h>
 #include "zconf.h"
-int main()
-{
+int main() {
 #ifdef STDC
   return 0;
 #endif
@@ -642,10 +665,7 @@ if test "$gcc" -eq 1; then
   cat > $test.c <<EOF
 #define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
 int ZLIB_INTERNAL foo;
-int main()
-{
-  return 0;
-}
+int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then
     CFLAGS="$CFLAGS -DHAVE_HIDDEN"
@@ -664,10 +684,7 @@ if test "$gcc" -eq 1; then
   cat > $test.c <<EOF
 #define ZLIB_INTERNAL __attribute__((visibility ("internal")))
 int ZLIB_INTERNAL foo;
-int main()
-{
-  return 0;
-}
+int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then
     CFLAGS="$CFLAGS -DHAVE_INTERNAL"
@@ -682,15 +699,14 @@ fi
 
 # Check for __builtin_ctzl() support in compiler
 cat > $test.c << EOF
-int main(void)
-{
+int main(void) {
     unsigned int zero = 0;
     long test = __builtin_ctzl(zero);
     (void)test;
     return 0;
 }
 EOF
-if try ${CC} ${CFLAGS} $test.c; then
+if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
     echo "Checking for __builtin_ctzl ... Yes." | tee -a configure.log
     CFLAGS="$CFLAGS -DHAVE_BUILTIN_CTZL"
     SFLAGS="$SFLAGS -DHAVE_BUILTIN_CTZL"
@@ -701,8 +717,7 @@ fi
 # Check for SSE2 intrinsics
 cat > $test.c << EOF
 #include <immintrin.h>
-int main(void)
-{
+int main(void) {
     __m128i zero = _mm_setzero_si128();
     (void)zero;
     return 0;
@@ -720,8 +735,7 @@ fi
 cat > $test.c << EOF
 #include <immintrin.h>
 #include <wmmintrin.h>
-int main(void)
-{
+int main(void) {
     __m128i a = _mm_setzero_si128();
     __m128i b = _mm_setzero_si128();
     __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
@@ -749,10 +763,9 @@ ARCH_SHARED_OBJS=''
 
 # Set ARCH specific FLAGS
 case "${ARCH}" in
-
     # x86 and x86_64 specific optimizations
     i386 | i486 | i586 | i686 | x86_64)
-	ARCHDIR=arch/x86
+	    ARCHDIR=arch/x86
 
         case "${ARCH}" in
             x86_64)
@@ -768,8 +781,8 @@ case "${ARCH}" in
         CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
         SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
 
-	# Enable arch-specific optimizations?
-	if test $without_optimizations -eq 0; then
+    	# Enable arch-specific optimizations?
+	    if test $without_optimizations -eq 0; then
             CFLAGS="${CFLAGS} -DX86_CPUID"
             SFLAGS="${SFLAGS} -DX86_CPUID"
 
@@ -808,8 +821,18 @@ case "${ARCH}" in
     ;;
 
     # ARM specific optimizations
-    armv3l | armv4b | armv4l | armv4tl | armv5tel | armv5tejl | armv6l | armv6hl | armv7l | armv7hl | armv7hnl)
-	ARCHDIR=arch/arm
+    arm | armv[3467]l | armv4b | armv4tl | armv5tel | armv5tejl | armv[67]hl | armv7hnl | armv[78]-a | armv8-a+* | armv8.[12]-a)
+        ARCHDIR=arch/arm
+        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
+        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
+
+        GCC_MACHINE=$(${CC} -dumpmachine)
+        case "${GCC_MACHINE}" in
+            *gnueabihf)
+                floatabi="-mfloat-abi=hard" ;;
+            *gnueabi)
+                floatabi="-mfloat-abi=softfp" ;;
+        esac
 
         case "${ARCH}" in
             armv6l | armv6hl)
@@ -818,8 +841,65 @@ case "${ARCH}" in
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
             ;;
+            arm | armv7* | armv8-a | armv8-a+simd)
+                CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+                SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+
+                if test $buildneon -eq 1; then
+                    CFLAGS="${CFLAGS} ${floatabi} -mfpu=neon"
+                    SFLAGS="${SFLAGS} ${floatabi} -mfpu=neon"
+
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+                fi
+            ;;
+            armv8-a+crc | armv8-a+crc+simd | armv8.[12]-a)
+                CFLAGS="-march=${ARCH} ${CFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
+                SFLAGS="-march=${ARCH} ${SFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
+
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+
+                if test $buildneon -eq 1; then
+                    CFLAGS="${CFLAGS} ${floatabi} -mfpu=neon"
+                    SFLAGS="${SFLAGS} ${floatabi} -mfpu=neon"
+
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+                fi
+            ;;
         esac
 
+    ;;
+    # 64-bit ARM specific optimizations
+    aarch64)
+        ARCHDIR=arch/aarch64
+        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
+        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
+
+        if test $native -eq 0; then
+          ARCH="armv8-a"
+        else
+          ARCH="native"
+        fi
+        if test $buildacle -eq 1; then
+           if test $native -eq 0; then
+             ARCH="${ARCH}+crc"
+           fi
+            CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
+            SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+        fi
+        if test $buildneon -eq 1; then
+            if test $native -eq 0; then
+                ARCH="${ARCH}+simd"
+            fi
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+        fi
+        CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+        SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
     ;;
 esac
 
