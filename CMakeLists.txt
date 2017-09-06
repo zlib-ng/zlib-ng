@@ -588,12 +588,21 @@ if(NOT CYGWIN)
     set_target_properties(zlib PROPERTIES VERSION ${ZLIB_FULL_VERSION})
 endif()
 
+
 if(UNIX)
-    # On unix-like platforms the library is almost always called libz
-   set_target_properties(zlib zlibstatic PROPERTIES OUTPUT_NAME z)
-   if(NOT APPLE)
-     set_target_properties(zlib PROPERTIES LINK_FLAGS "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib.map\"")
-   endif()
+    if (ZLIB_COMPAT)
+        # On unix-like platforms the library is almost always called libz
+        set_target_properties(zlib zlibstatic PROPERTIES OUTPUT_NAME z)
+    else()
+        set_target_properties(zlib zlibstatic PROPERTIES OUTPUT_NAME z-ng)
+    endif()
+    if(NOT APPLE)
+        if (NOT ZLIB_COMPAT)
+            set_target_properties(zlib PROPERTIES LINK_FLAGS "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib-ng.map\"")
+        else()
+            set_target_properties(zlib PROPERTIES LINK_FLAGS "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib.map\"")
+        endif()
+    endif()
 elseif(MSYS)
    # Suppress version number from shared library name
    set(CMAKE_SHARED_LIBRARY_NAME_WITH_VERSION 0)
