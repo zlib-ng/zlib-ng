@@ -22,17 +22,19 @@ CFLAGS=-O
 
 SFLAGS=-O
 LDFLAGS=-L.
-LIBNAME=libz
-TEST_LIBS=$(LIBNAME).a
+LIBNAME1=libz-ng
+LIBNAME2=zlib-ng
+TEST_LIBS=$(LIBNAME1).a
 LDSHARED=$(CC)
 LDSHAREDFLAGS=-shared
 
-STATICLIB=$(LIBNAME).a
-SHAREDLIB=$(LIBNAME).so
-SHAREDLIBV=$(LIBNAME).so.1.2.11
-SHAREDLIBM=$(LIBNAME).so.1
+STATICLIB=$(LIBNAME1).a
+SHAREDLIB=$(LIBNAME1).so
+SHAREDLIBV=$(LIBNAME1).so.1.2.11
+SHAREDLIBM=$(LIBNAME1).so.1
 IMPORTLIB=
-SHAREDTARGET=$(LIBNAME).so.1.2.11
+SHAREDTARGET=$(LIBNAME1).so.1.2.11
+PKGFILE=$(LIBNAME2).pc
 
 LIBS=$(STATICLIB) $(SHAREDTARGET)
 
@@ -229,9 +231,9 @@ install-libs: install-shared install-static
 	rm -f $(DESTDIR)$(man3dir)/zlib.3
 	cp $(SRCDIR)/zlib.3 $(DESTDIR)$(man3dir)
 	chmod 644 $(DESTDIR)$(man3dir)/zlib.3
-	rm -f $(DESTDIR)$(pkgconfigdir)/zlib.pc
-	cp zlib.pc $(DESTDIR)$(pkgconfigdir)
-	chmod 644 $(DESTDIR)$(pkgconfigdir)/zlib.pc
+	rm -f $(DESTDIR)$(pkgconfigdir)/$(PKGFILE)
+	cp $(PKGFILE) $(DESTDIR)$(pkgconfigdir)
+	chmod 644 $(DESTDIR)$(pkgconfigdir)/$(PKGFILE)
 
 install: install-libs
 	-@if [ ! -d $(DESTDIR)$(includedir)   ]; then mkdir -p $(DESTDIR)$(includedir); fi

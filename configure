@@ -50,12 +50,6 @@ esac
 # destination name for windows import library
 IMPORTLIB=
 
-# extract zlib version numbers from zlib.h
-VER=`sed -n -e '/ZLIB_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib.h`
-VER3=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib.h`
-VER2=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
-VER1=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
-
 # establish commands for library building
 if "${CROSS_PREFIX}ar" --version >/dev/null 2>/dev/null || test $? -lt 126; then
     AR=${AR-"${CROSS_PREFIX}ar"}
@@ -227,14 +221,29 @@ fi
 # Set library name depending on zlib-compat option
 if test $compat -eq 0; then
   LIBNAME=libz-ng
-  STATICLIB=libz-ng.a
-  MAPNAME=zlib-ng.map
+  LIBNAME2=zlib-ng
+  SUFFIX=-ng
 else
   LIBNAME=libz
-  STATICLIB=libz.a
-  MAPNAME=zlib.map
+  LIBNAME2=zlib
+  SUFFIX=""
 fi
 
+STATICLIB=${LIBNAME}.a
+MAPNAME=$LIBNAME2.map
+
+# extract zlib version numbers from zlib.h
+if test $compat -eq 0; then
+  VER=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib.h`
+  VER3=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib.h`
+  VER2=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
+  VER1=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
+else
+  VER=`sed -n -e '/ZLIB_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib.h`
+  VER3=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib.h`
+  VER2=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
+  VER1=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
+fi
 
 show $cc -c $test.c
 if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
@@ -986,7 +995,8 @@ sed < $SRCDIR/Makefile.in "
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
 /^LDSHAREDFLAGS *=/s#=.*#=$LDSHAREDFLAGS#
-/^LIBNAME *=/s#=.*#=$LIBNAME#
+/^LIBNAME1 *=/s#=.*#=$LIBNAME#
+/^LIBNAME2 *=/s#=.*#=$LIBNAME2#
 /^STATICLIB *=/s#=.*#=$STATICLIB#
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#
@@ -1086,7 +1096,8 @@ sed < $SRCDIR/zlib.pc.in "
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 " | sed -e "
 s/\@VERSION\@/$VER/g;
-" > zlib.pc
+s/\@SUFFIX\@/$SUFFIX/g;
+" > ${LIBNAME2}.pc
 
 # done
 leave 0
