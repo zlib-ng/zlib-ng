@@ -1003,6 +1003,8 @@ sed < $SRCDIR/Makefile.in "
 /^SHAREDLIBM *=/s#=.*#=$SHAREDLIBM#
 /^SHAREDTARGET *=/s#=.*#=$SHAREDTARGET#
 /^IMPORTLIB *=/s#=.*#=$IMPORTLIB#
+/^VER *=/s#=.*#=$VER#
+/^VER1 *=/s#=.*#=$VER1#
 /^AR *=/s#=.*#=$AR#
 /^ARFLAGS *=/s#=.*#=$ARFLAGS#
 /^RANLIB *=/s#=.*#=$RANLIB#
