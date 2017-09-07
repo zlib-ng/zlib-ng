@@ -276,6 +276,7 @@ clean:
 	rm -rf objs
 	rm -f *.gcda *.gcno *.gcov
 	rm -f a.out a.exe
+	rm -f *.pc
 
 maintainer-clean: distclean
 distclean: clean
