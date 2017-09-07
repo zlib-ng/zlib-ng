@@ -52,6 +52,13 @@ option (ZLIB_COMPAT "Compile with zlib compatible API" OFF)
 if (ZLIB_COMPAT)
     add_definitions(-DZLIB_COMPAT)
     set (WITH_GZFILEOP ON)
+    set (LIBNAME1 libz)
+    set (LIBNAME2 zlib)
+    set (SUFFIX "")
+else(ZLIB_COMPAT)
+    set (LIBNAME1 libz-ng)
+    set (LIBNAME2 zlib-ng)
+    set (SUFFIX -ng)
 endif (ZLIB_COMPAT)
 
 option (WITH_GZFILEOP "Compile with support for gzFile related functions" OFF)
@@ -485,7 +492,7 @@ if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     endif()
 endif()
 
-set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/zlib.pc)
+set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME2}.pc)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
 		${ZLIB_PC} @ONLY)
 configure_file(	${CMAKE_CURRENT_BINARY_DIR}/zconf.h.cmakein
@@ -590,18 +597,10 @@ endif()
 
 
 if(UNIX)
-    if (ZLIB_COMPAT)
-        # On unix-like platforms the library is almost always called libz
-        set_target_properties(zlib zlibstatic PROPERTIES OUTPUT_NAME z)
-    else()
-        set_target_properties(zlib zlibstatic PROPERTIES OUTPUT_NAME z-ng)
-    endif()
+    # On unix-like platforms the library is almost always called libz
+    set_target_properties(zlib zlibstatic PROPERTIES OUTPUT_NAME z${SUFFIX})
     if(NOT APPLE)
-        if (NOT ZLIB_COMPAT)
-            set_target_properties(zlib PROPERTIES LINK_FLAGS "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib-ng.map\"")
-        else()
-            set_target_properties(zlib PROPERTIES LINK_FLAGS "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib.map\"")
-        endif()
+        set_target_properties(zlib PROPERTIES LINK_FLAGS "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/${LIBNAME2}.map\"")
     endif()
 elseif(MSYS)
    # Suppress version number from shared library name

@@ -4,10 +4,10 @@ libdir=@libdir@
 sharedlibdir=@sharedlibdir@
 includedir=@includedir@
 
-Name: zlib
-Description: zlib compression library
+Name: zlib@SUFFIX@
+Description: zlib-ng compression library
 Version: @VERSION@
 
 Requires:
-Libs: -L${libdir} -L${sharedlibdir} -lz
+Libs: -L${libdir} -L${sharedlibdir} -lz@SUFFIX@
 Cflags: -I${includedir}
