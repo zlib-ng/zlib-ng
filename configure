@@ -997,6 +997,7 @@ sed < $SRCDIR/Makefile.in "
 /^LDSHAREDFLAGS *=/s#=.*#=$LDSHAREDFLAGS#
 /^LIBNAME1 *=/s#=.*#=$LIBNAME#
 /^LIBNAME2 *=/s#=.*#=$LIBNAME2#
+/^SUFFIX *=/s#=.*#=$SUFFIX#
 /^STATICLIB *=/s#=.*#=$STATICLIB#
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#
