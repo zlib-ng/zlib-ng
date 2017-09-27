@@ -200,7 +200,7 @@ ifneq ($(SHAREDTARGET),)
 	-@if [ ! -d $(DESTDIR)$(sharedlibdir) ]; then mkdir -p $(DESTDIR)$(sharedlibdir); fi
 	rm -f $(DESTDIR)$(sharedlibdir)/$(SHAREDTARGET)
 	cp $(SHAREDTARGET) $(DESTDIR)$(sharedlibdir)
-	chmod 644 $(DESTDIR)$(sharedlibdir)/$(SHAREDTARGET)
+	chmod 755 $(DESTDIR)$(sharedlibdir)/$(SHAREDTARGET)
 ifneq ($(SHAREDLIB),$(SHAREDTARGET))
 	rm -f $(DESTDIR)$(sharedlibdir)/$(SHAREDLIB) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIBM)
 	ln -s $(SHAREDLIBV) $(DESTDIR)$(sharedlibdir)/$(SHAREDLIB)
