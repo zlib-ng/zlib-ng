@@ -104,6 +104,7 @@ with_fuzzers=0
 floatabi=
 native=0
 sse2flag="-msse2"
+ssse3flag="-mssse3"
 sse4flag="-msse4"
 sse42flag="-msse4.2"
 pclmulflag="-mpclmul"
@@ -884,6 +885,25 @@ EOF
         ;;
 esac
 
+# Check for SSSE3 intrinsics.
+case "${ARCH}" in
+    i386 | i486 | i586 | i686 | x86_64)
+        echo -n "Checking for SSSE3 intrinsics... "
+        cat > $test.c << EOF
+#include <immintrin.h>
+__m128i fun(__m128i a, __m128i b) { return _mm_maddubs_epi16(a, b); }
+int main() { return 0; }
+EOF
+        if try ${CC} ${CFLAGS} ${ssse3flag} $test.c; then
+            echo "Yes." | tee -a configure.log
+            HAVE_SSSE3_INTRIN=1
+        else
+            echo "No." | tee -a configure.log
+            HAVE_SSSE3_INTRIN=0
+        fi
+        ;;
+esac
+
 # Check for SSE4.2 CRC intrinsics
 case "${ARCH}" in
     i386 | i486 | i586 | i686 | x86_64)
@@ -990,6 +1010,13 @@ case "${ARCH}" in
                 fi
             fi
 
+            if test ${HAVE_SSSE3_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSSE3_ADLER32"
+                SFLAGS="${SFLAGS} -DX86_SSSE3_ADLER32"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_ssse3.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_ssse3.lo"
+            fi
+
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_INTRIN"
                 SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_INTRIN"
@@ -1024,6 +1051,13 @@ case "${ARCH}" in
 
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o fill_window_sse.o insert_string_sse.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo fill_window_sse.lo insert_string_sse.lo"
+
+            if test ${HAVE_SSSE3_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSSE3_ADLER32"
+                SFLAGS="${SFLAGS} -DX86_SSSE3_ADLER32"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_ssse3.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_ssse3.lo"
+            fi
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_INTRIN"
@@ -1241,6 +1275,7 @@ echo prefix = $prefix >> configure.log
 echo sharedlibdir = $sharedlibdir >> configure.log
 echo uname = $uname >> configure.log
 echo sse2flag = $sse2flag >> configure.log
+echo ssse3flag = $ssse3flag >> configure.log
 echo sse4flag = $sse4flag >> configure.log
 echo pclmulflag = $pclmulflag >> configure.log
 echo ARCHDIR = ${ARCHDIR} >> configure.log
@@ -1318,6 +1353,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^TOPDIR *=/s#=.*#=$BUILDDIR#
 /^SSE2FLAG *=/s#=.*#=$sse2flag#
+/^SSSE3FLAG *=/s#=.*#=$ssse3flag#
 /^SSE4FLAG *=/s#=.*#=$sse4flag#
 /^PCLMULFLAG *=/s#=.*#=$pclmulflag#
 " > $ARCHDIR/Makefile

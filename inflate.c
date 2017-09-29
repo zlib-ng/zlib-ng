@@ -124,7 +124,7 @@ int ZEXPORT PREFIX(inflateResetKeep)(PREFIX3(stream) *strm) {
     if (state->wrap)        /* to support ill-conceived Java test suite */
         strm->adler = state->wrap & 1;
     state->mode = HEAD;
-    state->check = functable.adler32(0L, NULL, 0);
+    state->check = adler32_c(0L, NULL, 0);
     state->last = 0;
     state->havedict = 0;
     state->dmax = 32768U;
@@ -426,9 +426,9 @@ static int updatewindow(PREFIX3(stream) *strm, const unsigned char *end, uint32_
 /* check function to use adler32() for zlib or crc32() for gzip */
 #ifdef GUNZIP
 #  define UPDATE(check, buf, len) \
-    (state->flags ? PREFIX(crc32)(check, buf, len) : functable.adler32(check, buf, len))
+    (state->flags ? PREFIX(crc32)(check, buf, len) : adler32_c(check, buf, len))
 #else
-#  define UPDATE(check, buf, len) functable.adler32(check, buf, len)
+#  define UPDATE(check, buf, len) adler32_c(check, buf, len)
 #endif
 
 /* check macros for header crc */
@@ -674,7 +674,7 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
             }
             state->dmax = 1U << len;
             Tracev((stderr, "inflate:   zlib header ok\n"));
-            strm->adler = state->check = functable.adler32(0L, NULL, 0);
+            strm->adler = state->check = adler32_c(0L, NULL, 0);
             state->mode = hold & 0x200 ? DICTID : TYPE;
             INITBITS();
             break;
@@ -821,7 +821,7 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
                 RESTORE();
                 return Z_NEED_DICT;
             }
-            strm->adler = state->check = functable.adler32(0L, NULL, 0);
+            strm->adler = state->check = adler32_c(0L, NULL, 0);
             state->mode = TYPE;
         case TYPE:
             if (flush == Z_BLOCK || flush == Z_TREES)
@@ -1309,8 +1309,8 @@ int ZEXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const unsigned c
 
     /* check for correct dictionary identifier */
     if (state->mode == DICT) {
-        dictid = functable.adler32(0L, NULL, 0);
-        dictid = functable.adler32(dictid, dictionary, dictLength);
+        dictid = adler32_c(0L, NULL, 0);
+        dictid = adler32_c(dictid, dictionary, dictLength);
         if (dictid != state->check)
             return Z_DATA_ERROR;
     }
