@@ -389,7 +389,7 @@ int ZEXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list va) {
         strm->avail_in = state->size;
         if (gz_comp(state, Z_NO_FLUSH) == -1)
             return state->err;
-        memcpy(state->in, state->in + state->size, left);
+        memmove(state->in, state->in + state->size, left);
         strm->next_in = state->in;
         strm->avail_in = left;
     }
