@@ -462,7 +462,7 @@ int ZEXPORT deflateResetKeep(z_stream *strm) {
 #ifdef GZIP
         s->wrap == 2 ? GZIP_STATE :
 #endif
-        s->wrap ? INIT_STATE : BUSY_STATE;
+        INIT_STATE;
 
 #ifdef GZIP
     if (s->wrap == 2)
@@ -756,6 +756,8 @@ int ZEXPORT deflate(z_stream *strm, int flush) {
     }
 
     /* Write the header */
+    if (s->status == INIT_STATE && s->wrap == 0)
+        s->status = BUSY_STATE;
     if (s->status == INIT_STATE) {
         /* zlib header */
         unsigned int header = (Z_DEFLATED + ((s->w_bits-8)<<4)) << 8;
