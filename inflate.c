@@ -483,7 +483,7 @@ static int updatewindow(z_stream *strm, const unsigned char *end, uint32_t copy)
     do { \
         if (have == 0) goto inf_leave; \
         have--; \
-        hold += (*next++ << bits); \
+        hold += ((unsigned)(*next++) << bits); \
         bits += 8; \
     } while (0)
 
