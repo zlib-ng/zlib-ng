@@ -145,7 +145,7 @@ static int  build_bl_tree    (deflate_state *s);
 static void send_all_trees   (deflate_state *s, int lcodes, int dcodes, int blcodes);
 static void compress_block   (deflate_state *s, const ct_data *ltree, const ct_data *dtree);
 static int  detect_data_type (deflate_state *s);
-static unsigned bi_reverse   (unsigned value, int length);
+static unsigned bi_reverse   (unsigned code, int len);
 static void bi_flush         (deflate_state *s);
 
 #ifdef GEN_TREES_H
