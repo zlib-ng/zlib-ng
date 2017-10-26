@@ -208,17 +208,17 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
 }
 
 /* -- see zlib.h -- */
-gzFile ZEXPORT gzopen(const char *path, const char *mode) {
+gzFile ZEXPORT PREFIX(gzopen)(const char *path, const char *mode) {
     return gz_open(path, -1, mode);
 }
 
 /* -- see zlib.h -- */
-gzFile ZEXPORT gzopen64(const char *path, const char *mode) {
+gzFile ZEXPORT PREFIX(gzopen64)(const char *path, const char *mode) {
     return gz_open(path, -1, mode);
 }
 
 /* -- see zlib.h -- */
-gzFile ZEXPORT gzdopen(int fd, const char *mode) {
+gzFile ZEXPORT PREFIX(gzdopen)(int fd, const char *mode) {
     char *path;         /* identifier for error messages */
     gzFile gz;
 
@@ -232,13 +232,13 @@ gzFile ZEXPORT gzdopen(int fd, const char *mode) {
 
 /* -- see zlib.h -- */
 #ifdef WIDECHAR
-gzFile ZEXPORT gzopen_w(const wchar_t *path, const char *mode) {
+gzFile ZEXPORT PREFIX(gzopen_w)(const wchar_t *path, const char *mode) {
     return gz_open(path, -2, mode);
 }
 #endif
 
 /* -- see zlib.h -- */
-int ZEXPORT gzbuffer(gzFile file, unsigned size) {
+int ZEXPORT PREFIX(gzbuffer)(gzFile file, unsigned size) {
     gz_state *state;
 
     /* get internal structure and check integrity */
@@ -262,7 +262,7 @@ int ZEXPORT gzbuffer(gzFile file, unsigned size) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzrewind(gzFile file) {
+int ZEXPORT PREFIX(gzrewind)(gzFile file) {
     gz_state *state;
 
     /* get internal structure */
@@ -282,7 +282,7 @@ int ZEXPORT gzrewind(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-z_off64_t ZEXPORT gzseek64(gzFile file, z_off64_t offset, int whence) {
+z_off64_t ZEXPORT PREFIX(gzseek64)(gzFile file, z_off64_t offset, int whence) {
     unsigned n;
     z_off64_t ret;
     gz_state *state;
@@ -353,7 +353,7 @@ z_off64_t ZEXPORT gzseek64(gzFile file, z_off64_t offset, int whence) {
 }
 
 /* -- see zlib.h -- */
-z_off_t ZEXPORT gzseek(gzFile file, z_off_t offset, int whence) {
+z_off_t ZEXPORT PREFIX(gzseek)(gzFile file, z_off_t offset, int whence) {
     z_off64_t ret;
 
     ret = gzseek64(file, (z_off64_t)offset, whence);
@@ -361,7 +361,7 @@ z_off_t ZEXPORT gzseek(gzFile file, z_off_t offset, int whence) {
 }
 
 /* -- see zlib.h -- */
-z_off64_t ZEXPORT gztell64(gzFile file) {
+z_off64_t ZEXPORT PREFIX(gztell64)(gzFile file) {
     gz_state *state;
 
     /* get internal structure and check integrity */
@@ -376,7 +376,7 @@ z_off64_t ZEXPORT gztell64(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-z_off_t ZEXPORT gztell(gzFile file) {
+z_off_t ZEXPORT PREFIX(gztell)(gzFile file) {
     z_off64_t ret;
 
     ret = gztell64(file);
@@ -384,7 +384,7 @@ z_off_t ZEXPORT gztell(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-z_off64_t ZEXPORT gzoffset64(gzFile file) {
+z_off64_t ZEXPORT PREFIX(gzoffset64)(gzFile file) {
     z_off64_t offset;
     gz_state *state;
 
@@ -405,7 +405,7 @@ z_off64_t ZEXPORT gzoffset64(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-z_off_t ZEXPORT gzoffset(gzFile file) {
+z_off_t ZEXPORT PREFIX(gzoffset)(gzFile file) {
     z_off64_t ret;
 
     ret = gzoffset64(file);
@@ -413,7 +413,7 @@ z_off_t ZEXPORT gzoffset(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzeof(gzFile file) {
+int ZEXPORT PREFIX(gzeof)(gzFile file) {
     gz_state *state;
 
     /* get internal structure and check integrity */
@@ -428,7 +428,7 @@ int ZEXPORT gzeof(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-const char * ZEXPORT gzerror(gzFile file, int *errnum) {
+const char * ZEXPORT PREFIX(gzerror)(gzFile file, int *errnum) {
     gz_state *state;
 
     /* get internal structure and check integrity */
@@ -445,7 +445,7 @@ const char * ZEXPORT gzerror(gzFile file, int *errnum) {
 }
 
 /* -- see zlib.h -- */
-void ZEXPORT gzclearerr(gzFile file) {
+void ZEXPORT PREFIX(gzclearerr)(gzFile file) {
     gz_state *state;
 
     /* get internal structure and check integrity */

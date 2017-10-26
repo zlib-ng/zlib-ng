@@ -342,7 +342,7 @@ static size_t gz_read(gz_state *state, void *buf, size_t len) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzread(gzFile file, void *buf, unsigned len) {
+int ZEXPORT PREFIX(gzread)(gzFile file, void *buf, unsigned len) {
     gz_state *state;
 
     /* get internal structure */
@@ -374,7 +374,7 @@ int ZEXPORT gzread(gzFile file, void *buf, unsigned len) {
 }
 
 /* -- see zlib.h -- */
-size_t ZEXPORT gzfread(void *buf, size_t size, size_t nitems, gzFile file) {
+size_t ZEXPORT PREFIX(gzfread)(void *buf, size_t size, size_t nitems, gzFile file) {
     size_t len;
     gz_state *state;
 
@@ -405,7 +405,7 @@ size_t ZEXPORT gzfread(void *buf, size_t size, size_t nitems, gzFile file) {
 
 /* -- see zlib.h -- */
 #undef gzgetc
-int ZEXPORT gzgetc(gzFile file) {
+int ZEXPORT PREFIX(gzgetc)(gzFile file) {
     int ret;
     unsigned char buf[1];
     gz_state *state;
@@ -431,12 +431,12 @@ int ZEXPORT gzgetc(gzFile file) {
     return ret < 1 ? -1 : buf[0];
 }
 
-int ZEXPORT gzgetc_(gzFile file) {
+int ZEXPORT PREFIX(gzgetc_)(gzFile file) {
     return gzgetc(file);
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzungetc(int c, gzFile file) {
+int ZEXPORT PREFIX(gzungetc)(int c, gzFile file) {
     gz_state *state;
 
     /* get internal structure */
@@ -492,7 +492,7 @@ int ZEXPORT gzungetc(int c, gzFile file) {
 }
 
 /* -- see zlib.h -- */
-char * ZEXPORT gzgets(gzFile file, char *buf, int len) {
+char * ZEXPORT PREFIX(gzgets)(gzFile file, char *buf, int len) {
     unsigned left, n;
     char *str;
     unsigned char *eol;
@@ -551,7 +551,7 @@ char * ZEXPORT gzgets(gzFile file, char *buf, int len) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzdirect(gzFile file) {
+int ZEXPORT PREFIX(gzdirect)(gzFile file) {
     gz_state *state;
 
     /* get internal structure */
@@ -570,7 +570,7 @@ int ZEXPORT gzdirect(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzclose_r(gzFile file) {
+int ZEXPORT PREFIX(gzclose_r)(gzFile file) {
     int ret, err;
     gz_state *state;
 

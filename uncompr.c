@@ -24,7 +24,7 @@
    Z_DATA_ERROR if the input data was corrupted, including if the input data is
    an incomplete zlib stream.
 */
-int ZEXPORT uncompress2(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t *sourceLen) {
+int ZEXPORT PREFIX(uncompress2)(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t *sourceLen) {
     z_stream stream;
     int err;
     const unsigned int max = (unsigned int)-1;
@@ -78,7 +78,7 @@ int ZEXPORT uncompress2(unsigned char *dest, size_t *destLen, const unsigned cha
            err;
 }
 
-int ZEXPORT uncompress(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen)
+int ZEXPORT PREFIX(uncompress)(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen)
 {
     return uncompress2(dest, destLen, source, &sourceLen);
 }

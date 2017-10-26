@@ -6,7 +6,11 @@
 /* @(#) $Id$ */
 
 #define ZLIB_INTERNAL
-#include "zlib.h"
+#if defined(ZLIB_COMPAT)
+# include "zlib.h"
+#else
+# include "zlib-ng.h"
+#endif
 
 /* ===========================================================================
      Compresses the source buffer into the destination buffer. The level
@@ -19,7 +23,7 @@
    memory, Z_BUF_ERROR if there was not enough room in the output buffer,
    Z_STREAM_ERROR if the level parameter is invalid.
 */
-int ZEXPORT compress2(unsigned char *dest, size_t *destLen, const unsigned char *source,
+int ZEXPORT PREFIX(compress2)(unsigned char *dest, size_t *destLen, const unsigned char *source,
                         size_t sourceLen, int level) {
     z_stream stream;
     int err;
@@ -61,14 +65,14 @@ int ZEXPORT compress2(unsigned char *dest, size_t *destLen, const unsigned char 
 
 /* ===========================================================================
  */
-int ZEXPORT compress(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen) {
-    return compress2(dest, destLen, source, sourceLen, Z_DEFAULT_COMPRESSION);
+int ZEXPORT PREFIX(compress)(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen) {
+    return PREFIX(compress2)(dest, destLen, source, sourceLen, Z_DEFAULT_COMPRESSION);
 }
 
 /* ===========================================================================
    If the default memLevel or windowBits for deflateInit() is changed, then
    this function needs to be updated.
  */
-size_t ZEXPORT compressBound(size_t sourceLen) {
+size_t ZEXPORT PREFIX(compressBound)(size_t sourceLen) {
     return sourceLen + (sourceLen >> 12) + (sourceLen >> 14) + (sourceLen >> 25) + 13;
 }
