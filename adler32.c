@@ -144,12 +144,12 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
     return adler | (sum2 << 16);
 }
 
-uint32_t ZEXPORT adler32_z(uint32_t adler, const unsigned char *buf, size_t len) {
+uint32_t ZEXPORT PREFIX(adler32_z)(uint32_t adler, const unsigned char *buf, size_t len) {
     return functable.adler32(adler, buf, len);
 }
 
 /* ========================================================================= */
-uint32_t ZEXPORT adler32(uint32_t adler, const unsigned char *buf, uint32_t len) {
+uint32_t ZEXPORT PREFIX(adler32)(uint32_t adler, const unsigned char *buf, uint32_t len) {
     return functable.adler32(adler, buf, len);
 }
 
@@ -179,10 +179,10 @@ static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len
 }
 
 /* ========================================================================= */
-uint32_t ZEXPORT adler32_combine(uint32_t adler1, uint32_t adler2, z_off_t len2) {
+uint32_t ZEXPORT PREFIX(adler32_combine)(uint32_t adler1, uint32_t adler2, z_off_t len2) {
     return adler32_combine_(adler1, adler2, len2);
 }
 
-uint32_t ZEXPORT adler32_combine64(uint32_t adler1, uint32_t adler2, z_off64_t len2) {
+uint32_t ZEXPORT PREFIX(adler32_combine64)(uint32_t adler1, uint32_t adler2, z_off64_t len2) {
     return adler32_combine_(adler1, adler2, len2);
 }
