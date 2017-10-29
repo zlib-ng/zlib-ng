@@ -6,6 +6,7 @@ CC=
 CFLAGS=
 SFLAGS=
 INCLUDES=
+SUFFIX=
 
 SRCDIR=.
 SRCTOP=../..
@@ -55,12 +56,12 @@ depend:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 adler32_neon.o: $(SRCDIR)/adler32_neon.h
-crc32_acle.o: $(TOPDIR)/zconf.h
-fill_window_arm.o: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/functable.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
-insert_string_acle.o: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
+crc32_acle.o: $(TOPDIR)/zconf$(SUFFIX).h
+fill_window_arm.o: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/functable.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
+insert_string_acle.o: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
 
 adler32_neon.lo: $(SRCDIR)/adler32_neon.h
-crc32_acle.lo: $(TOPDIR)/zconf.h
-fill_window_arm.lo: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/functable.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
-insert_string_acle.lo: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib.h $(TOPDIR)/zconf.h
+crc32_acle.lo: $(TOPDIR)/zconf$(SUFFIX).h
+fill_window_arm.lo: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/functable.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
+insert_string_acle.lo: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
 

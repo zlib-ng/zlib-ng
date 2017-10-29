@@ -98,7 +98,7 @@ static int gz_look(gz_state *state) {
         state->strm.opaque = NULL;
         state->strm.avail_in = 0;
         state->strm.next_in = NULL;
-        if (inflateInit2(&(state->strm), 15 + 16) != Z_OK) {    /* gunzip */
+        if (PREFIX(inflateInit2)(&(state->strm), 15 + 16) != Z_OK) {    /* gunzip */
             free(state->out);
             free(state->in);
             state->size = 0;
@@ -124,7 +124,7 @@ static int gz_look(gz_state *state) {
        single byte is sufficient indication that it is not a gzip file) */
     if (strm->avail_in > 1 &&
             strm->next_in[0] == 31 && strm->next_in[1] == 139) {
-        inflateReset(strm);
+        PREFIX(inflateReset)(strm);
         state->how = GZIP;
         state->direct = 0;
         return 0;
@@ -175,7 +175,7 @@ static int gz_decomp(gz_state *state) {
         }
 
         /* decompress and handle errors */
-        ret = inflate(strm, Z_NO_FLUSH);
+        ret = PREFIX(inflate)(strm, Z_NO_FLUSH);
         if (ret == Z_STREAM_ERROR || ret == Z_NEED_DICT) {
             gz_error(state, Z_STREAM_ERROR, "internal error: inflate stream corrupt");
             return -1;
@@ -432,7 +432,7 @@ int ZEXPORT PREFIX(gzgetc)(gzFile file) {
 }
 
 int ZEXPORT PREFIX(gzgetc_)(gzFile file) {
-    return gzgetc(file);
+    return PREFIX(gzgetc)(file);
 }
 
 /* -- see zlib.h -- */
@@ -586,7 +586,7 @@ int ZEXPORT PREFIX(gzclose_r)(gzFile file) {
 
     /* free memory and close file */
     if (state->size) {
-        inflateEnd(&(state->strm));
+        PREFIX(inflateEnd)(&(state->strm));
         free(state->out);
         free(state->in);
     }

@@ -40,7 +40,7 @@ static int gz_init(gz_state *state) {
         strm->zalloc = NULL;
         strm->zfree = NULL;
         strm->opaque = NULL;
-        ret = deflateInit2(strm, state->level, Z_DEFLATED, MAX_WBITS + 16, DEF_MEM_LEVEL, state->strategy);
+        ret = PREFIX(deflateInit2)(strm, state->level, Z_DEFLATED, MAX_WBITS + 16, DEF_MEM_LEVEL, state->strategy);
         if (ret != Z_OK) {
             free(state->out);
             free(state->in);
@@ -110,7 +110,7 @@ static int gz_comp(gz_state *state, int flush) {
 
         /* compress */
         have = strm->avail_out;
-        ret = deflate(strm, flush);
+        ret = PREFIX(deflate)(strm, flush);
         if (ret == Z_STREAM_ERROR) {
             gz_error(state, Z_STREAM_ERROR, "internal error: deflate stream corrupt");
             return -1;
@@ -120,7 +120,7 @@ static int gz_comp(gz_state *state, int flush) {
 
     /* if that completed a deflate stream, allow another to start */
     if (flush == Z_FINISH)
-        deflateReset(strm);
+        PREFIX(deflateReset)(strm);
 
     /* all done, no errors */
     return 0;
@@ -400,7 +400,7 @@ int ZEXPORTVA PREFIX(gzprintf)(gzFile file, const char *format, ...) {
     int ret;
 
     va_start(va, format);
-    ret = gzvprintf(file, format, va);
+    ret = PREFIX(gzvprintf)(file, format, va);
     va_end(va);
     return ret;
 }
@@ -465,7 +465,7 @@ int ZEXPORT PREFIX(gzsetparams)(gzFile file, int level, int strategy) {
         /* flush previous input with previous parameters before changing */
         if (strm->avail_in && gz_comp(state, Z_BLOCK) == -1)
             return state->err;
-        deflateParams(strm, level, strategy);
+        PREFIX(deflateParams)(strm, level, strategy);
     }
     state->level = level;
     state->strategy = strategy;
@@ -498,7 +498,7 @@ int ZEXPORT PREFIX(gzclose_w)(gzFile file) {
         ret = state->err;
     if (state->size) {
         if (!state->direct) {
-            (void)deflateEnd(&(state->strm));
+            (void)PREFIX(deflateEnd)(&(state->strm));
             free(state->out);
         }
         free(state->in);

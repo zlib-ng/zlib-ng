@@ -16,8 +16,8 @@ int ZEXPORT PREFIX(gzclose)(gzFile file) {
         return Z_STREAM_ERROR;
     state = (gz_state *)file;
 
-    return state->mode == GZ_READ ? gzclose_r(file) : gzclose_w(file);
+    return state->mode == GZ_READ ? PREFIX(gzclose_r)(file) : PREFIX(gzclose_w)(file);
 #else
-    return gzclose_r(file);
+    return PREFIX(gzclose_r)(file);
 #endif
 }

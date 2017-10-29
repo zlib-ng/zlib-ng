@@ -331,7 +331,7 @@ z_off64_t ZEXPORT PREFIX(gzseek64)(gzFile file, z_off64_t offset, int whence) {
         offset += state->x.pos;
         if (offset < 0)                     /* before start of file! */
             return -1;
-        if (gzrewind(file) == -1)           /* rewind, then skip to offset */
+        if (PREFIX(gzrewind)(file) == -1)   /* rewind, then skip to offset */
             return -1;
     }
 
@@ -356,7 +356,7 @@ z_off64_t ZEXPORT PREFIX(gzseek64)(gzFile file, z_off64_t offset, int whence) {
 z_off_t ZEXPORT PREFIX(gzseek)(gzFile file, z_off_t offset, int whence) {
     z_off64_t ret;
 
-    ret = gzseek64(file, (z_off64_t)offset, whence);
+    ret = PREFIX(gzseek64)(file, (z_off64_t)offset, whence);
     return ret == (z_off_t)ret ? (z_off_t)ret : -1;
 }
 
@@ -379,7 +379,7 @@ z_off64_t ZEXPORT PREFIX(gztell64)(gzFile file) {
 z_off_t ZEXPORT PREFIX(gztell)(gzFile file) {
     z_off64_t ret;
 
-    ret = gztell64(file);
+    ret = PREFIX(gztell64)(file);
     return ret == (z_off_t)ret ? (z_off_t)ret : -1;
 }
 
@@ -408,7 +408,7 @@ z_off64_t ZEXPORT PREFIX(gzoffset64)(gzFile file) {
 z_off_t ZEXPORT PREFIX(gzoffset)(gzFile file) {
     z_off64_t ret;
 
-    ret = gzoffset64(file);
+    ret = PREFIX(gzoffset64)(file);
     return ret == (z_off_t)ret ? (z_off_t)ret : -1;
 }
 
