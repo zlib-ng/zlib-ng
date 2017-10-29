@@ -105,7 +105,7 @@ typedef struct zng_stream_s {
     unsigned long         reserved;   /* reserved for future use */
 } zng_stream;
 
-typedef zng_stream *zng_streamp;  // Obsolete type, retained for compatability only
+typedef zng_stream *zng_streamp;  /* Obsolete type, retained for compatibility only */
 
 /*
     gzip header information passed to and from zlib routines.  See RFC 1952
@@ -204,10 +204,10 @@ typedef zng_gz_header *zng_gz_headerp;
 
                         /* basic functions */
 
-ZEXTERN const char * ZEXPORT zng_version(void);
-/* The application can compare zlibVersion and ZLIB_VERSION for consistency.
+ZEXTERN const char * ZEXPORT zlibng_version(void);
+/* The application can compare zlibng_version and ZLIBNG_VERSION for consistency.
    If the first character differs, the library code actually used is not
-   compatible with the zlib.h header file used by the application.  This check
+   compatible with the zlib-ng.h header file used by the application.  This check
    is automatically made by deflateInit and inflateInit.
  */
 
