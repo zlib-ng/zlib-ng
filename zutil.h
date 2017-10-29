@@ -24,7 +24,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "zlib.h"
+#ifdef ZLIB_COMPAT
+# include "zlib.h"
+#else
+# include "zlib-ng.h"
+#endif
 
 typedef unsigned char uch; /* Included for compatibility with external code only */
 typedef uint16_t ush;      /* Included for compatibility with external code only */

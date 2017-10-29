@@ -1,14 +1,17 @@
-/* zconf.h -- configuration of the zlib compression library
+/* zconf-ng.h -- configuration of the zlib-ng compression library
  * Copyright (C) 1995-2016 Jean-loup Gailly, Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
 /* @(#) $Id$ */
 
-#ifndef ZCONF_H
-#define ZCONF_H
+#ifndef ZCONFNG_H
+#define ZCONFNG_H
 
 #define PREFIX(x) zng_ ## x
+#define PREFIX2(x) ZLIBNG_ ## x
+#define PREFIX3(x) zng_ ## x
+#define zVersion zlibng_version
 
 #if defined(_WINDOWS) && !defined(WINDOWS)
 #  define WINDOWS
@@ -173,4 +176,4 @@ typedef void       *voidp;
 #  endif
 #endif
 
-#endif /* ZCONF_H */
+#endif /* ZCONFNG_H */

@@ -25,7 +25,7 @@
 */
 int ZEXPORT PREFIX(compress2)(unsigned char *dest, size_t *destLen, const unsigned char *source,
                         size_t sourceLen, int level) {
-    z_stream stream;
+    PREFIX3(stream) stream;
     int err;
     const unsigned int max = (unsigned int)-1;
     size_t left;
@@ -37,7 +37,7 @@ int ZEXPORT PREFIX(compress2)(unsigned char *dest, size_t *destLen, const unsign
     stream.zfree = NULL;
     stream.opaque = NULL;
 
-    err = deflateInit(&stream, level);
+    err = PREFIX(deflateInit)(&stream, level);
     if (err != Z_OK)
         return err;
 
@@ -55,11 +55,11 @@ int ZEXPORT PREFIX(compress2)(unsigned char *dest, size_t *destLen, const unsign
             stream.avail_in = sourceLen > (unsigned long)max ? max : (unsigned int)sourceLen;
             sourceLen -= stream.avail_in;
         }
-        err = deflate(&stream, sourceLen ? Z_NO_FLUSH : Z_FINISH);
+        err = PREFIX(deflate)(&stream, sourceLen ? Z_NO_FLUSH : Z_FINISH);
     } while (err == Z_OK);
 
     *destLen = stream.total_out;
-    deflateEnd(&stream);
+    PREFIX(deflateEnd)(&stream);
     return err == Z_STREAM_END ? Z_OK : err;
 }
 

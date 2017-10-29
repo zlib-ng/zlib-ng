@@ -452,12 +452,12 @@ uint32_t ZEXPORT PREFIX(crc32_combine64)(uint32_t crc1, uint32_t crc2, z_off64_t
 
 #ifndef X86_PCLMULQDQ_CRC
 ZLIB_INTERNAL void crc_reset(deflate_state *const s) {
-    s->strm->adler = crc32(0L, NULL, 0);
+    s->strm->adler = PREFIX(crc32)(0L, NULL, 0);
 }
 
-ZLIB_INTERNAL void copy_with_crc(z_stream *strm, unsigned char *dst, unsigned long size) {
+ZLIB_INTERNAL void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size) {
     memcpy(dst, strm->next_in, size);
-    strm->adler = crc32(strm->adler, dst, size);
+    strm->adler = PREFIX(crc32)(strm->adler, dst, size);
 }
 #endif
 

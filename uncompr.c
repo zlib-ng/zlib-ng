@@ -6,7 +6,11 @@
 /* @(#) $Id$ */
 
 #define ZLIB_INTERNAL
-#include "zlib.h"
+#ifdef ZLIB_COMPAT
+# include "zlib.h"
+#else
+# include "zlib-ng.h"
+#endif
 
 /* ===========================================================================
      Decompresses the source buffer into the destination buffer.  *sourceLen is
@@ -25,7 +29,7 @@
    an incomplete zlib stream.
 */
 int ZEXPORT PREFIX(uncompress2)(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t *sourceLen) {
-    z_stream stream;
+    PREFIX3(stream) stream;
     int err;
     const unsigned int max = (unsigned int)-1;
     size_t len, left;
@@ -47,7 +51,7 @@ int ZEXPORT PREFIX(uncompress2)(unsigned char *dest, size_t *destLen, const unsi
     stream.zfree = NULL;
     stream.opaque = NULL;
 
-    err = inflateInit(&stream);
+    err = PREFIX(inflateInit)(&stream);
     if (err != Z_OK) return err;
 
     stream.next_out = dest;
@@ -62,7 +66,7 @@ int ZEXPORT PREFIX(uncompress2)(unsigned char *dest, size_t *destLen, const unsi
             stream.avail_in = len > (unsigned long)max ? max : (unsigned int)len;
             len -= stream.avail_in;
         }
-        err = inflate(&stream, Z_NO_FLUSH);
+        err = PREFIX(inflate)(&stream, Z_NO_FLUSH);
     } while (err == Z_OK);
 
     *sourceLen -= len + stream.avail_in;
@@ -71,7 +75,7 @@ int ZEXPORT PREFIX(uncompress2)(unsigned char *dest, size_t *destLen, const unsi
     else if (stream.total_out && err == Z_BUF_ERROR)
         left = 1;
 
-    inflateEnd(&stream);
+    PREFIX(inflateEnd)(&stream);
     return err == Z_STREAM_END ? Z_OK :
            err == Z_NEED_DICT ? Z_DATA_ERROR  :
            err == Z_BUF_ERROR && left + stream.avail_out ? Z_DATA_ERROR :
@@ -80,5 +84,5 @@ int ZEXPORT PREFIX(uncompress2)(unsigned char *dest, size_t *destLen, const unsi
 
 int ZEXPORT PREFIX(uncompress)(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen)
 {
-    return uncompress2(dest, destLen, source, &sourceLen);
+    return PREFIX(uncompress2)(dest, destLen, source, &sourceLen);
 }

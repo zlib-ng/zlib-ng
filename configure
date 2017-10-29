@@ -230,7 +230,7 @@ else
 fi
 
 STATICLIB=${LIBNAME}.a
-MAPNAME=$LIBNAME2.map
+MAPNAME=${LIBNAME2}.map
 
 # extract zlib version numbers from zlib.h
 if test $compat -eq 0; then
@@ -326,7 +326,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHARED=${LDSHARED-"$cc"}
         LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/${MAPNAME}"
         LDSHAREDLIBC=""
-        DEFFILE='win32/zlib.def'
+        DEFFILE='win32/${LIBNAME2}.def'
         RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         RCOBJS='zlibrc.o'
@@ -349,7 +349,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHARED=${LDSHARED-"$cc"}
         LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB}"
         LDSHAREDLIBC=""
-        DEFFILE='win32/zlib.def'
+        DEFFILE='win32/${LIBNAME2}.def'
         RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         RCOBJS='zlibrc.o'
@@ -369,7 +369,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHARED=${LDSHARED-"$cc"}
         LDSHAREDFLAGS="-shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/${MAPNAME}"
         LDSHAREDLIBC=""
-        DEFFILE='win32/zlib.def'
+        DEFFILE='win32/${LIBNAME2}.def'
         RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         if [ "$CC" == "mingw32-gcc" ]; then
@@ -672,7 +672,7 @@ echo >> configure.log
 cat > $test.c <<EOF
 #include <stdio.h>
 #include <stdarg.h>
-#include "zconf.h"
+#include "zconf${SUFFIX}.h"
 int main() {
 #ifdef STDC
   return 0;
@@ -1050,6 +1050,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^INCLUDES *=/s#=.*#=$ARCHINCLUDES#
+/^SUFFIX *=/s#=.*#=$SUFFIX#
 /^SRCDIR *=/s#=.*#=$SRCDIR/$ARCHDIR#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^TOPDIR *=/s#=.*#=$BUILDDIR#

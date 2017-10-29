@@ -58,7 +58,7 @@ if (ZLIB_COMPAT)
 else(ZLIB_COMPAT)
     set (LIBNAME1 libz-ng)
     set (LIBNAME2 zlib-ng)
-    set (SUFFIX -ng)
+    set (SUFFIX "-ng")
 endif (ZLIB_COMPAT)
 
 option (WITH_GZFILEOP "Compile with support for gzFile related functions" OFF)
@@ -553,15 +553,19 @@ endif (WITH_GZFILEOP)
 
 if(NOT MINGW AND NOT MSYS)
     set(ZLIB_DLL_SRCS
-        win32/zlib1.rc # If present will override custom build rule below.
+        win32/zlib${SUFFIX}1.rc # If present will override custom build rule below.
     )
 endif()
 
 # parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h _zlib_h_contents)
-string(REGEX REPLACE ".*#define[ \t]+ZLIB_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
-    "\\1" ZLIB_FULL_VERSION ${_zlib_h_contents})
-
+if (ZLIB_COMPAT)
+    string(REGEX REPLACE ".*#define[ \t]+ZLIB_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
+        "\\1" ZLIB_FULL_VERSION ${_zlib_h_contents})
+else()
+    string(REGEX REPLACE ".*#define[ \t]+ZLIBNG_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
+        "\\1" ZLIB_FULL_VERSION ${_zlib_h_contents})
+endif()
 if(MINGW OR MSYS)
     # This gets us DLL resource information when compiling on MinGW.
     if(NOT CMAKE_RC_COMPILER)
@@ -574,7 +578,7 @@ if(MINGW OR MSYS)
                             -I ${CMAKE_CURRENT_SOURCE_DIR}
                             -I ${CMAKE_CURRENT_BINARY_DIR}
                             -o ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj
-                            -i ${CMAKE_CURRENT_SOURCE_DIR}/win32/zlib1.rc)
+                            -i ${CMAKE_CURRENT_SOURCE_DIR}/win32/zlib${SUFFIX}1.rc)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif(MINGW OR MSYS)
 
