@@ -205,9 +205,9 @@ typedef zng_gz_header *zng_gz_headerp;
                         /* basic functions */
 
 ZEXTERN const char * ZEXPORT zng_version(void);
-/* The application can compare zlibVersion and ZLIB_VERSION for consistency.
+/* The application can compare zng_version and ZLIBNG_VERSION for consistency.
    If the first character differs, the library code actually used is not
-   compatible with the zlib.h header file used by the application.  This check
+   compatible with the zlib-ng.h header file used by the application.  This check
    is automatically made by deflateInit and inflateInit.
  */
 
