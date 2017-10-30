@@ -45,7 +45,7 @@ Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count
             s->prev[p & s->w_mask] = s->head[hm];
             s->head[hm] = p;
             if (p == lp) {
-                ret = s->prev[lp & s->w_mask]);
+                ret = s->prev[lp & s->w_mask];
             }
         }
     }

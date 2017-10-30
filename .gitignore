@@ -17,10 +17,12 @@
 /example64
 /examplesh
 /libz.so*
+/libz-ng.so*
 /minigzip
 /minigzip64
 /minigzipsh
 /zlib.pc
+/zlib-ng.pc
 /CVE-2003-0107
 
 .DS_Store
@@ -48,6 +50,8 @@ Testing
 zconf.h
 zconf.h.cmakein
 zconf.h.included
+zconf-ng.h
+zconf-ng.h.cmakein
 ztest*
 
 configure.log

@@ -14,7 +14,11 @@
 
 /* @(#) $Id$ */
 
-#include "zlib.h"
+#ifdef ZLIB_COMPAT
+# include "zlib.h"
+#else
+# include "zlib-ng.h"
+#endif
 #include <stdio.h>
 
 #include <string.h>
@@ -80,20 +84,20 @@ typedef struct gzFile_s {
     int write;
     int err;
     const char *msg;
-    z_stream strm;
+    PREFIX3(stream) strm;
     unsigned char *buf;
 } *gzFile;
 
-gzFile gzopen (const char *, const char *);
-gzFile gzdopen (int, const char *);
+gzFile PREFIX(gzopen)(const char *, const char *);
+gzFile PREFIX(gzdopen)(int, const char *);
 gzFile gz_open (const char *, int, const char *);
 
-gzFile gzopen(const char *path, const char *mode)
+gzFile PREFIX(gzopen)(const char *path, const char *mode)
 {
     return gz_open(path, -1, mode);
 }
 
-gzFile gzdopen(int fd, const char *mode)
+gzFile PREFIX(gzdopen)(int fd, const char *mode)
 {
     return gz_open(NULL, fd, mode);
 }
@@ -127,11 +131,11 @@ gzFile gz_open(const char *path, int fd, const char *mode)
         plevel++;
     }
     if (gz->write)
-        ret = deflateInit2(&(gz->strm), level, 8, 15 + 16, 8, 0);
+        ret = PREFIX(deflateInit2)(&(gz->strm), level, 8, 15 + 16, 8, 0);
     else {
         gz->strm.next_in = NULL;
         gz->strm.avail_in = 0;
-        ret = inflateInit2(&(gz->strm), 15 + 16);
+        ret = PREFIX(inflateInit2)(&(gz->strm), 15 + 16);
     }
     if (ret != Z_OK) {
         free(gz);
@@ -140,7 +144,7 @@ gzFile gz_open(const char *path, int fd, const char *mode)
     gz->file = path == NULL ? fdopen(fd, gz->write ? "wb" : "rb") :
                               fopen(path, gz->write ? "wb" : "rb");
     if (gz->file == NULL) {
-        gz->write ? deflateEnd(&(gz->strm)) : inflateEnd(&(gz->strm));
+        gz->write ? PREFIX(deflateEnd)(&(gz->strm)) : PREFIX(inflateEnd)(&(gz->strm));
         free(gz);
         return NULL;
     }
@@ -149,11 +153,11 @@ gzFile gz_open(const char *path, int fd, const char *mode)
     return gz;
 }
 
-int gzwrite (gzFile, const void *, unsigned);
+int PREFIX(gzwrite)(gzFile, const void *, unsigned);
 
-int gzwrite(gzFile gz, const void *buf, unsigned len)
+int PREFIX(gzwrite)(gzFile gz, const void *buf, unsigned len)
 {
-    z_stream *strm;
+    PREFIX3(stream) *strm;
 
     if (gz == NULL || !gz->write)
         return 0;
@@ -163,17 +167,17 @@ int gzwrite(gzFile gz, const void *buf, unsigned len)
     do {
         strm->next_out = gz->buf;
         strm->avail_out = BUFLENW;
-        (void)deflate(strm, Z_NO_FLUSH);
+        (void)PREFIX(deflate)(strm, Z_NO_FLUSH);
         fwrite(gz->buf, 1, BUFLENW - strm->avail_out, gz->file);
     } while (strm->avail_out == 0);
     return len;
 }
 
-int gzread (gzFile, void *, unsigned);
+int PREFIX(gzread)(gzFile, void *, unsigned);
 
-int gzread(gzFile gz, void *buf, unsigned len)
+int PREFIX(gzread)(gzFile gz, void *buf, unsigned len)
 {
-    z_stream *strm;
+    PREFIX3(stream) *strm;
 
     if (gz == NULL || gz->write || gz->err)
         return 0;
@@ -188,14 +192,14 @@ int gzread(gzFile gz, void *buf, unsigned len)
         }
         if (strm->avail_in > 0)
         {
-            int ret = inflate(strm, Z_NO_FLUSH);
+            int ret = PREFIX(inflate)(strm, Z_NO_FLUSH);
             if (ret == Z_DATA_ERROR) {
                 gz->err = ret;
                 gz->msg = strm->msg;
                 return 0;
             }
             else if (ret == Z_STREAM_END)
-                inflateReset(strm);
+                PREFIX(inflateReset)(strm);
         }
         else
             break;
@@ -203,11 +207,11 @@ int gzread(gzFile gz, void *buf, unsigned len)
     return len - strm->avail_out;
 }
 
-int gzclose (gzFile);
+int PREFIX(gzclose)(gzFile);
 
-int gzclose(gzFile gz)
+int PREFIX(gzclose)(gzFile gz)
 {
-    z_stream *strm;
+    PREFIX3(stream) *strm;
 
     if (gz == NULL)
         return Z_STREAM_ERROR;
@@ -218,22 +222,22 @@ int gzclose(gzFile gz)
         do {
             strm->next_out = gz->buf;
             strm->avail_out = BUFLENW;
-            (void)deflate(strm, Z_FINISH);
+            (void)PREFIX(deflate)(strm, Z_FINISH);
             fwrite(gz->buf, 1, BUFLENW - strm->avail_out, gz->file);
         } while (strm->avail_out == 0);
-        deflateEnd(strm);
+        PREFIX(deflateEnd)(strm);
     }
     else
-        inflateEnd(strm);
+        PREFIX(inflateEnd)(strm);
     free(gz->buf);
     fclose(gz->file);
     free(gz);
     return Z_OK;
 }
 
-const char *gzerror (gzFile, int *);
+const char *PREFIX(gzerror)(gzFile, int *);
 
-const char *gzerror(gzFile gz, int *err)
+const char *PREFIX(gzerror)(gzFile gz, int *err)
 {
     *err = gz->err;
     return gz->msg;
@@ -286,10 +290,10 @@ void gz_compress(FILE   *in, gzFile out)
         }
         if (len == 0) break;
 
-        if (gzwrite(out, buf, (unsigned)len) != len) error(gzerror(out, &err));
+        if (PREFIX(gzwrite)(out, buf, (unsigned)len) != len) error(PREFIX(gzerror)(out, &err));
     }
     fclose(in);
-    if (gzclose(out) != Z_OK) error("failed gzclose");
+    if (PREFIX(gzclose)(out) != Z_OK) error("failed gzclose");
 }
 
 #ifdef USE_MMAP /* MMAP version, Miguel Albrecht <malbrech@eso.org> */
@@ -316,13 +320,13 @@ int gz_compress_mmap(FILE   *in, gzFile out)
     if (buf == (caddr_t)(-1)) return Z_ERRNO;
 
     /* Compress the whole file at once: */
-    len = gzwrite(out, (char *)buf, (unsigned)buf_len);
+    len = PREFIX(gzwrite)(out, (char *)buf, (unsigned)buf_len);
 
-    if (len != (int)buf_len) error(gzerror(out, &err));
+    if (len != (int)buf_len) error(PREFIX(gzerror)(out, &err));
 
     munmap(buf, buf_len);
     fclose(in);
-    if (gzclose(out) != Z_OK) error("failed gzclose");
+    if (PREFIX(gzclose)(out) != Z_OK) error("failed gzclose");
     return Z_OK;
 }
 #endif /* USE_MMAP */
@@ -337,8 +341,8 @@ void gz_uncompress(gzFile in, FILE   *out)
     int err;
 
     for (;;) {
-        len = gzread(in, buf, sizeof(buf));
-        if (len < 0) error (gzerror(in, &err));
+        len = PREFIX(gzread)(in, buf, sizeof(buf));
+        if (len < 0) error (PREFIX(gzerror)(in, &err));
         if (len == 0) break;
 
         if ((int)fwrite(buf, 1, (unsigned)len, out) != len) {
@@ -347,7 +351,7 @@ void gz_uncompress(gzFile in, FILE   *out)
     }
     if (fclose(out)) error("failed fclose");
 
-    if (gzclose(in) != Z_OK) error("failed gzclose");
+    if (PREFIX(gzclose)(in) != Z_OK) error("failed gzclose");
 }
 
 
@@ -373,7 +377,7 @@ void file_compress(char  *file, char  *mode)
         perror(file);
         exit(1);
     }
-    out = gzopen(outfile, mode);
+    out = PREFIX(gzopen)(outfile, mode);
     if (out == NULL) {
         fprintf(stderr, "%s: can't gzopen %s\n", prog, outfile);
         exit(1);
@@ -411,7 +415,7 @@ void file_uncompress(char  *file)
         infile = buf;
         snprintf(buf + len, sizeof(buf) - len, "%s", GZ_SUFFIX);
     }
-    in = gzopen(infile, "rb");
+    in = PREFIX(gzopen)(infile, "rb");
     if (in == NULL) {
         fprintf(stderr, "%s: can't gzopen %s\n", prog, infile);
         exit(1);
@@ -484,11 +488,11 @@ int main(int argc, char *argv[])
         SET_BINARY_MODE(stdin);
         SET_BINARY_MODE(stdout);
         if (uncompr) {
-            file = gzdopen(fileno(stdin), "rb");
+            file = PREFIX(gzdopen)(fileno(stdin), "rb");
             if (file == NULL) error("can't gzdopen stdin");
             gz_uncompress(file, stdout);
         } else {
-            file = gzdopen(fileno(stdout), outmode);
+            file = PREFIX(gzdopen)(fileno(stdout), outmode);
             if (file == NULL) error("can't gzdopen stdout");
             gz_compress(stdin, file);
         }
@@ -499,7 +503,7 @@ int main(int argc, char *argv[])
         do {
             if (uncompr) {
                 if (copyout) {
-                    file = gzopen(*argv, "rb");
+                    file = PREFIX(gzopen)(*argv, "rb");
                     if (file == NULL)
                         fprintf(stderr, "%s: can't gzopen %s\n", prog, *argv);
                     else
@@ -514,7 +518,7 @@ int main(int argc, char *argv[])
                     if (in == NULL) {
                         perror(*argv);
                     } else {
-                        file = gzdopen(fileno(stdout), outmode);
+                        file = PREFIX(gzdopen)(fileno(stdout), outmode);
                         if (file == NULL) error("can't gzdopen stdout");
 
                         gz_compress(in, file);
