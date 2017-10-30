@@ -468,35 +468,35 @@ macro(generate_cmakein input output)
 
 endmacro(generate_cmakein)
 
-generate_cmakein( ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.in ${CMAKE_CURRENT_BINARY_DIR}/zconf.h.cmakein )
+generate_cmakein( ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.in ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein )
 
 if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     # If we're doing an out of source build and the user has a zconf.h
     # in their source tree...
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h)
         message(STATUS "Renaming")
-        message(STATUS "    ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h")
-        message(STATUS "to 'zconf.h.included' because this file is included with zlib")
+        message(STATUS "    ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h")
+        message(STATUS "to 'zconf${SUFFIX}.h.included' because this file is included with zlib")
         message(STATUS "but CMake generates it automatically in the build directory.")
-        file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.included)
+        file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.included)
     endif()
 
     # If we're doing an out of source build and the user has a zconf.h.cmakein
     # in their source tree...
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakein)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.cmakein)
         message(STATUS "Renaming")
-        message(STATUS "    ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakein")
-        message(STATUS "to 'zconf.h.cmakeincluded' because this file is included with zlib")
+        message(STATUS "    ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.cmakein")
+        message(STATUS "to 'zconf${SUFFIX}.h.cmakeincluded' because this file is included with zlib")
         message(STATUS "but CMake generates it automatically in the build directory.")
-        file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakein ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakeincluded)
+        file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.cmakein ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.cmakeincluded)
     endif()
 endif()
 
 set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME2}.pc)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
 		${ZLIB_PC} @ONLY)
-configure_file(	${CMAKE_CURRENT_BINARY_DIR}/zconf.h.cmakein
-		${CMAKE_CURRENT_BINARY_DIR}/zconf.h @ONLY)
+configure_file(	${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
+		${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 
@@ -505,7 +505,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 #============================================================================
 
 set(ZLIB_PUBLIC_HDRS
-    ${CMAKE_CURRENT_BINARY_DIR}/zconf.h
+    ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h
     zlib${SUFFIX}.h
 )
 set(ZLIB_PRIVATE_HDRS
@@ -618,7 +618,7 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
 endif()
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL )
     install(FILES zlib${SUFFIX}.h DESTINATION "${INSTALL_INC_DIR}" RENAME zlib${SUFFIX}.h)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zconf.h DESTINATION "${INSTALL_INC_DIR}" RENAME zconf${SUFFIX}.h)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h DESTINATION "${INSTALL_INC_DIR}" RENAME zconf${SUFFIX}.h)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL )
     install(FILES zlib.3 DESTINATION "${INSTALL_MAN_DIR}/man3" RENAME zlib${SUFFIX}.3)
