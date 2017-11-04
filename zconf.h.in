@@ -8,7 +8,10 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
-#define PREFIX(x) zng_ ## x
+#define PREFIX(x) x
+#define PREFIX2(x) ZLIB_ ## x
+#define PREFIX3(x) z_ ## x
+#define zVersion zlibVersion
 
 #if defined(_WINDOWS) && !defined(WINDOWS)
 #  define WINDOWS

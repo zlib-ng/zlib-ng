@@ -1,6 +1,6 @@
 #ifndef ZNGLIB_H_
 #define ZNGLIB_H_
-/* zlib.h -- interface of the 'zlib-ng' compression library
+/* zlib-ng.h -- interface of the 'zlib-ng' compression library
    Forked from and compatible with zlib 1.2.11
 
   Copyright (C) 1995-2016 Jean-loup Gailly and Mark Adler
@@ -105,7 +105,7 @@ typedef struct zng_stream_s {
     unsigned long         reserved;   /* reserved for future use */
 } zng_stream;
 
-typedef zng_stream *zng_streamp;  // Obsolete type, retained for compatability only
+typedef zng_stream *zng_streamp;  /* Obsolete type, retained for compatibility only */
 
 /*
     gzip header information passed to and from zlib routines.  See RFC 1952
@@ -204,10 +204,10 @@ typedef zng_gz_header *zng_gz_headerp;
 
                         /* basic functions */
 
-ZEXTERN const char * ZEXPORT zng_version(void);
-/* The application can compare zlibVersion and ZLIB_VERSION for consistency.
+ZEXTERN const char * ZEXPORT zlibng_version(void);
+/* The application can compare zlibng_version and ZLIBNG_VERSION for consistency.
    If the first character differs, the library code actually used is not
-   compatible with the zlib.h header file used by the application.  This check
+   compatible with the zlib-ng.h header file used by the application.  This check
    is automatically made by deflateInit and inflateInit.
  */
 
@@ -227,8 +227,8 @@ ZEXTERN int ZEXPORT zng_deflateInit (zng_stream *strm, int level);
 
      deflateInit returns Z_OK if success, Z_MEM_ERROR if there was not enough
    memory, Z_STREAM_ERROR if level is not a valid compression level, or
-   Z_VERSION_ERROR if the zlib library version (zlib_version) is incompatible
-   with the version assumed by the caller (ZLIB_VERSION).  msg is set to null
+   Z_VERSION_ERROR if the zlib library version (zng_version) is incompatible
+   with the version assumed by the caller (ZLIBNG_VERSION).  msg is set to null
    if there is no error message.  deflateInit does not perform any compression:
    this will be done by deflate().
 */
@@ -589,8 +589,8 @@ ZEXTERN int ZEXPORT zng_deflateInit2 (zng_stream *strm,
 
      deflateInit2 returns Z_OK if success, Z_MEM_ERROR if there was not enough
    memory, Z_STREAM_ERROR if any parameter is invalid (such as an invalid
-   method), or Z_VERSION_ERROR if the zlib library version (zlib_version) is
-   incompatible with the version assumed by the caller (ZLIB_VERSION).  msg is
+   method), or Z_VERSION_ERROR if the zlib library version (zng_version) is
+   incompatible with the version assumed by the caller (ZLIBNG_VERSION).  msg is
    set to null if there is no error message.  deflateInit2 does not perform any
    compression: this will be done by deflate().
 */
@@ -1714,14 +1714,14 @@ ZEXTERN int ZEXPORT zng_deflateInit2_(zng_stream *strm, int  level, int  method,
 ZEXTERN int ZEXPORT zng_inflateInit2_(zng_stream *strm, int  windowBits, const char *version, int stream_size);
 ZEXTERN int ZEXPORT zng_inflateBackInit_(zng_stream *strm, int windowBits, unsigned char *window,
                                       const char *version, int stream_size);
-#define zng_deflateInit(strm, level) zng_deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(zng_stream))
-#define zng_inflateInit(strm) zng_inflateInit_((strm), ZLIB_VERSION, (int)sizeof(zng_stream))
+#define zng_deflateInit(strm, level) zng_deflateInit_((strm), (level), ZLIBNG_VERSION, (int)sizeof(zng_stream))
+#define zng_inflateInit(strm) zng_inflateInit_((strm), ZLIBNG_VERSION, (int)sizeof(zng_stream))
 #define zng_deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
         zng_deflateInit2_((strm), (level), (method), (windowBits), (memLevel), \
-                     (strategy), ZLIB_VERSION, (int)sizeof(zng_stream))
-#define zng_inflateInit2(strm, windowBits) inflateInit2_((strm), (windowBits), ZLIB_VERSION, (int)sizeof(zng_stream))
+                     (strategy), ZLIBNG_VERSION, (int)sizeof(zng_stream))
+#define zng_inflateInit2(strm, windowBits) zng_inflateInit2_((strm), (windowBits), ZLIBNG_VERSION, (int)sizeof(zng_stream))
 #define zng_inflateBackInit(strm, windowBits, window) \
-                        zng_inflateBackInit_((strm), (windowBits), (window), ZLIB_VERSION, (int)sizeof(zng_stream))
+                        zng_inflateBackInit_((strm), (windowBits), (window), ZLIBNG_VERSION, (int)sizeof(zng_stream))
 
 #ifdef WITH_GZFILEOP
 

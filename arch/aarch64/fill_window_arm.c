@@ -14,7 +14,7 @@
 #include "deflate_p.h"
 #include "functable.h"
 
-extern ZLIB_INTERNAL int read_buf(z_stream *strm, unsigned char *buf, unsigned size);
+extern ZLIB_INTERNAL int read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
 #if __ARM_NEON
 #include <arm_neon.h>
