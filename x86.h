@@ -16,6 +16,8 @@
 
 #ifdef ZLIB_X86
 
+#define UNALIGNED_OK
+
 extern int x86_cpu_has_sse2;
 extern int x86_cpu_has_sse42;
 extern int x86_cpu_has_pclmul;
