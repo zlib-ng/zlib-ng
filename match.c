@@ -361,11 +361,11 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
     unsigned int wmask = s->w_mask;
 
     register unsigned char *strend = s->window + s->strstart + MAX_MATCH;
-    
+
     uint16_t scan_start, scan_end;
-    memcpy(&scan_start, scan, sizeof(scan_start)); // = *(uint16_t*)scan;
-    memcpy(&scan_end, scan+best_len-1, sizeof(scan_end)); // = *(uint16_t*)(scan+best_len-1);
-    
+    memcpy(&scan_start, scan, sizeof(scan_start));
+    memcpy(&scan_end, scan+best_len-1, sizeof(scan_end));
+
     /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
      * It is easy to get rid of this optimization if necessary.
      */
@@ -429,11 +429,12 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
         Assert(*scan == *match, "match[2]?");
         do {
             unsigned long sv, mv, xor;
-            
-            memcpy(&sv, scan, sizeof(sv)); // = *(unsigned long*)(void*)scan;
-            memcpy(&mv, match, sizeof(mv)); // = *(unsigned long*)(void*)match;
+
+            memcpy(&sv, scan, sizeof(sv));
+            memcpy(&mv, match, sizeof(mv));
+
             xor = sv ^ mv;
-            
+
             if (xor) {
                 int match_byte = __builtin_ctzl(xor) / 8;
                 scan += match_byte;
