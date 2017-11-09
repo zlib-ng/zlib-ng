@@ -428,10 +428,12 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
         scan += 2, match+=2;
         Assert(*scan == *match, "match[2]?");
         do {
-            unsigned long sv, mv;
+            unsigned long sv, mv, xor;
+            
             memcpy(&sv, scan, sizeof(sv)); // = *(unsigned long*)(void*)scan;
             memcpy(&mv, match, sizeof(mv)); // = *(unsigned long*)(void*)match;
-            unsigned long xor = sv ^ mv;
+            xor = sv ^ mv;
+            
             if (xor) {
                 int match_byte = __builtin_ctzl(xor) / 8;
                 scan += match_byte;
