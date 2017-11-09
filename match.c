@@ -361,9 +361,11 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
     unsigned int wmask = s->w_mask;
 
     register unsigned char *strend = s->window + s->strstart + MAX_MATCH;
-    register uint16_t scan_start = *(uint16_t*)scan;
-    register uint16_t scan_end   = *(uint16_t*)(scan+best_len-1);
-
+    
+    uint16_t scan_start, scan_end;
+    memcpy(&scan_start, scan, sizeof(scan_start)); // = *(uint16_t*)scan;
+    memcpy(&scan_end, scan+best_len-1, sizeof(scan_end)); // = *(uint16_t*)(scan+best_len-1);
+    
     /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
      * It is easy to get rid of this optimization if necessary.
      */
@@ -397,7 +399,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
         int cont = 1;
         do {
             match = win + cur_match;
-            if (likely(*(uint16_t*)(match+best_len-1) != scan_end)) {
+            if (likely(memcmp(match+best_len-1, &scan_end, sizeof(scan_end)) != 0)) {
                 if ((cur_match = prev[cur_match & wmask]) > limit
                     && --chain_length != 0) {
                     continue;
@@ -411,7 +413,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
         if (!cont)
             break;
 
-        if (*(uint16_t*)match != scan_start)
+        if (memcmp(match, &scan_start, sizeof(scan_start)) != 0)
             continue;
 
         /* It is not necessary to compare scan[2] and match[2] since they are
@@ -426,8 +428,9 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
         scan += 2, match+=2;
         Assert(*scan == *match, "match[2]?");
         do {
-            unsigned long sv = *(unsigned long*)(void*)scan;
-            unsigned long mv = *(unsigned long*)(void*)match;
+            unsigned long sv, mv;
+            memcpy(&sv, scan, sizeof(sv)); // = *(unsigned long*)(void*)scan;
+            memcpy(&mv, match, sizeof(mv)); // = *(unsigned long*)(void*)match;
             unsigned long xor = sv ^ mv;
             if (xor) {
                 int match_byte = __builtin_ctzl(xor) / 8;
@@ -452,7 +455,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
             best_len = len;
             if (len >= nice_match)
                 break;
-            scan_end = *(uint16_t*)(scan+best_len-1);
+            memcpy(&scan_end, scan+best_len-1, sizeof(scan_end));
         } else {
             /*
              * The probability of finding a match later if we here
