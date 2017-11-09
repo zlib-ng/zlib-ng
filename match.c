@@ -363,6 +363,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
     register unsigned char *strend = s->window + s->strstart + MAX_MATCH;
 
     uint16_t scan_start, scan_end;
+
     memcpy(&scan_start, scan, sizeof(scan_start));
     memcpy(&scan_end, scan+best_len-1, sizeof(scan_end));
 
