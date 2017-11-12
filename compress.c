@@ -8,8 +8,10 @@
 #define ZLIB_INTERNAL
 #if defined(ZLIB_COMPAT)
 # include "zlib.h"
+# define z_size_t unsigned long
 #else
 # include "zlib-ng.h"
+# define z_size_t size_t
 #endif
 
 /* ===========================================================================
@@ -23,12 +25,12 @@
    memory, Z_BUF_ERROR if there was not enough room in the output buffer,
    Z_STREAM_ERROR if the level parameter is invalid.
 */
-int ZEXPORT PREFIX(compress2)(unsigned char *dest, size_t *destLen, const unsigned char *source,
-                        size_t sourceLen, int level) {
+int ZEXPORT PREFIX(compress2)(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
+                        z_size_t sourceLen, int level) {
     PREFIX3(stream) stream;
     int err;
     const unsigned int max = (unsigned int)-1;
-    size_t left;
+    z_size_t left;
 
     left = *destLen;
     *destLen = 0;
@@ -65,7 +67,7 @@ int ZEXPORT PREFIX(compress2)(unsigned char *dest, size_t *destLen, const unsign
 
 /* ===========================================================================
  */
-int ZEXPORT PREFIX(compress)(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen) {
+int ZEXPORT PREFIX(compress)(unsigned char *dest, z_size_t *destLen, const unsigned char *source, z_size_t sourceLen) {
     return PREFIX(compress2)(dest, destLen, source, sourceLen, Z_DEFAULT_COMPRESSION);
 }
 
@@ -73,6 +75,6 @@ int ZEXPORT PREFIX(compress)(unsigned char *dest, size_t *destLen, const unsigne
    If the default memLevel or windowBits for deflateInit() is changed, then
    this function needs to be updated.
  */
-size_t ZEXPORT PREFIX(compressBound)(size_t sourceLen) {
+z_size_t ZEXPORT PREFIX(compressBound)(z_size_t sourceLen) {
     return sourceLen + (sourceLen >> 12) + (sourceLen >> 14) + (sourceLen >> 25) + 13;
 }

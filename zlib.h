@@ -1194,7 +1194,7 @@ ZEXTERN unsigned long ZEXPORT zlibCompileFlags(void);
    you need special options.
 */
 
-ZEXTERN int ZEXPORT compress(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen);
+ZEXTERN int ZEXPORT compress(unsigned char *dest, unsigned long *destLen, const unsigned char *source, unsigned long sourceLen);
 /*
      Compresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
@@ -1208,8 +1208,8 @@ ZEXTERN int ZEXPORT compress(unsigned char *dest, size_t *destLen, const unsigne
    buffer.
 */
 
-ZEXTERN int ZEXPORT compress2(unsigned char *dest, size_t *destLen, const unsigned char *source,
-                              size_t sourceLen, int level);
+ZEXTERN int ZEXPORT compress2(unsigned char *dest, unsigned long *destLen, const unsigned char *source,
+                              unsigned long sourceLen, int level);
 /*
      Compresses the source buffer into the destination buffer.  The level
    parameter has the same meaning as in deflateInit.  sourceLen is the byte
@@ -1223,14 +1223,14 @@ ZEXTERN int ZEXPORT compress2(unsigned char *dest, size_t *destLen, const unsign
    Z_STREAM_ERROR if the level parameter is invalid.
 */
 
-ZEXTERN size_t ZEXPORT compressBound(size_t sourceLen);
+ZEXTERN unsigned long ZEXPORT compressBound(unsigned long sourceLen);
 /*
      compressBound() returns an upper bound on the compressed size after
    compress() or compress2() on sourceLen bytes.  It would be used before a
    compress() or compress2() call to allocate the destination buffer.
 */
 
-ZEXTERN int ZEXPORT uncompress(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen);
+ZEXTERN int ZEXPORT uncompress(unsigned char *dest, unsigned long *destLen, const unsigned char *source, unsigned long sourceLen);
 /*
      Decompresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
@@ -1248,8 +1248,8 @@ ZEXTERN int ZEXPORT uncompress(unsigned char *dest, size_t *destLen, const unsig
 */
 
 
-ZEXTERN int ZEXPORT uncompress2 (unsigned char *dest,         size_t *destLen,
-                                 const unsigned char *source, size_t *sourceLen);
+ZEXTERN int ZEXPORT uncompress2 (unsigned char *dest,         unsigned long *destLen,
+                                 const unsigned char *source, unsigned long *sourceLen);
 /*
      Same as uncompress, except that sourceLen is a pointer, where the
    length of the source is *sourceLen.  On return, *sourceLen is the number of

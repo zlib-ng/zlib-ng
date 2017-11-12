@@ -8,8 +8,10 @@
 #define ZLIB_INTERNAL
 #ifdef ZLIB_COMPAT
 # include "zlib.h"
+# define z_size_t unsigned long
 #else
 # include "zlib-ng.h"
+# define z_size_t size_t
 #endif
 
 /* ===========================================================================
@@ -28,11 +30,11 @@
    Z_DATA_ERROR if the input data was corrupted, including if the input data is
    an incomplete zlib stream.
 */
-int ZEXPORT PREFIX(uncompress2)(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t *sourceLen) {
+int ZEXPORT PREFIX(uncompress2)(unsigned char *dest, z_size_t *destLen, const unsigned char *source, z_size_t *sourceLen) {
     PREFIX3(stream) stream;
     int err;
     const unsigned int max = (unsigned int)-1;
-    size_t len, left;
+    z_size_t len, left;
     unsigned char buf[1];    /* for detection of incomplete stream when *destLen == 0 */
 
     len = *sourceLen;
@@ -82,7 +84,7 @@ int ZEXPORT PREFIX(uncompress2)(unsigned char *dest, size_t *destLen, const unsi
            err;
 }
 
-int ZEXPORT PREFIX(uncompress)(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen)
+int ZEXPORT PREFIX(uncompress)(unsigned char *dest, z_size_t *destLen, const unsigned char *source, z_size_t sourceLen)
 {
     return PREFIX(uncompress2)(dest, destLen, source, &sourceLen);
 }
