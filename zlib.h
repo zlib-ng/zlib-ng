@@ -1257,7 +1257,6 @@ ZEXTERN int ZEXPORT uncompress2 (unsigned char *dest,         size_t *destLen,
 */
 
 
-#ifdef WITH_GZFILEOP
                         /* gzip file access functions */
 
 /*
@@ -1637,7 +1636,6 @@ ZEXTERN void ZEXPORT gzclearerr(gzFile file);
    file that is being written concurrently.
 */
 
-#endif /* WITH_GZFILEOP */
 
                         /* checksum functions */
 
@@ -1736,7 +1734,6 @@ ZEXTERN int ZEXPORT inflateBackInit_(z_stream *strm, int windowBits, unsigned ch
 #define inflateBackInit(strm, windowBits, window) \
                         inflateBackInit_((strm), (windowBits), (window), ZLIB_VERSION, (int)sizeof(z_stream))
 
-#ifdef WITH_GZFILEOP
 
 /* gzgetc() macro and its supporting function and exposed data structure.  Note
  * that the real internal state is much larger than the exposed structure.
@@ -1783,7 +1780,6 @@ ZEXTERN int ZEXPORT gzgetc_(gzFile file);  /* backward compatibility */
    ZEXTERN z_off_t ZEXPORT gztell(gzFile);
    ZEXTERN z_off_t ZEXPORT gzoffset(gzFile);
 #endif
-#endif /* WITH_GZFILEOP */
 
 
 /* provide 64-bit offset functions if _LARGEFILE64_SOURCE defined, and/or
@@ -1820,12 +1816,10 @@ ZEXTERN unsigned long    ZEXPORT inflateCodesUsed (z_stream *);
 ZEXTERN int              ZEXPORT inflateResetKeep (z_stream *);
 ZEXTERN int              ZEXPORT deflateResetKeep (z_stream *);
 
-#ifdef WITH_GZFILEOP
-# if (defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW__))
+#if (defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW__))
     ZEXTERN gzFile ZEXPORT gzopen_w(const wchar_t *path, const char *mode);
-# endif
-ZEXTERN int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va);
 #endif
+ZEXTERN int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va);
 
 #ifdef __cplusplus
 }
