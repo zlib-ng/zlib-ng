@@ -49,15 +49,7 @@ endif()
 message(STATUS "Architecture: ${ARCH}")
 
 option (ZLIB_COMPAT "Compile with zlib compatible API" OFF)
-if (ZLIB_COMPAT)
-    add_definitions(-DZLIB_COMPAT)
-    set (WITH_GZFILEOP ON)
-endif (ZLIB_COMPAT)
-
-option (WITH_GZFILEOP "Compile with support for gzFile related functions" OFF)
-if (WITH_GZFILEOP)
-    add_definitions(-DWITH_GZFILEOP)
-endif (WITH_GZFILEOP)
+option (WITH_GZFILEOP "Compile with support for gzFile related functions" ${ZLIB_COMPAT})
 
 option(WITH_OPTIM "Build with optimisation" ON)
 option(WITH_NEW_STRATEGIES "Use new strategies" ON)
@@ -573,6 +565,16 @@ endif(MINGW OR MSYS)
 
 add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_GZFILE_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_GZFILE_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+
+if (ZLIB_COMPAT)
+    target_compile_definitions (zlib PUBLIC ZLIB_COMPAT)
+    target_compile_definitions (zlibstatic PUBLIC ZLIB_COMPAT)
+endif (ZLIB_COMPAT)
+
+if (WITH_GZFILEOP)
+    target_compile_definitions (zlib PUBLIC WITH_GZFILEOP)
+    target_compile_definitions (zlibstatic PUBLIC WITH_GZFILEOP)
+endif (WITH_GZFILEOP)
 
 set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
 set_target_properties(zlib PROPERTIES SOVERSION 1)
