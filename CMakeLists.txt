@@ -31,8 +31,6 @@ else()
     add_feature_info(CMAKE_BUILD_TYPE 1 "Build type: ${CMAKE_BUILD_TYPE} (selected)")
 endif()
 
-enable_testing()
-
 check_include_file(sys/types.h HAVE_SYS_TYPES_H)
 check_include_file(stdint.h    HAVE_STDINT_H)
 check_include_file(stddef.h    HAVE_STDDEF_H)
@@ -642,22 +640,26 @@ endif()
 # Example binaries
 #============================================================================
 
-add_executable(example test/example.c)
-target_link_libraries(example zlib)
-add_test(example example${CMAKE_EXECUTABLE_SUFFIX})
+option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
+if (ZLIB_ENABLE_TESTS)
+    enable_testing()
+    add_executable(example test/example.c)
+    target_link_libraries(example zlib)
+    add_test(example example${CMAKE_EXECUTABLE_SUFFIX})
 
-add_executable(minigzip test/minigzip.c)
-target_link_libraries(minigzip zlib)
+    add_executable(minigzip test/minigzip.c)
+    target_link_libraries(minigzip zlib)
 
-if(HAVE_OFF64_T)
-    add_executable(example64 test/example.c)
-    target_link_libraries(example64 zlib)
-    set_target_properties(example64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
-    add_test(example64 example64${CMAKE_EXECUTABLE_SUFFIX})
+    if(HAVE_OFF64_T)
+        add_executable(example64 test/example.c)
+        target_link_libraries(example64 zlib)
+        set_target_properties(example64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
+        add_test(example64 example64${CMAKE_EXECUTABLE_SUFFIX})
 
-    add_executable(minigzip64 test/minigzip.c)
-    target_link_libraries(minigzip64 zlib)
-    set_target_properties(minigzip64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
+        add_executable(minigzip64 test/minigzip.c)
+        target_link_libraries(minigzip64 zlib)
+        set_target_properties(minigzip64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
+    endif()
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
