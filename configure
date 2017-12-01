@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 # configure script for zlib.
 #
 # Normally configure builds both a static and a shared library.
