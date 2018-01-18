@@ -263,6 +263,57 @@ if(HAVE_BUILTIN_CTZL)
     add_definitions(-DHAVE_BUILTIN_CTZL)
 endif()
 
+#
+# check for attribute(ifunc) support in the compiler
+#
+check_c_source_compiles(
+    "
+    static unsigned int crc32_real_optimized(unsigned int crc, unsigned char *p,
+                              unsigned long len)
+    {
+            return 1;
+    }
+
+    static unsigned int (*(crc32_ifunc(void)))(unsigned int, unsigned char *,unsigned long)
+    {
+      return crc32_real_optimized;
+    }
+
+    unsigned int crc32(unsigned int, unsigned char *,unsigned long)
+                        __attribute__ ((ifunc (\"crc32_ifunc\")));
+    "
+    HAVE_IFUNC_NATIVE
+)
+if(HAVE_IFUNC_NATIVE)
+    add_definitions(-DHAVE_IFUNC_NATIVE)
+endif()
+
+#
+# check for asm .type %gnu_indirect_function support in the compiler
+#
+check_c_source_compiles(
+    "
+    static unsigned int crc32_real_optimized(unsigned int crc, unsigned char *p,
+                              unsigned long len)
+    {
+            return 1;
+    }
+
+    static unsigned int (*(crc32_ifunc(void)))(unsigned int, unsigned char *,unsigned long)
+           __asm__ (\"crc32\");
+
+    static unsigned int (*(crc32_ifunc(void)))(unsigned int, unsigned char *,unsigned long)
+    {
+      return crc32_real_optimized;
+    }
+
+    __asm__(\".type crc32, %gnu_indirect_function\");
+    "
+    HAVE_IFUNC_ASM
+)
+if(HAVE_IFUNC_ASM AND NOT HAVE_IFUNC_NATIVE)
+    add_definitions(-DHAVE_IFUNC_ASM)
+endif()
 # Macro to check if source compiles when cross-compiling
 # or runs when compiling natively
 macro(check_c_source_compile_or_run source flag)

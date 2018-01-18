@@ -18,6 +18,8 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, size_t len) {
     register const uint32_t *buf4;
     register const uint64_t *buf8;
 
+    if (buf == NULL) return 0;
+
     c = ~crc;
     if (len && ((ptrdiff_t)buf & 1)) {
         c = __crc32b(c, *buf++);
