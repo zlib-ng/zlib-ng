@@ -65,10 +65,10 @@
 
 #include "deflate.h"
 
-ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, z_off64_t);
+ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, size_t);
 
 #ifdef __ARM_FEATURE_CRC32
-extern uint32_t crc32_acle(uint32_t, const unsigned char *, z_off64_t);
+extern uint32_t crc32_acle(uint32_t, const unsigned char *, size_t);
 #endif
 
 #if BYTE_ORDER == LITTLE_ENDIAN
@@ -213,8 +213,24 @@ const uint32_t * ZEXPORT get_crc_table(void) {
     return (const uint32_t *)crc_table;
 }
 
-uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len) {
-    if (buf == NULL) return 0;
+#ifdef HAVE_IFUNC_ASM
+uint32_t (*(crc32_z_ifunc(void)))(uint32_t, const unsigned char *, size_t)
+    __asm__ ("crc32_z");
+__asm__(".type crc32_z, %gnu_indirect_function");
+#elif defined(HAVE_IFUNC_NATIVE)
+uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len)
+  __attribute__ ((ifunc ("crc32_z_ifunc")));
+#endif
+
+/* due to a quirk of gnu_indirect_function - static is applied to
+ * crc32_z which is not desired. crc32_z_ifunc is implictly static */
+#ifndef HAVE_IFUNC_ASM
+static
+#endif
+uint32_t (*(crc32_z_ifunc(void)))(uint32_t, const unsigned char *, size_t)
+{
+
+/* return a function pointer for optimized arches here after a capability test */
 
 #ifdef DYNAMIC_CRC_TABLE
     if (crc_table_empty)
@@ -224,17 +240,29 @@ uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len) {
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
 #if BYTE_ORDER == LITTLE_ENDIAN
 #  if __ARM_FEATURE_CRC32
-        return crc32_acle(crc, buf, len);
+        return crc32_acle;
 #  else
-        return crc32_little(crc, buf, len);
+        return crc32_little;
 #  endif
 #elif BYTE_ORDER == BIG_ENDIAN
-        return crc32_big(crc, buf, len);
+        return crc32_big;
 #endif
     }
 
-    return crc32_generic(crc, buf, len);
+    return crc32_generic;
 }
+
+#if !defined(HAVE_IFUNC_ASM) && !defined(HAVE_IFUNC_NATIVE)
+
+uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len)
+{
+    static uint32_t ZEXPORT (*crc32_func)(uint32_t, const unsigned char *, size_t) = NULL;
+
+    if (!crc32_func)
+        crc32_func = crc32_z_ifunc();
+    return (*crc32_func)(crc, buf, len);
+}
+#endif /* defined(HAVE_IFUNC_ASM) || defined(HAVE_IFUNC_NATIVE) */
 
 /* ========================================================================= */
 #define DO1 crc = crc_table[0][((int)crc ^ (*buf++)) & 0xff] ^ (crc >> 8)
@@ -242,8 +270,10 @@ uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len) {
 #define DO4 DO1; DO1; DO1; DO1
 
 /* ========================================================================= */
-ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, z_off64_t len)
+ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, size_t len)
 {
+    if (buf == NULL) return 0;
+
     crc = crc ^ 0xffffffff;
 
 #ifdef UNROLL_LESS
@@ -292,6 +322,8 @@ ZLIB_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, size
     register uint32_t c;
     register const uint32_t *buf4;
 
+    if (buf == NULL) return 0;
+
     c = crc;
     c = ~c;
     while (len && ((ptrdiff_t)buf & 3)) {
@@ -333,6 +365,8 @@ ZLIB_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, size
 ZLIB_INTERNAL uint32_t crc32_big(uint32_t crc, const unsigned char *buf, size_t len) {
     register uint32_t c;
     register const uint32_t *buf4;
+
+    if (buf == NULL) return 0;
 
     c = ZSWAP32(crc);
     c = ~c;

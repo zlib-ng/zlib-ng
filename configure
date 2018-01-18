@@ -713,6 +713,67 @@ if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
 else
     echo "Checking for __builtin_ctzl ... No." | tee -a configure.log
 fi
+# test to see if we can use a gnu indirection function to detect and load optimized code at runtime
+echo >> configure.log
+cat > $test.c <<EOF
+static unsigned int crc32_real_optimized(unsigned int crc, unsigned char *p,
+                          unsigned long len)
+{
+        return 1;
+}
+
+static unsigned int (*(crc32_ifunc(void)))(unsigned int, unsigned char *,unsigned long)
+{
+  return crc32_real_optimized;
+}
+
+unsigned int crc32(unsigned int, unsigned char *,unsigned long)
+                    __attribute__ ((ifunc ("crc32_ifunc")));
+
+int main(int argc, char *argv[])
+{
+        return crc32(0, (unsigned char *) argv[0], 0);
+}
+EOF
+
+if tryboth $CC -c $CFLAGS -Wno-unused-function $test.c; then
+  SFLAGS="${SFLAGS} -DHAVE_IFUNC_NATIVE"
+  echo "Checking for attribute(ifunc) support... Yes." | tee -a configure.log
+else
+  echo "Checking for attribute(ifunc) support... No." | tee -a configure.log
+
+  # alternately can we can use a gnu indirection using __asm__ attributes to detect and load optimized code at runtime
+  echo >> configure.log
+  cat > $test.c <<EOF
+static unsigned int crc32_real_optimized(unsigned int crc, unsigned char *p,
+                          unsigned long len)
+{
+        return 1;
+}
+
+static unsigned int (*(crc32_ifunc(void)))(unsigned int, unsigned char *,unsigned long)
+       __asm__ ("crc32");
+
+static unsigned int (*(crc32_ifunc(void)))(unsigned int, unsigned char *,unsigned long)
+{
+  return crc32_real_optimized;
+}
+
+__asm__(".type crc32, %gnu_indirect_function");
+
+int main(int argc, char *argv[])
+{
+        return crc32(0, (unsigned char *) argv[0], 0);
+}
+EOF
+
+  if tryboth $CC -c $CFLAGS -Wno-unused-function -Wno-implicit-function-declaration $test.c; then
+    SFLAGS="${SFLAGS} -DHAVE_IFUNC_ASM"
+    echo "Checking for asm .type %gnu_indirect_function support... Yes." | tee -a configure.log
+  else
+    echo "Checking for asm .type %gnu_indirect_function support... No." | tee -a configure.log
+  fi
+fi
 
 # Check for SSE2 intrinsics
 cat > $test.c << EOF
