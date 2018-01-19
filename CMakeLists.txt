@@ -454,11 +454,16 @@ message(STATUS "Architecture-specific source files: ${ZLIB_ARCH_SRCS}")
 #============================================================================
 
 macro(generate_cmakein input output)
-    execute_process(COMMAND sed "/#define ZCONF_H/ a\\\n#cmakedefine Z_HAVE_UNISTD_H\\\n#cmakedefine Z_HAVE_STDARG_H\n"
-                    INPUT_FILE ${input}
-                    OUTPUT_FILE ${output}
-)
+    file(REMOVE ${output})
+    file(STRINGS ${input} _lines)
+    foreach(_line IN LISTS _lines)
+        file(APPEND ${output} "${_line}\n")
 
+        if (_line STREQUAL "#define ZCONF_H")
+            file(APPEND ${output} "#cmakedefine Z_HAVE_UNISTD_H\n")
+            file(APPEND ${output}"#cmakedefine Z_HAVE_STDARG_H\n")
+        endif()
+    endforeach()
 endmacro(generate_cmakein)
 
 generate_cmakein( ${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.in ${CMAKE_CURRENT_BINARY_DIR}/zconf.h.cmakein )
