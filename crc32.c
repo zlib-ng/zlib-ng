@@ -64,11 +64,12 @@
 #endif /* MAKECRCH */
 
 #include "deflate.h"
+#include "functable.h"
 
 ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, z_off64_t);
 
 #ifdef __ARM_FEATURE_CRC32
-extern uint32_t crc32_acle(uint32_t, const unsigned char *, z_off64_t);
+extern uint32_t crc32_acle(uint32_t, const unsigned char *, size_t);
 #endif
 
 #if BYTE_ORDER == LITTLE_ENDIAN
@@ -213,8 +214,12 @@ const uint32_t * ZEXPORT get_crc_table(void) {
     return (const uint32_t *)crc_table;
 }
 
-uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len) {
-    if (buf == NULL) return 0;
+
+ZLIB_INTERNAL
+uint32_t (*(crc32_z_ifunc(void)))(uint32_t, const unsigned char *, size_t)
+{
+
+/* return a function pointer for optimized arches here after a capability test */
 
 #ifdef DYNAMIC_CRC_TABLE
     if (crc_table_empty)
@@ -224,18 +229,24 @@ uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len) {
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
 #if BYTE_ORDER == LITTLE_ENDIAN
 #  if __ARM_FEATURE_CRC32
-        return crc32_acle(crc, buf, len);
+        return crc32_acle;
 #  else
-        return crc32_little(crc, buf, len);
+        return crc32_little;
 #  endif
 #elif BYTE_ORDER == BIG_ENDIAN
-        return crc32_big(crc, buf, len);
+        return crc32_big;
 #endif
     }
 
-    return crc32_generic(crc, buf, len);
+    return crc32_generic;
 }
 
+uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len) {
+
+    if (buf == NULL) return 0;
+
+    return functable.crc32(crc, buf, len);
+}
 /* ========================================================================= */
 #define DO1 crc = crc_table[0][((int)crc ^ (*buf++)) & 0xff] ^ (crc >> 8)
 #define DO8 DO1; DO1; DO1; DO1; DO1; DO1; DO1; DO1

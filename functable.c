@@ -32,13 +32,16 @@ extern uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
 
+extern uint32_t (*(crc32_z_ifunc(void)))(uint32_t, const unsigned char *, size_t);
+
 /* stub definitions */
 ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count);
 ZLIB_INTERNAL void fill_window_stub(deflate_state *s);
 ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len);
+ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, size_t len);
 
 /* functable init */
-ZLIB_INTERNAL struct functable_s functable = {fill_window_stub,insert_string_stub,adler32_stub};
+ZLIB_INTERNAL struct functable_s functable = {fill_window_stub,insert_string_stub,adler32_stub,crc32_stub};
 
 
 /* stub functions */
@@ -81,4 +84,11 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
     #endif
 
     return functable.adler32(adler, buf, len);
+}
+
+ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, size_t len) {
+    // Initialize default
+    functable.crc32=crc32_z_ifunc();
+
+    return functable.crc32(crc, buf, len);
 }
