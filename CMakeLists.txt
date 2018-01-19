@@ -461,7 +461,7 @@ macro(generate_cmakein input output)
 
         if (_line STREQUAL "#define ZCONF_H")
             file(APPEND ${output} "#cmakedefine Z_HAVE_UNISTD_H\n")
-            file(APPEND ${output}"#cmakedefine Z_HAVE_STDARG_H\n")
+            file(APPEND ${output} "#cmakedefine Z_HAVE_STDARG_H\n")
         endif()
     endforeach()
 endmacro(generate_cmakein)
