@@ -240,7 +240,7 @@ install: install-libs
 	-@if [ ! -d $(DESTDIR)$(includedir)   ]; then mkdir -p $(DESTDIR)$(includedir); fi
 	rm -f $(DESTDIR)$(includedir)/zlib$(SUFFIX).h $(DESTDIR)$(includedir)/zconf$(SUFFIX).h
 	cp $(SRCDIR)/zlib$(SUFFIX).h $(DESTDIR)$(includedir)/zlib$(SUFFIX).h
-	cp zconf.h $(DESTDIR)$(includedir)/zconf$(SUFFIX).h
+	cp zconf$(SUFFIX).h $(DESTDIR)$(includedir)/zconf$(SUFFIX).h
 	chmod 644 $(DESTDIR)$(includedir)/zlib$(SUFFIX).h $(DESTDIR)$(includedir)/zconf$(SUFFIX).h
 
 uninstall-static:
