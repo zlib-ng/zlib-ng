@@ -506,7 +506,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(ZLIB_PUBLIC_HDRS
     ${CMAKE_CURRENT_BINARY_DIR}/zconf.h
-    zlib.h
+    zlib${SUFFIX}.h
 )
 set(ZLIB_PRIVATE_HDRS
     crc32.h
@@ -558,7 +558,7 @@ if(NOT MINGW AND NOT MSYS)
 endif()
 
 # parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/zlib.h _zlib_h_contents)
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h _zlib_h_contents)
 string(REGEX REPLACE ".*#define[ \t]+ZLIB_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
     "\\1" ZLIB_FULL_VERSION ${_zlib_h_contents})
 
@@ -617,7 +617,7 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
         LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )
 endif()
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL )
-    install(FILES zlib.h DESTINATION "${INSTALL_INC_DIR}" RENAME zlib${SUFFIX}.h)
+    install(FILES zlib${SUFFIX}.h DESTINATION "${INSTALL_INC_DIR}" RENAME zlib${SUFFIX}.h)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zconf.h DESTINATION "${INSTALL_INC_DIR}" RENAME zconf${SUFFIX}.h)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL )
