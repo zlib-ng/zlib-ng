@@ -22,16 +22,20 @@ CFLAGS=-O
 
 SFLAGS=-O
 LDFLAGS=-L.
-TEST_LIBS=libz.a
+LIBNAME1=libz-ng
+LIBNAME2=zlib-ng
+SUFFIX=-ng
+TEST_LIBS=$(LIBNAME1).a
 LDSHARED=$(CC)
 LDSHAREDFLAGS=-shared
 
-STATICLIB=libz.a
-SHAREDLIB=libz.so
-SHAREDLIBV=libz.so.1.2.11
-SHAREDLIBM=libz.so.1
+STATICLIB=$(LIBNAME1).a
+SHAREDLIB=$(LIBNAME1).so
+SHAREDLIBV=$(LIBNAME1).so.1.2.11
+SHAREDLIBM=$(LIBNAME1).so.1
 IMPORTLIB=
-SHAREDTARGET=libz.so.1.2.11
+SHAREDTARGET=$(LIBNAME1).so.1.2.11
+PKGFILE=$(LIBNAME2).pc
 
 LIBS=$(STATICLIB) $(SHAREDTARGET)
 
@@ -225,18 +229,19 @@ install-static: $(STATICLIB)
 install-libs: install-shared install-static
 	-@if [ ! -d $(DESTDIR)$(man3dir)      ]; then mkdir -p $(DESTDIR)$(man3dir); fi
 	-@if [ ! -d $(DESTDIR)$(pkgconfigdir) ]; then mkdir -p $(DESTDIR)$(pkgconfigdir); fi
-	rm -f $(DESTDIR)$(man3dir)/zlib.3
-	cp $(SRCDIR)/zlib.3 $(DESTDIR)$(man3dir)
-	chmod 644 $(DESTDIR)$(man3dir)/zlib.3
-	rm -f $(DESTDIR)$(pkgconfigdir)/zlib.pc
-	cp zlib.pc $(DESTDIR)$(pkgconfigdir)
-	chmod 644 $(DESTDIR)$(pkgconfigdir)/zlib.pc
+	rm -f $(DESTDIR)$(man3dir)/zlib$(SUFFIX).3
+	cp $(SRCDIR)/zlib.3 $(DESTDIR)$(man3dir)/zlib$(SUFFIX).3
+	chmod 644 $(DESTDIR)$(man3dir)/zlib$(SUFFIX).3
+	rm -f $(DESTDIR)$(pkgconfigdir)/$(PKGFILE)
+	cp $(PKGFILE) $(DESTDIR)$(pkgconfigdir)
+	chmod 644 $(DESTDIR)$(pkgconfigdir)/$(PKGFILE)
 
 install: install-libs
 	-@if [ ! -d $(DESTDIR)$(includedir)   ]; then mkdir -p $(DESTDIR)$(includedir); fi
-	rm -f $(DESTDIR)$(includedir)/zlib.h $(DESTDIR)$(includedir)/zconf.h
-	cp $(SRCDIR)/zlib.h zconf.h $(DESTDIR)$(includedir)
-	chmod 644 $(DESTDIR)$(includedir)/zlib.h $(DESTDIR)$(includedir)/zconf.h
+	rm -f $(DESTDIR)$(includedir)/zlib$(SUFFIX).h $(DESTDIR)$(includedir)/zconf$(SUFFIX).h
+	cp $(SRCDIR)/zlib.h $(DESTDIR)$(includedir)/zlib$(SUFFIX).h
+	cp zconf.h $(DESTDIR)$(includedir)/zconf$(SUFFIX).h
+	chmod 644 $(DESTDIR)$(includedir)/zlib$(SUFFIX).h $(DESTDIR)$(includedir)/zconf$(SUFFIX).h
 
 uninstall-static:
 	cd $(DESTDIR)$(libdir) && rm -f $(STATICLIB)
@@ -250,9 +255,9 @@ ifneq ($(IMPORTLIB),)
 endif
 
 uninstall: uninstall-static uninstall-shared
-	cd $(DESTDIR)$(includedir) && rm -f zlib.h zconf.h
-	cd $(DESTDIR)$(man3dir) && rm -f zlib.3
-	cd $(DESTDIR)$(pkgconfigdir) && rm -f zlib.pc
+	cd $(DESTDIR)$(includedir) && rm -f zlib$(SUFFIX).h zconf$(SUFFIX).h
+	cd $(DESTDIR)$(man3dir) && rm -f zlib$(SUFFIX).3
+	cd $(DESTDIR)$(pkgconfigdir) && rm -f $(PKGFILE)
 
 docs: zlib.3.pdf
 
@@ -273,12 +278,13 @@ clean:
 	rm -rf objs
 	rm -f *.gcda *.gcno *.gcov
 	rm -f a.out a.exe
+	rm -f *.pc
 
 maintainer-clean: distclean
 distclean: clean
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) distclean; fi
 	@if [ -f test/Makefile ]; then $(MAKE) -C test distclean; fi
-	rm -f zlib.pc configure.log zconf.h zconf.h.cmakein
+	rm -f $(PKGFILE) configure.log zconf.h zconf.h.cmakein
 	-@rm -f .DS_Store
 # Reset Makefile if building inside source tree
 	@if [ -f Makefile.in ]; then \
