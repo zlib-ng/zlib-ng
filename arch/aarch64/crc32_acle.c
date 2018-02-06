@@ -42,16 +42,16 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, size_t len) {
 
 #ifndef UNROLL_LESS
     while (len >= 32) {
-        c = __crc32b(c, *buf8++);
-        c = __crc32b(c, *buf8++);
-        c = __crc32b(c, *buf8++);
-        c = __crc32b(c, *buf8++);
+        c = __crc32d(c, *buf8++);
+        c = __crc32d(c, *buf8++);
+        c = __crc32d(c, *buf8++);
+        c = __crc32d(c, *buf8++);
         len -= 32;
     }
 #endif
 
     while (len >= 8) {
-        c = __crc32b(c, *buf8++);
+        c = __crc32d(c, *buf8++);
         len -= 8;
     }
 
