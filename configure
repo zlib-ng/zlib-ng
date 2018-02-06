@@ -821,7 +821,7 @@ case "${ARCH}" in
     ;;
 
     # ARM specific optimizations
-    arm | armv[3467]l | armv4b | armv4tl | armv5tel | armv5tejl | armv[67]hl | armv7hnl | armv[78]-a | armv8-a+* | armv8.[12]-a)
+    arm | armv[3467]l | armv4b | armv4tl | armv5tel | armv5tejl | armv[67]hl | armv7hnl | armv[78]-a | armv8-a+* | armv8.[1234]-a | armv8.[1234]-a+*)
         ARCHDIR=arch/arm
         ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
         ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
@@ -841,7 +841,7 @@ case "${ARCH}" in
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
             ;;
-            arm | armv7* | armv8-a | armv8-a+simd)
+            arm | armv7*)
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
 
@@ -853,20 +853,17 @@ case "${ARCH}" in
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
                 fi
             ;;
-            armv8-a+crc | armv8-a+crc+simd | armv8.[12]-a)
-                CFLAGS="-march=${ARCH} ${CFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
-                SFLAGS="-march=${ARCH} ${SFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
-
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
-
-                if test $buildneon -eq 1; then
-                    CFLAGS="${CFLAGS} ${floatabi} -mfpu=neon"
-                    SFLAGS="${SFLAGS} ${floatabi} -mfpu=neon"
-
-                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
-                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
-                fi
+            armv8-a | armv8-a+simd)
+                CFLAGS="${CFLAGS} ${floatabi} -DUNALIGNED_OK -DUNROLL_LESS"
+                SFLAGS="${SFLAGS} ${floatabi} -DUNALIGNED_OK -DUNROLL_LESS"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+            ;;
+            armv8-a+crc | armv8-a+crc+simd | armv8.[1234]-a | armv8.[1234]-a+simd)
+                CFLAGS="-march=${ARCH} ${CFLAGS} ${floatabi} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
+                SFLAGS="-march=${ARCH} ${SFLAGS} ${floatabi} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o adler32_neon.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo adler32_neon.lo"
             ;;
         esac
 
@@ -874,8 +871,8 @@ case "${ARCH}" in
     # 64-bit ARM specific optimizations
     aarch64)
         ARCHDIR=arch/aarch64
-        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
-        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
+        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o adler32_neon.o"
+        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo adler32_neon.o"
 
         if test $native -eq 0; then
           ARCH="armv8-a"
@@ -890,13 +887,6 @@ case "${ARCH}" in
             SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
-        fi
-        if test $buildneon -eq 1; then
-            if test $native -eq 0; then
-                ARCH="${ARCH}+simd"
-            fi
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
         fi
         CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
         SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
