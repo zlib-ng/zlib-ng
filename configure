@@ -751,6 +751,27 @@ else
     HAVE_PCLMULQDQ_INTRIN=0
 fi
 
+# Check for 64bit long int
+cat > $test.c << EOF
+int main(void) {
+    if(sizeof(long int) == 8)
+        return 0;
+    else
+        return 1;
+}
+EOF
+if try ${CC} ${CFLAGS} -o $test $test.c; then
+    if try ./$test; then
+        CFLAGS="$CFLAGS -DIS_64BIT_LONG"
+        SFLAGS="$SFLAGS -DIS_64BIT_LONG"
+        echo "Checking for 64bit long int ... Yes." | tee -a configure.log
+    else
+        echo "Checking for 64bit long int ... No." | tee -a configure.log
+    fi
+else
+    echo "Checking for 64bit long int ... No." | tee -a configure.log
+fi
+
 # Enable deflate_medium at level 4-6
 if test $without_new_strategies -eq 0; then
     CFLAGS="${CFLAGS} -DMEDIUM_STRATEGY"
@@ -769,8 +790,8 @@ case "${ARCH}" in
 
         case "${ARCH}" in
             x86_64)
-                CFLAGS="${CFLAGS} -DX86_64 -DX86_NOCHECK_SSE2"
-                SFLAGS="${SFLAGS} -DX86_64 -DX86_NOCHECK_SSE2"
+                CFLAGS="${CFLAGS} -DX86_NOCHECK_SSE2"
+                SFLAGS="${SFLAGS} -DX86_NOCHECK_SSE2"
             ;;
             i386 | i486 | i586 | i686)
                 CFLAGS="${CFLAGS} -DX86"
