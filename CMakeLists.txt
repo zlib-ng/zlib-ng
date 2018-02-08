@@ -229,9 +229,6 @@ check_c_source_runs(
     }"
     IS_64BIT_LONG
 )
-if(IS_64BIT_LONG)
-    add_definitions(-DIS_64BIT_LONG)
-endif()
 
 #
 # Check if we can hide zlib internal symbols that are linked between separate source files using hidden
@@ -385,14 +382,20 @@ set(ZLIB_ARCH_SRCS)
 set(ARCHDIR "arch/generic")
 if("${ARCH}" MATCHES "x86_64" OR "${ARCH}" MATCHES "AMD64")
     set(ARCHDIR "arch/x86")
-    add_definitions(-DX86_NOCHECK_SSE2 -DUNALIGNED_OK -DUNROLL_LESS)
+    add_definitions(-DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK -DUNROLL_LESS)
     add_feature_info(SSE2 1 "Use the SSE2 instruction set, using \"${SSE2FLAG}\"")
 elseif("${ARCH}" MATCHES "arm")
     set(ARCHDIR "arch/arm")
     add_definitions(-DUNALIGNED_OK -DUNROLL_LESS)
+    if(IS_64BIT_LONG)
+        add_definitions(-DARM_64BIT_LONG)
+    endif()
 elseif("${ARCH}" MATCHES "aarch64")
     set(ARCHDIR "arch/aarch64")
     add_definitions(-DUNALIGNED_OK -DUNROLL_LESS)
+    if(IS_64BIT_LONG)
+        add_definitions(-DARM_64BIT_LONG)
+    endif()
 else()
     set(ARCHDIR "arch/x86")
     add_definitions(-DX86 -DUNALIGNED_OK -DUNROLL_LESS)
