@@ -28,7 +28,7 @@ extern void fill_window_arm(deflate_state *s);
 
 /* adler32 */
 extern uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
-#if ((defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(WITH_NEON))
+#if ((defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32))
 extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
 
@@ -76,7 +76,7 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
     // Initialize default
     functable.adler32=&adler32_c;
 
-    #if ((defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(WITH_NEON))
+    #if ((defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32))
         functable.adler32=&adler32_neon;
     #endif
 
