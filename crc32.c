@@ -184,7 +184,7 @@ uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len) {
 #define DO4 DO1; DO1; DO1; DO1
 
 /* ========================================================================= */
-ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, z_off64_t len)
+ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, uint64_t len)
 {
     crc = crc ^ 0xffffffff;
 
@@ -230,7 +230,7 @@ uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, uint32_t len) {
 #define DOLIT32 DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4
 
 /* ========================================================================= */
-ZLIB_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, size_t len) {
+ZLIB_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, uint64_t len) {
     register uint32_t c;
     register const uint32_t *buf4;
 
@@ -272,7 +272,7 @@ ZLIB_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, size
 #define DOBIG32 DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4
 
 /* ========================================================================= */
-ZLIB_INTERNAL uint32_t crc32_big(uint32_t crc, const unsigned char *buf, size_t len) {
+ZLIB_INTERNAL uint32_t crc32_big(uint32_t crc, const unsigned char *buf, uint64_t len) {
     register uint32_t c;
     register const uint32_t *buf4;
 
