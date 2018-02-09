@@ -100,6 +100,9 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
 
 ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len) {
 
+
+   Assert(sizeof(uint64_t) >= sizeof(size_t),
+          "crc32_z takes size_t but internally we have a uint64_t len");
 /* return a function pointer for optimized arches here after a capability test */
 
 #ifdef DYNAMIC_CRC_TABLE
