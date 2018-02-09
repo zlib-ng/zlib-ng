@@ -98,7 +98,7 @@ static int gz_look(gz_state *state) {
         state->strm.opaque = NULL;
         state->strm.avail_in = 0;
         state->strm.next_in = NULL;
-        if (inflateInit2(&(state->strm), 15 + 16) != Z_OK) {    /* gunzip */
+        if (PREFIX(inflateInit2)(&(state->strm), 15 + 16) != Z_OK) {    /* gunzip */
             free(state->out);
             free(state->in);
             state->size = 0;
@@ -124,7 +124,7 @@ static int gz_look(gz_state *state) {
        single byte is sufficient indication that it is not a gzip file) */
     if (strm->avail_in > 1 &&
             strm->next_in[0] == 31 && strm->next_in[1] == 139) {
-        inflateReset(strm);
+        PREFIX(inflateReset)(strm);
         state->how = GZIP;
         state->direct = 0;
         return 0;
@@ -175,7 +175,7 @@ static int gz_decomp(gz_state *state) {
         }
 
         /* decompress and handle errors */
-        ret = inflate(strm, Z_NO_FLUSH);
+        ret = PREFIX(inflate)(strm, Z_NO_FLUSH);
         if (ret == Z_STREAM_ERROR || ret == Z_NEED_DICT) {
             gz_error(state, Z_STREAM_ERROR, "internal error: inflate stream corrupt");
             return -1;
@@ -342,7 +342,7 @@ static size_t gz_read(gz_state *state, void *buf, size_t len) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzread(gzFile file, void *buf, unsigned len) {
+int ZEXPORT PREFIX(gzread)(gzFile file, void *buf, unsigned len) {
     gz_state *state;
 
     /* get internal structure */
@@ -374,7 +374,7 @@ int ZEXPORT gzread(gzFile file, void *buf, unsigned len) {
 }
 
 /* -- see zlib.h -- */
-size_t ZEXPORT gzfread(void *buf, size_t size, size_t nitems, gzFile file) {
+size_t ZEXPORT PREFIX(gzfread)(void *buf, size_t size, size_t nitems, gzFile file) {
     size_t len;
     gz_state *state;
 
@@ -405,7 +405,7 @@ size_t ZEXPORT gzfread(void *buf, size_t size, size_t nitems, gzFile file) {
 
 /* -- see zlib.h -- */
 #undef gzgetc
-int ZEXPORT gzgetc(gzFile file) {
+int ZEXPORT PREFIX(gzgetc)(gzFile file) {
     int ret;
     unsigned char buf[1];
     gz_state *state;
@@ -431,12 +431,12 @@ int ZEXPORT gzgetc(gzFile file) {
     return ret < 1 ? -1 : buf[0];
 }
 
-int ZEXPORT gzgetc_(gzFile file) {
-    return gzgetc(file);
+int ZEXPORT PREFIX(gzgetc_)(gzFile file) {
+    return PREFIX(gzgetc)(file);
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzungetc(int c, gzFile file) {
+int ZEXPORT PREFIX(gzungetc)(int c, gzFile file) {
     gz_state *state;
 
     /* get internal structure */
@@ -492,7 +492,7 @@ int ZEXPORT gzungetc(int c, gzFile file) {
 }
 
 /* -- see zlib.h -- */
-char * ZEXPORT gzgets(gzFile file, char *buf, int len) {
+char * ZEXPORT PREFIX(gzgets)(gzFile file, char *buf, int len) {
     unsigned left, n;
     char *str;
     unsigned char *eol;
@@ -551,7 +551,7 @@ char * ZEXPORT gzgets(gzFile file, char *buf, int len) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzdirect(gzFile file) {
+int ZEXPORT PREFIX(gzdirect)(gzFile file) {
     gz_state *state;
 
     /* get internal structure */
@@ -570,7 +570,7 @@ int ZEXPORT gzdirect(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzclose_r(gzFile file) {
+int ZEXPORT PREFIX(gzclose_r)(gzFile file) {
     int ret, err;
     gz_state *state;
 
@@ -586,7 +586,7 @@ int ZEXPORT gzclose_r(gzFile file) {
 
     /* free memory and close file */
     if (state->size) {
-        inflateEnd(&(state->strm));
+        PREFIX(inflateEnd)(&(state->strm));
         free(state->out);
         free(state->in);
     }

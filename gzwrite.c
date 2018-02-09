@@ -40,7 +40,7 @@ static int gz_init(gz_state *state) {
         strm->zalloc = NULL;
         strm->zfree = NULL;
         strm->opaque = NULL;
-        ret = deflateInit2(strm, state->level, Z_DEFLATED, MAX_WBITS + 16, DEF_MEM_LEVEL, state->strategy);
+        ret = PREFIX(deflateInit2)(strm, state->level, Z_DEFLATED, MAX_WBITS + 16, DEF_MEM_LEVEL, state->strategy);
         if (ret != Z_OK) {
             free(state->out);
             free(state->in);
@@ -110,7 +110,7 @@ static int gz_comp(gz_state *state, int flush) {
 
         /* compress */
         have = strm->avail_out;
-        ret = deflate(strm, flush);
+        ret = PREFIX(deflate)(strm, flush);
         if (ret == Z_STREAM_ERROR) {
             gz_error(state, Z_STREAM_ERROR, "internal error: deflate stream corrupt");
             return -1;
@@ -120,7 +120,7 @@ static int gz_comp(gz_state *state, int flush) {
 
     /* if that completed a deflate stream, allow another to start */
     if (flush == Z_FINISH)
-        deflateReset(strm);
+        PREFIX(deflateReset)(strm);
 
     /* all done, no errors */
     return 0;
@@ -220,7 +220,7 @@ static size_t gz_write(gz_state *state, void const *buf, size_t len) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len) {
+int ZEXPORT PREFIX(gzwrite)(gzFile file, void const *buf, unsigned len) {
     gz_state *state;
 
     /* get internal structure */
@@ -244,7 +244,7 @@ int ZEXPORT gzwrite(gzFile file, void const *buf, unsigned len) {
 }
 
 /* -- see zlib.h -- */
-size_t ZEXPORT gzfwrite(void const *buf, size_t size, size_t nitems, gzFile file) {
+size_t ZEXPORT PREFIX(gzfwrite)(void const *buf, size_t size, size_t nitems, gzFile file) {
     size_t len;
     gz_state *state;
 
@@ -273,7 +273,7 @@ size_t ZEXPORT gzfwrite(void const *buf, size_t size, size_t nitems, gzFile file
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzputc(gzFile file, int c) {
+int ZEXPORT PREFIX(gzputc)(gzFile file, int c) {
     unsigned have;
     unsigned char buf[1];
     gz_state *state;
@@ -318,7 +318,7 @@ int ZEXPORT gzputc(gzFile file, int c) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzputs(gzFile file, const char *str) {
+int ZEXPORT PREFIX(gzputs)(gzFile file, const char *str) {
     int ret;
     size_t len;
     gz_state *state;
@@ -339,7 +339,7 @@ int ZEXPORT gzputs(gzFile file, const char *str) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va) {
+int ZEXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list va) {
     int len;
     unsigned left;
     char *next;
@@ -395,18 +395,18 @@ int ZEXPORTVA gzvprintf(gzFile file, const char *format, va_list va) {
     return len;
 }
 
-int ZEXPORTVA gzprintf(gzFile file, const char *format, ...) {
+int ZEXPORTVA PREFIX(gzprintf)(gzFile file, const char *format, ...) {
     va_list va;
     int ret;
 
     va_start(va, format);
-    ret = gzvprintf(file, format, va);
+    ret = PREFIX(gzvprintf)(file, format, va);
     va_end(va);
     return ret;
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzflush(gzFile file, int flush) {
+int ZEXPORT PREFIX(gzflush)(gzFile file, int flush) {
     gz_state *state;
 
     /* get internal structure */
@@ -435,7 +435,7 @@ int ZEXPORT gzflush(gzFile file, int flush) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzsetparams(gzFile file, int level, int strategy) {
+int ZEXPORT PREFIX(gzsetparams)(gzFile file, int level, int strategy) {
     gz_state *state;
     z_stream *strm;
 
@@ -465,7 +465,7 @@ int ZEXPORT gzsetparams(gzFile file, int level, int strategy) {
         /* flush previous input with previous parameters before changing */
         if (strm->avail_in && gz_comp(state, Z_BLOCK) == -1)
             return state->err;
-        deflateParams(strm, level, strategy);
+        PREFIX(deflateParams)(strm, level, strategy);
     }
     state->level = level;
     state->strategy = strategy;
@@ -473,7 +473,7 @@ int ZEXPORT gzsetparams(gzFile file, int level, int strategy) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT gzclose_w(gzFile file) {
+int ZEXPORT PREFIX(gzclose_w)(gzFile file) {
     int ret = Z_OK;
     gz_state *state;
 
@@ -498,7 +498,7 @@ int ZEXPORT gzclose_w(gzFile file) {
         ret = state->err;
     if (state->size) {
         if (!state->direct) {
-            (void)deflateEnd(&(state->strm));
+            (void)PREFIX(deflateEnd)(&(state->strm));
             free(state->out);
         }
         free(state->in);

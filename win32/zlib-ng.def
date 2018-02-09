@@ -1,0 +1,61 @@
+; zlib-ng data compression library
+EXPORTS
+; basic functions
+    zlibng_version
+    zng_deflate
+    zng_deflateEnd
+    zng_inflate
+    zng_inflateEnd
+; advanced functions
+    zng_deflateSetDictionary
+    zng_deflateGetDictionary
+    zng_deflateCopy
+    zng_deflateReset
+    zng_deflateParams
+    zng_deflateTune
+    zng_deflateBound
+    zng_deflatePending
+    zng_deflatePrime
+    zng_deflateSetHeader
+    zng_inflateSetDictionary
+    zng_inflateGetDictionary
+    zng_inflateSync
+    zng_inflateCopy
+    zng_inflateReset
+    zng_inflateReset2
+    zng_inflatePrime
+    zng_inflateMark
+    zng_inflateGetHeader
+    zng_inflateBack
+    zng_inflateBackEnd
+    zng_zlibCompileFlags
+; utility functions
+    zng_compress
+    zng_compress2
+    zng_compressBound
+    zng_uncompress
+    zng_uncompress2
+; large file functions
+    zng_adler32_combine64
+    zng_crc32_combine64
+; checksum functions
+    zng_adler32
+    zng_adler32_z
+    zng_crc32
+    zng_crc32_z
+    zng_adler32_combine
+    zng_crc32_combine
+; various hacks, don't look :)
+    zng_deflateInit_
+    zng_deflateInit2_
+    zng_inflateInit_
+    zng_inflateInit2_
+    zng_inflateBackInit_
+    zng_zError
+    zng_inflateSyncPoint
+    zng_get_crc_table
+    zng_inflateUndermine
+    zng_inflateValidate
+    zng_inflateCodesUsed
+    zng_inflateResetKeep
+    zng_deflateResetKeep

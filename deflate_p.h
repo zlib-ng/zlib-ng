@@ -20,7 +20,7 @@ void check_match(deflate_state *s, IPos start, IPos match, int length);
 #else
 #define check_match(s, start, match, length)
 #endif
-void flush_pending(z_stream *strm);
+void flush_pending(PREFIX3(stream) *strm);
 
 /* ===========================================================================
  * Insert string str in the dictionary and set match_head to the previous head
