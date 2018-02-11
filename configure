@@ -47,17 +47,8 @@ case "${ARCH}" in
     ;;
 esac
 
-# destination name for static library
-STATICLIB=libz.a
-
 # destination name for windows import library
 IMPORTLIB=
-
-# extract zlib version numbers from zlib.h
-VER=`sed -n -e '/ZLIB_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib.h`
-VER3=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib.h`
-VER2=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
-VER1=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
 
 # establish commands for library building
 if "${CROSS_PREFIX}ar" --version >/dev/null 2>/dev/null || test $? -lt 126; then
@@ -227,6 +218,33 @@ if test $build64 -eq 1; then
   LDFLAGS="${LDFLAGS} -m64"
 fi
 
+# Set library name depending on zlib-compat option
+if test $compat -eq 0; then
+  LIBNAME=libz-ng
+  LIBNAME2=zlib-ng
+  SUFFIX=-ng
+else
+  LIBNAME=libz
+  LIBNAME2=zlib
+  SUFFIX=""
+fi
+
+STATICLIB=${LIBNAME}.a
+MAPNAME=${LIBNAME2}.map
+
+# extract zlib version numbers from zlib.h
+if test $compat -eq 0; then
+  VER=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib-ng.h`
+  VER3=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib-ng.h`
+  VER2=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib-ng.h`
+  VER1=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib-ng.h`
+else
+  VER=`sed -n -e '/ZLIB_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib.h`
+  VER3=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib.h`
+  VER2=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
+  VER1=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
+fi
+
 show $cc -c $test.c
 if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   echo ... using gcc >> configure.log
@@ -286,25 +304,29 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   case "$uname" in
   Linux* | linux* | GNU | GNU/* | solaris*)
         LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map" ;;
+        LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.1,--version-script,${SRCDIR}/${MAPNAME}" ;;
   *BSD | *bsd* | DragonFly)
         LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,-soname,libz.so.1,--version-script,${SRCDIR}/zlib.map"
+        LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.1,--version-script,${SRCDIR}/${MAPNAME}"
         LDCONFIG="ldconfig -m" ;;
   CYGWIN* | Cygwin* | cygwin*)
         ARFLAGS="rcs"
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
         sharedlibdir='${bindir}'
-        SHAREDLIB=cygz$shared_ext
+        if test $compat -eq 0; then
+          SHAREDLIB=cygz-ng$shared_ext
+        else
+          SHAREDLIB=cygz$shared_ext
+        fi
         SHAREDLIBM=''
         SHAREDLIBV=''
         SHAREDTARGET=$SHAREDLIB
-        IMPORTLIB='libz.dll.a'
+        IMPORTLIB='${LIBNAME}.dll.a'
         LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/zlib.map"
+        LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/${MAPNAME}"
         LDSHAREDLIBC=""
-        DEFFILE='win32/zlib.def'
+        DEFFILE='win32/${LIBNAME2}.def'
         RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         RCOBJS='zlibrc.o'
@@ -315,15 +337,19 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
         sharedlibdir='${bindir}'
-        SHAREDLIB=msys-z$shared_ext
+        if test $compat -eq 0; then
+          SHAREDLIB=msys-z-ng$shared_ext
+        else
+          SHAREDLIB=msys-z$shared_ext
+        fi
         SHAREDLIBM=''
         SHAREDLIBV=''
         SHAREDTARGET=$SHAREDLIB
-        IMPORTLIB='libz.dll.a'
+        IMPORTLIB='${LIBNAME}.dll.a'
         LDSHARED=${LDSHARED-"$cc"}
         LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB}"
         LDSHAREDLIBC=""
-        DEFFILE='win32/zlib.def'
+        DEFFILE='win32/${LIBNAME2}.def'
         RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         RCOBJS='zlibrc.o'
@@ -335,15 +361,15 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
         sharedlibdir='${bindir}'
-        SHAREDLIB=libz-$VER1$shared_ext
+        SHAREDLIB=${LIBNAME}-$VER1$shared_ext
         SHAREDLIBM=''
         SHAREDLIBV=''
         SHAREDTARGET=$SHAREDLIB
-        IMPORTLIB='libz.dll.a'
+        IMPORTLIB='${LIBNAME}.dll.a'
         LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/zlib.map"
+        LDSHAREDFLAGS="-shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/${MAPNAME}"
         LDSHAREDLIBC=""
-        DEFFILE='win32/zlib.def'
+        DEFFILE='win32/${LIBNAME2}.def'
         RC="${CROSS_PREFIX}windres"
         RCFLAGS='--define GCC_WINDRES'
         if [ "$CC" == "mingw32-gcc" ]; then
@@ -357,23 +383,23 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   QNX*)  # This is for QNX6. I suppose that the QNX rule below is for QNX2,QNX4
          # (alain.bonnefoy@icbt.com)
                  LDSHARED=${LDSHARED-"$cc"}
-                 LDSHAREDFLAGS="-shared -Wl,-hlibz.so.1" ;;
+                 LDSHAREDFLAGS="-shared -Wl,-h${LIBNAME}.so.1" ;;
   HP-UX*)
          LDSHARED=${LDSHARED-"$cc"}
          LDSHAREDFLAGS="-shared"
          case `(uname -m || echo unknown) 2>/dev/null` in
          ia64)
                  shared_ext='.so'
-                 SHAREDLIB='libz.so' ;;
+                 SHAREDLIB='${LIBNAME}.so' ;;
          *)
                  shared_ext='.sl'
-                 SHAREDLIB='libz.sl' ;;
+                 SHAREDLIB='${LIBNAME}.sl' ;;
          esac ;;
   Darwin* | darwin*)
              shared_ext='.dylib'
-             SHAREDLIB=libz$shared_ext
-             SHAREDLIBV=libz.$VER$shared_ext
-             SHAREDLIBM=libz.$VER1$shared_ext
+             SHAREDLIB=${LIBNAME}$shared_ext
+             SHAREDLIBV=${LIBNAME}.$VER$shared_ext
+             SHAREDLIBM=${LIBNAME}.$VER1$shared_ext
              SHAREDTARGET=$SHAREDLIBV
              LDSHARED=${LDSHARED-"$cc"}
              LDSHAREDFLAGS="-dynamiclib -install_name $libdir/$SHAREDLIBM -compatibility_version $VER1 -current_version $VER3"
@@ -383,11 +409,13 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
                  AR="/usr/bin/libtool"
              fi
              ARFLAGS="-o" ;;
-  aarch64)   LDSHARED=${LDSHARED-"$cc"}
-             LDSHAREDFLAGS="-shared -Wl,-soname,libz.so.1 -Wl,--version-script,${SRCDIR}/zlib.map"
+  aarch64)
+             LDSHARED=${LDSHARED-"$cc"}
+             LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.1 -Wl,--version-script,${SRCDIR}/${MAPNAME}"
              LDSHAREDLIBC="-Wl,--start-group -lc -lrdimon -Wl,--end-group" ;;
-  *)             LDSHARED=${LDSHARED-"$cc"}
-                 LDSHAREDFLAGS="-shared" ;;
+  *)
+             LDSHARED=${LDSHARED-"$cc"}
+             LDSHAREDFLAGS="-shared" ;;
   esac
 else
   # find system name and corresponding cc options
@@ -405,10 +433,10 @@ else
          case `(uname -m || echo unknown) 2>/dev/null` in
          ia64)
              shared_ext='.so'
-             SHAREDLIB='libz.so' ;;
+             SHAREDLIB='${LIBNAME}.so' ;;
          *)
              shared_ext='.sl'
-             SHAREDLIB='libz.sl' ;;
+             SHAREDLIB='${LIBNAME}.sl' ;;
          esac ;;
   AIX*)  # Courtesy of dbakker@arrayasolutions.com
              SFLAGS=${CFLAGS-"-O -qmaxmem=8192"}
@@ -424,10 +452,10 @@ else
 fi
 
 # destination names for shared library if not defined above
-SHAREDLIB=${SHAREDLIB-"libz$shared_ext"}
-SHAREDLIBV=${SHAREDLIBV-"libz$shared_ext.$VER"}
-SHAREDLIBM=${SHAREDLIBM-"libz$shared_ext.$VER1"}
-SHAREDTARGET=${SHAREDTARGET-"libz$shared_ext.$VER"}
+SHAREDLIB=${SHAREDLIB-"${LIBNAME}$shared_ext"}
+SHAREDLIBV=${SHAREDLIBV-"${LIBNAME}$shared_ext.$VER"}
+SHAREDLIBM=${SHAREDLIBM-"${LIBNAME}$shared_ext.$VER1"}
+SHAREDTARGET=${SHAREDTARGET-"${LIBNAME}$shared_ext.$VER"}
 
 echo >> configure.log
 
@@ -581,10 +609,12 @@ else
 fi
 
 # We need to remove zconf.h from source directory if building outside of it
-if [ "$SRCDIR" != "$BUILDDIR" ]; then rm -f $SRCDIR/zconf.h; fi
+if [ "$SRCDIR" != "$BUILDDIR" ]; then
+    rm -f $SRCDIR/zconf${SUFFIX}.h
+fi
 
 # copy clean zconf.h for subsequent edits
-cp -p $SRCDIR/zconf.h.in zconf.h
+cp -p $SRCDIR/zconf${SUFFIX}.h.in zconf${SUFFIX}.h
 
 echo >> configure.log
 
@@ -594,8 +624,8 @@ cat > $test.c <<EOF
 int main() { return 0; }
 EOF
 if try $CC -c $CFLAGS $test.c; then
-  sed < zconf.h "/^#ifdef HAVE_UNISTD_H.* may be/s/def HAVE_UNISTD_H\(.*\) may be/ 1\1 was/" > zconf.temp.h
-  mv zconf.temp.h zconf.h
+  sed < zconf${SUFFIX}.h "/^#ifdef HAVE_UNISTD_H.* may be/s/def HAVE_UNISTD_H\(.*\) may be/ 1\1 was/" > zconf${SUFFIX}.temp.h
+  mv zconf${SUFFIX}.temp.h zconf${SUFFIX}.h
   echo "Checking for unistd.h... Yes." | tee -a configure.log
 else
   echo "Checking for unistd.h... No." | tee -a configure.log
@@ -609,8 +639,8 @@ cat > $test.c <<EOF
 int main() { return 0; }
 EOF
 if try $CC -c $CFLAGS $test.c; then
-  sed < zconf.h "/^#ifdef HAVE_STDARG_H.* may be/s/def HAVE_STDARG_H\(.*\) may be/ 1\1 was/" > zconf.temp.h
-  mv zconf.temp.h zconf.h
+  sed < zconf${SUFFIX}.h "/^#ifdef HAVE_STDARG_H.* may be/s/def HAVE_STDARG_H\(.*\) may be/ 1\1 was/" > zconf${SUFFIX}.temp.h
+  mv zconf${SUFFIX}.temp.h zconf${SUFFIX}.h
   echo "Checking for stdarg.h... Yes." | tee -a configure.log
 else
   echo "Checking for stdarg.h... No." | tee -a configure.log
@@ -642,7 +672,7 @@ echo >> configure.log
 cat > $test.c <<EOF
 #include <stdio.h>
 #include <stdarg.h>
-#include "zconf.h"
+#include "zconf${SUFFIX}.h"
 int main() {
 #ifdef STDC
   return 0;
@@ -980,12 +1010,17 @@ sed < $SRCDIR/Makefile.in "
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
 /^LDSHAREDFLAGS *=/s#=.*#=$LDSHAREDFLAGS#
+/^LIBNAME1 *=/s#=.*#=$LIBNAME#
+/^LIBNAME2 *=/s#=.*#=$LIBNAME2#
+/^SUFFIX *=/s#=.*#=$SUFFIX#
 /^STATICLIB *=/s#=.*#=$STATICLIB#
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#
 /^SHAREDLIBM *=/s#=.*#=$SHAREDLIBM#
 /^SHAREDTARGET *=/s#=.*#=$SHAREDTARGET#
 /^IMPORTLIB *=/s#=.*#=$IMPORTLIB#
+/^VER *=/s#=.*#=$VER#
+/^VER1 *=/s#=.*#=$VER1#
 /^AR *=/s#=.*#=$AR#
 /^ARFLAGS *=/s#=.*#=$ARFLAGS#
 /^RANLIB *=/s#=.*#=$RANLIB#
@@ -1028,6 +1063,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^INCLUDES *=/s#=.*#=$ARCHINCLUDES#
+/^SUFFIX *=/s#=.*#=$SUFFIX#
 /^SRCDIR *=/s#=.*#=$SRCDIR/$ARCHDIR#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^TOPDIR *=/s#=.*#=$BUILDDIR#
@@ -1079,7 +1115,8 @@ sed < $SRCDIR/zlib.pc.in "
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 " | sed -e "
 s/\@VERSION\@/$VER/g;
-" > zlib.pc
+s/\@SUFFIX\@/$SUFFIX/g;
+" > ${LIBNAME2}.pc
 
 # done
 leave 0

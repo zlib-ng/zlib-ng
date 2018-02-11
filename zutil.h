@@ -24,7 +24,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "zlib.h"
+#ifdef ZLIB_COMPAT
+# include "zlib.h"
+#else
+# include "zlib-ng.h"
+#endif
 
 typedef unsigned char uch; /* Included for compatibility with external code only */
 typedef uint16_t ush;      /* Included for compatibility with external code only */
@@ -112,8 +116,8 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(WIN32) && !defined(__MSYS__) && (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
-    ZEXTERN uint32_t ZEXPORT adler32_combine64(uint32_t, uint32_t, z_off_t);
-    ZEXTERN uint32_t ZEXPORT crc32_combine64(uint32_t, uint32_t, z_off_t);
+    ZEXTERN uint32_t ZEXPORT PREFIX(adler32_combine64)(uint32_t, uint32_t, z_off_t);
+    ZEXTERN uint32_t ZEXPORT PREFIX(crc32_combine64)(uint32_t, uint32_t, z_off_t);
 #endif
 
 /* MS Visual Studio does not allow inline in C, only C++.

@@ -28,7 +28,10 @@ LDFLAGS = -nologo -debug -incremental:no -opt:ref -manifest
 ARFLAGS = -nologo
 RCFLAGS = /dWIN32 /r
 DEFFILE = zlib.def
+RCFILE = zlib1.rc
+RESFILE = zlib1.res
 WITH_GZFILEOP =
+SUFFIX =
 
 OBJS = adler32.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_quick.obj deflate_slow.obj \
        functable.obj infback.obj inflate.obj inftrees.obj inffast.obj match.obj trees.obj uncompr.obj zutil.obj \
@@ -37,20 +40,31 @@ OBJS = adler32.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_q
 WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
 OBJS = $(OBJS) gzclose.obj gzlib.obj gzread.obj gzwrite.obj
 DEFFILE = zlibcompat.def
+!else
+STATICLIB = zlib-ng.lib
+SHAREDLIB = zlib-ng1.dll
+IMPLIB = zngdll.lib
+DEFFILE = zlib-ng.def
+RCFILE = zlib-ng1.rc
+RESFILE = zlib-ng1.res
+SUFFIX = -ng
 !endif
 
 # targets
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) \
      example.exe minigzip.exe example_d.exe minigzip_d.exe
 
-$(STATICLIB): $(OBJS)
+zconf: $(TOP)/zconf$(SUFFIX).h.in
+     $(CP) $(TOP)\zconf$(SUFFIX).h.in $(TOP)\zconf$(SUFFIX).h
+
+$(STATICLIB): zconf $(OBJS)
 	$(AR) $(ARFLAGS) -out:$@ $(OBJS)
 
 $(IMPLIB): $(SHAREDLIB)
 
-$(SHAREDLIB): $(TOP)/win32/zlib.def $(OBJS) zlib1.res
+$(SHAREDLIB): zconf $(TOP)/win32/$(DEFFILE) $(OBJS) $(RESFILE)
 	$(LD) $(LDFLAGS) -def:$(TOP)/win32/$(DEFFILE) -dll -implib:$(IMPLIB) \
-	  -out:$@ -base:0x5A4C0000 $(OBJS) zlib1.res
+	  -out:$@ -base:0x5A4C0000 $(OBJS) $(RESFILE)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;2
 
@@ -83,50 +97,49 @@ minigzip_d.exe: minigzip.obj $(IMPLIB)
 {$(TOP)/test}.c.obj:
 	$(CC) -c -I$(TOP) $(WFLAGS) $(CFLAGS) $<
 
-$(TOP)/zconf.h: $(TOP)/zconf.h.in
-	$(CP) $(TOP)\zconf.h.in $(TOP)\zconf.h
+$(TOP)/zconf$(SUFFIX).h: zconf
 
-adler32.obj: $(TOP)/adler32.c $(TOP)/zlib.h $(TOP)/zconf.h
+adler32.obj: $(TOP)/adler32.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h
 
-compress.obj: $(TOP)/compress.c $(TOP)/zlib.h $(TOP)/zconf.h
+compress.obj: $(TOP)/compress.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h
 
-crc32.obj: $(TOP)/crc32.c $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/crc32.h
+crc32.obj: $(TOP)/crc32.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/crc32.h
 
-deflate.obj: $(TOP)/deflate.c $(TOP)/deflate.h $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h
+deflate.obj: $(TOP)/deflate.c $(TOP)/deflate.h $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h
 
-gzclose.obj: $(TOP)/gzclose.c $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/gzguts.h
+gzclose.obj: $(TOP)/gzclose.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/gzguts.h
 
-gzlib.obj: $(TOP)/gzlib.c $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/gzguts.h
+gzlib.obj: $(TOP)/gzlib.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/gzguts.h
 
-gzread.obj: $(TOP)/gzread.c $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/gzguts.h
+gzread.obj: $(TOP)/gzread.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/gzguts.h
 
-gzwrite.obj: $(TOP)/gzwrite.c $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/gzguts.h
+gzwrite.obj: $(TOP)/gzwrite.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/gzguts.h
 
-infback.obj: $(TOP)/infback.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/inftrees.h $(TOP)/inflate.h \
+infback.obj: $(TOP)/infback.c $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/inftrees.h $(TOP)/inflate.h \
              $(TOP)/inffast.h $(TOP)/inffixed.h
 
-inffast.obj: $(TOP)/inffast.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/inftrees.h $(TOP)/inflate.h \
+inffast.obj: $(TOP)/inffast.c $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/inftrees.h $(TOP)/inflate.h \
              $(TOP)/inffast.h
 
-inflate.obj: $(TOP)/inflate.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/inftrees.h $(TOP)/inflate.h \
+inflate.obj: $(TOP)/inflate.c $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/inftrees.h $(TOP)/inflate.h \
              $(TOP)/inffast.h $(TOP)/inffixed.h
 
-inftrees.obj: $(TOP)/inftrees.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/inftrees.h
+inftrees.obj: $(TOP)/inftrees.c $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/inftrees.h
 
 match.obj: $(TOP)/match.c $(TOP)/deflate.h
 
-trees.obj: $(TOP)/trees.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h $(TOP)/deflate.h $(TOP)/trees.h
+trees.obj: $(TOP)/trees.c $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/deflate.h $(TOP)/trees.h
 
-uncompr.obj: $(TOP)/uncompr.c $(TOP)/zlib.h $(TOP)/zconf.h
+uncompr.obj: $(TOP)/uncompr.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h
 
-zutil.obj: $(TOP)/zutil.c $(TOP)/zutil.h $(TOP)/zlib.h $(TOP)/zconf.h
+zutil.obj: $(TOP)/zutil.c $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h
 
-example.obj: $(TOP)/test/example.c $(TOP)/zlib.h $(TOP)/zconf.h
+example.obj: $(TOP)/test/example.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h
 
-minigzip.obj: $(TOP)/test/minigzip.c $(TOP)/zlib.h $(TOP)/zconf.h
+minigzip.obj: $(TOP)/test/minigzip.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h
 
-zlib1.res: $(TOP)/win32/zlib1.rc
-	$(RC) $(RCFLAGS) /fo$@ $(TOP)/win32/zlib1.rc
+$(RESFILE): $(TOP)/win32/$(RCFILE)
+	$(RC) $(RCFLAGS) /fo$@ $(TOP)/win32/$(RCFILE)
 
 # testing
 test: example.exe minigzip.exe
@@ -149,7 +162,6 @@ clean:
 	-del *.exe
 	-del *.pdb
 	-del *.manifest
-	-del foo.gz
 
 distclean: clean
-	-del zconf.h
+	-del zconf$(SUFFIX).h

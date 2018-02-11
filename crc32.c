@@ -205,7 +205,7 @@ static void write_table(FILE *out, const uint32_t *table) {
 /* =========================================================================
  * This function can be used by asm versions of crc32()
  */
-const uint32_t * ZEXPORT get_crc_table(void) {
+const uint32_t * ZEXPORT PREFIX(get_crc_table)(void) {
 #ifdef DYNAMIC_CRC_TABLE
     if (crc_table_empty)
         make_crc_table();
@@ -213,7 +213,7 @@ const uint32_t * ZEXPORT get_crc_table(void) {
     return (const uint32_t *)crc_table;
 }
 
-uint32_t ZEXPORT crc32_z(uint32_t crc, const unsigned char *buf, size_t len) {
+uint32_t ZEXPORT PREFIX(crc32_z)(uint32_t crc, const unsigned char *buf, size_t len) {
     if (buf == NULL) return 0;
 
 #ifdef DYNAMIC_CRC_TABLE
@@ -264,8 +264,8 @@ ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, z_o
     return crc ^ 0xffffffff;
 }
 
-uint32_t ZEXPORT crc32(uint32_t crc, const unsigned char *buf, uint32_t len) {
-    return crc32_z(crc, buf, len);
+uint32_t ZEXPORT PREFIX(crc32)(uint32_t crc, const unsigned char *buf, uint32_t len) {
+    return PREFIX(crc32_z)(crc, buf, len);
 }
 
 /*
@@ -442,22 +442,22 @@ static uint32_t crc32_combine_(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
 }
 
 /* ========================================================================= */
-uint32_t ZEXPORT crc32_combine(uint32_t crc1, uint32_t crc2, z_off_t len2) {
+uint32_t ZEXPORT PREFIX(crc32_combine)(uint32_t crc1, uint32_t crc2, z_off_t len2) {
     return crc32_combine_(crc1, crc2, len2);
 }
 
-uint32_t ZEXPORT crc32_combine64(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
+uint32_t ZEXPORT PREFIX(crc32_combine64)(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
     return crc32_combine_(crc1, crc2, len2);
 }
 
 #ifndef X86_PCLMULQDQ_CRC
 ZLIB_INTERNAL void crc_reset(deflate_state *const s) {
-    s->strm->adler = crc32(0L, NULL, 0);
+    s->strm->adler = PREFIX(crc32)(0L, NULL, 0);
 }
 
-ZLIB_INTERNAL void copy_with_crc(z_stream *strm, unsigned char *dst, unsigned long size) {
+ZLIB_INTERNAL void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size) {
     memcpy(dst, strm->next_in, size);
-    strm->adler = crc32(strm->adler, dst, size);
+    strm->adler = PREFIX(crc32)(strm->adler, dst, size);
 }
 #endif
 
