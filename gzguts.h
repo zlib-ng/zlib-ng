@@ -27,7 +27,12 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <fcntl.h>
-#include "zlib.h"
+
+#if defined(ZLIB_COMPAT)
+# include "zlib.h"
+#else
+# include "zlib-ng.h"
+#endif
 
 #ifdef WIN32
 #  include <stddef.h>
@@ -74,10 +79,10 @@
 
 /* provide prototypes for these when building zlib without LFS */
 #if (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0) && defined(WITH_GZFILEOP)
-    ZEXTERN gzFile ZEXPORT gzopen64(const char *, const char *);
-    ZEXTERN z_off64_t ZEXPORT gzseek64(gzFile, z_off64_t, int);
-    ZEXTERN z_off64_t ZEXPORT gztell64(gzFile);
-    ZEXTERN z_off64_t ZEXPORT gzoffset64(gzFile);
+    ZEXTERN gzFile ZEXPORT PREFIX(gzopen64)(const char *, const char *);
+    ZEXTERN z_off64_t ZEXPORT PREFIX(gzseek64)(gzFile, z_off64_t, int);
+    ZEXTERN z_off64_t ZEXPORT PREFIX(gztell64)(gzFile);
+    ZEXTERN z_off64_t ZEXPORT PREFIX(gzoffset64)(gzFile);
 #endif
 
 /* default memLevel */

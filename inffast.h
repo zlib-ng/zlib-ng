@@ -10,7 +10,7 @@
    subject to change. Applications should only use zlib.h.
  */
 
-void ZLIB_INTERNAL inflate_fast(z_stream *strm, unsigned long start);
+void ZLIB_INTERNAL inflate_fast(PREFIX3(stream) *strm, unsigned long start);
 
 
 #if (defined(__GNUC__) || defined(__clang__)) && defined(__ARM_NEON__)
