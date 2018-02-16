@@ -19,11 +19,11 @@
 ZLIB_INTERNAL Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count) {
     Pos ret = 0;
     unsigned int idx;
-    unsigned *ip, val, h;
+    unsigned int *ip, val, h;
 
     for (idx = 0; idx < count; idx++) {
         ip = (unsigned *)&s->window[str+idx];
-        val = *ip;
+        memcpy(&val, ip, sizeof(val));
         h = 0;
 
         if (s->level >= TRIGGER_LEVEL)
