@@ -222,6 +222,20 @@ check_include_file(unistd.h Z_HAVE_UNISTD_H)
 check_include_file(stdarg.h Z_HAVE_STDARG_H)
 
 #
+# Check for 64bit long int
+#
+check_c_source_runs(
+    "int main(void)
+    {
+        if(sizeof(long int) == 8)
+            return 0;
+        else
+            return 1;
+    }"
+    IS_64BIT_LONG
+)
+
+#
 # Check if we can hide zlib internal symbols that are linked between separate source files using hidden
 #
 check_c_source_compiles(
@@ -378,9 +392,15 @@ if("${ARCH}" MATCHES "x86_64" OR "${ARCH}" MATCHES "AMD64")
 elseif("${ARCH}" MATCHES "arm")
     set(ARCHDIR "arch/arm")
     add_definitions(-DUNALIGNED_OK -DUNROLL_LESS)
+    if(IS_64BIT_LONG)
+        add_definitions(-DARM_64BIT_LONG)
+    endif()
 elseif("${ARCH}" MATCHES "aarch64")
     set(ARCHDIR "arch/aarch64")
     add_definitions(-DUNALIGNED_OK -DUNROLL_LESS)
+    if(IS_64BIT_LONG)
+        add_definitions(-DARM_64BIT_LONG)
+    endif()
 else()
     set(ARCHDIR "arch/x86")
     add_definitions(-DX86 -DUNALIGNED_OK -DUNROLL_LESS)

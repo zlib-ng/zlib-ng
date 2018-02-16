@@ -781,6 +781,28 @@ else
     HAVE_PCLMULQDQ_INTRIN=0
 fi
 
+# Check for 64bit long int
+cat > $test.c << EOF
+int main(void) {
+    if(sizeof(long int) == 8)
+        return 0;
+    else
+        return 1;
+}
+EOF
+if try ${CC} ${CFLAGS} -o $test $test.c; then
+    if try ./$test; then
+        IS_64BIT_LONG=1
+        echo "Checking for 64bit long int ... Yes." | tee -a configure.log
+    else
+        IS_64BIT_LONG=0
+        echo "Checking for 64bit long int ... No." | tee -a configure.log
+    fi
+else
+    IS_64BIT_LONG=0
+    echo "Checking for 64bit long int ... No." | tee -a configure.log
+fi
+
 # Enable deflate_medium at level 4-6
 if test $without_new_strategies -eq 0; then
     CFLAGS="${CFLAGS} -DMEDIUM_STRATEGY"
@@ -864,6 +886,11 @@ case "${ARCH}" in
                 floatabi="-mfloat-abi=softfp" ;;
         esac
 
+        if test $IS_64BIT_LONG -eq 1; then
+            CFLAGS="$CFLAGS -DARM_64BIT_LONG"
+            SFLAGS="$SFLAGS -DARM_64BIT_LONG"
+        fi
+
         case "${ARCH}" in
             armv6l | armv6hl)
                 # Tests done on Raspberry pi (armv6hl) indicate that UNALIGNED_OK and UNROLL_LESS both
@@ -917,6 +944,11 @@ case "${ARCH}" in
         ARCHDIR=arch/aarch64
         ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
         ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
+
+        if test $IS_64BIT_LONG -eq 1; then
+            CFLAGS="$CFLAGS -DARM_64BIT_LONG"
+            SFLAGS="$SFLAGS -DARM_64BIT_LONG"
+        fi
 
         if test $native -eq 0; then
           ARCH="armv8-a"
