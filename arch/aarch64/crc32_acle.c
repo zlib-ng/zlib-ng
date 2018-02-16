@@ -12,7 +12,7 @@
 #  include <stddef.h>
 #endif
 
-uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, size_t len) {
+uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
     register uint32_t c;
     register const uint16_t *buf2;
     register const uint32_t *buf4;
