@@ -1349,7 +1349,7 @@ int ZEXPORT PREFIX(inflateGetHeader)(PREFIX3(stream) *strm, PREFIX(gz_headerp) h
    called again with more data and the *have state.  *have is initialized to
    zero for the first call.
  */
-static unsigned syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len) {
+static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len) {
     uint32_t got;
     uint32_t next;
 
