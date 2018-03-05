@@ -15,6 +15,8 @@
 # else
 #  error Unknown endianness!
 # endif
+#elif defined(__linux__)
+# include <endian.h>
 #elif defined(__APPLE__) || defined(__arm__) || defined(__aarch64__)
 # include <machine/endian.h>
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__) || defined(__DragonFly__)
