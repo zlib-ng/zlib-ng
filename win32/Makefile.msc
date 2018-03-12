@@ -31,14 +31,15 @@ DEFFILE = zlib.def
 RCFILE = zlib1.rc
 RESFILE = zlib1.res
 WITH_GZFILEOP =
+ZLIB_COMPAT =
 SUFFIX =
 
 OBJS = adler32.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_quick.obj deflate_slow.obj \
        functable.obj infback.obj inflate.obj inftrees.obj inffast.obj match.obj trees.obj uncompr.obj zutil.obj \
        x86.obj fill_window_sse.obj insert_string_sse.obj crc_folding.obj crc_pclmulqdq.obj
-!if "$(WITH_GZFILEOP)" != ""
-WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
-OBJS = $(OBJS) gzclose.obj gzlib.obj gzread.obj gzwrite.obj
+!if "$(ZLIB_COMPAT)" != ""
+WITH_GZFILEOP = yes
+WFLAGS = $(WFLAGS) -DZLIB_COMPAT
 DEFFILE = zlibcompat.def
 !else
 STATICLIB = zlib-ng.lib
@@ -48,6 +49,11 @@ DEFFILE = zlib-ng.def
 RCFILE = zlib-ng1.rc
 RESFILE = zlib-ng1.res
 SUFFIX = -ng
+!endif
+
+!if "$(WITH_GZFILEOP)" != ""
+WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
+OBJS = $(OBJS) gzclose.obj gzlib.obj gzread.obj gzwrite.obj
 !endif
 
 # targets
