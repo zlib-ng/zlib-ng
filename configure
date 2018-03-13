@@ -322,7 +322,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         SHAREDLIBM=''
         SHAREDLIBV=''
         SHAREDTARGET=$SHAREDLIB
-        IMPORTLIB='${LIBNAME}.dll.a'
+        IMPORTLIB="${LIBNAME}.dll.a"
         LDSHARED=${LDSHARED-"$cc"}
         LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/${MAPNAME}"
         LDSHAREDLIBC=""
@@ -345,7 +345,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         SHAREDLIBM=''
         SHAREDLIBV=''
         SHAREDTARGET=$SHAREDLIB
-        IMPORTLIB='${LIBNAME}.dll.a'
+        IMPORTLIB="${LIBNAME}.dll.a"
         LDSHARED=${LDSHARED-"$cc"}
         LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB}"
         LDSHAREDLIBC=""
@@ -365,7 +365,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         SHAREDLIBM=''
         SHAREDLIBV=''
         SHAREDTARGET=$SHAREDLIB
-        IMPORTLIB='${LIBNAME}.dll.a'
+        IMPORTLIB="${LIBNAME}.dll.a"
         LDSHARED=${LDSHARED-"$cc"}
         LDSHAREDFLAGS="-shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/${MAPNAME}"
         LDSHAREDLIBC=""
@@ -661,6 +661,7 @@ fi
 # if code coverage testing was requested, use older gcc if defined, e.g. "gcc-4.2" on Mac OS X
 if test $cover -eq 1; then
   CFLAGS="${CFLAGS} -fprofile-arcs -ftest-coverage"
+  LDFLAGS="${LDFLAGS} -fprofile-arcs -ftest-coverage"
   if test -n "$GCC_CLASSIC"; then
     CC=$GCC_CLASSIC
   fi
