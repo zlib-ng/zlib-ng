@@ -944,8 +944,8 @@ case "${ARCH}" in
     arm | armv[3467]l | armv4b | armv4tl | armv5tel | armv5tejl | armv[67]hl | armv7hnl | armv[78]-a | armv8-a+* | armv8.[1234]-a | armv8.[1234]-a+*)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=arm
         ARCHDIR=arch/arm
-        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
-        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
+        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o fill_window_arm.o"
+        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo fill_window_arm.lo"
 
         GCC_MACHINE=$(${CC} -dumpmachine)
         case "${GCC_MACHINE}" in
@@ -1049,8 +1049,8 @@ case "${ARCH}" in
     aarch64)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=aarch64
         ARCHDIR=arch/aarch64
-        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
-        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
+        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o fill_window_arm.o"
+        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo fill_window_arm.lo"
 
         if test $native -eq 0; then
           ARCH="armv8-a"
