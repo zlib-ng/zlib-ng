@@ -10,6 +10,7 @@
  */
 #ifdef X86_SSE2_FILL_WINDOW
 
+#include "zbuild.h"
 #include <immintrin.h>
 #include "deflate.h"
 #include "deflate_p.h"

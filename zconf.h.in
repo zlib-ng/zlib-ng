@@ -8,11 +8,6 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
-#define PREFIX(x) x
-#define PREFIX2(x) ZLIB_ ## x
-#define PREFIX3(x) z_ ## x
-#define zVersion zlibVersion
-
 #if defined(_WINDOWS) && !defined(WINDOWS)
 #  define WINDOWS
 #endif
@@ -83,10 +78,6 @@
      /* For complete Windows compatibility, use WINAPI, not __stdcall. */
 #    define ZEXPORT WINAPI
 #    define ZEXPORTVA WINAPIV
-#  endif
-#  if defined(_MSC_VER)
-#    include <windows.h>
-     typedef SSIZE_T ssize_t;
 #  endif
 #endif
 

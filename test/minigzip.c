@@ -14,6 +14,7 @@
 
 /* @(#) $Id$ */
 
+#include "zbuild.h"
 #ifdef ZLIB_COMPAT
 # include "zlib.h"
 #else

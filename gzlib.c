@@ -3,6 +3,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#include "zbuild.h"
 #include "gzguts.h"
 
 #if defined(WIN32) && !defined(__BORLANDC__) && !defined(__MINGW32__)
