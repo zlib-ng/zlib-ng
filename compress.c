@@ -6,12 +6,11 @@
 /* @(#) $Id$ */
 
 #define ZLIB_INTERNAL
+#include "zbuild.h"
 #if defined(ZLIB_COMPAT)
 # include "zlib.h"
-# define z_size_t unsigned long
 #else
 # include "zlib-ng.h"
-# define z_size_t size_t
 #endif
 
 /* ===========================================================================

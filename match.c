@@ -8,6 +8,7 @@
  * OUT assertion: the match length is not greater than s->lookahead
  */
 
+#include "zbuild.h"
 #include "deflate.h"
 
 #if (defined(UNALIGNED_OK) && MAX_MATCH == 258)

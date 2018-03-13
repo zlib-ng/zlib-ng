@@ -4,6 +4,7 @@
  *
  */
 
+#include "zbuild.h"
 #include "x86.h"
 #include "crc_folding.h"
 #include "deflate.h"

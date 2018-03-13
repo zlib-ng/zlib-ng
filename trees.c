@@ -34,6 +34,7 @@
 
 /* #define GEN_TREES_H */
 
+#include "zbuild.h"
 #include "deflate.h"
 
 #ifdef ZLIB_DEBUG

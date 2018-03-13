@@ -18,6 +18,7 @@
 
 #ifdef X86_PCLMULQDQ_CRC
 
+#include "zbuild.h"
 #include <inttypes.h>
 #include <immintrin.h>
 #include <wmmintrin.h>

@@ -5,6 +5,7 @@
 
 /* @(#) $Id$ */
 
+#include "zbuild.h"
 #include "zutil.h"
 #ifdef WITH_GZFILEOP
 #  include "gzguts.h"

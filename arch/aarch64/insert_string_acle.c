@@ -5,6 +5,7 @@
  *
  */
 
+#include "zbuild.h"
 #ifdef __ARM_FEATURE_CRC32
 #include <arm_acle.h>
 #endif

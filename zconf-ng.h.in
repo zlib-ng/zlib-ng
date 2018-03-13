@@ -8,11 +8,6 @@
 #ifndef ZCONFNG_H
 #define ZCONFNG_H
 
-#define PREFIX(x) zng_ ## x
-#define PREFIX2(x) ZLIBNG_ ## x
-#define PREFIX3(x) zng_ ## x
-#define zVersion zlibng_version
-
 #if defined(_WINDOWS) && !defined(WINDOWS)
 #  define WINDOWS
 #endif

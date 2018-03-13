@@ -11,6 +11,7 @@
 
 /* @(#) $Id$ */
 
+# include "zbuild.h"
 # include "gzendian.h"
 
 /*
