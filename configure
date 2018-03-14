@@ -896,12 +896,15 @@ case "${ARCH}" in
                 fi
             ;;
             armv8-a+crc | armv8-a+crc+simd | armv8.[1234]-a | armv8.[1234]-a+simd)
-                CFLAGS="-march=${ARCH} ${CFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
-                SFLAGS="-march=${ARCH} ${SFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
+                CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+                SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
-
+                if test $buildacle -eq 1;then
+                    CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH -DARM_ACLE_CRC32"
+                    SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH -DARM_ACLE_CRC32"
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+                fi
                 if test $buildneon -eq 1; then
                     CFLAGS="${CFLAGS} ${floatabi} -DARM_NEON_ADLER32"
                     SFLAGS="${SFLAGS} ${floatabi} -DARM_NEON_ADLER32"
@@ -927,8 +930,8 @@ case "${ARCH}" in
            if test $native -eq 0; then
              ARCH="${ARCH}+crc"
            fi
-            CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
-            SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
+            CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH -DARM_ACLE_CRC32"
+            SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH -DARM_ACLE_CRC32"
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
         fi
