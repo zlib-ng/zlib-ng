@@ -7,7 +7,11 @@
 
 #ifdef __ARM_FEATURE_CRC32
 #include <arm_acle.h>
-#include "zconf.h"
+#ifdef ZLIB_COMPAT
+#  include <zconf.h>
+#else
+#  include <zconf-ng.h>
+#endif
 #ifdef __linux__
 #  include <stddef.h>
 #endif
