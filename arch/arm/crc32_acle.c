@@ -16,6 +16,7 @@
 #  include <stddef.h>
 #endif
 
+#ifdef ARM_ACLE_CRC32
 uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
     register uint32_t c;
     register const uint16_t *buf2;
@@ -71,4 +72,5 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
     c = ~c;
     return c;
 }
+#endif
 #endif
