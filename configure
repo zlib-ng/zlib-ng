@@ -268,12 +268,10 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       if test "${uname}" = "eabi"; then
         uname=arm
       fi
-      if test $buildacle -eq 1; then
-        if test $native -eq 0; then
-          ARCH=armv8-a+crc
-        else
-          ARCH=native
-        fi
+      if test $native -eq 0; then
+        ARCH=armv7-a
+      else
+        ARCH=native
       fi ;;
     aarch64)
       if test "${uname}" = "elf"; then
