@@ -84,6 +84,10 @@
 #    define ZEXPORT WINAPI
 #    define ZEXPORTVA WINAPIV
 #  endif
+#  if defined(_MSC_VER)
+#    include <windows.h>
+     typedef SSIZE_T ssize_t;
+#  endif
 #endif
 
 #ifndef ZEXTERN

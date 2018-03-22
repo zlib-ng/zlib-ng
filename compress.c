@@ -60,7 +60,7 @@ int ZEXPORT PREFIX(compress2)(unsigned char *dest, z_size_t *destLen, const unsi
         err = PREFIX(deflate)(&stream, sourceLen ? Z_NO_FLUSH : Z_FINISH);
     } while (err == Z_OK);
 
-    *destLen = stream.total_out;
+    *destLen = (z_size_t)stream.total_out;
     PREFIX(deflateEnd)(&stream);
     return err == Z_STREAM_END ? Z_OK : err;
 }
