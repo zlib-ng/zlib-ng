@@ -266,7 +266,12 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       fi ;;
     arm)
       if test "${uname}" = "eabi"; then
+        # No ACLE support
         uname=arm
+        if test $buildacle -eq 1; then
+          echo ACLE support not available
+          buildacle=0
+        fi
       fi
       if test $buildacle -eq 1; then
         if test $native -eq 0; then
@@ -867,15 +872,36 @@ case "${ARCH}" in
         esac
 
         case "${ARCH}" in
+            armv[345]*)
+                if test $buildacle -eq 1; then
+                    echo ACLE support not available
+                fi
+
+                if test $buildneon -eq 1; then
+                    echo NEON support not available
+                fi
+            ;;
             armv6l | armv6hl)
                 # Tests done on Raspberry pi (armv6hl) indicate that UNALIGNED_OK and UNROLL_LESS both
                 # provide performance improvements, totaling about 1.5% for the two.
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+
+                if test $buildacle -eq 1; then
+                    echo ACLE support not available
+                fi
+
+                if test $buildneon -eq 1; then
+                    echo NEON support not available
+                fi
             ;;
             arm | armv7*)
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+
+                if test $buildacle -eq 1; then
+                    echo ACLE support not available
+                fi
 
                 if test $buildneon -eq 1; then
                     CFLAGS="${CFLAGS} ${floatabi} -mfpu=neon -DARM_NEON_ADLER32"
@@ -888,6 +914,10 @@ case "${ARCH}" in
             armv8-a | armv8-a+simd)
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+
+                if test $buildacle -eq 1; then
+                    echo ACLE support not available
+                fi
 
                 if test $buildneon -eq 1; then
                     CFLAGS="${CFLAGS} ${floatabi} -DARM_NEON_ADLER32"
