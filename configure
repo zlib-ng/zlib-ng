@@ -102,6 +102,7 @@ floatabi=
 native=0
 sse2flag="-msse2"
 sse4flag="-msse4"
+sse42flag="-msse4.2"
 pclmulflag="-mpclmul"
 without_optimizations=0
 without_new_strategies=0
@@ -751,6 +752,7 @@ else
 fi
 
 # Check for SSE2 intrinsics
+if test "${ARCH}" = "i686"; then
 cat > $test.c << EOF
 #include <immintrin.h>
 int main(void) {
@@ -767,7 +769,31 @@ else
     HAVE_SSE2_INTRIN=0
 fi
 
+fi
+
+# Check for SSE4.2 CRC intrinsics
+if test "${ARCH}" = "i686" || test "${ARCH}" = "x86_64"; then
+cat > $test.c << EOF
+int main(void) {
+    unsigned crc = 0;
+    char c = 'c';
+    crc = __builtin_ia32_crc32qi(crc, c);
+    (void)crc;
+    return 0;
+}
+EOF
+if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
+    echo "Checking for SSE4.2 CRC intrinsics ... Yes." | tee -a configure.log
+    HAVE_SSE42CRC_INTRIN=1
+else
+    echo "Checking for SSE4.2 CRC intrinsics ... No." | tee -a configure.log
+    HAVE_SSE42CRC_INTRIN=0
+fi
+
+fi
+
 # Check for PCLMULQDQ intrinsics
+if test "${ARCH}" = "i686" || test "${ARCH}" = "x86_64"; then
 cat > $test.c << EOF
 #include <immintrin.h>
 #include <wmmintrin.h>
@@ -793,32 +819,23 @@ if test $without_new_strategies -eq 0; then
     SFLAGS="${SFLAGS} -DMEDIUM_STRATEGY"
 fi
 
+fi
+
 ARCHDIR='arch/generic'
 ARCH_STATIC_OBJS=''
 ARCH_SHARED_OBJS=''
 
 # Set ARCH specific FLAGS
 case "${ARCH}" in
-    # x86 and x86_64 specific optimizations
-    i386 | i486 | i586 | i686 | x86_64)
-	    ARCHDIR=arch/x86
+    # x86 specific optimizations
+    i386 | i486 | i586 | i686)
+        ARCHDIR=arch/x86
 
-        case "${ARCH}" in
-            x86_64)
-                CFLAGS="${CFLAGS} -DX86_64 -DX86_NOCHECK_SSE2"
-                SFLAGS="${SFLAGS} -DX86_64 -DX86_NOCHECK_SSE2"
-            ;;
-            i386 | i486 | i586 | i686)
-                CFLAGS="${CFLAGS} -DX86"
-                SFLAGS="${SFLAGS} -DX86"
-            ;;
-        esac
+        CFLAGS="${CFLAGS} -DX86 -DUNALIGNED_OK -DUNROLL_LESS"
+        SFLAGS="${SFLAGS} -DX86 -DUNALIGNED_OK -DUNROLL_LESS"
 
-        CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
-        SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
-
-    	# Enable arch-specific optimizations?
-	    if test $without_optimizations -eq 0; then
+        # Enable arch-specific optimizations?
+        if test $without_optimizations -eq 0; then
             CFLAGS="${CFLAGS} -DX86_CPUID"
             SFLAGS="${SFLAGS} -DX86_CPUID"
 
@@ -830,6 +847,21 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_SSE2_FILL_WINDOW"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_sse.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_sse.lo"
+
+                # Enable deflate_quick at level 1?
+                # requires SSE2: code uses fill_window_sse
+                if test $without_new_strategies -eq 0; then
+                    CFLAGS="${CFLAGS} -DX86_QUICK_STRATEGY"
+                    SFLAGS="${SFLAGS} -DX86_QUICK_STRATEGY"
+
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} deflate_quick.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} deflate_quick.lo"
+                fi
+            fi
+
+            if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_INTRIN"
+                SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_INTRIN"
             fi
 
             CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_HASH"
@@ -844,9 +876,38 @@ case "${ARCH}" in
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo crc_pclmulqdq.lo"
             fi
 
-	    # Enable deflate_quick at level 1?
-	    # requires SSE2: code uses fill_window_sse
-            if test ${HAVE_SSE2_INTRIN} -eq 1 && test $without_new_strategies -eq 0; then
+        fi
+    ;;
+
+    # x86_64 specific optimizations
+    x86_64)
+        ARCHDIR=arch/x86
+
+        CFLAGS="${CFLAGS} -DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK -DUNROLL_LESS"
+        SFLAGS="${SFLAGS} -DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK -DUNROLL_LESS"
+
+        # Enable arch-specific optimizations?
+        if test $without_optimizations -eq 0; then
+            CFLAGS="${CFLAGS} -DX86_CPUID -DX86_SSE2_FILL_WINDOW -DX86_SSE4_2_CRC_HASH"
+            SFLAGS="${SFLAGS} -DX86_CPUID -DX86_SSE2_FILL_WINDOW -DX86_SSE4_2_CRC_HASH"
+
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o fill_window_sse.o insert_string_sse.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo fill_window_sse.lo insert_string_sse.lo"
+
+            if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_INTRIN"
+                SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_INTRIN"
+            fi
+
+            if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
+                SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o crc_pclmulqdq.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo crc_pclmulqdq.lo"
+            fi
+
+            # Enable deflate_quick at level 1?
+            if test $without_new_strategies -eq 0; then
                 CFLAGS="${CFLAGS} -DX86_QUICK_STRATEGY"
                 SFLAGS="${SFLAGS} -DX86_QUICK_STRATEGY"
 

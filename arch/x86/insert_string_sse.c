@@ -32,6 +32,8 @@ ZLIB_INTERNAL Pos insert_string_sse(deflate_state *const s, const Pos str, unsig
 
 #ifdef _MSC_VER
         h = _mm_crc32_u32(h, val);
+#elif defined(X86_SSE4_2_CRC_INTRIN)
+        h = __builtin_ia32_crc32si(h, val);
 #else
         __asm__ __volatile__ (
             "crc32 %1,%0\n\t"

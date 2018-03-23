@@ -46,15 +46,23 @@ static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigne
 
 void ZLIB_INTERNAL x86_check_features(void) {
 	unsigned eax, ebx, ecx, edx;
+	unsigned maxbasic;
+
+	cpuid(0, &maxbasic, &ebx, &ecx, &edx);
+
 	cpuid(1 /*CPU_PROCINFO_AND_FEATUREBITS*/, &eax, &ebx, &ecx, &edx);
 
 	x86_cpu_has_sse2 = edx & 0x4000000;
 	x86_cpu_has_sse42 = ecx & 0x100000;
 	x86_cpu_has_pclmulqdq = ecx & 0x2;
 
-	cpuid(7, &eax, &ebx, &ecx, &edx);
+	if (maxbasic >= 7) {
+	  cpuid(7, &eax, &ebx, &ecx, &edx);
 
-	// check BMI1 bit
-	// Reference: https://software.intel.com/sites/default/files/article/405250/how-to-detect-new-instruction-support-in-the-4th-generation-intel-core-processor-family.pdf
-	x86_cpu_has_tzcnt = ebx & 0x8;
+	  // check BMI1 bit
+	  // Reference: https://software.intel.com/sites/default/files/article/405250/how-to-detect-new-instruction-support-in-the-4th-generation-intel-core-processor-family.pdf
+	  x86_cpu_has_tzcnt = ebx & 0x8;
+	} else {
+	  x86_cpu_has_tzcnt = 0;
+	}
 }

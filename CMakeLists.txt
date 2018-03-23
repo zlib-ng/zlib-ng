@@ -318,6 +318,17 @@ else()
         }"
         HAVE_SSE42_INTRIN
     )
+    check_c_source_compile_or_run(
+        "int main(void)
+        {
+            unsigned crc = 0;
+            char c = 'c';
+            crc = __builtin_ia32_crc32qi(crc, c);
+            (void)crc;
+            return 0;
+        }"
+        HAVE_SSE42CRC_INTRIN
+    )
     if(WITH_NATIVE_INSTRUCTIONS)
         set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
     else()
@@ -431,6 +442,9 @@ if(WITH_OPTIM)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
             add_feature_info(SSE4_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set, using \"${SSE4FLAG}\"")
             add_intrinsics_option("${SSE4FLAG}")
+            if(HAVE_SSE42CRC_INTRIN)
+                add_definitions(-DX86_SSE4_2_CRC_INTRIN)
+            endif()
             if(WITH_NEW_STRATEGIES)
                 add_definitions(-DX86_QUICK_STRATEGY)
                 set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/deflate_quick.c)
