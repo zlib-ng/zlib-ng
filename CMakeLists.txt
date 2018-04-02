@@ -354,6 +354,15 @@ else()
     endif()
 endif()
 
+#Check whether -mfpu=neon is available
+set(CMAKE_REQUIRED_FLAGS "-mfpu=neon")
+check_c_source_compiles(
+    "int main()
+    {
+      return 0;
+    }"
+    MFPU_NEON_AVAILABLE FAIL_REGEX "not supported")
+
 #
 # Enable deflate_medium at level 4-6
 #
@@ -411,7 +420,9 @@ if(WITH_OPTIM)
             add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using \"${ACLEFLAG}\"")
         endif()
         if(WITH_NEON)
-            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NEONFLAG}")
+            if(MFPU_NEON_AVAILABLE)
+                set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NEONFLAG}")
+            endif()
             add_definitions("-DARM_NEON_ADLER32")
             if(MSVC)
                 add_definitions("-D__ARM_NEON__=1")
