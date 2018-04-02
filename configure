@@ -264,7 +264,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       if test $build32 -ne 1; then
         ARCH=$GCC_ARCH
       fi ;;
-    arm)
+    arm | armeb)
       if test "${uname}" = "eabi"; then
         uname=arm
       fi
@@ -275,9 +275,20 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
           ARCH=native
         fi
       fi ;;
-    aarch64)
+    armv8l)
+      if test $native -eq 0; then
+        ARCH=armv8-a
+      else
+        ARCH=native
+      fi ;;
+    aarch64 | aarch64_be)
       if test "${uname}" = "elf"; then
         uname=aarch64
+      fi
+      if test $native -eq 0; then
+        ARCH=aarch64
+      else
+        ARCH=native
       fi ;;
   esac
   CFLAGS="${CFLAGS--O3}"
