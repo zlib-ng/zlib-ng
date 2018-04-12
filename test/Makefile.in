@@ -11,36 +11,44 @@ INCLUDES=
 TEST_LDFLAGS=-L.. ../libz.a
 
 COMPATTESTS =
+QEMU_RUN=
+QEMU_VER:=$(shell command -v $(QEMU_RUN) --version 2> /dev/null)
 
 all: oldtests cvetests $(COMPATTESTS)
 
 oldtests: #set by ../configure
+check_cross_dep:
+ifneq (,$(QEMU_RUN))
+ifeq (,$(QEMU_VER))
+	$(error "You need QEMU to run tests on non-native platform")
+endif
+endif
 
-teststatic:
+teststatic: check_cross_dep
 	@TMPST=tmpst_$$; \
-	if echo hello world | ../minigzip$(EXE) | ../minigzip$(EXE) -d && ../example$(EXE) $$TMPST ; then \
+	if echo hello world | ${QEMU_RUN} ../minigzip$(EXE) | ${QEMU_RUN} ../minigzip$(EXE) -d && ${QEMU_RUN} ../example$(EXE) $$TMPST ; then \
 	  echo '		*** zlib test OK ***'; \
 	else \
 	  echo '		*** zlib test FAILED ***'; exit 1; \
 	fi; \
 	rm -f $$TMPST
 
-testshared:
+testshared: check_cross_dep
 	@LD_LIBRARY_PATH=`pwd`/..:$(LD_LIBRARY_PATH) ; export LD_LIBRARY_PATH; \
 	LD_LIBRARYN32_PATH=`pwd`/..:$(LD_LIBRARYN32_PATH) ; export LD_LIBRARYN32_PATH; \
 	DYLD_LIBRARY_PATH=`pwd`/..:$(DYLD_LIBRARY_PATH) ; export DYLD_LIBRARY_PATH; \
 	SHLIB_PATH=`pwd`/..:$(SHLIB_PATH) ; export SHLIB_PATH; \
 	TMPSH=tmpsh_$$; \
-	if echo hello world | ../minigzipsh$(EXE) | ../minigzipsh$(EXE) -d && ../examplesh$(EXE) $$TMPSH; then \
+	if echo hello world | ${QEMU_RUN} ../minigzipsh$(EXE) | ${QEMU_RUN} ../minigzipsh$(EXE) -d && ${QEMU_RUN} ../examplesh$(EXE) $$TMPSH; then \
 	  echo '		*** zlib shared test OK ***'; \
 	else \
 	  echo '		*** zlib shared test FAILED ***'; exit 1; \
 	fi; \
 	rm -f $$TMPSH
 
-test64:
+test64: check_cross_dep
 	@TMP64=tmp64_$$; \
-	if echo hello world | ../minigzip64$(EXE) | ../minigzip64$(EXE) -d && ../example64$(EXE) $$TMP64; then \
+	if echo hello world | ${QEMU_RUN} ../minigzip64$(EXE) | ${QEMU_RUN} ../minigzip64$(EXE) -d && ${QEMU_RUN} ../example64$(EXE) $$TMP64; then \
 	  echo '		*** zlib 64-bit test OK ***'; \
 	else \
 	  echo '		*** zlib 64-bit test FAILED ***'; exit 1; \
@@ -52,11 +60,11 @@ cvetests: testCVEinputs
 # Tests requiring zlib-ng to be built with --zlib-compat
 compattests: testCVE-2003-0107
 
-testCVEinputs:
-	@EXE=$(EXE) $(SRCDIR)/testCVEinputs.sh
+testCVEinputs: check_cross_dep
+	@EXE=$(EXE) QEMU_RUN="${QEMU_RUN}" $(SRCDIR)/testCVEinputs.sh
 
-testCVE-2003-0107: CVE-2003-0107$(EXE)
-	@if ./CVE-2003-0107$(EXE); then \
+testCVE-2003-0107: CVE-2003-0107$(EXE) check_cross_dep
+	@if ${QEMU_RUN} ./CVE-2003-0107$(EXE); then \
 	  echo '                *** zlib not vulnerable to CVE-2003-0107 ***'; \
 	else \
 	  echo '                *** zlib VULNERABLE to CVE-2003-0107 ***'; exit 1; \

@@ -47,4 +47,79 @@ matrix:
       compiler: clang
       env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
 
+    # Cross compiling for arm variants
+    - os: linux
+      compiler: aarch64-linux-gnu-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-aarch64-linux-gnu
+            - libc-dev-arm64-cross
+      # For all aarch64 implementations NEON is mandatory, while crypto/crc are not.
+      # So for aarch64 NEON should be automatically enabled, and "acle" should be explicitly defined
+      env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+    - os: linux
+      compiler: aarch64-linux-gnu-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-aarch64-linux-gnu
+            - libc-dev-arm64-cross
+      # AArch64 toolchain in Trusty is 4.8.2, which doesn't support acle intrinsics.
+      # Until TravisCI provides Xenial dist (which comes with gcc-aarch64-5.3.1) 'acle' option cannot
+      # be enabled in subset. But the command
+      # "CHOST=aarch64-linux-gnu ./configure --warn --zlib-compat --acle"
+      # should work if manually test it in a dist with gcc-aarch64 5.1 or higher
+      # env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat --acle"
+      env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+    # Hard-float subsets
+    - os: linux
+      compiler: arm-linux-gnueabihf-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-arm-linux-gnueabihf
+            - libc-dev-armhf-cross
+      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn"
+    - os: linux
+      compiler: arm-linux-gnueabihf-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-arm-linux-gnueabihf
+            - libc-dev-armhf-cross
+      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn --zlib-compat --neon"
+    - os: linux
+      compiler: arm-linux-gnueabihf-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-arm-linux-gnueabihf
+            - libc-dev-armhf-cross
+      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+    # Soft-float subset
+    - os: linux
+      compiler: arm-linux-gnueabi-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-arm-linux-gnueabi
+            - libc-dev-armel-cross
+      env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="./configure"
+    - os: linux
+      compiler: arm-linux-gnueabi-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-arm-linux-gnueabi
+            - libc-dev-armel-cross
+      env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="./configure --zlib-compat"
+
 script: mkdir -p $BUILDDIR && cd $BUILDDIR && $TOOL && make -j2 && make test
