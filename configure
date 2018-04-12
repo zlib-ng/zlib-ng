@@ -853,6 +853,7 @@ case "${ARCH}" in
 
     # ARM specific optimizations
     arm | armv[3467]l | armv4b | armv4tl | armv5tel | armv5tejl | armv[67]hl | armv7hnl | armv[78]-a | armv8-a+* | armv8.[1234]-a | armv8.[1234]-a+*)
+        [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=arm
         ARCHDIR=arch/arm
         ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
         ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
@@ -915,6 +916,7 @@ case "${ARCH}" in
     ;;
     # 64-bit ARM specific optimizations
     aarch64)
+        [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=aarch64
         ARCHDIR=arch/aarch64
         ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_arm.o"
         ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_arm.lo"
@@ -944,6 +946,15 @@ case "${ARCH}" in
         fi
         CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
         SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+    ;;
+    powerpc)
+        [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=ppc
+    ;;
+    powerpc64)
+        [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=ppc64
+    ;;
+    *)
+        [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=$ARCH
     ;;
 esac
 
@@ -1078,6 +1089,7 @@ mkdir -p test
 TESTINCLUDES="-I$SRCDIR"
 if [ "$SRCDIR" != "$BUILDDIR" ]; then TESTINCLUDES="${TESTINCLUDES} -I$BUILDDIR"; fi
 if test $compat -eq 1; then COMPATTESTS="compattests"; fi
+if test $QEMU_ARCH; then QEMU_RUN="qemu-$QEMU_ARCH -L /usr/${CHOST}/"; fi
 sed < $SRCDIR/test/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
@@ -1088,6 +1100,7 @@ sed < $SRCDIR/test/Makefile.in "
 /^SRCDIR *=/s#=.*#=$SRCDIR/test#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^COMPATTESTS *=/s#=.*#=$COMPATTESTS#
+/^QEMU_RUN *=/s#=.*#=$QEMU_RUN#
 " > test/Makefile
 
 # create zlib.pc with the configure results
