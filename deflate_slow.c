@@ -158,7 +158,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
         FLUSH_BLOCK(s, 1);
         return finish_done;
     }
-    if (s->last_lit)
+    if (s->sym_next)
         FLUSH_BLOCK(s, 0);
     return block_done;
 }
