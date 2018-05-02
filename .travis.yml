@@ -47,6 +47,21 @@ matrix:
       compiler: clang
       env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
 
+    # compiling for linux-ppc64le variants
+    - os: linux-ppc64le
+      compiler: gcc
+      env: BUILDDIR=. TOOL="cmake ."
+    - os: linux-ppc64le
+      compiler: gcc
+      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
+
+    - os: linux-ppc64le
+      compiler: clang
+      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+    - os: linux-ppc64le
+      compiler: clang
+      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
+
     # Cross compiling for arm variants
     - os: linux
       compiler: aarch64-linux-gnu-gcc
