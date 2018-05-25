@@ -1004,13 +1004,17 @@ case "${ARCH}" in
                 fi
 
                 if test $buildneon -eq 1; then
+                    CFLAGS="${CFLAGS} ${floatabi}"
+                    SFLAGS="${SFLAGS} ${floatabi}"
+
                     if test $MFPU_NEON_AVAILABLE -eq 1;then
-                        CFLAGS="${CFLAGS} ${floatabi} -mfpu=neon -DARM_NEON_ADLER32"
-                        SFLAGS="${SFLAGS} ${floatabi} -mfpu=neon -DARM_NEON_ADLER32"
-                    else
-                        CFLAGS="${CFLAGS} ${floatabi} -DARM_NEON_ADLER32"
-                        SFLAGS="${SFLAGS} ${floatabi} -DARM_NEON_ADLER32"
+                        CFLAGS="${CFLAGS} -mfpu=neon"
+                        SFLAGS="${SFLAGS} -mfpu=neon"
                     fi
+
+                    CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
+                    SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
+
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
                 fi
@@ -1023,13 +1027,17 @@ case "${ARCH}" in
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
 
                 if test $buildneon -eq 1; then
+                    CFLAGS="${CFLAGS} ${floatabi}"
+                    SFLAGS="${SFLAGS} ${floatabi}"
+
                     if test $MFPU_NEON_AVAILABLE -eq 1;then
-                        CFLAGS="${CFLAGS} ${floatabi} -mfpu=neon -DARM_NEON_ADLER32"
-                        SFLAGS="${SFLAGS} ${floatabi} -mfpu=neon -DARM_NEON_ADLER32"
-                    else
-                        CFLAGS="${CFLAGS} ${floatabi} -DARM_NEON_ADLER32"
-                        SFLAGS="${SFLAGS} ${floatabi} -DARM_NEON_ADLER32"
+                        CFLAGS="${CFLAGS} -mfpu=neon"
+                        SFLAGS="${SFLAGS} -mfpu=neon"
                     fi
+
+                    CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
+                    SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
+
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
                 fi
