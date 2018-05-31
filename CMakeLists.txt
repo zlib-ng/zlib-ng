@@ -303,6 +303,8 @@ else()
         }"
         HAVE_SSE2_INTRIN
     )
+    set(CMAKE_REQUIRED_FLAGS)
+
     if(WITH_NATIVE_INSTRUCTIONS)
         set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
     else()
@@ -329,6 +331,8 @@ else()
         }"
         HAVE_SSE42CRC_INTRIN
     )
+    set(CMAKE_REQUIRED_FLAGS)
+
     if(WITH_NATIVE_INSTRUCTIONS)
         set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
     else()
@@ -352,6 +356,7 @@ else()
     else()
         set(HAVE_PCLMULQDQ_INTRIN NO)
     endif()
+    set(CMAKE_REQUIRED_FLAGS)
 endif()
 
 #
