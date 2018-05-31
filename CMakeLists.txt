@@ -362,6 +362,7 @@ check_c_source_compiles(
       return 0;
     }"
     MFPU_NEON_AVAILABLE FAIL_REGEX "not supported")
+set(CMAKE_REQUIRED_FLAGS)
 
 #
 # Enable deflate_medium at level 4-6
