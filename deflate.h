@@ -346,4 +346,70 @@ void ZLIB_INTERNAL _tr_stored_block OF((deflate_state *s, charf *buf,
               flush = _tr_tally(s, distance, length)
 #endif
 
+/* ===========================================================================
+ * Update a hash value with the given input byte
+ * IN  assertion: all calls to UPDATE_HASH are made with consecutive input
+ *    characters, so that a running hash key can be computed from the previous
+ *    key instead of complete recalculation each time.
+ */
+#define UPDATE_HASH_C(s,h,c) (h = (((h)<<s->hash_shift) ^ (c)) & s->hash_mask)
+
+#include <inttypes.h>
+
+#ifdef USE_CRC_HASH
+
+#ifndef _MSC_VER
+#define UPDATE_HASH_CRC(s,h,c) ( \
+{\
+    deflate_state *z_const state = (s);\
+    uintptr_t ip = (uintptr_t)(&c) - (MIN_MATCH-1);\
+    unsigned val = *(unsigned *)ip; \
+    unsigned hash = 0;\
+    if (state->level >= 6) val &= 0xFFFFFF; \
+    __asm__ __volatile__ ("crc32 %1,%0\n\t" : "+r" (hash) : "r" (val) : ); \
+    h = hash & s->hash_mask; \
+})
+#else
+#include <intrin.h>
+
+#define UPDATE_HASH_CRC(s, h, c) \
+	(h = _mm_crc32_u32(0, \
+		((deflate_state *)s)->level >= 6 \
+		 ?  (*(unsigned *)((uintptr_t)(&c) - (MIN_MATCH-1))) & 0xFFFFFF \
+		 :   *(unsigned *)((uintptr_t)(&c) - (MIN_MATCH-1))) \
+	 & ((deflate_state *)s)->hash_mask)
+#endif
+
+
+#define UPDATE_HASH(s,h,c) ( \
+    x86_cpu_has_sse42 ? UPDATE_HASH_CRC(s,h,c) : UPDATE_HASH_C(s,h,c)\
+) 
+
+#else
+#define UPDATE_HASH(s,h,c) (UPDATE_HASH_C(s,h,c))
+#endif
+
+/* ===========================================================================
+ * Insert string str in the dictionary and set match_head to the previous head
+ * of the hash chain (the most recent string with same hash key). Return
+ * the previous length of the hash chain.
+ * If this file is compiled with -DFASTEST, the compression level is forced
+ * to 1, and no hash chains are maintained.
+ * IN  assertion: all calls to INSERT_STRING are made with consecutive input
+ *    characters and the first MIN_MATCH bytes of str are valid (except for
+ *    the last MIN_MATCH-1 bytes of the input file).
+ */
+#include <stdio.h>
+#ifdef FASTEST
+#define INSERT_STRING(s, str, match_head) \
+   (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
+    match_head = s->head[s->ins_h], \
+    s->head[s->ins_h] = (Pos)(str))
+#else
+#define INSERT_STRING(s, str, match_head) \
+   (UPDATE_HASH(s, s->ins_h, s->window[(str) + (MIN_MATCH-1)]), \
+    match_head = s->prev[(str) & s->w_mask] = s->head[s->ins_h], \
+    s->head[s->ins_h] = (Pos)(str))
+#endif
+
 #endif /* DEFLATE_H */

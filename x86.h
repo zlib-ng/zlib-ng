@@ -20,6 +20,7 @@
 #define ADLER32_UNROLL_LESS
 #define CRC32_UNROLL_LESS
 #define USE_SSE_SLIDE
+#define USE_CRC_HASH
 
 extern int x86_cpu_has_sse2;
 extern int x86_cpu_has_sse42;
