@@ -63,13 +63,6 @@ const char deflate_copyright[] =
 /* ===========================================================================
  *  Function prototypes.
  */
-typedef enum {
-    need_more,      /* block not completed, need more input or more output */
-    block_done,     /* block flush performed */
-    finish_started, /* finish started, need only more output at next deflate */
-    finish_done     /* finish done, accept no more input or output */
-} block_state;
-
 typedef block_state (*compress_func) OF((deflate_state *s, int flush));
 /* Compression function. Returns the block state after the call. */
 
@@ -79,17 +72,18 @@ local void slide_hash_c     OF((deflate_state *s));
 #ifdef USE_SSE_SLIDE
 extern void slide_hash_sse(deflate_state *s);
 #endif
-local void fill_window    OF((deflate_state *s));
 local block_state deflate_stored OF((deflate_state *s, int flush));
 local block_state deflate_fast   OF((deflate_state *s, int flush));
 #ifndef FASTEST
 local block_state deflate_slow   OF((deflate_state *s, int flush));
 #endif
+#ifdef USE_QUICK
+block_state deflate_quick OF((deflate_state *s, int flush));
+#endif
 local block_state deflate_rle    OF((deflate_state *s, int flush));
 local block_state deflate_huff   OF((deflate_state *s, int flush));
 local void lm_init        OF((deflate_state *s));
 local void putShortMSB    OF((deflate_state *s, uInt b));
-local void flush_pending  OF((z_streamp strm));
 local unsigned read_buf   OF((z_streamp strm, Bytef *buf, unsigned size));
 #ifdef ASMV
 #  pragma message("Assembler code may have bugs -- use at your own risk")
@@ -138,10 +132,15 @@ local const config configuration_table[2] = {
 local const config configuration_table[10] = {
 /*      good lazy nice chain */
 /* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
+#ifdef USE_QUICK
+/* 1 */ {4,    4,  8,    4, deflate_quick},
+/* 1 */ {4,    4,  8,    4, deflate_fast},
+/* 3 */ {4,    6, 32,   32, deflate_fast},
+#else
 /* 1 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
 /* 2 */ {4,    5, 16,    8, deflate_fast},
 /* 3 */ {4,    6, 32,   32, deflate_fast},
-
+#endif
 /* 4 */ {4,    4, 16,   16, deflate_slow},  /* lazy matches */
 /* 5 */ {8,   16, 32,   32, deflate_slow},
 /* 6 */ {8,   16, 128, 128, deflate_slow},
@@ -294,6 +293,12 @@ int ZEXPORT deflateInit2_(strm, level, method, windowBits, memLevel, strategy,
         return Z_STREAM_ERROR;
     }
     if (windowBits == 8) windowBits = 9;  /* until 256-byte window bug fixed */
+
+#ifdef USE_QUICK
+    if (level == 1)
+        windowBits = 13;
+#endif
+
     s = (deflate_state *) ZALLOC(strm, 1, sizeof(deflate_state));
     if (s == Z_NULL) return Z_MEM_ERROR;
     strm->state = (struct internal_state FAR *)s;
@@ -730,7 +735,7 @@ local void putShortMSB (s, b)
  * applications may wish to modify it to avoid allocating a large
  * strm->next_out buffer and copying into it. (See also read_buf()).
  */
-local void flush_pending(strm)
+ZLIB_INTERNAL void flush_pending(strm)
     z_streamp strm;
 {
     unsigned len;
@@ -1002,10 +1007,16 @@ int ZEXPORT deflate (strm, flush)
         (flush != Z_NO_FLUSH && s->status != FINISH_STATE)) {
         block_state bstate;
 
-        bstate = s->level == 0 ? deflate_stored(s, flush) :
-                 s->strategy == Z_HUFFMAN_ONLY ? deflate_huff(s, flush) :
-                 s->strategy == Z_RLE ? deflate_rle(s, flush) :
-                 (*(configuration_table[s->level].func))(s, flush);
+        if (s->level == 0)
+            bstate = deflate_stored(s, flush);
+	else if (s->strategy == Z_HUFFMAN_ONLY)
+            bstate = deflate_huff(s, flush);
+        else if (s->strategy == Z_RLE)
+            bstate = deflate_rle(s, flush);
+        else if (s->level == 1 && !x86_cpu_has_sse42)
+            bstate = deflate_fast(s, flush);
+        else
+	    bstate = (*configuration_table[s->level].func)(s, flush);
 
         if (bstate == finish_started || bstate == finish_done) {
             s->status = FINISH_STATE;
@@ -1498,7 +1509,7 @@ local void check_match(s, start, match, length)
  *    performed for at least two bytes (required for the zip translate_eol
  *    option -- not supported here).
  */
-local void fill_window(s)
+ZLIB_INTERNAL void fill_window(s)
     deflate_state *s;
 {
     unsigned n;

@@ -51,6 +51,9 @@
 #define Buf_size 16
 /* size of bit buffer in bi_buf */
 
+#define END_BLOCK 256
+/* end of block literal code */
+
 #define INIT_STATE    42    /* zlib header -> BUSY_STATE */
 #ifdef GZIP
 #  define GZIP_STATE  57    /* gzip header -> BUSY_STATE | EXTRA_STATE */
@@ -63,6 +66,12 @@
 #define FINISH_STATE 666    /* stream complete */
 /* Stream status */
 
+typedef enum {
+    need_more,      /* block not completed, need more input or more output */
+    block_done,     /* block flush performed */
+    finish_started, /* finish started, need only more output at next deflate */
+    finish_done     /* finish done, accept no more input or output */
+} block_state;
 
 /* Data structure describing a single value and its code string. */
 typedef struct ct_data_s {
@@ -308,6 +317,7 @@ void ZLIB_INTERNAL _tr_flush_bits OF((deflate_state *s));
 void ZLIB_INTERNAL _tr_align OF((deflate_state *s));
 void ZLIB_INTERNAL _tr_stored_block OF((deflate_state *s, charf *buf,
                         ulg stored_len, int last));
+void ZLIB_INTERNAL bi_windup      OF((deflate_state *s));
 
 #define d_code(dist) \
    ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
