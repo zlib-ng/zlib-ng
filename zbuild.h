@@ -5,6 +5,7 @@
 #if defined(_MSC_VER)
 #  include <windows.h>
    typedef SSIZE_T ssize_t;
+#  define __thread __declspec(thread)
 #endif
 
 #if defined(ZLIB_COMPAT)
