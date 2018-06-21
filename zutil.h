@@ -187,6 +187,12 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  define zunlikely(x)  x
 #endif
 
+#if defined(_MSC_VER)
+#define zalign(x)        __declspec(align(x))
+#else
+#define zalign(x)        __attribute__((aligned((x))))
+#endif
+
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(_WIN32) && \
     (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
