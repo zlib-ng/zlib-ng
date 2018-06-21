@@ -54,7 +54,7 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
 ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len);
 
 /* functable init */
-ZLIB_INTERNAL struct functable_s functable = {fill_window_stub,insert_string_stub,adler32_stub,crc32_stub};
+ZLIB_INTERNAL __thread struct functable_s functable = {fill_window_stub,insert_string_stub,adler32_stub,crc32_stub};
 
 
 /* stub functions */
