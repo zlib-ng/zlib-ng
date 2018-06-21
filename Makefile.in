@@ -57,11 +57,11 @@ SRCDIR=
 ZINC=
 ZINCOUT=-I.
 
-OBJZ = adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o trees.o x86.o zutil.o
+OBJZ = adler32.o crc32.o deflate.o infback.o inffast.o inflate.o inftrees.o slide_sse.o trees.o x86.o  zutil.o
 OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo crc32.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo x86.lo zutil.lo
+PIC_OBJZ = adler32.lo crc32.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo slide_sse.lo trees.lo x86.lo zutil.lo
 PIC_OBJG = compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
@@ -204,6 +204,8 @@ gzwrite.o: $(SRCDIR)gzwrite.c
 x86.o: $(SRCDIR)x86.c
 	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)x86.c
 
+slide_sse.o: $(SRCDIR)slide_sse.c
+	$(CC) $(CFLAGS) $(ZINC) -msse2 -c -o $@ $(SRCDIR)slide_sse.c
 
 adler32.lo: $(SRCDIR)adler32.c
 	-@mkdir objs 2>/dev/null || test -d objs
@@ -284,6 +286,12 @@ x86.lo: $(SRCDIR)x86.c
 	-@mkdir objs 2>/dev/null || test -d objs
 	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/x86.o $(SRCDIR)x86.c
 	-@mv objs/x86.o $@
+
+slide_sse.lo: $(SRCDIR)slide_sse.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) $(ZINC) -msse2 -DPIC -c -o objs/slide_sse.o $(SRCDIR)slide_sse.c
+	-@mv objs/slide_sse.o $@
+
 
 
 placebo $(SHAREDLIBV): $(PIC_OBJS) libz.a

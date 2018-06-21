@@ -19,12 +19,13 @@
 #define UNALIGNED_OK
 #define ADLER32_UNROLL_LESS
 #define CRC32_UNROLL_LESS
+#define USE_SSE_SLIDE
 
 extern int x86_cpu_has_sse2;
 extern int x86_cpu_has_sse42;
 extern int x86_cpu_has_pclmul;
 
 void x86_check_features(void);
-#endif
 
+#endif
 #endif

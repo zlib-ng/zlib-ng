@@ -75,6 +75,10 @@ typedef block_state (*compress_func) OF((deflate_state *s, int flush));
 
 local int deflateStateCheck      OF((z_streamp strm));
 local void slide_hash     OF((deflate_state *s));
+local void slide_hash_c     OF((deflate_state *s));
+#ifdef USE_SSE_SLIDE
+extern void slide_hash_sse(deflate_state *s);
+#endif
 local void fill_window    OF((deflate_state *s));
 local block_state deflate_stored OF((deflate_state *s, int flush));
 local block_state deflate_fast   OF((deflate_state *s, int flush));
@@ -201,7 +205,7 @@ local const config configuration_table[10] = {
  * bit values at the expense of memory usage). We slide even when level == 0 to
  * keep the hash table consistent if we switch back to level > 0 later.
  */
-local void slide_hash(s)
+local void slide_hash_c(s)
     deflate_state *s;
 {
     unsigned n, m;
@@ -225,6 +229,17 @@ local void slide_hash(s)
          */
     } while (--n);
 #endif
+}
+
+local void slide_hash(deflate_state *s)
+{
+#ifdef USE_SSE_SLIDE
+    if (x86_cpu_has_sse2)
+        slide_hash_sse(s);
+    else
+#endif
+        slide_hash_c(s);
+
 }
 
 /* ========================================================================= */
