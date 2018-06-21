@@ -179,6 +179,14 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
   #pragma warn -8066
 #endif
 
+#if defined(__GNUC__)
+#  define zlikely(x)    __builtin_expect(!!(x), 1)
+#  define zunlikely(x)  __builtin_expect(!!(x), 0)
+#else
+#  define zlikely(x)    x
+#  define zunlikely(x)  x
+#endif
+
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(_WIN32) && \
     (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
