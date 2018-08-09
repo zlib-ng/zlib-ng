@@ -26,6 +26,7 @@
 /CVE-2003-0107
 
 .DS_Store
+*_fuzzer
 *.obj
 *.exe
 *.pdb
