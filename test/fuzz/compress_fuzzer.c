@@ -12,9 +12,9 @@
 #endif
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  uint8_t *cbuf = (uint8_t *)malloc(size);
-  uint8_t *ubuf = (uint8_t *)malloc(size);
-  size_t cbuf_len = size, ubuf_len = size;
+  size_t cbuf_len = 100 + 2 * size, ubuf_len = size;
+  uint8_t *cbuf = (uint8_t *)malloc(cbuf_len);
+  uint8_t *ubuf = (uint8_t *)malloc(ubuf_len);
   PREFIX(compress)(cbuf, &cbuf_len, data, size);
   PREFIX(uncompress)(ubuf, &ubuf_len, cbuf, cbuf_len);
 
