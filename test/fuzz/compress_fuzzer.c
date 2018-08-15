@@ -23,6 +23,11 @@ static void check_compress_level(const uint8_t *data, size_t size,
   assert(0 == memcmp(data, ubuf, size));
 }
 
+static void check_decompress(const uint8_t *data, size_t size,
+                             uint8_t *cbuf, size_t cbuf_len) {
+  PREFIX(uncompress)(cbuf, &cbuf_len, data, size);
+}
+
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   size_t cbuf_len = 100 + 2 * size, ubuf_len = size;
   uint8_t *cbuf = (uint8_t *)malloc(cbuf_len);
@@ -32,6 +37,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   check_compress_level(data, size, cbuf, cbuf_len, ubuf, ubuf_len, 3);
   check_compress_level(data, size, cbuf, cbuf_len, ubuf, ubuf_len, 6);
   check_compress_level(data, size, cbuf, cbuf_len, ubuf, ubuf_len, 7);
+
+  check_decompress(data, size, cbuf, cbuf_len);
 
   free(cbuf);
   free(ubuf);
