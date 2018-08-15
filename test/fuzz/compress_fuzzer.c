@@ -39,6 +39,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
   check_compress_level(data, size, cbuf, cbuf_len, ubuf, ubuf_len, 7);
 
   check_decompress(data, size, cbuf, cbuf_len);
+  check_decompress(data, size, cbuf, size);
+  check_decompress(data, size, cbuf, 100);
+  check_decompress(data, size, cbuf, 10);
 
   free(cbuf);
   free(ubuf);
