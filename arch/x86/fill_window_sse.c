@@ -49,7 +49,7 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
          */
         if (s->strstart >= wsize+MAX_DIST(s)) {
             memcpy(s->window, s->window+wsize, (unsigned)wsize);
-            s->match_start -= wsize;
+            s->match_start = (s->match_start >= wsize) ? s->match_start - wsize : 0;
             s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
             s->block_start -= (long) wsize;
 

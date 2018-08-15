@@ -969,8 +969,10 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
                         state->mode = BAD;
                         break;
                     }
-                    while (copy--)
+                    while (copy) {
+                        --copy;
                         state->lens[state->have++] = (uint16_t)len;
+                    }
                 }
             }
 

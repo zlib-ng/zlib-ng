@@ -88,7 +88,8 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
 
     /* in case short lengths are provided, keep it somewhat fast */
     if (len < 16) {
-        while (len--) {
+        while (len) {
+            --len;
             adler += *buf++;
             sum2 += adler;
         }
@@ -133,7 +134,8 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
             buf += 8;
 #endif
         }
-        while (len--) {
+        while (len) {
+            --len;
             adler += *buf++;
             sum2 += adler;
         }
