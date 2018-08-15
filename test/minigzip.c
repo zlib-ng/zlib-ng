@@ -291,6 +291,9 @@ void gz_compress(FILE   *in, gzFile out)
      */
     if (gz_compress_mmap(in, out) == Z_OK) return;
 #endif
+    /* Clear out the contents of buf before reading from the file to avoid
+       MemorySanitizer: use-of-uninitialized-value warnings. */
+    bzero(buf, sizeof(buf));
     for (;;) {
         len = (int)fread(buf, 1, sizeof(buf), in);
         if (ferror(in)) {
