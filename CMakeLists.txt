@@ -19,6 +19,7 @@ include(CheckIncludeFile)
 include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
 include(FeatureSummary)
+include(ExternalProject)
 
 # make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
 # this should select the maximum generic optimisation on the current platform (i.e. -O3 for gcc/clang)
@@ -532,10 +533,9 @@ endif()
 
 set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME2}.pc)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
-		${ZLIB_PC} @ONLY)
+        ${ZLIB_PC} @ONLY)
 configure_file(	${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
-		${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
-
+        ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
 
 #============================================================================
 # zlib
@@ -696,4 +696,25 @@ if (ZLIB_ENABLE_TESTS)
     endif()
 endif()
 
-FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
+#============================================================================
+# minizip
+#============================================================================
+
+option(WITH_MINIZIP "Build minizip" ON)
+if (WITH_MINIZIP)
+    get_target_property(ZLIB_LIBRARY zlibstatic LOCATION_${CMAKE_BUILD_TYPE})
+    ExternalProject_Add(minizip
+        GIT_REPOSITORY    https://github.com/nmoinvaz/minizip.git
+        PREFIX            ${CMAKE_BINARY_DIR}/minizip.prefix
+        SOURCE_DIR        ${CMAKE_BINARY_DIR}/minizip
+        BINARY_DIR        ${CMAKE_BINARY_DIR}/minizip
+        INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}/../minizip
+        INSTALL_COMMAND   ${CMAKE_COMMAND} --build . --target install --config ${CMAKE_BUILD_TYPE}
+        CMAKE_ARGS
+            -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DZLIB_LIBRARY=${ZLIB_LIBRARY}
+            -DZLIB_INCLUDE_DIR=${CMAKE_SOURCE_DIR}
+            -DBUILD_TEST=ON
+    )
+endif()
