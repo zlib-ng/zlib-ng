@@ -700,21 +700,23 @@ endif()
 # minizip
 #============================================================================
 
-option(WITH_MINIZIP "Build minizip" ON)
+option(WITH_MINIZIP "Build minizip" OFF)
+add_feature_info(WITH_MINIZIP WITH_MINIZIP "Build minizip project")
 if (WITH_MINIZIP)
-    get_target_property(ZLIB_LIBRARY zlibstatic LOCATION_${CMAKE_BUILD_TYPE})
     ExternalProject_Add(minizip
         GIT_REPOSITORY    https://github.com/nmoinvaz/minizip.git
         PREFIX            ${CMAKE_BINARY_DIR}/minizip.prefix
         SOURCE_DIR        ${CMAKE_BINARY_DIR}/minizip
         BINARY_DIR        ${CMAKE_BINARY_DIR}/minizip
         INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}/../minizip
-        INSTALL_COMMAND   ${CMAKE_COMMAND} --build . --target install --config ${CMAKE_BUILD_TYPE}
         CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
-            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-            -DZLIB_LIBRARY=${ZLIB_LIBRARY}
+            -DZLIB_LIBRARY=$<TARGET_FILE:zlibstatic>
             -DZLIB_INCLUDE_DIR=${CMAKE_SOURCE_DIR}
             -DBUILD_TEST=ON
     )
 endif()
+
+#============================================================================
+
+FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
