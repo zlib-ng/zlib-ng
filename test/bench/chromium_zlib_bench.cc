@@ -118,6 +118,7 @@ void zlib_compress(
     const char* input,
     const size_t input_size,
     std::string* output,
+    const int compression_level,
     bool resize_output = false)
 {
   if (resize_output)
@@ -127,7 +128,7 @@ void zlib_compress(
   PREFIX3(stream) stream;
   memset(&stream, 0, sizeof(stream));
 
-  int result = PREFIX(deflateInit2)(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
+  int result = PREFIX(deflateInit2)(&stream, compression_level, Z_DEFLATED,
       zlib_stream_wrapper_type(type), MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
   if (result != Z_OK)
     error_exit("deflateInit2 failed", result);
@@ -187,14 +188,15 @@ void verify_equal(const char* input, size_t size, std::string* output) {
   exit(3);
 }
 
-void zlib_file(const char* name, const zlib_wrapper type) {
+void zlib_file(const char* name, const zlib_wrapper type,
+               const int compression_level) {
   /*
    * Read the file data.
    */
   const auto file = read_file_data_or_exit(name);
   const int length = static_cast<int>(file.size);
   const char* data = file.data.get();
-  printf("%-40s :\n", name);
+  printf("%-40s : ", name);
 
   /*
    * Chop the data into blocks.
@@ -235,13 +237,15 @@ void zlib_file(const char* name, const zlib_wrapper type) {
     auto start = now();
     for (int b = 0; b < blocks; ++b)
       for (int r = 0; r < repeats; ++r)
-        zlib_compress(type, input[b], input_length[b], &compressed[b]);
+        zlib_compress(type, input[b], input_length[b], &compressed[b],
+                      compression_level);
     ctime[run] = std::chrono::duration<double>(now() - start).count();
 
     // Compress again, resizing compressed, so we don't leave junk at the
     // end of the compressed string that could confuse zlib_uncompress().
     for (int b = 0; b < blocks; ++b)
-      zlib_compress(type, input[b], input_length[b], &compressed[b], true);
+      zlib_compress(type, input[b], input_length[b], &compressed[b],
+                    compression_level, true);
 
     for (int b = 0; b < blocks; ++b)
       output[b].resize(input_length[b]);
@@ -272,8 +276,8 @@ void zlib_file(const char* name, const zlib_wrapper type) {
   double inflate_rate_max = length * repeats / mega_byte / utime[0];
 
   // type, block size, compression ratio, etc
-  printf("%s: [b %dM] bytes %6d -> %6u %4.1f%%",
-    zlib_wrapper_name(type), block_size / (1 << 20), length,
+  printf("%s -%d: [b %dM] bytes %6d -> %6u %4.1f%%",
+    zlib_wrapper_name(type), compression_level, block_size / (1 << 20), length,
     static_cast<unsigned>(output_length), output_length * 100.0 / length);
 
   // compress / uncompress median (max) rates
@@ -283,22 +287,57 @@ void zlib_file(const char* name, const zlib_wrapper type) {
 
 int main(int argc, char* argv[]) {
   zlib_wrapper type = kWrapperNONE;
+  int file_index = 3;
+  // DEFAULT is equivalent to level 6. Compression level ranges from 1 to 9,
+  // being 0 used for Z_NO_COMPRESSION.
+  int compression_level = Z_DEFAULT_COMPRESSION;
+
+  auto help_msg_exit = [&argv] {
+    printf("usage: %s -wrapper gzip|zlib|raw -compression [0:9] files...\n", argv[0]);
+    exit(1);
+  };
+
+  // If no arguments were passed, print usage and exit.
+  if (argc == 1)
+    help_msg_exit();
 
   if (argc > 1) {
-    if (!strcmp(argv[1], "zlib"))
+    if (strcmp(argv[1], "-wrapper") || !(strcmp(argv[1], "-h")) ||
+        !(strcmp(argv[1], "--help")))
+      help_msg_exit();
+
+    // Got check the argument count before reading.
+    if (argc < 3)
+      help_msg_exit();
+
+    if (!strcmp(argv[2], "zlib"))
       type = kWrapperZLIB;
-    else if (!strcmp(argv[1], "gzip"))
+    else if (!strcmp(argv[2], "gzip"))
       type = kWrapperGZIP;
-    else if (!strcmp(argv[1], "raw"))
+    else if (!strcmp(argv[2], "raw"))
       type = kWrapperZRAW;
+    else
+      help_msg_exit();
+  }
+
+  if (argc >= 4) {
+    if (!strcmp(argv[3], "-compression")) {
+      int user_level = atoi(argv[4]);
+      if ((user_level <= 9) && (user_level >= 0)) {
+        compression_level = user_level;
+        file_index = 5;
+      } else
+        help_msg_exit();
+    }
   }
 
   if ((type != kWrapperNONE) && (argc > 2)) {
-    for (int file = 2; file < argc; ++file)
-      zlib_file(argv[file], type);
-    return 0;
+    while (file_index < argc) {
+      // TODO: return a status (e.g. success | fail).
+      zlib_file(argv[file_index], type, compression_level);
+      ++file_index;
+    }
   }
 
-  printf("usage: %s gzip|zlib|raw files...\n", argv[0]);
-  return 1;
+  return 0;
 }

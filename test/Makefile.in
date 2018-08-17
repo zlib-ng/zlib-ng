@@ -32,9 +32,11 @@ benchmark:
 else
 SNAPPY_FILES := $(wildcard bench/snappy/*)
 benchmark:
-	@../chromium_zlib_bench$(EXE) gzip $(SNAPPY_FILES) && \
-	../chromium_zlib_bench$(EXE) zlib $(SNAPPY_FILES) && \
-	../chromium_zlib_bench$(EXE) raw $(SNAPPY_FILES)
+	@for wrapper in gzip zlib raw; do \
+	   for level in $$(seq 2 9); do \
+	     ../chromium_zlib_bench$(EXE) -wrapper $$wrapper -compression $$level $(SNAPPY_FILES); \
+	   done \
+	done
 endif
 
 ALL_SRC_FILES := $(wildcard ../*)
