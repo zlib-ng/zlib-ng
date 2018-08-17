@@ -12,15 +12,15 @@
 #endif
 
 static void check_compress_level(const uint8_t *data, size_t size,
-                                 uint8_t *cbuf, size_t cbuf_len,
-                                 uint8_t *ubuf, size_t ubuf_len,
+                                 uint8_t *compr, size_t comprLen,
+                                 uint8_t *uncompr, size_t uncomprLen,
                                  int level) {
-  PREFIX(compress2)(cbuf, &cbuf_len, data, size, level);
-  PREFIX(uncompress)(ubuf, &ubuf_len, cbuf, cbuf_len);
+  PREFIX(compress2)(compr, &comprLen, data, size, level);
+  PREFIX(uncompress)(uncompr, &uncomprLen, compr, comprLen);
 
   /* Make sure compress + uncompress gives back the input data. */
-  assert(size == ubuf_len);
-  assert(0 == memcmp(data, ubuf, size));
+  assert(size == uncomprLen);
+  assert(0 == memcmp(data, uncompr, size));
 }
 
 #define put_byte(s, i, c) {s[i] = (unsigned char)(c);}
@@ -42,29 +42,29 @@ static void write_zlib_header(uint8_t *s, unsigned preset_dict) {
 }
 
 /* No preset dictionary. */
-static void check_decompress_no_dict(uint8_t *cbuf, size_t cbuf_len,
-                                     uint8_t *data, size_t data_len) {
+static void check_decompress_no_dict(uint8_t *compr, size_t comprLen,
+                                     uint8_t *data, size_t dataLen) {
   write_zlib_header(data, 0);
-  PREFIX(uncompress)(cbuf, &cbuf_len, data, data_len);
+  PREFIX(uncompress)(compr, &comprLen, data, dataLen);
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-  size_t cbuf_len = 100 + 2 * size, ubuf_len = size;
-  uint8_t *cbuf = (uint8_t *)malloc(cbuf_len);
-  uint8_t *ubuf = (uint8_t *)malloc(ubuf_len);
+  size_t comprLen = 100 + 2 * size, uncomprLen = size;
+  uint8_t *compr = (uint8_t *)malloc(comprLen);
+  uint8_t *uncompr = (uint8_t *)malloc(uncomprLen);
 
-  check_compress_level(data, size, cbuf, cbuf_len, ubuf, ubuf_len, 1);
-  check_compress_level(data, size, cbuf, cbuf_len, ubuf, ubuf_len, 3);
-  check_compress_level(data, size, cbuf, cbuf_len, ubuf, ubuf_len, 6);
-  check_compress_level(data, size, cbuf, cbuf_len, ubuf, ubuf_len, 7);
+  check_compress_level(data, size, compr, comprLen, uncompr, uncomprLen, 1);
+  check_compress_level(data, size, compr, comprLen, uncompr, uncomprLen, 3);
+  check_compress_level(data, size, compr, comprLen, uncompr, uncomprLen, 6);
+  check_compress_level(data, size, compr, comprLen, uncompr, uncomprLen, 7);
 
   /* check_decompress will write two bytes for the zlib header: check that the
      buffer is long enough and cast const away from data. */
   if (size > 2)
-    check_decompress_no_dict(cbuf, cbuf_len, (uint8_t *)data, size);
+    check_decompress_no_dict(compr, comprLen, (uint8_t *)data, size);
 
-  free(cbuf);
-  free(ubuf);
+  free(compr);
+  free(uncompr);
 
   /* This function must return 0. */
   return 0;
