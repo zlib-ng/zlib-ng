@@ -137,6 +137,8 @@ void test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
   }
 }
 
+static unsigned int diff;
+
 /* ===========================================================================
  * Test deflate() with large buffers and dynamic change of compression level
  */
@@ -170,7 +172,8 @@ void test_large_deflate(unsigned char *compr, size_t comprLen,
   /* Feed in already compressed data and switch to no compression: */
   PREFIX(deflateParams)(&c_stream, Z_NO_COMPRESSION, Z_DEFAULT_STRATEGY);
   c_stream.next_in = compr;
-  c_stream.avail_in = (unsigned int)comprLen / 2;
+  diff = (unsigned int)(c_stream.next_out - compr);
+  c_stream.avail_in = diff;
   err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
   CHECK_ERR(err, "deflate");
 
@@ -222,7 +225,7 @@ void test_large_inflate(unsigned char *compr, size_t comprLen,
   err = PREFIX(inflateEnd)(&d_stream);
   CHECK_ERR(err, "inflateEnd");
 
-  if (d_stream.total_out != 2 * uncomprLen + comprLen / 2) {
+  if (d_stream.total_out != 2 * uncomprLen + diff) {
     fprintf(stderr, "bad large inflate: %zu\n", d_stream.total_out);
     exit(1);
   }

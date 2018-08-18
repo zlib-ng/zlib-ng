@@ -1119,7 +1119,7 @@ ZLIB_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsig
     else
 #endif
     {
-        memmove(buf, strm->next_in, len);
+        memcpy(buf, strm->next_in, len);
         if (strm->state->wrap == 1)
             strm->adler = functable.adler32(strm->adler, buf, len);
     }
