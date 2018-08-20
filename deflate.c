@@ -287,7 +287,7 @@ int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, 
     strm->state = (struct internal_state *)s;
     s->strm = strm;
     s->status = INIT_STATE;     /* to pass state test in deflateReset() */
-
+    s->match_start = 0;
     s->wrap = wrap;
     s->gzhead = NULL;
     s->w_bits = (unsigned int)windowBits;
