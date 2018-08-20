@@ -84,7 +84,7 @@ void test_deflate(unsigned char *compr, size_t comprLen) {
   while (c_stream.total_in != len && c_stream.total_out < comprLen) {
     c_stream.avail_in = c_stream.avail_out = 1; /* force small buffers */
     err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
-    CHECK_ERR(err, "deflate");
+    CHECK_ERR(err, "deflate small 1");
   }
   /* Finish the stream, still forcing small buffers: */
   for (;;) {
@@ -92,7 +92,7 @@ void test_deflate(unsigned char *compr, size_t comprLen) {
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
     if (err == Z_STREAM_END)
       break;
-    CHECK_ERR(err, "deflate");
+    CHECK_ERR(err, "deflate small 2");
   }
 
   err = PREFIX(deflateEnd)(&c_stream);
@@ -163,7 +163,7 @@ void test_large_deflate(unsigned char *compr, size_t comprLen,
   c_stream.next_in = uncompr;
   c_stream.avail_in = (unsigned int)uncomprLen;
   err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
-  CHECK_ERR(err, "deflate");
+  CHECK_ERR(err, "deflate large 1");
   if (c_stream.avail_in != 0) {
     fprintf(stderr, "deflate not greedy\n");
     exit(1);
@@ -175,14 +175,14 @@ void test_large_deflate(unsigned char *compr, size_t comprLen,
   diff = (unsigned int)(c_stream.next_out - compr);
   c_stream.avail_in = diff;
   err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
-  CHECK_ERR(err, "deflate");
+  CHECK_ERR(err, "deflate large 2");
 
   /* Switch back to compressing mode: */
   PREFIX(deflateParams)(&c_stream, Z_BEST_COMPRESSION, Z_FILTERED);
   c_stream.next_in = uncompr;
   c_stream.avail_in = (unsigned int)uncomprLen;
   err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
-  CHECK_ERR(err, "deflate");
+  CHECK_ERR(err, "deflate large 3");
 
   err = PREFIX(deflate)(&c_stream, Z_FINISH);
   if (err != Z_STREAM_END) {
@@ -251,14 +251,14 @@ void test_flush(unsigned char *compr, z_size_t *comprLen) {
   c_stream.avail_in = 3;
   c_stream.avail_out = (unsigned int)*comprLen;
   err = PREFIX(deflate)(&c_stream, Z_FULL_FLUSH);
-  CHECK_ERR(err, "deflate");
+  CHECK_ERR(err, "deflate flush 1");
 
   compr[3]++; /* force an error in first compressed block */
   c_stream.avail_in = len - 3;
 
   err = PREFIX(deflate)(&c_stream, Z_FINISH);
   if (err != Z_STREAM_END) {
-    CHECK_ERR(err, "deflate");
+    CHECK_ERR(err, "deflate flush 2");
   }
   err = PREFIX(deflateEnd)(&c_stream);
   CHECK_ERR(err, "deflateEnd");
