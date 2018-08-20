@@ -9,7 +9,7 @@ int main(int argc, char **argv) {
   fprintf(stderr, "StandaloneFuzzTargetMain: running %d inputs\n", argc - 1);
 
   for (i = 1; i < argc; i++) {
-    size_t len, n_read;
+    size_t len, n_read, err;
     unsigned char *buf;
     FILE *f = fopen(argv[i], "r");
     assert(f);
@@ -22,6 +22,8 @@ int main(int argc, char **argv) {
     assert(n_read == len);
     LLVMFuzzerTestOneInput(buf, len);
     free(buf);
+    err = fclose(f);
+    assert(err == 0);
     fprintf(stderr, "Done:    %s: (%d bytes)\n", argv[i], (int)n_read);
   }
 
