@@ -24,8 +24,9 @@ static const uint8_t *data;
 static size_t dataLen;
 static alloc_func zalloc = NULL;
 static free_func zfree = NULL;
-static size_t dictionaryLen = 1024;
-static const char *dictionary[1024];
+#define DICTIONARY_LEN 1024
+static size_t dictionaryLen = DICTIONARY_LEN;
+static const char *dictionary[DICTIONARY_LEN];
 static unsigned long dictId; /* Adler32 value of the dictionary */
 
 static void check_compress_level(uint8_t *compr, size_t comprLen,
@@ -421,13 +422,11 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
 
   /* Set up the contents of the dictionary. */
   if (dictionaryLen < dataLen)
-    memcpy(dictionary, data, dictionaryLen);
-  else {
-    size_t index = 0;
-    for (; index < dictionaryLen; index += dataLen)
-      memcpy(dictionary + index, data, dataLen);
-    memcpy(dictionary + index, data, dictionaryLen - index);
-  }
+    dictionaryLen = DICTIONARY_LEN;
+  else
+    dictionaryLen = dataLen;
+
+  memcpy(dictionary, data, dictionaryLen);
 
   test_dict_deflate(compr, comprLen);
   test_dict_inflate(compr, comprLen, uncompr, uncomprLen);
