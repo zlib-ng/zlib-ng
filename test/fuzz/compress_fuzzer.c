@@ -398,8 +398,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
 
   data = d;
   dataLen = size;
-  compr = (uint8_t *)malloc(comprLen);
-  uncompr = (uint8_t *)malloc(uncomprLen);
+  compr = (uint8_t *)calloc(1, comprLen);
+  uncompr = (uint8_t *)calloc(1, uncomprLen);
 
   check_compress_level(compr, comprLen, uncompr, uncomprLen, 1);
   check_compress_level(compr, comprLen, uncompr, uncomprLen, 3);
