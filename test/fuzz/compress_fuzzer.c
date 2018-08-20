@@ -409,9 +409,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
   test_large_deflate(compr, comprLen, uncompr, uncomprLen);
   test_large_inflate(compr, comprLen, uncompr, uncomprLen);
 
-  test_flush(compr, &comprLen);
-  test_sync(compr, comprLen, uncompr, uncomprLen);
-  comprLen = uncomprLen;
+  if (dataLen > 3) {
+    // This test requires at least 3 bytes of input data.
+    test_flush(compr, &comprLen);
+    test_sync(compr, comprLen, uncompr, uncomprLen);
+    comprLen = uncomprLen;
+  }
 
   /* Set up the contents of the dictionary. */
   if (dictionaryLen < dataLen)
