@@ -501,7 +501,7 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
 int main(int argc, char *argv[])
 {
     unsigned char *compr, *uncompr;
-    z_size_t comprLen = 10000*sizeof(int); /* don't overflow on MSDOS */
+    z_size_t comprLen = 1024*sizeof(int); /* don't overflow on MSDOS */
     z_size_t uncomprLen = comprLen;
     static const char* myVersion = PREFIX2(VERSION);
 
