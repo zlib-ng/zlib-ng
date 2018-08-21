@@ -11,8 +11,12 @@ int main(int argc, char **argv) {
   for (i = 1; i < argc; i++) {
     size_t len, n_read, err;
     unsigned char *buf;
-    FILE *f = fopen(argv[i], "r");
-    assert(f);
+    FILE *f = fopen(argv[i], "r+");
+    if (!f) {
+      /* Failed to open this file: it may be a directory. */
+      fprintf(stderr, "Skipping: %s\n", argv[i]);
+      continue;
+    }
     fprintf(stderr, "Running: %s\n", argv[i]);
     fseek(f, 0, SEEK_END);
     len = ftell(f);
