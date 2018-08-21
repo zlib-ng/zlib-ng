@@ -421,9 +421,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
   }
 
   /* Set up the contents of the dictionary. */
-  if (dictionaryLen < dataLen)
-    dictionaryLen = DICTIONARY_LEN;
-  else
+  dictionaryLen = DICTIONARY_LEN;
+  if (dictionaryLen > dataLen)
     dictionaryLen = dataLen;
 
   memcpy(dictionary, data, dictionaryLen);
