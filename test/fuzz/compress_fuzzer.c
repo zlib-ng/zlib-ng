@@ -152,7 +152,7 @@ void test_large_deflate(unsigned char *compr, size_t comprLen,
   c_stream.zfree = zfree;
   c_stream.opaque = (void *)0;
 
-  err = PREFIX(deflateInit)(&c_stream, Z_BEST_SPEED);
+  err = PREFIX(deflateInit)(&c_stream, Z_BEST_COMPRESSION);
   CHECK_ERR(err, "deflateInit");
 
   c_stream.next_out = compr;
@@ -390,7 +390,7 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen,
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
-  size_t comprLen = 100 + 2 * size;
+  size_t comprLen = 100 + 3 * size;
   size_t uncomprLen = comprLen;
   uint8_t *compr, *uncompr;
 
@@ -410,10 +410,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
   test_deflate(compr, comprLen);
   test_inflate(compr, comprLen, uncompr, uncomprLen);
 
-  if (0) {
-    test_large_deflate(compr, comprLen, uncompr, uncomprLen);
-    test_large_inflate(compr, comprLen, uncompr, uncomprLen);
-  }
+  test_large_deflate(compr, comprLen, uncompr, uncomprLen);
+  test_large_inflate(compr, comprLen, uncompr, uncomprLen);
 
   if (dataLen > 3) {
     // This test requires at least 3 bytes of input data.
