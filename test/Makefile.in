@@ -26,8 +26,9 @@ endif
 
 # Only check the fuzzer when it is a stand-alone executable.
 ifeq (,$(LIB_FUZZING_ENGINE))
+ALL_SRC_FILES := $(wildcard ../*)
 fuzzer:
-	../compress_fuzzer ../*
+	../compress_fuzzer $(ALL_SRC_FILES)
 else
 fuzzer:
 endif
