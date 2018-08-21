@@ -410,8 +410,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
   test_deflate(compr, comprLen);
   test_inflate(compr, comprLen, uncompr, uncomprLen);
 
-  test_large_deflate(compr, comprLen, uncompr, uncomprLen);
-  test_large_inflate(compr, comprLen, uncompr, uncomprLen);
+  if (0) {
+    test_large_deflate(compr, comprLen, uncompr, uncomprLen);
+    test_large_inflate(compr, comprLen, uncompr, uncomprLen);
+  }
 
   if (dataLen > 3) {
     // This test requires at least 3 bytes of input data.
