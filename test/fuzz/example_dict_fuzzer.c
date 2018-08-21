@@ -112,7 +112,7 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen,
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
-  size_t comprLen = 100 + 3 * size;
+  size_t comprLen = 100 + 2 * size;
   size_t uncomprLen = comprLen;
   uint8_t *compr, *uncompr;
 
