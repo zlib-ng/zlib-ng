@@ -96,7 +96,7 @@ LIB_FUZZING_ENGINE ?= standalone_fuzz_target_runner.o
 
 all: static shared
 
-static: example$(EXE) minigzip$(EXE) compress_fuzzer
+static: example$(EXE) minigzip$(EXE) compress_fuzzer$(EXE) example_small_fuzzer$(EXE) example_large_fuzzer$(EXE) example_flush_fuzzer$(EXE) example_dict_fuzzer$(EXE)
 
 shared: examplesh$(EXE) minigzipsh$(EXE)
 
@@ -126,8 +126,24 @@ standalone_fuzz_target_runner.o: $(SRCDIR)/test/fuzz/standalone_fuzz_target_runn
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 compress_fuzzer.o: $(SRCDIR)/test/fuzz/compress_fuzzer.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-compress_fuzzer: compress_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
-	$(CC) $(LDFLAGS) $(INCLUDES) -o $@ ${LIB_FUZZING_ENGINE} compress_fuzzer.o $(TEST_LIBS) -lpthread
+example_small_fuzzer.o: $(SRCDIR)/test/fuzz/example_small_fuzzer.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+example_large_fuzzer.o: $(SRCDIR)/test/fuzz/example_large_fuzzer.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+example_flush_fuzzer.o: $(SRCDIR)/test/fuzz/example_flush_fuzzer.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+example_dict_fuzzer.o: $(SRCDIR)/test/fuzz/example_dict_fuzzer.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+compress_fuzzer$(EXE): compress_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ ${LIB_FUZZING_ENGINE} compress_fuzzer.o $(TEST_LIBS) -lpthread
+example_small_fuzzer$(EXE): example_small_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ ${LIB_FUZZING_ENGINE} example_small_fuzzer.o $(TEST_LIBS) -lpthread
+example_large_fuzzer$(EXE): example_large_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ ${LIB_FUZZING_ENGINE} example_large_fuzzer.o $(TEST_LIBS) -lpthread
+example_flush_fuzzer$(EXE): example_flush_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ ${LIB_FUZZING_ENGINE} example_flush_fuzzer.o $(TEST_LIBS) -lpthread
+example_dict_fuzzer$(EXE): example_dict_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ ${LIB_FUZZING_ENGINE} example_dict_fuzzer.o $(TEST_LIBS) -lpthread
 
 infcover.o: $(SRCDIR)/test/infcover.c $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/infcover.c
@@ -290,7 +306,9 @@ clean:
 	@if [ -f test/Makefile ]; then $(MAKE) -C test clean; fi
 	rm -f *.o *.lo *~ \
 	   example$(EXE) minigzip$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
-	   example64$(EXE) minigzip64$(EXE) compress_fuzzer \
+	   example64$(EXE) minigzip64$(EXE) \
+	   compress_fuzzer$(EXE) example_small_fuzzer$(EXE) example_large_fuzzer$(EXE) \
+	   example_flush_fuzzer$(EXE) example_dict_fuzzer$(EXE) \
 	   infcover \
 	   $(STATICLIB) $(IMPORTLIB) $(SHAREDLIB) $(SHAREDLIBV) $(SHAREDLIBM) \
 	   foo.gz so_locations \
