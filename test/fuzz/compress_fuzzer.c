@@ -40,30 +40,6 @@ static void check_compress_level(uint8_t *compr, size_t comprLen,
   assert(0 == memcmp(data, uncompr, dataLen));
 }
 
-#define put_byte(s, i, c) {s[i] = (unsigned char)(c);}
-#define PRESET_DICT 0x20 /* preset dictionary flag in zlib header */
-
-static void write_zlib_header(uint8_t *s, unsigned preset_dict) {
-  unsigned level_flags = 0; /* compression level (0..3) */
-  unsigned w_bits = 8; /* window size log2(w_size)  (8..16) */
-  unsigned int header = (Z_DEFLATED + ((w_bits-8)<<4)) << 8;
-  header |= (level_flags << 6);
-
-  if (preset_dict)
-    header |= PRESET_DICT;
-  header += 31 - (header % 31);
-
-  /* s is guaranteed to be longer than 2 bytes. */
-  put_byte(s, 0, (unsigned char)(header >> 8));
-  put_byte(s, 1, (unsigned char)(header & 0xff));
-}
-
-/* No preset dictionary. */
-static void check_decompress_no_dict(uint8_t *compr, size_t comprLen) {
-  write_zlib_header((uint8_t *)data, 0);
-  PREFIX(uncompress)(compr, &comprLen, data, dataLen);
-}
-
 /* ===========================================================================
  * Test deflate() with small buffers
  */
@@ -429,11 +405,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
 
   test_dict_deflate(compr, comprLen);
   test_dict_inflate(compr, comprLen, uncompr, uncomprLen);
-
-  /* check_decompress will write two bytes for the zlib header: check that the
-     buffer is long enough. */
-  if (dataLen > 2)
-    check_decompress_no_dict(compr, comprLen);
 
   free(compr);
   free(uncompr);
