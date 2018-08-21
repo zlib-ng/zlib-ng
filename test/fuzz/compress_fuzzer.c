@@ -187,7 +187,7 @@ void test_large_deflate(unsigned char *compr, size_t comprLen,
 
   err = PREFIX(deflate)(&c_stream, Z_FINISH);
   if (err != Z_STREAM_END) {
-    fprintf(stderr, "deflate should report Z_STREAM_END\n");
+    fprintf(stderr, "deflate large should report Z_STREAM_END\n");
     exit(1);
   }
   err = PREFIX(deflateEnd)(&c_stream);
@@ -335,7 +335,7 @@ void test_dict_deflate(unsigned char *compr, size_t comprLen)
 
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
     if (err != Z_STREAM_END) {
-        fprintf(stderr, "deflate should report Z_STREAM_END\n");
+        fprintf(stderr, "deflate dict should report Z_STREAM_END\n");
         exit(1);
     }
     err = PREFIX(deflateEnd)(&c_stream);
