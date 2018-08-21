@@ -1150,6 +1150,7 @@ static void lm_init(deflate_state *s) {
     s->insert = 0;
     s->match_length = s->prev_length = MIN_MATCH-1;
     s->match_available = 0;
+    s->match_start = 0;
     s->ins_h = 0;
 }
 
