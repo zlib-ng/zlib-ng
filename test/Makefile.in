@@ -28,7 +28,7 @@ endif
 ifeq (,$(LIB_FUZZING_ENGINE))
 ALL_SRC_FILES := $(wildcard ../*)
 fuzzer:
-	@../compress_fuzzer $(ALL_SRC_FILES)
+	@${QEMU_RUN} ../compress_fuzzer $(ALL_SRC_FILES)
 else
 fuzzer:
 endif
