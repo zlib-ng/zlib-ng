@@ -12,7 +12,7 @@
 #  define PREFIX2(x) ZLIB_ ## x
 #  define PREFIX3(x) z_ ## x
 #  define zVersion zlibVersion
-#  define z_size_t size_t
+#  define z_size_t unsigned long
 #else
 #  define PREFIX(x) zng_ ## x
 #  define PREFIX2(x) ZLIBNG_ ## x
