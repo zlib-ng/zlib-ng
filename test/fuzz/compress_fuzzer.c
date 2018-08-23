@@ -52,6 +52,7 @@ static void check_decompress(uint8_t *compr, size_t comprLen) {
   write_zlib_header(copy);
 
   PREFIX(uncompress)(compr, &comprLen, copy, copyLen);
+  free(copy);
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
