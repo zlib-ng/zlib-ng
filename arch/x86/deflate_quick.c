@@ -123,41 +123,51 @@ static inline long compare258(const unsigned char *const src0, const unsigned ch
 static const unsigned quick_len_codes[MAX_MATCH-MIN_MATCH+1];
 static const unsigned quick_dist_codes[8192];
 
-static inline void quick_send_bits(deflate_state *const s, const int value, const int length) {
-    unsigned out, width, bytes_out;
+static inline void quick_send_bits(deflate_state *const s,
+                                   const int value1, const int length1,
+                                   const int value2, const int length2) {
+    unsigned offset2 = s->bi_valid + length1;
+    unsigned width = s->bi_valid + length1 + length2;
+    unsigned bytes_out = width / 8;
 
     /* Concatenate the new bits with the bits currently in the buffer */
-    out = s->bi_buf | (value << s->bi_valid);
-    width = s->bi_valid + length;
+    unsigned out = s->bi_buf | (value1 << s->bi_valid);
+    if (width < 32) {
+      out |= (value2 << offset2);
+      /* Shift out the valid LSBs written out. */
+      s->bi_buf = out >> (bytes_out * 8);
+    } else /* width => 32 */ {
+      unsigned bits_that_fit = 32 - offset2;
+      unsigned mask = (1 << bits_that_fit) - 1;
+      /* Zero out the high bits of value2 such that the shift by offset2 will
+         not cause undefined behavior. */
+      out |= ((value2 & mask) << offset2);
+
+      /* Save in s->bi_buf the bits of value2 that do not fit: they will be
+         written in a next full byte. */
+      s->bi_buf = (width == 32) ? 0 : value2 >> bits_that_fit;
+    }
+
+    s->bi_valid = width - (bytes_out * 8);
 
     /* Taking advantage of the fact that LSB comes first, write to output buffer */
     *(unsigned *)(s->pending_buf + s->pending) = out;
 
-    bytes_out = width / 8;
-
     s->pending += bytes_out;
-
-    /* Shift out the valid LSBs written out */
-    s->bi_buf =  out >> (bytes_out * 8);
-    s->bi_valid = width - (bytes_out * 8);
 }
 
 static inline void static_emit_ptr(deflate_state *const s, const int lc, const unsigned dist) {
-    unsigned code, len;
-
-    code = quick_len_codes[lc] >> 8;
-    len =  quick_len_codes[lc] & 0xFF;
-    quick_send_bits(s, code, len);
-
-    code = quick_dist_codes[dist-1] >> 8;
-    len  = quick_dist_codes[dist-1] & 0xFF;
-    quick_send_bits(s, code, len);
+    unsigned code1 = quick_len_codes[lc] >> 8;
+    unsigned len1 =  quick_len_codes[lc] & 0xFF;
+    unsigned code2 = quick_dist_codes[dist-1] >> 8;
+    unsigned len2  = quick_dist_codes[dist-1] & 0xFF;
+    quick_send_bits(s, code1, len1, code2, len2);
 }
 
 const ct_data static_ltree[L_CODES+2];
 
 static inline void static_emit_lit(deflate_state *const s, const int lit) {
-    quick_send_bits(s, static_ltree[lit].Code, static_ltree[lit].Len);
+    quick_send_bits(s, static_ltree[lit].Code, static_ltree[lit].Len, 0, 0);
     Tracecv(isgraph(lit), (stderr, " '%c' ", lit));
 }
 
