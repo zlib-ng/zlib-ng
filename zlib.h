@@ -32,7 +32,7 @@
 
 #include <stdint.h>
 #include <stdarg.h>
-#include "zconf.h"
+#include <zconf.h>
 
 #ifdef __cplusplus
 extern "C" {
