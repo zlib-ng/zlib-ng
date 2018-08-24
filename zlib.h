@@ -31,7 +31,8 @@
 */
 
 #include <stdint.h>
-#include "zconf.h"
+#include <stdarg.h>
+#include <zconf.h>
 
 #ifdef __cplusplus
 extern "C" {

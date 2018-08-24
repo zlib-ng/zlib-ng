@@ -172,8 +172,6 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
             break;
         if (n.match_length >= 256)
             break;
-        if (n.match_start <= 0)
-            break;
 
         n.strstart--;
         n.match_start--;
@@ -182,6 +180,9 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
         match--;
         orig--;
         changed++;
+
+        if (n.match_start <= 0)
+            break;
     }
 
     if (!changed)
