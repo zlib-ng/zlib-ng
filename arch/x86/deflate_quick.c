@@ -131,22 +131,29 @@ static inline void quick_send_bits(deflate_state *const s,
     unsigned bytes_out = width / 8;
 
     /* Concatenate the new bits with the bits currently in the buffer */
-    unsigned out = s->bi_buf | (value1 << s->bi_valid) | (value2 << offset2);
+    unsigned out = s->bi_buf | (value1 << s->bi_valid);
+    if (width < 32) {
+      out |= (value2 << offset2);
+      /* Shift out the valid LSBs written out. */
+      s->bi_buf = out >> (bytes_out * 8);
+    } else /* width => 32 */ {
+      unsigned bits_that_fit = 32 - offset2;
+      unsigned mask = (1 << bits_that_fit) - 1;
+      /* Zero out the high bits of value2 such that the shift by offset2 will
+         not cause undefined behavior. */
+      out |= ((value2 & mask) << offset2);
+
+      /* Save in s->bi_buf the bits of value2 that do not fit: they will be
+         written in a next full byte. */
+      s->bi_buf = (width == 32) ? 0 : value2 >> bits_that_fit;
+    }
+
+    s->bi_valid = width - (bytes_out * 8);
 
     /* Taking advantage of the fact that LSB comes first, write to output buffer */
     *(unsigned *)(s->pending_buf + s->pending) = out;
 
     s->pending += bytes_out;
-
-    /* Shift out the valid LSBs written out */
-    if (width < 32)
-      s->bi_buf = out >> (bytes_out * 8);
-    else if (width == 32)
-      s->bi_buf = 0;
-    else /* width > 32 */
-      s->bi_buf = value2 >> (32 - offset2);
-
-    s->bi_valid = width - (bytes_out * 8);
 }
 
 static inline void static_emit_ptr(deflate_state *const s, const int lc, const unsigned dist) {
