@@ -251,7 +251,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   echo ... using gcc >> configure.log
   CC="$cc"
   # Re-check arch if gcc is a cross-compiler
-  GCC_ARCH=`$CC -dumpmachine | sed 's/-.*//g'`
+  GCC_ARCH=`$CC $CFLAGS -dumpmachine | sed 's/-.*//g'`
   case $GCC_ARCH in
     i386 | i486 | i586 | i686)
       # Honor user choice if gcc is multilib and 64-bit is requested
