@@ -24,9 +24,9 @@ static const uint8_t *data;
 static size_t dataLen;
 static alloc_func zalloc = NULL;
 static free_func zfree = NULL;
-#define DICTIONARY_LEN 42
-static size_t dictionaryLen = DICTIONARY_LEN;
-static const char *dictionary[DICTIONARY_LEN];
+static size_t dictionaryLen = 0;
+/* The length of the dictionary is the first byte from the input data. */
+static const char *dictionary[256];
 static unsigned long dictId; /* Adler32 value of the dictionary */
 
 /* ===========================================================================
@@ -127,8 +127,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
   compr = (uint8_t *)calloc(1, comprLen);
   uncompr = (uint8_t *)calloc(1, uncomprLen);
 
-  /* Set up the contents of the dictionary. */
-  dictionaryLen = DICTIONARY_LEN;
+  /* Set up the contents of the dictionary.  The size of the dictionary is
+     intentionally selected to be of unusual size.  To help cover more corner
+     cases, the size of the dictionary is read from the input data.  */
+  dictionaryLen = data[0];
   if (dictionaryLen > dataLen)
     dictionaryLen = dataLen;
 
