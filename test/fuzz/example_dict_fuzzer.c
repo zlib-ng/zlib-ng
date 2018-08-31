@@ -24,7 +24,7 @@ static const uint8_t *data;
 static size_t dataLen;
 static alloc_func zalloc = NULL;
 static free_func zfree = NULL;
-#define DICTIONARY_LEN 1024
+#define DICTIONARY_LEN 42
 static size_t dictionaryLen = DICTIONARY_LEN;
 static const char *dictionary[DICTIONARY_LEN];
 static unsigned long dictId; /* Adler32 value of the dictionary */
