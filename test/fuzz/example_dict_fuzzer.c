@@ -34,12 +34,38 @@ void test_dict_deflate(unsigned char **compr, size_t *comprLen)
 {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
+    int level = data[0] % 11 - 1; /* [-1..9]
+      compression levels
+      #define Z_NO_COMPRESSION         0
+      #define Z_BEST_SPEED             1
+      #define Z_BEST_COMPRESSION       9
+      #define Z_DEFAULT_COMPRESSION  (-1) */
+
+    int method = Z_DEFLATED; /* The deflate compression method (the only one
+                                supported in this version) */
+    int windowBits = 8 + data[0] % 8; /* The windowBits parameter is the base
+      two logarithm of the window size (the size of the history buffer).  It
+      should be in the range 8..15 for this version of the library. */
+    int memLevel = 1 + data[0] % 9;   /* memLevel=1 uses minimum memory but is
+      slow and reduces compression ratio; memLevel=9 uses maximum memory for
+      optimal speed. */
+    int strategy = data[0] % 5;       /* [0..4]
+      #define Z_FILTERED            1
+      #define Z_HUFFMAN_ONLY        2
+      #define Z_RLE                 3
+      #define Z_FIXED               4
+      #define Z_DEFAULT_STRATEGY    0 */
+
+    /* deflate would fail for no-compression or for speed levels. */
+    if (level == 0 || level == 1)
+      level = -1;
 
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
     c_stream.opaque = (void *)0;
 
-    err = PREFIX(deflateInit)(&c_stream, Z_BEST_COMPRESSION);
+    err = PREFIX(deflateInit2)(&c_stream, level, method, windowBits, memLevel,
+                               strategy);
     CHECK_ERR(err, "deflateInit");
 
     err = PREFIX(deflateSetDictionary)(
