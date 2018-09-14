@@ -101,8 +101,8 @@ void test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
-  size_t comprLen = 100 + 2 * size;
-  size_t uncomprLen = comprLen;
+  size_t comprLen = PREFIX(compressBound)(size);
+  size_t uncomprLen = size;
   uint8_t *compr, *uncompr;
 
   /* Discard inputs larger than 1Mb. */

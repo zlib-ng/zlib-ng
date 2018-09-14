@@ -25,14 +25,12 @@ static size_t dataLen;
 static alloc_func zalloc = NULL;
 static free_func zfree = NULL;
 static size_t dictionaryLen = 0;
-/* The length of the dictionary is the first byte from the input data. */
-static const char *dictionary[256];
 static unsigned long dictId; /* Adler32 value of the dictionary */
 
 /* ===========================================================================
  * Test deflate() with preset dictionary
  */
-void test_dict_deflate(unsigned char *compr, size_t comprLen)
+void test_dict_deflate(unsigned char **compr, size_t *comprLen)
 {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
@@ -45,12 +43,15 @@ void test_dict_deflate(unsigned char *compr, size_t comprLen)
     CHECK_ERR(err, "deflateInit");
 
     err = PREFIX(deflateSetDictionary)(
-        &c_stream, (const unsigned char *)dictionary, dictionaryLen);
+        &c_stream, (const unsigned char *)data, dictionaryLen);
     CHECK_ERR(err, "deflateSetDictionary");
 
+    *comprLen = PREFIX(deflateBound)(&c_stream, dataLen);
+    *compr = (uint8_t *)calloc(1, *comprLen);
+
     dictId = c_stream.adler;
-    c_stream.next_out = compr;
-    c_stream.avail_out = (unsigned int)comprLen;
+    c_stream.next_out = *compr;
+    c_stream.avail_out = (unsigned int)(*comprLen);
 
     c_stream.next_in = data;
     c_stream.avail_in = dataLen;
@@ -67,12 +68,10 @@ void test_dict_deflate(unsigned char *compr, size_t comprLen)
 /* ===========================================================================
  * Test inflate() with a preset dictionary
  */
-void test_dict_inflate(unsigned char *compr, size_t comprLen,
-                       unsigned char *uncompr, size_t uncomprLen) {
+void test_dict_inflate(unsigned char *compr, size_t comprLen) {
   int err;
   PREFIX3(stream) d_stream; /* decompression stream */
-
-  strcpy((char *)uncompr, "garbage");
+  unsigned char *uncompr;
 
   d_stream.zalloc = zalloc;
   d_stream.zfree = zfree;
@@ -84,8 +83,9 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen,
   err = PREFIX(inflateInit)(&d_stream);
   CHECK_ERR(err, "inflateInit");
 
+  uncompr = (uint8_t *)calloc(1, dataLen);
   d_stream.next_out = uncompr;
-  d_stream.avail_out = (unsigned int)uncomprLen;
+  d_stream.avail_out = (unsigned int)dataLen;
 
   for (;;) {
     err = PREFIX(inflate)(&d_stream, Z_NO_FLUSH);
@@ -97,7 +97,7 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen,
         exit(1);
       }
       err = PREFIX(inflateSetDictionary)(
-          &d_stream, (const unsigned char *)dictionary, dictionaryLen);
+          &d_stream, (const unsigned char *)data, dictionaryLen);
     }
     CHECK_ERR(err, "inflate with dict");
   }
@@ -109,12 +109,13 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen,
     fprintf(stderr, "bad inflate with dict\n");
     exit(1);
   }
+
+  free(uncompr);
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
-  size_t comprLen = 100 + 2 * size;
-  size_t uncomprLen = comprLen;
-  uint8_t *compr, *uncompr;
+  size_t comprLen = 0;
+  uint8_t *compr;
 
   /* Discard inputs larger than 100Kb. */
   static size_t kMaxSize = 100 * 1024;
@@ -124,8 +125,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
 
   data = d;
   dataLen = size;
-  compr = (uint8_t *)calloc(1, comprLen);
-  uncompr = (uint8_t *)calloc(1, uncomprLen);
 
   /* Set up the contents of the dictionary.  The size of the dictionary is
      intentionally selected to be of unusual size.  To help cover more corner
@@ -134,13 +133,10 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
   if (dictionaryLen > dataLen)
     dictionaryLen = dataLen;
 
-  memcpy(dictionary, data, dictionaryLen);
-
-  test_dict_deflate(compr, comprLen);
-  test_dict_inflate(compr, comprLen, uncompr, uncomprLen);
+  test_dict_deflate(&compr, &comprLen);
+  test_dict_inflate(compr, comprLen);
 
   free(compr);
-  free(uncompr);
 
   /* This function must return 0. */
   return 0;

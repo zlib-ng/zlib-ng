@@ -119,8 +119,8 @@ void test_large_inflate(unsigned char *compr, size_t comprLen,
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
-  size_t comprLen = 100 + 3 * size;
-  size_t uncomprLen = comprLen;
+  size_t comprLen = PREFIX(compressBound)(size);
+  size_t uncomprLen = size;
   uint8_t *compr, *uncompr;
 
   /* Discard inputs larger than 512Kb. */
