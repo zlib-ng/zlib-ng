@@ -69,8 +69,6 @@ void test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
   int err;
   PREFIX3(stream) d_stream; /* decompression stream */
 
-  strcpy((char *)uncompr, "garbage");
-
   d_stream.zalloc = zalloc;
   d_stream.zfree = zfree;
   d_stream.opaque = (void *)0;
