@@ -143,6 +143,7 @@ case "$1" in
       echo '    [--warn]                    Enables extra compiler warnings' | tee -a configure.log
       echo '    [--debug]                   Enables extra debug prints during operation' | tee -a configure.log
       echo '    [--zlib-compat]             Compiles for zlib-compatible API instead of zlib-ng API' | tee -a configure.log
+      echo '    [--with-gzfileops]          Compiles with the gzfile parts of the API enabled' | tee -a configure.log
       echo '    [--without-optimizations]   Compiles without support for optional instruction sets' | tee -a configure.log
       echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
       echo '    [--acle] [--neon]           Compiles with additional instruction set enabled' | tee -a configure.log
@@ -160,6 +161,7 @@ case "$1" in
     -s* | --shared | --enable-shared) shared=1; shift ;;
     -t | --static) shared=0; shift ;;
     --zlib-compat) compat=1; shift ;;
+    --with-gzfileops) gzfileops=1; shift ;;
     --cover) cover=1; shift ;;
     -3* | --32) build32=1; shift ;;
     -6* | --64) build64=1; shift ;;
@@ -670,14 +672,21 @@ fi
 
 # if --zlib-compat was requested
 if test $compat -eq 1; then
-  CFLAGS="${CFLAGS} -DZLIB_COMPAT -DWITH_GZFILEOP"
-  SFLAGS="${SFLAGS} -DZLIB_COMPAT -DWITH_GZFILEOP"
-  OBJC="${OBJC} \$(OBJG)"
-  PIC_OBJC="${PIC_OBJC} \$(PIC_OBJG)"
+  gzfileops=1
+  CFLAGS="${CFLAGS} -DZLIB_COMPAT"
+  SFLAGS="${SFLAGS} -DZLIB_COMPAT"
   case "$uname" in
   CYGWIN* | Cygwin* | cygwin* | MSYS* | msys* | MINGW* | mingw*)
     DEFFILE="win32/zlibcompat.def" ;;
   esac
+fi
+
+# if --gzfileops was requested
+if test $gzfileops -eq 1; then
+  CFLAGS="${CFLAGS} -DWITH_GZFILEOP"
+  SFLAGS="${SFLAGS} -DWITH_GZFILEOP"
+  OBJC="${OBJC} \$(OBJG)"
+  PIC_OBJC="${PIC_OBJC} \$(PIC_OBJG)"
 fi
 
 # if code coverage testing was requested, use older gcc if defined, e.g. "gcc-4.2" on Mac OS X
