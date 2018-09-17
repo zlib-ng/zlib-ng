@@ -258,7 +258,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   echo ... using gcc >> configure.log
   CC="$cc"
   # Re-check arch if gcc is a cross-compiler
-  GCC_ARCH=`$CC -dumpmachine | sed 's/-.*//g'`
+  GCC_ARCH=`$CC $CFLAGS -dumpmachine | sed 's/-.*//g'`
   case $GCC_ARCH in
     i386 | i486 | i586 | i686)
       # Honor user choice if gcc is multilib and 64-bit is requested
@@ -532,6 +532,26 @@ else
 fi
 
 echo >> configure.log
+
+echo -n "Checking for ASan/UBSan/MSan... " | tee -a configure.log
+sanitizers=""
+for san in bool array-bounds float-divide-by-zero function integer-divide-by-zero return shift signed-integer-overflow unsigned-integer-overflow vla-bound vptr; do
+    if try $CC -c $CFLAGS $test.c -fsanitize=$san ; then
+        if test -n "$sanitizers"; then
+            sanitizers="$sanitizers,$san"
+        else
+            sanitizers="$san"
+        fi
+    fi
+done
+
+FUZZ_CFLAGS=""
+if test -n "$sanitizers"; then
+    echo "-fsanitize=$sanitizers" | tee -a configure.log
+    FUZZ_CFLAGS="-fsanitize=$sanitizers"
+else
+    echo No | tee -a configure.log
+fi
 
 # see if shared library build supported
 cat > $test.c <<EOF
@@ -1163,6 +1183,7 @@ if [ "$SRCDIR" != "$BUILDDIR" ]; then INCLUDES="-I$BUILDDIR ${INCLUDES}"; fi
 sed < $SRCDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
+/^FUZZ_CFLAGS *=/s#=.*#=$FUZZ_CFLAGS#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#

@@ -14,7 +14,7 @@ COMPATTESTS =
 QEMU_RUN=
 QEMU_VER:=$(shell command -v $(QEMU_RUN) --version 2> /dev/null)
 
-all: oldtests cvetests $(COMPATTESTS)
+all: oldtests cvetests $(COMPATTESTS) fuzzer
 
 oldtests: #set by ../configure
 check_cross_dep:
@@ -22,6 +22,19 @@ ifneq (,$(QEMU_RUN))
 ifeq (,$(QEMU_VER))
 	$(error "You need QEMU to run tests on non-native platform")
 endif
+endif
+
+# Only check the fuzzer when it is a stand-alone executable.
+ifeq (,$(LIB_FUZZING_ENGINE))
+ALL_SRC_FILES := $(wildcard ../*)
+fuzzer:
+	@${QEMU_RUN} ../compress_fuzzer$(EXE) $(ALL_SRC_FILES) ; \
+	${QEMU_RUN} ../example_small_fuzzer$(EXE) $(ALL_SRC_FILES) ; \
+	${QEMU_RUN} ../example_large_fuzzer$(EXE) $(ALL_SRC_FILES) ; \
+	${QEMU_RUN} ../example_flush_fuzzer$(EXE) $(ALL_SRC_FILES) ; \
+	${QEMU_RUN} ../example_dict_fuzzer$(EXE) $(ALL_SRC_FILES)
+else
+fuzzer:
 endif
 
 teststatic: check_cross_dep

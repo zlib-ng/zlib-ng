@@ -20,6 +20,8 @@ CFLAGS=-O
 #CFLAGS=-O3 -Wall -Wwrite-strings -Wpointer-arith -Wconversion \
 #           -Wstrict-prototypes -Wmissing-prototypes
 
+FUZZ_CFLAGS=
+
 SFLAGS=-O
 LDFLAGS=-L.
 LIBNAME1=libz-ng
@@ -85,9 +87,18 @@ OBJS = $(OBJC)
 
 PIC_OBJS = $(PIC_OBJC)
 
+# By default, use our own standalone_fuzz_target_runner.
+# This runner does no fuzzing, but simply executes the inputs
+# provided via parameters.
+# Run e.g. "make all LIB_FUZZING_ENGINE=/path/to/libFuzzer.a"
+# to link the fuzzer(s) against a real fuzzing engine.
+#
+# OSS-Fuzz will define its own value for LIB_FUZZING_ENGINE.
+LIB_FUZZING_ENGINE ?= standalone_fuzz_target_runner.o
+
 all: static shared
 
-static: example$(EXE) minigzip$(EXE)
+static: example$(EXE) minigzip$(EXE) compress_fuzzer$(EXE) example_small_fuzzer$(EXE) example_large_fuzzer$(EXE) example_flush_fuzzer$(EXE) example_dict_fuzzer$(EXE)
 
 shared: examplesh$(EXE) minigzipsh$(EXE)
 
@@ -111,6 +122,30 @@ $(ARCHDIR)/%.lo: $(SRCDIR)/$(ARCHDIR)/%.c
 
 test: all
 	$(MAKE) -C test
+
+# The standalone fuzz target runner.
+standalone_fuzz_target_runner.o: $(SRCDIR)/test/fuzz/standalone_fuzz_target_runner.c
+	$(CC) $(CFLAGS) $(FUZZ_CFLAGS) $(INCLUDES) -c -o $@ $<
+compress_fuzzer.o: $(SRCDIR)/test/fuzz/compress_fuzzer.c
+	$(CC) $(CFLAGS) $(FUZZ_CFLAGS) $(INCLUDES) -c -o $@ $<
+example_small_fuzzer.o: $(SRCDIR)/test/fuzz/example_small_fuzzer.c
+	$(CC) $(CFLAGS) $(FUZZ_CFLAGS) $(INCLUDES) -c -o $@ $<
+example_large_fuzzer.o: $(SRCDIR)/test/fuzz/example_large_fuzzer.c
+	$(CC) $(CFLAGS) $(FUZZ_CFLAGS) $(INCLUDES) -c -o $@ $<
+example_flush_fuzzer.o: $(SRCDIR)/test/fuzz/example_flush_fuzzer.c
+	$(CC) $(CFLAGS) $(FUZZ_CFLAGS) $(INCLUDES) -c -o $@ $<
+example_dict_fuzzer.o: $(SRCDIR)/test/fuzz/example_dict_fuzzer.c
+	$(CC) $(CFLAGS) $(FUZZ_CFLAGS) $(INCLUDES) -c -o $@ $<
+compress_fuzzer$(EXE): compress_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) $(FUZZ_CFLAGS) -o $@ ${LIB_FUZZING_ENGINE} compress_fuzzer.o $(TEST_LIBS) -lpthread
+example_small_fuzzer$(EXE): example_small_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) $(FUZZ_CFLAGS) -o $@ ${LIB_FUZZING_ENGINE} example_small_fuzzer.o $(TEST_LIBS) -lpthread
+example_large_fuzzer$(EXE): example_large_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) $(FUZZ_CFLAGS) -o $@ ${LIB_FUZZING_ENGINE} example_large_fuzzer.o $(TEST_LIBS) -lpthread
+example_flush_fuzzer$(EXE): example_flush_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) $(FUZZ_CFLAGS) -o $@ ${LIB_FUZZING_ENGINE} example_flush_fuzzer.o $(TEST_LIBS) -lpthread
+example_dict_fuzzer$(EXE): example_dict_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) $(FUZZ_CFLAGS) -o $@ ${LIB_FUZZING_ENGINE} example_dict_fuzzer.o $(TEST_LIBS) -lpthread
 
 infcover.o: $(SRCDIR)/test/infcover.c $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/infcover.c
@@ -274,6 +309,8 @@ clean:
 	rm -f *.o *.lo *~ \
 	   example$(EXE) minigzip$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
 	   example64$(EXE) minigzip64$(EXE) \
+	   compress_fuzzer$(EXE) example_small_fuzzer$(EXE) example_large_fuzzer$(EXE) \
+	   example_flush_fuzzer$(EXE) example_dict_fuzzer$(EXE) \
 	   infcover \
 	   $(STATICLIB) $(IMPORTLIB) $(SHAREDLIB) $(SHAREDLIBV) $(SHAREDLIBM) \
 	   foo.gz so_locations \
