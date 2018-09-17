@@ -137,10 +137,15 @@ do
 case "$1" in
     -h* | --help)
       echo 'usage:' | tee -a configure.log
-      echo '  configure [--zlib-compat] [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
+      echo '  configure [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
       echo '    [--static] [--32] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
       echo '    [--includedir=INCLUDEDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
-      echo '    [--acle] [--neon]' | tee -a configure.log
+      echo '    [--warn]                    Enables extra compiler warnings' | tee -a configure.log
+      echo '    [--debug]                   Enables extra debug prints during operation' | tee -a configure.log
+      echo '    [--zlib-compat]             Compiles for zlib-compatible API instead of zlib-ng API' | tee -a configure.log
+      echo '    [--without-optimizations]   Compiles without support for optional instruction sets' | tee -a configure.log
+      echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
+      echo '    [--acle] [--neon]           Compiles with additional instruction set enabled' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=`echo $1 | sed 's/.*=//'`; shift ;;
     -e*=* | --eprefix=*) exec_prefix=`echo $1 | sed 's/.*=//'`; shift ;;
