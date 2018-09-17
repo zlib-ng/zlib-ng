@@ -12,6 +12,9 @@
 
 #if defined(X86_CPUID)
 # include "arch/x86/x86.h"
+#elif (defined(__arm__) || defined(__aarch64__) || defined(_M_ARM))
+extern int arm_has_crc32();
+extern int arm_has_neon();
 #endif
 
 
@@ -65,7 +68,8 @@ ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsi
     #ifdef X86_SSE4_2_CRC_HASH
     if (x86_cpu_has_sse42)
         functable.insert_string=&insert_string_sse;
-    #elif defined(ARM_ACLE_CRC_HASH)
+    #elif defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
+    if (arm_has_crc32())
         functable.insert_string=&insert_string_acle;
     #endif
 
@@ -93,6 +97,7 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
     functable.adler32=&adler32_c;
 
     #if ((defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32))
+    if (arm_has_neon())
         functable.adler32=&adler32_neon;
     #endif
 
@@ -113,10 +118,10 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
 
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
 #if BYTE_ORDER == LITTLE_ENDIAN
-#  if __ARM_FEATURE_CRC32
+      functable.crc32=crc32_little;
+#  if __ARM_FEATURE_CRC32 && defined(ARM_ACLE_CRC_HASH)
+      if (arm_has_crc32())
         functable.crc32=crc32_acle;
-#  else
-        functable.crc32=crc32_little;
 #  endif
 #elif BYTE_ORDER == BIG_ENDIAN
         functable.crc32=crc32_big;
