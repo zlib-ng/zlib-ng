@@ -9,7 +9,7 @@ matrix:
       env: BUILDDIR=. TOOL="./configure --warn"
     - os: linux
       compiler: gcc
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat --native"
+      env: BUILDDIR=. TOOL="cmake . -DZLIB_COMPAT=OFF -DWITH_GZFILEOP=ON -DWITH_NEW_STRATEGIES=YES -DWITH_OPTIM=ON"
     - os: linux
       compiler: gcc
       env: BUILDDIR=../build TOOL="../zlib-ng/configure --warn --zlib-compat"

@@ -47,7 +47,7 @@ static int gz_load(gz_state *state, unsigned char *buf, unsigned len, unsigned *
    available data from the input file. */
 static int gz_avail(gz_state *state) {
     unsigned got;
-    z_stream *strm = &(state->strm);
+    PREFIX3(stream) *strm = &(state->strm);
 
     if (state->err != Z_OK && state->err != Z_BUF_ERROR)
         return -1;
@@ -78,7 +78,7 @@ static int gz_avail(gz_state *state) {
    a user buffer.  If decompressing, the inflate state will be initialized.
    gz_look() will return 0 on success or -1 on failure. */
 static int gz_look(gz_state *state) {
-    z_stream *strm = &(state->strm);
+    PREFIX3(stream) *strm = &(state->strm);
 
     /* allocate read buffers and inflate memory */
     if (state->size == 0) {
@@ -162,7 +162,7 @@ static int gz_look(gz_state *state) {
 static int gz_decomp(gz_state *state) {
     int ret = Z_OK;
     unsigned had;
-    z_stream *strm = &(state->strm);
+    PREFIX3(stream) *strm = &(state->strm);
 
     /* fill output buffer up to end of deflate stream */
     had = strm->avail_out;
@@ -210,7 +210,7 @@ static int gz_decomp(gz_state *state) {
    otherwise 0.  gz_fetch() will leave state->how as COPY or GZIP unless the
    end of the input file has been reached and all data has been processed.  */
 static int gz_fetch(gz_state *state) {
-    z_stream *strm = &(state->strm);
+    PREFIX3(stream) *strm = &(state->strm);
 
     do {
         switch (state->how) {
@@ -406,6 +406,7 @@ size_t ZEXPORT PREFIX(gzfread)(void *buf, size_t size, size_t nitems, gzFile fil
 
 /* -- see zlib.h -- */
 #undef gzgetc
+#undef zng_gzgetc
 int ZEXPORT PREFIX(gzgetc)(gzFile file) {
     int ret;
     unsigned char buf[1];

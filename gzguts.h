@@ -138,7 +138,7 @@ typedef struct {
     int err;                /* error code */
     char *msg;              /* error message */
         /* zlib inflate or deflate stream */
-    z_stream strm;          /* stream structure in-place (not a pointer) */
+    PREFIX3(stream) strm;  /* stream structure in-place (not a pointer) */
 } gz_state;
 typedef gz_state *gz_statep;
 

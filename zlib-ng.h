@@ -1754,10 +1754,10 @@ ZEXTERN int ZEXPORT zng_gzgetc_(gzFile file);  /* backward compatibility */
 #endif
 
 #if !defined(ZLIB_INTERNAL) && defined(Z_WANT64)
-#    define gzopen gzopen64
-#    define gzseek gzseek64
-#    define gztell gztell64
-#    define gzoffset gzoffset64
+#    define zng_gzopen zng_gzopen64
+#    define zng_gzseek zng_gzseek64
+#    define zng_gztell zng_gztell64
+#    define zng_gzoffset zng_gzoffset64
 #  ifndef Z_LARGE64
      ZEXTERN gzFile ZEXPORT zng_gzopen64(const char *, const char *);
      ZEXTERN z_off_t ZEXPORT zng_gzseek64(gzFile, z_off_t, int);
