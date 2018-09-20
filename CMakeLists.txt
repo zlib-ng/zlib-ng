@@ -708,7 +708,7 @@ if (WITH_MINIZIP)
         PREFIX            ${CMAKE_BINARY_DIR}/minizip.prefix
         SOURCE_DIR        ${CMAKE_BINARY_DIR}/minizip
         BINARY_DIR        ${CMAKE_BINARY_DIR}/minizip
-        INSTALL_DIR       ${INSTALL_BIN_DIR}
+        INSTALL_DIR       ${CMAKE_INSTALL_PREFIX}
         CMAKE_ARGS
             -DCMAKE_INSTALL_PREFIX=<INSTALL_DIR>
             -DZLIB_LIBRARY=$<TARGET_FILE:zlibstatic>
