@@ -116,7 +116,7 @@ typedef struct internal_state {
     int                  last_flush;       /* value of flush param for previous deflate call */
 
 #ifdef X86_PCLMULQDQ_CRC
-    unsigned ALIGNED_(16) crc0[4 * 5];
+    unsigned crc0[4 * 5];
 #endif
 
                 /* used by deflate.c: */
