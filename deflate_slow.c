@@ -108,11 +108,13 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
 #else
             {
                 unsigned int mov_fwd = s->prev_length - 2;
-                unsigned int insert_cnt = mov_fwd;
-                if (unlikely(insert_cnt > max_insert - s->strstart))
-                    insert_cnt = max_insert - s->strstart;
+                if (max_insert > s->strstart) {
+                    unsigned int insert_cnt = mov_fwd;
+                    if (unlikely(insert_cnt > max_insert - s->strstart))
+                        insert_cnt = max_insert - s->strstart;
 
-                functable.insert_string(s, s->strstart + 1, insert_cnt);
+                    functable.insert_string(s, s->strstart + 1, insert_cnt);
+                }
                 s->prev_length = 0;
                 s->match_available = 0;
                 s->match_length = MIN_MATCH-1;
