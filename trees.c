@@ -479,7 +479,8 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
                 continue;
             if (tree[m].Len != bits) {
                 Trace((stderr, "code %d bits %d->%u\n", m, tree[m].Len, bits));
-                s->opt_len += (unsigned long)((bits - tree[m].Len) * tree[m].Freq);
+                s->opt_len += (unsigned long)(bits * tree[m].Freq);
+                s->opt_len -= (unsigned long)(tree[m].Len * tree[m].Freq);
                 tree[m].Len = (uint16_t)bits;
             }
             n--;
