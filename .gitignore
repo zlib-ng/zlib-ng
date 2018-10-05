@@ -23,4 +23,14 @@
 /zlib.pc
 /configure.log
 
+*.obj
+*.lib
+*.pdb
+*.exp
+*.dll
+*.exe
+*.res
+
+*.swp
+
 .DS_Store
