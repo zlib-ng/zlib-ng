@@ -57,11 +57,11 @@ SRCDIR=
 ZINC=
 ZINCOUT=-I.
 
-OBJZ = adler32.o crc32.o crc_folding.o deflate_quick.o deflate_medium.o deflate.o infback.o inffast.o inflate.o inftrees.o slide_sse.o trees.o x86.o  zutil.o
+OBJZ = adler32.o crc32.o crc_folding.o deflate_quick.o deflate_medium.o deflate.o infback.o inffast.o inflate.o inftrees.o match.o slide_sse.o trees.o x86.o  zutil.o
 OBJG = compress.o uncompr.o gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo crc32.lo crc_folding.lo deflate_quick.lo deflate_medium.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo slide_sse.lo trees.lo x86.lo zutil.lo
+PIC_OBJZ = adler32.lo crc32.lo crc_folding.lo deflate_quick.lo deflate_medium.lo deflate.lo infback.lo inffast.lo inflate.lo inftrees.lo match.lo slide_sse.lo trees.lo x86.lo zutil.lo
 PIC_OBJG = compress.lo uncompr.lo gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
@@ -130,18 +130,6 @@ cover: infcover
 libz.a: $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
-
-match.o: match.S
-	$(CPP) match.S > _match.s
-	$(CC) -c _match.s
-	mv _match.o match.o
-	rm -f _match.s
-
-match.lo: match.S
-	$(CPP) match.S > _match.s
-	$(CC) -c -fPIC _match.s
-	mv _match.o match.lo
-	rm -f _match.s
 
 example.o: $(SRCDIR)test/example.c $(SRCDIR)zlib.h zconf.h
 	$(CC) $(CFLAGS) $(ZINCOUT) -c -o $@ $(SRCDIR)test/example.c
@@ -215,6 +203,9 @@ deflate_quick.o: $(SRCDIR)deflate_quick.c
 
 deflate_medium.o: $(SRCDIR)deflate_medium.c
 	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)deflate_medium.c
+
+match.o: $(SRCDIR)match.c
+	$(CC) $(CFLAGS) $(ZINC) -c -o $@ $(SRCDIR)match.c
 
 adler32.lo: $(SRCDIR)adler32.c
 	-@mkdir objs 2>/dev/null || test -d objs
@@ -315,6 +306,11 @@ deflate_medium.lo: $(SRCDIR)deflate_medium.c
 	-@mkdir objs 2>/dev/null || test -d objs
 	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/deflate_medium.o $(SRCDIR)deflate_medium.c
 	-@mv objs/deflate_medium.o $@
+
+match.lo: $(SRCDIR)match.c
+	-@mkdir objs 2>/dev/null || test -d objs
+	$(CC) $(SFLAGS) $(ZINC) -DPIC -c -o objs/match.o $(SRCDIR)match.c
+	-@mv objs/match.o $@
 
 placebo $(SHAREDLIBV): $(PIC_OBJS) libz.a
 	$(LDSHARED) $(SFLAGS) -o $@ $(PIC_OBJS) $(LDSHAREDLIBC) $(LDFLAGS)

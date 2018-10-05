@@ -31,8 +31,8 @@ RCFLAGS = /dWIN32 /r
 
 OBJS = adler32.obj crc_folding.obj compress.obj crc32.obj deflate_quick.obj \
        deflate_medium.obj deflate.obj gzclose.obj gzlib.obj gzread.obj gzwrite.obj \
-       infback.obj inflate.obj inftrees.obj inffast.obj slide_sse.obj trees.obj \
-       uncompr.obj x86.obj zutil.obj
+       infback.obj inflate.obj inftrees.obj inffast.obj match.obj slide_sse.obj \
+       trees.obj uncompr.obj x86.obj zutil.obj
 OBJA =
 
 
@@ -120,6 +120,8 @@ uncompr.obj: $(TOP)/uncompr.c $(TOP)/zlib.h $(TOP)/zconf.h
 x86.obj: $(TOP)/x86.c $(TOP)/x86.h
 
 slide_sse.obj: $(TOP)/slide_sse.c $(TOP)/deflate.h
+
+match.obj: $(TOP)/match.c $(TOP)/deflate.h
 
 crc_folding.obj: $(TOP)/crc_folding.c
 

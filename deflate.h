@@ -308,13 +308,10 @@ typedef struct internal_state {
 /* Number of bytes after end of data in window to initialize in order to avoid
    memory checker errors from longest match routines */
 
-#ifdef ASMV
-#  pragma message("Assembler code may have bugs -- use at your own risk")
-      void match_init OF((void)); /* asm code initialization */
-      uInt longest_match  OF((deflate_state *s, IPos cur_match));
-#else
+#define NIL 0
+/* Tail of hash chains */
+
 uInt longest_match  OF((deflate_state *s, IPos cur_match));
-#endif
 
         /* in trees.c */
 void ZLIB_INTERNAL _tr_init OF((deflate_state *s));
