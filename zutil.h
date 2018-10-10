@@ -193,6 +193,13 @@ extern z_const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #define zalign(x)        __attribute__((aligned((x))))
 #endif
 
+#if defined(_MSC_VER)
+#define zalways_inline    __forceinline
+#else
+#define zalways_inline    __attribute__((always_inline))
+#endif
+
+
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(_WIN32) && \
     (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
