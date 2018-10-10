@@ -118,7 +118,7 @@ local inline uInt std1_longest_match(deflate_state *z_const s, IPos cur_match)
     return s->lookahead;
 }
 
-local inline uInt std2_longest_match(deflate_state *z_const s, IPos cur_match)
+local zalways_inline uInt std2_longest_match(deflate_state *z_const s, IPos cur_match)
 {
     z_const Posf *prev = s->prev;
     z_const uInt wmask = s->w_mask;
