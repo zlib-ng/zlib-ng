@@ -295,7 +295,6 @@ static inline unsigned char *byte_memset(unsigned char *out, unsigned len) {
     unsigned rem = len % sz;
     len /= sz;
     out += rem;
-    from += rem;
 
     unsigned by8 = len % 8;
     len -= by8;
