@@ -257,6 +257,7 @@ show $cc -c $test.c
 if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   echo ... using gcc >> configure.log
   CC="$cc"
+  CFLAGS="${CFLAGS} -std=c99"
   # Re-check arch if gcc is a cross-compiler
   GCC_ARCH=`$CC -dumpmachine | sed 's/-.*//g'`
   case $GCC_ARCH in

@@ -20,6 +20,15 @@ include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
 include(FeatureSummary)
 
+# Enable C99
+if (CMAKE_VERSION VERSION_LESS "3.1")
+    if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        set (CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
+    endif ()
+else ()
+    set (CMAKE_C_STANDARD 99)
+endif ()
+
 # make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
 # this should select the maximum generic optimisation on the current platform (i.e. -O3 for gcc/clang)
 if(NOT CMAKE_BUILD_TYPE)
