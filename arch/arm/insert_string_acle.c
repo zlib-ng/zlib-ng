@@ -5,9 +5,10 @@
  *
  */
 
-#if defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
-#include <arm_acle.h>
 #include "zbuild.h"
+#ifdef __ARM_FEATURE_CRC32
+#include <arm_acle.h>
+#endif
 #include "deflate.h"
 
 /* ===========================================================================
@@ -18,6 +19,7 @@
  *    input characters and the first MIN_MATCH bytes of str are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
+#ifdef ARM_ACLE_CRC_HASH
 Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count) {
     Pos p, lp, ret;
 

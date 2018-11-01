@@ -37,7 +37,7 @@ WITH_VFPV3 =
 NEON_ARCH = /arch:VFPv4
 SUFFIX =
 
-OBJS = adler32.obj armfeature.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_slow.obj \
+OBJS = adler32.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_slow.obj \
        functable.obj infback.obj inflate.obj inftrees.obj inffast.obj match.obj trees.obj uncompr.obj zutil.obj fill_window_arm.obj
 !if "$(WITH_GZFILEOP)" != ""
 WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
@@ -61,7 +61,7 @@ NEON_ARCH = /arch:VFPv3
 !endif
 !if "$(WITH_NEON)" != ""
 CFLAGS = $(CFLAGS) $(NEON_ARCH)
-WFLAGS = $(WFLAGS) -D__ARM_NEON__=1 -DARM_NEON_ADLER32 -DARM_NOCHECK_NEON
+WFLAGS = $(WFLAGS) -D__ARM_NEON__=1
 OBJS = $(OBJS) adler32_neon.obj
 !endif
 
