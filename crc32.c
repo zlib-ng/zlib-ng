@@ -1,5 +1,5 @@
 /* crc32.c -- compute the CRC-32 of a data stream
- * Copyright (C) 1995-2006, 2010, 2011, 2012, 2016 Mark Adler
+ * Copyright (C) 1995-2006, 2010, 2011, 2012, 2016, 2018 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  *
  * Thanks to Rodney Brown <rbrown64@csc.com.au> for his contribution of faster
@@ -21,7 +21,9 @@
   first call get_crc_table() to initialize the tables before allowing more than
   one thread to use crc32().
 
-  DYNAMIC_CRC_TABLE and MAKECRCH can be #defined to write out crc32.h.
+  DYNAMIC_CRC_TABLE and MAKECRCH can be #defined to write out crc32.h. A main()
+  routine is also produced, so that this one source file can be compiled to an
+  executable.
  */
 
 #ifdef MAKECRCH
@@ -36,18 +38,40 @@
 
 
 /* Local functions for crc concatenation */
-static uint32_t gf2_matrix_times(uint32_t *mat, uint32_t vec);
-static void gf2_matrix_square(uint32_t *square, uint32_t *mat);
+#define GF2_DIM 32      /* dimension of GF(2) vectors (length of CRC) */
+static uint32_t gf2_matrix_times(const uint32_t *mat, uint32_t vec);
 static uint32_t crc32_combine_(uint32_t crc1, uint32_t crc2, z_off64_t len2);
 
+/* ========================================================================= */
+static uint32_t gf2_matrix_times(const uint32_t *mat, uint32_t vec) {
+    uint32_t sum = 0;
+    while (vec) {
+        if (vec & 1)
+            sum ^= *mat;
+        vec >>= 1;
+        mat++;
+    }
+    return sum;
+}
 
 #ifdef DYNAMIC_CRC_TABLE
 static volatile int crc_table_empty = 1;
 static uint32_t crc_table[8][256];
+static uint32_t crc_comb[GF2_DIM][GF2_DIM];
 static void make_crc_table(void);
+static void gf2_matrix_square(uint32_t *square, const uint32_t *mat);
 #ifdef MAKECRCH
-static void write_table(FILE *, const uint32_t *);
+static void write_table(FILE *, const uint32_t *, int);
 #endif /* MAKECRCH */
+
+/* ========================================================================= */
+static void gf2_matrix_square(uint32_t *square, const uint32_t *mat) {
+    int n;
+
+    for (n = 0; n < GF2_DIM; n++)
+        square[n] = gf2_matrix_times(mat, mat[n]);
+}
+
 /*
   Generate tables for a byte-wise 32-bit CRC calculation on the polynomial:
   x^32+x^26+x^23+x^22+x^16+x^12+x^11+x^10+x^8+x^7+x^5+x^4+x^2+x+1.
@@ -113,28 +137,65 @@ static void make_crc_table() {
             }
         }
 
+        /* generate zero operators table for crc32_combine() */
+
+        /* generate the operator to apply a single zero bit to a CRC -- the
+           first row adds the polynomial if the low bit is a 1, and the
+           remaining rows shift the CRC right one bit */
+        k = GF2_DIM - 3;
+        crc_comb[k][0] = 0xedb88320UL;      /* CRC-32 polynomial */
+        uint32_t row = 1;
+        for (n = 1; n < GF2_DIM; n++) {
+            crc_comb[k][n] = row;
+            row <<= 1;
+        }
+
+        /* generate operators that apply 2, 4, and 8 zeros to a CRC, putting
+           the last one, the operator for one zero byte, at the 0 position */
+        gf2_matrix_square(crc_comb[k + 1], crc_comb[k]);
+        gf2_matrix_square(crc_comb[k + 2], crc_comb[k + 1]);
+        gf2_matrix_square(crc_comb[0], crc_comb[k + 2]);
+
+        /* generate operators for applying 2^n zero bytes to a CRC, filling out
+           the remainder of the table -- the operators repeat after GF2_DIM
+           values of n, so the table only needs GF2_DIM entries, regardless of
+           the size of the length being processed */
+        for (n = 1; n < k; n++)
+            gf2_matrix_square(crc_comb[n], crc_comb[n - 1]);
+
+        /* mark tables as complete, in case someone else is waiting */
         crc_table_empty = 0;
     } else {      /* not first */
         /* wait for the other guy to finish (not efficient, but rare) */
         while (crc_table_empty)
             {}
     }
-
 #ifdef MAKECRCH
-    /* write out CRC tables to crc32.h */
     {
         FILE *out;
 
         out = fopen("crc32.h", "w");
         if (out == NULL) return;
+
+        /* write out CRC table to crc32.h */
         fprintf(out, "/* crc32.h -- tables for rapid CRC calculation\n");
         fprintf(out, " * Generated automatically by crc32.c\n */\n\n");
         fprintf(out, "static const uint32_t ");
         fprintf(out, "crc_table[8][256] =\n{\n  {\n");
-        write_table(out, crc_table[0]);
+        write_table(out, crc_table[0], 256);
         for (k = 1; k < 8; k++) {
             fprintf(out, "  },\n  {\n");
-            write_table(out, crc_table[k]);
+            write_table(out, crc_table[k], 256);
+        }
+        fprintf(out, "  }\n};\n");
+
+        /* write out zero operator table to crc32.h */
+        fprintf(out, "\nstatic const uint32_t ");
+        fprintf(out, "crc_comb[%d][%d] =\n{\n  {\n", GF2_DIM, GF2_DIM);
+        write_table(out, crc_comb[0], GF2_DIM);
+        for (k = 1; k < GF2_DIM; k++) {
+            fprintf(out, "  },\n  {\n");
+            write_table(out, crc_comb[k], GF2_DIM);
         }
         fprintf(out, "  }\n};\n");
         fclose(out);
@@ -143,19 +204,26 @@ static void make_crc_table() {
 }
 
 #ifdef MAKECRCH
-static void write_table(FILE *out, const uint32_t *table) {
+static void write_table(FILE *out, const uint32_t *table, int k) {
     int n;
 
-    for (n = 0; n < 256; n++)
+    for (n = 0; n < k; n++)
         fprintf(out, "%s0x%08lx%s", n % 5 ? "" : "    ",
                 (uint32_t)(table[n]),
-                n == 255 ? "\n" : (n % 5 == 4 ? ",\n" : ", "));
+                n == k - 1 ? "\n" : (n % 5 == 4 ? ",\n" : ", "));
+}
+
+int main()
+{
+    make_crc_table();
+    return 0;
 }
 #endif /* MAKECRCH */
 
 #else /* !DYNAMIC_CRC_TABLE */
 /* ========================================================================
- * Tables of CRC-32s of all single-byte values, made by make_crc_table().
+ * Tables of CRC-32s of all single-byte values, made by make_crc_table(),
+ * and tables of zero operator matrices for crc32_combine().
  */
 #include "crc32.h"
 #endif /* DYNAMIC_CRC_TABLE */
@@ -305,80 +373,21 @@ ZLIB_INTERNAL uint32_t crc32_big(uint32_t crc, const unsigned char *buf, uint64_
 #endif /* BYTE_ORDER == BIG_ENDIAN */
 
 
-#define GF2_DIM 32      /* dimension of GF(2) vectors (length of CRC) */
-
-/* ========================================================================= */
-static uint32_t gf2_matrix_times(uint32_t *mat, uint32_t vec) {
-    uint32_t sum;
-
-    sum = 0;
-    while (vec) {
-        if (vec & 1)
-            sum ^= *mat;
-        vec >>= 1;
-        mat++;
-    }
-    return sum;
-}
-
-/* ========================================================================= */
-static void gf2_matrix_square(uint32_t *square, uint32_t *mat) {
-    int n;
-
-    for (n = 0; n < GF2_DIM; n++)
-        square[n] = gf2_matrix_times(mat, mat[n]);
-}
-
 /* ========================================================================= */
 static uint32_t crc32_combine_(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
     int n;
-    uint32_t row;
-    uint32_t even[GF2_DIM];    /* even-power-of-two zeros operator */
-    uint32_t odd[GF2_DIM];     /* odd-power-of-two zeros operator */
 
-    /* degenerate case (also disallow negative lengths) */
-    if (len2 <= 0)
-        return crc1;
+#ifdef DYNAMIC_CRC_TABLE
+    if (crc_table_empty)
+        make_crc_table();
+#endif /* DYNAMIC_CRC_TABLE */
 
-    /* put operator for one zero bit in odd */
-    odd[0] = 0xedb88320;          /* CRC-32 polynomial */
-    row = 1;
-    for (n = 1; n < GF2_DIM; n++) {
-        odd[n] = row;
-        row <<= 1;
-    }
-
-    /* put operator for two zero bits in even */
-    gf2_matrix_square(even, odd);
-
-    /* put operator for four zero bits in odd */
-    gf2_matrix_square(odd, even);
-
-    /* apply len2 zeros to crc1 (first square will put the operator for one
-       zero byte, eight zero bits, in even) */
-    do {
-        /* apply zeros operator for this bit of len2 */
-        gf2_matrix_square(even, odd);
-        if (len2 & 1)
-            crc1 = gf2_matrix_times(even, crc1);
-        len2 >>= 1;
-
-        /* if no more bits set, then done */
-        if (len2 == 0)
-            break;
-
-        /* another iteration of the loop with odd and even swapped */
-        gf2_matrix_square(odd, even);
-        if (len2 & 1)
-            crc1 = gf2_matrix_times(odd, crc1);
-        len2 >>= 1;
-
-        /* if no more bits set, then done */
-    } while (len2 != 0);
-
-    /* return combined crc */
-    crc1 ^= crc2;
-    return crc1;
+    if (len2 > 0)
+        /* operator for 2^n zeros repeats every GF2_DIM n values */
+        for (n = 0; len2; n = (n + 1) % GF2_DIM, len2 >>= 1)
+            if (len2 & 1)
+                crc1 = gf2_matrix_times(crc_comb[n], crc1);
+    return crc1 ^ crc2;
 }
 
 /* ========================================================================= */
