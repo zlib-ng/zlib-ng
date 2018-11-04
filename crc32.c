@@ -41,6 +41,7 @@
 #define GF2_DIM 32      /* dimension of GF(2) vectors (length of CRC) */
 static uint32_t gf2_matrix_times(const uint32_t *mat, uint32_t vec);
 static uint32_t crc32_combine_(uint32_t crc1, uint32_t crc2, z_off64_t len2);
+static void crc32_combine_gen_(uint32_t *op, z_off64_t len2);
 
 /* ========================================================================= */
 static uint32_t gf2_matrix_times(const uint32_t *mat, uint32_t vec) {
@@ -410,3 +411,67 @@ ZLIB_INTERNAL void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsi
 }
 #endif
 
+/* ========================================================================= */
+static void crc32_combine_gen_(uint32_t *op, z_off64_t len2)
+{
+    uint32_t row;
+    int j;
+    unsigned i;
+
+#ifdef DYNAMIC_CRC_TABLE
+    if (crc_table_empty)
+        make_crc_table();
+#endif /* DYNAMIC_CRC_TABLE */
+
+    /* if len2 is zero or negative, return the identity matrix */
+    if (len2 <= 0) {
+        row = 1;
+        for (j = 0; j < GF2_DIM; j++) {
+            op[j] = row;
+            row <<= 1;
+        }
+        return;
+    }
+
+    /* at least one bit in len2 is set -- find it, and copy the operator
+       corresponding to that position into op */
+    i = 0;
+    for (;;) {
+        if (len2 & 1) {
+            for (j = 0; j < GF2_DIM; j++)
+                op[j] = crc_comb[i][j];
+            break;
+        }
+        len2 >>= 1;
+        i = (i + 1) % GF2_DIM;
+    }
+
+    /* for each remaining bit set in len2 (if any), multiply op by the operator
+       corresponding to that position */
+    for (;;) {
+        len2 >>= 1;
+        i = (i + 1) % GF2_DIM;
+        if (len2 == 0)
+            break;
+        if (len2 & 1)
+            for (j = 0; j < GF2_DIM; j++)
+                op[j] = gf2_matrix_times(crc_comb[i], op[j]);
+    }
+}
+
+/* ========================================================================= */
+void ZEXPORT PREFIX(crc32_combine_gen)(uint32_t *op, z_off_t len2)
+{
+    crc32_combine_gen_(op, len2);
+}
+
+void ZEXPORT PREFIX(crc32_combine_gen64)(uint32_t *op, z_off64_t len2)
+{
+    crc32_combine_gen_(op, len2);
+}
+
+/* ========================================================================= */
+uint32_t ZEXPORT PREFIX(crc32_combine_op)(uint32_t crc1, uint32_t crc2, const uint32_t *op)
+{
+    return gf2_matrix_times(op, crc1) ^ crc2;
+}

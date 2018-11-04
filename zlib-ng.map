@@ -11,6 +11,8 @@ ZLIB_NG_1.9.9 {
     zng_crc32;
     zng_crc32_combine;
     zng_crc32_combine64;
+    zng_crc32_combine_gen;
+    zng_crc32_combine_op;
     zng_crc32_z;
     zng_deflate;
     zng_deflateBound;

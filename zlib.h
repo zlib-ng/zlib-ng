@@ -1710,6 +1710,22 @@ ZEXTERN uint32_t ZEXPORT crc32_combine(uint32_t crc1, uint32_t crc2, z_off64_t l
    len2.
 */
 
+/*
+ZEXTERN void ZEXPORT crc32_combine_gen(uint32_t op[32], z_off_t len2);
+
+     Generate the operator op corresponding to length len2, to be used with
+   crc32_combine_op(). op must have room for 32 z_crc_t values. (32 is the
+   number of bits in the CRC.)
+*/
+
+ZEXTERN uint32_t ZEXPORT crc32_combine_op(uint32_t crc1, uint32_t crc2,
+                                          const uint32_t *op);
+/*
+     Give the same result as crc32_combine(), using op in place of len2. op is
+   is generated from len2 by crc32_combine_gen(). This will be faster than
+   crc32_combine() if the generated op is used many times.
+*/
+
 
                         /* various hacks, don't look :) */
 
@@ -1789,18 +1805,22 @@ ZEXTERN int ZEXPORT gzgetc_(gzFile file);  /* backward compatibility */
 #ifdef Z_LARGE64
    ZEXTERN uint32_t ZEXPORT adler32_combine64(uint32_t, uint32_t, z_off64_t);
    ZEXTERN uint32_t ZEXPORT crc32_combine64(uint32_t, uint32_t, z_off64_t);
+   ZEXTERN void ZEXPORT crc32_combine_gen64(uint32_t *op, z_off64_t);
 #endif
 
 #if !defined(ZLIB_INTERNAL) && defined(Z_WANT64)
 #    define adler32_combine adler32_combine64
 #    define crc32_combine crc32_combine64
+#    define crc32_combine_gen crc32_combine_gen64
 #  ifndef Z_LARGE64
      ZEXTERN uint32_t ZEXPORT adler32_combine64(uint32_t, uint32_t, z_off_t);
      ZEXTERN uint32_t ZEXPORT crc32_combine64(uint32_t, uint32_t, z_off_t);
+     ZEXTERN void ZEXPORT crc32_combine_gen64(uint32_t *op, z_off64_t);
 #  endif
 #else
    ZEXTERN uint32_t ZEXPORT adler32_combine(uint32_t, uint32_t, z_off_t);
    ZEXTERN uint32_t ZEXPORT crc32_combine(uint32_t, uint32_t, z_off_t);
+   ZEXTERN void ZEXPORT crc32_combine_gen(uint32_t *op, z_off_t);
 #endif
 
 
