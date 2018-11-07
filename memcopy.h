@@ -4,23 +4,15 @@
 #ifndef MEMCOPY_H_
 #define MEMCOPY_H_
 
-/* Load a short from IN and place the bytes at offset BITS in the result. */
-static inline uint32_t load_short(const unsigned char *in, unsigned bits) {
-    union {
-        uint16_t a;
-        uint8_t b[2];
-    } chunk;
-    MEMCPY(&chunk, in, sizeof(uint16_t));
+/* Load 64 bits from IN and place the bytes at offset BITS in the result. */
+static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
+  uint64_t chunk;
+  MEMCPY(&chunk, in, sizeof(chunk));
 
 #if BYTE_ORDER == LITTLE_ENDIAN
-    uint32_t res = chunk.a;
-    return res << bits;
+  return chunk << bits;
 #else
-    uint32_t c0 = chunk.b[0];
-    uint32_t c1 = chunk.b[1];
-    c0 <<= bits;
-    c1 <<= bits + 8;
-    return c0 + c1;
+  return ZSWAP64(chunk) << bits;
 #endif
 }
 

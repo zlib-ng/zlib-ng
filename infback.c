@@ -453,7 +453,8 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
 
         case LEN:
             /* use inflate_fast() if we have enough input and output */
-            if (have >= 6 && left >= 258) {
+            if (have >= INFLATE_FAST_MIN_HAVE &&
+                left >= INFLATE_FAST_MIN_LEFT) {
                 RESTORE();
                 if (state->whave < state->wsize)
                     state->whave = state->wsize - left;
