@@ -38,7 +38,7 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
     }
 
     if ((len > 4) && ((ptrdiff_t)buf & 4)) {
-        c = __crc32b(c, *buf4++);
+        c = __crc32w(c, *buf4++);
         len -= 4;
     }
 
