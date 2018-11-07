@@ -98,6 +98,9 @@ build32=0
 build64=0
 buildacle=0
 buildneon=0
+with_sanitizers=0
+with_msan=0
+with_fuzzers=0
 floatabi=
 native=0
 sse2flag="-msse2"
@@ -147,6 +150,9 @@ case "$1" in
       echo '    [--without-optimizations]   Compiles without support for optional instruction sets' | tee -a configure.log
       echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
       echo '    [--acle] [--neon]           Compiles with additional instruction set enabled' | tee -a configure.log
+      echo '    [--with-sanitizers]         Build with address sanitizer and all supported sanitizers other than memory sanitizer (disabled by default)' | tee -a configure.log
+      echo '    [--with-msan]               Build with memory sanitizer (disabled by default)' | tee -a configure.log
+      echo '    [--with-fuzzers]            Build test/fuzz (disabled by default)' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=`echo $1 | sed 's/.*=//'`; shift ;;
     -e*=* | --eprefix=*) exec_prefix=`echo $1 | sed 's/.*=//'`; shift ;;
@@ -175,6 +181,9 @@ case "$1" in
     -oldstrat | --without-new-strategies) without_new_strategies=1; shift;;
     -w* | --warn) warn=1; shift ;;
     -d* | --debug) debug=1; shift ;;
+    --with-sanitizers) with_sanitizers=1; shift ;;
+    --with-msan) with_msan=1; shift ;;
+    --with-fuzzers) with_fuzzers=1; shift ;;
     *)
       echo "unknown option: $1" | tee -a configure.log
       echo "$0 --help for help" | tee -a configure.log
@@ -259,7 +268,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   CC="$cc"
   CFLAGS="${CFLAGS} -std=c99"
   # Re-check arch if gcc is a cross-compiler
-  GCC_ARCH=`$CC -dumpmachine | sed 's/-.*//g'`
+  GCC_ARCH=`$CC $CFLAGS -dumpmachine | sed 's/-.*//g'`
   case $GCC_ARCH in
     i386 | i486 | i586 | i686)
       # Honor user choice if gcc is multilib and 64-bit is requested
@@ -533,6 +542,49 @@ else
 fi
 
 echo >> configure.log
+
+if test $with_sanitizers -eq 1; then
+    if test $with_msan -eq 1; then
+        echo "Error: --with-sanitizers and --with-msan cannot be used together"
+        exit 1
+    fi
+    echo -n "Checking for sanitizers ASan/UBSan... " | tee -a configure.log
+    sanitizers=""
+    for san in bool address array-bounds float-divide-by-zero function integer-divide-by-zero return shift signed-integer-overflow undefined unsigned-integer-overflow vla-bound vptr; do
+        if try $CC -c $CFLAGS $test.c -fsanitize=$san ; then
+            if test -n "$sanitizers"; then
+                sanitizers="$sanitizers,$san"
+            else
+                sanitizers="$san"
+            fi
+        fi
+    done
+
+    SANITIZERS_CFLAGS=""
+    if test -n "$sanitizers"; then
+        echo "-fsanitize=$sanitizers" | tee -a configure.log
+        SANITIZERS_CFLAGS="-fsanitize=$sanitizers"
+    else
+        echo No | tee -a configure.log
+        with_sanitizers=0
+    fi
+
+    echo >> configure.log
+fi
+
+if test $with_msan -eq 1; then
+    echo -n "Checking for MSan... " | tee -a configure.log
+    if try $CC -c $CFLAGS $test.c -fsanitize=memory ; then
+        echo "-fsanitize=memory" | tee -a configure.log
+        MSAN_CFLAGS="-fsanitize=memory"
+    else
+        echo No | tee -a configure.log
+        MSAN_CFLAGS=""
+        with_msan=0
+    fi
+
+    echo >> configure.log
+fi
 
 # see if shared library build supported
 cat > $test.c <<EOF
@@ -1164,6 +1216,11 @@ if [ "$SRCDIR" != "$BUILDDIR" ]; then INCLUDES="-I$BUILDDIR ${INCLUDES}"; fi
 sed < $SRCDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
+/^WITH_SANITIZERS *=/s#=.*#=$with_sanitizers#
+/^WITH_MSAN *=/s#=.*#=$with_msan#
+/^WITH_FUZZERS *=/s#=.*#=$with_fuzzers#
+/^SANITIZERS_CFLAGS *=/s#=.*#=$SANITIZERS_CFLAGS#
+/^MSAN_CFLAGS *=/s#=.*#=$MSAN_CFLAGS#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
@@ -1247,6 +1304,7 @@ sed < $SRCDIR/test/Makefile.in "
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^COMPATTESTS *=/s#=.*#=$COMPATTESTS#
 /^QEMU_RUN *=/s#=.*#=$QEMU_RUN#
+/^WITH_FUZZERS *=/s#=.*#=$with_fuzzers#
 " > test/Makefile
 
 # create zlib.pc with the configure results

@@ -73,6 +73,9 @@ if (WITH_GZFILEOP)
     add_definitions(-DWITH_GZFILEOP)
 endif (WITH_GZFILEOP)
 
+option(WITH_SANITIZERS "Build with address sanitizer and all supported sanitizers other than memory sanitizer" OFF)
+option(WITH_MSAN "Build with memory sanitizer" OFF)
+option(WITH_FUZZERS "Build test/fuzz" OFF)
 option(WITH_OPTIM "Build with optimisation" ON)
 option(WITH_NEW_STRATEGIES "Use new strategies" ON)
 option(WITH_NATIVE_INSTRUCTIONS
@@ -177,6 +180,9 @@ endif()
 add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Provide a zlib-compatible API")
 add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile-related functions")
 add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
+add_feature_info(WITH_SANITIZERS WITH_SANITIZERS "Build with address sanitizer and all supported sanitizers other than memory sanitizer")
+add_feature_info(WITH_MSAN WITH_MSAN "Build with memory sanitizer")
+add_feature_info(WITH_FUZZERS WITH_FUZZERS "Build test/fuzz")
 add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
 if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
     add_feature_info(WITH_ACLE WITH_ACLE "Build with ACLE CRC")
@@ -229,6 +235,54 @@ endif()
 #
 check_include_file(unistd.h Z_HAVE_UNISTD_H)
 check_include_file(stdarg.h Z_HAVE_STDARG_H)
+
+if(WITH_SANITIZERS AND WITH_MSAN)
+    message(FATAL_ERROR "Memory sanitizer is incompatible with address sanitizer")
+endif()
+
+if(WITH_MSAN)
+    set(CMAKE_REQUIRED_FLAGS "-fsanitize=memory")
+    check_c_source_compiles("int main() { return 0; }" HAS_MSAN FAIL_REGEX "not supported")
+    if(${HAS_MSAN})
+        set(SANITIZERS_FLAGS "-fsanitize=memory")
+        message(STATUS "Adding memory sanitizer flag: ${SANITIZERS_FLAGS}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZERS_FLAGS}")
+    endif()
+endif()
+
+if(WITH_SANITIZERS)
+    set(_sanitize_flags
+        bool
+        address
+        array-bounds
+        float-divide-by-zero
+        function
+        integer-divide-by-zero
+        return
+        shift
+        signed-integer-overflow
+        undefined
+        unsigned-integer-overflow
+        vla-bound
+        vptr
+       )
+    set(SANITIZERS_FLAGS "")
+    foreach(_flag ${_sanitize_flags})
+        set(CMAKE_REQUIRED_FLAGS "-fsanitize=${_flag}")
+        check_c_source_compiles("int main() { return 0; }"
+          HAS_SANITIZER_${_flag} FAIL_REGEX "not supported")
+        if(${HAS_SANITIZER_${_flag}})
+            if("${SANITIZERS_FLAGS}" STREQUAL "")
+                set(SANITIZERS_FLAGS "-fsanitize=${_flag}")
+            else()
+                set(SANITIZERS_FLAGS "${SANITIZERS_FLAGS},${_flag}")
+            endif()
+        endif()
+        set(CMAKE_REQUIRED_FLAGS)
+    endforeach()
+    message(STATUS "Adding sanitizers flags: ${SANITIZERS_FLAGS}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZERS_FLAGS}")
+endif()
 
 #
 # Check if we can hide zlib internal symbols that are linked between separate source files using hidden
@@ -702,6 +756,33 @@ if (ZLIB_ENABLE_TESTS)
         add_executable(minigzip64 test/minigzip.c)
         target_link_libraries(minigzip64 zlib)
         set_target_properties(minigzip64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
+    endif()
+
+    if(WITH_FUZZERS)
+        add_executable(checksum_fuzzer test/fuzz/checksum_fuzzer.c test/fuzz/standalone_fuzz_target_runner.c)
+        add_executable(compress_fuzzer test/fuzz/compress_fuzzer.c test/fuzz/standalone_fuzz_target_runner.c)
+        add_executable(example_small_fuzzer test/fuzz/example_small_fuzzer.c test/fuzz/standalone_fuzz_target_runner.c)
+        add_executable(example_large_fuzzer test/fuzz/example_large_fuzzer.c test/fuzz/standalone_fuzz_target_runner.c)
+        add_executable(example_flush_fuzzer test/fuzz/example_flush_fuzzer.c test/fuzz/standalone_fuzz_target_runner.c)
+        add_executable(example_dict_fuzzer test/fuzz/example_dict_fuzzer.c test/fuzz/standalone_fuzz_target_runner.c)
+        add_executable(minigzip_fuzzer test/fuzz/minigzip_fuzzer.c test/fuzz/standalone_fuzz_target_runner.c)
+
+        target_link_libraries(checksum_fuzzer zlib)
+        target_link_libraries(compress_fuzzer zlib)
+        target_link_libraries(example_small_fuzzer zlib)
+        target_link_libraries(example_large_fuzzer zlib)
+        target_link_libraries(example_flush_fuzzer zlib)
+        target_link_libraries(example_dict_fuzzer zlib)
+        target_link_libraries(minigzip_fuzzer zlib)
+
+        file(GLOB ALL_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*")
+        add_test(checksum_fuzzer checksum_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
+        add_test(compress_fuzzer compress_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
+        add_test(example_small_fuzzer example_small_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
+        add_test(example_large_fuzzer example_large_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
+        add_test(example_flush_fuzzer example_flush_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
+        add_test(example_dict_fuzzer example_dict_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
+        add_test(minigzip_fuzzer minigzip_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
     endif()
 endif()
 
