@@ -313,6 +313,7 @@ int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, 
 
     s->window = (unsigned char *) ZALLOC(strm, s->w_size + window_padding, 2*sizeof(unsigned char));
     s->prev   = (Pos *)  ZALLOC(strm, s->w_size, sizeof(Pos));
+    memset(s->prev, 0, s->w_size * sizeof(Pos));
     s->head   = (Pos *)  ZALLOC(strm, s->hash_size, sizeof(Pos));
 
     s->high_water = 0;      /* nothing written to s->window yet */
