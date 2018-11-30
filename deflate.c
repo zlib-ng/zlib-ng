@@ -289,18 +289,11 @@ int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, 
     s->w_size = 1 << s->w_bits;
     s->w_mask = s->w_size - 1;
 
-#ifdef X86_SSE4_2_CRC_HASH
-    if (x86_cpu_has_sse42)
-        s->hash_bits = (unsigned int)15;
-    else
-#endif
-        s->hash_bits = (unsigned int)memLevel + 7;
+    s->hash_bits = (unsigned int)memLevel + 7;
 
     s->hash_size = 1 << s->hash_bits;
     s->hash_mask = s->hash_size - 1;
-#if !defined(__x86_64) && !defined(__i386_)
     s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
-#endif
 
 #ifdef X86_PCLMULQDQ_CRC
     window_padding = 8;
@@ -443,7 +436,7 @@ int ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const unsigned c
     while (s->lookahead >= MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (MIN_MATCH-1);
-        functable.insert_string(s, str, n);
+        insert_string(s, str, n);
         s->strstart = str + n;
         s->lookahead = MIN_MATCH-1;
         functable.fill_window(s);
@@ -1273,7 +1266,7 @@ void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
             unsigned int str = s->strstart - s->insert;
             s->ins_h = s->window[str];
             if (str >= 1)
-                functable.insert_string(s, str + 2 - MIN_MATCH, 1);
+                insert_string(s, str + 2 - MIN_MATCH, 1);
 #if MIN_MATCH != 3
 #error Call insert_string() MIN_MATCH-3 more times
             while (s->insert) {
@@ -1290,7 +1283,7 @@ void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
             }else{
                 count = s->insert;
             }
-            functable.insert_string(s,str,count);
+            insert_string(s,str,count);
             s->insert -= count;
 #endif
         }

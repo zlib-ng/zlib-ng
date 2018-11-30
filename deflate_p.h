@@ -31,12 +31,12 @@ void flush_pending(PREFIX3(stream) *strm);
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
 
-static inline Pos insert_string_c(deflate_state *const s, const Pos str, unsigned int count) {
+static inline Pos insert_string(deflate_state *const s, const Pos str, unsigned int count) {
     Pos ret = 0;
     unsigned int idx;
 
     for (idx = 0; idx < count; idx++) {
-        UPDATE_HASH(s, s->ins_h, str+idx);
+        UPDATE_HASH(s, s->ins_h, s->window[str+idx + (MIN_MATCH-1)]);
         if (s->head[s->ins_h] != str+idx) {
             s->prev[(str+idx) & s->w_mask] = s->head[s->ins_h];
             s->head[s->ins_h] = str+idx;

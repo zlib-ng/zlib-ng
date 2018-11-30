@@ -404,11 +404,9 @@ zutil.o: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(S
 arch/aarch64/adler32_neon.o: $(SRCDIR)/arch/aarch64/adler32_neon.h
 arch/aarch64/crc32_acle.o: zconf$(SUFFIX).h
 arch/aarch64/fill_window_arm.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/aarch64/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/arm/adler32_neon.o: $(SRCDIR)/arch/arm/adler32_neon.h
 arch/arm/crc32_acle.o: zconf$(SUFFIX).h
 arch/arm/fill_window_arm.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/arm/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/crc_folding.o: $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/crc_pclmulqdq.o: $(SRCDIR)/arch/x86/x86.h $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/deflate_quick.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
@@ -433,11 +431,9 @@ zutil.lo: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(
 arch/aarch64/adler32_neon.lo: $(SRCDIR)/arch/aarch64/adler32_neon.h
 arch/aarch64/crc32_acle.lo: zconf$(SUFFIX).h
 arch/aarch64/fill_window_arm.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/aarch64/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/arm/adler32_neon.lo: $(SRCDIR)/arch/arm/adler32_neon.h
 arch/arm/crc32_acle.lo: zconf$(SUFFIX).h
 arch/arm/fill_window_arm.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/arm/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/crc_folding.lo: $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/crc_pclmulqdq.lo: $(SRCDIR)/arch/x86/x86.h $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/deflate_quick.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h

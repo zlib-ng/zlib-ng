@@ -954,11 +954,6 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_INTRIN"
             fi
 
-            CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_HASH"
-            SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_HASH"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} insert_string_sse.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} insert_string_sse.lo"
-
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
@@ -978,11 +973,11 @@ case "${ARCH}" in
 
         # Enable arch-specific optimizations?
         if test $without_optimizations -eq 0; then
-            CFLAGS="${CFLAGS} -DX86_CPUID -DX86_SSE2_FILL_WINDOW -DX86_SSE4_2_CRC_HASH"
-            SFLAGS="${SFLAGS} -DX86_CPUID -DX86_SSE2_FILL_WINDOW -DX86_SSE4_2_CRC_HASH"
+            CFLAGS="${CFLAGS} -DX86_CPUID -DX86_SSE2_FILL_WINDOW "
+            SFLAGS="${SFLAGS} -DX86_CPUID -DX86_SSE2_FILL_WINDOW "
 
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o fill_window_sse.o insert_string_sse.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo fill_window_sse.lo insert_string_sse.lo"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o fill_window_sse.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo fill_window_sse.lo"
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_INTRIN"
@@ -1087,11 +1082,11 @@ case "${ARCH}" in
                 fi
             ;;
             armv8-a+crc | armv8-a+crc+simd | armv8.[1234]-a | armv8.[1234]-a+simd)
-                CFLAGS="-march=${ARCH} ${CFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
-                SFLAGS="-march=${ARCH} ${SFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
+                CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+                SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo"
 
                 if test $buildneon -eq 1; then
                     CFLAGS="${CFLAGS} ${floatabi}"
@@ -1128,10 +1123,8 @@ case "${ARCH}" in
            if test $native -eq 0; then
              ARCH="${ARCH}+crc"
            fi
-            CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
-            SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo"
         fi
         if test $buildneon -eq 1; then
             if test $native -eq 0; then

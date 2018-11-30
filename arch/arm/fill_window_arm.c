@@ -122,7 +122,7 @@ void fill_window_arm(deflate_state *s) {
             }
             if (insert_cnt > 0)
             {
-                functable.insert_string(s, str, insert_cnt);
+                insert_string(s, str, insert_cnt);
                 s->insert -= slen;
             }
         }
