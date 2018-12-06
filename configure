@@ -214,7 +214,6 @@ EOF
 
 test -z "$CC" && echo Checking for ${CROSS_PREFIX}gcc... | tee -a configure.log
 cc=${CC-${CROSS_PREFIX}gcc}
-cflags=${CFLAGS-"-O3"}
 case "$cc" in
   *gcc*) gcc=1 ;;
   *clang*) gcc=1 ;;
@@ -314,13 +313,13 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         ARCH=native
       fi ;;
   esac
-  CFLAGS="${CFLAGS--O3}"
+  CFLAGS="${CFLAGS} -O2"
   if test -n "${ARCHS}"; then
     CFLAGS="${CFLAGS} ${ARCHS}"
     LDFLAGS="${LDFLAGS} ${ARCHS}"
   fi
   CFLAGS="${CFLAGS} -Wall"
-  SFLAGS="${CFLAGS--O3} -fPIC"
+  SFLAGS="${CFLAGS} -O2 -fPIC"
   if test $native -eq 1; then
     CFLAGS="${CFLAGS} -march=native"
     SFLAGS="${SFLAGS} -march=native"
