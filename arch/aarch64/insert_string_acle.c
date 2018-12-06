@@ -42,12 +42,14 @@ Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count
         h = __crc32w(0, val);
         hm = h & s->hash_mask;
 
-        if (s->head[hm] != p) {
-            s->prev[p & s->w_mask] = s->head[hm];
+        Pos head = s->head[hm];
+        if (head != p) {
+            s->prev[p & s->w_mask] = head;
             s->head[hm] = p;
-            if (p == lp) {
-                ret = s->prev[lp & s->w_mask];
-            }
+            if (p == lp)
+              ret = head;
+        } else if (p == lp) {
+          ret = p;
         }
     }
     return ret;
