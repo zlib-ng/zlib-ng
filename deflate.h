@@ -13,6 +13,7 @@
 /* @(#) $Id$ */
 
 #include "zutil.h"
+#include "gzendian.h"
 
 /* define NO_GZIP when compiling if you want to disable gzip header and
    trailer creation by deflate().  NO_GZIP would be used to avoid linking in
@@ -302,26 +303,13 @@ typedef enum {
  * Output a short LSB first on the stream.
  * IN assertion: there is enough room in pendingBuf.
  */
-#ifdef UNALIGNED_OK
-/* Compared to the else-clause's implementation, there are few advantages:
- *  - s->pending is loaded only once (else-clause's implementation needs to
- *    load s->pending twice due to the alias between s->pending and
- *    s->pending_buf[].
- *  - no instructions for extracting bytes from short.
- *  - needs less registers
- *  - stores to adjacent bytes are merged into a single store, albeit at the
- *    cost of penalty of potentially unaligned access. 
- */
-#define put_short(s, w) { \
-    *(uint16_t*)(&s->pending_buf[s->pending]) = (w) ; \
-    s->pending += 2; \
-}
-#else
-#define put_short(s, w) { \
-    put_byte(s, (unsigned char)((w) & 0xff)); \
-    put_byte(s, (unsigned char)((uint16_t)(w) >> 8)); \
-}
+static inline void put_short(deflate_state *s, uint16_t w) {
+#if BYTE_ORDER == BIG_ENDIAN
+  w = ZSWAP16(w);
 #endif
+  MEMCPY(&(s->pending_buf[s->pending]), &w, sizeof(uint16_t));
+  s->pending += 2;
+}
 
 #define MIN_LOOKAHEAD (MAX_MATCH+MIN_MATCH+1)
 /* Minimum amount of lookahead, except at the end of the input file.
