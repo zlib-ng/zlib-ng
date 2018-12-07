@@ -150,8 +150,15 @@ gzFile gz_open(const char *path, int fd, const char *mode)
         free(gz);
         return NULL;
     }
-    gz->file = path == NULL ? fdopen(fd, gz->write ? "wb" : "rb") :
-                              fopen(path, gz->write ? "wb" : "rb");
+#if _POSIX_C_SOURCE >= 1 || _XOPEN_SOURCE || _POSIX_SOURCE
+    gz->file = path == NULL ? fdopen(fd, gz->write ? "wb" : "rb")
+                            : fopen(path, gz->write ? "wb" : "rb");
+#else
+    /* fdopen is not available in C99. */
+    if (path == NULL)
+      exit(1);
+    gz->file = fopen(path, gz->write ? "wb" : "rb");
+#endif
     if (gz->file == NULL) {
         gz->write ? PREFIX(deflateEnd)(&(gz->strm)) : PREFIX(inflateEnd)(&(gz->strm));
         free(gz);
