@@ -165,31 +165,52 @@ void ZLIB_INTERNAL   zcfree(void *opaque, void *ptr);
 #define ZFREE(strm, addr)         (*((strm)->zfree))((strm)->opaque, (void *)(addr))
 #define TRY_FREE(s, p) {if (p) ZFREE(s, p);}
 
-/* Reverse the bytes in a 32-bit value. Use compiler intrinsics when
+/* Reverse the bytes in a value. Use compiler intrinsics when
    possible to take advantage of hardware implementations. */
 #if defined(WIN32) && (_MSC_VER >= 1300)
 #  pragma intrinsic(_byteswap_ulong)
+#  define ZSWAP16(q) _byteswap_ushort(q)
 #  define ZSWAP32(q) _byteswap_ulong(q)
+#  define ZSWAP64(q) _byteswap_uint64(q)
 
 #elif defined(__Clang__) || (defined(__GNUC__) && \
         (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2)))
+#  define ZSWAP16(q) __builtin_bswap16(q)
 #  define ZSWAP32(q) __builtin_bswap32(q)
+#  define ZSWAP64(q) __builtin_bswap64(q)
 
 #elif defined(__GNUC__) && (__GNUC__ >= 2) && defined(__linux__)
 #  include <byteswap.h>
+#  define ZSWAP16(q) bswap_16(q)
 #  define ZSWAP32(q) bswap_32(q)
+#  define ZSWAP64(q) bswap_64(q)
 
 #elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
 #  include <sys/endian.h>
+#  define ZSWAP16(q) bswap16(q)
 #  define ZSWAP32(q) bswap32(q)
+#  define ZSWAP64(q) bswap64(q)
 
 #elif defined(__INTEL_COMPILER)
+/* ICC does not provide a two byte swap. */
+#  define ZSWAP16(q) ((((q) & 0xff) << 8) | (((q) & 0xff00) >> 8))
 #  define ZSWAP32(q) _bswap(q)
+#  define ZSWAP64(q) _bswap64(q)
 
 #else
+#  define ZSWAP16(q) ((((q) & 0xff) << 8) | (((q) & 0xff00) >> 8))
 #  define ZSWAP32(q) ((((q) >> 24) & 0xff) + (((q) >> 8) & 0xff00) + \
                     (((q) & 0xff00) << 8) + (((q) & 0xff) << 24))
-#endif /* ZSWAP32 */
+#  define ZSWAP64(q)                           \
+          ((q & 0xFF00000000000000u) >> 56u) | \
+          ((q & 0x00FF000000000000u) >> 40u) | \
+          ((q & 0x0000FF0000000000u) >> 24u) | \
+          ((q & 0x000000FF00000000u) >> 8u)  | \
+          ((q & 0x00000000FF000000u) << 8u)  | \
+          ((q & 0x0000000000FF0000u) << 24u) | \
+          ((q & 0x000000000000FF00u) << 40u) | \
+          ((q & 0x00000000000000FFu) << 56u)
+#endif
 
 /* Only enable likely/unlikely if the compiler is known to support it */
 #if (defined(__GNUC__) && (__GNUC__ >= 3)) || defined(__INTEL_COMPILER) || defined(__Clang__)
