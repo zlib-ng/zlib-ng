@@ -1,6 +1,6 @@
 language: c
 cache: ccache
-dist: trusty
+dist: xenial
 
 matrix:
   include:
