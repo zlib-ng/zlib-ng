@@ -2,6 +2,10 @@ language: c
 cache: ccache
 dist: xenial
 
+env:
+  global:
+    - MAKE="make"
+
 matrix:
   include:
     - os: linux
@@ -29,6 +33,9 @@ matrix:
     - os: linux
       compiler: clang
       env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
+    - os: linux
+      compiler: clang
+      env: BUILDDIR=../build TOOL="scan-build -v --status-bugs cmake ../zlib-ng" MAKE="scan-build -v --status-bugs make"
 
     - os: osx
       compiler: gcc
@@ -137,4 +144,4 @@ matrix:
             - libc-dev-armel-cross
       env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="./configure --zlib-compat"
 
-script: mkdir -p $BUILDDIR && cd $BUILDDIR && $TOOL && make -j2 && make test
+script: mkdir -p $BUILDDIR && cd $BUILDDIR && $TOOL && $MAKE -j2 && $MAKE test
