@@ -5,7 +5,16 @@
 #ifndef ENDIAN_H_
 #define ENDIAN_H_
 
-#ifdef __MINGW32__
+/* First check whether the compiler knows the target __BYTE_ORDER__. */
+#if defined(__BYTE_ORDER__)
+# if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#  define LITTLE_ENDIAN __ORDER_LITTLE_ENDIAN__
+#  define BYTE_ORDER LITTLE_ENDIAN
+# elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+#  define BIG_ENDIAN __ORDER_BIG_ENDIAN__
+#  define BYTE_ORDER BIG_ENDIAN
+# endif
+#elif defined(__MINGW32__)
 # include <sys/param.h>
 #elif defined(WIN32) || defined(_WIN32)
 # define LITTLE_ENDIAN 1234
