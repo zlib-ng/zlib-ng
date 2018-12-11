@@ -4,14 +4,6 @@
 #ifndef MEMCOPY_H_
 #define MEMCOPY_H_
 
-#if (defined(__GNUC__) || defined(__clang__))
-#define MEMCPY __builtin_memcpy
-#define MEMSET __builtin_memset
-#else
-#define MEMCPY memcpy
-#define MEMSET memset
-#endif
-
 /* Load a short from IN and place the bytes at offset BITS in the result. */
 static inline uint32_t load_short(const unsigned char *in, unsigned bits) {
     union {
