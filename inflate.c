@@ -124,6 +124,7 @@ int ZEXPORT PREFIX(inflateResetKeep)(PREFIX3(stream) *strm) {
     if (state->wrap)        /* to support ill-conceived Java test suite */
         strm->adler = state->wrap & 1;
     state->mode = HEAD;
+    state->check = functable.adler32(0L, NULL, 0);
     state->last = 0;
     state->havedict = 0;
     state->dmax = 32768U;
