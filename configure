@@ -313,13 +313,13 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         ARCH=native
       fi ;;
   esac
-  CFLAGS="${CFLAGS} -O2"
+  CFLAGS="-O2 ${CFLAGS}"
   if test -n "${ARCHS}"; then
     CFLAGS="${CFLAGS} ${ARCHS}"
     LDFLAGS="${LDFLAGS} ${ARCHS}"
   fi
   CFLAGS="${CFLAGS} -Wall"
-  SFLAGS="${CFLAGS} -O2 -fPIC"
+  SFLAGS="-O2 ${CFLAGS} -fPIC"
   if test $native -eq 1; then
     CFLAGS="${CFLAGS} -march=native"
     SFLAGS="${SFLAGS} -march=native"
