@@ -330,6 +330,29 @@ if(HAVE_BUILTIN_CTZL)
     add_definitions(-DHAVE_BUILTIN_CTZL)
 endif()
 
+#
+# check for ptrdiff_t support
+#
+check_c_source_compiles(
+    "#include <stddef.h>
+     int main() { ptrdiff_t *a; return 0; }"
+    HAVE_PTRDIFF_T
+)
+if(NOT HAVE_PTRDIFF_T)
+  set(NEED_PTRDIFF_T 1)
+
+  check_type_size("void *" SIZEOF_DATA_PTR)
+  message(STATUS "sizeof(void *) is ${SIZEOF_DATA_PTR} bytes")
+
+  if(${SIZEOF_DATA_PTR} MATCHES "4")
+    set(PTRDIFF_TYPE "uint32_t")
+  elseif(${SIZEOF_DATA_PTR} MATCHES "8")
+    set(PTRDIFF_TYPE "uint64_t")
+  else()
+    message(FATAL_ERROR "sizeof(void *) is neither 32 nor 64 bit")
+  endif()
+endif()
+
 # Macro to check if source compiles when cross-compiling
 # or runs when compiling natively
 macro(check_c_source_compile_or_run source flag)
@@ -561,8 +584,12 @@ macro(generate_cmakein input output)
     foreach(_line IN LISTS _lines)
         file(APPEND ${output} "${_line}\n")
 
-        if (_line STREQUAL "#define ZCONF_H")
+        if (_line STREQUAL "#define ZCONF_H" OR _line STREQUAL "#define ZCONFNG_H")
             file(APPEND ${output} "#cmakedefine Z_HAVE_UNISTD_H\n")
+            if(NOT HAVE_PTRDIFF_T)
+              file(APPEND ${output} "#cmakedefine NEED_PTRDIFF_T\n")
+              file(APPEND ${output} "#cmakedefine PTRDIFF_TYPE ${PTRDIFF_TYPE}\n")
+            endif()
         endif()
     endforeach()
 endmacro(generate_cmakein)
