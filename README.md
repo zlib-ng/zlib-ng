@@ -19,9 +19,9 @@ drop-in replacement with a lower threshold for code change.
 zlib has a long history and is incredibly portable, even supporting
 lots of systems that predate the Internet. This is great, but it does
 complicate further development and maintainability.
-The zlib code has to make numerous workarounds for old compilers that
-do not understand ANSI-C or to accommodate systems with limitations
-such as operating in a 16-bit environment.
+The zlib code has numerous workarounds for old compilers that do not
+understand ANSI-C or to accommodate systems with limitations such as
+operating in a 16-bit environment.
 
 Many of these workarounds are only maintenance burdens, some of them
 are pretty huge code-wise. For example, the [v]s[n]printf workaround
@@ -37,24 +37,31 @@ of other smaller patches. Then I started cleaning out workarounds,
 various dead code, all contrib and example code as there is little
 point in having those in this fork for various reasons.
 
-Zlib-ng is a work in progress, and we would be delighted to receive
-patches, preferably as pull requests on github.
-Just remember that any code you submit must be your own and it must
-be zlib licensed.
-
 A lot of improvements have gone into zlib-ng since its start, and
 numerous people have contributed both small and big improvements,
 or valuable testing. 
 
-
 Please read LICENSE.md, it is very simple and very liberal.
+
+
+Contributing
+------------
+
+Zlib-ng is a young project, and we aim to be open to contributions,
+and we would be delighted to receive pull requests on github.
+Just remember that any code you submit must be your own and it must
+be zlib licensed.
+Help with testing and reviewing of pull requests etc is also very
+much appreciated.
+
+If you are interested in contributing, please consider joining our
+IRC channel #zlib-ng on the Freenode IRC network.
 
 
 Acknowledgments
 ----------------
 
-Thanks to Raske Sider AS / servebolt.com for sponsoring my
-maintainership of zlib-ng.
+Thanks to Servebolt.com for sponsoring my maintainership of zlib-ng.
 
 Thanks go out to all the people and companies who have taken the time
 to contribute code reviews, testing and/or patches. Zlib-ng would not
@@ -66,4 +73,4 @@ The deflate and zlib specifications were written by L. Peter Deutsch.
 zlib was originally created by Jean-loup Gailly (compression)
 and Mark Adler (decompression).
 
-Travis CI: [![build status](https://api.travis-ci.org/Dead2/zlib-ng.svg)](https://travis-ci.org/Dead2/zlib-ng/)
+Travis CI: [![build status](https://api.travis-ci.org/zlib-ng/zlib-ng.svg)](https://travis-ci.org/zlib-ng/zlib-ng/)
