@@ -234,7 +234,6 @@ endif()
 # Check for unistd.h and stdarg.h
 #
 check_include_file(unistd.h Z_HAVE_UNISTD_H)
-check_include_file(stdarg.h Z_HAVE_STDARG_H)
 
 if(WITH_SANITIZERS AND WITH_MSAN)
     message(FATAL_ERROR "Memory sanitizer is incompatible with address sanitizer")
@@ -564,7 +563,6 @@ macro(generate_cmakein input output)
 
         if (_line STREQUAL "#define ZCONF_H")
             file(APPEND ${output} "#cmakedefine Z_HAVE_UNISTD_H\n")
-            file(APPEND ${output} "#cmakedefine Z_HAVE_STDARG_H\n")
         endif()
     endforeach()
 endmacro(generate_cmakein)

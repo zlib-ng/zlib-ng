@@ -111,10 +111,6 @@ typedef void       *voidp;
 #  define Z_HAVE_UNISTD_H
 #endif
 
-#ifdef HAVE_STDARG_H    /* may be set to #if 1 by ./configure */
-#  define Z_HAVE_STDARG_H
-#endif
-
 #include <sys/types.h>      /* for off_t */
 #include <stdarg.h>         /* for va_list */
 

@@ -709,19 +709,6 @@ fi
 
 echo >> configure.log
 
-# check for stdarg.h and save result in zconf.h
-cat > $test.c <<EOF
-#include <stdarg.h>
-int main() { return 0; }
-EOF
-if try $CC -c $CFLAGS $test.c; then
-  sed < zconf${SUFFIX}.h "/^#ifdef HAVE_STDARG_H.* may be/s/def HAVE_STDARG_H\(.*\) may be/ 1\1 was/" > zconf${SUFFIX}.temp.h
-  mv zconf${SUFFIX}.temp.h zconf${SUFFIX}.h
-  echo "Checking for stdarg.h... Yes." | tee -a configure.log
-else
-  echo "Checking for stdarg.h... No." | tee -a configure.log
-fi
-
 # if --zlib-compat was requested
 if test $compat -eq 1; then
   gzfileops=1
