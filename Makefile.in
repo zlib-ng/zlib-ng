@@ -365,7 +365,7 @@ distclean: clean
 	@if [ -f zconf.h.in ]; then \
 	cp -p $(SRCDIR)/zconf.h.in zconf.h ; \
 	TEMPFILE=zconfh_$$ ; \
-	echo "/#define ZCONF_H/ a\\\n#cmakedefine Z_HAVE_UNISTD_H\\n#cmakedefine Z_HAVE_STDARG_H\n" >> $$TEMPFILE &&\
+	echo "/#define ZCONF_H/ a\\\n#cmakedefine Z_HAVE_UNISTD_H\\n" >> $$TEMPFILE &&\
 	sed -f $$TEMPFILE $(SRCDIR)/zconf.h.in > zconf.h.cmakein &&\
 	touch -r $(SRCDIR)/zconf.h.in zconf.h.cmakein &&\
 	rm $$TEMPFILE ; fi
