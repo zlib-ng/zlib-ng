@@ -86,11 +86,43 @@ static void putShortMSB          (deflate_state *s, uint16_t b);
 ZLIB_INTERNAL void flush_pending (PREFIX3(stream) *strm);
 ZLIB_INTERNAL unsigned read_buf  (PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
-extern void crc_reset(deflate_state *const s);
 #ifdef X86_PCLMULQDQ_CRC
-extern void crc_finalize(deflate_state *const s);
-#endif
-extern void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size);
+#include "arch/x86/crc_folding.h"
+
+static inline void crc_reset(deflate_state *const s) {
+    if (x86_cpu_has_pclmulqdq) {
+       crc_fold_init(s);
+       return;
+    }
+    s->strm->adler = PREFIX(crc32)(0L, NULL, 0);
+}
+
+static inline void crc_finalize(deflate_state *const s) {
+    if (x86_cpu_has_pclmulqdq)
+        s->strm->adler = crc_fold_512to32(s);
+}
+
+static inline void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size) {
+    if (x86_cpu_has_pclmulqdq) {
+        crc_fold_copy(strm->state, dst, strm->next_in, size);
+        return;
+    }
+    memcpy(dst, strm->next_in, size);
+    strm->adler = PREFIX(crc32)(strm->adler, dst, size);
+}
+
+#else /* not defined X86_PCLMULQDQ_CRC */
+
+static inline void crc_reset(deflate_state *const s) {
+    s->strm->adler = PREFIX(crc32)(0L, NULL, 0);
+}
+
+static inline void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size) {
+    memcpy(dst, strm->next_in, size);
+    strm->adler = PREFIX(crc32)(strm->adler, dst, size);
+}
+
+#endif /* X86_PCLMULQDQ_CRC */
 
 /* ===========================================================================
  * Local data
