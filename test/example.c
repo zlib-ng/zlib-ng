@@ -33,7 +33,7 @@ static const char hello[] = "hello, hello!";
  */
 
 static const char dictionary[] = "hello";
-static unsigned long dictId; /* Adler32 value of the dictionary */
+static unsigned long dictId = 0; /* Adler32 value of the dictionary */
 
 void test_deflate       (unsigned char *compr, size_t comprLen);
 void test_inflate       (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
@@ -175,6 +175,8 @@ void test_deflate(unsigned char *compr, size_t comprLen)
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
     c_stream.opaque = (void *)0;
+    c_stream.total_in = 0;
+    c_stream.total_out = 0;
 
     err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
@@ -216,6 +218,8 @@ void test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
     d_stream.next_in  = compr;
     d_stream.avail_in = 0;
     d_stream.next_out = uncompr;
+    d_stream.total_in = 0;
+    d_stream.total_out = 0;
 
     err = PREFIX(inflateInit)(&d_stream);
     CHECK_ERR(err, "inflateInit");
@@ -310,6 +314,8 @@ void test_large_inflate(unsigned char *compr, size_t comprLen, unsigned char *un
 
     d_stream.next_in  = compr;
     d_stream.avail_in = (unsigned int)comprLen;
+    d_stream.total_in = 0;
+    d_stream.total_out = 0;
 
     err = PREFIX(inflateInit)(&d_stream);
     CHECK_ERR(err, "inflateInit");
@@ -422,6 +428,7 @@ void test_dict_deflate(unsigned char *compr, size_t comprLen)
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
     c_stream.opaque = (void *)0;
+    c_stream.adler = 0;
 
     err = PREFIX(deflateInit)(&c_stream, Z_BEST_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
@@ -454,12 +461,13 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
     int err;
     PREFIX3(stream) d_stream; /* decompression stream */
 
-    strcpy((char*)uncompr, "garbage");
+    char garbage_str[] = "garbage garbage garbage";
+    strncpy((char*)uncompr, garbage_str, sizeof(garbage_str));
 
     d_stream.zalloc = zalloc;
     d_stream.zfree = zfree;
     d_stream.opaque = (void *)0;
-
+    d_stream.adler = 0;
     d_stream.next_in  = compr;
     d_stream.avail_in = (unsigned int)comprLen;
 
@@ -486,7 +494,7 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
     err = PREFIX(inflateEnd)(&d_stream);
     CHECK_ERR(err, "inflateEnd");
 
-    if (strcmp((char*)uncompr, hello)) {
+    if (strncmp((char*)uncompr, hello, sizeof(hello))) {
         fprintf(stderr, "bad inflate with dict\n");
         exit(1);
     } else {
