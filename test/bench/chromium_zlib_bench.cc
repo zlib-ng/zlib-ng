@@ -31,7 +31,12 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "zlib.h"
+#include "zbuild.h"
+#ifdef ZLIB_COMPAT
+#  include "zlib.h"
+#else
+#  include "zlib-ng.h"
+#endif
 
 void error_exit(const char* error, int code) {
   fprintf(stderr, "%s (%d)\n", error, code);
@@ -76,7 +81,7 @@ Data read_file_data_or_exit(const char* name) {
 }
 
 size_t zlib_estimate_compressed_size(size_t input_size) {
-  return compressBound(input_size);
+  return PREFIX(compressBound)(input_size);
 }
 
 enum zlib_wrapper {
@@ -119,23 +124,23 @@ void zlib_compress(
     output->resize(zlib_estimate_compressed_size(input_size));
   size_t output_size = output->size();
 
-  z_stream stream;
+  PREFIX3(stream) stream;
   memset(&stream, 0, sizeof(stream));
 
-  int result = deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
+  int result = PREFIX(deflateInit2)(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
       zlib_stream_wrapper_type(type), MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY);
   if (result != Z_OK)
     error_exit("deflateInit2 failed", result);
 
-  stream.next_out = (Bytef*)string_data(output);
-  stream.avail_out = (uInt)output_size;
-  stream.next_in = (z_const Bytef*)input;
-  stream.avail_in = (uInt)input_size;
+  stream.next_out = (unsigned char *)string_data(output);
+  stream.avail_out = (uint32_t)output_size;
+  stream.next_in = (const unsigned char *)input;
+  stream.avail_in = (uint32_t)input_size;
 
-  result = deflate(&stream, Z_FINISH);
+  result = PREFIX(deflate)(&stream, Z_FINISH);
   if (result == Z_STREAM_END)
     output_size = stream.total_out;
-  result |= deflateEnd(&stream);
+  result |= PREFIX(deflateEnd)(&stream);
   if (result != Z_STREAM_END)
     error_exit("compress failed", result);
 
@@ -149,22 +154,22 @@ void zlib_uncompress(
     const size_t output_size,
     std::string* output)
 {
-  z_stream stream;
+  PREFIX3(stream) stream;
   memset(&stream, 0, sizeof(stream));
 
-  int result = inflateInit2(&stream, zlib_stream_wrapper_type(type));
+  int result = PREFIX(inflateInit2)(&stream, zlib_stream_wrapper_type(type));
   if (result != Z_OK)
     error_exit("inflateInit2 failed", result);
 
-  stream.next_out = (Bytef*)string_data(output);
-  stream.avail_out = (uInt)output->size();
-  stream.next_in = (z_const Bytef*)input.data();
-  stream.avail_in = (uInt)input.size();
+  stream.next_out = (unsigned char *)string_data(output);
+  stream.avail_out = (uint32_t)output->size();
+  stream.next_in = (const unsigned char *)input.data();
+  stream.avail_in = (uint32_t)input.size();
 
-  result = inflate(&stream, Z_FINISH);
+  result = PREFIX(inflate)(&stream, Z_FINISH);
   if (stream.total_out != output_size)
     result = Z_DATA_ERROR;
-  result |= inflateEnd(&stream);
+  result |= PREFIX(inflateEnd)(&stream);
   if (result == Z_STREAM_END)
     return;
 

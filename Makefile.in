@@ -15,6 +15,7 @@
 CC=cc
 
 CFLAGS=-O
+CXXFLAGS=-O
 #CFLAGS=-O -DMAX_WBITS=14 -DMAX_MEM_LEVEL=7
 #CFLAGS=-g -DZLIB_DEBUG
 #CFLAGS=-O3 -Wall -Wwrite-strings -Wpointer-arith -Wconversion \
@@ -23,6 +24,7 @@ CFLAGS=-O
 WITH_SANITIZERS=
 WITH_MSAN=
 WITH_FUZZERS=
+WITH_BENCHMARKS=
 SANITIZERS_CFLAGS=
 MSAN_CFLAGS=
 
@@ -117,6 +119,16 @@ $(ARCHDIR)/%.lo: $(SRCDIR)/$(ARCHDIR)/%.c
 
 test: all
 	$(MAKE) -C test
+
+ifeq (1,$(WITH_BENCHMARKS))
+benchmark: chromium_zlib_bench$(EXE)
+	$(MAKE) -C test benchmark
+else
+benchmark:
+endif
+
+chromium_zlib_bench$(EXE): $(SRCDIR)/test/bench/chromium_zlib_bench.cc $(STATICLIB)
+	$(CXX) $(CXXFLAGS) -std=c++11 $(INCLUDES) -o $@ $(SRCDIR)/test/bench/chromium_zlib_bench.cc $(STATICLIB)
 
 # By default, use our own standalone_fuzz_target_runner.
 # This runner does no fuzzing, but simply executes the inputs

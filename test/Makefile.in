@@ -10,6 +10,7 @@ SRCTOP=
 INCLUDES=
 TEST_LDFLAGS=-L.. ../libz.a
 WITH_FUZZERS=
+WITH_BENCHMARKS=
 
 COMPATTESTS =
 QEMU_RUN=
@@ -23,6 +24,17 @@ ifneq (,$(QEMU_RUN))
 ifeq (,$(QEMU_VER))
 	$(error "You need QEMU to run tests on non-native platform")
 endif
+endif
+
+
+ifeq (0,$(WITH_BENCHMARKS))
+benchmark:
+else
+SNAPPY_FILES := $(wildcard bench/snappy/*)
+benchmark:
+	@../chromium_zlib_bench$(EXE) gzip $(SNAPPY_FILES) && \
+	../chromium_zlib_bench$(EXE) zlib $(SNAPPY_FILES) && \
+	../chromium_zlib_bench$(EXE) raw $(SNAPPY_FILES)
 endif
 
 ALL_SRC_FILES := $(wildcard ../*)

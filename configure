@@ -101,6 +101,7 @@ buildneon=0
 with_sanitizers=0
 with_msan=0
 with_fuzzers=0
+with_benchmarks=0
 floatabi=
 native=0
 sse2flag="-msse2"
@@ -184,6 +185,7 @@ case "$1" in
     --with-sanitizers) with_sanitizers=1; shift ;;
     --with-msan) with_msan=1; shift ;;
     --with-fuzzers) with_fuzzers=1; shift ;;
+    --with-benchmarks) with_benchmarks=1; shift ;;
     *)
       echo "unknown option: $1" | tee -a configure.log
       echo "$0 --help for help" | tee -a configure.log
@@ -225,11 +227,13 @@ esac
 
 if test $build32 -eq 1; then
   CFLAGS="${CFLAGS} -m32"
+  CXXFLAGS="${CXXFLAGS} -m32"
   SFLAGS="${SFLAGS} -m32"
   LDFLAGS="${LDFLAGS} -m32"
 fi
 if test $build64 -eq 1; then
   CFLAGS="${CFLAGS} -m64"
+  CXXFLAGS="${CXXFLAGS} -m64"
   SFLAGS="${SFLAGS} -m64"
   LDFLAGS="${LDFLAGS} -m64"
 fi
@@ -314,21 +318,27 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       fi ;;
   esac
   CFLAGS="-O2 ${CFLAGS}"
+  CXXFLAGS="-O2 ${CXXFLAGS}"
   if test -n "${ARCHS}"; then
     CFLAGS="${CFLAGS} ${ARCHS}"
+    CXXFLAGS="${CXXFLAGS} ${ARCHS}"
     LDFLAGS="${LDFLAGS} ${ARCHS}"
   fi
   CFLAGS="${CFLAGS} -Wall"
+  CXXFLAGS="${CXXFLAGS} -Wall"
   SFLAGS="-O2 ${CFLAGS} -fPIC"
   if test $native -eq 1; then
     CFLAGS="${CFLAGS} -march=native"
+    CXXFLAGS="${CXXFLAGS} -march=native"
     SFLAGS="${SFLAGS} -march=native"
   fi
   if test "$warn" -eq 1; then
     CFLAGS="${CFLAGS} -Wextra -Wpedantic"
+    CXXFLAGS="${CXXFLAGS} -Wextra -Wpedantic"
   fi
   if test $debug -eq 1; then
     CFLAGS="${CFLAGS} -DZLIB_DEBUG"
+    CXXFLAGS="${CXXFLAGS} -DZLIB_DEBUG"
     SFLAGS="${SFLAGS} -DZLIB_DEBUG"
   fi
   if test -z "$uname"; then
@@ -629,6 +639,7 @@ off64_t dummy = 0;
 EOF
 if try $CC -c $CFLAGS -D_LARGEFILE64_SOURCE=1 $test.c; then
   CFLAGS="${CFLAGS} -D_LARGEFILE64_SOURCE=1"
+  CXXFLAGS="${CXXFLAGS} -D_LARGEFILE64_SOURCE=1"
   SFLAGS="${SFLAGS} -D_LARGEFILE64_SOURCE=1"
   ALL="${ALL} all64"
   TEST="${TEST} test64"
@@ -663,6 +674,7 @@ EOF
     echo "Checking for fseeko... Yes." | tee -a configure.log
   else
     CFLAGS="${CFLAGS} -DNO_FSEEKO"
+    CXXFLAGS="${CXXFLAGS} -DNO_FSEEKO"
     SFLAGS="${SFLAGS} -DNO_FSEEKO"
     echo "Checking for fseeko... No." | tee -a configure.log
   fi
@@ -680,6 +692,7 @@ if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
   echo "Checking for strerror... Yes." | tee -a configure.log
 else
   CFLAGS="${CFLAGS} -DNO_STRERROR"
+  CXXFLAGS="${CXXFLAGS} -DNO_STRERROR"
   SFLAGS="${SFLAGS} -DNO_STRERROR"
   echo "Checking for strerror... No." | tee -a configure.log
 fi
@@ -726,6 +739,7 @@ fi
 if test $compat -eq 1; then
   gzfileops=1
   CFLAGS="${CFLAGS} -DZLIB_COMPAT"
+  CXXFLAGS="${CXXFLAGS} -DZLIB_COMPAT"
   SFLAGS="${SFLAGS} -DZLIB_COMPAT"
   case "$uname" in
   CYGWIN* | Cygwin* | cygwin* | MSYS* | msys* | MINGW* | mingw*)
@@ -736,6 +750,7 @@ fi
 # if --gzfileops was requested
 if test $gzfileops -eq 1; then
   CFLAGS="${CFLAGS} -DWITH_GZFILEOP"
+  CXXFLAGS="${CXXFLAGS} -DWITH_GZFILEOP"
   SFLAGS="${SFLAGS} -DWITH_GZFILEOP"
   OBJC="${OBJC} \$(OBJG)"
   PIC_OBJC="${PIC_OBJC} \$(PIC_OBJG)"
@@ -744,6 +759,7 @@ fi
 # if code coverage testing was requested, use older gcc if defined, e.g. "gcc-4.2" on Mac OS X
 if test $cover -eq 1; then
   CFLAGS="${CFLAGS} -fprofile-arcs -ftest-coverage"
+  CXXFLAGS="${CXXFLAGS} -fprofile-arcs -ftest-coverage"
   LDFLAGS="${LDFLAGS} -fprofile-arcs -ftest-coverage"
   if test -n "$GCC_CLASSIC"; then
     CC=$GCC_CLASSIC
@@ -783,6 +799,7 @@ int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then
     CFLAGS="$CFLAGS -DHAVE_HIDDEN"
+    CXXFLAGS="$CXXFLAGS -DHAVE_HIDDEN"
     SFLAGS="$SFLAGS -DHAVE_HIDDEN"
     echo >> configure.log
     echo "Checking for attribute(visibility(hidden)) support... Yes." | tee -a configure.log
@@ -802,6 +819,7 @@ int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then
     CFLAGS="$CFLAGS -DHAVE_INTERNAL"
+    CXXFLAGS="$CXXFLAGS -DHAVE_INTERNAL"
     SFLAGS="$SFLAGS -DHAVE_INTERNAL"
     echo >> configure.log
     echo "Checking for attribute(visibility(internal)) support... Yes." | tee -a configure.log
@@ -823,6 +841,7 @@ EOF
 if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
     echo "Checking for __builtin_ctzl ... Yes." | tee -a configure.log
     CFLAGS="$CFLAGS -DHAVE_BUILTIN_CTZL"
+    CXXFLAGS="$CXXFLAGS -DHAVE_BUILTIN_CTZL"
     SFLAGS="$SFLAGS -DHAVE_BUILTIN_CTZL"
 else
     echo "Checking for __builtin_ctzl ... No." | tee -a configure.log
@@ -893,6 +912,7 @@ fi
 # Enable deflate_medium at level 4-6
 if test $without_new_strategies -eq 0; then
     CFLAGS="${CFLAGS} -DMEDIUM_STRATEGY"
+    CXXFLAGS="${CXXFLAGS} -DMEDIUM_STRATEGY"
     SFLAGS="${SFLAGS} -DMEDIUM_STRATEGY"
 fi
 
@@ -921,11 +941,13 @@ case "${ARCH}" in
         ARCHDIR=arch/x86
 
         CFLAGS="${CFLAGS} -DX86 -DUNALIGNED_OK -DUNROLL_LESS"
+        CXXFLAGS="${CXXFLAGS} -DX86 -DUNALIGNED_OK -DUNROLL_LESS"
         SFLAGS="${SFLAGS} -DX86 -DUNALIGNED_OK -DUNROLL_LESS"
 
         # Enable arch-specific optimizations?
         if test $without_optimizations -eq 0; then
             CFLAGS="${CFLAGS} -DX86_CPUID"
+            CXXFLAGS="${CXXFLAGS} -DX86_CPUID"
             SFLAGS="${SFLAGS} -DX86_CPUID"
 
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o"
@@ -933,6 +955,7 @@ case "${ARCH}" in
 
             if test ${HAVE_SSE2_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE2_FILL_WINDOW"
+                CXXFLAGS="${CXXFLAGS} -DX86_SSE2_FILL_WINDOW"
                 SFLAGS="${SFLAGS} -DX86_SSE2_FILL_WINDOW"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_sse.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_sse.lo"
@@ -941,6 +964,7 @@ case "${ARCH}" in
                 # requires SSE2: code uses fill_window_sse
                 if test $without_new_strategies -eq 0; then
                     CFLAGS="${CFLAGS} -DX86_QUICK_STRATEGY"
+                    CXXFLAGS="${CXXFLAGS} -DX86_QUICK_STRATEGY"
                     SFLAGS="${SFLAGS} -DX86_QUICK_STRATEGY"
 
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} deflate_quick.o"
@@ -950,16 +974,19 @@ case "${ARCH}" in
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_INTRIN"
+                CXXFLAGS="${CXXFLAGS} -DX86_SSE4_2_CRC_INTRIN"
                 SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_INTRIN"
             fi
 
             CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_HASH"
+            CXXFLAGS="${CXXFLAGS} -DX86_SSE4_2_CRC_HASH"
             SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_HASH"
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} insert_string_sse.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} insert_string_sse.lo"
 
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
+                CXXFLAGS="${CXXFLAGS} -DX86_PCLMULQDQ_CRC"
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o crc_pclmulqdq.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo crc_pclmulqdq.lo"
@@ -973,11 +1000,13 @@ case "${ARCH}" in
         ARCHDIR=arch/x86
 
         CFLAGS="${CFLAGS} -DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK -DUNROLL_LESS"
+        CXXFLAGS="${CXXFLAGS} -DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK -DUNROLL_LESS"
         SFLAGS="${SFLAGS} -DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK -DUNROLL_LESS"
 
         # Enable arch-specific optimizations?
         if test $without_optimizations -eq 0; then
             CFLAGS="${CFLAGS} -DX86_CPUID -DX86_SSE2_FILL_WINDOW -DX86_SSE4_2_CRC_HASH"
+            CXXFLAGS="${CXXFLAGS} -DX86_CPUID -DX86_SSE2_FILL_WINDOW -DX86_SSE4_2_CRC_HASH"
             SFLAGS="${SFLAGS} -DX86_CPUID -DX86_SSE2_FILL_WINDOW -DX86_SSE4_2_CRC_HASH"
 
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o fill_window_sse.o insert_string_sse.o"
@@ -985,11 +1014,13 @@ case "${ARCH}" in
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_INTRIN"
+                CXXFLAGS="${CXXFLAGS} -DX86_SSE4_2_CRC_INTRIN"
                 SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_INTRIN"
             fi
 
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
+                CXXFLAGS="${CXXFLAGS} -DX86_PCLMULQDQ_CRC"
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o crc_pclmulqdq.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo crc_pclmulqdq.lo"
@@ -998,6 +1029,7 @@ case "${ARCH}" in
             # Enable deflate_quick at level 1?
             if test $without_new_strategies -eq 0; then
                 CFLAGS="${CFLAGS} -DX86_QUICK_STRATEGY"
+                CXXFLAGS="${CXXFLAGS} -DX86_QUICK_STRATEGY"
                 SFLAGS="${SFLAGS} -DX86_QUICK_STRATEGY"
 
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} deflate_quick.o"
@@ -1035,6 +1067,7 @@ case "${ARCH}" in
                 # Tests done on Raspberry pi (armv6hl) indicate that UNALIGNED_OK and UNROLL_LESS both
                 # provide performance improvements, totaling about 1.5% for the two.
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+                CXXFLAGS="${CXXFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
 
                 if test $buildacle -eq 1; then
@@ -1047,6 +1080,7 @@ case "${ARCH}" in
             ;;
             arm | armv7*)
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+                CXXFLAGS="${CXXFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
 
                 if test $buildacle -eq 1; then
@@ -1055,6 +1089,7 @@ case "${ARCH}" in
 
                 if test $buildneon -eq 1; then
                     CFLAGS="${CFLAGS} ${floatabi} -mfpu=neon -DARM_NEON_ADLER32"
+                    CXXFLAGS="${CXXFLAGS} ${floatabi} -mfpu=neon -DARM_NEON_ADLER32"
                     SFLAGS="${SFLAGS} ${floatabi} -mfpu=neon -DARM_NEON_ADLER32"
 
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
@@ -1063,6 +1098,7 @@ case "${ARCH}" in
             ;;
             armv8-a | armv8-a+simd)
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+                CXXFLAGS="${CXXFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
 
                 if test $buildacle -eq 1; then
@@ -1071,14 +1107,17 @@ case "${ARCH}" in
 
                 if test $buildneon -eq 1; then
                     CFLAGS="${CFLAGS} ${floatabi}"
+                    CXXFLAGS="${CXXFLAGS} ${floatabi}"
                     SFLAGS="${SFLAGS} ${floatabi}"
 
                     if test $MFPU_NEON_AVAILABLE -eq 1;then
                         CFLAGS="${CFLAGS} -mfpu=neon"
+                        CXXFLAGS="${CXXFLAGS} -mfpu=neon"
                         SFLAGS="${SFLAGS} -mfpu=neon"
                     fi
 
                     CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
+                    CXXFLAGS="${CXXFLAGS} -DARM_NEON_ADLER32"
                     SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
 
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
@@ -1087,6 +1126,7 @@ case "${ARCH}" in
             ;;
             armv8-a+crc | armv8-a+crc+simd | armv8.[1234]-a | armv8.[1234]-a+simd)
                 CFLAGS="-march=${ARCH} ${CFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
+                CXXFLAGS="-march=${ARCH} ${CXXFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
                 SFLAGS="-march=${ARCH} ${SFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
 
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
@@ -1094,14 +1134,17 @@ case "${ARCH}" in
 
                 if test $buildneon -eq 1; then
                     CFLAGS="${CFLAGS} ${floatabi}"
+                    CXXFLAGS="${CXXFLAGS} ${floatabi}"
                     SFLAGS="${SFLAGS} ${floatabi}"
 
                     if test $MFPU_NEON_AVAILABLE -eq 1;then
                         CFLAGS="${CFLAGS} -mfpu=neon"
+                        CXXFLAGS="${CXXFLAGS} -mfpu=neon"
                         SFLAGS="${SFLAGS} -mfpu=neon"
                     fi
 
                     CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
+                    CXXFLAGS="${CXXFLAGS} -DARM_NEON_ADLER32"
                     SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
 
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
@@ -1128,6 +1171,7 @@ case "${ARCH}" in
              ARCH="${ARCH}+crc"
            fi
             CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
+            CXXFLAGS="${CXXFLAGS} -DARM_ACLE_CRC_HASH"
             SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
@@ -1137,11 +1181,13 @@ case "${ARCH}" in
                 ARCH="${ARCH}+simd"
             fi
             CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
+            CXXFLAGS="${CXXFLAGS} -DARM_NEON_ADLER32"
             SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
         fi
         CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+        CXXFLAGS="-march=${ARCH} ${CXXFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
         SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
     ;;
     powerpc)
@@ -1165,6 +1211,7 @@ echo AR = $AR >> configure.log
 echo ARFLAGS = $ARFLAGS >> configure.log
 echo CC = $CC >> configure.log
 echo CFLAGS = $CFLAGS >> configure.log
+echo CXXFLAGS = $CXXFLAGS >> configure.log
 echo EXE = $EXE >> configure.log
 echo LDCONFIG = $LDCONFIG >> configure.log
 echo LDFLAGS = $LDFLAGS >> configure.log
@@ -1215,9 +1262,11 @@ if [ "$SRCDIR" != "$BUILDDIR" ]; then INCLUDES="-I$BUILDDIR ${INCLUDES}"; fi
 sed < $SRCDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
+/^CXXFLAGS *=/s#=.*#=$CXXFLAGS#
 /^WITH_SANITIZERS *=/s#=.*#=$with_sanitizers#
 /^WITH_MSAN *=/s#=.*#=$with_msan#
 /^WITH_FUZZERS *=/s#=.*#=$with_fuzzers#
+/^WITH_BENCHMARKS *=/s#=.*#=$with_benchmarks#
 /^SANITIZERS_CFLAGS *=/s#=.*#=$SANITIZERS_CFLAGS#
 /^MSAN_CFLAGS *=/s#=.*#=$MSAN_CFLAGS#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
@@ -1274,6 +1323,7 @@ if [ "$SRCDIR" != "$BUILDDIR" ]; then ARCHINCLUDES="-I$BUILDDIR ${ARCHINCLUDES}"
 sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
+/^CXXFLAGS *=/s#=.*#=$CXXFLAGS#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^INCLUDES *=/s#=.*#=$ARCHINCLUDES#
@@ -1295,6 +1345,7 @@ if test $QEMU_ARCH; then QEMU_RUN="qemu-$QEMU_ARCH -L /usr/${CHOST}/"; fi
 sed < $SRCDIR/test/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
+/^CXXFLAGS *=/s#=.*#=$CXXFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^EXE *=/s#=.*#=$EXE#
 /^oldtests: */s#:.*#: $TEST#
@@ -1304,12 +1355,14 @@ sed < $SRCDIR/test/Makefile.in "
 /^COMPATTESTS *=/s#=.*#=$COMPATTESTS#
 /^QEMU_RUN *=/s#=.*#=$QEMU_RUN#
 /^WITH_FUZZERS *=/s#=.*#=$with_fuzzers#
+/^WITH_BENCHMARKS *=/s#=.*#=$with_benchmarks#
 " > test/Makefile
 
 # create zlib.pc with the configure results
 sed < $SRCDIR/zlib.pc.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
+/^CXXFLAGS *=/s#=.*#=$CXXFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
 /^LDSHAREDFLAGS *=/s#=.*#=$LDSHAREDFLAGS#
