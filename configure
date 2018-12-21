@@ -282,6 +282,11 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         ARCH=$GCC_ARCH
       fi ;;
     arm | armeb)
+      if test $native -eq 0; then
+        ARCH=arm
+      else
+        ARCH=native
+      fi
       if test "${uname}" = "eabi"; then
         # No ACLE support
         uname=arm
@@ -293,8 +298,6 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       if test $buildacle -eq 1; then
         if test $native -eq 0; then
           ARCH=armv8-a+crc
-        else
-          ARCH=native
         fi
       fi ;;
     armv8l)
