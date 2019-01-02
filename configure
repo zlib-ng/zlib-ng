@@ -950,8 +950,8 @@ case "${ARCH}" in
     i386 | i486 | i586 | i686)
         ARCHDIR=arch/x86
 
-        CFLAGS="${CFLAGS} -DX86 -DUNALIGNED_OK"
-        SFLAGS="${SFLAGS} -DX86 -DUNALIGNED_OK"
+        CFLAGS="${CFLAGS} -DUNALIGNED_OK"
+        SFLAGS="${SFLAGS} -DUNALIGNED_OK"
 
         # Enable arch-specific optimizations?
         if test $without_optimizations -eq 0; then
