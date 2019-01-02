@@ -1002,8 +1002,8 @@ case "${ARCH}" in
     x86_64)
         ARCHDIR=arch/x86
 
-        CFLAGS="${CFLAGS} -DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK"
-        SFLAGS="${SFLAGS} -DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK"
+        CFLAGS="${CFLAGS} -DX86_NOCHECK_SSE2 -DUNALIGNED_OK"
+        SFLAGS="${SFLAGS} -DX86_NOCHECK_SSE2 -DUNALIGNED_OK"
 
         # Enable arch-specific optimizations?
         if test $without_optimizations -eq 0; then
