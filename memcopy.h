@@ -266,6 +266,11 @@ static inline unsigned char *chunk_memcpy(unsigned char *out, unsigned char *fro
     return out;
 }
 
+#undef CALL_MEMSET
+#if defined(__x86_64) || defined(__i386_)
+# define CALL_MEMSET 1
+#endif
+
 /* Memset LEN bytes in OUT with the value at OUT - 1. Return OUT + LEN. */
 static inline unsigned char *byte_memset(unsigned char *out, unsigned len) {
     unsigned sz = sizeof(uint64_t);
@@ -273,6 +278,11 @@ static inline unsigned char *byte_memset(unsigned char *out, unsigned len) {
 
     unsigned char *from = out - 1;
     unsigned char c = *from;
+
+#if defined(CALL_MEMSET)
+    MEMSET(out, c, len);
+    return out + len;
+#endif
 
     /* First, deal with the case when LEN is not a multiple of SZ. */
     MEMSET(out, c, sz);
