@@ -92,11 +92,11 @@ static inline long compare258(const unsigned char *const src0, const unsigned ch
         "cmp        $256 + 16, %[ax]\n\t"
         "jb         1b\n\t"
 
-#ifdef X86
+# if !defined(__x86_64)
         "movzwl     -16(%[src0], %[ax]), %[dx]\n\t"
-#else
+# else
         "movzwq     -16(%[src0], %[ax]), %[dx]\n\t"
-#endif
+# endif
         "xorw       -16(%[src1], %[ax]), %%dx\n\t"
         "jnz        3f\n\t"
 
