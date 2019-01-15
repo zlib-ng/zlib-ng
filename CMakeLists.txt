@@ -631,7 +631,6 @@ set(ZLIB_SRCS
     infback.c
     inftrees.c
     inffast.c
-    match.c
     trees.c
     uncompr.c
     zutil.c
