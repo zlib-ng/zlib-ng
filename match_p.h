@@ -45,7 +45,7 @@
  * Standard longest_match
  *
  */
-ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
+static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
     const unsigned wmask = s->w_mask;
     const Pos *prev = s->prev;
 
@@ -164,7 +164,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
  * UNALIGNED_OK longest_match
  *
  */
-ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
+static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
     const unsigned wmask = s->w_mask;
     const Pos *prev = s->prev;
 
@@ -346,7 +346,7 @@ ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
  *       -------------------------------------------------
  */
 
-ZLIB_INTERNAL unsigned longest_match(deflate_state *const s, IPos cur_match) {
+static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
     unsigned int strstart = s->strstart;
     unsigned chain_length = s->max_chain_length;/* max hash chain length */
     unsigned char *window = s->window;
