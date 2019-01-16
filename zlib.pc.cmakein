@@ -6,7 +6,7 @@ includedir=@INSTALL_INC_DIR@
 
 Name: zlib@SUFFIX@
 Description: zlib-ng compression library
-Version: @VERSION@
+Version: @zlib_VERSION@
 
 Requires:
 Libs: -L${libdir} -L${sharedlibdir} -lz@SUFFIX@
