@@ -38,6 +38,10 @@
 #  include <stddef.h>
 #endif
 
+#if !defined(_MSC_VER) || defined(__MINGW__)
+#  include <unistd.h>       /* for lseek(), read(), close(), write(), unlink() */
+#endif
+
 #if defined(_MSC_VER) || defined(WIN32)
 #  include <io.h>
 #endif
