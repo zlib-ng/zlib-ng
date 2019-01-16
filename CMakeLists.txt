@@ -434,8 +434,8 @@ set(CMAKE_REQUIRED_FLAGS)
 #
 # Enable deflate_medium at level 4-6
 #
-if(WITH_NEW_STRATEGIES)
-    add_definitions(-DMEDIUM_STRATEGY)
+if(NOT WITH_NEW_STRATEGIES)
+    add_definitions(-DNO_MEDIUM_STRATEGY)
 endif()
 
 #
