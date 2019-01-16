@@ -36,7 +36,7 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
         buf4 = (const uint32_t *) buf;
     }
 
-#ifndef UNROLL_LESS
+#ifdef UNROLL_MORE
     while (len >= 32) {
         c = __crc32w(c, *buf4++);
         c = __crc32w(c, *buf4++);

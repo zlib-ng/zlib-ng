@@ -102,13 +102,13 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
     /* do length NMAX blocks -- requires just one modulo operation */
     while (len >= NMAX) {
         len -= NMAX;
-#ifndef UNROLL_LESS
+#ifdef UNROLL_MORE
         n = NMAX / 16;          /* NMAX is divisible by 16 */
 #else
         n = NMAX / 8;           /* NMAX is divisible by 8 */
 #endif
         do {
-#ifndef UNROLL_LESS
+#ifdef UNROLL_MORE
             DO16(buf);          /* 16 sums unrolled */
             buf += 16;
 #else
@@ -122,7 +122,7 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
 
     /* do remaining bytes (less than NMAX, still just one modulo) */
     if (len) {                  /* avoid modulos if none remaining */
-#ifndef UNROLL_LESS
+#ifdef UNROLL_MORE
         while (len >= 16) {
             len -= 16;
             DO16(buf);

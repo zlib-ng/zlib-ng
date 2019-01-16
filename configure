@@ -950,8 +950,8 @@ case "${ARCH}" in
     i386 | i486 | i586 | i686)
         ARCHDIR=arch/x86
 
-        CFLAGS="${CFLAGS} -DX86 -DUNALIGNED_OK -DUNROLL_LESS"
-        SFLAGS="${SFLAGS} -DX86 -DUNALIGNED_OK -DUNROLL_LESS"
+        CFLAGS="${CFLAGS} -DX86 -DUNALIGNED_OK"
+        SFLAGS="${SFLAGS} -DX86 -DUNALIGNED_OK"
 
         # Enable arch-specific optimizations?
         if test $without_optimizations -eq 0; then
@@ -1002,8 +1002,8 @@ case "${ARCH}" in
     x86_64)
         ARCHDIR=arch/x86
 
-        CFLAGS="${CFLAGS} -DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK -DUNROLL_LESS"
-        SFLAGS="${SFLAGS} -DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK -DUNROLL_LESS"
+        CFLAGS="${CFLAGS} -DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK"
+        SFLAGS="${SFLAGS} -DX86_64 -DX86_NOCHECK_SSE2 -DUNALIGNED_OK"
 
         # Enable arch-specific optimizations?
         if test $without_optimizations -eq 0; then
@@ -1062,10 +1062,8 @@ case "${ARCH}" in
                 fi
             ;;
             armv6l | armv6hl)
-                # Tests done on Raspberry pi (armv6hl) indicate that UNALIGNED_OK and UNROLL_LESS both
-                # provide performance improvements, totaling about 1.5% for the two.
-                CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
-                SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+                CFLAGS="${CFLAGS} -DUNALIGNED_OK"
+                SFLAGS="${SFLAGS} -DUNALIGNED_OK"
 
                 if test $buildacle -eq 1; then
                     echo ACLE support not available
@@ -1076,8 +1074,8 @@ case "${ARCH}" in
                 fi
             ;;
             arm | armv7*)
-                CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
-                SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+                CFLAGS="${CFLAGS} -DUNALIGNED_OK"
+                SFLAGS="${SFLAGS} -DUNALIGNED_OK"
 
                 if test $buildacle -eq 1; then
                     echo ACLE support not available
@@ -1092,8 +1090,8 @@ case "${ARCH}" in
                 fi
             ;;
             armv8-a | armv8-a+simd)
-                CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
-                SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+                CFLAGS="${CFLAGS} -DUNALIGNED_OK"
+                SFLAGS="${SFLAGS} -DUNALIGNED_OK"
 
                 if test $buildacle -eq 1; then
                     echo ACLE support not available
@@ -1116,8 +1114,8 @@ case "${ARCH}" in
                 fi
             ;;
             armv8-a+crc | armv8-a+crc+simd | armv8.[1234]-a | armv8.[1234]-a+simd)
-                CFLAGS="-march=${ARCH} ${CFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
-                SFLAGS="-march=${ARCH} ${SFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK -DUNROLL_LESS"
+                CFLAGS="-march=${ARCH} ${CFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK"
+                SFLAGS="-march=${ARCH} ${SFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK"
 
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
@@ -1171,8 +1169,8 @@ case "${ARCH}" in
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
         fi
-        CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
-        SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNROLL_LESS"
+        CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK"
+        SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK"
     ;;
     powerpc)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=ppc
