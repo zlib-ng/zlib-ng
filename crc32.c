@@ -255,15 +255,15 @@ ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, uin
 {
     crc = crc ^ 0xffffffff;
 
-#ifdef UNROLL_LESS
-    while (len >= 4) {
-        DO4;
-        len -= 4;
-    }
-#else
+#ifdef UNROLL_MORE
     while (len >= 8) {
         DO8;
         len -= 8;
+    }
+#else
+    while (len >= 4) {
+        DO4;
+        len -= 4;
     }
 #endif
 
@@ -310,7 +310,7 @@ ZLIB_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, uint
 
     buf4 = (const uint32_t *)(const void *)buf;
 
-#ifndef UNROLL_LESS
+#ifdef UNROLL_MORE
     while (len >= 32) {
         DOLIT32;
         len -= 32;
@@ -352,7 +352,7 @@ ZLIB_INTERNAL uint32_t crc32_big(uint32_t crc, const unsigned char *buf, uint64_
 
     buf4 = (const uint32_t *)(const void *)buf;
 
-#ifndef UNROLL_LESS
+#ifdef UNROLL_MORE
     while (len >= 32) {
         DOBIG32;
         len -= 32;
