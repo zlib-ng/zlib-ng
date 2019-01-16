@@ -38,7 +38,7 @@ NEON_ARCH = /arch:VFPv4
 SUFFIX =
 
 OBJS = adler32.obj armfeature.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_slow.obj \
-       functable.obj infback.obj inflate.obj inftrees.obj inffast.obj match.obj trees.obj uncompr.obj zutil.obj fill_window_arm.obj
+       functable.obj infback.obj inflate.obj inftrees.obj inffast.obj trees.obj uncompr.obj zutil.obj fill_window_arm.obj
 !if "$(WITH_GZFILEOP)" != ""
 WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
 OBJS = $(OBJS) gzclose.obj gzlib.obj gzread.obj gzwrite.obj
@@ -140,8 +140,6 @@ inflate.obj: $(TOP)/inflate.c $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf
              $(TOP)/inffast.h $(TOP)/inffixed.h
 
 inftrees.obj: $(TOP)/inftrees.c $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/inftrees.h
-
-match.obj: $(TOP)/match.c $(TOP)/deflate.h
 
 trees.obj: $(TOP)/trees.c $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/deflate.h $(TOP)/trees.h
 
