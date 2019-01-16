@@ -75,7 +75,7 @@ static void slide_hash            (deflate_state *s);
 static block_state deflate_stored (deflate_state *s, int flush);
 ZLIB_INTERNAL block_state deflate_fast         (deflate_state *s, int flush);
 ZLIB_INTERNAL block_state deflate_quick        (deflate_state *s, int flush);
-#ifdef MEDIUM_STRATEGY
+#ifndef NO_MEDIUM_STRATEGY
 ZLIB_INTERNAL block_state deflate_medium       (deflate_state *s, int flush);
 #endif
 ZLIB_INTERNAL block_state deflate_slow         (deflate_state *s, int flush);
@@ -126,14 +126,14 @@ static const config configuration_table[10] = {
 
 /* 3 */ {4,    6, 32,   32, deflate_fast},
 
-#ifdef MEDIUM_STRATEGY
-/* 4 */ {4,    4, 16,   16, deflate_medium},  /* lazy matches */
-/* 5 */ {8,   16, 32,   32, deflate_medium},
-/* 6 */ {8,   16, 128, 128, deflate_medium},
-#else
+#ifdef NO_MEDIUM_STRATEGY
 /* 4 */ {4,    4, 16,   16, deflate_slow},  /* lazy matches */
 /* 5 */ {8,   16, 32,   32, deflate_slow},
 /* 6 */ {8,   16, 128, 128, deflate_slow},
+#else
+/* 4 */ {4,    4, 16,   16, deflate_medium},  /* lazy matches */
+/* 5 */ {8,   16, 32,   32, deflate_medium},
+/* 6 */ {8,   16, 128, 128, deflate_medium},
 #endif
 
 /* 7 */ {8,   32, 128,  256, deflate_slow},
