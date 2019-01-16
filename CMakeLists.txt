@@ -24,8 +24,17 @@ if(NOT CMAKE_C_STANDARD IN_LIST VALID_C_STANDARDS )
    MESSAGE(FATAL_ERROR "CMAKE_C_STANDARD:STRING=${CMAKE_C_STANDARD} not in know standards list\n ${VALID_C_STANDARDS}")
 endif()
 
+# parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h _zlib_h_contents)
+string(REGEX REPLACE ".*#define[ \t]+ZLIB_VERSION[ \t]+\"([0-9]+.[0-9]+.[0-9]+).*\".*"
+        "\\1" ZLIB_HEADER_VERSION ${_zlib_h_contents})
+string(REGEX REPLACE ".*#define[ \t]+ZLIBNG_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
+        "\\1" ZLIBNG_HEADER_VERSION ${_zlib_h_contents})
+message(STATUS "ZLIB_HEADER_VERSION: ${ZLIB_HEADER_VERSION}")
+message(STATUS "ZLIBNG_HEADER_VERSION: ${ZLIBNG_HEADER_VERSION}")
+
 project(zlib 
-  VERSION 1.2.11
+  VERSION ${ZLIB_HEADER_VERSION}
   LANGUAGES C)
 
 set(VERSION "${zlib_VERSION}")
@@ -696,14 +705,10 @@ if(NOT MINGW AND NOT MSYS)
     )
 endif()
 
-# parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h _zlib_h_contents)
 if (ZLIB_COMPAT)
-    string(REGEX REPLACE ".*#define[ \t]+ZLIB_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
-        "\\1" ZLIB_FULL_VERSION ${_zlib_h_contents})
+    set(ZLIB_FULL_VERSION ${ZLIB_HEADER_VERSION})
 else()
-    string(REGEX REPLACE ".*#define[ \t]+ZLIBNG_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
-        "\\1" ZLIB_FULL_VERSION ${_zlib_h_contents})
+    set(ZLIB_FULL_VERSION ${ZLIBNG_HEADER_VERSION})
 endif()
 if(MINGW OR MSYS)
     # This gets us DLL resource information when compiling on MinGW.
