@@ -1,4 +1,10 @@
-cmake_minimum_required(VERSION 2.8.4)
+cmake_minimum_required(VERSION 3.5.1)
+if(CMAKE_VERSION VERSION_LESS 3.12)
+  cmake_policy(VERSION ${CMAKE_VERSION})
+else()
+  cmake_policy(VERSION 3.5.1...3.13.2)
+endif()
+
 set(CMAKE_MACOSX_RPATH 1)
 
 project(zlib C)
@@ -20,13 +26,7 @@ include(CheckCSourceRuns)
 include(FeatureSummary)
 
 # Enable C99
-if (CMAKE_VERSION VERSION_LESS "3.1")
-    if (CMAKE_C_COMPILER_ID STREQUAL "GNU")
-        set (CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
-    endif ()
-else ()
-    set (CMAKE_C_STANDARD 99)
-endif ()
+set (CMAKE_C_STANDARD 99)
 
 # make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
 # this should select the maximum generic optimisation on the current platform (i.e. -O3 for gcc/clang)
