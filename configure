@@ -266,20 +266,25 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   echo ... using gcc >> configure.log
   CC="$cc"
   CFLAGS="${CFLAGS} -std=c99"
-  # Re-check arch if gcc is a cross-compiler
-  GCC_ARCH=`$CC $CFLAGS -dumpmachine | sed 's/-.*//g'`
-  case $GCC_ARCH in
+
+  # Re-check ARCH if the compiler is a cross-compiler.
+  if $CC -print-multiarch 1> /dev/null 2>&1; then
+      CC_ARCH=`$CC $CFLAGS -print-multiarch | sed 's/-.*//g'`
+  else
+      CC_ARCH=`$CC $CFLAGS -dumpmachine | sed 's/-.*//g'`
+  fi
+  case $CC_ARCH in
     i386 | i486 | i586 | i686)
       # Honor user choice if gcc is multilib and 64-bit is requested
       if test $build64 -eq 1; then
         ARCH=x86_64
       else
-        ARCH=$GCC_ARCH
+        ARCH=$CC_ARCH
       fi ;;
     x86_64)
       # Honor user choice if gcc is multilib and 32-bit is requested
       if test $build32 -ne 1; then
-        ARCH=$GCC_ARCH
+        ARCH=$CC_ARCH
       fi ;;
     arm | armeb)
       if test $native -eq 0; then
@@ -859,7 +864,7 @@ else
 fi
 
 # Check for SSE2 intrinsics
-if test "${ARCH}" = "i686"; then
+if test "${ARCH}" = "i386" -o "${ARCH}" = "i686"; then
 cat > $test.c << EOF
 #include <immintrin.h>
 int main(void) {
@@ -879,7 +884,7 @@ fi
 fi
 
 # Check for SSE4.2 CRC intrinsics
-if test "${ARCH}" = "i686" || test "${ARCH}" = "x86_64"; then
+if test "${ARCH}" = "i386" -o "${ARCH}" = "i686" -o "${ARCH}" = "x86_64"; then
 cat > $test.c << EOF
 int main(void) {
     unsigned crc = 0;
@@ -900,7 +905,7 @@ fi
 fi
 
 # Check for PCLMULQDQ intrinsics
-if test "${ARCH}" = "i686" || test "${ARCH}" = "x86_64"; then
+if test "${ARCH}" = "i386" -o "${ARCH}" = "i686" -o "${ARCH}" = "x86_64"; then
 cat > $test.c << EOF
 #include <immintrin.h>
 #include <wmmintrin.h>
