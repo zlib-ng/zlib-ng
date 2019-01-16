@@ -562,13 +562,13 @@ if test $with_sanitizers -eq 1; then
         fi
     done
 
-    SANITIZERS_CFLAGS=""
     if test -n "$sanitizers"; then
         echo "-fsanitize=$sanitizers" | tee -a configure.log
-        SANITIZERS_CFLAGS="-fsanitize=$sanitizers"
+        CFLAGS="$CFLAGS -fsanitize=$sanitizers"
+        SFLAGS="$SFLAGS -fsanitize=$sanitizers"
+        LDFLAGS="$LDFLAGS -fsanitize=$sanitizers"
     else
         echo No | tee -a configure.log
-        with_sanitizers=0
     fi
 
     echo >> configure.log
@@ -578,11 +578,11 @@ if test $with_msan -eq 1; then
     echo -n "Checking for MSan... " | tee -a configure.log
     if try $CC -c $CFLAGS $test.c -fsanitize=memory ; then
         echo "-fsanitize=memory" | tee -a configure.log
-        MSAN_CFLAGS="-fsanitize=memory"
+        CFLAGS="$CFLAGS -fsanitize=memory"
+        SFLAGS="$SFLAGS -fsanitize=memory"
+        LDFLAGS="$LDFLAGS -fsanitize=memory"
     else
         echo No | tee -a configure.log
-        MSAN_CFLAGS=""
-        with_msan=0
     fi
 
     echo >> configure.log
@@ -1205,11 +1205,7 @@ if [ "$SRCDIR" != "$BUILDDIR" ]; then INCLUDES="-I$BUILDDIR ${INCLUDES}"; fi
 sed < $SRCDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
-/^WITH_SANITIZERS *=/s#=.*#=$with_sanitizers#
-/^WITH_MSAN *=/s#=.*#=$with_msan#
 /^WITH_FUZZERS *=/s#=.*#=$with_fuzzers#
-/^SANITIZERS_CFLAGS *=/s#=.*#=$SANITIZERS_CFLAGS#
-/^MSAN_CFLAGS *=/s#=.*#=$MSAN_CFLAGS#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
