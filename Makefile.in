@@ -20,12 +20,6 @@ CFLAGS=-O
 #CFLAGS=-O3 -Wall -Wwrite-strings -Wpointer-arith -Wconversion \
 #           -Wstrict-prototypes -Wmissing-prototypes
 
-WITH_SANITIZERS=
-WITH_MSAN=
-WITH_FUZZERS=
-SANITIZERS_CFLAGS=
-MSAN_CFLAGS=
-
 SFLAGS=-O
 LDFLAGS=-L.
 LIBNAME1=libz-ng
@@ -116,25 +110,19 @@ $(ARCHDIR)/%.lo: $(SRCDIR)/$(ARCHDIR)/%.c
 test: all
 	$(MAKE) -C test
 
+# This variable is set by configure.
+WITH_FUZZERS=
+
 # By default, use our own standalone_fuzz_target_runner.
 # This runner does no fuzzing, but simply executes the inputs
 # provided via parameters.
 # Run e.g. "make all LIB_FUZZING_ENGINE=/path/to/libFuzzer.a"
 # to link the fuzzer(s) against a real fuzzing engine.
-ifneq (,$(LIB_FUZZING_ENGINE))
+ifeq (,$(LIB_FUZZING_ENGINE))
+  LIB_FUZZING_ENGINE = standalone_fuzz_target_runner.o
+else
   # OSS-Fuzz will define its own value for LIB_FUZZING_ENGINE.
   WITH_FUZZERS=1
-else
-  LIB_FUZZING_ENGINE = standalone_fuzz_target_runner.o
-  ifeq (1,$(WITH_SANITIZERS))
-  CFLAGS := $(CFLAGS) $(SANITIZERS_CFLAGS)
-  LDFLAGS := $(LDFLAGS) $(SANITIZERS_CFLAGS)
-  else
-    ifeq (1,$(WITH_MSAN))
-    CFLAGS := $(CFLAGS) $(MSAN_CFLAGS)
-    LDFLAGS := $(LDFLAGS) $(MSAN_CFLAGS)
-    endif
-  endif
 endif
 
 ifeq (1,$(WITH_FUZZERS))
