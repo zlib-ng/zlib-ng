@@ -13,10 +13,13 @@
 
 #if (defined(UNALIGNED_OK) && MAX_MATCH == 258)
 
+   /* ARM 32-bit clang/gcc builds perform better, on average, with std2. Both gcc and clang and define __GNUC__. */
+#  if defined(__GNUC__) && defined(__arm__) && !defined(__aarch64__)
+#    define std2_longest_match
    /* Only use std3_longest_match for little_endian systems, also avoid using it with
       non-gcc compilers since the __builtin_ctzl() function might not be optimized. */
-#  if defined(__GNUC__) && defined(HAVE_BUILTIN_CTZL) && ((__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__) \
-        || defined(__LITTLE_ENDIAN__))
+#  elif(defined(__GNUC__) && defined(HAVE_BUILTIN_CTZL) && ((__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__) \
+        || defined(__LITTLE_ENDIAN__)))
 #    define std3_longest_match
 #  elif(defined(_MSC_VER) && defined(_WIN32))
 #    define std3_longest_match
