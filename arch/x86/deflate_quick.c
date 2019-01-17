@@ -181,7 +181,7 @@ static void static_emit_tree(deflate_state *const s, const int flush) {
 
 static void static_emit_end_block(deflate_state *const s, int last) {
     send_code(s, END_BLOCK, static_ltree);
-    Tracev((stderr, "\n+++ Emit End Block: Last: %u Pending: %u Total Out: %u\n", last, s->pending, s->strm->total_out));
+    Tracev((stderr, "\n+++ Emit End Block: Last: %u Pending: %u Total Out: %zu\n", last, s->pending, s->strm->total_out));
 
     if (last)
         bi_windup(s);
