@@ -58,8 +58,6 @@ STRIP=
 RANLIB=ranlib
 LDCONFIG=ldconfig
 LDSHAREDLIBC=-lc
-TAR=tar
-SHELL=/bin/sh
 EXE=
 
 SRCDIR=.
