@@ -1316,8 +1316,6 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 
 # Generate Makefile in test dir
 mkdir -p test
-TESTINCLUDES="-I$SRCDIR"
-if [ "$SRCDIR" != "$BUILDDIR" ]; then TESTINCLUDES="${TESTINCLUDES} -I$BUILDDIR"; fi
 if test $compat -eq 1; then COMPATTESTS="compattests"; fi
 if test $QEMU_ARCH; then QEMU_RUN="qemu-$QEMU_ARCH -L /usr/${CHOST}/"; fi
 sed < $SRCDIR/test/Makefile.in "
@@ -1326,7 +1324,6 @@ sed < $SRCDIR/test/Makefile.in "
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^EXE *=/s#=.*#=$EXE#
 /^oldtests: */s#:.*#: $TEST#
-/^INCLUDES *=/s#=.*#=$TESTINCLUDES#
 /^SRCDIR *=/s#=.*#=$SRCDIR/test#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^COMPATTESTS *=/s#=.*#=$COMPATTESTS#
