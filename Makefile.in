@@ -103,10 +103,14 @@ check: test
 
 .SECONDARY:
 
-$(ARCHDIR)/%.o: $(SRCDIR)/$(ARCHDIR)/%.c
+$(ARCHDIR)/%.o: $(SRCDIR)/$(ARCHDIR)/%.c 
+	$(MAKE) -C $(ARCHDIR) $(notdir $@)
+$(ARCHDIR)/%.o: $(SRCDIR)/$(ARCHDIR)/%.S
 	$(MAKE) -C $(ARCHDIR) $(notdir $@)
 
 $(ARCHDIR)/%.lo: $(SRCDIR)/$(ARCHDIR)/%.c
+	$(MAKE) -C $(ARCHDIR) $(notdir $@)
+$(ARCHDIR)/%.lo: $(SRCDIR)/$(ARCHDIR)/%.S
 	$(MAKE) -C $(ARCHDIR) $(notdir $@)
 
 %.o: $(ARCHDIR)/%.o
@@ -399,6 +403,7 @@ inftrees.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h $(SRCDI
 trees.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h $(SRCDIR)/trees.h
 zutil.o: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/aarch64/adler32_neon.o: $(SRCDIR)/arch/aarch64/adler32_neon.h
+arch/aarch64/crc32_armv8_le.o: $(SRCDIR)/arch/aarch64/include/asm/assembler.h
 arch/aarch64/crc32_acle.o: zconf$(SUFFIX).h
 arch/aarch64/fill_window_arm.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/aarch64/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
@@ -428,6 +433,7 @@ inftrees.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h $(SRCD
 trees.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h $(SRCDIR)/trees.h
 zutil.lo: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/aarch64/adler32_neon.lo: $(SRCDIR)/arch/aarch64/adler32_neon.h
+arch/aarch64/crc32_armv8_le.o: $(SRCDIR)/arch/aarch64/include/asm/assembler.h
 arch/aarch64/crc32_acle.lo: zconf$(SUFFIX).h
 arch/aarch64/fill_window_arm.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/aarch64/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h

@@ -40,6 +40,8 @@ extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t le
 
 ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
 
+extern uint32_t crc32_armv8_le(uint32_t, unsigned char const*, uint64_t);
+
 #ifdef __ARM_FEATURE_CRC32
 extern uint32_t crc32_acle(uint32_t, const unsigned char *, uint64_t);
 #endif
@@ -122,6 +124,10 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
 #  if __ARM_FEATURE_CRC32 && defined(ARM_ACLE_CRC_HASH)
       if (arm_has_crc32())
         functable.crc32=crc32_acle;
+#  endif
+# ifdef ARM_FAST_HW_CRC
+      if (arm_has_crc32())
+        functable.crc32=crc32_armv8_le;
 #  endif
 #elif BYTE_ORDER == BIG_ENDIAN
         functable.crc32=crc32_big;

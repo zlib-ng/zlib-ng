@@ -96,6 +96,7 @@ compat=0
 cover=0
 build32=0
 build64=0
+buildhwcrc=0
 buildacle=0
 buildneon=0
 with_sanitizers=0
@@ -149,7 +150,7 @@ case "$1" in
       echo '    [--with-gzfileops]          Compiles with the gzfile parts of the API enabled' | tee -a configure.log
       echo '    [--without-optimizations]   Compiles without support for optional instruction sets' | tee -a configure.log
       echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
-      echo '    [--acle] [--neon]           Compiles with additional instruction set enabled' | tee -a configure.log
+      echo '    [--acle] [--neon] [--hwcrc] Compiles with additional instruction set enabled' | tee -a configure.log
       echo '    [--with-sanitizers]         Build with address sanitizer and all supported sanitizers other than memory sanitizer (disabled by default)' | tee -a configure.log
       echo '    [--with-msan]               Build with memory sanitizer (disabled by default)' | tee -a configure.log
       echo '    [--with-fuzzers]            Build test/fuzz (disabled by default)' | tee -a configure.log
@@ -171,6 +172,7 @@ case "$1" in
     --cover) cover=1; shift ;;
     -3* | --32) build32=1; shift ;;
     -6* | --64) build64=1; shift ;;
+    --hwcrc) buildhwcrc=1; shift ;;
     --acle) buildacle=1; shift ;;
     --neon) buildneon=1; shift ;;
     -n | --native) native=1; shift ;;
@@ -1152,6 +1154,15 @@ case "${ARCH}" in
           ARCH="armv8-a"
         else
           ARCH="native"
+        fi
+        if test $buildhwcrc -eq 1; then
+            if test $native -eq 0; then
+                ARCH="${ARCH}+crc"
+            fi
+            CFLAGS="${CFLAGS} -DARM_FAST_HW_CRC"
+            SFLAGS="${SFLAGS} -DARM_FAST_HW_CRC"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_armv8_le.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_armv8_le.lo"
         fi
         if test $buildacle -eq 1; then
            if test $native -eq 0; then
