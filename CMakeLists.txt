@@ -26,7 +26,7 @@ include(CheckCSourceRuns)
 include(FeatureSummary)
 
 # Enable C99
-set (CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 99)
 
 # make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
 # this should select the maximum generic optimisation on the current platform (i.e. -O3 for gcc/clang)
@@ -54,23 +54,23 @@ else()
 endif()
 message(STATUS "Architecture: ${ARCH}")
 
-option (WITH_GZFILEOP "Compile with support for gzFile related functions" OFF)
-option (ZLIB_COMPAT "Compile with zlib compatible API" OFF)
-if (ZLIB_COMPAT)
+option(WITH_GZFILEOP "Compile with support for gzFile related functions" OFF)
+option(ZLIB_COMPAT "Compile with zlib compatible API" OFF)
+if(ZLIB_COMPAT)
     add_definitions(-DZLIB_COMPAT)
-    set (WITH_GZFILEOP ON)
-    set (LIBNAME1 libz)
-    set (LIBNAME2 zlib)
-    set (SUFFIX "")
+    set(WITH_GZFILEOP ON)
+    set(LIBNAME1 libz)
+    set(LIBNAME2 zlib)
+    set(SUFFIX "")
 else(ZLIB_COMPAT)
-    set (LIBNAME1 libz-ng)
-    set (LIBNAME2 zlib-ng)
-    set (SUFFIX "-ng")
-endif (ZLIB_COMPAT)
+    set(LIBNAME1 libz-ng)
+    set(LIBNAME2 zlib-ng)
+    set(SUFFIX "-ng")
+endif(ZLIB_COMPAT)
 
-if (WITH_GZFILEOP)
+if(WITH_GZFILEOP)
     add_definitions(-DWITH_GZFILEOP)
-endif (WITH_GZFILEOP)
+endif(WITH_GZFILEOP)
 
 option(WITH_SANITIZERS "Build with address sanitizer and all supported sanitizers other than memory sanitizer" OFF)
 option(WITH_MSAN "Build with memory sanitizer" OFF)
@@ -133,7 +133,7 @@ else()
     if(__GNUC__ AND "${ARCH}" MATCHES "arm")
         execute_process(COMMAND "${CC}" "-dumpmachine"
                         OUTPUT_VARIABLE GCC_MACHINE)
-        if ("${GCC_MACHINE}" MATCHES "eabihf")
+        if("${GCC_MACHINE}" MATCHES "eabihf")
             set(FLOATABI "-mfloat-abi=hard")
         else()
             set(FLOATABI "-mfloat-abi=softfp")
@@ -209,7 +209,7 @@ if(HAVE_OFF64_T)
    add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
 else()
    check_type_size(_off64_t _OFF64_T)
-   if (HAVE__OFF64_T)
+   if(HAVE__OFF64_T)
       add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
    else()
       check_type_size(__off64_t __OFF64_T)
@@ -469,11 +469,11 @@ endif()
 #
 macro(add_intrinsics_option flag)
     if(WITH_NATIVE_INSTRUCTIONS AND NATIVEFLAG)
-        if (NOT "${CMAKE_C_FLAGS} " MATCHES ".*${NATIVEFLAG} .*")
+        if(NOT "${CMAKE_C_FLAGS} " MATCHES ".*${NATIVEFLAG} .*")
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NATIVEFLAG}")
         endif()
     else()
-        if (NOT "${CMAKE_C_FLAGS} " MATCHES ".*${flag} .*")
+        if(NOT "${CMAKE_C_FLAGS} " MATCHES ".*${flag} .*")
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}")
         endif()
     endif()
@@ -583,7 +583,7 @@ macro(generate_cmakein input output)
     foreach(_line IN LISTS _lines)
         file(APPEND ${output} "${_line}\n")
 
-        if (_line STREQUAL "#define ZCONF_H" OR _line STREQUAL "#define ZCONFNG_H")
+        if(_line STREQUAL "#define ZCONF_H" OR _line STREQUAL "#define ZCONFNG_H")
             file(APPEND ${output} "#cmakedefine Z_HAVE_UNISTD_H\n")
             if(NOT HAVE_PTRDIFF_T)
               file(APPEND ${output} "#cmakedefine NEED_PTRDIFF_T\n")
@@ -661,17 +661,17 @@ set(ZLIB_SRCS
     uncompr.c
     zutil.c
 )
-if (WITH_GZFILEOP)
+if(WITH_GZFILEOP)
     set(ZLIB_GZFILE_SRCS
         gzclose.c
         gzlib.c
         gzread.c
         gzwrite.c
     )
-else (WITH_GZFILEOP)
+else(WITH_GZFILEOP)
     set(ZLIB_GZFILE_SRCS
     )
-endif (WITH_GZFILEOP)
+endif(WITH_GZFILEOP)
 
 
 if(NOT MINGW AND NOT MSYS)
@@ -682,7 +682,7 @@ endif()
 
 # parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h _zlib_h_contents)
-if (ZLIB_COMPAT)
+if(ZLIB_COMPAT)
     string(REGEX REPLACE ".*#define[ \t]+ZLIB_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
         "\\1" ZLIB_FULL_VERSION ${_zlib_h_contents})
 else()
@@ -761,7 +761,7 @@ endif()
 #============================================================================
 
 option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
-if (ZLIB_ENABLE_TESTS)
+if(ZLIB_ENABLE_TESTS)
     enable_testing()
     add_executable(example test/example.c)
     target_link_libraries(example zlib)
