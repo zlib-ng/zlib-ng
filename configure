@@ -936,17 +936,21 @@ EOF
         ;;
 esac
 
-#Check whether -mfpu=neon is available
-cat > $test.c << EOF
+# Check whether -mfpu=neon is available on ARM processors.
+case "${ARCH}" in
+    arm*)
+        cat > $test.c << EOF
 int main() { return 0; }
 EOF
-if try $CC -c $CFLAGS -mfpu=neon $test.c; then
-    MFPU_NEON_AVAILABLE=1
-    echo "Check whether -mfpu=neon is available ... Yes." | tee -a configure.log
-else
-    MFPU_NEON_AVAILABLE=0
-    echo "Check whether -mfpu=neon is available ... No." | tee -a configure.log
-fi
+        if try $CC -c $CFLAGS -mfpu=neon $test.c; then
+            MFPU_NEON_AVAILABLE=1
+            echo "Check whether -mfpu=neon is available ... Yes." | tee -a configure.log
+        else
+            MFPU_NEON_AVAILABLE=0
+            echo "Check whether -mfpu=neon is available ... No." | tee -a configure.log
+        fi
+        ;;
+esac
 
 ARCHDIR='arch/generic'
 ARCH_STATIC_OBJS=''
