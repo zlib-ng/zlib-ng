@@ -864,8 +864,9 @@ else
 fi
 
 # Check for SSE2 intrinsics
-if test "${ARCH}" = "i386" -o "${ARCH}" = "i686"; then
-cat > $test.c << EOF
+case "${ARCH}" in
+    i386 | i486 | i586 | i686)
+        cat > $test.c << EOF
 #include <immintrin.h>
 int main(void) {
     __m128i zero = _mm_setzero_si128();
@@ -873,19 +874,20 @@ int main(void) {
     return 0;
 }
 EOF
-if try ${CC} ${CFLAGS} ${sse2flag} $test.c; then
-    echo "Checking for SSE2 intrinsics ... Yes." | tee -a configure.log
-    HAVE_SSE2_INTRIN=1
-else
-    echo "Checking for SSE2 intrinsics ... No." | tee -a configure.log
-    HAVE_SSE2_INTRIN=0
-fi
-
-fi
+        if try ${CC} ${CFLAGS} ${sse2flag} $test.c; then
+            echo "Checking for SSE2 intrinsics ... Yes." | tee -a configure.log
+            HAVE_SSE2_INTRIN=1
+        else
+            echo "Checking for SSE2 intrinsics ... No." | tee -a configure.log
+            HAVE_SSE2_INTRIN=0
+        fi
+        ;;
+esac
 
 # Check for SSE4.2 CRC intrinsics
-if test "${ARCH}" = "i386" -o "${ARCH}" = "i686" -o "${ARCH}" = "x86_64"; then
-cat > $test.c << EOF
+case "${ARCH}" in
+    i386 | i486 | i586 | i686 | x86_64)
+        cat > $test.c << EOF
 int main(void) {
     unsigned crc = 0;
     char c = 'c';
@@ -894,19 +896,20 @@ int main(void) {
     return 0;
 }
 EOF
-if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
-    echo "Checking for SSE4.2 CRC intrinsics ... Yes." | tee -a configure.log
-    HAVE_SSE42CRC_INTRIN=1
-else
-    echo "Checking for SSE4.2 CRC intrinsics ... No." | tee -a configure.log
-    HAVE_SSE42CRC_INTRIN=0
-fi
-
-fi
+        if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
+            echo "Checking for SSE4.2 CRC intrinsics ... Yes." | tee -a configure.log
+            HAVE_SSE42CRC_INTRIN=1
+        else
+            echo "Checking for SSE4.2 CRC intrinsics ... No." | tee -a configure.log
+            HAVE_SSE42CRC_INTRIN=0
+        fi
+        ;;
+esac
 
 # Check for PCLMULQDQ intrinsics
-if test "${ARCH}" = "i386" -o "${ARCH}" = "i686" -o "${ARCH}" = "x86_64"; then
-cat > $test.c << EOF
+case "${ARCH}" in
+    i386 | i486 | i586 | i686 | x86_64)
+        cat > $test.c << EOF
 #include <immintrin.h>
 #include <wmmintrin.h>
 int main(void) {
@@ -917,21 +920,21 @@ int main(void) {
     return 0;
 }
 EOF
-if try ${CC} ${CFLAGS} ${pclmulflag} $test.c; then
-    echo "Checking for PCLMULQDQ intrinsics ... Yes." | tee -a configure.log
-    HAVE_PCLMULQDQ_INTRIN=1
-else
-    echo "Checking for PCLMULQDQ intrinsics ... No." | tee -a configure.log
-    HAVE_PCLMULQDQ_INTRIN=0
-fi
+        if try ${CC} ${CFLAGS} ${pclmulflag} $test.c; then
+            echo "Checking for PCLMULQDQ intrinsics ... Yes." | tee -a configure.log
+            HAVE_PCLMULQDQ_INTRIN=1
+        else
+            echo "Checking for PCLMULQDQ intrinsics ... No." | tee -a configure.log
+            HAVE_PCLMULQDQ_INTRIN=0
+        fi
 
-# Enable deflate_medium at level 4-6
-if test $without_new_strategies -eq 1; then
-    CFLAGS="${CFLAGS} -DNO_MEDIUM_STRATEGY"
-    SFLAGS="${SFLAGS} -DNO_MEDIUM_STRATEGY"
-fi
-
-fi
+        # Enable deflate_medium at level 4-6
+        if test $without_new_strategies -eq 1; then
+            CFLAGS="${CFLAGS} -DNO_MEDIUM_STRATEGY"
+            SFLAGS="${SFLAGS} -DNO_MEDIUM_STRATEGY"
+        fi
+        ;;
+esac
 
 #Check whether -mfpu=neon is available
 cat > $test.c << EOF
