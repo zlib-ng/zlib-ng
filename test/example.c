@@ -461,8 +461,7 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
     int err;
     PREFIX3(stream) d_stream; /* decompression stream */
 
-    char garbage_str[] = "garbage garbage garbage";
-    strncpy((char*)uncompr, garbage_str, sizeof(garbage_str));
+    strcpy((char*)uncompr, "garbage garbage garbage");
 
     d_stream.zalloc = zalloc;
     d_stream.zfree = zfree;
