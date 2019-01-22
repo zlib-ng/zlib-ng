@@ -599,13 +599,13 @@ extern int getchar();
 int hello() {return getchar();}
 EOF
 if test $shared -eq 1; then
-  echo Checking for shared library support... | tee -a configure.log
+  echo -n "Checking for shared library support... " | tee -a configure.log
   # we must test in two steps (cc then ld), required at least on SunOS 4.x
   if try $CC -w -c $SFLAGS $test.c &&
      try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
-    echo Building shared library $SHAREDTARGET with $CC. | tee -a configure.log
+    echo "Building shared library $SHAREDTARGET with $CC." | tee -a configure.log
   elif test -z "$old_cc" -a -z "$old_cflags"; then
-    echo No shared library support. | tee -a configure.log
+    echo "No shared library support." | tee -a configure.log
     shared=0;
   else
     echo 'No shared library support; try without defining CC and CFLAGS' | tee -a configure.log
