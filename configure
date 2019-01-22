@@ -212,8 +212,8 @@ extern int getchar();
 int main() {return getchar();}
 EOF
 
-test -z "$CC" && echo Checking for ${CROSS_PREFIX}gcc... | tee -a configure.log
 cc=${CC-${CROSS_PREFIX}gcc}
+echo -n "Checking for compiler... " | tee -a configure.log
 case "$cc" in
   *gcc*) gcc=1 ;;
   *clang*) gcc=1 ;;
@@ -263,7 +263,7 @@ fi
 
 show $cc -c $test.c
 if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
-  echo ... using gcc >> configure.log
+  echo "$cc" | tee -a configure.log
   CC="$cc"
   CFLAGS="${CFLAGS} -std=c99"
 
@@ -462,7 +462,7 @@ else
   # find system name and corresponding cc options
   CC=${CC-cc}
   gcc=0
-  echo ... using $CC >> configure.log
+  echo "$CC" | tee -a configure.log
   if test -z "$uname"; then
     uname=`(uname -sr || echo unknown) 2>/dev/null`
   fi
