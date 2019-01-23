@@ -103,8 +103,8 @@ option(WITH_NEW_STRATEGIES "Use new strategies" ON)
 option(WITH_NATIVE_INSTRUCTIONS
     "Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native)" OFF)
 if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
-    option(WITH_ACLE "Build with ACLE CRC" OFF)
-    option(WITH_NEON "Build with NEON intrinsics" OFF)
+    option(WITH_ACLE "Build with ACLE CRC" ON)
+    option(WITH_NEON "Build with NEON intrinsics" ON)
 endif()
 
 if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${CMAKE_C_COMPILER} MATCHES "icl")
