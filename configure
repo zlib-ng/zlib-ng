@@ -1003,8 +1003,8 @@ case "${ARCH}" in
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o crc_pclmulqdq.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo crc_pclmulqdq.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo"
             fi
 
         fi
@@ -1033,8 +1033,8 @@ case "${ARCH}" in
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o crc_pclmulqdq.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo crc_pclmulqdq.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo"
             fi
 
             # Enable deflate_quick at level 1?

@@ -48,12 +48,6 @@ crc_folding.o: $(SRCDIR)/crc_folding.c
 crc_folding.lo: $(SRCDIR)/crc_folding.c
 	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE4FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
 
-crc_pclmulqdq.o: $(SRCDIR)/crc_pclmulqdq.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc_pclmulqdq.c
-
-crc_pclmulqdq.lo: $(SRCDIR)/crc_pclmulqdq.c
-	$(CC) $(SFLAGS) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc_pclmulqdq.c
-
 mostlyclean: clean
 clean:
 	rm -f *.o *.lo *~
@@ -72,13 +66,11 @@ depend:
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
 crc_folding.o: $(SRCDIR)/crc_folding.h $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
-crc_pclmulqdq.o: $(SRCDIR)/x86.h $(SRCDIR)/crc_folding.h $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
 deflate_quick.o: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
 fill_window_sse.o: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/functable.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
 x86.o: $(SRCDIR)/x86.h
 
 crc_folding.lo: $(SRCDIR)/crc_folding.h $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
-crc_pclmulqdq.lo: $(SRCDIR)/x86.h $(SRCDIR)/crc_folding.h $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
 deflate_quick.lo: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
 fill_window_sse.lo: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/functable.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
 x86.lo: $(SRCDIR)/x86.h
