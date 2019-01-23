@@ -96,8 +96,8 @@ compat=0
 cover=0
 build32=0
 build64=0
-buildacle=0
-buildneon=0
+buildacle=1
+buildneon=1
 with_sanitizers=0
 with_msan=0
 with_fuzzers=0
@@ -171,8 +171,8 @@ case "$1" in
     --cover) cover=1; shift ;;
     -3* | --32) build32=1; shift ;;
     -6* | --64) build64=1; shift ;;
-    --acle) buildacle=1; shift ;;
-    --neon) buildneon=1; shift ;;
+    --without-acle) buildacle=0; shift ;;
+    --without-neon) buildneon=0; shift ;;
     -n | --native) native=1; shift ;;
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;

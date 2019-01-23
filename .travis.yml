@@ -79,7 +79,6 @@ matrix:
             - gcc-aarch64-linux-gnu
             - libc-dev-arm64-cross
       # For all aarch64 implementations NEON is mandatory, while crypto/crc are not.
-      # So for aarch64 NEON should be automatically enabled, and "acle" should be explicitly defined
       env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat"
     - os: linux
       compiler: aarch64-linux-gnu-gcc
@@ -89,12 +88,6 @@ matrix:
             - qemu
             - gcc-aarch64-linux-gnu
             - libc-dev-arm64-cross
-      # AArch64 toolchain in Trusty is 4.8.2, which doesn't support acle intrinsics.
-      # Until TravisCI provides Xenial dist (which comes with gcc-aarch64-5.3.1) 'acle' option cannot
-      # be enabled in subset. But the command
-      # "CHOST=aarch64-linux-gnu ./configure --warn --zlib-compat --acle"
-      # should work if manually test it in a dist with gcc-aarch64 5.1 or higher
-      # env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat --acle"
       env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat"
     # Hard-float subsets
     - os: linux
@@ -114,7 +107,7 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
-      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn --zlib-compat --neon"
+      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn --zlib-compat --without-neon"
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
       addons:
