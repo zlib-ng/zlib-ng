@@ -19,15 +19,13 @@ The lastest zlib FAQ is at http://zlib.net/zlib_faq.html
 
  2. Where can I get a Windows DLL version?
 
-    The zlib sources can be compiled without change to produce a DLL.  See the
-    file win32/DLL_FAQ.txt in the zlib distribution.  Pointers to the
-    precompiled DLL are found in the zlib web site at http://zlib.net/ .
+    The zlib sources can be compiled without change to produce a DLL.  Pointers
+    to the precompiled DLL are found in the zlib web site at http://zlib.net/ .
 
  3. Where can I get a Visual Basic interface to zlib?
 
     See
         * http://marknelson.us/1997/01/01/zlib-engine/
-        * win32/DLL_FAQ.txt in the zlib distribution
 
  4. compress() returns Z_BUF_ERROR.
 

@@ -22,7 +22,6 @@ zlib2ansi       perl script to convert source files for C++ compilation
 
 arch/		architecture-specific code
 doc/            documentation for formats and algorithms
-win32/          makefiles for Windows
 
                 zlib public header files (required for library use):
 zconf.h

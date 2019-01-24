@@ -16,8 +16,7 @@ files in the root directory.
 To compile all files and run the test program, follow the instructions given at
 the top of Makefile.in.  In short "./configure; make test", and if that goes
 well, "make install" should work for most flavors of Unix.  For Windows, use
-one of the special makefiles in win32/ or contrib/vstudio/ .  For VMS, use
-make_vms.com.
+cmake.  For VMS, use make_vms.com.
 
 Questions about zlib should be sent to <zlib@gzip.org>, or to Gilles Vollant
 <info@winimage.com> for the Windows DLL version.  The zlib home page is
@@ -54,8 +53,6 @@ contrib/minizip directory of zlib.
 
 
 Notes for some targets:
-
-- For Windows DLL versions, please see win32/DLL_FAQ.txt
 
 - For 64-bit Irix, deflate.c must be compiled without any optimization. With
   -O, one libpng test fails. The test works in 32 bit mode (with the -n32

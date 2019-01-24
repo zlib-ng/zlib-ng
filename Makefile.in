@@ -42,7 +42,6 @@ STATICLIB=$(LIBNAME1).a
 SHAREDLIB=$(LIBNAME1).so
 SHAREDLIBV=$(LIBNAME1).so.$(VER)
 SHAREDLIBM=$(LIBNAME1).so.$(VER1)
-IMPORTLIB=
 SHAREDTARGET=$(LIBNAME1).so.$(VER)
 PKGFILE=$(LIBNAME2).pc
 
@@ -205,9 +204,6 @@ example64.o: $(SRCDIR)/test/example.c $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 minigzip64.o: $(SRCDIR)/test/minigzip.c $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 	$(CC) $(CFLAGS) -D_FILE_OFFSET_BITS=64 $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
 
-zlibrc.o: win32/zlib$(SUFFIX)1.rc
-	$(RC) $(RCFLAGS) -o $@ win32/zlib$(SUFFIX)1.rc
-
 .SUFFIXES: .lo
 
 %.o: $(SRCDIR)/%.c
@@ -278,10 +274,6 @@ ifneq ($(SHAREDLIB),$(SHAREDTARGET))
 	($(LDCONFIG) || true)  >/dev/null 2>&1
 # ldconfig is for Linux
 endif
-ifneq ($(IMPORTLIB),)
-	cp $(IMPORTLIB) $(DESTDIR)$(sharedlibdir)
-	chmod 644 $(DESTDIR)$(sharedlibdir)/$(IMPORTLIB)
-endif
 endif
 
 install-static: $(STATICLIB)
@@ -316,9 +308,6 @@ uninstall-shared:
 ifneq ($(SHAREDLIB),)
 	cd $(DESTDIR)$(sharedlibdir) && rm -f $(SHAREDLIBV) $(SHAREDLIB) $(SHAREDLIBM)
 endif
-ifneq ($(IMPORTLIB),)
-	cd $(DESTDIR)$(sharedlibdir) && rm -f $(IMPORTLIB)
-endif
 
 uninstall: uninstall-static uninstall-shared
 	cd $(DESTDIR)$(includedir) && rm -f zlib$(SUFFIX).h zconf$(SUFFIX).h
@@ -340,7 +329,7 @@ clean:
 	   checksum_fuzzer$(EXE) compress_fuzzer$(EXE) example_small_fuzzer$(EXE) example_large_fuzzer$(EXE) \
 	   example_flush_fuzzer$(EXE) example_dict_fuzzer$(EXE) minigzip_fuzzer$(EXE) \
 	   infcover \
-	   $(STATICLIB) $(IMPORTLIB) $(SHAREDLIB) $(SHAREDLIBV) $(SHAREDLIBM) \
+	   $(STATICLIB) $(SHAREDLIB) $(SHAREDLIBV) $(SHAREDLIBM) \
 	   foo.gz so_locations \
 	   _match.s maketree
 	rm -rf objs

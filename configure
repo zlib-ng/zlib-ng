@@ -47,9 +47,6 @@ case "${ARCH}" in
     ;;
 esac
 
-# destination name for windows import library
-IMPORTLIB=
-
 # establish commands for library building
 if "${CROSS_PREFIX}ar" --version >/dev/null 2>/dev/null || test $? -lt 126; then
     AR=${AR-"${CROSS_PREFIX}ar"}
@@ -345,77 +342,6 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHARED=${LDSHARED-"$cc"}
         LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.1,--version-script,${SRCDIR}/${MAPNAME}"
         LDCONFIG="ldconfig -m" ;;
-  CYGWIN* | Cygwin* | cygwin*)
-        ARFLAGS="rcs"
-        SFLAGS="${CFLAGS}"
-        shared_ext='.dll'
-        sharedlibdir='${bindir}'
-        if test $compat -eq 0; then
-          SHAREDLIB=cygz-ng$shared_ext
-        else
-          SHAREDLIB=cygz$shared_ext
-        fi
-        SHAREDLIBM=''
-        SHAREDLIBV=''
-        SHAREDTARGET=$SHAREDLIB
-        IMPORTLIB="${LIBNAME}.dll.a"
-        LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/${MAPNAME}"
-        LDSHAREDLIBC=""
-        DEFFILE='win32/${LIBNAME2}.def'
-        RC="${CROSS_PREFIX}windres"
-        RCFLAGS='--define GCC_WINDRES'
-        RCOBJS='zlibrc.o'
-        STRIP="${CROSS_PREFIX}strip"
-        EXE='.exe' ;;
-  MSYS* | msys*)
-        ARFLAGS="rcs"
-        SFLAGS="${CFLAGS}"
-        shared_ext='.dll'
-        sharedlibdir='${bindir}'
-        if test $compat -eq 0; then
-          SHAREDLIB=msys-z-ng$shared_ext
-        else
-          SHAREDLIB=msys-z$shared_ext
-        fi
-        SHAREDLIBM=''
-        SHAREDLIBV=''
-        SHAREDTARGET=$SHAREDLIB
-        IMPORTLIB="${LIBNAME}.dll.a"
-        LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB}"
-        LDSHAREDLIBC=""
-        DEFFILE='win32/${LIBNAME2}.def'
-        RC="${CROSS_PREFIX}windres"
-        RCFLAGS='--define GCC_WINDRES'
-        RCOBJS='zlibrc.o'
-        STRIP="${CROSS_PREFIX}strip"
-        EXE='.exe' ;;
-  MINGW* | mingw*)
-        ARFLAGS="rcs"
-        CFLAGS="${CFLAGS} -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE=1"
-        SFLAGS="${CFLAGS}"
-        shared_ext='.dll'
-        sharedlibdir='${bindir}'
-        SHAREDLIB=${LIBNAME}-$VER1$shared_ext
-        SHAREDLIBM=''
-        SHAREDLIBV=''
-        SHAREDTARGET=$SHAREDLIB
-        IMPORTLIB="${LIBNAME}.dll.a"
-        LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/${MAPNAME}"
-        LDSHAREDLIBC=""
-        DEFFILE='win32/${LIBNAME2}.def'
-        RC="${CROSS_PREFIX}windres"
-        RCFLAGS='--define GCC_WINDRES'
-        if [ "$CC" == "mingw32-gcc" ]; then
-          case $ARCH in
-          i386 | i486 | i586 | i686) RCFLAGS="${RCFLAGS} -F pe-i386";;
-          esac;
-        fi
-        RCOBJS='zlibrc.o'
-        STRIP="${CROSS_PREFIX}strip"
-        EXE='.exe' ;;
   QNX*)  # This is for QNX6. I suppose that the QNX rule below is for QNX2,QNX4
          # (alain.bonnefoy@icbt.com)
                  LDSHARED=${LDSHARED-"$cc"}
@@ -757,10 +683,6 @@ if test $compat -eq 1; then
   gzfileops=1
   CFLAGS="${CFLAGS} -DZLIB_COMPAT"
   SFLAGS="${SFLAGS} -DZLIB_COMPAT"
-  case "$uname" in
-  CYGWIN* | Cygwin* | cygwin* | MSYS* | msys* | MINGW* | mingw*)
-    DEFFILE="win32/zlibcompat.def" ;;
-  esac
 fi
 
 # if --gzfileops was requested
@@ -1212,7 +1134,6 @@ echo SHAREDLIB = $SHAREDLIB >> configure.log
 echo SHAREDLIBM = $SHAREDLIBM >> configure.log
 echo SHAREDLIBV = $SHAREDLIBV >> configure.log
 echo SHAREDTARGET = $SHAREDTARGET >> configure.log
-echo IMPORTLIB = $IMPORTLIB >> configure.log
 echo INSTALLTARGETS = $INSTALLTARGETS >> configure.log
 echo UNINSTALLTARGETS = $UNINSTALLTARGETS >> configure.log
 echo SRCDIR = $SRCDIR >> configure.log
@@ -1260,7 +1181,6 @@ sed < $SRCDIR/Makefile.in "
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#
 /^SHAREDLIBM *=/s#=.*#=$SHAREDLIBM#
 /^SHAREDTARGET *=/s#=.*#=$SHAREDTARGET#
-/^IMPORTLIB *=/s#=.*#=$IMPORTLIB#
 /^VER *=/s#=.*#=$VER#
 /^VER1 *=/s#=.*#=$VER1#
 /^AR *=/s#=.*#=$AR#
@@ -1342,7 +1262,6 @@ sed < $SRCDIR/zlib.pc.in "
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#
 /^SHAREDLIBM *=/s#=.*#=$SHAREDLIBM#
-/^IMPORTLIB *=/s#=.*#=$IMPORTLIB#
 /^AR *=/s#=.*#=$AR#
 /^ARFLAGS *=/s#=.*#=$ARFLAGS#
 /^RANLIB *=/s#=.*#=$RANLIB#

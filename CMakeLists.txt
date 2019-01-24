@@ -676,7 +676,7 @@ endif (WITH_GZFILEOP)
 
 if(NOT MINGW AND NOT MSYS)
     set(ZLIB_DLL_SRCS
-        win32/zlib${SUFFIX}1.rc # If present will override custom build rule below.
+        win32-zlib${SUFFIX}1.rc # If present will override custom build rule below.
     )
 endif()
 
@@ -701,7 +701,7 @@ if(MINGW OR MSYS)
                             -I ${CMAKE_CURRENT_SOURCE_DIR}
                             -I ${CMAKE_CURRENT_BINARY_DIR}
                             -o ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj
-                            -i ${CMAKE_CURRENT_SOURCE_DIR}/win32/zlib${SUFFIX}1.rc)
+                            -i ${CMAKE_CURRENT_SOURCE_DIR}/win32-zlib${SUFFIX}1.rc)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif(MINGW OR MSYS)
 
@@ -720,7 +720,7 @@ if(NOT CYGWIN)
     # seems to be the default.
     #
     # This has no effect with MSVC, on that platform the version info for
-    # the DLL comes from the resource file win32/zlib1.rc
+    # the DLL comes from the resource file win32-zlib1.rc
     set_target_properties(zlib PROPERTIES VERSION ${ZLIB_FULL_VERSION})
 endif()
 
