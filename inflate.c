@@ -189,6 +189,12 @@ int ZEXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int windowBits, const c
     int ret;
     struct inflate_state *state;
 
+#ifdef X86_CPUID
+    x86_check_features();
+#elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM)
+    arm_check_features();
+#endif
+
     if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != (int)(sizeof(PREFIX3(stream))))
         return Z_VERSION_ERROR;
     if (strm == NULL)

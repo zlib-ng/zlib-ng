@@ -24,7 +24,7 @@ armfeature.o: $(SRCDIR)/armfeature.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/armfeature.c
 
 armfeature.lo: $(SRCDIR)/armfeature.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/armfeature.c
+	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/armfeature.c
 
 crc32_acle.o: $(SRCDIR)/crc32_acle.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c

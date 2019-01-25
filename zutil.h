@@ -116,6 +116,7 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(WIN32) && !defined(__MSYS__) && (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
+# include "zbuild.h"  /* For PREFIX() */
     ZEXTERN uint32_t ZEXPORT PREFIX(adler32_combine64)(uint32_t, uint32_t, z_off_t);
     ZEXTERN uint32_t ZEXPORT PREFIX(crc32_combine64)(uint32_t, uint32_t, z_off_t);
 #endif
@@ -243,6 +244,14 @@ void ZLIB_INTERNAL   zcfree(void *opaque, void *ptr);
 #else
 #define MEMCPY memcpy
 #define MEMSET memset
+#endif
+
+#if defined(X86_CPUID)
+# include "arch/x86/x86.h"
+#elif defined(__aarch64__)
+# include "arch/aarch64/arm.h"
+#elif defined(__arm__) || defined(_M_ARM)
+# include "arch/arm/arm.h"
 #endif
 
 #endif /* ZUTIL_H_ */

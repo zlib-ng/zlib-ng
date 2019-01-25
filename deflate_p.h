@@ -9,10 +9,6 @@
 #ifndef DEFLATE_P_H
 #define DEFLATE_P_H
 
-#if defined(X86_CPUID)
-# include "arch/x86/x86.h"
-#endif
-
 /* Forward declare common non-inlined functions declared in deflate.c */
 
 #ifdef ZLIB_DEBUG
