@@ -38,6 +38,7 @@ NEON_ARCH = /arch:VFPv4
 SUFFIX =
 
 OBJS = adler32.obj armfeature.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_slow.obj \
+       deflate_medium.obj \
        functable.obj infback.obj inflate.obj inftrees.obj inffast.obj trees.obj uncompr.obj zutil.obj fill_window_arm.obj
 !if "$(WITH_GZFILEOP)" != ""
 WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
@@ -121,6 +122,12 @@ compress.obj: $(TOP)/compress.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h
 crc32.obj: $(TOP)/crc32.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/crc32.h
 
 deflate.obj: $(TOP)/deflate.c $(TOP)/deflate.h $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h
+
+deflate_fast.obj: $(TOP)/deflate_fast.c $(TOP)/zbuild.h $(TOP)/deflate.h $(TOP)/deflate_p.h $(TOP)/match_p.h $(TOP)/functable.h
+
+deflate_medium.obj: $(TOP)/deflate_medium.c $(TOP)/zbuild.h $(TOP)/deflate.h $(TOP)/deflate_p.h $(TOP)/match_p.h $(TOP)/functable.h
+
+deflate_slow.obj: $(TOP)/deflate_slow.c $(TOP)/zbuild.h $(TOP)/deflate.h $(TOP)/deflate_p.h $(TOP)/match_p.h $(TOP)/functable.h
 
 gzclose.obj: $(TOP)/gzclose.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/gzguts.h
 
