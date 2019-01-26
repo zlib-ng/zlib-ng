@@ -18,34 +18,34 @@ TOPDIR=$(SRCTOP)
 
 all: x86.o x86.lo fill_window_sse.o fill_window_sse.lo deflate_quick.o deflate_quick.lo insert_string_sse.o insert_string_sse.lo crc_folding.o crc_folding.lo
 
-x86.o: $(SRCDIR)/x86.c
+x86.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86.c
 
-x86.lo: $(SRCDIR)/x86.c
+x86.lo:
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86.c
 
-fill_window_sse.o: $(SRCDIR)/fill_window_sse.c
+fill_window_sse.o:
 	$(CC) $(CFLAGS) $(SSE2FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/fill_window_sse.c
 
-fill_window_sse.lo: $(SRCDIR)/fill_window_sse.c
+fill_window_sse.lo:
 	$(CC) $(SFLAGS) $(SSE2FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/fill_window_sse.c
 
-deflate_quick.o: $(SRCDIR)/deflate_quick.c
+deflate_quick.o:
 	$(CC) $(CFLAGS) $(SSE4FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/deflate_quick.c
 
-deflate_quick.lo: $(SRCDIR)/deflate_quick.c
+deflate_quick.lo:
 	$(CC) $(SFLAGS) $(SSE4FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/deflate_quick.c
 
-insert_string_sse.o: $(SRCDIR)/insert_string_sse.c
+insert_string_sse.o:
 	$(CC) $(CFLAGS) $(SSE4FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
 
-insert_string_sse.lo: $(SRCDIR)/insert_string_sse.c
+insert_string_sse.lo:
 	$(CC) $(SFLAGS) $(SSE4FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
 
-crc_folding.o: $(SRCDIR)/crc_folding.c
+crc_folding.o:
 	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE4FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
 
-crc_folding.lo: $(SRCDIR)/crc_folding.c
+crc_folding.lo:
 	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE4FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
 
 mostlyclean: clean
@@ -56,21 +56,3 @@ clean:
 
 distclean:
 	rm -f Makefile
-
-depend:
-	makedepend -Y -- $(CFLAGS) -- $(SRCDIR)/*.c
-	makedepend -Y -a -o.lo -- $(SFLAGS) -- $(SRCDIR)/*.c
-	@sed "s=^$(SRCDIR)/\([a-zA-Z0-9_]*\.\(lo\|o\):\)=\1=g" < Makefile > Makefile.tmp
-	@mv -f Makefile.tmp Makefile
-
-# DO NOT DELETE THIS LINE -- make depend depends on it.
-
-crc_folding.o: $(SRCDIR)/crc_folding.h $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
-deflate_quick.o: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
-fill_window_sse.o: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/functable.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
-x86.o: $(SRCDIR)/x86.h
-
-crc_folding.lo: $(SRCDIR)/crc_folding.h $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
-deflate_quick.lo: $(SRCTOP)/deflate.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
-fill_window_sse.lo: $(SRCTOP)/deflate.h $(SRCTOP)/deflate_p.h $(SRCTOP)/functable.h $(SRCTOP)/zutil.h $(SRCTOP)/zlib$(SUFFIX).h $(TOPDIR)/zconf$(SUFFIX).h
-x86.lo: $(SRCDIR)/x86.h
