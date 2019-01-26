@@ -35,6 +35,7 @@ ZLIB_COMPAT =
 SUFFIX =
 
 OBJS = adler32.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_quick.obj deflate_slow.obj \
+       deflate_medium.obj \
        functable.obj infback.obj inflate.obj inftrees.obj inffast.obj trees.obj uncompr.obj zutil.obj \
        x86.obj fill_window_sse.obj insert_string_sse.obj crc_folding.obj
 !if "$(ZLIB_COMPAT)" != ""
@@ -112,6 +113,12 @@ compress.obj: $(TOP)/compress.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h
 crc32.obj: $(TOP)/crc32.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/crc32.h
 
 deflate.obj: $(TOP)/deflate.c $(TOP)/deflate.h $(TOP)/zutil.h $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h
+
+deflate_medium.obj: $(TOP)/deflate_medium.c $(TOP)/deflate.h $(TOP)/zbuild.h $(TOP)/deflate_p.h $(TOP)/match_p.h $(TOP)/functable.h
+
+deflate_quick.obj: $(TOP)/arch/x86/deflate_quick.c $(TOP)/zbuild.h $(TOP)/deflate.h $(TOP)/memcopy.h
+
+deflate_slow.obj: $(TOP)/deflate_slow.c $(TOP)/zbuild.h $(TOP)/deflate.h $(TOP)/deflate_p.h $(TOP)/match_p.h $(TOP)/functable.h
 
 gzclose.obj: $(TOP)/gzclose.c $(TOP)/zlib$(SUFFIX).h $(TOP)/zconf$(SUFFIX).h $(TOP)/gzguts.h
 
