@@ -1303,6 +1303,58 @@ sed < $SRCDIR/Makefile.in "
 /^ARCH_SHARED_OBJS *=/s#=.*#=$ARCH_SHARED_OBJS#
 " > Makefile
 
+# Append header files dependences.
+for file in $(ls -1 $SRCDIR/*.c $SRCDIR/test/*.c $SRCDIR/test/fuzz/*.c $SRCDIR/$ARCHDIR/*.c); do
+    short_name=$(echo $file | sed -e "s#$SRCDIR/##g")
+    incs=$(grep -h include $file | sed -n 's/# *\include *"\(.*\.h\)".*/\1/p' | sort | uniq)
+    includes=$(for i in $incs; do
+                   # Check that the include file exists in the current dir,
+                   # otherwise it may be one of the system include header.
+                   if test -e $SRCDIR/$i; then
+                       echo -n " \$(SRCDIR)/$i"
+                   fi
+                   # We also need to check whether the include file is in the ARCHDIR.
+                   if test -e $SRCDIR/$ARCHDIR/$i; then
+                       echo -n " \$(SRCDIR)/$ARCHDIR/$i"
+                   fi
+               done)
+    obj=$(basename $(echo $file | sed -e 's/\.c/\.o/g' -e 's#^\./##g'))
+    lobj=$(basename $(echo $file | sed -e 's/\.c/\.lo/g' -e 's#^\./##g'))
+
+    if grep -q "^$obj:" Makefile; then
+        # Replace the existing line with a line with all dependences.
+        sed -i "s#$obj:.*#$obj: \$(SRCDIR)/$short_name $includes#g" Makefile
+
+        # Special case example64 and minigzip64.
+        case "$obj" in
+            example.o)
+                sed -i "s#example64.o:.*#example64.o: \$(SRCDIR)/$short_name $includes#g" Makefile
+                ;;
+            minigzip.o)
+                sed -i "s#minigzip64.o:.*#minigzip64.o: \$(SRCDIR)/$short_name $includes#g" Makefile
+                ;;
+        esac
+    else
+        # Append at the end of Makefile a new line with the header dependences.
+        echo "$obj: \$(SRCDIR)/$short_name $includes" >> Makefile
+
+        # In case this is one of the ARCHDIR files, append a dependence line
+        # that will force the `$(MAKE) -C $(ARCHDIR)` generic rule. Without this
+        # we would only execute the copy rule from ARCHDIR to SRCDIR.
+        if test -e $SRCDIR/$ARCHDIR/$(basename $file); then
+            echo "$ARCHDIR/$obj: \$(SRCDIR)/$short_name $includes" >> Makefile
+        fi
+    fi
+
+    if grep -q "^$lobj:" Makefile; then
+        # Replace the existing line with a line with all dependences.
+        sed -i "s#$lobj:.*#$lobj: \$(SRCDIR)/$short_name $includes#g" Makefile
+    else
+        # Append at the end of Makefile a new line with the header dependences.
+        echo "$lobj: \$(SRCDIR)/$short_name $includes" >> Makefile
+    fi
+done
+
 # Generate Makefile in arch dir
 mkdir -p $ARCHDIR
 
@@ -1323,6 +1375,40 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SSE4FLAG *=/s#=.*#=$sse4flag#
 /^PCLMULFLAG *=/s#=.*#=$pclmulflag#
 " > $ARCHDIR/Makefile
+
+# Append header files dependences.
+for file in $(ls -1 $SRCDIR/$ARCHDIR/*.c); do
+    incs=$(grep -h include $file | sed -n 's/# *\include *"\(.*\.h\)".*/\1/p' | sort | uniq)
+    includes=$(for i in $incs; do
+                   # Check that the include file exists in the current dir,
+                   # otherwise it may be one of the system include header.
+                   if test -e $SRCDIR/$i; then
+                       echo -n " \$(SRCTOP)/$i"
+                   fi
+                   # We also need to check whether the include file is in the ARCHDIR.
+                   if test -e $SRCDIR/$ARCHDIR/$i; then
+                       echo -n " \$(SRCDIR)/$i"
+                   fi
+               done)
+    obj=$(basename $(echo $file | sed -e 's/\.c/\.o/g' -e 's#^\./##g'))
+    lobj=$(basename $(echo $file | sed -e 's/\.c/\.lo/g' -e 's#^\./##g'))
+    short_name=$(basename $file)
+    if grep -q "^$obj:" $ARCHDIR/Makefile; then
+        # Replace the existing line with a line with all dependences.
+        sed -i "s#$obj:.*#$obj: \$(SRCDIR)/$short_name $includes#g" $ARCHDIR/Makefile
+    else
+        # Append at the end of Makefile a new line with the header dependences.
+        echo "$obj: \$(SRCDIR)/$short_name $includes" >> $ARCHDIR/Makefile
+    fi
+
+    if grep -q "^$lobj:" $ARCHDIR/Makefile; then
+        # Replace the existing line with a line with all dependences.
+        sed -i "s#$lobj:.*#$lobj: \$(SRCDIR)/$short_name $includes#g" $ARCHDIR/Makefile
+    else
+        # Append at the end of Makefile a new line with the header dependences.
+        echo "$lobj: \$(SRCDIR)/$short_name $includes" >> $ARCHDIR/Makefile
+    fi
+done
 
 # Generate Makefile in test dir
 mkdir -p test
