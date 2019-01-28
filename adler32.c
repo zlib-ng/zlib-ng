@@ -8,11 +8,11 @@
 #include "zbuild.h"
 #include "zutil.h"
 #include "functable.h"
+#include "adler32_p.h"
 
 uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len2);
 
-#define BASE 65521U     /* largest prime smaller than 65536 */
 #define NMAX 5552
 /* NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 */
 
@@ -21,46 +21,6 @@ static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len
 #define DO4(buf, i)  DO2(buf, i); DO2(buf, i+2);
 #define DO8(buf, i)  DO4(buf, i); DO4(buf, i+4);
 #define DO16(buf)    DO8(buf, 0); DO8(buf, 8);
-
-/* use NO_DIVIDE if your processor does not do division in hardware --
-   try it both ways to see which is faster */
-#ifdef NO_DIVIDE
-/* note that this assumes BASE is 65521, where 65536 % 65521 == 15
-   (thank you to John Reiser for pointing this out) */
-#  define CHOP(a) \
-    do { \
-        uint32_t tmp = a >> 16; \
-        a &= 0xffff; \
-        a += (tmp << 4) - tmp; \
-    } while (0)
-#  define MOD28(a) \
-    do { \
-        CHOP(a); \
-        if (a >= BASE) a -= BASE; \
-    } while (0)
-#  define MOD(a) \
-    do { \
-        CHOP(a); \
-        MOD28(a); \
-    } while (0)
-#  define MOD63(a) \
-    do { /* this assumes a is not negative */ \
-        z_off64_t tmp = a >> 32; \
-        a &= 0xffffffffL; \
-        a += (tmp << 8) - (tmp << 5) + tmp; \
-        tmp = a >> 16; \
-        a &= 0xffffL; \
-        a += (tmp << 4) - tmp; \
-        tmp = a >> 16; \
-        a &= 0xffffL; \
-        a += (tmp << 4) - tmp; \
-        if (a >= BASE) a -= BASE; \
-    } while (0)
-#else
-#  define MOD(a) a %= BASE
-#  define MOD28(a) a %= BASE
-#  define MOD63(a) a %= BASE
-#endif
 
 /* ========================================================================= */
 uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
@@ -72,32 +32,16 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
     adler &= 0xffff;
 
     /* in case user likes doing a byte at a time, keep it fast */
-    if (len == 1) {
-        adler += buf[0];
-        if (adler >= BASE)
-            adler -= BASE;
-        sum2 += adler;
-        if (sum2 >= BASE)
-            sum2 -= BASE;
-        return adler | (sum2 << 16);
-    }
+    if (len == 1)
+        return adler32_len_1(adler, buf, sum2);
 
     /* initial Adler-32 value (deferred check for len == 1 speed) */
     if (buf == NULL)
         return 1L;
 
     /* in case short lengths are provided, keep it somewhat fast */
-    if (len < 16) {
-        while (len) {
-            --len;
-            adler += *buf++;
-            sum2 += adler;
-        }
-        if (adler >= BASE)
-            adler -= BASE;
-        MOD28(sum2);            /* only added so many BASE's */
-        return adler | (sum2 << 16);
-    }
+    if (len < 16)
+        return adler32_len_16(adler, buf, len, sum2);
 
     /* do length NMAX blocks -- requires just one modulo operation */
     while (len >= NMAX) {
