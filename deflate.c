@@ -444,7 +444,7 @@ int ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const unsigned c
     while (s->lookahead >= MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (MIN_MATCH-1);
-        functable.insert_string(s, str, n);
+        insert_string(s, str, n);
         s->strstart = str + n;
         s->lookahead = MIN_MATCH-1;
         functable.fill_window(s);
@@ -1277,11 +1277,11 @@ void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
             unsigned int str = s->strstart - s->insert;
             s->ins_h = s->window[str];
             if (str >= 1)
-                functable.insert_string(s, str + 2 - MIN_MATCH, 1);
+                insert_string(s, str + 2 - MIN_MATCH, 1);
 #if MIN_MATCH != 3
 #error Call insert_string() MIN_MATCH-3 more times
             while (s->insert) {
-                functable.insert_string(s, str, 1);
+                insert_string(s, str, 1);
                 str++;
                 s->insert--;
                 if (s->lookahead + s->insert < MIN_MATCH)
@@ -1294,7 +1294,7 @@ void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
             }else{
                 count = s->insert;
             }
-            functable.insert_string(s,str,count);
+            insert_string(s,str,count);
             s->insert -= count;
 #endif
         }

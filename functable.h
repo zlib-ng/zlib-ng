@@ -10,7 +10,6 @@
 
 struct functable_s {
     void     (* fill_window)    (deflate_state *s);
-    Pos      (* insert_string)  (deflate_state *const s, const Pos str, unsigned int count);
 };
 
 ZLIB_INTERNAL extern __thread struct functable_s functable;

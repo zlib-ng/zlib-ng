@@ -51,6 +51,30 @@ static inline Pos insert_string_c(deflate_state *const s, const Pos str, unsigne
     return ret;
 }
 
+#if defined(X86_CPUID)
+# include "arch/x86/x86.h"
+#elif (defined(__arm__) || defined(__aarch64__) || defined(_M_ARM))
+extern int arm_has_crc32();
+#endif
+
+#ifdef X86_SSE4_2_CRC_HASH
+extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
+#elif defined(ARM_ACLE_CRC_HASH)
+extern Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count);
+#endif
+
+static inline Pos insert_string(deflate_state *const s, const Pos str, unsigned int count) {
+#ifdef X86_SSE4_2_CRC_HASH
+    if (x86_cpu_has_sse42)
+        return insert_string_sse(s, str, count);
+#elif defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
+    if (arm_has_crc32())
+        return insert_string_acle(s, str, count);
+#endif
+
+    return insert_string_c(s, str, count);
+}
+
 /* ===========================================================================
  * Flush the current block, with given end-of-file flag.
  * IN assertion: strstart is set to the end of the current match.
