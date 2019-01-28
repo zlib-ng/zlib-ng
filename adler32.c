@@ -7,9 +7,7 @@
 
 #include "zbuild.h"
 #include "zutil.h"
-#include "functable.h"
 
-uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len2);
 
 #define BASE 65521U     /* largest prime smaller than 65536 */
@@ -63,7 +61,7 @@ static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len
 #endif
 
 /* ========================================================================= */
-uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
+uint32_t ZLIB_INTERNAL adler32_impl(uint32_t adler, const unsigned char *buf, size_t len) {
     uint32_t sum2;
     unsigned n;
 
@@ -98,6 +96,11 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
         MOD28(sum2);            /* only added so many BASE's */
         return adler | (sum2 << 16);
     }
+
+#if ((defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32))
+    if (len >= 64 && arm_has_neon())
+        return adler32_neon(adler, buf, len);
+#endif
 
     /* do length NMAX blocks -- requires just one modulo operation */
     while (len >= NMAX) {
@@ -148,12 +151,12 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
 }
 
 uint32_t ZEXPORT PREFIX(adler32_z)(uint32_t adler, const unsigned char *buf, size_t len) {
-    return functable.adler32(adler, buf, len);
+    return adler32_impl(adler, buf, len);
 }
 
 /* ========================================================================= */
 uint32_t ZEXPORT PREFIX(adler32)(uint32_t adler, const unsigned char *buf, uint32_t len) {
-    return functable.adler32(adler, buf, len);
+    return adler32_impl(adler, buf, len);
 }
 
 /* ========================================================================= */

@@ -1,7 +1,7 @@
 ZLIB_NG_1.9.9 {
   global:
     zng_adler32;
-    zng_adler32_c;
+    zng_adler32_impl;
     zng_adler32_combine;
     zng_adler32_combine64;
     zng_adler32_z;

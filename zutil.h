@@ -158,6 +158,8 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #   define Tracecv(c, x)
 #endif
 
+uint32_t ZLIB_INTERNAL adler32_impl(uint32_t adler, const unsigned char *buf, size_t len);
+
 void ZLIB_INTERNAL *zcalloc(void *opaque, unsigned items, unsigned size);
 void ZLIB_INTERNAL   zcfree(void *opaque, void *ptr);
 
