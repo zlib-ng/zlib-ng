@@ -32,25 +32,12 @@ extern void fill_window_sse(deflate_state *s);
 extern void fill_window_arm(deflate_state *s);
 #endif
 
-ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
-
-#ifdef __ARM_FEATURE_CRC32
-extern uint32_t crc32_acle(uint32_t, const unsigned char *, uint64_t);
-#endif
-
-#if BYTE_ORDER == LITTLE_ENDIAN
-extern uint32_t crc32_little(uint32_t, const unsigned char *, uint64_t);
-#elif BYTE_ORDER == BIG_ENDIAN
-extern uint32_t crc32_big(uint32_t, const unsigned char *, uint64_t);
-#endif
-
 /* stub definitions */
 ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count);
 ZLIB_INTERNAL void fill_window_stub(deflate_state *s);
-ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len);
 
 /* functable init */
-ZLIB_INTERNAL __thread struct functable_s functable = {fill_window_stub,insert_string_stub,crc32_stub};
+ZLIB_INTERNAL __thread struct functable_s functable = {fill_window_stub,insert_string_stub};
 
 
 /* stub functions */
@@ -83,35 +70,4 @@ ZLIB_INTERNAL void fill_window_stub(deflate_state *s) {
     #endif
 
     functable.fill_window(s);
-}
-
-ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len) {
-
-
-   Assert(sizeof(uint64_t) >= sizeof(size_t),
-          "crc32_z takes size_t but internally we have a uint64_t len");
-/* return a function pointer for optimized arches here after a capability test */
-
-#ifdef DYNAMIC_CRC_TABLE
-    if (crc_table_empty)
-        make_crc_table();
-#endif /* DYNAMIC_CRC_TABLE */
-
-    if (sizeof(void *) == sizeof(ptrdiff_t)) {
-#if BYTE_ORDER == LITTLE_ENDIAN
-      functable.crc32=crc32_little;
-#  if __ARM_FEATURE_CRC32 && defined(ARM_ACLE_CRC_HASH)
-      if (arm_has_crc32())
-        functable.crc32=crc32_acle;
-#  endif
-#elif BYTE_ORDER == BIG_ENDIAN
-        functable.crc32=crc32_big;
-#else
-#  error No endian defined
-#endif
-    } else {
-        functable.crc32=crc32_generic;
-    }
-
-    return functable.crc32(crc, buf, len);
 }

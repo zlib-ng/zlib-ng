@@ -34,8 +34,6 @@
 #endif /* MAKECRCH */
 
 #include "deflate.h"
-#include "functable.h"
-
 
 /* Local functions for crc concatenation */
 #define GF2_DIM 32      /* dimension of GF(2) vectors (length of CRC) */
@@ -240,11 +238,6 @@ const uint32_t * ZEXPORT PREFIX(get_crc_table)(void) {
     return (const uint32_t *)crc_table;
 }
 
-uint32_t ZEXPORT PREFIX(crc32_z)(uint32_t crc, const unsigned char *buf, size_t len) {
-    if (buf == NULL) return 0;
-
-    return functable.crc32(crc, buf, len);
-}
 /* ========================================================================= */
 #define DO1 crc = crc_table[0][((int)crc ^ (*buf++)) & 0xff] ^ (crc >> 8)
 #define DO8 DO1; DO1; DO1; DO1; DO1; DO1; DO1; DO1
@@ -271,10 +264,6 @@ ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, uin
         DO1;
     } while (--len);
     return crc ^ 0xffffffff;
-}
-
-uint32_t ZEXPORT PREFIX(crc32)(uint32_t crc, const unsigned char *buf, uint32_t len) {
-    return PREFIX(crc32_z)(crc, buf, len);
 }
 
 /*
@@ -474,4 +463,44 @@ void ZEXPORT PREFIX(crc32_combine_gen64)(uint32_t *op, z_off64_t len2)
 uint32_t ZEXPORT PREFIX(crc32_combine_op)(uint32_t crc1, uint32_t crc2, const uint32_t *op)
 {
     return gf2_matrix_times(op, crc1) ^ crc2;
+}
+
+static uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len) {
+
+   Assert(sizeof(uint64_t) >= sizeof(size_t),
+          "crc32_z takes size_t but internally we have a uint64_t len");
+/* return a function pointer for optimized arches here after a capability test */
+
+#ifdef DYNAMIC_CRC_TABLE
+    if (crc_table_empty)
+        make_crc_table();
+#endif /* DYNAMIC_CRC_TABLE */
+
+    if (sizeof(void *) != sizeof(ptrdiff_t))
+      return crc32_generic(crc, buf, len);
+
+#if BYTE_ORDER == LITTLE_ENDIAN && defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
+    if (arm_has_crc32())
+        return crc32_acle(crc, buf, len);
+#elif BYTE_ORDER == LITTLE_ENDIAN
+    return crc32_little(crc, buf, len);
+#elif BYTE_ORDER == BIG_ENDIAN
+    return crc32_big(crc, buf, len);
+#else
+#  error No endian defined
+#endif
+}
+
+uint32_t ZEXPORT PREFIX(crc32_z)(uint32_t crc, const unsigned char *buf, size_t len) {
+    if (buf == NULL)
+        return 0;
+
+    return crc32_stub(crc, buf, len);
+}
+
+uint32_t ZEXPORT PREFIX(crc32)(uint32_t crc, const unsigned char *buf, uint32_t len) {
+    if (buf == NULL)
+        return 0;
+
+    return crc32_stub(crc, buf, len);
 }
