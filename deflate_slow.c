@@ -8,7 +8,6 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "match_p.h"
-#include "functable.h"
 
 /* ===========================================================================
  * Local data
@@ -36,7 +35,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
          * string following the next match.
          */
         if (s->lookahead < MIN_LOOKAHEAD) {
-            functable.fill_window(s);
+            fill_window(s);
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
                 return need_more;
             }

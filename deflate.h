@@ -325,9 +325,6 @@ static inline void put_short(deflate_state *s, uint16_t w) {
 /* Number of bytes after end of data in window to initialize in order to avoid
    memory checker errors from longest match routines */
 
-
-void ZLIB_INTERNAL fill_window_c(deflate_state *s);
-
         /* in trees.c */
 void ZLIB_INTERNAL _tr_init(deflate_state *s);
 int ZLIB_INTERNAL _tr_tally(deflate_state *s, unsigned dist, unsigned lc);

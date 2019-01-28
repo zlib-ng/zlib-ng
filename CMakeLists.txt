@@ -635,7 +635,6 @@ set(ZLIB_PUBLIC_HDRS
 set(ZLIB_PRIVATE_HDRS
     crc32.h
     deflate.h
-    functable.h
     gzguts.h
     inffast.h
     inffixed.h
@@ -652,7 +651,6 @@ set(ZLIB_SRCS
     deflate_fast.c
     deflate_medium.c
     deflate_slow.c
-    functable.c
     inflate.c
     infback.c
     inftrees.c

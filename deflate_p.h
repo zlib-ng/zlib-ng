@@ -75,6 +75,27 @@ static inline Pos insert_string(deflate_state *const s, const Pos str, unsigned 
     return insert_string_c(s, str, count);
 }
 
+/* fill_window */
+#ifdef X86_SSE2_FILL_WINDOW
+extern void fill_window_sse(deflate_state *s);
+#elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM)
+extern void fill_window_arm(deflate_state *s);
+#endif
+void ZLIB_INTERNAL fill_window_c(deflate_state *s);
+
+static inline void fill_window(deflate_state *s) {
+#ifdef X86_SSE2_FILL_WINDOW
+# ifndef X86_NOCHECK_SSE2
+    if (x86_cpu_has_sse2)
+# endif
+        return fill_window_sse(s);
+#elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM)
+    return fill_window_arm(s);
+#endif
+
+    return fill_window_c(s);
+}
+
 /* ===========================================================================
  * Flush the current block, with given end-of-file flag.
  * IN assertion: strstart is set to the end of the current match.

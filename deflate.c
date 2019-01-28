@@ -53,7 +53,6 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "match_p.h"
-#include "functable.h"
 
 const char deflate_copyright[] = " deflate 1.2.11.f Copyright 1995-2016 Jean-loup Gailly and Mark Adler ";
 /*
@@ -440,14 +439,14 @@ int ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const unsigned c
     next = strm->next_in;
     strm->avail_in = dictLength;
     strm->next_in = (const unsigned char *)dictionary;
-    functable.fill_window(s);
+    fill_window(s);
     while (s->lookahead >= MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (MIN_MATCH-1);
         insert_string(s, str, n);
         s->strstart = str + n;
         s->lookahead = MIN_MATCH-1;
-        functable.fill_window(s);
+        fill_window(s);
     }
     s->strstart += s->lookahead;
     s->block_start = (long)s->strstart;
@@ -1547,7 +1546,7 @@ static block_state deflate_rle(deflate_state *s, int flush) {
          * for the longest run, plus one for the unrolled loop.
          */
         if (s->lookahead <= MAX_MATCH) {
-            functable.fill_window(s);
+            fill_window(s);
             if (s->lookahead <= MAX_MATCH && flush == Z_NO_FLUSH) {
                 return need_more;
             }
@@ -1614,7 +1613,7 @@ static block_state deflate_huff(deflate_state *s, int flush) {
     for (;;) {
         /* Make sure that we have a literal to write. */
         if (s->lookahead == 0) {
-            functable.fill_window(s);
+            fill_window(s);
             if (s->lookahead == 0) {
                 if (flush == Z_NO_FLUSH)
                     return need_more;

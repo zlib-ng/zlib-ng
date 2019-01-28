@@ -13,7 +13,6 @@
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
-#include "functable.h"
 
 extern ZLIB_INTERNAL int read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
