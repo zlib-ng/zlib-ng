@@ -459,7 +459,7 @@ void ZLIB_INTERNAL inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
         (unsigned)(out < end ? (INFLATE_FAST_MIN_LEFT - 1) + (end - out)
                              : (INFLATE_FAST_MIN_LEFT - 1) - (out - end));
 
-    Assert(state->bits <= 32, "Remaining bits greater than 32");
+    Assert(bits <= 32, "Remaining bits greater than 32");
     state->hold = (uint32_t)hold;
     state->bits = bits;
     return;
