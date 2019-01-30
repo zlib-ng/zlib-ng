@@ -16,6 +16,200 @@ static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
 #endif
 }
 
+# if defined(__ARM_NEON__) || defined(__ARM_NEON)
+#  include <arm_neon.h>
+typedef uint8x16_t inffast_chunk_t;
+#  define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
+# endif
+
+# if defined(X86_SSE2)
+#  include <immintrin.h>
+typedef __m128i inffast_chunk_t;
+#  define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
+# endif
+
+# if defined(INFFAST_CHUNKSIZE)
+/* Ask the compiler to perform a wide, unaligned load with an machine
+   instruction appropriate for the inffast_chunk_t type. */
+static inline inffast_chunk_t load_chunk(unsigned char const* s) {
+    inffast_chunk_t c;
+    MEMCPY(&c, s, sizeof(c));
+    return c;
+}
+
+/* Ask the compiler to perform a wide, unaligned store with an machine
+   instruction appropriate for the inffast_chunk_t type. */
+static inline void store_chunk(unsigned char* d, inffast_chunk_t c) {
+    MEMCPY(d, &c, sizeof(c));
+}
+
+/* Behave like memcpy, but assume that it's OK to overwrite at least
+   INFFAST_CHUNKSIZE bytes of output even if the length is shorter than this,
+   that the length is non-zero, and that `from` lags `out` by at least
+   INFFAST_CHUNKSIZE bytes (or that they don't overlap at all or simply that
+   the distance is less than the length of the copy).
+
+   Aside from better memory bus utilisation, this means that short copies
+   (INFFAST_CHUNKSIZE bytes or fewer) will fall straight through the loop
+   without iteration, which will hopefully make the branch prediction more
+   reliable. */
+static inline unsigned char* chunk_copy(unsigned char *out, unsigned char const *from, unsigned len) {
+    --len;
+    store_chunk(out, load_chunk(from));
+    out += (len % INFFAST_CHUNKSIZE) + 1;
+    from += (len % INFFAST_CHUNKSIZE) + 1;
+    len /= INFFAST_CHUNKSIZE;
+    while (len > 0) {
+        store_chunk(out, load_chunk(from));
+        out += INFFAST_CHUNKSIZE;
+        from += INFFAST_CHUNKSIZE;
+        --len;
+    }
+    return out;
+}
+
+/* Behave like chunk_copy, but avoid writing beyond of legal output. */
+static inline unsigned char* chunk_copy_safe(unsigned char *out, unsigned char const *from, unsigned len,
+                                           unsigned char *safe) {
+    if ((safe - out) < (ptrdiff_t)INFFAST_CHUNKSIZE) {
+        if (len & 8) {
+            MEMCPY(out, from, 8);
+            out += 8;
+            from += 8;
+        }
+        if (len & 4) {
+            MEMCPY(out, from, 4);
+            out += 4;
+            from += 4;
+        }
+        if (len & 2) {
+            MEMCPY(out, from, 2);
+            out += 2;
+            from += 2;
+        }
+        if (len & 1) {
+            *out++ = *from++;
+        }
+        return out;
+    }
+    return chunk_copy(out, from, len);
+}
+
+/* Perform short copies until distance can be rewritten as being at least
+   INFFAST_CHUNKSIZE.
+
+   This assumes that it's OK to overwrite at least the first
+   2*INFFAST_CHUNKSIZE bytes of output even if the copy is shorter than this.
+   This assumption holds because inflate_fast() starts every iteration with at
+   least 258 bytes of output space available (258 being the maximum length
+   output from a single token; see inflate_fast()'s assumptions below). */
+static inline unsigned char* chunk_unroll(unsigned char *out, unsigned *dist, unsigned *len) {
+    unsigned char const *from = out - *dist;
+    while (*dist < *len && *dist < INFFAST_CHUNKSIZE) {
+        store_chunk(out, load_chunk(from));
+        out += *dist;
+        *len -= *dist;
+        *dist += *dist;
+    }
+    return out;
+}
+
+/* Copy DIST bytes from OUT - DIST into OUT + DIST * k, for 0 <= k < LEN/DIST. Return OUT + LEN. */
+static inline unsigned char *chunk_memset(unsigned char *out, unsigned dist, unsigned len) {
+    Assert(len >= sizeof(uint64_t), "chunk_memset should be called on larger chunks");
+    Assert(dist > 0, "cannot have a distance 0");
+
+    unsigned char *from = out - dist;
+    inffast_chunk_t chunk;
+    unsigned sz = sizeof(chunk);
+    if (len < sz) {
+        do {
+            *out++ = *from++;
+            --len;
+        } while (len != 0);
+        return out;
+    }
+
+    switch (dist) {
+    case 1: {
+#if defined(X86_SSE2)
+        int8_t c;
+        MEMCPY(&c, from, sizeof(c));
+        chunk = _mm_set1_epi8(c);
+#elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+        chunk = vld1q_dup_u8(from);
+#endif
+        break;
+    }
+    case 2: {
+        int16_t c;
+        MEMCPY(&c, from, sizeof(c));
+#if defined(X86_SSE2)
+        chunk = _mm_set1_epi16(c);
+#elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+        chunk = vreinterpretq_u8_s16(vdupq_n_s16(c));
+#endif
+        break;
+    }
+    case 4: {
+        int32_t c;
+        MEMCPY(&c, from, sizeof(c));
+#if defined(X86_SSE2)
+        chunk = _mm_set1_epi32(c);
+#elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+        chunk = vreinterpretq_u8_s32(vdupq_n_s32(c));
+#endif
+        break;
+    }
+    case 8: {
+#if defined(X86_SSE2)
+        int64_t c;
+        MEMCPY(&c, from, sizeof(c));
+        chunk = _mm_set1_epi64x(c);
+#elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+        chunk = vcombine_u8(vld1_u8(from), vld1_u8(from));
+#endif
+        break;
+    }
+    case 16:
+        MEMCPY(&chunk, from, sz);
+        break;
+
+    default:
+        out = chunk_unroll(out, &dist, &len);
+        return chunk_copy(out, out - dist, len);
+    }
+
+    unsigned rem = len % sz;
+    len -= rem;
+    while (len) {
+        MEMCPY(out, &chunk, sz);
+        out += sz;
+        len -= sz;
+    }
+
+    /* Last, deal with the case when LEN is not a multiple of SZ. */
+    if (rem)
+        MEMCPY(out, &chunk, rem);
+    out += rem;
+    return out;
+}
+
+static inline unsigned char* chunk_memset_safe(unsigned char *out, unsigned dist, unsigned len, unsigned left) {
+    if (left < (unsigned)(3 * INFFAST_CHUNKSIZE)) {
+        while (len > 0) {
+          *out = *(out - dist);
+          out++;
+          --len;
+        }
+        return out;
+    }
+
+    return chunk_memset(out, dist, len);
+}
+
+# else /* INFFAST_CHUNKSIZE */
+
 static inline unsigned char *copy_1_bytes(unsigned char *out, unsigned char *from) {
     *out++ = *from;
     return out;
@@ -373,5 +567,7 @@ static inline unsigned char *chunk_copy(unsigned char *out, unsigned char *from,
 
     return chunk_memcpy(out, from, len);
 }
+
+# endif /* INFFAST_CHUNKSIZE */
 
 #endif /* MEMCOPY_H_ */
