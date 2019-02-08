@@ -65,12 +65,6 @@ if "${CROSS_PREFIX}ranlib" --version >/dev/null 2>/dev/null || test $? -lt 126; 
 else
     RANLIB=${RANLIB-"ranlib"}
 fi
-if "${CROSS_PREFIX}nm" --version >/dev/null 2>/dev/null || test $? -lt 126; then
-    NM=${NM-"${CROSS_PREFIX}nm"}
-    test -n "${CROSS_PREFIX}" && echo Using ${NM} | tee -a configure.log
-else
-    NM=${NM-"nm"}
-fi
 
 # set defaults before processing command line options
 LDCONFIG=${LDCONFIG-"ldconfig"}
