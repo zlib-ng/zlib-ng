@@ -22,6 +22,12 @@ typedef uint8x16_t inffast_chunk_t;
   #define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
  #endif
 
+ #if defined(X86_SSE2)
+  #include <immintrin.h>
+typedef __m128i inffast_chunk_t;
+  #define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
+ #endif
+
  #ifdef INFFAST_CHUNKSIZE
 /*
    Ask the compiler to perform a wide, unaligned load with an machine
