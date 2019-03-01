@@ -18,7 +18,7 @@ extern Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned in
 #endif
 
 /* fill_window */
-#ifdef X86_SSE2_FILL_WINDOW
+#ifdef X86_SSE2
 extern void fill_window_sse(deflate_state *s);
 #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM)
 extern void fill_window_arm(deflate_state *s);
@@ -72,7 +72,7 @@ ZLIB_INTERNAL void fill_window_stub(deflate_state *s) {
     // Initialize default
     functable.fill_window=&fill_window_c;
 
-    #ifdef X86_SSE2_FILL_WINDOW
+    #ifdef X86_SSE2
     # ifndef X86_NOCHECK_SSE2
     if (x86_cpu_has_sse2)
     # endif
