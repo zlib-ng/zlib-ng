@@ -292,7 +292,7 @@ int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, 
     s->w_size = 1 << s->w_bits;
     s->w_mask = s->w_size - 1;
 
-#ifdef X86_SSE4_2_CRC_HASH
+#ifdef X86_SSE4_2
     if (x86_cpu_has_sse42)
         s->hash_bits = (unsigned int)15;
     else
