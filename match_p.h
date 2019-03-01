@@ -192,7 +192,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         chain_length >>= 2;
 
     /*
-     * Do not looks for matches beyond the end of the input. This is
+     * Do not look for matches beyond the end of the input. This is
      * necessary to make deflate deterministic
      */
     nice_match = (unsigned int)s->nice_match > s->lookahead ? s->lookahead : s->nice_match;
@@ -205,8 +205,8 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
 
     scan = s->window + s->strstart;
     strend = s->window + s->strstart + MAX_MATCH - 1;
-    scan_start = *(uint16_t *)scan;
-    scan_end = *(uint16_t *)(scan + best_len-1);
+    MEMCPY(&scan_start, scan, sizeof(scan_start));
+    MEMCPY(&scan_end, scan + best_len - 1, sizeof(scan_end));
 
     Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     do {
@@ -226,9 +226,13 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
          * is limited to the lookahead, so the output of deflate is not
          * affected by the uninitialized values.
          */
-        if (likely((*(uint16_t *)(match + best_len - 1) != scan_end)))
+        uint16_t val;
+        MEMCPY(&val, match + best_len - 1, sizeof(val));
+        if (likely(val != scan_end))
             continue;
-        if (*(uint16_t *)match != scan_start)
+
+        MEMCPY(&val, match, sizeof(val));
+        if (val != scan_start)
             continue;
 
         /* It is not necessary to compare scan[2] and match[2] since
@@ -246,11 +250,37 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         match++;
 
         do {
-        } while (*(uint16_t *)(scan += 2)== *(uint16_t *)(match += 2) &&
-                 *(uint16_t *)(scan += 2)== *(uint16_t *)(match += 2) &&
-                 *(uint16_t *)(scan += 2)== *(uint16_t *)(match += 2) &&
-                 *(uint16_t *)(scan += 2)== *(uint16_t *)(match += 2) &&
-                 scan < strend);
+            uint16_t mval, sval;
+
+            MEMCPY(&mval, match, sizeof(mval));
+            MEMCPY(&sval, scan, sizeof(sval));
+            if (mval != sval)
+              break;
+            match += sizeof(mval);
+            scan += sizeof(sval);
+
+            MEMCPY(&mval, match, sizeof(mval));
+            MEMCPY(&sval, scan, sizeof(sval));
+            if (mval != sval)
+              break;
+            match += sizeof(mval);
+            scan += sizeof(sval);
+
+            MEMCPY(&mval, match, sizeof(mval));
+            MEMCPY(&sval, scan, sizeof(sval));
+            if (mval != sval)
+              break;
+            match += sizeof(mval);
+            scan += sizeof(sval);
+
+            MEMCPY(&mval, match, sizeof(mval));
+            MEMCPY(&sval, scan, sizeof(sval));
+            if (mval != sval)
+              break;
+            match += sizeof(mval);
+            scan += sizeof(sval);
+
+        } while (scan < strend);
 
         /*
          * Here, scan <= window + strstart + 257
@@ -267,7 +297,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
             best_len = len;
             if (len >= nice_match)
                 break;
-            scan_end = *(uint16_t *)(scan + best_len - 1);
+            MEMCPY(&scan_end, scan + best_len - 1, sizeof(scan_end));
         } else {
             /*
              * The probability of finding a match later if we here
@@ -370,8 +400,8 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
 
     uint16_t scan_start, scan_end;
 
-    memcpy(&scan_start, scan, sizeof(scan_start));
-    memcpy(&scan_end, scan+best_len-1, sizeof(scan_end));
+    MEMCPY(&scan_start, scan, sizeof(scan_start));
+    MEMCPY(&scan_end, scan+best_len-1, sizeof(scan_end));
 
     /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
      * It is easy to get rid of this optimization if necessary.
@@ -436,8 +466,8 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         do {
             unsigned long sv, mv, xor;
 
-            memcpy(&sv, scan, sizeof(sv));
-            memcpy(&mv, match, sizeof(mv));
+            MEMCPY(&sv, scan, sizeof(sv));
+            MEMCPY(&mv, match, sizeof(mv));
 
             xor = sv ^ mv;
 
@@ -464,7 +494,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
             best_len = len;
             if (len >= nice_match)
                 break;
-            memcpy(&scan_end, scan+best_len-1, sizeof(scan_end));
+            MEMCPY(&scan_end, scan + best_len - 1, sizeof(scan_end));
         } else {
             /*
              * The probability of finding a match later if we here

@@ -29,16 +29,14 @@ Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count
     lp = str + count - 1; /* last position */
 
     for (p = str; p <= lp; p++) {
-        unsigned *ip, val, h, hm;
-
-        ip = (unsigned *)&s->window[p];
-        val = *ip;
+        uint32_t val;
+        MEMCPY(&val, &s->window[p], sizeof(val));
 
         if (s->level >= TRIGGER_LEVEL)
             val &= 0xFFFFFF;
 
-        h = __crc32w(0, val);
-        hm = h & s->hash_mask;
+        uint32_t h = __crc32w(0, val);
+        uint32_t hm = h & s->hash_mask;
 
         Pos head = s->head[hm];
         if (head != p) {
