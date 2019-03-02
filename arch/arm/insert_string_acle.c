@@ -5,7 +5,7 @@
  *
  */
 
-#if defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
+#if __ARM_FEATURE_CRC32
 #include <arm_acle.h>
 #include "zbuild.h"
 #include "deflate.h"
@@ -52,4 +52,4 @@ Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count
     }
     return ret;
 }
-#endif
+#endif /* __ARM_FEATURE_CRC32 */
