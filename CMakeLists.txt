@@ -527,9 +527,7 @@ endif()
 if(WITH_OPTIM)
     if("${ARCH}" MATCHES "arm")
         if(WITH_ACLE)
-            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_acle.c)
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ACLEFLAG}")
-            add_definitions("-DARM_ACLE_CRC_HASH")
             add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using \"${ACLEFLAG}\"")
         endif()
         if(WITH_NEON)
@@ -545,8 +543,6 @@ if(WITH_OPTIM)
         endif()
     elseif("${ARCH}" MATCHES "aarch64")
         if(WITH_ACLE)
-            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_acle.c)
-            add_definitions("-DARM_ACLE_CRC_HASH")
             add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using \"${ACLEFLAG}\"")
         endif()
         # We need to check WITH_NEON first
@@ -681,6 +677,7 @@ set(ZLIB_SRCS
     infback.c
     inftrees.c
     inffast.c
+    insert_string_acle.c
     trees.c
     uncompr.c
     zutil.c

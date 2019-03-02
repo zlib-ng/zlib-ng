@@ -71,11 +71,11 @@ mandir = ${prefix}/share/man
 man3dir = ${mandir}/man3
 pkgconfigdir = ${libdir}/pkgconfig
 
-OBJZ = adler32.o compress.o crc32.o crc32_acle.o deflate.o deflate_fast.o deflate_medium.o deflate_slow.o functable.o infback.o inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o $(ARCH_STATIC_OBJS)
+OBJZ = adler32.o compress.o crc32.o crc32_acle.o deflate.o deflate_fast.o deflate_medium.o deflate_slow.o functable.o infback.o inffast.o inflate.o inftrees.o insert_string_acle.o trees.o uncompr.o zutil.o $(ARCH_STATIC_OBJS)
 OBJG = gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo compress.lo crc32.lo crc32_acle.lo deflate.lo deflate_fast.lo deflate_medium.lo deflate_slow.lo functable.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo uncompr.lo zutil.lo $(ARCH_SHARED_OBJS)
+PIC_OBJZ = adler32.lo compress.lo crc32.lo crc32_acle.lo deflate.lo deflate_fast.lo deflate_medium.lo deflate_slow.lo functable.lo infback.lo inffast.lo inflate.lo inftrees.lo insert_string_acle.lo trees.lo uncompr.lo zutil.lo $(ARCH_SHARED_OBJS)
 PIC_OBJG = gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
@@ -387,11 +387,11 @@ zutil.o: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(S
 arch/aarch64/adler32_neon.o: $(SRCDIR)/arch/aarch64/adler32_neon.h
 crc32_acle.o: zconf$(SUFFIX).h
 arch/aarch64/fill_window_arm.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/aarch64/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
+insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/arm/adler32_neon.o: $(SRCDIR)/arch/arm/adler32_neon.h
 crc32_acle.o: zconf$(SUFFIX).h
 arch/arm/fill_window_arm.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/arm/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
+insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/crc_folding.o: $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/deflate_quick.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/fill_window_sse.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
@@ -415,11 +415,11 @@ zutil.lo: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(
 arch/aarch64/adler32_neon.lo: $(SRCDIR)/arch/aarch64/adler32_neon.h
 crc32_acle.lo: zconf$(SUFFIX).h
 arch/aarch64/fill_window_arm.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/aarch64/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
+insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/arm/adler32_neon.lo: $(SRCDIR)/arch/arm/adler32_neon.h
 crc32_acle.lo: zconf$(SUFFIX).h
 arch/arm/fill_window_arm.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/arm/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
+insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/crc_folding.lo: $(SRCDIR)/arch/x86/crc_folding.h $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/deflate_quick.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/x86/fill_window_sse.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h

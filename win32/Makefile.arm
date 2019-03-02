@@ -54,7 +54,6 @@ RESFILE = zlib-ng1.res
 SUFFIX = -ng
 !endif
 !if "$(WITH_ACLE)" != ""
-WFLAGS = $(WFLAGS) -DARM_ACLE_CRC_HASH
 OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj
 !endif
 !if "$(WITH_VFPV3)" != ""

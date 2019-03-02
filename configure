@@ -1120,11 +1120,8 @@ case "${ARCH}" in
                 fi
             ;;
             armv8-a+crc | armv8-a+crc+simd | armv8.[1234]-a | armv8.[1234]-a+simd)
-                CFLAGS="-march=${ARCH} ${CFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK"
-                SFLAGS="-march=${ARCH} ${SFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK"
-
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} insert_string_acle.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} insert_string_acle.lo"
+                CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK"
+                SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK"
 
                 if test $buildneon -eq 1; then
                     CFLAGS="${CFLAGS} ${floatabi}"
@@ -1161,10 +1158,6 @@ case "${ARCH}" in
            if test $native -eq 0; then
              ARCH="${ARCH}+crc"
            fi
-            CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
-            SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} insert_string_acle.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} insert_string_acle.lo"
         fi
         if test $buildneon -eq 1; then
             if test $native -eq 0; then

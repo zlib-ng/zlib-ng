@@ -13,7 +13,7 @@
 /* insert_string */
 #ifdef X86_SSE4_2_CRC_HASH
 extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
-#elif defined(ARM_ACLE_CRC_HASH)
+#elif __ARM_FEATURE_CRC32
 extern Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count);
 #endif
 
@@ -32,7 +32,7 @@ extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t le
 
 ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
 
-#ifdef __ARM_FEATURE_CRC32
+#if __ARM_FEATURE_CRC32
 extern uint32_t crc32_acle(uint32_t, const unsigned char *, uint64_t);
 #endif
 
@@ -60,7 +60,7 @@ ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsi
     #ifdef X86_SSE4_2_CRC_HASH
     if (x86_cpu_has_sse42)
         functable.insert_string=&insert_string_sse;
-    #elif defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
+    #elif __ARM_FEATURE_CRC32
     if (arm_cpu_has_crc32)
         functable.insert_string=&insert_string_acle;
     #endif
@@ -111,7 +111,7 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
 #if BYTE_ORDER == LITTLE_ENDIAN
       functable.crc32=crc32_little;
-#  if __ARM_FEATURE_CRC32 && defined(ARM_ACLE_CRC_HASH)
+#  if __ARM_FEATURE_CRC32
       if (arm_cpu_has_crc32)
         functable.crc32=crc32_acle;
 #  endif
