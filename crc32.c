@@ -303,7 +303,7 @@ ZLIB_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, uint
 
     c = crc;
     c = ~c;
-    while (len && ((ptrdiff_t)buf & 3)) {
+    while (len && ((unsigned long)(void *)buf & 3)) {
         c = crc_table[0][(c ^ *buf++) & 0xff] ^ (c >> 8);
         len--;
     }
@@ -345,7 +345,7 @@ ZLIB_INTERNAL uint32_t crc32_big(uint32_t crc, const unsigned char *buf, uint64_
 
     c = ZSWAP32(crc);
     c = ~c;
-    while (len && ((ptrdiff_t)buf & 3)) {
+    while (len && ((unsigned long)(void *)buf & 3)) {
         c = crc_table[4][(c >> 24) ^ *buf++] ^ (c << 8);
         len--;
     }

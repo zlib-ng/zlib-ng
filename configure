@@ -711,46 +711,6 @@ fi
 
 echo >> configure.log
 
-# check for ptrdiff_t and save result in zconf.h
-echo -n "Checking for ptrdiff_t... " | tee -a configure.log
-cat > $test.c <<EOF
-#include <stddef.h>
-int fun(ptrdiff_t *a) { return 0; }
-EOF
-if try $CC -c $CFLAGS $test.c; then
-  echo "Yes." | tee -a configure.log
-else
-    echo "No." | tee -a configure.log
-    sed < zconf${SUFFIX}.h "/^#ifdef NEED_PTRDIFF_T.* may be/s/def NEED_PTRDIFF_T\(.*\) may be/ 1\1 was/" > zconf${SUFFIX}.temp.h
-    mv zconf${SUFFIX}.temp.h zconf${SUFFIX}.h
-
-    echo -n "Checking for sizeof(void *)... " | tee -a configure.log
-    cat > $test.c <<EOF
-#include <stdint.h>
-#define COMPILE_TIME_ASSERT(pred) struct s { int x: (pred) ? 1 : -1; };
-COMPILE_TIME_ASSERT(sizeof(int32_t) == sizeof(void *));
-EOF
-    if try $CC -c $CFLAGS $test.c; then
-        echo "sizeof(int32_t)." | tee -a configure.log
-        sed < zconf${SUFFIX}.h "s/^typedef PTRDIFF_TYPE ptrdiff_t;/typedef int32_t ptrdiff_t;/g" > zconf${SUFFIX}.temp.h
-        mv zconf${SUFFIX}.temp.h zconf${SUFFIX}.h
-    else
-        cat > $test.c <<EOF
-#include <stdint.h>
-#define COMPILE_TIME_ASSERT(pred) struct s { int x: (pred) ? 1 : -1; };
-COMPILE_TIME_ASSERT(sizeof(int64_t) == sizeof(void *));
-EOF
-        if try $CC -c $CFLAGS $test.c; then
-            echo "sizeof(int64_t)." | tee -a configure.log
-            sed < zconf${SUFFIX}.h "s/^typedef PTRDIFF_TYPE ptrdiff_t;/typedef int64_t ptrdiff_t;/g" > zconf${SUFFIX}.temp.h
-            mv zconf${SUFFIX}.temp.h zconf${SUFFIX}.h
-        else
-            echo "unknown." | tee -a configure.log
-            exit 1
-        fi
-    fi
-fi
-
 # if --zlib-compat was requested
 if test $compat -eq 1; then
   gzfileops=1

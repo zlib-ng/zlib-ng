@@ -108,7 +108,7 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
         make_crc_table();
 #endif /* DYNAMIC_CRC_TABLE */
 
-    if (sizeof(void *) == sizeof(ptrdiff_t)) {
+    if (sizeof(void *) == sizeof(unsigned long)) {
 #if BYTE_ORDER == LITTLE_ENDIAN
       functable.crc32=crc32_little;
 #  if __ARM_FEATURE_CRC32 && defined(ARM_ACLE_CRC_HASH)

@@ -352,29 +352,6 @@ if(HAVE_BUILTIN_CTZL)
     add_definitions(-DHAVE_BUILTIN_CTZL)
 endif()
 
-#
-# check for ptrdiff_t support
-#
-check_c_source_compiles(
-    "#include <stddef.h>
-     int main() { ptrdiff_t *a; return 0; }"
-    HAVE_PTRDIFF_T
-)
-if(NOT HAVE_PTRDIFF_T)
-  set(NEED_PTRDIFF_T 1)
-
-  check_type_size("void *" SIZEOF_DATA_PTR)
-  message(STATUS "sizeof(void *) is ${SIZEOF_DATA_PTR} bytes")
-
-  if(${SIZEOF_DATA_PTR} MATCHES "4")
-    set(PTRDIFF_TYPE "uint32_t")
-  elseif(${SIZEOF_DATA_PTR} MATCHES "8")
-    set(PTRDIFF_TYPE "uint64_t")
-  else()
-    message(FATAL_ERROR "sizeof(void *) is neither 32 nor 64 bit")
-  endif()
-endif()
-
 # Macro to check if source compiles when cross-compiling
 # or runs when compiling natively
 macro(check_c_source_compile_or_run source flag)
