@@ -527,7 +527,7 @@ endif()
 if(WITH_OPTIM)
     if("${ARCH}" MATCHES "arm")
         if(WITH_ACLE)
-            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
+            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_acle.c)
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ACLEFLAG}")
             add_definitions("-DARM_ACLE_CRC_HASH")
             add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using \"${ACLEFLAG}\"")
@@ -545,7 +545,7 @@ if(WITH_OPTIM)
         endif()
     elseif("${ARCH}" MATCHES "aarch64")
         if(WITH_ACLE)
-            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
+            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_acle.c)
             add_definitions("-DARM_ACLE_CRC_HASH")
             add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using \"${ACLEFLAG}\"")
         endif()
@@ -671,6 +671,7 @@ set(ZLIB_SRCS
     adler32.c
     compress.c
     crc32.c
+    crc32_acle.c
     deflate.c
     deflate_fast.c
     deflate_medium.c
