@@ -279,7 +279,6 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
               break;
             match += sizeof(mval);
             scan += sizeof(sval);
-
         } while (scan < strend);
 
         /*
