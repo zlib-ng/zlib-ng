@@ -27,57 +27,57 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
         len--;
     }
 
-    if ((len > 2) && ((ptrdiff_t)buf & 2)) {
+    if ((len > sizeof(uint16_t)) && ((ptrdiff_t)buf & sizeof(uint16_t))) {
         buf2 = (const uint16_t *) buf;
         c = __crc32h(c, *buf2++);
-        len -= 2;
+        len -= sizeof(uint16_t);
         buf4 = (const uint32_t *) buf2;
     } else {
         buf4 = (const uint32_t *) buf;
     }
 
 # if defined(__aarch64__)
-    if ((len > 4) && ((ptrdiff_t)buf & 4)) {
+    if ((len > sizeof(uint32_t)) && ((ptrdiff_t)buf & sizeof(uint32_t))) {
         c = __crc32w(c, *buf4++);
-        len -= 4;
+        len -= sizeof(uint32_t);
     }
 
     const uint64_t *buf8 = (const uint64_t *) buf4;
 
 #  ifdef UNROLL_MORE
-    while (len >= 32) {
+    while (len >= 4 * sizeof(uint64_t)) {
         c = __crc32d(c, *buf8++);
         c = __crc32d(c, *buf8++);
         c = __crc32d(c, *buf8++);
         c = __crc32d(c, *buf8++);
-        len -= 32;
+        len -= 4 * sizeof(uint64_t);
     }
 #  endif
 
-    while (len >= 8) {
+    while (len >= sizeof(uint64_t)) {
         c = __crc32d(c, *buf8++);
-        len -= 8;
+        len -= sizeof(uint64_t);
     }
 
-    if (len >= 4) {
+    if (len >= sizeof(uint32_t)) {
         buf4 = (const uint32_t *) buf8;
         c = __crc32w(c, *buf4++);
-        len -= 4;
+        len -= sizeof(uint32_t);
         buf2 = (const uint16_t *) buf4;
     } else {
         buf2 = (const uint16_t *) buf8;
     }
 
-    if (len >= 2) {
+    if (len >= sizeof(uint16_t)) {
         c = __crc32h(c, *buf2++);
-        len -= 2;
+        len -= sizeof(uint16_t);
     }
 
     buf = (const unsigned char *) buf2;
 # else /* __aarch64__ */
 
 #  ifdef UNROLL_MORE
-    while (len >= 32) {
+    while (len >= 8 * sizeof(uint32_t)) {
         c = __crc32w(c, *buf4++);
         c = __crc32w(c, *buf4++);
         c = __crc32w(c, *buf4++);
@@ -86,19 +86,19 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
         c = __crc32w(c, *buf4++);
         c = __crc32w(c, *buf4++);
         c = __crc32w(c, *buf4++);
-        len -= 32;
+        len -= 8 * sizeof(uint32_t);
     }
 #  endif
 
-    while (len >= 4) {
+    while (len >= sizeof(uint32_t)) {
         c = __crc32w(c, *buf4++);
-        len -= 4;
+        len -= sizeof(uint32_t);
     }
 
-    if (len >= 2) {
+    if (len >= sizeof(uint16_t)) {
         buf2 = (const uint16_t *) buf4;
         c = __crc32h(c, *buf2++);
-        len -= 2;
+        len -= sizeof(uint16_t);
         buf = (const unsigned char *) buf2;
     } else {
         buf = (const unsigned char *) buf4;
