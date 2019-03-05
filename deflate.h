@@ -307,7 +307,7 @@ static inline void put_short(deflate_state *s, uint16_t w) {
 #if BYTE_ORDER == BIG_ENDIAN
   w = ZSWAP16(w);
 #endif
-  MEMCPY(&(s->pending_buf[s->pending]), &w, sizeof(uint16_t));
+  memcpy(&(s->pending_buf[s->pending]), &w, sizeof(uint16_t));
   s->pending += 2;
 }
 

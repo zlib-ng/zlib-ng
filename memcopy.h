@@ -7,7 +7,7 @@
 /* Load 64 bits from IN and place the bytes at offset BITS in the result. */
 static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
   uint64_t chunk;
-  MEMCPY(&chunk, in, sizeof(chunk));
+  memcpy(&chunk, in, sizeof(chunk));
 
 #if BYTE_ORDER == LITTLE_ENDIAN
   return chunk << bits;
@@ -24,8 +24,8 @@ static inline unsigned char *copy_1_bytes(unsigned char *out, unsigned char *fro
 static inline unsigned char *copy_2_bytes(unsigned char *out, unsigned char *from) {
     uint16_t chunk;
     unsigned sz = sizeof(chunk);
-    MEMCPY(&chunk, from, sz);
-    MEMCPY(out, &chunk, sz);
+    memcpy(&chunk, from, sz);
+    memcpy(out, &chunk, sz);
     return out + sz;
 }
 
@@ -37,8 +37,8 @@ static inline unsigned char *copy_3_bytes(unsigned char *out, unsigned char *fro
 static inline unsigned char *copy_4_bytes(unsigned char *out, unsigned char *from) {
     uint32_t chunk;
     unsigned sz = sizeof(chunk);
-    MEMCPY(&chunk, from, sz);
-    MEMCPY(out, &chunk, sz);
+    memcpy(&chunk, from, sz);
+    memcpy(out, &chunk, sz);
     return out + sz;
 }
 
@@ -60,8 +60,8 @@ static inline unsigned char *copy_7_bytes(unsigned char *out, unsigned char *fro
 static inline unsigned char *copy_8_bytes(unsigned char *out, unsigned char *from) {
     uint64_t chunk;
     unsigned sz = sizeof(chunk);
-    MEMCPY(&chunk, from, sz);
-    MEMCPY(out, &chunk, sz);
+    memcpy(&chunk, from, sz);
+    memcpy(out, &chunk, sz);
     return out + sz;
 }
 
