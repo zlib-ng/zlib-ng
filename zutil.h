@@ -239,10 +239,8 @@ void ZLIB_INTERNAL   zcfree(void *opaque, void *ptr);
 #endif
 
 #if (defined(__GNUC__) || defined(__clang__))
-#define MEMCPY __builtin_memcpy
 #define MEMSET __builtin_memset
 #else
-#define MEMCPY memcpy
 #define MEMSET memset
 #endif
 

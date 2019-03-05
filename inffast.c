@@ -28,7 +28,7 @@
  */
 static inline inffast_chunk_t loadchunk(unsigned char const* s) {
     inffast_chunk_t c;
-    __builtin_memcpy(&c, s, sizeof(c));
+    memcpy(&c, s, sizeof(c));
     return c;
 }
 
@@ -37,7 +37,7 @@ static inline inffast_chunk_t loadchunk(unsigned char const* s) {
    instruction appropriate for the inffast_chunk_t type.
  */
 static inline void storechunk(unsigned char* d, inffast_chunk_t c) {
-    __builtin_memcpy(d, &c, sizeof(c));
+    memcpy(d, &c, sizeof(c));
 }
 
 /*

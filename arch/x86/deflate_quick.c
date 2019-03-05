@@ -152,7 +152,7 @@ static inline void quick_send_bits(deflate_state *const s,
     s->bi_valid = width - (bytes_out * 8);
 
     /* Taking advantage of the fact that LSB comes first, write to output buffer */
-    MEMCPY(s->pending_buf + s->pending, &out, sizeof(out));
+    memcpy(s->pending_buf + s->pending, &out, sizeof(out));
 
     s->pending += bytes_out;
 }
