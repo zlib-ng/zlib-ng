@@ -17,7 +17,7 @@
  * 3. This notice may not be removed or altered from any source distribution.
  */
 #include "adler32_neon.h"
-#if (defined(__ARM_NEON__) || defined(__ARM_NEON))
+#if defined(__ARM_NEON__) || defined(__ARM_NEON)
 #include <arm_neon.h>
 
 static void NEON_accum32(uint32_t *s, const unsigned char *buf, size_t len) {
