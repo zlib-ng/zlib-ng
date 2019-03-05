@@ -111,7 +111,7 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
 #if BYTE_ORDER == LITTLE_ENDIAN
       functable.crc32=crc32_little;
-#  if __ARM_FEATURE_CRC32 && defined(ARM_ACLE_CRC_HASH)
+#  if defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
       if (arm_cpu_has_crc32)
         functable.crc32=crc32_acle;
 #  endif
