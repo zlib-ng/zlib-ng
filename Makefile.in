@@ -384,10 +384,6 @@ inflate.o: $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zco
 inftrees.o: $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h $(SRCDIR)/inftrees.h
 trees.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h $(SRCDIR)/trees.h
 zutil.o: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/aarch64/adler32_neon.o: $(SRCDIR)/arch/aarch64/adler32_neon.h
-arch/aarch64/crc32_acle.o: zconf$(SUFFIX).h
-arch/aarch64/fill_window_arm.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/aarch64/insert_string_acle.o: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/arm/adler32_neon.o: $(SRCDIR)/arch/arm/adler32_neon.h
 arch/arm/crc32_acle.o: zconf$(SUFFIX).h
 arch/arm/fill_window_arm.o: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
@@ -412,10 +408,6 @@ inflate.lo: $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zc
 inftrees.lo: $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h $(SRCDIR)/inftrees.h
 trees.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h $(SRCDIR)/trees.h
 zutil.lo: $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/aarch64/adler32_neon.lo: $(SRCDIR)/arch/aarch64/adler32_neon.h
-arch/aarch64/crc32_acle.lo: zconf$(SUFFIX).h
-arch/aarch64/fill_window_arm.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
-arch/aarch64/insert_string_acle.lo: $(SRCDIR)/deflate.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 arch/arm/adler32_neon.lo: $(SRCDIR)/arch/arm/adler32_neon.h
 arch/arm/crc32_acle.lo: zconf$(SUFFIX).h
 arch/arm/fill_window_arm.lo: $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/zutil.h $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
