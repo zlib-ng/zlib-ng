@@ -1156,7 +1156,7 @@ case "${ARCH}" in
     # 64-bit ARM specific optimizations
     aarch64)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=aarch64
-        ARCHDIR=arch/aarch64
+        ARCHDIR=arch/arm
         ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o fill_window_arm.o"
         ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo fill_window_arm.lo"
 

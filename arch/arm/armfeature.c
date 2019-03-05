@@ -17,7 +17,7 @@ static int arm_has_crc32() {
 #endif
 }
 
-static int arm_has_neon()
+static inline int arm_has_neon()
 {
 #if defined(__linux__) && defined(HWCAP_NEON)
   return (getauxval(AT_HWCAP) & HWCAP_NEON) != 0 ? 1 : 0;
@@ -38,6 +38,10 @@ ZLIB_INTERNAL int arm_cpu_has_neon;
 ZLIB_INTERNAL int arm_cpu_has_crc32;
 
 void ZLIB_INTERNAL arm_check_features(void) {
+#if defined(__aarch64__)
+  arm_cpu_has_neon = 1; /* always available */
+#else
   arm_cpu_has_neon = arm_has_neon();
+#endif
   arm_cpu_has_crc32 = arm_has_crc32();
 }
