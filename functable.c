@@ -73,7 +73,7 @@ ZLIB_INTERNAL void fill_window_stub(deflate_state *s) {
     functable.fill_window=&fill_window_c;
 
     #ifdef X86_SSE2
-    # ifndef X86_NOCHECK_SSE2
+    # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
     # endif
         functable.fill_window=&fill_window_sse;

@@ -49,6 +49,7 @@ include(CheckFunctionExists)
 include(CheckIncludeFile)
 include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
+include(CMakeDependentOption)
 include(FeatureSummary)
 
 # make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
@@ -476,6 +477,11 @@ check_c_source_compiles(
     MFPU_NEON_AVAILABLE FAIL_REGEX "not supported")
 set(CMAKE_REQUIRED_FLAGS)
 
+# FORCE_SSE2 option will only be shown if HAVE_SSE2_INTRIN is true
+if("${ARCH}" MATCHES "i[3-6]86")
+    cmake_dependent_option(FORCE_SSE2 "Always assume CPU is SSE2 capable" OFF "HAVE_SSE2_INTRIN" OFF)
+endif()
+
 #
 # Enable deflate_medium at level 4-6
 #
@@ -507,9 +513,6 @@ set(ARCHDIR "arch/generic")
 if("${ARCH}" MATCHES "x86_64" OR "${ARCH}" MATCHES "AMD64" OR "${ARCH}" MATCHES "i[3-6]86")
     set(ARCHDIR "arch/x86")
     add_definitions(-DUNALIGNED_OK)
-    if("${ARCH}" MATCHES "x86_64" OR "${ARCH}" MATCHES "AMD64")
-      add_definitions(-DX86_NOCHECK_SSE2)
-    endif()
     add_feature_info(SSE2 1 "Support the SSE2 instruction set, using \"${SSE2FLAG}\"")
 elseif("${ARCH}" MATCHES "arm")
     set(ARCHDIR "arch/arm")
@@ -579,6 +582,10 @@ if(WITH_OPTIM)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/fill_window_sse.c)
             if(NOT ${ARCH} MATCHES "x86_64")
                 add_intrinsics_option("${SSE2FLAG}")
+                add_feature_info(FORCE_SSE2 FORCE_SSE2 "Assume CPU is SSE2 capable")
+                if(FORCE_SSE2)
+                    add_definitions(-DX86_NOCHECK_SSE2)
+                endif()
             endif()
         endif()
         if(HAVE_PCLMULQDQ_INTRIN)
