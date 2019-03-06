@@ -262,18 +262,10 @@ void ZLIB_INTERNAL inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
                     if (op < len) {             /* still need some from output */
                         len -= op;
                         out = chunkcopysafe(out, from, op, safe);
-                        if (dist == 1) {
-                            out = byte_memset(out, len);
-                        } else {
-                            out = chunkunroll(out, &dist, &len);
-                            out = chunkcopysafe(out, out - dist, len, safe);
-                        }
+                        out = chunkunroll(out, &dist, &len);
+                        out = chunkcopysafe(out, out - dist, len, safe);
                     } else {
-                        if (from - out == 1) {
-                            out = byte_memset(out, len);
-                        } else {
-                            out = chunkcopysafe(out, from, len, safe);
-                        }
+                        out = chunkcopysafe(out, from, len, safe);
                     }
 #else
                     from = window;
@@ -319,18 +311,16 @@ void ZLIB_INTERNAL inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
 #endif
                 } else {
 #ifdef INFFAST_CHUNKSIZE
-                    if (dist == 1 && len >= sizeof(uint64_t)) {
-                        out = byte_memset(out, len);
-                    } else {
-                        /* Whole reference is in range of current output.  No
-                           range checks are necessary because we start with room
-                           for at least 258 bytes of output, so unroll and roundoff
-                           operations can write beyond `out+len` so long as they
-                           stay within 258 bytes of `out`.
-                         */
-                        out = chunkunroll(out, &dist, &len);
+                    /* Whole reference is in range of current output.  No
+                       range checks are necessary because we start with room
+                       for at least 258 bytes of output, so unroll and roundoff
+                       operations can write beyond `out+len` so long as they
+                       stay within 258 bytes of `out`.
+                    */
+                    if (dist >= len || dist >= INFFAST_CHUNKSIZE)
                         out = chunkcopy(out, out - dist, len);
-                    }
+                    else
+                        out = chunkmemset(out, dist, len);
 #else
                     if (len < sizeof(uint64_t))
                       out = set_bytes(out, out - dist, dist, len);
