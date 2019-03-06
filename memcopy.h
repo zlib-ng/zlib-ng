@@ -177,22 +177,22 @@ static inline unsigned char *set_bytes(unsigned char *out, unsigned char *from, 
         unsigned char c = *from;
         switch (len) {
         case 7:
-            MEMSET(out, c, 7);
+            memset(out, c, 7);
             return out + 7;
         case 6:
-            MEMSET(out, c, 6);
+            memset(out, c, 6);
             return out + 6;
         case 5:
-            MEMSET(out, c, 5);
+            memset(out, c, 5);
             return out + 5;
         case 4:
-            MEMSET(out, c, 4);
+            memset(out, c, 4);
             return out + 4;
         case 3:
-            MEMSET(out, c, 3);
+            memset(out, c, 3);
             return out + 3;
         case 2:
-            MEMSET(out, c, 2);
+            memset(out, c, 2);
             return out + 2;
         default:
             Assert(0, "should not happen");
@@ -275,7 +275,7 @@ static inline unsigned char *byte_memset(unsigned char *out, unsigned len) {
     unsigned char c = *from;
 
     /* First, deal with the case when LEN is not a multiple of SZ. */
-    MEMSET(out, c, sz);
+    memset(out, c, sz);
     unsigned rem = len % sz;
     len /= sz;
     out += rem;
@@ -284,46 +284,46 @@ static inline unsigned char *byte_memset(unsigned char *out, unsigned len) {
     len -= by8;
     switch (by8) {
     case 7:
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
     case 6:
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
     case 5:
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
     case 4:
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
     case 3:
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
     case 2:
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
     case 1:
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
     }
 
     while (len) {
         /* When sz is a constant, the compiler replaces __builtin_memset with an
            inline version that does not incur a function call overhead. */
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
-        MEMSET(out, c, sz);
+        memset(out, c, sz);
         out += sz;
         len -= 8;
     }
