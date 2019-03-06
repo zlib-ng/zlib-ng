@@ -97,6 +97,7 @@ with_msan=0
 with_fuzzers=0
 floatabi=
 native=0
+forcesse2=0
 sse2flag="-msse2"
 sse4flag="-msse4"
 sse42flag="-msse4.2"
@@ -144,6 +145,7 @@ case "$1" in
       echo '    [--without-optimizations]   Compiles without support for optional instruction sets' | tee -a configure.log
       echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
       echo '    [--acle] [--neon]           Compiles with additional instruction set enabled' | tee -a configure.log
+      echo '    [--force-sse2]              Assume SSE2 instructions are always available (disabled by default on x86, enabled on x86_64)' | tee -a configure.log
       echo '    [--with-sanitizers]         Build with address sanitizer and all supported sanitizers other than memory sanitizer (disabled by default)' | tee -a configure.log
       echo '    [--with-msan]               Build with memory sanitizer (disabled by default)' | tee -a configure.log
       echo '    [--with-fuzzers]            Build test/fuzz (disabled by default)' | tee -a configure.log
@@ -167,6 +169,7 @@ case "$1" in
     -6* | --64) build64=1; shift ;;
     --without-acle) buildacle=0; shift ;;
     --without-neon) buildneon=0; shift ;;
+    --force-sse2) forcesse2=1; shift ;;
     -n | --native) native=1; shift ;;
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
@@ -973,6 +976,11 @@ case "${ARCH}" in
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_sse.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_sse.lo"
 
+                if test $forcesse2 -eq 1; then
+                    CFLAGS="${CFLAGS} -DX86_NOCHECK_SSE2"
+                    SFLAGS="${SFLAGS} -DX86_NOCHECK_SSE2"
+                fi
+
                 # Enable deflate_quick at level 1?
                 # requires SSE2: code uses fill_window_sse
                 if test $without_new_strategies -eq 0; then
@@ -1008,8 +1016,8 @@ case "${ARCH}" in
     x86_64)
         ARCHDIR=arch/x86
 
-        CFLAGS="${CFLAGS} -DX86_NOCHECK_SSE2 -DUNALIGNED_OK"
-        SFLAGS="${SFLAGS} -DX86_NOCHECK_SSE2 -DUNALIGNED_OK"
+        CFLAGS="${CFLAGS} -DUNALIGNED_OK"
+        SFLAGS="${SFLAGS} -DUNALIGNED_OK"
 
         # Enable arch-specific optimizations?
         if test $without_optimizations -eq 0; then
