@@ -65,10 +65,11 @@ static inline unsigned char* chunkcopy(unsigned char *out, unsigned char const *
     out += (len % INFFAST_CHUNKSIZE) + 1;
     from += (len % INFFAST_CHUNKSIZE) + 1;
     len /= INFFAST_CHUNKSIZE;
-    while (len-- > 0) {
+    while (len > 0) {
         storechunk(out, loadchunk(from));
         out += INFFAST_CHUNKSIZE;
         from += INFFAST_CHUNKSIZE;
+        --len;
     }
     return out;
 }
