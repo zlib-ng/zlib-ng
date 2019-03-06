@@ -307,7 +307,7 @@ static inline unsigned char* chunkmemsetsafe(unsigned char *out, unsigned dist, 
     return chunkmemset(out, dist, len);
 }
 
- #endif /* INFFAST_CHUNKSIZE */
+ #else /* INFFAST_CHUNKSIZE */
 
 static inline unsigned char *copy_1_bytes(unsigned char *out, unsigned char *from) {
     *out++ = *from;
@@ -666,4 +666,5 @@ static inline unsigned char *chunk_copy(unsigned char *out, unsigned char *from,
 
     return chunk_memcpy(out, from, len);
 }
+ #endif /* INFFAST_CHUNKSIZE */
 #endif /* MEMCOPY_H_ */
