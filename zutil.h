@@ -238,12 +238,6 @@ void ZLIB_INTERNAL   zcfree(void *opaque, void *ptr);
 #endif
 #endif
 
-#if (defined(__GNUC__) || defined(__clang__))
-#define MEMSET __builtin_memset
-#else
-#define MEMSET memset
-#endif
-
 #if defined(X86_CPUID)
 # include "arch/x86/x86.h"
 #elif defined(__aarch64__)
