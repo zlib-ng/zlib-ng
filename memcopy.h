@@ -2,27 +2,27 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 #ifndef MEMCOPY_H_
-#define MEMCOPY_H_
+ #define MEMCOPY_H_
 
 /* Load 64 bits from IN and place the bytes at offset BITS in the result. */
 static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
   uint64_t chunk;
   memcpy(&chunk, in, sizeof(chunk));
 
-#if BYTE_ORDER == LITTLE_ENDIAN
+ #if BYTE_ORDER == LITTLE_ENDIAN
   return chunk << bits;
-#else
+ #else
   return ZSWAP64(chunk) << bits;
-#endif
+ #endif
 }
 
-#if (defined(__GNUC__) || defined(__clang__)) && defined(__ARM_NEON__)
-#  include <arm_neon.h>
+ #if (defined(__GNUC__) || defined(__clang__)) && defined(__ARM_NEON__)
+  #include <arm_neon.h>
 typedef uint8x16_t inffast_chunk_t;
-#  define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
-#endif
+  #define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
+ #endif
 
-#ifdef INFFAST_CHUNKSIZE
+ #ifdef INFFAST_CHUNKSIZE
 /*
    Ask the compiler to perform a wide, unaligned load with an machine
    instruction appropriate for the inffast_chunk_t type.
@@ -101,7 +101,7 @@ static inline unsigned char* chunkunroll(unsigned char *out, unsigned *dist, uns
     }
     return out;
 }
-#endif
+ #endif /* INFFAST_CHUNKSIZE */
 
 static inline unsigned char *copy_1_bytes(unsigned char *out, unsigned char *from) {
     *out++ = *from;
@@ -156,12 +156,12 @@ static inline unsigned char *copy_8_bytes(unsigned char *out, unsigned char *fro
 static inline unsigned char *copy_bytes(unsigned char *out, unsigned char *from, unsigned len) {
     Assert(len < 8, "copy_bytes should be called with less than 8 bytes");
 
-#ifndef UNALIGNED_OK
+ #ifndef UNALIGNED_OK
     while (len--) {
         *out++ = *from++;
     }
     return out;
-#else
+ #else
     switch (len) {
     case 7:
         return copy_7_bytes(out, from);
@@ -184,19 +184,19 @@ static inline unsigned char *copy_bytes(unsigned char *out, unsigned char *from,
     }
 
     return out;
-#endif /* UNALIGNED_OK */
+ #endif /* UNALIGNED_OK */
 }
 
 /* Copy LEN bytes (7 or fewer) from FROM into OUT. Return OUT + LEN. */
 static inline unsigned char *set_bytes(unsigned char *out, unsigned char *from, unsigned dist, unsigned len) {
     Assert(len < 8, "set_bytes should be called with less than 8 bytes");
 
-#ifndef UNALIGNED_OK
+ #ifndef UNALIGNED_OK
     while (len--) {
         *out++ = *from++;
     }
     return out;
-#else
+ #else
     if (dist >= len)
         return copy_bytes(out, from, len);
 
@@ -287,7 +287,7 @@ static inline unsigned char *set_bytes(unsigned char *out, unsigned char *from, 
         }
     }
     return out;
-#endif /* UNALIGNED_OK */
+ #endif /* UNALIGNED_OK */
 }
 
 /* Byte by byte semantics: copy LEN bytes from OUT + DIST and write them to OUT. Return OUT + LEN. */
