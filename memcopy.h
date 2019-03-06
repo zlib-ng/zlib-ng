@@ -78,9 +78,24 @@ static inline unsigned char* chunkcopy(unsigned char *out, unsigned char const *
  */
 static inline unsigned char* chunkcopysafe(unsigned char *out, unsigned char const *from, unsigned len,
                                            unsigned char *safe) {
-    if (out > safe) {
-        while (len-- > 0) {
-          *out++ = *from++;
+    if ((safe - out) < (ptrdiff_t)INFFAST_CHUNKSIZE) {
+        if (len & 8) {
+            memcpy(out, from, 8);
+            out += 8;
+            from += 8;
+        }
+        if (len & 4) {
+            memcpy(out, from, 4);
+            out += 4;
+            from += 4;
+        }
+        if (len & 2) {
+            memcpy(out, from, 2);
+            out += 2;
+            from += 2;
+        }
+        if (len & 1) {
+            *out++ = *from++;
         }
         return out;
     }
@@ -107,6 +122,191 @@ static inline unsigned char* chunkunroll(unsigned char *out, unsigned *dist, uns
     }
     return out;
 }
+
+static inline inffast_chunk_t chunkmemset_1(unsigned char *from) {
+  #if defined(X86_SSE2)
+    int8_t c;
+    memcpy(&c, from, sizeof(c));
+    return _mm_set1_epi8(c);
+  #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+    return vld1q_dup_u8(from);
+  #endif
+}
+
+static inline inffast_chunk_t chunkmemset_2(unsigned char *from) {
+    int16_t c;
+    memcpy(&c, from, sizeof(c));
+  #if defined(X86_SSE2)
+    return _mm_set1_epi16(c);
+  #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+    return vreinterpretq_u8_s16(vdupq_n_s16(c));
+  #endif
+}
+
+static inline inffast_chunk_t chunkmemset_4(unsigned char *from) {
+    int32_t c;
+    memcpy(&c, from, sizeof(c));
+  #if defined(X86_SSE2)
+    return _mm_set1_epi32(c);
+  #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+    return vreinterpretq_u8_s32(vdupq_n_s32(c));
+  #endif
+}
+
+static inline inffast_chunk_t chunkmemset_8(unsigned char *from) {
+  #if defined(X86_SSE2)
+    int64_t c;
+    memcpy(&c, from, sizeof(c));
+    return _mm_set1_epi64x(c);
+  #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+    return vcombine_u8(vld1_u8(from), vld1_u8(from));
+  #endif
+}
+
+  #if defined(__ARM_NEON__) || defined(__ARM_NEON)
+static inline unsigned char *chunkmemset_3(unsigned char *out, unsigned char *from, unsigned dist, unsigned len) {
+    uint8x8x3_t chunks;
+    unsigned sz = sizeof(chunks);
+    if (len < sz) {
+        out = chunkunroll(out, &dist, &len);
+        return chunkcopy(out, out - dist, len);
+    }
+
+    /* Load 3 bytes 'a,b,c' from FROM and duplicate across all lanes:
+       chunks[0] = {a,a,a,a,a,a,a,a}
+       chunks[1] = {b,b,b,b,b,b,b,b}
+       chunks[2] = {c,c,c,c,c,c,c,c}. */
+    chunks = vld3_dup_u8(from);
+
+    unsigned rem = len % sz;
+    len -= rem;
+    while (len) {
+        /* Store "a,b,c, ..., a,b,c". */
+        vst3_u8(out, chunks);
+        out += sz;
+        len -= sz;
+    }
+
+    if (!rem)
+        return out;
+
+    /* Last, deal with the case when LEN is not a multiple of SZ. */
+    out = chunkunroll(out, &dist, &rem);
+    return chunkcopy(out, out - dist, rem);
+}
+  #endif
+
+  #if defined(__aarch64__)
+static inline unsigned char *chunkmemset_6(unsigned char *out, unsigned char *from, unsigned dist, unsigned len) {
+    uint16x8x3_t chunks;
+    unsigned sz = sizeof(chunks);
+    if (len < sz) {
+        out = chunkunroll(out, &dist, &len);
+        return chunkcopy(out, out - dist, len);
+    }
+
+    /* Load 6 bytes 'ab,cd,ef' from FROM and duplicate across all lanes:
+       chunks[0] = {ab,ab,ab,ab,ab,ab,ab,ab}
+       chunks[1] = {cd,cd,cd,cd,cd,cd,cd,cd}
+       chunks[2] = {ef,ef,ef,ef,ef,ef,ef,ef}. */
+    chunks = vld3q_dup_u16((unsigned short *)from);
+
+    unsigned rem = len % sz;
+    len -= rem;
+    while (len) {
+        /* Store "ab,cd,ef, ..., ab,cd,ef". */
+        vst3q_u16((unsigned short *)out, chunks);
+        out += sz;
+        len -= sz;
+    }
+
+    if (rem)
+        return out;
+
+    /* Last, deal with the case when LEN is not a multiple of SZ. */
+    out = chunkunroll(out, &dist, &rem);
+    return chunkcopy(out, out - dist, rem);
+}
+  #endif
+
+/* Copy DIST bytes from OUT - DIST into OUT + DIST * k, for 0 <= k < LEN/DIST. Return OUT + LEN. */
+static inline unsigned char *chunkmemset(unsigned char *out, unsigned dist, unsigned len) {
+    Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks");
+    Assert(dist > 0, "cannot have a distance 0");
+
+    unsigned char *from = out - dist;
+    inffast_chunk_t chunk;
+    unsigned sz = sizeof(chunk);
+    if (len < sz) {
+        do {
+            *out++ = *from++;
+            --len;
+        } while (len != 0);
+        return out;
+    }
+
+    switch (dist) {
+    case 1: {
+        chunk = chunkmemset_1(from);
+        break;
+    }
+    case 2: {
+        chunk = chunkmemset_2(from);
+        break;
+    }
+  #if defined(__ARM_NEON__) || defined(__ARM_NEON)
+    case 3:
+      return chunkmemset_3(out, from, dist, len);
+  #endif
+    case 4: {
+        chunk = chunkmemset_4(from);
+        break;
+    }
+  #if defined(__aarch64__)
+    case 6:
+        return chunkmemset_6(out, from, dist, len);
+  #endif
+    case 8: {
+        chunk = chunkmemset_8(from);
+        break;
+    }
+    case 16:
+        memcpy(&chunk, from, sz);
+        break;
+
+    default:
+        out = chunkunroll(out, &dist, &len);
+        return chunkcopy(out, out - dist, len);
+    }
+
+    unsigned rem = len % sz;
+    len -= rem;
+    while (len) {
+        memcpy(out, &chunk, sz);
+        out += sz;
+        len -= sz;
+    }
+
+    /* Last, deal with the case when LEN is not a multiple of SZ. */
+    if (rem)
+        memcpy(out, &chunk, rem);
+    out += rem;
+    return out;
+}
+
+static inline unsigned char* chunkmemsetsafe(unsigned char *out, unsigned dist, unsigned len, unsigned left) {
+    if (left < (unsigned)(3 * INFFAST_CHUNKSIZE)) {
+        while (len > 0) {
+          *out = *(out - dist);
+          out++;
+          --len;
+        }
+        return out;
+    }
+
+    return chunkmemset(out, dist, len);
+}
+
  #endif /* INFFAST_CHUNKSIZE */
 
 static inline unsigned char *copy_1_bytes(unsigned char *out, unsigned char *from) {
@@ -466,5 +666,4 @@ static inline unsigned char *chunk_copy(unsigned char *out, unsigned char *from,
 
     return chunk_memcpy(out, from, len);
 }
-
 #endif /* MEMCOPY_H_ */
