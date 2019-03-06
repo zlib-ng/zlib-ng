@@ -301,7 +301,7 @@ int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, 
 
     s->hash_size = 1 << s->hash_bits;
     s->hash_mask = s->hash_size - 1;
-#if !defined(__x86_64) && !defined(__i386_)
+#if !defined(__x86_64__) && !defined(_M_X64) && !defined(__i386) && !defined(_M_IX86)
     s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
 #endif
 
