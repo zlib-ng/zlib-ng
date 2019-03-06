@@ -1164,18 +1164,26 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
                     copy = state->length;
                 if (copy > left)
                     copy = left;
+#if defined(INFFAST_CHUNKSIZE)
+                put = chunkcopysafe(put, from, copy, put + left);
+#else
                 if (copy >= sizeof(uint64_t))
                     put = chunk_memcpy(put, from, copy);
                 else
                     put = copy_bytes(put, from, copy);
+#endif
             } else {                             /* copy from output */
                 copy = state->length;
                 if (copy > left)
                     copy = left;
+#if defined(INFFAST_CHUNKSIZE)
+                put = chunkmemsetsafe(put, state->offset, copy, left);
+#else
                 if (copy >= sizeof(uint64_t))
                     put = chunk_memset(put, put - state->offset, state->offset, copy);
                 else
                     put = set_bytes(put, put - state->offset, state->offset, copy);
+#endif
             }
             left -= copy;
             state->length -= copy;
