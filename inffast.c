@@ -138,7 +138,7 @@ void ZLIB_INTERNAL inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
     end = out + (strm->avail_out - (INFLATE_FAST_MIN_LEFT - 1));
 
 #ifdef INFFAST_CHUNKSIZE
-    safe = out + (strm->avail_out - INFFAST_CHUNKSIZE);
+    safe = out + strm->avail_out;
 #endif
 #ifdef INFLATE_STRICT
     dmax = state->dmax;
