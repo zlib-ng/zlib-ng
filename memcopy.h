@@ -399,6 +399,7 @@ static inline unsigned char *set_bytes(unsigned char *out, unsigned char *from, 
     Assert(len < 8, "set_bytes should be called with less than 8 bytes");
 
  #ifndef UNALIGNED_OK
+    (void)dist;
     while (len--) {
         *out++ = *from++;
     }
