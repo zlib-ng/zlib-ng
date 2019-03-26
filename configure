@@ -718,7 +718,7 @@ echo >> configure.log
 echo -n "Checking for ptrdiff_t... " | tee -a configure.log
 cat > $test.c <<EOF
 #include <stddef.h>
-int fun(ptrdiff_t *a) { return 0; }
+int fun(ptrdiff_t *a) { (void)a; return 0; }
 EOF
 if try $CC -c $CFLAGS $test.c; then
   echo "Yes." | tee -a configure.log
@@ -730,7 +730,7 @@ else
     echo -n "Checking for sizeof(void *)... " | tee -a configure.log
     cat > $test.c <<EOF
 #include <stdint.h>
-#define COMPILE_TIME_ASSERT(pred) struct s { int x: (pred) ? 1 : -1; };
+#define COMPILE_TIME_ASSERT(pred) struct s { int x: (pred) ? 1 : -1; }
 COMPILE_TIME_ASSERT(sizeof(int32_t) == sizeof(void *));
 EOF
     if try $CC -c $CFLAGS $test.c; then
@@ -740,7 +740,7 @@ EOF
     else
         cat > $test.c <<EOF
 #include <stdint.h>
-#define COMPILE_TIME_ASSERT(pred) struct s { int x: (pred) ? 1 : -1; };
+#define COMPILE_TIME_ASSERT(pred) struct s { int x: (pred) ? 1 : -1; }
 COMPILE_TIME_ASSERT(sizeof(int64_t) == sizeof(void *));
 EOF
         if try $CC -c $CFLAGS $test.c; then

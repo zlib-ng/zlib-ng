@@ -538,6 +538,9 @@ int main(int argc, char *argv[])
 #ifdef WITH_GZFILEOP
     test_gzio((argc > 1 ? argv[1] : TESTFILE),
               uncompr, uncomprLen);
+#else
+    (void)argc;
+    (void)argv;
 #endif
 
     test_deflate(compr, comprLen);
