@@ -9,6 +9,8 @@
 #define ADLER32_P_H
 
 #define BASE 65521U     /* largest prime smaller than 65536 */
+#define NMAX 5552
+/* NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 */
 
 /* use NO_DIVIDE if your processor does not do division in hardware --
    try it both ways to see which is faster */

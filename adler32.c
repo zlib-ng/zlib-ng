@@ -13,9 +13,6 @@
 uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len2);
 
-#define NMAX 5552
-/* NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 */
-
 #define DO1(buf, i)  {adler += (buf)[i]; sum2 += adler;}
 #define DO2(buf, i)  DO1(buf, i); DO1(buf, i+1);
 #define DO4(buf, i)  DO2(buf, i); DO2(buf, i+2);
