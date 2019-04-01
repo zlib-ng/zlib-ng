@@ -266,7 +266,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   CFLAGS="${CFLAGS} -std=c99"
 
   # Re-check ARCH if the compiler is a cross-compiler.
-  if $CC -print-multiarch && test -n "$($CC -print-multiarch)" 1> /dev/null 2>&1; then
+  if $CC -print-multiarch 1> /dev/null 2>&1 && test -n "$($CC -print-multiarch)" 1> /dev/null 2>&1; then
       CC_ARCH=`$CC $CFLAGS -print-multiarch | sed 's/-.*//g'`
   else
       CC_ARCH=`$CC $CFLAGS -dumpmachine | sed 's/-.*//g'`
