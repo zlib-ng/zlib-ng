@@ -1691,8 +1691,9 @@ Z_EXTERN Z_EXPORT
 uint32_t zng_adler32(uint32_t adler, const uint8_t *buf, uint32_t len);
 /*
      Update a running Adler-32 checksum with the bytes buf[0..len-1] and
-   return the updated checksum.  If buf is NULL, this function returns the
-   required initial value for the checksum.
+   return the updated checksum. An Adler-32 value is in the range of a 32-bit
+   unsigned integer. If buf is Z_NULL, this function returns the required
+   initial value for the checksum.
 
      An Adler-32 checksum is almost as reliable as a CRC-32 but can be computed
    much faster.
@@ -1728,9 +1729,10 @@ Z_EXTERN Z_EXPORT
 uint32_t zng_crc32(uint32_t crc, const uint8_t *buf, uint32_t len);
 /*
      Update a running CRC-32 with the bytes buf[0..len-1] and return the
-   updated CRC-32.  If buf is NULL, this function returns the required
-   initial value for the crc.  Pre- and post-conditioning (one's complement) is
-   performed within this function so it shouldn't be done by the application.
+   updated CRC-32. A CRC-32 value is in the range of a 32-bit unsigned integer.
+   If buf is Z_NULL, this function returns the required initial value for the
+   crc. Pre- and post-conditioning (one's complement) is performed within this
+   function so it shouldn't be done by the application.
 
    Usage example:
 
