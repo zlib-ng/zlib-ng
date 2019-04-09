@@ -203,6 +203,9 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                 hash_head = functable.quick_insert_string(s, s->strstart);
             }
 
+            if (hash_head && hash_head == s->strstart)
+                hash_head--;
+
             current_match.strstart = (uint16_t)s->strstart;
             current_match.orgstart = current_match.strstart;
 
@@ -237,6 +240,9 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         if (LIKELY(!early_exit && s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < (s->window_size - MIN_LOOKAHEAD))) {
             s->strstart = current_match.strstart + current_match.match_length;
             hash_head = functable.quick_insert_string(s, s->strstart);
+
+            if (hash_head && hash_head == s->strstart)
+                hash_head--;
 
             next_match.strstart = (uint16_t)s->strstart;
             next_match.orgstart = next_match.strstart;
