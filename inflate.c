@@ -89,25 +89,29 @@
 #include "functable.h"
 
 /* Architecture-specific hooks. */
+#ifdef S390_DFLTCC_INFLATE
+#  include "arch/s390/dfltcc_inflate.h"
+#else
 /* Memory management for the inflate state. Useful for allocating arch-specific extension blocks. */
-#define ZALLOC_STATE(strm, items, size) ZALLOC(strm, items, size)
-#define ZFREE_STATE(strm, addr) ZFREE(strm, addr)
-#define ZCOPY_STATE(dst, src, size) memcpy(dst, src, size)
+#  define ZALLOC_STATE(strm, items, size) ZALLOC(strm, items, size)
+#  define ZFREE_STATE(strm, addr) ZFREE(strm, addr)
+#  define ZCOPY_STATE(dst, src, size) memcpy(dst, src, size)
 /* Memory management for the window. Useful for allocation the aligned window. */
-#define ZALLOC_WINDOW(strm, items, size) ZALLOC(strm, items, size)
-#define ZFREE_WINDOW(strm, addr) ZFREE(strm, addr)
+#  define ZALLOC_WINDOW(strm, items, size) ZALLOC(strm, items, size)
+#  define ZFREE_WINDOW(strm, addr) ZFREE(strm, addr)
 /* Invoked at the end of inflateResetKeep(). Useful for initializing arch-specific extension blocks. */
-#define INFLATE_RESET_KEEP_HOOK(strm) do {} while (0)
+#  define INFLATE_RESET_KEEP_HOOK(strm) do {} while (0)
 /* Invoked at the beginning of inflatePrime(). Useful for updating arch-specific buffers. */
-#define INFLATE_PRIME_HOOK(strm, bits, value) do {} while (0)
+#  define INFLATE_PRIME_HOOK(strm, bits, value) do {} while (0)
 /* Invoked at the beginning of each block. Useful for plugging arch-specific inflation code. */
-#define INFLATE_TYPEDO_HOOK(strm, flush) do {} while (0)
+#  define INFLATE_TYPEDO_HOOK(strm, flush) do {} while (0)
 /* Returns whether zlib-ng should compute a checksum. Set to 0 if arch-specific inflation code already does that. */
-#define INFLATE_NEED_CHECKSUM(strm) 1
+#  define INFLATE_NEED_CHECKSUM(strm) 1
 /* Returns whether zlib-ng should update a window. Set to 0 if arch-specific inflation code already does that. */
-#define INFLATE_NEED_UPDATEWINDOW(strm) 1
+#  define INFLATE_NEED_UPDATEWINDOW(strm) 1
 /* Invoked at the beginning of inflateMark(). Useful for updating arch-specific pointers and offsets. */
-#define INFLATE_MARK_HOOK(strm) do {} while (0)
+#  define INFLATE_MARK_HOOK(strm) do {} while (0)
+#endif
 
 #ifdef MAKEFIXED
 #  ifndef BUILDFIXED

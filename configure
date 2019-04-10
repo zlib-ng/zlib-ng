@@ -92,6 +92,8 @@ build32=0
 build64=0
 buildacle=1
 buildneon=1
+builddfltccdeflate=0
+builddfltccinflate=0
 with_sanitizers=0
 with_msan=0
 with_fuzzers=0
@@ -146,6 +148,8 @@ case "$1" in
       echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
       echo '    [--without-acle]            Compiles without ARM C Language Extensions' | tee -a configure.log
       echo '    [--without-neon]            Compiles without ARM Neon SIMD instruction set' | tee -a configure.log
+      echo '    [--with-dfltcc-deflate]     Use DEFLATE COMPRESSION CALL instruction for compression on IBM Z' | tee -a configure.log
+      echo '    [--with-dfltcc-inflate]     Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z' | tee -a configure.log
       echo '    [--force-sse2]              Assume SSE2 instructions are always available (disabled by default on x86, enabled on x86_64)' | tee -a configure.log
       echo '    [--with-sanitizers]         Build with address sanitizer and all supported sanitizers other than memory sanitizer (disabled by default)' | tee -a configure.log
       echo '    [--with-msan]               Build with memory sanitizer (disabled by default)' | tee -a configure.log
@@ -170,6 +174,8 @@ case "$1" in
     -6* | --64) build64=1; shift ;;
     --without-acle) buildacle=0; shift ;;
     --without-neon) buildneon=0; shift ;;
+    --with-dfltcc-deflate) builddfltccdeflate=1; shift ;;
+    --with-dfltcc-inflate) builddfltccinflate=1; shift ;;
     --force-sse2) forcesse2=1; shift ;;
     -n | --native) native=1; shift ;;
     -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
@@ -182,6 +188,7 @@ case "$1" in
     --with-sanitizers) with_sanitizers=1; shift ;;
     --with-msan) with_msan=1; shift ;;
     --with-fuzzers) with_fuzzers=1; shift ;;
+
     *)
       echo "unknown option: $1" | tee -a configure.log
       echo "$0 --help for help" | tee -a configure.log
@@ -950,6 +957,19 @@ EOF
         ;;
 esac
 
+# Check whether sys/sdt.h is available
+cat > $test.c << EOF
+#include <sys/sdt.h>
+int main() { return 0; }
+EOF
+if try ${CC} ${CFLAGS} $test.c; then
+    echo "Checking for sys/sdt.h ... Yes." | tee -a configure.log
+    CFLAGS="$CFLAGS -DHAVE_SYS_SDT_H"
+    SFLAGS="$SFLAGS -DHAVE_SYS_SDT_H"
+else
+    echo "Checking for sys/sdt.h ... No." | tee -a configure.log
+fi
+
 ARCHDIR='arch/generic'
 ARCH_STATIC_OBJS=''
 ARCH_SHARED_OBJS=''
@@ -1192,6 +1212,28 @@ case "${ARCH}" in
     ;;
     powerpc64)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=ppc64
+    ;;
+    s390x)
+        [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=s390x
+        ARCHDIR=arch/s390
+        if test $builddfltccdeflate -eq 1 -o $builddfltccinflate -eq 1; then
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_common.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_common.lo"
+        fi
+        if test $builddfltccdeflate -eq 1; then
+            CFLAGS="${CFLAGS} -DS390_DFLTCC_DEFLATE"
+            SFLAGS="${SFLAGS} -DS390_DFLTCC_DEFLATE"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_deflate.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_deflate.lo"
+            ARCH="${ARCH}+dfltcc-deflate"
+        fi
+        if test $builddfltccinflate -eq 1; then
+            CFLAGS="${CFLAGS} -DS390_DFLTCC_INFLATE"
+            SFLAGS="${SFLAGS} -DS390_DFLTCC_INFLATE"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_inflate.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_inflate.lo"
+            ARCH="${ARCH}+dfltcc-inflate"
+        fi
     ;;
     *)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=$ARCH
