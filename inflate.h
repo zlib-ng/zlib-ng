@@ -127,4 +127,6 @@ struct inflate_state {
     unsigned was;               /* initial length of match */
 };
 
+int ZLIB_INTERNAL inflate_ensure_window(struct inflate_state *state);
+
 #endif /* INFLATE_H_ */

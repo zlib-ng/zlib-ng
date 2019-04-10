@@ -359,6 +359,33 @@ void makefixed(void) {
 }
 #endif /* MAKEFIXED */
 
+int ZLIB_INTERNAL inflate_ensure_window(struct inflate_state *state)
+{
+    /* if it hasn't been done already, allocate space for the window */
+    if (state->window == NULL) {
+#ifdef INFFAST_CHUNKSIZE
+        unsigned wsize = 1U << state->wbits;
+        state->window = (unsigned char *) ZALLOC(state->strm, wsize + INFFAST_CHUNKSIZE, sizeof(unsigned char));
+        if (state->window == Z_NULL)
+            return 1;
+        memset(state->window + wsize, 0, INFFAST_CHUNKSIZE);
+#else
+        state->window = (unsigned char *) ZALLOC(state->strm, 1U << state->wbits, sizeof(unsigned char));
+        if (state->window == NULL)
+            return 1;
+#endif
+    }
+
+    /* if window not in use yet, initialize */
+    if (state->wsize == 0) {
+        state->wsize = 1U << state->wbits;
+        state->wnext = 0;
+        state->whave = 0;
+    }
+
+    return 0;
+}
+
 /*
    Update the window with the last wsize (normally 32K) bytes written before
    returning.  If window does not exist yet, create it.  This is only called
@@ -379,27 +406,7 @@ static int updatewindow(PREFIX3(stream) *strm, const unsigned char *end, uint32_
 
     state = (struct inflate_state *)strm->state;
 
-    /* if it hasn't been done already, allocate space for the window */
-    if (state->window == NULL) {
-#ifdef INFFAST_CHUNKSIZE
-        unsigned wsize = 1U << state->wbits;
-        state->window = (unsigned char *) ZALLOC(strm, wsize + INFFAST_CHUNKSIZE, sizeof(unsigned char));
-        if (state->window == Z_NULL)
-            return 1;
-        memset(state->window + wsize, 0, INFFAST_CHUNKSIZE);
-#else
-        state->window = (unsigned char *) ZALLOC(strm, 1U << state->wbits, sizeof(unsigned char));
-        if (state->window == NULL)
-            return 1;
-#endif
-    }
-
-    /* if window not in use yet, initialize */
-    if (state->wsize == 0) {
-        state->wsize = 1U << state->wbits;
-        state->wnext = 0;
-        state->whave = 0;
-    }
+    if (inflate_ensure_window(state)) return 1;
 
     /* copy state->wsize or less output bytes into the circular window */
     if (copy >= state->wsize) {
