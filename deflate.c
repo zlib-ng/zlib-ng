@@ -83,7 +83,6 @@ static block_state deflate_rle   (deflate_state *s, int flush);
 static block_state deflate_huff  (deflate_state *s, int flush);
 static void lm_init              (deflate_state *s);
 static void putShortMSB          (deflate_state *s, uint16_t b);
-ZLIB_INTERNAL void flush_pending (PREFIX3(stream) *strm);
 ZLIB_INTERNAL unsigned read_buf  (PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
 extern void crc_reset(deflate_state *const s);

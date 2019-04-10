@@ -336,6 +336,8 @@ void ZLIB_INTERNAL _tr_flush_bits(deflate_state *s);
 void ZLIB_INTERNAL _tr_align(deflate_state *s);
 void ZLIB_INTERNAL _tr_stored_block(deflate_state *s, char *buf, unsigned long stored_len, int last);
 void ZLIB_INTERNAL bi_windup(deflate_state *s);
+unsigned ZLIB_INTERNAL bi_reverse(unsigned code, int len);
+void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
 
 #define d_code(dist) ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
 /* Mapping from a distance to a distance code. dist is the distance - 1 and
