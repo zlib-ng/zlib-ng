@@ -71,3 +71,6 @@ a.out
 /zlib.dir
 /zlibstatic.dir
 /win32/Debug
+
+/.idea
+/cmake-build-debug
