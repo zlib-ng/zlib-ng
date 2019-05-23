@@ -1710,3 +1710,122 @@ void send_bits(deflate_state *s, int value, int length) {
     }
 }
 #endif
+
+#ifndef ZLIB_COMPAT
+/* =========================================================================
+ * Checks whether buffer size is sufficient and whether this parameter is a duplicate.
+ */
+static int deflateSetParamPre(zng_deflate_param_value **out, size_t min_size, zng_deflate_param_value *param) {
+    int buf_error = param->size < min_size;
+
+    if (*out != NULL) {
+        (*out)->status = Z_BUF_ERROR;
+        buf_error = 1;
+    }
+    *out = param;
+    return buf_error;
+}
+
+/* ========================================================================= */
+int ZEXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count) {
+    size_t i;
+    deflate_state *s;
+    zng_deflate_param_value *new_level = NULL;
+    zng_deflate_param_value *new_strategy = NULL;
+    int param_buf_error;
+    int version_error = 0;
+    int buf_error = 0;
+    int stream_error = 0;
+    int ret;
+
+    /* Initialize the statuses. */
+    for (i = 0; i < count; i++)
+        params[i].status = Z_OK;
+
+    /* Check whether the stream state is consistent. */
+    if (deflateStateCheck(strm))
+        return Z_STREAM_ERROR;
+    s = strm->state;
+
+    /* Check buffer sizes and detect duplicates. */
+    for (i = 0; i < count; i++) {
+        switch (params[i].param) {
+            case Z_DEFLATE_LEVEL:
+                param_buf_error = deflateSetParamPre(&new_level, sizeof(int), &params[i]);
+                break;
+            case Z_DEFLATE_STRATEGY:
+                param_buf_error = deflateSetParamPre(&new_strategy, sizeof(int), &params[i]);
+                break;
+            default:
+                params[i].status = Z_VERSION_ERROR;
+                version_error = 1;
+                param_buf_error = 0;
+                break;
+        }
+        if (param_buf_error) {
+            params[i].status = Z_BUF_ERROR;
+            buf_error = 1;
+        }
+    }
+    /* Exit early if small buffers or duplicates are detected. */
+    if (buf_error)
+        return Z_BUF_ERROR;
+
+    /* Apply changes, remember if there were errors. */
+    if (new_level != NULL || new_strategy != NULL) {
+        ret = PREFIX(deflateParams)(strm, new_level == NULL ? s->level : *(int *)new_level->buf,
+                                    new_strategy == NULL ? s->strategy : *(int *)new_strategy->buf);
+        if (ret != Z_OK) {
+            if (new_level != NULL)
+                new_level->status = Z_STREAM_ERROR;
+            if (new_strategy != NULL)
+                new_strategy->status = Z_STREAM_ERROR;
+            stream_error = 1;
+        }
+    }
+
+    /* Report version errors only if there are no real errors. */
+    return stream_error ? Z_STREAM_ERROR : (version_error ? Z_VERSION_ERROR : Z_OK);
+}
+
+/* ========================================================================= */
+int ZEXPORT zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count) {
+    deflate_state *s;
+    size_t i;
+    int buf_error = 0;
+    int version_error = 0;
+
+    /* Initialize the statuses. */
+    for (i = 0; i < count; i++)
+        params[i].status = Z_OK;
+
+    /* Check whether the stream state is consistent. */
+    if (deflateStateCheck(strm))
+        return Z_STREAM_ERROR;
+    s = strm->state;
+
+    for (i = 0; i < count; i++) {
+        switch (params[i].param) {
+            case Z_DEFLATE_LEVEL:
+                if (params[i].size < sizeof(int))
+                    params[i].status = Z_BUF_ERROR;
+                else
+                    *(int *)params[i].buf = s->level;
+                break;
+            case Z_DEFLATE_STRATEGY:
+                if (params[i].size < sizeof(int))
+                    params[i].status = Z_BUF_ERROR;
+                else
+                    *(int *)params[i].buf = s->strategy;
+                break;
+            default:
+                params[i].status = Z_VERSION_ERROR;
+                version_error = 1;
+                break;
+        }
+        if (params[i].status == Z_BUF_ERROR)
+            buf_error = 1;
+    }
+    return buf_error ? Z_BUF_ERROR : (version_error ? Z_VERSION_ERROR : Z_OK);
+}
+#endif
