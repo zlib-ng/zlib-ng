@@ -284,6 +284,9 @@ typedef struct internal_state {
      * This is set to 1 if there is an active block, or 0 if the block was just
      * closed.
      */
+    int reproducible;
+    /* Whether reproducible compression results are required.
+     */
 
 } deflate_state;
 

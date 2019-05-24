@@ -94,6 +94,8 @@ const char deflate_copyright[] = " deflate 1.2.11.f Copyright 1995-2016 Jean-lou
 #  define DEFLATE_HOOK(strm, flush, bstate) 0
 /* Returns whether zlib-ng should compute a checksum. Set to 0 if arch-specific deflation code already does that. */
 #  define DEFLATE_NEED_CHECKSUM(strm) 1
+/* Returns whether reproducibility parameter can be set to a given value. */
+#  define DEFLATE_CAN_SET_REPRODUCIBLE(strm, reproducible) 1
 #endif
 
 /* ===========================================================================
@@ -409,6 +411,7 @@ int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, 
     s->strategy = strategy;
     s->method = (unsigned char)method;
     s->block_open = 0;
+    s->reproducible = 0;
 
     return PREFIX(deflateReset)(strm);
 }
@@ -1732,11 +1735,13 @@ int ZEXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value *para
     deflate_state *s;
     zng_deflate_param_value *new_level = NULL;
     zng_deflate_param_value *new_strategy = NULL;
+    zng_deflate_param_value *new_reproducible = NULL;
     int param_buf_error;
     int version_error = 0;
     int buf_error = 0;
     int stream_error = 0;
     int ret;
+    int val;
 
     /* Initialize the statuses. */
     for (i = 0; i < count; i++)
@@ -1755,6 +1760,9 @@ int ZEXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value *para
                 break;
             case Z_DEFLATE_STRATEGY:
                 param_buf_error = deflateSetParamPre(&new_strategy, sizeof(int), &params[i]);
+                break;
+            case Z_DEFLATE_REPRODUCIBLE:
+                param_buf_error = deflateSetParamPre(&new_reproducible, sizeof(int), &params[i]);
                 break;
             default:
                 params[i].status = Z_VERSION_ERROR;
@@ -1780,6 +1788,15 @@ int ZEXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value *para
                 new_level->status = Z_STREAM_ERROR;
             if (new_strategy != NULL)
                 new_strategy->status = Z_STREAM_ERROR;
+            stream_error = 1;
+        }
+    }
+    if (new_reproducible != NULL) {
+        val = *(int *)new_reproducible->buf;
+        if (DEFLATE_CAN_SET_REPRODUCIBLE(strm, val))
+            s->reproducible = val;
+        else {
+            new_reproducible->status = Z_STREAM_ERROR;
             stream_error = 1;
         }
     }
@@ -1817,6 +1834,12 @@ int ZEXPORT zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value *para
                     params[i].status = Z_BUF_ERROR;
                 else
                     *(int *)params[i].buf = s->strategy;
+                break;
+            case Z_DEFLATE_REPRODUCIBLE:
+                if (params[i].size < sizeof(int))
+                    params[i].status = Z_BUF_ERROR;
+                else
+                    *(int *)params[i].buf = s->reproducible;
                 break;
             default:
                 params[i].status = Z_VERSION_ERROR;
