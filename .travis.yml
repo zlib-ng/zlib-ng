@@ -54,7 +54,7 @@ matrix:
             - gcc-aarch64-linux-gnu
             - libc-dev-arm64-cross
       # For all aarch64 implementations NEON is mandatory, while crypto/crc are not.
-      env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="cmake . -DZLIB_COMPAT=ON"
     - os: linux
       compiler: aarch64-linux-gnu-gcc
       addons:
@@ -63,7 +63,7 @@ matrix:
             - qemu
             - gcc-aarch64-linux-gnu
             - libc-dev-arm64-cross
-      env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="cmake . -DZLIB_COMPAT=ON"
     # Hard-float subsets
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
@@ -73,7 +73,7 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
-      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn"
+      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="cmake ."
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
       addons:
@@ -82,7 +82,7 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
-      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn --zlib-compat --without-neon"
+      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="cmake . -DZLIB_COMPAT=ON -DWITH_NEON=OFF"
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
       addons:
@@ -91,7 +91,7 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
-      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="cmake . -DZLIB_COMPAT=ON"
     # Soft-float subset
     - os: linux
       compiler: arm-linux-gnueabi-gcc
@@ -101,7 +101,7 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
-      env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="./configure"
+      env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="cmake ."
     - os: linux
       compiler: arm-linux-gnueabi-gcc
       addons:
@@ -110,6 +110,6 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
-      env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="./configure --zlib-compat"
+      env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="cmake . -DZLIB_COMPAT=ON"
 
 script: mkdir -p $BUILDDIR && cd $BUILDDIR && $TOOL && $MAKE -j2 && $MAKE test
