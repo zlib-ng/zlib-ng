@@ -114,8 +114,8 @@ if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
 endif()
 
 if("${ARCH}" MATCHES "s390x")
-    option(WITH_DFLTCC_DEFLATE "Use DEFLATE COMPRESSION CALL instruction for compression on IBM Z" OFF)
-    option(WITH_DFLTCC_INFLATE "Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z" OFF)
+    option(WITH_DFLTCC_DEFLATE "Use DEFLATE CONVERSION CALL instruction for compression on IBM Z" OFF)
+    option(WITH_DFLTCC_INFLATE "Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z" OFF)
 endif()
 
 if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${CMAKE_C_COMPILER} MATCHES "icl")

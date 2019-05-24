@@ -148,8 +148,8 @@ case "$1" in
       echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
       echo '    [--without-acle]            Compiles without ARM C Language Extensions' | tee -a configure.log
       echo '    [--without-neon]            Compiles without ARM Neon SIMD instruction set' | tee -a configure.log
-      echo '    [--with-dfltcc-deflate]     Use DEFLATE COMPRESSION CALL instruction for compression on IBM Z' | tee -a configure.log
-      echo '    [--with-dfltcc-inflate]     Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z' | tee -a configure.log
+      echo '    [--with-dfltcc-deflate]     Use DEFLATE CONVERSION CALL instruction for compression on IBM Z' | tee -a configure.log
+      echo '    [--with-dfltcc-inflate]     Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z' | tee -a configure.log
       echo '    [--force-sse2]              Assume SSE2 instructions are always available (disabled by default on x86, enabled on x86_64)' | tee -a configure.log
       echo '    [--with-sanitizers]         Build with address sanitizer and all supported sanitizers other than memory sanitizer (disabled by default)' | tee -a configure.log
       echo '    [--with-msan]               Build with memory sanitizer (disabled by default)' | tee -a configure.log

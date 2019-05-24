@@ -1,8 +1,13 @@
-This directory contains IBM Z DEFLATE CONVERSION CALL support to
+This directory contains IBM Z DEFLATE CONVERSION CALL support for
 zlib-ng. In order to enable it, the following build commands should be
 used:
 
     $ ./configure --with-dfltcc-deflate --with-dfltcc-inflate
+    $ make
+
+or
+
+    $ cmake -DWITH_DFLTCC_DEFLATE=1 -DWITH_DFLTCC_INFLATE=1 .
     $ make
 
 When built like this, zlib-ng would compress in hardware on level 1,
@@ -53,9 +58,9 @@ than the one implemented in software. DEFLATE_BOUND_ADJUST_COMPLEN and
 DEFLATE_NEED_CONSERVATIVE_BOUND macros make deflateBound() return the
 correct results for the hardware implementation.
 
-Actual compression and decompression are handled by the new DEFLATE_HOOK
-and INFLATE_TYPEDO_HOOK macros. Since inflation with DFLTCC manages the
-window on its own, calling updatewindow() is suppressed using the new
+Actual compression and decompression are handled by DEFLATE_HOOK and
+INFLATE_TYPEDO_HOOK macros. Since inflation with DFLTCC manages the
+window on its own, calling updatewindow() is suppressed using
 INFLATE_NEED_UPDATEWINDOW() macro.
 
 In addition to compression, DFLTCC computes CRC-32 and Adler-32

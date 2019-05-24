@@ -7,7 +7,7 @@
 /*
    Memory management.
 
-   DFLTCC requires parameter blocks and window to be aligned. zlib allows
+   DFLTCC requires parameter blocks and window to be aligned. zlib-ng allows
    users to specify their own allocation functions, so using e.g.
    `posix_memalign' is not an option. Thus, we overallocate and take the
    aligned portion of the buffer.
@@ -52,7 +52,7 @@ void ZLIB_INTERNAL dfltcc_reset(PREFIX3(streamp) strm, uInt size)
 void ZLIB_INTERNAL *dfltcc_alloc_state(PREFIX3(streamp) strm, uInt items, uInt size)
 {
     Assert((items * size) % 8 == 0,
-           "The size of zlib state must be a multiple of 8");
+           "The size of zlib-ng state must be a multiple of 8");
     return ZALLOC(strm, items * size + sizeof(struct dfltcc_state), sizeof(unsigned char));
 }
 
