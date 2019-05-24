@@ -10,16 +10,7 @@ matrix:
   include:
     - os: linux
       compiler: gcc
-      env: BUILDDIR=. TOOL="./configure --warn"
-    - os: linux
-      compiler: gcc
       env: BUILDDIR=. TOOL="cmake . -DZLIB_COMPAT=OFF -DWITH_GZFILEOP=ON -DWITH_NEW_STRATEGIES=YES -DWITH_OPTIM=ON"
-    - os: linux
-      compiler: gcc
-      env: BUILDDIR=../build TOOL="../zlib-ng/configure --warn --zlib-compat"
-    - os: linux
-      compiler: gcc
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat --without-optimizations --without-new-strategies"
     - os: linux
       compiler: gcc
       env: BUILDDIR=. TOOL="cmake ."
@@ -27,9 +18,6 @@ matrix:
       compiler: gcc
       env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
 
-    - os: linux
-      compiler: clang
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
     - os: linux
       compiler: clang
       env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
@@ -39,17 +27,8 @@ matrix:
 
     - os: osx
       compiler: gcc
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
-    - os: osx
-      compiler: gcc
-      env: BUILDDIR=../build TOOL="../zlib-ng/configure --warn --zlib-compat"
-    - os: osx
-      compiler: gcc
       env: BUILDDIR=. TOOL="cmake ."
 
-    - os: osx
-      compiler: clang
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
     - os: osx
       compiler: clang
       env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
@@ -61,10 +40,6 @@ matrix:
     - os: linux-ppc64le
       compiler: gcc
       env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
-
-    - os: linux-ppc64le
-      compiler: clang
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
     - os: linux-ppc64le
       compiler: clang
       env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
