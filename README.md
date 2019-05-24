@@ -43,6 +43,50 @@ or valuable testing.
 
 Please read LICENSE.md, it is very simple and very liberal.
 
+Build
+=====
+
+To build zlib-ng for your platform, use the cross-platform makefile generator cmake.
+
+```
+cmake . 
+cmake --build . --config Release
+```
+
+Build Options
+-------------
+
+|Name|Description|Default Value|
+|:-|:-|-|
+|WITH_GZFILEOP|Compile with support for gzFile related functions|OFF|
+|ZLIB_COMPAT|Compile with zlib compatible API|OFF|
+|WITH_MSAN|Build with memory sanitizer|OFF|
+|WITH_OPTIM|Build with optimisations|ON|
+|WITH_NEW_STRATEGIES|Use new strategies|ON|
+|WITH_NATIVE_INSTRUCTIONS|Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native)|OFF|
+|WITH_ACLE|Build with ACLE CRC|ON|
+|WITH_NEON|Build with NEON intrinsics|ON|
+|WITH_DFLTCC_DEFLATE|Use DEFLATE COMPRESSION CALL instruction for compression on IBM Z|OFF|
+|WITH_DFLTCC_INFLATE|Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z|OFF|
+|ZLIB_ENABLE_TESTS|Build test binaries|ON|
+|WITH_SANITIZERS|Build with address sanitizer and all supported sanitizers other than memory sanitizer|OFF|
+|WITH_FUZZERS|Build test/fuzz|OFF|
+|WITH_CVES|Build test/CVEs|OFF|
+
+Install
+-------
+
+To install the binaries for distribution, use the cmake install command:
+
+```
+cmake --build . --target install
+```
+
+On linux distros, an alternative way to use zlib-ng instead of zlib
+for specific programs exist, use LD_PRELOAD.
+If the program is dynamically linked with zlib, then zlib-ng can take
+its place without risking system-wide instability. Ex:
+LD_PRELOAD=/opt/zlib-ng/libz.so.1.2.11.zlib-ng /usr/bin/program
 
 Contributing
 ------------

@@ -100,6 +100,7 @@ endif (WITH_GZFILEOP)
 option(WITH_SANITIZERS "Build with address sanitizer and all supported sanitizers other than memory sanitizer" OFF)
 option(WITH_MSAN "Build with memory sanitizer" OFF)
 option(WITH_FUZZERS "Build test/fuzz" OFF)
+option(WITH_CVES "Build test/CVEs" OFF)
 option(WITH_OPTIM "Build with optimisation" ON)
 option(WITH_NEW_STRATEGIES "Use new strategies" ON)
 option(WITH_NATIVE_INSTRUCTIONS
@@ -212,6 +213,7 @@ add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
 add_feature_info(WITH_SANITIZERS WITH_SANITIZERS "Build with address sanitizer and all supported sanitizers other than memory sanitizer")
 add_feature_info(WITH_MSAN WITH_MSAN "Build with memory sanitizer")
 add_feature_info(WITH_FUZZERS WITH_FUZZERS "Build test/fuzz")
+add_feature_info(WITH_CVES WITH_CVES "Build test/CVEs")
 add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
 if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
     add_feature_info(WITH_ACLE WITH_ACLE "Build with ACLE CRC")
@@ -623,24 +625,6 @@ message(STATUS "Architecture-specific source files: ${ZLIB_ARCH_SRCS}")
 # zconf.h
 #============================================================================
 
-macro(generate_cmakein input output)
-    file(REMOVE ${output})
-    file(STRINGS ${input} _lines)
-    foreach(_line IN LISTS _lines)
-        file(APPEND ${output} "${_line}\n")
-
-        if (_line STREQUAL "#define ZCONF_H" OR _line STREQUAL "#define ZCONFNG_H")
-            file(APPEND ${output} "#cmakedefine Z_HAVE_UNISTD_H\n")
-            if(NOT HAVE_PTRDIFF_T)
-              file(APPEND ${output} "#cmakedefine NEED_PTRDIFF_T\n")
-              file(APPEND ${output} "#cmakedefine PTRDIFF_TYPE ${PTRDIFF_TYPE}\n")
-            endif()
-        endif()
-    endforeach()
-endmacro(generate_cmakein)
-
-generate_cmakein( ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.in ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein )
-
 if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     # If we're doing an out of source build and the user has a zconf.h
     # in their source tree...
@@ -665,9 +649,9 @@ endif()
 
 set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME2}.pc)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
-		${ZLIB_PC} @ONLY)
+        ${ZLIB_PC} @ONLY)
 configure_file(	${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
-		${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
+        ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
 
 
 #============================================================================
@@ -849,6 +833,21 @@ if (ZLIB_ENABLE_TESTS)
         add_test(example_dict_fuzzer example_dict_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
         add_test(minigzip_fuzzer minigzip_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
     endif()
+
+    if(WITH_CVES)
+        # Use python script to translate exit code 1 as success
+        add_test(${CVE_NAME} python test/CVE.py minigzip -d test/CVE-2002-0059/test.gz)
+        add_test(${CVE_NAME} python test/CVE.py minigzip -d test/CVE-2004-0797/test.gz)
+        add_test(${CVE_NAME} python test/CVE.py minigzip -d test/CVE-2005-1849/test.gz)
+        add_test(${CVE_NAME} python test/CVE.py minigzip -d test/CVE-2005-2096/test.gz)
+
+        if(NOT WIN32 AND WITH_COMPAT)
+            add_executable(CVE-2003-0107 test/CVE-2003-0107.c)
+            target_link_libraries(CVE-2003-0107 zlib)
+            add_test(NAME CVE-2003-0107 COMMAND CVE-2003-0107)
+        endif()
+    endif()
+
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
