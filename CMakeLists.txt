@@ -87,7 +87,7 @@ if (ZLIB_COMPAT)
     set (LIBNAME1 libz)
     set (LIBNAME2 zlib)
     set (SUFFIX "")
-else(ZLIB_COMPAT)
+else(NOT ZLIB_COMPAT)
     set (LIBNAME1 libz-ng)
     set (LIBNAME2 zlib-ng)
     set (SUFFIX "-ng")
@@ -628,7 +628,7 @@ message(STATUS "Architecture-specific source files: ${ZLIB_ARCH_SRCS}")
 set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME2}.pc)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
         ${ZLIB_PC} @ONLY)
-configure_file(	${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
+configure_file(	${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.cmakein
         ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
 
 
