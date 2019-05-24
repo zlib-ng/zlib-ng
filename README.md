@@ -44,7 +44,7 @@ or valuable testing.
 Please read LICENSE.md, it is very simple and very liberal.
 
 Build
-=====
+-----
 
 To build zlib-ng for your platform, use the cross-platform makefile generator cmake.
 
@@ -87,6 +87,29 @@ for specific programs exist, use LD_PRELOAD.
 If the program is dynamically linked with zlib, then zlib-ng can take
 its place without risking system-wide instability. Ex:
 LD_PRELOAD=/opt/zlib-ng/libz.so.1.2.11.zlib-ng /usr/bin/program
+
+Contents
+--------
+
+|Name|Description|
+|:-|:-|
+|arch/|Architecture-specific code|
+|doc/|Documentation for formats and algorithms|
+|test/example.c|zlib usages examples for build testing|
+|test/minigzip.c|Minimal gzip-like functionality for build testing|
+|test/infcover.c|inf*.c code coverage for build coverage testing|
+|win32/|Shared library version resources for Windows|
+|CMakeLists.txt|Cmake build file|
+|ChangeLog.zlib|History of changes up to the fork from zlib 1.2.11|
+|FAQ.zlib|Frequently Asked Questions about zlib, as distributed in zlib 1.2.11|
+|README.zlib|Copy of the original README file distributed in zlib 1.2.11|
+|zconf.h.cmakein|zconf.h template for cmake|
+|zlib.3|Man page for zlib|
+|zlib.3.pdf|Man page in PDF format|
+|zlib.map|Linux symbol information|
+|zlib.pc.cmakein|zlib.pc template for cmake|
+
+The rest of the files consist of public header files which are required for library use and private source files used to build the library.
 
 Contributing
 ------------
