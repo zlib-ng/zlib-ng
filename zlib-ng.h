@@ -1793,6 +1793,13 @@ ZEXTERN int ZEXPORT zng_gzgetc_(gzFile file);  /* backward compatibility */
 typedef enum {
     Z_DEFLATE_LEVEL = 0,         /* compression level, represented as an int */
     Z_DEFLATE_STRATEGY = 1,      /* compression strategy, represented as an int */
+    Z_DEFLATE_REPRODUCIBLE = 2,
+    /*
+         Whether reproducible compression results are required. Represented as an int, where 0 means that it is allowed
+       to trade reproducibility for e.g. improved performance or compression ratio, and non-0 means that
+       reproducibility is strictly required. Reproducibility is guaranteed only when using an identical zlib-ng build.
+       Default is 0.
+    */
 } zng_deflate_param;
 
 typedef struct {
