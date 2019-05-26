@@ -4,7 +4,8 @@ dist: xenial
 
 env:
   global:
-    - MAKE="make"
+    - MAKE="cmake --build . --config Release"
+    - TEST="ctest --output-on-failure -C Release"
 
 matrix:
   include:
@@ -112,4 +113,4 @@ matrix:
             - libc-dev-armel-cross
       env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="cmake . -DZLIB_COMPAT=ON"
 
-script: mkdir -p $BUILDDIR && cd $BUILDDIR && $TOOL && $MAKE -j2 && $MAKE test
+script: mkdir -p $BUILDDIR && cd $BUILDDIR && $TOOL && $MAKE && $TEST
