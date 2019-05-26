@@ -113,4 +113,9 @@ matrix:
             - libc-dev-armel-cross
       env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="cmake . -DZLIB_COMPAT=ON"
 
-script: mkdir -p $BUILDDIR && cd $BUILDDIR && $TOOL && $MAKE && $TEST
+script: 
+  - mkdir -p $BUILDDIR
+  - cd $BUILDDIR
+  - $TOOL
+  - $MAKE
+  - $TEST
