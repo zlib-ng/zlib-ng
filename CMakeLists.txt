@@ -75,7 +75,14 @@ if(CMAKE_OSX_ARCHITECTURES)
     # if multiple architectures are requested (universal build), pick only the first
     list(GET CMAKE_OSX_ARCHITECTURES 0 ARCH)
 else()
-    set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
+    # Simple fix for cross-compiler so we don't have to include toolchain cmake
+    if (CMAKE_C_COMPILER MATCHES "^aarch64")
+        set(ARCH "aarch64")
+    elseif(CMAKE_C_COMPILER MATCHES "^arm")
+        set(ARCH "arm")
+    else()
+        set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
+    endif()
 endif()
 message(STATUS "Architecture: ${ARCH}")
 
