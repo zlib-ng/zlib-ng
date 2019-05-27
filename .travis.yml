@@ -120,7 +120,7 @@ matrix:
       env: GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=test/cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi"
 
 
-script: 
+script:
   - mkdir -p $BUILDDIR
   - cd $BUILDDIR
   - $GENERATOR
