@@ -34,10 +34,10 @@ matrix:
       env: GENERATOR="cmake . -DZLIB_COMPAT=OFF -DWITH_GZFILEOP=ON -DWITH_NEW_STRATEGIES=YES -DWITH_OPTIM=ON"
     - os: linux
       compiler: gcc
-      env: GENERATOR="cmake ../zlib-ng" BUILDDIR=../build 
+      env: GENERATOR="cmake ../zlib-ng" BUILDDIR=../build
     - os: linux
       compiler: clang
-      env: GENERATOR="cmake ../zlib-ng" BUILDDIR=../build 
+      env: GENERATOR="cmake ../zlib-ng" BUILDDIR=../build
     - os: linux
       compiler: clang
       env: GENERATOR="scan-build -v --status-bugs cmake ../zlib-ng" MAKER="scan-build -v --status-bugs make"
