@@ -4,71 +4,53 @@ dist: xenial
 
 env:
   global:
-    - MAKE="make"
+    - BUILDDIR=.
+    - GENERATOR="cmake . -DCMAKE_BUILD_TYPE=Release"
+    - MAKER="cmake --build . --config Release"
+    - TESTER="ctest --verbose -C Release"
 
 matrix:
   include:
-    - os: linux
-      compiler: gcc
-      env: BUILDDIR=. TOOL="./configure --warn"
-    - os: linux
-      compiler: gcc
-      env: BUILDDIR=. TOOL="cmake . -DZLIB_COMPAT=OFF -DWITH_GZFILEOP=ON -DWITH_NEW_STRATEGIES=YES -DWITH_OPTIM=ON"
-    - os: linux
-      compiler: gcc
-      env: BUILDDIR=../build TOOL="../zlib-ng/configure --warn --zlib-compat"
-    - os: linux
-      compiler: gcc
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat --without-optimizations --without-new-strategies"
-    - os: linux
-      compiler: gcc
-      env: BUILDDIR=. TOOL="cmake ."
-    - os: linux
-      compiler: gcc
-      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
-
-    - os: linux
+    - os: windows
       compiler: clang
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
-    - os: linux
+      env: GENERATOR="cmake . "
+    - os: windows
       compiler: clang
-      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
-    - os: linux
-      compiler: clang
-      env: BUILDDIR=../build TOOL="scan-build -v --status-bugs cmake ../zlib-ng" MAKE="scan-build -v --status-bugs make"
+      env: GENERATOR="cmake . -DZLIB_COMPAT=ON"
+    - os: windows
+      compiler: gcc
+      env: GENERATOR="cmake ."
 
     - os: osx
       compiler: gcc
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
     - os: osx
-      compiler: gcc
-      env: BUILDDIR=../build TOOL="../zlib-ng/configure --warn --zlib-compat"
-    - os: osx
-      compiler: gcc
-      env: BUILDDIR=. TOOL="cmake ."
+      compiler: clang
+      env: GENERATOR="cmake ../zlib-ng" BUILDDIR=../build
 
-    - os: osx
+    - os: linux
+      compiler: gcc
+    - os: linux
+      compiler: gcc
+      env: GENERATOR="cmake . -DZLIB_COMPAT=OFF -DWITH_GZFILEOP=ON -DWITH_NEW_STRATEGIES=YES -DWITH_OPTIM=ON"
+    - os: linux
+      compiler: gcc
+      env: GENERATOR="cmake ../zlib-ng" BUILDDIR=../build 
+    - os: linux
       compiler: clang
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
-    - os: osx
+      env: GENERATOR="cmake ../zlib-ng" BUILDDIR=../build 
+    - os: linux
       compiler: clang
-      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
+      env: GENERATOR="scan-build -v --status-bugs cmake ../zlib-ng" MAKER="scan-build -v --status-bugs make"
 
     # compiling for linux-ppc64le variants
     - os: linux-ppc64le
       compiler: gcc
-      env: BUILDDIR=. TOOL="cmake ."
     - os: linux-ppc64le
       compiler: gcc
-      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
-
+      env: GENERATOR="cmake ../zlib-ng" BUILDDIR=../build
     - os: linux-ppc64le
       compiler: clang
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
-    - os: linux-ppc64le
-      compiler: clang
-      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
-
+      env: GENERATOR="cmake ../zlib-ng" BUILDDIR=../build
     # Cross compiling for arm variants
     - os: linux
       compiler: aarch64-linux-gnu-gcc
@@ -79,7 +61,7 @@ matrix:
             - gcc-aarch64-linux-gnu
             - libc-dev-arm64-cross
       # For all aarch64 implementations NEON is mandatory, while crypto/crc are not.
-      env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env: GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=test/cmake/toolchain-aarch64.cmake . -DZLIB_COMPAT=ON"
     - os: linux
       compiler: aarch64-linux-gnu-gcc
       addons:
@@ -88,7 +70,7 @@ matrix:
             - qemu
             - gcc-aarch64-linux-gnu
             - libc-dev-arm64-cross
-      env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env: GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=test/cmake/toolchain-aarch64.cmake ."
     # Hard-float subsets
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
@@ -98,7 +80,7 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
-      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn"
+      env: GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=test/cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
       addons:
@@ -107,7 +89,7 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
-      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn --zlib-compat --without-neon"
+      env: GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=test/cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DWITH_NEON=OFF -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
       addons:
@@ -116,7 +98,7 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
-      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env: GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=test/cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
     # Soft-float subset
     - os: linux
       compiler: arm-linux-gnueabi-gcc
@@ -126,7 +108,7 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
-      env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="./configure"
+      env: GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=test/cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi"
     - os: linux
       compiler: arm-linux-gnueabi-gcc
       addons:
@@ -135,6 +117,12 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
-      env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="./configure --zlib-compat"
+      env: GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=test/cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi"
 
-script: mkdir -p $BUILDDIR && cd $BUILDDIR && $TOOL && $MAKE -j2 && $MAKE test
+
+script: 
+  - mkdir -p $BUILDDIR
+  - cd $BUILDDIR
+  - $GENERATOR
+  - $MAKER
+  - $TESTER
