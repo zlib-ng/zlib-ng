@@ -629,50 +629,10 @@ message(STATUS "Architecture-specific source files: ${ZLIB_ARCH_SRCS}")
 # zconf.h
 #============================================================================
 
-macro(generate_cmakein input output)
-    file(REMOVE ${output})
-    file(STRINGS ${input} _lines)
-    foreach(_line IN LISTS _lines)
-        file(APPEND ${output} "${_line}\n")
-
-        if (_line STREQUAL "#define ZCONF_H" OR _line STREQUAL "#define ZCONFNG_H")
-            file(APPEND ${output} "#cmakedefine Z_HAVE_UNISTD_H\n")
-            if(NOT HAVE_PTRDIFF_T)
-              file(APPEND ${output} "#cmakedefine NEED_PTRDIFF_T\n")
-              file(APPEND ${output} "#cmakedefine PTRDIFF_TYPE ${PTRDIFF_TYPE}\n")
-            endif()
-        endif()
-    endforeach()
-endmacro(generate_cmakein)
-
-generate_cmakein( ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.in ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein )
-
-if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
-    # If we're doing an out of source build and the user has a zconf.h
-    # in their source tree...
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h)
-        message(STATUS "Renaming")
-        message(STATUS "    ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h")
-        message(STATUS "to 'zconf${SUFFIX}.h.included' because this file is included with zlib")
-        message(STATUS "but CMake generates it automatically in the build directory.")
-        file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.included)
-    endif()
-
-    # If we're doing an out of source build and the user has a zconf.h.cmakein
-    # in their source tree...
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.cmakein)
-        message(STATUS "Renaming")
-        message(STATUS "    ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.cmakein")
-        message(STATUS "to 'zconf${SUFFIX}.h.cmakeincluded' because this file is included with zlib")
-        message(STATUS "but CMake generates it automatically in the build directory.")
-        file(RENAME ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.cmakein ${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.cmakeincluded)
-    endif()
-endif()
-
 set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME2}.pc)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
         ${ZLIB_PC} @ONLY)
-configure_file(	${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zconf${SUFFIX}.h.cmakein
         ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
 
 #============================================================================
