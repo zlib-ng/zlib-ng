@@ -378,7 +378,7 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
 #else
 #   define _tr_tally_lit(s, c, flush) flush = _tr_tally(s, 0, c)
 #   define _tr_tally_dist(s, distance, length, flush) \
-              flush = _tr_tally(s, distance, length)
+              flush = _tr_tally(s, (unsigned)distance, (unsigned)length)
 #endif
 
 /* ===========================================================================
