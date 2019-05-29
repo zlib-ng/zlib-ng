@@ -161,7 +161,7 @@ else()
         endif()
     endif()
     if(__GNUC__ AND "${ARCH}" MATCHES "arm")
-        execute_process(COMMAND "${CC}" "-dumpmachine"
+        execute_process(COMMAND ${CMAKE_C_COMPILER} "-dumpmachine"
                         OUTPUT_VARIABLE GCC_MACHINE)
         if ("${GCC_MACHINE}" MATCHES "eabihf")
             set(FLOATABI "-mfloat-abi=hard")
