@@ -11,20 +11,20 @@ set(CMAKE_MACOSX_RPATH 1)
 # Configuration items that affect the global compiler envirionment standards
 # should be issued before the "project" command.
 if(NOT CMAKE_C_STANDARD)
-  set (CMAKE_C_STANDARD 99)          #The C standard whose features are requested to build this target
+  set (CMAKE_C_STANDARD 99)          # The C standard whose features are requested to build this target
 endif()
 if(NOT CMAKE_C_STANDARD_REQUIRED)
-  set (CMAKE_C_STANDARD_REQUIRED ON) #Boolean describing whether the value of C_STANDARD is a requirement
+  set (CMAKE_C_STANDARD_REQUIRED ON) # Boolean describing whether the value of C_STANDARD is a requirement
 endif()
 if(NOT CMAKE_C_EXTENSIONS)
-  set (CMAKE_C_EXTENSIONS OFF)       #Boolean specifying whether compiler specific extensions are requested
+  set (CMAKE_C_EXTENSIONS OFF)       # Boolean specifying whether compiler specific extensions are requested
 endif()
 set(VALID_C_STANDARDS "99" "11")
 if(NOT CMAKE_C_STANDARD IN_LIST VALID_C_STANDARDS )
    MESSAGE(FATAL_ERROR "CMAKE_C_STANDARD:STRING=${CMAKE_C_STANDARD} not in know standards list\n ${VALID_C_STANDARDS}")
 endif()
 
-# parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
+# Parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
 file(READ ${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h _zlib_h_contents)
 string(REGEX REPLACE ".*#define[ \t]+ZLIB_VERSION[ \t]+\"([0-9]+.[0-9]+.[0-9]+).*\".*"
         "\\1" ZLIB_HEADER_VERSION ${_zlib_h_contents})
@@ -52,7 +52,7 @@ include(CheckCSourceRuns)
 include(CMakeDependentOption)
 include(FeatureSummary)
 
-# make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
+# Make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
 # this should select the maximum generic optimisation on the current platform (i.e. -O3 for gcc/clang)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING
@@ -68,39 +68,23 @@ check_include_file(stdint.h    HAVE_STDINT_H)
 check_include_file(stddef.h    HAVE_STDDEF_H)
 check_include_file(sys/sdt.h   HAVE_SYS_SDT_H)
 
-#
-# Options parsing
-#
 if(CMAKE_OSX_ARCHITECTURES)
-    # if multiple architectures are requested (universal build), pick only the first
+    # If multiple architectures are requested (universal build), pick only the first
     list(GET CMAKE_OSX_ARCHITECTURES 0 ARCH)
 else()
     set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
 endif()
 message(STATUS "Architecture: ${ARCH}")
-
 if(CMAKE_TOOLCHAIN_FILE)
     message(STATUS "Using cmake toolchain: ${CMAKE_TOOLCHAIN_FILE}")
 endif()
 
-option (WITH_GZFILEOP "Compile with support for gzFile related functions" OFF)
-option (ZLIB_COMPAT "Compile with zlib compatible API" OFF)
-if (ZLIB_COMPAT)
-    add_definitions(-DZLIB_COMPAT)
-    set (WITH_GZFILEOP ON)
-    set (LIBNAME1 libz)
-    set (LIBNAME2 zlib)
-    set (SUFFIX "")
-else(ZLIB_COMPAT)
-    set (LIBNAME1 libz-ng)
-    set (LIBNAME2 zlib-ng)
-    set (SUFFIX "-ng")
-endif (ZLIB_COMPAT)
-
-if (WITH_GZFILEOP)
-    add_definitions(-DWITH_GZFILEOP)
-endif (WITH_GZFILEOP)
-
+#
+# Options parsing
+#
+option(WITH_GZFILEOP "Compile with support for gzFile related functions" OFF)
+option(ZLIB_COMPAT "Compile with zlib compatible API" OFF)
+option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 option(WITH_SANITIZERS "Build with address sanitizer and all supported sanitizers other than memory sanitizer" OFF)
 option(WITH_MSAN "Build with memory sanitizer" OFF)
 option(WITH_FUZZERS "Build test/fuzz" OFF)
@@ -111,11 +95,37 @@ option(WITH_NATIVE_INSTRUCTIONS
 if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
     option(WITH_ACLE "Build with ACLE CRC" ON)
     option(WITH_NEON "Build with NEON intrinsics" ON)
-endif()
-
-if("${ARCH}" MATCHES "s390x")
+elseif("${ARCH}" MATCHES "s390x")
     option(WITH_DFLTCC_DEFLATE "Use DEFLATE CONVERSION CALL instruction for compression on IBM Z" OFF)
     option(WITH_DFLTCC_INFLATE "Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z" OFF)
+endif()
+
+add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Provide a zlib-compatible API")
+add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile-related functions")
+add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
+add_feature_info(WITH_SANITIZERS WITH_SANITIZERS "Build with address sanitizer and all supported sanitizers other than memory sanitizer")
+add_feature_info(WITH_MSAN WITH_MSAN "Build with memory sanitizer")
+add_feature_info(WITH_FUZZERS WITH_FUZZERS "Build test/fuzz")
+add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
+if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
+    add_feature_info(WITH_ACLE WITH_ACLE "Build with ACLE CRC")
+    add_feature_info(WITH_NEON WITH_NEON "Build with NEON intrinsics")
+endif()
+
+if (ZLIB_COMPAT)
+    add_definitions(-DZLIB_COMPAT)
+    set(WITH_GZFILEOP ON)
+    set(LIBNAME1 libz)
+    set(LIBNAME2 zlib)
+    set(SUFFIX "")
+else()
+    set(LIBNAME1 libz-ng)
+    set(LIBNAME2 zlib-ng)
+    set(SUFFIX "-ng")
+endif()
+
+if(WITH_GZFILEOP)
+    add_definitions(-DWITH_GZFILEOP)
 endif()
 
 if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${CMAKE_C_COMPILER} MATCHES "icl")
@@ -196,7 +206,7 @@ else()
             set(ACLEFLAG "-march=armv8-a+crc")
             set(NEONFLAG "-march=armv8-a+crc+simd")
         endif()
-    else(NOT NATIVEFLAG)
+    else()
         set(SSE2FLAG ${NATIVEFLAG})
         set(SSE4FLAG ${NATIVEFLAG})
         set(PCLMULFLAG ${NATIVEFLAG})
@@ -207,19 +217,7 @@ else()
             set(ACLEFLAG "${NATIVEFLAG}")
             set(NEONFLAG "${NATIVEFLAG}")
         endif()
-    endif(NOT NATIVEFLAG)
-endif()
-
-add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Provide a zlib-compatible API")
-add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile-related functions")
-add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
-add_feature_info(WITH_SANITIZERS WITH_SANITIZERS "Build with address sanitizer and all supported sanitizers other than memory sanitizer")
-add_feature_info(WITH_MSAN WITH_MSAN "Build with memory sanitizer")
-add_feature_info(WITH_FUZZERS WITH_FUZZERS "Build test/fuzz")
-add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
-if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
-    add_feature_info(WITH_ACLE WITH_ACLE "Build with ACLE CRC")
-    add_feature_info(WITH_NEON WITH_NEON "Build with NEON intrinsics")
+    endif()
 endif()
 
 #
@@ -243,7 +241,7 @@ if(HAVE_OFF64_T)
    add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
 else()
    check_type_size(_off64_t _OFF64_T)
-   if (HAVE__OFF64_T)
+   if(HAVE__OFF64_T)
       add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
    else()
       check_type_size(__off64_t __OFF64_T)
@@ -394,7 +392,7 @@ macro(check_c_source_compile_or_run source flag)
     else()
         check_c_source_runs("${source}" ${flag})
     endif()
-endmacro(check_c_source_compile_or_run)
+endmacro()
 
 set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DZLIB_DEBUG")
 
@@ -404,7 +402,7 @@ if(MSVC)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
 else()
     #
-    # not MSVC, so we need to check if we have the MS-style SSE etc. intrinsics
+    # Not MSVC, so we need to check if we have the MS-style SSE etc. intrinsics
     #
     if(WITH_NATIVE_INSTRUCTIONS)
         set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
@@ -426,7 +424,7 @@ else()
     if(WITH_NATIVE_INSTRUCTIONS)
         set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
     else()
-        # use the generic SSE4 enabler option to check for the SSE4.2 instruction we require:
+        # Use the generic SSE4 enabler option to check for the SSE4.2 instruction we require:
         set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
     endif()
     check_c_source_compile_or_run(
@@ -457,7 +455,7 @@ else()
         set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
     endif()
     if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
-        # the pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
+        # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
         check_c_source_compile_or_run(
             "#include <immintrin.h>
             #include <wmmintrin.h>
@@ -477,7 +475,7 @@ else()
     set(CMAKE_REQUIRED_FLAGS)
 endif()
 
-#Check whether -mfpu=neon is available
+# Check whether -mfpu=neon is available
 set(CMAKE_REQUIRED_FLAGS "-mfpu=neon")
 check_c_source_compiles(
     "int main()
@@ -500,7 +498,7 @@ if(NOT WITH_NEW_STRATEGIES)
 endif()
 
 #
-# macro to add either the given intrinsics option to the global compiler options,
+# Macro to add either the given intrinsics option to the global compiler options,
 # or ${NATIVEFLAG} (-march=native) if that is appropriate and possible.
 # An alternative version of this macro would take a file argument, and set ${flag}
 # only for that file as opposed to ${NATIVEFLAG} globally, to limit side-effect of
@@ -516,7 +514,7 @@ macro(add_intrinsics_option flag)
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}")
         endif()
     endif()
-endmacro(add_intrinsics_option)
+endmacro()
 
 set(ZLIB_ARCH_SRCS)
 set(ARCHDIR "arch/generic")
@@ -669,9 +667,9 @@ endif()
 
 set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME2}.pc)
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
-		${ZLIB_PC} @ONLY)
-configure_file(	${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
-		${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
+    ${ZLIB_PC} @ONLY)
+configure_file(${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
+    ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
 
 
 #============================================================================
@@ -730,11 +728,6 @@ if(NOT MINGW AND NOT MSYS)
     )
 endif()
 
-if (ZLIB_COMPAT)
-    set(ZLIB_FULL_VERSION ${ZLIB_HEADER_VERSION})
-else()
-    set(ZLIB_FULL_VERSION ${ZLIBNG_HEADER_VERSION})
-endif()
 if(MINGW OR MSYS)
     # This gets us DLL resource information when compiling on MinGW.
     if(NOT CMAKE_RC_COMPILER)
@@ -742,14 +735,14 @@ if(MINGW OR MSYS)
     endif()
 
     add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj
-                       COMMAND ${CMAKE_RC_COMPILER}
-                            -D GCC_WINDRES
-                            -I ${CMAKE_CURRENT_SOURCE_DIR}
-                            -I ${CMAKE_CURRENT_BINARY_DIR}
-                            -o ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj
-                            -i ${CMAKE_CURRENT_SOURCE_DIR}/win32/zlib${SUFFIX}1.rc)
+        COMMAND ${CMAKE_RC_COMPILER}
+            -D GCC_WINDRES
+            -I ${CMAKE_CURRENT_SOURCE_DIR}
+            -I ${CMAKE_CURRENT_BINARY_DIR}
+            -o ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj
+            -i ${CMAKE_CURRENT_SOURCE_DIR}/win32/zlib${SUFFIX}1.rc)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
-endif(MINGW OR MSYS)
+endif()
 
 add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_GZFILE_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 target_include_directories(zlib PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -759,6 +752,11 @@ target_include_directories(zlibstatic PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE
 set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
 set_target_properties(zlib PROPERTIES SOVERSION 1)
 
+if (ZLIB_COMPAT)
+    set(ZLIB_FULL_VERSION ${ZLIB_HEADER_VERSION})
+else()
+    set(ZLIB_FULL_VERSION ${ZLIBNG_HEADER_VERSION})
+endif()
 if(NOT CYGWIN)
     # This property causes shared libraries on Linux to have the full version
     # encoded into their final filename.  We disable this on Cygwin because
@@ -778,8 +776,8 @@ if(UNIX)
         set_target_properties(zlib PROPERTIES LINK_FLAGS "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/${LIBNAME2}.map\"")
     endif()
 elseif(MSYS)
-   # Suppress version number from shared library name
-   set(CMAKE_SHARED_LIBRARY_NAME_WITH_VERSION 0)
+    # Suppress version number from shared library name
+    set(CMAKE_SHARED_LIBRARY_NAME_WITH_VERSION 0)
 elseif(BUILD_SHARED_LIBS AND WIN32)
     # Creates zlib1.dll when building shared library version
     set_target_properties(zlib PROPERTIES SUFFIX "1.dll")
@@ -839,3 +837,4 @@ if (ZLIB_ENABLE_TESTS)
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
+
