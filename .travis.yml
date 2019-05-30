@@ -196,4 +196,3 @@ script:
   - $GENERATOR
   - $MAKER
   - $TESTER
-  
