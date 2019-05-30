@@ -100,6 +100,7 @@ endif (WITH_GZFILEOP)
 option(WITH_SANITIZERS "Build with address sanitizer and all supported sanitizers other than memory sanitizer" OFF)
 option(WITH_MSAN "Build with memory sanitizer" OFF)
 option(WITH_FUZZERS "Build test/fuzz" OFF)
+option(WITH_CVES "Build test/CVEs" OFF)
 option(WITH_OPTIM "Build with optimisation" ON)
 option(WITH_NEW_STRATEGIES "Use new strategies" ON)
 option(WITH_NATIVE_INSTRUCTIONS
@@ -113,6 +114,7 @@ if("${ARCH}" MATCHES "s390x")
     option(WITH_DFLTCC_DEFLATE "Use DEFLATE COMPRESSION CALL instruction for compression on IBM Z" OFF)
     option(WITH_DFLTCC_INFLATE "Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z" OFF)
 endif()
+add_feature_info(WITH_CVES WITH_CVES "Build test/CVEs")
 
 if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${CMAKE_C_COMPILER} MATCHES "icl")
     if(WITH_NATIVE_INSTRUCTIONS)
@@ -848,6 +850,22 @@ if (ZLIB_ENABLE_TESTS)
         add_test(example_flush_fuzzer example_flush_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
         add_test(example_dict_fuzzer example_dict_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
         add_test(minigzip_fuzzer minigzip_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
+    endif()
+
+    if(WITH_CVES)
+        # Use python script to translate exit code 0 or 1 as success
+        set(CVES CVE-2002-0059 CVE-2004-0797 CVE-2005-1849 CVE-2005-2096)
+        foreach(CVE ${CVES})
+            add_test(NAME ${CVE} COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/test/CVE.py 
+                ${CVE} ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -d 
+                    ${CMAKE_CURRENT_SOURCE_DIR}/test/${CVE}/test.gz)
+        endforeach()
+
+        if(NOT WIN32 AND ZLIB_COMPAT)
+            add_executable(CVE-2003-0107 test/CVE-2003-0107.c)
+            target_link_libraries(CVE-2003-0107 zlib)
+            add_test(NAME CVE-2003-0107 COMMAND CVE-2003-0107)
+        endif()
     endif()
 endif()
 
