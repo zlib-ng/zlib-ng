@@ -854,9 +854,14 @@ if (ZLIB_ENABLE_TESTS)
 
     if(WITH_CVES)
         # Use python script to translate exit code 0 or 1 as success
+        find_program(PYTHON_EXECUTABLE python)
+        if(NOT PYTHON_EXECUTABLE)
+            message(FATAL_ERROR "Python must be installed to test CVEs")
+        endif()
+
         set(CVES CVE-2002-0059 CVE-2004-0797 CVE-2005-1849 CVE-2005-2096)
         foreach(CVE ${CVES})
-            add_test(NAME ${CVE} COMMAND python ${CMAKE_CURRENT_SOURCE_DIR}/test/CVE.py 
+            add_test(NAME ${CVE} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/CVE.py 
                 ${CVE} ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -d 
                     ${CMAKE_CURRENT_SOURCE_DIR}/test/${CVE}/test.gz)
         endforeach()
