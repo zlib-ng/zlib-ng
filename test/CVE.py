@@ -12,7 +12,7 @@ def main():
     # We expect 1 error code is OK and we expect 134 or 
     # similar exit code for a vulnerable failure
     if proc.returncode == 1 or proc.returncode == 0:
-        print('zlib is not vulnerable to {0} ({1})'.format(sys.argv[1], proc.returncode))
+        print('zlib not vulnerable to {0} ({1})'.format(sys.argv[1], proc.returncode))
         exit(0)
     else:
         print('zlib VULNERABLE to {0} ({1})'.format(sys.argv[1], proc.returncode))
