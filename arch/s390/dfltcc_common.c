@@ -15,13 +15,11 @@
 static inline int is_dfltcc_enabled(void)
 {
     uint64_t facilities[(DFLTCC_FACILITY / 64) + 1];
-    register int r0 __asm__("r0");
+    register uint8_t r0 __asm__("r0");
 
-    r0 = sizeof(facilities) / sizeof(facilities[0]);
-    __asm__ volatile("stfle %[facilities]\n"
-                     : [facilities] "=Q" (facilities)
-                     : [r0] "r" (r0)
-                     : "cc", "memory");
+    memset(facilities, 0, sizeof(facilities));
+    r0 = sizeof(facilities) / sizeof(facilities[0]) - 1;
+    __asm__ volatile("stfle %[facilities]\n" : [facilities] "=Q" (facilities), [r0] "+r" (r0) :: "cc");
     return is_bit_set((const char *)facilities, DFLTCC_FACILITY);
 }
 
