@@ -8,10 +8,10 @@ def main():
                         stderr=subprocess.STDOUT)
     stdout, stderr = proc.communicate()
     print stdout
-    #print stderr
-    # We expect 1 error code is OK and we expect 134 or 
-    # similar exit code for a vulnerable failure
-    if proc.returncode == 1 or proc.returncode == 0:
+
+    # Exit code 0 or 1 is OK
+    # Exit code 134 or similar is a vulnerable failure
+    if proc.returncode == 0 or proc.returncode == 1:
         print('zlib not vulnerable to {0} ({1})'.format(sys.argv[1], proc.returncode))
         exit(0)
     else:
