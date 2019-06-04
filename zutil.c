@@ -14,7 +14,7 @@
 #  include "malloc.h"
 #endif
 
-const char * const z_errmsg[10] = {
+const char * const PREFIX3(errmsg)[10] = {
     (const char *)"need dictionary",     /* Z_NEED_DICT       2  */
     (const char *)"stream end",          /* Z_STREAM_END      1  */
     (const char *)"",                    /* Z_OK              0  */
@@ -120,7 +120,7 @@ const char * ZEXPORT PREFIX(zError)(int err)
 
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 
-void ZLIB_INTERNAL *zcalloc (void *opaque, unsigned items, unsigned size)
+void ZLIB_INTERNAL *PREFIX5(calloc)(void *opaque, unsigned items, unsigned size)
 {
     (void)opaque;
 #ifndef UNALIGNED_OK
@@ -131,7 +131,7 @@ void ZLIB_INTERNAL *zcalloc (void *opaque, unsigned items, unsigned size)
 #endif
 }
 
-void ZLIB_INTERNAL zcfree (void *opaque, void *ptr)
+void ZLIB_INTERNAL PREFIX5(cfree)(void *opaque, void *ptr)
 {
     (void)opaque;
     free(ptr);
