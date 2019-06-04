@@ -1,3 +1,4 @@
+#include "zbuild.h"
 #include "zutil.h"
 
 #if defined(__linux__)
