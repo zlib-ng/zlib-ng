@@ -251,7 +251,7 @@ ifneq ($(STRIP),)
 endif
 
 minigzip64$(EXE): minigzip64.o $(OBJG) $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@  minigzip64.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+	$(CC) $(LDFLAGS) -o $@ minigzip64.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
