@@ -110,6 +110,8 @@ static void insert_match(deflate_state *s, struct match match) {
             } else {
                 functable.insert_string(s, match.strstart, match.orgstart - match.strstart + 1);
             }
+        } else if (match.orgstart < match.strstart + match.match_length) {
+            functable.insert_string(s, match.orgstart, match.strstart + match.match_length - match.orgstart);
         }
         match.strstart += match.match_length;
         match.match_length = 0;

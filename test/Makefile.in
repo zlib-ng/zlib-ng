@@ -14,7 +14,7 @@ COMPATTESTS =
 QEMU_RUN=
 QEMU_VER:=$(shell command -v $(QEMU_RUN) --version 2> /dev/null)
 
-all: oldtests cvetests $(COMPATTESTS) fuzzer
+all: oldtests cvetests $(COMPATTESTS) fuzzer ghtests
 
 oldtests: #set by ../configure
 check_cross_dep:
@@ -96,6 +96,12 @@ CVE-2003-0107.o: $(SRCDIR)/CVE-2003-0107.c
 CVE-2003-0107$(EXE): CVE-2003-0107.o
 	$(CC) $(CFLAGS) -o $@ CVE-2003-0107.o $(TEST_LDFLAGS)
 
+.PHONY: ghtests
+ghtests: testGH-361
+
+.PHONY: testGH-361
+testGH-361:
+	$(QEMU_RUN) ../minigzip$(EXE) -4 <$(SRCDIR)/GH-361/test.txt >/dev/null
 
 clean:
 	rm -f *.o *.gcda *.gcno *.gcov
