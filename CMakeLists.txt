@@ -859,6 +859,13 @@ if (ZLIB_ENABLE_TESTS)
         target_link_libraries(CVE-2003-0107 zlib)
         add_test(NAME CVE-2003-0107 COMMAND CVE-2003-0107)
     endif()
+
+    set(GH_361_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -4)
+    add_test(NAME GH-361
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${GH_361_COMMAND}"
+        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-361/test.txt
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
