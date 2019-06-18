@@ -7,7 +7,7 @@ def main():
                         stdout=subprocess.PIPE,
                         stderr=subprocess.STDOUT)
     stdout, stderr = proc.communicate()
-    print stdout
+    print(stdout)
 
     # Exit code 0 or 1 is OK
     # Exit code 134 or similar is a vulnerable failure
