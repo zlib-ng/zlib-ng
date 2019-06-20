@@ -36,10 +36,8 @@ static const char dictionary[] = "hello";
 static unsigned long dictId = 0; /* Adler32 value of the dictionary */
 
 
-void test_compress      (unsigned char *compr, z_size_t comprLen,
-                            unsigned char *uncompr, z_size_t uncomprLen);
-void test_gzio          (const char *fname, 
-                            unsigned char *uncompr, z_size_t uncomprLen);
+void test_compress      (unsigned char *compr, z_size_t comprLen,unsigned char *uncompr, z_size_t uncomprLen);
+void test_gzio          (const char *fname, unsigned char *uncompr, z_size_t uncomprLen);
 void test_deflate       (unsigned char *compr, size_t comprLen);
 void test_inflate       (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
 void test_large_deflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
