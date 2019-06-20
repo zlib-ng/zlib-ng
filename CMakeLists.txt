@@ -850,19 +850,16 @@ if (ZLIB_ENABLE_TESTS)
         add_test(minigzip_fuzzer minigzip_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
     endif()
 
-    # Use python script to translate exit code 0 or 1 as success
     set(CVES CVE-2002-0059 CVE-2004-0797 CVE-2005-1849 CVE-2005-2096)
-    find_program(PYTHON_EXECUTABLE python)
-    if(NOT PYTHON_EXECUTABLE)
-        string (REPLACE ";" ", " CVES_CSL "${CVES}")
-        message(WARNING "Python not found skipping ${CVES_CSL} tests")
-    else()
-        foreach(CVE ${CVES})
-            add_test(NAME ${CVE} COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/test/CVE.py
-                ${CVE} ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -d
-                    ${CMAKE_CURRENT_SOURCE_DIR}/test/${CVE}/test.gz)
-        endforeach()
-    endif()
+    foreach(CVE ${CVES})
+        set(CVE_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -d)
+        add_test(NAME ${CVE}
+            COMMAND ${CMAKE_COMMAND}
+            "-DCOMMAND=${CVE_COMMAND}"
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/${CVE}/test.gz
+            -DSUCCESS_EXIT=1
+            -P cmake/run-and-redirect.cmake)
+    endforeach()
 
     if(NOT WIN32 AND ZLIB_COMPAT)
         add_executable(CVE-2003-0107 test/CVE-2003-0107.c)
