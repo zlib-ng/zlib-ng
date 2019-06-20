@@ -857,7 +857,7 @@ if (ZLIB_ENABLE_TESTS)
             COMMAND ${CMAKE_COMMAND}
             "-DCOMMAND=${CVE_COMMAND}"
             -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/${CVE}/test.gz
-            -DSUCCESS_EXIT=1
+            "-DSUCCESS_EXIT=0;1"
             -P cmake/run-and-redirect.cmake)
     endforeach()
 
