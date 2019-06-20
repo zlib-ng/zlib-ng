@@ -858,7 +858,7 @@ if (ZLIB_ENABLE_TESTS)
             "-DCOMMAND=${CVE_COMMAND}"
             -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/${CVE}/test.gz
             "-DSUCCESS_EXIT=0;1"
-            -P cmake/run-and-redirect.cmake)
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
     endforeach()
 
     if(NOT WIN32 AND ZLIB_COMPAT)
