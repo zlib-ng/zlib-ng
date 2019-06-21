@@ -22,21 +22,15 @@ struct match {
 
 #define MAX_DIST2  ((1 << MAX_WBITS) - MIN_LOOKAHEAD)
 
-static int tr_tally_dist(deflate_state *s, int distance, int length) {
-    return _tr_tally(s, distance, length);
-}
-
-static int tr_tally_lit(deflate_state *s, int c) {
-    return  _tr_tally(s, 0, c);
-}
-
 static int emit_match(deflate_state *s, struct match match) {
     int flush = 0;
+    int mflush = 0;
 
     /* matches that are not long enough we need to emit as literals */
     if (match.match_length < MIN_MATCH) {
         while (match.match_length) {
-            flush += tr_tally_lit(s, s->window[match.strstart]);
+            zng_tr_tally_lit(s, s->window[match.strstart], mflush);
+            flush += mflush;
             s->lookahead--;
             match.strstart++;
             match.match_length--;
@@ -46,7 +40,8 @@ static int emit_match(deflate_state *s, struct match match) {
 
     check_match(s, match.strstart, match.match_start, match.match_length);
 
-    flush += tr_tally_dist(s, match.strstart - match.match_start, match.match_length - MIN_MATCH);
+    zng_tr_tally_dist(s, match.strstart - match.match_start, match.match_length - MIN_MATCH, mflush);
+    flush += mflush;
 
     s->lookahead -= match.match_length;
     return flush;

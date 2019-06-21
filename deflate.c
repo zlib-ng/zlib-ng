@@ -55,7 +55,7 @@
 #include "match_p.h"
 #include "functable.h"
 
-const char deflate_copyright[] = " deflate 1.2.11.f Copyright 1995-2016 Jean-loup Gailly and Mark Adler ";
+const char zng_deflate_copyright[] = " deflate 1.2.11.f Copyright 1995-2016 Jean-loup Gailly and Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -279,11 +279,11 @@ int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, 
 
     strm->msg = NULL;
     if (strm->zalloc == NULL) {
-        strm->zalloc = zcalloc;
+        strm->zalloc = zng_calloc;
         strm->opaque = NULL;
     }
     if (strm->zfree == NULL)
-        strm->zfree = zcfree;
+        strm->zfree = zng_cfree;
 
     if (level == Z_DEFAULT_COMPRESSION)
         level = 6;
@@ -547,7 +547,7 @@ int ZEXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
         strm->adler = functable.adler32(0L, NULL, 0);
     s->last_flush = -2;
 
-    _tr_init(s);
+    zng_tr_init(s);
 
     DEFLATE_RESET_KEEP_HOOK(strm);  /* hook for IBM Z DFLTCC */
 
@@ -600,7 +600,7 @@ int ZEXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int bits, int value) {
             put = bits;
         s->bi_buf |= (uint16_t)((value & ((1 << put) - 1)) << s->bi_valid);
         s->bi_valid += put;
-        _tr_flush_bits(s);
+        zng_tr_flush_bits(s);
         value >>= put;
         bits -= put;
     } while (bits);
@@ -762,7 +762,7 @@ ZLIB_INTERNAL void flush_pending(PREFIX3(stream) *strm) {
     uint32_t len;
     deflate_state *s = strm->state;
 
-    _tr_flush_bits(s);
+    zng_tr_flush_bits(s);
     len = s->pending;
     if (len > strm->avail_out)
         len = strm->avail_out;
@@ -1050,9 +1050,9 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
         }
         if (bstate == block_done) {
             if (flush == Z_PARTIAL_FLUSH) {
-                _tr_align(s);
+                zng_tr_align(s);
             } else if (flush != Z_BLOCK) { /* FULL_FLUSH or SYNC_FLUSH */
-                _tr_stored_block(s, (char*)0, 0L, 0);
+                zng_tr_stored_block(s, (char*)0, 0L, 0);
                 /* For a full flush, this empty block will be recognized
                  * as a special marker by inflate_sync().
                  */
@@ -1441,7 +1441,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
          * including any pending bits. This also updates the debugging counts.
          */
         last = flush == Z_FINISH && len == left + s->strm->avail_in ? 1 : 0;
-        _tr_stored_block(s, (char *)0, 0L, last);
+        zng_tr_stored_block(s, (char *)0, 0L, last);
 
         /* Replace the lengths in the dummy stored block with len. */
         s->pending_buf[s->pending - 4] = len;
@@ -1565,7 +1565,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
         len = MIN(left, have);
         last = flush == Z_FINISH && s->strm->avail_in == 0 &&
                len == left ? 1 : 0;
-        _tr_stored_block(s, (char *)s->window + s->block_start, len, last);
+        zng_tr_stored_block(s, (char *)s->window + s->block_start, len, last);
         s->block_start += len;
         flush_pending(s->strm);
     }
@@ -1623,7 +1623,7 @@ static block_state deflate_rle(deflate_state *s, int flush) {
         if (s->match_length >= MIN_MATCH) {
             check_match(s, s->strstart, s->strstart - 1, s->match_length);
 
-            _tr_tally_dist(s, 1, s->match_length - MIN_MATCH, bflush);
+            zng_tr_tally_dist(s, 1, s->match_length - MIN_MATCH, bflush);
 
             s->lookahead -= s->match_length;
             s->strstart += s->match_length;
@@ -1631,7 +1631,7 @@ static block_state deflate_rle(deflate_state *s, int flush) {
         } else {
             /* No match, output a literal byte */
             Tracevv((stderr, "%c", s->window[s->strstart]));
-            _tr_tally_lit(s, s->window[s->strstart], bflush);
+            zng_tr_tally_lit(s, s->window[s->strstart], bflush);
             s->lookahead--;
             s->strstart++;
         }
@@ -1669,7 +1669,7 @@ static block_state deflate_huff(deflate_state *s, int flush) {
         /* Output a literal byte */
         s->match_length = 0;
         Tracevv((stderr, "%c", s->window[s->strstart]));
-        _tr_tally_lit(s, s->window[s->strstart], bflush);
+        zng_tr_tally_lit(s, s->window[s->strstart], bflush);
         s->lookahead--;
         s->strstart++;
         if (bflush)
