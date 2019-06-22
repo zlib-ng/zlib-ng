@@ -842,6 +842,23 @@ if (ZLIB_ENABLE_TESTS)
             add_test(${FUZZER}_fuzzer ${FUZZER}_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
         endforeach()
     endif()
+
+    set(CVES CVE-2002-0059 CVE-2004-0797 CVE-2005-1849 CVE-2005-2096)
+    foreach(CVE ${CVES})
+        set(CVE_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -d)
+        add_test(NAME ${CVE}
+            COMMAND ${CMAKE_COMMAND}
+            "-DCOMMAND=${CVE_COMMAND}"
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/${CVE}/test.gz
+            "-DSUCCESS_EXIT=0;1"
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+    endforeach()
+
+    if(NOT WIN32 AND ZLIB_COMPAT)
+        add_executable(CVE-2003-0107 test/CVE-2003-0107.c)
+        target_link_libraries(CVE-2003-0107 zlib)
+        add_test(NAME CVE-2003-0107 COMMAND CVE-2003-0107)
+    endif()
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
