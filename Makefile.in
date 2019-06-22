@@ -147,7 +147,7 @@ example_flush_fuzzer.o:
 example_dict_fuzzer.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 minigzip_fuzzer.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
+	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $<
 checksum_fuzzer$(EXE): checksum_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
 	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) checksum_fuzzer.o $(STATICLIB) -lpthread
 compress_fuzzer$(EXE): compress_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
@@ -160,8 +160,8 @@ example_flush_fuzzer$(EXE): example_flush_fuzzer.o standalone_fuzz_target_runner
 	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) example_flush_fuzzer.o $(STATICLIB) -lpthread
 example_dict_fuzzer$(EXE): example_dict_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
 	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) example_dict_fuzzer.o $(STATICLIB) -lpthread
-minigzip_fuzzer$(EXE): minigzip_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) minigzip_fuzzer.o $(STATICLIB) -lpthread
+minigzip_fuzzer$(EXE): minigzip_fuzzer.o standalone_fuzz_target_runner.o $(OBJG) $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) minigzip_fuzzer.o $(OBJG) $(STATICLIB) -lpthread
 
 infcover.o: $(SRCDIR)/test/infcover.c $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/infcover.c
@@ -182,16 +182,16 @@ $(STATICLIB): $(OBJS)
 	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
 
 example.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
+	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
 
 minigzip.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
+	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
 
 example64.o:
-	$(CC) $(CFLAGS) -D_FILE_OFFSET_BITS=64 $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
+	$(CC) $(CFLAGS) -DWITH_GZFILEOP -D_FILE_OFFSET_BITS=64 $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
 
 minigzip64.o:
-	$(CC) $(CFLAGS) -D_FILE_OFFSET_BITS=64 $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
+	$(CC) $(CFLAGS) -DWITH_GZFILEOP -D_FILE_OFFSET_BITS=64 $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
 
 zlibrc.o: win32/zlib$(SUFFIX)1.rc
 	$(RC) $(RCFLAGS) -o $@ win32/zlib$(SUFFIX)1.rc
@@ -203,6 +203,9 @@ zlibrc.o: win32/zlib$(SUFFIX)1.rc
 
 %.lo: $(SRCDIR)/%.c
 	$(CC) $(SFLAGS) -DPIC $(INCLUDES) -c -o $@ $<
+
+$(OBJG): %.o: $(SRCDIR)/%.c
+	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $<
 
 $(SHAREDTARGET): $(PIC_OBJS) $(DEFFILE) $(RCOBJS)
 ifneq ($(SHAREDTARGET),)
@@ -217,38 +220,38 @@ ifneq ($(SHAREDLIB),$(SHAREDTARGET))
 endif
 endif
 
-example$(EXE): example.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ example.o $(TEST_LIBS) $(LDSHAREDLIBC)
+example$(EXE): example.o $(OBJG) $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ example.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-minigzip$(EXE): minigzip.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ minigzip.o $(TEST_LIBS) $(LDSHAREDLIBC)
+minigzip$(EXE): minigzip.o $(OBJG) $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ minigzip.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-examplesh$(EXE): example.o $(SHAREDTARGET)
-	$(CC) $(LDFLAGS) -o $@ example.o $(SHAREDTARGET) $(LDSHAREDLIBC)
+examplesh$(EXE): example.o $(OBJG) $(SHAREDTARGET)
+	$(CC) $(LDFLAGS) -o $@ example.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-minigzipsh$(EXE): minigzip.o $(SHAREDTARGET)
-	$(CC) $(LDFLAGS) -o $@ minigzip.o $(SHAREDTARGET) $(LDSHAREDLIBC)
+minigzipsh$(EXE): minigzip.o $(OBJG) $(SHAREDTARGET)
+	$(CC) $(LDFLAGS) -o $@ minigzip.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-example64$(EXE): example64.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ example64.o $(TEST_LIBS) $(LDSHAREDLIBC)
+example64$(EXE): example64.o $(OBJG) $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ example64.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-minigzip64$(EXE): minigzip64.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ minigzip64.o $(TEST_LIBS) $(LDSHAREDLIBC)
+minigzip64$(EXE): minigzip64.o $(OBJG) $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ minigzip64.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif

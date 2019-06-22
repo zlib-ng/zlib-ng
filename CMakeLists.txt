@@ -709,18 +709,13 @@ set(ZLIB_SRCS
     uncompr.c
     zutil.c
 )
-if (WITH_GZFILEOP)
-    set(ZLIB_GZFILE_SRCS
-        gzclose.c
-        gzlib.c
-        gzread.c
-        gzwrite.c
-    )
-else (WITH_GZFILEOP)
-    set(ZLIB_GZFILE_SRCS
-    )
-endif (WITH_GZFILEOP)
 
+set(ZLIB_GZFILE_SRCS
+    gzclose.c
+    gzlib.c
+    gzread.c
+    gzwrite.c
+)
 
 if(NOT MINGW AND NOT MSYS)
     set(ZLIB_DLL_SRCS
@@ -744,10 +739,15 @@ if(MINGW OR MSYS)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif()
 
-add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_GZFILE_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 target_include_directories(zlib PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_GZFILE_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 target_include_directories(zlibstatic PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(WITH_GZFILEOP)
+    target_sources(zlib PRIVATE ${ZLIB_GZFILE_SRCS})
+    target_sources(zlibstatic PRIVATE ${ZLIB_GZFILE_SRCS})
+endif()
 
 set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
 set_target_properties(zlib PROPERTIES SOVERSION 1)
@@ -807,21 +807,29 @@ endif()
 option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 if (ZLIB_ENABLE_TESTS)
     enable_testing()
+    macro(configure_test_executable target)
+        target_link_libraries(${target} zlib)
+        if(NOT WITH_GZFILEOP)
+            target_compile_definitions(${target} PUBLIC -DWITH_GZFILEOP)
+            target_sources(${target} PRIVATE ${ZLIB_GZFILE_SRCS})
+        endif()
+    endmacro()
+
     add_executable(example test/example.c)
-    target_link_libraries(example zlib)
+    configure_test_executable(example)
     add_test(NAME example COMMAND example${CMAKE_EXECUTABLE_SUFFIX})
 
     add_executable(minigzip test/minigzip.c)
-    target_link_libraries(minigzip zlib)
+    configure_test_executable(minigzip)
 
     if(HAVE_OFF64_T)
         add_executable(example64 test/example.c)
-        target_link_libraries(example64 zlib)
+        configure_test_executable(example64)
         set_target_properties(example64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
         add_test(NAME example64 COMMAND example64${CMAKE_EXECUTABLE_SUFFIX})
 
         add_executable(minigzip64 test/minigzip.c)
-        target_link_libraries(minigzip64 zlib)
+        configure_test_executable(minigzip64)
         set_target_properties(minigzip64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
     endif()
 
@@ -830,7 +838,7 @@ if (ZLIB_ENABLE_TESTS)
         file(GLOB ALL_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*")
         foreach(FUZZER ${FUZZERS})
             add_executable(${FUZZER}_fuzzer test/fuzz/${FUZZER}_fuzzer.c test/fuzz/standalone_fuzz_target_runner.c)
-            target_link_libraries(${FUZZER}_fuzzer zlib)
+            configure_test_executable(${FUZZER}_fuzzer)
             add_test(${FUZZER}_fuzzer ${FUZZER}_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
         endforeach()
     endif()

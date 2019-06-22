@@ -35,6 +35,9 @@ static const char hello[] = "hello, hello!";
 static const char dictionary[] = "hello";
 static unsigned long dictId = 0; /* Adler32 value of the dictionary */
 
+
+void test_compress      (unsigned char *compr, z_size_t comprLen,unsigned char *uncompr, z_size_t uncomprLen);
+void test_gzio          (const char *fname, unsigned char *uncompr, z_size_t uncomprLen);
 void test_deflate       (unsigned char *compr, size_t comprLen);
 void test_inflate       (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
 void test_large_deflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
@@ -48,9 +51,6 @@ int  main               (int argc, char *argv[]);
 
 static alloc_func zalloc = NULL;
 static free_func zfree = NULL;
-
-void test_compress      (unsigned char *compr, z_size_t comprLen,
-                            unsigned char *uncompr, z_size_t uncomprLen);
 
 /* ===========================================================================
  * Test compress() and uncompress()
@@ -75,10 +75,6 @@ void test_compress(unsigned char *compr, z_size_t comprLen, unsigned char *uncom
         printf("uncompress(): %s\n", (char *)uncompr);
     }
 }
-
-#ifdef WITH_GZFILEOP
-void test_gzio          (const char *fname,
-                            unsigned char *uncompr, z_size_t uncomprLen);
 
 /* ===========================================================================
  * Test read/write of .gz files
@@ -160,8 +156,6 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen)
     PREFIX(gzclose)(file);
 #endif
 }
-
-#endif /* WITH_GZFILEOP */
 
 /* ===========================================================================
  * Test deflate() with small buffers
@@ -535,13 +529,8 @@ int main(int argc, char *argv[])
 
     test_compress(compr, comprLen, uncompr, uncomprLen);
 
-#ifdef WITH_GZFILEOP
     test_gzio((argc > 1 ? argv[1] : TESTFILE),
               uncompr, uncomprLen);
-#else
-    (void)argc;
-    (void)argv;
-#endif
 
     test_deflate(compr, comprLen);
     test_inflate(compr, comprLen, uncompr, uncomprLen);
