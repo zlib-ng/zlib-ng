@@ -1468,6 +1468,7 @@ sed < $SRCDIR/test/Makefile.in "
 /^COMPATTESTS *=/s#=.*#=$COMPATTESTS#
 /^QEMU_RUN *=/s#=.*#=$QEMU_RUN#
 /^WITH_FUZZERS *=/s#=.*#=$with_fuzzers#
+/^LIBNAME *=/s#=.*#=$LIBNAME#
 " > test/Makefile
 
 # create zlib.pc with the configure results

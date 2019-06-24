@@ -66,7 +66,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
     /*
      * Do not waste too much time if we already have a good match
      */
-    best_len = s->prev_length;
+    best_len = s->prev_length ? s->prev_length : 1;
     chain_length = s->max_chain_length;
     if (best_len >= s->good_match)
         chain_length >>= 2;
@@ -186,7 +186,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
     /*
      * Do not waste too much time if we already have a good match
      */
-    best_len = s->prev_length;
+    best_len = s->prev_length ? s->prev_length : 1;
     chain_length = s->max_chain_length;
     if (best_len >= s->good_match)
         chain_length >>= 2;
@@ -385,7 +385,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
     register unsigned char *scan = window + strstart; /* current string */
     register unsigned char *match;                       /* matched string */
     register unsigned int len;                  /* length of current match */
-    unsigned int best_len = s->prev_length;     /* best match length so far */
+    unsigned int best_len = s->prev_length ? s->prev_length : 1;     /* best match length so far */
     unsigned int nice_match = s->nice_match;    /* stop if match long enough */
     IPos limit = strstart > (IPos)MAX_DIST(s) ?
         strstart - (IPos)MAX_DIST(s) : NIL;

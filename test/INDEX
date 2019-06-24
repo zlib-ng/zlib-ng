@@ -7,6 +7,8 @@ CVE-2005-1849  :
 CVE-2005-2096  : test cases for the relevant CVEs
 GH-361         : test case for overlapping matches
                  https://github.com/zlib-ng/zlib-ng/issues/361
+GH-364         : test case for switching compression levels
+                 https://github.com/zlib-ng/zlib-ng/issues/364
 
 testCVEinputs.sh: script to run tests for CVEs where input data is supplied
 
