@@ -7,7 +7,8 @@ CFLAGS=
 EXE=
 SRCDIR=
 SRCTOP=
-TEST_LDFLAGS=-L.. ../libz.a
+LIBNAME=
+TEST_LDFLAGS=-L.. ../$(LIBNAME).a
 WITH_FUZZERS=
 
 COMPATTESTS =
@@ -97,15 +98,22 @@ CVE-2003-0107$(EXE): CVE-2003-0107.o
 	$(CC) $(CFLAGS) -o $@ CVE-2003-0107.o $(TEST_LDFLAGS)
 
 .PHONY: ghtests
-ghtests: testGH-361
+ghtests: testGH-361 testGH-364
 
 .PHONY: testGH-361
 testGH-361:
 	$(QEMU_RUN) ../minigzip$(EXE) -4 <$(SRCDIR)/GH-361/test.txt >/dev/null
 
+switchlevels$(EXE): $(SRCDIR)/switchlevels.c
+	$(CC) $(CFLAGS) -I.. -I$(SRCTOP) -o $@ $< $(TEST_LDFLAGS)
+
+.PHONY: testGH-364
+testGH-364: switchlevels$(EXE)
+	$(QEMU_RUN) ./switchlevels$(EXE) 1 5 9 3 <$(SRCDIR)/GH-364/test.bin >/dev/null
+
 clean:
 	rm -f *.o *.gcda *.gcno *.gcov
-	rm -f CVE-2003-0107$(EXE)
+	rm -f CVE-2003-0107$(EXE) switchlevels$(EXE)
 
 distclean:
 	rm -f Makefile
