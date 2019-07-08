@@ -198,4 +198,6 @@ struct dfltcc_state {
     char msg[64];                      /* Buffer for strm->msg */
 };
 
-#define GET_DFLTCC_STATE(state) ((struct dfltcc_state *)((state) + 1))
+#define ALIGN_UP(p, size) (__typeof__(p))(((uintptr_t)(p) + ((size) - 1)) & ~((size) - 1))
+
+#define GET_DFLTCC_STATE(state) ((struct dfltcc_state *)((char *)(state) + ALIGN_UP(sizeof(*state), 8)))
