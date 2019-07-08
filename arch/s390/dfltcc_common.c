@@ -19,13 +19,21 @@ static inline int is_dfltcc_enabled(void)
 
     memset(facilities, 0, sizeof(facilities));
     r0 = sizeof(facilities) / sizeof(facilities[0]) - 1;
-    __asm__ volatile("stfle %[facilities]\n" : [facilities] "=Q" (facilities), [r0] "+r" (r0) :: "cc");
+    /* STFLE is supported since z9-109 and only in z/Architecture mode. When
+     * compiling with -m31, gcc defaults to ESA mode, however, since the kernel
+     * is 64-bit, it's always z/Architecture mode at runtime.
+     */
+    __asm__ volatile(".machinemode push\n"
+                     ".machinemode zarch\n"
+                     "stfle %[facilities]\n"
+                     ".machinemode pop\n"
+                     : [facilities] "=Q" (facilities), [r0] "+r" (r0) :: "cc");
     return is_bit_set((const char *)facilities, DFLTCC_FACILITY);
 }
 
 void ZLIB_INTERNAL dfltcc_reset(PREFIX3(streamp) strm, uInt size)
 {
-    struct dfltcc_state *dfltcc_state = (struct dfltcc_state *)((char *)strm->state + size);
+    struct dfltcc_state *dfltcc_state = (struct dfltcc_state *)((char *)strm->state + ALIGN_UP(size, 8));
     struct dfltcc_qaf_param *param = (struct dfltcc_qaf_param *)&dfltcc_state->param;
 
     /* Initialize available functions */
@@ -49,19 +57,15 @@ void ZLIB_INTERNAL dfltcc_reset(PREFIX3(streamp) strm, uInt size)
 
 void ZLIB_INTERNAL *dfltcc_alloc_state(PREFIX3(streamp) strm, uInt items, uInt size)
 {
-    Assert((items * size) % 8 == 0,
-           "The size of zlib-ng state must be a multiple of 8");
-    return ZALLOC(strm, items * size + sizeof(struct dfltcc_state), sizeof(unsigned char));
+    return ZALLOC(strm, ALIGN_UP(items * size, 8) + sizeof(struct dfltcc_state), sizeof(unsigned char));
 }
 
 void ZLIB_INTERNAL dfltcc_copy_state(void *dst, const void *src, uInt size)
 {
-    memcpy(dst, src, size + sizeof(struct dfltcc_state));
+    memcpy(dst, src, ALIGN_UP(size, 8) + sizeof(struct dfltcc_state));
 }
 
 static const int PAGE_ALIGN = 0x1000;
-
-#define ALIGN_UP(p, size) (__typeof__(p))(((uintptr_t)(p) + ((size) - 1)) & ~((size) - 1))
 
 void ZLIB_INTERNAL *dfltcc_alloc_window(PREFIX3(streamp) strm, uInt items, uInt size)
 {
