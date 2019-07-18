@@ -61,6 +61,7 @@ To build zlib-ng using the cross-platform makefile generator cmake.
 ```
 cmake .
 cmake --build . --config Release
+ctest --verbose -C Release
 ```
 
 Alternatively, yuou can use the cmake configuration GUI tool ccmake:
@@ -128,25 +129,6 @@ To install zlib-ng system-wide using the configure script:
 
 ```
 make install
-```
-
-Testing
--------
-
-### Cmake
-
-To run the unit tests using cmake:
-
-```
-ctest --verbose -C Release
-```
-
-### Configure
-
-To run the unit tests using the configure script:
-
-```
-make test
 ```
 
 Contributing
