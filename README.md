@@ -173,15 +173,15 @@ Contents
 | deflate_medium.c | Compress data using the medium stragety of deflate algorithm   |
 | deflate_slow.c   | Compress data using the slow strategy of deflate algorithm     |
 | functable.*      | Struct containing function pointers to optimized functions     |
-| gzclose.c        | Zlib function for closing gzip files                           |
+| gzclose.c        | Close gzip files                                               |
 | gzendian.h       | BYTE_ORDER for endian tests                                    |
-| gzguts.h         | Zlib header internal definitions for gz* operations            |
-| gzlib.c          | Zlib functions common to reading and writing gzip files        |
-| gzread.c         | Zlib functions for reading gzip files                          |
-| gzwrite.c        | Zlib functions for writing gzip files                          |
+| gzguts.h         | Internal definitions for gzip operations                       |
+| gzlib.c          | Functions common to reading and writing gzip files             |
+| gzread.c         | Read gzip files                                                |
+| gzwrite.c        | Write gzip files                                               |
 | infback.*        | Inflate using a callback interface                             |
-| inflate.*        | Zlib decompression                                             |
-| inffast.*        | Fast decoding                                                  |
+| inflate.*        | Decompress data                                                |
+| inffast.*        | Decompress data fast                                           |
 | inffixed.h       | Table for decoding fixed codes                                 |
 | inftrees.h       | Generate Huffman trees for efficient decoding                  |
 | memcopy.h        | Inline functions to copy small data chunks                     |
@@ -191,4 +191,4 @@ Contents
 | zlib.3           | Man page for zlib                                              |
 | zlib.3.pdf       | Man page in PDF format                                         |
 | zlib.map         | Linux symbol information                                       |
-| zlib.pc.in       | zlib.pc template for cmake                                     |
+| zlib.pc.in       | Pkg-config template                                            |
