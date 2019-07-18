@@ -63,6 +63,12 @@ cmake .
 cmake --build . --config Release
 ```
 
+Alternatively, yuou can use the cmake configuration GUI tool ccmake:
+
+```
+ccmake .
+```
+
 ### Configure
 
 To build zlib-ng using the bash configure script:
@@ -122,6 +128,25 @@ To install zlib-ng system-wide using the configure script:
 
 ```
 make install
+```
+
+Testing
+-------
+
+### Cmake
+
+To run the unit tests using cmake:
+
+```
+ctest --verbose -C Release
+```
+
+### Configure
+
+To run the unit tests using the configure script:
+
+```
+make test
 ```
 
 Contributing
