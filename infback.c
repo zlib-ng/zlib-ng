@@ -15,6 +15,7 @@
 #include "inftrees.h"
 #include "inflate.h"
 #include "inffast.h"
+#include "inflate_p.h"
 
 /* function prototypes */
 static void fixedtables(struct inflate_state *state);
@@ -105,37 +106,9 @@ static void fixedtables(struct inflate_state *state) {
     state->distcode = distfix;
     state->distbits = 5;
 }
-
-/* Macros for inflateBack(): */
-
-/* Load returned state from inflate_fast() */
-#define LOAD() \
-    do { \
-        put = strm->next_out; \
-        left = strm->avail_out; \
-        next = strm->next_in; \
-        have = strm->avail_in; \
-        hold = state->hold; \
-        bits = state->bits; \
-    } while (0)
-
-/* Set state from registers for inflate_fast() */
-#define RESTORE() \
-    do { \
-        strm->next_out = put; \
-        strm->avail_out = left; \
-        strm->next_in = next; \
-        strm->avail_in = have; \
-        state->hold = hold; \
-        state->bits = bits; \
-    } while (0)
-
-/* Clear the input bit accumulator */
-#define INITBITS() \
-    do { \
-        hold = 0; \
-        bits = 0; \
-    } while (0)
+   Private macros for inflateBack()
+   Look in inflate_p.h for macros shared with inflate()
+*/
 
 /* Assure that some input is available.  If input is requested, but denied,
    then return a Z_BUF_ERROR from inflateBack(). */
@@ -159,33 +132,6 @@ static void fixedtables(struct inflate_state *state) {
         have--; \
         hold += (*next++ << bits); \
         bits += 8; \
-    } while (0)
-
-/* Assure that there are at least n bits in the bit accumulator.  If there is
-   not enough available input to do that, then return from inflateBack() with
-   an error. */
-#define NEEDBITS(n) \
-    do { \
-        while (bits < (unsigned)(n)) \
-            PULLBYTE(); \
-    } while (0)
-
-/* Return the low n bits of the bit accumulator (n < 16) */
-#define BITS(n) \
-    (hold & ((1U << (n)) - 1))
-
-/* Remove n bits from the bit accumulator */
-#define DROPBITS(n) \
-    do { \
-        hold >>= (n); \
-        bits -= (unsigned)(n); \
-    } while (0)
-
-/* Remove zero to seven bits as needed to go to a byte boundary */
-#define BYTEBITS() \
-    do { \
-        hold >>= bits & 7; \
-        bits -= bits & 7; \
     } while (0)
 
 /* Assure that some output space is available, by writing out the window

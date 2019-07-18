@@ -8,18 +8,8 @@
 #include "inftrees.h"
 #include "inflate.h"
 #include "inffast.h"
+#include "inflate_p.h"
 #include "memcopy.h"
-
-/* Return the low n bits of the bit accumulator (n < 16) */
-#define BITS(n) \
-    (hold & ((UINT64_C(1) << (n)) - 1))
-
-/* Remove n bits from the bit accumulator */
-#define DROPBITS(n) \
-    do { \
-        hold >>= (n); \
-        bits -= (unsigned)(n); \
-    } while (0)
 
 /*
    Decode literal, length, and distance codes and write out the resulting
