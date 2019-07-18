@@ -36,11 +36,11 @@ int ZEXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int windowBits, unsi
         return Z_STREAM_ERROR;
     strm->msg = NULL;                   /* in case we return an error */
     if (strm->zalloc == NULL) {
-        strm->zalloc = zcalloc;
+        strm->zalloc = zng_calloc;
         strm->opaque = NULL;
     }
     if (strm->zfree == NULL)
-        strm->zfree = zcfree;
+        strm->zfree = zng_cfree;
     state = (struct inflate_state *)ZALLOC(strm, 1, sizeof(struct inflate_state));
     if (state == NULL)
         return Z_MEM_ERROR;
@@ -85,14 +85,14 @@ static void fixedtables(struct inflate_state *state) {
         next = fixed;
         lenfix = next;
         bits = 9;
-        inflate_table(LENS, state->lens, 288, &(next), &(bits), state->work);
+        zng_inflate_table(LENS, state->lens, 288, &(next), &(bits), state->work);
 
         /* distance table */
         sym = 0;
         while (sym < 32) state->lens[sym++] = 5;
         distfix = next;
         bits = 5;
-        inflate_table(DISTS, state->lens, 32, &(next), &(bits), state->work);
+        zng_inflate_table(DISTS, state->lens, 32, &(next), &(bits), state->work);
 
         /* do this just once */
         virgin = 0;
@@ -361,7 +361,7 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
             state->next = state->codes;
             state->lencode = (code const *)(state->next);
             state->lenbits = 7;
-            ret = inflate_table(CODES, state->lens, 19, &(state->next), &(state->lenbits), state->work);
+            ret = zng_inflate_table(CODES, state->lens, 19, &(state->next), &(state->lenbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid code lengths set";
                 state->mode = BAD;
@@ -433,7 +433,7 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
             state->next = state->codes;
             state->lencode = (code const *)(state->next);
             state->lenbits = 9;
-            ret = inflate_table(LENS, state->lens, state->nlen, &(state->next), &(state->lenbits), state->work);
+            ret = zng_inflate_table(LENS, state->lens, state->nlen, &(state->next), &(state->lenbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid literal/lengths set";
                 state->mode = BAD;
@@ -441,7 +441,7 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
             }
             state->distcode = (code const *)(state->next);
             state->distbits = 6;
-            ret = inflate_table(DISTS, state->lens + state->nlen, state->ndist,
+            ret = zng_inflate_table(DISTS, state->lens + state->nlen, state->ndist,
                                 &(state->next), &(state->distbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid distances set";
@@ -458,7 +458,7 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
                 RESTORE();
                 if (state->whave < state->wsize)
                     state->whave = state->wsize - left;
-                inflate_fast(strm, state->wsize);
+                zng_inflate_fast(strm, state->wsize);
                 LOAD();
                 break;
             }

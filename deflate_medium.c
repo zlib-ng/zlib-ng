@@ -23,11 +23,11 @@ struct match {
 #define MAX_DIST2  ((1 << MAX_WBITS) - MIN_LOOKAHEAD)
 
 static int tr_tally_dist(deflate_state *s, int distance, int length) {
-    return _tr_tally(s, distance, length);
+    return zng_tr_tally(s, distance, length);
 }
 
 static int tr_tally_lit(deflate_state *s, int c) {
-    return  _tr_tally(s, 0, c);
+    return zng_tr_tally(s, 0, c);
 }
 
 static int emit_match(deflate_state *s, struct match match) {
