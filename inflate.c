@@ -122,12 +122,13 @@
 
 /* function prototypes */
 static int inflateStateCheck(PREFIX3(stream) *strm);
-static void fixedtables(struct inflate_state *state);
 static int updatewindow(PREFIX3(stream) *strm, const unsigned char *end, uint32_t copy);
+static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len);
 #ifdef BUILDFIXED
     void makefixed(void);
+#else
+#   include "inffixed.h"
 #endif
-static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len);
 
 static int inflateStateCheck(PREFIX3(stream) *strm) {
     struct inflate_state *state;
@@ -283,7 +284,8 @@ int ZEXPORT PREFIX(inflatePrime)(PREFIX3(stream) *strm, int bits, int value) {
    used for threaded applications, since the rewriting of the tables and virgin
    may not be thread-safe.
  */
-static void fixedtables(struct inflate_state *state) {
+
+void ZLIB_INTERNAL fixedtables(struct inflate_state *state) {
 #ifdef BUILDFIXED
     static int virgin = 1;
     static code *lenfix, *distfix;
@@ -315,8 +317,6 @@ static void fixedtables(struct inflate_state *state) {
         /* do this just once */
         virgin = 0;
     }
-#else /* !BUILDFIXED */
-#   include "inffixed.h"
 #endif /* BUILDFIXED */
     state->lencode = lenfix;
     state->lenbits = 9;
