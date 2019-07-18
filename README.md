@@ -59,7 +59,7 @@ There are two ways to build zlib-ng:
 To build zlib-ng using the cross-platform makefile generator cmake.
 
 ```
-cmake . -DZLIB_COMPAT=ON
+cmake .
 cmake --build . --config Release
 ```
 
@@ -68,7 +68,7 @@ cmake --build . --config Release
 To build zlib-ng using the bash configure script:
 
 ```
-./configure --zlib-compat
+./configure
 make
 make test
 ```
