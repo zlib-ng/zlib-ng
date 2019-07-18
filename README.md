@@ -169,9 +169,9 @@ Contents
 | adler32.c        | Compute the Adler-32 checksum of a data stream                 |
 | compress.c       | Compress a memory buffer                                       |
 | deflate.*        | Compress data using the deflation algorithm                    |
-| deflate_fast.c   | Compress data using the fast strategy of deflation algorithm   |
-| deflate_medium.c | Compress data using the medium stragety of deflation algorithm |
-| deflate_slow.c   | Compress data using the slow strategy of deflation algorithm   |
+| deflate_fast.c   | Compress data using the fast strategy of deflate algorithm     |
+| deflate_medium.c | Compress data using the medium stragety of deflate algorithm   |
+| deflate_slow.c   | Compress data using the slow strategy of deflate algorithm     |
 | functable.*      | Struct containing function pointers to optimized functions     |
 | gzclose.c        | Zlib function for closing gzip files                           |
 | gzendian.h       | BYTE_ORDER for endian tests                                    |
