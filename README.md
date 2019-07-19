@@ -107,7 +107,7 @@ We do not recommend installing unless you know what you are doing, as this can
 override the system default zlib library, and any wrong configuration or
 incompatibility of zlib-ng can make the whole system unusable.
 
-On linux distros, an alternative way to use zlib-ng instead of zlib, is through
+On Linux distros, an alternative way to use zlib-ng instead of zlib, is through
 the use of the _LD_PRELOAD_ environment variable. If the program is dynamically linked
 with zlib, then zlib-ng can take its place without risking system-wide instability.
 
