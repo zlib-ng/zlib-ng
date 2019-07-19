@@ -169,16 +169,16 @@ Contents
 | doc/             | Documentation for formats and algorithms                       |
 | test/example.c   | Zlib usages examples for build testing                         |
 | test/minigzip.c  | Minimal gzip-like functionality for build testing              |
-| test/infcover.c  | inf*.c code coverage for build coverage testing                |
+| test/infcover.c  | Inflate code coverage for build testing                        |
 | win32/           | Shared library version resources for Windows                   |
 | CMakeLists.txt   | Cmake build script                                             |
 | configure        | Bash configure/build script                                    |
 | adler32.c        | Compute the Adler-32 checksum of a data stream                 |
 | compress.c       | Compress a memory buffer                                       |
-| deflate.*        | Compress data using the deflation algorithm                    |
-| deflate_fast.c   | Compress data using the fast strategy of deflate algorithm     |
-| deflate_medium.c | Compress data using the medium stragety of deflate algorithm   |
-| deflate_slow.c   | Compress data using the slow strategy of deflate algorithm     |
+| deflate.*        | Compress data using the deflate algorithm                      |
+| deflate_fast.c   | Compress data using the deflate algorithm with fast strategy   |
+| deflate_medium.c | Compress data using the deflate algorithm with medium stragety |
+| deflate_slow.c   | Compress data using the deflate algorithm with slow strategy   |
 | functable.*      | Struct containing function pointers to optimized functions     |
 | gzclose.c        | Close gzip files                                               |
 | gzendian.h       | BYTE_ORDER for endian tests                                    |
@@ -188,7 +188,7 @@ Contents
 | gzwrite.c        | Write gzip files                                               |
 | infback.*        | Inflate using a callback interface                             |
 | inflate.*        | Decompress data                                                |
-| inffast.*        | Decompress data fast                                           |
+| inffast.*        | Decompress data with speed optimizations                       |
 | inffixed.h       | Table for decoding fixed codes                                 |
 | inftrees.h       | Generate Huffman trees for efficient decoding                  |
 | memcopy.h        | Inline functions to copy small data chunks                     |
