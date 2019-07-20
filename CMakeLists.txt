@@ -431,12 +431,12 @@ else()
     endif()
     check_c_source_compile_or_run(
         "#include <immintrin.h>
-        #include <tmmintrin.h>
         int main(void)
         {
-            __m128i zero1 = _mm_setzero_si128();
-            __m128i zero2 = _mm_setzero_si128();
-            _mm_shuffle_epi8(zero1, zero2);
+            __m128i a = _mm_setzero_si128();
+            __m128i b = _mm_setzero_si128();
+            __m128i c = _mm_shuffle_epi8(a, b);
+            (void)c;
             return (int) 0;
         }"
         HAVE_SSSE3_INTRIN
@@ -476,7 +476,6 @@ else()
         # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
         check_c_source_compile_or_run(
             "#include <immintrin.h>
-            #include <wmmintrin.h>
             int main(void)
             {
                 __m128i a = _mm_setzero_si128();
@@ -662,7 +661,6 @@ if(WITH_OPTIM)
             endif()
         endif()
         if(HAVE_PCLMULQDQ_INTRIN)
-            add_definitions(-DX86_PCLMULQDQ_CRC)
             check_intrinsics_attribute("pclmul" HAVE_ATTRIBUTE_PCLMULQDQ)
             if(HAVE_ATTRIBUTE_PCLMULQDQ)
                 add_definitions(-DHAVE_ATTRIBUTE_PCLMULQDQ)
@@ -673,6 +671,7 @@ if(WITH_OPTIM)
             endif()
         endif()
         if(HAVE_SSE2_INTRIN AND HAVE_SSSE3_INTRIN AND HAVE_PCLMULQDQ_INTRIN)
+            add_definitions(-DX86_PCLMULQDQ_CRC)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc_folding.c)
             add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using SSE2, SSSE3, PCLMULQDQ")
         endif()
