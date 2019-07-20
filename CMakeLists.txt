@@ -539,7 +539,7 @@ endmacro()
 #
 macro(check_intrinsics_attribute target variable)
     check_c_source_compiles(
-        "int __attribute__((target (\"${target}\"))) foo()
+        "int __attribute__((__target__(\"${target}\"))) foo()
         {
             return 0;
         }
