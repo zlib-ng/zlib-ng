@@ -25,6 +25,11 @@
 #else
 #  define ZNG_TARGET_SSE2
 #endif
+#if defined(HAVE_ATTRIBUTE_SSSE3)
+#  define ZNG_TARGET_SSSE3 __attribute__((__target__("ssse3")))
+#else
+#  define ZNG_TARGET_SSSE3
+#endif
 #if defined(HAVE_ATTRIBUTE_SSE42)
 #  define ZNG_TARGET_SSE42 __attribute__((__target__("sse4.2")))
 #else
@@ -36,7 +41,11 @@
 #  define ZNG_TARGET_PCLMUL
 #endif
 #if defined(HAVE_ATTRIBUTE_ACLE_CRC)
-#  define ZNG_TARGET_ACLE_CRC __attribute__((__target__("+crc")))
+#  if defined(__clang__)
+#    define ZNG_TARGET_ACLE_CRC __attribute__((__target__("+crc")))
+#  else
+#    define ZNG_TARGET_ACLE_CRC __attribute__((__target__("crc")))
+#  endif
 #else
 #  define ZNG_TARGET_ACLE_CRC
 #endif
