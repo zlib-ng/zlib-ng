@@ -567,10 +567,10 @@ if(WITH_OPTIM)
                     (void)h;
                     return 0;
                 }"
-                HAVE_ATTRIBUTE_SSE2 FAIL_REGEX "not supported"
+                HAVE_ATTRIBUTE_SSE2
             )
             if (HAVE_ATTRIBUTE_ACLE_CRC)
-                add_definitions("-DHAVE_ATTRIBUTE_ACLE_CRC")
+                add_definitions(-DHAVE_ATTRIBUTE_ACLE_CRC)
                 add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using target attribute")
             else()
                 add_intrinsics_option("${ACLEFLAG}")
@@ -613,8 +613,8 @@ if(WITH_OPTIM)
                         __m128i zero = _mm_setzero_si128();
                         (void)zero;
                         return 0;
-                    }" 
-                    HAVE_ATTRIBUTE_SSE2 FAIL_REGEX "not supported"
+                    }"
+                    HAVE_ATTRIBUTE_SSE2
                 )
                 if(HAVE_ATTRIBUTE_SSE2)
                     add_definitions(-DHAVE_ATTRIBUTE_SSE2)
@@ -656,13 +656,13 @@ if(WITH_OPTIM)
             add_definitions(-DX86_SSE4_2_CRC_HASH)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
             check_c_source_compiles(
-                "int  main(void)
+                "int __attribute__((__target__(\"sse4.2\"))) main(void)
                 {
                     unsigned val = 0, h = 0;
                     __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
                     return (int) h;
                 }"
-                HAVE_ATTRIBUTE_SSE42 FAIL_REGEX "not supported"
+                HAVE_ATTRIBUTE_SSE42
             )
             if(HAVE_ATTRIBUTE_SSE42)
                 add_definitions(-DHAVE_ATTRIBUTE_SSE42)
@@ -692,7 +692,7 @@ if(WITH_OPTIM)
                     (void)c;
                     return 0;
                 }"
-                HAVE_ATTRIBUTE_PCLMULQDQ FAIL_REGEX "not supported"
+                HAVE_ATTRIBUTE_PCLMULQDQ
             )
             if(HAVE_ATTRIBUTE_PCLMULQDQ)
                 add_definitions(-DHAVE_ATTRIBUTE_PCLMULQDQ)
