@@ -198,7 +198,7 @@ ZNG_TARGET_SSE2 ZNG_TARGET_SSSE3 ZNG_TARGET_PCLMULQDQ static void partial_fold(c
 
     xmm_a0_0 = _mm_shuffle_epi8(*xmm_crc0, xmm_shl);
 
-    *xmm_crc0 = _mm_shuffle_epi8(*xmm_crc0, xmm_shr); // SSSE3
+    *xmm_crc0 = _mm_shuffle_epi8(*xmm_crc0, xmm_shr);
     xmm_tmp1 = _mm_shuffle_epi8(*xmm_crc1, xmm_shl);
     *xmm_crc0 = _mm_or_si128(*xmm_crc0, xmm_tmp1);
 
