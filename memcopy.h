@@ -126,7 +126,7 @@ static inline unsigned char* chunkunroll(unsigned char *out, unsigned *dist, uns
     return out;
 }
 
-static inline ZNG_TARGET_SSE2 inffast_chunk_t chunkmemset_1(unsigned char *from) {
+ZNG_TARGET_SSE2 static inline inffast_chunk_t chunkmemset_1(unsigned char *from) {
   #if defined(X86_SSE2)
     int8_t c;
     memcpy(&c, from, sizeof(c));
@@ -136,7 +136,7 @@ static inline ZNG_TARGET_SSE2 inffast_chunk_t chunkmemset_1(unsigned char *from)
   #endif
 }
 
-static inline ZNG_TARGET_SSE2 inffast_chunk_t chunkmemset_2(unsigned char *from) {
+ZNG_TARGET_SSE2 static inline inffast_chunk_t chunkmemset_2(unsigned char *from) {
     int16_t c;
     memcpy(&c, from, sizeof(c));
   #if defined(X86_SSE2)
@@ -146,7 +146,7 @@ static inline ZNG_TARGET_SSE2 inffast_chunk_t chunkmemset_2(unsigned char *from)
   #endif
 }
 
-static inline ZNG_TARGET_SSE2 inffast_chunk_t chunkmemset_4(unsigned char *from) {
+ZNG_TARGET_SSE2 static inline inffast_chunk_t chunkmemset_4(unsigned char *from) {
     int32_t c;
     memcpy(&c, from, sizeof(c));
   #if defined(X86_SSE2)
@@ -156,7 +156,7 @@ static inline ZNG_TARGET_SSE2 inffast_chunk_t chunkmemset_4(unsigned char *from)
   #endif
 }
 
-static inline ZNG_TARGET_SSE2 inffast_chunk_t chunkmemset_8(unsigned char *from) {
+ZNG_TARGET_SSE2 static inline inffast_chunk_t chunkmemset_8(unsigned char *from) {
   #if defined(X86_SSE2)
     int64_t c;
     memcpy(&c, from, sizeof(c));
