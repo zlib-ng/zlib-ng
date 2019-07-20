@@ -35,10 +35,10 @@
 #else
 #  define ZNG_TARGET_SSE42
 #endif
-#if defined(HAVE_ATTRIBUTE_PCLMUL)
-#  define ZNG_TARGET_PCLMUL __attribute__((__target__("pclmul")))
+#if defined(HAVE_ATTRIBUTE_PCLMULQDQ)
+#  define ZNG_TARGET_PCLMULQDQ __attribute__((__target__("pclmul")))
 #else
-#  define ZNG_TARGET_PCLMUL
+#  define ZNG_TARGET_PCLMULQDQ
 #endif
 #if defined(HAVE_ATTRIBUTE_ACLE_CRC)
 #  if defined(__clang__)
