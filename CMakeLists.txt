@@ -535,7 +535,7 @@ endmacro()
 
 #
 # Macro to check to see if the compiler supports targeting specific functions for
-# use with certain instrinsics
+# use with certain intrinsics
 #
 macro(check_intrinsics_attribute target variable)
     check_c_source_compiles(
