@@ -20,6 +20,19 @@
 #  define ZLIB_INTERNAL
 #endif
 
+#if defined(HAVE_ATTRIBUTE_SSE2)
+#  define ZNG_TARGET_SSE2 __attribute__((__target__("sse2")))
+#endif
+#if defined(HAVE_ATTRIBUTE_SSE42)
+#  define ZNG_TARGET_SSE42 __attribute__((__target__("sse42")))
+#endif
+#if defined(HAVE_ATTRIBUTE_PCLMUL)
+#  define ZNG_TARGET_PCLMUL __attribute__((__target__("pclmul")))
+#endif
+#if defined(HAVE_ATTRIBUTE_ACLE_CRC)
+#  define ZNG_TARGET_ACLE_CRC __attribute__((__target__("+crc")))
+#endif
+
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>

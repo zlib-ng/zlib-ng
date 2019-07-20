@@ -33,7 +33,7 @@ string(REGEX REPLACE ".*#define[ \t]+ZLIBNG_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
 message(STATUS "ZLIB_HEADER_VERSION: ${ZLIB_HEADER_VERSION}")
 message(STATUS "ZLIBNG_HEADER_VERSION: ${ZLIBNG_HEADER_VERSION}")
 
-project(zlib 
+project(zlib
   VERSION ${ZLIB_HEADER_VERSION}
   LANGUAGES C)
 
@@ -534,13 +534,27 @@ if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
     set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/armfeature.c ${ARCHDIR}/fill_window_arm.c)
 endif()
 if(WITH_OPTIM)
-    if("${ARCH}" MATCHES "arm")
+    if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
         if(WITH_ACLE)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
-            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${ACLEFLAG}")
             add_definitions("-DARM_ACLE_CRC_HASH")
+            check_c_source_compiles(
+                "int __attribute__((target (\"+crc\"))) foo()
+                {
+                    return 0;
+                }
+                int main()
+                {
+                    return foo();
+                }"
+                HAVE_ATTRIBUTE_ACLE_CRC FAIL_REGEX "not supported")
+            if (HAVE_ATTRIBUTE_ACLE_CRC)
+                add_definitions(-DHAVE_ATTRIBUTE_ACLE_CRC)
+            endif()
             add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using \"${ACLEFLAG}\"")
         endif()
+    endif()
+    if("${ARCH}" MATCHES "arm")
         if(WITH_NEON)
             if(MFPU_NEON_AVAILABLE)
                 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NEONFLAG}")
@@ -553,12 +567,6 @@ if(WITH_OPTIM)
             add_feature_info(NEON_FILLWINDOW 1 "Support NEON instructions in fill_window_arm, using \"${NEONFLAG}\"")
         endif()
     elseif("${ARCH}" MATCHES "aarch64")
-        if(WITH_ACLE)
-            set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
-            add_definitions("-DARM_ACLE_CRC_HASH")
-            add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using \"${ACLEFLAG}\"")
-        endif()
-        # We need to check WITH_NEON first
         if(WITH_NEON)
             add_definitions("-DARM_NEON_ADLER32")
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NEONFLAG}")
@@ -574,7 +582,22 @@ if(WITH_OPTIM)
             add_definitions(-DX86_SSE4_2_CRC_HASH)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
             add_feature_info(SSE4_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set, using \"${SSE4FLAG}\"")
-            add_intrinsics_option("${SSE4FLAG}")
+            # Check if we can we can target which functions should be compiled with sse2 intrinics
+            check_c_source_compiles(
+                "int __attribute__((target (\"sse42\"))) foo()
+                {
+                    return 0;
+                }
+                int main()
+                {
+                    return foo();
+                }"
+                HAVE_ATTRIBUTE_SSE42 FAIL_REGEX "not supported")
+            if(HAVE_ATTRIBUTE_SSE42)
+                add_definitions(-DHAVE_ATTRIBUTE_SSE42)
+            else()
+                add_intrinsics_option("${SSE4FLAG}")
+            endif()
             if(HAVE_SSE42CRC_INTRIN)
                 add_definitions(-DX86_SSE4_2_CRC_INTRIN)
             endif()
@@ -588,7 +611,22 @@ if(WITH_OPTIM)
             add_definitions(-DX86_SSE2)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/fill_window_sse.c)
             if(NOT ${ARCH} MATCHES "x86_64")
-                add_intrinsics_option("${SSE2FLAG}")
+                # Check if we can we can target which functions should be compiled with sse2 intrinics
+                check_c_source_compiles(
+                    "int __attribute__((target (\"sse2\"))) foo()
+                    {
+                        return 0;
+                    }
+                    int main()
+                    {
+                        return foo();
+                    }"
+                    HAVE_ATTRIBUTE_SSE2 FAIL_REGEX "not supported")
+                if(HAVE_ATTRIBUTE_SSE2)
+                    add_definitions(-DHAVE_ATTRIBUTE_SSE2)
+                else()
+                    add_intrinsics_option("${SSE2FLAG}")
+                endif()
                 add_feature_info(FORCE_SSE2 FORCE_SSE2 "Assume CPU is SSE2 capable")
                 if(FORCE_SSE2)
                     add_definitions(-DX86_NOCHECK_SSE2)
@@ -598,7 +636,22 @@ if(WITH_OPTIM)
         if(HAVE_PCLMULQDQ_INTRIN)
             add_definitions(-DX86_PCLMULQDQ_CRC)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc_folding.c)
-            add_intrinsics_option("${PCLMULFLAG}")
+            # Check if we can we can target which functions should be compiled with sse2 intrinics
+            check_c_source_compiles(
+                "int __attribute__((target (\"pclmul\"))) foo()
+                {
+                    return 0;
+                }
+                int main()
+                {
+                    return foo();
+                }"
+                HAVE_ATTRIBUTE_PCLMUL FAIL_REGEX "not supported")
+            if(HAVE_ATTRIBUTE_PCLMUL)
+                add_definitions(-DHAVE_ATTRIBUTE_PCLMUL)
+            else()
+                add_intrinsics_option("${PCLMULFLAG}")
+            endif()
             if(HAVE_SSE42_INTRIN)
                 add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG}\"")
             else()
@@ -862,4 +915,3 @@ if (ZLIB_ENABLE_TESTS)
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
-

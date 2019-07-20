@@ -12,14 +12,14 @@
 
 /* insert_string */
 #ifdef X86_SSE4_2_CRC_HASH
-extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
+ZNG_TARGET_SSE42 extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
 #elif defined(ARM_ACLE_CRC_HASH)
 extern Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count);
 #endif
 
 /* fill_window */
 #ifdef X86_SSE2
-extern void fill_window_sse(deflate_state *s);
+ZNG_TARGET_SSE2 extern void fill_window_sse(deflate_state *s);
 #elif defined(__arm__) || defined(__aarch64__) || defined(_M_ARM)
 extern void fill_window_arm(deflate_state *s);
 #endif

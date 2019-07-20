@@ -32,7 +32,7 @@
 extern void fill_window_sse(deflate_state *s);
 extern void flush_pending(PREFIX3(stream) *strm);
 
-static inline long compare258(const unsigned char *const src0, const unsigned char *const src1) {
+ZNG_TARGET_SSE2 ZNG_TARGET_SSE42 static inline long compare258(const unsigned char *const src0, const unsigned char *const src1) {
 #ifdef _MSC_VER
     long cnt;
 
@@ -198,7 +198,7 @@ static void static_emit_end_block(deflate_state *const s, int last) {
     s->block_open = 0;
 }
 
-static inline Pos quick_insert_string(deflate_state *const s, const Pos str) {
+ZNG_TARGET_SSE42 static inline Pos quick_insert_string(deflate_state *const s, const Pos str) {
     Pos ret;
     unsigned h = 0;
 
