@@ -533,23 +533,6 @@ macro(add_intrinsics_option flag)
     endif()
 endmacro()
 
-#
-# Macro to check to see if the compiler supports targeting specific functions for
-# use with certain intrinsics
-#
-macro(check_intrinsics_attribute target variable)
-    check_c_source_compiles(
-        "int __attribute__((__target__(\"${target}\"))) foo()
-        {
-            return 0;
-        }
-        int main()
-        {
-            return foo();
-        }"
-        ${variable} FAIL_REGEX "not supported")
-endmacro()
-
 set(ZLIB_ARCH_SRCS)
 set(ARCHDIR "arch/generic")
 if("${ARCH}" MATCHES "x86_64" OR "${ARCH}" MATCHES "AMD64" OR "${ARCH}" MATCHES "i[3-6]86")
@@ -570,14 +553,24 @@ if(WITH_OPTIM)
     if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
         if(WITH_ACLE)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
-            add_definitions("-DARM_ACLE_CRC_HASH")
+            add_definitions(-DARM_ACLE_CRC_HASH)
             if (CMAKE_C_COMPILER_ID MATCHES "Clang")
-                check_intrinsics_attribute("+crc" HAVE_ATTRIBUTE_ACLE_CRC)
+                set(CRC_ATTRIBUTE_TARGET "+crc")
             else()
-                check_intrinsics_attribute("crc" HAVE_ATTRIBUTE_ACLE_CRC)
+                set(CRC_ATTRIBUTE_TARGET "crc")
             endif()
+            check_c_source_compiles(
+                "#include <arm_acle.h>
+                int __attribute__((__target__(\"${CRC_ATTRIBUTE_TARGET}\"))) main(void)
+                {
+                    unsigned int h = __crc32w(0, 0xFFFFFFF);
+                    (void)h;
+                    return 0;
+                }"
+                HAVE_ATTRIBUTE_SSE2 FAIL_REGEX "not supported"
+            )
             if (HAVE_ATTRIBUTE_ACLE_CRC)
-                add_definitions(-DHAVE_ATTRIBUTE_ACLE_CRC)
+                add_definitions("-DHAVE_ATTRIBUTE_ACLE_CRC")
                 add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using target attribute")
             else()
                 add_intrinsics_option("${ACLEFLAG}")
@@ -613,7 +606,16 @@ if(WITH_OPTIM)
             add_definitions(-DX86_SSE2)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/fill_window_sse.c)
             if(NOT ${ARCH} MATCHES "x86_64")
-                check_intrinsics_attribute("sse2" HAVE_ATTRIBUTE_SSE2)
+                check_c_source_compiles(
+                    "#include <immintrin.h>
+                    int __attribute__((__target__(\"sse2\"))) main(void)
+                    {
+                        __m128i zero = _mm_setzero_si128();
+                        (void)zero;
+                        return 0;
+                    }" 
+                    HAVE_ATTRIBUTE_SSE2 FAIL_REGEX "not supported"
+                )
                 if(HAVE_ATTRIBUTE_SSE2)
                     add_definitions(-DHAVE_ATTRIBUTE_SSE2)
                     add_feature_info(SSE2 1 "Support the SSE2 instruction set, using target attribute")
@@ -630,7 +632,18 @@ if(WITH_OPTIM)
             endif()
         endif()
         if(HAVE_SSSE3_INTRIN)
-            check_intrinsics_attribute("ssse3" HAVE_ATTRIBUTE_SSSE3)
+            check_c_source_compiles(
+                "#include <immintrin.h>
+                int __attribute__((__target__(\"ssse3\"))) main(void)
+                {
+                    __m128i a = _mm_setzero_si128();
+                    __m128i b = _mm_setzero_si128();
+                    __m128i c = _mm_shuffle_epi8(a, b);
+                    (void)c;
+                    return (int) 0;
+                }"
+                HAVE_ATTRIBUTE_SSSE3 FAIL_REGEX "not supported"
+            )
             if(HAVE_ATTRIBUTE_SSSE3)
                 add_definitions(-DHAVE_ATTRIBUTE_SSSE3)
                 add_feature_info(SSSE3 1 "Support the SSSE3 instruction set, using target attribute")
@@ -642,7 +655,15 @@ if(WITH_OPTIM)
         if(HAVE_SSE42_INTRIN)
             add_definitions(-DX86_SSE4_2_CRC_HASH)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
-            check_intrinsics_attribute("sse4.2" HAVE_ATTRIBUTE_SSE42)
+            check_c_source_compiles(
+                "int  main(void)
+                {
+                    unsigned val = 0, h = 0;
+                    __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
+                    return (int) h;
+                }"
+                HAVE_ATTRIBUTE_SSE42 FAIL_REGEX "not supported"
+            )
             if(HAVE_ATTRIBUTE_SSE42)
                 add_definitions(-DHAVE_ATTRIBUTE_SSE42)
                 add_feature_info(SSE42 1 "Support the SSE4.2 instruction set, using target attribute")
@@ -661,7 +682,18 @@ if(WITH_OPTIM)
             endif()
         endif()
         if(HAVE_PCLMULQDQ_INTRIN)
-            check_intrinsics_attribute("pclmul" HAVE_ATTRIBUTE_PCLMULQDQ)
+            check_c_source_compile_or_run(
+                "#include <immintrin.h>
+                int __attribute__((__target__(\"pclmul\"))) main(void)
+                {
+                    __m128i a = _mm_setzero_si128();
+                    __m128i b = _mm_setzero_si128();
+                    __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+                    (void)c;
+                    return 0;
+                }"
+                HAVE_ATTRIBUTE_PCLMULQDQ FAIL_REGEX "not supported"
+            )
             if(HAVE_ATTRIBUTE_PCLMULQDQ)
                 add_definitions(-DHAVE_ATTRIBUTE_PCLMULQDQ)
                 add_feature_info(PCLMUL 1 "Support the PCLMULQDQ instruction set, using target attribute")
