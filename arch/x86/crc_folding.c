@@ -21,7 +21,6 @@
 #include "zbuild.h"
 #include <inttypes.h>
 #include <immintrin.h>
-#include <wmmintrin.h>
 
 #include "crc_folding.h"
 
