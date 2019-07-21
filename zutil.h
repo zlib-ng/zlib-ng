@@ -49,6 +49,8 @@
 #  endif
 #else
 #  define ZNG_TARGET_PCLMULQDQ
+#  define ZNG_TARGET_SSE2_SSE42_PCLMULQDQ
+#  define ZNG_TARGET_SSE2_SSSE3_PCLMULQDQ
 #endif
 #if defined(HAVE_ATTRIBUTE_ACLE_CRC)
 #  if defined(__clang__)
