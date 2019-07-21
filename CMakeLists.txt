@@ -607,11 +607,12 @@ if(WITH_OPTIM)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/fill_window_sse.c)
             if(NOT ${ARCH} MATCHES "x86_64")
                 check_c_source_compiles(
-                    "#include <immintrin.h>
-                    int __attribute__((__target__(\"sse2\")),optimize(\"O0\")) main(void)
+                    "#include <stdio.h>
+                    #include <immintrin.h>
+                    int __attribute__((__target__(\"sse2\"))) main(void)
                     {
                         __m128i zero = _mm_setzero_si128();
-                        (void)zero;
+                        printf(\"%08x\", zero);
                         return 0;
                     }"
                     HAVE_ATTRIBUTE_SSE2
@@ -633,14 +634,15 @@ if(WITH_OPTIM)
         endif()
         if(HAVE_SSSE3_INTRIN)
             check_c_source_compiles(
-                "#include <immintrin.h>
-                int __attribute__((__target__(\"ssse3\")) main(void)
+                "#include <stdio.h>
+                #include <immintrin.h>
+                int __attribute__((__target__(\"ssse3\"))) main(void)
                 {
                     __m128i a = _mm_setzero_si128();
                     __m128i b = _mm_setzero_si128();
                     __m128i c = _mm_shuffle_epi8(a, b);
                     printf(\"%08x\", c);
-                    return (int) 0;
+                    return 0;
                 }"
                 HAVE_ATTRIBUTE_SSSE3 FAIL_REGEX "not supported"
             )
@@ -656,7 +658,7 @@ if(WITH_OPTIM)
             add_definitions(-DX86_SSE4_2_CRC_HASH)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
             check_c_source_compiles(
-                "int __attribute__((__target__(\"sse4.2\")),optimize(\"O0\")) main(void)
+                "int __attribute__((__target__(\"sse4.2\"))) main(void)
                 {
                     unsigned val = 0, h = 0;
                     __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
@@ -683,13 +685,14 @@ if(WITH_OPTIM)
         endif()
         if(HAVE_PCLMULQDQ_INTRIN)
             check_c_source_compile_or_run(
-                "#include <immintrin.h>
+                "#include <stdio.h>
+                #include <immintrin.h>
                 int __attribute__((__target__(\"pclmul\"))) main(void)
                 {
                     __m128i a = _mm_setzero_si128();
                     __m128i b = _mm_setzero_si128();
                     __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-                    (void)c;
+                    printf(\"%08x\", c);
                     return 0;
                 }"
                 HAVE_ATTRIBUTE_PCLMULQDQ
