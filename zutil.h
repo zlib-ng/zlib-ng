@@ -37,6 +37,16 @@
 #endif
 #if defined(HAVE_ATTRIBUTE_PCLMULQDQ)
 #  define ZNG_TARGET_PCLMULQDQ __attribute__((__target__("pclmul")))
+#  if defined(HAVE_ATTRIBUTE_SSE2)
+#    if defined(HAVE_ATTRIBUTE_SSE42)
+#       define ZNG_TARGET_SSE2_SSE42_PCLMULQDQ \
+          __attribute__((__target__("sse2,sse4.2,pclmul")))
+#    endif
+#    if defined(HAVE_ATTRIBUTE_SSSE3)
+#      define ZNG_TARGET_SSE2_SSSE3_PCLMULQDQ \
+         __attribute__((__target__("sse2,ssse3,pclmul")))
+#    endif
+#  endif
 #else
 #  define ZNG_TARGET_PCLMULQDQ
 #endif

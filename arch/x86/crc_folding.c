@@ -181,7 +181,7 @@ static const unsigned ALIGNED_(32) pshufb_shf_table[60] = {
     0x0201008f, 0x06050403, 0x0a090807, 0x0e0d0c0b  /* shl  1 (16 -15)/shr15*/
 };
 
-ZNG_TARGET_SSE2 ZNG_TARGET_SSSE3 ZNG_TARGET_PCLMULQDQ static void partial_fold(const size_t len, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2,
+ZNG_TARGET_SSE2_SSSE3_PCLMULQDQ static void partial_fold(const size_t len, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2,
                          __m128i *xmm_crc3, __m128i *xmm_crc_part) {
 
     const __m128i xmm_fold4 = _mm_set_epi32( 0x00000001, 0x54442bd4,
@@ -377,7 +377,7 @@ static const unsigned ALIGNED_(16) crc_mask2[4] = {
     0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
 };
 
-ZLIB_INTERNAL ZNG_TARGET_SSE2 ZNG_TARGET_PCLMULQDQ uint32_t crc_fold_512to32(deflate_state *const s) {
+ZLIB_INTERNAL ZNG_TARGET_SSE2_SSE42_PCLMULQDQ uint32_t crc_fold_512to32(deflate_state *const s) {
     const __m128i xmm_mask  = _mm_load_si128((__m128i *)crc_mask);
     const __m128i xmm_mask2 = _mm_load_si128((__m128i *)crc_mask2);
 
