@@ -6,7 +6,7 @@ else()
 endif()
 
 set(CMAKE_MACOSX_RPATH 1)
-
+set(CMAKE_VERBOSE_MAKEFILE ON)
 # If not specified on the command line, enable C99 as the default
 # Configuration items that affect the global compiler envirionment standards
 # should be issued before the "project" command.
@@ -608,7 +608,7 @@ if(WITH_OPTIM)
             if(NOT ${ARCH} MATCHES "x86_64")
                 check_c_source_compiles(
                     "#include <immintrin.h>
-                    int __attribute__((__target__(\"sse2\"))) main(void)
+                    int __attribute__((__target__(\"sse2\")),optimize(\"O0\")) main(void)
                     {
                         __m128i zero = _mm_setzero_si128();
                         (void)zero;
@@ -634,12 +634,12 @@ if(WITH_OPTIM)
         if(HAVE_SSSE3_INTRIN)
             check_c_source_compiles(
                 "#include <immintrin.h>
-                int __attribute__((__target__(\"ssse3\"))) main(void)
+                int __attribute__((__target__(\"ssse3\")) main(void)
                 {
                     __m128i a = _mm_setzero_si128();
                     __m128i b = _mm_setzero_si128();
                     __m128i c = _mm_shuffle_epi8(a, b);
-                    (void)c;
+                    printf(\"%08x\", c);
                     return (int) 0;
                 }"
                 HAVE_ATTRIBUTE_SSSE3 FAIL_REGEX "not supported"
@@ -656,7 +656,7 @@ if(WITH_OPTIM)
             add_definitions(-DX86_SSE4_2_CRC_HASH)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
             check_c_source_compiles(
-                "int __attribute__((__target__(\"sse4.2\"))) main(void)
+                "int __attribute__((__target__(\"sse4.2\")),optimize(\"O0\")) main(void)
                 {
                     unsigned val = 0, h = 0;
                     __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
