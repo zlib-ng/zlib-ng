@@ -213,6 +213,7 @@ else()
         endif()
     else()
         set(SSE2FLAG ${NATIVEFLAG})
+        set(SSSE3FLAG ${NATIVEFLAG})
         set(SSE4FLAG ${NATIVEFLAG})
         set(PCLMULFLAG ${NATIVEFLAG})
         if("${ARCH}" MATCHES "arm")
@@ -567,7 +568,7 @@ if(WITH_OPTIM)
                     (void)h;
                     return 0;
                 }"
-                HAVE_ATTRIBUTE_SSE2
+                HAVE_ATTRIBUTE_SSE2 FAIL_REGEX "not supported"
             )
             if (HAVE_ATTRIBUTE_ACLE_CRC)
                 add_definitions(-DHAVE_ATTRIBUTE_ACLE_CRC)
@@ -606,16 +607,21 @@ if(WITH_OPTIM)
             add_definitions(-DX86_SSE2)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/fill_window_sse.c)
             if(NOT ${ARCH} MATCHES "x86_64")
+                add_feature_info(FORCE_SSE2 FORCE_SSE2 "Assume CPU is SSE2 capable")
+                if(FORCE_SSE2)
+                    add_definitions(-DX86_NOCHECK_SSE2)
+                endif()
+            else()
                 check_c_source_compiles(
                     "#include <stdio.h>
                     #include <immintrin.h>
                     int __attribute__((__target__(\"sse2\"))) main(void)
                     {
                         __m128i zero = _mm_setzero_si128();
-                        printf(\"%08x\", zero);
+                        (void)zero;
                         return 0;
                     }"
-                    HAVE_ATTRIBUTE_SSE2
+                    HAVE_ATTRIBUTE_SSE2 FAIL_REGEX "not supported"
                 )
                 if(HAVE_ATTRIBUTE_SSE2)
                     add_definitions(-DHAVE_ATTRIBUTE_SSE2)
@@ -624,24 +630,17 @@ if(WITH_OPTIM)
                     add_intrinsics_option("${SSE2FLAG}")
                     add_feature_info(SSE2 1 "Support the SSE2 instruction set, using \"${SSE2FLAG}\"")
                 endif()
-                add_feature_info(FORCE_SSE2 FORCE_SSE2 "Assume CPU is SSE2 capable")
-                if(FORCE_SSE2)
-                    add_definitions(-DX86_NOCHECK_SSE2)
-                endif()
-            else()
-                add_feature_info(SSE2 1 "Support the SSE2 instruction set")
             endif()
         endif()
         if(HAVE_SSSE3_INTRIN)
             check_c_source_compiles(
-                "#include <stdio.h>
-                #include <immintrin.h>
+                "#include <immintrin.h>
                 int __attribute__((__target__(\"ssse3\"))) main(void)
                 {
                     __m128i a = _mm_setzero_si128();
                     __m128i b = _mm_setzero_si128();
                     __m128i c = _mm_shuffle_epi8(a, b);
-                    printf(\"%08x\", c);
+                    (void)c;
                     return 0;
                 }"
                 HAVE_ATTRIBUTE_SSSE3 FAIL_REGEX "not supported"
@@ -664,7 +663,7 @@ if(WITH_OPTIM)
                     __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
                     return (int) h;
                 }"
-                HAVE_ATTRIBUTE_SSE42
+                HAVE_ATTRIBUTE_SSE42 FAIL_REGEX "not supported"
             )
             if(HAVE_ATTRIBUTE_SSE42)
                 add_definitions(-DHAVE_ATTRIBUTE_SSE42)
@@ -684,18 +683,17 @@ if(WITH_OPTIM)
             endif()
         endif()
         if(HAVE_PCLMULQDQ_INTRIN)
-            check_c_source_compile_or_run(
-                "#include <stdio.h>
-                #include <immintrin.h>
+            check_c_source_compiles(
+                "#include <immintrin.h>
                 int __attribute__((__target__(\"pclmul\"))) main(void)
                 {
                     __m128i a = _mm_setzero_si128();
                     __m128i b = _mm_setzero_si128();
                     __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-                    printf(\"%08x\", c);
+                    (void)c;
                     return 0;
                 }"
-                HAVE_ATTRIBUTE_PCLMULQDQ
+                HAVE_ATTRIBUTE_PCLMULQDQ FAIL_REGEX "not supported"
             )
             if(HAVE_ATTRIBUTE_PCLMULQDQ)
                 add_definitions(-DHAVE_ATTRIBUTE_PCLMULQDQ)
