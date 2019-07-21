@@ -6,7 +6,7 @@ else()
 endif()
 
 set(CMAKE_MACOSX_RPATH 1)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+
 # If not specified on the command line, enable C99 as the default
 # Configuration items that affect the global compiler envirionment standards
 # should be issued before the "project" command.
