@@ -400,80 +400,85 @@ if(MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
+if(WITH_NATIVE_INSTRUCTIONS)
+    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
 else()
-    #
-    # Not MSVC, so we need to check if we have the MS-style SSE etc. intrinsics
-    #
-    if(WITH_NATIVE_INSTRUCTIONS)
-        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-    else()
-        set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
-    endif()
+    set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
+endif()
+check_c_source_compile_or_run(
+    "#include <immintrin.h>
+    int main(void)
+    {
+        __m128i zero = _mm_setzero_si128();
+        (void)zero;
+        return 0;
+    }"
+    HAVE_SSE2_INTRIN
+)
+set(CMAKE_REQUIRED_FLAGS)
+
+if(WITH_NATIVE_INSTRUCTIONS)
+    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+else()
+    # Use the generic SSE4 enabler option to check for the SSE4.2 instruction we require:
+    set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
+endif()
+check_c_source_compile_or_run(
+    "int main(void)
+    {
+        unsigned val = 0, h = 0;
+    #if defined(_MSC_VER)
+        { __asm mov edx, h __asm  mov eax, val __asm crc32 eax, edx __asm mov val, eax }
+    #else
+        __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
+    #endif
+        return (int) h;
+    }"
+    HAVE_SSE42_INTRIN
+)
+check_c_source_compile_or_run(
+    "#include <immintrin.h>
+    int main(void)
+    {
+        unsigned crc = 0;
+        char c = 'c';
+    #if defined(_MSC_VER)
+        crc = _mm_crc32_u32(crc, c);
+    #else
+        crc = __builtin_ia32_crc32qi(crc, c);
+    #endif
+        (void)crc;
+        return 0;
+    }"
+    HAVE_SSE42CRC_INTRIN
+)
+set(CMAKE_REQUIRED_FLAGS)
+
+if(WITH_NATIVE_INSTRUCTIONS)
+    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+else()
+    set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
+endif()
+if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
+    # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void)
         {
-            __m128i zero = _mm_setzero_si128();
-            (void)zero;
+            __m128i a = _mm_setzero_si128();
+            __m128i b = _mm_setzero_si128();
+            __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+            (void)c;
             return 0;
         }"
-        HAVE_SSE2_INTRIN
+        HAVE_PCLMULQDQ_INTRIN
     )
-    set(CMAKE_REQUIRED_FLAGS)
-
-    if(WITH_NATIVE_INSTRUCTIONS)
-        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-    else()
-        # Use the generic SSE4 enabler option to check for the SSE4.2 instruction we require:
-        set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
-    endif()
-    check_c_source_compile_or_run(
-        "int main(void)
-        {
-            unsigned val = 0, h = 0;
-            __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
-            return (int) h;
-        }"
-        HAVE_SSE42_INTRIN
-    )
-    check_c_source_compile_or_run(
-        "int main(void)
-        {
-            unsigned crc = 0;
-            char c = 'c';
-            crc = __builtin_ia32_crc32qi(crc, c);
-            (void)crc;
-            return 0;
-        }"
-        HAVE_SSE42CRC_INTRIN
-    )
-    set(CMAKE_REQUIRED_FLAGS)
-
-    if(WITH_NATIVE_INSTRUCTIONS)
-        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-    else()
-        set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
-    endif()
-    if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
-        # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
-        check_c_source_compile_or_run(
-            "#include <immintrin.h>
-            #include <wmmintrin.h>
-            int main(void)
-            {
-                __m128i a = _mm_setzero_si128();
-                __m128i b = _mm_setzero_si128();
-                __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-                (void)c;
-                return 0;
-            }"
-            HAVE_PCLMULQDQ_INTRIN
-        )
-    else()
-        set(HAVE_PCLMULQDQ_INTRIN NO)
-    endif()
-    set(CMAKE_REQUIRED_FLAGS)
+else()
+    set(HAVE_PCLMULQDQ_INTRIN NO)
 endif()
+set(CMAKE_REQUIRED_FLAGS)
 
 # Check whether -mfpu=neon is available
 set(CMAKE_REQUIRED_FLAGS "-mfpu=neon")
