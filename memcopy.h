@@ -223,7 +223,7 @@ static inline unsigned char *chunkmemset_6(unsigned char *out, unsigned char *fr
         len -= sz;
     }
 
-    if (rem)
+    if (!rem)
         return out;
 
     /* Last, deal with the case when LEN is not a multiple of SZ. */
