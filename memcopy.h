@@ -18,7 +18,7 @@ static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
  #endif
 }
 
- #if (defined(__GNUC__) || defined(__clang__)) && defined(__ARM_NEON__)
+ #if (defined(__GNUC__) || defined(__clang__)) && (defined(__ARM_NEON__) || defined(__ARM_NEON))
   #include <arm_neon.h>
 typedef uint8x16_t inffast_chunk_t;
   #define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
