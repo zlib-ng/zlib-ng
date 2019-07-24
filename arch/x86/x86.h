@@ -13,6 +13,4 @@ extern int x86_cpu_has_sse42;
 extern int x86_cpu_has_pclmulqdq;
 extern int x86_cpu_has_tzcnt;
 
-void Z_INTERNAL x86_check_features(void);
-
 #endif /* CPU_H_ */
