@@ -11,6 +11,7 @@
 #else
 #  include "zlib-ng.h"
 #endif
+#include "deflate.h"
 
 #include <stdio.h>
 
@@ -85,7 +86,7 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen)
     fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
 #else
     int err;
-    int len = (int)strlen(hello)+1;
+    size_t len = strlen(hello)+1;
     gzFile file;
     z_off_t pos;
 
@@ -164,7 +165,7 @@ void test_deflate(unsigned char *compr, size_t comprLen)
 {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
-    unsigned long len = (unsigned long)strlen(hello)+1;
+    size_t len = strlen(hello)+1;
 
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
@@ -546,9 +547,341 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
 }
 
 /* ===========================================================================
+ * Test deflateBound() with small buffers
+ */
+void test_deflate_bound(unsigned char *compr, size_t comprLen)
+{
+    PREFIX3(stream) c_stream; /* compression stream */
+    int err;
+    unsigned int len = (unsigned int)strlen(hello)+1;
+    int estimateLen = 0;
+    unsigned char *outBuf = NULL;
+
+    c_stream.zalloc = zalloc;
+    c_stream.zfree = zfree;
+    c_stream.opaque = (voidpf)0;
+    c_stream.avail_in = len;
+    c_stream.next_in = hello;
+    c_stream.avail_out = 0;
+    c_stream.next_out = outBuf;
+
+    err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
+    CHECK_ERR(err, "deflateInit");
+
+    /* calculate actual output length and update structure */
+    estimateLen = PREFIX(deflateBound)(&c_stream, len);
+    outBuf = malloc(estimateLen);
+
+    if (outBuf != NULL) {
+        /* update zlib configuration */
+        c_stream.avail_out = estimateLen;
+        c_stream.next_out = outBuf;
+
+        /* do the compression */
+        err = PREFIX(deflate)(&c_stream, Z_FINISH);
+        if (err == Z_STREAM_END) {
+            printf("deflateBound(): OK\n");
+        } else {
+            CHECK_ERR(err, "deflate");
+        }
+    }
+
+    err = PREFIX(deflateEnd)(&c_stream);
+    CHECK_ERR(err, "deflateEnd");
+
+    free(outBuf);
+}
+
+/* ===========================================================================
+ * Test deflateCopy() with small buffers
+ */
+void test_deflate_copy(unsigned char *compr, size_t comprLen)
+{
+    PREFIX3(stream) c_stream, c_stream_copy; /* compression stream */
+    int err;
+    size_t len = strlen(hello)+1;
+
+    c_stream.zalloc = zalloc;
+    c_stream.zfree = zfree;
+    c_stream.opaque = (voidpf)0;
+
+    err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
+    CHECK_ERR(err, "deflateInit");
+
+    c_stream.next_in = hello;
+    c_stream.next_out = compr;
+
+    while (c_stream.total_in != len && c_stream.total_out < comprLen) {
+        c_stream.avail_in = c_stream.avail_out = 1; /* force small buffers */
+        err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
+        CHECK_ERR(err, "deflate");
+    }
+
+    /* Finish the stream, still forcing small buffers: */
+    for (;;) {
+        c_stream.avail_out = 1;
+        err = PREFIX(deflate)(&c_stream, Z_FINISH);
+        if (err == Z_STREAM_END) break;
+        CHECK_ERR(err, "deflate");
+    }
+
+    err = PREFIX(deflateCopy)(&c_stream_copy, &c_stream);
+    CHECK_ERR(err, "deflate_copy");
+
+    if (c_stream.state->status == c_stream_copy.state->status) {
+        printf("deflate_copy(): OK\n");
+    }
+
+    err = PREFIX(deflateEnd)(&c_stream);
+    CHECK_ERR(err, "deflateEnd");
+}
+
+/* ===========================================================================
+ * Test deflateGetDictionary() with small buffers
+ */
+void test_deflate_get_dict(unsigned char *compr, size_t comprLen)
+{
+    PREFIX3(stream) c_stream; /* compression stream */
+    int err;
+    unsigned char *dictNew = NULL;
+    unsigned int *dictLen;
+
+    c_stream.zalloc = zalloc;
+    c_stream.zfree = zfree;
+    c_stream.opaque = (voidpf)0;
+
+    err = PREFIX(deflateInit)(&c_stream, Z_BEST_COMPRESSION);
+    CHECK_ERR(err, "deflateInit");
+
+    c_stream.next_out = compr;
+    c_stream.avail_out = (uInt)comprLen;
+
+    c_stream.next_in = hello;
+    c_stream.avail_in = (unsigned int)strlen(hello)+1;
+
+    err = PREFIX(deflate)(&c_stream, Z_FINISH);
+
+    if (err != Z_STREAM_END) {
+        fprintf(stderr, "deflate should report Z_STREAM_END\n");
+        exit(1);
+    }
+
+    dictNew = calloc(256, 1);
+    dictLen = (unsigned int *)calloc(4, 1);
+    err = PREFIX(deflateGetDictionary)(&c_stream, dictNew, dictLen);
+
+    CHECK_ERR(err, "deflateGetDictionary");
+    if (err == Z_OK) {
+        printf("deflateGetDictionary(): %s\n", dictNew);
+    }
+
+    err = PREFIX(deflateEnd)(&c_stream);
+    CHECK_ERR(err, "deflateEnd");
+
+    free(dictNew);
+    free(dictLen);
+}
+
+/* ===========================================================================
+ * Test deflatePending() with small buffers
+ */
+void test_deflate_pending(unsigned char *compr, size_t comprLen)
+{
+    PREFIX3(stream) c_stream; /* compression stream */
+    int err;
+    int *bits = calloc(256, 1);
+    unsigned *ped = calloc(256, 1);
+    size_t len = strlen(hello)+1;
+
+
+    c_stream.zalloc = zalloc;
+    c_stream.zfree = zfree;
+    c_stream.opaque = (voidpf)0;
+
+    err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
+    CHECK_ERR(err, "deflateInit");
+
+    c_stream.next_in = hello;
+    c_stream.next_out = compr;
+
+    while (c_stream.total_in != len && c_stream.total_out < comprLen) {
+        c_stream.avail_in = c_stream.avail_out = 1; /* force small buffers */
+        err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
+        CHECK_ERR(err, "deflate");
+    }
+
+    err = PREFIX(deflatePending)(&c_stream,ped,bits);
+    CHECK_ERR(err, "deflatePending");
+
+    if (*bits >= 0 && *bits <=7 && *ped >= 0) {
+        printf("deflatePending(): OK\n");
+    } else {
+        printf("deflatePending(): error\n");
+    }
+
+    /* Finish the stream, still forcing small buffers: */
+    for (;;) {
+        c_stream.avail_out = 1;
+        err = PREFIX(deflate)(&c_stream, Z_FINISH);
+        if (err == Z_STREAM_END) break;
+        CHECK_ERR(err, "deflate");
+    }
+
+    err = PREFIX(deflateEnd)(&c_stream);
+    CHECK_ERR(err, "deflateEnd");
+
+    free(bits);
+    free(ped);
+}
+
+/* ===========================================================================
+ * Test deflatePrime() with small buffers
+ */
+ void test_deflate_prime(unsigned char *compr, size_t comprLen)
+{
+    PREFIX3(stream) c_stream; /* compression stream */
+    int err;
+    int bits = 0;
+    int values = 0;
+    size_t len = strlen(hello)+1;
+
+
+    c_stream.zalloc = zalloc;
+    c_stream.zfree = zfree;
+    c_stream.opaque = (voidpf)0;
+
+    // windowBits can also be -8..-15 for raw deflate,The default value is 15
+    err = PREFIX(deflateInit2)(&c_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY);
+    CHECK_ERR(err, "deflateInit2");
+
+    err = PREFIX(deflatePrime)(&c_stream, bits,values);
+    CHECK_ERR(err, "deflatePrime");
+
+    if (err == Z_OK) {
+        printf("deflatePrime(): OK\n");
+    }
+
+    c_stream.next_in = hello;
+    c_stream.next_out = compr;
+
+    while (c_stream.total_in != len && c_stream.total_out < comprLen) {
+        c_stream.avail_in = c_stream.avail_out = 1; /* force small buffers */
+        err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
+        CHECK_ERR(err, "deflate");
+    }
+
+    /* Finish the stream, still forcing small buffers: */
+    for (;;) {
+        c_stream.avail_out = 1;
+        err = PREFIX(deflate)(&c_stream, Z_FINISH);
+        if (err == Z_STREAM_END) break;
+        CHECK_ERR(err, "deflate");
+    }
+
+    err = PREFIX(deflateEnd)(&c_stream);
+    CHECK_ERR(err, "deflateEnd");
+}
+
+/* ===========================================================================
+ * Test deflateSetHeader() with small buffers
+ */
+void test_deflate_set_header(unsigned char *compr, size_t comprLen)
+{
+    PREFIX(gz_header) *head = calloc(256, 1);
+    PREFIX3(stream) c_stream; /* compression stream */
+    int err;
+    size_t len = strlen(hello)+1;
+
+
+    c_stream.zalloc = zalloc;
+    c_stream.zfree = zfree;
+    c_stream.opaque = (voidpf)0;
+
+    /* gzip */
+    err = PREFIX(deflateInit2)(&c_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS + 16, 8, Z_DEFAULT_STRATEGY);
+    CHECK_ERR(err, "deflateInit2");
+
+    head->text = 1;
+    err = PREFIX(deflateSetHeader)(&c_stream, head);
+    CHECK_ERR(err, "deflateSetHeader");
+    if (err == Z_OK) {
+        printf("deflateSetHeader(): OK\n");
+    }
+
+    c_stream.next_in  = (unsigned char *)hello;
+    c_stream.next_out = compr;
+
+    while (c_stream.total_in != len && c_stream.total_out < comprLen) {
+        c_stream.avail_in = c_stream.avail_out = 1; /* force small buffers */
+        err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
+        CHECK_ERR(err, "deflate");
+    }
+
+    /* Finish the stream, still forcing small buffers: */
+    for (;;) {
+        c_stream.avail_out = 1;
+        err = PREFIX(deflate)(&c_stream, Z_FINISH);
+        if (err == Z_STREAM_END) break;
+        CHECK_ERR(err, "deflate");
+    }
+
+    err = PREFIX(deflateEnd)(&c_stream);
+    CHECK_ERR(err, "deflateEnd");
+
+    free(head);
+}
+
+/* ===========================================================================
+ * Test deflateTune() with small buffers
+ */
+void test_deflate_tune(unsigned char *compr, size_t comprLen)
+{
+    PREFIX3(stream) c_stream; /* compression stream */
+    int err;
+    int good_length = 3;
+    int max_lazy = 5;
+    int nice_length = 18;
+    int max_chain = 6;
+    size_t len = strlen(hello)+1;
+
+
+    c_stream.zalloc = zalloc;
+    c_stream.zfree = zfree;
+    c_stream.opaque = (voidpf)0;
+
+    err = PREFIX(deflateInit)(&c_stream, Z_BEST_COMPRESSION);
+    CHECK_ERR(err, "deflateInit");
+
+    err = PREFIX(deflateTune)(&c_stream,(uInt)good_length,(uInt)max_lazy,nice_length,(uInt)max_chain);
+    CHECK_ERR(err, "deflateTune");
+    if (err == Z_OK) {
+        printf("deflateTune(): OK\n");
+    }
+
+    c_stream.next_in = hello;
+    c_stream.next_out = compr;
+
+    while (c_stream.total_in != len && c_stream.total_out < comprLen) {
+        c_stream.avail_in = c_stream.avail_out = 1; /* force small buffers */
+        err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
+        CHECK_ERR(err, "deflate");
+    }
+
+    /* Finish the stream, still forcing small buffers: */
+    for (;;) {
+        c_stream.avail_out = 1;
+        err = PREFIX(deflate)(&c_stream, Z_FINISH);
+        if (err == Z_STREAM_END) break;
+        CHECK_ERR(err, "deflate");
+    }
+
+    err = PREFIX(deflateEnd)(&c_stream);
+    CHECK_ERR(err, "deflateEnd");
+}
+
+/* ===========================================================================
  * Usage:  example [output.gz  [input.gz]]
  */
-
 int main(int argc, char *argv[])
 {
     unsigned char *compr, *uncompr;
@@ -599,6 +932,14 @@ int main(int argc, char *argv[])
 
     test_dict_deflate(compr, comprLen);
     test_dict_inflate(compr, comprLen, uncompr, uncomprLen);
+
+    test_deflate_bound(compr, comprLen);
+    test_deflate_copy(compr, comprLen);
+    test_deflate_get_dict(compr, comprLen);
+    test_deflate_set_header(compr, comprLen);
+    test_deflate_tune(compr, comprLen);
+    test_deflate_pending(compr, comprLen);
+    test_deflate_prime(compr, comprLen);
 
     free(compr);
     free(uncompr);
