@@ -1347,7 +1347,7 @@ sed < $SRCDIR/Makefile.in "
 " > Makefile
 
 # Append header files dependences.
-for file in $(ls -1 $SRCDIR/*.c $SRCDIR/test/*.c $SRCDIR/test/fuzz/*.c $SRCDIR/$ARCHDIR/*.c); do
+for file in $(ls -1 $SRCDIR/*.c $SRCDIR/test/*.c $SRCDIR/test/fuzz/*.c $SRCDIR/$ARCHDIR/*.c $SRCDIR/tools/*.c); do
     short_name=$(echo $file | sed -e "s#$SRCDIR/##g")
     incs=$(grep -h include $file | sed -n 's/# *\include *"\(.*\.h\)".*/\1/p' | sort | uniq)
     includes=$(for i in $incs; do

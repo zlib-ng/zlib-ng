@@ -825,6 +825,9 @@ if (ZLIB_ENABLE_TESTS)
     add_executable(switchlevels test/switchlevels.c)
     configure_test_executable(switchlevels)
 
+    add_executable(makefixed tools/makefixed.c inftrees.c)
+    configure_test_executable(makefixed)
+
     if(HAVE_OFF64_T)
         add_executable(example64 test/example.c)
         configure_test_executable(example64)

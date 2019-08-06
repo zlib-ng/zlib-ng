@@ -77,9 +77,6 @@ unsigned long ZEXPORT PREFIX(zlibCompileFlags)(void)
 #ifdef ZLIB_WINAPI
     flags += 1 << 10;
 #endif
-#ifdef BUILDFIXED
-    flags += 1 << 12;
-#endif
 #ifdef DYNAMIC_CRC_TABLE
     flags += 1 << 13;
 #endif

@@ -18,6 +18,7 @@
 /examplesh
 /libz.so*
 /libz-ng.so*
+/makefixed
 /minigzip
 /minigzip64
 /minigzipsh
