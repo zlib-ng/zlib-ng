@@ -402,6 +402,7 @@ if(MSVC)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
 
+# Check whether compiler supports SSE2 instrinics
 if(WITH_NATIVE_INSTRUCTIONS)
     set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
 else()
@@ -419,10 +420,10 @@ check_c_source_compile_or_run(
 )
 set(CMAKE_REQUIRED_FLAGS)
 
+# Check whether compiler supports SSE4 instrinics
 if(WITH_NATIVE_INSTRUCTIONS)
     set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
 else()
-    # Use the generic SSE4 enabler option to check for the SSE4.2 instruction we require:
     set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
 endif()
 check_c_source_compile_or_run(
@@ -438,6 +439,7 @@ check_c_source_compile_or_run(
     }"
     HAVE_SSE42_INTRIN
 )
+# Check whether compiler supports SSE4 CRC instrinics
 check_c_source_compile_or_run(
     "#include <immintrin.h>
     int main(void)
@@ -456,6 +458,7 @@ check_c_source_compile_or_run(
 )
 set(CMAKE_REQUIRED_FLAGS)
 
+# Check whether compiler supports PCLMULQDQ intrinics
 if(WITH_NATIVE_INSTRUCTIONS)
     set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
 else()
@@ -867,4 +870,3 @@ if (ZLIB_ENABLE_TESTS)
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
-
