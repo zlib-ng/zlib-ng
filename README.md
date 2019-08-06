@@ -4,10 +4,11 @@
 Maintained by Hans Kristian Rosbach
           aka Dead2 (zlib-ng àt circlestorm dót org)
 
-|CI|Build Status|
+|CI|Status|
 |:-|-|
 |Travis|[![build status](https://api.travis-ci.org/zlib-ng/zlib-ng.svg)](https://travis-ci.org/zlib-ng/zlib-ng/)|
 |Buildkite|[![Build status](https://badge.buildkite.com/7bb1ef84356d3baee26202706cc053ee1de871c0c712b65d26.svg?branch=develop)](https://buildkite.com/circlestorm-productions/zlib-ng)|
+|CodeFactor|[![CodeFactor](https://www.codefactor.io/repository/github/zlib-ng/zlib-ng/badge)](https://www.codefactor.io/repository/github/zlib-ng/zlib-ng)|
 
 
 Fork Motivation
