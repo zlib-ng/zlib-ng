@@ -39,7 +39,7 @@ int ZEXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int windowBits, unsi
     }
     if (strm->zfree == NULL)
         strm->zfree = zng_cfree;
-    state = (struct inflate_state *)ZALLOC(strm, 1, sizeof(struct inflate_state));
+    state = (struct inflate_state *) ZALLOC(strm, 1, sizeof(struct inflate_state));
     if (state == NULL)
         return Z_MEM_ERROR;
     Tracev((stderr, "inflate: allocated\n"));
@@ -210,10 +210,8 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
                 copy = state->length;
                 PULL();
                 ROOM();
-                if (copy > have)
-                    copy = have;
-                if (copy > left)
-                    copy = left;
+                if (copy > have) copy = have;
+                if (copy > left) copy = left;
                 memcpy(put, next, copy);
                 have -= copy;
                 next += copy;
@@ -242,9 +240,9 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
             }
 #endif
             Tracev((stderr, "inflate:       table sizes ok\n"));
+            state->have = 0;
 
             /* get code length code lengths (not a typo) */
-            state->have = 0;
             while (state->have < state->ncode) {
                 NEEDBITS(3);
                 state->lens[order[state->have++]] = (uint16_t)BITS(3);
@@ -253,7 +251,7 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
             while (state->have < 19)
                 state->lens[order[state->have++]] = 0;
             state->next = state->codes;
-            state->lencode = (code const *)(state->next);
+            state->lencode = (const code *)(state->next);
             state->lenbits = 7;
             ret = zng_inflate_table(CODES, state->lens, 19, &(state->next), &(state->lenbits), state->work);
             if (ret) {
@@ -262,14 +260,13 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
                 break;
             }
             Tracev((stderr, "inflate:       code lengths ok\n"));
+            state->have = 0;
 
             /* get length and distance code code lengths */
-            state->have = 0;
             while (state->have < state->nlen + state->ndist) {
                 for (;;) {
                     here = state->lencode[BITS(state->lenbits)];
-                    if (here.bits <= bits)
-                        break;
+                    if (here.bits <= bits) break;
                     PULLBYTE();
                 }
                 if (here.val < 16) {
@@ -284,7 +281,7 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
                             state->mode = BAD;
                             break;
                         }
-                        len = (unsigned)(state->lens[state->have - 1]);
+                        len = state->lens[state->have - 1];
                         copy = 3 + BITS(2);
                         DROPBITS(2);
                     } else if (here.val == 17) {
@@ -305,8 +302,10 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
                         state->mode = BAD;
                         break;
                     }
-                    while (copy--)
+                    while (copy) {
+                        --copy;
                         state->lens[state->have++] = (uint16_t)len;
+                    }
                 }
             }
 
@@ -325,7 +324,7 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
                values here (9 and 6) without reading the comments in inftrees.h
                concerning the ENOUGH constants, which depend on those values */
             state->next = state->codes;
-            state->lencode = (code const *)(state->next);
+            state->lencode = (const code *)(state->next);
             state->lenbits = 9;
             ret = zng_inflate_table(LENS, state->lens, state->nlen, &(state->next), &(state->lenbits), state->work);
             if (ret) {
@@ -333,7 +332,7 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
                 state->mode = BAD;
                 break;
             }
-            state->distcode = (code const *)(state->next);
+            state->distcode = (const code *)(state->next);
             state->distbits = 6;
             ret = zng_inflate_table(DISTS, state->lens + state->nlen, state->ndist,
                                 &(state->next), &(state->distbits), state->work);
@@ -367,8 +366,7 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
             if (here.op && (here.op & 0xf0) == 0) {
                 last = here;
                 for (;;) {
-                    here = state->lencode[last.val +
-                            (BITS(last.bits + last.op) >> last.bits)];
+                    here = state->lencode[last.val + (BITS(last.bits + last.op) >> last.bits)];
                     if ((unsigned)last.bits + (unsigned)here.bits <= bits)
                         break;
                     PULLBYTE();
@@ -379,7 +377,7 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
             state->length = here.val;
 
             /* process literal */
-            if (here.op == 0) {
+            if ((int)(here.op) == 0) {
                 Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
                         "inflate:         literal '%c'\n" :
                         "inflate:         literal 0x%02x\n", here.val));
@@ -406,7 +404,7 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
 
             /* length code -- get extra bits, if any */
             state->extra = (here.op & 15);
-            if (state->extra != 0) {
+            if (state->extra) {
                 NEEDBITS(state->extra);
                 state->length += BITS(state->extra);
                 DROPBITS(state->extra);
@@ -437,19 +435,21 @@ int ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc
                 break;
             }
             state->offset = here.val;
+            state->extra = (here.op & 15);
 
             /* get distance extra bits, if any */
-            state->extra = (here.op & 15);
-            if (state->extra != 0) {
+            if (state->extra) {
                 NEEDBITS(state->extra);
                 state->offset += BITS(state->extra);
                 DROPBITS(state->extra);
             }
+#ifdef INFLATE_STRICT
             if (state->offset > state->wsize - (state->whave < state->wsize ? left : 0)) {
                 strm->msg = (char *)"invalid distance too far back";
                 state->mode = BAD;
                 break;
             }
+#endif
             Tracevv((stderr, "inflate:         distance %u\n", state->offset));
 
             /* copy match from window to output */
