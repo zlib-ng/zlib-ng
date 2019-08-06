@@ -103,13 +103,17 @@ Build Options
 Install
 -------
 
-We do not recommend installing unless you know what you are doing, as this can
-override the system default zlib library, and any wrong configuration or
-incompatibility of zlib-ng can make the whole system unusable.
+WARNING: We do not recommend manually installing unless you really
+know what you are doing, because this can potentially override the system
+default zlib library, and any incompatability or wrong configuration of
+zlib-ng can make the whole system unusable, requiring recovery or reinstall.
+If you still want a manual install, we recommend using the /opt/ path prefix.
 
-On Linux distros, an alternative way to use zlib-ng instead of zlib, is through
-the use of the _LD_PRELOAD_ environment variable. If the program is dynamically linked
-with zlib, then zlib-ng can take its place without risking system-wide instability.
+For Linux distros, an alternative way to use zlib-ng (if compiled in
+zlib-compat mode) instead of zlib, is through the use of the
+_LD_PRELOAD_ environment variable. If the program is dynamically linked
+with zlib, then zlib-ng will temporarily be used instead by the program,
+without risking system-wide instability.
 
 ```
 LD_PRELOAD=/opt/zlib-ng/libz.so.1.2.11.zlib-ng /usr/bin/program
