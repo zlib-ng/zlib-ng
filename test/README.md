@@ -8,5 +8,5 @@ Contents
 |[CVE-2004-0797](https://nvd.nist.gov/vuln/detail/CVE-2004-0797)|Error handling in inflate and inflateBack causes crash|
 |[CVE-2005-1849](https://nvd.nist.gov/vuln/detail/CVE-2005-1849)|inftrees.h bug causes crash|
 |[CVE-2005-2096](https://nvd.nist.gov/vuln/detail/CVE-2005-2096)|Buffer overflow when incomplete code description
-|cvetest.py|Python script that converts exitcode from minigzip for use with cmake test
-
+|[GH-361](https://github.com/zlib-ng/zlib-ng/issues/361)|Test case for overlapping matches|
+|[GH-364](https://github.com/zlib-ng/zlib-ng/issues/364)|Test case for switching compression levels|
