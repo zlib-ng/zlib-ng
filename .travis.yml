@@ -7,9 +7,12 @@ env:
     - BUILDDIR=.
     - MAKER="make -j2"
     - TESTER="make test"
+    - CFLAGS="-O2 -g --coverage"
+    - LDFLAGS="--coverage"
 
 matrix:
   include:
+    # Windows tests
     - os: windows
       compiler: clang
       env:
@@ -30,6 +33,7 @@ matrix:
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
+    # Linux x86-64 tests
     - os: linux
       compiler: gcc
       env: GENERATOR="./configure --warn"
@@ -68,6 +72,20 @@ matrix:
         - MAKER="scan-build -v --status-bugs make"
         - BUILDDIR=../build
 
+    # GCC-9 test
+    - os: linux
+      compiler: gcc-9
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - gcc-9
+      env:
+        - GENERATOR="./configure --warn"
+        - CC=gcc-9
+
+    # OSX tests
     - os: osx
       compiler: gcc
       env: GENERATOR="./configure --warn --zlib-compat"
@@ -281,3 +299,6 @@ script:
   - $GENERATOR
   - $MAKER
   - $TESTER
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
