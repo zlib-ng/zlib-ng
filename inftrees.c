@@ -9,7 +9,7 @@
 
 #define MAXBITS 15
 
-const char inflate_copyright[] = " inflate 1.2.11.f Copyright 1995-2016 Mark Adler ";
+const char zng_inflate_copyright[] = " inflate 1.2.11.f Copyright 1995-2016 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -29,7 +29,7 @@ const char inflate_copyright[] = " inflate 1.2.11.f Copyright 1995-2016 Mark Adl
    table index bits.  It will differ if the request is greater than the
    longest code or if it is less than the shortest code.
  */
-int ZLIB_INTERNAL inflate_table(codetype type, uint16_t *lens, unsigned codes,
+int ZLIB_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
                                 code * *table, unsigned *bits, uint16_t  *work) {
     unsigned len;               /* a code's length in bits */
     unsigned sym;               /* index of code symbols */

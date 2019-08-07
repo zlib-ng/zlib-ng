@@ -35,9 +35,12 @@ static const char hello[] = "hello, hello!";
 static const char dictionary[] = "hello";
 static unsigned long dictId = 0; /* Adler32 value of the dictionary */
 
+
+void test_compress      (unsigned char *compr, z_size_t comprLen,unsigned char *uncompr, z_size_t uncomprLen);
+void test_gzio          (const char *fname, unsigned char *uncompr, z_size_t uncomprLen);
 void test_deflate       (unsigned char *compr, size_t comprLen);
 void test_inflate       (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
-void test_large_deflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
+void test_large_deflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen, int zng_params);
 void test_large_inflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
 void test_flush         (unsigned char *compr, z_size_t *comprLen);
 void test_sync          (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
@@ -48,9 +51,6 @@ int  main               (int argc, char *argv[]);
 
 static alloc_func zalloc = NULL;
 static free_func zfree = NULL;
-
-void test_compress      (unsigned char *compr, z_size_t comprLen,
-                            unsigned char *uncompr, z_size_t uncomprLen);
 
 /* ===========================================================================
  * Test compress() and uncompress()
@@ -75,10 +75,6 @@ void test_compress(unsigned char *compr, z_size_t comprLen, unsigned char *uncom
         printf("uncompress(): %s\n", (char *)uncompr);
     }
 }
-
-#ifdef WITH_GZFILEOP
-void test_gzio          (const char *fname,
-                            unsigned char *uncompr, z_size_t uncomprLen);
 
 /* ===========================================================================
  * Test read/write of .gz files
@@ -160,8 +156,6 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen)
     PREFIX(gzclose)(file);
 #endif
 }
-
-#endif /* WITH_GZFILEOP */
 
 /* ===========================================================================
  * Test deflate() with small buffers
@@ -247,10 +241,18 @@ static unsigned int diff;
 /* ===========================================================================
  * Test deflate() with large buffers and dynamic change of compression level
  */
-void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen)
+void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen, int zng_params)
 {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
+#ifndef ZLIB_COMPAT
+    int level = -1;
+    int strategy = -1;
+    zng_deflate_param_value params[] = {
+        { .param = Z_DEFLATE_LEVEL, .buf = &level, .size = sizeof(level) },
+        { .param = Z_DEFLATE_STRATEGY, .buf = &strategy, .size = sizeof(strategy) },
+    };
+#endif
 
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
@@ -275,7 +277,27 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
     }
 
     /* Feed in already compressed data and switch to no compression: */
-    PREFIX(deflateParams)(&c_stream, Z_NO_COMPRESSION, Z_DEFAULT_STRATEGY);
+    if (zng_params) {
+#ifndef ZLIB_COMPAT
+        zng_deflateGetParams(&c_stream, params, sizeof(params) / sizeof(params[0]));
+        if (level != Z_BEST_SPEED) {
+            fprintf(stderr, "Expected compression level Z_BEST_SPEED, got %d\n", level);
+            exit(1);
+        }
+        if (strategy != Z_DEFAULT_STRATEGY) {
+            fprintf(stderr, "Expected compression strategy Z_DEFAULT_STRATEGY, got %d\n", strategy);
+            exit(1);
+        }
+        level = Z_NO_COMPRESSION;
+        strategy = Z_DEFAULT_STRATEGY;
+        zng_deflateSetParams(&c_stream, params, sizeof(params) / sizeof(params[0]));
+#else
+        fprintf(stderr, "test_large_deflate() called with zng_params=1 in compat mode\n");
+        exit(1);
+#endif
+    } else {
+        PREFIX(deflateParams)(&c_stream, Z_NO_COMPRESSION, Z_DEFAULT_STRATEGY);
+    }
     c_stream.next_in = compr;
     diff = (unsigned int)(c_stream.next_out - compr);
     c_stream.avail_in = diff;
@@ -283,7 +305,29 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
     CHECK_ERR(err, "deflate");
 
     /* Switch back to compressing mode: */
-    PREFIX(deflateParams)(&c_stream, Z_BEST_COMPRESSION, Z_FILTERED);
+    if (zng_params) {
+#ifndef ZLIB_COMPAT
+        level = -1;
+        strategy = -1;
+        zng_deflateGetParams(&c_stream, params, sizeof(params) / sizeof(params[0]));
+        if (level != Z_NO_COMPRESSION) {
+            fprintf(stderr, "Expected compression level Z_NO_COMPRESSION, got %d\n", level);
+            exit(1);
+        }
+        if (strategy != Z_DEFAULT_STRATEGY) {
+            fprintf(stderr, "Expected compression strategy Z_DEFAULT_STRATEGY, got %d\n", strategy);
+            exit(1);
+        }
+        level = Z_BEST_COMPRESSION;
+        strategy = Z_FILTERED;
+        zng_deflateSetParams(&c_stream, params, sizeof(params) / sizeof(params[0]));
+#else
+        fprintf(stderr, "test_large_deflate() called with zng_params=1 in compat mode\n");
+        exit(1);
+#endif
+    } else {
+        PREFIX(deflateParams)(&c_stream, Z_BEST_COMPRESSION, Z_FILTERED);
+    }
     c_stream.next_in = uncompr;
     c_stream.avail_in = (unsigned int)uncomprLen;
     err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
@@ -535,19 +579,19 @@ int main(int argc, char *argv[])
 
     test_compress(compr, comprLen, uncompr, uncomprLen);
 
-#ifdef WITH_GZFILEOP
     test_gzio((argc > 1 ? argv[1] : TESTFILE),
               uncompr, uncomprLen);
-#else
-    (void)argc;
-    (void)argv;
-#endif
 
     test_deflate(compr, comprLen);
     test_inflate(compr, comprLen, uncompr, uncomprLen);
 
-    test_large_deflate(compr, comprLen, uncompr, uncomprLen);
+    test_large_deflate(compr, comprLen, uncompr, uncomprLen, 0);
     test_large_inflate(compr, comprLen, uncompr, uncomprLen);
+
+#ifndef ZLIB_COMPAT
+    test_large_deflate(compr, comprLen, uncompr, uncomprLen, 1);
+    test_large_inflate(compr, comprLen, uncompr, uncomprLen);
+#endif
 
     test_flush(compr, &comprLen);
     test_sync(compr, comprLen, uncompr, uncomprLen);

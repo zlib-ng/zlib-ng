@@ -128,5 +128,6 @@ struct inflate_state {
 };
 
 int ZLIB_INTERNAL inflate_ensure_window(struct inflate_state *state);
+void ZLIB_INTERNAL fixedtables(struct inflate_state *state);
 
 #endif /* INFLATE_H_ */

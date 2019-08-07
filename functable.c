@@ -4,12 +4,11 @@
  */
 
 #include "zbuild.h"
-#include "functable.h"
+#include "zendian.h"
 #include "deflate.h"
 #include "deflate_p.h"
 
-#include "gzendian.h"
-
+#include "functable.h"
 /* insert_string */
 #ifdef X86_SSE4_2_CRC_HASH
 extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
@@ -31,6 +30,11 @@ extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t le
 #endif
 
 ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
+
+#ifdef DYNAMIC_CRC_TABLE
+extern volatile int crc_table_empty;
+extern void make_crc_table(void);
+#endif
 
 #ifdef __ARM_FEATURE_CRC32
 extern uint32_t crc32_acle(uint32_t, const unsigned char *, uint64_t);

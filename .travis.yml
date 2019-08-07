@@ -4,70 +4,109 @@ dist: xenial
 
 env:
   global:
-    - MAKE="make"
+    - BUILDDIR=.
+    - MAKER="make -j2"
+    - TESTER="make test"
 
 matrix:
   include:
+    - os: windows
+      compiler: clang
+      env:
+        - GENERATOR="cmake . "
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
+    - os: windows
+      compiler: clang
+      env:
+        - GENERATOR="cmake ..\\zlib-ng -DZLIB_COMPAT=ON"
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
+        - BUILDDIR=..\\build
+    - os: windows
+      compiler: gcc
+      env:
+        - GENERATOR="cmake ."
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
+
     - os: linux
       compiler: gcc
-      env: BUILDDIR=. TOOL="./configure --warn"
+      env: GENERATOR="./configure --warn"
     - os: linux
       compiler: gcc
-      env: BUILDDIR=. TOOL="cmake . -DZLIB_COMPAT=OFF -DWITH_GZFILEOP=ON -DWITH_NEW_STRATEGIES=YES -DWITH_OPTIM=ON"
+      env: GENERATOR="cmake . -DZLIB_COMPAT=OFF -DWITH_GZFILEOP=ON -DWITH_NEW_STRATEGIES=YES -DWITH_OPTIM=ON"
     - os: linux
       compiler: gcc
-      env: BUILDDIR=../build TOOL="../zlib-ng/configure --warn --zlib-compat"
+      env:
+        - GENERATOR="../zlib-ng/configure --warn --zlib-compat"
+        - BUILDDIR=../build
     - os: linux
       compiler: gcc
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat --without-optimizations --without-new-strategies"
+      env: GENERATOR="./configure --warn --zlib-compat --without-optimizations --without-new-strategies"
     - os: linux
       compiler: gcc
-      env: BUILDDIR=. TOOL="cmake ."
+      env: GENERATOR="cmake ."
     - os: linux
       compiler: gcc
-      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
+      env:
+        - GENERATOR="cmake ../zlib-ng"
+        - BUILDDIR=../build
 
     - os: linux
       compiler: clang
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env: GENERATOR="./configure --warn --zlib-compat"
     - os: linux
       compiler: clang
-      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
+      env:
+        - GENERATOR="cmake ../zlib-ng"
+        - BUILDDIR=../build
     - os: linux
       compiler: clang
-      env: BUILDDIR=../build TOOL="scan-build -v --status-bugs cmake ../zlib-ng" MAKE="scan-build -v --status-bugs make"
+      env:
+        - GENERATOR="scan-build -v --status-bugs cmake ../zlib-ng"
+        - MAKER="scan-build -v --status-bugs make"
+        - BUILDDIR=../build
 
     - os: osx
       compiler: gcc
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env: GENERATOR="./configure --warn --zlib-compat"
     - os: osx
       compiler: gcc
-      env: BUILDDIR=../build TOOL="../zlib-ng/configure --warn --zlib-compat"
+      env:
+        - GENERATOR="../zlib-ng/configure --warn --zlib-compat"
+        - BUILDDIR=../build
     - os: osx
       compiler: gcc
-      env: BUILDDIR=. TOOL="cmake ."
+      env: GENERATOR="cmake ."
 
     - os: osx
       compiler: clang
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env: GENERATOR="./configure --warn --zlib-compat"
     - os: osx
       compiler: clang
-      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
+      env:
+        - GENERATOR="cmake ../zlib-ng"
+        - BUILDDIR=../build
 
     # compiling for linux-ppc64le variants
     - os: linux-ppc64le
       compiler: gcc
-      env: BUILDDIR=. TOOL="cmake ."
+      env: GENERATOR="cmake ."
     - os: linux-ppc64le
       compiler: gcc
-      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
+      env:
+        - GENERATOR="cmake ../zlib-ng"
+        - BUILDDIR=../build
 
     - os: linux-ppc64le
       compiler: clang
-      env: BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env: GENERATOR="./configure --warn --zlib-compat"
     - os: linux-ppc64le
       compiler: clang
-      env: BUILDDIR=../build TOOL="cmake ../zlib-ng"
+      env:
+        - GENERATOR="cmake ../zlib-ng"
+        - BUILDDIR=../build
 
     # Cross compiling for arm variants
     - os: linux
@@ -79,7 +118,9 @@ matrix:
             - gcc-aarch64-linux-gnu
             - libc-dev-arm64-cross
       # For all aarch64 implementations NEON is mandatory, while crypto/crc are not.
-      env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env:
+        - GENERATOR="./configure --warn --zlib-compat"
+        - CHOST=aarch64-linux-gnu
     - os: linux
       compiler: aarch64-linux-gnu-gcc
       addons:
@@ -88,7 +129,34 @@ matrix:
             - qemu
             - gcc-aarch64-linux-gnu
             - libc-dev-arm64-cross
-      env: CHOST=aarch64-linux-gnu BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      # For all aarch64 implementations NEON is mandatory, while crypto/crc are not.
+      env:
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake . -DZLIB_COMPAT=ON"
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
+    - os: linux
+      compiler: aarch64-linux-gnu-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-aarch64-linux-gnu
+            - libc-dev-arm64-cross
+      env:
+        - GENERATOR="./configure --warn --zlib-compat"
+        - CHOST=aarch64-linux-gnu
+    - os: linux
+      compiler: aarch64-linux-gnu-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-aarch64-linux-gnu
+            - libc-dev-arm64-cross
+      env:
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake ."
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
     # Hard-float subsets
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
@@ -98,7 +166,9 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
-      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn"
+      env:
+        - GENERATOR="./configure --warn"
+        - CHOST=arm-linux-gnueabihf
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
       addons:
@@ -107,7 +177,10 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
-      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn --zlib-compat --without-neon"
+      env:
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
       addons:
@@ -116,7 +189,44 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
-      env: CHOST=arm-linux-gnueabihf BUILDDIR=. TOOL="./configure --warn --zlib-compat"
+      env:
+        - GENERATOR="./configure --warn --zlib-compat --without-neon"
+        - CHOST=arm-linux-gnueabihf
+    - os: linux
+      compiler: arm-linux-gnueabihf-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-arm-linux-gnueabihf
+            - libc-dev-armhf-cross
+      env:
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DWITH_NEON=OFF -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
+    - os: linux
+      compiler: arm-linux-gnueabihf-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-arm-linux-gnueabihf
+            - libc-dev-armhf-cross
+      env:
+        - GENERATOR="./configure --warn --zlib-compat"
+        - CHOST=arm-linux-gnueabihf
+    - os: linux
+      compiler: arm-linux-gnueabihf-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-arm-linux-gnueabihf
+            - libc-dev-armhf-cross
+      env:
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
     # Soft-float subset
     - os: linux
       compiler: arm-linux-gnueabi-gcc
@@ -126,7 +236,9 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
-      env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="./configure"
+      env:
+        - GENERATOR="./configure"
+        - CHOST=arm-linux-gnueabi
     - os: linux
       compiler: arm-linux-gnueabi-gcc
       addons:
@@ -135,6 +247,37 @@ matrix:
             - qemu
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
-      env: CHOST=arm-linux-gnueabi BUILDDIR=. TOOL="./configure --zlib-compat"
+      env:
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi"
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
+    - os: linux
+      compiler: arm-linux-gnueabi-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-arm-linux-gnueabi
+            - libc-dev-armel-cross
+      env:
+        - GENERATOR="./configure --zlib-compat"
+        - CHOST=arm-linux-gnueabi
+    - os: linux
+      compiler: arm-linux-gnueabi-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-arm-linux-gnueabi
+            - libc-dev-armel-cross
+      env:
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi"
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
 
-script: mkdir -p $BUILDDIR && cd $BUILDDIR && $TOOL && $MAKE -j2 && $MAKE test
+script:
+  - mkdir -p $BUILDDIR
+  - cd $BUILDDIR
+  - $GENERATOR
+  - $MAKER
+  - $TESTER

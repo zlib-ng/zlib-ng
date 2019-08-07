@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
   for (i = 1; i < argc; i++) {
     size_t len, n_read, err;
     unsigned char *buf;
-    FILE *f = fopen(argv[i], "r+");
+    FILE *f = fopen(argv[i], "rb+");
     if (!f) {
       /* Failed to open this file: it may be a directory. */
       fprintf(stderr, "Skipping: %s\n", argv[i]);

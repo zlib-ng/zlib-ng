@@ -6,6 +6,7 @@
 int ZLIB_INTERNAL dfltcc_can_deflate(PREFIX3(streamp) strm);
 int ZLIB_INTERNAL dfltcc_deflate(PREFIX3(streamp) strm, int flush, block_state *result);
 int ZLIB_INTERNAL dfltcc_deflate_params(PREFIX3(streamp) strm, int level, int strategy);
+int ZLIB_INTERNAL dfltcc_can_set_reproducible(PREFIX3(streamp) strm, int reproducible);
 int ZLIB_INTERNAL dfltcc_deflate_set_dictionary(PREFIX3(streamp) strm,
                                                 const unsigned char *dictionary, uInt dict_length);
 int ZLIB_INTERNAL dfltcc_deflate_get_dictionary(PREFIX3(streamp) strm, unsigned char *dictionary, uInt* dict_length);
@@ -46,5 +47,7 @@ int ZLIB_INTERNAL dfltcc_deflate_get_dictionary(PREFIX3(streamp) strm, unsigned 
 #define DEFLATE_HOOK dfltcc_deflate
 
 #define DEFLATE_NEED_CHECKSUM(strm) (!dfltcc_can_deflate((strm)))
+
+#define DEFLATE_CAN_SET_REPRODUCIBLE dfltcc_can_set_reproducible
 
 #endif
