@@ -85,6 +85,7 @@
 #include "inftrees.h"
 #include "inflate.h"
 #include "inffast.h"
+#include "inflate_p.h"
 #include "memcopy.h"
 #include "functable.h"
 
@@ -121,12 +122,13 @@
 
 /* function prototypes */
 static int inflateStateCheck(PREFIX3(stream) *strm);
-static void fixedtables(struct inflate_state *state);
 static int updatewindow(PREFIX3(stream) *strm, const unsigned char *end, uint32_t copy);
+static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len);
 #ifdef BUILDFIXED
     void makefixed(void);
+#else
+#   include "inffixed.h"
 #endif
-static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len);
 
 static int inflateStateCheck(PREFIX3(stream) *strm) {
     struct inflate_state *state;
@@ -227,11 +229,11 @@ int ZEXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int windowBits, const c
         return Z_STREAM_ERROR;
     strm->msg = NULL;                   /* in case we return an error */
     if (strm->zalloc == NULL) {
-        strm->zalloc = zcalloc;
+        strm->zalloc = zng_calloc;
         strm->opaque = NULL;
     }
     if (strm->zfree == NULL)
-        strm->zfree = zcfree;
+        strm->zfree = zng_cfree;
     state = (struct inflate_state *) ZALLOC_STATE(strm, 1, sizeof(struct inflate_state));
     if (state == NULL)
         return Z_MEM_ERROR;
@@ -282,7 +284,8 @@ int ZEXPORT PREFIX(inflatePrime)(PREFIX3(stream) *strm, int bits, int value) {
    used for threaded applications, since the rewriting of the tables and virgin
    may not be thread-safe.
  */
-static void fixedtables(struct inflate_state *state) {
+
+void ZLIB_INTERNAL fixedtables(struct inflate_state *state) {
 #ifdef BUILDFIXED
     static int virgin = 1;
     static code *lenfix, *distfix;
@@ -302,20 +305,18 @@ static void fixedtables(struct inflate_state *state) {
         next = fixed;
         lenfix = next;
         bits = 9;
-        inflate_table(LENS, state->lens, 288, &(next), &(bits), state->work);
+        zng_inflate_table(LENS, state->lens, 288, &(next), &(bits), state->work);
 
         /* distance table */
         sym = 0;
         while (sym < 32) state->lens[sym++] = 5;
         distfix = next;
         bits = 5;
-        inflate_table(DISTS, state->lens, 32, &(next), &(bits), state->work);
+        zng_inflate_table(DISTS, state->lens, 32, &(next), &(bits), state->work);
 
         /* do this just once */
         virgin = 0;
     }
-#else /* !BUILDFIXED */
-#   include "inffixed.h"
 #endif /* BUILDFIXED */
     state->lencode = lenfix;
     state->lenbits = 9;
@@ -461,98 +462,19 @@ static int updatewindow(PREFIX3(stream) *strm, const unsigned char *end, uint32_
     return 0;
 }
 
-/* Macros for inflate(): */
 
-/* check function to use adler32() for zlib or crc32() for gzip */
-#ifdef GUNZIP
-#  define UPDATE(check, buf, len) \
-    (state->flags ? PREFIX(crc32)(check, buf, len) : functable.adler32(check, buf, len))
-#else
-#  define UPDATE(check, buf, len) functable.adler32(check, buf, len)
-#endif
+/*
+   Private macros for inflate()
+   Look in inflate_p.h for macros shared with inflateBack()
+*/
 
-/* check macros for header crc */
-#ifdef GUNZIP
-#  define CRC2(check, word) \
-    do { \
-        hbuf[0] = (unsigned char)(word); \
-        hbuf[1] = (unsigned char)((word) >> 8); \
-        check = PREFIX(crc32)(check, hbuf, 2); \
-    } while (0)
-
-#  define CRC4(check, word) \
-    do { \
-        hbuf[0] = (unsigned char)(word); \
-        hbuf[1] = (unsigned char)((word) >> 8); \
-        hbuf[2] = (unsigned char)((word) >> 16); \
-        hbuf[3] = (unsigned char)((word) >> 24); \
-        check = PREFIX(crc32)(check, hbuf, 4); \
-    } while (0)
-#endif
-
-/* Load registers with state in inflate() for speed */
-#define LOAD() \
-    do { \
-        put = strm->next_out; \
-        left = strm->avail_out; \
-        next = strm->next_in; \
-        have = strm->avail_in; \
-        hold = state->hold; \
-        bits = state->bits; \
-    } while (0)
-
-/* Restore state from registers in inflate() */
-#define RESTORE() \
-    do { \
-        strm->next_out = put; \
-        strm->avail_out = left; \
-        strm->next_in = next; \
-        strm->avail_in = have; \
-        state->hold = hold; \
-        state->bits = bits; \
-    } while (0)
-
-/* Clear the input bit accumulator */
-#define INITBITS() \
-    do { \
-        hold = 0; \
-        bits = 0; \
-    } while (0)
-
-/* Get a byte of input into the bit accumulator, or return from inflate()
-   if there is no input available. */
+/* Get a byte of input into the bit accumulator, or return from inflate() if there is no input available. */
 #define PULLBYTE() \
     do { \
         if (have == 0) goto inf_leave; \
         have--; \
         hold += ((unsigned)(*next++) << bits); \
         bits += 8; \
-    } while (0)
-
-/* Assure that there are at least n bits in the bit accumulator.  If there is
-   not enough available input to do that, then return from inflate(). */
-#define NEEDBITS(n) \
-    do { \
-        while (bits < (unsigned)(n)) \
-            PULLBYTE(); \
-    } while (0)
-
-/* Return the low n bits of the bit accumulator (n < 16) */
-#define BITS(n) \
-    (hold & ((1U << (n)) - 1))
-
-/* Remove n bits from the bit accumulator */
-#define DROPBITS(n) \
-    do { \
-        hold >>= (n); \
-        bits -= (unsigned)(n); \
-    } while (0)
-
-/* Remove zero to seven bits as needed to go to a byte boundary */
-#define BYTEBITS() \
-    do { \
-        hold >>= bits & 7; \
-        bits -= bits & 7; \
     } while (0)
 
 /*
@@ -962,7 +884,7 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
             state->next = state->codes;
             state->lencode = (const code *)(state->next);
             state->lenbits = 7;
-            ret = inflate_table(CODES, state->lens, 19, &(state->next), &(state->lenbits), state->work);
+            ret = zng_inflate_table(CODES, state->lens, 19, &(state->next), &(state->lenbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid code lengths set";
                 state->mode = BAD;
@@ -1035,7 +957,7 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
             state->next = state->codes;
             state->lencode = (const code *)(state->next);
             state->lenbits = 9;
-            ret = inflate_table(LENS, state->lens, state->nlen, &(state->next), &(state->lenbits), state->work);
+            ret = zng_inflate_table(LENS, state->lens, state->nlen, &(state->next), &(state->lenbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid literal/lengths set";
                 state->mode = BAD;
@@ -1043,7 +965,7 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
             }
             state->distcode = (const code *)(state->next);
             state->distbits = 6;
-            ret = inflate_table(DISTS, state->lens + state->nlen, state->ndist,
+            ret = zng_inflate_table(DISTS, state->lens + state->nlen, state->ndist,
                             &(state->next), &(state->distbits), state->work);
             if (ret) {
                 strm->msg = (char *)"invalid distances set";
@@ -1060,7 +982,7 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
             if (have >= INFLATE_FAST_MIN_HAVE &&
                 left >= INFLATE_FAST_MIN_LEFT) {
                 RESTORE();
-                inflate_fast(strm, out);
+                zng_inflate_fast(strm, out);
                 LOAD();
                 if (state->mode == TYPE)
                     state->back = -1;
