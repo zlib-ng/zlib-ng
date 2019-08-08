@@ -420,7 +420,7 @@ check_c_source_compile_or_run(
 )
 set(CMAKE_REQUIRED_FLAGS)
 
-# Check whether compiler supports SSE4 instrinics
+# Check whether compiler supports SSE4 CRC inline asm
 if(WITH_NATIVE_INSTRUCTIONS)
     set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
 else()
