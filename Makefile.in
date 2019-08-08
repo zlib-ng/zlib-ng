@@ -85,7 +85,7 @@ PIC_OBJS = $(PIC_OBJC)
 
 all: static shared
 
-static: example$(EXE) minigzip$(EXE) fuzzers
+static: example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE)
 
 shared: examplesh$(EXE) minigzipsh$(EXE)
 
@@ -193,6 +193,9 @@ example64.o:
 minigzip64.o:
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP -D_FILE_OFFSET_BITS=64 $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
 
+makefixed.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/tools/makefixed.c
+
 zlibrc.o: win32/zlib$(SUFFIX)1.rc
 	$(RC) $(RCFLAGS) -o $@ win32/zlib$(SUFFIX)1.rc
 
@@ -252,6 +255,12 @@ endif
 
 minigzip64$(EXE): minigzip64.o $(OBJG) $(STATICLIB)
 	$(CC) $(LDFLAGS) -o $@ minigzip64.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+makefixed$(EXE): makefixed.o $(OBJG) $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ makefixed.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -330,7 +339,7 @@ clean:
 	   example64$(EXE) minigzip64$(EXE) \
 	   checksum_fuzzer$(EXE) compress_fuzzer$(EXE) example_small_fuzzer$(EXE) example_large_fuzzer$(EXE) \
 	   example_flush_fuzzer$(EXE) example_dict_fuzzer$(EXE) minigzip_fuzzer$(EXE) \
-	   infcover \
+	   infcover makefixed$(EXE) \
 	   $(STATICLIB) $(IMPORTLIB) $(SHAREDLIB) $(SHAREDLIBV) $(SHAREDLIBM) \
 	   foo.gz so_locations \
 	   _match.s maketree

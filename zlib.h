@@ -1158,7 +1158,7 @@ ZEXTERN unsigned long ZEXPORT zlibCompileFlags(void);
      11: 0 (reserved)
 
     One-time table building (smaller code, but not thread-safe if true):
-     12: BUILDFIXED -- build static block decoding tables when needed
+     12: BUILDFIXED -- build static block decoding tables when needed (not supported by zlib-ng)
      13: DYNAMIC_CRC_TABLE -- build CRC calculation tables when needed
      14,15: 0 (reserved)
 
