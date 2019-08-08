@@ -186,7 +186,6 @@ Contents
 | deflate_slow.c   | Compress data using the deflate algorithm with slow strategy   |
 | functable.*      | Struct containing function pointers to optimized functions     |
 | gzclose.c        | Close gzip files                                               |
-| gzendian.h       | BYTE_ORDER for endian tests                                    |
 | gzguts.h         | Internal definitions for gzip operations                       |
 | gzlib.c          | Functions common to reading and writing gzip files             |
 | gzread.c         | Read gzip files                                                |
@@ -200,6 +199,7 @@ Contents
 | trees.*          | Output deflated data using Huffman coding                      |
 | uncompr.c        | Decompress a memory buffer                                     |
 | zconf.h.cmakein  | zconf.h template for cmake                                     |
+| zendian.h        | BYTE_ORDER for endian tests                                    |
 | zlib.3           | Man page for zlib                                              |
 | zlib.3.pdf       | Man page in PDF format                                         |
 | zlib.map         | Linux symbol information                                       |
