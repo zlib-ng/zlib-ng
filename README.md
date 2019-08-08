@@ -201,6 +201,5 @@ Contents
 | zconf.h.cmakein  | zconf.h template for cmake                                     |
 | zendian.h        | BYTE_ORDER for endian tests                                    |
 | zlib.3           | Man page for zlib                                              |
-| zlib.3.pdf       | Man page in PDF format                                         |
 | zlib.map         | Linux symbol information                                       |
 | zlib.pc.in       | Pkg-config template                                            |
