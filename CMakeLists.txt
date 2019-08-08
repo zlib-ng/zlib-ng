@@ -437,7 +437,7 @@ check_c_source_compile_or_run(
     #endif
         return (int) h;
     }"
-    HAVE_SSE42_INTRIN
+    HAVE_SSE42CRC_INLINE_ASM
 )
 # Check whether compiler supports SSE4 CRC instrinics
 check_c_source_compile_or_run(
@@ -578,7 +578,7 @@ if(WITH_OPTIM)
     elseif("${ARCHDIR}" MATCHES "arch/x86")
         add_definitions("-DX86_CPUID")
         set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/x86.c)
-        if(HAVE_SSE42_INTRIN)
+        if(HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN)
             add_definitions(-DX86_SSE4_2_CRC_HASH)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
             add_feature_info(SSE4_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set, using \"${SSE4FLAG}\"")
@@ -607,10 +607,10 @@ if(WITH_OPTIM)
             add_definitions(-DX86_PCLMULQDQ_CRC)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc_folding.c)
             add_intrinsics_option("${PCLMULFLAG}")
-            if(HAVE_SSE42_INTRIN)
-                add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG}\"")
-            else()
+            if(HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN)
                 add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG} ${SSE4FLAG}\"")
+            else()
+                add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG}\"")
             endif()
         endif()
     elseif("${ARCH}" MATCHES "s390x")
