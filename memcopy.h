@@ -4,7 +4,7 @@
 #ifndef MEMCOPY_H_
  #define MEMCOPY_H_
 
- #include "gzendian.h"
+ #include "zendian.h"
 
 /* Load 64 bits from IN and place the bytes at offset BITS in the result. */
 static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
@@ -18,7 +18,7 @@ static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
  #endif
 }
 
- #if (defined(__GNUC__) || defined(__clang__)) && defined(__ARM_NEON__)
+ #if (defined(__GNUC__) || defined(__clang__)) && (defined(__ARM_NEON__) || defined(__ARM_NEON))
   #include <arm_neon.h>
 typedef uint8x16_t inffast_chunk_t;
   #define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
@@ -223,7 +223,7 @@ static inline unsigned char *chunkmemset_6(unsigned char *out, unsigned char *fr
         len -= sz;
     }
 
-    if (rem)
+    if (!rem)
         return out;
 
     /* Last, deal with the case when LEN is not a multiple of SZ. */

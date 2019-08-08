@@ -830,6 +830,9 @@ if (ZLIB_ENABLE_TESTS)
     add_executable(minigzip test/minigzip.c)
     configure_test_executable(minigzip)
 
+    add_executable(switchlevels test/switchlevels.c)
+    configure_test_executable(switchlevels)
+
     if(HAVE_OFF64_T)
         add_executable(example64 test/example.c)
         configure_test_executable(example64)
@@ -867,6 +870,20 @@ if (ZLIB_ENABLE_TESTS)
         target_link_libraries(CVE-2003-0107 zlib)
         add_test(NAME CVE-2003-0107 COMMAND CVE-2003-0107)
     endif()
+
+    set(GH_361_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -4)
+    add_test(NAME GH-361
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${GH_361_COMMAND}"
+        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-361/test.txt
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+    set(GH_364_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels> 1 5 9 3)
+    add_test(NAME GH-364
+            COMMAND ${CMAKE_COMMAND}
+            "-DCOMMAND=${GH_364_COMMAND}"
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-364/test.bin
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)

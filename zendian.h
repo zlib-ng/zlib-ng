@@ -1,4 +1,4 @@
-/* gzendian.h -- define BYTE_ORDER for endian tests
+/* zendian.h -- define BYTE_ORDER for endian tests
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 

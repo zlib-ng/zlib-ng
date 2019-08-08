@@ -19,6 +19,7 @@ ZLIB_NG_1.9.9 {
     zng_deflateCopy;
     zng_deflateEnd;
     zng_deflateGetDictionary;
+    zng_deflateGetParams;
     zng_deflateInit_;
     zng_deflateInit2_;
     zng_deflateParams;
@@ -28,6 +29,7 @@ ZLIB_NG_1.9.9 {
     zng_deflateResetKeep;
     zng_deflateSetDictionary;
     zng_deflateSetHeader;
+    zng_deflateSetParams;
     zng_deflateTune;
     zng_get_crc_table;
     zng_inflate;

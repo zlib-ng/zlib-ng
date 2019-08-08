@@ -17,6 +17,8 @@ EXPORTS
     zng_deflatePending
     zng_deflatePrime
     zng_deflateSetHeader
+    zng_deflateSetParams
+    zng_deflateGetParams
     zng_inflateSetDictionary
     zng_inflateGetDictionary
     zng_inflateSync

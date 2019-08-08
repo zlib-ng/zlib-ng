@@ -20,7 +20,10 @@ Two DFLTCC compression calls produce the same results only when they
 both are made on machines of the same generation, and when the
 respective buffers have the same offset relative to the start of the
 page. Therefore care should be taken when using hardware compression
-when reproducible results are desired.
+when reproducible results are desired. In particular, zlib-ng-specific
+zng_deflateSetParams call allows setting Z_DEFLATE_REPRODUCIBLE
+parameter, which would disable DFLTCC if reproducible results are
+required.
 
 DFLTCC does not support every single zlib-ng feature, in particular:
 
@@ -67,3 +70,11 @@ In addition to compression, DFLTCC computes CRC-32 and Adler-32
 checksums, therefore, whenever it's used, software checksumming is
 suppressed using DEFLATE_NEED_CHECKSUM and INFLATE_NEED_CHECKSUM
 macros.
+
+While software always produces reproducible compression results, this
+is not the case for DFLTCC. Therefore, zlib-ng users are given the
+ability to specify whether or not reproducible compression results
+are required. While it is always possible to specify this setting
+before the compression begins, it is not always possible to do so in
+the middle of a deflate stream - the exact conditions for that are
+determined by DEFLATE_CAN_SET_REPRODUCIBLE macro.

@@ -12,7 +12,7 @@
 /* @(#) $Id$ */
 
 # include "zbuild.h"
-# include "gzendian.h"
+# include "zendian.h"
 # include <inttypes.h>
 
 /*

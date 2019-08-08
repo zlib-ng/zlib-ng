@@ -19,11 +19,13 @@
 #include "dfltcc_deflate.h"
 #include "dfltcc_detail.h"
 
-static inline int dfltcc_are_params_ok(int level, uInt window_bits, int strategy, uint16_t level_mask)
+static inline int dfltcc_are_params_ok(int level, uInt window_bits, int strategy, uint16_t level_mask,
+                                       int reproducible)
 {
     return (level_mask & ((uint16_t)1 << level)) != 0 &&
         (window_bits == HB_BITS) &&
-        (strategy == Z_FIXED || strategy == Z_DEFAULT_STRATEGY);
+        (strategy == Z_FIXED || strategy == Z_DEFAULT_STRATEGY) &&
+        !reproducible;
 }
 
 
@@ -33,7 +35,8 @@ int ZLIB_INTERNAL dfltcc_can_deflate(PREFIX3(streamp) strm)
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
 
     /* Unsupported compression settings */
-    if (!dfltcc_are_params_ok(state->level, state->w_bits, state->strategy, dfltcc_state->level_mask))
+    if (!dfltcc_are_params_ok(state->level, state->w_bits, state->strategy, dfltcc_state->level_mask,
+                              state->reproducible))
         return 0;
 
     /* Unsupported hardware */
@@ -277,24 +280,39 @@ again:
    fly with deflateParams, we need to convert between hardware and software
    window formats.
 */
+static int dfltcc_was_deflate_used(PREFIX3(streamp) strm)
+{
+    deflate_state *state = (deflate_state *)strm->state;
+    struct dfltcc_param_v0 *param = &GET_DFLTCC_STATE(state)->param;
+
+    return strm->total_in > 0 || param->nt == 0 || param->hl > 0;
+}
+
 int ZLIB_INTERNAL dfltcc_deflate_params(PREFIX3(streamp) strm, int level, int strategy)
 {
     deflate_state *state = (deflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
-    struct dfltcc_param_v0 *param = &dfltcc_state->param;
     int could_deflate = dfltcc_can_deflate(strm);
-    int can_deflate = dfltcc_are_params_ok(level, state->w_bits, strategy, dfltcc_state->level_mask);
+    int can_deflate = dfltcc_are_params_ok(level, state->w_bits, strategy, dfltcc_state->level_mask,
+                                           state->reproducible);
 
     if (can_deflate == could_deflate)
         /* We continue to work in the same mode - no changes needed */
         return Z_OK;
 
-    if (strm->total_in == 0 && param->nt == 1 && param->hl == 0)
+    if (!dfltcc_was_deflate_used(strm))
         /* DFLTCC was not used yet - no changes needed */
         return Z_OK;
 
     /* Switching between hardware and software is not implemented */
     return Z_STREAM_ERROR;
+}
+
+int ZLIB_INTERNAL dfltcc_can_set_reproducible(PREFIX3(streamp) strm, int reproducible)
+{
+    deflate_state *state = (deflate_state *)strm->state;
+
+    return reproducible != state->reproducible && !dfltcc_was_deflate_used(strm);
 }
 
 /*

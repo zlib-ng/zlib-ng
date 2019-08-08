@@ -52,7 +52,7 @@ static inline Pos insert_string_c(deflate_state *const s, const Pos str, unsigne
  * IN assertion: strstart is set to the end of the current match.
  */
 #define FLUSH_BLOCK_ONLY(s, last) { \
-    _tr_flush_block(s, (s->block_start >= 0L ? \
+    zng_tr_flush_block(s, (s->block_start >= 0L ? \
                    (char *)&s->window[(unsigned)s->block_start] : \
                    NULL), \
                    (unsigned long)((long)s->strstart - s->block_start), \
