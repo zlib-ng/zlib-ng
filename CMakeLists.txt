@@ -33,7 +33,7 @@ string(REGEX REPLACE ".*#define[ \t]+ZLIBNG_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
 message(STATUS "ZLIB_HEADER_VERSION: ${ZLIB_HEADER_VERSION}")
 message(STATUS "ZLIBNG_HEADER_VERSION: ${ZLIBNG_HEADER_VERSION}")
 
-project(zlib 
+project(zlib
   VERSION ${ZLIB_HEADER_VERSION}
   LANGUAGES C)
 
@@ -326,7 +326,7 @@ check_c_source_compiles(
     }"
     HAVE_ATTRIBUTE_VISIBILITY_HIDDEN FAIL_REGEX "not supported")
 if(HAVE_ATTRIBUTE_VISIBILITY_HIDDEN)
-    add_definitions(-DHAVE_HIDDEN)
+    add_definitions(-DHAVE_ATTRIBUTE_HIDDEN)
 endif()
 
 #
@@ -341,7 +341,7 @@ check_c_source_compiles(
     }"
     HAVE_ATTRIBUTE_VISIBILITY_INTERNAL FAIL_REGEX "not supported")
 if(HAVE_ATTRIBUTE_VISIBILITY_INTERNAL)
-    add_definitions(-DHAVE_INTERNAL)
+    add_definitions(-DHAVE_ATTRIBUTE_INTERNAL)
 endif()
 
 #
@@ -571,17 +571,17 @@ if(WITH_OPTIM)
         add_definitions("-DX86_CPUID")
         set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/x86.c)
         if(HAVE_SSE42_INTRIN)
-            add_definitions(-DX86_SSE4_2_CRC_HASH)
+            add_definitions(-DX86_SSE42_CRC_HASH)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
-            add_feature_info(SSE4_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set, using \"${SSE4FLAG}\"")
+            add_feature_info(SSE42_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set, using \"${SSE4FLAG}\"")
             add_intrinsics_option("${SSE4FLAG}")
             if(HAVE_SSE42CRC_INTRIN)
-                add_definitions(-DX86_SSE4_2_CRC_INTRIN)
+                add_definitions(-DX86_SSE42_CRC_INTRIN)
             endif()
             if(WITH_NEW_STRATEGIES)
                 add_definitions(-DX86_QUICK_STRATEGY)
                 set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/deflate_quick.c)
-                add_feature_info(SSE4DEFLATE 1 "Support SSE4.2-accelerated quick compression")
+                add_feature_info(SSE42_DEFLATE 1 "Support SSE4.2-accelerated quick compression")
             endif()
         endif()
         if(HAVE_SSE2_INTRIN)
@@ -882,4 +882,3 @@ if (ZLIB_ENABLE_TESTS)
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
-

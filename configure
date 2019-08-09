@@ -822,8 +822,8 @@ int ZLIB_INTERNAL foo;
 int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then
-    CFLAGS="$CFLAGS -DHAVE_HIDDEN"
-    SFLAGS="$SFLAGS -DHAVE_HIDDEN"
+    CFLAGS="$CFLAGS -DHAVE_ATTRIBUTE_HIDDEN"
+    SFLAGS="$SFLAGS -DHAVE_ATTRIBUTE_HIDDEN"
     echo >> configure.log
     echo "Checking for attribute(visibility(hidden)) support... Yes." | tee -a configure.log
   else
@@ -841,8 +841,8 @@ int ZLIB_INTERNAL foo;
 int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then
-    CFLAGS="$CFLAGS -DHAVE_INTERNAL"
-    SFLAGS="$SFLAGS -DHAVE_INTERNAL"
+    CFLAGS="$CFLAGS -DHAVE_ATTRIBUTE_INTERNAL"
+    SFLAGS="$SFLAGS -DHAVE_ATTRIBUTE_INTERNAL"
     echo >> configure.log
     echo "Checking for attribute(visibility(internal)) support... Yes." | tee -a configure.log
   else
@@ -1014,12 +1014,12 @@ case "${ARCH}" in
             fi
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_INTRIN"
-                SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_INTRIN"
+                CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
+                SFLAGS="${SFLAGS} -DX86_SSE42_CRC_INTRIN"
             fi
 
-            CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_HASH"
-            SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_HASH"
+            CFLAGS="${CFLAGS} -DX86_SSE42_CRC_HASH"
+            SFLAGS="${SFLAGS} -DX86_SSE42_CRC_HASH"
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} insert_string_sse.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} insert_string_sse.lo"
 
@@ -1042,15 +1042,15 @@ case "${ARCH}" in
 
         # Enable arch-specific optimizations?
         if test $without_optimizations -eq 0; then
-            CFLAGS="${CFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE4_2_CRC_HASH"
-            SFLAGS="${SFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE4_2_CRC_HASH"
+            CFLAGS="${CFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE42_CRC_HASH"
+            SFLAGS="${SFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE42_CRC_HASH"
 
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o fill_window_sse.o insert_string_sse.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo fill_window_sse.lo insert_string_sse.lo"
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE4_2_CRC_INTRIN"
-                SFLAGS="${SFLAGS} -DX86_SSE4_2_CRC_INTRIN"
+                CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
+                SFLAGS="${SFLAGS} -DX86_SSE42_CRC_INTRIN"
             fi
 
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
