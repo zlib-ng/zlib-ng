@@ -30,16 +30,27 @@ ZLIB_INTERNAL Pos insert_string_sse(deflate_state *const s, const Pos str, unsig
         if (s->level >= TRIGGER_LEVEL)
             val &= 0xFFFFFF;
 
-#ifdef _MSC_VER
+#if defined(X86_SSE4_2_CRC_INTRIN)
+#  ifdef _MSC_VER
         h = _mm_crc32_u32(h, val);
-#elif defined(X86_SSE4_2_CRC_INTRIN)
+#  else
         h = __builtin_ia32_crc32si(h, val);
+#  endif
 #else
+#  ifdef _MSC_VER
+        __asm {
+            mov edx h
+            mov eax, val
+            crc32 eax, edx
+            mov val, eax
+        };
+#  else
         __asm__ __volatile__ (
             "crc32 %1,%0\n\t"
             : "+r" (h)
             : "r" (val)
         );
+#  endif
 #endif
         Pos head = s->head[h & s->hash_mask];
         if (head != str+idx) {
