@@ -432,7 +432,8 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         int cont = 1;
         do {
             match = window + cur_match;
-            if (likely(memcmp(match+best_len-1, &scan_end, sizeof(scan_end)) != 0)) {
+            if (likely(memcmp(match+best_len-1, &scan_end, sizeof(scan_end)) != 0
+                || memcmp(match, &scan_start, sizeof(scan_start)) != 0)) {
                 if ((cur_match = prev[cur_match & wmask]) > limit
                     && --chain_length != 0) {
                     continue;
@@ -445,9 +446,6 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
 
         if (!cont)
             break;
-
-        if (memcmp(match, &scan_start, sizeof(scan_start)) != 0)
-            continue;
 
         /* It is not necessary to compare scan[2] and match[2] since they are
          * always equal when the other bytes match, given that the hash keys
