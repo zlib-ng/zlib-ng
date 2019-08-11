@@ -410,35 +410,44 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
 #   define UPDATE_HASH(s, h, i) (h = (((h) << s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
 #endif
 
-#ifndef ZLIB_DEBUG
-#  define send_code(s, c, tree) send_bits(s, tree[c].Code, tree[c].Len)
-/* Send a code of the given tree. c and tree must not have side effects */
-
-#else /* ZLIB_DEBUG */
-#  define send_code(s, c, tree) \
-    {  if (z_verbose > 2) { \
+#ifdef ZLIB_DEBUG
+    #define send_code(s, c, tree, bit_buf, bits_valid) { \
+        if (z_verbose > 2) { \
            fprintf(stderr, "\ncd %3d ", (c)); \
-       } \
-       send_bits(s, tree[c].Code, tree[c].Len); \
-     }
+        } \
+        send_bits(s, tree[c].Code, tree[c].Len, bit_buf, bits_valid); \
+    }
+#else /* ZLIB_DEBUG */
+    /* Send a code of the given tree. c and tree must not have side effects */
+    #define send_code(s, c, tree, bit_buf, bits_valid) send_bits(s, tree[c].Code, tree[c].Len, bit_buf, bits_valid)
 #endif
+
 
 #ifdef ZLIB_DEBUG
-void send_bits(deflate_state *s, int value, int length);
+    #define send_debug_trace(s, value, length) {\
+        Tracevv((stderr, " l %2d v %4x ", length, value));\
+        Assert(length > 0 && length <= 15, "invalid length");\
+        s->bits_sent += (unsigned long)length;\
+    }
 #else
-#define send_bits(s, value, length) \
-{ int len = length;\
-  if (s->bi_valid > (int)Buf_size - len) {\
-    int val = (int)value;\
-    s->bi_buf |= (uint16_t)val << s->bi_valid;\
-    put_short(s, s->bi_buf);\
-    s->bi_buf = (uint16_t)val >> (Buf_size - s->bi_valid);\
-    s->bi_valid += len - Buf_size;\
-  } else {\
-    s->bi_buf |= (uint16_t)(value) << s->bi_valid;\
-    s->bi_valid += len;\
-  }\
-}
+    #define send_debug_trace(s, value, length) {}
 #endif
+
+/* If not enough room in bit_buf, use (valid) bits from bit_buf and
+ * (16 - bit_valid) bits from value, leaving (width - (16-bit_valid))
+ * unused bits in value.
+ */
+#define send_bits(s, val, len, bit_buf, bits_valid) {\
+    send_debug_trace(s, val, len);\
+    if (bits_valid > (int)Buf_size - len) {\
+        bit_buf |= (uint16_t)val << bits_valid;\
+        put_short(s, bit_buf);\
+        bit_buf = (uint16_t)val >> (Buf_size - bits_valid);\
+        bits_valid += len - Buf_size;\
+    } else {\
+        bit_buf |= (uint16_t)(val) << bits_valid;\
+        bits_valid += len;\
+    }\
+}
 
 #endif /* DEFLATE_H_ */

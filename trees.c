@@ -474,6 +474,10 @@ static void send_tree(deflate_state *s, ct_data *tree, int max_code) {
     if (nextlen == 0)
         max_count = 138, min_count = 3;
 
+    // Temp local variables
+    int filled = s->bi_valid;
+    uint16_t bit_buf = s->bi_buf;
+
     for (n = 0; n <= max_code; n++) {
         curlen = nextlen;
         nextlen = tree[n+1].Len;
@@ -481,25 +485,25 @@ static void send_tree(deflate_state *s, ct_data *tree, int max_code) {
             continue;
         } else if (count < min_count) {
             do {
-                send_code(s, curlen, s->bl_tree);
+                send_code(s, curlen, s->bl_tree, bit_buf, filled);
             } while (--count != 0);
 
         } else if (curlen != 0) {
             if (curlen != prevlen) {
-                send_code(s, curlen, s->bl_tree);
+                send_code(s, curlen, s->bl_tree, bit_buf, filled);
                 count--;
             }
             Assert(count >= 3 && count <= 6, " 3_6?");
-            send_code(s, REP_3_6, s->bl_tree);
-            send_bits(s, count-3, 2);
+            send_code(s, REP_3_6, s->bl_tree, bit_buf, filled);
+            send_bits(s, count-3, 2, bit_buf, filled);
 
         } else if (count <= 10) {
-            send_code(s, REPZ_3_10, s->bl_tree);
-            send_bits(s, count-3, 3);
+            send_code(s, REPZ_3_10, s->bl_tree, bit_buf, filled);
+            send_bits(s, count-3, 3, bit_buf, filled);
 
         } else {
-            send_code(s, REPZ_11_138, s->bl_tree);
-            send_bits(s, count-11, 7);
+            send_code(s, REPZ_11_138, s->bl_tree, bit_buf, filled);
+            send_bits(s, count-11, 7, bit_buf, filled);
         }
         count = 0;
         prevlen = curlen;
@@ -511,6 +515,10 @@ static void send_tree(deflate_state *s, ct_data *tree, int max_code) {
             max_count = 7, min_count = 4;
         }
     }
+
+    // Store back temp variables
+    s->bi_buf = bit_buf;
+    s->bi_valid = filled;
 }
 
 /* ===========================================================================
@@ -556,12 +564,12 @@ static void send_all_trees(deflate_state *s, int lcodes, int dcodes, int blcodes
     Assert(lcodes >= 257 && dcodes >= 1 && blcodes >= 4, "not enough codes");
     Assert(lcodes <= L_CODES && dcodes <= D_CODES && blcodes <= BL_CODES, "too many codes");
     Tracev((stderr, "\nbl counts: "));
-    send_bits(s, lcodes-257, 5); /* not +255 as stated in appnote.txt */
-    send_bits(s, dcodes-1,   5);
-    send_bits(s, blcodes-4,  4); /* not -3 as stated in appnote.txt */
+    send_bits(s, lcodes-257, 5, s->bi_buf, s->bi_valid); /* not +255 as stated in appnote.txt */
+    send_bits(s, dcodes-1,   5, s->bi_buf, s->bi_valid);
+    send_bits(s, blcodes-4,  4, s->bi_buf, s->bi_valid); /* not -3 as stated in appnote.txt */
     for (rank = 0; rank < blcodes; rank++) {
         Tracev((stderr, "\nbl code %2u ", bl_order[rank]));
-        send_bits(s, s->bl_tree[bl_order[rank]].Len, 3);
+        send_bits(s, s->bl_tree[bl_order[rank]].Len, 3, s->bi_buf, s->bi_valid);
     }
     Tracev((stderr, "\nbl tree: sent %lu", s->bits_sent));
 
@@ -579,7 +587,7 @@ void ZLIB_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, unsigned lon
     /* buf: input block */
     /* stored_len: length of input block */
     /* last: one if this is the last block for a file */
-    send_bits(s, (STORED_BLOCK << 1)+last, 3);    /* send block type */
+    send_bits(s, (STORED_BLOCK << 1)+last, 3, s->bi_buf, s->bi_valid);    /* send block type */
     bi_windup(s);        /* align on byte boundary */
     put_short(s, (uint16_t)stored_len);
     put_short(s, (uint16_t)~stored_len);
@@ -606,8 +614,8 @@ void ZLIB_INTERNAL zng_tr_flush_bits(deflate_state *s) {
  * This takes 10 bits, of which 7 may remain in the bit buffer.
  */
 void ZLIB_INTERNAL zng_tr_align(deflate_state *s) {
-    send_bits(s, STATIC_TREES << 1, 3);
-    send_code(s, END_BLOCK, static_ltree);
+    send_bits(s, STATIC_TREES << 1, 3, s->bi_buf, s->bi_valid);
+    send_code(s, END_BLOCK, static_ltree, s->bi_buf, s->bi_valid);
 #ifdef ZLIB_DEBUG
     s->compressed_len += 10L; /* 3 for block type, 7 for EOB */
 #endif
@@ -681,13 +689,13 @@ void ZLIB_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, unsigned long
 #else
     } else if (s->strategy == Z_FIXED || static_lenb == opt_lenb) {
 #endif
-        send_bits(s, (STATIC_TREES << 1)+last, 3);
+        send_bits(s, (STATIC_TREES << 1)+last, 3, s->bi_buf, s->bi_valid);
         compress_block(s, (const ct_data *)static_ltree, (const ct_data *)static_dtree);
 #ifdef ZLIB_DEBUG
         s->compressed_len += 3 + s->static_len;
 #endif
     } else {
-        send_bits(s, (DYN_TREES << 1)+last, 3);
+        send_bits(s, (DYN_TREES << 1)+last, 3, s->bi_buf, s->bi_valid);
         send_all_trees(s, s->l_desc.max_code+1, s->d_desc.max_code+1, max_blindex+1);
         compress_block(s, (const ct_data *)s->dyn_ltree, (const ct_data *)s->dyn_dtree);
 #ifdef ZLIB_DEBUG
@@ -748,32 +756,36 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
     int code;           /* the code to send */
     int extra;          /* number of extra bits to send */
 
+    // Temp local variables
+    int filled = s->bi_valid;
+    uint16_t bit_buf = s->bi_buf;
+
     if (s->sym_next != 0) {
         do {
             dist = s->sym_buf[sx++] & 0xff;
             dist += (unsigned)(s->sym_buf[sx++] & 0xff) << 8;
             lc = s->sym_buf[sx++];
             if (dist == 0) {
-                send_code(s, lc, ltree); /* send a literal byte */
+                send_code(s, lc, ltree, bit_buf, filled)                /* send a literal byte */
                 Tracecv(isgraph(lc), (stderr, " '%c' ", lc));
             } else {
                 /* Here, lc is the match length - MIN_MATCH */
                 code = zng_length_code[lc];
-                send_code(s, code+LITERALS+1, ltree); /* send the length code */
+                send_code(s, code+LITERALS+1, ltree, bit_buf, filled);  /* send the length code */
                 extra = extra_lbits[code];
                 if (extra != 0) {
                     lc -= base_length[code];
-                    send_bits(s, lc, extra);       /* send the extra length bits */
+                    send_bits(s, lc, extra, bit_buf, filled);           /* send the extra length bits */
                 }
                 dist--; /* dist is now the match distance - 1 */
                 code = d_code(dist);
                 Assert(code < D_CODES, "bad d_code");
 
-                send_code(s, code, dtree);       /* send the distance code */
+                send_code(s, code, dtree, bit_buf, filled);             /* send the distance code */
                 extra = extra_dbits[code];
                 if (extra != 0) {
                     dist -= (unsigned int)base_dist[code];
-                    send_bits(s, dist, extra);   /* send the extra distance bits */
+                    send_bits(s, dist, extra, bit_buf, filled);         /* send the extra distance bits */
                 }
             } /* literal or match pair ? */
 
@@ -782,7 +794,11 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
         } while (sx < s->sym_next);
     }
 
-    send_code(s, END_BLOCK, ltree);
+    send_code(s, END_BLOCK, ltree, bit_buf, filled);
+
+    // Store back temp variables
+    s->bi_buf = bit_buf;
+    s->bi_valid = filled;
 }
 
 /* ===========================================================================
