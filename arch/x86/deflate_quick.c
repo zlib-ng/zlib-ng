@@ -177,14 +177,14 @@ static void static_emit_tree(deflate_state *const s, const int flush) {
 
     last = flush == Z_FINISH ? 1 : 0;
     Tracev((stderr, "\n--- Emit Tree: Last: %u\n", last));
-    send_bits(s, (STATIC_TREES << 1)+ last, 3);
+    send_bits(s, (STATIC_TREES << 1)+ last, 3, s->bi_buf, s->bi_valid);
 #ifdef ZLIB_DEBUG
     s->compressed_len += 3;
 #endif
 }
 
 static void static_emit_end_block(deflate_state *const s, int last) {
-    send_code(s, END_BLOCK, static_ltree);
+    send_code(s, END_BLOCK, static_ltree, s->bi_buf, s->bi_valid);
 #ifdef ZLIB_DEBUG
     s->compressed_len += 7;  /* 7 bits for EOB */
 #endif
