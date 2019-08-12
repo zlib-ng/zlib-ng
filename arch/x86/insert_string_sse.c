@@ -17,7 +17,8 @@
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
 #ifdef X86_SSE4_2_CRC_HASH
-ZLIB_INTERNAL ZNG_TARGET_SSE42 Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count) {
+ZNG_TARGET_SSE42
+ZLIB_INTERNAL Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count) {
     Pos ret = 0;
     unsigned int idx;
     unsigned int *ip, val, h;

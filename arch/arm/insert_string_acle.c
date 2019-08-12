@@ -18,7 +18,8 @@
  *    input characters and the first MIN_MATCH bytes of str are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
-ZNG_TARGET_ACLE_CRC Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count) {
+ZNG_TARGET_ACLE_CRC
+Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count) {
     Pos p, lp, ret;
 
     if (unlikely(count == 0)) {
