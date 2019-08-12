@@ -40,6 +40,18 @@
 #else
 #  define ZNG_TARGET_PCLMULQDQ
 #endif
+#if defined(HAVE_ATTRIBUTE_PCLMULQDQ) && defined(HAVE_ATTRIBUTE_SSE42)
+#  define ZNG_TARGET_SSE42_PCLMULQDQ \
+     __attribute__((__target__("sse4.2,pclmul")))
+#else
+#  define ZNG_TARGET_SSE42_PCLMULQDQ
+#endif
+#if defined(HAVE_ATTRIBUTE_PCLMULQDQ) && defined(HAVE_ATTRIBUTE_SSSE3)
+#  define ZNG_TARGET_SSSE3_PCLMULQDQ \
+    __attribute__((__target__("ssse3,pclmul")))
+#else
+#  define ZNG_TARGET_SSSE3_PCLMULQDQ
+#endif
 #if defined(HAVE_ATTRIBUTE_ACLE_CRC)
 #  if defined(__clang__)
 #    define ZNG_TARGET_ACLE_CRC __attribute__((__target__("+crc")))
