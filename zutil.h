@@ -46,7 +46,7 @@
        __attribute__((__target__("ssse3,pclmul")))
 #    if defined(HAVE_ATTRIBUTE_SSE2)
 #      define ZNG_TARGET_SSE2_SSSE3_PCLMULQDQ \
-         __attribute__((__target__("sse2,ssse3,pclmul")))
+         __attribute__((__target__("ssse3,pclmul")))
 #    endif
 #  endif
 #else
