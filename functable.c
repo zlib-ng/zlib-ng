@@ -11,7 +11,7 @@
 #include "functable.h"
 /* insert_string */
 #ifdef X86_SSE4_2_CRC_HASH
-ZNG_TARGET_SSE42 extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
+extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
 #elif defined(ARM_ACLE_CRC_HASH)
 extern Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count);
 #endif
