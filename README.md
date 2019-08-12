@@ -60,7 +60,7 @@ There are two ways to build zlib-ng:
 To build zlib-ng using the cross-platform makefile generator cmake.
 
 ```
-cmake .
+cmake . -DZLIB_ENABLE_TESTS=ON
 cmake --build . --config Release
 ctest --verbose -C Release
 ```
@@ -87,7 +87,7 @@ Build Options
 | CMake                    | configure                | Description                                                                                  | Default                          |
 |:-------------------------|:-------------------------|:---------------------------------------------------------------------------------------------|----------------------------------|
 | ZLIB_COMPAT              | --zlib-compat            | Compile with zlib compatible API                                                             | OFF                              |
-| ZLIB_ENABLE_TESTS        |                          | Build test binaries                                                                          | ON                               |
+| ZLIB_ENABLE_TESTS        |                          | Build test binaries                                                                          | OFF                              |
 | WITH_GZFILEOP            | --with-gzfileops         | Compile with support for gzFile related functions                                            | OFF                              |
 | WITH_MSAN                | --with-msan              | Build with memory sanitizer                                                                  | OFF                              |
 | WITH_OPTIM               | --without-optimizations  | Build with optimisations                                                                     | ON                               |

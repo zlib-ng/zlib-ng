@@ -84,7 +84,7 @@ endif()
 #
 option(WITH_GZFILEOP "Compile with support for gzFile related functions" OFF)
 option(ZLIB_COMPAT "Compile with zlib compatible API" OFF)
-option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
+option(ZLIB_ENABLE_TESTS "Build test binaries" OFF)
 option(WITH_SANITIZERS "Build with address sanitizer and all supported sanitizers other than memory sanitizer" OFF)
 option(WITH_MSAN "Build with memory sanitizer" OFF)
 option(WITH_FUZZERS "Build test/fuzz" OFF)
@@ -812,7 +812,6 @@ endif()
 # Example binaries
 #============================================================================
 
-option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 if (ZLIB_ENABLE_TESTS)
     enable_testing()
     macro(configure_test_executable target)

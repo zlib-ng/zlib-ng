@@ -13,20 +13,20 @@ matrix:
     - os: windows
       compiler: clang
       env:
-        - GENERATOR="cmake . "
+        - GENERATOR="cmake . -DZLIB_ENABLE_TESTS=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
     - os: windows
       compiler: clang
       env:
-        - GENERATOR="cmake ..\\zlib-ng -DZLIB_COMPAT=ON"
+        - GENERATOR="cmake ..\\zlib-ng -DZLIB_ENABLE_TESTS=ON -DZLIB_COMPAT=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
         - BUILDDIR=..\\build
     - os: windows
       compiler: gcc
       env:
-        - GENERATOR="cmake ."
+        - GENERATOR="cmake . -DZLIB_ENABLE_TESTS=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
@@ -35,7 +35,7 @@ matrix:
       env: GENERATOR="./configure --warn"
     - os: linux
       compiler: gcc
-      env: GENERATOR="cmake . -DZLIB_COMPAT=OFF -DWITH_GZFILEOP=ON -DWITH_NEW_STRATEGIES=YES -DWITH_OPTIM=ON"
+      env: GENERATOR="cmake . -DZLIB_ENABLE_TESTS=ON -DZLIB_COMPAT=OFF -DWITH_GZFILEOP=ON -DWITH_NEW_STRATEGIES=YES -DWITH_OPTIM=ON"
     - os: linux
       compiler: gcc
       env:
@@ -46,11 +46,11 @@ matrix:
       env: GENERATOR="./configure --warn --zlib-compat --without-optimizations --without-new-strategies"
     - os: linux
       compiler: gcc
-      env: GENERATOR="cmake ."
+      env: GENERATOR="cmake . -DZLIB_ENABLE_TESTS=ON"
     - os: linux
       compiler: gcc
       env:
-        - GENERATOR="cmake ../zlib-ng"
+        - GENERATOR="cmake ../zlib-ng -DZLIB_ENABLE_TESTS=ON"
         - BUILDDIR=../build
 
     - os: linux
@@ -59,12 +59,12 @@ matrix:
     - os: linux
       compiler: clang
       env:
-        - GENERATOR="cmake ../zlib-ng"
+        - GENERATOR="cmake ../zlib-ng -DZLIB_ENABLE_TESTS=ON"
         - BUILDDIR=../build
     - os: linux
       compiler: clang
       env:
-        - GENERATOR="scan-build -v --status-bugs cmake ../zlib-ng"
+        - GENERATOR="scan-build -v --status-bugs cmake ../zlib-ng -DZLIB_ENABLE_TESTS=ON"
         - MAKER="scan-build -v --status-bugs make"
         - BUILDDIR=../build
 
@@ -78,7 +78,7 @@ matrix:
         - BUILDDIR=../build
     - os: osx
       compiler: gcc
-      env: GENERATOR="cmake ."
+      env: GENERATOR="cmake . -DZLIB_ENABLE_TESTS=ON"
 
     - os: osx
       compiler: clang
@@ -86,17 +86,17 @@ matrix:
     - os: osx
       compiler: clang
       env:
-        - GENERATOR="cmake ../zlib-ng"
+        - GENERATOR="cmake ../zlib-ng -DZLIB_ENABLE_TESTS=ON"
         - BUILDDIR=../build
 
     # compiling for linux-ppc64le variants
     - os: linux-ppc64le
       compiler: gcc
-      env: GENERATOR="cmake ."
+      env: GENERATOR="cmake . -DZLIB_ENABLE_TESTS=ON"
     - os: linux-ppc64le
       compiler: gcc
       env:
-        - GENERATOR="cmake ../zlib-ng"
+        - GENERATOR="cmake ../zlib-ng -DZLIB_ENABLE_TESTS=ON"
         - BUILDDIR=../build
 
     - os: linux-ppc64le
@@ -105,7 +105,7 @@ matrix:
     - os: linux-ppc64le
       compiler: clang
       env:
-        - GENERATOR="cmake ../zlib-ng"
+        - GENERATOR="cmake ../zlib-ng -DZLIB_ENABLE_TESTS=ON"
         - BUILDDIR=../build
 
     # Cross compiling for arm variants
@@ -131,7 +131,7 @@ matrix:
             - libc-dev-arm64-cross
       # For all aarch64 implementations NEON is mandatory, while crypto/crc are not.
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake . -DZLIB_COMPAT=ON"
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake . -DZLIB_COMPAT=ON -DZLIB_ENABLE_TESTS=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
     - os: linux
@@ -154,7 +154,7 @@ matrix:
             - gcc-aarch64-linux-gnu
             - libc-dev-arm64-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake ."
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake . -DZLIB_ENABLE_TESTS=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
     # Hard-float subsets
@@ -178,7 +178,7 @@ matrix:
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_ENABLE_TESTS=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
     - os: linux
@@ -201,7 +201,7 @@ matrix:
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DWITH_NEON=OFF -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_ENABLE_TESTS=ON -DZLIB_COMPAT=ON -DWITH_NEON=OFF"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
     - os: linux
@@ -224,7 +224,7 @@ matrix:
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_ENABLE_TESTS=ON -DZLIB_COMPAT=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
     # Soft-float subset
@@ -248,7 +248,7 @@ matrix:
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi"
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_ENABLE_TESTS=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
     - os: linux
@@ -271,7 +271,7 @@ matrix:
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi"
+        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_ENABLE_TESTS=ON -DZLIB_COMPAT=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
