@@ -619,8 +619,7 @@ if(WITH_OPTIM)
                 endif()
             else()
                 check_c_source_compiles(
-                    "#include <stdio.h>
-                    #include <immintrin.h>
+                    "#include <immintrin.h>
                     int __attribute__((__target__(\"sse2\"))) main(void)
                     {
                         __m128i zero = _mm_setzero_si128();
@@ -663,11 +662,12 @@ if(WITH_OPTIM)
             add_definitions(-DX86_SSE4_2_CRC_HASH)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
             check_c_source_compiles(
-                "int __attribute__((__target__(\"sse4.2\"))) main(void)
+                "#include <immintrin.h>
+                int __attribute__((__target__(\"sse4.2\"))) main(void)
                 {
-                    unsigned val = 0, h = 0;
-                    __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
-                    return (int) h;
+                    __m128i a = _mm_setzero_si128();
+                    int h = __mm_extract_epi32(a, 1);
+                    return (int)h;
                 }"
                 HAVE_ATTRIBUTE_SSE42 FAIL_REGEX "not supported"
             )
