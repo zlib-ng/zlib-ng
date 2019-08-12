@@ -425,7 +425,24 @@ check_c_source_compile_or_run(
     HAVE_SSE2_INTRIN
 )
 set(CMAKE_REQUIRED_FLAGS)
-
+# Check whether compiler supports SSSE3 instrinics
+if(WITH_NATIVE_INSTRUCTIONS)
+    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+else()
+    set(CMAKE_REQUIRED_FLAGS "${SSSE3FLAG}")
+endif()
+check_c_source_compile_or_run(
+    "#include <immintrin.h>
+    int main(void)
+    {
+        __m128i a = _mm_setzero_si128();
+        __m128i b = _mm_setzero_si128();
+        __m128i c = _mm_shuffle_epi8(a, b);
+        (void)c;
+        return (int) 0;
+    }"
+    HAVE_SSSE3_INTRIN
+)
 # Check whether compiler supports SSE4 CRC inline asm
 if(WITH_NATIVE_INSTRUCTIONS)
     set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
@@ -692,10 +709,10 @@ if(WITH_OPTIM)
                 add_feature_info(PCLMUL 1 "Support the PCLMULQDQ instruction set, using \"${PCLMULFLAG}\"")
             endif()
         endif()
-        if(HAVE_SSE2_INTRIN AND HAVE_SSSE3_INTRIN AND HAVE_PCLMULQDQ_INTRIN)
+        if(HAVE_SSE2_INTRIN AND HAVE_SSSE3_INTRIN AND HAVE_SSE42CRC_INTRIN AND HAVE_PCLMULQDQ_INTRIN)
             add_definitions(-DX86_PCLMULQDQ_CRC)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc_folding.c)
-            add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using SSE2, SSSE3, PCLMULQDQ")
+            add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using SSE2, SSSE3, SSE4.2, PCLMULQDQ")
         endif()
     elseif("${ARCH}" MATCHES "s390x")
         if(WITH_DFLTCC_DEFLATE OR WITH_DFLTCC_INFLATE)
