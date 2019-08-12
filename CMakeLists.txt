@@ -666,7 +666,7 @@ if(WITH_OPTIM)
                 int __attribute__((__target__(\"sse4.2\"))) main(void)
                 {
                     __m128i a = _mm_setzero_si128();
-                    int h = __mm_extract_epi32(a, 1);
+                    int h = _mm_extract_epi32(a, 1);
                     return (int)h;
                 }"
                 HAVE_ATTRIBUTE_SSE42 FAIL_REGEX "not supported"
