@@ -1147,7 +1147,7 @@ ZEXTERN unsigned long ZEXPORT zng_zlibCompileFlags(void);
      11: 0 (reserved)
 
     One-time table building (smaller code, but not thread-safe if true):
-     12: BUILDFIXED -- build static block decoding tables when needed
+     12: BUILDFIXED -- build static block decoding tables when needed (not supported by zlib-ng)
      13: DYNAMIC_CRC_TABLE -- build CRC calculation tables when needed
      14,15: 0 (reserved)
 
@@ -1788,6 +1788,53 @@ ZEXTERN int ZEXPORT zng_gzgetc_(gzFile file);  /* backward compatibility */
    ZEXTERN z_off_t ZEXPORT zng_gzoffset(gzFile);
 #endif
 #endif /* WITH_GZFILEOP */
+
+
+typedef enum {
+    Z_DEFLATE_LEVEL = 0,         /* compression level, represented as an int */
+    Z_DEFLATE_STRATEGY = 1,      /* compression strategy, represented as an int */
+    Z_DEFLATE_REPRODUCIBLE = 2,
+    /*
+         Whether reproducible compression results are required. Represented as an int, where 0 means that it is allowed
+       to trade reproducibility for e.g. improved performance or compression ratio, and non-0 means that
+       reproducibility is strictly required. Reproducibility is guaranteed only when using an identical zlib-ng build.
+       Default is 0.
+    */
+} zng_deflate_param;
+
+typedef struct {
+    zng_deflate_param param;  /* parameter ID */
+    void *buf;                /* parameter value */
+    size_t size;              /* parameter value size */
+    int status;               /* result of the last set/get call */
+} zng_deflate_param_value;
+
+ZEXTERN int ZEXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count);
+/*
+     Sets the values of the given zlib-ng deflate stream parameters. All the buffers are copied internally, so the
+   caller still owns them after this function returns. Returns Z_OK if success.
+
+     If the size of at least one of the buffers is too small to hold the entire value of the corresponding parameter,
+   or if the same parameter is specified multiple times, Z_BUF_ERROR is returned. The caller may inspect status fields
+   in order to determine which of the parameters caused this error. No other changes are performed.
+
+     If the stream state is inconsistent or if at least one of the values cannot be updated, Z_STREAM_ERROR is
+   returned. The caller may inspect status fields in order to determine which of the parameters caused this error.
+   Parameters, whose status field is equal to Z_OK, have been applied successfully. If all status fields are not equal
+   to Z_STREAM_ERROR, then the error was caused by a stream state inconsistency.
+
+     If there are no other errors, but at least one parameter is not supported by the current zlib-ng version,
+   Z_VERSION_ERROR is returned. The caller may inspect status fields in order to determine which of the parameters
+   caused this error.
+*/
+
+ZEXTERN int ZEXPORT zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count);
+/*
+     Copies the values of the given zlib-ng deflate stream parameters into the user-provided buffers. Returns Z_OK if
+   success, Z_VERSION_ERROR if at least one parameter is not supported by the current zlib-ng version, Z_STREAM_ERROR
+   if the stream state is inconsistent, and Z_BUF_ERROR if the size of at least one buffer is too small to hold the
+   entire value of the corresponding parameter.
+*/
 
 
 /* provide 64-bit offset functions if _LARGEFILE64_SOURCE defined, and/or

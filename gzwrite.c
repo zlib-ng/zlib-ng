@@ -26,6 +26,7 @@ static int gz_init(gz_state *state) {
         gz_error(state, Z_MEM_ERROR, "out of memory");
         return -1;
     }
+    memset(state->in, 0, state->want << 1);
 
     /* only need output buffer and deflate state if compressing */
     if (!state->direct) {

@@ -406,92 +406,88 @@ if(MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
+# Check whether compiler supports SSE2 instrinics
+if(WITH_NATIVE_INSTRUCTIONS)
+    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
 else()
-    #
-    # Not MSVC, so we need to check if we have the MS-style SSE etc. intrinsics
-    #
-    if(WITH_NATIVE_INSTRUCTIONS)
-        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-    else()
-        set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
-    endif()
-    check_c_source_compile_or_run(
-        "#include <immintrin.h>
-        int main(void)
-        {
-            __m128i zero = _mm_setzero_si128();
-            (void)zero;
-            return 0;
-        }"
-        HAVE_SSE2_INTRIN
-    )
-    if(WITH_NATIVE_INSTRUCTIONS)
-        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-    else()
-        set(CMAKE_REQUIRED_FLAGS "${SSSE3FLAG}")
-    endif()
+    set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
+endif()
+check_c_source_compile_or_run(
+    "#include <immintrin.h>
+    int main(void)
+    {
+        __m128i zero = _mm_setzero_si128();
+        (void)zero;
+        return 0;
+    }"
+    HAVE_SSE2_INTRIN
+)
+set(CMAKE_REQUIRED_FLAGS)
+
+# Check whether compiler supports SSE4 CRC inline asm
+if(WITH_NATIVE_INSTRUCTIONS)
+    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+else()
+    set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
+endif()
+check_c_source_compile_or_run(
+    "int main(void)
+    {
+        unsigned val = 0, h = 0;
+    #if defined(_MSC_VER)
+        { __asm mov edx, h __asm mov eax, val __asm crc32 eax, edx __asm mov val, eax }
+    #else
+        __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
+    #endif
+        return (int) h;
+    }"
+    HAVE_SSE42CRC_INLINE_ASM
+)
+# Check whether compiler supports SSE4 CRC instrinics
+check_c_source_compile_or_run(
+    "#include <immintrin.h>
+    int main(void)
+    {
+        unsigned crc = 0;
+        char c = 'c';
+    #if defined(_MSC_VER)
+        crc = _mm_crc32_u32(crc, c);
+    #else
+        crc = __builtin_ia32_crc32qi(crc, c);
+    #endif
+        (void)crc;
+        return 0;
+    }"
+    HAVE_SSE42CRC_INTRIN
+)
+set(CMAKE_REQUIRED_FLAGS)
+
+# Check whether compiler supports PCLMULQDQ intrinics
+if(WITH_NATIVE_INSTRUCTIONS)
+    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+else()
+    set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
+endif()
+if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
+    # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void)
         {
             __m128i a = _mm_setzero_si128();
             __m128i b = _mm_setzero_si128();
-            __m128i c = _mm_shuffle_epi8(a, b);
+            __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
             (void)c;
-            return (int) 0;
-        }"
-        HAVE_SSSE3_INTRIN
-    )
-    if(WITH_NATIVE_INSTRUCTIONS)
-        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-    else()
-        # Use the generic SSE4 enabler option to check for the SSE4.2 instruction we require:
-        set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
-    endif()
-    check_c_source_compile_or_run(
-        "int main(void)
-        {
-            unsigned val = 0, h = 0;
-            __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
-            return (int) h;
-        }"
-        HAVE_SSE42_INTRIN
-    )
-    check_c_source_compile_or_run(
-        "int main(void)
-        {
-            unsigned crc = 0;
-            char c = 'c';
-            crc = __builtin_ia32_crc32qi(crc, c);
-            (void)crc;
             return 0;
         }"
-        HAVE_SSE42CRC_INTRIN
+        HAVE_PCLMULQDQ_INTRIN
     )
-    if(WITH_NATIVE_INSTRUCTIONS)
-        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-    else()
-        set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
-    endif()
-    if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
-        # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
-        check_c_source_compile_or_run(
-            "#include <immintrin.h>
-            int main(void)
-            {
-                __m128i a = _mm_setzero_si128();
-                __m128i b = _mm_setzero_si128();
-                __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-                (void)c;
-                return 0;
-            }"
-            HAVE_PCLMULQDQ_INTRIN
-        )
-    else()
-        set(HAVE_PCLMULQDQ_INTRIN NO)
-    endif()
-    set(CMAKE_REQUIRED_FLAGS)
+else()
+    set(HAVE_PCLMULQDQ_INTRIN NO)
 endif()
+set(CMAKE_REQUIRED_FLAGS)
 
 # Check whether -mfpu=neon is available
 set(CMAKE_REQUIRED_FLAGS "-mfpu=neon")
@@ -653,7 +649,7 @@ if(WITH_OPTIM)
                 add_feature_info(SSSE3 1 "Support the SSSE3 instruction set, using \"${SSSE3FLAG}\"")
             endif()
         endif()
-        if(HAVE_SSE42_INTRIN)
+        if(HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN)
             add_definitions(-DX86_SSE4_2_CRC_HASH)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
             check_c_source_compiles(
@@ -925,6 +921,12 @@ if (ZLIB_ENABLE_TESTS)
     add_executable(minigzip test/minigzip.c)
     configure_test_executable(minigzip)
 
+    add_executable(switchlevels test/switchlevels.c)
+    configure_test_executable(switchlevels)
+
+    add_executable(makefixed tools/makefixed.c inftrees.c)
+    configure_test_executable(makefixed)
+
     if(HAVE_OFF64_T)
         add_executable(example64 test/example.c)
         configure_test_executable(example64)
@@ -962,6 +964,20 @@ if (ZLIB_ENABLE_TESTS)
         target_link_libraries(CVE-2003-0107 zlib)
         add_test(NAME CVE-2003-0107 COMMAND CVE-2003-0107)
     endif()
+
+    set(GH_361_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -4)
+    add_test(NAME GH-361
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${GH_361_COMMAND}"
+        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-361/test.txt
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+    set(GH_364_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels> 1 5 9 3)
+    add_test(NAME GH-364
+            COMMAND ${CMAKE_COMMAND}
+            "-DCOMMAND=${GH_364_COMMAND}"
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-364/test.bin
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
