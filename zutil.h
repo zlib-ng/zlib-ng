@@ -175,7 +175,7 @@ void ZLIB_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #  define ZSWAP64(q) _byteswap_uint64(q)
 
 #elif defined(__Clang__) || (defined(__GNUC__) && \
-        (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)))
+        (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)))
 #  define ZSWAP16(q) __builtin_bswap16(q)
 #  define ZSWAP32(q) __builtin_bswap32(q)
 #  define ZSWAP64(q) __builtin_bswap64(q)
