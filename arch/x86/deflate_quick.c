@@ -17,13 +17,13 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "zbuild.h"
+#include "../../zbuild.h"
 #include <immintrin.h>
 #ifdef _MSC_VER
 #  include <nmmintrin.h>
 #endif
-#include "deflate.h"
-#include "memcopy.h"
+#include "../../deflate.h"
+#include "../../memcopy.h"
 
 #ifdef ZLIB_DEBUG
 #include <ctype.h>

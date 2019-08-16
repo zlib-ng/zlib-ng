@@ -13,9 +13,9 @@
         $ make
 */
 
-#include "zbuild.h"
-#include "zutil.h"
-#include "deflate.h"
+#include "../../zbuild.h"
+#include "../../zutil.h"
+#include "../../deflate.h"
 #include "dfltcc_deflate.h"
 #include "dfltcc_detail.h"
 
