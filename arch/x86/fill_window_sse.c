@@ -10,11 +10,11 @@
  */
 #ifdef X86_SSE2
 
-#include "zbuild.h"
+#include "../../zbuild.h"
 #include <immintrin.h>
-#include "deflate.h"
-#include "deflate_p.h"
-#include "functable.h"
+#include "../../deflate.h"
+#include "../../deflate_p.h"
+#include "../../functable.h"
 
 extern int read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 

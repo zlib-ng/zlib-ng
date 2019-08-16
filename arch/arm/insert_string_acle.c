@@ -7,8 +7,8 @@
 
 #if defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
 #include <arm_acle.h>
-#include "zbuild.h"
-#include "deflate.h"
+#include "../../zbuild.h"
+#include "../../deflate.h"
 
 /* ===========================================================================
  * Insert string str in the dictionary and set match_head to the previous head
