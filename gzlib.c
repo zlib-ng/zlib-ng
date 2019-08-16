@@ -29,7 +29,7 @@ static void gz_reset(gz_state *state) {
         state->how = LOOK;          /* look for gzip header */
     }
     state->seek = 0;                /* no seek request pending */
-    gz_error(state, Z_OK, NULL);    /* clear error */
+    zng_gz_error(state, Z_OK, NULL);    /* clear error */
     state->x.pos = 0;               /* no uncompressed data yet */
     state->strm.avail_in = 0;       /* no input data yet */
 }
@@ -319,7 +319,7 @@ z_off64_t ZEXPORT PREFIX(gzseek64)(gzFile file, z_off64_t offset, int whence) {
         state->eof = 0;
         state->past = 0;
         state->seek = 0;
-        gz_error(state, Z_OK, NULL);
+        zng_gz_error(state, Z_OK, NULL);
         state->strm.avail_in = 0;
         state->x.pos += offset;
         return state->x.pos;
@@ -461,7 +461,7 @@ void ZEXPORT PREFIX(gzclearerr)(gzFile file) {
         state->eof = 0;
         state->past = 0;
     }
-    gz_error(state, Z_OK, NULL);
+    zng_gz_error(state, Z_OK, NULL);
 }
 
 /* Create an error message in allocated memory and set state->err and
@@ -470,7 +470,7 @@ void ZEXPORT PREFIX(gzclearerr)(gzFile file) {
    memory).  Simply save the error message as a static string.  If there is an
    allocation failure constructing the error message, then convert the error to
    out of memory. */
-void ZLIB_INTERNAL gz_error(gz_state *state, int err, const char *msg) {
+void ZLIB_INTERNAL zng_gz_error(gz_state *state, int err, const char *msg) {
     /* free previously allocated message and clear */
     if (state->msg != NULL) {
         if (state->err != Z_MEM_ERROR)
@@ -504,7 +504,7 @@ void ZLIB_INTERNAL gz_error(gz_state *state, int err, const char *msg) {
    available) -- we need to do this to cover cases where 2's complement not
    used, since C standard permits 1's complement and sign-bit representations,
    otherwise we could just use ((unsigned)-1) >> 1 */
-unsigned ZLIB_INTERNAL gz_intmax() {
+unsigned ZLIB_INTERNAL zng_gz_intmax() {
     unsigned p, q;
 
     p = 1;

@@ -23,7 +23,7 @@ static int gz_init(gz_state *state) {
     /* allocate input buffer (double size for gzprintf) */
     state->in = (unsigned char *)malloc(state->want << 1);
     if (state->in == NULL) {
-        gz_error(state, Z_MEM_ERROR, "out of memory");
+        zng_gz_error(state, Z_MEM_ERROR, "out of memory");
         return -1;
     }
     memset(state->in, 0, state->want << 1);
@@ -34,7 +34,7 @@ static int gz_init(gz_state *state) {
         state->out = (unsigned char *)malloc(state->want);
         if (state->out == NULL) {
             free(state->in);
-            gz_error(state, Z_MEM_ERROR, "out of memory");
+            zng_gz_error(state, Z_MEM_ERROR, "out of memory");
             return -1;
         }
 
@@ -46,7 +46,7 @@ static int gz_init(gz_state *state) {
         if (ret != Z_OK) {
             free(state->out);
             free(state->in);
-            gz_error(state, Z_MEM_ERROR, "out of memory");
+            zng_gz_error(state, Z_MEM_ERROR, "out of memory");
             return -1;
         }
         strm->next_in = NULL;
@@ -84,7 +84,7 @@ static int gz_comp(gz_state *state, int flush) {
     if (state->direct) {
         got = write(state->fd, strm->next_in, strm->avail_in);
         if (got < 0 || (unsigned)got != strm->avail_in) {
-            gz_error(state, Z_ERRNO, zstrerror());
+            zng_gz_error(state, Z_ERRNO, zstrerror());
             return -1;
         }
         strm->avail_in = 0;
@@ -99,7 +99,7 @@ static int gz_comp(gz_state *state, int flush) {
         if (strm->avail_out == 0 || (flush != Z_NO_FLUSH && (flush != Z_FINISH || ret == Z_STREAM_END))) {
             have = (unsigned)(strm->next_out - state->x.next);
             if (have && ((got = write(state->fd, state->x.next, (unsigned long)have)) < 0 || (unsigned)got != have)) {
-                gz_error(state, Z_ERRNO, zstrerror());
+                zng_gz_error(state, Z_ERRNO, zstrerror());
                 return -1;
             }
             if (strm->avail_out == 0) {
@@ -114,7 +114,7 @@ static int gz_comp(gz_state *state, int flush) {
         have = strm->avail_out;
         ret = PREFIX(deflate)(strm, flush);
         if (ret == Z_STREAM_ERROR) {
-            gz_error(state, Z_STREAM_ERROR, "internal error: deflate stream corrupt");
+            zng_gz_error(state, Z_STREAM_ERROR, "internal error: deflate stream corrupt");
             return -1;
         }
         have -= strm->avail_out;
@@ -237,7 +237,7 @@ int ZEXPORT PREFIX(gzwrite)(gzFile file, void const *buf, unsigned len) {
     /* since an int is returned, make sure len fits in one, otherwise return
        with an error (this avoids a flaw in the interface) */
     if ((int)len < 0) {
-        gz_error(state, Z_DATA_ERROR, "requested length does not fit in int");
+        zng_gz_error(state, Z_DATA_ERROR, "requested length does not fit in int");
         return 0;
     }
 
@@ -266,7 +266,7 @@ size_t ZEXPORT PREFIX(gzfwrite)(void const *buf, size_t size, size_t nitems, gzF
     /* compute bytes to read -- error on overflow */
     len = nitems * size;
     if (size && len / size != nitems) {
-        gz_error(state, Z_STREAM_ERROR, "request does not fit in a size_t");
+        zng_gz_error(state, Z_STREAM_ERROR, "request does not fit in a size_t");
         return 0;
     }
 
@@ -336,7 +336,7 @@ int ZEXPORT PREFIX(gzputs)(gzFile file, const char *s) {
     /* write string */
     len = strlen(s);
     if ((int)len < 0 || (unsigned)len != len) {
-        gz_error(state, Z_STREAM_ERROR, "string length does not fit in int");
+        zng_gz_error(state, Z_STREAM_ERROR, "string length does not fit in int");
         return -1;
     }
     put = gz_write(state, s, len);
@@ -508,7 +508,7 @@ int ZEXPORT PREFIX(gzclose_w)(gzFile file) {
         }
         free(state->in);
     }
-    gz_error(state, Z_OK, NULL);
+    zng_gz_error(state, Z_OK, NULL);
     free(state->path);
     if (close(state->fd) == -1)
         ret = Z_ERRNO;

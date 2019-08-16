@@ -151,7 +151,7 @@ typedef struct {
 typedef gz_state *gz_statep;
 
 /* shared functions */
-void ZLIB_INTERNAL gz_error(gz_state *, int, const char *);
+void ZLIB_INTERNAL zng_gz_error(gz_state *, int, const char *);
 
 /* GT_OFF(x), where x is an unsigned value, is true if x > maximum z_off64_t
    value -- needed when comparing unsigned to z_off64_t, which is signed
@@ -159,8 +159,8 @@ void ZLIB_INTERNAL gz_error(gz_state *, int, const char *);
 #ifdef INT_MAX
 #  define GT_OFF(x) (sizeof(int) == sizeof(z_off64_t) && (x) > INT_MAX)
 #else
-unsigned ZLIB_INTERNAL gz_intmax(void);
-#  define GT_OFF(x) (sizeof(int) == sizeof(z_off64_t) && (x) > gz_intmax())
+unsigned ZLIB_INTERNAL zng_gz_intmax(void);
+#  define GT_OFF(x) (sizeof(int) == sizeof(z_off64_t) && (x) > zng_gz_intmax())
 #endif
 
 #endif /* GZGUTS_H_ */
