@@ -18,7 +18,7 @@ static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
  #endif
 }
 
- #if (defined(__GNUC__) || defined(__clang__)) && (defined(__ARM_NEON__) || defined(__ARM_NEON))
+ #if defined(__ARM_NEON__) || defined(__ARM_NEON)
   #include <arm_neon.h>
 typedef uint8x16_t inffast_chunk_t;
   #define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
@@ -199,7 +199,7 @@ static inline unsigned char *chunkmemset_3(unsigned char *out, unsigned char *fr
 }
   #endif
 
-  #if defined(__aarch64__)
+  #if defined(__aarch64__) || defined(_M_ARM64)
 static inline unsigned char *chunkmemset_6(unsigned char *out, unsigned char *from, unsigned dist, unsigned len) {
     uint16x8x3_t chunks;
     unsigned sz = sizeof(chunks);
@@ -265,7 +265,7 @@ static inline unsigned char *chunkmemset(unsigned char *out, unsigned dist, unsi
         chunk = chunkmemset_4(from);
         break;
     }
-  #if defined(__aarch64__)
+  #if defined(__aarch64__) || defined(_M_ARM64)
     case 6:
         return chunkmemset_6(out, from, dist, len);
   #endif

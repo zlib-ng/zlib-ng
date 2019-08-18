@@ -109,7 +109,7 @@ uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len) {
 
     for (i = 0; i < len; i += n) {
         if ((i + n) > len)
-            n = len - i;
+            n = (int)(len - i);
 
         if (n < 16)
             break;
