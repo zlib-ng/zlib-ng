@@ -607,7 +607,7 @@ if(WITH_OPTIM)
             add_definitions(-DX86_PCLMULQDQ_CRC)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/crc_folding.c)
             add_intrinsics_option("${PCLMULFLAG}")
-            if(HAVE_SSE42CRC_INLINE_ASM)
+            if(HAVE_SSE42_INTRIN)
                 add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG}\"")
             else()
                 add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG} ${SSE4FLAG}\"")
@@ -747,14 +747,29 @@ if(MINGW OR MSYS)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif()
 
-add_library(zlib ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-target_include_directories(zlib PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+if(NOT DEFINED BUILD_SHARED_LIBS)
+    add_library(zlib SHARED  ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS}
+        ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+    add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS}
+        ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 
-if(WITH_GZFILEOP)
-    target_sources(zlib PRIVATE ${ZLIB_GZFILE_SRCS})
+    set(ZLIB_INSTALL_LIBRARIES zlib zlibstatic)
+else()
+    add_library(zlib ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS}
+        ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+
+    set(ZLIB_INSTALL_LIBRARIES zlib)
 endif()
 
-if(BUILD_SHARED_LIBS)
+foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
+    target_include_directories(${ZLIB_INSTALL_LIBRARY} PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+    if(WITH_GZFILEOP)
+        target_sources(${ZLIB_INSTALL_LIBRARY} PRIVATE ${ZLIB_GZFILE_SRCS})
+    endif()
+endforeach()
+
+if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
     set_target_properties(zlib PROPERTIES SOVERSION 1)
 
@@ -777,10 +792,10 @@ if(BUILD_SHARED_LIBS)
 
     if(UNIX)
         # On unix-like platforms the library is almost always called libz
-        set_target_properties(zlib PROPERTIES OUTPUT_NAME z${SUFFIX})
+        set_target_properties(${ZLIB_INSTALL_LIBRARIES} PROPERTIES OUTPUT_NAME z${SUFFIX})
         if(NOT APPLE)
-            set_target_properties(zlib PROPERTIES
-                LINK_FLAGS "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/${LIBNAME2}.map\"")
+            set_target_properties(zlib PROPERTIES LINK_FLAGS
+                "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/${LIBNAME2}.map\"")
         endif()
     elseif(MSYS)
         # Suppress version number from shared library name
@@ -792,14 +807,16 @@ if(BUILD_SHARED_LIBS)
 endif()
 
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
-    install(TARGETS zlib
+    install(TARGETS ${ZLIB_INSTALL_LIBRARIES}
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
         ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )
+        LIBRARY DESTINATION "${INSTALL_LIB_DIR}")
 endif()
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
-    install(FILES zlib${SUFFIX}.h DESTINATION "${INSTALL_INC_DIR}" RENAME zlib${SUFFIX}.h)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h DESTINATION "${INSTALL_INC_DIR}" RENAME zconf${SUFFIX}.h)
+    install(FILES zlib${SUFFIX}.h
+        DESTINATION "${INSTALL_INC_DIR}" RENAME zlib${SUFFIX}.h)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h
+        DESTINATION "${INSTALL_INC_DIR}" RENAME zconf${SUFFIX}.h)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(FILES zlib.3 DESTINATION "${INSTALL_MAN_DIR}/man3" RENAME zlib${SUFFIX}.3)
@@ -817,6 +834,8 @@ if (ZLIB_ENABLE_TESTS)
     enable_testing()
     macro(configure_test_executable target)
         target_link_libraries(${target} zlib)
+        target_include_directories(${target} PUBLIC
+            ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
         if(NOT WITH_GZFILEOP)
             target_compile_definitions(${target} PUBLIC -DWITH_GZFILEOP)
             target_sources(${target} PRIVATE ${ZLIB_GZFILE_SRCS})
@@ -833,8 +852,11 @@ if (ZLIB_ENABLE_TESTS)
     add_executable(switchlevels test/switchlevels.c)
     configure_test_executable(switchlevels)
 
-    add_executable(makefixed tools/makefixed.c inftrees.c)
+    add_executable(makefixed tools/makefixed.c)
     configure_test_executable(makefixed)
+    if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
+        target_sources(makefixed PRIVATE inftrees.c)
+    endif()
 
     if(HAVE_OFF64_T)
         add_executable(example64 test/example.c)
