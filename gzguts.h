@@ -14,9 +14,9 @@
 #  endif
 #endif
 
-#if defined(HAVE_ATTRIBUTE_INTERNAL)
+#if defined(HAVE_VISIBILITY_INTERNAL)
 #  define ZLIB_INTERNAL __attribute__((visibility ("internal")))
-#elif defined(HAVE_ATTRIBUTE_HIDDEN)
+#elif defined(HAVE_VISIBILITY_HIDDEN)
 #  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
 #else
 #  define ZLIB_INTERNAL

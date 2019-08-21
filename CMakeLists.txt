@@ -326,7 +326,7 @@ check_c_source_compiles(
     }"
     HAVE_ATTRIBUTE_VISIBILITY_HIDDEN FAIL_REGEX "not supported")
 if(HAVE_ATTRIBUTE_VISIBILITY_HIDDEN)
-    add_definitions(-DHAVE_ATTRIBUTE_HIDDEN)
+    add_definitions(-DHAVE_VISIBILITY_HIDDEN)
 endif()
 
 #
@@ -341,7 +341,7 @@ check_c_source_compiles(
     }"
     HAVE_ATTRIBUTE_VISIBILITY_INTERNAL FAIL_REGEX "not supported")
 if(HAVE_ATTRIBUTE_VISIBILITY_INTERNAL)
-    add_definitions(-DHAVE_ATTRIBUTE_INTERNAL)
+    add_definitions(-DHAVE_VISIBILITY_INTERNAL)
 endif()
 
 #

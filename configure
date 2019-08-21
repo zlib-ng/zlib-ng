@@ -822,8 +822,8 @@ int ZLIB_INTERNAL foo;
 int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then
-    CFLAGS="$CFLAGS -DHAVE_ATTRIBUTE_HIDDEN"
-    SFLAGS="$SFLAGS -DHAVE_ATTRIBUTE_HIDDEN"
+    CFLAGS="$CFLAGS -DHAVE_VISIBILITY_HIDDEN"
+    SFLAGS="$SFLAGS -DHAVE_VISIBILITY_HIDDEN"
     echo >> configure.log
     echo "Checking for attribute(visibility(hidden)) support... Yes." | tee -a configure.log
   else
@@ -841,8 +841,8 @@ int ZLIB_INTERNAL foo;
 int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then
-    CFLAGS="$CFLAGS -DHAVE_ATTRIBUTE_INTERNAL"
-    SFLAGS="$SFLAGS -DHAVE_ATTRIBUTE_INTERNAL"
+    CFLAGS="$CFLAGS -DHAVE_VISIBILITY_INTERNAL"
+    SFLAGS="$SFLAGS -DHAVE_VISIBILITY_INTERNAL"
     echo >> configure.log
     echo "Checking for attribute(visibility(internal)) support... Yes." | tee -a configure.log
   else
