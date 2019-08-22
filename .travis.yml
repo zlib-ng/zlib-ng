@@ -15,14 +15,12 @@ matrix:
     # Windows tests
     #   msvc/cmake
     - os: windows
-      compiler: cl
       env:
         - GENERATOR="cmake . "
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
     - os: windows
-      compiler: cl
       env:
         - GENERATOR="cmake ..\\zlib-ng -DZLIB_COMPAT=ON"
         - MAKER="cmake --build . --config Release"
