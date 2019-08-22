@@ -747,27 +747,22 @@ if(MINGW OR MSYS)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif()
 
-if(NOT DEFINED BUILD_SHARED_LIBS)
-    add_library(zlib SHARED  ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS}
-        ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-    add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS}
-        ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-
-    set(ZLIB_INSTALL_LIBRARIES zlib zlibstatic)
-else()
-    add_library(zlib ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS}
-        ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-
-    set(ZLIB_INSTALL_LIBRARIES zlib)
+set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_DLL_SRCS} 
+    ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+if(WITH_GZFILEOP)
+    list(APPEND ZLIB_ALL_SRCS ${ZLIB_GZFILE_SRCS})
 endif()
 
-foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
-    target_include_directories(${ZLIB_INSTALL_LIBRARY} PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-    if(WITH_GZFILEOP)
-        target_sources(${ZLIB_INSTALL_LIBRARY} PRIVATE ${ZLIB_GZFILE_SRCS})
-    endif()
-endforeach()
+if(NOT DEFINED BUILD_SHARED_LIBS)
+    add_library(zlib SHARED ${ZLIB_ALL_SRCS})
+    add_library(zlibstatic STATIC ${ZLIB_ALL_SRCS})
+
+    target_include_directories(zlibstatic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+else()
+    add_library(zlib ${ZLIB_ALL_SRCS})
+endif()
+
+target_include_directories(zlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
