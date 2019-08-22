@@ -757,12 +757,16 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
     add_library(zlib SHARED ${ZLIB_ALL_SRCS})
     add_library(zlibstatic STATIC ${ZLIB_ALL_SRCS})
 
-    target_include_directories(zlibstatic PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    set(ZLIB_INSTALL_LIBRARIES zlib zlibstatic)
 else()
     add_library(zlib ${ZLIB_ALL_SRCS})
+
+    set(ZLIB_INSTALL_LIBRARIES zlib)
 endif()
 
-target_include_directories(zlib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+foreach(ZLIB_INSTALL_LIBRARY in ZLIB_INSTALL_LIBRARIES)
+    target_include_directories(${ZLIB_INSTALL_LIBRARY} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+endif()
 
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
