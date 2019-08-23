@@ -23,12 +23,18 @@ extern void fill_window_sse(deflate_state *s);
 extern void fill_window_arm(deflate_state *s);
 #endif
 
+/* slide_hash */
+#ifdef X86_SSE2
+void slide_hash_sse2(deflate_state *s);
+#endif
+
 /* adler32 */
 extern uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32)
 extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
 
+/* CRC32 */
 ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
 
 #ifdef DYNAMIC_CRC_TABLE
@@ -46,14 +52,22 @@ extern uint32_t crc32_little(uint32_t, const unsigned char *, uint64_t);
 extern uint32_t crc32_big(uint32_t, const unsigned char *, uint64_t);
 #endif
 
+
 /* stub definitions */
 ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count);
 ZLIB_INTERNAL void fill_window_stub(deflate_state *s);
 ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len);
 ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len);
+ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
 
 /* functable init */
-ZLIB_INTERNAL __thread struct functable_s functable = {fill_window_stub,insert_string_stub,adler32_stub,crc32_stub};
+ZLIB_INTERNAL __thread struct functable_s functable = {
+                                            fill_window_stub,
+                                            insert_string_stub,
+                                            adler32_stub,
+                                            crc32_stub,
+                                            slide_hash_stub
+                                          };
 
 
 /* stub functions */
@@ -86,6 +100,20 @@ ZLIB_INTERNAL void fill_window_stub(deflate_state *s) {
     #endif
 
     functable.fill_window(s);
+}
+
+ZLIB_INTERNAL void slide_hash_stub(deflate_state *s) {
+    // Initialize default
+    functable.slide_hash=&slide_hash_c;
+
+    #ifdef X86_SSE2
+    # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+    if (x86_cpu_has_sse2)
+    # endif
+        functable.slide_hash=&slide_hash_sse2;
+    #endif
+
+    functable.slide_hash(s);
 }
 
 ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len) {

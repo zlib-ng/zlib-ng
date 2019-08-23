@@ -105,7 +105,6 @@ typedef block_state (*compress_func) (deflate_state *s, int flush);
 /* Compression function. Returns the block state after the call. */
 
 static int deflateStateCheck      (PREFIX3(stream) *strm);
-static void slide_hash            (deflate_state *s);
 static block_state deflate_stored (deflate_state *s, int flush);
 ZLIB_INTERNAL block_state deflate_fast         (deflate_state *s, int flush);
 ZLIB_INTERNAL block_state deflate_quick        (deflate_state *s, int flush);
@@ -196,7 +195,7 @@ static const config configuration_table[10] = {
  * bit values at the expense of memory usage). We slide even when level == 0 to
  * keep the hash table consistent if we switch back to level > 0 later.
  */
-static void slide_hash(deflate_state *s) {
+ZLIB_INTERNAL void slide_hash_c(deflate_state *s) {
     unsigned n;
     Pos *p;
     unsigned int wsize = s->w_size;
@@ -639,7 +638,7 @@ int ZEXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int level, int strategy
     if (s->level != level) {
         if (s->level == 0 && s->matches != 0) {
             if (s->matches == 1) {
-                slide_hash(s);
+                functable.slide_hash(s);
             } else {
                 CLEAR_HASH(s);
             }
@@ -1297,7 +1296,7 @@ void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
             s->block_start -= (long) wsize;
             if (s->insert > s->strstart)
                 s->insert = s->strstart;
-            slide_hash(s);
+            functable.slide_hash(s);
             more += wsize;
         }
         if (s->strm->avail_in == 0)
