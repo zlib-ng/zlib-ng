@@ -238,7 +238,6 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         if (s->lookahead < MIN_LOOKAHEAD) {
             fill_window_sse(s);
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
-                static_emit_end_block(s, 0);
                 return need_more;
             }
             if (s->lookahead == 0)
