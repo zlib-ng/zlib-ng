@@ -17,12 +17,10 @@
 #include "../../functable.h"
 
 extern int read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
+void slide_hash_sse2(deflate_state *s);
 
 ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
-    const __m128i xmm_wsize = _mm_set1_epi16(s->w_size);
-
     register unsigned n;
-    register Pos *p;
     unsigned more;    /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;
 
@@ -59,33 +57,7 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
                later. (Using level 0 permanently is not an optimal usage of
                zlib, so we don't care about this pathological case.)
              */
-            n = s->hash_size;
-            p = &s->head[n];
-            p -= 8;
-            do {
-                __m128i value, result;
-
-                value = _mm_loadu_si128((__m128i *)p);
-                result = _mm_subs_epu16(value, xmm_wsize);
-                _mm_storeu_si128((__m128i *)p, result);
-
-                p -= 8;
-                n -= 8;
-            } while (n > 0);
-
-            n = wsize;
-            p = &s->prev[n];
-            p -= 8;
-            do {
-                __m128i value, result;
-
-                value = _mm_loadu_si128((__m128i *)p);
-                result = _mm_subs_epu16(value, xmm_wsize);
-                _mm_storeu_si128((__m128i *)p, result);
-
-                p -= 8;
-                n -= 8;
-            } while (n > 0);
+            slide_hash_sse2(s);
             more += wsize;
         }
         if (s->strm->avail_in == 0) break;
