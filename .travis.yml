@@ -13,29 +13,19 @@ env:
 matrix:
   include:
     # Windows tests
-    #   clang/cmake
+    #   msvc/cmake
     - os: windows
-      compiler: clang
       env:
         - GENERATOR="cmake . "
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
     - os: windows
-      compiler: clang
       env:
         - GENERATOR="cmake ..\\zlib-ng -DZLIB_COMPAT=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
         - BUILDDIR=..\\build
-
-    #   gcc/cmake
-    - os: windows
-      compiler: gcc
-      env:
-        - GENERATOR="cmake ."
-        - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
 
 
     # Linux x86-64 tests
