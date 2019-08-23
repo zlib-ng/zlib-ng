@@ -326,7 +326,7 @@ check_c_source_compiles(
     }"
     HAVE_ATTRIBUTE_VISIBILITY_HIDDEN FAIL_REGEX "not supported")
 if(HAVE_ATTRIBUTE_VISIBILITY_HIDDEN)
-    add_definitions(-DHAVE_HIDDEN)
+    add_definitions(-DHAVE_VISIBILITY_HIDDEN)
 endif()
 
 #
@@ -341,7 +341,7 @@ check_c_source_compiles(
     }"
     HAVE_ATTRIBUTE_VISIBILITY_INTERNAL FAIL_REGEX "not supported")
 if(HAVE_ATTRIBUTE_VISIBILITY_INTERNAL)
-    add_definitions(-DHAVE_INTERNAL)
+    add_definitions(-DHAVE_VISIBILITY_INTERNAL)
 endif()
 
 #
@@ -579,17 +579,17 @@ if(WITH_OPTIM)
         add_definitions("-DX86_CPUID")
         set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/x86.c)
         if(HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN)
-            add_definitions(-DX86_SSE4_2_CRC_HASH)
+            add_definitions(-DX86_SSE42_CRC_HASH)
             set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/insert_string_sse.c)
-            add_feature_info(SSE4_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set, using \"${SSE4FLAG}\"")
+            add_feature_info(SSE42_CRC 1 "Support CRC hash generation using the SSE4.2 instruction set, using \"${SSE4FLAG}\"")
             add_intrinsics_option("${SSE4FLAG}")
             if(HAVE_SSE42CRC_INTRIN)
-                add_definitions(-DX86_SSE4_2_CRC_INTRIN)
+                add_definitions(-DX86_SSE42_CRC_INTRIN)
             endif()
             if(WITH_NEW_STRATEGIES)
                 add_definitions(-DX86_QUICK_STRATEGY)
                 set(ZLIB_ARCH_SRCS ${ZLIB_ARCH_SRCS} ${ARCHDIR}/deflate_quick.c)
-                add_feature_info(SSE4DEFLATE 1 "Support SSE4.2-accelerated quick compression")
+                add_feature_info(SSE42_DEFLATE_QUICK 1 "Support SSE4.2-accelerated quick compression")
             endif()
         endif()
         if(HAVE_SSE2_INTRIN)

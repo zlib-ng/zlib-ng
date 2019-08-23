@@ -10,7 +10,7 @@
 
 #include "functable.h"
 /* insert_string */
-#ifdef X86_SSE4_2_CRC_HASH
+#ifdef X86_SSE42_CRC_HASH
 extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
 #elif defined(ARM_ACLE_CRC_HASH)
 extern Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count);
@@ -61,7 +61,7 @@ ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsi
     // Initialize default
     functable.insert_string=&insert_string_c;
 
-    #ifdef X86_SSE4_2_CRC_HASH
+    #ifdef X86_SSE42_CRC_HASH
     if (x86_cpu_has_sse42)
         functable.insert_string=&insert_string_sse;
     #elif defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)

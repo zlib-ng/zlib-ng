@@ -16,7 +16,7 @@
  *    input characters and the first MIN_MATCH bytes of str are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
-#ifdef X86_SSE4_2_CRC_HASH
+#ifdef X86_SSE42_CRC_HASH
 ZLIB_INTERNAL Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count) {
     Pos ret = 0;
     unsigned int idx;
@@ -30,7 +30,7 @@ ZLIB_INTERNAL Pos insert_string_sse(deflate_state *const s, const Pos str, unsig
         if (s->level >= TRIGGER_LEVEL)
             val &= 0xFFFFFF;
 
-#if defined(X86_SSE4_2_CRC_INTRIN)
+#if defined(X86_SSE42_CRC_INTRIN)
 #  ifdef _MSC_VER
         h = _mm_crc32_u32(h, val);
 #  else
