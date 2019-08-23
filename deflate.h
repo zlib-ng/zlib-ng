@@ -330,6 +330,7 @@ static inline void put_short(deflate_state *s, uint16_t w) {
 
 
 void ZLIB_INTERNAL fill_window_c(deflate_state *s);
+void ZLIB_INTERNAL slide_hash_c(deflate_state *s);
 
         /* in trees.c */
 void ZLIB_INTERNAL zng_tr_init(deflate_state *s);

@@ -994,8 +994,8 @@ case "${ARCH}" in
             if test ${HAVE_SSE2_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE2"
                 SFLAGS="${SFLAGS} -DX86_SSE2"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_sse.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_sse.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_sse.o slide_sse.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_sse.lo slide_sse.lo"
 
                 if test $forcesse2 -eq 1; then
                     CFLAGS="${CFLAGS} -DX86_NOCHECK_SSE2"
@@ -1045,8 +1045,8 @@ case "${ARCH}" in
             CFLAGS="${CFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE42_CRC_HASH"
             SFLAGS="${SFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE42_CRC_HASH"
 
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o fill_window_sse.o insert_string_sse.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo fill_window_sse.lo insert_string_sse.lo"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o fill_window_sse.o insert_string_sse.o slide_sse.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo fill_window_sse.lo insert_string_sse.lo slide_sse.lo"
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
