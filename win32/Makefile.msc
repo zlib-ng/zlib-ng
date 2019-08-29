@@ -75,34 +75,46 @@ $(SHAREDLIB): zconf $(TOP)/win32/$(DEFFILE) $(OBJS) $(RESFILE)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;2
 
-example.exe: example.obj $(STATICLIB)
-	$(LD) $(LDFLAGS) example.obj $(STATICLIB)
+example.exe: example.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) example.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;1
 
-minigzip.exe: minigzip.obj $(STATICLIB)
-	$(LD) $(LDFLAGS) minigzip.obj $(STATICLIB)
+minigzip.exe: minigzip.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) minigzip.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;1
 
-example_d.exe: example.obj $(IMPLIB)
-	$(LD) $(LDFLAGS) -out:$@ example.obj $(IMPLIB)
+example_d.exe: example.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
+	$(LD) $(LDFLAGS) -out:$@ example.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;1
 
-minigzip_d.exe: minigzip.obj $(IMPLIB)
-	$(LD) $(LDFLAGS) -out:$@ minigzip.obj $(IMPLIB)
+minigzip_d.exe: minigzip.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
+	$(LD) $(LDFLAGS) -out:$@ minigzip.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;1
 
 {$(TOP)}.c.obj:
 	$(CC) -c $(WFLAGS) $(CFLAGS) $<
 
+gzclose2.obj: gzclose.c
+	$(CC) -c $(WFLAGS) $(CFLAGS) -DWITH_GZFILEOP -Fogzclose2.obj gzclose.c
+
+gzlib2.obj: gzlib.c
+	$(CC) -c $(WFLAGS) $(CFLAGS) -DWITH_GZFILEOP -Fogzlib2.obj gzlib.c
+
+gzread2.obj: gzread.c
+	$(CC) -c $(WFLAGS) $(CFLAGS) -DWITH_GZFILEOP -Fogzread2.obj gzread.c
+
+gzwrite2.obj: gzwrite.c
+	$(CC) -c $(WFLAGS) $(CFLAGS) -DWITH_GZFILEOP -Fogzwrite2.obj gzwrite.c
+
 {$(TOP)/arch/x86}.c.obj:
 	$(CC) -c -I$(TOP) $(WFLAGS) $(CFLAGS) $<
 
 {$(TOP)/test}.c.obj:
-	$(CC) -c -I$(TOP) $(WFLAGS) $(CFLAGS) $<
+	$(CC) -c -I$(TOP) $(WFLAGS) $(CFLAGS) -DWITH_GZFILEOP $<
 
 $(TOP)/zconf$(SUFFIX).h: zconf
 
