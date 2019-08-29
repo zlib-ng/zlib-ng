@@ -2,8 +2,8 @@
 # zlib is copyright (C) 1995-2006 Jean-loup Gailly and Mark Adler
 #
 # Usage:
-#   nmake -f win32/Makefile.arm                          (standard build)
-#   nmake -f win32/Makefile.arm LOC=-DFOO                (nonstandard build)
+#   nmake -f win32/Makefile.a64                          (standard build)
+#   nmake -f win32/Makefile.a64 LOC=-DFOO                (nonstandard build)
 
 # The toplevel directory of the source tree.
 #
@@ -23,18 +23,14 @@ AR = lib
 RC = rc
 CP = copy /y
 CFLAGS  = -nologo -MD -W3 -O2 -Oy- -Zi -Fd"zlib" $(LOC)
-WFLAGS  = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DUNALIGNED_OK -D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1
+WFLAGS  = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DUNALIGNED_OK -D_ARM64_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1
 LDFLAGS = -nologo -debug -incremental:no -opt:ref -manifest
 ARFLAGS = -nologo
-RCFLAGS = /dARM /r
+RCFLAGS = /dARM64 /r
 DEFFILE = zlib.def
 RCFILE = zlib1.rc
 RESFILE = zlib1.res
 WITH_GZFILEOP =
-WITH_ACLE =
-WITH_NEON =
-WITH_VFPV3 =
-NEON_ARCH = /arch:VFPv4
 SUFFIX =
 
 OBJS = adler32.obj armfeature.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_slow.obj \
@@ -53,18 +49,8 @@ RCFILE = zlib-ng1.rc
 RESFILE = zlib-ng1.res
 SUFFIX = -ng
 !endif
-!if "$(WITH_ACLE)" != ""
-WFLAGS = $(WFLAGS) -DARM_ACLE_CRC_HASH
-OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj
-!endif
-!if "$(WITH_VFPV3)" != ""
-NEON_ARCH = /arch:VFPv3
-!endif
-!if "$(WITH_NEON)" != ""
-CFLAGS = $(CFLAGS) $(NEON_ARCH)
-WFLAGS = $(WFLAGS) -D__ARM_NEON__=1 -DARM_NEON_ADLER32 -DARM_NOCHECK_NEON
-OBJS = $(OBJS) adler32_neon.obj
-!endif
+WFLAGS = $(WFLAGS) -DARM_ACLE_CRC_HASH -D__ARM_NEON__=1 -DARM_NEON_ADLER32 -DARM_NOCHECK_NEON
+OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj adler32_neon.obj
 
 # targets
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) \
@@ -80,7 +66,7 @@ $(IMPLIB): $(SHAREDLIB)
 
 $(SHAREDLIB): zconf $(TOP)/win32/$(DEFFILE) $(OBJS) $(RESFILE)
 	$(LD) $(LDFLAGS) -def:$(TOP)/win32/$(DEFFILE) -dll -implib:$(IMPLIB) \
-	  -out:$@ -base:0x5A4C0000 $(OBJS) $(RESFILE)
+	  -out:$@ -base:0x55A4C0000 $(OBJS) $(RESFILE)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;2
 
