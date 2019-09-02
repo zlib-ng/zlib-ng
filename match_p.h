@@ -34,7 +34,7 @@
 
 #if defined(_MSC_VER) && !defined(__clang__)
 # if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64) ||  defined(_M_ARM) || defined(_M_ARM64)
-#  include "arch/x86/ctzl.h"
+#  include "fallback_builtins.h"
 # endif
 #endif
 
