@@ -3,7 +3,7 @@
 
 #include <intrin.h>
 #ifdef X86_CPUID
-# include "x86.h"
+# include "arch/x86/x86.h"
 #endif
 
 #if defined(_MSC_VER) && !defined(__clang__)
