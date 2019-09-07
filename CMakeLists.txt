@@ -890,6 +890,18 @@ if (ZLIB_ENABLE_TESTS)
         add_test(NAME CVE-2003-0107 COMMAND CVE-2003-0107)
     endif()
 
+    set(MAKEFIXED_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makefixed>)
+    add_test(NAME makefixed
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${MAKEFIXED_COMMAND}"
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/inffixed._h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+    add_test(NAME makefixed-cmp
+        COMMAND ${CMAKE_COMMAND} -E compare_files
+            ${CMAKE_CURRENT_SOURCE_DIR}/inffixed.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/inffixed._h)
+
     set(GH_361_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -4)
     add_test(NAME GH-361
         COMMAND ${CMAKE_COMMAND}
