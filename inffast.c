@@ -307,7 +307,9 @@ void ZLIB_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) 
                        operations can write beyond `out+len` so long as they
                        stay within 258 bytes of `out`.
                     */
-                    if (dist >= len || dist >= INFFAST_CHUNKSIZE)
+                    if (len < sizeof(uint64_t))
+                        out = chunkcopysafe(out, out - dist, len, safe);
+                    else if (dist >= len || dist >= INFFAST_CHUNKSIZE)
                         out = chunkcopy(out, out - dist, len);
                     else
                         out = chunkmemset(out, dist, len);
