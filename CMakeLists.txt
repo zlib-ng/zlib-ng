@@ -832,7 +832,7 @@ if (ZLIB_ENABLE_TESTS)
     enable_testing()
     macro(configure_test_executable target)
         target_sources(${target} PRIVATE $<TARGET_OBJECTS:zlibobj>)
-        target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+        target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
         if(NOT WITH_GZFILEOP)
             target_compile_definitions(${target} PUBLIC -DWITH_GZFILEOP)
             target_sources(${target} PRIVATE ${ZLIB_GZFILE_SRCS})
@@ -849,6 +849,7 @@ if (ZLIB_ENABLE_TESTS)
     add_executable(switchlevels test/switchlevels.c)
     configure_test_executable(switchlevels)
 
+    # Makefixed does not need to be linked against zlib sources
     add_executable(makefixed tools/makefixed.c inftrees.c)
     target_include_directories(makefixed PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
