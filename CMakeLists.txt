@@ -757,19 +757,15 @@ target_include_directories(zlibobj PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(NOT DEFINED BUILD_SHARED_LIBS)
-    add_library(zlib SHARED)
-    add_library(zlibstatic STATIC)
+    add_library(zlib SHARED $<TARGET_OBJECTS:zlibobj>)
+    add_library(zlibstatic STATIC $<TARGET_OBJECTS:zlibobj>)
 
     set(ZLIB_INSTALL_LIBRARIES zlib zlibstatic)
 else()
-    add_library(zlib)
+    add_library(zlib $<TARGET_OBJECTS:zlibobj>)
 
     set(ZLIB_INSTALL_LIBRARIES zlib)
 endif()
-
-foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
-    target_link_libraries(${ZLIB_INSTALL_LIBRARY} zlibobj)
-endforeach()
 
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
@@ -835,7 +831,7 @@ option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 if (ZLIB_ENABLE_TESTS)
     enable_testing()
     macro(configure_test_executable target)
-        target_link_libraries(${target} zlibobj)
+        target_sources(${target} PRIVATE $<TARGET_OBJECTS:zlibobj>)
         target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
         if(NOT WITH_GZFILEOP)
             target_compile_definitions(${target} PUBLIC -DWITH_GZFILEOP)
