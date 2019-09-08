@@ -133,10 +133,6 @@ else()
     set(SUFFIX "-ng")
 endif()
 
-if(WITH_GZFILEOP)
-    add_definitions(-DWITH_GZFILEOP)
-endif()
-
 if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${CMAKE_C_COMPILER} MATCHES "icl")
     if(WITH_NATIVE_INSTRUCTIONS)
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
@@ -745,16 +741,21 @@ if(MINGW OR MSYS)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif()
 
-set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_DLL_SRCS}
+# Object library for zlib sources
+add_library(zlibobj OBJECT ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_DLL_SRCS}
     ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-if(WITH_GZFILEOP)
-    list(APPEND ZLIB_ALL_SRCS ${ZLIB_GZFILE_SRCS})
-endif()
-
-add_library(zlibobj OBJECT ${ZLIB_ALL_SRCS})
 set_property(TARGET zlibobj PROPERTY POSITION_INDEPENDENT_CODE ON)
 target_include_directories(zlibobj PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
+if(WITH_GZFILEOP OR ZLIB_ENABLE_TESTS)
+    # Object library for gz file sources
+    add_library(zlibgzobj OBJECT ${ZLIB_GZFILE_SRCS})
+    set_property(TARGET zlibgzobj PROPERTY POSITION_INDEPENDENT_CODE ON)
+    target_include_directories(zlibgzobj PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+    target_compile_definitions(zlibgzobj PUBLIC -DWITH_GZFILEOP)
+endif()
 
 if(NOT DEFINED BUILD_SHARED_LIBS)
     add_library(zlib SHARED $<TARGET_OBJECTS:zlibobj>)
@@ -766,6 +767,13 @@ else()
 
     set(ZLIB_INSTALL_LIBRARIES zlib)
 endif()
+
+foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
+    if(WITH_GZFILEOP)
+        target_compile_definitions(${ZLIB_INSTALL_LIBRARY} PUBLIC -DWITH_GZFILEOP)
+        target_sources(${ZLIB_INSTALL_LIBRARY} PRIVATE $<TARGET_OBJECTS:zlibgzobj>)
+    endif()
+endforeach()
 
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
@@ -831,12 +839,9 @@ option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 if (ZLIB_ENABLE_TESTS)
     enable_testing()
     macro(configure_test_executable target)
-        target_sources(${target} PRIVATE $<TARGET_OBJECTS:zlibobj>)
+        target_sources(${target} PRIVATE $<TARGET_OBJECTS:zlibobj> $<TARGET_OBJECTS:zlibgzobj>)
         target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-        if(NOT WITH_GZFILEOP)
-            target_compile_definitions(${target} PUBLIC -DWITH_GZFILEOP)
-            target_sources(${target} PRIVATE ${ZLIB_GZFILE_SRCS})
-        endif()
+        target_compile_definitions(${target} PUBLIC -DWITH_GZFILEOP)
     endmacro()
 
     add_executable(example test/example.c)
