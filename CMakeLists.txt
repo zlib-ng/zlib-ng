@@ -753,6 +753,8 @@ endif()
 
 add_library(zlibobj OBJECT ${ZLIB_ALL_SRCS})
 set_property(TARGET zlibobj PROPERTY POSITION_INDEPENDENT_CODE ON)
+target_include_directories(zlibobj PUBLIC
+        ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
 if(NOT DEFINED BUILD_SHARED_LIBS)
     add_library(zlib SHARED)
@@ -767,8 +769,6 @@ endif()
 
 foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
     target_link_libraries(${ZLIB_INSTALL_LIBRARY} zlibobj)
-    target_include_directories(${ZLIB_INSTALL_LIBRARY} PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach()
 
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
