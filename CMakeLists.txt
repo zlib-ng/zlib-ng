@@ -750,7 +750,10 @@ set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_DLL_SRCS}
 if(WITH_GZFILEOP)
     list(APPEND ZLIB_ALL_SRCS ${ZLIB_GZFILE_SRCS})
 endif()
+
 add_library(zlibobj OBJECT ${ZLIB_ALL_SRCS})
+set_property(TARGET zlibobj PROPERTY POSITION_INDEPENDENT_CODE ON)
+
 if(NOT DEFINED BUILD_SHARED_LIBS)
     add_library(zlib SHARED)
     add_library(zlibstatic STATIC)
