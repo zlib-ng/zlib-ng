@@ -745,25 +745,26 @@ if(MINGW OR MSYS)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif()
 
-set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_DLL_SRCS} 
+set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_DLL_SRCS}
     ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 if(WITH_GZFILEOP)
     list(APPEND ZLIB_ALL_SRCS ${ZLIB_GZFILE_SRCS})
 endif()
-
+add_library(zlibobj OBJECT ${ZLIB_ALL_SRCS})
 if(NOT DEFINED BUILD_SHARED_LIBS)
-    add_library(zlib SHARED ${ZLIB_ALL_SRCS})
-    add_library(zlibstatic STATIC ${ZLIB_ALL_SRCS})
+    add_library(zlib SHARED)
+    add_library(zlibstatic STATIC)
 
     set(ZLIB_INSTALL_LIBRARIES zlib zlibstatic)
 else()
-    add_library(zlib ${ZLIB_ALL_SRCS})
+    add_library(zlib)
 
     set(ZLIB_INSTALL_LIBRARIES zlib)
 endif()
 
 foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
-    target_include_directories(${ZLIB_INSTALL_LIBRARY} PUBLIC 
+    target_link_libraries(${ZLIB_INSTALL_LIBRARY} zlibobj)
+    target_include_directories(${ZLIB_INSTALL_LIBRARY} PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach()
 
@@ -831,7 +832,7 @@ option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 if (ZLIB_ENABLE_TESTS)
     enable_testing()
     macro(configure_test_executable target)
-        target_link_libraries(${target} zlib)
+        target_link_libraries(${target} zlibobj)
         target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
         if(NOT WITH_GZFILEOP)
             target_compile_definitions(${target} PUBLIC -DWITH_GZFILEOP)
