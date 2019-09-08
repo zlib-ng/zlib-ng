@@ -770,8 +770,8 @@ endif()
 
 foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
     if(WITH_GZFILEOP)
-        target_compile_definitions(${ZLIB_INSTALL_LIBRARY} PUBLIC -DWITH_GZFILEOP)
         target_sources(${ZLIB_INSTALL_LIBRARY} PRIVATE $<TARGET_OBJECTS:zlibgzobj>)
+        target_compile_definitions(${ZLIB_INSTALL_LIBRARY} PUBLIC -DWITH_GZFILEOP)
     endif()
 endforeach()
 
