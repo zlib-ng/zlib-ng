@@ -22,6 +22,12 @@ matrix:
 
     - os: windows
       env:
+        - GENERATOR="cmake . -A x64"
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
+
+    - os: windows
+      env:
         - GENERATOR="cmake ..\\zlib-ng -DZLIB_COMPAT=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
