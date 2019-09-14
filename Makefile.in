@@ -347,6 +347,7 @@ clean:
 	rm -f *.gcda *.gcno *.gcov
 	rm -f a.out a.exe
 	rm -f *.pc
+	rm -f *._h
 
 maintainer-clean: distclean
 distclean: clean
