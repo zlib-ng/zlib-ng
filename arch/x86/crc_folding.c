@@ -259,6 +259,8 @@ ZLIB_INTERNAL void crc_fold_copy(deflate_state *const s, unsigned char *dst, con
         len -= algn_diff;
 
         partial_fold(algn_diff, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, &xmm_crc_part);
+    } else {
+        xmm_crc_part = _mm_setzero_si128();
     }
 
     while ((len -= 64) >= 0) {
