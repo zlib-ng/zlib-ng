@@ -910,6 +910,18 @@ if (ZLIB_ENABLE_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/inffixed.h
             ${CMAKE_CURRENT_SOURCE_DIR}/inffixed._h)
 
+    set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees>)
+    add_test(NAME maketrees
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${MAKETREES_COMMAND}"
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/trees._h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+    add_test(NAME maketrees-cmp
+        COMMAND ${CMAKE_COMMAND} -E compare_files
+            ${CMAKE_CURRENT_SOURCE_DIR}/trees.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/trees._h)
+
     set(GH_361_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -4)
     add_test(NAME GH-361
         COMMAND ${CMAKE_COMMAND}
