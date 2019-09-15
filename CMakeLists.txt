@@ -857,6 +857,9 @@ if (ZLIB_ENABLE_TESTS)
     add_executable(makefixed tools/makefixed.c inftrees.c)
     target_include_directories(makefixed PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
+    add_executable(maketrees tools/maketrees.c trees.c)
+    target_include_directories(maketrees PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
     if(HAVE_OFF64_T)
         add_executable(example64 test/example.c)
         configure_test_executable(example64)
