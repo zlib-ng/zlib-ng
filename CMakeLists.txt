@@ -687,15 +687,22 @@ set(ZLIB_PUBLIC_HDRS
     zlib${SUFFIX}.h
 )
 set(ZLIB_PRIVATE_HDRS
+    adler32_p.h
     crc32.h
     deflate.h
+    deflate_p.h
     functable.h
     gzguts.h
     inffast.h
     inffixed.h
     inflate.h
+    inflate_p.h
     inftrees.h
+    match_p.h
+    memcopy.h
     trees.h
+    zbuild.h
+    zendian.h
     zutil.h
 )
 set(ZLIB_SRCS
