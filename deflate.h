@@ -437,7 +437,9 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
  * (16 - bit_valid) bits from value, leaving (width - (16-bit_valid))
  * unused bits in value.
  */
-#define send_bits(s, val, len, bit_buf, bits_valid) {\
+#define send_bits(s, t_val, t_len, bit_buf, bits_valid) {\
+    int val = t_val;\
+    int len = t_len;\
     send_debug_trace(s, val, len);\
     if (bits_valid > (int)Buf_size - len) {\
         bit_buf |= (uint16_t)val << bits_valid;\
