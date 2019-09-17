@@ -563,15 +563,24 @@ static void send_all_trees(deflate_state *s, int lcodes, int dcodes, int blcodes
 
     Assert(lcodes >= 257 && dcodes >= 1 && blcodes >= 4, "not enough codes");
     Assert(lcodes <= L_CODES && dcodes <= D_CODES && blcodes <= BL_CODES, "too many codes");
+
+    // Temp local variables
+    int filled = s->bi_valid;
+    uint16_t bit_buf = s->bi_buf;
+
     Tracev((stderr, "\nbl counts: "));
-    send_bits(s, lcodes-257, 5, s->bi_buf, s->bi_valid); /* not +255 as stated in appnote.txt */
-    send_bits(s, dcodes-1,   5, s->bi_buf, s->bi_valid);
-    send_bits(s, blcodes-4,  4, s->bi_buf, s->bi_valid); /* not -3 as stated in appnote.txt */
+    send_bits(s, lcodes-257, 5, bit_buf, filled); /* not +255 as stated in appnote.txt */
+    send_bits(s, dcodes-1,   5, bit_buf, filled);
+    send_bits(s, blcodes-4,  4, bit_buf, filled); /* not -3 as stated in appnote.txt */
     for (rank = 0; rank < blcodes; rank++) {
         Tracev((stderr, "\nbl code %2u ", bl_order[rank]));
-        send_bits(s, s->bl_tree[bl_order[rank]].Len, 3, s->bi_buf, s->bi_valid);
+        send_bits(s, s->bl_tree[bl_order[rank]].Len, 3, bit_buf, filled);
     }
     Tracev((stderr, "\nbl tree: sent %lu", s->bits_sent));
+
+    // Store back temp variables
+    s->bi_buf = bit_buf;
+    s->bi_valid = filled;
 
     send_tree(s, (ct_data *)s->dyn_ltree, lcodes-1); /* literal tree */
     Tracev((stderr, "\nlit tree: sent %lu", s->bits_sent));
