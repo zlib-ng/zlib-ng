@@ -925,6 +925,18 @@ if (ZLIB_ENABLE_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/trees.h
             ${CMAKE_CURRENT_SOURCE_DIR}/trees._h)
 
+    set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct>)
+    add_test(NAME makecrct
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${MAKECRCT_COMMAND}"
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32._h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+    add_test(NAME makecrct-cmp
+        COMMAND ${CMAKE_COMMAND} -E compare_files
+            ${CMAKE_CURRENT_SOURCE_DIR}/crc32.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/crc32._h)
+
     set(GH_361_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -4)
     add_test(NAME GH-361
         COMMAND ${CMAKE_COMMAND}

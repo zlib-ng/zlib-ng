@@ -16,26 +16,13 @@
 #include <inttypes.h>
 #include "deflate.h"
 #include "functable.h"
+#include "crc32_p.h"
 #include "crc32.h"
 
 
 /* Local functions for crc concatenation */
-#define GF2_DIM 32      /* dimension of GF(2) vectors (length of CRC) */
-static uint32_t gf2_matrix_times(const uint32_t *mat, uint32_t vec);
 static uint32_t crc32_combine_(uint32_t crc1, uint32_t crc2, z_off64_t len2);
 static void crc32_combine_gen_(uint32_t *op, z_off64_t len2);
-
-/* ========================================================================= */
-static uint32_t gf2_matrix_times(const uint32_t *mat, uint32_t vec) {
-    uint32_t sum = 0;
-    while (vec) {
-        if (vec & 1)
-            sum ^= *mat;
-        vec >>= 1;
-        mat++;
-    }
-    return sum;
-}
 
 /* =========================================================================
  * This function can be used by asm versions of crc32()
