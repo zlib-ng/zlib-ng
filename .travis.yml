@@ -1,6 +1,7 @@
 language: c
 cache: ccache
 dist: xenial
+bundler_args: --retry 5
 
 env:
   global:
@@ -369,4 +370,4 @@ script:
   - $TESTER
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash --connect-timeout 10 --retry 8 --retry-delay 10) -U "--connect-timeout 10 --retry 8 --retry-delay 10"
