@@ -633,7 +633,10 @@ void test_deflate_copy(unsigned char *compr, size_t comprLen)
     }
 
     err = PREFIX(deflateEnd)(&c_stream);
-    CHECK_ERR(err, "deflateEnd");
+    CHECK_ERR(err, "deflateEnd original");
+
+    err = PREFIX(deflateEnd)(&c_stream_copy);
+    CHECK_ERR(err, "deflateEnd copy");
 }
 
 /* ===========================================================================
