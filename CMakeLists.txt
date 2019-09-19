@@ -95,6 +95,7 @@ elseif(BASEARCH_S360_FOUND AND "${ARCH}" MATCHES "s390x")
     option(WITH_DFLTCC_DEFLATE "Use DEFLATE CONVERSION CALL instruction for compression on IBM Z" OFF)
     option(WITH_DFLTCC_INFLATE "Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z" OFF)
 endif()
+option(MAINTAINER "Build with extra warnings and tests enabled" OFF)
 
 add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Provide a zlib-compatible API")
 add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile-related functions")
@@ -107,6 +108,7 @@ if(BASEARCH_ARM_FOUND)
     add_feature_info(WITH_ACLE WITH_ACLE "Build with ACLE CRC")
     add_feature_info(WITH_NEON WITH_NEON "Build with NEON intrinsics")
 endif()
+add_feature_info(MAINTAINER MAINTAINER "Build with maintainer warnings and tests enabled")
 
 if (ZLIB_COMPAT)
     add_definitions(-DZLIB_COMPAT)
@@ -122,6 +124,14 @@ endif()
 
 if(WITH_GZFILEOP)
     add_definitions(-DWITH_GZFILEOP)
+endif()
+
+if(DEFINED ENV{CI})
+    message(STATUS "CI detected, enabling maintainer mode.")
+    set(MAINTAINER ON)
+endif()
+if(MAINTAINER)
+    set(WITH_FUZZERS ON)
 endif()
 
 if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${CMAKE_C_COMPILER} MATCHES "icl")
@@ -165,7 +175,12 @@ else()
     endif()
     # Enable warnings
     if(__GNUC__)
-        set(WARNFLAGS "-Wall -Wno-implicit-fallthrough")
+        set(WARNFLAGS "-Wall")
+        if(MAINTAINER AND __GNUC__)
+            set(WARNFLAGS "${WARNFLAGS} -Wextra -Wpedantic -Wstrict-overflow=3")
+        endif()
+        # Disable some warnings
+        set(WARNFLAGS "${WARNFLAGS} -Wno-implicit-fallthrough")
     endif()
     # Check support for ARM floating point
     if(BASEARCH_ARM_FOUND)
@@ -268,14 +283,28 @@ endif()
 
 if(WITH_SANITIZERS)
     set(_sanitize_flags
-        bool
         address
+        alignment
         array-bounds
+        bool
+        bounds
+        builtin
+        enum
         float-divide-by-zero
         function
         integer-divide-by-zero
+        leak
+        null
+        nonnull-attribute
+        object-size
+        pointer-compare             # Depends on 'address'
+        pointer-overflow
+        pointer-subtract            # Depends on 'address'
         return
+        returns-nonnull-attribute
         shift
+        shift-base
+        shift-exponent
         signed-integer-overflow
         undefined
         unsigned-integer-overflow
@@ -284,18 +313,22 @@ if(WITH_SANITIZERS)
        )
     set(SANITIZERS_FLAGS "")
     foreach(_flag ${_sanitize_flags})
-        set(CMAKE_REQUIRED_FLAGS "-fsanitize=${_flag}")
+        set(CMAKE_REQUIRED_FLAGS "-fsanitize=${SANITIZERS_FLAGS},${_flag}")
         check_c_source_compiles("int main() { return 0; }"
           HAS_SANITIZER_${_flag} FAIL_REGEX "not supported")
         if(${HAS_SANITIZER_${_flag}})
             if("${SANITIZERS_FLAGS}" STREQUAL "")
-                set(SANITIZERS_FLAGS "-fsanitize=${_flag}")
+                set(SANITIZERS_FLAGS "${_flag}")
             else()
                 set(SANITIZERS_FLAGS "${SANITIZERS_FLAGS},${_flag}")
             endif()
         endif()
         set(CMAKE_REQUIRED_FLAGS)
     endforeach()
+    if(NOT "${SANITIZERS_FLAGS}" STREQUAL "")
+        set(SANITIZERS_FLAGS "-fsanitize=${SANITIZERS_FLAGS}")
+    endif()
+
     message(STATUS "Adding sanitizers flags: ${SANITIZERS_FLAGS}")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZERS_FLAGS}")
 endif()
@@ -809,7 +842,7 @@ if (ZLIB_ENABLE_TESTS)
 
     add_executable(example test/example.c)
     configure_test_executable(example)
-    add_test(NAME example COMMAND example${CMAKE_EXECUTABLE_SUFFIX})
+    add_test(NAME example COMMAND $<TARGET_FILE:example>)
 
     add_executable(minigzip test/minigzip.c)
     configure_test_executable(minigzip)
@@ -830,7 +863,7 @@ if (ZLIB_ENABLE_TESTS)
         add_executable(example64 test/example.c)
         configure_test_executable(example64)
         set_target_properties(example64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
-        add_test(NAME example64 COMMAND example64${CMAKE_EXECUTABLE_SUFFIX})
+        add_test(NAME example64 COMMAND $<TARGET_FILE:example64>)
 
         add_executable(minigzip64 test/minigzip.c)
         configure_test_executable(minigzip64)
@@ -844,6 +877,7 @@ if (ZLIB_ENABLE_TESTS)
             add_executable(${FUZZER}_fuzzer test/fuzz/${FUZZER}_fuzzer.c test/fuzz/standalone_fuzz_target_runner.c)
             configure_test_executable(${FUZZER}_fuzzer)
             add_test(${FUZZER}_fuzzer ${FUZZER}_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
+            add_test(${FUZZER}_fuzzer $<TARGET_FILE:${FUZZER}_fuzzer> ${ALL_SRC_FILES})
         endforeach()
     endif()
 
@@ -861,7 +895,7 @@ if (ZLIB_ENABLE_TESTS)
     if(NOT WIN32 AND ZLIB_COMPAT)
         add_executable(CVE-2003-0107 test/CVE-2003-0107.c)
         target_link_libraries(CVE-2003-0107 zlib)
-        add_test(NAME CVE-2003-0107 COMMAND CVE-2003-0107)
+        add_test(NAME CVE-2003-0107 COMMAND $<TARGET_FILE:CVE-2003-0107>)
     endif()
 
     set(MAKEFIXED_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makefixed>)

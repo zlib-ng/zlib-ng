@@ -1,7 +1,7 @@
 language: c
 #cache: ccache  # cannot be used because it caches gcno(coverage) files
-dist: xenial
 bundler_args: --retry 5
+dist: bionic
 
 env:
   global:
@@ -12,35 +12,17 @@ env:
     - LDFLAGS="--coverage"
 
     # Shorthand variables
+    - FUZZ="-DWITH_FUZZERS=ON"
+    - MSAN="-DWITH_MSAN=ON"
+    - SANI="-DWITH_SANITIZERS=ON"
     - TC_AARCH64="-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake"
     - TC_ARM="-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake"
     - T_ARMHF="-DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
     - T_ARMSF="-DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi"
+    - CTEST="ctest -C Release --output-on-failure --max-width 120"
 
 matrix:
   include:
-    # Windows tests
-    #   msvc/cmake
-    - os: windows
-      env:
-        - GENERATOR="cmake . "
-        - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
-
-    - os: windows
-      env:
-        - GENERATOR="cmake . -A x64"
-        - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
-
-    - os: windows
-      env:
-        - GENERATOR="cmake ..\\zlib-ng -DZLIB_COMPAT=ON"
-        - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
-        - BUILDDIR=..\\build
-
-
     # Linux x86-64 tests
     #   gcc/configure
     - os: linux
@@ -61,49 +43,20 @@ matrix:
     - os: linux
       compiler: gcc
       env:
-        - GENERATOR="cmake ."
-        - TESTER="ctest --verbose -C Release"
+        - GENERATOR="cmake . $SANI"
+        - TESTER="$CTEST"
 
     - os: linux
       compiler: gcc
       env:
-        - GENERATOR="cmake . -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO"
-        - TESTER="ctest --verbose -C Release"
+        - GENERATOR="cmake . -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO $FUZZ $SANI"
+        - TESTER="$CTEST"
 
     - os: linux
       compiler: gcc
       env:
-        - GENERATOR="cmake ../zlib-ng -DZLIB_COMPAT=ON"
-        - TESTER="ctest --verbose -C Release"
-        - BUILDDIR=../build
-
-    #   clang/configure
-    - os: linux
-      compiler: clang
-      env: GENERATOR="./configure --warn --zlib-compat"
-
-    #   clang/cmake
-    - os: linux
-      compiler: clang
-      env:
-        - GENERATOR="cmake ../zlib-ng"
-        - TESTER="ctest --verbose -C Release"
-        - BUILDDIR=../build
-
-    - os: linux
-      compiler: clang
-      env:
-        - GENERATOR="scan-build -v --status-bugs cmake ../zlib-ng"
-        - MAKER="scan-build -v --status-bugs make"
-        - TESTER="ctest --verbose -C Release"
-        - BUILDDIR=../build
-
-    - os: linux
-      compiler: clang
-      env:
-        - GENERATOR="scan-build -v --status-bugs cmake ../zlib-ng -DZLIB_COMPAT=ON"
-        - MAKER="scan-build -v --status-bugs make"
-        - TESTER="ctest --verbose -C Release"
+        - GENERATOR="cmake ../zlib-ng -DZLIB_COMPAT=ON $FUZZ $SANI"
+        - TESTER="$CTEST"
         - BUILDDIR=../build
 
     #   gcc-9/cmake
@@ -112,45 +65,41 @@ matrix:
       addons:
         apt:
           sources:
-            - ubuntu-toolchain-r-test
+            - sourceline: 'ppa:ubuntu-toolchain-r/test'
           packages:
             - gcc-9
       env:
         - CC=gcc-9
-        - GENERATOR="cmake ."
-        - TESTER="ctest --verbose -C Release"
-
-
-    # OSX tests
-    #   gcc/configure
-    - os: osx
-      compiler: gcc
-      env: GENERATOR="./configure --warn"
-
-    - os: osx
-      compiler: gcc
-      env:
-        - GENERATOR="../zlib-ng/configure --warn --zlib-compat"
-        - BUILDDIR=../build
-
-    #   gcc/cmake
-    - os: osx
-      compiler: gcc
-      env:
-        - GENERATOR="cmake ."
-        - TESTER="ctest --verbose -C Release"
+        - GENERATOR="cmake . $FUZZ $SANI"
+        - TESTER="$CTEST"
 
     #   clang/configure
-    - os: osx
+    - os: linux
       compiler: clang
       env: GENERATOR="./configure --warn --zlib-compat"
 
     #   clang/cmake
-    - os: osx
+    - os: linux
       compiler: clang
       env:
-        - GENERATOR="cmake ../zlib-ng"
-        - TESTER="ctest --verbose -C Release"
+        - GENERATOR="cmake ../zlib-ng $FUZZ"
+        - TESTER="$CTEST"
+        - BUILDDIR=../build
+
+    - os: linux
+      compiler: clang
+      env:
+        - GENERATOR="scan-build -v --status-bugs cmake ../zlib-ng $FUZZ $MSAN"
+        - MAKER="scan-build -v --status-bugs make"
+        - TESTER="$CTEST"
+        - BUILDDIR=../build
+
+    - os: linux
+      compiler: clang
+      env:
+        - GENERATOR="scan-build -v --status-bugs cmake ../zlib-ng -DZLIB_COMPAT=ON $FUZZ $SANI"
+        - MAKER="scan-build -v --status-bugs make"
+        - TESTER="$CTEST"
         - BUILDDIR=../build
 
 
@@ -158,13 +107,13 @@ matrix:
     #   gcc/cmake
     - os: linux-ppc64le
       compiler: gcc
-      env: GENERATOR="cmake ."
+      env: GENERATOR="cmake . $FUZZ $SANI"
 
     - os: linux-ppc64le
       compiler: gcc
       env:
-        - GENERATOR="cmake ../zlib-ng -DZLIB_COMPAT=ON"
-        - TESTER="ctest --verbose -C Release"
+        - GENERATOR="cmake ../zlib-ng -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO $FUZZ $SANI"
+        - TESTER="$CTEST"
         - BUILDDIR=../build
 
     #   clang/configure
@@ -176,8 +125,15 @@ matrix:
     - os: linux-ppc64le
       compiler: clang
       env:
-        - GENERATOR="cmake ../zlib-ng"
-        - TESTER="ctest --verbose -C Release"
+        - GENERATOR="cmake . $FUZZ $SANI"
+        - TESTER="$CTEST"
+
+    #   clang/cmake
+    - os: linux-ppc64le
+      compiler: clang
+      env:
+        - GENERATOR="cmake ../zlib-ng $FUZZ $MSAN"
+        - TESTER="$CTEST"
         - BUILDDIR=../build
 
 
@@ -220,9 +176,9 @@ matrix:
             - libc-dev-arm64-cross
       # For all aarch64 implementations NEON is mandatory, while crypto/crc are not.
       env:
-        - GENERATOR="cmake . $TC_AARCH64 -DZLIB_COMPAT=ON"
+        - GENERATOR="cmake . $TC_AARCH64 -DZLIB_COMPAT=ON $FUZZ $SANI"
         - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
+        - TESTER="$CTEST"
 
     - os: linux
       compiler: aarch64-linux-gnu-gcc
@@ -233,9 +189,9 @@ matrix:
             - gcc-aarch64-linux-gnu
             - libc-dev-arm64-cross
       env:
-        - GENERATOR="cmake . $TC_AARCH64"
+        - GENERATOR="cmake . $TC_AARCH64 -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO $FUZZ $SANI"
         - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
+        - TESTER="$CTEST"
 
     # Linux ARM Hard-float, cross compiled + qemu
     #   gcc/configure
@@ -285,9 +241,9 @@ matrix:
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
       env:
-        - GENERATOR="cmake . $TC_ARM $T_ARMHF"
+        - GENERATOR="cmake . $TC_ARM $T_ARMHF $FUZZ $SANI"
         - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
+        - TESTER="$CTEST"
 
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
@@ -298,9 +254,9 @@ matrix:
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
       env:
-        - GENERATOR="cmake . $TC_ARM $T_ARMHF -DZLIB_COMPAT=ON -DWITH_NEON=OFF"
+        - GENERATOR="cmake . $TC_ARM $T_ARMHF -DZLIB_COMPAT=ON -DWITH_NEON=OFF $FUZZ $SANI"
         - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
+        - TESTER="$CTEST"
 
     - os: linux
       compiler: arm-linux-gnueabihf-gcc
@@ -311,9 +267,9 @@ matrix:
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
       env:
-        - GENERATOR="cmake . $TC_ARM $T_ARMHF -DZLIB_COMPAT=ON"
+        - GENERATOR="cmake . $TC_ARM $T_ARMHF -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO $FUZZ $SANI"
         - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
+        - TESTER="$CTEST"
 
     # Linux ARM Soft-float, cross compiled + qemu
     #   gcc/configure
@@ -351,9 +307,9 @@ matrix:
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
       env:
-        - GENERATOR="cmake . $TC_ARM $T_ARMSF"
+        - GENERATOR="cmake . $TC_ARM $T_ARMSF $FUZZ $SANI"
         - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
+        - TESTER="$CTEST"
 
     - os: linux
       compiler: arm-linux-gnueabi-gcc
@@ -364,9 +320,9 @@ matrix:
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
       env:
-        - GENERATOR="cmake . $TC_ARM $T_ARMSF -DZLIB_COMPAT=ON"
+        - GENERATOR="cmake . $TC_ARM $T_ARMSF -DZLIB_COMPAT=ON $FUZZ $SANI"
         - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
+        - TESTER="$CTEST"
 
     - os: linux
       compiler: arm-linux-gnueabi-gcc
@@ -377,16 +333,74 @@ matrix:
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
       env:
-        - GENERATOR="cmake . $TC_ARM $T_ARMSF -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO"
+        - GENERATOR="cmake . $TC_ARM $T_ARMSF -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO $FUZZ $SANI"
         - MAKER="cmake --build . --config Release"
-        - TESTER="ctest --verbose -C Release"
+        - TESTER="$CTEST"
+
+
+    # Windows tests
+    #   msvc/cmake
+    - os: windows
+      env:
+        - GENERATOR="cmake . "
+        - MAKER="cmake --build . --config Release"
+        - TESTER="$CTEST"
+
+    - os: windows
+      env:
+        - GENERATOR="cmake . -A x64"
+        - MAKER="cmake --build . --config Release"
+        - TESTER="$CTEST"
+
+    - os: windows
+      env:
+        - GENERATOR="cmake ..\\zlib-ng -DZLIB_COMPAT=ON"
+        - MAKER="cmake --build . --config Release"
+        - TESTER="$CTEST"
+        - BUILDDIR=..\\build
+
+
+    # OSX tests
+    #   gcc/configure
+    - os: osx
+      compiler: gcc
+      env: GENERATOR="./configure --warn"
+
+    - os: osx
+      compiler: gcc
+      env:
+        - GENERATOR="../zlib-ng/configure --warn --zlib-compat"
+        - BUILDDIR=../build
+
+    #   gcc/cmake
+    - os: osx
+      compiler: gcc
+      env:
+        - GENERATOR="cmake . $FUZZ $SANI"
+        - TESTER="$CTEST"
+
+    #   clang/configure
+    - os: osx
+      compiler: clang
+      env: GENERATOR="./configure --warn --zlib-compat"
+
+    #   clang/cmake
+    - os: osx
+      compiler: clang
+      env:
+        - GENERATOR="cmake ../zlib-ng $FUZZ $SANI"
+        - TESTER="$CTEST"
+        - BUILDDIR=../build
+
+
+
 
 script:
   - mkdir -p $BUILDDIR
   - cd $BUILDDIR
-  - $GENERATOR
-  - $MAKER
-  - $TESTER
+  - eval "${GENERATOR}"
+  - eval "${MAKER}"
+  - eval "${TESTER}"
 
 after_success:
   - bash <(curl -s https://codecov.io/bash --connect-timeout 10 --retry 8 --retry-delay 10) -U "--connect-timeout 10 --retry 8 --retry-delay 10"
