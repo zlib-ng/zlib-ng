@@ -65,13 +65,13 @@
 static const char *prog = "minigzip_fuzzer";
 
 void error            (const char *msg);
-void gz_compress      (FILE   *in, gzFile out);
+void gz_compress      (FILE *in, gzFile out);
 #ifdef USE_MMAP
-int  gz_compress_mmap (FILE   *in, gzFile out);
+int  gz_compress_mmap (FILE *in, gzFile out);
 #endif
-void gz_uncompress    (gzFile in, FILE   *out);
-void file_compress    (char  *file, char *mode);
-void file_uncompress  (char  *file);
+void gz_uncompress    (gzFile in, FILE *out);
+void file_compress    (char *file, char *mode);
+void file_uncompress  (char *file);
 int  main             (int argc, char *argv[]);
 
 /* ===========================================================================
@@ -87,7 +87,7 @@ void error(const char *msg)
  * Compress input to output then close both files.
  */
 
-void gz_compress(FILE   *in, gzFile out)
+void gz_compress(FILE *in, gzFile out)
 {
     char buf[BUFLEN];
     int len;
@@ -121,7 +121,7 @@ void gz_compress(FILE   *in, gzFile out)
 /* Try compressing the input file at once using mmap. Return Z_OK if
  * if success, Z_ERRNO otherwise.
  */
-int gz_compress_mmap(FILE   *in, gzFile out)
+int gz_compress_mmap(FILE *in, gzFile out)
 {
     int len;
     int err;
@@ -154,7 +154,7 @@ int gz_compress_mmap(FILE   *in, gzFile out)
 /* ===========================================================================
  * Uncompress input to output then close both files.
  */
-void gz_uncompress(gzFile in, FILE   *out)
+void gz_uncompress(gzFile in, FILE *out)
 {
     char buf[BUFLENW];
     int len;
@@ -179,7 +179,7 @@ void gz_uncompress(gzFile in, FILE   *out)
  * Compress the given file: create a corresponding .gz file and remove the
  * original.
  */
-void file_compress(char  *file, char  *mode)
+void file_compress(char *file, char *mode)
 {
     char outfile[MAX_NAME_LEN];
     FILE  *in;
@@ -211,7 +211,7 @@ void file_compress(char  *file, char  *mode)
 /* ===========================================================================
  * Uncompress the given file and remove the original.
  */
-void file_uncompress(char  *file)
+void file_uncompress(char *file)
 {
     char buf[MAX_NAME_LEN];
     char *infile, *outfile;
