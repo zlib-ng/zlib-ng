@@ -22,6 +22,7 @@
 /minigzip
 /minigzip64
 /minigzipsh
+/switchlevels
 /zlib.pc
 /zlib-ng.pc
 /CVE-2003-0107

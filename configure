@@ -338,7 +338,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
     SFLAGS="${SFLAGS} -march=native"
   fi
   if test "$warn" -eq 1; then
-    CFLAGS="${CFLAGS} -Wextra -Wpedantic"
+    CFLAGS="${CFLAGS} -Wextra -Wpedantic -Wno-implicit-fallthrough"
   fi
   if test $debug -eq 1; then
     CFLAGS="${CFLAGS} -DZLIB_DEBUG"
