@@ -62,7 +62,7 @@
 #define BUFLENW     (BUFLEN * 3) /* write buffer size */
 #define MAX_NAME_LEN 1024
 
-static char *prog;
+static const char *prog = "minigzip_fuzzer";
 
 void error            (const char *msg);
 void gz_compress      (FILE   *in, gzFile out);

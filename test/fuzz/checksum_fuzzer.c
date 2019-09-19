@@ -41,6 +41,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     uint32_t crc4 = PREFIX(crc32_combine_op)(crc1, crc3, op);
     crc1 = PREFIX(crc32_z)(crc1, data + offset, buffSize);
     assert(crc1 == crc4);
+    (void)crc4;
   }
   crc1 = PREFIX(crc32_z)(crc1, data + offset, dataLen % buffSize);
 

@@ -561,7 +561,7 @@ void test_deflate_bound(unsigned char *compr, size_t comprLen)
     c_stream.zfree = zfree;
     c_stream.opaque = (voidpf)0;
     c_stream.avail_in = len;
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.avail_out = 0;
     c_stream.next_out = outBuf;
 
@@ -608,7 +608,7 @@ void test_deflate_copy(unsigned char *compr, size_t comprLen)
     err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
@@ -656,7 +656,7 @@ void test_deflate_get_dict(unsigned char *compr, size_t comprLen)
     c_stream.next_out = compr;
     c_stream.avail_out = (uInt)comprLen;
 
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.avail_in = (unsigned int)strlen(hello)+1;
 
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
@@ -701,7 +701,7 @@ void test_deflate_pending(unsigned char *compr, size_t comprLen)
     err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
@@ -761,7 +761,7 @@ void test_deflate_pending(unsigned char *compr, size_t comprLen)
         printf("deflatePrime(): OK\n");
     }
 
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
@@ -858,7 +858,7 @@ void test_deflate_tune(unsigned char *compr, size_t comprLen)
         printf("deflateTune(): OK\n");
     }
 
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
