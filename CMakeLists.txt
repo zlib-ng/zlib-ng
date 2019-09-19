@@ -70,6 +70,14 @@ else()
     add_feature_info(CMAKE_BUILD_TYPE 1 "Build type: ${CMAKE_BUILD_TYPE} (selected)")
 endif()
 
+if(DEFINED ENV{CI})
+    message(STATUS "CI detected, enabling maintainer mode.")
+    set(MAINTAINER ON)
+endif()
+if(MAINTAINER)
+    set(WITH_FUZZERS ON)
+endif()
+
 check_include_file(sys/types.h HAVE_SYS_TYPES_H)
 check_include_file(stdint.h    HAVE_STDINT_H)
 check_include_file(stddef.h    HAVE_STDDEF_H)
@@ -95,6 +103,7 @@ elseif(BASEARCH_S360_FOUND AND "${ARCH}" MATCHES "s390x")
     option(WITH_DFLTCC_DEFLATE "Use DEFLATE CONVERSION CALL instruction for compression on IBM Z" OFF)
     option(WITH_DFLTCC_INFLATE "Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z" OFF)
 endif()
+option(MAINTAINER "Build with extra warnings and tests enabled" OFF)
 
 add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Provide a zlib-compatible API")
 add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile-related functions")
@@ -107,6 +116,7 @@ if(BASEARCH_ARM_FOUND)
     add_feature_info(WITH_ACLE WITH_ACLE "Build with ACLE CRC")
     add_feature_info(WITH_NEON WITH_NEON "Build with NEON intrinsics")
 endif()
+add_feature_info(MAINTAINER MAINTAINER "Build with maintainer warnings and tests enabled")
 
 if (ZLIB_COMPAT)
     add_definitions(-DZLIB_COMPAT)
@@ -128,18 +138,31 @@ if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${
     if(WITH_NATIVE_INSTRUCTIONS)
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
     endif()
-    if(CMAKE_HOST_UNIX)
-        set(SSE2FLAG "-msse2")
-        set(SSE4FLAG "-msse4.2")
+    if(CMAKE_HOST_UNIX OR APPLE)
+        set(WARNFLAGS "-W3")
+        set(WARNFLAGS_MAINTAINER "-W4 -Wcheck")
+        set(WARNFLAGS_DISABLE "")
+        if(BASEARCH_X86_FOUND)
+            set(SSE2FLAG "-msse2")
+            set(SSE4FLAG "-msse4.2")
+        endif()
     else()
-        set(SSE2FLAG "/arch:SSE2")
-        set(SSE4FLAG "/arch:SSE4.2")
+        set(WARNFLAGS "/W3")
+        set(WARNFLAGS_MAINTAINER "/W4 /Wcheck")
+        set(WARNFLAGS_DISABLE "")
+        if(BASEARCH_X86_FOUND)
+            set(SSE2FLAG "/arch:SSE2")
+            set(SSE4FLAG "/arch:SSE4.2")
+        endif()
     endif()
 elseif(MSVC)
     # TODO. ICC can be used through MSVC. I'm not sure if we'd ever see that combination
     # (who'd use cmake from an IDE...) but checking for ICC before checking for MSVC should
     # avoid mistakes.
     # /Oi ?
+    set(WARNFLAGS "/W3")
+    set(WARNFLAGS_MAINTAINER "/W4")
+    set(WARNFLAGS_DISABLE "")
     if(BASEARCH_X86_FOUND)
         if(NOT ${ARCH} MATCHES "x86_64")
             set(SSE2FLAG "/arch:SSE2")
@@ -156,6 +179,12 @@ else()
     if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         set(__GNUC__ ON)
     endif()
+    # Enable warnings in GCC and Clang
+    if(__GNUC__)
+        set(WARNFLAGS "-Wall")
+        set(WARNFLAGS_MAINTAINER "-Wextra -Wpedantic")
+        set(WARNFLAGS_DISABLE "-Wno-implicit-fallthrough")
+    endif()
     if(WITH_NATIVE_INSTRUCTIONS)
         if(__GNUC__)
             set(NATIVEFLAG "-march=native")
@@ -163,51 +192,47 @@ else()
             message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not implemented yet on this configuration")
         endif()
     endif()
-    # Enable warnings
-    if(__GNUC__)
-        set(WARNFLAGS "-Wall -Wno-implicit-fallthrough")
-    endif()
-    # Check support for ARM floating point
-    if(BASEARCH_ARM_FOUND)
-        if (__GNUC__)
-            execute_process(COMMAND ${CMAKE_C_COMPILER} "-dumpmachine"
-                            OUTPUT_VARIABLE GCC_MACHINE)
-            if ("${GCC_MACHINE}" MATCHES "eabihf")
-                set(FLOATABI "-mfloat-abi=hard")
-            else()
-                set(FLOATABI "-mfloat-abi=softfp")
-            endif()
-        endif()
-        # Check whether -mfpu=neon is available
-        set(CMAKE_REQUIRED_FLAGS "-mfpu=neon")
-        check_c_source_compiles(
-            "int main() { return 0; }"
-            MFPU_NEON_AVAILABLE FAIL_REGEX "not supported")
-        set(CMAKE_REQUIRED_FLAGS)
-        if(MFPU_NEON_AVAILABLE)
-            set(NEONFLAG "${FLOATABI} -mfpu=neon")
-        else()
-            set(NEONFLAG "${FLOATABI}")
-        endif()
-    endif()
     if(NOT NATIVEFLAG)
-        if(__GNUC__)
+        if (__GNUC__)
             if(BASEARCH_X86_FOUND)
                 set(SSE2FLAG "-msse2")
                 set(SSE4FLAG "-msse4")
                 set(PCLMULFLAG "-mpclmul")
             elseif(BASEARCH_ARM_FOUND)
-                set(ACLEFLAG "-march=armv8-a+crc")
+                # Check support for ARM floating point
+                execute_process(COMMAND ${CMAKE_C_COMPILER} "-dumpmachine"
+                                OUTPUT_VARIABLE GCC_MACHINE)
+                if ("${GCC_MACHINE}" MATCHES "eabihf")
+                    set(FLOATABI "-mfloat-abi=hard")
+                else()
+                    set(FLOATABI "-mfloat-abi=softfp")
+                endif()
+                # NEON
                 if("${ARCH}" MATCHES "aarch64")
                     set(NEONFLAG "-march=armv8-a+crc+simd")
+                else()
+                    # Check whether -mfpu=neon is available
+                    set(CMAKE_REQUIRED_FLAGS "-mfpu=neon")
+                    check_c_source_compiles(
+                        "int main() { return 0; }"
+                        MFPU_NEON_AVAILABLE FAIL_REGEX "not supported")
+                    set(CMAKE_REQUIRED_FLAGS)
+                    if(MFPU_NEON_AVAILABLE)
+                        set(NEONFLAG "${FLOATABI} -mfpu=neon")
+                    else()
+                        set(NEONFLAG "${FLOATABI}")
+                    endif()
                 endif()
+                # ACLE
+                set(ACLEFLAG "-march=armv8-a+crc")
             endif()
         endif()
     else()
-        set(SSE2FLAG ${NATIVEFLAG})
-        set(SSE4FLAG ${NATIVEFLAG})
-        set(PCLMULFLAG ${NATIVEFLAG})
-        if(BASEARCH_ARM_FOUND)
+        if(BASEARCH_X86_FOUND)
+            set(SSE2FLAG ${NATIVEFLAG})
+            set(SSE4FLAG ${NATIVEFLAG})
+            set(PCLMULFLAG ${NATIVEFLAG})
+        elseif(BASEARCH_ARM_FOUND)
             set(ACLEFLAG "${NATIVEFLAG}")
             if("${ARCH}" MATCHES "aarch64")
                 set(NEONFLAG "${NATIVEFLAG}")
@@ -216,7 +241,12 @@ else()
     endif()
 endif()
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS}")
+# Apply warning flags to cflags
+if(MAINTAINER)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS} ${WARNFLAGS_MAINTAINER} ${WARNFLAGS_DISABLE}")
+else()
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS} ${WARNFLAGS_DISABLE}")
+endif()
 
 #
 # Check to see if we have large file support
@@ -268,14 +298,28 @@ endif()
 
 if(WITH_SANITIZERS)
     set(_sanitize_flags
-        bool
         address
+        alignment
         array-bounds
+        bool
+        bounds
+        builtin
+        enum
         float-divide-by-zero
         function
         integer-divide-by-zero
+        leak
+        null
+        nonnull-attribute
+        object-size
+        pointer-compare             # Depends on 'address'
+        pointer-overflow
+        pointer-subtract            # Depends on 'address'
         return
+        returns-nonnull-attribute
         shift
+        shift-base
+        shift-exponent
         signed-integer-overflow
         undefined
         unsigned-integer-overflow
@@ -284,18 +328,24 @@ if(WITH_SANITIZERS)
        )
     set(SANITIZERS_FLAGS "")
     foreach(_flag ${_sanitize_flags})
-        set(CMAKE_REQUIRED_FLAGS "-fsanitize=${_flag}")
-        check_c_source_compiles("int main() { return 0; }"
-          HAS_SANITIZER_${_flag} FAIL_REGEX "not supported")
-        if(${HAS_SANITIZER_${_flag}})
-            if("${SANITIZERS_FLAGS}" STREQUAL "")
-                set(SANITIZERS_FLAGS "-fsanitize=${_flag}")
-            else()
-                set(SANITIZERS_FLAGS "${SANITIZERS_FLAGS},${_flag}")
+        if(NOT (CMAKE_CROSSCOMPILING_EMULATOR AND ${_flag} STREQUAL "leak")) # LeakSanitizer crashes under qemu
+            set(CMAKE_REQUIRED_FLAGS "-fsanitize=${SANITIZERS_FLAGS},${_flag}")
+            check_c_source_compiles("int main() { return 0; }"
+              HAS_SANITIZER_${_flag} FAIL_REGEX "not supported")
+            if(${HAS_SANITIZER_${_flag}})
+                if("${SANITIZERS_FLAGS}" STREQUAL "")
+                    set(SANITIZERS_FLAGS "${_flag}")
+                else()
+                    set(SANITIZERS_FLAGS "${SANITIZERS_FLAGS},${_flag}")
+                endif()
             endif()
+            set(CMAKE_REQUIRED_FLAGS)
         endif()
-        set(CMAKE_REQUIRED_FLAGS)
     endforeach()
+    if(NOT "${SANITIZERS_FLAGS}" STREQUAL "")
+        set(SANITIZERS_FLAGS "-fsanitize=${SANITIZERS_FLAGS}")
+    endif()
+
     message(STATUS "Adding sanitizers flags: ${SANITIZERS_FLAGS}")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZERS_FLAGS}")
 endif()
@@ -844,6 +894,7 @@ if (ZLIB_ENABLE_TESTS)
         file(GLOB ALL_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*")
         foreach(FUZZER ${FUZZERS})
             add_executable(${FUZZER}_fuzzer test/fuzz/${FUZZER}_fuzzer.c test/fuzz/standalone_fuzz_target_runner.c)
+            configure_test_executable(${FUZZER}_fuzzer)
             set(FUZZER_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${FUZZER}_fuzzer> ${ALL_SRC_FILES})
             add_test(NAME ${FUZZER}_fuzzer COMMAND ${FUZZER_COMMAND})
         endforeach()
