@@ -897,19 +897,30 @@ int test_deflate_pending(unsigned char *compr, size_t comprLen)
     err = PREFIX(deflatePending)(&c_stream, ped, bits);
     CHECK_ERR(err, "deflatePending");
 
-    /* Finish the stream, still forcing small buffers: */
-    c_stream.avail_in = 0;
-    do {
-        c_stream.avail_out = 1;
-        err = PREFIX(deflate)(&c_stream, Z_FINISH);
-        if (err == Z_STREAM_END) break;
-        CHECK_ERR(err, "deflate");
-    } while (c_stream.total_out < comprLen);
+    if (*bits < 0 || *bits > 7) {
+        printf("error\n");
+        err = Z_DATA_ERROR;
+    }
+
+    if (err == Z_OK) {
+        /* Finish the stream, still forcing small buffers: */
+        c_stream.avail_in = 0;
+        do {
+            c_stream.avail_out = 1;
+            err = PREFIX(deflate)(&c_stream, Z_FINISH);
+            if (err == Z_STREAM_END) break;
+            CHECK_ERR(err, "deflate");
+        } while (c_stream.total_out < comprLen);
+    }
 
     err = PREFIX(deflateEnd)(&c_stream);
     CHECK_ERR(err, "deflateEnd");
-    if ((err == Z_OK) && (*bits >= 0 && *bits <=7 && *ped >= 0)) {
+
+    if ((err == Z_OK) && (*bits >= 0 && *bits <= 7)) {
         printf("OK\n");
+    } else {
+        printf("error\n");
+        err = Z_DATA_ERROR;
     }
 
     free(bits);
@@ -1355,7 +1366,7 @@ int main(int argc, char *argv[])
 
     err |= test_dict_deflate(compr, comprLen);
     err |= test_dict_inflate(compr, comprLen, uncompr, uncomprLen);
-    
+
     err |= test_deflate_bound();
     err |= test_deflate_copy(compr, comprLen);
     err |= test_deflate_get_dict(compr, comprLen);
@@ -1363,7 +1374,7 @@ int main(int argc, char *argv[])
     err |= test_deflate_tune(compr, comprLen);
     err |= test_deflate_pending(compr, comprLen);
     err |= test_deflate_prime(compr, comprLen);
-    
+
     err |= test_file_deflate_inflate("data/defneg3.dat", Z_BEST_SPEED, 1, Z_DEFAULT_STRATEGY);
 
     for (memLevel = 1; memLevel <= MAX_MEM_LEVEL; memLevel++) {

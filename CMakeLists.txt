@@ -183,6 +183,10 @@ else()
             message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not implemented yet on this configuration")
         endif()
     endif()
+    # Enable warnings
+    if(__GNUC__)
+        set(WARNFLAGS "-Wall -Wno-implicit-fallthrough")
+    endif()
     # Check support for ARM floating point
     if("${ARCH}" MATCHES "arm")
         if (__GNUC__)
@@ -240,6 +244,8 @@ else()
         endif()
     endif()
 endif()
+
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS}")
 
 #
 # Check to see if we have large file support
