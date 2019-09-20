@@ -53,7 +53,7 @@ int test_inflate_params(unsigned char *compr, size_t comprLen, unsigned char *un
 int test_inflate_small_params(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen,
     int windowBits);
 int test_deflate_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
-int test_deflate_bound(unsigned char *compr, size_t comprLen);
+int test_deflate_bound(void);
 int test_deflate_copy(unsigned char *compr, size_t comprLen);
 int test_deflate_get_dict(unsigned char *compr, size_t comprLen);
 int test_deflate_pending(unsigned char *compr, size_t comprLen);
@@ -357,7 +357,7 @@ int test_inflate_small_params(unsigned char *compr, size_t comprLen, unsigned ch
  */
 int test_deflate_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen)
 {
-    int err = Z_OK;
+    int err;
     size_t len = strlen(hello) + 1;
 
     printf("deflate() hello: ");
@@ -400,7 +400,7 @@ int test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *unc
     int zng_params)
 {
     PREFIX3(stream) c_stream; /* compression stream */
-    int err = Z_OK;
+    int err;
 #ifndef ZLIB_COMPAT
     int level = -1;
     int strategy = -1;
@@ -723,10 +723,10 @@ int test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unco
 /* ===========================================================================
  * Test deflateBound() with small buffers
  */
-int test_deflate_bound(unsigned char *compr, size_t comprLen)
+int test_deflate_bound(void)
 {
     PREFIX3(stream) c_stream; /* compression stream */
-    int err = Z_OK;
+    int err;
     size_t len = strlen(hello)+1;
     int estimateLen = 0;
     unsigned char *outBuf = NULL;
@@ -821,7 +821,7 @@ int test_deflate_copy(unsigned char *compr, size_t comprLen)
 int test_deflate_get_dict(unsigned char *compr, size_t comprLen)
 {
     PREFIX3(stream) c_stream; /* compression stream */
-    int err = Z_OK;
+    int err;
     unsigned char *dictNew = NULL;
     unsigned int *dictLen;
 
@@ -870,7 +870,7 @@ int test_deflate_get_dict(unsigned char *compr, size_t comprLen)
 int test_deflate_pending(unsigned char *compr, size_t comprLen)
 {
     PREFIX3(stream) c_stream; /* compression stream */
-    int err = Z_OK;
+    int err;
     int *bits = calloc(256, 1);
     unsigned *ped = calloc(256, 1);
     size_t len = strlen(hello)+1;
@@ -976,7 +976,7 @@ int test_deflate_set_header(unsigned char *compr, size_t comprLen)
 {
     PREFIX(gz_header) *head = calloc(256, 1);
     PREFIX3(stream) c_stream; /* compression stream */
-    int err = Z_OK;
+    int err;
     size_t len = strlen(hello)+1;
 
 
@@ -1027,7 +1027,7 @@ int test_deflate_set_header(unsigned char *compr, size_t comprLen)
 int test_deflate_tune(unsigned char *compr, size_t comprLen)
 {
     PREFIX3(stream) c_stream; /* compression stream */
-    int err = Z_OK;
+    int err;
     int good_length = 3;
     int max_lazy = 5;
     int nice_length = 18;
@@ -1083,7 +1083,7 @@ int test_file_deflate(char *path, int level, int memLevel, int strategy)
     FILE *f = NULL;
     int len = 0;
     int comprLen = 0;
-    int err = 0;
+    int err;
     size_t read = 0;
 
 
@@ -1151,7 +1151,7 @@ int test_file_inflate(char *path)
     FILE *f = NULL;
     int comprLen = 0;
     int uncomprLen = 0;
-    int err = 0;
+    int err;
     size_t read = 0;
    
     printf("inflate() %s: ", path);
@@ -1219,7 +1219,7 @@ int test_file_deflate_inflate(char *path, int level, int memLevel, int strategy)
     int len = 0;
     int comprLen = 0;
     int uncomprLen = 0;
-    int err = 0;
+    int err;
     size_t read = 0;
 
 
@@ -1355,7 +1355,7 @@ int main(int argc, char *argv[])
     err |= test_dict_deflate(compr, comprLen);
     err |= test_dict_inflate(compr, comprLen, uncompr, uncomprLen);
     
-    err |= test_deflate_bound(compr, comprLen);
+    err |= test_deflate_bound();
     err |= test_deflate_copy(compr, comprLen);
     err |= test_deflate_get_dict(compr, comprLen);
     err |= test_deflate_set_header(compr, comprLen);
@@ -1363,14 +1363,12 @@ int main(int argc, char *argv[])
     err |= test_deflate_pending(compr, comprLen);
     err |= test_deflate_prime(compr, comprLen);
     
-    err |= test_file_inflate("test/data/infbuferr.dat");
-
-    err |= test_file_deflate_inflate("test/data/defneg3.dat", Z_BEST_SPEED, 1, Z_DEFAULT_STRATEGY);
+    err |= test_file_deflate_inflate("data/defneg3.dat", Z_BEST_SPEED, 1, Z_DEFAULT_STRATEGY);
 
     for (memLevel = 1; memLevel <= MAX_MEM_LEVEL; memLevel++) {
-        err |= test_file_deflate_inflate("test/data/lcet10.txt", Z_BEST_SPEED, memLevel, Z_DEFAULT_STRATEGY);
-        err |= test_file_deflate_inflate("test/data/lcet10.txt", Z_DEFAULT_COMPRESSION, memLevel, Z_DEFAULT_STRATEGY);
-        err |= test_file_deflate_inflate("test/data/lcet10.txt", Z_BEST_COMPRESSION, memLevel, Z_DEFAULT_STRATEGY);
+        err |= test_file_deflate_inflate("data/lcet10.txt", Z_BEST_SPEED, memLevel, Z_DEFAULT_STRATEGY);
+        err |= test_file_deflate_inflate("data/lcet10.txt", Z_DEFAULT_COMPRESSION, memLevel, Z_DEFAULT_STRATEGY);
+        err |= test_file_deflate_inflate("data/lcet10.txt", Z_BEST_COMPRESSION, memLevel, Z_DEFAULT_STRATEGY);
     }
 
     free(compr);

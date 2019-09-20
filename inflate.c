@@ -1093,7 +1093,7 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
         strm->adler = state->check = UPDATE(state->check, strm->next_out - out, out);
     strm->data_type = (int)state->bits + (state->last ? 64 : 0) +
                       (state->mode == TYPE ? 128 : 0) + (state->mode == LEN_ || state->mode == COPY_ ? 256 : 0);
-    if (((in == 0 && out == 0) || (out == 0 && flush == Z_FINISH)) && ret == Z_OK)
+    if (((in == 0 && out == 0) || (flush == Z_FINISH)) && ret == Z_OK)
         ret = Z_BUF_ERROR;
     return ret;
 }

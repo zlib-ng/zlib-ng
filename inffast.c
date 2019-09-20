@@ -310,7 +310,7 @@ void ZLIB_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) 
                     if (dist >= len || dist >= INFFAST_CHUNKSIZE)
                         out = chunkcopy(out, out - dist, len);
                     else
-                        out = chunkmemsetsafe(out, dist, len, len);
+                        out = chunkmemset(out, dist, len);
 #else
                     if (len < sizeof(uint64_t))
                       out = set_bytes(out, out - dist, dist, len);
