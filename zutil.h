@@ -240,7 +240,7 @@ void ZLIB_INTERNAL   zng_cfree(void *opaque, void *ptr);
 
 #if defined(X86_CPUID)
 # include "arch/x86/x86.h"
-#elif defined(__aarch64__) || defined(__arm__) || defined(_M_ARM) || defined(_M_ARM64)
+#elif defined(ARM_GETAUXVAL)
 # include "arch/arm/arm.h"
 #endif
 
