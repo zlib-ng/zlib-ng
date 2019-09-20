@@ -273,45 +273,43 @@ int main(int argc, char *argv[])
 {
     int copyout = 0;
     int uncompr = 0;
+    int i = 0;
     gzFile file;
     char *bname, outmode[20];
 
     snprintf(outmode, sizeof(outmode), "%s", "wb6 ");
 
-    prog = argv[0];
-    bname = strrchr(argv[0], '/');
+    prog = argv[i];
+    bname = strrchr(argv[i], '/');
     if (bname)
       bname++;
     else
-      bname = argv[0];
-    argc--, argv++;
+      bname = argv[i];
 
     if (!strcmp(bname, "gunzip"))
       uncompr = 1;
     else if (!strcmp(bname, "zcat"))
       copyout = uncompr = 1;
 
-    while (argc > 0) {
-      if (strcmp(*argv, "-c") == 0)
-        copyout = 1;
-      else if (strcmp(*argv, "-d") == 0)
-        uncompr = 1;
-      else if (strcmp(*argv, "-f") == 0)
-        outmode[3] = 'f';
-      else if (strcmp(*argv, "-h") == 0)
-        outmode[3] = 'h';
-      else if (strcmp(*argv, "-r") == 0)
-        outmode[3] = 'R';
-      else if ((*argv)[0] == '-' && (*argv)[1] >= '0' && (*argv)[1] <= '9' &&
-               (*argv)[2] == 0)
-        outmode[2] = (*argv)[1];
-      else
-        break;
-      argc--, argv++;
+    for (i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-c") == 0)
+            copyout = 1;
+        else if (strcmp(argv[i], "-d") == 0)
+            uncompr = 1;
+        else if (strcmp(argv[i], "-f") == 0)
+            outmode[3] = 'f';
+        else if (strcmp(argv[i], "-h") == 0)
+            outmode[3] = 'h';
+        else if (strcmp(argv[i], "-r") == 0)
+            outmode[3] = 'R';
+        else if (argv[i][0] == '-' && argv[i][1] >= '0' && argv[i][1] <= '9' && argv[i][2] == 0)
+            outmode[2] = argv[i][1];
+        else
+            break;
     }
     if (outmode[3] == ' ')
         outmode[3] = 0;
-    if (argc == 0) {
+    if (i == argc) {
         SET_BINARY_MODE(stdin);
         SET_BINARY_MODE(stdout);
         if (uncompr) {
@@ -330,20 +328,20 @@ int main(int argc, char *argv[])
         do {
             if (uncompr) {
                 if (copyout) {
-                    file = PREFIX(gzopen)(*argv, "rb");
+                    file = PREFIX(gzopen)(argv[i], "rb");
                     if (file == NULL)
-                        fprintf(stderr, "%s: can't gzopen %s\n", prog, *argv);
+                        fprintf(stderr, "%s: can't gzopen %s\n", prog, argv[i]);
                     else
                         gz_uncompress(file, stdout);
                 } else {
-                    file_uncompress(*argv);
+                    file_uncompress(argv[i]);
                 }
             } else {
                 if (copyout) {
-                    FILE * in = fopen(*argv, "rb");
+                    FILE * in = fopen(argv[i], "rb");
 
                     if (in == NULL) {
-                        perror(*argv);
+                        perror(argv[i]);
                     } else {
                         file = PREFIX(gzdopen)(fileno(stdout), outmode);
                         if (file == NULL) error("can't gzdopen stdout");
@@ -352,10 +350,10 @@ int main(int argc, char *argv[])
                     }
 
                 } else {
-                    file_compress(*argv, outmode);
+                    file_compress(argv[i], outmode);
                 }
             }
-        } while (argv++, --argc);
+        } while (++i < argc);
     }
     return 0;
 }
