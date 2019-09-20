@@ -1075,8 +1075,14 @@ case "${ARCH}" in
     arm | armv[3467]l | armv4b | armv4tl | armv5tel | armv5tejl | armv[67]hl | armv7hnl | armv[78]-a | armv8-a+* | armv8.[1234]-a | armv8.[1234]-a+*)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=arm
         ARCHDIR=arch/arm
-        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o fill_window_arm.o"
-        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo fill_window_arm.lo"
+
+        if test $without_optimizations -eq 0; then
+            CFLAGS="${CFLAGS} -DARM_GETAUXVAL"
+            SFLAGS="${SFLAGS} -DARM_GETAUXVAL"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o fill_window_arm.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo fill_window_arm.lo"
+        fi
+
 
         GCC_MACHINE=$(${CC} -dumpmachine)
         case "${GCC_MACHINE}" in
@@ -1085,90 +1091,98 @@ case "${ARCH}" in
             *gnueabi)
                 floatabi="-mfloat-abi=softfp" ;;
         esac
+        CFLAGS="${CFLAGS} ${floatabi}"
+        SFLAGS="${SFLAGS} ${floatabi}"
 
         case "${ARCH}" in
             armv[345]*)
-                if test $buildacle -eq 1; then
-                    echo ACLE support not available
-                fi
+                if test $without_optimizations -eq 0; then
+                    if test $buildacle -eq 1; then
+                        echo ACLE support not available
+                    fi
 
-                if test $buildneon -eq 1; then
-                    echo NEON support not available
+                    if test $buildneon -eq 1; then
+                        echo NEON support not available
+                    fi
                 fi
             ;;
             armv6l | armv6hl)
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK"
 
-                if test $buildacle -eq 1; then
-                    echo ACLE support not available
-                fi
+                if test $without_optimizations -eq 0; then
+                    if test $buildacle -eq 1; then
+                        echo ACLE support not available
+                    fi
 
-                if test $buildneon -eq 1; then
-                    echo NEON support not available
+                    if test $buildneon -eq 1; then
+                        echo NEON support not available
+                    fi
                 fi
             ;;
             arm | armv7*)
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK"
 
-                if test $buildacle -eq 1; then
-                    echo ACLE support not available
-                fi
+                if test $without_optimizations -eq 0; then
+                    if test $buildacle -eq 1; then
+                        echo ACLE support not available
+                    fi
 
-                if test $buildneon -eq 1; then
-                    CFLAGS="${CFLAGS} ${floatabi} -mfpu=neon -DARM_NEON_ADLER32"
-                    SFLAGS="${SFLAGS} ${floatabi} -mfpu=neon -DARM_NEON_ADLER32"
+                    if test $buildneon -eq 1; then
+                        CFLAGS="${CFLAGS} -mfpu=neon -DARM_NEON_ADLER32"
+                        SFLAGS="${SFLAGS} -mfpu=neon -DARM_NEON_ADLER32"
 
-                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
-                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+                    fi
                 fi
             ;;
             armv8-a | armv8-a+simd)
                 CFLAGS="${CFLAGS} -DUNALIGNED_OK"
                 SFLAGS="${SFLAGS} -DUNALIGNED_OK"
 
-                if test $buildacle -eq 1; then
-                    echo ACLE support not available
-                fi
-
-                if test $buildneon -eq 1; then
-                    CFLAGS="${CFLAGS} ${floatabi}"
-                    SFLAGS="${SFLAGS} ${floatabi}"
-
-                    if test $MFPU_NEON_AVAILABLE -eq 1;then
-                        CFLAGS="${CFLAGS} -mfpu=neon"
-                        SFLAGS="${SFLAGS} -mfpu=neon"
+                if test $without_optimizations -eq 0; then
+                    if test $buildacle -eq 1; then
+                        echo ACLE support not available
                     fi
 
-                    CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
-                    SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
+                    if test $buildneon -eq 1; then
+                        if test $MFPU_NEON_AVAILABLE -eq 1;then
+                            CFLAGS="${CFLAGS} -mfpu=neon"
+                            SFLAGS="${SFLAGS} -mfpu=neon"
+                        fi
 
-                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
-                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
+                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
+
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+                    fi
                 fi
             ;;
             armv8-a+crc | armv8-a+crc+simd | armv8.[1234]-a | armv8.[1234]-a+simd)
-                CFLAGS="-march=${ARCH} ${CFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK"
-                SFLAGS="-march=${ARCH} ${SFLAGS} -DARM_ACLE_CRC_HASH -DUNALIGNED_OK"
+                CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK"
+                SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+                if test $without_optimizations -eq 0; then
+                    CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
+                    SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
 
-                if test $buildneon -eq 1; then
-                    CFLAGS="${CFLAGS} ${floatabi}"
-                    SFLAGS="${SFLAGS} ${floatabi}"
+                    if test $buildneon -eq 1; then
+                        if test $MFPU_NEON_AVAILABLE -eq 1;then
+                            CFLAGS="${CFLAGS} -mfpu=neon"
+                            SFLAGS="${SFLAGS} -mfpu=neon"
+                        fi
 
-                    if test $MFPU_NEON_AVAILABLE -eq 1;then
-                        CFLAGS="${CFLAGS} -mfpu=neon"
-                        SFLAGS="${SFLAGS} -mfpu=neon"
+                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
+                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
+
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
                     fi
-
-                    CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
-                    SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
-
-                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
-                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
                 fi
             ;;
         esac
@@ -1178,34 +1192,42 @@ case "${ARCH}" in
     aarch64)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=aarch64
         ARCHDIR=arch/arm
-        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o fill_window_arm.o"
-        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo fill_window_arm.lo"
 
         if test $native -eq 0; then
-          ARCH="armv8-a"
+            ARCH="armv8-a"
         else
-          ARCH="native"
+            ARCH="native"
         fi
-        if test $buildacle -eq 1; then
-           if test $native -eq 0; then
-             ARCH="${ARCH}+crc"
-           fi
-            CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
-            SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
-        fi
-        if test $buildneon -eq 1; then
-            if test $native -eq 0; then
-                ARCH="${ARCH}+simd"
-            fi
-            CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
-            SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
-        fi
+
         CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK"
         SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK"
+
+        if test $without_optimizations -eq 0; then
+            CFLAGS="${CFLAGS} -DARM_GETAUXVAL"
+            SFLAGS="${SFLAGS} -DARM_GETAUXVAL"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o fill_window_arm.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo fill_window_arm.lo"
+
+            if test $buildacle -eq 1; then
+                if test $native -eq 0; then
+                    ARCH="${ARCH}+crc"
+                fi
+                CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
+                SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+            fi
+
+            if test $buildneon -eq 1; then
+                if test $native -eq 0; then
+                    ARCH="${ARCH}+simd"
+                fi
+                CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
+                SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+            fi
+        fi
     ;;
     powerpc)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=ppc
@@ -1216,23 +1238,28 @@ case "${ARCH}" in
     s390x)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=s390x
         ARCHDIR=arch/s390
-        if test $builddfltccdeflate -eq 1 -o $builddfltccinflate -eq 1; then
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_common.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_common.lo"
-        fi
-        if test $builddfltccdeflate -eq 1; then
-            CFLAGS="${CFLAGS} -DS390_DFLTCC_DEFLATE"
-            SFLAGS="${SFLAGS} -DS390_DFLTCC_DEFLATE"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_deflate.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_deflate.lo"
-            ARCH="${ARCH}+dfltcc-deflate"
-        fi
-        if test $builddfltccinflate -eq 1; then
-            CFLAGS="${CFLAGS} -DS390_DFLTCC_INFLATE"
-            SFLAGS="${SFLAGS} -DS390_DFLTCC_INFLATE"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_inflate.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_inflate.lo"
-            ARCH="${ARCH}+dfltcc-inflate"
+
+        if test $without_optimizations -eq 0; then
+            if test $builddfltccdeflate -eq 1 -o $builddfltccinflate -eq 1; then
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_common.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_common.lo"
+            fi
+
+            if test $builddfltccdeflate -eq 1; then
+                CFLAGS="${CFLAGS} -DS390_DFLTCC_DEFLATE"
+                SFLAGS="${SFLAGS} -DS390_DFLTCC_DEFLATE"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_deflate.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_deflate.lo"
+                ARCH="${ARCH}+dfltcc-deflate"
+            fi
+
+            if test $builddfltccinflate -eq 1; then
+                CFLAGS="${CFLAGS} -DS390_DFLTCC_INFLATE"
+                SFLAGS="${SFLAGS} -DS390_DFLTCC_INFLATE"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_inflate.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_inflate.lo"
+                ARCH="${ARCH}+dfltcc-inflate"
+            fi
         fi
     ;;
     *)
