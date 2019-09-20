@@ -306,9 +306,6 @@ static inline unsigned char* chunkmemsetsafe(unsigned char *out, unsigned dist, 
         }
         return out;
     }
-    /*int mod = (len % INFFAST_CHUNKSIZE);
-    if (mod > 0)
-        len += INFFAST_CHUNKSIZE - mod;*/
     return chunkmemset(out, dist, len);
 }
 
