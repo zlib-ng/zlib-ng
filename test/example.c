@@ -114,7 +114,7 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen)
     }
     strcpy((char*)uncompr, "garbage");
 
-    if (PREFIX(gzread)(file, uncompr, (unsigned)uncomprLen) != len) {
+    if (PREFIX(gzread)(file, uncompr, (unsigned)uncomprLen) != (int)len) {
         fprintf(stderr, "gzread err: %s\n", PREFIX(gzerror)(file, &err));
         exit(1);
     }
@@ -549,7 +549,7 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
 /* ===========================================================================
  * Test deflateBound() with small buffers
  */
-void test_deflate_bound(unsigned char *compr, size_t comprLen)
+void test_deflate_bound(void)
 {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
@@ -713,10 +713,10 @@ void test_deflate_pending(unsigned char *compr, size_t comprLen)
         CHECK_ERR(err, "deflate");
     }
 
-    err = PREFIX(deflatePending)(&c_stream,ped,bits);
+    err = PREFIX(deflatePending)(&c_stream, ped, bits);
     CHECK_ERR(err, "deflatePending");
 
-    if (*bits >= 0 && *bits <=7 && *ped >= 0) {
+    if (*bits >= 0 && *bits <= 7) {
         printf("deflatePending(): OK\n");
     } else {
         printf("deflatePending(): error\n");
@@ -740,7 +740,7 @@ void test_deflate_pending(unsigned char *compr, size_t comprLen)
 /* ===========================================================================
  * Test deflatePrime() with small buffers
  */
- void test_deflate_prime(unsigned char *compr, size_t comprLen)
+void test_deflate_prime(unsigned char *compr, size_t comprLen)
 {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
@@ -936,7 +936,7 @@ int main(int argc, char *argv[])
     test_dict_deflate(compr, comprLen);
     test_dict_inflate(compr, comprLen, uncompr, uncomprLen);
 
-    test_deflate_bound(compr, comprLen);
+    test_deflate_bound();
     test_deflate_copy(compr, comprLen);
     test_deflate_get_dict(compr, comprLen);
     test_deflate_set_header(compr, comprLen);
