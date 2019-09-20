@@ -129,19 +129,11 @@ if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
     endif()
     if(CMAKE_HOST_UNIX)
-        if(NOT SSE2FLAG)
-            set(SSE2FLAG "-msse2")
-        endif()
-        if(NOT SSE4FLAG)
-            set(SSE4FLAG "-msse4.2")
-        endif()
+        set(SSE2FLAG "-msse2")
+        set(SSE4FLAG "-msse4.2")
     else()
-        if(NOT SSE2FLAG)
-            set(SSE2FLAG "/arch:SSE2")
-        endif()
-        if(NOT SSE4FLAG)
-            set(SSE4FLAG "/arch:SSE4.2")
-        endif()
+        set(SSE2FLAG "/arch:SSE2")
+        set(SSE4FLAG "/arch:SSE4.2")
     endif()
 elseif(MSVC)
     # TODO. ICC can be used through MSVC. I'm not sure if we'd ever see that combination
@@ -201,16 +193,9 @@ else()
     if(NOT NATIVEFLAG)
         if(__GNUC__)
             if(BASEARCH_X86_FOUND)
-                if(NOT SSE2FLAG)
-                    set(SSE2FLAG "-msse2")
-                endif()
-                if(NOT SSE4FLAG)
-                    set(SSE4FLAG "-msse4")
-                endif()
-                if(NOT PCLMULFLAG)
-                    set(PCLMULFLAG "-mpclmul")
-                endif()
-            endif()
+                set(SSE2FLAG "-msse2")
+                set(SSE4FLAG "-msse4")
+                set(PCLMULFLAG "-mpclmul")
             elseif(BASEARCH_ARM_FOUND)
                 set(ACLEFLAG "-march=armv8-a+crc")
                 if("${ARCH}" MATCHES "aarch64")
@@ -237,18 +222,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS}")
 # Check to see if we have large file support
 #
 set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
-# We add these other definitions here because CheckTypeSize.cmake
-# in CMake 2.4.x does not automatically do so and we want
-# compatibility with CMake 2.4.x.
-if(HAVE_SYS_TYPES_H)
-    list(APPEND CMAKE_REQUIRED_DEFINITIONS -DHAVE_SYS_TYPES_H)
-endif()
-if(HAVE_STDINT_H)
-    list(APPEND CMAKE_REQUIRED_DEFINITIONS -DHAVE_STDINT_H)
-endif()
-if(HAVE_STDDEF_H)
-    list(APPEND CMAKE_REQUIRED_DEFINITIONS -DHAVE_STDDEF_H)
-endif()
 check_type_size(off64_t OFF64_T)
 if(HAVE_OFF64_T)
    add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
@@ -415,90 +388,92 @@ if(MSVC)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
 
-# Check whether compiler supports SSE2 instrinics
-if(WITH_NATIVE_INSTRUCTIONS)
-    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-else()
-    set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
-endif()
-check_c_source_compile_or_run(
-    "#include <immintrin.h>
-    int main(void)
-    {
-        __m128i zero = _mm_setzero_si128();
-        (void)zero;
-        return 0;
-    }"
-    HAVE_SSE2_INTRIN
-)
-set(CMAKE_REQUIRED_FLAGS)
-
-# Check whether compiler supports SSE4 CRC inline asm
-if(WITH_NATIVE_INSTRUCTIONS)
-    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-else()
-    set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
-endif()
-check_c_source_compile_or_run(
-    "int main(void)
-    {
-        unsigned val = 0, h = 0;
-    #if defined(_MSC_VER)
-        { __asm mov edx, h __asm mov eax, val __asm crc32 eax, edx __asm mov val, eax }
-    #else
-        __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
-    #endif
-        return (int) h;
-    }"
-    HAVE_SSE42CRC_INLINE_ASM
-)
-# Check whether compiler supports SSE4 CRC instrinics
-check_c_source_compile_or_run(
-    "#include <immintrin.h>
-    int main(void)
-    {
-        unsigned crc = 0;
-        char c = 'c';
-    #if defined(_MSC_VER)
-        crc = _mm_crc32_u32(crc, c);
-    #else
-        crc = __builtin_ia32_crc32qi(crc, c);
-    #endif
-        (void)crc;
-        return 0;
-    }"
-    HAVE_SSE42CRC_INTRIN
-)
-set(CMAKE_REQUIRED_FLAGS)
-
-# Check whether compiler supports PCLMULQDQ intrinics
-if(WITH_NATIVE_INSTRUCTIONS)
-    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-else()
-    set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
-endif()
-if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
-    # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
+if(BASEARCH_X86_FOUND)
+    # Check whether compiler supports SSE2 instrinics
+    if(WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+    else()
+        set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
+    endif()
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void)
         {
-            __m128i a = _mm_setzero_si128();
-            __m128i b = _mm_setzero_si128();
-            __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-            (void)c;
+            __m128i zero = _mm_setzero_si128();
+            (void)zero;
             return 0;
         }"
-        HAVE_PCLMULQDQ_INTRIN
+        HAVE_SSE2_INTRIN
     )
-else()
-    set(HAVE_PCLMULQDQ_INTRIN NO)
-endif()
-set(CMAKE_REQUIRED_FLAGS)
+    set(CMAKE_REQUIRED_FLAGS)
 
-# FORCE_SSE2 option will only be shown if HAVE_SSE2_INTRIN is true
-if("${ARCH}" MATCHES "i[3-6]86")
-    cmake_dependent_option(FORCE_SSE2 "Always assume CPU is SSE2 capable" OFF "HAVE_SSE2_INTRIN" OFF)
+    # Check whether compiler supports SSE4 CRC inline asm
+    if(WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+    else()
+        set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
+    endif()
+    check_c_source_compile_or_run(
+        "int main(void)
+        {
+            unsigned val = 0, h = 0;
+        #if defined(_MSC_VER)
+            { __asm mov edx, h __asm mov eax, val __asm crc32 eax, edx __asm mov val, eax }
+        #else
+            __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
+        #endif
+            return (int) h;
+        }"
+        HAVE_SSE42CRC_INLINE_ASM
+    )
+    # Check whether compiler supports SSE4 CRC instrinics
+    check_c_source_compile_or_run(
+        "#include <immintrin.h>
+        int main(void)
+        {
+            unsigned crc = 0;
+            char c = 'c';
+        #if defined(_MSC_VER)
+            crc = _mm_crc32_u32(crc, c);
+        #else
+            crc = __builtin_ia32_crc32qi(crc, c);
+        #endif
+            (void)crc;
+            return 0;
+        }"
+        HAVE_SSE42CRC_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+
+    # Check whether compiler supports PCLMULQDQ intrinics
+    if(WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+    else()
+        set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
+    endif()
+    if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
+        # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
+        check_c_source_compile_or_run(
+            "#include <immintrin.h>
+            int main(void)
+            {
+                __m128i a = _mm_setzero_si128();
+                __m128i b = _mm_setzero_si128();
+                __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+                (void)c;
+                return 0;
+            }"
+            HAVE_PCLMULQDQ_INTRIN
+        )
+    else()
+        set(HAVE_PCLMULQDQ_INTRIN NO)
+    endif()
+    set(CMAKE_REQUIRED_FLAGS)
+
+    # FORCE_SSE2 option will only be shown if HAVE_SSE2_INTRIN is true
+    if("${ARCH}" MATCHES "i[3-6]86")
+        cmake_dependent_option(FORCE_SSE2 "Always assume CPU is SSE2 capable" OFF "HAVE_SSE2_INTRIN" OFF)
+    endif()
 endif()
 
 #
@@ -532,7 +507,9 @@ set(ARCHDIR "arch/generic")
 if(BASEARCH_X86_FOUND)
     set(ARCHDIR "arch/x86")
     add_definitions(-DUNALIGNED_OK)
-    add_feature_info(SSE2 1 "Support the SSE2 instruction set, using \"${SSE2FLAG}\"")
+    if(NOT ${ARCH} MATCHES "x86_64")
+        add_feature_info(SSE2 1 "Support the SSE2 instruction set, using \"${SSE2FLAG}\"")
+    endif()
 elseif(BASEARCH_ARM_FOUND)
     set(ARCHDIR "arch/arm")
     add_definitions(-DUNALIGNED_OK)
