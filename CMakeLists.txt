@@ -5,6 +5,8 @@ else()
   cmake_policy(VERSION 3.5.1...3.13.2)
 endif()
 
+message(STATUS "Using CMake version ${CMAKE_VERSION}")
+
 set(CMAKE_MACOSX_RPATH 1)
 
 # If not specified on the command line, enable C99 as the default
