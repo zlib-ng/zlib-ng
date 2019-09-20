@@ -298,7 +298,7 @@ static inline unsigned char *chunkmemset(unsigned char *out, unsigned dist, unsi
 }
 
 static inline unsigned char* chunkmemsetsafe(unsigned char *out, unsigned dist, unsigned len, unsigned left) {
-    if (left < (unsigned)(3 * INFFAST_CHUNKSIZE)) {
+    if (len < sizeof(uint64_t) || left < (unsigned)(3 * INFFAST_CHUNKSIZE)) {
         while (len > 0) {
           *out = *(out - dist);
           out++;
