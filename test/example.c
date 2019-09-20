@@ -1375,12 +1375,12 @@ int main(int argc, char *argv[])
     err |= test_deflate_pending(compr, comprLen);
     err |= test_deflate_prime(compr, comprLen);
 
-    err |= test_file_deflate_inflate("data/defneg3.dat", Z_BEST_SPEED, 1, Z_DEFAULT_STRATEGY);
+    err |= test_file_deflate_inflate("test/data/defneg3.dat", Z_BEST_SPEED, 1, Z_DEFAULT_STRATEGY);
 
     for (memLevel = 1; memLevel <= MAX_MEM_LEVEL; memLevel++) {
-        err |= test_file_deflate_inflate("data/lcet10.txt", Z_BEST_SPEED, memLevel, Z_DEFAULT_STRATEGY);
-        err |= test_file_deflate_inflate("data/lcet10.txt", Z_DEFAULT_COMPRESSION, memLevel, Z_DEFAULT_STRATEGY);
-        err |= test_file_deflate_inflate("data/lcet10.txt", Z_BEST_COMPRESSION, memLevel, Z_DEFAULT_STRATEGY);
+        err |= test_file_deflate_inflate("test/data/lcet10.txt", Z_BEST_SPEED, memLevel, Z_DEFAULT_STRATEGY);
+        err |= test_file_deflate_inflate("test/data/lcet10.txt", Z_DEFAULT_COMPRESSION, memLevel, Z_DEFAULT_STRATEGY);
+        err |= test_file_deflate_inflate("test/data/lcet10.txt", Z_BEST_COMPRESSION, memLevel, Z_DEFAULT_STRATEGY);
     }
 
     free(compr);
