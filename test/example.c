@@ -1300,73 +1300,7 @@ int test_file_deflate_inflate(char *path, int level, int memLevel, int strategy)
     free(uncompr);
     return err;
 }
-/* ===========================================================================
- * Test burn code
- */
 
-void test_burn(int level,  int memLevel)
-{
-    int max_size = 40 * 1024 * 1024;
-    char *buf = NULL;
-    char *compr = NULL;
-    char *uncompr = NULL;
-    int bufLen = 0;
-    int comprLen = 0;
-    int uncomprLen = 0;
-
-    buf = (char *)malloc(max_size);
-    compr = (char *)malloc(max_size);
-    uncompr = (char *)malloc(max_size);
-
-    srand(time(NULL));
-    int target_len = 0;
-     
-    for (int z = 0; z < 10; z += 1) {
-        for (int x = 0; x < 100; x += 1) {
-            bufLen = rand() % max_size;
-            for (int y = 0; y < bufLen; y += 6) {
-                buf[y] = 'a' + (rand() % 26);
-                buf[y+1] = buf[y];
-                buf[y+2] = 'a' + (rand() % 26);
-                if (buf[y+2] > 't')
-                    buf[y+3] = 'a' + (rand() % 26);
-                buf[y+4] = buf[y];
-                if (buf[y] > 'g')
-                    buf[y+5] = 'a' + (rand() % 26);
-            }
-
-            printf("test %d\n", x + (z * 100));
-            test_write_buffer("input.dat", buf, bufLen);
-            //printf("buf length %d\n", bufLen);
-            comprLen = test_deflate_small_params(buf, bufLen, compr, max_size, level, Z_DEFLATED,
-                -MAX_WBITS, memLevel, Z_DEFAULT_STRATEGY);
-            //printf("compr length %d\n", comprLen);
-            uncomprLen = test_inflate_small_params(compr, comprLen, uncompr, max_size, -MAX_WBITS);
-            //printf("uncompr length %d\n", uncomprLen);
-
-            int bad = 0;
-            if (memcmp(buf, uncompr, bufLen) != 0)
-                bad = 1;
-            if (bufLen != uncomprLen)
-                bad = 1;
-
-            if (bad) {
-                if (comprLen < target_len || target_len == 0) {
-                    printf("found new bad burn %d\n", comprLen);
-                    test_write_buffer("bad_burn.dat", buf, bufLen);
-                    test_write_buffer("bad_burn.gz", compr, comprLen);
-                    target_len = comprLen;
-                    bufLen = comprLen;
-                }
-                break;
-            }
-        }
-    }
-
-    free(buf);
-    free(compr);
-    free(uncompr);
-}
 /* ===========================================================================
  * Usage:  example [output.gz  [input.gz]]
  */
