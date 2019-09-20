@@ -840,7 +840,8 @@ if (ZLIB_ENABLE_TESTS)
 
     add_executable(example test/example.c)
     configure_test_executable(example)
-    add_test(NAME example COMMAND example${CMAKE_EXECUTABLE_SUFFIX})
+    add_test(NAME example COMMAND example${CMAKE_EXECUTABLE_SUFFIX}
+         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
     add_executable(minigzip test/minigzip.c)
     configure_test_executable(minigzip)
@@ -855,7 +856,8 @@ if (ZLIB_ENABLE_TESTS)
         add_executable(example64 test/example.c)
         configure_test_executable(example64)
         set_target_properties(example64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
-        add_test(NAME example64 COMMAND example64${CMAKE_EXECUTABLE_SUFFIX})
+        add_test(NAME example64 COMMAND example64${CMAKE_EXECUTABLE_SUFFIX}
+            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
         add_executable(minigzip64 test/minigzip.c)
         configure_test_executable(minigzip64)
