@@ -306,6 +306,7 @@ static inline unsigned char* chunkmemsetsafe(unsigned char *out, unsigned dist, 
         }
         return out;
     }
+
     return chunkmemset(out, dist, len);
 }
 
