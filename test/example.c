@@ -89,6 +89,7 @@ int test_write_buffer(char *path, char *buf, size_t bufLen)
     fclose(f);
     return Z_OK;
 }
+
 /* ===========================================================================
  * Test compress() and uncompress()
  */
