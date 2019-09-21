@@ -47,8 +47,7 @@ endif
 
 teststatic: check_cross_dep
 	@TMPST=tmpst_$$; \
-	cd $(SRCTOP); \
-	if echo hello world | ${QEMU_RUN} $(SRCTOP)/minigzip$(EXE) | ${QEMU_RUN} $(SRCTOP)/minigzip$(EXE) -d && ${QEMU_RUN} $(SRCTOP)/example$(EXE) $$TMPST ; then \
+	if echo hello world | ${QEMU_RUN} ../minigzip$(EXE) | ${QEMU_RUN} ../minigzip$(EXE) -d && ${QEMU_RUN} ../example$(EXE) $$TMPST ; then \
 	  echo '		*** zlib test OK ***'; \
 	else \
 	  echo '		*** zlib test FAILED ***'; exit 1; \
@@ -61,8 +60,7 @@ testshared: check_cross_dep
 	DYLD_LIBRARY_PATH=`pwd`/..:$(DYLD_LIBRARY_PATH) ; export DYLD_LIBRARY_PATH; \
 	SHLIB_PATH=`pwd`/..:$(SHLIB_PATH) ; export SHLIB_PATH; \
 	TMPSH=tmpsh_$$; \
-	cd $(SRCTOP); \
-	if echo hello world | ${QEMU_RUN} $(SRCTOP)/minigzipsh$(EXE) | ${QEMU_RUN} $(SRCTOP)/minigzipsh$(EXE) -d && ${QEMU_RUN} $(SRCTOP)/examplesh$(EXE) $$TMPSH; then \
+	if echo hello world | ${QEMU_RUN} ../minigzipsh$(EXE) | ${QEMU_RUN} ../minigzipsh$(EXE) -d && ${QEMU_RUN} ../examplesh$(EXE) $$TMPSH; then \
 	  echo '		*** zlib shared test OK ***'; \
 	else \
 	  echo '		*** zlib shared test FAILED ***'; exit 1; \
@@ -71,8 +69,7 @@ testshared: check_cross_dep
 
 test64: check_cross_dep
 	@TMP64=tmp64_$$; \
-	cd $(SRCTOP); \
-	if echo hello world | ${QEMU_RUN} $(SRCTOP)/minigzip64$(EXE) | ${QEMU_RUN} $(SRCTOP)/minigzip64$(EXE) -d && ${QEMU_RUN} $(SRCTOP)/example64$(EXE) $$TMP64; then \
+	if echo hello world | ${QEMU_RUN} ../minigzip64$(EXE) | ${QEMU_RUN} ../minigzip64$(EXE) -d && ${QEMU_RUN} ../example64$(EXE) $$TMP64; then \
 	  echo '		*** zlib 64-bit test OK ***'; \
 	else \
 	  echo '		*** zlib 64-bit test FAILED ***'; exit 1; \
