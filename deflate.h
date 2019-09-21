@@ -352,13 +352,8 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
 #ifndef ZLIB_DEBUG
 /* Inline versions of _tr_tally for speed: */
 
-# if defined(GEN_TREES_H)
-    extern unsigned char ZLIB_INTERNAL zng_length_code[];
-    extern unsigned char ZLIB_INTERNAL zng_dist_code[];
-# else
-    extern const unsigned char ZLIB_INTERNAL zng_length_code[];
-    extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
-# endif
+  extern const unsigned char ZLIB_INTERNAL zng_length_code[];
+  extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
 
 # define zng_tr_tally_lit(s, c, flush) \
   { unsigned char cc = (c); \

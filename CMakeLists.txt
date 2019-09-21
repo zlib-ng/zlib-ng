@@ -4,7 +4,6 @@ if(CMAKE_VERSION VERSION_LESS 3.12)
 else()
   cmake_policy(VERSION 3.5.1...3.13.2)
 endif()
-
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
 set(CMAKE_MACOSX_RPATH 1)
@@ -54,6 +53,12 @@ include(CheckCSourceRuns)
 include(CMakeDependentOption)
 include(FeatureSummary)
 
+include(cmake/archdetect.cmake)
+
+if(CMAKE_TOOLCHAIN_FILE)
+    message(STATUS "Using CMake toolchain: ${CMAKE_TOOLCHAIN_FILE}")
+endif()
+
 # Make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
 # this should select the maximum generic optimisation on the current platform (i.e. -O3 for gcc/clang)
 if(NOT CMAKE_BUILD_TYPE)
@@ -70,26 +75,6 @@ check_include_file(stdint.h    HAVE_STDINT_H)
 check_include_file(stddef.h    HAVE_STDDEF_H)
 check_include_file(sys/sdt.h   HAVE_SYS_SDT_H)
 
-if(CMAKE_OSX_ARCHITECTURES)
-    # If multiple architectures are requested (universal build), pick only the first
-    list(GET CMAKE_OSX_ARCHITECTURES 0 ARCH)
-else()
-    if (MSVC)
-        if("${MSVC_C_ARCHITECTURE_ID}" STREQUAL "ARM" OR "${MSVC_C_ARCHITECTURE_ID}" STREQUAL "ARMV7")
-            set(ARCH "arm")
-        elseif ("${MSVC_C_ARCHITECTURE_ID}" STREQUAL "ARM64")
-            set(ARCH "aarch64")
-        endif()
-    endif()
-    if(NOT ARCH)
-        set(ARCH ${CMAKE_SYSTEM_PROCESSOR})
-    endif()
-endif()
-message(STATUS "Architecture: ${ARCH}")
-if(CMAKE_TOOLCHAIN_FILE)
-    message(STATUS "Using cmake toolchain: ${CMAKE_TOOLCHAIN_FILE}")
-endif()
-
 #
 # Options parsing
 #
@@ -103,10 +88,10 @@ option(WITH_OPTIM "Build with optimisation" ON)
 option(WITH_NEW_STRATEGIES "Use new strategies" ON)
 option(WITH_NATIVE_INSTRUCTIONS
     "Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native)" OFF)
-if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
+if(BASEARCH_ARM_FOUND)
     option(WITH_ACLE "Build with ACLE CRC" ON)
     option(WITH_NEON "Build with NEON intrinsics" ON)
-elseif("${ARCH}" MATCHES "s390x")
+elseif(BASEARCH_S360_FOUND AND "${ARCH}" MATCHES "s390x")
     option(WITH_DFLTCC_DEFLATE "Use DEFLATE CONVERSION CALL instruction for compression on IBM Z" OFF)
     option(WITH_DFLTCC_INFLATE "Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z" OFF)
 endif()
@@ -118,7 +103,7 @@ add_feature_info(WITH_SANITIZERS WITH_SANITIZERS "Build with address sanitizer a
 add_feature_info(WITH_MSAN WITH_MSAN "Build with memory sanitizer")
 add_feature_info(WITH_FUZZERS WITH_FUZZERS "Build test/fuzz")
 add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
-if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
+if(BASEARCH_ARM_FOUND)
     add_feature_info(WITH_ACLE WITH_ACLE "Build with ACLE CRC")
     add_feature_info(WITH_NEON WITH_NEON "Build with NEON intrinsics")
 endif()
@@ -144,29 +129,22 @@ if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
     endif()
     if(CMAKE_HOST_UNIX)
-        if(NOT SSE2FLAG)
-            set(SSE2FLAG "-msse2")
-        endif()
-        if(NOT SSE4FLAG)
-            set(SSE4FLAG "-msse4.2")
-        endif()
+        set(SSE2FLAG "-msse2")
+        set(SSE4FLAG "-msse4.2")
     else()
-        if(NOT SSE2FLAG)
-            set(SSE2FLAG "/arch:SSE2")
-        endif()
-        if(NOT SSE4FLAG)
-            set(SSE4FLAG "/arch:SSE4.2")
-        endif()
+        set(SSE2FLAG "/arch:SSE2")
+        set(SSE4FLAG "/arch:SSE4.2")
     endif()
 elseif(MSVC)
     # TODO. ICC can be used through MSVC. I'm not sure if we'd ever see that combination
     # (who'd use cmake from an IDE...) but checking for ICC before checking for MSVC should
     # avoid mistakes.
     # /Oi ?
-    if(NOT ${ARCH} MATCHES "AMD64")
-        set(SSE2FLAG "/arch:SSE2")
-    endif()
-    if("${ARCH}" MATCHES "arm")
+    if(BASEARCH_X86_FOUND)
+        if(NOT ${ARCH} MATCHES "x86_64")
+            set(SSE2FLAG "/arch:SSE2")
+        endif()
+    elseif(BASEARCH_ARM_FOUND)
         add_definitions(-D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE)
         set(NEONFLAG "/arch:VFPv4")
     endif()
@@ -190,7 +168,7 @@ else()
         set(WARNFLAGS "-Wall -Wno-implicit-fallthrough")
     endif()
     # Check support for ARM floating point
-    if("${ARCH}" MATCHES "arm")
+    if(BASEARCH_ARM_FOUND)
         if (__GNUC__)
             execute_process(COMMAND ${CMAKE_C_COMPILER} "-dumpmachine"
                             OUTPUT_VARIABLE GCC_MACHINE)
@@ -213,36 +191,27 @@ else()
         endif()
     endif()
     if(NOT NATIVEFLAG)
-        if(NOT SSE2FLAG)
-            if(__GNUC__)
+        if(__GNUC__)
+            if(BASEARCH_X86_FOUND)
                 set(SSE2FLAG "-msse2")
-            endif()
-        endif()
-        if(NOT SSE4FLAG)
-            if(__GNUC__)
                 set(SSE4FLAG "-msse4")
-            endif()
-        endif()
-        if(NOT PCLMULFLAG)
-            if(__GNUC__)
                 set(PCLMULFLAG "-mpclmul")
+            elseif(BASEARCH_ARM_FOUND)
+                set(ACLEFLAG "-march=armv8-a+crc")
+                if("${ARCH}" MATCHES "aarch64")
+                    set(NEONFLAG "-march=armv8-a+crc+simd")
+                endif()
             endif()
-        endif()
-        if("${ARCH}" MATCHES "arm")
-            set(ACLEFLAG "-march=armv8-a+crc")
-        elseif("${ARCH}" MATCHES "aarch64")
-            set(ACLEFLAG "-march=armv8-a+crc")
-            set(NEONFLAG "-march=armv8-a+crc+simd")
         endif()
     else()
         set(SSE2FLAG ${NATIVEFLAG})
         set(SSE4FLAG ${NATIVEFLAG})
         set(PCLMULFLAG ${NATIVEFLAG})
-        if("${ARCH}" MATCHES "arm")
+        if(BASEARCH_ARM_FOUND)
             set(ACLEFLAG "${NATIVEFLAG}")
-        elseif("${ARCH}" MATCHES "aarch64")
-            set(ACLEFLAG "${NATIVEFLAG}")
-            set(NEONFLAG "${NATIVEFLAG}")
+            if("${ARCH}" MATCHES "aarch64")
+                set(NEONFLAG "${NATIVEFLAG}")
+            endif()
         endif()
     endif()
 endif()
@@ -253,18 +222,6 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS}")
 # Check to see if we have large file support
 #
 set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
-# We add these other definitions here because CheckTypeSize.cmake
-# in CMake 2.4.x does not automatically do so and we want
-# compatibility with CMake 2.4.x.
-if(HAVE_SYS_TYPES_H)
-    list(APPEND CMAKE_REQUIRED_DEFINITIONS -DHAVE_SYS_TYPES_H)
-endif()
-if(HAVE_STDINT_H)
-    list(APPEND CMAKE_REQUIRED_DEFINITIONS -DHAVE_STDINT_H)
-endif()
-if(HAVE_STDDEF_H)
-    list(APPEND CMAKE_REQUIRED_DEFINITIONS -DHAVE_STDDEF_H)
-endif()
 check_type_size(off64_t OFF64_T)
 if(HAVE_OFF64_T)
    add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
@@ -431,90 +388,92 @@ if(MSVC)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
 
-# Check whether compiler supports SSE2 instrinics
-if(WITH_NATIVE_INSTRUCTIONS)
-    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-else()
-    set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
-endif()
-check_c_source_compile_or_run(
-    "#include <immintrin.h>
-    int main(void)
-    {
-        __m128i zero = _mm_setzero_si128();
-        (void)zero;
-        return 0;
-    }"
-    HAVE_SSE2_INTRIN
-)
-set(CMAKE_REQUIRED_FLAGS)
-
-# Check whether compiler supports SSE4 CRC inline asm
-if(WITH_NATIVE_INSTRUCTIONS)
-    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-else()
-    set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
-endif()
-check_c_source_compile_or_run(
-    "int main(void)
-    {
-        unsigned val = 0, h = 0;
-    #if defined(_MSC_VER)
-        { __asm mov edx, h __asm mov eax, val __asm crc32 eax, edx __asm mov val, eax }
-    #else
-        __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
-    #endif
-        return (int) h;
-    }"
-    HAVE_SSE42CRC_INLINE_ASM
-)
-# Check whether compiler supports SSE4 CRC instrinics
-check_c_source_compile_or_run(
-    "#include <immintrin.h>
-    int main(void)
-    {
-        unsigned crc = 0;
-        char c = 'c';
-    #if defined(_MSC_VER)
-        crc = _mm_crc32_u32(crc, c);
-    #else
-        crc = __builtin_ia32_crc32qi(crc, c);
-    #endif
-        (void)crc;
-        return 0;
-    }"
-    HAVE_SSE42CRC_INTRIN
-)
-set(CMAKE_REQUIRED_FLAGS)
-
-# Check whether compiler supports PCLMULQDQ intrinics
-if(WITH_NATIVE_INSTRUCTIONS)
-    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
-else()
-    set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
-endif()
-if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
-    # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
+if(BASEARCH_X86_FOUND)
+    # Check whether compiler supports SSE2 instrinics
+    if(WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+    else()
+        set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
+    endif()
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void)
         {
-            __m128i a = _mm_setzero_si128();
-            __m128i b = _mm_setzero_si128();
-            __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-            (void)c;
+            __m128i zero = _mm_setzero_si128();
+            (void)zero;
             return 0;
         }"
-        HAVE_PCLMULQDQ_INTRIN
+        HAVE_SSE2_INTRIN
     )
-else()
-    set(HAVE_PCLMULQDQ_INTRIN NO)
-endif()
-set(CMAKE_REQUIRED_FLAGS)
+    set(CMAKE_REQUIRED_FLAGS)
 
-# FORCE_SSE2 option will only be shown if HAVE_SSE2_INTRIN is true
-if("${ARCH}" MATCHES "i[3-6]86")
-    cmake_dependent_option(FORCE_SSE2 "Always assume CPU is SSE2 capable" OFF "HAVE_SSE2_INTRIN" OFF)
+    # Check whether compiler supports SSE4 CRC inline asm
+    if(WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+    else()
+        set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
+    endif()
+    check_c_source_compile_or_run(
+        "int main(void)
+        {
+            unsigned val = 0, h = 0;
+        #if defined(_MSC_VER)
+            { __asm mov edx, h __asm mov eax, val __asm crc32 eax, edx __asm mov val, eax }
+        #else
+            __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
+        #endif
+            return (int) h;
+        }"
+        HAVE_SSE42CRC_INLINE_ASM
+    )
+    # Check whether compiler supports SSE4 CRC instrinics
+    check_c_source_compile_or_run(
+        "#include <immintrin.h>
+        int main(void)
+        {
+            unsigned crc = 0;
+            char c = 'c';
+        #if defined(_MSC_VER)
+            crc = _mm_crc32_u32(crc, c);
+        #else
+            crc = __builtin_ia32_crc32qi(crc, c);
+        #endif
+            (void)crc;
+            return 0;
+        }"
+        HAVE_SSE42CRC_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+
+    # Check whether compiler supports PCLMULQDQ intrinics
+    if(WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+    else()
+        set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
+    endif()
+    if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
+        # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
+        check_c_source_compile_or_run(
+            "#include <immintrin.h>
+            int main(void)
+            {
+                __m128i a = _mm_setzero_si128();
+                __m128i b = _mm_setzero_si128();
+                __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+                (void)c;
+                return 0;
+            }"
+            HAVE_PCLMULQDQ_INTRIN
+        )
+    else()
+        set(HAVE_PCLMULQDQ_INTRIN NO)
+    endif()
+    set(CMAKE_REQUIRED_FLAGS)
+
+    # FORCE_SSE2 option will only be shown if HAVE_SSE2_INTRIN is true
+    if("${ARCH}" MATCHES "i[3-6]86")
+        cmake_dependent_option(FORCE_SSE2 "Always assume CPU is SSE2 capable" OFF "HAVE_SSE2_INTRIN" OFF)
+    endif()
 endif()
 
 #
@@ -545,23 +504,25 @@ endmacro()
 
 set(ZLIB_ARCH_SRCS)
 set(ARCHDIR "arch/generic")
-if("${ARCH}" MATCHES "x86_64" OR "${ARCH}" MATCHES "AMD64" OR "${ARCH}" MATCHES "i[3-6]86")
+if(BASEARCH_X86_FOUND)
     set(ARCHDIR "arch/x86")
     add_definitions(-DUNALIGNED_OK)
-    add_feature_info(SSE2 1 "Support the SSE2 instruction set, using \"${SSE2FLAG}\"")
-elseif("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
+    if(NOT ${ARCH} MATCHES "x86_64")
+        add_feature_info(SSE2 1 "Support the SSE2 instruction set, using \"${SSE2FLAG}\"")
+    endif()
+elseif(BASEARCH_ARM_FOUND)
     set(ARCHDIR "arch/arm")
     add_definitions(-DUNALIGNED_OK)
-elseif("${ARCH}" MATCHES "s390x")
+elseif(BASEARCH_S360_FOUND AND "${ARCH}" MATCHES "s390x")
     set(ARCHDIR "arch/s390")
 else()
     message(STATUS "No optimized architecture: using ${ARCHDIR}")
 endif()
-if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
-    list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/armfeature.c ${ARCHDIR}/fill_window_arm.c)
-endif()
+
 if(WITH_OPTIM)
-    if("${ARCH}" MATCHES "arm" OR "${ARCH}" MATCHES "aarch64")
+    if(BASEARCH_ARM_FOUND)
+        add_definitions(-DARM_GETAUXVAL)
+        list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/armfeature.c ${ARCHDIR}/fill_window_arm.c)
         if(WITH_NEON)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/adler32_neon.c)
             add_definitions(-DARM_NEON_ADLER32)
@@ -580,8 +541,8 @@ if(WITH_OPTIM)
             endif()
             add_feature_info(ACLE_CRC 1 "Support CRC hash generation using the ACLE instruction set, using \"${ACLEFLAG}\"")
         endif()
-    elseif("${ARCHDIR}" MATCHES "arch/x86")
-        add_definitions("-DX86_CPUID")
+    elseif(BASEARCH_X86_FOUND)
+        add_definitions(-DX86_CPUID)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/x86.c)
         if(HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN)
             add_definitions(-DX86_SSE42_CRC_HASH)
@@ -618,7 +579,7 @@ if(WITH_OPTIM)
                 add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG} ${SSE4FLAG}\"")
             endif()
         endif()
-    elseif("${ARCH}" MATCHES "s390x")
+    elseif(BASEARCH_S360_FOUND AND "${ARCH}" MATCHES "s390x")
         if(WITH_DFLTCC_DEFLATE OR WITH_DFLTCC_INFLATE)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/dfltcc_common.c)
         endif()
@@ -752,7 +713,7 @@ if(MINGW OR MSYS)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif()
 
-set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_DLL_SRCS} 
+set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_DLL_SRCS}
     ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 if(WITH_GZFILEOP)
     list(APPEND ZLIB_ALL_SRCS ${ZLIB_GZFILE_SRCS})
@@ -770,7 +731,7 @@ else()
 endif()
 
 foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
-    target_include_directories(${ZLIB_INSTALL_LIBRARY} PUBLIC 
+    target_include_directories(${ZLIB_INSTALL_LIBRARY} PUBLIC
         ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach()
 
@@ -848,9 +809,8 @@ if (ZLIB_ENABLE_TESTS)
 
     add_executable(example test/example.c)
     configure_test_executable(example)
-    add_test(NAME example COMMAND $<TARGET_FILE:example>
-         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
+    set(EXAMPLE_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:example>)
+    add_test(NAME example COMMAND ${EXAMPLE_COMMAND})
     add_executable(minigzip test/minigzip.c)
     configure_test_executable(minigzip)
 
@@ -860,13 +820,18 @@ if (ZLIB_ENABLE_TESTS)
     add_executable(makefixed tools/makefixed.c inftrees.c)
     target_include_directories(makefixed PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
+    add_executable(maketrees tools/maketrees.c trees.c)
+    target_include_directories(maketrees PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
+    add_executable(makecrct tools/makecrct.c)
+    target_include_directories(makecrct PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
     if(HAVE_OFF64_T)
         add_executable(example64 test/example.c)
         configure_test_executable(example64)
         set_target_properties(example64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
-        add_test(NAME example64 COMMAND $<TARGET_FILE:example64>
-            WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-
+        set(EXAMPLE64_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:example64>)
+        add_test(NAME example64 COMMAND ${EXAMPLE64_COMMAND})
         add_executable(minigzip64 test/minigzip.c)
         configure_test_executable(minigzip64)
         set_target_properties(minigzip64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
@@ -877,8 +842,8 @@ if (ZLIB_ENABLE_TESTS)
         file(GLOB ALL_SRC_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*")
         foreach(FUZZER ${FUZZERS})
             add_executable(${FUZZER}_fuzzer test/fuzz/${FUZZER}_fuzzer.c test/fuzz/standalone_fuzz_target_runner.c)
-            configure_test_executable(${FUZZER}_fuzzer)
-            add_test(${FUZZER}_fuzzer ${FUZZER}_fuzzer${CMAKE_EXECUTABLE_SUFFIX} ${ALL_SRC_FILES})
+            set(FUZZER_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${FUZZER}_fuzzer> ${ALL_SRC_FILES})
+            add_test(NAME ${FUZZER}_fuzzer COMMAND ${FUZZER_COMMAND})
         endforeach()
     endif()
 
@@ -896,7 +861,8 @@ if (ZLIB_ENABLE_TESTS)
     if(NOT WIN32 AND ZLIB_COMPAT)
         add_executable(CVE-2003-0107 test/CVE-2003-0107.c)
         target_link_libraries(CVE-2003-0107 zlib)
-        add_test(NAME CVE-2003-0107 COMMAND CVE-2003-0107)
+        set(CVE20030107_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:CVE-2003-0107>)
+        add_test(NAME CVE-2003-0107 COMMAND ${CVE20030107_COMMAND})
     endif()
 
     set(MAKEFIXED_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makefixed>)
@@ -910,6 +876,30 @@ if (ZLIB_ENABLE_TESTS)
         COMMAND ${CMAKE_COMMAND} -E compare_files
             ${CMAKE_CURRENT_SOURCE_DIR}/inffixed.h
             ${CMAKE_CURRENT_SOURCE_DIR}/inffixed._h)
+
+    set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees>)
+    add_test(NAME maketrees
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${MAKETREES_COMMAND}"
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/trees._h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+    add_test(NAME maketrees-cmp
+        COMMAND ${CMAKE_COMMAND} -E compare_files
+            ${CMAKE_CURRENT_SOURCE_DIR}/trees.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/trees._h)
+
+    set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct>)
+    add_test(NAME makecrct
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${MAKECRCT_COMMAND}"
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32._h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+    add_test(NAME makecrct-cmp
+        COMMAND ${CMAKE_COMMAND} -E compare_files
+            ${CMAKE_CURRENT_SOURCE_DIR}/crc32.h
+            ${CMAKE_CURRENT_SOURCE_DIR}/crc32._h)
 
     set(GH_361_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -4)
     add_test(NAME GH-361

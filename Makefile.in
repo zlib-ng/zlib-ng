@@ -85,7 +85,7 @@ PIC_OBJS = $(PIC_OBJC)
 
 all: static shared
 
-static: example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE)
+static: example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
 
 shared: examplesh$(EXE) minigzipsh$(EXE)
 
@@ -196,6 +196,12 @@ minigzip64.o:
 makefixed.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/tools/makefixed.c
 
+maketrees.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/tools/maketrees.c
+
+makecrct.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/tools/makecrct.c
+
 zlibrc.o: win32/zlib$(SUFFIX)1.rc
 	$(RC) $(RCFLAGS) -o $@ win32/zlib$(SUFFIX)1.rc
 
@@ -261,6 +267,18 @@ endif
 
 makefixed$(EXE): makefixed.o $(OBJG) $(STATICLIB)
 	$(CC) $(LDFLAGS) -o $@ makefixed.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+maketrees$(EXE): maketrees.o $(OBJG) $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ maketrees.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+makecrct$(EXE): makecrct.o $(OBJG) $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ makecrct.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -339,7 +357,7 @@ clean:
 	   example64$(EXE) minigzip64$(EXE) \
 	   checksum_fuzzer$(EXE) compress_fuzzer$(EXE) example_small_fuzzer$(EXE) example_large_fuzzer$(EXE) \
 	   example_flush_fuzzer$(EXE) example_dict_fuzzer$(EXE) minigzip_fuzzer$(EXE) \
-	   infcover makefixed$(EXE) \
+	   infcover makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) \
 	   $(STATICLIB) $(IMPORTLIB) $(SHAREDLIB) $(SHAREDLIBV) $(SHAREDLIBM) \
 	   foo.gz so_locations \
 	   _match.s maketree
