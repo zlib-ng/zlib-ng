@@ -21,7 +21,7 @@
 Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count) {
     Pos p, lp, ret;
 
-    if (unlikely(count == 0)) {
+    if (UNLIKELY(count == 0)) {
         return s->prev[str & s->w_mask];
     }
 

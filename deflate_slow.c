@@ -110,7 +110,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
                 unsigned int mov_fwd = s->prev_length - 2;
                 if (max_insert > s->strstart) {
                     unsigned int insert_cnt = mov_fwd;
-                    if (unlikely(insert_cnt > max_insert - s->strstart))
+                    if (UNLIKELY(insert_cnt > max_insert - s->strstart))
                         insert_cnt = max_insert - s->strstart;
 
                     functable.insert_string(s, s->strstart + 1, insert_cnt);

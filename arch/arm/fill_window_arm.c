@@ -112,7 +112,7 @@ void fill_window_arm(deflate_state *s) {
 
             s->ins_h = s->window[str];
 
-            if (unlikely(s->lookahead < MIN_MATCH))
+            if (UNLIKELY(s->lookahead < MIN_MATCH))
                 insert_cnt += s->lookahead - MIN_MATCH;
             slen = insert_cnt;
             if (str >= (MIN_MATCH - 2))

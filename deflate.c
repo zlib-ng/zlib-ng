@@ -1335,7 +1335,7 @@ void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
             }
 #else
             unsigned int count;
-            if (unlikely(s->lookahead == 1)){
+            if (UNLIKELY(s->lookahead == 1)){
                 count = s->insert - 1;
             }else{
                 count = s->insert;
