@@ -53,7 +53,7 @@ static int emit_match(deflate_state *s, struct match match) {
 }
 
 static void insert_match(deflate_state *s, struct match match) {
-    if (unlikely(s->lookahead <= match.match_length + MIN_MATCH))
+    if (UNLIKELY(s->lookahead <= match.match_length + MIN_MATCH))
         return;
 
     /* matches that are not long enough we need to emit as literals */
@@ -95,7 +95,7 @@ static void insert_match(deflate_state *s, struct match match) {
         match.strstart++;
 #ifdef NOT_TWEAK_COMPILER
         do {
-            if (likely(match.strstart >= match.orgstart)) {
+            if (LIKELY(match.strstart >= match.orgstart)) {
                 functable.insert_string(s, match.strstart, 1);
             }
             match.strstart++;
@@ -104,8 +104,8 @@ static void insert_match(deflate_state *s, struct match match) {
              */
         } while (--match.match_length != 0);
 #else
-        if (likely(match.strstart >= match.orgstart)) {
-            if (likely(match.strstart + match.match_length - 1 >= match.orgstart)) {
+        if (LIKELY(match.strstart >= match.orgstart)) {
+            if (LIKELY(match.strstart + match.match_length - 1 >= match.orgstart)) {
                 functable.insert_string(s, match.strstart, match.match_length);
             } else {
                 functable.insert_string(s, match.strstart, match.orgstart - match.strstart + 1);
@@ -145,17 +145,17 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
     if (current->match_length <= 1)
         return;
 
-    if (unlikely(current->match_length > 1 + next->match_start))
+    if (UNLIKELY(current->match_length > 1 + next->match_start))
         return;
 
-    if (unlikely(current->match_length > 1 + next->strstart))
+    if (UNLIKELY(current->match_length > 1 + next->strstart))
         return;
 
     match = s->window - current->match_length + 1 + next->match_start;
     orig  = s->window - current->match_length + 1 + next->strstart;
 
     /* quick exit check.. if this fails then don't bother with anything else */
-    if (likely(*match != *orig))
+    if (LIKELY(*match != *orig))
         return;
 
     c = *current;

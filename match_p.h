@@ -226,7 +226,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
          */
         uint16_t val;
         memcpy(&val, match + best_len - 1, sizeof(val));
-        if (likely(val != scan_end))
+        if (LIKELY(val != scan_end))
             continue;
 
         memcpy(&val, match, sizeof(val));
@@ -432,7 +432,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         int cont = 1;
         do {
             match = window + cur_match;
-            if (likely(memcmp(match+best_len-1, &scan_end, sizeof(scan_end)) != 0
+            if (LIKELY(memcmp(match+best_len-1, &scan_end, sizeof(scan_end)) != 0
                 || memcmp(match, &scan_start, sizeof(scan_start)) != 0)) {
                 if ((cur_match = prev[cur_match & wmask]) > limit
                     && --chain_length != 0) {
