@@ -1,0 +1,322 @@
+name: CI CMake
+on: [push]
+jobs:
+  ci-cmake:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [
+          Ubuntu 18.04 GCC,
+          Ubuntu 18.04 GCC OSB,
+          Ubuntu 18.04 GCC No Opt,
+          Ubuntu 18.04 GCC Compat,
+          Ubuntu 18.04 GCC Compat No Opt,
+          Ubuntu 18.04 GCC Compat,
+          Ubuntu 18.04 GCC ARM SF,
+          Ubuntu 18.04 GCC ARM SF No Opt,
+          Ubuntu 18.04 GCC ARM SF Compat,
+          Ubuntu 18.04 GCC ARM SF Compat No Opt,
+          Ubuntu 18.04 GCC ARM HF,
+          Ubuntu 18.04 GCC ARM HF No Opt,
+          Ubuntu 18.04 GCC ARM HF Compat,
+          Ubuntu 18.04 GCC ARM HF Compat No Opt,
+          Ubuntu 18.04 GCC ARM HF Compat No Neon,
+          Ubuntu 18.04 GCC AARCH64 Compat,
+          Ubuntu 18.04 GCC AARCH64 Compat No Opt,
+          Ubuntu 18.04 GCC PPC Compat,
+          Ubuntu 18.04 GCC PPC64 Compat,
+          Ubuntu 18.04 GCC PPC64LE Compat,
+          Ubuntu 18.04 GCC SPARC64 Compat,
+          Ubuntu 18.04 GCC S390X Compat,
+          Ubuntu 18.04 Clang,
+          Ubuntu 18.04 Clang MSAN,
+          Windows 2019 MSVC Win32,
+          Windows 2019 MSVC Win64,
+          Windows 2019 GCC,
+          Windows 2019 GCC Compat,
+          Windows 2019 GCC Compat No Opt,
+          macOS 10.14 Clang,
+          macOS 10.14 GCC
+        ]
+        include:
+          - name: Ubuntu 18.04 GCC
+            os: ubuntu-18.04
+            compiler: gcc
+            cmake-args: -DWITH_SANITIZERS=ON
+            codecov: ubuntu_gcc
+
+          - name: Ubuntu 18.04 GCC OSB
+            os: ubuntu-18.04
+            compiler: gcc
+            cmake-args: -DWITH_SANITIZERS=ON
+            build-dir: ../build
+            build-src-dir: ../zlib-ng
+            codecov: ubuntu_gcc_osb
+
+          - name: Ubuntu 18.04 GCC No Opt
+            os: ubuntu-18.04
+            compiler: gcc
+            cmake-args: -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            codecov: ubuntu_gcc_no_opt
+
+          - name: Ubuntu 18.04 GCC Compat
+            os: ubuntu-18.04
+            compiler: gcc
+            cmake-args: -DZLIB_COMPAT=ON
+            codecov: ubuntu_gcc_compat
+
+          - name: Ubuntu 18.04 GCC Compat No Opt
+            os: ubuntu-18.04
+            compiler: gcc
+            cmake-args: -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            codecov: ubuntu_gcc_compat_no_opt
+
+          - name: Ubuntu 18.04 GCC Compat
+            os: ubuntu-18.04
+            compiler: gcc
+            cmake-args: -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
+            codecov: ubuntu_gcc_compat
+
+          - name: Ubuntu 18.04 GCC ARM SF
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabi-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_SANITIZERS=ON
+            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
+            codecov: ubuntu_gcc_armsf
+
+          - name: Ubuntu 18.04 GCC ARM SF No Opt
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabi-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
+            codecov: ubuntu_gcc_armsf_no_opt
+
+          - name: Ubuntu 18.04 GCC ARM SF Compat
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabi-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
+            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
+            codecov: ubuntu_gcc_armsf_compat
+
+          - name: Ubuntu 18.04 GCC ARM SF Compat No Opt
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabi-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
+            codecov: ubuntu_gcc_armsf_compat_no_opt
+
+          - name: Ubuntu 18.04 GCC ARM HF
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabihf-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_SANITIZERS=ON
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+            codecov: ubuntu_gcc_armhf
+
+          - name: Ubuntu 18.04 GCC ARM HF No Opt
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabihf-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+            codecov: ubuntu_gcc_armhf_no_opt
+
+          - name: Ubuntu 18.04 GCC ARM HF Compat
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabihf-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+            codecov: ubuntu_gcc_armhf_compat
+
+          - name: Ubuntu 18.04 GCC ARM HF Compat No Opt
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabihf-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+            codecov: ubuntu_gcc_armhf_compat_no_opt
+
+          - name: Ubuntu 18.04 GCC ARM HF Compat No Neon
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabihf-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_NEON=OFF -DWITH_SANITIZERS=ON
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+            codecov: ubuntu_gcc_armhf_compat_no_neon
+
+          - name: Ubuntu 18.04 GCC AARCH64 Compat
+            os: ubuntu-18.04
+            compiler: aarch64-linux-gnu-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
+            asan-options: detect_leaks=0
+            packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
+            codecov: ubuntu_gcc_aarch64_compat
+
+          - name: Ubuntu 18.04 GCC AARCH64 Compat No Opt
+            os: ubuntu-18.04
+            compiler: aarch64-linux-gnu-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            asan-options: detect_leaks=0
+            packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
+            codecov: ubuntu_gcc_aarch64_compat_no_opt
+
+          - name: Ubuntu 18.04 GCC PPC Compat
+            os: ubuntu-18.04
+            compiler: powerpc-linux-gnu-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake -DZLIB_COMPAT=ON
+            packages: qemu gcc-powerpc-linux-gnu libc-dev-powerpc-cross
+            codecov: ubuntu_gcc_ppc_compat
+
+            cflags: -static
+          - name: Ubuntu 18.04 GCC PPC64 Compat
+            os: ubuntu-18.04
+            compiler: powerpc64-linux-gnu-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64.cmake -DZLIB_COMPAT=ON
+            packages: qemu gcc-powerpc64-linux-gnu libc-dev-ppc64-cross
+            cflags: -static
+            codecov: ubuntu_gcc_ppc64_compat
+
+          - name: Ubuntu 18.04 GCC PPC64LE Compat
+            os: ubuntu-18.04
+            compiler: powerpc64le-linux-gnu-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake -DZLIB_COMPAT=ON
+            packages: qemu gcc-powerpc64le-linux-gnu libc-dev-ppc64el-cross
+            cflags: -static
+            codecov: ubuntu_gcc_ppc64le_compat
+
+          - name: Ubuntu 18.04 GCC SPARC64 Compat
+            os: ubuntu-18.04
+            compiler: sparc64-linux-gnu-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake -DZLIB_COMPAT=ON
+            packages: qemu gcc-sparc64-linux-gnu libc-dev-sparc64-cross
+            cflags: -static
+            codecov: ubuntu_gcc_sparc64_compat
+
+          - name: Ubuntu 18.04 GCC S390X Compat
+            os: ubuntu-18.04
+            compiler: s390x-linux-gnu-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON
+            packages: qemu gcc-s390x-linux-gnu libc-dev-s390x-cross
+            cflags: -static
+            codecov: ubuntu_gcc_s390x_compat
+
+          - name: Ubuntu 18.04 Clang
+            os: ubuntu-18.04
+            compiler: clang
+            codecov: ubuntu_clang
+
+          - name: Ubuntu 18.04 Clang MSAN
+            os: ubuntu-18.04
+            compiler: clang
+            cmake-args: -GNinja -DWITH_MSAN=ON
+            packages:  ninja-build
+            cflags: -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-memory-track-origins
+            codecov: ubuntu_clang_msan
+
+          - name: Windows 2019 MSVC Win32
+            os: windows-2019
+            compiler: cl
+            cmake-args: -A Win32
+
+          - name: Windows 2019 MSVC Win64
+            os: windows-2019
+            compiler: cl
+            cmake-args: -A x64
+
+          - name: Windows 2019 GCC
+            os: windows-2019
+            compiler: gcc
+            cmake-args: -G Ninja
+            codecov: win64_gcc
+
+          - name: Windows 2019 GCC Compat
+            os: windows-2019
+            compiler: gcc
+            cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO
+            codecov: win64_gcc
+
+          - name: Windows 2019 GCC Compat No Opt
+            os: windows-2019
+            compiler: gcc
+            cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO
+            codecov: win64_gcc
+
+          - name: macOS 10.14 Clang
+            os: macOS-10.14
+            compiler: clang
+            cmake-args: -DWITH_SANITIZERS=ON
+            codecov: macos_clang
+
+          - name: macOS 10.14 GCC
+            os: macOS-10.14
+            compiler: gcc
+            cmake-args: -DWITH_SANITIZERS=ON
+            codecov: macos_gcc
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Install packages (Ubuntu)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get install -y ninja-build ${{ matrix.packages }}
+        sudo pip install codecov
+
+    - name: Install Clang code coverage tools (Ubuntu)
+      if: runner.os == 'Linux' && matrix.codecov && matrix.compiler == 'clang'
+      run: |
+        sudo apt-get install -y gcc-7 clang-7 clang-tools-7 llvm lcov
+
+    - name: Install packages (Windows)
+      if: runner.os == 'Windows'
+      # Use gcov-7 on windows because gcov-8 throws tons of warnings
+      # https://partner-bugzilla.redhat.com/show_bug.cgi?id=1577508
+      # Need to use special fork of codecov-python for Windows
+      # https://github.com/codecov/codecov-python/pull/169
+      run: |
+        choco install ninja ${{ matrix.packages }}
+        choco uninstall mingw
+        choco install mingw --version=7.3.0
+        pip install git+https://github.com/nmoinvaz/codecov-python.git@master
+
+    - name: Install packages (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install ninja llvm ${{ matrix.packages }}
+        sudo pip install codecov
+
+    - name: Generate project files
+      # Shared libaries turned off for qemu ppc* and sparc & reduce code coverage sources
+      # Gzip file operations turned on to reduce code coverage sources across multiple tests
+      run: |
+        mkdir ${{ matrix.build-dir || '.not-used' }}
+        cd ${{ matrix.build-dir || '.' }}
+        ${{ matrix.cmake-prefix }} cmake ${{ matrix.build-src-dir || '.' }} ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_GZFILEOP=ON
+      env:
+        CC: ${{ matrix.compiler }}
+        CFLAGS: ${{ matrix.cflags }}
+        LDFLAGS: ${{ matrix.ldflags }}
+        CI: true
+
+    - name: Compile source code
+      run: |
+        cd ${{ matrix.build-dir || '.' }}
+        ${{ matrix.cmake-prefix }} cmake --build . --config Release
+
+    - name: Run test cases
+      run: |
+        cd ${{ matrix.build-dir || '.' }}
+        ctest -C Release --output-on-failure --max-width 120
+      env:
+        ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=1' }}
+        MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=1' }}
+        TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=1' }}
+        LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=1' }}
+
+    - name: Upload coverage report
+      if: matrix.codecov
+      shell: pwsh
+      run: |
+        $gcovfiles = (Get-ChildItem -Path "*.gcov").Name
+        codecov -f $gcovfiles -F "${{ matrix.codecov }}" --name "${{ matrix.name }}"
+      env:
+        # Codecov does not yet support GitHub Actions
+        CODECOV_TOKEN: "${{secrets.CODECOV_TOKEN}}"

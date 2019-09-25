@@ -1,0 +1,154 @@
+name: CI Configure
+on: [push]
+jobs:
+  ci-configure:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [
+          Ubuntu 18.04 Clang,
+          Ubuntu 18.04 Clang OSB,
+          Ubuntu 18.04 Clang No Opt,
+          Ubuntu 18.04 Clang Compat,
+          Ubuntu 18.04 Clang Compat No Opt,
+          Ubuntu 18.04 Clang Compat,
+          Ubuntu 18.04 Clang ARM SF,
+          Ubuntu 18.04 Clang ARM SF No Opt,
+          Ubuntu 18.04 Clang ARM SF Compat,
+          Ubuntu 18.04 Clang ARM SF Compat No Opt,
+          Ubuntu 18.04 Clang ARM HF,
+          Ubuntu 18.04 Clang ARM HF No Opt,
+          Ubuntu 18.04 Clang ARM HF Compat,
+          Ubuntu 18.04 Clang ARM HF Compat No Opt,
+          Ubuntu 18.04 Clang ARM HF Compat No Neon,
+          Ubuntu 18.04 Clang AARCH64 Compat No Opt,
+          Ubuntu 18.04 Clang AARCH64 Compat
+        ]
+        include:
+          - name: Ubuntu 18.04 Clang
+            os: ubuntu-18.04
+            compiler: gcc
+            configure-args: --warn
+
+          - name: Ubuntu 18.04 Clang OSB
+            os: ubuntu-18.04
+            compiler: gcc
+            configure-args: --warn
+            build-dir: ../build
+            build-src-dir: ../zlib-ng
+
+          - name: Ubuntu 18.04 Clang No Opt
+            os: ubuntu-18.04
+            compiler: gcc
+            configure-args: --warn --without-optimizations --without-new-strategies
+
+          - name: Ubuntu 18.04 Clang Compat
+            os: ubuntu-18.04
+            compiler: gcc
+            configure-args: --warn --zlib-compat
+
+          - name: Ubuntu 18.04 Clang Compat No Opt
+            os: ubuntu-18.04
+            compiler: gcc
+            configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
+
+          - name: Ubuntu 18.04 Clang Compat
+            os: ubuntu-18.04
+            compiler: gcc
+            configure-args: --warn --zlib-compat
+
+          - name: Ubuntu 18.04 Clang ARM SF
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabi-gcc
+            configure-args: --warn
+            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
+
+          - name: Ubuntu 18.04 Clang ARM SF No Opt
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabi-gcc
+            configure-args: --warn --without-optimizations --without-new-strategies
+            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
+
+          - name: Ubuntu 18.04 Clang ARM SF Compat
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabi-gcc
+            configure-args: --warn --zlib-compat
+            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
+
+          - name: Ubuntu 18.04 Clang ARM SF Compat No Opt
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabi-gcc
+            configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
+            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
+
+          - name: Ubuntu 18.04 Clang ARM HF
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabihf-gcc
+            configure-args: --warn
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+
+          - name: Ubuntu 18.04 Clang ARM HF No Opt
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabihf-gcc
+            configure-args: --warn --without-optimizations --without-new-strategies
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+
+          - name: Ubuntu 18.04 Clang ARM HF Compat
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabihf-gcc
+            configure-args: --warn --zlib-compat
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+
+          - name: Ubuntu 18.04 Clang ARM HF Compat No Opt
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabihf-gcc
+            configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+
+          - name: Ubuntu 18.04 Clang ARM HF Compat No Neon
+            os: ubuntu-18.04
+            compiler: arm-linux-gnueabihf-gcc
+            configure-args: --warn --zlib-compat --without-neon
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+
+          - name: Ubuntu 18.04 Clang AARCH64 Compat
+            os: ubuntu-18.04
+            compiler: aarch64-linux-gnu-gcc
+            configure-args: --warn --zlib-compat
+            asan-options: detect_leaks=0
+            packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
+
+          - name: Ubuntu 18.04 Clang AARCH64 Compat No Opt
+            os: ubuntu-18.04
+            compiler: aarch64-linux-gnu-gcc
+            configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
+            asan-options: detect_leaks=0
+            packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Generate project files
+      run: |
+        mkdir ${{ matrix.build-dir || '.not-used' }}
+        cd ${{ matrix.build-dir || '.' }}
+        ${{ matrix.build-src-dir || '.' }}/configure ${{ matrix.configure-args }}
+      env:
+        CI: true
+
+    - name: Compile source code
+      run: |
+        cd ${{ matrix.build-dir || '.' }}
+        make -j2
+
+    - name: Run test cases
+      run: |
+        cd ${{ matrix.build-dir || '.' }}
+        make test
+      env:
+        ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=1' }}
+        MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=1' }}
+        TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=1' }}
+        LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=1' }}
