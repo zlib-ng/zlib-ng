@@ -41,12 +41,16 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     uint32_t crc4 = PREFIX(crc32_combine_op)(crc1, crc3, op);
     crc1 = PREFIX(crc32_z)(crc1, data + offset, buffSize);
     assert(crc1 == crc4);
+    (void)crc1;
+    (void)crc4;
   }
   crc1 = PREFIX(crc32_z)(crc1, data + offset, dataLen % buffSize);
 
   crc2 = PREFIX(crc32_z)(crc2, data, dataLen);
 
   assert(crc1 == crc2);
+  (void)crc1;
+  (void)crc2;
   assert(PREFIX(crc32_combine)(crc1, crc2, dataLen) ==
          PREFIX(crc32_combine)(crc1, crc1, dataLen));
 
@@ -65,6 +69,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   adler2 = PREFIX(adler32_z)(adler2, data, dataLen);
 
   assert(adler1 == adler2);
+  (void)adler1;
+  (void)adler2;
   assert(PREFIX(adler32_combine)(adler1, adler2, dataLen) ==
          PREFIX(adler32_combine)(adler1, adler1, dataLen));
 

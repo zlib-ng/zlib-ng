@@ -47,7 +47,7 @@ foo.gz
 CMakeCache.txt
 CMakeFiles
 Testing
-*.cmake
+/*.cmake
 *.stackdump
 *._h
 zconf.h

@@ -1,6 +1,7 @@
 language: c
-cache: ccache
+#cache: ccache  # cannot be used because it caches gcno(coverage) files
 dist: xenial
+bundler_args: --retry 5
 
 env:
   global:
@@ -9,6 +10,12 @@ env:
     - TESTER="make test"
     - CFLAGS="-O2 -g --coverage"
     - LDFLAGS="--coverage"
+
+    # Shorthand variables
+    - TC_AARCH64="-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake"
+    - TC_ARM="-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake"
+    - T_ARMHF="-DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
+    - T_ARMSF="-DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi"
 
 matrix:
   include:
@@ -213,7 +220,7 @@ matrix:
             - libc-dev-arm64-cross
       # For all aarch64 implementations NEON is mandatory, while crypto/crc are not.
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake . -DZLIB_COMPAT=ON"
+        - GENERATOR="cmake . $TC_AARCH64 -DZLIB_COMPAT=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
@@ -226,7 +233,7 @@ matrix:
             - gcc-aarch64-linux-gnu
             - libc-dev-arm64-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake ."
+        - GENERATOR="cmake . $TC_AARCH64"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
@@ -278,7 +285,7 @@ matrix:
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
+        - GENERATOR="cmake . $TC_ARM $T_ARMHF"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
@@ -291,7 +298,7 @@ matrix:
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DWITH_NEON=OFF -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
+        - GENERATOR="cmake . $TC_ARM $T_ARMHF -DZLIB_COMPAT=ON -DWITH_NEON=OFF"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
@@ -304,7 +311,7 @@ matrix:
             - gcc-arm-linux-gnueabihf
             - libc-dev-armhf-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf"
+        - GENERATOR="cmake . $TC_ARM $T_ARMHF -DZLIB_COMPAT=ON"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
@@ -319,7 +326,7 @@ matrix:
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
       env:
-        - GENERATOR="./configure"
+        - GENERATOR="./configure --warn"
         - CHOST=arm-linux-gnueabi
 
     - os: linux
@@ -331,7 +338,7 @@ matrix:
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
       env:
-        - GENERATOR="./configure --zlib-compat"
+        - GENERATOR="./configure --warn --zlib-compat"
         - CHOST=arm-linux-gnueabi
 
     #   gcc/cmake
@@ -344,7 +351,7 @@ matrix:
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi"
+        - GENERATOR="cmake . $TC_ARM $T_ARMSF"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
@@ -357,7 +364,20 @@ matrix:
             - gcc-arm-linux-gnueabi
             - libc-dev-armel-cross
       env:
-        - GENERATOR="cmake -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake . -DZLIB_COMPAT=ON -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi"
+        - GENERATOR="cmake . $TC_ARM $T_ARMSF -DZLIB_COMPAT=ON"
+        - MAKER="cmake --build . --config Release"
+        - TESTER="ctest --verbose -C Release"
+
+    - os: linux
+      compiler: arm-linux-gnueabi-gcc
+      addons:
+        apt:
+          packages:
+            - qemu
+            - gcc-arm-linux-gnueabi
+            - libc-dev-armel-cross
+      env:
+        - GENERATOR="cmake . $TC_ARM $T_ARMSF -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO"
         - MAKER="cmake --build . --config Release"
         - TESTER="ctest --verbose -C Release"
 
@@ -369,4 +389,9 @@ script:
   - $TESTER
 
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+  - bash <(curl -s https://codecov.io/bash --connect-timeout 10 --retry 8 --retry-delay 10) -U "--connect-timeout 10 --retry 8 --retry-delay 10"
+
+after_failure:
+  - cd $BUILDDIR
+  - cat CMakeFiles/CMakeError.log || true
+  - cat configure.log || true

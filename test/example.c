@@ -114,7 +114,7 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen)
     }
     strcpy((char*)uncompr, "garbage");
 
-    if (PREFIX(gzread)(file, uncompr, (unsigned)uncomprLen) != len) {
+    if (PREFIX(gzread)(file, uncompr, (unsigned)uncomprLen) != (int)len) {
         fprintf(stderr, "gzread err: %s\n", PREFIX(gzerror)(file, &err));
         exit(1);
     }
@@ -549,7 +549,7 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
 /* ===========================================================================
  * Test deflateBound() with small buffers
  */
-void test_deflate_bound(unsigned char *compr, size_t comprLen)
+void test_deflate_bound(void)
 {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
@@ -561,7 +561,7 @@ void test_deflate_bound(unsigned char *compr, size_t comprLen)
     c_stream.zfree = zfree;
     c_stream.opaque = (voidpf)0;
     c_stream.avail_in = len;
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.avail_out = 0;
     c_stream.next_out = outBuf;
 
@@ -608,7 +608,7 @@ void test_deflate_copy(unsigned char *compr, size_t comprLen)
     err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
@@ -633,7 +633,10 @@ void test_deflate_copy(unsigned char *compr, size_t comprLen)
     }
 
     err = PREFIX(deflateEnd)(&c_stream);
-    CHECK_ERR(err, "deflateEnd");
+    CHECK_ERR(err, "deflateEnd original");
+
+    err = PREFIX(deflateEnd)(&c_stream_copy);
+    CHECK_ERR(err, "deflateEnd copy");
 }
 
 /* ===========================================================================
@@ -656,7 +659,7 @@ void test_deflate_get_dict(unsigned char *compr, size_t comprLen)
     c_stream.next_out = compr;
     c_stream.avail_out = (uInt)comprLen;
 
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.avail_in = (unsigned int)strlen(hello)+1;
 
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
@@ -701,7 +704,7 @@ void test_deflate_pending(unsigned char *compr, size_t comprLen)
     err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
@@ -710,10 +713,10 @@ void test_deflate_pending(unsigned char *compr, size_t comprLen)
         CHECK_ERR(err, "deflate");
     }
 
-    err = PREFIX(deflatePending)(&c_stream,ped,bits);
+    err = PREFIX(deflatePending)(&c_stream, ped, bits);
     CHECK_ERR(err, "deflatePending");
 
-    if (*bits >= 0 && *bits <=7 && *ped >= 0) {
+    if (*bits >= 0 && *bits <= 7) {
         printf("deflatePending(): OK\n");
     } else {
         printf("deflatePending(): error\n");
@@ -737,7 +740,7 @@ void test_deflate_pending(unsigned char *compr, size_t comprLen)
 /* ===========================================================================
  * Test deflatePrime() with small buffers
  */
- void test_deflate_prime(unsigned char *compr, size_t comprLen)
+void test_deflate_prime(unsigned char *compr, size_t comprLen)
 {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
@@ -761,7 +764,7 @@ void test_deflate_pending(unsigned char *compr, size_t comprLen)
         printf("deflatePrime(): OK\n");
     }
 
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
@@ -858,7 +861,7 @@ void test_deflate_tune(unsigned char *compr, size_t comprLen)
         printf("deflateTune(): OK\n");
     }
 
-    c_stream.next_in = hello;
+    c_stream.next_in = (const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
@@ -933,7 +936,7 @@ int main(int argc, char *argv[])
     test_dict_deflate(compr, comprLen);
     test_dict_inflate(compr, comprLen, uncompr, uncomprLen);
 
-    test_deflate_bound(compr, comprLen);
+    test_deflate_bound();
     test_deflate_copy(compr, comprLen);
     test_deflate_get_dict(compr, comprLen);
     test_deflate_set_header(compr, comprLen);

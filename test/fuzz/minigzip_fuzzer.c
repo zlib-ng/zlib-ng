@@ -62,7 +62,7 @@
 #define BUFLENW     (BUFLEN * 3) /* write buffer size */
 #define MAX_NAME_LEN 1024
 
-static char *prog;
+static const char *prog = "minigzip_fuzzer";
 
 void error            (const char *msg);
 void gz_compress      (FILE   *in, gzFile out);
@@ -252,8 +252,8 @@ void file_uncompress(char  *file)
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
-  char *inFileName = "/tmp/minigzip_fuzzer.out";
-  char *outFileName = "/tmp/minigzip_fuzzer.out.gz";
+  char *inFileName = "minigzip_fuzzer.out";
+  char *outFileName = "minigzip_fuzzer.out.gz";
   char outmode[20];
   FILE *in;
   char buf[BUFLEN];
@@ -264,7 +264,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   if (dataLen < 1 || dataLen > kMaxSize)
     return 0;
 
-  in = fopen(inFileName, "w");
+  in = fopen(inFileName, "wb");
   if (fwrite(data, 1, (unsigned)dataLen, in) != dataLen)
     error("failed fwrite");
   if (fclose(in))
