@@ -153,9 +153,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
     data = d;
     dataLen = size;
 
-    /* Set up the contents of the dictionary.    The size of the dictionary is
-       intentionally selected to be of unusual size.    To help cover more corner
-       cases, the size of the dictionary is read from the input data.    */
+    /* Set up the contents of the dictionary. The size of the dictionary is
+       intentionally selected to be of unusual size. To help cover more corner
+       cases, the size of the dictionary is read from the input data. */
     dictionaryLen = data[0];
     if (dictionaryLen > dataLen)
         dictionaryLen = dataLen;

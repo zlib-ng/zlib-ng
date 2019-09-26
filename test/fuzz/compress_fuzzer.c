@@ -31,7 +31,7 @@ static void check_compress_level(uint8_t *compr, size_t comprLen,
 
 static void write_zlib_header(uint8_t *s) {
     unsigned level_flags = 0; /* compression level (0..3) */
-    unsigned w_bits = 8; /* window size log2(w_size)    (8..16) */
+    unsigned w_bits = 8; /* window size log2(w_size) (8..16) */
     unsigned int header = (Z_DEFLATED + ((w_bits-8)<<4)) << 8;
     header |= (level_flags << 6);
 
