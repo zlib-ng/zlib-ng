@@ -661,6 +661,7 @@ set(ZLIB_PUBLIC_HDRS
 set(ZLIB_PRIVATE_HDRS
     adler32_p.h
     crc32.h
+    crc32_p.h
     deflate.h
     deflate_p.h
     functable.h
