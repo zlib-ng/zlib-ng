@@ -39,7 +39,7 @@ ZLIB_INTERNAL Pos insert_string_sse(deflate_state *const s, const Pos str, unsig
 #else
 #  ifdef _MSC_VER
         __asm {
-            mov edx h
+            mov edx, h
             mov eax, val
             crc32 eax, edx
             mov val, eax
