@@ -234,7 +234,8 @@ static inline unsigned char *chunkmemset_6(unsigned char *out, unsigned char *fr
 
 /* Copy DIST bytes from OUT - DIST into OUT + DIST * k, for 0 <= k < LEN/DIST. Return OUT + LEN. */
 static inline unsigned char *chunkmemset(unsigned char *out, unsigned dist, unsigned len) {
-    Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks");
+    /* Debug performance related issues when len < sizeof(uint64_t): 
+       Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
     Assert(dist > 0, "cannot have a distance 0");
 
     unsigned char *from = out - dist;
@@ -298,7 +299,7 @@ static inline unsigned char *chunkmemset(unsigned char *out, unsigned dist, unsi
 }
 
 static inline unsigned char* chunkmemsetsafe(unsigned char *out, unsigned dist, unsigned len, unsigned left) {
-    if (len < sizeof(uint64_t) || left < (unsigned)(3 * INFFAST_CHUNKSIZE)) {
+    if (left < (unsigned)(3 * INFFAST_CHUNKSIZE)) {
         while (len > 0) {
           *out = *(out - dist);
           out++;
