@@ -601,6 +601,8 @@ void test_deflate_copy(unsigned char *compr, size_t comprLen)
     int err;
     size_t len = strlen(hello)+1;
 
+    memset(&c_stream, 0, sizeof(c_stream));
+
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
     c_stream.opaque = (voidpf)0;
