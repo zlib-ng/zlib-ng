@@ -96,75 +96,75 @@ void test_dict_deflate(unsigned char **compr, size_t *comprLen)
  * Test inflate() with a preset dictionary
  */
 void test_dict_inflate(unsigned char *compr, size_t comprLen) {
-  int err;
-  PREFIX3(stream) d_stream; /* decompression stream */
-  unsigned char *uncompr;
+    int err;
+    PREFIX3(stream) d_stream; /* decompression stream */
+    unsigned char *uncompr;
 
-  d_stream.zalloc = zalloc;
-  d_stream.zfree = zfree;
-  d_stream.opaque = (void *)0;
+    d_stream.zalloc = zalloc;
+    d_stream.zfree = zfree;
+    d_stream.opaque = (void *)0;
 
-  d_stream.next_in = compr;
-  d_stream.avail_in = (unsigned int)comprLen;
+    d_stream.next_in = compr;
+    d_stream.avail_in = (unsigned int)comprLen;
 
-  err = PREFIX(inflateInit)(&d_stream);
-  CHECK_ERR(err, "inflateInit");
+    err = PREFIX(inflateInit)(&d_stream);
+    CHECK_ERR(err, "inflateInit");
 
-  uncompr = (uint8_t *)calloc(1, dataLen);
-  d_stream.next_out = uncompr;
-  d_stream.avail_out = (unsigned int)dataLen;
+    uncompr = (uint8_t *)calloc(1, dataLen);
+    d_stream.next_out = uncompr;
+    d_stream.avail_out = (unsigned int)dataLen;
 
-  for (;;) {
-    err = PREFIX(inflate)(&d_stream, Z_NO_FLUSH);
-    if (err == Z_STREAM_END)
-      break;
-    if (err == Z_NEED_DICT) {
-      if (d_stream.adler != dictId) {
-        fprintf(stderr, "unexpected dictionary");
-        exit(1);
-      }
-      err = PREFIX(inflateSetDictionary)(
-          &d_stream, (const unsigned char *)data, dictionaryLen);
+    for (;;) {
+        err = PREFIX(inflate)(&d_stream, Z_NO_FLUSH);
+        if (err == Z_STREAM_END)
+            break;
+        if (err == Z_NEED_DICT) {
+            if (d_stream.adler != dictId) {
+                fprintf(stderr, "unexpected dictionary");
+                exit(1);
+            }
+            err = PREFIX(inflateSetDictionary)(
+                    &d_stream, (const unsigned char *)data, dictionaryLen);
+        }
+        CHECK_ERR(err, "inflate with dict");
     }
-    CHECK_ERR(err, "inflate with dict");
-  }
 
-  err = PREFIX(inflateEnd)(&d_stream);
-  CHECK_ERR(err, "inflateEnd");
+    err = PREFIX(inflateEnd)(&d_stream);
+    CHECK_ERR(err, "inflateEnd");
 
-  if (memcmp(uncompr, data, dataLen)) {
-    fprintf(stderr, "bad inflate with dict\n");
-    exit(1);
-  }
+    if (memcmp(uncompr, data, dataLen)) {
+        fprintf(stderr, "bad inflate with dict\n");
+        exit(1);
+    }
 
-  free(uncompr);
+    free(uncompr);
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
-  size_t comprLen = 0;
-  uint8_t *compr;
+    size_t comprLen = 0;
+    uint8_t *compr;
 
-  /* Discard inputs larger than 100Kb. */
-  static size_t kMaxSize = 100 * 1024;
+    /* Discard inputs larger than 100Kb. */
+    static size_t kMaxSize = 100 * 1024;
 
-  if (size < 1 || size > kMaxSize)
+    if (size < 1 || size > kMaxSize)
+        return 0;
+
+    data = d;
+    dataLen = size;
+
+    /* Set up the contents of the dictionary. The size of the dictionary is
+       intentionally selected to be of unusual size. To help cover more corner
+       cases, the size of the dictionary is read from the input data. */
+    dictionaryLen = data[0];
+    if (dictionaryLen > dataLen)
+        dictionaryLen = dataLen;
+
+    test_dict_deflate(&compr, &comprLen);
+    test_dict_inflate(compr, comprLen);
+
+    free(compr);
+
+    /* This function must return 0. */
     return 0;
-
-  data = d;
-  dataLen = size;
-
-  /* Set up the contents of the dictionary.  The size of the dictionary is
-     intentionally selected to be of unusual size.  To help cover more corner
-     cases, the size of the dictionary is read from the input data.  */
-  dictionaryLen = data[0];
-  if (dictionaryLen > dataLen)
-    dictionaryLen = dataLen;
-
-  test_dict_deflate(&compr, &comprLen);
-  test_dict_inflate(compr, comprLen);
-
-  free(compr);
-
-  /* This function must return 0. */
-  return 0;
 }
