@@ -288,12 +288,14 @@ endif()
 
 if(WITH_MSAN)
     set(CMAKE_REQUIRED_FLAGS "-fsanitize=memory")
-    check_c_source_compiles("int main() { return 0; }" HAS_MSAN FAIL_REGEX "not supported")
-    if(${HAS_MSAN})
+    check_c_source_compiles("int main() { return 0; }"
+        HAS_MSAN FAIL_REGEX "not supported|unrecognized command")
+    if(HAS_MSAN)
         set(SANITIZERS_FLAGS "-fsanitize=memory")
         message(STATUS "Adding memory sanitizer flag: ${SANITIZERS_FLAGS}")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZERS_FLAGS}")
     endif()
+    set(CMAKE_REQUIRED_FLAGS)
 endif()
 
 if(WITH_SANITIZERS)
@@ -331,7 +333,7 @@ if(WITH_SANITIZERS)
         if(NOT (CMAKE_CROSSCOMPILING_EMULATOR AND ${_flag} STREQUAL "leak")) # LeakSanitizer crashes under qemu
             set(CMAKE_REQUIRED_FLAGS "-fsanitize=${SANITIZERS_FLAGS},${_flag}")
             check_c_source_compiles("int main() { return 0; }"
-              HAS_SANITIZER_${_flag} FAIL_REGEX "not supported")
+              HAS_SANITIZER_${_flag} FAIL_REGEX "not supported|unrecognized command")
             if(${HAS_SANITIZER_${_flag}})
                 if("${SANITIZERS_FLAGS}" STREQUAL "")
                     set(SANITIZERS_FLAGS "${_flag}")
