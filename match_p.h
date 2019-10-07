@@ -193,7 +193,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
      * Do not look for matches beyond the end of the input. This is
      * necessary to make deflate deterministic
      */
-    nice_match = (unsigned int)s->nice_match > s->lookahead ? s->lookahead : s->nice_match;
+    nice_match = (unsigned int)s->nice_match > s->lookahead ? s->lookahead : (unsigned int)s->nice_match;
 
     /*
      * Stop when cur_match becomes <= limit. To simplify the code,
