@@ -44,6 +44,7 @@ void makefixed(void) {
     unsigned low, size;
     struct inflate_state state;
 
+    memset(&state, 0, sizeof(state));
     buildfixedtables(&state);
     puts("    /* inffixed.h -- table for decoding fixed codes");
     puts("     * Generated automatically by makefixed().");
