@@ -553,6 +553,7 @@ macro(add_intrinsics_option flag)
 endmacro()
 
 set(ZLIB_ARCH_SRCS)
+set(ZLIB_ARCH_HDRS)
 set(ARCHDIR "arch/generic")
 if(BASEARCH_X86_FOUND)
     set(ARCHDIR "arch/x86")
@@ -594,6 +595,9 @@ if(WITH_OPTIM)
     elseif(BASEARCH_X86_FOUND)
         add_definitions(-DX86_CPUID)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/x86.c)
+        if(MSVC)
+            list(APPEND ZLIB_ARCH_HDRS fallback_builtins.h)
+        endif()
         if(HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN)
             add_definitions(-DX86_SSE42_CRC_HASH)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/insert_string_sse.c)
@@ -705,15 +709,24 @@ set(ZLIB_PUBLIC_HDRS
     zlib${SUFFIX}.h
 )
 set(ZLIB_PRIVATE_HDRS
+    adler32_p.h
     crc32.h
+    crc32_p.h
     deflate.h
+    deflate_p.h
     functable.h
     gzguts.h
     inffast.h
     inffixed.h
     inflate.h
+    inflate_p.h
     inftrees.h
+    match_p.h
+    memcopy.h
     trees.h
+    trees_p.h
+    zbuild.h
+    zendian.h
     zutil.h
 )
 set(ZLIB_SRCS
@@ -763,7 +776,7 @@ if(MINGW OR MSYS)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif()
 
-set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_SRCS} ${ZLIB_DLL_SRCS}
+set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_HDRS} ${ZLIB_ARCH_SRCS} ${ZLIB_DLL_SRCS}
     ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 if(WITH_GZFILEOP)
     list(APPEND ZLIB_ALL_SRCS ${ZLIB_GZFILE_SRCS})
