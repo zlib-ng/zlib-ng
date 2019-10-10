@@ -135,6 +135,174 @@ if(WITH_GZFILEOP)
     add_definitions(-DWITH_GZFILEOP)
 endif()
 
+#
+# Check to see if we have large file support
+#
+set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
+check_type_size(off64_t OFF64_T)
+if(HAVE_OFF64_T)
+   add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
+else()
+   check_type_size(_off64_t _OFF64_T)
+   if(HAVE__OFF64_T)
+      add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
+   else()
+      check_type_size(__off64_t __OFF64_T)
+   endif()
+endif()
+set(CMAKE_REQUIRED_DEFINITIONS) # clear variable
+
+#
+# Check for fseeko and other optional functions
+#
+check_function_exists(fseeko HAVE_FSEEKO)
+if(NOT HAVE_FSEEKO)
+    add_definitions(-DNO_FSEEKO)
+endif()
+check_function_exists(strerror HAVE_STRERROR)
+if(NOT HAVE_STRERROR)
+    add_definitions(-DNO_STRERROR)
+endif()
+
+#
+# Check for unistd.h and stdarg.h
+#
+check_include_file(unistd.h Z_HAVE_UNISTD_H)
+
+#
+# Check if we can hide zlib internal symbols that are linked between separate source files using hidden
+#
+check_c_source_compiles(
+    "#define ZLIB_INTERNAL __attribute__((visibility (\"hidden\")))
+    int ZLIB_INTERNAL foo;
+    int main()
+    {
+      return 0;
+    }"
+    HAVE_ATTRIBUTE_VISIBILITY_HIDDEN FAIL_REGEX "not supported")
+if(HAVE_ATTRIBUTE_VISIBILITY_HIDDEN)
+    add_definitions(-DHAVE_VISIBILITY_HIDDEN)
+endif()
+
+#
+# Check if we can hide zlib internal symbols that are linked between separate source files using internal
+#
+check_c_source_compiles(
+    "#define ZLIB_INTERNAL __attribute__((visibility (\"internal\")))
+    int ZLIB_INTERNAL foo;
+    int main()
+    {
+      return 0;
+    }"
+    HAVE_ATTRIBUTE_VISIBILITY_INTERNAL FAIL_REGEX "not supported")
+if(HAVE_ATTRIBUTE_VISIBILITY_INTERNAL)
+    add_definitions(-DHAVE_VISIBILITY_INTERNAL)
+endif()
+
+#
+# check for __builtin_ctzl() support in the compiler
+#
+check_c_source_compiles(
+    "int main(void)
+    {
+        unsigned int zero = 0;
+        long test = __builtin_ctzl(zero);
+        (void)test;
+        return 0;
+    }"
+    HAVE_BUILTIN_CTZL
+)
+if(HAVE_BUILTIN_CTZL)
+    add_definitions(-DHAVE_BUILTIN_CTZL)
+endif()
+
+#
+# check for ptrdiff_t support
+#
+check_c_source_compiles(
+    "#include <stddef.h>
+     int main() { ptrdiff_t *a; return 0; }"
+    HAVE_PTRDIFF_T
+)
+if(NOT HAVE_PTRDIFF_T)
+  set(NEED_PTRDIFF_T 1)
+
+  check_type_size("void *" SIZEOF_DATA_PTR)
+  message(STATUS "sizeof(void *) is ${SIZEOF_DATA_PTR} bytes")
+
+  if(${SIZEOF_DATA_PTR} MATCHES "4")
+    set(PTRDIFF_TYPE "uint32_t")
+  elseif(${SIZEOF_DATA_PTR} MATCHES "8")
+    set(PTRDIFF_TYPE "uint64_t")
+  else()
+    message(FATAL_ERROR "sizeof(void *) is neither 32 nor 64 bit")
+  endif()
+endif()
+
+if(WITH_SANITIZERS AND WITH_MSAN)
+    message(FATAL_ERROR "Memory sanitizer is incompatible with address sanitizer")
+endif()
+
+if(WITH_MSAN)
+    check_c_compiler_flag("-fsanitize=memory" HAS_MSAN)
+    if(HAS_MSAN)
+        set(SANITIZERS_FLAGS "-fsanitize=memory")
+        message(STATUS "Adding memory sanitizer flag: ${SANITIZERS_FLAGS}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZERS_FLAGS}")
+    endif()
+endif()
+
+if(WITH_SANITIZERS)
+    set(_sanitize_flags
+        address
+        alignment
+        array-bounds
+        bool
+        bounds
+        builtin
+        enum
+        float-divide-by-zero
+        function
+        integer-divide-by-zero
+        leak
+        null
+        nonnull-attribute
+        object-size
+        pointer-compare             # Depends on 'address'
+        pointer-overflow
+        pointer-subtract            # Depends on 'address'
+        return
+        returns-nonnull-attribute
+        shift
+        shift-base
+        shift-exponent
+        signed-integer-overflow
+        undefined
+        unsigned-integer-overflow
+        vla-bound
+        vptr
+       )
+    set(SANITIZERS_FLAGS "")
+    foreach(_flag ${_sanitize_flags})
+        if(NOT (CMAKE_CROSSCOMPILING_EMULATOR AND ${_flag} STREQUAL "leak")) # LeakSanitizer crashes under qemu
+            check_c_compiler_flag("-fsanitize=${SANITIZERS_FLAGS},${_flag}" HAS_SANITIZER_${_flag})
+            if(HAS_SANITIZER_${_flag})
+                if(SANITIZERS_FLAGS STREQUAL "")
+                    set(SANITIZERS_FLAGS "${_flag}")
+                else()
+                    set(SANITIZERS_FLAGS "${SANITIZERS_FLAGS},${_flag}")
+                endif()
+            endif()
+        endif()
+    endforeach()
+    if(NOT SANITIZERS_FLAGS STREQUAL "")
+        set(SANITIZERS_FLAGS "-fsanitize=${SANITIZERS_FLAGS}")
+    endif()
+
+    message(STATUS "Adding sanitizers flags: ${SANITIZERS_FLAGS}")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZERS_FLAGS}")
+endif()
+
 if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${CMAKE_C_COMPILER} MATCHES "icl")
     if(WITH_NATIVE_INSTRUCTIONS)
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
@@ -214,7 +382,6 @@ else()
                 else()
                     # Check whether -mfpu=neon is available
                     check_c_compiler_flag("-mfpu=neon" MFPU_NEON_AVAILABLE)
-                    set(CMAKE_REQUIRED_FLAGS)
                     if(MFPU_NEON_AVAILABLE)
                         set(NEONFLAG "${FLOATABI} -mfpu=neon")
                     else()
@@ -244,176 +411,6 @@ if(MAINTAINER)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS} ${WARNFLAGS_MAINTAINER} ${WARNFLAGS_DISABLE}")
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS} ${WARNFLAGS_DISABLE}")
-endif()
-
-#
-# Check to see if we have large file support
-#
-set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
-check_type_size(off64_t OFF64_T)
-if(HAVE_OFF64_T)
-   add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
-else()
-   check_type_size(_off64_t _OFF64_T)
-   if(HAVE__OFF64_T)
-      add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
-   else()
-      check_type_size(__off64_t __OFF64_T)
-   endif()
-endif()
-set(CMAKE_REQUIRED_DEFINITIONS) # clear variable
-
-#
-# Check for fseeko and other optional functions
-#
-check_function_exists(fseeko HAVE_FSEEKO)
-if(NOT HAVE_FSEEKO)
-    add_definitions(-DNO_FSEEKO)
-endif()
-check_function_exists(strerror HAVE_STRERROR)
-if(NOT HAVE_STRERROR)
-    add_definitions(-DNO_STRERROR)
-endif()
-
-#
-# Check for unistd.h and stdarg.h
-#
-check_include_file(unistd.h Z_HAVE_UNISTD_H)
-
-if(WITH_SANITIZERS AND WITH_MSAN)
-    message(FATAL_ERROR "Memory sanitizer is incompatible with address sanitizer")
-endif()
-
-if(WITH_MSAN)
-    check_c_compiler_flag("-fsanitize=memory" HAS_MSAN)
-    set(CMAKE_REQUIRED_FLAGS)
-    if(HAS_MSAN)
-        set(SANITIZERS_FLAGS "-fsanitize=memory")
-        message(STATUS "Adding memory sanitizer flag: ${SANITIZERS_FLAGS}")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZERS_FLAGS}")
-    endif()
-endif()
-
-if(WITH_SANITIZERS)
-    set(_sanitize_flags
-        address
-        alignment
-        array-bounds
-        bool
-        bounds
-        builtin
-        enum
-        float-divide-by-zero
-        function
-        integer-divide-by-zero
-        leak
-        null
-        nonnull-attribute
-        object-size
-        pointer-compare             # Depends on 'address'
-        pointer-overflow
-        pointer-subtract            # Depends on 'address'
-        return
-        returns-nonnull-attribute
-        shift
-        shift-base
-        shift-exponent
-        signed-integer-overflow
-        undefined
-        unsigned-integer-overflow
-        vla-bound
-        vptr
-       )
-    set(SANITIZERS_FLAGS "")
-    foreach(_flag ${_sanitize_flags})
-        if(NOT (CMAKE_CROSSCOMPILING_EMULATOR AND ${_flag} STREQUAL "leak")) # LeakSanitizer crashes under qemu
-            check_c_compiler_flag("-fsanitize=${SANITIZERS_FLAGS},${_flag}" HAS_SANITIZER_${_flag})
-            set(CMAKE_REQUIRED_FLAGS)
-            if(HAS_SANITIZER_${_flag})
-                if("${SANITIZERS_FLAGS}" STREQUAL "")
-                    set(SANITIZERS_FLAGS "${_flag}")
-                else()
-                    set(SANITIZERS_FLAGS "${SANITIZERS_FLAGS},${_flag}")
-                endif()
-            endif()
-        endif()
-    endforeach()
-    if(NOT "${SANITIZERS_FLAGS}" STREQUAL "")
-        set(SANITIZERS_FLAGS "-fsanitize=${SANITIZERS_FLAGS}")
-    endif()
-
-    message(STATUS "Adding sanitizers flags: ${SANITIZERS_FLAGS}")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZERS_FLAGS}")
-endif()
-
-#
-# Check if we can hide zlib internal symbols that are linked between separate source files using hidden
-#
-check_c_source_compiles(
-    "#define ZLIB_INTERNAL __attribute__((visibility (\"hidden\")))
-    int ZLIB_INTERNAL foo;
-    int main()
-    {
-      return 0;
-    }"
-    HAVE_ATTRIBUTE_VISIBILITY_HIDDEN FAIL_REGEX "not supported")
-if(HAVE_ATTRIBUTE_VISIBILITY_HIDDEN)
-    add_definitions(-DHAVE_VISIBILITY_HIDDEN)
-endif()
-
-#
-# Check if we can hide zlib internal symbols that are linked between separate source files using internal
-#
-check_c_source_compiles(
-    "#define ZLIB_INTERNAL __attribute__((visibility (\"internal\")))
-    int ZLIB_INTERNAL foo;
-    int main()
-    {
-      return 0;
-    }"
-    HAVE_ATTRIBUTE_VISIBILITY_INTERNAL FAIL_REGEX "not supported")
-if(HAVE_ATTRIBUTE_VISIBILITY_INTERNAL)
-    add_definitions(-DHAVE_VISIBILITY_INTERNAL)
-endif()
-
-#
-# check for __builtin_ctzl() support in the compiler
-#
-check_c_source_compiles(
-    "int main(void)
-    {
-        unsigned int zero = 0;
-        long test = __builtin_ctzl(zero);
-        (void)test;
-        return 0;
-    }"
-    HAVE_BUILTIN_CTZL
-)
-if(HAVE_BUILTIN_CTZL)
-    add_definitions(-DHAVE_BUILTIN_CTZL)
-endif()
-
-#
-# check for ptrdiff_t support
-#
-check_c_source_compiles(
-    "#include <stddef.h>
-     int main() { ptrdiff_t *a; return 0; }"
-    HAVE_PTRDIFF_T
-)
-if(NOT HAVE_PTRDIFF_T)
-  set(NEED_PTRDIFF_T 1)
-
-  check_type_size("void *" SIZEOF_DATA_PTR)
-  message(STATUS "sizeof(void *) is ${SIZEOF_DATA_PTR} bytes")
-
-  if(${SIZEOF_DATA_PTR} MATCHES "4")
-    set(PTRDIFF_TYPE "uint32_t")
-  elseif(${SIZEOF_DATA_PTR} MATCHES "8")
-    set(PTRDIFF_TYPE "uint64_t")
-  else()
-    message(FATAL_ERROR "sizeof(void *) is neither 32 nor 64 bit")
-  endif()
 endif()
 
 # Macro to check if source compiles when cross-compiling
