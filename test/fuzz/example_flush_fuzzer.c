@@ -31,7 +31,7 @@ static free_func zfree = NULL;
 void test_flush(unsigned char *compr, z_size_t *comprLen) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
-    unsigned int len = dataLen;
+    unsigned int len = (unsigned int)dataLen;
 
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
@@ -98,8 +98,8 @@ void test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr, si
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
-    size_t comprLen = 100 + 2 * PREFIX(compressBound)(size);
-    size_t uncomprLen = size;
+    z_size_t comprLen = 100 + 2 * PREFIX(compressBound)(size);
+    z_size_t uncomprLen = (z_size_t)size;
     uint8_t *compr, *uncompr;
 
     /* Discard inputs larger than 1Mb. */

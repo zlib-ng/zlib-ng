@@ -31,7 +31,7 @@ static free_func zfree = NULL;
 void test_deflate(unsigned char *compr, size_t comprLen) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
-    unsigned long len = dataLen;
+    unsigned long len = (unsigned long)dataLen;
 
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
