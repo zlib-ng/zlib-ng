@@ -24,7 +24,7 @@ static const uint8_t *data;
 static size_t dataLen;
 static alloc_func zalloc = NULL;
 static free_func zfree = NULL;
-static size_t dictionaryLen = 0;
+static unsigned int dictionaryLen = 0;
 static unsigned long dictId; /* Adler32 value of the dictionary */
 
 /* ===========================================================================
@@ -73,7 +73,7 @@ void test_dict_deflate(unsigned char **compr, size_t *comprLen)
     CHECK_ERR(err, "deflateSetDictionary");
 
     /* deflateBound does not provide enough space for low compression levels. */
-    *comprLen = 100 + 2 * PREFIX(deflateBound)(&c_stream, dataLen);
+    *comprLen = 100 + 2 * PREFIX(deflateBound)(&c_stream, (unsigned long)dataLen);
     *compr = (uint8_t *)calloc(1, *comprLen);
 
     dictId = c_stream.adler;
@@ -81,7 +81,7 @@ void test_dict_deflate(unsigned char **compr, size_t *comprLen)
     c_stream.avail_out = (unsigned int)(*comprLen);
 
     c_stream.next_in = data;
-    c_stream.avail_in = dataLen;
+    c_stream.avail_in = (uint32_t)dataLen;
 
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
     if (err != Z_STREAM_END) {
@@ -158,7 +158,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
        cases, the size of the dictionary is read from the input data. */
     dictionaryLen = data[0];
     if (dictionaryLen > dataLen)
-        dictionaryLen = dataLen;
+        dictionaryLen = (unsigned int)dataLen;
 
     test_dict_deflate(&compr, &comprLen);
     test_dict_inflate(compr, comprLen);

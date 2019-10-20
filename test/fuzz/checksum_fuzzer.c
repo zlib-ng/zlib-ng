@@ -51,14 +51,14 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   assert(crc1 == crc2);
   (void)crc1;
   (void)crc2;
-  assert(PREFIX(crc32_combine)(crc1, crc2, dataLen) ==
-         PREFIX(crc32_combine)(crc1, crc1, dataLen));
+  assert(PREFIX(crc32_combine)(crc1, crc2, (z_off_t)dataLen) ==
+         PREFIX(crc32_combine)(crc1, crc1, (z_off_t)dataLen));
 
   /* Fast CRC32 combine. */
-  PREFIX(crc32_combine_gen)(op, dataLen);
+  PREFIX(crc32_combine_gen)(op, (z_off_t)dataLen);
   assert(PREFIX(crc32_combine_op)(crc1, crc2, op) ==
          PREFIX(crc32_combine_op)(crc2, crc1, op));
-  assert(PREFIX(crc32_combine)(crc1, crc2, dataLen) ==
+  assert(PREFIX(crc32_combine)(crc1, crc2, (z_off_t)dataLen) ==
          PREFIX(crc32_combine_op)(crc2, crc1, op));
 
   /* Adler32 */
@@ -71,8 +71,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   assert(adler1 == adler2);
   (void)adler1;
   (void)adler2;
-  assert(PREFIX(adler32_combine)(adler1, adler2, dataLen) ==
-         PREFIX(adler32_combine)(adler1, adler1, dataLen));
+  assert(PREFIX(adler32_combine)(adler1, adler2, (z_off_t)dataLen) ==
+         PREFIX(adler32_combine)(adler1, adler1, (z_off_t)dataLen));
 
   /* This function must return 0. */
   return 0;
