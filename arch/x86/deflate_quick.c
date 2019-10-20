@@ -62,7 +62,7 @@ static inline long compare258(const unsigned char *const src0, const unsigned ch
         cnt += 16;
     } while (cnt < 256);
 
-    if (*(unsigned short *)(src0 + cnt) == *(unsigned short *)(src1 + cnt)) {
+    if (memcmp(src0 + cnt, src1 + cnt, sizeof(uint16_t)) == 0) {
         cnt += 2;
     } else if (*(src0 + cnt) == *(src1 + cnt)) {
         cnt++;
