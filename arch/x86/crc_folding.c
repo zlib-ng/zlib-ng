@@ -249,7 +249,7 @@ ZLIB_INTERNAL void crc_fold_copy(deflate_state *const s, unsigned char *dst, con
         goto partial;
     }
 
-    algn_diff = (0 - (uintptr_t)src) & 0xF;
+    algn_diff = ((uintptr_t)0 - (uintptr_t)src) & 0xF;
     if (algn_diff) {
         xmm_crc_part = _mm_loadu_si128((__m128i *)src);
         _mm_storeu_si128((__m128i *)dst, xmm_crc_part);
@@ -311,7 +311,7 @@ ZLIB_INTERNAL void crc_fold_copy(deflate_state *const s, unsigned char *dst, con
             goto done;
 
         dst += 48;
-        xmm_crc_part = _mm_load_si128((__m128i *)src + 3);
+        memcpy(&xmm_crc_part, (__m128i *)src + 3, len);
     } else if (len + 32 >= 0) {
         len += 32;
 
@@ -330,7 +330,7 @@ ZLIB_INTERNAL void crc_fold_copy(deflate_state *const s, unsigned char *dst, con
             goto done;
 
         dst += 32;
-        xmm_crc_part = _mm_load_si128((__m128i *)src + 2);
+        memcpy(&xmm_crc_part, (__m128i *)src + 2, len);
     } else if (len + 48 >= 0) {
         len += 48;
 
@@ -346,12 +346,12 @@ ZLIB_INTERNAL void crc_fold_copy(deflate_state *const s, unsigned char *dst, con
             goto done;
 
         dst += 16;
-        xmm_crc_part = _mm_load_si128((__m128i *)src + 1);
+        memcpy(&xmm_crc_part, (__m128i *)src + 1, len);
     } else {
         len += 64;
         if (len == 0)
             goto done;
-        xmm_crc_part = _mm_load_si128((__m128i *)src);
+        memcpy(&xmm_crc_part, src, len);
     }
 
     _mm_storeu_si128((__m128i *)partial_buf, xmm_crc_part);
