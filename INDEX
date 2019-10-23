@@ -20,7 +20,7 @@ zlib.pc.in      Template for pkg-config descriptor
 zlib.pc.cmakein zlib.pc template for cmake
 zlib2ansi       perl script to convert source files for C++ compilation
 
-arch/		architecture-specific code
+arch/           architecture-specific code
 doc/            documentation for formats and algorithms
 win32/          makefiles for Windows
 

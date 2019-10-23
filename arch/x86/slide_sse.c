@@ -3,8 +3,8 @@
  *
  * Copyright (C) 2017 Intel Corporation
  * Authors:
- *   Arjan van de Ven	<arjan@linux.intel.com>
- *   Jim Kukunas	<james.t.kukunas@linux.intel.com>
+ *   Arjan van de Ven   <arjan@linux.intel.com>
+ *   Jim Kukunas        <james.t.kukunas@linux.intel.com>
  *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */

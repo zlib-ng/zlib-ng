@@ -26,7 +26,7 @@
 #include "../../memcopy.h"
 
 #ifdef ZLIB_DEBUG
-#include <ctype.h>
+#  include <ctype.h>
 #endif
 
 extern void fill_window_sse(deflate_state *s);
@@ -48,7 +48,7 @@ static inline long compare258(const unsigned char *const src0, const unsigned ch
         ret = _mm_cmpestri(xmm_src0, 16, xmm_src1, 16, mode);
         if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, mode)) {
             cnt += ret;
-	    break;
+            break;
         }
         cnt += 16;
 
@@ -57,7 +57,7 @@ static inline long compare258(const unsigned char *const src0, const unsigned ch
         ret = _mm_cmpestri(xmm_src0, 16, xmm_src1, 16, mode);
         if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, mode)) {
             cnt += ret;
-	    break;
+            break;
         }
         cnt += 16;
     } while (cnt < 256);
