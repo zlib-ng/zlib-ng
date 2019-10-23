@@ -257,12 +257,14 @@ jobs:
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux'
       run: |
+        sudo apt-get update
         sudo apt-get install -y ninja-build ${{ matrix.packages }}
         sudo pip install codecov
 
     - name: Install Clang code coverage tools (Ubuntu)
       if: runner.os == 'Linux' && matrix.codecov && matrix.compiler == 'clang'
       run: |
+        sudo apt-get update
         sudo apt-get install -y gcc-7 clang-7 clang-tools-7 llvm lcov
 
     - name: Install packages (Windows)
