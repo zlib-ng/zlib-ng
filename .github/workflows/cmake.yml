@@ -269,15 +269,16 @@ jobs:
 
     - name: Install packages (Windows)
       if: runner.os == 'Windows'
-      # Use gcov-7 on windows because gcov-8 throws tons of warnings
+      # Use gcov-7 via mingw on windows because gcov-8 throws tons of warnings
       # https://partner-bugzilla.redhat.com/show_bug.cgi?id=1577508
       # Need to use special fork of codecov-python for Windows
       # https://github.com/codecov/codecov-python/pull/169
       run: |
+        python -u -m pip install --upgrade pip
+        python -u -m pip -v install git+https://github.com/nmoinvaz/codecov-python.git@master
         choco install ninja ${{ matrix.packages }}
         choco uninstall mingw
         choco install mingw --version=7.3.0
-        pip install git+https://github.com/nmoinvaz/codecov-python.git@master
 
     - name: Install packages (macOS)
       if: runner.os == 'macOS'
