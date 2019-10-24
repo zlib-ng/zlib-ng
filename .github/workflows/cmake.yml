@@ -31,6 +31,7 @@ jobs:
           Ubuntu 18.04 GCC SPARC64 Compat,
           Ubuntu 18.04 GCC S390X Compat,
           Ubuntu 18.04 Clang,
+          Ubuntu 18.04 Clang Debug,
           Ubuntu 18.04 Clang MSAN,
           Windows 2019 MSVC Win32,
           Windows 2019 MSVC Win64,
@@ -203,6 +204,12 @@ jobs:
             compiler: clang
             codecov: ubuntu_clang
 
+          - name: Ubuntu 18.04 Clang Debug
+            os: ubuntu-18.04
+            compiler: clang
+            codecov: ubuntu_clang
+            build-config: Debug
+
           - name: Ubuntu 18.04 Clang MSAN
             os: ubuntu-18.04
             compiler: clang
@@ -292,7 +299,7 @@ jobs:
       run: |
         mkdir ${{ matrix.build-dir || '.not-used' }}
         cd ${{ matrix.build-dir || '.' }}
-        ${{ matrix.cmake-prefix }} cmake ${{ matrix.build-src-dir || '.' }} ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_GZFILEOP=ON
+        ${{ matrix.cmake-prefix }} cmake ${{ matrix.build-src-dir || '.' }} ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} -DBUILD_SHARED_LIBS=OFF -DWITH_GZFILEOP=ON
       env:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
@@ -302,7 +309,7 @@ jobs:
     - name: Compile source code
       run: |
         cd ${{ matrix.build-dir || '.' }}
-        ${{ matrix.cmake-prefix }} cmake --build . --config Release
+        ${{ matrix.cmake-prefix }} cmake --build . --config ${{ matrix.build-config || 'Release' }}
 
     - name: Run test cases
       run: |
