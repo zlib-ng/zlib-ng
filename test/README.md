@@ -10,3 +10,24 @@ Contents
 |[CVE-2005-2096](https://nvd.nist.gov/vuln/detail/CVE-2005-2096)|Buffer overflow when incomplete code description
 |[GH-361](https://github.com/zlib-ng/zlib-ng/issues/361)|Test case for overlapping matches|
 |[GH-364](https://github.com/zlib-ng/zlib-ng/issues/364)|Test case for switching compression levels|
+
+Copying
+-------
+
+Some of the test data in test/data is licensed differently:
+
+ - fireworks.jpeg is Copyright 2013 Steinar H. Gunderson, and
+   is licensed under the Creative Commons Attribution 3.0 license
+   (CC-BY-3.0). See https://creativecommons.org/licenses/by/3.0/
+   for more information.
+
+ - paper-100k.pdf is an excerpt (bytes 92160 to 194560) from the paper
+   “Combinatorial Modeling of Chromatin Features Quantitatively Predicts DNA
+   Replication Timing in _Drosophila_” by Federico Comoglio and Renato Paro,
+   which is licensed under the CC-BY license. See
+   http://www.ploscompbiol.org/static/license for more information.
+
+ - lcet10.txt is from Project
+   Gutenberg. It does not have expired copyright, but is still in the
+   public domain according to the license information.
+   (http://www.gutenberg.org/ebooks/53).

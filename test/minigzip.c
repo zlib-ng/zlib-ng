@@ -265,7 +265,10 @@ void file_uncompress(char  *file)
  *   -d : decompress
  *   -f : compress with Z_FILTERED
  *   -h : compress with Z_HUFFMAN_ONLY
- *   -r : compress with Z_RLE
+ *   -R : compress with Z_RLE
+ *   -F : compress with Z_FIXED
+ *   -T : stored raw
+ *   -A : auto detect type
  *   -0 to -9 : compression level
  */
 
@@ -276,8 +279,9 @@ int main(int argc, char *argv[])
     int i = 0;
     gzFile file;
     char *bname, outmode[20];
-
-    snprintf(outmode, sizeof(outmode), "%s", "wb6 ");
+    char *strategy = "";
+    char *level = "6";
+    char *type = "b";
 
     prog = argv[i];
     bname = strrchr(argv[i], '/');
@@ -296,19 +300,19 @@ int main(int argc, char *argv[])
             copyout = 1;
         else if (strcmp(argv[i], "-d") == 0)
             uncompr = 1;
-        else if (strcmp(argv[i], "-f") == 0)
-            outmode[3] = 'f';
-        else if (strcmp(argv[i], "-h") == 0)
-            outmode[3] = 'h';
-        else if (strcmp(argv[i], "-r") == 0)
-            outmode[3] = 'R';
+        else if (strcmp(argv[i], "-A") == 0)
+            type = "";
+        else if (argv[i][0] == '-' && (argv[i][1] == 'f' || argv[i][1] == 'h' ||
+                argv[i][1] == 'R' || argv[i][1] == 'F' || argv[i][1] == 'T') && argv[i][2] == 0)
+            strategy = argv[i] + 1;
         else if (argv[i][0] == '-' && argv[i][1] >= '0' && argv[i][1] <= '9' && argv[i][2] == 0)
-            outmode[2] = argv[i][1];
+            level = argv[i] + 1;
         else
             break;
     }
-    if (outmode[3] == ' ')
-        outmode[3] = 0;
+
+    snprintf(outmode, sizeof(outmode), "w%s%s%s", type, strategy, level);
+
     if (i == argc) {
         SET_BINARY_MODE(stdin);
         SET_BINARY_MODE(stdout);

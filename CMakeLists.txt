@@ -935,6 +935,73 @@ if (ZLIB_ENABLE_TESTS)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
     endforeach()
 
+    macro(minigzip_deflate_file target name path)
+        set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}>
+            ${CMAKE_CURRENT_SOURCE_DIR}/${path})
+        add_test(NAME ${target}-${name}-file-compr
+            COMMAND ${CMAKE_COMMAND}
+            "-DCOMMAND=${GZ_COMMAND}"
+            "-DSUCCESS_EXIT=0;1"
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+    endmacro()
+    macro(minigzip_inflate_file target name path)
+        set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}>
+            -d ${CMAKE_CURRENT_SOURCE_DIR}/${path})
+        add_test(NAME ${target}-${name}-file-uncompr
+            COMMAND ${CMAKE_COMMAND}
+            "-DCOMMAND=${GZ_COMMAND}"
+            "-DSUCCESS_EXIT=0;1"
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+    endmacro()
+
+    minigzip_deflate_file(minigzip "lcet10" "test/data/lcet10.txt")
+    minigzip_inflate_file(minigzip "lcet10" "test/data/lcet10.txt.gz")
+
+    macro(minigzip_stdio_cmp target name path)
+        set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}> -c)
+        foreach(EXTRA_ARG IN ITEMS "${ARGN}")
+            list(APPEND GZ_COMMAND ${EXTRA_ARG})
+        endforeach()
+        string(REPLACE ";" "" GZ_ARGS "${ARGN}")
+        string(REPLACE "-" "" GZ_ARGS "${GZ_ARGS}")
+        add_test(NAME ${target}-${name}-${GZ_ARGS}-compr
+            COMMAND ${CMAKE_COMMAND}
+            "-DCOMMAND=${GZ_COMMAND}"
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
+            -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gz
+            "-DSUCCESS_EXIT=0;1"
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+        set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}> -d)
+        add_test(NAME ${target}-${name}-${GZ_ARGS}-uncompr
+            COMMAND ${CMAKE_COMMAND}
+            "-DCOMMAND=${GZ_COMMAND}"
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gz
+            -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.out
+            "-DSUCCESS_EXIT=0;1"
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+        add_test(NAME ${target}-${name}-${GZ_ARGS}-cmp
+            COMMAND ${CMAKE_COMMAND} -E compare_files
+                ${CMAKE_CURRENT_SOURCE_DIR}/${path}
+                ${CMAKE_CURRENT_SOURCE_DIR}/${path}.out)
+    endmacro()
+
+    set(OPEN_MODES -f -h -R -F -T)
+    set(COMPRESSION_LEVELS -0 -1 -6 -9)
+    foreach(OPEN_MODE ${OPEN_MODES})
+        foreach(COMPRESSION_LEVEL ${COMPRESSION_LEVELS})
+            minigzip_stdio_cmp(minigzip "lcet10" "test/data/lcet10.txt" ${OPEN_MODE} ${COMPRESSION_LEVEL})
+            minigzip_stdio_cmp(minigzip "fireworks" "test/data/fireworks.jpg" ${OPEN_MODE} ${COMPRESSION_LEVEL})
+            minigzip_stdio_cmp(minigzip "paper-100k" "test/data/paper-100k.pdf" ${OPEN_MODE} ${COMPRESSION_LEVEL})
+        endforeach()
+    endforeach()
+
+    if(HAVE_OFF64_T)
+        minigzip_stdio_cmp(minigzip64 "offset64" "test/data/paper-100k.pdf")
+    endif()
+
+    minigzip_stdio_cmp(minigzip "detect-text" "test/data/lcet10.txt" -A)
+    minigzip_stdio_cmp(minigzip "detect-binary" "test/data/paper-100k.pdf" -A)
+
     if(NOT WIN32 AND ZLIB_COMPAT)
         add_executable(CVE-2003-0107 test/CVE-2003-0107.c)
         target_link_libraries(CVE-2003-0107 zlib)
