@@ -1029,6 +1029,10 @@ if(ZLIB_ENABLE_TESTS)
         endif()
     endif()
 
+    add_executable(minideflate test/minideflate.c)
+    configure_test_executable(minideflate)
+    target_link_libraries(minideflate zlib)
+
     add_executable(switchlevels test/switchlevels.c)
     configure_test_executable(switchlevels)
     target_link_libraries(switchlevels zlib)
@@ -1219,6 +1223,27 @@ if(ZLIB_ENABLE_TESTS)
             "-DCOMMAND=${GH_364_COMMAND}"
             -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-364/test.bin
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+    set(GH_382_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minideflate> -c -m 1 -w -15 -1 -s 4)
+    add_test(NAME GH-382-deflate COMMAND
+            COMMAND ${CMAKE_COMMAND}
+            "-DCOMMAND=${GH_382_COMMAND}"
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat
+            -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat.zz
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+    set(GH_382_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minideflate> -c -d -m 1 -w -15)
+    add_test(NAME GH-382-inflate COMMAND
+            COMMAND ${CMAKE_COMMAND}
+            "-DCOMMAND=${GH_382_COMMAND}"
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat.zz
+            -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat.out
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+    add_test(NAME GH-382-cmp
+            COMMAND ${CMAKE_COMMAND} -E compare_files
+            ${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat
+            ${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat.out)
 
     set(GH_536_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels> 6 9744 1 91207)
     add_test(NAME GH-536-segfault
