@@ -20,6 +20,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   uint32_t adler0 = PREFIX(adler32)(0L, NULL, 0);
   uint32_t adler1 = adler0;
   uint32_t adler2 = adler0;
+  uint32_t combine1, combine2;
   /* Checksum with a buffer of size equal to the first byte in the input. */
   uint32_t buffSize = data[0];
   uint32_t offset = 0;
@@ -51,15 +52,18 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   assert(crc1 == crc2);
   (void)crc1;
   (void)crc2;
-  assert(PREFIX(crc32_combine)(crc1, crc2, (z_off_t)dataLen) ==
-         PREFIX(crc32_combine)(crc1, crc1, (z_off_t)dataLen));
+  combine1 = PREFIX(crc32_combine)(crc1, crc2, (z_off_t)dataLen);
+  combine2 = PREFIX(crc32_combine)(crc1, crc1, (z_off_t)dataLen);
+  assert(combine1 == combine2);
 
   /* Fast CRC32 combine. */
   PREFIX(crc32_combine_gen)(op, (z_off_t)dataLen);
-  assert(PREFIX(crc32_combine_op)(crc1, crc2, op) ==
-         PREFIX(crc32_combine_op)(crc2, crc1, op));
-  assert(PREFIX(crc32_combine)(crc1, crc2, (z_off_t)dataLen) ==
-         PREFIX(crc32_combine_op)(crc2, crc1, op));
+  combine1 = PREFIX(crc32_combine_op)(crc1, crc2, op);
+  combine2 = PREFIX(crc32_combine_op)(crc2, crc1, op);
+  assert(combine1 == combine2);
+  combine1 = PREFIX(crc32_combine)(crc1, crc2, (z_off_t)dataLen);
+  combine2 = PREFIX(crc32_combine_op)(crc2, crc1, op);
+  assert(combine1 == combine2);
 
   /* Adler32 */
   for (offset = 0; offset + buffSize <= dataLen; offset += buffSize)
@@ -71,8 +75,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
   assert(adler1 == adler2);
   (void)adler1;
   (void)adler2;
-  assert(PREFIX(adler32_combine)(adler1, adler2, (z_off_t)dataLen) ==
-         PREFIX(adler32_combine)(adler1, adler1, (z_off_t)dataLen));
+  combine1 = PREFIX(adler32_combine)(adler1, adler2, (z_off_t)dataLen);
+  combine2 = PREFIX(adler32_combine)(adler1, adler1, (z_off_t)dataLen);
+  assert(combine1 == combine2);
 
   /* This function must return 0. */
   return 0;
