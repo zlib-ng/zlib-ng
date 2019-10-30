@@ -922,6 +922,16 @@ if (ZLIB_ENABLE_TESTS)
     add_executable(minigzip test/minigzip.c)
     configure_test_executable(minigzip)
 
+    add_executable(inflateparams test/inflateparams.c)
+    configure_test_executable(inflateparams)
+
+    set(INFPARAMS_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:inflateparams> -s 
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/data/infbuferr.dat)
+    add_test(NAME inflateparams
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${INFPARAMS_COMMAND}"
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
     add_executable(switchlevels test/switchlevels.c)
     configure_test_executable(switchlevels)
 
