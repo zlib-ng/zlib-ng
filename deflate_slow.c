@@ -26,7 +26,7 @@
  */
 ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     IPos hash_head;          /* head of hash chain */
-    int bflush;              /* set if current block must be flushed */
+    int bflush = 0;          /* set if current block must be flushed */
 
     /* Process the input block. */
     for (;;) {
@@ -122,7 +122,8 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
             }
 #endif /*NOT_TWEAK_COMPILER*/
 
-            if (bflush) FLUSH_BLOCK(s, 0);
+            if (bflush)
+                FLUSH_BLOCK(s, 0);
 
         } else if (s->match_available) {
             /* If there was no match at the previous position, output a
@@ -131,9 +132,8 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
              */
             Tracevv((stderr, "%c", s->window[s->strstart-1]));
             bflush = zng_tr_tally_lit(s, s->window[s->strstart-1]);
-            if (bflush) {
+            if (bflush)
                 FLUSH_BLOCK_ONLY(s, 0);
-            }
             s->strstart++;
             s->lookahead--;
             if (s->strm->avail_out == 0)

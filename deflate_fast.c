@@ -19,7 +19,7 @@
  */
 ZLIB_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
     IPos hash_head;       /* head of the hash chain */
-    int bflush;           /* set if current block must be flushed */
+    int bflush = 0;       /* set if current block must be flushed */
 
     for (;;) {
         /* Make sure that we always have enough lookahead, except
