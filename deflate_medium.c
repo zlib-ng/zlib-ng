@@ -7,6 +7,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 #ifndef NO_MEDIUM_STRATEGY
+#include <stdint.h>
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
@@ -14,10 +15,10 @@
 #include "functable.h"
 
 struct match {
-    unsigned int match_start;
-    unsigned int match_length;
-    unsigned int strstart;
-    unsigned int orgstart;
+    uint16_t match_start;
+    uint16_t match_length;
+    uint16_t strstart;
+    uint16_t orgstart;
 };
 
 static int emit_match(deflate_state *s, struct match match) {
@@ -43,7 +44,7 @@ static int emit_match(deflate_state *s, struct match match) {
 }
 
 static void insert_match(deflate_state *s, struct match match) {
-    if (UNLIKELY(s->lookahead <= match.match_length + MIN_MATCH))
+    if (UNLIKELY(s->lookahead <= (unsigned int)(match.match_length + MIN_MATCH)))
         return;
 
     /* matches that are not long enough we need to emit as literals */
@@ -189,7 +190,9 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
 }
 
 ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
-    struct match current_match, next_match;
+    /* Align the first struct to start on a new cacheline, this allows us to fit both structs in one cacheline */
+    ALIGNED_(16) struct match current_match;
+                 struct match next_match;
 
     memset(&current_match, 0, sizeof(struct match));
     memset(&next_match, 0, sizeof(struct match));
