@@ -21,25 +21,25 @@ struct match {
 };
 
 static int emit_match(deflate_state *s, struct match match) {
-    int flush = 0;
+    int bflush = 0;
 
     /* matches that are not long enough we need to emit as literals */
     if (match.match_length < MIN_MATCH) {
         while (match.match_length) {
-            flush += zng_tr_tally_lit(s, s->window[match.strstart]);
+            bflush += zng_tr_tally_lit(s, s->window[match.strstart]);
             s->lookahead--;
             match.strstart++;
             match.match_length--;
         }
-        return flush;
+        return bflush;
     }
 
     check_match(s, match.strstart, match.match_start, match.match_length);
 
-    flush += zng_tr_tally_dist(s, match.strstart - match.match_start, match.match_length - MIN_MATCH);
+    bflush += zng_tr_tally_dist(s, match.strstart - match.match_start, match.match_length - MIN_MATCH);
 
     s->lookahead -= match.match_length;
-    return flush;
+    return bflush;
 }
 
 static void insert_match(deflate_state *s, struct match match) {
@@ -196,7 +196,7 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
 
     for (;;) {
         IPos hash_head = 0;   /* head of the hash chain */
-        int bflush;           /* set if current block must be flushed */
+        int bflush = 0;       /* set if current block must be flushed */
 
         /* Make sure that we always have enough lookahead, except
          * at the end of the input file. We need MAX_MATCH bytes

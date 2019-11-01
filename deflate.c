@@ -1552,7 +1552,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
  * deflate switches away from Z_RLE.)
  */
 static block_state deflate_rle(deflate_state *s, int flush) {
-    int bflush;                     /* set if current block must be flushed */
+    int bflush = 0;                 /* set if current block must be flushed */
     unsigned int prev;              /* byte at distance one to match */
     unsigned char *scan, *strend;   /* scan goes up to strend for length of run */
 
@@ -1624,7 +1624,7 @@ static block_state deflate_rle(deflate_state *s, int flush) {
  * (It will be regenerated if this run of deflate switches away from Huffman.)
  */
 static block_state deflate_huff(deflate_state *s, int flush) {
-    int bflush;             /* set if current block must be flushed */
+    int bflush = 0;         /* set if current block must be flushed */
 
     for (;;) {
         /* Make sure that we have a literal to write. */
