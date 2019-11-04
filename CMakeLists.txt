@@ -21,7 +21,7 @@ if(NOT CMAKE_C_EXTENSIONS)
   set (CMAKE_C_EXTENSIONS OFF)       # Boolean specifying whether compiler specific extensions are requested
 endif()
 set(VALID_C_STANDARDS "99" "11")
-if(NOT CMAKE_C_STANDARD IN_LIST VALID_C_STANDARDS )
+if(NOT CMAKE_C_STANDARD IN_LIST VALID_C_STANDARDS)
    MESSAGE(FATAL_ERROR "CMAKE_C_STANDARD:STRING=${CMAKE_C_STANDARD} not in know standards list\n ${VALID_C_STANDARDS}")
 endif()
 
@@ -250,10 +250,10 @@ else()
 endif()
 if(CODECOVERAGE)
     if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O1 -g -coverage")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g -coverage")
     elseif(__GNUC__)
         # Some versions of GCC don't support -coverage shorthand
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O1 -fprofile-arcs -ftest-coverage")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g -fprofile-arcs -ftest-coverage")
     endif()
 endif()
 
