@@ -202,11 +202,15 @@ jobs:
           - name: Ubuntu 18.04 Clang
             os: ubuntu-18.04
             compiler: clang
+            packages: llvm-6.0
+            gcov-exec: llvm-cov-6.0 gcov
             codecov: ubuntu_clang
 
           - name: Ubuntu 18.04 Clang Debug
             os: ubuntu-18.04
             compiler: clang
+            packages: llvm-6.0
+            gcov-exec: llvm-cov-6.0 gcov
             codecov: ubuntu_clang
             build-config: Debug
 
@@ -214,7 +218,8 @@ jobs:
             os: ubuntu-18.04
             compiler: clang
             cmake-args: -GNinja -DWITH_MSAN=ON
-            packages:  ninja-build
+            packages:  ninja-build llvm-6.0
+            gcov-exec: llvm-cov-6.0 gcov
             cflags: -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-memory-track-origins
             codecov: ubuntu_clang_msan
 
@@ -262,36 +267,34 @@ jobs:
     - uses: actions/checkout@v1
 
     - name: Install packages (Ubuntu)
-      if: runner.os == 'Linux'
+      if: runner.os == 'Linux' && matrix.packages
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build ${{ matrix.packages }}
-        sudo pip install codecov
-
-    - name: Install Clang code coverage tools (Ubuntu)
-      if: runner.os == 'Linux' && matrix.codecov && matrix.compiler == 'clang'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-7 clang-7 clang-tools-7 llvm lcov
+        sudo apt-get install -y ${{ matrix.packages }}
 
     - name: Install packages (Windows)
       if: runner.os == 'Windows'
+      run: |
+        choco install ninja ${{ matrix.packages }}
+
+    - name: Install packages (Windows/GCC)
+      if: runner.os == 'Windows' && matrix.codecov && matrix.compiler == 'gcc'
       # Use gcov-7 via mingw on windows because gcov-8 throws tons of warnings
       # https://partner-bugzilla.redhat.com/show_bug.cgi?id=1577508
-      # Need to use special fork of codecov-python for Windows
-      # https://github.com/codecov/codecov-python/pull/169
       run: |
-        python -u -m pip install --upgrade pip
-        python -u -m pip -v install git+https://github.com/nmoinvaz/codecov-python.git@master
-        choco install ninja ${{ matrix.packages }}
-        choco uninstall mingw
-        choco install mingw --version=7.3.0
+        choco install mingw --version=7.3.0 --force --allow-downgrade
 
     - name: Install packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        brew install ninja llvm ${{ matrix.packages }}
-        sudo pip install codecov
+        brew install ninja ${{ matrix.packages }}
+
+    - name: Install codecov.io tools
+      if: matrix.codecov
+      # Need to use special fork of codecov-python for Windows
+      # https://github.com/codecov/codecov-python/pull/169
+      run: |
+        python -u -m pip -v install git+https://github.com/nmoinvaz/codecov-python.git@master
 
     - name: Generate project files
       # Shared libaries turned off for qemu ppc* and sparc & reduce code coverage sources
@@ -323,10 +326,9 @@ jobs:
 
     - name: Upload coverage report
       if: matrix.codecov
-      shell: pwsh
       run: |
-        $gcovfiles = (Get-ChildItem -Path "*.gcov").Name
-        codecov -f $gcovfiles -F "${{ matrix.codecov }}" --name "${{ matrix.name }}"
+        cd ${{ matrix.build-dir || '.' }}
+        python -m codecov -F "${{ matrix.codecov }}" --name "${{ matrix.name }}" --gcov-exec="${{ matrix.gcov-exec || 'gcov' }}"
       env:
         # Codecov does not yet support GitHub Actions
         CODECOV_TOKEN: "${{secrets.CODECOV_TOKEN}}"
