@@ -1072,7 +1072,7 @@ case "${ARCH}" in
     ;;
 
     # ARM specific optimizations
-    arm | armv[3467]l | armv4b | armv4tl | armv5tel | armv5tejl | armv[67]hl | armv7hnl | armv[78]-a | armv8-a+* | armv8.[1234]-a | armv8.[1234]-a+*)
+    arm*)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=arm
         ARCHDIR=arch/arm
 
