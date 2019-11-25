@@ -64,9 +64,15 @@ ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, uin
     return crc ^ 0xffffffff;
 }
 
+#ifdef ZLIB_COMPAT
+unsigned long ZEXPORT PREFIX(crc32)(unsigned long crc, const unsigned char *buf, unsigned int len) {
+    return (unsigned long) PREFIX(crc32_z)((uint32_t) crc, buf, len);
+}
+#else
 uint32_t ZEXPORT PREFIX(crc32)(uint32_t crc, const unsigned char *buf, uint32_t len) {
     return PREFIX(crc32_z)(crc, buf, len);
 }
+#endif
 
 /*
    This BYFOUR code accesses the passed unsigned char * buffer with a 32-bit
