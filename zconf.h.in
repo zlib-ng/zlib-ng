@@ -55,6 +55,10 @@
                         /* Type declarations */
 
 
+#ifndef OF /* function prototypes */
+#  define OF(args)  args
+#endif
+
 #if defined(WINDOWS) || defined(WIN32)
    /* If building or using zlib as a DLL, define ZLIB_DLL.
     * This is not mandatory, but it offers a little performance increase.
