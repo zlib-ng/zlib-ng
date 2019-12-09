@@ -692,9 +692,11 @@ if(WITH_OPTIM)
         endif()
     elseif(BASEARCH_PPC_FOUND)
         if(WITH_POWER8 AND HAVE_POWER8)
-            add_definitions(-DPOWER_FEATURES)
             add_definitions(-DPOWER8)
+            add_definitions(-DPOWER_FEATURES)
+            add_definitions(-DPOWER8_VSX_ADLER32)
             set(ZLIB_POWER8_SRCS
+                ${ARCHDIR}/adler32_power8.c
                 ${ARCHDIR}/slide_hash_power8.c)
             set_source_files_properties(
                 ${ZLIB_POWER8_SRCS}

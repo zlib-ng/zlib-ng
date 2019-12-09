@@ -58,7 +58,7 @@ Features
 * Modernized native API based on zlib API for ease of porting
 * Intel deflate medium and quick algorithms
 * Support for CPU intrinsics when available
-  * Adler32 implementation using SSSE3, AVX2, & Neon
+  * Adler32 implementation using SSSE3, AVX2, Neon, & VSX
   * Intel CRC32-B implementation using PCLMULQDQ
   * Intel CRC32-C intrinics for hash tables
   * ARM CRC32-B implementation using ACLE
