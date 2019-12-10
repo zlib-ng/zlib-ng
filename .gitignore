@@ -13,6 +13,8 @@
 *.gcno
 *.gcov
 
+/adler32_test
+/adler32_testsh
 /example
 /example64
 /examplesh
