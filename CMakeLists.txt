@@ -1040,6 +1040,13 @@ if(ZLIB_ENABLE_TESTS)
         endif()
     endmacro()
 
+    add_executable(adler32_test test/adler32_test.c)
+    configure_test_executable(adler32_test)
+    target_link_libraries(adler32_test zlib)
+
+    set(ADLER32TEST_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:adler32_test>)
+    add_test(NAME adler32_test COMMAND ${ADLER32TEST_COMMAND})
+
     add_executable(example test/example.c)
     configure_test_executable(example)
     target_link_libraries(example zlib)

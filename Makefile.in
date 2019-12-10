@@ -135,9 +135,9 @@ PIC_OBJS = $(PIC_OBJC)
 
 all: static shared
 
-static: example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
+static: adler32_test$(EXE) example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
 
-shared: examplesh$(EXE) minigzipsh$(EXE)
+shared: adler32_testsh$(EXE) examplesh$(EXE) minigzipsh$(EXE)
 
 check: test
 
@@ -229,6 +229,9 @@ $(STATICLIB): $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
 
+adler32_test.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/adler32_test.c
+
 example.o:
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
 
@@ -271,6 +274,12 @@ ifneq ($(SHAREDLIB),$(SHAREDTARGET))
 endif
 endif
 
+adler32_test$(EXE): adler32_test.o $(OBJG) $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ adler32_test.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
 example$(EXE): example.o $(OBJG) $(STATICLIB)
 	$(CC) $(LDFLAGS) -o $@ example.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
@@ -279,6 +288,12 @@ endif
 
 minigzip$(EXE): minigzip.o $(OBJG) $(STATICLIB)
 	$(CC) $(LDFLAGS) -o $@ minigzip.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+adler32_testsh$(EXE): adler32_test.o $(OBJG) $(SHAREDTARGET)
+	$(CC) $(LDFLAGS) -o $@ adler32_test.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -383,7 +398,8 @@ clean:
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) clean; fi
 	@if [ -f test/Makefile ]; then $(MAKE) -C test clean; fi
 	rm -f *.o *.lo *~ \
-	   example$(EXE) minigzip$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
+	   adler32_test$(EXE) example$(EXE) minigzip$(EXE) \
+	   adler32_testsh$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
 	   checksum_fuzzer$(EXE) compress_fuzzer$(EXE) example_small_fuzzer$(EXE) example_large_fuzzer$(EXE) \
 	   example_flush_fuzzer$(EXE) example_dict_fuzzer$(EXE) minigzip_fuzzer$(EXE) \
 	   infcover makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) \
