@@ -334,7 +334,7 @@ void ZLIB_INTERNAL slide_hash_c(deflate_state *s);
 
         /* in trees.c */
 void ZLIB_INTERNAL zng_tr_init(deflate_state *s);
-int ZLIB_INTERNAL zng_tr_tally(deflate_state *s, unsigned dist, unsigned lc);
+int ZLIB_INTERNAL zng_tr_tally(deflate_state *s, unsigned dist, unsigned lc, unsigned max_dist);
 void ZLIB_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, unsigned long stored_len, int last);
 void ZLIB_INTERNAL zng_tr_flush_bits(deflate_state *s);
 void ZLIB_INTERNAL zng_tr_align(deflate_state *s);
@@ -375,9 +375,9 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
     flush = (s->sym_next == s->sym_end); \
   }
 #else
-#   define zng_tr_tally_lit(s, c, flush) flush = zng_tr_tally(s, 0, c)
+#   define zng_tr_tally_lit(s, c, flush) flush = zng_tr_tally(s, 0, c, MAX_DIST(s))
 #   define zng_tr_tally_dist(s, distance, length, flush) \
-              flush = zng_tr_tally(s, (unsigned)(distance), (unsigned)(length))
+              flush = zng_tr_tally(s, (unsigned)(distance), (unsigned)(length), MAX_DIST(s))
 #endif
 
 /* ===========================================================================

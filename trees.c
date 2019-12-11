@@ -730,7 +730,7 @@ void ZLIB_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, unsigned long
  * Save the match info and tally the frequency counts. Return true if
  * the current block must be flushed.
  */
-int ZLIB_INTERNAL zng_tr_tally(deflate_state *s, unsigned dist, unsigned lc) {
+int ZLIB_INTERNAL zng_tr_tally(deflate_state *s, unsigned dist, unsigned lc, unsigned max_dist) {
     /* dist: distance of matched string */
     /* lc: match length-MIN_MATCH or unmatched char (if dist==0) */
     s->sym_buf[s->sym_next++] = dist;
@@ -743,7 +743,7 @@ int ZLIB_INTERNAL zng_tr_tally(deflate_state *s, unsigned dist, unsigned lc) {
         s->matches++;
         /* Here, lc is the match length - MIN_MATCH */
         dist--;             /* dist = match distance - 1 */
-        Assert((uint16_t)dist < (uint16_t)MAX_DIST(s) &&
+        Assert((uint16_t)dist < max_dist &&
                (uint16_t)lc <= (uint16_t)(MAX_MATCH-MIN_MATCH) &&
                (uint16_t)d_code(dist) < (uint16_t)D_CODES,  "zng_tr_tally: bad match");
 
