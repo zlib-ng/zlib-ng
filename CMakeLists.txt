@@ -903,6 +903,9 @@ if (ZLIB_ENABLE_TESTS)
     add_executable(switchlevels test/switchlevels.c)
     configure_test_executable(switchlevels)
 
+    add_executable(infcover test/infcover.c inftrees.c)
+    configure_test_executable(infcover)
+
     add_executable(makefixed tools/makefixed.c inftrees.c)
     target_include_directories(makefixed PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -1055,6 +1058,9 @@ if (ZLIB_ENABLE_TESTS)
         COMMAND ${CMAKE_COMMAND} -E compare_files
             ${CMAKE_CURRENT_SOURCE_DIR}/crc32.h
             ${CMAKE_CURRENT_SOURCE_DIR}/crc32._h)
+
+    set(INFCOVER_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
+    add_test(NAME infcover COMMAND ${CMAKE_COMMAND})
 
     set(GH_361_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -4)
     add_test(NAME GH-361
