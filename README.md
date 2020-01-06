@@ -100,6 +100,8 @@ Build Options
 | WITH_DFLTCC_INFLATE      | --with-dfltcc-inflate    | Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z                          | OFF                              |
 | WITH_SANITIZERS          | --with-sanitizers        | Build with address sanitizer and all supported sanitizers other than memory sanitizer        | OFF                              |
 | WITH_FUZZERS             | --with-fuzzers           | Build test/fuzz                                                                              | OFF                              |
+| WITH_MAINTAINER_WARNINGS |                          | Build with project maintainer warnings                                                       | OFF                              |
+| WITH_CODE_COVERAGE       |                          | Enable code coverage reporting                                                               | OFF                              |
 
 Install
 -------
