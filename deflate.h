@@ -154,9 +154,9 @@ typedef struct internal_state {
     unsigned int  hash_bits;         /* log2(hash_size) */
     unsigned int  hash_mask;         /* hash_size-1 */
 
-    #if !defined(__x86_64__) && !defined(_M_X64) && !defined(__i386) && !defined(_M_IX86)
+#if !defined(__x86_64__) && !defined(_M_X64) && !defined(__i386) && !defined(_M_IX86)
     unsigned int  hash_shift;
-    #endif
+#endif
     /* Number of bits by which ins_h must be shifted at each input
      * step. It must be such that after MIN_MATCH steps, the oldest
      * byte no longer takes part in the hash key, that is:
@@ -300,7 +300,9 @@ typedef enum {
 /* Output a byte on the stream.
  * IN assertion: there is enough room in pending_buf.
  */
-#define put_byte(s, c) {s->pending_buf[s->pending++] = (unsigned char)(c);}
+#define put_byte(s, c) { \
+    s->pending_buf[s->pending++] = (unsigned char)(c); \
+}
 
 /* ===========================================================================
  * Output a short LSB first on the stream.
@@ -308,10 +310,10 @@ typedef enum {
  */
 static inline void put_short(deflate_state *s, uint16_t w) {
 #if BYTE_ORDER == BIG_ENDIAN
-  w = ZSWAP16(w);
+    w = ZSWAP16(w);
 #endif
-  memcpy(&(s->pending_buf[s->pending]), &w, sizeof(uint16_t));
-  s->pending += 2;
+    memcpy(&(s->pending_buf[s->pending]), &w, sizeof(uint16_t));
+    s->pending += 2;
 }
 
 #define MIN_LOOKAHEAD (MAX_MATCH+MIN_MATCH+1)
@@ -352,10 +354,10 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
 #ifndef ZLIB_DEBUG
 /* Inline versions of _tr_tally for speed: */
 
-  extern const unsigned char ZLIB_INTERNAL zng_length_code[];
-  extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
+extern const unsigned char ZLIB_INTERNAL zng_length_code[];
+extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
 
-# define zng_tr_tally_lit(s, c, flush) \
+#  define zng_tr_tally_lit(s, c, flush) \
   { unsigned char cc = (c); \
     s->sym_buf[s->sym_next++] = 0; \
     s->sym_buf[s->sym_next++] = 0; \
@@ -363,7 +365,7 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
     s->dyn_ltree[cc].Freq++; \
     flush = (s->sym_next == s->sym_end); \
   }
-# define zng_tr_tally_dist(s, distance, length, flush) \
+#  define zng_tr_tally_dist(s, distance, length, flush) \
   { unsigned char len = (unsigned char)(length); \
     unsigned dist = (unsigned)(distance); \
     s->sym_buf[s->sym_next++] = dist; \
@@ -375,8 +377,8 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
     flush = (s->sym_next == s->sym_end); \
   }
 #else
-#   define zng_tr_tally_lit(s, c, flush) flush = zng_tr_tally(s, 0, c)
-#   define zng_tr_tally_dist(s, distance, length, flush) \
+#  define zng_tr_tally_lit(s, c, flush) flush = zng_tr_tally(s, 0, c)
+#  define zng_tr_tally_dist(s, distance, length, flush) \
               flush = zng_tr_tally(s, (unsigned)(distance), (unsigned)(length))
 #endif
 
@@ -388,13 +390,13 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
  */
 
 #ifdef NOT_TWEAK_COMPILER
-#define TRIGGER_LEVEL 6
+#  define TRIGGER_LEVEL 6
 #else
-#define TRIGGER_LEVEL 5
+#  define TRIGGER_LEVEL 5
 #endif
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
-#define UPDATE_HASH(s, h, i) \
+#  define UPDATE_HASH(s, h, i) \
     do {\
         if (s->level < TRIGGER_LEVEL) \
             h = (3483 * (s->window[i]) +\
@@ -407,30 +409,32 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
                  25811* (s->window[i+2])) & s->hash_mask;\
     } while (0)
 #else
-#   define UPDATE_HASH(s, h, i) (h = (((h) << s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
+#  define UPDATE_HASH(s, h, i) \
+    (h = (((h) << s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
 #endif
 
 #ifdef ZLIB_DEBUG
-    #define send_code(s, c, tree, bit_buf, bits_valid) { \
+#  define send_code(s, c, tree, bit_buf, bits_valid) { \
         if (z_verbose > 2) { \
            fprintf(stderr, "\ncd %3d ", (c)); \
         } \
         send_bits(s, tree[c].Code, tree[c].Len, bit_buf, bits_valid); \
     }
 #else /* ZLIB_DEBUG */
-    /* Send a code of the given tree. c and tree must not have side effects */
-    #define send_code(s, c, tree, bit_buf, bits_valid) send_bits(s, tree[c].Code, tree[c].Len, bit_buf, bits_valid)
+/* Send a code of the given tree. c and tree must not have side effects */
+#  define send_code(s, c, tree, bit_buf, bits_valid) \
+        send_bits(s, tree[c].Code, tree[c].Len, bit_buf, bits_valid)
 #endif
 
 
 #ifdef ZLIB_DEBUG
-    #define send_debug_trace(s, value, length) {\
+#  define send_debug_trace(s, value, length) {\
         Tracevv((stderr, " l %2d v %4x ", length, value));\
         Assert(length > 0 && length <= 15, "invalid length");\
         s->bits_sent += (unsigned long)length;\
     }
 #else
-    #define send_debug_trace(s, value, length) {}
+#  define send_debug_trace(s, value, length) {}
 #endif
 
 /* If not enough room in bit_buf, use (valid) bits from bit_buf and

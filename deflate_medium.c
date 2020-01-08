@@ -129,9 +129,9 @@ static void insert_match(deflate_state *s, struct match match) {
 #warning    Call insert_string() MIN_MATCH-3 more times
 #endif
 #endif
-    /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
-     * matter since it will be recomputed at next deflate call.
-     */
+        /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
+         * matter since it will be recomputed at next deflate call.
+         */
     }
 }
 

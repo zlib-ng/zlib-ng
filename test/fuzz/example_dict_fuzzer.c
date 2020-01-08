@@ -30,8 +30,7 @@ static unsigned long dictId; /* Adler32 value of the dictionary */
 /* ===========================================================================
  * Test deflate() with preset dictionary
  */
-void test_dict_deflate(unsigned char **compr, size_t *comprLen)
-{
+void test_dict_deflate(unsigned char **compr, size_t *comprLen) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
     int level = data[0] % 11 - 1; /* [-1..9]
@@ -58,7 +57,7 @@ void test_dict_deflate(unsigned char **compr, size_t *comprLen)
 
     /* deflate would fail for no-compression or for speed levels. */
     if (level == 0 || level == 1)
-      level = -1;
+        level = -1;
 
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;

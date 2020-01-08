@@ -95,9 +95,9 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
             }
 #else
             unsigned int count;
-            if (UNLIKELY(s->lookahead == 1)){
+            if (UNLIKELY(s->lookahead == 1)) {
                 count = s->insert - 1;
-            }else{
+            } else {
                 count = s->insert;
             }
             functable.insert_string(s, str, count);

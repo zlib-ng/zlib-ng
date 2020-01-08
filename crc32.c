@@ -42,8 +42,7 @@ uint32_t ZEXPORT PREFIX(crc32_z)(uint32_t crc, const unsigned char *buf, size_t 
 #define DO4 DO1; DO1; DO1; DO1
 
 /* ========================================================================= */
-ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, uint64_t len)
-{
+ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, uint64_t len) {
     crc = crc ^ 0xffffffff;
 
 #ifdef UNROLL_MORE
@@ -224,8 +223,8 @@ ZLIB_INTERNAL void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsi
 }
 
 /* ========================================================================= */
-static void crc32_combine_gen_(uint32_t *op, z_off64_t len2)
-{
+
+static void crc32_combine_gen_(uint32_t *op, z_off64_t len2) {
     uint32_t row;
     int j;
     unsigned i;
@@ -267,18 +266,16 @@ static void crc32_combine_gen_(uint32_t *op, z_off64_t len2)
 }
 
 /* ========================================================================= */
-void ZEXPORT PREFIX(crc32_combine_gen)(uint32_t *op, z_off_t len2)
-{
+
+void ZEXPORT PREFIX(crc32_combine_gen)(uint32_t *op, z_off_t len2) {
     crc32_combine_gen_(op, len2);
 }
 
-void ZEXPORT PREFIX(crc32_combine_gen64)(uint32_t *op, z_off64_t len2)
-{
+void ZEXPORT PREFIX(crc32_combine_gen64)(uint32_t *op, z_off64_t len2) {
     crc32_combine_gen_(op, len2);
 }
 
 /* ========================================================================= */
-uint32_t ZEXPORT PREFIX(crc32_combine_op)(uint32_t crc1, uint32_t crc2, const uint32_t *op)
-{
+uint32_t ZEXPORT PREFIX(crc32_combine_op)(uint32_t crc1, uint32_t crc2, const uint32_t *op) {
     return gf2_matrix_times(op, crc1) ^ crc2;
 }

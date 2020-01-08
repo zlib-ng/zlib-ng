@@ -203,52 +203,52 @@ ZLIB_INTERNAL void slide_hash_c(deflate_state *s) {
     n = s->hash_size;
     p = &s->head[n];
 #ifdef NOT_TWEAK_COMPILER
-            do {
-                unsigned m;
-                m = *--p;
-                *p = (Pos)(m >= wsize ? m-wsize : NIL);
-            } while (--n);
+    do {
+        unsigned m;
+        m = *--p;
+        *p = (Pos)(m >= wsize ? m-wsize : NIL);
+    } while (--n);
 #else
-            /* As of I make this change, gcc (4.8.*) isn't able to vectorize
-             * this hot loop using saturated-subtraction on x86-64 architecture.
-             * To avoid this defect, we can change the loop such that
-             *    o. the pointer advance forward, and
-             *    o. demote the variable 'm' to be local to the loop, and
-             *       choose type "Pos" (instead of 'unsigned int') for the
-             *       variable to avoid unncessary zero-extension.
-             */
-            {
-                unsigned int i;
-                Pos *q = p - n;
-                for (i = 0; i < n; i++) {
-                    Pos m = *q;
-                    Pos t = wsize;
-                    *q++ = (Pos)(m >= t ? m-t: NIL);
-                }
-            }
+    /* As of I make this change, gcc (4.8.*) isn't able to vectorize
+     * this hot loop using saturated-subtraction on x86-64 architecture.
+     * To avoid this defect, we can change the loop such that
+     *    o. the pointer advance forward, and
+     *    o. demote the variable 'm' to be local to the loop, and
+     *       choose type "Pos" (instead of 'unsigned int') for the
+     *       variable to avoid unncessary zero-extension.
+     */
+    {
+        unsigned int i;
+        Pos *q = p - n;
+        for (i = 0; i < n; i++) {
+            Pos m = *q;
+            Pos t = wsize;
+            *q++ = (Pos)(m >= t ? m-t: NIL);
+        }
+    }
 
 #endif /* NOT_TWEAK_COMPILER */
-            n = wsize;
-            p = &s->prev[n];
+    n = wsize;
+    p = &s->prev[n];
 #ifdef NOT_TWEAK_COMPILER
-            do {
-                unsigned m;
-                m = *--p;
-                *p = (Pos)(m >= wsize ? m-wsize : NIL);
-                /* If n is not on any hash chain, prev[n] is garbage but
-                 * its value will never be used.
-                 */
-            } while (--n);
+    do {
+        unsigned m;
+        m = *--p;
+        *p = (Pos)(m >= wsize ? m-wsize : NIL);
+        /* If n is not on any hash chain, prev[n] is garbage but
+         * its value will never be used.
+         */
+    } while (--n);
 #else
-            {
-                unsigned int i;
-                Pos *q = p - n;
-                for (i = 0; i < n; i++) {
-                    Pos m = *q;
-                    Pos t = wsize;
-                    *q++ = (Pos)(m >= t ? m-t: NIL);
-                }
-            }
+    {
+        unsigned int i;
+        Pos *q = p - n;
+        for (i = 0; i < n; i++) {
+            Pos m = *q;
+            Pos t = wsize;
+            *q++ = (Pos)(m >= t ? m-t: NIL);
+        }
+    }
 #endif /* NOT_TWEAK_COMPILER */
 }
 
@@ -498,7 +498,7 @@ int ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const unsigned c
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflateGetDictionary)(PREFIX3(stream) *strm, unsigned char *dictionary, unsigned int  *dictLength) {
+int ZEXPORT PREFIX(deflateGetDictionary)(PREFIX3(stream) *strm, unsigned char *dictionary, unsigned int *dictLength) {
     deflate_state *s;
     unsigned int len;
 
@@ -825,10 +825,10 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
             return Z_OK;
         }
 
-    /* Make sure there is something to do and avoid duplicate consecutive
-     * flushes. For repeated and useless calls with Z_FINISH, we keep
-     * returning Z_STREAM_END instead of Z_BUF_ERROR.
-     */
+        /* Make sure there is something to do and avoid duplicate consecutive
+         * flushes. For repeated and useless calls with Z_FINISH, we keep
+         * returning Z_STREAM_END instead of Z_BUF_ERROR.
+         */
     } else if (strm->avail_in == 0 && RANK(flush) <= RANK(old_flush) &&
                flush != Z_FINISH) {
         ERR_RETURN(strm, Z_BUF_ERROR);
@@ -900,8 +900,7 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
                 s->last_flush = -1;
                 return Z_OK;
             }
-        }
-        else {
+        } else {
             put_byte(s, (s->gzhead->text ? 1 : 0) +
                      (s->gzhead->hcrc ? 2 : 0) +
                      (s->gzhead->extra == NULL ? 0 : 4) +
@@ -1069,8 +1068,8 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
             }
             flush_pending(strm);
             if (strm->avail_out == 0) {
-              s->last_flush = -1; /* avoid BUF_ERROR at next call, see above */
-              return Z_OK;
+                s->last_flush = -1; /* avoid BUF_ERROR at next call, see above */
+                return Z_OK;
             }
         }
     }
@@ -1335,9 +1334,9 @@ void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
             }
 #else
             unsigned int count;
-            if (UNLIKELY(s->lookahead == 1)){
+            if (UNLIKELY(s->lookahead == 1)) {
                 count = s->insert - 1;
-            }else{
+            } else {
                 count = s->insert;
             }
             functable.insert_string(s,str,count);
@@ -1499,8 +1498,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
             memcpy(s->window, s->strm->next_in - s->w_size, s->w_size);
             s->strstart = s->w_size;
             s->insert = s->strstart;
-        }
-        else {
+        } else {
             if (s->window_size - s->strstart <= used) {
                 /* Slide the window down. */
                 s->strstart -= s->w_size;

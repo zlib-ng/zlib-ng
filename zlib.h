@@ -649,7 +649,7 @@ ZEXTERN int ZEXPORT deflateSetDictionary(z_stream *strm,
    not perform any compression: this will be done by deflate().
 */
 
-ZEXTERN int ZEXPORT deflateGetDictionary (z_stream *strm, unsigned char *dictionary, unsigned int  *dictLength);
+ZEXTERN int ZEXPORT deflateGetDictionary (z_stream *strm, unsigned char *dictionary, unsigned int *dictLength);
 /*
      Returns the sliding dictionary being maintained by deflate.  dictLength is
    set to the number of bytes in the dictionary, and that many bytes are copied

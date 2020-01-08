@@ -200,8 +200,7 @@ void ZLIB_INTERNAL fixedtables(struct inflate_state *state) {
     state->distbits = 5;
 }
 
-int ZLIB_INTERNAL inflate_ensure_window(struct inflate_state *state)
-{
+int ZLIB_INTERNAL inflate_ensure_window(struct inflate_state *state) {
     /* if it hasn't been done already, allocate space for the window */
     if (state->window == NULL) {
 #ifdef INFFAST_CHUNKSIZE

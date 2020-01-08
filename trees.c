@@ -423,7 +423,7 @@ static void scan_tree(deflate_state *s, ct_data *tree, int max_code) {
     int min_count = 4;         /* min repeat count */
 
     if (nextlen == 0)
-         max_count = 138, min_count = 3;
+        max_count = 138, min_count = 3;
 
     tree[max_code+1].Len = (uint16_t)0xffff; /* guard */
 
@@ -683,7 +683,7 @@ void ZLIB_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, unsigned long
     if (buf != NULL) { /* force stored block */
 #else
     if (stored_len+4 <= opt_lenb && buf != NULL) {
-                       /* 4: two words for the lengths */
+        /* 4: two words for the lengths */
 #endif
         /* The test buf != NULL is only necessary if LIT_BUFSIZE > WSIZE.
          * Otherwise we can't have processed more than WSIZE input bytes since

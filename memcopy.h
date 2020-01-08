@@ -2,35 +2,35 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 #ifndef MEMCOPY_H_
- #define MEMCOPY_H_
+#define MEMCOPY_H_
 
- #include "zendian.h"
+#include "zendian.h"
 
 /* Load 64 bits from IN and place the bytes at offset BITS in the result. */
 static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
-  uint64_t chunk;
-  memcpy(&chunk, in, sizeof(chunk));
+    uint64_t chunk;
+    memcpy(&chunk, in, sizeof(chunk));
 
- #if BYTE_ORDER == LITTLE_ENDIAN
-  return chunk << bits;
- #else
-  return ZSWAP64(chunk) << bits;
- #endif
+#if BYTE_ORDER == LITTLE_ENDIAN
+    return chunk << bits;
+#else
+    return ZSWAP64(chunk) << bits;
+#endif
 }
 
- #if defined(__ARM_NEON__) || defined(__ARM_NEON)
-  #include <arm_neon.h>
+#if defined(__ARM_NEON__) || defined(__ARM_NEON)
+#include <arm_neon.h>
 typedef uint8x16_t inffast_chunk_t;
-  #define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
- #endif
+#define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
+#endif
 
- #if defined(X86_SSE2)
-  #include <immintrin.h>
+#if defined(X86_SSE2)
+#include <immintrin.h>
 typedef __m128i inffast_chunk_t;
-  #define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
- #endif
+#define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
+#endif
 
- #ifdef INFFAST_CHUNKSIZE
+#ifdef INFFAST_CHUNKSIZE
 /*
    Ask the compiler to perform a wide, unaligned load with an machine
    instruction appropriate for the inffast_chunk_t type.
@@ -127,46 +127,46 @@ static inline unsigned char* chunkunroll(unsigned char *out, unsigned *dist, uns
 }
 
 static inline inffast_chunk_t chunkmemset_1(unsigned char *from) {
-  #if defined(X86_SSE2)
+#if defined(X86_SSE2)
     int8_t c;
     memcpy(&c, from, sizeof(c));
     return _mm_set1_epi8(c);
-  #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+#elif defined(__ARM_NEON__) || defined(__ARM_NEON)
     return vld1q_dup_u8(from);
-  #endif
+#endif
 }
 
 static inline inffast_chunk_t chunkmemset_2(unsigned char *from) {
     int16_t c;
     memcpy(&c, from, sizeof(c));
-  #if defined(X86_SSE2)
+#if defined(X86_SSE2)
     return _mm_set1_epi16(c);
-  #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+#elif defined(__ARM_NEON__) || defined(__ARM_NEON)
     return vreinterpretq_u8_s16(vdupq_n_s16(c));
-  #endif
+#endif
 }
 
 static inline inffast_chunk_t chunkmemset_4(unsigned char *from) {
     int32_t c;
     memcpy(&c, from, sizeof(c));
-  #if defined(X86_SSE2)
+#if defined(X86_SSE2)
     return _mm_set1_epi32(c);
-  #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+#elif defined(__ARM_NEON__) || defined(__ARM_NEON)
     return vreinterpretq_u8_s32(vdupq_n_s32(c));
-  #endif
+#endif
 }
 
 static inline inffast_chunk_t chunkmemset_8(unsigned char *from) {
-  #if defined(X86_SSE2)
+#if defined(X86_SSE2)
     int64_t c;
     memcpy(&c, from, sizeof(c));
     return _mm_set1_epi64x(c);
-  #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+#elif defined(__ARM_NEON__) || defined(__ARM_NEON)
     return vcombine_u8(vld1_u8(from), vld1_u8(from));
-  #endif
+#endif
 }
 
-  #if defined(__ARM_NEON__) || defined(__ARM_NEON)
+#if defined(__ARM_NEON__) || defined(__ARM_NEON)
 static inline unsigned char *chunkmemset_3(unsigned char *out, unsigned char *from, unsigned dist, unsigned len) {
     uint8x8x3_t chunks;
     unsigned sz = sizeof(chunks);
@@ -197,9 +197,9 @@ static inline unsigned char *chunkmemset_3(unsigned char *out, unsigned char *fr
     out = chunkunroll(out, &dist, &rem);
     return chunkcopy(out, out - dist, rem);
 }
-  #endif
+#endif
 
-  #if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__aarch64__) || defined(_M_ARM64)
 static inline unsigned char *chunkmemset_6(unsigned char *out, unsigned char *from, unsigned dist, unsigned len) {
     uint16x8x3_t chunks;
     unsigned sz = sizeof(chunks);
@@ -230,11 +230,11 @@ static inline unsigned char *chunkmemset_6(unsigned char *out, unsigned char *fr
     out = chunkunroll(out, &dist, &rem);
     return chunkcopy(out, out - dist, rem);
 }
-  #endif
+#endif
 
 /* Copy DIST bytes from OUT - DIST into OUT + DIST * k, for 0 <= k < LEN/DIST. Return OUT + LEN. */
 static inline unsigned char *chunkmemset(unsigned char *out, unsigned dist, unsigned len) {
-    /* Debug performance related issues when len < sizeof(uint64_t): 
+    /* Debug performance related issues when len < sizeof(uint64_t):
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
     Assert(dist > 0, "cannot have a distance 0");
 
@@ -258,18 +258,18 @@ static inline unsigned char *chunkmemset(unsigned char *out, unsigned dist, unsi
         chunk = chunkmemset_2(from);
         break;
     }
-  #if defined(__ARM_NEON__) || defined(__ARM_NEON)
+#if defined(__ARM_NEON__) || defined(__ARM_NEON)
     case 3:
-      return chunkmemset_3(out, from, dist, len);
-  #endif
+        return chunkmemset_3(out, from, dist, len);
+#endif
     case 4: {
         chunk = chunkmemset_4(from);
         break;
     }
-  #if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__aarch64__) || defined(_M_ARM64)
     case 6:
         return chunkmemset_6(out, from, dist, len);
-  #endif
+#endif
     case 8: {
         chunk = chunkmemset_8(from);
         break;
@@ -301,9 +301,9 @@ static inline unsigned char *chunkmemset(unsigned char *out, unsigned dist, unsi
 static inline unsigned char* chunkmemsetsafe(unsigned char *out, unsigned dist, unsigned len, unsigned left) {
     if (left < (unsigned)(3 * INFFAST_CHUNKSIZE)) {
         while (len > 0) {
-          *out = *(out - dist);
-          out++;
-          --len;
+            *out = *(out - dist);
+            out++;
+            --len;
         }
         return out;
     }
@@ -311,7 +311,7 @@ static inline unsigned char* chunkmemsetsafe(unsigned char *out, unsigned dist, 
     return chunkmemset(out, dist, len);
 }
 
- #else /* INFFAST_CHUNKSIZE */
+#else /* INFFAST_CHUNKSIZE */
 
 static inline unsigned char *copy_1_bytes(unsigned char *out, unsigned char *from) {
     *out++ = *from;
@@ -366,12 +366,12 @@ static inline unsigned char *copy_8_bytes(unsigned char *out, unsigned char *fro
 static inline unsigned char *copy_bytes(unsigned char *out, unsigned char *from, unsigned len) {
     Assert(len < 8, "copy_bytes should be called with less than 8 bytes");
 
- #ifndef UNALIGNED_OK
+#ifndef UNALIGNED_OK
     while (len--) {
         *out++ = *from++;
     }
     return out;
- #else
+#else
     switch (len) {
     case 7:
         return copy_7_bytes(out, from);
@@ -394,20 +394,20 @@ static inline unsigned char *copy_bytes(unsigned char *out, unsigned char *from,
     }
 
     return out;
- #endif /* UNALIGNED_OK */
+#endif /* UNALIGNED_OK */
 }
 
 /* Copy LEN bytes (7 or fewer) from FROM into OUT. Return OUT + LEN. */
 static inline unsigned char *set_bytes(unsigned char *out, unsigned char *from, unsigned dist, unsigned len) {
     Assert(len < 8, "set_bytes should be called with less than 8 bytes");
 
- #ifndef UNALIGNED_OK
+#ifndef UNALIGNED_OK
     (void)dist;
     while (len--) {
         *out++ = *from++;
     }
     return out;
- #else
+#else
     if (dist >= len)
         return copy_bytes(out, from, len);
 
@@ -498,7 +498,7 @@ static inline unsigned char *set_bytes(unsigned char *out, unsigned char *from, 
         }
     }
     return out;
- #endif /* UNALIGNED_OK */
+#endif /* UNALIGNED_OK */
 }
 
 /* Byte by byte semantics: copy LEN bytes from OUT + DIST and write them to OUT. Return OUT + LEN. */
@@ -671,5 +671,5 @@ static inline unsigned char *chunk_copy(unsigned char *out, unsigned char *from,
 
     return chunk_memcpy(out, from, len);
 }
- #endif /* INFFAST_CHUNKSIZE */
+#endif /* INFFAST_CHUNKSIZE */
 #endif /* MEMCOPY_H_ */

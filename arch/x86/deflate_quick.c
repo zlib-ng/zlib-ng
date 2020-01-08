@@ -93,11 +93,11 @@ static inline long compare258(const unsigned char *const src0, const unsigned ch
         "cmp        $256 + 16, %[ax]\n\t"
         "jb         1b\n\t"
 
-# if !defined(__x86_64__)
+#  if !defined(__x86_64__)
         "movzwl     -16(%[src0], %[ax]), %[dx]\n\t"
-# else
+#  else
         "movzwq     -16(%[src0], %[ax]), %[dx]\n\t"
-# endif
+#  endif
         "xorw       -16(%[src1], %[ax]), %%dx\n\t"
         "jnz        3f\n\t"
 
@@ -134,19 +134,19 @@ static inline void quick_send_bits(deflate_state *const s,
     /* Concatenate the new bits with the bits currently in the buffer */
     unsigned out = s->bi_buf | (value1 << s->bi_valid);
     if (width < 32) {
-      out |= (value2 << offset2);
-      /* Shift out the valid LSBs written out. */
-      s->bi_buf = out >> (bytes_out * 8);
-    } else /* width => 32 */ {
-      unsigned bits_that_fit = 32 - offset2;
-      unsigned mask = (1 << bits_that_fit) - 1;
-      /* Zero out the high bits of value2 such that the shift by offset2 will
-         not cause undefined behavior. */
-      out |= ((value2 & mask) << offset2);
+        out |= (value2 << offset2);
+        /* Shift out the valid LSBs written out. */
+        s->bi_buf = out >> (bytes_out * 8);
+    } else { /* width => 32 */
+        unsigned bits_that_fit = 32 - offset2;
+        unsigned mask = (1 << bits_that_fit) - 1;
+        /* Zero out the high bits of value2 such that the shift by offset2 will
+           not cause undefined behavior. */
+        out |= ((value2 & mask) << offset2);
 
-      /* Save in s->bi_buf the bits of value2 that do not fit: they will be
-         written in a next full byte. */
-      s->bi_buf = (width == 32) ? 0 : value2 >> bits_that_fit;
+        /* Save in s->bi_buf the bits of value2 that do not fit: they will be
+           written in a next full byte. */
+        s->bi_buf = (width == 32) ? 0 : value2 >> bits_that_fit;
     }
 
     s->bi_valid = width - (bytes_out * 8);

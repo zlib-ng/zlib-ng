@@ -46,8 +46,7 @@ typedef enum {
 #define DFLTCC_FACILITY 151
 
 static inline dfltcc_cc dfltcc(int fn, void *param,
-                               unsigned char **op1, size_t *len1, const unsigned char **op2, size_t *len2, void *hist)
-{
+                               unsigned char **op1, size_t *len1, const unsigned char **op2, size_t *len2, void *hist) {
     unsigned char *t2 = op1 ? *op1 : NULL;
     size_t t3 = len1 ? *len1 : 0;
     const unsigned char *t4 = op2 ? *op2 : NULL;
@@ -108,13 +107,11 @@ struct dfltcc_qaf_param {
 
 static_assert(sizeof(struct dfltcc_qaf_param) == 32, sizeof_struct_dfltcc_qaf_param_is_32);
 
-static inline int is_bit_set(const char *bits, int n)
-{
+static inline int is_bit_set(const char *bits, int n) {
     return bits[n / 8] & (1 << (7 - (n % 8)));
 }
 
-static inline void clear_bit(char *bits, int n)
-{
+static inline void clear_bit(char *bits, int n) {
     bits[n / 8] &= ~(1 << (7 - (n % 8)));
 }
 
@@ -175,8 +172,7 @@ struct dfltcc_param_v0 {
 
 static_assert(sizeof(struct dfltcc_param_v0) == 1536, sizeof_struct_dfltcc_param_v0_is_1536);
 
-static inline const char *oesc_msg(char *buf, int oesc)
-{
+static inline const char *oesc_msg(char *buf, int oesc) {
     if (oesc == 0x00)
         return NULL; /* Successful completion */
     else {

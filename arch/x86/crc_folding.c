@@ -1,5 +1,5 @@
 /*
- * Compute the CRC32 using a parallelized folding approach with the PCLMULQDQ 
+ * Compute the CRC32 using a parallelized folding approach with the PCLMULQDQ
  * instruction.
  *
  * A white paper describing this algorithm can be found at:

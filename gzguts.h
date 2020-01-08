@@ -29,9 +29,9 @@
 #include <fcntl.h>
 
 #if defined(ZLIB_COMPAT)
-# include "zlib.h"
+#  include "zlib.h"
 #else
-# include "zlib-ng.h"
+#  include "zlib-ng.h"
 #endif
 
 #ifdef WIN32
@@ -99,9 +99,9 @@
 /* default i/o buffer size -- double this for output when reading (this and
    twice this must be able to fit in an unsigned type) */
 #if defined(S390_DFLTCC_DEFLATE) || defined(S390_DFLTCC_INFLATE)
-#define GZBUFSIZE 262144  /* DFLTCC works faster with larger buffers */
+#  define GZBUFSIZE 262144  /* DFLTCC works faster with larger buffers */
 #else
-#define GZBUFSIZE 8192
+#  define GZBUFSIZE 8192
 #endif
 
 /* gzip modes, also provide a little integrity check on the passed structure */

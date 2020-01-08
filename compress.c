@@ -8,9 +8,9 @@
 #define ZLIB_INTERNAL
 #include "zbuild.h"
 #if defined(ZLIB_COMPAT)
-# include "zlib.h"
+#  include "zlib.h"
 #else
-# include "zlib-ng.h"
+#  include "zlib-ng.h"
 #endif
 
 /* ===========================================================================

@@ -313,11 +313,11 @@ void ZLIB_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) 
                         out = chunkmemset(out, dist, len);
 #else
                     if (len < sizeof(uint64_t))
-                      out = set_bytes(out, out - dist, dist, len);
+                        out = set_bytes(out, out - dist, dist, len);
                     else if (dist == 1)
-                      out = byte_memset(out, len);
+                        out = byte_memset(out, len);
                     else
-                      out = chunk_memset(out, out - dist, dist, len);
+                        out = chunk_memset(out, out - dist, dist, len);
 #endif
                 }
             } else if ((op & 64) == 0) {          /* 2nd level distance code */

@@ -1939,9 +1939,9 @@ ZEXTERN ZEXPORT int              zng_inflateResetKeep (zng_stream *);
 ZEXTERN ZEXPORT int              zng_deflateResetKeep (zng_stream *);
 
 #ifdef WITH_GZFILEOP
-# if (defined(WIN32) || defined(__MINGW__))
-    ZEXTERN ZEXPORT gzFile zng_gzopen_w(const wchar_t *path, const char *mode);
-# endif
+#  if (defined(WIN32) || defined(__MINGW__))
+     ZEXTERN ZEXPORT gzFile zng_gzopen_w(const wchar_t *path, const char *mode);
+#  endif
 ZEXTERN ZEXPORTVA int zng_gzvprintf(gzFile file, const char *format, va_list va);
 #endif
 
