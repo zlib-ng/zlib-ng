@@ -30,7 +30,7 @@ const char zng_inflate_copyright[] = " inflate 1.2.11.f Copyright 1995-2016 Mark
    longest code or if it is less than the shortest code.
  */
 int ZLIB_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
-                                code * *table, unsigned *bits, uint16_t  *work) {
+                                code * *table, unsigned *bits, uint16_t *work) {
     unsigned len;               /* a code's length in bits */
     unsigned sym;               /* index of code symbols */
     unsigned min, max;          /* minimum and maximum code lengths */

@@ -11,7 +11,7 @@
 #  include "gzguts.h"
 #endif
 #ifndef UNALIGNED_OK
-#  include "malloc.h"
+#  include <malloc.h>
 #endif
 
 const char * const zng_errmsg[10] = {
@@ -28,22 +28,19 @@ const char * const zng_errmsg[10] = {
 };
 
 const char zlibng_string[] =
-   " zlib-ng 1.9.9 forked from zlib 1.2.11 ";
+    " zlib-ng 1.9.9 forked from zlib 1.2.11 ";
 
 #ifdef ZLIB_COMPAT
-const char * ZEXPORT zlibVersion(void)
-{
+const char * ZEXPORT zlibVersion(void) {
     return ZLIB_VERSION;
 }
 #endif
 
-const char * ZEXPORT zlibng_version(void)
-{
+const char * ZEXPORT zlibng_version(void) {
     return ZLIBNG_VERSION;
 }
 
-unsigned long ZEXPORT PREFIX(zlibCompileFlags)(void)
-{
+unsigned long ZEXPORT PREFIX(zlibCompileFlags)(void) {
     unsigned long flags;
 
     flags = 0;
@@ -93,15 +90,13 @@ unsigned long ZEXPORT PREFIX(zlibCompileFlags)(void)
 }
 
 #ifdef ZLIB_DEBUG
-#include <stdlib.h>
+#  include <stdlib.h>
 #  ifndef verbose
 #    define verbose 0
 #  endif
 int ZLIB_INTERNAL z_verbose = verbose;
 
-void ZLIB_INTERNAL z_error (m)
-    char *m;
-{
+void ZLIB_INTERNAL z_error(char *m) {
     fprintf(stderr, "%s\n", m);
     exit(1);
 }
@@ -110,15 +105,13 @@ void ZLIB_INTERNAL z_error (m)
 /* exported to allow conversion of error code to string for compress() and
  * uncompress()
  */
-const char * ZEXPORT PREFIX(zError)(int err)
-{
+const char * ZEXPORT PREFIX(zError)(int err) {
     return ERR_MSG(err);
 }
 
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 
-void ZLIB_INTERNAL *zng_calloc (void *opaque, unsigned items, unsigned size)
-{
+void ZLIB_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size) {
     (void)opaque;
 #ifndef UNALIGNED_OK
     return memalign(16, items * size);
@@ -128,8 +121,7 @@ void ZLIB_INTERNAL *zng_calloc (void *opaque, unsigned items, unsigned size)
 #endif
 }
 
-void ZLIB_INTERNAL zng_cfree (void *opaque, void *ptr)
-{
+void ZLIB_INTERNAL zng_cfree(void *opaque, void *ptr) {
     (void)opaque;
     free(ptr);
 }

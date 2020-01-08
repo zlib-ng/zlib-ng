@@ -519,29 +519,31 @@ char * ZEXPORT PREFIX(gzgets)(gzFile file, char *buf, int len) {
        the contents, let the user worry about that) */
     str = buf;
     left = (unsigned)len - 1;
-    if (left) do {
-        /* assure that something is in the output buffer */
-        if (state->x.have == 0 && gz_fetch(state) == -1)
-            return NULL;                /* error */
-        if (state->x.have == 0) {       /* end of file */
-            state->past = 1;            /* read past end */
-            break;                      /* return what we have */
-        }
+    if (left) {
+        do {
+            /* assure that something is in the output buffer */
+            if (state->x.have == 0 && gz_fetch(state) == -1)
+                return NULL;                /* error */
+            if (state->x.have == 0) {       /* end of file */
+                state->past = 1;            /* read past end */
+                break;                      /* return what we have */
+            }
 
-        /* look for end-of-line in current output buffer */
-        n = state->x.have > left ? left : state->x.have;
-        eol = (unsigned char *)memchr(state->x.next, '\n', n);
-        if (eol != NULL)
-            n = (unsigned)(eol - state->x.next) + 1;
+            /* look for end-of-line in current output buffer */
+            n = state->x.have > left ? left : state->x.have;
+            eol = (unsigned char *)memchr(state->x.next, '\n', n);
+            if (eol != NULL)
+                n = (unsigned)(eol - state->x.next) + 1;
 
-        /* copy through end-of-line, or remainder if not found */
-        memcpy(buf, state->x.next, n);
-        state->x.have -= n;
-        state->x.next += n;
-        state->x.pos += n;
-        left -= n;
-        buf += n;
-    } while (left && eol == NULL);
+            /* copy through end-of-line, or remainder if not found */
+            memcpy(buf, state->x.next, n);
+            state->x.have -= n;
+            state->x.next += n;
+            state->x.pos += n;
+            left -= n;
+            buf += n;
+        } while (left && eol == NULL);
+    }
 
     /* return terminated string, or if nothing, end of file */
     if (buf == str)

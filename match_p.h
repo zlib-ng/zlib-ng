@@ -33,9 +33,9 @@
 
 
 #if defined(_MSC_VER) && !defined(__clang__)
-# if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64) ||  defined(_M_ARM) || defined(_M_ARM64)
-#  include "fallback_builtins.h"
-# endif
+#  if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64) ||  defined(_M_ARM) || defined(_M_ARM64)
+#    include "fallback_builtins.h"
+#  endif
 #endif
 
 
@@ -89,7 +89,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
     Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     do {
         if (cur_match >= s->strstart) {
-          break;
+            break;
         }
         match = s->window + cur_match;
 
@@ -210,7 +210,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
     do {
         unsigned char *match;
         if (cur_match >= s->strstart) {
-          break;
+            break;
         }
         match = s->window + cur_match;
 
@@ -253,28 +253,28 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
             memcpy(&mval, match, sizeof(mval));
             memcpy(&sval, scan, sizeof(sval));
             if (mval != sval)
-              break;
+                break;
             match += sizeof(mval);
             scan += sizeof(sval);
 
             memcpy(&mval, match, sizeof(mval));
             memcpy(&sval, scan, sizeof(sval));
             if (mval != sval)
-              break;
+                break;
             match += sizeof(mval);
             scan += sizeof(sval);
 
             memcpy(&mval, match, sizeof(mval));
             memcpy(&sval, scan, sizeof(sval));
             if (mval != sval)
-              break;
+                break;
             match += sizeof(mval);
             scan += sizeof(sval);
 
             memcpy(&mval, match, sizeof(mval));
             memcpy(&sval, scan, sizeof(sval));
             if (mval != sval)
-              break;
+                break;
             match += sizeof(mval);
             scan += sizeof(sval);
         } while (scan < strend);
@@ -418,7 +418,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
 
     do {
         if (cur_match >= strstart) {
-          break;
+            break;
         }
 
         /* Skip to next match if the match length cannot increase

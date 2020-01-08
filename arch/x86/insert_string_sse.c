@@ -61,9 +61,9 @@ ZLIB_INTERNAL Pos insert_string_sse(deflate_state *const s, const Pos str, unsig
             s->prev[(str+idx) & s->w_mask] = head;
             s->head[h & s->hash_mask] = str+idx;
             if (idx == count-1)
-              ret = head;
+                ret = head;
         } else if (idx == count - 1) {
-          ret = str + idx;
+            ret = str + idx;
         }
     }
     return ret;

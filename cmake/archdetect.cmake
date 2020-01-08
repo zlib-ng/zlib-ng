@@ -45,7 +45,6 @@ else()
     message(STATUS "Arch detected: '${ARCH}'")
 endif()
 
-
 # Base arch detection
 if("${ARCH}" MATCHES "(x86_64|AMD64|i[3-6]86)")
     set(BASEARCH "x86")

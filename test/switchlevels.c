@@ -13,8 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static int read_all(unsigned char *buf, size_t size)
-{
+static int read_all(unsigned char *buf, size_t size) {
     for (size_t total_read = 0; total_read < size;) {
         size_t n_read = fread(buf + total_read, 1, size - total_read, stdin);
         if (ferror(stdin)) {
@@ -30,8 +29,7 @@ static int read_all(unsigned char *buf, size_t size)
     return 0;
 }
 
-static int write_all(unsigned char *buf, size_t size)
-{
+static int write_all(unsigned char *buf, size_t size) {
     for (size_t total_written = 0; total_written < size;) {
         size_t n_written = fwrite(buf + total_written, 1, size - total_written, stdout);
         if (ferror(stdout)) {
@@ -43,8 +41,7 @@ static int write_all(unsigned char *buf, size_t size)
     return 0;
 }
 
-static int compress_chunk(PREFIX3(stream) *strm, int level, int size, int last)
-{
+static int compress_chunk(PREFIX3(stream) *strm, int level, int size, int last) {
     int ret = 1;
     int err = PREFIX(deflateParams)(strm, level, Z_DEFAULT_STRATEGY);
     if (err != Z_OK) {
@@ -87,8 +84,7 @@ done:
  * Usage:  switchlevels level1 size1 [level2 size2 ...]
  */
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     int ret = EXIT_FAILURE;
     PREFIX3(stream) strm;
     memset(&strm, 0, sizeof(strm));

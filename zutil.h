@@ -25,14 +25,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 #ifdef ZLIB_COMPAT
-# include "zlib.h"
+#  include "zlib.h"
 #else
-# include "zlib-ng.h"
+#  include "zlib-ng.h"
 #endif
 
 typedef unsigned char uch; /* Included for compatibility with external code only */
 typedef uint16_t ush;      /* Included for compatibility with external code only */
-typedef unsigned long  ulg;
+typedef unsigned long ulg;
 
 extern const char * const zng_errmsg[10]; /* indexed by 2-zlib_error */
 /* (size given to avoid silly warnings with Visual C++) */
@@ -116,7 +116,7 @@ extern const char * const zng_errmsg[10]; /* indexed by 2-zlib_error */
 
 /* provide prototypes for these when building zlib without LFS */
 #if !defined(WIN32) && !defined(__MSYS__) && (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
-# include "zbuild.h"  /* For PREFIX() */
+#  include "zbuild.h"  /* For PREFIX() */
     ZEXTERN uint32_t ZEXPORT PREFIX(adler32_combine64)(uint32_t, uint32_t, z_off_t);
     ZEXTERN uint32_t ZEXPORT PREFIX(crc32_combine64)(uint32_t, uint32_t, z_off_t);
 #endif
@@ -141,22 +141,22 @@ extern const char * const zng_errmsg[10]; /* indexed by 2-zlib_error */
 
 /* Diagnostic functions */
 #ifdef ZLIB_DEBUG
-#   include <stdio.h>
-    extern int ZLIB_INTERNAL z_verbose;
-    extern void ZLIB_INTERNAL z_error(char *m);
-#   define Assert(cond, msg) {if(!(cond)) z_error(msg);}
-#   define Trace(x) {if (z_verbose >= 0) fprintf x;}
-#   define Tracev(x) {if (z_verbose > 0) fprintf x;}
-#   define Tracevv(x) {if (z_verbose > 1) fprintf x;}
-#   define Tracec(c, x) {if (z_verbose > 0 && (c)) fprintf x;}
-#   define Tracecv(c, x) {if (z_verbose > 1 && (c)) fprintf x;}
+#  include <stdio.h>
+   extern int ZLIB_INTERNAL z_verbose;
+   extern void ZLIB_INTERNAL z_error(char *m);
+#  define Assert(cond, msg) {if (!(cond)) z_error(msg);}
+#  define Trace(x) {if (z_verbose >= 0) fprintf x;}
+#  define Tracev(x) {if (z_verbose > 0) fprintf x;}
+#  define Tracevv(x) {if (z_verbose > 1) fprintf x;}
+#  define Tracec(c, x) {if (z_verbose > 0 && (c)) fprintf x;}
+#  define Tracecv(c, x) {if (z_verbose > 1 && (c)) fprintf x;}
 #else
-#   define Assert(cond, msg)
-#   define Trace(x)
-#   define Tracev(x)
-#   define Tracevv(x)
-#   define Tracec(c, x)
-#   define Tracecv(c, x)
+#  define Assert(cond, msg)
+#  define Trace(x)
+#  define Tracev(x)
+#  define Tracevv(x)
+#  define Tracec(c, x)
+#  define Tracecv(c, x)
 #endif
 
 void ZLIB_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size);
@@ -164,7 +164,7 @@ void ZLIB_INTERNAL   zng_cfree(void *opaque, void *ptr);
 
 #define ZALLOC(strm, items, size) (*((strm)->zalloc))((strm)->opaque, (items), (size))
 #define ZFREE(strm, addr)         (*((strm)->zfree))((strm)->opaque, (void *)(addr))
-#define TRY_FREE(s, p) {if (p) ZFREE(s, p);}
+#define TRY_FREE(s, p)            {if (p) ZFREE(s, p);}
 
 /* Reverse the bytes in a value. Use compiler intrinsics when
    possible to take advantage of hardware implementations. */
@@ -215,41 +215,41 @@ void ZLIB_INTERNAL   zng_cfree(void *opaque, void *ptr);
 
 /* Only enable likely/unlikely if the compiler is known to support it */
 #if (defined(__GNUC__) && (__GNUC__ >= 3)) || defined(__INTEL_COMPILER) || defined(__Clang__)
-#    define LIKELY_NULL(x)      __builtin_expect((x) != 0, 0)
-#    define LIKELY(x)           __builtin_expect(!!(x), 1)
-#    define UNLIKELY(x)         __builtin_expect(!!(x), 0)
-#    define PREFETCH_L1(addr)    __builtin_prefetch(addr, 0, 3)
-#    define PREFETCH_L2(addr)    __builtin_prefetch(addr, 0, 2)
-#    define PREFETCH_RW(addr)    __builtin_prefetch(addr, 1, 2)
+#  define LIKELY_NULL(x)        __builtin_expect((x) != 0, 0)
+#  define LIKELY(x)             __builtin_expect(!!(x), 1)
+#  define UNLIKELY(x)           __builtin_expect(!!(x), 0)
+#  define PREFETCH_L1(addr)     __builtin_prefetch(addr, 0, 3)
+#  define PREFETCH_L2(addr)     __builtin_prefetch(addr, 0, 2)
+#  define PREFETCH_RW(addr)     __builtin_prefetch(addr, 1, 2)
 #elif defined(__WIN__)
-#    include <xmmintrin.h>
-#    define LIKELY_NULL(x) x
-#    define LIKELY(x)      x
-#    define UNLIKELY(x)    x
-#    define PREFETCH_L1(addr)    _mm_prefetch((char *) addr, _MM_HINT_T0)
-#    define PREFETCH_L2(addr)    _mm_prefetch((char *) addr, _MM_HINT_T1)
-#    define PREFETCH_RW(addr)    _mm_prefetch((char *) addr, _MM_HINT_T1)
+#  include <xmmintrin.h>
+#  define LIKELY_NULL(x)        x
+#  define LIKELY(x)             x
+#  define UNLIKELY(x)           x
+#  define PREFETCH_L1(addr)     _mm_prefetch((char *) addr, _MM_HINT_T0)
+#  define PREFETCH_L2(addr)     _mm_prefetch((char *) addr, _MM_HINT_T1)
+#  define PREFETCH_RW(addr)     _mm_prefetch((char *) addr, _MM_HINT_T1)
 #else
-#    define LIKELY_NULL(x) x
-#    define LIKELY(x)      x
-#    define UNLIKELY(x)    x
-#    define PREFETCH_L1(addr)    addr
-#    define PREFETCH_L2(addr)    addr
-#    define PREFETCH_RW(addr)    addr
+#  define LIKELY_NULL(x)        x
+#  define LIKELY(x)             x
+#  define UNLIKELY(x)           x
+#  define PREFETCH_L1(addr)     addr
+#  define PREFETCH_L2(addr)     addr
+#  define PREFETCH_RW(addr)     addr
 #endif /* (un)likely */
 
 #if defined(_MSC_VER)
-#define ALIGNED_(x) __declspec(align(x))
+#  define ALIGNED_(x) __declspec(align(x))
 #else
-#if defined(__GNUC__)
-#define ALIGNED_(x) __attribute__ ((aligned(x)))
-#endif
+#  if defined(__GNUC__)
+#    define ALIGNED_(x) __attribute__ ((aligned(x)))
+#  endif
 #endif
 
 #if defined(X86_CPUID)
-# include "arch/x86/x86.h"
+#  include "arch/x86/x86.h"
 #elif defined(ARM_GETAUXVAL)
-# include "arch/arm/arm.h"
+#  include "arch/arm/arm.h"
 #endif
 
 #endif /* ZUTIL_H_ */

@@ -62,78 +62,77 @@ ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
 
 /* functable init */
 ZLIB_INTERNAL __thread struct functable_s functable = {
-                                            fill_window_stub,
-                                            insert_string_stub,
-                                            adler32_stub,
-                                            crc32_stub,
-                                            slide_hash_stub
-                                          };
+    fill_window_stub,
+    insert_string_stub,
+    adler32_stub,
+    crc32_stub,
+    slide_hash_stub
+};
 
 
 /* stub functions */
 ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count) {
     // Initialize default
-    functable.insert_string=&insert_string_c;
+    functable.insert_string = &insert_string_c;
 
-    #ifdef X86_SSE42_CRC_HASH
+#ifdef X86_SSE42_CRC_HASH
     if (x86_cpu_has_sse42)
-        functable.insert_string=&insert_string_sse;
-    #elif defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
+        functable.insert_string = &insert_string_sse;
+#elif defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
     if (arm_cpu_has_crc32)
-        functable.insert_string=&insert_string_acle;
-    #endif
+        functable.insert_string = &insert_string_acle;
+#endif
 
     return functable.insert_string(s, str, count);
 }
 
 ZLIB_INTERNAL void fill_window_stub(deflate_state *s) {
     // Initialize default
-    functable.fill_window=&fill_window_c;
+    functable.fill_window = &fill_window_c;
 
-    #if defined(X86_SSE2)
-    # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+#if defined(X86_SSE2)
+# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
-    # endif
-        functable.fill_window=&fill_window_sse;
-    #elif defined(ARM_GETAUXVAL)
-        functable.fill_window=&fill_window_arm;
-    #endif
+# endif
+        functable.fill_window = &fill_window_sse;
+#elif defined(ARM_GETAUXVAL)
+    functable.fill_window = &fill_window_arm;
+#endif
 
     functable.fill_window(s);
 }
 
 ZLIB_INTERNAL void slide_hash_stub(deflate_state *s) {
     // Initialize default
-    functable.slide_hash=&slide_hash_c;
+    functable.slide_hash = &slide_hash_c;
 
-    #ifdef X86_SSE2
-    # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+#ifdef X86_SSE2
+# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
-    # endif
-        functable.slide_hash=&slide_hash_sse2;
-    #endif
+# endif
+        functable.slide_hash = &slide_hash_sse2;
+#endif
 
     functable.slide_hash(s);
 }
 
 ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len) {
     // Initialize default
-    functable.adler32=&adler32_c;
+    functable.adler32 = &adler32_c;
 
-    #if (defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32)
+#if (defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32)
     if (arm_cpu_has_neon)
-        functable.adler32=&adler32_neon;
-    #endif
+        functable.adler32 = &adler32_neon;
+#endif
 
     return functable.adler32(adler, buf, len);
 }
 
 ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len) {
 
-
-   Assert(sizeof(uint64_t) >= sizeof(size_t),
-          "crc32_z takes size_t but internally we have a uint64_t len");
-/* return a function pointer for optimized arches here after a capability test */
+    Assert(sizeof(uint64_t) >= sizeof(size_t),
+           "crc32_z takes size_t but internally we have a uint64_t len");
+    /* return a function pointer for optimized arches here after a capability test */
 
 #ifdef DYNAMIC_CRC_TABLE
     if (crc_table_empty)
@@ -142,18 +141,18 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
 
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
 #if BYTE_ORDER == LITTLE_ENDIAN
-      functable.crc32=crc32_little;
+        functable.crc32 = crc32_little;
 #  if defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
-      if (arm_cpu_has_crc32)
-        functable.crc32=crc32_acle;
+        if (arm_cpu_has_crc32)
+            functable.crc32 = crc32_acle;
 #  endif
 #elif BYTE_ORDER == BIG_ENDIAN
-        functable.crc32=crc32_big;
+        functable.crc32 = crc32_big;
 #else
 #  error No endian defined
 #endif
     } else {
-        functable.crc32=crc32_generic;
+        functable.crc32 = crc32_generic;
     }
 
     return functable.crc32(crc, buf, len);

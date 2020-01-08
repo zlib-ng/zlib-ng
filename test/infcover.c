@@ -67,8 +67,7 @@ struct mem_zone {
 };
 
 /* memory allocation routine to pass to zlib */
-static void *mem_alloc(void *mem, unsigned count, unsigned size)
-{
+static void *mem_alloc(void *mem, unsigned count, unsigned size) {
     void *ptr;
     struct mem_item *item;
     struct mem_zone *zone = mem;
@@ -108,8 +107,7 @@ static void *mem_alloc(void *mem, unsigned count, unsigned size)
 }
 
 /* memory free routine to pass to zlib */
-static void mem_free(void *mem, void *ptr)
-{
+static void mem_free(void *mem, void *ptr) {
     struct mem_item *item, *next;
     struct mem_zone *zone = mem;
 
@@ -154,8 +152,7 @@ static void mem_free(void *mem, void *ptr)
 
 /* set up a controlled memory allocation space for monitoring, set the stream
    parameters to the controlled routines, with opaque pointing to the space */
-static void mem_setup(z_stream *strm)
-{
+static void mem_setup(z_stream *strm) {
     struct mem_zone *zone;
 
     zone = malloc(sizeof(struct mem_zone));
@@ -172,32 +169,28 @@ static void mem_setup(z_stream *strm)
 }
 
 /* set a limit on the total memory allocation, or 0 to remove the limit */
-static void mem_limit(z_stream *strm, size_t limit)
-{
+static void mem_limit(z_stream *strm, size_t limit) {
     struct mem_zone *zone = strm->opaque;
 
     zone->limit = limit;
 }
 
 /* show the current total requested allocations in bytes */
-static void mem_used(z_stream *strm, char *prefix)
-{
+static void mem_used(z_stream *strm, char *prefix) {
     struct mem_zone *zone = strm->opaque;
 
     fprintf(stderr, "%s: %zu allocated\n", prefix, zone->total);
 }
 
 /* show the high water allocation in bytes */
-static void mem_high(z_stream *strm, char *prefix)
-{
+static void mem_high(z_stream *strm, char *prefix) {
     struct mem_zone *zone = strm->opaque;
 
     fprintf(stderr, "%s: %zu high water mark\n", prefix, zone->highwater);
 }
 
 /* release the memory allocation zone -- if there are any surprises, notify */
-static void mem_done(z_stream *strm, char *prefix)
-{
+static void mem_done(z_stream *strm, char *prefix) {
     int count = 0;
     struct mem_item *item, *next;
     struct mem_zone *zone = strm->opaque;
@@ -241,8 +234,7 @@ static void mem_done(z_stream *strm, char *prefix)
    by a delimiter, where that single digit writes a byte.  The returned data is
    allocated and must eventually be freed.  NULL is returned if out of memory.
    If the length is not needed, then len can be NULL. */
-static unsigned char *h2b(const char *hex, unsigned *len)
-{
+static unsigned char *h2b(const char *hex, unsigned *len) {
     unsigned char *in, *re;
     unsigned next, val;
 
@@ -280,8 +272,7 @@ static unsigned char *h2b(const char *hex, unsigned *len)
    header information is collected with inflateGetHeader().  If a zlib stream
    is looking for a dictionary, then an empty dictionary is provided.
    inflate() is run until all of the input data is consumed. */
-static void inf(char *hex, char *what, unsigned step, int win, unsigned len, int err)
-{
+static void inf(char *hex, char *what, unsigned step, int win, unsigned len, int err) {
     int ret;
     unsigned have;
     unsigned char *in, *out;
@@ -345,8 +336,7 @@ static void inf(char *hex, char *what, unsigned step, int win, unsigned len, int
 }
 
 /* cover all of the lines in inflate.c up to inflate() */
-static void cover_support(void)
-{
+static void cover_support(void) {
     int ret;
     z_stream strm;
 
@@ -383,8 +373,7 @@ static void cover_support(void)
 }
 
 /* cover all inflate() header and trailer cases and code after inflate() */
-static void cover_wrap(void)
-{
+static void cover_wrap(void) {
     int ret;
     z_stream strm, copy;
     unsigned char dict[257];
@@ -442,8 +431,7 @@ static void cover_wrap(void)
 }
 
 /* input and output functions for inflateBack() */
-static unsigned pull(void *desc, const unsigned char **buf)
-{
+static unsigned pull(void *desc, const unsigned char **buf) {
     static unsigned int next = 0;
     static unsigned char dat[] = {0x63, 0, 2, 0};
     struct inflate_state *state;
@@ -458,15 +446,13 @@ static unsigned pull(void *desc, const unsigned char **buf)
     return next < sizeof(dat) ? (*buf = dat + next++, 1) : 0;
 }
 
-static int push(void *desc, unsigned char *buf, unsigned len)
-{
+static int push(void *desc, unsigned char *buf, unsigned len) {
     buf += len;
     return desc != NULL;        /* force error if desc not null */
 }
 
 /* cover inflateBack() up to common deflate data cases and after those */
-static void cover_back(void)
-{
+static void cover_back(void) {
     int ret;
     z_stream strm;
     unsigned char win[32768];
@@ -502,8 +488,7 @@ static void cover_back(void)
 }
 
 /* do a raw inflate of data in hexadecimal with both inflate and inflateBack */
-static int try(char *hex, char *id, int err)
-{
+static int try(char *hex, char *id, int err) {
     int ret;
     unsigned len, size;
     unsigned char *in, *out, *win;
@@ -576,8 +561,7 @@ static int try(char *hex, char *id, int err)
 }
 
 /* cover deflate data cases in both inflate() and inflateBack() */
-static void cover_inflate(void)
-{
+static void cover_inflate(void) {
     try("0 0 0 0 0", "invalid stored block lengths", 1);
     try("3 0", "fixed", 0);
     try("6", "invalid block type", 1);
@@ -612,8 +596,7 @@ static void cover_inflate(void)
 }
 
 /* cover remaining lines in inftrees.c */
-static void cover_trees(void)
-{
+static void cover_trees(void) {
     int ret;
     unsigned bits;
     uint16_t lens[16], work[16];
@@ -636,8 +619,7 @@ static void cover_trees(void)
 }
 
 /* cover remaining inffast.c decoding and window copying */
-static void cover_fast(void)
-{
+static void cover_fast(void) {
     inf("e5 e0 81 ad 6d cb b2 2c c9 01 1e 59 63 ae 7d ee fb 4d fd b5 35 41 68"
         " ff 7f 0f 0 0 0", "fast length extra bits", 0, -8, 258, Z_DATA_ERROR);
     inf("25 fd 81 b5 6d 59 b6 6a 49 ea af 35 6 34 eb 8c b9 f6 b9 1e ef 67 49"
@@ -656,8 +638,7 @@ static void cover_fast(void)
         Z_STREAM_END);
 }
 
-int main(void)
-{
+int main(void) {
     fprintf(stderr, "%s\n", zlibVersion());
     cover_support();
     cover_wrap();

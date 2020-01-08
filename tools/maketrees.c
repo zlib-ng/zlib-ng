@@ -121,7 +121,7 @@ static void gen_trees_header() {
         printf("%2u%s", dist_code[i], SEPARATOR(i, DIST_CODE_LEN-1, 20));
     }
 
-    printf("const unsigned char ZLIB_INTERNAL zng_length_code[MAX_MATCH-MIN_MATCH+1]= {\n");
+    printf("const unsigned char ZLIB_INTERNAL zng_length_code[MAX_MATCH-MIN_MATCH+1] = {\n");
     for (i = 0; i < MAX_MATCH-MIN_MATCH+1; i++) {
         printf("%2u%s", length_code[i], SEPARATOR(i, MAX_MATCH-MIN_MATCH, 20));
     }
