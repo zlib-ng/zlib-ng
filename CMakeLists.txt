@@ -242,6 +242,17 @@ else()
     endif()
 endif()
 
+# Set architecture alignment requirements
+if(BASEARCH_X86_FOUND OR BASEARCH_ARM_FOUND)
+    if(NOT DEFINED UNALIGNED_OK)
+        set(UNALIGNED_OK TRUE)
+    endif()
+endif()
+if(UNALIGNED_OK)
+    add_definitions(-DUNALIGNED_OK)
+    message(STATUS "Architecture supports unaligned reads")
+endif()
+
 # Apply warning flags to cflags
 if(MAINTAINER)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS} ${WARNFLAGS_MAINTAINER} ${WARNFLAGS_DISABLE}")
@@ -310,7 +321,6 @@ endif()
 if(WITH_SANITIZERS)
     set(_sanitize_flags
         address
-        alignment
         array-bounds
         bool
         bounds
@@ -337,6 +347,9 @@ if(WITH_SANITIZERS)
         vla-bound
         vptr
        )
+    if(NOT UNALIGNED_OK)
+        list(APPEND _sanitize_flags alignment)
+    endif()
     set(SANITIZERS_FLAGS "")
     foreach(_flag ${_sanitize_flags})
         if(NOT (CMAKE_CROSSCOMPILING_EMULATOR AND ${_flag} STREQUAL "leak")) # LeakSanitizer crashes under qemu
@@ -568,13 +581,11 @@ set(ZLIB_ARCH_HDRS)
 set(ARCHDIR "arch/generic")
 if(BASEARCH_X86_FOUND)
     set(ARCHDIR "arch/x86")
-    add_definitions(-DUNALIGNED_OK)
     if(NOT ${ARCH} MATCHES "x86_64")
         add_feature_info(SSE2 1 "Support the SSE2 instruction set, using \"${SSE2FLAG}\"")
     endif()
 elseif(BASEARCH_ARM_FOUND)
     set(ARCHDIR "arch/arm")
-    add_definitions(-DUNALIGNED_OK)
 elseif(BASEARCH_S360_FOUND AND "${ARCH}" MATCHES "s390x")
     set(ARCHDIR "arch/s390")
 else()
