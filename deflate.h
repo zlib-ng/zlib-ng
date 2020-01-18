@@ -391,35 +391,10 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
  * used.
  */
 
-/* ===========================================================================
- * Update a hash value with the given input byte
- * IN  assertion: all calls to to UPDATE_HASH are made with consecutive
- *    input characters, so that a running hash key can be computed from the
- *    previous key instead of complete recalculation each time.
- */
-
 #ifdef NOT_TWEAK_COMPILER
 #  define TRIGGER_LEVEL 6
 #else
 #  define TRIGGER_LEVEL 5
-#endif
-
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
-#  define UPDATE_HASH(s, h, i) \
-    do {\
-        if (s->level < TRIGGER_LEVEL) \
-            h = (3483 * (s->window[i]) +\
-                 23081* (s->window[i+1]) +\
-                 6954 * (s->window[i+2]) +\
-                 20947* (s->window[i+3])) & s->hash_mask;\
-        else\
-            h = (25881* (s->window[i]) +\
-                 24674* (s->window[i+1]) +\
-                 25811* (s->window[i+2])) & s->hash_mask;\
-    } while (0)
-#else
-#  define UPDATE_HASH(s, h, i) \
-    (h = (((h) << s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
 #endif
 
 #ifdef ZLIB_DEBUG

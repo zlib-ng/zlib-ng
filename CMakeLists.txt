@@ -770,6 +770,7 @@ set(ZLIB_PRIVATE_HDRS
     inflate.h
     inflate_p.h
     inftrees.h
+    insert_string_tpl.h
     match_p.h
     memcopy.h
     trees.h
@@ -791,6 +792,7 @@ set(ZLIB_SRCS
     infback.c
     inftrees.c
     inffast.c
+    insert_string.c
     trees.c
     uncompr.c
     zutil.c

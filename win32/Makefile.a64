@@ -35,7 +35,8 @@ SUFFIX =
 
 OBJS = adler32.obj armfeature.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_slow.obj \
        deflate_medium.obj \
-       functable.obj infback.obj inflate.obj inftrees.obj inffast.obj trees.obj uncompr.obj zutil.obj fill_window_arm.obj
+       functable.obj infback.obj inflate.obj inftrees.obj inffast.obj insert_string.obj \
+       trees.obj uncompr.obj zutil.obj fill_window_arm.obj
 !if "$(WITH_GZFILEOP)" != ""
 WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
 OBJS = $(OBJS) gzclose.obj gzlib.obj gzread.obj gzwrite.obj
