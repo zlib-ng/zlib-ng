@@ -24,12 +24,16 @@
 ZLIB_INTERNAL Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count) {
     Pos ret = 0;
     unsigned int idx;
-    unsigned int *ip, val, h;
+    unsigned int val, h;
+    unsigned char *strstart = s->window + str;
 
-    for (idx = 0; idx < count; idx++) {
-        ip = (unsigned *)&s->window[str+idx];
-        memcpy(&val, ip, sizeof(val));
+    for (idx = 0; idx < count; idx++, strstart++) {
         h = 0;
+#if defined(UNALIGNED_OK)
+        val = *(unsigned int *)(strstart);
+#else
+        memcpy(&val, strstart, sizeof(val));
+#endif
 
         if (s->level >= TRIGGER_LEVEL)
             val &= 0xFFFFFF;

@@ -201,16 +201,35 @@ static void static_emit_end_block(deflate_state *const s, int last) {
 static inline Pos quick_insert_string(deflate_state *const s, const Pos str) {
     Pos ret;
     unsigned h = 0;
+    unsigned int val;
 
-#ifdef _MSC_VER
-    h = _mm_crc32_u32(h, *(unsigned *)(s->window + str));
+#if defined(UNALIGNED_OK)
+    val = *(unsigned int *)(s->window + str);
 #else
+    memcpy(&val, s->window + str, sizeof(val)); 
+#endif
+
+#if defined(X86_SSE42_CRC_INTRIN)
+#  ifdef _MSC_VER
+    h = _mm_crc32_u32(h, val);
+#  else
+    h = __builtin_ia32_crc32si(h, val);
+#  endif
+#else
+#  ifdef _MSC_VER
+    __asm {
+        mov edx, h
+        mov eax, val
+        crc32 eax, edx
+        mov val, eax
+    };
+#  else
     __asm__ __volatile__ (
-        "crc32l (%[window], %[str], 1), %0\n\t"
-    : "+r" (h)
-    : [window] "r" (s->window),
-      [str] "r" ((uintptr_t)str)
+        "crc32 %1,%0\n\t"
+        : "+r" (h)
+        : "r" (val)
     );
+#  endif
 #endif
 
     ret = s->head[h & s->hash_mask];
