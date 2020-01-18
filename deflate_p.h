@@ -19,35 +19,6 @@ void check_match(deflate_state *s, IPos start, IPos match, int length);
 void flush_pending(PREFIX3(stream) *strm);
 
 /* ===========================================================================
- * Insert string str in the dictionary and set match_head to the previous head
- * of the hash chain (the most recent string with same hash key). Return
- * the previous length of the hash chain.
- * IN  assertion: all calls to to INSERT_STRING are made with consecutive
- *    input characters and the first MIN_MATCH bytes of str are valid
- *    (except for the last MIN_MATCH-1 bytes of the input file).
- */
-
-static inline Pos insert_string_c(deflate_state *const s, const Pos str, unsigned int count) {
-    Pos ret = 0;
-    unsigned int idx;
-
-    for (idx = 0; idx < count; idx++) {
-        UPDATE_HASH(s, s->ins_h, str+idx);
-
-        Pos head = s->head[s->ins_h];
-        if (head != str+idx) {
-            s->prev[(str+idx) & s->w_mask] = head;
-            s->head[s->ins_h] = str+idx;
-            if (idx == count - 1)
-                ret = head;
-        } else if (idx == count - 1) {
-            ret = str + idx;
-        }
-    }
-    return ret;
-}
-
-/* ===========================================================================
  * Save the match info and tally the frequency counts. Return true if
  * the current block must be flushed.
  */

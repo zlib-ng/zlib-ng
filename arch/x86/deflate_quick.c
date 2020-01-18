@@ -31,6 +31,7 @@
 
 extern void fill_window_sse(deflate_state *s);
 extern void flush_pending(PREFIX3(stream) *strm);
+extern Pos  quick_insert_string_sse4(deflate_state *const s, const Pos str);
 
 static inline long compare258(const unsigned char *const src0, const unsigned char *const src1) {
 #ifdef _MSC_VER
@@ -186,26 +187,6 @@ static void static_emit_end_block(deflate_state *const s, int last) {
     s->block_open = 0;
 }
 
-static inline Pos quick_insert_string(deflate_state *const s, const Pos str) {
-    Pos ret;
-    unsigned h = 0;
-
-#ifdef _MSC_VER
-    h = _mm_crc32_u32(h, *(unsigned *)(s->window + str));
-#else
-    __asm__ __volatile__ (
-        "crc32l (%[window], %[str], 1), %0\n\t"
-    : "+r" (h)
-    : [window] "r" (s->window),
-      [str] "r" ((uintptr_t)str)
-    );
-#endif
-
-    ret = s->head[h & s->hash_mask];
-    s->head[h & s->hash_mask] = str;
-    return ret;
-}
-
 ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     IPos hash_head;
     unsigned dist, match_len;
@@ -238,7 +219,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         }
 
         if (s->lookahead >= MIN_MATCH) {
-            hash_head = quick_insert_string(s, s->strstart);
+            hash_head = quick_insert_string_sse4(s, s->strstart);
             dist = s->strstart - hash_head;
 
             if (dist > 0 && (dist-1) < (wsize - 1)) {
