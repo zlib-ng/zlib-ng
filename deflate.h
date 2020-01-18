@@ -439,21 +439,24 @@ extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
 #endif
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
-#  define UPDATE_HASH(s, h, i) \
-    do {\
-        if (s->level < TRIGGER_LEVEL) \
-            h = (3483 * (s->window[i]) +\
-                 23081* (s->window[i+1]) +\
-                 6954 * (s->window[i+2]) +\
-                 20947* (s->window[i+3])) & s->hash_mask;\
-        else\
-            h = (25881* (s->window[i]) +\
-                 24674* (s->window[i+1]) +\
-                 25811* (s->window[i+2])) & s->hash_mask;\
-    } while (0)
+static inline uint32_t update_hash_c(deflate_state *s, uint32_t hash, uint32_t val) {
+    if (s->level < TRIGGER_LEVEL) {
+        hash = (3483 * ((val) & 0xff) +
+                23081* ((val >> 8) & 0xff) +
+                6954 * ((val >> 16) & 0xff) +
+                20947* ((val >> 24) & 0xff));
+    } else {
+        hash = (25881* ((val) & 0xff) +
+                24674* ((val >> 8) & 0xff) +
+                25811* ((val >> 16) & 0xff));
+    }
+    return hash;
+}
 #else
-#  define UPDATE_HASH(s, h, i) \
-    (h = (((h) << s->hash_shift) ^ (s->window[i + (MIN_MATCH-1)])) & s->hash_mask)
+static inline uint32_t update_hash_c(deflate_state *s, uint32_t hash, uint32_t val) {
+    hash = ((hash << s->hash_shift) ^ ((val >> MIN_MATCH_SHIFT) & 0xff));
+    return hash;
+}
 #endif
 
 #ifdef ZLIB_DEBUG

@@ -50,7 +50,7 @@ RESFILE = zlib-ng1.res
 SUFFIX = -ng
 !endif
 WFLAGS = $(WFLAGS) -DARM_ACLE_CRC_HASH -D__ARM_NEON__=1 -DARM_NEON_ADLER32 -DARM_NOCHECK_NEON
-OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj adler32_neon.obj
+OBJS = $(OBJS) crc32_acle.obj update_hash_acle.obj adler32_neon.obj
 
 # targets
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) \

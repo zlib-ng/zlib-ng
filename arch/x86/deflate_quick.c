@@ -24,6 +24,7 @@
 #endif
 #include "../../deflate.h"
 #include "../../memcopy.h"
+#include "../../functable.h"
 
 #ifdef ZLIB_DEBUG
 #  include <ctype.h>
@@ -189,18 +190,14 @@ static void static_emit_end_block(deflate_state *const s, int last) {
 static inline Pos quick_insert_string(deflate_state *const s, const Pos str) {
     Pos ret;
     unsigned h = 0;
+    unsigned int val;
 
-#ifdef _MSC_VER
-    h = _mm_crc32_u32(h, *(unsigned *)(s->window + str));
+#if defined(UNALIGNED_OK)
+    val = *(unsigned int *)(s->window + str);
 #else
-    __asm__ __volatile__ (
-        "crc32l (%[window], %[str], 1), %0\n\t"
-    : "+r" (h)
-    : [window] "r" (s->window),
-      [str] "r" ((uintptr_t)str)
-    );
+    memcpy(&val, s->window + str, sizeof(val)); 
 #endif
-
+    h = functable.update_hash(s, h, val);
     ret = s->head[h & s->hash_mask];
     s->head[h & s->hash_mask] = str;
     return ret;

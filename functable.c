@@ -9,11 +9,11 @@
 #include "deflate_p.h"
 
 #include "functable.h"
-/* insert_string */
+/* update_hash */
 #ifdef X86_SSE42_CRC_HASH
-extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
+extern uint32_t update_hash_sse(deflate_state *const s, uint32_t hash, uint32_t val);
 #elif defined(ARM_ACLE_CRC_HASH)
-extern Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count);
+extern uint32_t update_hash_acle(deflate_state *const s, uint32_t hash, uint32_t val);
 #endif
 
 /* fill_window */
@@ -54,8 +54,8 @@ extern uint32_t crc32_big(uint32_t, const unsigned char *, uint64_t);
 
 
 /* stub definitions */
-ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count);
 ZLIB_INTERNAL void fill_window_stub(deflate_state *s);
+ZLIB_INTERNAL uint32_t update_hash_stub(deflate_state *const s, uint32_t hash, uint32_t val);
 ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len);
 ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len);
 ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
@@ -63,7 +63,7 @@ ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
 /* functable init */
 ZLIB_INTERNAL __thread struct functable_s functable = {
     fill_window_stub,
-    insert_string_stub,
+    update_hash_stub,
     adler32_stub,
     crc32_stub,
     slide_hash_stub
@@ -71,19 +71,19 @@ ZLIB_INTERNAL __thread struct functable_s functable = {
 
 
 /* stub functions */
-ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count) {
+ZLIB_INTERNAL uint32_t update_hash_stub(deflate_state *const s, uint32_t hash, uint32_t val) {
     // Initialize default
-    functable.insert_string = &insert_string_c;
+    functable.update_hash = &update_hash_c;
 
 #ifdef X86_SSE42_CRC_HASH
     if (x86_cpu_has_sse42)
-        functable.insert_string = &insert_string_sse;
+        functable.update_hash = &update_hash_sse;
 #elif defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
     if (arm_cpu_has_crc32)
-        functable.insert_string = &insert_string_acle;
+        functable.update_hash = &update_hash_acle;
 #endif
 
-    return functable.insert_string(s, str, count);
+    return functable.update_hash(s, hash, val);
 }
 
 ZLIB_INTERNAL void fill_window_stub(deflate_state *s) {

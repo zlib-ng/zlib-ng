@@ -55,7 +55,7 @@ SUFFIX = -ng
 !endif
 !if "$(WITH_ACLE)" != ""
 WFLAGS = $(WFLAGS) -DARM_ACLE_CRC_HASH
-OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj
+OBJS = $(OBJS) crc32_acle.obj update_hash_acle.obj
 !endif
 !if "$(WITH_VFPV3)" != ""
 NEON_ARCH = /arch:VFPv3

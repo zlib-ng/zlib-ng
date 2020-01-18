@@ -11,6 +11,8 @@
 
 /* Forward declare common non-inlined functions declared in deflate.c */
 
+#include "functable.h"
+
 #ifdef ZLIB_DEBUG
 void check_match(deflate_state *s, IPos start, IPos match, int length);
 #else
@@ -27,21 +29,40 @@ void flush_pending(PREFIX3(stream) *strm);
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
 
-static inline Pos insert_string_c(deflate_state *const s, const Pos str, unsigned int count) {
-    Pos ret = 0;
-    unsigned int idx;
+static inline Pos insert_string(deflate_state *const s, const Pos str, unsigned int count) {
+    Pos str_idx, str_end, ret;
+    update_hash_cb update_hash;
 
-    for (idx = 0; idx < count; idx++) {
-        UPDATE_HASH(s, s->ins_h, str+idx);
+    if (UNLIKELY(count == 0)) {
+        return s->prev[str & s->w_mask];
+    }
 
-        Pos head = s->head[s->ins_h];
-        if (head != str+idx) {
-            s->prev[(str+idx) & s->w_mask] = head;
-            s->head[s->ins_h] = str+idx;
-            if (idx == count - 1)
+    ret = 0;
+    str_end = str + count - 1; /* last position */
+    update_hash = functable.update_hash;
+
+    for (str_idx = str; str_idx <= str_end; str_idx++) {
+        uint32_t val, hm;
+#if defined(UNALIGNED_OK)
+        val = *(unsigned int *)(&s->window[str_idx]);
+#else
+        memcpy(&val, &s->window[str_idx], sizeof(val));
+#endif
+
+        if (s->level >= TRIGGER_LEVEL)
+            val &= MIN_MATCH_MASK;
+
+        s->ins_h = update_hash(s, s->ins_h, val);
+        hm = s->ins_h & s->hash_mask;
+
+        Pos head = s->head[hm];
+        if (head != str_idx) {
+            s->prev[str_idx & s->w_mask] = head;
+            s->head[hm] = str_idx;
+            if (str_idx == str_end)
                 ret = head;
-        } else if (idx == count - 1) {
-            ret = str + idx;
+        } else if (str_idx == str_end) {
+            ret = str_idx;
         }
     }
     return ret;

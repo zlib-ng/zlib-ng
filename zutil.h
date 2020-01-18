@@ -65,6 +65,15 @@ extern const char * const zng_errmsg[10]; /* indexed by 2-zlib_error */
 #define MAX_MATCH  258
 /* The minimum and maximum match lengths */
 
+#if BYTE_ORDER == BIG_ENDIAN
+#  define MIN_MATCH_MASK 0x00FFFFFF
+#  define MIN_MATCH_SHIFT 8
+#else
+#  define MIN_MATCH_MASK 0xFFFFFF00
+#  define MIN_MATCH_SHIFT 16
+#endif
+/* The minimum match hash mask and shift */
+
 #define PRESET_DICT 0x20 /* preset dictionary flag in zlib header */
 
         /* target dependencies */
