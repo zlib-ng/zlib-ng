@@ -8,120 +8,120 @@ jobs:
       fail-fast: false
       matrix:
         name: [
-          Ubuntu 18.04 Clang,
-          Ubuntu 18.04 Clang OSB,
-          Ubuntu 18.04 Clang No Opt,
-          Ubuntu 18.04 Clang Compat,
-          Ubuntu 18.04 Clang Compat No Opt,
-          Ubuntu 18.04 Clang Compat,
-          Ubuntu 18.04 Clang ARM SF,
-          Ubuntu 18.04 Clang ARM SF No Opt,
-          Ubuntu 18.04 Clang ARM SF Compat,
-          Ubuntu 18.04 Clang ARM SF Compat No Opt,
-          Ubuntu 18.04 Clang ARM HF,
-          Ubuntu 18.04 Clang ARM HF No Opt,
-          Ubuntu 18.04 Clang ARM HF Compat,
-          Ubuntu 18.04 Clang ARM HF Compat No Opt,
-          Ubuntu 18.04 Clang ARM HF Compat No Neon,
-          Ubuntu 18.04 Clang AARCH64 Compat No Opt,
-          Ubuntu 18.04 Clang AARCH64 Compat
+          Ubuntu 18.04 GCC,
+          Ubuntu 18.04 GCC OSB,
+          Ubuntu 18.04 GCC No Opt,
+          Ubuntu 18.04 GCC Compat,
+          Ubuntu 18.04 GCC Compat No Opt,
+          Ubuntu 18.04 GCC Compat,
+          Ubuntu 18.04 GCC ARM SF,
+          Ubuntu 18.04 GCC ARM SF No Opt,
+          Ubuntu 18.04 GCC ARM SF Compat,
+          Ubuntu 18.04 GCC ARM SF Compat No Opt,
+          Ubuntu 18.04 GCC ARM HF,
+          Ubuntu 18.04 GCC ARM HF No Opt,
+          Ubuntu 18.04 GCC ARM HF Compat,
+          Ubuntu 18.04 GCC ARM HF Compat No Opt,
+          Ubuntu 18.04 GCC ARM HF Compat No Neon,
+          Ubuntu 18.04 GCC AARCH64 Compat No Opt,
+          Ubuntu 18.04 GCC AARCH64 Compat
           macOS 10.14 GCC,
         ]
         include:
-          - name: Ubuntu 18.04 Clang
+          - name: Ubuntu 18.04 GCC
             os: ubuntu-18.04
             compiler: gcc
             configure-args: --warn
 
-          - name: Ubuntu 18.04 Clang OSB
+          - name: Ubuntu 18.04 GCC OSB
             os: ubuntu-18.04
             compiler: gcc
             configure-args: --warn
             build-dir: ../build
             build-src-dir: ../zlib-ng
 
-          - name: Ubuntu 18.04 Clang No Opt
+          - name: Ubuntu 18.04 GCC No Opt
             os: ubuntu-18.04
             compiler: gcc
             configure-args: --warn --without-optimizations --without-new-strategies
 
-          - name: Ubuntu 18.04 Clang Compat
+          - name: Ubuntu 18.04 GCC Compat
             os: ubuntu-18.04
             compiler: gcc
             configure-args: --warn --zlib-compat
 
-          - name: Ubuntu 18.04 Clang Compat No Opt
+          - name: Ubuntu 18.04 GCC Compat No Opt
             os: ubuntu-18.04
             compiler: gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
 
-          - name: Ubuntu 18.04 Clang Compat
+          - name: Ubuntu 18.04 GCC Compat
             os: ubuntu-18.04
             compiler: gcc
             configure-args: --warn --zlib-compat
 
-          - name: Ubuntu 18.04 Clang ARM SF
+          - name: Ubuntu 18.04 GCC ARM SF
             os: ubuntu-18.04
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 Clang ARM SF No Opt
+          - name: Ubuntu 18.04 GCC ARM SF No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --without-optimizations --without-new-strategies
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 Clang ARM SF Compat
+          - name: Ubuntu 18.04 GCC ARM SF Compat
             os: ubuntu-18.04
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --zlib-compat
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 Clang ARM SF Compat No Opt
+          - name: Ubuntu 18.04 GCC ARM SF Compat No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 Clang ARM HF
+          - name: Ubuntu 18.04 GCC ARM HF
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 Clang ARM HF No Opt
+          - name: Ubuntu 18.04 GCC ARM HF No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --without-optimizations --without-new-strategies
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 Clang ARM HF Compat
+          - name: Ubuntu 18.04 GCC ARM HF Compat
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 Clang ARM HF Compat No Opt
+          - name: Ubuntu 18.04 GCC ARM HF Compat No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 Clang ARM HF Compat No Neon
+          - name: Ubuntu 18.04 GCC ARM HF Compat No Neon
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat --without-neon
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 Clang AARCH64 Compat
+          - name: Ubuntu 18.04 GCC AARCH64 Compat
             os: ubuntu-18.04
             compiler: aarch64-linux-gnu-gcc
             configure-args: --warn --zlib-compat
             asan-options: detect_leaks=0
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
-          - name: Ubuntu 18.04 Clang AARCH64 Compat No Opt
+          - name: Ubuntu 18.04 GCC AARCH64 Compat No Opt
             os: ubuntu-18.04
             compiler: aarch64-linux-gnu-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
