@@ -25,6 +25,7 @@ jobs:
           Ubuntu 18.04 Clang ARM HF Compat No Neon,
           Ubuntu 18.04 Clang AARCH64 Compat No Opt,
           Ubuntu 18.04 Clang AARCH64 Compat
+          macOS 10.14 GCC,
         ]
         include:
           - name: Ubuntu 18.04 Clang
@@ -126,6 +127,11 @@ jobs:
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             asan-options: detect_leaks=0
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
+
+          - name: macOS 10.14 GCC
+            os: macOS-10.14
+            compiler: gcc
+            configure-args: --warn
 
     steps:
     - uses: actions/checkout@v1
