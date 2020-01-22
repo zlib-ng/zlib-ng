@@ -100,6 +100,7 @@ with_fuzzers=0
 floatabi=
 native=0
 forcesse2=0
+avx2flag="-mavx2"
 sse2flag="-msse2"
 sse4flag="-msse4"
 sse42flag="-msse4.2"
@@ -941,6 +942,30 @@ EOF
         ;;
 esac
 
+# Check for AVX2 intrinsics
+case "${ARCH}" in
+    i386 | i486 | i586 | i686 | x86_64)
+        cat > $test.c << EOF
+#include <immintrin.h>
+int main(void) {
+    __m256i x = _mm256_set1_epi16(2);
+    const __m256i y = _mm256_set1_epi16(1);
+    x = _mm256_subs_epu16(x, y);
+    (void)x;
+    return 0;
+}
+EOF
+        if try ${CC} ${CFLAGS} ${avx2flag} $test.c; then
+            echo "Checking for AVX2 intrinsics ... Yes." | tee -a configure.log
+            HAVE_AVX2_INTRIN=1
+        else
+            echo "Checking for AVX2 intrinsics ... No." | tee -a configure.log
+            HAVE_AVX2_INTRIN=0
+        fi
+        ;;
+esac
+
+
 # Check whether -mfpu=neon is available on ARM processors.
 case "${ARCH}" in
     arm*)
@@ -1018,6 +1043,13 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_SSE42_CRC_INTRIN"
             fi
 
+            if test ${HAVE_AVX2_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_AVX2"
+                SFLAGS="${SFLAGS} -DX86_AVX2"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_avx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_avx.lo"
+            fi
+
             CFLAGS="${CFLAGS} -DX86_SSE42_CRC_HASH"
             SFLAGS="${SFLAGS} -DX86_SSE42_CRC_HASH"
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} insert_string_sse.o"
@@ -1058,6 +1090,13 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo"
+            fi
+
+            if test ${HAVE_AVX2_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_AVX2"
+                SFLAGS="${SFLAGS} -DX86_AVX2"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_avx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_avx.lo"
             fi
 
             # Enable deflate_quick at level 1?
@@ -1450,6 +1489,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SRCDIR *=/s#=.*#=$SRCDIR/$ARCHDIR#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^TOPDIR *=/s#=.*#=$BUILDDIR#
+/^AVX2FLAG *=/s#=.*#=$avx2flag#
 /^SSE2FLAG *=/s#=.*#=$sse2flag#
 /^SSE4FLAG *=/s#=.*#=$sse4flag#
 /^PCLMULFLAG *=/s#=.*#=$pclmulflag#

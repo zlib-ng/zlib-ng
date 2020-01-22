@@ -137,6 +137,7 @@ if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${
         set(WARNFLAGS_MAINTAINER "-W4 -Wcheck")
         set(WARNFLAGS_DISABLE "")
         if(BASEARCH_X86_FOUND)
+            set(AVX2FLAG "-mavx2")
             set(SSE2FLAG "-msse2")
             set(SSE4FLAG "-msse4.2")
         endif()
@@ -145,6 +146,7 @@ if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${
         set(WARNFLAGS_MAINTAINER "/W4 /Wcheck")
         set(WARNFLAGS_DISABLE "")
         if(BASEARCH_X86_FOUND)
+            set(AVX2FLAG "/arch:AVX2")
             set(SSE2FLAG "/arch:SSE2")
             set(SSE4FLAG "/arch:SSE4.2")
         endif()
@@ -189,6 +191,7 @@ else()
     if(NOT NATIVEFLAG)
         if (__GNUC__)
             if(BASEARCH_X86_FOUND)
+                set(AVX2FLAG "-mavx2")
                 set(SSE2FLAG "-msse2")
                 set(SSE4FLAG "-msse4")
                 set(PCLMULFLAG "-mpclmul")
@@ -223,6 +226,7 @@ else()
         endif()
     else()
         if(BASEARCH_X86_FOUND)
+            set(AVX2FLAG ${NATIVEFLAG})
             set(SSE2FLAG ${NATIVEFLAG})
             set(SSE4FLAG ${NATIVEFLAG})
             set(PCLMULFLAG ${NATIVEFLAG})
@@ -537,6 +541,25 @@ if(BASEARCH_X86_FOUND)
     endif()
     set(CMAKE_REQUIRED_FLAGS)
 
+    # Check whether compiler supports AVX2 intrinics
+    if(WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+    else()
+        set(CMAKE_REQUIRED_FLAGS "${AVX2FLAG}")
+    endif()
+    check_c_source_compile_or_run(
+        "#include <immintrin.h>
+        int main(void) {
+            __m256i x = _mm256_set1_epi16(2);
+            const __m256i y = _mm256_set1_epi16(1);
+            x = _mm256_subs_epu16(x, y);
+            (void)x;
+            return 0;
+        }"
+        HAVE_AVX2_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+
     # FORCE_SSE2 option will only be shown if HAVE_SSE2_INTRIN is true
     if("${ARCH}" MATCHES "i[3-6]86")
         cmake_dependent_option(FORCE_SSE2 "Always assume CPU is SSE2 capable" OFF "HAVE_SSE2_INTRIN" OFF)
@@ -612,6 +635,12 @@ if(WITH_OPTIM)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/x86.c)
         if(MSVC)
             list(APPEND ZLIB_ARCH_HDRS fallback_builtins.h)
+        endif()
+        if(HAVE_AVX2_INTRIN)
+            add_definitions(-DX86_AVX2)
+            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/slide_avx.c)
+            add_feature_info(AVX2_SLIDEHASH 1 "Support AVX2-optimized slide_hash, using \"${AVX2FLAG}\"")
+            add_intrinsics_option("${AVX2FLAG}")
         endif()
         if(HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN)
             add_definitions(-DX86_SSE42_CRC_HASH)
