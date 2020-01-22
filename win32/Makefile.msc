@@ -23,7 +23,7 @@ AR = lib
 RC = rc
 CP = copy /y
 CFLAGS  = -nologo -MD -W3 -O2 -Oy- -Zi -Fd"zlib" $(LOC)
-WFLAGS  = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DX86_PCLMULQDQ_CRC -DX86_SSE2 -DX86_CPUID -DX86_SSE42_CRC_HASH -DUNALIGNED_OK -DX86_QUICK_STRATEGY
+WFLAGS  = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DX86_PCLMULQDQ_CRC -DX86_SSE2 -DX86_CPUID -DX86_SSE42_CRC_INTRIN -DX86_SSE42_CRC_HASH -DX86_AVX2 -DUNALIGNED_OK -DX86_QUICK_STRATEGY
 LDFLAGS = -nologo -debug -incremental:no -opt:ref -manifest
 ARFLAGS = -nologo
 RCFLAGS = /dWIN32 /r
@@ -36,7 +36,7 @@ SUFFIX =
 
 OBJS = adler32.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_quick.obj deflate_slow.obj \
        deflate_medium.obj \
-       functable.obj infback.obj inflate.obj inftrees.obj inffast.obj slide_sse.obj trees.obj uncompr.obj zutil.obj \
+       functable.obj infback.obj inflate.obj inftrees.obj inffast.obj slide_avx.obj slide_sse.obj trees.obj uncompr.obj zutil.obj \
        x86.obj fill_window_sse.obj insert_string_sse.obj crc_folding.obj
 !if "$(ZLIB_COMPAT)" != ""
 WITH_GZFILEOP = yes

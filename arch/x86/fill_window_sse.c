@@ -18,6 +18,9 @@
 
 extern int read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 void slide_hash_sse2(deflate_state *s);
+#ifdef X86_AVX2
+void slide_hash_avx2(deflate_state *s);
+#endif
 
 ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
     register unsigned n;
@@ -57,6 +60,11 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
                later. (Using level 0 permanently is not an optimal usage of
                zlib, so we don't care about this pathological case.)
              */
+#ifdef X86_AVX2
+            if (x86_cpu_has_avx2) {
+                slide_hash_avx2(s);
+            } else
+#endif
             slide_hash_sse2(s);
             more += wsize;
         }

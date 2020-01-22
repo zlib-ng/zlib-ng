@@ -17,6 +17,7 @@
 #  include <cpuid.h>
 #endif
 
+ZLIB_INTERNAL int x86_cpu_has_avx2;
 ZLIB_INTERNAL int x86_cpu_has_sse2;
 ZLIB_INTERNAL int x86_cpu_has_sse42;
 ZLIB_INTERNAL int x86_cpu_has_pclmulqdq;
@@ -62,7 +63,10 @@ void ZLIB_INTERNAL x86_check_features(void) {
         // check BMI1 bit
         // Reference: https://software.intel.com/sites/default/files/article/405250/how-to-detect-new-instruction-support-in-the-4th-generation-intel-core-processor-family.pdf
         x86_cpu_has_tzcnt = ebx & 0x8;
+        // check AVX2 bit
+        x86_cpu_has_avx2 = ebx & 0x20;
     } else {
         x86_cpu_has_tzcnt = 0;
+        x86_cpu_has_avx2 = 0;
     }
 }
