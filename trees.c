@@ -799,7 +799,7 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
             } /* literal or match pair ? */
 
             /* Check that the overlay between pending_buf and sym_buf is ok: */
-            Assert(s->pending < s->lit_bufsize + sx, "pendingBuf overflow");
+            Assert(s->pending < s->lit_bufsize + sx, "pending_buf overflow");
         } while (sx < s->sym_next);
     }
 
