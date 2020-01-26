@@ -308,10 +308,14 @@ typedef enum {
  */
 static inline void put_short(deflate_state *s, uint16_t w) {
 #if BYTE_ORDER == BIG_ENDIAN
-  w = ZSWAP16(w);
+    w = ZSWAP16(w);
 #endif
-  memcpy(&(s->pending_buf[s->pending]), &w, sizeof(uint16_t));
-  s->pending += 2;
+#if defined(UNALIGNED_OK)
+    *(uint16_t *)(&s->pending_buf[s->pending]) = w;
+#else
+    memcpy(&(s->pending_buf[s->pending]), &w, sizeof(uint16_t));
+#endif
+    s->pending += 2;
 }
 
 #define MIN_LOOKAHEAD (MAX_MATCH+MIN_MATCH+1)
