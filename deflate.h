@@ -306,14 +306,57 @@ typedef enum {
 
 /* ===========================================================================
  * Output a short LSB first on the stream.
- * IN assertion: there is enough room in pendingBuf.
+ * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_short(deflate_state *s, uint16_t w) {
-#if BYTE_ORDER == BIG_ENDIAN
-    w = ZSWAP16(w);
-#endif
-    memcpy(&(s->pending_buf[s->pending]), &w, sizeof(uint16_t));
+#if defined(UNALIGNED_OK)
+    *(uint16_t *)(&s->pending_buf[s->pending]) = w;
     s->pending += 2;
+#else
+    put_byte(s, (w & 0xff));
+    put_byte(s, ((w >> 8) & 0xff));
+#endif
+}
+
+/* ===========================================================================
+ * Output a short MSB first on the stream.
+ * IN assertion: there is enough room in pending_buf.
+ */
+static inline void put_short_msb(deflate_state *s, uint16_t w) {
+    put_byte(s, ((w >> 8) & 0xff));
+    put_byte(s, (w & 0xff));
+}
+
+/* ===========================================================================
+ * Output a 32-bit unsigned int LSB first on the stream.
+ * IN assertion: there is enough room in pending_buf.
+ */
+static inline void put_uint32(deflate_state *s, uint32_t dw) {
+#if defined(UNALIGNED_OK)
+    *(uint32_t *)(&s->pending_buf[s->pending]) = dw;
+    s->pending += 4;
+#else
+    put_byte(s, (dw & 0xff));
+    put_byte(s, ((dw >> 8) & 0xff));
+    put_byte(s, ((dw >> 16) & 0xff));
+    put_byte(s, ((dw >> 24) & 0xff));
+#endif
+}
+
+/* ===========================================================================
+ * Output a 32-bit unsigned int MSB first on the stream.
+ * IN assertion: there is enough room in pending_buf.
+ */
+static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
+#if defined(UNALIGNED_OK)
+    *(uint32_t *)(&s->pending_buf[s->pending]) = ZSWAP32(dw);
+    s->pending += 4;
+#else
+    put_byte(s, ((dw >> 24) & 0xff));
+    put_byte(s, ((dw >> 16) & 0xff));
+    put_byte(s, ((dw >> 8) & 0xff));
+    put_byte(s, (dw & 0xff));
+#endif
 }
 
 #define MIN_LOOKAHEAD (MAX_MATCH+MIN_MATCH+1)

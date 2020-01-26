@@ -115,7 +115,6 @@ ZLIB_INTERNAL block_state deflate_slow         (deflate_state *s, int flush);
 static block_state deflate_rle   (deflate_state *s, int flush);
 static block_state deflate_huff  (deflate_state *s, int flush);
 static void lm_init              (deflate_state *s);
-static void putShortMSB          (deflate_state *s, uint16_t b);
 ZLIB_INTERNAL unsigned read_buf  (PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
 extern void crc_reset(deflate_state *const s);
@@ -745,16 +744,6 @@ unsigned long ZEXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long 
 }
 
 /* =========================================================================
- * Put a short in the pending buffer. The 16-bit value is put in MSB order.
- * IN assertion: the stream state is correct and there is enough room in
- * pending_buf.
- */
-static void putShortMSB(deflate_state *s, uint16_t b) {
-    put_byte(s, (unsigned char)(b >> 8));
-    put_byte(s, (unsigned char)(b & 0xff));
-}
-
-/* =========================================================================
  * Flush as much pending output as possible. All deflate() output, except for
  * some deflate_stored() output, goes through this function so some
  * applications may wish to modify it to avoid allocating a large
@@ -859,12 +848,11 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
         if (s->strstart != 0) header |= PRESET_DICT;
         header += 31 - (header % 31);
 
-        putShortMSB(s, header);
+        put_short_msb(s, header);
 
         /* Save the adler32 of the preset dictionary: */
         if (s->strstart != 0) {
-            putShortMSB(s, (uint16_t)(strm->adler >> 16));
-            putShortMSB(s, (uint16_t)(strm->adler));
+            put_uint32_msb(s, strm->adler);
         }
         strm->adler = functable.adler32(0L, NULL, 0);
         s->status = BUSY_STATE;
@@ -884,10 +872,7 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
         put_byte(s, 139);
         put_byte(s, 8);
         if (s->gzhead == NULL) {
-            put_byte(s, 0);
-            put_byte(s, 0);
-            put_byte(s, 0);
-            put_byte(s, 0);
+            put_uint32(s, 0);
             put_byte(s, 0);
             put_byte(s, s->level == 9 ? 2 :
                      (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ? 4 : 0));
@@ -907,16 +892,12 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
                      (s->gzhead->name == NULL ? 0 : 8) +
                      (s->gzhead->comment == NULL ? 0 : 16)
                      );
-            put_byte(s, (unsigned char)(s->gzhead->time & 0xff));
-            put_byte(s, (unsigned char)((s->gzhead->time >> 8) & 0xff));
-            put_byte(s, (unsigned char)((s->gzhead->time >> 16) & 0xff));
-            put_byte(s, (unsigned char)((s->gzhead->time >> 24) & 0xff));
+            put_uint32(s, s->gzhead->time);
             put_byte(s, s->level == 9 ? 2 :
                      (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ? 4 : 0));
             put_byte(s, s->gzhead->os & 0xff);
             if (s->gzhead->extra != NULL) {
-                put_byte(s, s->gzhead->extra_len & 0xff);
-                put_byte(s, (s->gzhead->extra_len >> 8) & 0xff);
+                put_short(s, s->gzhead->extra_len);
             }
             if (s->gzhead->hcrc)
                 strm->adler = PREFIX(crc32)(strm->adler, s->pending_buf, s->pending);
@@ -953,7 +934,7 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
     if (s->status == NAME_STATE) {
         if (s->gzhead->name != NULL) {
             uint32_t beg = s->pending;   /* start of bytes to update crc */
-            int val;
+            unsigned char val;
 
             do {
                 if (s->pending == s->pending_buf_size) {
@@ -976,7 +957,7 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
     if (s->status == COMMENT_STATE) {
         if (s->gzhead->comment != NULL) {
             uint32_t beg = s->pending;  /* start of bytes to update crc */
-            int val;
+            unsigned char val;
 
             do {
                 if (s->pending == s->pending_buf_size) {
@@ -1004,8 +985,7 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
                     return Z_OK;
                 }
             }
-            put_byte(s, (unsigned char)(strm->adler & 0xff));
-            put_byte(s, (unsigned char)((strm->adler >> 8) & 0xff));
+            put_short(s, (uint16_t)strm->adler);
             crc_reset(s);
         }
         s->status = BUSY_STATE;
@@ -1085,19 +1065,12 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
 #  ifdef X86_PCLMULQDQ_CRC
         crc_finalize(s);
 #  endif
-        put_byte(s, (unsigned char)(strm->adler & 0xff));
-        put_byte(s, (unsigned char)((strm->adler >> 8) & 0xff));
-        put_byte(s, (unsigned char)((strm->adler >> 16) & 0xff));
-        put_byte(s, (unsigned char)((strm->adler >> 24) & 0xff));
-        put_byte(s, (unsigned char)(strm->total_in & 0xff));
-        put_byte(s, (unsigned char)((strm->total_in >> 8) & 0xff));
-        put_byte(s, (unsigned char)((strm->total_in >> 16) & 0xff));
-        put_byte(s, (unsigned char)((strm->total_in >> 24) & 0xff));
+        put_uint32(s, strm->adler);
+        put_uint32(s, strm->total_in);
     } else
 #endif
     {
-        putShortMSB(s, (uint16_t)(strm->adler >> 16));
-        putShortMSB(s, (uint16_t)strm->adler);
+        put_uint32_msb(s, strm->adler);
     }
     flush_pending(strm);
     /* If avail_out is zero, the application will call deflate again
