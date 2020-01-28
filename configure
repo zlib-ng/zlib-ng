@@ -332,7 +332,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
     LDFLAGS="${LDFLAGS} ${ARCHS}"
   fi
   CFLAGS="${CFLAGS} -Wall"
-  SFLAGS="-O2 ${CFLAGS} -fPIC"
+  SFLAGS="${CFLAGS} -fPIC"
   if test $native -eq 1; then
     CFLAGS="${CFLAGS} -march=native"
     SFLAGS="${SFLAGS} -march=native"
