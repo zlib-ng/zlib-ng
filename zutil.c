@@ -10,9 +10,6 @@
 #ifdef WITH_GZFILEOP
 #  include "gzguts.h"
 #endif
-#ifndef UNALIGNED_OK
-#  include <malloc.h>
-#endif
 
 const char * const zng_errmsg[10] = {
     (const char *)"need dictionary",     /* Z_NEED_DICT       2  */
@@ -111,10 +108,22 @@ const char * ZEXPORT PREFIX(zError)(int err) {
 
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
 
-void ZLIB_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size) {
+#ifndef UNALIGNED_OK
+#  include <malloc.h>
+#  if defined(_WIN32)
+#    define zng_align_alloc(align, size) _aligned_malloc(size, align)
+#    define zng_align_free(ptr)          _aligned_free(ptr)
+#  else
+#    define zng_align_alloc              memalign
+#    define zng_align_free(ptr)          free(ptr)
+#  endif
+#endif
+
+void ZLIB_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size)
+{
     (void)opaque;
 #ifndef UNALIGNED_OK
-    return memalign(16, items * size);
+    return zng_align_alloc(16, items * size);
 #else
     return sizeof(unsigned int) > 2 ? (void *)malloc(items * size) :
                               (void *)calloc(items, size);
@@ -123,7 +132,11 @@ void ZLIB_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size) {
 
 void ZLIB_INTERNAL zng_cfree(void *opaque, void *ptr) {
     (void)opaque;
+#ifndef UNALIGNED_OK
+    zng_align_free(ptr);
+#else
     free(ptr);
+#endif
 }
 
 #endif /* MY_ZCALLOC */
