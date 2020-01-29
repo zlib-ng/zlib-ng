@@ -11,7 +11,7 @@
 #include "zbuild.h"
 #include "deflate.h"
 
-#if (defined(UNALIGNED_OK) && MAX_MATCH == 258)
+#if (MAX_MATCH == 258)
 
    /* ARM 32-bit clang/gcc builds perform better, on average, with std2. Both gcc and clang and define __GNUC__. */
 #  if defined(__GNUC__) && defined(__arm__) && !defined(__aarch64__)
@@ -203,8 +203,8 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
 
     scan = s->window + s->strstart;
     strend = s->window + s->strstart + MAX_MATCH - 1;
-    memcpy(&scan_start, scan, sizeof(scan_start));
-    memcpy(&scan_end, scan + best_len - 1, sizeof(scan_end));
+    ZCOPY16(scan_start, scan);
+    ZCOPY16(scan_end, scan + best_len - 1);
 
     Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     do {
@@ -225,11 +225,11 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
          * affected by the uninitialized values.
          */
         uint16_t val;
-        memcpy(&val, match + best_len - 1, sizeof(val));
+        ZCOPY16(val, match + best_len - 1);
         if (LIKELY(val != scan_end))
             continue;
 
-        memcpy(&val, match, sizeof(val));
+        ZCOPY16(val, match);
         if (val != scan_start)
             continue;
 
@@ -250,29 +250,29 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         do {
             uint16_t mval, sval;
 
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
+            ZCOPY16(mval, match);
+            ZCOPY16(sval, scan);
             if (mval != sval)
               break;
             match += sizeof(mval);
             scan += sizeof(sval);
 
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
+            ZCOPY16(mval, match);
+            ZCOPY16(sval, scan);
             if (mval != sval)
               break;
             match += sizeof(mval);
             scan += sizeof(sval);
 
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
+            ZCOPY16(mval, match);
+            ZCOPY16(sval, scan);
             if (mval != sval)
               break;
             match += sizeof(mval);
             scan += sizeof(sval);
 
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
+            ZCOPY16(mval, match);
+            ZCOPY16(sval, scan);
             if (mval != sval)
               break;
             match += sizeof(mval);
@@ -294,7 +294,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
             best_len = len;
             if (len >= nice_match)
                 break;
-            memcpy(&scan_end, scan + best_len - 1, sizeof(scan_end));
+            ZCOPY16(scan_end, scan + best_len - 1);
         } else {
             /*
              * The probability of finding a match later if we here
@@ -397,8 +397,8 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
 
     uint16_t scan_start, scan_end;
 
-    memcpy(&scan_start, scan, sizeof(scan_start));
-    memcpy(&scan_end, scan+best_len-1, sizeof(scan_end));
+    ZCOPY16(scan_start, scan);
+    ZCOPY16(scan_end, scan+best_len-1);
 
     /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
      * It is easy to get rid of this optimization if necessary.
@@ -461,8 +461,8 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         do {
             unsigned long sv, mv, xor;
 
-            memcpy(&sv, scan, sizeof(sv));
-            memcpy(&mv, match, sizeof(mv));
+            ZCOPYULONG(sv, scan);
+            ZCOPYULONG(mv, match);
 
             xor = sv ^ mv;
 
@@ -489,7 +489,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
             best_len = len;
             if (len >= nice_match)
                 break;
-            memcpy(&scan_end, scan+best_len-1, sizeof(scan_end));
+            ZCOPY16(scan_end, scan+best_len-1);
         } else {
             /*
              * The probability of finding a match later if we here

@@ -213,6 +213,17 @@ void ZLIB_INTERNAL   zng_cfree(void *opaque, void *ptr);
           ((q & 0x00000000000000FFu) << 56u)
 #endif
 
+/* Copy into data type aligned or unaligned */
+#if defined(UNALIGNED_OK)
+#   define ZCOPY16(val, ptr)    val = *(uint16_t *)(ptr)
+#   define ZCOPY32(val, ptr)    val = *(uint32_t *)(ptr)
+#   define ZCOPYULONG(val, ptr) val = *(unsigned long *)(ptr)
+#else 
+#   define ZCOPY16(val, ptr)    memcpy(&val, ptr, sizeof(val))
+#   define ZCOPY32(val, ptr)    memcpy(&val, ptr, sizeof(val))
+#   define ZCOPYULONG(val, ptr) memcpy(&val, ptr, sizeof(val))
+#endif
+
 /* Only enable likely/unlikely if the compiler is known to support it */
 #if (defined(__GNUC__) && (__GNUC__ >= 3)) || defined(__INTEL_COMPILER) || defined(__Clang__)
 #    define LIKELY_NULL(x)      __builtin_expect((x) != 0, 0)
