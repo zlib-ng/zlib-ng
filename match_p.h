@@ -162,7 +162,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
 
 #ifdef std2_longest_match
 /*
- * UNALIGNED_OK longest_match
+ * UNALIGNED_OK longest_match without __builtin_ctzl
  *
  */
 static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
@@ -203,7 +203,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
 
     scan = s->window + s->strstart;
     strend = s->window + s->strstart + MAX_MATCH - 1;
-    scan_start = *(uint16_t *)scan;
+    scan_start = *(uint16_t *)scan; /* UNALIGNED_OK */
     scan_end = *(uint16_t *)(scan + best_len-1);
 
     Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
@@ -224,9 +224,9 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
          * is limited to the lookahead, so the output of deflate is not
          * affected by the uninitialized values.
          */
-        if (LIKELY(*(uint16_t *)(match + best_len - 1) != scan_end))
+        if (LIKELY(*(uint16_t *)(match + best_len - 1) != scan_end)) /* UNALIGNED_OK */
             continue;
-        if (*(uint16_t *)match != scan_start)
+        if (*(uint16_t *)match != scan_start) /* UNALIGNED_OK */
             continue;
 
         /* It is not necessary to compare scan[2] and match[2] since
@@ -243,7 +243,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         scan++;
         match++;
 
-        do {
+        do { /* UNALIGNED_OK */
         } while (*(uint16_t *)(scan += 2) == *(uint16_t *)(match += 2) &&
                  *(uint16_t *)(scan += 2) == *(uint16_t *)(match += 2) &&
                  *(uint16_t *)(scan += 2) == *(uint16_t *)(match += 2) &&
@@ -265,7 +265,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
             best_len = len;
             if (len >= nice_match)
                 break;
-            scan_end = *(uint16_t *)(scan + best_len - 1);
+            scan_end = *(uint16_t *)(scan + best_len - 1); /* UNALIGNED_OK */
         } else {
             /*
              * The probability of finding a match later if we here
@@ -284,8 +284,8 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
 #endif
 
 #ifdef std3_longest_match
-/* longest_match() with minor change to improve performance (in terms of
- * execution time).
+/* UNALIGNED_OK longest_match() with __builtin_ctzl, minor change to improve 
+ * performance (in terms of execution time).
  *
  * The pristine longest_match() function is sketched below (strip the
  * then-clause of the "#ifdef UNALIGNED_OK"-directive)
@@ -365,7 +365,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
     unsigned int wmask = s->w_mask;
 
     register unsigned char *strend = window + strstart + MAX_MATCH;
-    register uint16_t scan_start = *(uint16_t*)scan;
+    register uint16_t scan_start = *(uint16_t*)scan; /* UNALIGNED_OK */
     register uint16_t scan_end   = *(uint16_t*)(scan+best_len-1);
 
     /* The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple of 16.
@@ -400,7 +400,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         int cont = 1;
         do {
             match = window + cur_match;
-            if (LIKELY(*(uint16_t *)(match+best_len-1) != scan_end) ||
+            if (LIKELY(*(uint16_t *)(match+best_len-1) != scan_end) || /* UNALIGNED_OK */
                 LIKELY(*(uint16_t *)(match) != scan_start)) {
                 if ((cur_match = prev[cur_match & wmask]) > limit
                     && --chain_length != 0) {
@@ -427,7 +427,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         scan += 2, match+=2;
         Assert(*scan == *match, "match[2]?");
         do {
-            unsigned long sv = *(unsigned long*)(void*)scan;
+            unsigned long sv = *(unsigned long*)(void*)scan; /* UNALIGNED_OK */
             unsigned long mv = *(unsigned long*)(void*)match;
             unsigned long xor = sv ^ mv;
             if (xor) {
@@ -453,7 +453,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
             best_len = len;
             if (len >= nice_match)
                 break;
-            scan_end = *(uint16_t*)(scan+best_len-1);
+            scan_end = *(uint16_t*)(scan+best_len-1); /* UNALIGNED_OK */
         } else {
             /*
              * The probability of finding a match later if we here
