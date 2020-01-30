@@ -29,8 +29,10 @@ Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count
     lp = str + count - 1; /* last position */
 
     for (p = str; p <= lp; p++) {
-        uint32_t val, h, hm;
-        memcpy(&val, &s->window[p], sizeof(val));
+        unsigned *ip, val, h, hm;
+
+        ip = (unsigned *)&s->window[p];
+        val = *ip;
 
         if (s->level >= TRIGGER_LEVEL)
             val &= 0xFFFFFF;

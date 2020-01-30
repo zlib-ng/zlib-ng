@@ -203,8 +203,8 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
 
     scan = s->window + s->strstart;
     strend = s->window + s->strstart + MAX_MATCH - 1;
-    memcpy(&scan_start, scan, sizeof(scan_start));
-    memcpy(&scan_end, scan + best_len - 1, sizeof(scan_end));
+    scan_start = *(uint16_t *)scan;
+    scan_end = *(uint16_t *)(scan + best_len-1);
 
     Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     do {
@@ -224,13 +224,9 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
          * is limited to the lookahead, so the output of deflate is not
          * affected by the uninitialized values.
          */
-        uint16_t val;
-        memcpy(&val, match + best_len - 1, sizeof(val));
-        if (LIKELY(val != scan_end))
+        if (LIKELY(*(uint16_t *)(match + best_len - 1) != scan_end))
             continue;
-
-        memcpy(&val, match, sizeof(val));
-        if (val != scan_start)
+        if (*(uint16_t *)match != scan_start)
             continue;
 
         /* It is not necessary to compare scan[2] and match[2] since
@@ -248,36 +244,11 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         match++;
 
         do {
-            uint16_t mval, sval;
-
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
-            if (mval != sval)
-                break;
-            match += sizeof(mval);
-            scan += sizeof(sval);
-
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
-            if (mval != sval)
-                break;
-            match += sizeof(mval);
-            scan += sizeof(sval);
-
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
-            if (mval != sval)
-                break;
-            match += sizeof(mval);
-            scan += sizeof(sval);
-
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
-            if (mval != sval)
-                break;
-            match += sizeof(mval);
-            scan += sizeof(sval);
-        } while (scan < strend);
+        } while (*(uint16_t *)(scan += 2) == *(uint16_t *)(match += 2) &&
+                 *(uint16_t *)(scan += 2) == *(uint16_t *)(match += 2) &&
+                 *(uint16_t *)(scan += 2) == *(uint16_t *)(match += 2) &&
+                 *(uint16_t *)(scan += 2) == *(uint16_t *)(match += 2) &&
+                 scan < strend);
 
         /*
          * Here, scan <= window + strstart + 257
@@ -294,7 +265,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
             best_len = len;
             if (len >= nice_match)
                 break;
-            memcpy(&scan_end, scan + best_len - 1, sizeof(scan_end));
+            scan_end = *(uint16_t *)(scan + best_len - 1);
         } else {
             /*
              * The probability of finding a match later if we here
