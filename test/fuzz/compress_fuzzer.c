@@ -38,8 +38,8 @@ static void write_zlib_header(uint8_t *s) {
     header += 31 - (header % 31);
 
     /* s is guaranteed to be longer than 2 bytes. */
-    put_byte(s, 0, (unsigned char)(header >> 8));
-    put_byte(s, 1, (unsigned char)(header & 0xff));
+    put_byte(s, 0, (header >> 8));
+    put_byte(s, 1, (header & 0xff));
 }
 
 static void check_decompress(uint8_t *compr, size_t comprLen) {

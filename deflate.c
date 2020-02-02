@@ -592,14 +592,14 @@ int ZEXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int bits, int value) {
     if (deflateStateCheck(strm))
         return Z_STREAM_ERROR;
     s = strm->state;
-    if (bits < 0 || bits > 16 ||
-        s->sym_buf < s->pending_out + ((Buf_size + 7) >> 3))
+    if (bits < 0 || bits > BIT_BUF_SIZE ||
+        s->sym_buf < s->pending_out + ((BIT_BUF_SIZE + 7) >> 3))
         return Z_BUF_ERROR;
     do {
-        put = Buf_size - s->bi_valid;
+        put = BIT_BUF_SIZE - s->bi_valid;
         if (put > bits)
             put = bits;
-        s->bi_buf |= (uint16_t)((value & ((1 << put) - 1)) << s->bi_valid);
+        s->bi_buf |= (uint32_t)((value & ((1 << put) - 1)) << s->bi_valid);
         s->bi_valid += put;
         zng_tr_flush_bits(s);
         value >>= put;

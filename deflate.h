@@ -52,7 +52,7 @@
 #define MAX_BITS 15
 /* All codes must not exceed MAX_BITS bits */
 
-#define Buf_size 16
+#define BIT_BUF_SIZE 32
 /* size of bit buffer in bi_buf */
 
 #define END_BLOCK 256
@@ -264,7 +264,7 @@ typedef struct internal_state {
     unsigned long bits_sent;      /* bit length of compressed data sent mod 2^32 */
 #endif
 
-    uint16_t bi_buf;
+    uint32_t bi_buf;
     /* Output buffer. bits are inserted starting at the bottom (least
      * significant bits).
      */
@@ -473,7 +473,7 @@ extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
 #ifdef ZLIB_DEBUG
 #  define send_debug_trace(s, value, length) {\
         Tracevv((stderr, " l %2d v %4x ", length, value));\
-        Assert(length > 0 && length <= 15, "invalid length");\
+        Assert(length > 0 && length <= BIT_BUF_SIZE - 1, "invalid length");\
         s->bits_sent += (unsigned long)length;\
     }
 #else
@@ -481,20 +481,24 @@ extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
 #endif
 
 /* If not enough room in bit_buf, use (valid) bits from bit_buf and
- * (16 - bit_valid) bits from value, leaving (width - (16-bit_valid))
+ * (32 - bit_valid) bits from value, leaving (width - (32-bit_valid))
  * unused bits in value.
  */
 #define send_bits(s, t_val, t_len, bit_buf, bits_valid) {\
-    int val = t_val;\
-    int len = t_len;\
+    uint32_t val = (uint32_t)t_val;\
+    uint32_t len = (uint32_t)t_len;\
     send_debug_trace(s, val, len);\
-    if (bits_valid > (int)Buf_size - len) {\
-        bit_buf |= (uint16_t)val << bits_valid;\
-        put_short(s, bit_buf);\
-        bit_buf = (uint16_t)val >> (Buf_size - bits_valid);\
-        bits_valid += len - Buf_size;\
+    if (bits_valid == BIT_BUF_SIZE) {\
+        put_uint32(s, bit_buf);\
+        bit_buf = val;\
+        bits_valid = len;\
+    } else if (bits_valid + len >= BIT_BUF_SIZE) {\
+        bit_buf |= val << bits_valid;\
+        put_uint32(s, bit_buf);\
+        bit_buf = val >> (BIT_BUF_SIZE - bits_valid);\
+        bits_valid += len - BIT_BUF_SIZE;\
     } else {\
-        bit_buf |= (uint16_t)(val) << bits_valid;\
+        bit_buf |= val << bits_valid;\
         bits_valid += len;\
     }\
 }
