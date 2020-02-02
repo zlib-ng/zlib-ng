@@ -75,7 +75,7 @@
 
 /* Return the low n bits of the bit accumulator (n < 16) */
 #define BITS(n) \
-    (hold & ((1U << (n)) - 1))
+    (hold & ((1U << (unsigned)(n)) - 1))
 
 /* Remove n bits from the bit accumulator */
 #define DROPBITS(n) \
