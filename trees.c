@@ -476,7 +476,7 @@ static void send_tree(deflate_state *s, ct_data *tree, int max_code) {
 
     // Temp local variables
     int filled = s->bi_valid;
-    uint16_t bit_buf = s->bi_buf;
+    uint32_t bit_buf = s->bi_buf;
 
     for (n = 0; n <= max_code; n++) {
         curlen = nextlen;
@@ -566,7 +566,7 @@ static void send_all_trees(deflate_state *s, int lcodes, int dcodes, int blcodes
 
     // Temp local variables
     int filled = s->bi_valid;
-    uint16_t bit_buf = s->bi_buf;
+    uint32_t bit_buf = s->bi_buf;
 
     Tracev((stderr, "\nbl counts: "));
     send_bits(s, lcodes-257, 5, bit_buf, filled); /* not +255 as stated in appnote.txt */
@@ -767,7 +767,7 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
 
     // Temp local variables
     int filled = s->bi_valid;
-    uint16_t bit_buf = s->bi_buf;
+    uint32_t bit_buf = s->bi_buf;
 
     if (s->sym_next != 0) {
         do {
@@ -869,14 +869,21 @@ ZLIB_INTERNAL unsigned bi_reverse(unsigned code, int len) {
  * Flush the bit buffer, keeping at most 7 bits in it.
  */
 static void bi_flush(deflate_state *s) {
-    if (s->bi_valid == 16) {
-        put_short(s, s->bi_buf);
+    if (s->bi_valid == 32) {
+        put_uint32(s, s->bi_buf);
         s->bi_buf = 0;
         s->bi_valid = 0;
-    } else if (s->bi_valid >= 8) {
-        put_byte(s, (unsigned char)s->bi_buf);
-        s->bi_buf >>= 8;
-        s->bi_valid -= 8;
+    } else {
+        if (s->bi_valid >= 16) {
+            put_short(s, s->bi_buf);
+            s->bi_buf >>= 16;
+            s->bi_valid -= 16;
+        }
+        if (s->bi_valid >= 8) {
+            put_byte(s, s->bi_buf);
+            s->bi_buf >>= 8;
+            s->bi_valid -= 8;
+        }
     }
 }
 
@@ -884,10 +891,17 @@ static void bi_flush(deflate_state *s) {
  * Flush the bit buffer and align the output on a byte boundary
  */
 ZLIB_INTERNAL void bi_windup(deflate_state *s) {
-    if (s->bi_valid > 8) {
-        put_short(s, s->bi_buf);
-    } else if (s->bi_valid > 0) {
-        put_byte(s, (unsigned char)s->bi_buf);
+    if (s->bi_valid > 24) {
+        put_uint32(s, s->bi_buf);
+    } else {
+        if (s->bi_valid > 8) {
+            put_short(s, s->bi_buf);
+            s->bi_buf >>= 16;
+            s->bi_valid -= 16;
+        }
+        if (s->bi_valid > 0) {
+            put_byte(s, s->bi_buf);
+        }
     }
     s->bi_buf = 0;
     s->bi_valid = 0;
