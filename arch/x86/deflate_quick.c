@@ -130,26 +130,26 @@ static inline void static_emit_ptr(deflate_state *const s, const int lc, const u
     unsigned code2 = quick_dist_codes[dist-1] >> 8;
     unsigned len2  = quick_dist_codes[dist-1] & 0xFF;
 
-    int filled = s->bi_valid;
-    uint32_t bit_buf = s->bi_buf;
+    uint32_t bi_valid = s->bi_valid;
+    uint32_t bi_buf = s->bi_buf;
 
-    send_bits(s, code1, len1, bit_buf, filled);
-    send_bits(s, code2, len2, bit_buf, filled);
+    send_bits(s, code1, len1, bi_buf, bi_valid);
+    send_bits(s, code2, len2, bi_buf, bi_valid);
 
-    s->bi_valid = filled;
-    s->bi_buf = bit_buf;
+    s->bi_valid = bi_valid;
+    s->bi_buf = bi_buf;
 }
 
 const ct_data static_ltree[L_CODES+2];
 
 static inline void static_emit_lit(deflate_state *const s, const int lit) {
-    int filled = s->bi_valid;
-    uint32_t bit_buf = s->bi_buf;
+    uint32_t bi_valid = s->bi_valid;
+    uint32_t bi_buf = s->bi_buf;
 
-    send_bits(s, static_ltree[lit].Code, static_ltree[lit].Len, s->bi_buf, s->bi_valid);
+    send_bits(s, static_ltree[lit].Code, static_ltree[lit].Len, bi_buf, bi_valid);
 
-    s->bi_valid = filled;
-    s->bi_buf = bit_buf;
+    s->bi_valid = bi_valid;
+    s->bi_buf = bi_buf;
 
     Tracecv(isgraph(lit), (stderr, " '%c' ", lit));
 }
