@@ -473,7 +473,7 @@ extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
 #ifdef ZLIB_DEBUG
 #  define send_debug_trace(s, value, length) {\
         Tracevv((stderr, " l %2d v %4x ", length, value));\
-        Assert(length > 0 && length <= BIT_BUF_SIZE - 1, "invalid length");\
+        Assert(length > 0 && length <= BIT_BUF_SIZE, "invalid length");\
         s->bits_sent += (unsigned long)length;\
     }
 #else
@@ -488,19 +488,18 @@ extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
     uint32_t val = (uint32_t)t_val;\
     uint32_t len = (uint32_t)t_len;\
     send_debug_trace(s, val, len);\
-    if (bits_valid == BIT_BUF_SIZE) {\
+    if (bits_valid + len < BIT_BUF_SIZE) {\
+        bit_buf |= val << bits_valid;\
+        bits_valid += len;\
+    } else if (bits_valid == BIT_BUF_SIZE) {\
         put_uint32(s, bit_buf);\
         bit_buf = val;\
         bits_valid = len;\
-    } else if (bits_valid + len >= BIT_BUF_SIZE) {\
+    } else {\
         bit_buf |= val << bits_valid;\
         put_uint32(s, bit_buf);\
         bit_buf = val >> (BIT_BUF_SIZE - bits_valid);\
         bits_valid += len - BIT_BUF_SIZE;\
-    } else {\
-        bit_buf |= val << bits_valid;\
-        bits_valid += len;\
     }\
 }
-
 #endif /* DEFLATE_H_ */
