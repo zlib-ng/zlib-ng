@@ -135,6 +135,9 @@ static inline void static_emit_ptr(deflate_state *const s, const int lc, const u
 
     send_bits(s, code1, len1, bi_buf, bi_valid);
     send_bits(s, code2, len2, bi_buf, bi_valid);
+#ifdef ZLIB_DEBUG
+    s->compressed_len += len1 + len2;
+#endif
 
     s->bi_valid = bi_valid;
     s->bi_buf = bi_buf;
@@ -147,6 +150,9 @@ static inline void static_emit_lit(deflate_state *const s, const int lit) {
     uint32_t bi_buf = s->bi_buf;
 
     send_bits(s, static_ltree[lit].Code, static_ltree[lit].Len, bi_buf, bi_valid);
+#ifdef ZLIB_DEBUG
+    s->compressed_len += static_ltree[lit].Len;
+#endif
 
     s->bi_valid = bi_valid;
     s->bi_buf = bi_buf;
