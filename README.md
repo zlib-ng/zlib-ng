@@ -10,6 +10,7 @@ Maintained by Hans Kristian Rosbach
 |Buildkite|[![Build status](https://badge.buildkite.com/7bb1ef84356d3baee26202706cc053ee1de871c0c712b65d26.svg?branch=develop)](https://buildkite.com/circlestorm-productions/zlib-ng)|
 |CodeFactor|[![CodeFactor](https://www.codefactor.io/repository/github/zlib-ng/zlib-ng/badge)](https://www.codefactor.io/repository/github/zlib-ng/zlib-ng)|
 |OSS-Fuzz|[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/zlib-ng.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:zlib-ng)
+|Codecov|[![codecov.io](https://codecov.io/github/zlib-ng/zlib-ng/coverage.svg?branch=develop)](https://codecov.io/github/zlib-ng/zlib-ng/)|
 
 Fork Motivation
 ---------------------------
