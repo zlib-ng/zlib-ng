@@ -24,8 +24,8 @@ jobs:
           Ubuntu 18.04 GCC ARM HF Compat No Opt,
           Ubuntu 18.04 GCC ARM HF Compat No Neon,
           Ubuntu 18.04 GCC AARCH64 Compat No Opt,
-          Ubuntu 18.04 GCC AARCH64 Compat
-          macOS 10.14 GCC,
+          Ubuntu 18.04 GCC AARCH64 Compat,
+          macOS 10.14 GCC
         ]
         include:
           - name: Ubuntu 18.04 GCC
