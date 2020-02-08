@@ -328,9 +328,12 @@ jobs:
       if: matrix.codecov && ( env.CODECOV_TOKEN_SECRET != '' || github.repository == 'zlib-ng/zlib-ng' )
       shell: bash
       run: |
-        cd ${{ matrix.build-dir || '.' }}
-        python -m codecov --required --flags "${{ matrix.codecov }}" --name "${{ matrix.name }}" --gcov-exec="${{ matrix.gcov-exec || 'gcov' }}"
+        bash tools/codecov-upload.sh
       env:
         # Codecov does not yet support GitHub Actions
         CODECOV_TOKEN_SECRET: "${{secrets.CODECOV_TOKEN}}"
         CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}"
+        CODECOV_FLAGS: "${{ matrix.codecov }}"
+        CODECOV_NAME:  "${{ matrix.name }}"
+        CODECOV_EXEC:  "${{ matrix.gcov-exec || 'gcov' }}"
+        CODECOV_DIR:   "${{ matrix.build-dir || '.' }}"
