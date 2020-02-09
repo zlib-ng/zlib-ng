@@ -38,8 +38,8 @@ jobs:
           Windows 2019 GCC,
           Windows 2019 GCC Compat,
           Windows 2019 GCC Compat No Opt,
-          macOS 10.14 Clang,
-          macOS 10.14 GCC
+          macOS Clang,
+          macOS GCC
         ]
         include:
           - name: Ubuntu 18.04 GCC
@@ -251,14 +251,14 @@ jobs:
             cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO
             codecov: win64_gcc
 
-          - name: macOS 10.14 Clang
-            os: macOS-10.14
+          - name: macOS Clang
+            os: macOS-latest
             compiler: clang
             cmake-args: -DWITH_SANITIZERS=ON
             codecov: macos_clang
 
-          - name: macOS 10.14 GCC
-            os: macOS-10.14
+          - name: macOS GCC
+            os: macOS-latest
             compiler: gcc
             cmake-args: -DWITH_SANITIZERS=ON
             codecov: macos_gcc
