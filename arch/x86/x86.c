@@ -33,15 +33,21 @@ static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigne
     *ecx = registers[2];
     *edx = registers[3];
 #else
-    unsigned int _eax;
-    unsigned int _ebx;
-    unsigned int _ecx;
-    unsigned int _edx;
-    __cpuid(info, _eax, _ebx, _ecx, _edx);
-    *eax = _eax;
-    *ebx = _ebx;
-    *ecx = _ecx;
-    *edx = _edx;
+    __cpuid(info, *eax, *ebx, *ecx, *edx);
+#endif
+}
+
+static void cpuidex(int info, int subinfo, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
+#ifdef _MSC_VER
+    unsigned int registers[4];
+    __cpuidex(registers, info, subinfo);
+
+    *eax = registers[0];
+    *ebx = registers[1];
+    *ecx = registers[2];
+    *edx = registers[3];
+#else
+    __cpuid_count(info, subinfo, *eax, *ebx, *ecx, *edx);
 #endif
 }
 
@@ -58,7 +64,7 @@ void ZLIB_INTERNAL x86_check_features(void) {
     x86_cpu_has_pclmulqdq = ecx & 0x2;
 
     if (maxbasic >= 7) {
-        cpuid(7, &eax, &ebx, &ecx, &edx);
+        cpuidex(7, 0, &eax, &ebx, &ecx, &edx);
 
         // check BMI1 bit
         // Reference: https://software.intel.com/sites/default/files/article/405250/how-to-detect-new-instruction-support-in-the-4th-generation-intel-core-processor-family.pdf
