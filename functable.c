@@ -24,17 +24,14 @@ extern Pos quick_insert_string_sse4(deflate_state *const s, const Pos str);
 #elif defined(ARM_ACLE_CRC_HASH)
 extern Pos quick_insert_string_acle(deflate_state *const s, const Pos str);
 #endif
-
-/* fill_window */
-#if defined(X86_SSE2)
-extern void fill_window_sse(deflate_state *s);
-#elif defined(ARM_GETAUXVAL)
-extern void fill_window_arm(deflate_state *s);
-#endif
-
 /* slide_hash */
 #ifdef X86_SSE2
 void slide_hash_sse2(deflate_state *s);
+#elif defined(ARM_NEON_SLIDEHASH)
+void slide_hash_neon(deflate_state *s);
+#endif
+#ifdef X86_AVX2
+void slide_hash_avx2(deflate_state *s);
 #endif
 
 /* adler32 */
@@ -65,14 +62,12 @@ extern uint32_t crc32_big(uint32_t, const unsigned char *, uint64_t);
 /* stub definitions */
 ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count);
 ZLIB_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const Pos str);
-ZLIB_INTERNAL void fill_window_stub(deflate_state *s);
 ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len);
 ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len);
 ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
 
 /* functable init */
 ZLIB_INTERNAL __thread struct functable_s functable = {
-    fill_window_stub,
     insert_string_stub,
     quick_insert_string_stub,
     adler32_stub,
@@ -80,11 +75,25 @@ ZLIB_INTERNAL __thread struct functable_s functable = {
     slide_hash_stub
 };
 
+ZLIB_INTERNAL void cpu_check_features(void)
+{
+    static int features_checked = 0;
+    if (features_checked)
+        return;
+#ifdef X86_CPUID
+    x86_check_features();
+#elif ARM_CPUID
+    arm_check_features();
+#endif
+    features_checked = 1;
+}
 
 /* stub functions */
 ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count) {
     // Initialize default
+
     functable.insert_string = &insert_string_c;
+    cpu_check_features();
 
 #ifdef X86_SSE42_CRC_HASH
     if (x86_cpu_has_sse42)
@@ -111,31 +120,23 @@ ZLIB_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const Pos str
     return functable.quick_insert_string(s, str);
 }
 
-ZLIB_INTERNAL void fill_window_stub(deflate_state *s) {
-    // Initialize default
-    functable.fill_window = &fill_window_c;
-
-#if defined(X86_SSE2)
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-        functable.fill_window = &fill_window_sse;
-#elif defined(ARM_GETAUXVAL)
-    functable.fill_window = &fill_window_arm;
-#endif
-
-    functable.fill_window(s);
-}
-
 ZLIB_INTERNAL void slide_hash_stub(deflate_state *s) {
-    // Initialize default
+
     functable.slide_hash = &slide_hash_c;
+    cpu_check_features();
 
 #ifdef X86_SSE2
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+#  if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
-# endif
+#  endif
         functable.slide_hash = &slide_hash_sse2;
+#elif defined(ARM_NEON_SLIDEHASH)
+    if (arm_cpu_has_neon)
+        functable.slide_hash = &slide_hash_neon;
+#endif
+#ifdef X86_AVX2
+    if (x86_cpu_has_avx2)
+        functable.slide_hash = &slide_hash_avx2;
 #endif
 
     functable.slide_hash(s);
@@ -144,6 +145,7 @@ ZLIB_INTERNAL void slide_hash_stub(deflate_state *s) {
 ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len) {
     // Initialize default
     functable.adler32 = &adler32_c;
+    cpu_check_features();
 
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32)
     if (arm_cpu_has_neon)
@@ -163,6 +165,7 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
     if (crc_table_empty)
         make_crc_table();
 #endif /* DYNAMIC_CRC_TABLE */
+    cpu_check_features();
 
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
 #if BYTE_ORDER == LITTLE_ENDIAN

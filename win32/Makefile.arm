@@ -63,8 +63,8 @@ NEON_ARCH = /arch:VFPv3
 !endif
 !if "$(WITH_NEON)" != ""
 CFLAGS = $(CFLAGS) $(NEON_ARCH)
-WFLAGS = $(WFLAGS) -D__ARM_NEON__=1 -DARM_NEON_ADLER32 -DARM_NOCHECK_NEON
-OBJS = $(OBJS) adler32_neon.obj
+WFLAGS = $(WFLAGS) -D__ARM_NEON__=1 -DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH -DARM_NOCHECK_NEON
+OBJS = $(OBJS) adler32_neon.obj slide_neon.obj
 !endif
 
 # targets

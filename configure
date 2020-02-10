@@ -1019,8 +1019,8 @@ case "${ARCH}" in
             if test ${HAVE_SSE2_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE2"
                 SFLAGS="${SFLAGS} -DX86_SSE2"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} fill_window_sse.o slide_sse.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} fill_window_sse.lo slide_sse.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_sse.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_sse.lo"
 
                 if test $forcesse2 -eq 1; then
                     CFLAGS="${CFLAGS} -DX86_NOCHECK_SSE2"
@@ -1028,7 +1028,6 @@ case "${ARCH}" in
                 fi
 
                 # Enable deflate_quick at level 1?
-                # requires SSE2: code uses fill_window_sse
                 if test $without_new_strategies -eq 0; then
                     CFLAGS="${CFLAGS} -DX86_QUICK_STRATEGY"
                     SFLAGS="${SFLAGS} -DX86_QUICK_STRATEGY"
@@ -1077,8 +1076,8 @@ case "${ARCH}" in
             CFLAGS="${CFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE42_CRC_HASH"
             SFLAGS="${SFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE42_CRC_HASH"
 
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o fill_window_sse.o insert_string_sse.o slide_sse.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo fill_window_sse.lo insert_string_sse.lo slide_sse.lo"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o insert_string_sse.o slide_sse.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo insert_string_sse.lo slide_sse.lo"
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
@@ -1116,10 +1115,10 @@ case "${ARCH}" in
         ARCHDIR=arch/arm
 
         if test $without_optimizations -eq 0; then
-            CFLAGS="${CFLAGS} -DARM_GETAUXVAL"
-            SFLAGS="${SFLAGS} -DARM_GETAUXVAL"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o fill_window_arm.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo fill_window_arm.lo"
+            CFLAGS="${CFLAGS} -DARM_CPUID"
+            SFLAGS="${SFLAGS} -DARM_CPUID"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo"
         fi
 
 
@@ -1169,11 +1168,11 @@ case "${ARCH}" in
                     fi
 
                     if test $buildneon -eq 1; then
-                        CFLAGS="${CFLAGS} -mfpu=neon -DARM_NEON_ADLER32"
-                        SFLAGS="${SFLAGS} -mfpu=neon -DARM_NEON_ADLER32"
+                        CFLAGS="${CFLAGS} -mfpu=neon -DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH"
+                        SFLAGS="${SFLAGS} -mfpu=neon -DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH"
 
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o slide_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo slide_neon.lo"
                     fi
                 fi
             ;;
@@ -1192,11 +1191,11 @@ case "${ARCH}" in
                             SFLAGS="${SFLAGS} -mfpu=neon"
                         fi
 
-                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
-                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
+                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH"
+                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH"
 
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o slide_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo slide_neon.lo"
                     fi
                 fi
             ;;
@@ -1216,11 +1215,11 @@ case "${ARCH}" in
                             SFLAGS="${SFLAGS} -mfpu=neon"
                         fi
 
-                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
-                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
+                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH"
+                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH"
 
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o slide_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo slide_neon.lo"
                     fi
                 fi
             ;;
@@ -1239,10 +1238,10 @@ case "${ARCH}" in
         fi
 
         if test $without_optimizations -eq 0; then
-            CFLAGS="${CFLAGS} -DARM_GETAUXVAL"
-            SFLAGS="${SFLAGS} -DARM_GETAUXVAL"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o fill_window_arm.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo fill_window_arm.lo"
+            CFLAGS="${CFLAGS} -DARM_CPUID"
+            SFLAGS="${SFLAGS} -DARM_CPUID"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo"
 
             if test $buildacle -eq 1; then
                 if test $native -eq 0; then
