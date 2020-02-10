@@ -487,10 +487,11 @@ extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
 #define send_bits(s, t_val, t_len, bit_buf, bits_valid) {\
     uint32_t val = (uint32_t)t_val;\
     uint32_t len = (uint32_t)t_len;\
+    uint32_t total_bits = bits_valid + len;\
     send_debug_trace(s, val, len);\
-    if (bits_valid + len < BIT_BUF_SIZE) {\
+    if (total_bits < BIT_BUF_SIZE) {\
         bit_buf |= val << bits_valid;\
-        bits_valid += len;\
+        bits_valid = total_bits;\
     } else if (bits_valid == BIT_BUF_SIZE) {\
         put_uint32(s, bit_buf);\
         bit_buf = val;\
@@ -499,7 +500,7 @@ extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
         bit_buf |= val << bits_valid;\
         put_uint32(s, bit_buf);\
         bit_buf = val >> (BIT_BUF_SIZE - bits_valid);\
-        bits_valid += len - BIT_BUF_SIZE;\
+        bits_valid = total_bits - BIT_BUF_SIZE;\
     }\
 }
 #endif /* DEFLATE_H_ */
