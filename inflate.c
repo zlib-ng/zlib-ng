@@ -133,7 +133,7 @@ int ZEXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int windowBits, const c
 
 #if defined(X86_CPUID)
     x86_check_features();
-#elif defined(ARM_GETAUXVAL)
+#elif defined(ARM_CPUID)
     arm_check_features();
 #endif
 

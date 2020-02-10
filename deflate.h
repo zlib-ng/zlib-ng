@@ -372,7 +372,7 @@ static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
    memory checker errors from longest match routines */
 
 
-void ZLIB_INTERNAL fill_window_c(deflate_state *s);
+void ZLIB_INTERNAL fill_window(deflate_state *s);
 void ZLIB_INTERNAL slide_hash_c(deflate_state *s);
 
         /* in trees.c */

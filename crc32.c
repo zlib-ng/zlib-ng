@@ -201,6 +201,7 @@ ZLIB_INTERNAL void crc_finalize(deflate_state *const s) {
 
 ZLIB_INTERNAL void crc_reset(deflate_state *const s) {
 #ifdef X86_PCLMULQDQ_CRC
+    x86_check_features();
     if (x86_cpu_has_pclmulqdq) {
         crc_fold_init(s);
         return;

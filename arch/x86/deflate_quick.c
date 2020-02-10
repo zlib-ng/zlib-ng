@@ -30,7 +30,6 @@
 #  include <ctype.h>
 #endif
 
-extern void fill_window_sse(deflate_state *s);
 extern void flush_pending(PREFIX3(stream) *strm);
 
 static inline long compare258(const unsigned char *const src0, const unsigned char *const src1) {
@@ -209,7 +208,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         }
 
         if (s->lookahead < MIN_LOOKAHEAD) {
-            fill_window_sse(s);
+            fill_window(s);
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
                 static_emit_end_block(s, 0);
                 return need_more;

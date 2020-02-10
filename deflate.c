@@ -265,7 +265,7 @@ int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, 
 
 #if defined(X86_CPUID)
     x86_check_features();
-#elif defined(ARM_GETAUXVAL)
+#elif defined(ARM_CPUID)
     arm_check_features();
 #endif
 
@@ -473,14 +473,14 @@ int ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const unsigned c
     next = strm->next_in;
     strm->avail_in = dictLength;
     strm->next_in = (const unsigned char *)dictionary;
-    functable.fill_window(s);
+    fill_window(s);
     while (s->lookahead >= MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (MIN_MATCH-1);
         functable.insert_string(s, str, n);
         s->strstart = str + n;
         s->lookahead = MIN_MATCH-1;
-        functable.fill_window(s);
+        fill_window(s);
     }
     s->strstart += s->lookahead;
     s->block_start = (long)s->strstart;
@@ -1246,22 +1246,22 @@ void check_match(deflate_state *s, IPos start, IPos match, int length) {
  *    option -- not supported here).
  */
 
-void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
+void ZLIB_INTERNAL fill_window(deflate_state *s) {
     unsigned n;
-    unsigned more;    /* Amount of free space at the end of the window. */
+    unsigned long more;    /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;
 
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
 
     do {
-        more = (unsigned)(s->window_size -(unsigned long)s->lookahead -(unsigned long)s->strstart);
+        more = s->window_size - s->lookahead - s->strstart;
 
         /* If the window is almost full and there is insufficient lookahead,
          * move the upper half to the lower one to make room in the upper half.
          */
         if (s->strstart >= wsize+MAX_DIST(s)) {
-            memcpy(s->window, s->window+wsize, (unsigned)wsize - more);
-            s->match_start -= wsize;
+            memcpy(s->window, s->window+wsize, (unsigned)wsize);
+            s->match_start = (s->match_start >= wsize) ? s->match_start - wsize : 0;
             s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
             s->block_start -= (long) wsize;
             if (s->insert > s->strstart)
@@ -1310,7 +1310,7 @@ void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
             } else {
                 count = s->insert;
             }
-            functable.insert_string(s,str,count);
+            functable.insert_string(s, str, count);
             s->insert -= count;
 #endif
         }
@@ -1327,7 +1327,7 @@ void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
      * routines allow scanning to strstart + MAX_MATCH, ignoring lookahead.
      */
     if (s->high_water < s->window_size) {
-        unsigned long curr = s->strstart + (unsigned long)(s->lookahead);
+        unsigned long curr = s->strstart + (unsigned long)s->lookahead;
         unsigned long init;
 
         if (s->high_water < curr) {
@@ -1337,9 +1337,9 @@ void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
             init = s->window_size - curr;
             if (init > WIN_INIT)
                 init = WIN_INIT;
-            memset(s->window + curr, 0, (unsigned)init);
+            memset(s->window + curr, 0, init);
             s->high_water = curr + init;
-        } else if (s->high_water < (unsigned long)curr + WIN_INIT) {
+        } else if (s->high_water < curr + WIN_INIT) {
             /* High water mark at or above current data, but below current data
              * plus WIN_INIT -- zero out to current data plus WIN_INIT, or up
              * to end of window, whichever is less.
@@ -1347,7 +1347,7 @@ void ZLIB_INTERNAL fill_window_c(deflate_state *s) {
             init = (unsigned long)curr + WIN_INIT - s->high_water;
             if (init > s->window_size - s->high_water)
                 init = s->window_size - s->high_water;
-            memset(s->window + s->high_water, 0, (unsigned)init);
+            memset(s->window + s->high_water, 0, init);
             s->high_water += init;
         }
     }
@@ -1562,7 +1562,7 @@ static block_state deflate_rle(deflate_state *s, int flush) {
          * for the longest run, plus one for the unrolled loop.
          */
         if (s->lookahead <= MAX_MATCH) {
-            functable.fill_window(s);
+            fill_window(s);
             if (s->lookahead <= MAX_MATCH && flush == Z_NO_FLUSH) {
                 return need_more;
             }
@@ -1629,7 +1629,7 @@ static block_state deflate_huff(deflate_state *s, int flush) {
     for (;;) {
         /* Make sure that we have a literal to write. */
         if (s->lookahead == 0) {
-            functable.fill_window(s);
+            fill_window(s);
             if (s->lookahead == 0) {
                 if (flush == Z_NO_FLUSH)
                     return need_more;
