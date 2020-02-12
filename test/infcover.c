@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#undef NDEBUG
 #include <assert.h>
 
 /* get definition of internal structure so we can mess with it (see pull()),
@@ -434,7 +435,12 @@ static void cover_wrap(void) {
     (void)PREFIX(inflateSyncPoint)(&strm);
     ret = PREFIX(inflateCopy)(&copy, &strm);    assert(ret == Z_MEM_ERROR);
     mem_limit(&strm, 0);
-    ret = PREFIX(inflateUndermine)(&strm, 1);   assert(ret == Z_DATA_ERROR);
+    ret = PREFIX(inflateUndermine)(&strm, 1);
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+    assert(ret == Z_OK);
+#else
+    assert(ret == Z_DATA_ERROR);
+#endif
     (void)PREFIX(inflateMark)(&strm);
     ret = PREFIX(inflateEnd)(&strm);            assert(ret == Z_OK);
     mem_done(&strm, "miscellaneous, force memory errors");
@@ -558,7 +564,7 @@ static int try(char *hex, char *id, int err) {
         strm.next_in = in;
         ret = PREFIX(inflateBack)(&strm, pull, NULL, push, NULL);
         assert(ret != Z_STREAM_ERROR);
-        if (err) {
+        if (err && ret != Z_BUF_ERROR) {
             assert(ret == Z_DATA_ERROR);
             assert(strcmp(id, strm.msg) == 0);
         }
@@ -590,7 +596,11 @@ static void cover_inflate(void) {
     try("4 80 49 92 24 49 92 24 f b4 ff ff c3 84", "invalid distances set", 1);
     try("4 c0 81 8 0 0 0 0 20 7f eb b 0 0", "invalid literal/length code", 1);
     try("2 7e ff ff", "invalid distance code", 1);
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+    try("c c0 81 0 0 0 0 0 90 ff 6b 4 0", "invalid distance too far back", 0);
+#else
     try("c c0 81 0 0 0 0 0 90 ff 6b 4 0", "invalid distance too far back", 1);
+#endif
 
     /* also trailer mismatch just in inflate() */
     try("1f 8b 8 0 0 0 0 0 0 0 3 0 0 0 0 1", "incorrect data check", -1);
