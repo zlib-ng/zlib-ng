@@ -78,7 +78,7 @@ jobs:
             os: ubuntu-18.04
             compiler: gcc
             cmake-args: -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
-            codecov: ubuntu_gcc_compat
+            codecov: ubuntu_gcc_compat_sani
 
           - name: Ubuntu 18.04 GCC ARM SF
             os: ubuntu-18.04
@@ -211,7 +211,7 @@ jobs:
             compiler: clang
             packages: llvm-6.0
             gcov-exec: llvm-cov-6.0 gcov
-            codecov: ubuntu_clang
+            codecov: ubuntu_clang_debug
             build-config: Debug
 
           - name: Ubuntu 18.04 Clang MSAN
@@ -243,13 +243,13 @@ jobs:
             os: windows-2019
             compiler: gcc
             cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO
-            codecov: win64_gcc
+            codecov: win64_gcc_compat
 
           - name: Windows 2019 GCC Compat No Opt
             os: windows-2019
             compiler: gcc
             cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO
-            codecov: win64_gcc
+            codecov: win64_gcc_compat_no_opt
 
           - name: macOS Clang
             os: macOS-latest
