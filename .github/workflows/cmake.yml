@@ -60,7 +60,7 @@ jobs:
           - name: Ubuntu 18.04 GCC No Opt
             os: ubuntu-18.04
             compiler: gcc
-            cmake-args: -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            cmake-args: -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             codecov: ubuntu_gcc_no_opt
 
           - name: Ubuntu 18.04 GCC Compat
@@ -72,7 +72,7 @@ jobs:
           - name: Ubuntu 18.04 GCC Compat No Opt
             os: ubuntu-18.04
             compiler: gcc
-            cmake-args: -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            cmake-args: -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             codecov: ubuntu_gcc_compat_no_opt
 
           - name: Ubuntu 18.04 GCC Compat
@@ -91,7 +91,7 @@ jobs:
           - name: Ubuntu 18.04 GCC ARM SF No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabi-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf_no_opt
 
@@ -105,7 +105,7 @@ jobs:
           - name: Ubuntu 18.04 GCC ARM SF Compat No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabi-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf_compat_no_opt
 
@@ -119,7 +119,7 @@ jobs:
           - name: Ubuntu 18.04 GCC ARM HF No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_no_opt
 
@@ -133,7 +133,7 @@ jobs:
           - name: Ubuntu 18.04 GCC ARM HF Compat No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_compat_no_opt
 
@@ -155,7 +155,7 @@ jobs:
           - name: Ubuntu 18.04 GCC AARCH64 Compat No Opt
             os: ubuntu-18.04
             compiler: aarch64-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             asan-options: detect_leaks=0
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64_compat_no_opt
@@ -243,13 +243,13 @@ jobs:
           - name: Windows 2019 GCC Compat
             os: windows-2019
             compiler: gcc
-            cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO
+            cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF
             codecov: win64_gcc_compat
 
           - name: Windows 2019 GCC Compat No Opt
             os: windows-2019
             compiler: gcc
-            cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=NO -DWITH_OPTIM=NO
+            cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF
             codecov: win64_gcc_compat_no_opt
 
           - name: macOS Clang
