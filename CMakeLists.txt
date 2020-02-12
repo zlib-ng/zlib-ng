@@ -320,6 +320,7 @@ endif()
 if(WITH_SANITIZERS)
     set(_sanitize_flags
         address
+        alignment
         array-bounds
         bool
         bounds
@@ -365,8 +366,14 @@ if(WITH_SANITIZERS)
             set(CMAKE_REQUIRED_FLAGS)
         endif()
     endforeach()
-    if(NOT "${SANITIZERS_FLAGS}" STREQUAL "")
+
+    if(NOT ${SANITIZERS_FLAGS} STREQUAL "")
         set(SANITIZERS_FLAGS "-fsanitize=${SANITIZERS_FLAGS}")
+        # Group flag -fsanitize=undefined will automatically add alignment, even if it is not in our
+        # sanitize flag list, so we need to explicitly disable alignment sanitizing.
+        if(UNALIGNED_OK AND ${SANITIZERS_FLAGS} MATCHES "alignment")
+            set(SANITIZERS_FLAGS "${SANITIZERS_FLAGS} -fno-sanitize=alignment")
+        endif()
     endif()
 
     message(STATUS "Adding sanitizers flags: ${SANITIZERS_FLAGS}")
