@@ -9,7 +9,7 @@ jobs:
       matrix:
         name: [
           Ubuntu 18.04 GCC,
-          Ubuntu 18.04 GCC OSB,
+          Ubuntu 18.04 GCC OSB -O1,
           Ubuntu 18.04 GCC No Opt,
           Ubuntu 18.04 GCC Compat,
           Ubuntu 18.04 GCC Compat No Opt,
@@ -48,13 +48,14 @@ jobs:
             cmake-args: -DWITH_SANITIZERS=ON
             codecov: ubuntu_gcc
 
-          - name: Ubuntu 18.04 GCC OSB
+          - name: Ubuntu 18.04 GCC OSB -O1
             os: ubuntu-18.04
             compiler: gcc
             cmake-args: -DWITH_SANITIZERS=ON
             build-dir: ../build
             build-src-dir: ../zlib-ng
             codecov: ubuntu_gcc_osb
+            cflags: -O1 -g3
 
           - name: Ubuntu 18.04 GCC No Opt
             os: ubuntu-18.04
@@ -220,7 +221,7 @@ jobs:
             cmake-args: -GNinja -DWITH_MSAN=ON
             packages:  ninja-build llvm-6.0
             gcov-exec: llvm-cov-6.0 gcov
-            cflags: -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-memory-track-origins
+            cflags: -g3 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-memory-track-origins
             codecov: ubuntu_clang_msan
 
           - name: Windows 2019 MSVC Win32
