@@ -115,12 +115,8 @@ add_feature_info(WITH_CODE_COVERAGE WITH_CODE_COVERAGE "Enable code coverage rep
 if (ZLIB_COMPAT)
     add_definitions(-DZLIB_COMPAT)
     set(WITH_GZFILEOP ON)
-    set(LIBNAME1 libz)
-    set(LIBNAME2 zlib)
     set(SUFFIX "")
 else()
-    set(LIBNAME1 libz-ng)
-    set(LIBNAME2 zlib-ng)
     set(SUFFIX "-ng")
 endif()
 
@@ -747,12 +743,11 @@ if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     endif()
 endif()
 
-set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/${LIBNAME2}.pc)
-configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
+set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
     ${ZLIB_PC} @ONLY)
 configure_file(${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
     ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
-
 
 #============================================================================
 # zlib
@@ -852,6 +847,13 @@ foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
         ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 endforeach()
 
+if(WIN32)
+    set_target_properties(${ZLIB_INSTALL_LIBRARIES} PROPERTIES OUTPUT_NAME zlib${SUFFIX})
+else()
+    # On unix-like platforms the library is almost always called libz
+    set_target_properties(${ZLIB_INSTALL_LIBRARIES} PROPERTIES OUTPUT_NAME z${SUFFIX})
+endif()
+
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
     set_target_properties(zlib PROPERTIES SOVERSION 1)
@@ -874,11 +876,9 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     endif()
 
     if(UNIX)
-        # On unix-like platforms the library is almost always called libz
-        set_target_properties(${ZLIB_INSTALL_LIBRARIES} PROPERTIES OUTPUT_NAME z${SUFFIX})
         if(NOT APPLE)
             set_target_properties(zlib PROPERTIES LINK_FLAGS
-                "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/${LIBNAME2}.map\"")
+                "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map\"")
         endif()
     elseif(MSYS)
         # Suppress version number from shared library name
