@@ -1030,6 +1030,7 @@ if (ZLIB_ENABLE_TESTS)
         endforeach()
         string(REPLACE ";" "" GZ_ARGS "${ARGN}")
         string(REPLACE "-" "" GZ_ARGS "${GZ_ARGS}")
+        # Test minigzip can decompress minigzip compressed
         add_test(NAME ${target}-${name}-${GZ_ARGS}-compr
             COMMAND ${CMAKE_COMMAND}
             "-DCOMMAND=${GZ_COMMAND}"
@@ -1046,9 +1047,49 @@ if (ZLIB_ENABLE_TESTS)
             "-DSUCCESS_EXIT=0;1"
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
         add_test(NAME ${target}-${name}-${GZ_ARGS}-cmp
-            COMMAND ${CMAKE_COMMAND} -E compare_files
-                ${CMAKE_CURRENT_SOURCE_DIR}/${path}
-                ${CMAKE_CURRENT_SOURCE_DIR}/${path}.out)
+        COMMAND ${CMAKE_COMMAND} -E compare_files
+            ${CMAKE_CURRENT_SOURCE_DIR}/${path}
+            ${CMAKE_CURRENT_SOURCE_DIR}/${path}.out)
+        if(NOT "${ARGN}" MATCHES "-T")
+            # Transparent writing does not use gzip format
+            find_program(GZIP gzip)
+            if(GZIP)
+                # Test gzip can decompress minigzip compressed
+                set(GZ_COMMAND ${GZIP} --decompress)
+                add_test(NAME ${target}-${name}-${GZ_ARGS}-gzip-uncompr
+                    COMMAND ${CMAKE_COMMAND}
+                    "-DCOMMAND=${GZ_COMMAND}"
+                    -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gz
+                    -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out
+                    "-DSUCCESS_EXIT=0;1"
+                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+                add_test(NAME ${target}-${name}-${GZ_ARGS}-gzip-uncompr-cmp
+                    COMMAND ${CMAKE_COMMAND} -E compare_files
+                        ${CMAKE_CURRENT_SOURCE_DIR}/${path}
+                        ${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out)
+                # Test minigzip can decompress gzip compressed
+                set(GZ_COMMAND ${GZIP} --stdout)
+                add_test(NAME ${target}-${name}-${GZ_ARGS}-gzip-compr
+                    COMMAND ${CMAKE_COMMAND}
+                    "-DCOMMAND=${GZ_COMMAND}"
+                    -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
+                    -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.gz
+                    "-DSUCCESS_EXIT=0;1"
+                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+                set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}> -d)
+                add_test(NAME ${target}-${name}-${GZ_ARGS}-minigzip-uncompr
+                    COMMAND ${CMAKE_COMMAND}
+                    "-DCOMMAND=${GZ_COMMAND}"
+                    -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.gz
+                    -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out
+                    "-DSUCCESS_EXIT=0;1"
+                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+                add_test(NAME ${target}-${name}-${GZ_ARGS}-minigzip-cmp
+                    COMMAND ${CMAKE_COMMAND} -E compare_files
+                        ${CMAKE_CURRENT_SOURCE_DIR}/${path}
+                        ${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out)
+            endif()
+        endif()
     endmacro()
 
     set(OPEN_MODES -f -h -R -F -T)
