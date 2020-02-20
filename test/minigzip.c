@@ -77,8 +77,8 @@ void gz_compress      (FILE *in, gzFile out);
 int  gz_compress_mmap (FILE *in, gzFile out);
 #endif
 void gz_uncompress    (gzFile in, FILE *out);
-void file_compress    (char *file, char *mode);
-void file_uncompress  (char *file);
+void file_compress    (char *file, char *mode, int keep);
+void file_uncompress  (char *file, int keep);
 int  main             (int argc, char *argv[]);
 
 /* ===========================================================================
@@ -182,7 +182,7 @@ void gz_uncompress(gzFile in, FILE *out) {
  * Compress the given file: create a corresponding .gz file and remove the
  * original.
  */
-void file_compress(char *file, char *mode) {
+void file_compress(char *file, char *mode, int keep) {
     char outfile[MAX_NAME_LEN];
     FILE *in;
     gzFile out;
@@ -206,14 +206,15 @@ void file_compress(char *file, char *mode) {
     }
     gz_compress(in, out);
 
-    unlink(file);
+    if (!keep)
+        unlink(file);
 }
 
 
 /* ===========================================================================
  * Uncompress the given file and remove the original.
  */
-void file_uncompress(char *file) {
+void file_uncompress(char *file, int keep) {
     char buf[MAX_NAME_LEN];
     char *infile, *outfile;
     FILE *out;
@@ -249,7 +250,8 @@ void file_uncompress(char *file) {
 
     gz_uncompress(in, out);
 
-    unlink(infile);
+    if (!keep)
+        unlink(infile);
 }
 
 
@@ -257,6 +259,7 @@ void file_uncompress(char *file) {
  * Usage:  minigzip [-c] [-d] [-f] [-h] [-r] [-1 to -9] [files...]
  *   -c : write to standard output
  *   -d : decompress
+ *   -k : Keep input files
  *   -f : compress with Z_FILTERED
  *   -h : compress with Z_HUFFMAN_ONLY
  *   -R : compress with Z_RLE
@@ -269,6 +272,7 @@ void file_uncompress(char *file) {
 int main(int argc, char *argv[]) {
     int copyout = 0;
     int uncompr = 0;
+    int keep = 0;
     int i = 0;
     gzFile file;
     char *bname, outmode[20];
@@ -293,6 +297,8 @@ int main(int argc, char *argv[]) {
             copyout = 1;
         else if (strcmp(argv[i], "-d") == 0)
             uncompr = 1;
+        else if (strcmp(argv[i], "-k") == 0)
+            keep = 1;
         else if (strcmp(argv[i], "-A") == 0)
             type = "";
         else if (argv[i][0] == '-' && (argv[i][1] == 'f' || argv[i][1] == 'h' ||
@@ -331,7 +337,7 @@ int main(int argc, char *argv[]) {
                     else
                         gz_uncompress(file, stdout);
                 } else {
-                    file_uncompress(argv[i]);
+                    file_uncompress(argv[i], keep);
                 }
             } else {
                 if (copyout) {
@@ -347,7 +353,7 @@ int main(int argc, char *argv[]) {
                     }
 
                 } else {
-                    file_compress(argv[i], outmode);
+                    file_compress(argv[i], outmode, keep);
                 }
             }
         } while (++i < argc);
