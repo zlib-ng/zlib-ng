@@ -203,7 +203,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     do {
         if (s->pending + 4 >= s->pending_buf_size) {
             flush_pending(s->strm);
-            if (flush != Z_FINISH) {
+            if (s->strm->avail_in == 0 && flush != Z_FINISH) {
                 return need_more;
             }
         }
