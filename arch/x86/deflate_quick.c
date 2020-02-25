@@ -209,6 +209,10 @@ static inline Pos quick_insert_string(deflate_state *const s, const Pos str) {
 ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     IPos hash_head;
     unsigned dist, match_len;
+    unsigned int wsize = s->w_size;
+
+    if (wsize > 8192)
+        wsize = 8192;
 
     if (s->block_open == 0) {
         static_emit_tree(s, flush);
@@ -237,7 +241,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
             hash_head = quick_insert_string(s, s->strstart);
             dist = s->strstart - hash_head;
 
-            if (dist > 0 && (dist-1) < (s->w_size - 1)) {
+            if (dist > 0 && (dist-1) < (wsize - 1)) {
                 match_len = compare258(s->window + s->strstart, s->window + hash_head);
 
                 if (match_len >= MIN_MATCH) {
