@@ -34,8 +34,8 @@ WITH_GZFILEOP =
 ZLIB_COMPAT =
 SUFFIX =
 
-OBJS = adler32.obj compress.obj crc32.obj deflate.obj deflate_fast.obj deflate_quick.obj deflate_slow.obj \
-       deflate_medium.obj \
+OBJS = adler32.obj compare258.obj compare258_sse.obj compress.obj crc32.obj \
+       deflate.obj deflate_fast.obj deflate_quick.obj deflate_slow.obj deflate_medium.obj \
        functable.obj infback.obj inflate.obj inftrees.obj inffast.obj insert_string.obj \
        slide_avx.obj slide_sse.obj trees.obj uncompr.obj zutil.obj \
        x86.obj insert_string_sse.obj crc_folding.obj

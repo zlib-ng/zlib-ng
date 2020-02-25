@@ -14,6 +14,7 @@ struct functable_s {
     uint32_t (* adler32)            (uint32_t adler, const unsigned char *buf, size_t len);
     uint32_t (* crc32)              (uint32_t crc, const unsigned char *buf, uint64_t len);
     void     (* slide_hash)         (deflate_state *s);
+    int32_t  (* compare258)         (const unsigned char *src0, const unsigned char *src1);
 };
 
 ZLIB_INTERNAL extern __thread struct functable_s functable;
