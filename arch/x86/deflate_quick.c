@@ -29,6 +29,8 @@
 #  include <ctype.h>
 #endif
 
+#define QUICK_WINDOW_SIZE 8192
+
 extern void fill_window_sse(deflate_state *s);
 extern void flush_pending(PREFIX3(stream) *strm);
 
@@ -122,7 +124,7 @@ static inline long compare258(const unsigned char *const src0, const unsigned ch
 }
 
 static const unsigned quick_len_codes[MAX_MATCH-MIN_MATCH+1];
-static const unsigned quick_dist_codes[8192];
+static const unsigned quick_dist_codes[QUICK_WINDOW_SIZE];
 
 static inline void static_emit_ptr(deflate_state *const s, const int lc, const unsigned dist) {
     unsigned code1 = quick_len_codes[lc] >> 8;
@@ -209,6 +211,10 @@ static inline Pos quick_insert_string(deflate_state *const s, const Pos str) {
 ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     IPos hash_head;
     unsigned dist, match_len;
+    unsigned int wsize = s->w_size;
+
+    if (wsize > QUICK_WINDOW_SIZE)
+        wsize = QUICK_WINDOW_SIZE;
 
     if (s->block_open == 0) {
         static_emit_tree(s, flush);
@@ -237,7 +243,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
             hash_head = quick_insert_string(s, s->strstart);
             dist = s->strstart - hash_head;
 
-            if (dist > 0 && (dist-1) < (s->w_size - 1)) {
+            if (dist > 0 && (dist-1) < wsize) {
                 match_len = compare258(s->window + s->strstart, s->window + s->strstart - dist);
 
                 if (match_len >= MIN_MATCH) {
@@ -343,7 +349,7 @@ static const unsigned quick_len_codes[MAX_MATCH-MIN_MATCH+1] = {
     0x001c230d, 0x001d230d, 0x001e230d, 0x0000a308,
 };
 
-static const unsigned quick_dist_codes[8192] = {
+static const unsigned quick_dist_codes[QUICK_WINDOW_SIZE] = {
     0x00000005, 0x00001005, 0x00000805, 0x00001805,
     0x00000406, 0x00002406, 0x00001406, 0x00003406,
     0x00000c07, 0x00002c07, 0x00004c07, 0x00006c07,
