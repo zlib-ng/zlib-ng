@@ -1175,6 +1175,13 @@ if (ZLIB_ENABLE_TESTS)
             "-DCOMMAND=${GH_536_COMMAND}"
             -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+    set(GH_536_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels> 6 88933 1 195840 2 45761)
+    add_test(NAME GH-536-incomplete-read
+            COMMAND ${CMAKE_COMMAND}
+            "-DCOMMAND=${GH_536_COMMAND}"
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
