@@ -9,6 +9,11 @@
 #include "deflate_p.h"
 
 #include "functable.h"
+
+#ifdef X86_CPUID
+#  include "fallback_builtins.h"
+#endif
+
 /* insert_string */
 extern Pos insert_string_c(deflate_state *const s, const Pos str, unsigned int count);
 #ifdef X86_SSE42_CRC_HASH
@@ -58,6 +63,16 @@ extern uint32_t crc32_little(uint32_t, const unsigned char *, uint64_t);
 extern uint32_t crc32_big(uint32_t, const unsigned char *, uint64_t);
 #endif
 
+/* compare258 */
+extern int32_t compare258_c(const unsigned char *src0, const unsigned char *src1);
+#ifdef UNALIGNED_OK
+extern int32_t compare258_unaligned_16(const unsigned char *src0, const unsigned char *src1);
+extern int32_t compare258_unaligned_32(const unsigned char *src0, const unsigned char *src1);
+extern int32_t compare258_unaligned_64(const unsigned char *src0, const unsigned char *src1);
+#ifdef X86_SSE42_CMP_STR
+extern int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1);
+#endif
+#endif
 
 /* stub definitions */
 ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count);
@@ -65,6 +80,7 @@ ZLIB_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const Pos str
 ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len);
 ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len);
 ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
+ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned char *src1);
 
 /* functable init */
 ZLIB_INTERNAL __thread struct functable_s functable = {
@@ -72,7 +88,8 @@ ZLIB_INTERNAL __thread struct functable_s functable = {
     quick_insert_string_stub,
     adler32_stub,
     crc32_stub,
-    slide_hash_stub
+    slide_hash_stub,
+    compare258_stub
 };
 
 ZLIB_INTERNAL void cpu_check_features(void)
@@ -189,3 +206,25 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
 
     return functable.crc32(crc, buf, len);
 }
+
+ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned char *src1) {
+
+    functable.compare258 = &compare258_c;
+
+#ifdef UNALIGNED_OK
+#  ifdef HAVE_BUILTIN_CTZLL
+    functable.compare258 = &compare258_unaligned_64;
+#  elif defined(HAVE_BUILTIN_CTZ)
+    functable.compare258 = &compare258_unaligned_32;
+#  else
+    functable.compare258 = &compare258_unaligned_16;
+#  endif
+#  ifdef X86_SSE42_CMP_STR
+    if (x86_cpu_has_sse42)
+        functable.compare258 = &compare258_unaligned_sse4;
+#  endif
+#endif
+
+    return functable.compare258(src0, src1);
+}
+
