@@ -136,12 +136,21 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: Install packages (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.packages }}
+
     - name: Generate project files
       run: |
         mkdir ${{ matrix.build-dir || '.not-used' }}
         cd ${{ matrix.build-dir || '.' }}
         ${{ matrix.build-src-dir || '.' }}/configure ${{ matrix.configure-args }}
       env:
+        CC: ${{ matrix.compiler }}
+        CFLAGS: ${{ matrix.cflags }}
+        LDFLAGS: ${{ matrix.ldflags }}
         CI: true
 
     - name: Compile source code

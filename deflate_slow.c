@@ -7,7 +7,6 @@
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
-#include "match_p.h"
 #include "functable.h"
 
 /* ===========================================================================
@@ -62,7 +61,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
              * of window index 0 (in particular we have to avoid a match
              * of the string with itself at the start of the input file).
              */
-            s->match_length = longest_match(s, hash_head);
+            s->match_length = functable.longest_match(s, hash_head);
             /* longest_match() sets match_start */
 
             if (s->match_length <= 5 && (s->strategy == Z_FILTERED

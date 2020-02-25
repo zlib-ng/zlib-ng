@@ -71,11 +71,11 @@ mandir = ${prefix}/share/man
 man3dir = ${mandir}/man3
 pkgconfigdir = ${libdir}/pkgconfig
 
-OBJZ = adler32.o compress.o crc32.o deflate.o deflate_fast.o deflate_medium.o deflate_slow.o functable.o infback.o inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o $(ARCH_STATIC_OBJS)
+OBJZ = adler32.o compare258.o compress.o crc32.o deflate.o deflate_fast.o deflate_medium.o deflate_slow.o functable.o infback.o inffast.o inflate.o inftrees.o trees.o uncompr.o zutil.o $(ARCH_STATIC_OBJS)
 OBJG = gzclose.o gzlib.o gzread.o gzwrite.o
 OBJC = $(OBJZ) $(OBJG)
 
-PIC_OBJZ = adler32.lo compress.lo crc32.lo deflate.lo deflate_fast.lo deflate_medium.lo deflate_slow.lo functable.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo uncompr.lo zutil.lo $(ARCH_SHARED_OBJS)
+PIC_OBJZ = adler32.lo compare258.lo compress.lo crc32.lo deflate.lo deflate_fast.lo deflate_medium.lo deflate_slow.lo functable.lo infback.lo inffast.lo inflate.lo inftrees.lo trees.lo uncompr.lo zutil.lo $(ARCH_SHARED_OBJS)
 PIC_OBJG = gzclose.lo gzlib.lo gzread.lo gzwrite.lo
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 

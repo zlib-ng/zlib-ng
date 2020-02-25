@@ -9,6 +9,11 @@
 #include "deflate_p.h"
 
 #include "functable.h"
+
+#ifdef X86_CPUID
+#  include "fallback_builtins.h"
+#endif
+
 /* insert_string */
 #ifdef X86_SSE42_CRC_HASH
 extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
@@ -52,6 +57,20 @@ extern uint32_t crc32_little(uint32_t, const unsigned char *, uint64_t);
 extern uint32_t crc32_big(uint32_t, const unsigned char *, uint64_t);
 #endif
 
+/* longest_match */
+#ifndef UNALIGNED_OK
+extern unsigned longest_match(deflate_state *const s, IPos cur_match);
+#else
+extern unsigned longest_match_unaligned_16(deflate_state *const s, IPos cur_match);
+extern unsigned longest_match_unaligned_32(deflate_state *const s, IPos cur_match);
+extern unsigned longest_match_unaligned_64(deflate_state *const s, IPos cur_match);
+#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+extern unsigned longest_match_unaligned_avx(deflate_state *const s, IPos cur_match);
+#endif
+#ifdef X86_SSE42_CMP_STR
+extern unsigned longest_match_unaligned_sse(deflate_state *const s, IPos cur_match);
+#endif
+#endif
 
 /* stub definitions */
 ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count);
@@ -59,6 +78,7 @@ ZLIB_INTERNAL void fill_window_stub(deflate_state *s);
 ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len);
 ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len);
 ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
+ZLIB_INTERNAL unsigned longest_match_stub(deflate_state *const s, IPos cur_match);
 
 /* functable init */
 ZLIB_INTERNAL __thread struct functable_s functable = {
@@ -66,7 +86,8 @@ ZLIB_INTERNAL __thread struct functable_s functable = {
     insert_string_stub,
     adler32_stub,
     crc32_stub,
-    slide_hash_stub
+    slide_hash_stub,
+    longest_match_stub
 };
 
 
@@ -156,4 +177,28 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
     }
 
     return functable.crc32(crc, buf, len);
+}
+
+ZLIB_INTERNAL unsigned longest_match_stub(deflate_state *const s, IPos cur_match) {
+#ifdef UNALIGNED_OK
+#  ifdef HAVE_BUILTIN_CTZLL
+    functable.longest_match = &longest_match_unaligned_64;
+#  elif defined(HAVE_BUILTIN_CTZ)
+    functable.longest_match = &longest_match_unaligned_32;
+#  else
+    functable.longest_match = &longest_match_unaligned_16;
+#  endif
+/*#  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_avx2)
+        functable.longest_match = &longest_match_unaligned_avx;
+#  endif*/
+#  ifdef X86_SSE42_CMP_STR
+    if (x86_cpu_has_sse42)
+        functable.longest_match = &longest_match_unaligned_sse;
+#  endif
+#else
+    functable.longest_match = &longest_match;
+#endif
+
+    return functable.longest_match(s, cur_match);
 }

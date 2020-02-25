@@ -52,7 +52,7 @@
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
-#include "match_p.h"
+#include "match.h"
 #include "functable.h"
 
 const char zng_deflate_copyright[] = " deflate 1.2.11.f Copyright 1995-2016 Jean-loup Gailly and Mark Adler ";
