@@ -238,7 +238,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
             dist = s->strstart - hash_head;
 
             if (dist > 0 && (dist-1) < (s->w_size - 1)) {
-                match_len = compare258(s->window + s->strstart, s->window + s->strstart - dist);
+                match_len = compare258(s->window + s->strstart, s->window + hash_head);
 
                 if (match_len >= MIN_MATCH) {
                     if (match_len > s->lookahead)
@@ -247,7 +247,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
                     if (match_len > MAX_MATCH)
                         match_len = MAX_MATCH;
 
-                    static_emit_ptr(s, match_len - MIN_MATCH, s->strstart - hash_head);
+                    static_emit_ptr(s, match_len - MIN_MATCH, dist);
                     s->lookahead -= match_len;
                     s->strstart += match_len;
                     continue;
