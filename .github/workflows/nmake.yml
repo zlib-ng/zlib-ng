@@ -1,0 +1,39 @@
+name: CI NMake
+on: [push, pull_request]
+jobs:
+  ci-cmake:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [
+          Windows 2019 NMake x86,
+          Windows 2019 NMake x64
+        ]
+        include:
+          - name: Windows 2019 NMake x86
+            os: windows-2019
+            makefile: win32/Makefile.msc
+            vc-vars: x86
+
+          - name: Windows 2019 NMake x64
+            os: windows-2019
+            makefile: win32/Makefile.msc
+            vc-vars: x86_amd64
+
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Compile source code
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vc-vars }}
+        nmake -f ${{ matrix.makefile }}
+
+    - name: Run test cases
+      shell: cmd
+      run: |
+        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vc-vars }}
+        nmake -f ${{ matrix.makefile }} test
+        nmake -f ${{ matrix.makefile }} testdll
