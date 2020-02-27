@@ -26,7 +26,11 @@ typedef uint8x16_t inffast_chunk_t;
 
 #if defined(X86_SSE2)
 #include <immintrin.h>
+# if defined(X86_AVX2_MEMCOPY)
+typedef __m256i inffast_chunk_t;
+# else
 typedef __m128i inffast_chunk_t;
+# endif
 #define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
 #endif
 
@@ -130,7 +134,11 @@ static inline inffast_chunk_t chunkmemset_1(unsigned char *from) {
 #if defined(X86_SSE2)
     int8_t c;
     memcpy(&c, from, sizeof(c));
+# if defined(X86_AVX2_MEMCOPY)
+    return _mm256_set1_epi8(c);
+# else
     return _mm_set1_epi8(c);
+# endif
 #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
     return vld1q_dup_u8(from);
 #endif
@@ -139,7 +147,9 @@ static inline inffast_chunk_t chunkmemset_1(unsigned char *from) {
 static inline inffast_chunk_t chunkmemset_2(unsigned char *from) {
     int16_t c;
     memcpy(&c, from, sizeof(c));
-#if defined(X86_SSE2)
+#if defined(X86_AVX2_MEMCOPY)
+    return _mm256_set1_epi16(c);
+#elif defined(X86_SSE2)
     return _mm_set1_epi16(c);
 #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
     return vreinterpretq_u8_s16(vdupq_n_s16(c));
@@ -149,7 +159,9 @@ static inline inffast_chunk_t chunkmemset_2(unsigned char *from) {
 static inline inffast_chunk_t chunkmemset_4(unsigned char *from) {
     int32_t c;
     memcpy(&c, from, sizeof(c));
-#if defined(X86_SSE2)
+#if defined(X86_AVX2_MEMCOPY)
+    return _mm256_set1_epi32(c);
+#elif defined(X86_SSE2)
     return _mm_set1_epi32(c);
 #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
     return vreinterpretq_u8_s32(vdupq_n_s32(c));
@@ -160,7 +172,11 @@ static inline inffast_chunk_t chunkmemset_8(unsigned char *from) {
 #if defined(X86_SSE2)
     int64_t c;
     memcpy(&c, from, sizeof(c));
+# if defined(X86_AVX2_MEMCOPY)
+    return _mm256_set1_epi64x(c);
+# else
     return _mm_set1_epi64x(c);
+# endif
 #elif defined(__ARM_NEON__) || defined(__ARM_NEON)
     return vcombine_u8(vld1_u8(from), vld1_u8(from));
 #endif

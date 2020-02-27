@@ -9,6 +9,7 @@ jobs:
       matrix:
         name: [
           Ubuntu 18.04 GCC,
+          Ubuntu 18.04 GCC AVX2MEMCOPY,
           Ubuntu 18.04 GCC OSB,
           Ubuntu 18.04 GCC No Opt,
           Ubuntu 18.04 GCC Compat,
@@ -47,6 +48,12 @@ jobs:
             compiler: gcc
             cmake-args: -DWITH_SANITIZERS=ON
             codecov: ubuntu_gcc
+
+          - name: Ubuntu 18.04 GCC AVX2MEMCOPY
+            os: ubuntu-18.04
+            compiler: gcc
+            cmake-args: -DWITH_AVX2_MEMCOPY=ON -DWITH_SANITIZERS=ON
+            codecov: ubuntu_gcc_avx2memcopy
 
           - name: Ubuntu 18.04 GCC OSB
             os: ubuntu-18.04

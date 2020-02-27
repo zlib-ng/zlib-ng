@@ -32,6 +32,8 @@ LDSHAREDFLAGS=-shared
 VER=1.9.9
 VER1=1
 
+AVX2FLAG=
+
 STATICLIB=$(LIBNAME1).a
 SHAREDLIB=$(LIBNAME1).so
 SHAREDLIBV=$(LIBNAME1).so.$(VER)
@@ -210,8 +212,20 @@ zlibrc.o: win32/zlib$(SUFFIX)1.rc
 %.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
 
+inffast.o: $(SRCDIR)/inffast.c
+	$(CC) $(CFLAGS) $(AVX2FLAG) $(INCLUDES) -c -o $@ $<
+
+inflate.o: $(SRCDIR)/inflate.c
+	$(CC) $(CFLAGS) $(AVX2FLAG) $(INCLUDES) -c -o $@ $<
+
 %.lo: $(SRCDIR)/%.c
 	$(CC) $(SFLAGS) -DPIC $(INCLUDES) -c -o $@ $<
+
+inffast.lo: $(SRCDIR)/inffast.c
+	$(CC) $(SFLAGS) $(AVX2FLAG) $(INCLUDES) -c -o $@ $<
+
+inflate.lo: $(SRCDIR)/inflate.c
+	$(CC) $(SFLAGS) $(AVX2FLAG) $(INCLUDES) -c -o $@ $<
 
 $(OBJG): %.o: $(SRCDIR)/%.c
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $<

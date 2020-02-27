@@ -9,6 +9,7 @@ jobs:
       matrix:
         name: [
           Ubuntu 18.04 GCC,
+          Ubuntu 18.04 GCC AVX2MEMCOPY,
           Ubuntu 18.04 GCC OSB,
           Ubuntu 18.04 GCC No Opt,
           Ubuntu 18.04 GCC Compat,
@@ -32,6 +33,11 @@ jobs:
             os: ubuntu-18.04
             compiler: gcc
             configure-args: --warn
+
+          - name: Ubuntu 18.04 GCC AVX2MEMCOPY
+            os: ubuntu-18.04
+            compiler: gcc
+            configure-args: --warn --with-avx2-memcopy
 
           - name: Ubuntu 18.04 GCC OSB
             os: ubuntu-18.04

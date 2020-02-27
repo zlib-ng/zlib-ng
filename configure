@@ -94,6 +94,7 @@ buildacle=1
 buildneon=1
 builddfltccdeflate=0
 builddfltccinflate=0
+with_avx2memcopy=0
 with_sanitizers=0
 with_msan=0
 with_fuzzers=0
@@ -101,6 +102,7 @@ floatabi=
 native=0
 forcesse2=0
 avx2flag="-mavx2"
+avx2memcopyflag=
 sse2flag="-msse2"
 sse4flag="-msse4"
 sse42flag="-msse4.2"
@@ -144,6 +146,7 @@ case "$1" in
       echo '    [--warn]                    Enables extra compiler warnings' | tee -a configure.log
       echo '    [--debug]                   Enables extra debug prints during operation' | tee -a configure.log
       echo '    [--zlib-compat]             Compiles for zlib-compatible API instead of zlib-ng API' | tee -a configure.log
+      echo '    [--with-avx2-memcopy]       Compiles with AVX2 support in memcopy' | tee -a configure.log
       echo '    [--with-gzfileops]          Compiles with the gzfile parts of the API enabled' | tee -a configure.log
       echo '    [--without-optimizations]   Compiles without support for optional instruction sets' | tee -a configure.log
       echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
@@ -173,6 +176,7 @@ case "$1" in
     --cover) cover=1; shift ;;
     -3* | --32) build32=1; shift ;;
     -6* | --64) build64=1; shift ;;
+    --with-avx2-memcopy) with_avx2memcopy=1; avx2memcopyflag=${avx2flag}; shift ;;
     --without-acle) buildacle=0; shift ;;
     --without-neon) buildneon=0; shift ;;
     --with-dfltcc-deflate) builddfltccdeflate=1; shift ;;
@@ -961,6 +965,8 @@ EOF
         else
             echo "Checking for AVX2 intrinsics ... No." | tee -a configure.log
             HAVE_AVX2_INTRIN=0
+            with_avx2memcopy=0
+            avx2memcopyflag=
         fi
         ;;
 esac
@@ -1048,6 +1054,10 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_AVX2"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_avx.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_avx.lo"
+                if test ${with_avx2memcopy} -eq 1; then
+                     CFLAGS="${CFLAGS} -DX86_AVX2_MEMCOPY"
+                     SFLAGS="${SFLAGS} -DX86_AVX2_MEMCOPY"
+                fi
             fi
 
             CFLAGS="${CFLAGS} -DX86_SSE42_CRC_HASH"
@@ -1097,6 +1107,10 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_AVX2"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_avx.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_avx.lo"
+                if test ${with_avx2memcopy} -eq 1; then
+                     CFLAGS="${CFLAGS} -DX86_AVX2_MEMCOPY"
+                     SFLAGS="${SFLAGS} -DX86_AVX2_MEMCOPY"
+                fi
             fi
 
             # Enable deflate_quick at level 1?
@@ -1383,6 +1397,7 @@ sed < $SRCDIR/Makefile.in "
 /^LIBNAME1 *=/s#=.*#=$LIBNAME#
 /^LIBNAME2 *=/s#=.*#=$LIBNAME2#
 /^SUFFIX *=/s#=.*#=$SUFFIX#
+/^AVX2FLAG *=/s#=.*#=$avx2memcopyflag#
 /^STATICLIB *=/s#=.*#=$STATICLIB#
 /^SHAREDLIB *=/s#=.*#=$SHAREDLIB#
 /^SHAREDLIBV *=/s#=.*#=$SHAREDLIBV#
@@ -1490,6 +1505,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^TOPDIR *=/s#=.*#=$BUILDDIR#
 /^AVX2FLAG *=/s#=.*#=$avx2flag#
+/^AVX2MEMCOPYFLAG *=/s#=.*#=$avx2memcopyflag#
 /^SSE2FLAG *=/s#=.*#=$sse2flag#
 /^SSE4FLAG *=/s#=.*#=$sse4flag#
 /^PCLMULFLAG *=/s#=.*#=$pclmulflag#

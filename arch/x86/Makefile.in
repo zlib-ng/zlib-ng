@@ -9,6 +9,7 @@ INCLUDES=
 SUFFIX=
 
 AVX2FLAG=-mavx2
+AVX2MEMCOPYFLAG=
 SSE2FLAG=-msse2
 SSE4FLAG=-msse4
 PCLMULFLAG=-mpclmul
@@ -32,10 +33,10 @@ fill_window_sse.lo:
 	$(CC) $(SFLAGS) $(SSE2FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/fill_window_sse.c
 
 deflate_quick.o:
-	$(CC) $(CFLAGS) $(SSE4FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/deflate_quick.c
+	$(CC) $(CFLAGS) $(SSE4FLAG) $(AVX2MEMCOPYFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/deflate_quick.c
 
 deflate_quick.lo:
-	$(CC) $(SFLAGS) $(SSE4FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/deflate_quick.c
+	$(CC) $(SFLAGS) $(SSE4FLAG) $(AVX2MEMCOPYFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/deflate_quick.c
 
 insert_string_sse.o:
 	$(CC) $(CFLAGS) $(SSE4FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
