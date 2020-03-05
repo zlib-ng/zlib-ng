@@ -727,33 +727,6 @@ void ZLIB_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, unsigned long
 }
 
 /* ===========================================================================
- * Save the match info and tally the frequency counts. Return true if
- * the current block must be flushed.
- */
-int ZLIB_INTERNAL zng_tr_tally(deflate_state *s, unsigned dist, unsigned lc) {
-    /* dist: distance of matched string */
-    /* lc: match length-MIN_MATCH or unmatched char (if dist==0) */
-    s->sym_buf[s->sym_next++] = dist;
-    s->sym_buf[s->sym_next++] = dist >> 8;
-    s->sym_buf[s->sym_next++] = lc;
-    if (dist == 0) {
-        /* lc is the unmatched char */
-        s->dyn_ltree[lc].Freq++;
-    } else {
-        s->matches++;
-        /* Here, lc is the match length - MIN_MATCH */
-        dist--;             /* dist = match distance - 1 */
-        Assert((uint16_t)dist < (uint16_t)MAX_DIST(s) &&
-               (uint16_t)lc <= (uint16_t)(MAX_MATCH-MIN_MATCH) &&
-               (uint16_t)d_code(dist) < (uint16_t)D_CODES,  "zng_tr_tally: bad match");
-
-        s->dyn_ltree[zng_length_code[lc]+LITERALS+1].Freq++;
-        s->dyn_dtree[d_code(dist)].Freq++;
-    }
-    return (s->sym_next == s->sym_end);
-}
-
-/* ===========================================================================
  * Send the block data compressed using the given Huffman trees
  */
 static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
