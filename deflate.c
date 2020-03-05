@@ -1424,11 +1424,9 @@ static block_state deflate_stored(deflate_state *s, int flush) {
         /* Write the stored block header bytes. */
         flush_pending(s->strm);
 
-#ifdef ZLIB_DEBUG
         /* Update debugging counts for the data about to be copied. */
-        s->compressed_len += len << 3;
-        s->bits_sent += len << 3;
-#endif
+        cmpr_bits_add(s, len << 3);
+        sent_bits_add(s, len << 3);
 
         /* Copy uncompressed bytes from the window to next_out. */
         if (left) {
