@@ -379,7 +379,6 @@ void ZLIB_INTERNAL slide_hash_c(deflate_state *s);
 
         /* in trees.c */
 void ZLIB_INTERNAL zng_tr_init(deflate_state *s);
-int ZLIB_INTERNAL zng_tr_tally(deflate_state *s, unsigned dist, unsigned lc);
 void ZLIB_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, unsigned long stored_len, int last);
 void ZLIB_INTERNAL zng_tr_flush_bits(deflate_state *s);
 void ZLIB_INTERNAL zng_tr_align(deflate_state *s);
@@ -393,37 +392,6 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
  * must not have side effects. zng_dist_code[256] and zng_dist_code[257] are never
  * used.
  */
-
-#ifndef ZLIB_DEBUG
-/* Inline versions of _tr_tally for speed: */
-
-extern const unsigned char ZLIB_INTERNAL zng_length_code[];
-extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
-
-#  define zng_tr_tally_lit(s, c, flush) \
-  { unsigned char cc = (c); \
-    s->sym_buf[s->sym_next++] = 0; \
-    s->sym_buf[s->sym_next++] = 0; \
-    s->sym_buf[s->sym_next++] = cc; \
-    s->dyn_ltree[cc].Freq++; \
-    flush = (s->sym_next == s->sym_end); \
-  }
-#  define zng_tr_tally_dist(s, distance, length, flush) \
-  { unsigned char len = (unsigned char)(length); \
-    unsigned dist = (unsigned)(distance); \
-    s->sym_buf[s->sym_next++] = dist; \
-    s->sym_buf[s->sym_next++] = dist >> 8; \
-    s->sym_buf[s->sym_next++] = len; \
-    dist--; \
-    s->dyn_ltree[zng_length_code[len]+LITERALS+1].Freq++; \
-    s->dyn_dtree[d_code(dist)].Freq++; \
-    flush = (s->sym_next == s->sym_end); \
-  }
-#else
-#  define zng_tr_tally_lit(s, c, flush) flush = zng_tr_tally(s, 0, c)
-#  define zng_tr_tally_dist(s, distance, length, flush) \
-              flush = zng_tr_tally(s, (unsigned)(distance), (unsigned)(length))
-#endif
 
 /* ===========================================================================
  * Update a hash value with the given input byte

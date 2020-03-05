@@ -48,6 +48,40 @@ static inline Pos insert_string_c(deflate_state *const s, const Pos str, unsigne
 }
 
 /* ===========================================================================
+ * Save the match info and tally the frequency counts. Return true if
+ * the current block must be flushed.
+ */
+
+extern const unsigned char ZLIB_INTERNAL zng_length_code[];
+extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
+
+static inline int zng_tr_tally_lit(deflate_state *s, unsigned char c) {
+    /* c is the unmatched char */
+    s->sym_buf[s->sym_next++] = 0;
+    s->sym_buf[s->sym_next++] = 0;
+    s->sym_buf[s->sym_next++] = c;
+    s->dyn_ltree[c].Freq++;
+    Assert(c <= (MAX_MATCH-MIN_MATCH), "zng_tr_tally: bad literal");
+    return (s->sym_next == s->sym_end);
+}
+
+static inline int zng_tr_tally_dist(deflate_state *s, unsigned dist, unsigned char len) {
+    /* dist: distance of matched string */
+    /* len: match length-MIN_MATCH */
+    s->sym_buf[s->sym_next++] = dist;
+    s->sym_buf[s->sym_next++] = dist >> 8;
+    s->sym_buf[s->sym_next++] = len;
+    s->matches++;
+    dist--;
+    Assert((uint16_t)dist < (uint16_t)MAX_DIST(s) &&
+           (uint16_t)d_code(dist) < (uint16_t)D_CODES,  "zng_tr_tally: bad match");
+
+    s->dyn_ltree[zng_length_code[len]+LITERALS+1].Freq++;
+    s->dyn_dtree[d_code(dist)].Freq++;
+    return (s->sym_next == s->sym_end);
+}
+
+/* ===========================================================================
  * Flush the current block, with given end-of-file flag.
  * IN assertion: strstart is set to the end of the current match.
  */

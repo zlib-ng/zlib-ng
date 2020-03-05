@@ -58,7 +58,7 @@ ZLIB_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
         if (s->match_length >= MIN_MATCH) {
             check_match(s, s->strstart, s->match_start, s->match_length);
 
-            zng_tr_tally_dist(s, s->strstart - s->match_start, s->match_length - MIN_MATCH, bflush);
+            bflush = zng_tr_tally_dist(s, s->strstart - s->match_start, s->match_length - MIN_MATCH);
 
             s->lookahead -= s->match_length;
 
@@ -102,7 +102,7 @@ ZLIB_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
         } else {
             /* No match, output a literal byte */
             Tracevv((stderr, "%c", s->window[s->strstart]));
-            zng_tr_tally_lit(s, s->window[s->strstart], bflush);
+            bflush = zng_tr_tally_lit(s, s->window[s->strstart]);
             s->lookahead--;
             s->strstart++;
         }
