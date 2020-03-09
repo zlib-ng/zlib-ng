@@ -64,68 +64,77 @@ jobs:
             os: ubuntu-18.04
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn
+            chost: arm-linux-gnueabi
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
           - name: Ubuntu 18.04 GCC ARM SF No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --without-optimizations --without-new-strategies
+            chost: arm-linux-gnueabi
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
           - name: Ubuntu 18.04 GCC ARM SF Compat
             os: ubuntu-18.04
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --zlib-compat
+            chost: arm-linux-gnueabi
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
           - name: Ubuntu 18.04 GCC ARM SF Compat No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
+            chost: arm-linux-gnueabi
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
           - name: Ubuntu 18.04 GCC ARM HF
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn
+            chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu 18.04 GCC ARM HF No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --without-optimizations --without-new-strategies
+            chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu 18.04 GCC ARM HF Compat
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat
+            chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu 18.04 GCC ARM HF Compat No Opt
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
+            chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu 18.04 GCC ARM HF Compat No Neon
             os: ubuntu-18.04
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat --without-neon
+            chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu 18.04 GCC AARCH64 Compat
             os: ubuntu-18.04
             compiler: aarch64-linux-gnu-gcc
             configure-args: --warn --zlib-compat
-            asan-options: detect_leaks=0
+            chost: aarch64-linux-gnu
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
           - name: Ubuntu 18.04 GCC AARCH64 Compat No Opt
             os: ubuntu-18.04
             compiler: aarch64-linux-gnu-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
-            asan-options: detect_leaks=0
+            chost: aarch64-linux-gnu
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
           - name: macOS GCC
@@ -136,12 +145,20 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: Install packages (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.packages }}
+
     - name: Generate project files
       run: |
         mkdir ${{ matrix.build-dir || '.not-used' }}
         cd ${{ matrix.build-dir || '.' }}
         ${{ matrix.build-src-dir || '.' }}/configure ${{ matrix.configure-args }}
       env:
+        CC: ${{ matrix.compiler }}
+        CHOST: ${{ matrix.chost }}
         CI: true
 
     - name: Compile source code
@@ -153,8 +170,3 @@ jobs:
       run: |
         cd ${{ matrix.build-dir || '.' }}
         make test
-      env:
-        ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=1' }}
-        MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=1' }}
-        TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=1' }}
-        LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=1' }}
