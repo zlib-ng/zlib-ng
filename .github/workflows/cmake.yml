@@ -326,13 +326,16 @@ jobs:
         LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=1' }}
 
     - name: Upload coverage report
-      if: matrix.codecov && ( env.CODECOV_TOKEN_SECRET != '' || github.repository == 'zlib-ng/zlib-ng' )
+      # GitHub Actions does not support secrets context in if statement
+      # https://github.community/t5/GitHub-Actions/If-expression-with-context-variable/td-p/34556
+      if: matrix.codecov
       shell: bash
       run: |
-        bash tools/codecov-upload.sh
+        if [ "$CODECOV_TOKEN" != "" ]; then
+            bash tools/codecov-upload.sh
+        fi
       env:
         # Codecov does not yet support GitHub Actions
-        CODECOV_TOKEN_SECRET: "${{secrets.CODECOV_TOKEN}}"
         CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}"
         CODECOV_FLAGS: "${{ matrix.codecov }}"
         CODECOV_NAME:  "${{ matrix.name }}"
