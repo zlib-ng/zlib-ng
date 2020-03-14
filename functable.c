@@ -44,7 +44,7 @@ void slide_hash_avx2(deflate_state *s);
 
 /* adler32 */
 extern uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
-#if (defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32)
+#ifdef ARM_NEON_ADLER32
 extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
 #ifdef X86_SSSE3_ADLER32
@@ -60,7 +60,7 @@ extern uint32_t adler32_power8(uint32_t adler, const unsigned char* buf, size_t 
 /* CRC32 */
 ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
 
-#ifdef __ARM_FEATURE_CRC32
+#ifdef ARM_ACLE_CRC_HASH
 extern uint32_t crc32_acle(uint32_t, const unsigned char *, uint64_t);
 #endif
 
@@ -147,7 +147,7 @@ ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsi
 #ifdef X86_SSE42_CRC_HASH
     if (x86_cpu_has_sse42)
         functable.insert_string = &insert_string_sse4;
-#elif defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
+#elif defined(ARM_ACLE_CRC_HASH)
     if (arm_cpu_has_crc32)
         functable.insert_string = &insert_string_acle;
 #endif
@@ -161,7 +161,7 @@ ZLIB_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const Pos str
 #ifdef X86_SSE42_CRC_HASH
     if (x86_cpu_has_sse42)
         functable.quick_insert_string = &quick_insert_string_sse4;
-#elif defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
+#elif defined(ARM_ACLE_CRC_HASH)
     if (arm_cpu_has_crc32)
         functable.quick_insert_string = &quick_insert_string_acle;
 #endif
@@ -202,7 +202,7 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
     functable.adler32 = &adler32_c;
     cpu_check_features();
 
-#if (defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32)
+#ifdef ARM_NEON_ADLER32
 #  ifndef ARM_NOCHECK_NEON
     if (arm_cpu_has_neon)
 #  endif
@@ -235,7 +235,7 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
 #if BYTE_ORDER == LITTLE_ENDIAN
         functable.crc32 = crc32_little;
-#  if defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
+#  if defined(ARM_ACLE_CRC_HASH)
         if (arm_cpu_has_crc32)
             functable.crc32 = crc32_acle;
 #  endif

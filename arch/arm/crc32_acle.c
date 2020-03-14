@@ -5,7 +5,7 @@
  *
 */
 
-#ifdef __ARM_FEATURE_CRC32
+#ifdef ARM_ACLE_CRC_HASH
 # include <arm_acle.h>
 # ifdef ZLIB_COMPAT
 #  include <zconf.h>
