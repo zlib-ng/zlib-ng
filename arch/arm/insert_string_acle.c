@@ -5,7 +5,7 @@
  *
  */
 
-#if defined(__ARM_FEATURE_CRC32) && defined(ARM_ACLE_CRC_HASH)
+#ifdef ARM_ACLE_CRC_HASH
 #include <arm_acle.h>
 #include "../../zbuild.h"
 #include "../../deflate.h"

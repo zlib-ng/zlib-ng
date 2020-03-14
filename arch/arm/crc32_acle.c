@@ -5,7 +5,7 @@
  *
 */
 
-#ifdef __ARM_FEATURE_CRC32
+#ifdef ARM_ACLE_CRC_HASH
 # include <arm_acle.h>
 # ifdef ZLIB_COMPAT
 #  include <zconf.h>
@@ -112,4 +112,4 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
     c = ~c;
     return c;
 }
-#endif /* __ARM_FEATURE_CRC32 */
+#endif
