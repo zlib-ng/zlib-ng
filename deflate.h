@@ -10,8 +10,6 @@
    subject to change. Applications should only use zlib.h.
  */
 
-/* @(#) $Id$ */
-
 #include "zutil.h"
 #include "zendian.h"
 

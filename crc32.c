@@ -9,8 +9,6 @@
  * factor of two increase in speed on a Power PC G4 (PPC7455) using gcc -O3.
  */
 
-/* @(#) $Id$ */
-
 #include "zbuild.h"
 #include "zendian.h"
 #include <inttypes.h>
