@@ -47,8 +47,6 @@
  *
  */
 
-/* @(#) $Id$ */
-
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"

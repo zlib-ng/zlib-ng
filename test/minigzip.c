@@ -12,8 +12,6 @@
  * real thing.
  */
 
-/* @(#) $Id$ */
-
 #define _POSIX_SOURCE 1  /* This file needs POSIX for fdopen(). */
 #define _POSIX_C_SOURCE 200112  /* For snprintf(). */
 

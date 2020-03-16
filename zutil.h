@@ -10,8 +10,6 @@
    subject to change. Applications should only use zlib.h.
  */
 
-/* @(#) $Id$ */
-
 #if defined(HAVE_VISIBILITY_INTERNAL)
 #  define ZLIB_INTERNAL __attribute__((visibility ("internal")))
 #elif defined(HAVE_VISIBILITY_HIDDEN)
