@@ -10,7 +10,6 @@
 #include "inffast.h"
 #include "inflate_p.h"
 #include "inffixed.h"
-#include "memcopy.h"
 #include "functable.h"
 
 /* Architecture-specific hooks. */
@@ -203,17 +202,11 @@ void ZLIB_INTERNAL fixedtables(struct inflate_state *state) {
 int ZLIB_INTERNAL inflate_ensure_window(struct inflate_state *state) {
     /* if it hasn't been done already, allocate space for the window */
     if (state->window == NULL) {
-#ifdef INFFAST_CHUNKSIZE
         unsigned wsize = 1U << state->wbits;
-        state->window = (unsigned char *) ZALLOC_WINDOW(state->strm, wsize + INFFAST_CHUNKSIZE, sizeof(unsigned char));
+        state->window = (unsigned char *) ZALLOC_WINDOW(state->strm, wsize + functable.chunksize(), sizeof(unsigned char));
         if (state->window == Z_NULL)
             return 1;
-        memset(state->window + wsize, 0, INFFAST_CHUNKSIZE);
-#else
-        state->window = (unsigned char *) ZALLOC_WINDOW(state->strm, 1U << state->wbits, sizeof(unsigned char));
-        if (state->window == NULL)
-            return 1;
-#endif
+        memset(state->window + wsize, 0, functable.chunksize());
     }
 
     /* if window not in use yet, initialize */
@@ -977,26 +970,14 @@ int32_t ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                     copy = state->length;
                 if (copy > left)
                     copy = left;
-#if defined(INFFAST_CHUNKSIZE)
-                put = chunkcopysafe(put, from, copy, put + left);
-#else
-                if (copy >= sizeof(uint64_t))
-                    put = chunk_memcpy(put, from, copy);
-                else
-                    put = copy_bytes(put, from, copy);
-#endif
+
+                put = functable.chunkcopy_safe(put, from, copy, put + left);
             } else {                             /* copy from output */
                 copy = state->length;
                 if (copy > left)
                     copy = left;
-#if defined(INFFAST_CHUNKSIZE)
-                put = chunkmemsetsafe(put, state->offset, copy, left);
-#else
-                if (copy >= sizeof(uint64_t))
-                    put = chunk_memset(put, put - state->offset, state->offset, copy);
-                else
-                    put = set_bytes(put, put - state->offset, state->offset, copy);
-#endif
+
+                put = functable.chunkmemset_safe(put, state->offset, copy, left);
             }
             left -= copy;
             state->length -= copy;

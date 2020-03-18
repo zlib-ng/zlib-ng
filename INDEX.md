@@ -28,7 +28,7 @@ Contents
 | inffast.*        | Decompress data with speed optimizations                       |
 | inffixed.h       | Table for decoding fixed codes                                 |
 | inftrees.h       | Generate Huffman trees for efficient decoding                  |
-| memcopy.h        | Inline functions to copy small data chunks                     |
+| memchunk.*       | Inline functions to copy small data chunks                     |
 | trees.*          | Output deflated data using Huffman coding                      |
 | uncompr.c        | Decompress a memory buffer                                     |
 | zconf.h.cmakein  | zconf.h template for cmake                                     |
