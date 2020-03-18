@@ -23,6 +23,7 @@
 #  include <nmmintrin.h>
 #endif
 #include "../../deflate.h"
+#include "../../functable.h"
 #include "../../memcopy.h"
 
 #ifdef ZLIB_DEBUG
@@ -31,7 +32,6 @@
 
 extern void fill_window_sse(deflate_state *s);
 extern void flush_pending(PREFIX3(stream) *strm);
-extern Pos  quick_insert_string_sse4(deflate_state *const s, const Pos str);
 
 static inline long compare258(const unsigned char *const src0, const unsigned char *const src1) {
 #ifdef _MSC_VER
@@ -219,7 +219,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         }
 
         if (s->lookahead >= MIN_MATCH) {
-            hash_head = quick_insert_string_sse4(s, s->strstart);
+            hash_head = functable.quick_insert_string(s, s->strstart);
             dist = s->strstart - hash_head;
 
             if (dist > 0 && (dist-1) < (wsize - 1)) {
