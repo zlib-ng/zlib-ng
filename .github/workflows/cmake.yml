@@ -37,6 +37,8 @@ jobs:
           Ubuntu 18.04 GCC SPARC64 Compat,
           Ubuntu 18.04 GCC S390X Compat,
           Ubuntu 18.04 Clang,
+          Ubuntu 18.04 Clang Inflate Strict,
+          Ubuntu 18.04 Clang Inflate Allow Invalid Dist,
           Ubuntu 18.04 Clang Debug,
           Ubuntu 18.04 Clang MSAN,
           Windows 2019 MSVC Win32,
@@ -250,6 +252,22 @@ jobs:
             packages: llvm-6.0
             gcov-exec: llvm-cov-6.0 gcov
             codecov: ubuntu_clang
+
+          - name: Ubuntu 18.04 Clang Inflate Strict
+            os: ubuntu-18.04
+            compiler: clang
+            cmake-args: -DWITH_INFLATE_STRICT=ON
+            packages: llvm-6.0
+            gcov-exec: llvm-cov-6.0 gcov
+            codecov: ubuntu_clang_inflate_strict
+
+          - name: Ubuntu 18.04 Clang Inflate Allow Invalid Dist
+            os: ubuntu-18.04
+            compiler: clang
+            cmake-args: -DWITH_INFLATE_ALLOW_INVALID_DIST=ON
+            packages: llvm-6.0
+            gcov-exec: llvm-cov-6.0 gcov
+            codecov: ubuntu_clang_inflate_allow_invalid_dist
 
           - name: Ubuntu 18.04 Clang Debug
             os: ubuntu-18.04
