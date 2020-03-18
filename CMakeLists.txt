@@ -675,8 +675,8 @@ if(WITH_OPTIM)
         list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm.h)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/armfeature.c)
         if(WITH_NEON)
-            add_definitions(-DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH)
-            set(NEON_SRCS ${ARCHDIR}/adler32_neon.c ${ARCHDIR}/slide_neon.c)
+            add_definitions(-DARM_NEON_ADLER32 -DARM_NEON_MEMCHUNK -DARM_NEON_SLIDEHASH)
+            set(NEON_SRCS ${ARCHDIR}/adler32_neon.c ${ARCHDIR}/memchunk_neon.c ${ARCHDIR}/slide_neon.c)
             list(APPEND ZLIB_ARCH_SRCS ${NEON_SRCS})
             add_intrinsics_option("${NEONFLAG}" ${NEON_SRCS})
             if(MSVC)
@@ -685,13 +685,10 @@ if(WITH_OPTIM)
             add_feature_info(NEON_ALDER32 1 "Support NEON instructions in adler32, using \"${NEONFLAG}\"")
             add_feature_info(NEON_SLIDEHASH 1 "Support NEON instructions in slide_hash, using \"${NEONFLAG}\"")
         endif()
-        if(WITH_ACLE)
+        if(WITH_ACLE AND NOT MSVC)
             add_definitions(-DARM_ACLE_CRC_HASH)
             set(ACLE_SRCS ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
-            # For ARM aarch64, we need to check WITH_NEON first
-            if("${ARCH}" MATCHES "arm" OR NOT WITH_NEON)
-                add_intrinsics_option("${ACLEFLAG}" ${ACLE_SRCS})
-            endif()
+            add_intrinsics_option("${ACLEFLAG}" ${ACLE_SRCS})
             list(APPEND ZLIB_ARCH_SRCS ${ACLE_SRCS})
             add_feature_info(ACLE_CRC 1 "Support ACLE optimized CRC hash generation, using \"${ACLEFLAG}\"")
         endif()
@@ -756,8 +753,8 @@ if(WITH_OPTIM)
             add_intrinsics_option("${SSE4FLAG}" ${SSE42_SRCS})
         endif()
         if(WITH_SSE2 AND HAVE_SSE2_INTRIN)
-            add_definitions(-DX86_SSE2)
-            set(SSE2_SRCS ${ARCHDIR}/slide_sse.c)
+            add_definitions(-DX86_SSE2 -DX86_SSE2_MEMCHUNK)
+            set(SSE2_SRCS ${ARCHDIR}/memchunk_sse.c ${ARCHDIR}/slide_sse.c)
             list(APPEND ZLIB_ARCH_SRCS ${SSE2_SRCS})
             if(NOT ${ARCH} MATCHES "x86_64")
                 add_intrinsics_option("${SSE2FLAG}" ${SSE2_SRCS})
@@ -867,7 +864,7 @@ set(ZLIB_PRIVATE_HDRS
     inftrees.h
     insert_string_tpl.h
     match_tpl.h
-    memcopy.h
+    memchunk_tpl.h
     trees.h
     trees_emit.h
     trees_p.h
@@ -891,6 +888,7 @@ set(ZLIB_SRCS
     inftrees.c
     inffast.c
     insert_string.c
+    memchunk.c
     trees.c
     uncompr.c
     zutil.c

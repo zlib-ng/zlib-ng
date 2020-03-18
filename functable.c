@@ -57,6 +57,30 @@ extern uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t le
 extern uint32_t adler32_power8(uint32_t adler, const unsigned char* buf, size_t len);
 #endif
 
+/* memory chunking */
+extern uint32_t chunksize_c(void);
+extern uint8_t* chunkcopy_c(uint8_t *out, uint8_t const *from, unsigned len);
+extern uint8_t* chunkcopy_safe_c(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe);
+extern uint8_t* chunkunroll_c(uint8_t *out, unsigned *dist, unsigned *len);
+extern uint8_t* chunkmemset_c(uint8_t *out, unsigned dist, unsigned len);
+extern uint8_t* chunkmemset_safe_c(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+#ifdef X86_SSE2_MEMCHUNK
+extern uint32_t chunksize_sse2(void);
+extern uint8_t* chunkcopy_sse2(uint8_t *out, uint8_t const *from, unsigned len);
+extern uint8_t* chunkcopy_safe_sse2(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe);
+extern uint8_t* chunkunroll_sse2(uint8_t *out, unsigned *dist, unsigned *len);
+extern uint8_t* chunkmemset_sse2(uint8_t *out, unsigned dist, unsigned len);
+extern uint8_t* chunkmemset_safe_sse2(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+#endif
+#ifdef ARM_NEON_MEMCHUNK
+extern uint32_t chunksize_neon(void);
+extern uint8_t* chunkcopy_neon(uint8_t *out, uint8_t const *from, unsigned len);
+extern uint8_t* chunkcopy_safe_neon(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe);
+extern uint8_t* chunkunroll_neon(uint8_t *out, unsigned *dist, unsigned *len);
+extern uint8_t* chunkmemset_neon(uint8_t *out, unsigned dist, unsigned len);
+extern uint8_t* chunkmemset_safe_neon(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+#endif
+
 /* CRC32 */
 ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
 
@@ -110,6 +134,12 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
 ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
 ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned char *src1);
 ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, Pos cur_match);
+ZLIB_INTERNAL uint32_t chunksize_stub(void);
+ZLIB_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned len);
+ZLIB_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe);
+ZLIB_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len);
+ZLIB_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len);
+ZLIB_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 
 /* functable init */
 ZLIB_INTERNAL __thread struct functable_s functable = {
@@ -119,7 +149,13 @@ ZLIB_INTERNAL __thread struct functable_s functable = {
     crc32_stub,
     slide_hash_stub,
     compare258_stub,
-    longest_match_stub
+    longest_match_stub,
+    chunksize_stub,
+    chunkcopy_stub,
+    chunkcopy_safe_stub,
+    chunkunroll_stub,
+    chunkmemset_stub,
+    chunkmemset_safe_stub
 };
 
 ZLIB_INTERNAL void cpu_check_features(void)
@@ -222,6 +258,114 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
 #endif
 
     return functable.adler32(adler, buf, len);
+}
+
+ZLIB_INTERNAL uint32_t chunksize_stub(void) {
+    // Initialize default
+    functable.chunksize = &chunksize_c;
+
+#ifdef X86_SSE2_MEMCHUNK
+# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+    if (x86_cpu_has_sse2)
+# endif
+        functable.chunksize = &chunksize_sse2;
+#endif
+#ifdef ARM_NEON_MEMCHUNK
+    if (arm_cpu_has_neon)
+        functable.chunksize = &chunksize_neon;
+#endif
+
+    return functable.chunksize();
+}
+
+ZLIB_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned len) {
+    // Initialize default
+    functable.chunkcopy = &chunkcopy_c;
+
+#ifdef X86_SSE2_MEMCHUNK
+# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+    if (x86_cpu_has_sse2)
+# endif
+        functable.chunkcopy = &chunkcopy_sse2;
+#endif
+#ifdef ARM_NEON_MEMCHUNK
+    if (arm_cpu_has_neon)
+        functable.chunkcopy = &chunkcopy_neon;
+#endif
+
+    return functable.chunkcopy(out, from, len);
+}
+
+ZLIB_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
+    // Initialize default
+    functable.chunkcopy_safe = &chunkcopy_safe_c;
+
+#ifdef X86_SSE2_MEMCHUNK
+# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+    if (x86_cpu_has_sse2)
+# endif
+        functable.chunkcopy_safe = &chunkcopy_safe_sse2;
+#endif
+#ifdef ARM_NEON_MEMCHUNK
+    if (arm_cpu_has_neon)
+        functable.chunkcopy_safe = &chunkcopy_safe_neon;
+#endif
+
+    return functable.chunkcopy_safe(out, from, len, safe);
+}
+
+ZLIB_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len) {
+    // Initialize default
+    functable.chunkunroll = &chunkunroll_c;
+
+#ifdef X86_SSE2_MEMCHUNK
+# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+    if (x86_cpu_has_sse2)
+# endif
+        functable.chunkunroll = &chunkunroll_sse2;
+#endif
+#ifdef ARM_NEON_MEMCHUNK
+    if (arm_cpu_has_neon)
+        functable.chunkunroll = &chunkunroll_neon;
+#endif
+
+    return functable.chunkunroll(out, dist, len);
+}
+
+ZLIB_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len) {
+    // Initialize default
+    functable.chunkmemset = &chunkmemset_c;
+
+#ifdef X86_SSE2_MEMCHUNK
+# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+    if (x86_cpu_has_sse2)
+# endif
+        functable.chunkmemset = &chunkmemset_sse2;
+#endif
+#ifdef ARM_NEON_MEMCHUNK
+    if (arm_cpu_has_neon)
+        functable.chunkmemset = &chunkmemset_neon;
+#endif
+
+    return functable.chunkmemset(out, dist, len);
+}
+
+ZLIB_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned len, unsigned left) {
+    // Initialize default
+    functable.chunkmemset_safe = &chunkmemset_safe_c;
+
+#ifdef X86_SSE2_MEMCHUNK
+# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+    if (x86_cpu_has_sse2)
+# endif
+        functable.chunkmemset_safe = &chunkmemset_safe_sse2;
+#endif
+#ifdef ARM_NEON_MEMCHUNK
+    if (arm_cpu_has_neon)
+        functable.chunkmemset_safe = &chunkmemset_safe_neon;
+#endif
+
+    return functable.chunkmemset_safe(out, dist, len, left);
 }
 
 ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len) {
