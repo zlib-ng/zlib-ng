@@ -90,6 +90,8 @@ option(WITH_NATIVE_INSTRUCTIONS
     "Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native)" OFF)
 option(WITH_MAINTAINER_WARNINGS "Build with project maintainer warnings" OFF)
 option(WITH_CODE_COVERAGE "Enable code coverage reporting" OFF)
+option(WITH_INFLATE_STRICT "Build with strict inflate distance checking" OFF)
+option(WITH_INFLATE_ALLOW_INVALID_DIST "Build with zero fill for inflate invalid distances" OFF)
 
 if(BASEARCH_ARM_FOUND)
     option(WITH_ACLE "Build with ACLE" ON)
@@ -105,7 +107,7 @@ elseif(BASEARCH_X86_FOUND)
 endif()
 
 mark_as_advanced(FORCE WITH_ACLE WITH_NEON WITH_DFLTCC_DEFLATE WITH_DFLTCC_INFLATE
-    WITH_AVX2 WITH_SSE2 WITH_SSE4 WITH_PCLMULQDQ)
+    WITH_AVX2 WITH_SSE2 WITH_SSE4 WITH_PCLMULQDQ WITH_INFLATE_STRICT WITH_INFLATE_ALLOW_INVALID_DIST)
 
 add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Provide a zlib-compatible API")
 add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile-related functions")
@@ -585,6 +587,17 @@ endif()
 #
 if(NOT WITH_NEW_STRATEGIES)
     add_definitions(-DNO_MEDIUM_STRATEGY)
+endif()
+#
+# Enable inflate compilation options
+#
+if(WITH_INFLATE_STRICT)
+    add_definitions(-DINFLATE_STRICT)
+    message(STATUS "Inflate strict distance checking enabled")
+endif()
+if(WITH_INFLATE_ALLOW_INVALID_DIST)
+    add_definitions(-DINFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR)
+    message(STATUS "Inflate zero data for invalid distances enabled")
 endif()
 
 #
