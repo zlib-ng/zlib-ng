@@ -1238,9 +1238,6 @@ case "${ARCH}" in
             ARCH="native"
         fi
 
-        CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK"
-        SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK"
-
         if test $without_optimizations -eq 0; then
             CFLAGS="${CFLAGS} -DARM_GETAUXVAL"
             SFLAGS="${SFLAGS} -DARM_GETAUXVAL"
@@ -1267,6 +1264,9 @@ case "${ARCH}" in
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
             fi
         fi
+
+        CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK"
+        SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK"
     ;;
     powerpc)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=ppc
