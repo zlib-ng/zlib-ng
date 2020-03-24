@@ -3,8 +3,11 @@
 
 /* This has to be first include that defines any types */
 #if defined(_MSC_VER)
-#  include <windows.h>
-   typedef SSIZE_T ssize_t;
+#  if defined(_WIN64)
+    typedef __int64 ssize_t;
+#  else
+    typedef long ssize_t;
+#  endif
 #  define __thread __declspec(thread)
 #endif
 
