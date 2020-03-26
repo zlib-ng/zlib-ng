@@ -91,11 +91,11 @@ ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
             unsigned int str = s->strstart - s->insert;
             s->ins_h = s->window[str];
             if (str >= 1)
-                functable.insert_string(s, str + 2 - MIN_MATCH, 1);
+                functable.quick_insert_string(s, str + 2 - MIN_MATCH);
 #if MIN_MATCH != 3
 #error Call insert_string() MIN_MATCH-3 more times
             while (s->insert) {
-                functable.insert_string(s, str, 1);
+                functable.quick_insert_string(s, str);
                 str++;
                 s->insert--;
                 if (s->lookahead + s->insert < MIN_MATCH)

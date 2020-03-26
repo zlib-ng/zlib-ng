@@ -56,7 +56,7 @@ static void insert_match(deflate_state *s, struct match match) {
 
             if (match.match_length) {
                 if (match.strstart >= match.orgstart) {
-                    functable.insert_string(s, match.strstart, 1);
+                    functable.quick_insert_string(s, match.strstart);
                 }
             }
         }
@@ -87,7 +87,7 @@ static void insert_match(deflate_state *s, struct match match) {
 #ifdef NOT_TWEAK_COMPILER
         do {
             if (LIKELY(match.strstart >= match.orgstart)) {
-                functable.insert_string(s, match.strstart, 1);
+                functable.quick_insert_string(s, match.strstart);
             }
             match.strstart++;
             /* strstart never exceeds WSIZE-MAX_MATCH, so there are
@@ -115,7 +115,7 @@ static void insert_match(deflate_state *s, struct match match) {
 #ifndef NOT_TWEAK_COMPILER
             functable.insert_string(s, match.strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
 #else
-            functable.insert_string(s, match.strstart + 2 - MIN_MATCH, 1);
+            functable.quick_insert_string(s, match.strstart + 2 - MIN_MATCH);
 #if MIN_MATCH != 3
 #warning    Call insert_string() MIN_MATCH-3 more times
 #endif
@@ -229,7 +229,7 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         } else {
             hash_head = 0;
             if (s->lookahead >= MIN_MATCH) {
-                hash_head = functable.insert_string(s, s->strstart, 1);
+                hash_head = functable.quick_insert_string(s, s->strstart);
             }
 
             /* set up the initial match to be a 1 byte literal */
@@ -263,7 +263,7 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         /* now, look ahead one */
         if (s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < (s->window_size - MIN_LOOKAHEAD)) {
             s->strstart = current_match.strstart + current_match.match_length;
-            hash_head = functable.insert_string(s, s->strstart, 1);
+            hash_head = functable.quick_insert_string(s, s->strstart);
 
             /* set up the initial match to be a 1 byte literal */
             next_match.match_start = 0;
