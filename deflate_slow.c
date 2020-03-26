@@ -49,7 +49,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
          */
         hash_head = NIL;
         if (s->lookahead >= MIN_MATCH) {
-            hash_head = functable.insert_string(s, s->strstart, 1);
+            hash_head = functable.quick_insert_string(s, s->strstart);
         }
 
         /* Find the longest match, discarding those <= prev_length.
@@ -99,7 +99,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
             s->prev_length -= 2;
             do {
                 if (++s->strstart <= max_insert) {
-                    functable.insert_string(s, s->strstart, 1);
+                    functable.quick_insert_string(s, s->strstart);
                 }
             } while (--s->prev_length != 0);
             s->match_available = 0;
