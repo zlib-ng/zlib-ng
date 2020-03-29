@@ -261,7 +261,7 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         insert_match(s, current_match);
 
         /* now, look ahead one */
-        if (s->lookahead > MIN_LOOKAHEAD && (current_match.strstart + current_match.match_length) < (s->window_size - MIN_LOOKAHEAD)) {
+        if (s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < (s->window_size - MIN_LOOKAHEAD)) {
             s->strstart = current_match.strstart + current_match.match_length;
             hash_head = functable.insert_string(s, s->strstart, 1);
 
