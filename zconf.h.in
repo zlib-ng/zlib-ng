@@ -6,13 +6,8 @@
 #ifndef ZCONF_H
 #define ZCONF_H
 
-#if defined(_WINDOWS) && !defined(WINDOWS)
-#  define WINDOWS
-#endif
-#if defined(_WIN32) || defined(__WIN32__)
-#  ifndef WIN32
-#    define WIN32
-#  endif
+#if !defined(_WIN32) && defined(__WIN32__)
+#  define _WIN32
 #endif
 
 #ifdef __STDC_VERSION__
@@ -50,24 +45,22 @@
  for small objects.
 */
 
-                        /* Type declarations */
+/* Type declarations */
 
 
 #ifndef OF /* function prototypes */
 #  define OF(args)  args
 #endif
 
-#if defined(WINDOWS) || defined(WIN32)
+#if defined(_WIN32)
    /* If building or using zlib as a DLL, define ZLIB_DLL.
     * This is not mandatory, but it offers a little performance increase.
     */
-#  ifdef ZLIB_DLL
-#    if defined(WIN32) && (!defined(__BORLANDC__) || (__BORLANDC__ >= 0x500))
-#      ifdef ZLIB_INTERNAL
-#        define ZEXTERN extern __declspec(dllexport)
-#      else
-#        define ZEXTERN extern __declspec(dllimport)
-#      endif
+#  if defined(ZLIB_DLL) && (!defined(__BORLANDC__) || (__BORLANDC__ >= 0x500))
+#    ifdef ZLIB_INTERNAL
+#      define ZEXTERN extern __declspec(dllexport)
+#    else
+#      define ZEXTERN extern __declspec(dllimport)
 #    endif
 #  endif  /* ZLIB_DLL */
    /* If building or using zlib with the WINAPI/WINAPIV calling convention,
@@ -161,12 +154,12 @@ typedef PTRDIFF_TYPE ptrdiff_t;
 #  define z_off_t long
 #endif
 
-#if !defined(WIN32) && defined(Z_LARGE64)
+#if !defined(_WIN32) && defined(Z_LARGE64)
 #  define z_off64_t off64_t
 #else
 #  if defined(__MSYS__)
 #    define z_off64_t _off64_t
-#  elif defined(WIN32) && !defined(__GNUC__)
+#  elif defined(_WIN32) && !defined(__GNUC__)
 #    define z_off64_t __int64
 #  else
 #    define z_off64_t z_off_t
