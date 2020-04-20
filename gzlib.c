@@ -6,7 +6,7 @@
 #include "zbuild.h"
 #include "gzguts.h"
 
-#if defined(WIN32) && !defined(__BORLANDC__)
+#if defined(_WIN32) && !defined(__BORLANDC__)
 #  define LSEEK _lseeki64
 #else
 #if defined(_LARGEFILE64_SOURCE) && _LFS64_LARGEFILE-0
@@ -181,7 +181,7 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
 
     /* open the file with the appropriate flags (or just use fd) */
     state->fd = fd > -1 ? fd : (
-#if defined(WIN32) || defined(__MINGW__)
+#if defined(_WIN32)
         fd == -2 ? _wopen(path, oflag, 0666) :
 #elif __CYGWIN__
         fd == -2 ? open(state->path, oflag, 0666) :
