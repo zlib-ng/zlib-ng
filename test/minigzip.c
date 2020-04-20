@@ -36,7 +36,7 @@
 #  include <malloc.h>
 #endif
 
-#if defined(WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
 #  include <io.h>
 #  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
@@ -49,7 +49,7 @@
 #endif
 
 #if !defined(Z_HAVE_UNISTD_H) && !defined(_LARGEFILE64_SOURCE)
-#ifndef WIN32 /* unlink already in stdio.h for WIN32 */
+#ifndef _WIN32 /* unlink already in stdio.h for Win32 */
 extern int unlink (const char *);
 #endif
 #endif

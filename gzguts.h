@@ -34,7 +34,7 @@
 #  include "zlib-ng.h"
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #  include <stddef.h>
 #endif
 
@@ -42,11 +42,8 @@
 #  include <unistd.h>       /* for lseek(), read(), close(), write(), unlink() */
 #endif
 
-#if defined(_MSC_VER) || defined(WIN32)
+#if defined(_WIN32)
 #  include <io.h>
-#endif
-
-#if defined(_WIN32) || defined(__MINGW__)
 #  define WIDECHAR
 #endif
 
@@ -58,7 +55,7 @@
 #endif
 
 /* In Win32, vsnprintf is available as the "non-ANSI" _vsnprintf. */
-#if !defined(STDC99) && !defined(__CYGWIN__) && !defined(__MINGW__) && defined(WIN32)
+#if !defined(STDC99) && !defined(__CYGWIN__) && !defined(__MINGW__) && defined(_WIN32)
 #  if !defined(vsnprintf)
 #    if !defined(_MSC_VER) || ( defined(_MSC_VER) && _MSC_VER < 1500 )
 #       define vsnprintf _vsnprintf

@@ -102,7 +102,7 @@ extern const char * const zng_errmsg[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE 13
 #endif
 
-#if defined(WIN32) && !defined(__CYGWIN__)
+#if defined(_WIN32) && !defined(__CYGWIN__)
 #  define OS_CODE  10
 #endif
 
@@ -115,7 +115,7 @@ extern const char * const zng_errmsg[10]; /* indexed by 2-zlib_error */
 #endif
 
 /* provide prototypes for these when building zlib without LFS */
-#if !defined(WIN32) && !defined(__MSYS__) && (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
+#if !defined(_WIN32) && !defined(__MSYS__) && (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
 #  include "zbuild.h"  /* For PREFIX() */
     ZEXTERN uint32_t ZEXPORT PREFIX(adler32_combine64)(uint32_t, uint32_t, z_off_t);
     ZEXTERN uint32_t ZEXPORT PREFIX(crc32_combine64)(uint32_t, uint32_t, z_off_t);
@@ -168,7 +168,7 @@ void ZLIB_INTERNAL   zng_cfree(void *opaque, void *ptr);
 
 /* Reverse the bytes in a value. Use compiler intrinsics when
    possible to take advantage of hardware implementations. */
-#if defined(WIN32) && (_MSC_VER >= 1300)
+#if defined(_MSC_VER) && (_MSC_VER >= 1300)
 #  pragma intrinsic(_byteswap_ulong)
 #  define ZSWAP16(q) _byteswap_ushort(q)
 #  define ZSWAP32(q) _byteswap_ulong(q)
