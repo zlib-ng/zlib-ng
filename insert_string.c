@@ -17,17 +17,10 @@
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
 #  define UPDATE_HASH(s, h, val) \
-    do {\
-        if (s->level < TRIGGER_LEVEL)\
-            h = (3483 * ((val) & 0xff) +\
-                 23081* (((val) >> 8) & 0xff) +\
-                 6954 * (((val) >> 16) & 0xff) +\
-                 20947* (((val) >> 24) & 0xff));\
-        else\
-            h = (25881* (((val)) & 0xff) +\
-                 24674* (((val) >> 8) & 0xff) +\
-                 25811* (((val) >> 16) & 0xff));\
-    } while (0)
+    h = (3483  * ((val) & 0xff) +\
+         23081 * (((val) >> 8) & 0xff) +\
+         6954  * (((val) >> 16) & 0xff) +\
+         20947 * (((val) >> 24) & 0xff));
 #else
 #  define UPDATE_HASH(s, h, val)\
     h = (s->ins_h = ((s->ins_h << s->hash_shift) ^ ((val) >> ((MIN_MATCH - 1) * 8))) & s->hash_mask)
