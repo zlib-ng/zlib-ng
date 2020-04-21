@@ -41,9 +41,6 @@ ZLIB_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, const Pos str) {
     val |= ((uint32_t)s->window[str+3] << 24);
 #endif
 
-    if (s->level >= TRIGGER_LEVEL)
-        val &= 0xFFFFFF;
-
     UPDATE_HASH(s, h, val);
     hm = h & s->hash_mask;
 
@@ -86,9 +83,6 @@ ZLIB_INTERNAL Pos INSERT_STRING(deflate_state *const s, const Pos str, unsigned 
         val |= ((uint32_t)(strstart[2]) << 16);
         val |= ((uint32_t)(strstart[3]) << 24);
 #endif
-
-        if (s->level >= TRIGGER_LEVEL)
-            val &= 0xFFFFFF;
 
         UPDATE_HASH(s, h, val);
         hm = h & s->hash_mask;
