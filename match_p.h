@@ -462,15 +462,13 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         scan += 2, match+=2;
         Assert(*scan == *match, "match[2]?");
         do {
-            unsigned long sv, mv, xor;
+            unsigned long sv, mv;
 
             memcpy(&sv, scan, sizeof(sv));
             memcpy(&mv, match, sizeof(mv));
 
-            xor = sv ^ mv;
-
-            if (xor) {
-                int match_byte = __builtin_ctzl(xor) / 8;
+            if (sv ^ mv) {
+                int match_byte = __builtin_ctzl(sv ^ mv) / 8;
                 scan += match_byte;
                 break;
             } else {
