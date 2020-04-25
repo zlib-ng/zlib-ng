@@ -18,7 +18,11 @@
  */
 #include "adler32_neon.h"
 #if defined(__ARM_NEON__) || defined(__ARM_NEON)
-#include <arm_neon.h>
+#ifdef _M_ARM64
+#  include <arm64_neon.h>
+#else
+#  include <arm_neon.h>
+#endif
 #include "../../adler32_p.h"
 
 static void NEON_accum32(uint32_t *s, const unsigned char *buf, size_t len) {

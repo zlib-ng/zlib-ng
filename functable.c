@@ -131,7 +131,9 @@ ZLIB_INTERNAL void slide_hash_stub(deflate_state *s) {
 #  endif
         functable.slide_hash = &slide_hash_sse2;
 #elif defined(ARM_NEON_SLIDEHASH)
+#  ifndef ARM_NOCHECK_NEON
     if (arm_cpu_has_neon)
+#  endif
         functable.slide_hash = &slide_hash_neon;
 #endif
 #ifdef X86_AVX2
@@ -148,7 +150,9 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
     cpu_check_features();
 
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32)
+#  ifndef ARM_NOCHECK_NEON
     if (arm_cpu_has_neon)
+#  endif
         functable.adler32 = &adler32_neon;
 #endif
 
