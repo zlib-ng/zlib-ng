@@ -61,7 +61,7 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
 ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
 
 /* functable init */
-ZLIB_INTERNAL __thread struct functable_s functable = {
+ZLIB_INTERNAL struct functable_s functable = {
     fill_window_stub,
     insert_string_stub,
     adler32_stub,

@@ -16,7 +16,7 @@ struct functable_s {
     void     (* slide_hash)     (deflate_state *s);
 };
 
-ZLIB_INTERNAL extern __thread struct functable_s functable;
+ZLIB_INTERNAL extern struct functable_s functable;
 
 
 #endif
