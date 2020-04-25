@@ -91,10 +91,7 @@ ZLIB_INTERNAL void fill_window_stub(deflate_state *s) {
     functable.fill_window = &fill_window_c;
 
 #if defined(X86_SSE2)
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-        functable.fill_window = &fill_window_sse;
+    functable.fill_window = &fill_window_sse;
 #elif defined(ARM_GETAUXVAL)
     functable.fill_window = &fill_window_arm;
 #endif
@@ -107,10 +104,7 @@ ZLIB_INTERNAL void slide_hash_stub(deflate_state *s) {
     functable.slide_hash = &slide_hash_c;
 
 #ifdef X86_SSE2
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-        functable.slide_hash = &slide_hash_sse2;
+    functable.slide_hash = &slide_hash_sse2;
 #endif
 
     functable.slide_hash(s);

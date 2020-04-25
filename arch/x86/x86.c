@@ -17,15 +17,13 @@
 #  include <cpuid.h>
 #endif
 
-ZLIB_INTERNAL int x86_cpu_has_avx2;
-ZLIB_INTERNAL int x86_cpu_has_sse2;
-ZLIB_INTERNAL int x86_cpu_has_sse42;
-ZLIB_INTERNAL int x86_cpu_has_pclmulqdq;
-ZLIB_INTERNAL int x86_cpu_has_tzcnt;
+ZLIB_INTERNAL int x86_cpu_has_avx2 = 0;
+ZLIB_INTERNAL int x86_cpu_has_sse42 = 0;
+ZLIB_INTERNAL int x86_cpu_has_pclmulqdq = 0;
 
 static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
 #ifdef _MSC_VER
-    unsigned int registers[4];
+    int registers[4];
     __cpuid(registers, info);
 
     *eax = registers[0];
@@ -39,7 +37,7 @@ static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigne
 
 static void cpuidex(int info, int subinfo, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
 #ifdef _MSC_VER
-    unsigned int registers[4];
+    int registers[4];
     __cpuidex(registers, info, subinfo);
 
     *eax = registers[0];
@@ -59,20 +57,13 @@ void ZLIB_INTERNAL x86_check_features(void) {
 
     cpuid(1 /*CPU_PROCINFO_AND_FEATUREBITS*/, &eax, &ebx, &ecx, &edx);
 
-    x86_cpu_has_sse2 = edx & 0x4000000;
     x86_cpu_has_sse42 = ecx & 0x100000;
     x86_cpu_has_pclmulqdq = ecx & 0x2;
 
     if (maxbasic >= 7) {
         cpuidex(7, 0, &eax, &ebx, &ecx, &edx);
 
-        // check BMI1 bit
-        // Reference: https://software.intel.com/sites/default/files/article/405250/how-to-detect-new-instruction-support-in-the-4th-generation-intel-core-processor-family.pdf
-        x86_cpu_has_tzcnt = ebx & 0x8;
         // check AVX2 bit
         x86_cpu_has_avx2 = ebx & 0x20;
-    } else {
-        x86_cpu_has_tzcnt = 0;
-        x86_cpu_has_avx2 = 0;
     }
 }

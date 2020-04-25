@@ -36,8 +36,8 @@ static inline int arm_has_neon() {
 }
 #endif
 
-ZLIB_INTERNAL int arm_cpu_has_neon;
-ZLIB_INTERNAL int arm_cpu_has_crc32;
+ZLIB_INTERNAL int arm_cpu_has_neon = 0;
+ZLIB_INTERNAL int arm_cpu_has_crc32 = 0;
 
 void ZLIB_INTERNAL arm_check_features(void) {
 #if defined(__aarch64__) || defined(_M_ARM64)
