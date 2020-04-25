@@ -128,3 +128,9 @@ uint32_t ZEXPORT PREFIX(adler32_combine)(uint32_t adler1, uint32_t adler2, z_off
 uint32_t ZEXPORT PREFIX(adler32_combine64)(uint32_t adler1, uint32_t adler2, z_off64_t len2) {
     return adler32_combine_(adler1, adler2, len2);
 }
+
+#undef DO1
+#undef DO2
+#undef DO4
+#undef DO8
+#undef DO16

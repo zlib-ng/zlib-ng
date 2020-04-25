@@ -506,3 +506,7 @@ int ZEXPORT PREFIX(inflateBackEnd)(PREFIX3(stream) *strm) {
     Tracev((stderr, "inflate: end\n"));
     return Z_OK;
 }
+
+#undef PULL
+#undef PULLBYTE
+#undef ROOM

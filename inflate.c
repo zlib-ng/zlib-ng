@@ -1367,3 +1367,5 @@ unsigned long ZEXPORT PREFIX(inflateCodesUsed)(PREFIX3(stream) *strm) {
     state = (struct inflate_state *)strm->state;
     return (unsigned long)(state->next - state->codes);
 }
+
+#undef PULLBYTE

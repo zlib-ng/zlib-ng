@@ -277,3 +277,11 @@ void ZEXPORT PREFIX(crc32_combine_gen64)(uint32_t *op, z_off64_t len2) {
 uint32_t ZEXPORT PREFIX(crc32_combine_op)(uint32_t crc1, uint32_t crc2, const uint32_t *op) {
     return gf2_matrix_times(op, crc1) ^ crc2;
 }
+
+#undef DO1
+#undef DO8
+#undef DO4
+#undef DOLIT4
+#undef DOLIT32
+#undef DOBIG4
+#undef DOBIG32

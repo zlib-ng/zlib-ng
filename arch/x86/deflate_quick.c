@@ -37,9 +37,9 @@ static inline long compare258(const unsigned char *const src0, const unsigned ch
     long cnt;
 
     cnt = 0;
-    do {
-#define mode  _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY
 
+#define mode  _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY
+    do {
         int ret;
         __m128i xmm_src0, xmm_src1;
 
@@ -61,6 +61,7 @@ static inline long compare258(const unsigned char *const src0, const unsigned ch
         }
         cnt += 16;
     } while (cnt < 256);
+#undef mode
 
     if (memcmp(src0 + cnt, src1 + cnt, sizeof(uint16_t)) == 0) {
         cnt += 2;
