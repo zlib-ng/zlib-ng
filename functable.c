@@ -11,16 +11,16 @@
 #include "functable.h"
 /* insert_string */
 #ifdef X86_SSE42_CRC_HASH
-extern Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
+Pos insert_string_sse(deflate_state *const s, const Pos str, unsigned int count);
 #elif defined(ARM_ACLE_CRC_HASH)
-extern Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count);
+Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count);
 #endif
 
 /* fill_window */
 #if defined(X86_SSE2)
-extern void fill_window_sse(deflate_state *s);
+void fill_window_sse(deflate_state *s);
 #elif defined(ARM_GETAUXVAL)
-extern void fill_window_arm(deflate_state *s);
+void fill_window_arm(deflate_state *s);
 #endif
 
 /* slide_hash */
@@ -29,27 +29,27 @@ void slide_hash_sse2(deflate_state *s);
 #endif
 
 /* adler32 */
-extern uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
+uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32)
-extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
+uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
 
 /* CRC32 */
 ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
 
 #ifdef DYNAMIC_CRC_TABLE
-extern volatile int crc_table_empty;
-extern void make_crc_table(void);
+volatile int crc_table_empty;
+void make_crc_table(void);
 #endif
 
 #ifdef __ARM_FEATURE_CRC32
-extern uint32_t crc32_acle(uint32_t, const unsigned char *, uint64_t);
+uint32_t crc32_acle(uint32_t, const unsigned char *, uint64_t);
 #endif
 
 #if BYTE_ORDER == LITTLE_ENDIAN
-extern uint32_t crc32_little(uint32_t, const unsigned char *, uint64_t);
+uint32_t crc32_little(uint32_t, const unsigned char *, uint64_t);
 #elif BYTE_ORDER == BIG_ENDIAN
-extern uint32_t crc32_big(uint32_t, const unsigned char *, uint64_t);
+uint32_t crc32_big(uint32_t, const unsigned char *, uint64_t);
 #endif
 
 

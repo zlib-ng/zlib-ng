@@ -29,8 +29,8 @@
 #  include <ctype.h>
 #endif
 
-extern void fill_window_sse(deflate_state *s);
-extern void flush_pending(PREFIX3(stream) *strm);
+void fill_window_sse(deflate_state *s);
+void flush_pending(PREFIX3(stream) *strm);
 
 static inline long compare258(const unsigned char *const src0, const unsigned char *const src1) {
 #ifdef _MSC_VER
@@ -144,7 +144,7 @@ static inline void static_emit_ptr(deflate_state *const s, const int lc, const u
     s->bi_buf = bi_buf;
 }
 
-const ct_data static_ltree[L_CODES+2];
+extern ZLIB_INTERNAL const ct_data static_ltree[L_CODES+2];
 
 static inline void static_emit_lit(deflate_state *const s, const int lit) {
     uint32_t bi_valid = s->bi_valid;

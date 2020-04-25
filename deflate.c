@@ -115,11 +115,11 @@ static block_state deflate_huff  (deflate_state *s, int flush);
 static void lm_init              (deflate_state *s);
 ZLIB_INTERNAL unsigned read_buf  (PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
-extern void crc_reset(deflate_state *const s);
+void crc_reset(deflate_state *const s);
 #ifdef X86_PCLMULQDQ_CRC
-extern void crc_finalize(deflate_state *const s);
+void crc_finalize(deflate_state *const s);
 #endif
-extern void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size);
+void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size);
 
 /* ===========================================================================
  * Local data
