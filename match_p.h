@@ -8,6 +8,9 @@
  * OUT assertion: the match length is not greater than s->lookahead
  */
 
+#ifndef MATCH_P_H_
+#define MATCH_P_H_
+
 #include "zbuild.h"
 #include "deflate.h"
 
@@ -505,4 +508,5 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         return (unsigned int)best_len;
     return s->lookahead;
 }
+#endif
 #endif
