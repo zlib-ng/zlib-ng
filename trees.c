@@ -828,7 +828,7 @@ static int detect_data_type(deflate_state *s) {
 ZLIB_INTERNAL unsigned bi_reverse(unsigned code, int len) {
     /* code: the value to invert */
     /* len: its bit length */
-    register unsigned res = 0;
+    unsigned res = 0;
     do {
         res |= code & 1;
         code >>= 1, res <<= 1;

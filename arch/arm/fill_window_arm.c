@@ -20,8 +20,8 @@ extern ZLIB_INTERNAL int read_buf(PREFIX3(stream) *strm, unsigned char *buf, uns
 
 /* SIMD version of hash_chain rebase */
 static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t window_size) {
-    register uint16x8_t v, *p;
-    register size_t n;
+    uint16x8_t v, *p;
+    size_t n;
 
     size_t size = entries*sizeof(table[0]);
     Assert((size % sizeof(uint16x8_t) * 8 == 0), "hash table size err");
@@ -54,7 +54,7 @@ static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t w
 #endif
 
 void fill_window_arm(deflate_state *s) {
-    register unsigned n;
+    unsigned n;
     unsigned long more;  /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;
 

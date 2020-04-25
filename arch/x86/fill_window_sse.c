@@ -23,7 +23,7 @@ void slide_hash_avx2(deflate_state *s);
 #endif
 
 ZLIB_INTERNAL void fill_window_sse(deflate_state *s) {
-    register unsigned n;
+    unsigned n;
     unsigned more;    /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;
 

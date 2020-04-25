@@ -380,9 +380,9 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
     unsigned int strstart = s->strstart;
     unsigned chain_length = s->max_chain_length;/* max hash chain length */
     unsigned char *window = s->window;
-    register unsigned char *scan = window + strstart; /* current string */
-    register unsigned char *match;                       /* matched string */
-    register unsigned int len;                  /* length of current match */
+    unsigned char *scan = window + strstart; /* current string */
+    unsigned char *match;                       /* matched string */
+    unsigned int len;                  /* length of current match */
     unsigned int best_len = s->prev_length ? s->prev_length : 1;     /* best match length so far */
     unsigned int nice_match = s->nice_match;    /* stop if match long enough */
     IPos limit = strstart > (IPos)MAX_DIST(s) ?
@@ -393,7 +393,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
     Pos *prev = s->prev;
     unsigned int wmask = s->w_mask;
 
-    register unsigned char *strend = window + strstart + MAX_MATCH;
+    unsigned char *strend = window + strstart + MAX_MATCH;
 
     uint16_t scan_start, scan_end;
 

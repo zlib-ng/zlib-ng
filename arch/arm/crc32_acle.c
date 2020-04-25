@@ -17,9 +17,9 @@
 # endif
 
 uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
-    register uint32_t c;
-    register const uint16_t *buf2;
-    register const uint32_t *buf4;
+    uint32_t c;
+    const uint16_t *buf2;
+    const uint32_t *buf4;
 
     c = ~crc;
     if (len && ((ptrdiff_t)buf & 1)) {
