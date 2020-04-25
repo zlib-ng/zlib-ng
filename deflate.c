@@ -1064,7 +1064,7 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
         crc_finalize(s);
 #  endif
         put_uint32(s, strm->adler);
-        put_uint32(s, strm->total_in);
+        put_uint32(s, (uint32_t)strm->total_in);
     } else
 #endif
     {
