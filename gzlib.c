@@ -136,7 +136,7 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
     /* save the path name for error messages */
 #ifdef WIDECHAR
     if (fd == -2) {
-        len = wcstombs(NULL, path, 0);
+        len = wcstombs(NULL, (const wchar_t *)path, 0);
         if (len == (size_t)-1)
             len = 0;
     } else
@@ -150,7 +150,7 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
 #ifdef WIDECHAR
     if (fd == -2)
         if (len) {
-            wcstombs(state->path, path, len + 1);
+            wcstombs(state->path, (const wchar_t *)path, len + 1);
         } else {
             *(state->path) = 0;
         }
@@ -182,7 +182,7 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
     /* open the file with the appropriate flags (or just use fd) */
     state->fd = fd > -1 ? fd : (
 #if defined(_WIN32)
-        fd == -2 ? _wopen(path, oflag, 0666) :
+        fd == -2 ? _wopen((const wchar_t *)path, oflag, 0666) :
 #elif __CYGWIN__
         fd == -2 ? open(state->path, oflag, 0666) :
 #endif
