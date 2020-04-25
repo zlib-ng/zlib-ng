@@ -16,7 +16,7 @@
 #include "../../deflate_p.h"
 #include "../../functable.h"
 
-extern int read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
+ZLIB_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 void slide_hash_sse2(deflate_state *s);
 #ifdef X86_AVX2
 void slide_hash_avx2(deflate_state *s);

@@ -13,7 +13,7 @@
 #include "../../deflate_p.h"
 #include "../../functable.h"
 
-ZLIB_INTERNAL int read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
+ZLIB_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
 #if defined(__ARM_NEON__) || defined(__ARM_NEON)
 #include <arm_neon.h>
