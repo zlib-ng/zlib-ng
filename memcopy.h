@@ -19,7 +19,11 @@ static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
 }
 
 #if defined(__ARM_NEON__) || defined(__ARM_NEON)
-#include <arm_neon.h>
+#ifdef _M_ARM64
+#  include <arm64_neon.h>
+#else
+#  include <arm_neon.h>
+#endif
 typedef uint8x16_t inffast_chunk_t;
 #define INFFAST_CHUNKSIZE sizeof(inffast_chunk_t)
 #endif

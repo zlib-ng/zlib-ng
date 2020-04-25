@@ -1,5 +1,5 @@
 /* slide_neon.c -- Optimized hash table shifting for ARM with support for NEON instructions
- * Copyright (C) 2017 Mika T. Lindqvist
+ * Copyright (C) 2017-2020 Mika T. Lindqvist
  *
  * Authors:
  * Mika T. Lindqvist <postmaster@raasu.org>
@@ -9,7 +9,11 @@
  */
 
 #if defined(ARM_NEON_SLIDEHASH)
-#include <arm_neon.h>
+#ifdef _M_ARM64
+#  include <arm64_neon.h>
+#else
+#  include <arm_neon.h>
+#endif
 #include "../../zbuild.h"
 #include "../../deflate.h"
 
