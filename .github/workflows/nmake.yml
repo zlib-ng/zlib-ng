@@ -9,7 +9,9 @@ jobs:
       matrix:
         name: [
           Windows NMake x86,
-          Windows NMake x64
+          Windows NMake x64,
+          Windows NMake ARM No Test,
+          Windows NMake ARM64 No Test
         ]
         include:
           - name: Windows NMake x86
@@ -21,6 +23,16 @@ jobs:
             os: windows-latest
             makefile: win32/Makefile.msc
             vc-vars: x86_amd64
+
+          - name: Windows NMake ARM No Test
+            os: windows-latest
+            makefile: win32/Makefile.arm
+            vc-vars: x86_arm
+
+          - name: Windows NMake ARM64 No Test
+            os: windows-latest
+            makefile: win32/Makefile.a64
+            vc-vars: x86_arm64
 
     steps:
     - name: Checkout repository
@@ -34,6 +46,8 @@ jobs:
 
     - name: Run test cases
       shell: cmd
+      # Don't run tests on Windows ARM
+      if: contains(matrix.vc-vars, 'arm') == false
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vc-vars }}
         nmake -f ${{ matrix.makefile }} test
