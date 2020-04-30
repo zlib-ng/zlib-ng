@@ -84,25 +84,19 @@ make test
 
 Build Options
 -------------
-
-| CMake                    | configure                | Description                                                                                  | Default                          |
-|:-------------------------|:-------------------------|:---------------------------------------------------------------------------------------------|----------------------------------|
-| ZLIB_COMPAT              | --zlib-compat            | Compile with zlib compatible API                                                             | OFF                              |
-| ZLIB_ENABLE_TESTS        |                          | Build test binaries                                                                          | ON                               |
-| WITH_GZFILEOP            | --with-gzfileops         | Compile with support for gzFile related functions                                            | OFF                              |
-| WITH_MSAN                | --with-msan              | Build with memory sanitizer                                                                  | OFF                              |
-| WITH_OPTIM               | --without-optimizations  | Build with optimisations                                                                     | ON                               |
-| WITH_NEW_STRATEGIES      | --without-new-strategies | Use new strategies                                                                           | ON                               |
-| WITH_NATIVE_INSTRUCTIONS |                          | Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native) | OFF                              |
-|                          | --force-sse2             | Assume SSE2 instructions are always available                                                | DISABLED (x86), ENABLED (x86_64) |
-| WITH_ACLE                | --without-acle           | Build with ACLE CRC                                                                          | ON                               |
-| WITH_NEON                | --without-neon           | Build with NEON intrinsics                                                                   | ON                               |
-| WITH_DFLTCC_DEFLATE      | --with-dfltcc-deflate    | Use DEFLATE COMPRESSION CALL instruction for compression on IBM Z                            | OFF                              |
-| WITH_DFLTCC_INFLATE      | --with-dfltcc-inflate    | Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z                          | OFF                              |
-| WITH_SANITIZERS          | --with-sanitizers        | Build with address sanitizer and all supported sanitizers other than memory sanitizer        | OFF                              |
-| WITH_FUZZERS             | --with-fuzzers           | Build test/fuzz                                                                              | OFF                              |
-| WITH_MAINTAINER_WARNINGS |                          | Build with project maintainer warnings                                                       | OFF                              |
-| WITH_CODE_COVERAGE       |                          | Enable code coverage reporting                                                               | OFF                              |
+| CMake                    | configure                | Description                                                                                  | Default |
+|:-------------------------|:-------------------------|:---------------------------------------------------------------------------------------------|---------|
+| ZLIB_COMPAT              | --zlib-compat            | Compile with zlib compatible API                                                             | OFF     |
+| ZLIB_ENABLE_TESTS        |                          | Build test binaries                                                                          | ON      |
+| WITH_GZFILEOP            | --with-gzfileops         | Compile with support for gzFile related functions                                            | OFF     |
+| WITH_MSAN                | --with-msan              | Build with memory sanitizer                                                                  | OFF     |
+| WITH_OPTIM               | --without-optimizations  | Build with optimisations                                                                     | ON      |
+| WITH_NEW_STRATEGIES      | --without-new-strategies | Use new strategies                                                                           | ON      |
+| WITH_NATIVE_INSTRUCTIONS |                          | Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native) | OFF     |
+| WITH_SANITIZERS          | --with-sanitizers        | Build with address sanitizer and all supported sanitizers other than memory sanitizer        | OFF     |
+| WITH_FUZZERS             | --with-fuzzers           | Build test/fuzz                                                                              | OFF     |
+| WITH_MAINTAINER_WARNINGS |                          | Build with project maintainer warnings                                                       | OFF     |
+| WITH_CODE_COVERAGE       |                          | Enable code coverage reporting                                                               | OFF     |
 
 Install
 -------
@@ -167,6 +161,21 @@ The deflate and zlib specifications were written by L. Peter Deutsch.
 
 zlib was originally created by Jean-loup Gailly (compression)
 and Mark Adler (decompression).
+
+Advanced Build Options
+----------------------
+| CMake               | configure             | Description                                                         | Default                |
+|:--------------------|:----------------------|:--------------------------------------------------------------------|------------------------|
+| UNALIGNED_OK        |                       | Allow unaligned reads                                               | ON (x86, arm)          |
+|                     | --force-sse2          | Assume SSE2 instructions are always available                       | ON (x86), OFF (x86_64) |
+| WITH_AVX2           |                       | Build with AVX2 intrinsics                                          | ON                     |
+| WITH_SSE2           |                       | Build with SSE2 intrinsics                                          | ON                     |
+| WITH_SSE4           |                       | Build with SSE4 intrinsics                                          | ON                     |
+| WITH_PCLMULQDQ      |                       | Build with PCLMULQDQ intrinsics                                     | ON                     |
+| WITH_ACLE           | --without-acle        | Build with ACLE intrinsics                                          | ON                     |
+| WITH_NEON           | --without-neon        | Build with NEON intrinsics                                          | ON                     |
+| WITH_DFLTCC_DEFLATE | --with-dfltcc-deflate | Use DEFLATE COMPRESSION CALL instruction for compression on IBM Z   | OFF                    |
+| WITH_DFLTCC_INFLATE | --with-dfltcc-inflate | Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z | OFF                    |
 
 Contents
 --------
