@@ -44,6 +44,8 @@ jobs:
           Ubuntu Clang MSAN,
           Windows MSVC Win32,
           Windows MSVC Win64,
+          Windows MSVC ARM No Test,
+          Windows MSVC ARM64 No Test,
           Windows GCC,
           Windows GCC Compat,
           Windows GCC Compat No Opt,
@@ -302,6 +304,16 @@ jobs:
             compiler: cl
             cmake-args: -A x64
 
+          - name: Windows MSVC ARM No Test
+            os: windows-latest
+            compiler: cl
+            cmake-args: -A ARM
+
+          - name: Windows MSVC ARM64 No Test
+            os: windows-latest
+            compiler: cl
+            cmake-args: -A ARM64
+
           - name: Windows GCC
             os: windows-latest
             compiler: gcc
@@ -396,6 +408,8 @@ jobs:
         cmake --build . --config ${{ matrix.build-config || 'Release' }}
 
     - name: Run test cases
+      # Don't run tests on Windows ARM
+      if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false
       run: |
         cd ${{ matrix.build-dir || '.' }}
         ctest -C Release --output-on-failure --max-width 120
