@@ -74,7 +74,6 @@ ZLIB_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
             } else {
                 s->strstart += s->match_length;
                 s->match_length = 0;
-                s->ins_h = s->window[s->strstart];
 #if MIN_MATCH != 3
                 functable.insert_string(s, s->strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
 #else

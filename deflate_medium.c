@@ -85,7 +85,6 @@ static void insert_match(deflate_state *s, struct match match) {
     } else {
         match.strstart += match.match_length;
         match.match_length = 0;
-        s->ins_h = s->window[match.strstart];
         if (match.strstart >= (MIN_MATCH - 2))
 #if MIN_MATCH != 3
             functable.insert_string(s, match.strstart + 2 - MIN_MATCH, MIN_MATCH - 2);

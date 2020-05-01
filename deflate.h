@@ -147,19 +147,9 @@ typedef struct internal_state {
 
     Pos *head; /* Heads of the hash chains or NIL. */
 
-    unsigned int  ins_h;             /* hash index of string to be inserted */
     unsigned int  hash_size;         /* number of elements in hash table */
     unsigned int  hash_bits;         /* log2(hash_size) */
     unsigned int  hash_mask;         /* hash_size-1 */
-
-#if !defined(__x86_64__) && !defined(_M_X64) && !defined(__i386) && !defined(_M_IX86)
-    unsigned int  hash_shift;
-#endif
-    /* Number of bits by which ins_h must be shifted at each input
-     * step. It must be such that after MIN_MATCH steps, the oldest
-     * byte no longer takes part in the hash key, that is:
-     *   hash_shift * MIN_MATCH >= hash_bits
-     */
 
     long block_start;
     /* Window position at the beginning of the current output block. Gets
