@@ -330,9 +330,6 @@ int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, 
 
     s->hash_size = 1 << s->hash_bits;
     s->hash_mask = s->hash_size - 1;
-#if !defined(__x86_64__) && !defined(_M_X64) && !defined(__i386) && !defined(_M_IX86)
-    s->hash_shift =  ((s->hash_bits+MIN_MATCH-1)/MIN_MATCH);
-#endif
 
 #ifdef X86_PCLMULQDQ_CRC
     window_padding = 8;
@@ -1205,7 +1202,6 @@ static void lm_init(deflate_state *s) {
     s->match_length = s->prev_length = MIN_MATCH-1;
     s->match_available = 0;
     s->match_start = 0;
-    s->ins_h = 0;
 }
 
 #ifdef ZLIB_DEBUG
@@ -1291,7 +1287,6 @@ void ZLIB_INTERNAL fill_window(deflate_state *s) {
         /* Initialize the hash value now that we have some input: */
         if (s->lookahead + s->insert >= MIN_MATCH) {
             unsigned int str = s->strstart - s->insert;
-            s->ins_h = s->window[str];
             if (str >= 1)
                 functable.quick_insert_string(s, str + 2 - MIN_MATCH);
 #if MIN_MATCH != 3

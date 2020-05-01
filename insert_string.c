@@ -15,16 +15,8 @@
  *    previous key instead of complete recalculation each time.
  */
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
-#  define UPDATE_HASH(s, h, val) \
-    h = (3483  * ((val) & 0xff) +\
-         23081 * (((val) >> 8) & 0xff) +\
-         6954  * (((val) >> 16) & 0xff) +\
-         20947 * (((val) >> 24) & 0xff));
-#else
-#  define UPDATE_HASH(s, h, val)\
-    h = (s->ins_h = ((s->ins_h << s->hash_shift) ^ ((val) >> ((MIN_MATCH - 1) * 8))) & s->hash_mask)
-#endif
+#define UPDATE_HASH(s, h, val) \
+    h = ((val * 2654435761U) >> (32 - s->hash_bits));
 
 #define INSERT_STRING       insert_string_c
 #define QUICK_INSERT_STRING quick_insert_string_c
