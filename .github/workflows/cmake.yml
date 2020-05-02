@@ -8,57 +8,57 @@ jobs:
       fail-fast: false
       matrix:
         name: [
-          Ubuntu 18.04 GCC,
-          Ubuntu 18.04 GCC OSB -O1,
-          Ubuntu 18.04 GCC Link Zlib,
-          Ubuntu 18.04 GCC No AVX2,
-          Ubuntu 18.04 GCC No SSE2,
-          Ubuntu 18.04 GCC No SSE4,
-          Ubuntu 18.04 GCC No PCLMULQDQ,
-          Ubuntu 18.04 GCC No Opt,
-          Ubuntu 18.04 GCC Compat,
-          Ubuntu 18.04 GCC Compat No Opt,
-          Ubuntu 18.04 GCC Compat,
-          Ubuntu 18.04 GCC ARM SF,
-          Ubuntu 18.04 GCC ARM SF No ACLE,
-          Ubuntu 18.04 GCC ARM SF No Opt,
-          Ubuntu 18.04 GCC ARM SF Compat,
-          Ubuntu 18.04 GCC ARM SF Compat No Opt,
-          Ubuntu 18.04 GCC ARM HF,
-          Ubuntu 18.04 GCC ARM HF No NEON,
-          Ubuntu 18.04 GCC ARM HF No Opt,
-          Ubuntu 18.04 GCC ARM HF Compat,
-          Ubuntu 18.04 GCC ARM HF Compat No Opt,
-          Ubuntu 18.04 GCC ARM HF Compat No Neon,
-          Ubuntu 18.04 GCC AARCH64 Compat,
-          Ubuntu 18.04 GCC AARCH64 Compat No Opt,
-          Ubuntu 18.04 GCC PPC Compat,
-          Ubuntu 18.04 GCC PPC64 Compat,
-          Ubuntu 18.04 GCC PPC64LE Compat,
-          Ubuntu 18.04 GCC SPARC64 Compat,
-          Ubuntu 18.04 GCC S390X Compat,
-          Ubuntu 18.04 Clang,
-          Ubuntu 18.04 Clang Inflate Strict,
-          Ubuntu 18.04 Clang Inflate Allow Invalid Dist,
-          Ubuntu 18.04 Clang Debug,
-          Ubuntu 18.04 Clang MSAN,
-          Windows 2019 MSVC Win32,
-          Windows 2019 MSVC Win64,
-          Windows 2019 GCC,
-          Windows 2019 GCC Compat,
-          Windows 2019 GCC Compat No Opt,
+          Ubuntu GCC,
+          Ubuntu GCC OSB -O1,
+          Ubuntu GCC Link Zlib,
+          Ubuntu GCC No AVX2,
+          Ubuntu GCC No SSE2,
+          Ubuntu GCC No SSE4,
+          Ubuntu GCC No PCLMULQDQ,
+          Ubuntu GCC No Opt,
+          Ubuntu GCC Compat,
+          Ubuntu GCC Compat No Opt,
+          Ubuntu GCC Compat,
+          Ubuntu GCC ARM SF,
+          Ubuntu GCC ARM SF No ACLE,
+          Ubuntu GCC ARM SF No Opt,
+          Ubuntu GCC ARM SF Compat,
+          Ubuntu GCC ARM SF Compat No Opt,
+          Ubuntu GCC ARM HF,
+          Ubuntu GCC ARM HF No NEON,
+          Ubuntu GCC ARM HF No Opt,
+          Ubuntu GCC ARM HF Compat,
+          Ubuntu GCC ARM HF Compat No Opt,
+          Ubuntu GCC ARM HF Compat No Neon,
+          Ubuntu GCC AARCH64 Compat,
+          Ubuntu GCC AARCH64 Compat No Opt,
+          Ubuntu GCC PPC Compat,
+          Ubuntu GCC PPC64 Compat,
+          Ubuntu GCC PPC64LE Compat,
+          Ubuntu GCC SPARC64 Compat,
+          Ubuntu GCC S390X Compat,
+          Ubuntu Clang,
+          Ubuntu Clang Inflate Strict,
+          Ubuntu Clang Inflate Allow Invalid Dist,
+          Ubuntu Clang Debug,
+          Ubuntu Clang MSAN,
+          Windows MSVC Win32,
+          Windows MSVC Win64,
+          Windows GCC,
+          Windows GCC Compat,
+          Windows GCC Compat No Opt,
           macOS Clang,
           macOS GCC
         ]
         include:
-          - name: Ubuntu 18.04 GCC
-            os: ubuntu-18.04
+          - name: Ubuntu GCC
+            os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_SANITIZERS=ON
             codecov: ubuntu_gcc
 
-          - name: Ubuntu 18.04 GCC OSB -O1
-            os: ubuntu-18.04
+          - name: Ubuntu GCC OSB -O1
+            os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_SANITIZERS=ON
             build-dir: ../build
@@ -66,225 +66,225 @@ jobs:
             codecov: ubuntu_gcc_osb
             cflags: -O1 -g3
 
-          - name: Ubuntu 18.04 GCC Link Zlib
-            os: ubuntu-18.04
+          - name: Ubuntu GCC Link Zlib
+            os: ubuntu-latest
             compiler: gcc
             cmake-args: -DZLIB_LINK_SYSLIB=ON
 
-          - name: Ubuntu 18.04 GCC No AVX2
-            os: ubuntu-18.04
+          - name: Ubuntu GCC No AVX2
+            os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_SANITIZERS=ON -DWITH_AVX2=OFF
             codecov: ubuntu_gcc_no_avx2
 
-          - name: Ubuntu 18.04 GCC No SSE2
-            os: ubuntu-18.04
+          - name: Ubuntu GCC No SSE2
+            os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_SANITIZERS=ON -DWITH_SSE2=OFF
             codecov: ubuntu_gcc_no_sse2
 
-          - name: Ubuntu 18.04 GCC No SSE4
-            os: ubuntu-18.04
+          - name: Ubuntu GCC No SSE4
+            os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_SANITIZERS=ON -DWITH_SSE4=OFF
             codecov: ubuntu_gcc_no_sse4
 
-          - name: Ubuntu 18.04 GCC No PCLMULQDQ
-            os: ubuntu-18.04
+          - name: Ubuntu GCC No PCLMULQDQ
+            os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_SANITIZERS=ON -DWITH_PCLMULQDQ=OFF
             codecov: ubuntu_gcc_no_pclmulqdq
 
-          - name: Ubuntu 18.04 GCC No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC No Opt
+            os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             codecov: ubuntu_gcc_no_opt
 
-          - name: Ubuntu 18.04 GCC Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC Compat
+            os: ubuntu-latest
             compiler: gcc
             cmake-args: -DZLIB_COMPAT=ON
             codecov: ubuntu_gcc_compat
 
-          - name: Ubuntu 18.04 GCC Compat No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC Compat No Opt
+            os: ubuntu-latest
             compiler: gcc
             cmake-args: -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             codecov: ubuntu_gcc_compat_no_opt
 
-          - name: Ubuntu 18.04 GCC Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC Compat
+            os: ubuntu-latest
             compiler: gcc
             cmake-args: -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
             codecov: ubuntu_gcc_compat_sani
 
-          - name: Ubuntu 18.04 GCC ARM SF
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM SF
+            os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf
 
-          - name: Ubuntu 18.04 GCC ARM SF No ACLE
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM SF No ACLE
+            os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_SANITIZERS=ON -DWITH_ACLE=OFF
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf_no_acle
 
-          - name: Ubuntu 18.04 GCC ARM SF No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM SF No Opt
+            os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf_no_opt
 
-          - name: Ubuntu 18.04 GCC ARM SF Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM SF Compat
+            os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf_compat
 
-          - name: Ubuntu 18.04 GCC ARM SF Compat No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM SF Compat No Opt
+            os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf_compat_no_opt
 
-          - name: Ubuntu 18.04 GCC ARM HF
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM HF
+            os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf
 
-          - name: Ubuntu 18.04 GCC ARM HF No NEON
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM HF No NEON
+            os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_SANITIZERS=ON -DWITH_NEON=OFF
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_no_neon
 
-          - name: Ubuntu 18.04 GCC ARM HF No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM HF No Opt
+            os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_no_opt
 
-          - name: Ubuntu 18.04 GCC ARM HF Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM HF Compat
+            os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_compat
 
-          - name: Ubuntu 18.04 GCC ARM HF Compat No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM HF Compat No Opt
+            os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_compat_no_opt
 
-          - name: Ubuntu 18.04 GCC ARM HF Compat No Neon
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM HF Compat No Neon
+            os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_NEON=OFF -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_compat_no_neon
 
-          - name: Ubuntu 18.04 GCC AARCH64 Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC AARCH64 Compat
+            os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
             asan-options: detect_leaks=0
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64_compat
 
-          - name: Ubuntu 18.04 GCC AARCH64 Compat No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC AARCH64 Compat No Opt
+            os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             asan-options: detect_leaks=0
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64_compat_no_opt
 
-          - name: Ubuntu 18.04 GCC PPC Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC PPC Compat
+            os: ubuntu-latest
             compiler: powerpc-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake -DZLIB_COMPAT=ON
             packages: qemu gcc-powerpc-linux-gnu libc-dev-powerpc-cross
             codecov: ubuntu_gcc_ppc_compat
 
             cflags: -static
-          - name: Ubuntu 18.04 GCC PPC64 Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC PPC64 Compat
+            os: ubuntu-latest
             compiler: powerpc64-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64.cmake -DZLIB_COMPAT=ON
             packages: qemu gcc-powerpc64-linux-gnu libc-dev-ppc64-cross
             cflags: -static
             codecov: ubuntu_gcc_ppc64_compat
 
-          - name: Ubuntu 18.04 GCC PPC64LE Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC PPC64LE Compat
+            os: ubuntu-latest
             compiler: powerpc64le-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake -DZLIB_COMPAT=ON
             packages: qemu gcc-powerpc64le-linux-gnu libc-dev-ppc64el-cross
             cflags: -static
             codecov: ubuntu_gcc_ppc64le_compat
 
-          - name: Ubuntu 18.04 GCC SPARC64 Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC SPARC64 Compat
+            os: ubuntu-latest
             compiler: sparc64-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake -DZLIB_COMPAT=ON
             packages: qemu gcc-sparc64-linux-gnu libc-dev-sparc64-cross
             cflags: -static
             codecov: ubuntu_gcc_sparc64_compat
 
-          - name: Ubuntu 18.04 GCC S390X Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC S390X Compat
+            os: ubuntu-latest
             compiler: s390x-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON
             packages: qemu gcc-s390x-linux-gnu libc-dev-s390x-cross
             cflags: -static
             codecov: ubuntu_gcc_s390x_compat
 
-          - name: Ubuntu 18.04 Clang
-            os: ubuntu-18.04
+          - name: Ubuntu Clang
+            os: ubuntu-latest
             compiler: clang
             packages: llvm-6.0
             gcov-exec: llvm-cov-6.0 gcov
             codecov: ubuntu_clang
 
-          - name: Ubuntu 18.04 Clang Inflate Strict
-            os: ubuntu-18.04
+          - name: Ubuntu Clang Inflate Strict
+            os: ubuntu-latest
             compiler: clang
             cmake-args: -DWITH_INFLATE_STRICT=ON
             packages: llvm-6.0
             gcov-exec: llvm-cov-6.0 gcov
             codecov: ubuntu_clang_inflate_strict
 
-          - name: Ubuntu 18.04 Clang Inflate Allow Invalid Dist
-            os: ubuntu-18.04
+          - name: Ubuntu Clang Inflate Allow Invalid Dist
+            os: ubuntu-latest
             compiler: clang
             cmake-args: -DWITH_INFLATE_ALLOW_INVALID_DIST=ON
             packages: llvm-6.0
             gcov-exec: llvm-cov-6.0 gcov
             codecov: ubuntu_clang_inflate_allow_invalid_dist
 
-          - name: Ubuntu 18.04 Clang Debug
-            os: ubuntu-18.04
+          - name: Ubuntu Clang Debug
+            os: ubuntu-latest
             compiler: clang
             packages: llvm-6.0
             gcov-exec: llvm-cov-6.0 gcov
             codecov: ubuntu_clang_debug
             build-config: Debug
 
-          - name: Ubuntu 18.04 Clang MSAN
-            os: ubuntu-18.04
+          - name: Ubuntu Clang MSAN
+            os: ubuntu-latest
             compiler: clang
             cmake-args: -GNinja -DWITH_MSAN=ON
             packages:  ninja-build llvm-6.0
@@ -292,30 +292,30 @@ jobs:
             cflags: -g3 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-memory-track-origins
             codecov: ubuntu_clang_msan
 
-          - name: Windows 2019 MSVC Win32
-            os: windows-2019
+          - name: Windows MSVC Win32
+            os: windows-latest
             compiler: cl
             cmake-args: -A Win32
 
-          - name: Windows 2019 MSVC Win64
-            os: windows-2019
+          - name: Windows MSVC Win64
+            os: windows-latest
             compiler: cl
             cmake-args: -A x64
 
-          - name: Windows 2019 GCC
-            os: windows-2019
+          - name: Windows GCC
+            os: windows-latest
             compiler: gcc
             cmake-args: -G Ninja
             codecov: win64_gcc
 
-          - name: Windows 2019 GCC Compat
-            os: windows-2019
+          - name: Windows GCC Compat
+            os: windows-latest
             compiler: gcc
             cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF
             codecov: win64_gcc_compat
 
-          - name: Windows 2019 GCC Compat No Opt
-            os: windows-2019
+          - name: Windows GCC Compat No Opt
+            os: windows-latest
             compiler: gcc
             cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF
             codecov: win64_gcc_compat_no_opt

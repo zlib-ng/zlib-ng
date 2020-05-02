@@ -8,17 +8,17 @@ jobs:
       fail-fast: false
       matrix:
         name: [
-          Windows 2019 NMake x86,
-          Windows 2019 NMake x64
+          Windows NMake x86,
+          Windows NMake x64
         ]
         include:
-          - name: Windows 2019 NMake x86
-            os: windows-2019
+          - name: Windows NMake x86
+            os: windows-latest
             makefile: win32/Makefile.msc
             vc-vars: x86
 
-          - name: Windows 2019 NMake x64
-            os: windows-2019
+          - name: Windows NMake x64
+            os: windows-latest
             makefile: win32/Makefile.msc
             vc-vars: x86_amd64
 
