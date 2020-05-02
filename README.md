@@ -168,6 +168,7 @@ Advanced Build Options
 
 | CMake                           | configure             | Description                                                         | Default                |
 |:--------------------------------|:----------------------|:--------------------------------------------------------------------|------------------------|
+| ZLIB_DUAL_LINK                  |                       | Dual link tests with system zlib                                    | OFF                    |
 | UNALIGNED_OK                    |                       | Allow unaligned reads                                               | ON (x86, arm)          |
 |                                 | --force-sse2          | Assume SSE2 instructions are always available                       | ON (x86), OFF (x86_64) |
 | WITH_AVX2                       |                       | Build with AVX2 intrinsics                                          | ON                     |
