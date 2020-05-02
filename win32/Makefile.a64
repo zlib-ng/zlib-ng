@@ -52,7 +52,6 @@ OBJS = \
 	trees.obj \
 	uncompr.obj \
 	zutil.obj \
-	fill_window_arm.obj
 
 !if "$(WITH_GZFILEOP)" != ""
 WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
