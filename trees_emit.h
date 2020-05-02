@@ -1,0 +1,243 @@
+#ifndef TREES_EMIT_H_
+#define TREES_EMIT_H_
+
+#include "zbuild.h"
+#include "trees_p.h"
+
+#ifdef ZLIB_DEBUG
+#  include <ctype.h>
+#endif
+
+/* trees.h */
+extern ZLIB_INTERNAL const ct_data static_ltree[L_CODES+2];
+extern ZLIB_INTERNAL const ct_data static_dtree[D_CODES];
+
+extern const unsigned char ZLIB_INTERNAL zng_dist_code[DIST_CODE_LEN];
+extern const unsigned char ZLIB_INTERNAL zng_length_code[MAX_MATCH-MIN_MATCH+1];
+
+extern ZLIB_INTERNAL const int base_length[LENGTH_CODES];
+extern ZLIB_INTERNAL const int base_dist[D_CODES];
+
+/* Bit buffer and deflate code stderr tracing */
+#ifdef ZLIB_DEBUG
+#  define send_bits_trace(s, value, length) { \
+        Tracevv((stderr, " l %2d v %4x ", length, value)); \
+        Assert(length > 0 && length <= BIT_BUF_SIZE, "invalid length"); \
+    }
+#  define send_code_trace(s, c) \
+    if (z_verbose > 2) { \
+        fprintf(stderr, "\ncd %3d ", (c)); \
+    }
+#else
+#  define send_bits_trace(s, value, length) 
+#  define send_code_trace(s, c)
+#endif
+
+/* If not enough room in bi_buf, use (valid) bits from bi_buf and
+ * (32 - bi_valid) bits from value, leaving (width - (32-bi_valid))
+ * unused bits in value.
+ */
+#define send_bits(s, t_val, t_len, bi_buf, bi_valid) {\
+    uint32_t val = (uint32_t)t_val;\
+    uint32_t len = (uint32_t)t_len;\
+    uint32_t total_bits = bi_valid + len;\
+    send_bits_trace(s, val, len);\
+    sent_bits_add(s, len);\
+    if (total_bits < BIT_BUF_SIZE) {\
+        bi_buf |= val << bi_valid;\
+        bi_valid = total_bits;\
+    } else if (bi_valid == BIT_BUF_SIZE) {\
+        put_uint32(s, bi_buf);\
+        bi_buf = val;\
+        bi_valid = len;\
+    } else {\
+        bi_buf |= val << bi_valid;\
+        put_uint32(s, bi_buf);\
+        bi_buf = val >> (BIT_BUF_SIZE - bi_valid);\
+        bi_valid = total_bits - BIT_BUF_SIZE;\
+    }\
+}
+
+/* Send a code of the given tree. c and tree must not have side effects */
+#ifdef ZLIB_DEBUG
+#  define send_code(s, c, tree, bi_buf, bi_valid) { \
+    send_code_trace(s, c); \
+    send_bits(s, tree[c].Code, tree[c].Len, bi_buf, bi_valid); \
+}
+#else
+#  define send_code(s, c, tree, bi_buf, bi_valid) \
+    send_bits(s, tree[c].Code, tree[c].Len, bi_buf, bi_valid)
+#endif
+
+/* ===========================================================================
+ * Flush the bit buffer, keeping at most 7 bits in it.
+ */
+static void bi_flush(deflate_state *s) {
+    if (s->bi_valid == 32) {
+        put_uint32(s, s->bi_buf);
+        s->bi_buf = 0;
+        s->bi_valid = 0;
+    } else {
+        if (s->bi_valid >= 16) {
+            put_short(s, s->bi_buf);
+            s->bi_buf >>= 16;
+            s->bi_valid -= 16;
+        }
+        if (s->bi_valid >= 8) {
+            put_byte(s, s->bi_buf);
+            s->bi_buf >>= 8;
+            s->bi_valid -= 8;
+        }
+    }
+}
+
+/* ===========================================================================
+ * Flush the bit buffer and align the output on a byte boundary
+ */
+static void bi_windup(deflate_state *s) {
+    if (s->bi_valid > 24) {
+        put_uint32(s, s->bi_buf);
+    } else {
+        if (s->bi_valid > 8) {
+            put_short(s, s->bi_buf);
+            s->bi_buf >>= 16;
+            s->bi_valid -= 16;
+        }
+        if (s->bi_valid > 0) {
+            put_byte(s, s->bi_buf);
+        }
+    }
+    s->bi_buf = 0;
+    s->bi_valid = 0;
+}
+
+/* ===========================================================================
+ * Emit literal code
+ */
+static inline uint32_t zng_emit_lit(deflate_state *s, const ct_data *ltree, unsigned c) {
+    uint32_t bi_valid = s->bi_valid;
+    uint32_t bi_buf = s->bi_buf;
+
+    send_code(s, c, ltree, bi_buf, bi_valid);
+
+    s->bi_valid = bi_valid;
+    s->bi_buf = bi_buf;
+
+    Tracecv(isgraph(c), (stderr, " '%c' ", c));
+
+    return ltree[c].Len;
+}
+
+/* ===========================================================================
+ * Emit match distance/length code
+ */
+static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree, 
+    uint32_t lc, uint32_t dist) {
+    uint32_t c, extra;
+    uint8_t code;
+    uint32_t dist_bits, dist_bits_len;
+    uint32_t lc_bits, lc_bits_len;
+    uint32_t bi_valid = s->bi_valid;
+    uint32_t bi_buf = s->bi_buf;
+
+    /* Send the length code, len is the match length - MIN_MATCH */
+    code = zng_length_code[lc];
+    c = code+LITERALS+1;
+    Assert(c < L_CODES, "bad l_code");
+    send_code_trace(s, c);
+
+    lc_bits = ltree[c].Code;
+    lc_bits_len = ltree[c].Len;
+    extra = extra_lbits[code];
+    if (extra != 0) {
+        lc -= base_length[code];
+        lc_bits |= (lc << lc_bits_len);
+        lc_bits_len += extra;
+    }
+    send_bits(s, lc_bits, lc_bits_len, bi_buf, bi_valid);
+
+    dist--; /* dist is now the match distance - 1 */
+    code = d_code(dist);
+    Assert(code < D_CODES, "bad d_code");
+    send_code_trace(s, code);
+
+    /* Send the distance code */
+    dist_bits = dtree[code].Code;
+    dist_bits_len = dtree[code].Len;
+    extra = extra_dbits[code];
+    if (extra != 0) {
+        dist -= base_dist[code];
+        dist_bits |= (dist << dist_bits_len);
+        dist_bits_len += extra;
+    }
+    send_bits(s, dist_bits, dist_bits_len, bi_buf, bi_valid);
+
+    s->bi_valid = bi_valid;
+    s->bi_buf = bi_buf;
+
+    return lc_bits_len + dist_bits_len;
+}
+
+/* ===========================================================================
+ * Emit end block
+ */
+static inline void zng_emit_end_block(deflate_state *s, const ct_data *ltree, const int last) {
+    uint32_t bi_valid = s->bi_valid;
+    uint32_t bi_buf = s->bi_buf;
+    send_code(s, END_BLOCK, ltree, bi_buf, bi_valid);
+    s->bi_valid = bi_valid;
+    s->bi_buf = bi_buf;
+    s->block_open = 0;
+    Tracev((stderr, "\n+++ Emit End Block: Last: %u Pending: %u Total Out: %zu\n",
+        last, s->pending, s->strm->total_out));
+    (void)last;
+}
+
+/* ===========================================================================
+ * Emit literal and count bits
+ */
+static inline void zng_tr_emit_lit(deflate_state *s, const ct_data *ltree, unsigned c) {
+    cmpr_bits_add(s, zng_emit_lit(s, ltree, c));
+}
+
+/* ===========================================================================
+ * Emit match and count bits
+ */
+static inline void zng_tr_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree, 
+    uint32_t lc, uint32_t dist) {
+    cmpr_bits_add(s, zng_emit_dist(s, ltree, dtree, lc, dist));
+}
+
+/* ===========================================================================
+ * Emit start of block
+ */
+static inline void zng_tr_emit_tree(deflate_state *s, int type, const int last) {
+    uint32_t bi_valid = s->bi_valid;
+    uint32_t bi_buf = s->bi_buf;
+    send_bits(s, (type << 1) + last, 3, bi_buf, bi_valid);
+    cmpr_bits_add(s, 3);
+    s->bi_valid = bi_valid;
+    s->bi_buf = bi_buf;
+    s->block_open = 1;
+    Tracev((stderr, "\n--- Emit Tree: Last: %u\n", last));
+} 
+
+/* ===========================================================================
+ * Align bit buffer on a byte boundary and count bits
+ */
+static inline void zng_tr_emit_align(deflate_state *s) {
+    bi_windup(s); /* align on byte boundary */
+    sent_bits_align(s);
+}
+
+/* ===========================================================================
+ * Emit an end block and align bit buffer if last block
+ */
+static inline void zng_tr_emit_end_block(deflate_state *s, const ct_data *ltree, const int last) {
+    zng_emit_end_block(s, ltree, last);
+    cmpr_bits_add(s, 7);
+    if (last)
+        zng_tr_emit_align(s);
+}
+
+#endif

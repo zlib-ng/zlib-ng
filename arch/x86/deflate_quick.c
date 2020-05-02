@@ -26,16 +26,10 @@
 #include "../../deflate_p.h"
 #include "../../functable.h"
 #include "../../memcopy.h"
+#include "../../trees_emit.h"
 
 extern const ct_data static_ltree[L_CODES+2];
 extern const ct_data static_dtree[D_CODES];
-
-
-extern void zng_tr_emit_lit(deflate_state *s, const ct_data *ltree, unsigned c);
-extern void zng_tr_emit_tree(deflate_state *s, int type, const int last);
-extern void zng_tr_emit_end_block(deflate_state *s, const ct_data *ltree, const int last);
-extern void zng_tr_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree, 
-    uint32_t lc, uint32_t dist);
 
 static inline long compare258(const unsigned char *const src0, const unsigned char *const src1) {
 #ifdef _MSC_VER

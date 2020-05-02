@@ -33,11 +33,8 @@
 #include "zbuild.h"
 #include "deflate.h"
 #include "trees_p.h"
+#include "trees_emit.h"
 #include "trees.h"
-
-#ifdef ZLIB_DEBUG
-#  include <ctype.h>
-#endif
 
 /* The lengths of the bit length codes are sent in order of decreasing
  * probability, to avoid transmitting the lengths for unused bit length codes.
@@ -78,8 +75,6 @@ static int  build_bl_tree    (deflate_state *s);
 static void send_all_trees   (deflate_state *s, int lcodes, int dcodes, int blcodes);
 static void compress_block   (deflate_state *s, const ct_data *ltree, const ct_data *dtree);
 static int  detect_data_type (deflate_state *s);
-static void bi_flush         (deflate_state *s);
-static void bi_windup        (deflate_state *s);
 
 /* ===========================================================================
  * Initialize the tree data structures for a new zlib stream.
@@ -589,135 +584,6 @@ static void send_all_trees(deflate_state *s, int lcodes, int dcodes, int blcodes
 }
 
 /* ===========================================================================
- * Emit literal code
- */
-static inline uint32_t zng_emit_lit(deflate_state *s, const ct_data *ltree, unsigned c) {
-    uint32_t bi_valid = s->bi_valid;
-    uint32_t bi_buf = s->bi_buf;
-
-    send_code(s, c, ltree, bi_buf, bi_valid);
-
-    s->bi_valid = bi_valid;
-    s->bi_buf = bi_buf;
-
-    Tracecv(isgraph(c), (stderr, " '%c' ", c));
-
-    return ltree[c].Len;
-}
-
-/* ===========================================================================
- * Emit match distance/length code
- */
-static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree, 
-    uint32_t lc, uint32_t dist) {
-    uint32_t c, extra;
-    uint8_t code;
-    uint32_t dist_bits, dist_bits_len;
-    uint32_t lc_bits, lc_bits_len;
-    uint32_t bi_valid = s->bi_valid;
-    uint32_t bi_buf = s->bi_buf;
-
-    /* Send the length code, len is the match length - MIN_MATCH */
-    code = zng_length_code[lc];
-    c = code+LITERALS+1;
-    Assert(c < L_CODES, "bad l_code");
-    send_code_trace(s, c);
-
-    lc_bits = ltree[c].Code;
-    lc_bits_len = ltree[c].Len;
-    extra = extra_lbits[code];
-    if (extra != 0) {
-        lc -= base_length[code];
-        lc_bits |= (lc << lc_bits_len);
-        lc_bits_len += extra;
-    }
-    send_bits(s, lc_bits, lc_bits_len, bi_buf, bi_valid);
-
-    dist--; /* dist is now the match distance - 1 */
-    code = d_code(dist);
-    Assert(code < D_CODES, "bad d_code");
-    send_code_trace(s, code);
-
-    /* Send the distance code */
-    dist_bits = dtree[code].Code;
-    dist_bits_len = dtree[code].Len;
-    extra = extra_dbits[code];
-    if (extra != 0) {
-        dist -= base_dist[code];
-        dist_bits |= (dist << dist_bits_len);
-        dist_bits_len += extra;
-    }
-    send_bits(s, dist_bits, dist_bits_len, bi_buf, bi_valid);
-
-    s->bi_valid = bi_valid;
-    s->bi_buf = bi_buf;
-
-    return lc_bits_len + dist_bits_len;
-}
-
-/* ===========================================================================
- * Emit end block
- */
-static inline void zng_emit_end_block(deflate_state *s, const ct_data *ltree, const int last) {
-    uint32_t bi_valid = s->bi_valid;
-    uint32_t bi_buf = s->bi_buf;
-    send_code(s, END_BLOCK, ltree, bi_buf, bi_valid);
-    s->bi_valid = bi_valid;
-    s->bi_buf = bi_buf;
-    s->block_open = 0;
-    Tracev((stderr, "\n+++ Emit End Block: Last: %u Pending: %u Total Out: %zu\n",
-        last, s->pending, s->strm->total_out));
-    (void)last;
-}
-
-/* ===========================================================================
- * Emit literal and count bits
- */
-void ZLIB_INTERNAL zng_tr_emit_lit(deflate_state *s, const ct_data *ltree, unsigned c) {
-    cmpr_bits_add(s, zng_emit_lit(s, ltree, c));
-}
-
-/* ===========================================================================
- * Emit match and count bits
- */
-void ZLIB_INTERNAL zng_tr_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree, 
-    uint32_t lc, uint32_t dist) {
-    cmpr_bits_add(s, zng_emit_dist(s, ltree, dtree, lc, dist));
-}
-
-/* ===========================================================================
- * Emit start of block
- */
-void ZLIB_INTERNAL zng_tr_emit_tree(deflate_state *s, int type, const int last) {
-    uint32_t bi_valid = s->bi_valid;
-    uint32_t bi_buf = s->bi_buf;
-    send_bits(s, (type << 1) + last, 3, bi_buf, bi_valid);
-    cmpr_bits_add(s, 3);
-    s->bi_valid = bi_valid;
-    s->bi_buf = bi_buf;
-    s->block_open = 1;
-    Tracev((stderr, "\n--- Emit Tree: Last: %u\n", last));
-} 
-
-/* ===========================================================================
- * Align bit buffer on a byte boundary and count bits
- */
-void ZLIB_INTERNAL zng_tr_emit_align(deflate_state *s) {
-    bi_windup(s); /* align on byte boundary */
-    sent_bits_align(s);
-}
-
-/* ===========================================================================
- * Emit an end block and align bit buffer if last block
- */
-void ZLIB_INTERNAL zng_tr_emit_end_block(deflate_state *s, const ct_data *ltree, const int last) {
-    zng_emit_end_block(s, ltree, last);
-    cmpr_bits_add(s, 7);
-    if (last)
-        zng_tr_emit_align(s);
-}
-
-/* ===========================================================================
  * Send a stored block
  */
 void ZLIB_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, unsigned long stored_len, int last) {
@@ -925,46 +791,4 @@ ZLIB_INTERNAL unsigned bi_reverse(unsigned code, int len) {
         code >>= 1, res <<= 1;
     } while (--len > 0);
     return res >> 1;
-}
-
-/* ===========================================================================
- * Flush the bit buffer, keeping at most 7 bits in it.
- */
-static void bi_flush(deflate_state *s) {
-    if (s->bi_valid == 32) {
-        put_uint32(s, s->bi_buf);
-        s->bi_buf = 0;
-        s->bi_valid = 0;
-    } else {
-        if (s->bi_valid >= 16) {
-            put_short(s, s->bi_buf);
-            s->bi_buf >>= 16;
-            s->bi_valid -= 16;
-        }
-        if (s->bi_valid >= 8) {
-            put_byte(s, s->bi_buf);
-            s->bi_buf >>= 8;
-            s->bi_valid -= 8;
-        }
-    }
-}
-
-/* ===========================================================================
- * Flush the bit buffer and align the output on a byte boundary
- */
-ZLIB_INTERNAL void bi_windup(deflate_state *s) {
-    if (s->bi_valid > 24) {
-        put_uint32(s, s->bi_buf);
-    } else {
-        if (s->bi_valid > 8) {
-            put_short(s, s->bi_buf);
-            s->bi_buf >>= 16;
-            s->bi_valid -= 16;
-        }
-        if (s->bi_valid > 0) {
-            put_byte(s, s->bi_buf);
-        }
-    }
-    s->bi_buf = 0;
-    s->bi_valid = 0;
 }

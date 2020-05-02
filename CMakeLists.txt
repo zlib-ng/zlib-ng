@@ -800,6 +800,7 @@ set(ZLIB_PRIVATE_HDRS
     match_p.h
     memcopy.h
     trees.h
+    trees_emit.h
     trees_p.h
     zbuild.h
     zendian.h
