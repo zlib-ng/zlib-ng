@@ -8,130 +8,130 @@ jobs:
       fail-fast: false
       matrix:
         name: [
-          Ubuntu 18.04 GCC,
-          Ubuntu 18.04 GCC OSB,
-          Ubuntu 18.04 GCC No Opt,
-          Ubuntu 18.04 GCC Compat,
-          Ubuntu 18.04 GCC Compat No Opt,
-          Ubuntu 18.04 GCC Compat,
-          Ubuntu 18.04 GCC ARM SF,
-          Ubuntu 18.04 GCC ARM SF No Opt,
-          Ubuntu 18.04 GCC ARM SF Compat,
-          Ubuntu 18.04 GCC ARM SF Compat No Opt,
-          Ubuntu 18.04 GCC ARM HF,
-          Ubuntu 18.04 GCC ARM HF No Opt,
-          Ubuntu 18.04 GCC ARM HF Compat,
-          Ubuntu 18.04 GCC ARM HF Compat No Opt,
-          Ubuntu 18.04 GCC ARM HF Compat No Neon,
-          Ubuntu 18.04 GCC AARCH64 Compat No Opt,
-          Ubuntu 18.04 GCC AARCH64 Compat,
+          Ubuntu GCC,
+          Ubuntu GCC OSB,
+          Ubuntu GCC No Opt,
+          Ubuntu GCC Compat,
+          Ubuntu GCC Compat No Opt,
+          Ubuntu GCC Compat,
+          Ubuntu GCC ARM SF,
+          Ubuntu GCC ARM SF No Opt,
+          Ubuntu GCC ARM SF Compat,
+          Ubuntu GCC ARM SF Compat No Opt,
+          Ubuntu GCC ARM HF,
+          Ubuntu GCC ARM HF No Opt,
+          Ubuntu GCC ARM HF Compat,
+          Ubuntu GCC ARM HF Compat No Opt,
+          Ubuntu GCC ARM HF Compat No Neon,
+          Ubuntu GCC AARCH64 Compat No Opt,
+          Ubuntu GCC AARCH64 Compat,
           macOS GCC
         ]
         include:
-          - name: Ubuntu 18.04 GCC
-            os: ubuntu-18.04
+          - name: Ubuntu GCC
+            os: ubuntu-latest
             compiler: gcc
             configure-args: --warn
 
-          - name: Ubuntu 18.04 GCC OSB
-            os: ubuntu-18.04
+          - name: Ubuntu GCC OSB
+            os: ubuntu-latest
             compiler: gcc
             configure-args: --warn
             build-dir: ../build
             build-src-dir: ../zlib-ng
 
-          - name: Ubuntu 18.04 GCC No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC No Opt
+            os: ubuntu-latest
             compiler: gcc
             configure-args: --warn --without-optimizations --without-new-strategies
 
-          - name: Ubuntu 18.04 GCC Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC Compat
+            os: ubuntu-latest
             compiler: gcc
             configure-args: --warn --zlib-compat
 
-          - name: Ubuntu 18.04 GCC Compat No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC Compat No Opt
+            os: ubuntu-latest
             compiler: gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
 
-          - name: Ubuntu 18.04 GCC Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC Compat
+            os: ubuntu-latest
             compiler: gcc
             configure-args: --warn --zlib-compat
 
-          - name: Ubuntu 18.04 GCC ARM SF
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM SF
+            os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn
             chost: arm-linux-gnueabi
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 GCC ARM SF No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM SF No Opt
+            os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --without-optimizations --without-new-strategies
             chost: arm-linux-gnueabi
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 GCC ARM SF Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM SF Compat
+            os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --zlib-compat
             chost: arm-linux-gnueabi
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 GCC ARM SF Compat No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM SF Compat No Opt
+            os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: arm-linux-gnueabi
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 GCC ARM HF
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM HF
+            os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn
             chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 GCC ARM HF No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM HF No Opt
+            os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --without-optimizations --without-new-strategies
             chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 GCC ARM HF Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM HF Compat
+            os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat
             chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 GCC ARM HF Compat No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM HF Compat No Opt
+            os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 GCC ARM HF Compat No Neon
-            os: ubuntu-18.04
+          - name: Ubuntu GCC ARM HF Compat No Neon
+            os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat --without-neon
             chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu 18.04 GCC AARCH64 Compat
-            os: ubuntu-18.04
+          - name: Ubuntu GCC AARCH64 Compat
+            os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
             configure-args: --warn --zlib-compat
             chost: aarch64-linux-gnu
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
-          - name: Ubuntu 18.04 GCC AARCH64 Compat No Opt
-            os: ubuntu-18.04
+          - name: Ubuntu GCC AARCH64 Compat No Opt
+            os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: aarch64-linux-gnu
