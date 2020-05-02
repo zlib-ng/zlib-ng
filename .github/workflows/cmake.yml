@@ -10,6 +10,7 @@ jobs:
         name: [
           Ubuntu 18.04 GCC,
           Ubuntu 18.04 GCC OSB -O1,
+          Ubuntu 18.04 GCC Link Zlib,
           Ubuntu 18.04 GCC No AVX2,
           Ubuntu 18.04 GCC No SSE2,
           Ubuntu 18.04 GCC No SSE4,
@@ -64,6 +65,11 @@ jobs:
             build-src-dir: ../zlib-ng
             codecov: ubuntu_gcc_osb
             cflags: -O1 -g3
+
+          - name: Ubuntu 18.04 GCC Link Zlib
+            os: ubuntu-18.04
+            compiler: gcc
+            cmake-args: -DZLIB_LINK_SYSLIB=ON
 
           - name: Ubuntu 18.04 GCC No AVX2
             os: ubuntu-18.04
