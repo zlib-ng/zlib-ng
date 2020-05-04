@@ -81,16 +81,19 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
 #ifdef NO_GZCOMPRESS
     fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
 #else
-    int err;
+    int err, read;
     size_t len = strlen(hello)+1;
+    size_t comprLen;
     gzFile file;
     z_off_t pos;
 
+    /* Write gz file with test data */
     file = PREFIX(gzopen)(fname, "wb");
     if (file == NULL) {
         fprintf(stderr, "gzopen error\n");
         exit(1);
     }
+    /* Write hello, hello! using gzputs and gzprintf */
     PREFIX(gzputc)(file, 'h');
     if (PREFIX(gzputs)(file, "ello") != 4) {
         fprintf(stderr, "gzputs err: %s\n", PREFIX(gzerror)(file, &err));
@@ -100,17 +103,42 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
         fprintf(stderr, "gzprintf err: %s\n", PREFIX(gzerror)(file, &err));
         exit(1);
     }
-    PREFIX(gzseek)(file, 1L, SEEK_CUR); /* add one zero byte */
+    /* Write string null-teriminator using gzseek */
+    if (PREFIX(gzseek)(file, 1L, SEEK_CUR) < 0)
+    {
+        fprintf(stderr, "gzseek error, gztell=%ld\n", (long)PREFIX(gztell)(file));
+        exit(1);
+    }
+    /* Write hello, hello! using gzfwrite using best compression level */
+    if (PREFIX(gzsetparams)(file, Z_BEST_COMPRESSION, Z_DEFAULT_STRATEGY) != Z_OK) {
+        fprintf(stderr, "gzsetparams err: %s\n", PREFIX(gzerror)(file, &err));
+        exit(1);
+    }
+    if (PREFIX(gzfwrite)(hello, len, 1, file) == 0) {
+        fprintf(stderr, "gzfwrite err: %s\n", PREFIX(gzerror)(file, &err));
+        exit(1);
+    }
+    /* Flush compressed bytes to file */
+    if (PREFIX(gzflush)(file, Z_SYNC_FLUSH) != Z_OK) {
+        fprintf(stderr, "gzflush err: %s\n", PREFIX(gzerror)(file, &err));
+        exit(1);
+    }
+    comprLen = PREFIX(gzoffset)(file);
+    if (comprLen <= 0) {
+        fprintf(stderr, "gzoffset err: %s\n", PREFIX(gzerror)(file, &err));
+        exit(1);
+    }
     PREFIX(gzclose)(file);
 
+    /* Open gz file we previously wrote */
     file = PREFIX(gzopen)(fname, "rb");
     if (file == NULL) {
         fprintf(stderr, "gzopen error\n");
         exit(1);
     }
-    strcpy((char*)uncompr, "garbage");
-
-    if (PREFIX(gzread)(file, uncompr, (unsigned)uncomprLen) != (int)len) {
+    /* Read uncompressed data - hello, hello! string twice */
+    strcpy((char*)uncompr, "garbages");
+    if (PREFIX(gzread)(file, uncompr, (unsigned)uncomprLen) != (int)(len + len)) {
         fprintf(stderr, "gzread err: %s\n", PREFIX(gzerror)(file, &err));
         exit(1);
     }
@@ -120,24 +148,28 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
     } else {
         printf("gzread(): %s\n", (char*)uncompr);
     }
-
-    pos = PREFIX(gzseek)(file, -8L, SEEK_CUR);
+    /* Check position at the end of the gz file */
+    if (PREFIX(gzeof)(file) != 1) {
+        fprintf(stderr, "gzeof err: not reporting end of stream\n");
+        exit(1);
+    }
+    /* Seek backwards mid-string and check char reading with gzgetc and gzungetc */
+    pos = PREFIX(gzseek)(file, -22L, SEEK_CUR);
     if (pos != 6 || PREFIX(gztell)(file) != pos) {
         fprintf(stderr, "gzseek error, pos=%ld, gztell=%ld\n",
                 (long)pos, (long)PREFIX(gztell)(file));
         exit(1);
     }
-
     if (PREFIX(gzgetc)(file) != ' ') {
         fprintf(stderr, "gzgetc error\n");
         exit(1);
     }
-
     if (PREFIX(gzungetc)(' ', file) != ' ') {
         fprintf(stderr, "gzungetc error\n");
         exit(1);
     }
-
+    /* Read first hello, hello! string with gzgets */
+    strcpy((char*)uncompr, "garbages");
     PREFIX(gzgets)(file, (char*)uncompr, (int)uncomprLen);
     if (strlen((char*)uncompr) != 7) { /* " hello!" */
         fprintf(stderr, "gzgets err after gzseek: %s\n", PREFIX(gzerror)(file, &err));
@@ -149,8 +181,53 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
     } else {
         printf("gzgets() after gzseek: %s\n", (char*)uncompr);
     }
+    /* Seek to second hello, hello! string */
+    pos = PREFIX(gzseek)(file, 14L, SEEK_SET);
+    if (pos != 14 || PREFIX(gztell)(file) != pos) {
+        fprintf(stderr, "gzseek error, pos=%ld, gztell=%ld\n",
+                (long)pos, (long)PREFIX(gztell)(file));
+        exit(1);
+    }
+    /* Check position not at end of file */
+    if (PREFIX(gzeof)(file) != 0) {
+        fprintf(stderr, "gzeof err: reporting end of stream\n");
+        exit(1);
+    }
+    /* Read first hello, hello! string with gzfread */
+    strcpy((char*)uncompr, "garbages");
+    read = PREFIX(gzfread)(uncompr, uncomprLen, 1, file);
+    if (strcmp(uncompr, hello) != 0) {
+        fprintf(stderr, "bad gzgets\n");
+        exit(1);
+    } else {
+        printf("gzgets(): %s\n", (char*)uncompr);
+    }
+    pos = PREFIX(gzoffset)(file);
+    if (pos != comprLen + 10) {
+        fprintf(stderr, "gzoffset err: wrong offset at end\n");
+        exit(1);
+    }
+    /* Trigger an error and clear it with gzclearerr */
+    PREFIX(gzfread)(uncompr, -1, -1, file);
+    PREFIX(gzerror)(file, &err);
+    if (err == 0) {
+        fprintf(stderr, "gzerror err: no error returned\n");
+        exit(1);
+    }
+    PREFIX(gzclearerr)(file);
+    PREFIX(gzerror)(file, &err);
+    if (err != 0) {
+        fprintf(stderr, "gzclearerr err: not zero %d\n", err);
+        exit(1);
+    }
 
     PREFIX(gzclose)(file);
+
+    if (PREFIX(gzclose)(NULL) != Z_STREAM_ERROR) {
+        fprintf(stderr, "gzclose unexpected return when handle null\n");
+        exit(1);
+    }
+
 #endif
 }
 
