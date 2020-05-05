@@ -62,7 +62,6 @@ jobs:
             cmake-args: -DWITH_SANITIZERS=ON
             build-dir: ../build
             build-src-dir: ../zlib-ng
-            codecov: ubuntu_gcc_osb
             cflags: -O1 -g3
 
           - name: Ubuntu 18.04 GCC No AVX2
