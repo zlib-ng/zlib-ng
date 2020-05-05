@@ -49,18 +49,6 @@ static void insert_match(deflate_state *s, struct match match) {
 
     /* matches that are not long enough we need to emit as literals */
     if (match.match_length < MIN_MATCH) {
-#ifdef NOT_TWEAK_COMPILER
-        while (match.match_length) {
-            match.strstart++;
-            match.match_length--;
-
-            if (match.match_length) {
-                if (match.strstart >= match.orgstart) {
-                    functable.quick_insert_string(s, match.strstart);
-                }
-            }
-        }
-#else
         match.strstart++;
         match.match_length--;
         if (match.match_length > 0) {
@@ -74,7 +62,6 @@ static void insert_match(deflate_state *s, struct match match) {
                 match.match_length = 0;
             }
         }
-#endif
         return;
     }
 
@@ -84,17 +71,7 @@ static void insert_match(deflate_state *s, struct match match) {
     if (match.match_length <= 16* s->max_insert_length && s->lookahead >= MIN_MATCH) {
         match.match_length--; /* string at strstart already in table */
         match.strstart++;
-#ifdef NOT_TWEAK_COMPILER
-        do {
-            if (LIKELY(match.strstart >= match.orgstart)) {
-                functable.quick_insert_string(s, match.strstart);
-            }
-            match.strstart++;
-            /* strstart never exceeds WSIZE-MAX_MATCH, so there are
-             * always MIN_MATCH bytes ahead.
-             */
-        } while (--match.match_length != 0);
-#else
+
         if (LIKELY(match.strstart >= match.orgstart)) {
             if (LIKELY(match.strstart + match.match_length - 1 >= match.orgstart)) {
                 functable.insert_string(s, match.strstart, match.match_length);
@@ -106,7 +83,6 @@ static void insert_match(deflate_state *s, struct match match) {
         }
         match.strstart += match.match_length;
         match.match_length = 0;
-#endif
     } else {
         match.strstart += match.match_length;
         match.match_length = 0;

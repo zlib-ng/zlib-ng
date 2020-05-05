@@ -391,11 +391,7 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
  * used.
  */
 
-#ifdef NOT_TWEAK_COMPILER
-#  define TRIGGER_LEVEL 6
-#else
-#  define TRIGGER_LEVEL 5
-#endif
+#define TRIGGER_LEVEL 5
 
 #ifdef ZLIB_DEBUG
 #  define send_code(s, c, tree, bit_buf, bits_valid) { \
