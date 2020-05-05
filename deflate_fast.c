@@ -76,13 +76,10 @@ ZLIB_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
                 s->strstart += s->match_length;
                 s->match_length = 0;
                 s->ins_h = s->window[s->strstart];
-#ifndef NOT_TWEAK_COMPILER
+#if MIN_MATCH != 3
                 functable.insert_string(s, s->strstart + 2 - MIN_MATCH, MIN_MATCH - 2);
 #else
                 functable.quick_insert_string(s, s->strstart + 2 - MIN_MATCH);
-#if MIN_MATCH != 3
-#warning        Call insert_string() MIN_MATCH-3 more times
-#endif
 #endif
                 /* If lookahead < MIN_MATCH, ins_h is garbage, but it does not
                  * matter since it will be recomputed at next deflate call.
