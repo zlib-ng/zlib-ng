@@ -223,8 +223,8 @@ ZLIB_INTERNAL void slide_hash_c(deflate_state *s) {
             *q++ = (Pos)(m >= t ? m-t: NIL);
         }
     }
-
 #endif /* NOT_TWEAK_COMPILER */
+
     n = wsize;
     p = &s->prev[n];
 #ifdef NOT_TWEAK_COMPILER
