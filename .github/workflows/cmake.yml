@@ -15,7 +15,7 @@ jobs:
           Ubuntu 18.04 GCC No SSE4,
           Ubuntu 18.04 GCC No PCLMULQDQ,
           Ubuntu 18.04 GCC No Opt,
-          Ubuntu 18.04 GCC Compat,
+          Ubuntu 18.04 GCC Compat Dynamic CRC,
           Ubuntu 18.04 GCC Compat No Opt,
           Ubuntu 18.04 GCC Compat,
           Ubuntu 18.04 GCC ARM SF,
@@ -95,11 +95,11 @@ jobs:
             cmake-args: -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             codecov: ubuntu_gcc_no_opt
 
-          - name: Ubuntu 18.04 GCC Compat
+          - name: Ubuntu 18.04 GCC Compat Dynamic CRC
             os: ubuntu-18.04
             compiler: gcc
-            cmake-args: -DZLIB_COMPAT=ON
-            codecov: ubuntu_gcc_compat
+            cmake-args: -DZLIB_COMPAT=ON -DWITH_DYNAMIC_CRC_TABLE=ON
+            codecov: ubuntu_gcc_compat_dyn_crc
 
           - name: Ubuntu 18.04 GCC Compat No Opt
             os: ubuntu-18.04
