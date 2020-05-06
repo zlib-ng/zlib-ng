@@ -50,7 +50,7 @@
 #define MAX_BITS 15
 /* All codes must not exceed MAX_BITS bits */
 
-#define BIT_BUF_SIZE 32
+#define BIT_BUF_SIZE 64
 /* size of bit buffer in bi_buf */
 
 #define END_BLOCK 256
@@ -262,7 +262,7 @@ typedef struct internal_state {
     unsigned long bits_sent;      /* bit length of compressed data sent mod 2^32 */
 #endif
 
-    uint32_t bi_buf;
+    uint64_t bi_buf;
     /* Output buffer. bits are inserted starting at the bottom (least
      * significant bits).
      */
@@ -354,6 +354,26 @@ static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
     put_byte(s, ((dw >> 16) & 0xff));
     put_byte(s, ((dw >> 8) & 0xff));
     put_byte(s, (dw & 0xff));
+#endif
+}
+
+/* ===========================================================================
+ * Output a 64-bit unsigned int LSB first on the stream.
+ * IN assertion: there is enough room in pending_buf.
+ */
+static inline void put_uint64(deflate_state *s, uint64_t lld) {
+#if defined(UNALIGNED_OK)
+    *(uint64_t *)(&s->pending_buf[s->pending]) = lld;
+    s->pending += 8;
+#else
+    put_byte(s, (lld & 0xff));
+    put_byte(s, ((lld >> 8) & 0xff));
+    put_byte(s, ((lld >> 16) & 0xff));
+    put_byte(s, ((lld >> 24) & 0xff));
+    put_byte(s, ((lld >> 32) & 0xff));
+    put_byte(s, ((lld >> 40) & 0xff));
+    put_byte(s, ((lld >> 48) & 0xff));
+    put_byte(s, ((lld >> 56) & 0xff));
 #endif
 }
 

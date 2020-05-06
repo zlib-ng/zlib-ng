@@ -470,7 +470,7 @@ static void send_tree(deflate_state *s, ct_data *tree, int max_code) {
 
     // Temp local variables
     uint32_t bi_valid = s->bi_valid;
-    uint32_t bi_buf = s->bi_buf;
+    uint64_t bi_buf = s->bi_buf;
 
     for (n = 0; n <= max_code; n++) {
         curlen = nextlen;
@@ -560,7 +560,7 @@ static void send_all_trees(deflate_state *s, int lcodes, int dcodes, int blcodes
 
     // Temp local variables
     uint32_t bi_valid = s->bi_valid;
-    uint32_t bi_buf = s->bi_buf;
+    uint64_t bi_buf = s->bi_buf;
 
     Tracev((stderr, "\nbl counts: "));
     send_bits(s, lcodes-257, 5, bi_buf, bi_valid); /* not +255 as stated in appnote.txt */
