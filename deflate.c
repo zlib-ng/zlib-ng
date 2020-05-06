@@ -597,7 +597,7 @@ int ZEXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int bits, int value) {
         put = BIT_BUF_SIZE - s->bi_valid;
         if (put > bits)
             put = bits;
-        s->bi_buf |= (uint32_t)((value & ((1 << put) - 1)) << s->bi_valid);
+        s->bi_buf |= (uint64_t)((value & ((1 << put) - 1)) << s->bi_valid);
         s->bi_valid += put;
         zng_tr_flush_bits(s);
         value >>= put;
