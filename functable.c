@@ -72,6 +72,9 @@ extern int32_t compare258_unaligned_64(const unsigned char *src0, const unsigned
 #ifdef X86_SSE42_CMP_STR
 extern int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1);
 #endif
+#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+extern int32_t compare258_unaligned_avx2(const unsigned char *src0, const unsigned char *src1);
+#endif
 #endif
 
 /* stub definitions */
@@ -222,6 +225,10 @@ ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned 
 #  ifdef X86_SSE42_CMP_STR
     if (x86_cpu_has_sse42)
         functable.compare258 = &compare258_unaligned_sse4;
+#  endif
+#  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_avx2)
+        functable.compare258 = &compare258_unaligned_avx2;
 #  endif
 #endif
 

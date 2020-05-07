@@ -1095,8 +1095,8 @@ case "${ARCH}" in
             if test ${HAVE_AVX2_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_AVX2"
                 SFLAGS="${SFLAGS} -DX86_AVX2"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_avx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_avx.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_avx.o slide_avx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_avx.lo slide_avx.lo"
             fi
 
             CFLAGS="${CFLAGS} -DX86_SSE42_CRC_HASH"
@@ -1144,8 +1144,8 @@ case "${ARCH}" in
             if test ${HAVE_AVX2_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_AVX2"
                 SFLAGS="${SFLAGS} -DX86_AVX2"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_avx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_avx.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_avx.o slide_avx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_avx.lo slide_avx.lo"
             fi
 
             if test ${HAVE_SSE42CMPSTR_INTRIN} -eq 1; then
