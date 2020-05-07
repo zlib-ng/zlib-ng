@@ -48,11 +48,6 @@ extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t le
 /* CRC32 */
 ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
 
-#ifdef DYNAMIC_CRC_TABLE
-extern volatile int crc_table_empty;
-extern void make_crc_table(void);
-#endif
-
 #ifdef __ARM_FEATURE_CRC32
 extern uint32_t crc32_acle(uint32_t, const unsigned char *, uint64_t);
 #endif
@@ -201,10 +196,6 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
            "crc32_z takes size_t but internally we have a uint64_t len");
     /* return a function pointer for optimized arches here after a capability test */
 
-#ifdef DYNAMIC_CRC_TABLE
-    if (crc_table_empty)
-        make_crc_table();
-#endif /* DYNAMIC_CRC_TABLE */
     cpu_check_features();
 
     if (sizeof(void *) == sizeof(ptrdiff_t)) {
