@@ -18,7 +18,7 @@
 #    define std2_longest_match
    /* Only use std3_longest_match for little_endian systems, also avoid using it with
       non-gcc compilers since the __builtin_ctzl() function might not be optimized. */
-#  elif(defined(__GNUC__) && defined(HAVE_BUILTIN_CTZL) && ((__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__) \
+#  elif(defined(__GNUC__) && (defined(HAVE_BUILTIN_CTZ) || defined(HAVE_BUILTIN_CTZLL)) && ((__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__) \
         || defined(__LITTLE_ENDIAN__)))
 #    define std3_longest_match
 #  elif(defined(_MSC_VER) && defined(_WIN32))
