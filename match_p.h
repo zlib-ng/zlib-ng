@@ -38,7 +38,15 @@
 #  endif
 #endif
 
-
+extern int32_t compare258_c(const unsigned char *src0, const unsigned char *src1);
+#ifdef UNALIGNED_OK
+extern int32_t compare258_unaligned_16(const unsigned char *src0, const unsigned char *src1);
+extern int32_t compare258_unaligned_32(const unsigned char *src0, const unsigned char *src1);
+extern int32_t compare258_unaligned_64(const unsigned char *src0, const unsigned char *src1);
+#ifdef X86_SSE42_CMP_STR
+extern int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1);
+#endif
+#endif
 
 #ifdef std1_longest_match
 
@@ -106,35 +114,11 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         if (match[best_len] != scan_end ||
             match[best_len-1] != scan_end1 ||
             *match != *scan ||
-            *++match != scan[1])
+            match[1] != scan[1])
             continue;
 
-        /*
-         * The check at best_len-1 can be removed because it will
-         * be made again later. (This heuristic is not always a win.)
-         * It is not necessary to compare scan[2] and match[2] since
-         * they are always equal when the other bytes match, given
-         * that the hash keys are equal and that HASH_BITS >= 8.
-         */
-        scan += 2;
-        match++;
-        Assert(*scan == *match, "match[2]?");
-
-        /*
-         * We check for insufficient lookahead only every 8th
-         * comparision; the 256th check will be made at strstart + 258.
-         */
-        do {
-        } while (*++scan == *++match && *++scan == *++match &&
-             *++scan == *++match && *++scan == *++match &&
-             *++scan == *++match && *++scan == *++match &&
-             *++scan == *++match && *++scan == *++match &&
-             scan < strend);
-
-        Assert(scan <= s->window+(unsigned int)(s->window_size-1), "wild scan");
-
-        len = MAX_MATCH - (int)(strend - scan);
-        scan = strend - MAX_MATCH;
+        len = compare258_c(scan, match);
+        Assert(scan+len <= window+(unsigned)(s->window_size-1), "wild scan");
 
         if (len > best_len) {
             s->match_start = cur_match;
@@ -233,61 +217,8 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         if (val != scan_start)
             continue;
 
-        /* It is not necessary to compare scan[2] and match[2] since
-         * they are always equal when the other bytes match, given that
-         * the hash keys are equal and that HASH_BITS >= 8. Compare 2
-         * bytes at a time at strstart+3, +5, ... up to strstart+257.
-         * We check for insufficient lookahead only every 4th
-         * comparison; the 128th check will be made at strstart+257.
-         * If MAX_MATCH-2 is not a multiple of 8, it is necessary to
-         * put more guard bytes at the end of the window, or to check
-         * more often for insufficient lookahead.
-         */
-        Assert(scan[2] == match[2], "scan[2]?");
-        scan++;
-        match++;
-
-        do {
-            uint16_t mval, sval;
-
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
-            if (mval != sval)
-                break;
-            match += sizeof(mval);
-            scan += sizeof(sval);
-
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
-            if (mval != sval)
-                break;
-            match += sizeof(mval);
-            scan += sizeof(sval);
-
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
-            if (mval != sval)
-                break;
-            match += sizeof(mval);
-            scan += sizeof(sval);
-
-            memcpy(&mval, match, sizeof(mval));
-            memcpy(&sval, scan, sizeof(sval));
-            if (mval != sval)
-                break;
-            match += sizeof(mval);
-            scan += sizeof(sval);
-        } while (scan < strend);
-
-        /*
-         * Here, scan <= window + strstart + 257
-         */
-        Assert(scan <= s->window+(unsigned)(s->window_size-1), "wild scan");
-        if (*scan == *match)
-            scan++;
-
-        len = (MAX_MATCH -1) - (int)(strend-scan);
-        scan = strend - (MAX_MATCH-1);
+        len = compare258_unaligned_16(scan, match);
+        Assert(scan+len <= window+(unsigned)(s->window_size-1), "wild scan");
 
         if (len > best_len) {
             s->match_start = cur_match;
@@ -447,42 +378,13 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         if (!cont)
             break;
 
-        /* It is not necessary to compare scan[2] and match[2] since they are
-         * always equal when the other bytes match, given that the hash keys
-         * are equal and that HASH_BITS >= 8. Compare 2 bytes at a time at
-         * strstart+3, +5, ... up to strstart+257. We check for insufficient
-         * lookahead only every 4th comparison; the 128th check will be made
-         * at strstart+257. If MAX_MATCH-2 is not a multiple of 8, it is
-         * necessary to put more guard bytes at the end of the window, or
-         * to check more often for insufficient lookahead.
-         */
-        scan += 2, match+=2;
-        Assert(*scan == *match, "match[2]?");
-        do {
-            unsigned long sv, mv, xor;
+#ifdef HAVE_BUILTIN_CTZLL
+        len = compare258_unaligned_64(scan, match);
+#elif defined(HAVE_BUILTIN_CTZ)
+        len = compare258_unaligned_32(scan, match);
+#endif
 
-            memcpy(&sv, scan, sizeof(sv));
-            memcpy(&mv, match, sizeof(mv));
-
-            xor = sv ^ mv;
-
-            if (xor) {
-                int match_byte = __builtin_ctzl(xor) / 8;
-                scan += match_byte;
-                break;
-            } else {
-                scan += sizeof(unsigned long);
-                match += sizeof(unsigned long);
-            }
-        } while (scan < strend);
-
-        if (scan > strend)
-            scan = strend;
-
-        Assert(scan <= window + (unsigned)(s->window_size-1), "wild scan");
-
-        len = MAX_MATCH - (int)(strend - scan);
-        scan = strend - MAX_MATCH;
+        Assert(scan+len <= window+(unsigned)(s->window_size-1), "wild scan");
 
         if (len > best_len) {
             s->match_start = cur_match;
