@@ -435,22 +435,6 @@ if(HAVE_BUILTIN_CTZ)
     add_definitions(-DHAVE_BUILTIN_CTZ)
 endif()
 #
-# check for __builtin_ctzl() support in the compiler
-#
-check_c_source_compiles(
-    "int main(void)
-    {
-        unsigned int zero = 0;
-        long test = __builtin_ctzl(zero);
-        (void)test;
-        return 0;
-    }"
-    HAVE_BUILTIN_CTZL
-)
-if(HAVE_BUILTIN_CTZL)
-    add_definitions(-DHAVE_BUILTIN_CTZL)
-endif()
-#
 # check for __builtin_ctzll() support in the compiler
 #
 check_c_source_compiles(
