@@ -31,8 +31,6 @@
 extern const ct_data static_ltree[L_CODES+2];
 extern const ct_data static_dtree[D_CODES];
 
-extern int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1);
-
 ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     IPos hash_head;
     unsigned dist, match_len, last;
@@ -67,7 +65,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
             dist = s->strstart - hash_head;
 
             if (dist > 0 && (dist-1) < (s->w_size - 1)) {
-                match_len = compare258_unaligned_sse4(s->window + s->strstart, s->window + hash_head);
+                match_len = functable.compare258(s->window + s->strstart, s->window + hash_head);
 
                 if (match_len >= MIN_MATCH) {
                     if (match_len > s->lookahead)
