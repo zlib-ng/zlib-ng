@@ -26,7 +26,7 @@
 #endif
 
 /* UNALIGNED_OK, SSE4.2 intrinsic comparison */
-int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1) {
+static inline int32_t compare258_unaligned_sse4_static(const unsigned char *src0, const unsigned char *src1) {
 #ifdef _MSC_VER
     const unsigned char *src0start = src0;
     const unsigned char *src0end = src0 + 256;
@@ -111,5 +111,14 @@ int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char
     return (int32_t)(ax - 16);
 #endif
 }
+
+int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1) {
+    return compare258_unaligned_sse4_static(src0, src1);
+}
+
+#define LONGEST_MATCH   longest_match_unaligned_sse4
+#define COMPARE258      compare258_unaligned_sse4_static
+
+#include "match_p.h"
 
 #endif

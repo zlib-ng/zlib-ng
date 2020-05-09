@@ -15,6 +15,7 @@ struct functable_s {
     uint32_t (* crc32)              (uint32_t crc, const unsigned char *buf, uint64_t len);
     void     (* slide_hash)         (deflate_state *s);
     int32_t  (* compare258)         (const unsigned char *src0, const unsigned char *src1);
+    int32_t  (* longest_match)      (deflate_state *const s, IPos cur_match);
 };
 
 ZLIB_INTERNAL extern __thread struct functable_s functable;

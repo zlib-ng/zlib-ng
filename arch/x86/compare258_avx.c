@@ -16,7 +16,7 @@
 #endif
 
 /* UNALIGNED_OK, AVX2 intrinsic comparison */
-int32_t compare258_unaligned_avx2(const unsigned char *src0, const unsigned char *src1) {
+static inline int32_t compare258_unaligned_avx2_static(const unsigned char *src0, const unsigned char *src1) {
     const unsigned char *src0start = src0;
     const unsigned char *src0end = src0 + 256;
  
@@ -52,5 +52,14 @@ int32_t compare258_unaligned_avx2(const unsigned char *src0, const unsigned char
 
     return (int32_t)(src0 - src0start);
 }
+
+int32_t compare258_unaligned_avx2(const unsigned char *src0, const unsigned char *src1) {
+    return compare258_unaligned_avx2_static(src0, src1);
+}
+
+#define LONGEST_MATCH   longest_match_unaligned_avx2
+#define COMPARE258      compare258_unaligned_avx2_static
+
+#include "match_p.h"
 
 #endif
