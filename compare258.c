@@ -9,7 +9,7 @@
 #include "fallback_builtins.h"
 
 /* ALIGNED, byte comparison */
-int32_t compare258_c(const unsigned char *src0, const unsigned char *src1) {
+static inline int32_t compare258_c_static(const unsigned char *src0, const unsigned char *src1) {
     const unsigned char *src0start = src0;
     const unsigned char *src0end = src0 + 258;
 
@@ -37,9 +37,18 @@ int32_t compare258_c(const unsigned char *src0, const unsigned char *src1) {
     return (int32_t)(src0 - src0start);
 }
 
+int32_t compare258_c(const unsigned char *src0, const unsigned char *src1) {
+    return compare258_c_static(src0, src1);
+}
+
+#define LONGEST_MATCH   longest_match_c
+#define COMPARE258      compare258_c_static
+
+#include "match_p.h"
+
 #ifdef UNALIGNED_OK
 /* UNALIGNED_OK, 16-bit integer comparison */
-int32_t compare258_unaligned_16(const unsigned char *src0, const unsigned char *src1) {
+static inline int32_t compare258_unaligned_16_static(const unsigned char *src0, const unsigned char *src1) {
     const unsigned char *src0start = src0;
     const unsigned char *src0end = src0 + 258;
 
@@ -61,9 +70,18 @@ int32_t compare258_unaligned_16(const unsigned char *src0, const unsigned char *
     return (int32_t)(src0 - src0start);
 }
 
+int32_t compare258_unaligned_16(const unsigned char *src0, const unsigned char *src1) {
+    return compare258_unaligned_16_static(src0, src1);
+}
+
+#define LONGEST_MATCH   longest_match_unaligned_16
+#define COMPARE258      compare258_unaligned_16_static
+
+#include "match_p.h"
+
 #ifdef HAVE_BUILTIN_CTZ
 /* UNALIGNED_OK, 32-bit integer comparison */
-int32_t compare258_unaligned_32(const unsigned char *src0, const unsigned char *src1) {
+static inline int32_t compare258_unaligned_32_static(const unsigned char *src0, const unsigned char *src1) {
     const unsigned char *src0start = src0;
     const unsigned char *src0end = src0 + 256;
 
@@ -88,11 +106,20 @@ int32_t compare258_unaligned_32(const unsigned char *src0, const unsigned char *
     return (int32_t)(src0 - src0start);
 }
 
+int32_t compare258_unaligned_32(const unsigned char *src0, const unsigned char *src1) {
+    return compare258_unaligned_32_static(src0, src1);
+}
+
+#define LONGEST_MATCH   longest_match_unaligned_32
+#define COMPARE258      compare258_unaligned_32_static
+
+#include "match_p.h"
+
 #endif
 
 #ifdef HAVE_BUILTIN_CTZLL
 /* UNALIGNED_OK, 64-bit integer comparison */
-int32_t compare258_unaligned_64(const unsigned char *src0, const unsigned char *src1) {
+static inline int32_t compare258_unaligned_64_static(const unsigned char *src0, const unsigned char *src1) {
     const unsigned char *src0start = src0;
     const unsigned char *src0end = src0 + 256;
 
@@ -116,6 +143,15 @@ int32_t compare258_unaligned_64(const unsigned char *src0, const unsigned char *
 
     return (int32_t)(src0 - src0start);
 }
+
+int32_t compare258_unaligned_64(const unsigned char *src0, const unsigned char *src1) {
+    return compare258_unaligned_64_static(src0, src1);
+}
+
+#define LONGEST_MATCH   longest_match_unaligned_64
+#define COMPARE258      compare258_unaligned_64_static
+
+#include "match_p.h"
 
 #endif
 

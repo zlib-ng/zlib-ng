@@ -77,6 +77,20 @@ extern int32_t compare258_unaligned_avx2(const unsigned char *src0, const unsign
 #endif
 #endif
 
+/* longest_match */
+extern int32_t longest_match_c(deflate_state *const s, IPos cur_match);
+#ifdef UNALIGNED_OK
+extern int32_t longest_match_unaligned_16(deflate_state *const s, IPos cur_match);
+extern int32_t longest_match_unaligned_32(deflate_state *const s, IPos cur_match);
+extern int32_t longest_match_unaligned_64(deflate_state *const s, IPos cur_match);
+#ifdef X86_SSE42_CMP_STR
+extern int32_t longest_match_unaligned_sse4(deflate_state *const s, IPos cur_match);
+#endif
+#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+extern int32_t longest_match_unaligned_avx2(deflate_state *const s, IPos cur_match);
+#endif
+#endif
+
 /* stub definitions */
 ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count);
 ZLIB_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const Pos str);
@@ -84,6 +98,7 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
 ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len);
 ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
 ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned char *src1);
+ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, IPos cur_match);
 
 /* functable init */
 ZLIB_INTERNAL __thread struct functable_s functable = {
@@ -92,7 +107,8 @@ ZLIB_INTERNAL __thread struct functable_s functable = {
     adler32_stub,
     crc32_stub,
     slide_hash_stub,
-    compare258_stub
+    compare258_stub,
+    longest_match_stub
 };
 
 ZLIB_INTERNAL void cpu_check_features(void)
@@ -233,5 +249,30 @@ ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned 
 #endif
 
     return functable.compare258(src0, src1);
+}
+
+ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, IPos cur_match) {
+
+    functable.longest_match = &longest_match_c;
+
+#ifdef UNALIGNED_OK
+#  ifdef HAVE_BUILTIN_CTZLL
+    functable.longest_match = &longest_match_unaligned_64;
+#  elif defined(HAVE_BUILTIN_CTZ)
+    functable.longest_match = &longest_match_unaligned_32;
+#  else
+    functable.longest_match = &longest_match_unaligned_16;
+#  endif
+#  ifdef X86_SSE42_CMP_STR
+    if (x86_cpu_has_sse42)
+        functable.longest_match = &longest_match_unaligned_sse4;
+#  endif
+#  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_avx2)
+        functable.longest_match = &longest_match_unaligned_avx2;
+#  endif
+#endif
+
+    return functable.longest_match(s, cur_match);
 }
 

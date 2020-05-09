@@ -29,7 +29,7 @@ typedef uint8_t         bestcmp_t;
  * string (strstart) and its distance is <= MAX_DIST, and prev_length >=1
  * OUT assertion: the match length is not greater than s->lookahead
  */
-static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
+int32_t LONGEST_MATCH(deflate_state *const s, IPos cur_match) {
     unsigned int strstart = s->strstart;
     const unsigned wmask = s->w_mask;
     unsigned char *window = s->window;
@@ -104,7 +104,7 @@ static inline unsigned longest_match(deflate_state *const s, IPos cur_match) {
         if (!cont)
             break;
 
-        len = functable.compare258(scan, match);
+        len = COMPARE258(scan, match);
         Assert(scan+len <= window+(unsigned)(s->window_size-1), "wild scan");
 
         if (len > best_len) {
