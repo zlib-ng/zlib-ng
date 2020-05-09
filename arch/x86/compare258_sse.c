@@ -26,10 +26,8 @@
 #endif
 
 /* UNALIGNED_OK, SSE4.2 intrinsic comparison */
-static inline int32_t compare258_unaligned_sse4_static(const unsigned char *src0, const unsigned char *src1) {
-#ifdef _MSC_VER
-    const unsigned char *src0start = src0;
-    const unsigned char *src0end = src0 + 256;
+static inline int32_t compare256_unaligned_sse4_static(const unsigned char *src0, const unsigned char *src1) {
+    int32_t len = 0;
 
     do {
         #define mode _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY
@@ -40,76 +38,34 @@ static inline int32_t compare258_unaligned_sse4_static(const unsigned char *src0
         xmm_src1 = _mm_loadu_si128((__m128i *)src1);
         ret = _mm_cmpestri(xmm_src0, 16, xmm_src1, 16, mode);
         if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, mode)) {
-            return (int32_t)(src0 - src0start + ret);
+            return (int32_t)(len + ret);
         }
-        src0 += 16, src1 += 16;
+        src0 += 16, src1 += 16, len += 16;
 
         xmm_src0 = _mm_loadu_si128((__m128i *)src0);
         xmm_src1 = _mm_loadu_si128((__m128i *)src1);
         ret = _mm_cmpestri(xmm_src0, 16, xmm_src1, 16, mode);
         if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, mode)) {
-            return (int32_t)(src0 - src0start + ret);
+            return (int32_t)(len + ret);
         }
-        src0 += 16, src1 += 16;
-    } while (src0 < src0end);
+        src0 += 16, src1 += 16, len += 16;
+    } while (len < 256);
 
-    if (*(uint16_t *)src0 == *(uint16_t *)src1)
-        src0 += 2, src1 += 2;
-    else if (*src0 == *src1)
-        src0 += 1, src1 += 1;
+    return len;
+}
 
-    return (int32_t)(src0 - src0start);
-#else
-    uintptr_t ax, dx, cx;
-    __m128i xmm_src0;
+static inline int32_t compare258_unaligned_sse4_static(const unsigned char *src0, const unsigned char *src1) {
+    if (*(uint16_t *)src0 != *(uint16_t *)src1)
+        return (*src0 == *src1);
 
-    ax = 16;
-    dx = 16;
-    /* Set cx to something, otherwise gcc thinks it's used
-       uninitalised */
-    cx = 0;
+    src0 += 2, src1 += 2;
 
-    __asm__ __volatile__ (
-    "1:"
-        "movdqu     -16(%[src0], %[ax]), %[xmm_src0]\n\t"
-        "pcmpestri  $0x18, -16(%[src1], %[ax]), %[xmm_src0]\n\t"
-        "jc         2f\n\t"
-        "add        $16, %[ax]\n\t"
+    if (*src0 != *src1)
+        return 2;
+    if (src0[1] != src1[1])
+        return 3;
 
-        "movdqu     -16(%[src0], %[ax]), %[xmm_src0]\n\t"
-        "pcmpestri  $0x18, -16(%[src1], %[ax]), %[xmm_src0]\n\t"
-        "jc         2f\n\t"
-        "add        $16, %[ax]\n\t"
-
-        "cmp        $256 + 16, %[ax]\n\t"
-        "jb         1b\n\t"
-
-#  if !defined(__x86_64__)
-        "movzwl     -16(%[src0], %[ax]), %[dx]\n\t"
-#  else
-        "movzwq     -16(%[src0], %[ax]), %[dx]\n\t"
-#  endif
-        "xorw       -16(%[src1], %[ax]), %%dx\n\t"
-        "jnz        3f\n\t"
-
-        "add        $2, %[ax]\n\t"
-        "jmp        4f\n\t"
-    "3:\n\t"
-        "rep; bsf   %[dx], %[cx]\n\t"
-        "shr        $3, %[cx]\n\t"
-    "2:"
-        "add        %[cx], %[ax]\n\t"
-    "4:"
-    : [ax] "+a" (ax),
-      [cx] "+c" (cx),
-      [dx] "+d" (dx),
-      [xmm_src0] "=x" (xmm_src0)
-    : [src0] "r" (src0),
-      [src1] "r" (src1)
-    : "cc"
-    );
-    return (int32_t)(ax - 16);
-#endif
+    return compare256_unaligned_sse4_static(src0, src1) + 2;
 }
 
 int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1) {
@@ -117,6 +73,7 @@ int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char
 }
 
 #define LONGEST_MATCH   longest_match_unaligned_sse4
+#define COMPARE256      compare256_unaligned_sse4_static
 #define COMPARE258      compare258_unaligned_sse4_static
 
 #include "match_p.h"

@@ -16,10 +16,9 @@
 #endif
 
 /* UNALIGNED_OK, AVX2 intrinsic comparison */
-static inline int32_t compare258_unaligned_avx2_static(const unsigned char *src0, const unsigned char *src1) {
-    const unsigned char *src0start = src0;
-    const unsigned char *src0end = src0 + 256;
- 
+static inline int32_t compare256_unaligned_avx2_static(const unsigned char *src0, const unsigned char *src1) {
+    int32_t len = 0;
+    
     do {
         __m256i ymm_src0, ymm_src1, ymm_cmp;
         ymm_src0 = _mm256_loadu_si256((__m256i*)src0);
@@ -28,10 +27,10 @@ static inline int32_t compare258_unaligned_avx2_static(const unsigned char *src0
         int mask = _mm256_movemask_epi8(ymm_cmp); 
         if ((unsigned int)mask != 0xFFFFFFFF) {
             int match_byte = __builtin_ctz(~mask); /* Invert bits so identical = 0 */
-            return (int32_t)(src0 - src0start + match_byte);
+            return (int32_t)(len + match_byte);
         }
 
-        src0 += 32, src1 += 32;
+        src0 += 32, src1 += 32, len += 32;
 
         ymm_src0 = _mm256_loadu_si256((__m256i*)src0);
         ymm_src1 = _mm256_loadu_si256((__m256i*)src1);
@@ -39,18 +38,26 @@ static inline int32_t compare258_unaligned_avx2_static(const unsigned char *src0
         mask = _mm256_movemask_epi8(ymm_cmp); 
         if ((unsigned int)mask != 0xFFFFFFFF) {
             int match_byte = __builtin_ctz(~mask);
-            return (int32_t)(src0 - src0start + match_byte);
+            return (int32_t)(len + match_byte);
         }
 
-        src0 += 32, src1 += 32;
-    } while (src0 < src0end);
+        src0 += 32, src1 += 32, len += 32;
+    } while (len < 256);
 
-    if (*(uint16_t *)src0 == *(uint16_t *)src1)
-        src0 += 2, src1 += 2;
-    else if (*src0 == *src1)
-        src0 += 1, src1 += 1;
+    return len;
+}
 
-    return (int32_t)(src0 - src0start);
+static inline int32_t compare258_unaligned_avx2_static(const unsigned char *src0, const unsigned char *src1) { 
+    if (*(uint16_t *)src0 != *(uint16_t *)src1)
+        return (*src0 == *src1);
+
+    src0 += 2, src1 += 2;
+    if (*src0 != *src1)
+        return 2;
+    if (src0[1] != src1[1])
+        return 3;
+
+    return compare256_unaligned_avx2_static(src0, src1) + 2;
 }
 
 int32_t compare258_unaligned_avx2(const unsigned char *src0, const unsigned char *src1) {
@@ -58,6 +65,7 @@ int32_t compare258_unaligned_avx2(const unsigned char *src0, const unsigned char
 }
 
 #define LONGEST_MATCH   longest_match_unaligned_avx2
+#define COMPARE256      compare256_unaligned_avx2_static
 #define COMPARE258      compare258_unaligned_avx2_static
 
 #include "match_p.h"
