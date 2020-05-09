@@ -104,7 +104,12 @@ int32_t LONGEST_MATCH(deflate_state *const s, IPos cur_match) {
         if (!cont)
             break;
 
+#if MIN_MATCH >= 2 && defined(UNALIGNED_OK)
+        len = COMPARE256(scan+2, match+2) + 2;
+#else
         len = COMPARE258(scan, match);
+#endif
+
         Assert(scan+len <= window+(unsigned)(s->window_size-1), "wild scan");
 
         if (len > best_len) {
@@ -128,3 +133,7 @@ int32_t LONGEST_MATCH(deflate_state *const s, IPos cur_match) {
         return best_len;
     return s->lookahead;
 }
+
+#undef LONGEST_MATCH
+#undef COMPARE256
+#undef COMPARE258
