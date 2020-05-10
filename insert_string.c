@@ -14,7 +14,6 @@
  *    input characters, so that a running hash key can be computed from the
  *    previous key instead of complete recalculation each time.
  */
-
 #define UPDATE_HASH(s, h, val) \
     h = ((val * 2654435761U) >> (32 - s->hash_bits));
 
