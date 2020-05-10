@@ -29,15 +29,16 @@
  */
 ZLIB_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, const Pos str) {
     Pos head;
+    uint8_t *strstart = s->window + str;
     uint32_t val, hm, h = 0;
 
 #ifdef UNALIGNED_OK
-    val = *(uint32_t *)(s->window + str);
+    val = *(uint32_t *)(strstart);
 #else
-    val  = ((uint32_t)s->window[str]);
-    val |= ((uint32_t)s->window[str+1] << 8);
-    val |= ((uint32_t)s->window[str+2] << 16);
-    val |= ((uint32_t)s->window[str+3] << 24);
+    val  = ((uint32_t)(strstart[0]));
+    val |= ((uint32_t)(strstart[1]) << 8);
+    val |= ((uint32_t)(strstart[2]) << 16);
+    val |= ((uint32_t)(strstart[3]) << 24);
 #endif
 
     UPDATE_HASH(s, h, val);
