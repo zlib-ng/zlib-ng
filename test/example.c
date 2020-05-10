@@ -196,19 +196,19 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
     /* Read first hello, hello! string with gzfread */
     strcpy((char*)uncompr, "garbages");
     read = PREFIX(gzfread)(uncompr, uncomprLen, 1, file);
-    if (strcmp(uncompr, hello) != 0) {
+    if (strcmp((const char *)uncompr, hello) != 0) {
         fprintf(stderr, "bad gzgets\n");
         exit(1);
     } else {
         printf("gzgets(): %s\n", (char*)uncompr);
     }
     pos = PREFIX(gzoffset)(file);
-    if (pos != comprLen + 10) {
+    if (pos < 0 || (size_t)pos != (comprLen + 10)) {
         fprintf(stderr, "gzoffset err: wrong offset at end\n");
         exit(1);
     }
     /* Trigger an error and clear it with gzclearerr */
-    PREFIX(gzfread)(uncompr, -1, -1, file);
+    PREFIX(gzfread)(uncompr, (size_t)-1, (size_t)-1, file);
     PREFIX(gzerror)(file, &err);
     if (err == 0) {
         fprintf(stderr, "gzerror err: no error returned\n");
@@ -319,10 +319,15 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
 #ifndef ZLIB_COMPAT
     int level = -1;
     int strategy = -1;
-    zng_deflate_param_value params[] = {
-        { .param = Z_DEFLATE_LEVEL, .buf = &level, .size = sizeof(level) },
-        { .param = Z_DEFLATE_STRATEGY, .buf = &strategy, .size = sizeof(strategy) },
-    };
+    zng_deflate_param_value params[2];
+
+    params[0].param = Z_DEFLATE_LEVEL;
+    params[0].buf = &level;
+    params[0].size = sizeof(level);
+
+    params[1].param = Z_DEFLATE_STRATEGY;
+    params[1].buf = &strategy;
+    params[1].size = sizeof(strategy);
 #endif
 
     c_stream.zalloc = zalloc;
