@@ -54,6 +54,7 @@ include(CMakeDependentOption)
 include(FeatureSummary)
 
 include(cmake/archdetect.cmake)
+include(cmake/detect-sanitizer.cmake)
 
 if(CMAKE_TOOLCHAIN_FILE)
     message(STATUS "Using CMake toolchain: ${CMAKE_TOOLCHAIN_FILE}")
@@ -309,85 +310,13 @@ endif()
 #
 check_include_file(unistd.h Z_HAVE_UNISTD_H)
 
-if(WITH_SANITIZERS AND WITH_MSAN)
+if(WITH_MSAN AND WITH_SANITIZERS)
     message(FATAL_ERROR "Memory sanitizer is incompatible with address sanitizer")
+elseif(WITH_MSAN)
+    add_memory_sanitizer_check()
+elseif(WITH_SANITIZERS)
+    add_sanitizer_checks()
 endif()
-
-if(WITH_MSAN)
-    set(CMAKE_REQUIRED_FLAGS "-fsanitize=memory")
-    check_c_source_compiles("int main() { return 0; }"
-        HAS_MSAN FAIL_REGEX "not supported|unrecognized command")
-    if(HAS_MSAN)
-        set(SANITIZERS_FLAGS "-fsanitize=memory")
-        message(STATUS "Adding memory sanitizer flag: ${SANITIZERS_FLAGS}")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZERS_FLAGS}")
-    endif()
-    set(CMAKE_REQUIRED_FLAGS)
-endif()
-
-if(WITH_SANITIZERS)
-    set(_sanitize_flags
-        address
-        alignment
-        array-bounds
-        bool
-        bounds
-        builtin
-        enum
-        float-divide-by-zero
-        function
-        integer-divide-by-zero
-        leak
-        null
-        nonnull-attribute
-        object-size
-        pointer-compare             # Depends on 'address'
-        pointer-overflow
-        pointer-subtract            # Depends on 'address'
-        return
-        returns-nonnull-attribute
-        shift
-        shift-base
-        shift-exponent
-        signed-integer-overflow
-        undefined
-        unsigned-integer-overflow
-        vla-bound
-        vptr
-       )
-    if(NOT UNALIGNED_OK)
-        list(APPEND _sanitize_flags alignment)
-    endif()
-    set(SANITIZERS_FLAGS "")
-    foreach(_flag ${_sanitize_flags})
-        if(NOT (CMAKE_CROSSCOMPILING_EMULATOR AND ${_flag} STREQUAL "leak")) # LeakSanitizer crashes under qemu
-            set(CMAKE_REQUIRED_FLAGS "-fsanitize=${SANITIZERS_FLAGS},${_flag}")
-            check_c_source_compiles("int main() { return 0; }"
-              HAS_SANITIZER_${_flag} FAIL_REGEX "not supported|unrecognized command")
-            if(${HAS_SANITIZER_${_flag}})
-                if("${SANITIZERS_FLAGS}" STREQUAL "")
-                    set(SANITIZERS_FLAGS "${_flag}")
-                else()
-                    set(SANITIZERS_FLAGS "${SANITIZERS_FLAGS},${_flag}")
-                endif()
-            endif()
-            set(CMAKE_REQUIRED_FLAGS)
-        endif()
-    endforeach()
-
-    if(NOT ${SANITIZERS_FLAGS} STREQUAL "")
-        set(SANITIZERS_FLAGS "-fsanitize=${SANITIZERS_FLAGS}")
-        # Group flag -fsanitize=undefined will automatically add alignment, even if it is not in our
-        # sanitize flag list, so we need to explicitly disable alignment sanitizing.
-        if(UNALIGNED_OK AND ${SANITIZERS_FLAGS} MATCHES "alignment")
-            set(SANITIZERS_FLAGS "${SANITIZERS_FLAGS} -fno-sanitize=alignment")
-        endif()
-    endif()
-
-    message(STATUS "Adding sanitizers flags: ${SANITIZERS_FLAGS}")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${SANITIZERS_FLAGS}")
-endif()
-
 #
 # Check if we can hide zlib internal symbols that are linked between separate source files using hidden
 #
