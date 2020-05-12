@@ -69,11 +69,6 @@ else()
     add_feature_info(CMAKE_BUILD_TYPE 1 "Build type: ${CMAKE_BUILD_TYPE} (selected)")
 endif()
 
-check_include_file(sys/types.h HAVE_SYS_TYPES_H)
-check_include_file(stdint.h    HAVE_STDINT_H)
-check_include_file(stddef.h    HAVE_STDDEF_H)
-check_include_file(sys/sdt.h   HAVE_SYS_SDT_H)
-
 #
 # Options parsing
 #
@@ -275,6 +270,15 @@ if(WITH_CODE_COVERAGE)
 endif()
 
 #
+# Check for stndard/system includes
+#
+check_include_file(sys/types.h HAVE_SYS_TYPES_H)
+check_include_file(stdint.h    HAVE_STDINT_H)
+check_include_file(stddef.h    HAVE_STDDEF_H)
+check_include_file(sys/sdt.h   HAVE_SYS_SDT_H)
+check_include_file(unistd.h    Z_HAVE_UNISTD_H)
+
+#
 # Check to see if we have large file support
 #
 set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
@@ -302,11 +306,6 @@ check_function_exists(strerror HAVE_STRERROR)
 if(NOT HAVE_STRERROR)
     add_definitions(-DNO_STRERROR)
 endif()
-
-#
-# Check for unistd.h and stdarg.h
-#
-check_include_file(unistd.h Z_HAVE_UNISTD_H)
 
 if(WITH_MSAN AND WITH_SANITIZERS)
     message(FATAL_ERROR "Memory sanitizer is incompatible with address sanitizer")
