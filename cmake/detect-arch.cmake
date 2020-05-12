@@ -32,7 +32,7 @@ else()
 
     # Find basearch tag, and extract the arch word into BASEARCH variable
     string(REGEX REPLACE ".*archfound ([a-zA-Z0-9_]+).*" "\\1" ARCH "${RAWOUTPUT}")
-    if (NOT ARCH)
+    if(NOT ARCH)
         set(ARCH unknown)
     endif()
 endif()
