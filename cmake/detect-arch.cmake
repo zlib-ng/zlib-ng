@@ -1,4 +1,4 @@
-# archdetect.cmake -- Detect compiler architecture and set ARCH and BASEARCH
+# detect-arch.cmake -- Detect compiler architecture and set ARCH and BASEARCH
 # Copyright (C) 2019 Hans Kristian Rosbach
 # Licensed under the Zlib license, see LICENSE.md for details
 set(ARCHDETECT_FOUND TRUE)
@@ -25,7 +25,7 @@ else()
         run_result_unused
         compile_result_unused
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/archdetect.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/detect-arch.c
         COMPILE_OUTPUT_VARIABLE RAWOUTPUT
         CMAKE_FLAGS CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
     )
