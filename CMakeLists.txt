@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.5.1)
 if(CMAKE_VERSION VERSION_LESS 3.12)
-  cmake_policy(VERSION ${CMAKE_VERSION})
+    cmake_policy(VERSION ${CMAKE_VERSION})
 else()
-  cmake_policy(VERSION 3.5.1...3.13.2)
+    cmake_policy(VERSION 3.5.1...3.13.2)
 endif()
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
@@ -12,17 +12,17 @@ set(CMAKE_MACOSX_RPATH 1)
 # Configuration items that affect the global compiler envirionment standards
 # should be issued before the "project" command.
 if(NOT CMAKE_C_STANDARD)
-  set (CMAKE_C_STANDARD 99)          # The C standard whose features are requested to build this target
+    set(CMAKE_C_STANDARD 99)          # The C standard whose features are requested to build this target
 endif()
 if(NOT CMAKE_C_STANDARD_REQUIRED)
-  set (CMAKE_C_STANDARD_REQUIRED ON) # Boolean describing whether the value of C_STANDARD is a requirement
+    set(CMAKE_C_STANDARD_REQUIRED ON) # Boolean describing whether the value of C_STANDARD is a requirement
 endif()
 if(NOT CMAKE_C_EXTENSIONS)
-  set (CMAKE_C_EXTENSIONS OFF)       # Boolean specifying whether compiler specific extensions are requested
+    set(CMAKE_C_EXTENSIONS OFF)       # Boolean specifying whether compiler specific extensions are requested
 endif()
 set(VALID_C_STANDARDS "99" "11")
 if(NOT CMAKE_C_STANDARD IN_LIST VALID_C_STANDARDS)
-   MESSAGE(FATAL_ERROR "CMAKE_C_STANDARD:STRING=${CMAKE_C_STANDARD} not in know standards list\n ${VALID_C_STANDARDS}")
+    MESSAGE(FATAL_ERROR "CMAKE_C_STANDARD:STRING=${CMAKE_C_STANDARD} not in know standards list\n ${VALID_C_STANDARDS}")
 endif()
 
 # Parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
@@ -34,9 +34,7 @@ string(REGEX REPLACE ".*#define[ \t]+ZLIBNG_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
 message(STATUS "ZLIB_HEADER_VERSION: ${ZLIB_HEADER_VERSION}")
 message(STATUS "ZLIBNG_HEADER_VERSION: ${ZLIBNG_HEADER_VERSION}")
 
-project(zlib
-  VERSION ${ZLIB_HEADER_VERSION}
-  LANGUAGES C)
+project(zlib VERSION ${ZLIB_HEADER_VERSION} LANGUAGES C)
 
 set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
 set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Installation directory for libraries")
@@ -125,7 +123,7 @@ endif()
 add_feature_info(WITH_MAINTAINER_WARNINGS WITH_MAINTAINER_WARNINGS "Build with project maintainer warnings")
 add_feature_info(WITH_CODE_COVERAGE WITH_CODE_COVERAGE "Enable code coverage reporting")
 
-if (ZLIB_COMPAT)
+if(ZLIB_COMPAT)
     add_definitions(-DZLIB_COMPAT)
     set(WITH_GZFILEOP ON)
     set(SUFFIX "")
@@ -198,12 +196,12 @@ else()
         endif()
     endif()
     if(NOT NATIVEFLAG)
-        if (__GNUC__)
+        if(__GNUC__)
             if(BASEARCH_ARM_FOUND)
                 # Check support for ARM floating point
                 execute_process(COMMAND ${CMAKE_C_COMPILER} "-dumpmachine"
                                 OUTPUT_VARIABLE GCC_MACHINE)
-                if ("${GCC_MACHINE}" MATCHES "eabihf")
+                if("${GCC_MACHINE}" MATCHES "eabihf")
                     set(FLOATABI "-mfloat-abi=hard")
                 else()
                     set(FLOATABI "-mfloat-abi=softfp")
@@ -282,14 +280,14 @@ endif()
 set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
 check_type_size(off64_t OFF64_T)
 if(HAVE_OFF64_T)
-   add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
+    add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
 else()
-   check_type_size(_off64_t _OFF64_T)
-   if(HAVE__OFF64_T)
-      add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
-   else()
-      check_type_size(__off64_t __OFF64_T)
-   endif()
+    check_type_size(_off64_t _OFF64_T)
+    if(HAVE__OFF64_T)
+        add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
+    else()
+        check_type_size(__off64_t __OFF64_T)
+    endif()
 endif()
 set(CMAKE_REQUIRED_DEFINITIONS) # clear variable
 
@@ -389,18 +387,18 @@ check_c_source_compiles(
     HAVE_PTRDIFF_T
 )
 if(NOT HAVE_PTRDIFF_T)
-  set(NEED_PTRDIFF_T 1)
+    set(NEED_PTRDIFF_T 1)
 
-  check_type_size("void *" SIZEOF_DATA_PTR)
-  message(STATUS "sizeof(void *) is ${SIZEOF_DATA_PTR} bytes")
+    check_type_size("void *" SIZEOF_DATA_PTR)
+    message(STATUS "sizeof(void *) is ${SIZEOF_DATA_PTR} bytes")
 
-  if(${SIZEOF_DATA_PTR} MATCHES "4")
-    set(PTRDIFF_TYPE "uint32_t")
-  elseif(${SIZEOF_DATA_PTR} MATCHES "8")
-    set(PTRDIFF_TYPE "uint64_t")
-  else()
-    message(FATAL_ERROR "sizeof(void *) is neither 32 nor 64 bit")
-  endif()
+    if(${SIZEOF_DATA_PTR} MATCHES "4")
+        set(PTRDIFF_TYPE "uint32_t")
+    elseif(${SIZEOF_DATA_PTR} MATCHES "8")
+        set(PTRDIFF_TYPE "uint64_t")
+    else()
+        message(FATAL_ERROR "sizeof(void *) is neither 32 nor 64 bit")
+    endif()
 endif()
 
 # Macro to check if source compiles when cross-compiling
@@ -569,11 +567,11 @@ endif()
 #
 macro(add_intrinsics_option flag)
     if(WITH_NATIVE_INSTRUCTIONS AND NATIVEFLAG)
-        if (NOT "${CMAKE_C_FLAGS} " MATCHES ".*${NATIVEFLAG} .*")
+        if(NOT "${CMAKE_C_FLAGS} " MATCHES ".*${NATIVEFLAG} .*")
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NATIVEFLAG}")
         endif()
     else()
-        if (NOT "${CMAKE_C_FLAGS} " MATCHES ".*${flag} .*")
+        if(NOT "${CMAKE_C_FLAGS} " MATCHES ".*${flag} .*")
             set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}")
         endif()
     endif()
@@ -702,7 +700,7 @@ macro(generate_cmakein input output)
     foreach(_line IN LISTS _lines)
         file(APPEND ${output} "${_line}\n")
 
-        if (_line STREQUAL "#define ZCONF_H" OR _line STREQUAL "#define ZCONFNG_H")
+        if(_line STREQUAL "#define ZCONF_H" OR _line STREQUAL "#define ZCONFNG_H")
             file(APPEND ${output} "#cmakedefine Z_HAVE_UNISTD_H\n")
             if(NOT HAVE_PTRDIFF_T)
               file(APPEND ${output} "#cmakedefine NEED_PTRDIFF_T\n")
@@ -855,7 +853,7 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
     set_target_properties(zlib PROPERTIES SOVERSION 1)
 
-    if (ZLIB_COMPAT)
+    if(ZLIB_COMPAT)
         set(ZLIB_FULL_VERSION ${ZLIB_HEADER_VERSION})
     else()
         set(ZLIB_FULL_VERSION ${ZLIBNG_HEADER_VERSION})
@@ -910,7 +908,7 @@ endif()
 #============================================================================
 
 option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
-if (ZLIB_ENABLE_TESTS)
+if(ZLIB_ENABLE_TESTS)
     enable_testing()
     macro(configure_test_executable target)
         target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
