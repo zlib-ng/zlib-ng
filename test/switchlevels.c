@@ -22,7 +22,8 @@
 #endif
 
 static int read_all(unsigned char *buf, size_t size) {
-    for (size_t total_read = 0; total_read < size;) {
+    size_t total_read = 0;
+    while (total_read < size) {
         size_t n_read = fread(buf + total_read, 1, size - total_read, stdin);
         if (ferror(stdin)) {
             perror("fread\n");
@@ -38,7 +39,8 @@ static int read_all(unsigned char *buf, size_t size) {
 }
 
 static int write_all(unsigned char *buf, size_t size) {
-    for (size_t total_written = 0; total_written < size;) {
+    size_t total_written = 0;
+    while (total_written < size) {
         size_t n_written = fwrite(buf + total_written, 1, size - total_written, stdout);
         if (ferror(stdout)) {
             perror("fwrite\n");
@@ -51,13 +53,18 @@ static int write_all(unsigned char *buf, size_t size) {
 
 static int compress_chunk(PREFIX3(stream) *strm, int level, int size, int last) {
     int ret = 1;
-    int err = PREFIX(deflateParams)(strm, level, Z_DEFAULT_STRATEGY);
+    int err = 0;
+    unsigned long compsize;
+    unsigned char *buf;
+
+    err = PREFIX(deflateParams)(strm, level, Z_DEFAULT_STRATEGY);
     if (err != Z_OK) {
         fprintf(stderr, "deflateParams() failed with code %d\n", err);
         goto done;
     }
-    unsigned long compsize = 100 + 2 * PREFIX(deflateBound)(strm, size);
-    unsigned char *buf = malloc(size + compsize);
+
+    compsize = 100 + 2 * PREFIX(deflateBound)(strm, size);
+    buf = malloc(size + compsize);
     if (buf == NULL) {
         fprintf(stderr, "Out of memory\n");
         goto done;
@@ -65,10 +72,12 @@ static int compress_chunk(PREFIX3(stream) *strm, int level, int size, int last) 
     if (read_all(buf, size) != 0) {
         goto free_buf;
     }
+
     strm->next_in = buf;
     strm->avail_in = size;
     strm->next_out = buf + size;
     strm->avail_out = compsize;
+
     err = PREFIX(deflate)(strm, last ? Z_FINISH : Z_SYNC_FLUSH);
     if ((!last && err != Z_OK) || (last && err != Z_STREAM_END)) {
         fprintf(stderr, "deflate() failed with code %d\n", err);
@@ -82,6 +91,7 @@ static int compress_chunk(PREFIX3(stream) *strm, int level, int size, int last) 
         goto free_buf;
     }
     ret = 0;
+
 free_buf:
     free(buf);
 done:
@@ -94,11 +104,15 @@ done:
 
 int main(int argc, char **argv) {
     int ret = EXIT_FAILURE;
+    int err = 0;
     PREFIX3(stream) strm;
+
     SET_BINARY_MODE(stdin);
     SET_BINARY_MODE(stdout);
+
     memset(&strm, 0, sizeof(strm));
-    int err = PREFIX(deflateInit2)(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS + 16, 8, Z_DEFAULT_STRATEGY);
+
+    err = PREFIX(deflateInit2)(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS + 16, 8, Z_DEFAULT_STRATEGY);
     if (err != Z_OK) {
         fprintf(stderr, "deflateInit() failed with code %d\n", err);
         goto done;
@@ -111,6 +125,7 @@ int main(int argc, char **argv) {
         }
     }
     ret = EXIT_SUCCESS;
+
 deflate_end:
     PREFIX(deflateEnd)(&strm);
 done:
