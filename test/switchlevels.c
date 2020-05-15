@@ -13,6 +13,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(WIN32) || defined(__CYGWIN__)
+#  include <fcntl.h>
+#  include <io.h>
+#  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
+#else
+#  define SET_BINARY_MODE(file)
+#endif
+
 static int read_all(unsigned char *buf, size_t size) {
     for (size_t total_read = 0; total_read < size;) {
         size_t n_read = fread(buf + total_read, 1, size - total_read, stdin);
@@ -87,6 +95,8 @@ done:
 int main(int argc, char **argv) {
     int ret = EXIT_FAILURE;
     PREFIX3(stream) strm;
+    SET_BINARY_MODE(stdin);
+    SET_BINARY_MODE(stdout);
     memset(&strm, 0, sizeof(strm));
     int err = PREFIX(deflateInit2)(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS + 16, 8, Z_DEFAULT_STRATEGY);
     if (err != Z_OK) {
