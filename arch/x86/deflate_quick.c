@@ -38,6 +38,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     if (s->block_open == 0) {
         last = (flush == Z_FINISH) ? 1 : 0;
         zng_tr_emit_tree(s, STATIC_TREES, last);
+        s->block_open = 1;
     }
 
     do {
@@ -52,6 +53,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
             fill_window(s);
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
                 zng_tr_emit_end_block(s, static_ltree, 0);
+                s->block_open = 0;
                 s->block_start = s->strstart;
                 flush_pending(s->strm);
                 return need_more;
@@ -96,6 +98,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
 
     last = (flush == Z_FINISH) ? 1 : 0;
     zng_tr_emit_end_block(s, static_ltree, last);
+    s->block_open = 0;
     s->block_start = s->strstart;
     flush_pending(s->strm);
 
