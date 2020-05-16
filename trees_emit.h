@@ -198,7 +198,6 @@ static inline void zng_emit_end_block(deflate_state *s, const ct_data *ltree, co
     send_code(s, END_BLOCK, ltree, bi_buf, bi_valid);
     s->bi_valid = bi_valid;
     s->bi_buf = bi_buf;
-    s->block_open = 0;
     Tracev((stderr, "\n+++ Emit End Block: Last: %u Pending: %u Total Out: %zu\n",
         last, s->pending, s->strm->total_out));
     (void)last;
@@ -229,7 +228,6 @@ static inline void zng_tr_emit_tree(deflate_state *s, int type, const int last) 
     cmpr_bits_add(s, 3);
     s->bi_valid = bi_valid;
     s->bi_buf = bi_buf;
-    s->block_open = 1;
     Tracev((stderr, "\n--- Emit Tree: Last: %u\n", last));
 } 
 

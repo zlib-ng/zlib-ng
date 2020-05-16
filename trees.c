@@ -597,11 +597,12 @@ void ZLIB_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, unsigned lon
     put_short(s, (uint16_t)~stored_len);
     cmpr_bits_add(s, 32);
     sent_bits_add(s, 32);
-    if (stored_len)
+    if (stored_len) {
         memcpy(s->pending_buf + s->pending, (unsigned char *)buf, stored_len);
-    s->pending += stored_len;
-    cmpr_bits_add(s, stored_len << 3);
-    sent_bits_add(s, stored_len << 3);
+        s->pending += stored_len;
+        cmpr_bits_add(s, stored_len << 3);
+        sent_bits_add(s, stored_len << 3);
+    }
 }
 
 /* ===========================================================================
