@@ -281,7 +281,7 @@ void test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
     d_stream.zfree = zfree;
     d_stream.opaque = (void *)0;
 
-    d_stream.next_in  = compr;
+    d_stream.next_in  = (const unsigned char *)compr;
     d_stream.avail_in = 0;
     d_stream.next_out = uncompr;
     d_stream.total_in = 0;
@@ -343,7 +343,7 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
     /* At this point, uncompr is still mostly zeroes, so it should compress
      * very well:
      */
-    c_stream.next_in = uncompr;
+    c_stream.next_in = (const unsigned char *)uncompr;
     c_stream.avail_in = (unsigned int)uncomprLen;
     err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
     CHECK_ERR(err, "deflate");
@@ -374,7 +374,7 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
     } else {
         PREFIX(deflateParams)(&c_stream, Z_NO_COMPRESSION, Z_DEFAULT_STRATEGY);
     }
-    c_stream.next_in = compr;
+    c_stream.next_in = (const unsigned char *)compr;
     diff = (unsigned int)(c_stream.next_out - compr);
     c_stream.avail_in = diff;
     err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
@@ -404,7 +404,7 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
     } else {
         PREFIX(deflateParams)(&c_stream, Z_BEST_COMPRESSION, Z_FILTERED);
     }
-    c_stream.next_in = uncompr;
+    c_stream.next_in = (const unsigned char *)uncompr;
     c_stream.avail_in = (unsigned int)uncomprLen;
     err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
     CHECK_ERR(err, "deflate");
@@ -431,7 +431,7 @@ void test_large_inflate(unsigned char *compr, size_t comprLen, unsigned char *un
     d_stream.zfree = zfree;
     d_stream.opaque = (void *)0;
 
-    d_stream.next_in  = compr;
+    d_stream.next_in  = (const unsigned char *)compr;
     d_stream.avail_in = (unsigned int)comprLen;
     d_stream.total_in = 0;
     d_stream.total_out = 0;
@@ -506,7 +506,7 @@ void test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr, si
     d_stream.zfree = zfree;
     d_stream.opaque = (void *)0;
 
-    d_stream.next_in  = compr;
+    d_stream.next_in  = (const unsigned char *)compr;
     d_stream.avail_in = 2; /* just read the zlib header */
 
     err = PREFIX(inflateInit)(&d_stream);
@@ -581,7 +581,7 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
     d_stream.zfree = zfree;
     d_stream.opaque = (void *)0;
     d_stream.adler = 0;
-    d_stream.next_in  = compr;
+    d_stream.next_in  = (const unsigned char *)compr;
     d_stream.avail_in = (unsigned int)comprLen;
 
     err = PREFIX(inflateInit)(&d_stream);
