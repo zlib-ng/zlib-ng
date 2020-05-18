@@ -6,7 +6,7 @@ Maintained by Hans Kristian Rosbach
 
 |CI|Status|
 |:-|-|
-|GitHub Actions|[![Master Branch Status](https://github.com/zlib-ng/zlib-ng/workflows/CI%20CMake/badge.svg)](https://github.com/zlib-ng/zlib-ng/actions) [![Master Branch Status](https://github.com/zlib-ng/zlib-ng/workflows/CI%20Configure/badge.svg)](https://github.com/zlib-ng/zlib-ng/actions)|
+|GitHub Actions|[![Master Branch Status](https://github.com/zlib-ng/zlib-ng/workflows/CI%20CMake/badge.svg)](https://github.com/zlib-ng/zlib-ng/actions) [![Master Branch Status](https://github.com/zlib-ng/zlib-ng/workflows/CI%20Configure/badge.svg)](https://github.com/zlib-ng/zlib-ng/actions) [![Master Branch Status](https://github.com/zlib-ng/zlib-ng/workflows/CI%20NMake/badge.svg)](https://github.com/zlib-ng/zlib-ng/actions)|
 |Buildkite|[![Build status](https://badge.buildkite.com/7bb1ef84356d3baee26202706cc053ee1de871c0c712b65d26.svg?branch=develop)](https://buildkite.com/circlestorm-productions/zlib-ng)|
 |CodeFactor|[![CodeFactor](https://www.codefactor.io/repository/github/zlib-ng/zlib-ng/badge)](https://www.codefactor.io/repository/github/zlib-ng/zlib-ng)|
 |OSS-Fuzz|[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/zlib-ng.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:zlib-ng)
