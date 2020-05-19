@@ -51,6 +51,29 @@ or valuable testing.
 
 Please read LICENSE.md, it is very simple and very liberal.
 
+Features
+--------
+
+* Zlib compatible API with support for dual-linking
+* Modernized native API based on zlib API for ease of porting
+* Intel deflate medium and quick algorithms
+* Support for CPU intrinsics when available
+  * Adler32 implementation using ARM Neon
+  * Intel CRC32-B implementation using PCLMULQDQ
+  * Intel CRC32-C intrinics for hash tables
+  * ARM CRC32-B implementation using ACLE
+  * Slide hash implementations using AVX2, SSE2, & ARM Neon
+  * Inflate fast using SSE2, ARM Neon
+  * Deflate hooks for IBM Z DFLTCC
+* Code sanitizers, fuzzing, and coverage
+* GitHub Actions continuous integration on Windows, macOS, and Linux
+  * Emulated CI for ARM, AARCH64, PPC, PPC64, SPARC64, S390x using qemu
+* Unaligned memory read/writes and large bit buffer improvements
+* Includes improvements from Cloudflare and Intel forks
+* Configure, CMake, and NMake build system support
+* Modern C99 syntax and a clean code layout
+* Over 200 CMake unit tests
+
 Build
 -----
 
