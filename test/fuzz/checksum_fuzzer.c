@@ -78,6 +78,8 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     combine1 = PREFIX(adler32_combine)(adler1, adler2, (z_off_t)dataLen);
     combine2 = PREFIX(adler32_combine)(adler1, adler1, (z_off_t)dataLen);
     assert(combine1 == combine2);
+    (void)combine1;
+    (void)combine2;
 
     /* This function must return 0. */
     return 0;
