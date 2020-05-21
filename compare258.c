@@ -38,8 +38,6 @@ static inline int32_t compare258_c_static(const unsigned char *src0, const unsig
     if (*src0 != *src1)
         return 1;
     src0 += 1, src1 += 1;
-    if (*src0 != *src1)
-        return 2;
 
     return compare256_c_static(src0, src1) + 2;
 }
@@ -120,13 +118,7 @@ static inline int32_t compare258_unaligned_32_static(const unsigned char *src0, 
     if (*(uint16_t *)src0 != *(uint16_t *)src1)
         return (*src0 == *src1);
 
-    src0 += 2, src1 += 2;
-    if (*src0 != *src1)
-        return 2;
-    if (src0[1] != src1[1])
-        return 3;
-
-    return compare256_unaligned_32_static(src0, src1) + 2;
+    return compare256_unaligned_32_static(src0+2, src1+2) + 2;
 }
 
 int32_t compare258_unaligned_32(const unsigned char *src0, const unsigned char *src1) {
@@ -166,13 +158,7 @@ static inline int32_t compare258_unaligned_64_static(const unsigned char *src0, 
     if (*(uint16_t *)src0 != *(uint16_t *)src1)
         return (*src0 == *src1);
 
-    src0 += 2, src1 += 2;
-    if (*src0 != *src1)
-        return 2;
-    if (src0[1] != src1[1])
-        return 3;
-
-    return compare256_unaligned_64_static(src0, src1) + 2;
+    return compare256_unaligned_64_static(src0+2, src1+2) + 2;
 }
 
 int32_t compare258_unaligned_64(const unsigned char *src0, const unsigned char *src1) {

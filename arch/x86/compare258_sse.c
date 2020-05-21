@@ -58,14 +58,7 @@ static inline int32_t compare258_unaligned_sse4_static(const unsigned char *src0
     if (*(uint16_t *)src0 != *(uint16_t *)src1)
         return (*src0 == *src1);
 
-    src0 += 2, src1 += 2;
-
-    if (*src0 != *src1)
-        return 2;
-    if (src0[1] != src1[1])
-        return 3;
-
-    return compare256_unaligned_sse4_static(src0, src1) + 2;
+    return compare256_unaligned_sse4_static(src0+2, src1+2) + 2;
 }
 
 int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1) {
