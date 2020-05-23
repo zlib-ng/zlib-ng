@@ -102,6 +102,7 @@ native=0
 forcesse2=0
 avx2flag="-mavx2"
 sse2flag="-msse2"
+ssse3flag="-mssse3"
 sse4flag="-msse4"
 sse42flag="-msse4.2"
 pclmulflag="-mpclmul"
@@ -915,6 +916,28 @@ EOF
         ;;
 esac
 
+# Check for SSSE3 intrinsics
+
+cat > $test.c << EOF
+#include <x86intrin.h>
+int main(void)
+{
+    __m128i u, v, w;
+    u = _mm_set1_epi32(1);
+    v = _mm_set1_epi32(2);
+    w = _mm_hadd_epi32(u, v);
+    (void)w;
+    return 0;
+}
+EOF
+if try ${CC} ${CFLAGS} ${ssse3flag} $test.c; then
+    echo "Checking for SSSE3 intrinsics ... Yes." | tee -a configure.log
+    HAVE_SSSE3_INTRIN=1
+else
+    echo "Checking for SSSE3 intrinsics ... No." | tee -a configure.log
+    HAVE_SSSE3_INTRIN=0
+fi
+
 # Check for SSE4.2 CRC intrinsics
 case "${ARCH}" in
     i386 | i486 | i586 | i686 | x86_64)
@@ -1098,6 +1121,13 @@ case "${ARCH}" in
                     SFLAGS="${SFLAGS} -DX86_NOCHECK_SSE2"
                 fi
             fi
+            
+            if test ${HAVE_SSSE3_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSSE3 -DX86_SSSE3_ADLER32"
+                SFLAGS="${SFLAGS} -DX86_SSSE3 -DX86_SSSE3_ADLER32"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_ssse3.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_ssse3.lo"
+            fi
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
@@ -1113,10 +1143,10 @@ case "${ARCH}" in
             fi
 
             if test ${HAVE_AVX2_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_AVX2"
-                SFLAGS="${SFLAGS} -DX86_AVX2"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_avx.o slide_avx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_avx.lo slide_avx.lo"
+                CFLAGS="${CFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
+                SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_avx.o slide_avx.o adler32_avx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_avx.lo slide_avx.lo adler32_avx.o"
             fi
 
             CFLAGS="${CFLAGS} -DX86_SSE42_CRC_HASH"
@@ -1149,6 +1179,13 @@ case "${ARCH}" in
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o insert_string_sse.o slide_sse.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo insert_string_sse.lo slide_sse.lo"
 
+            if test ${HAVE_SSSE3_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSSE3 -DX86_SSSE3_ADLER32"
+                SFLAGS="${SFLAGS} -DX86_SSSE3 -DX86_SSSE3_ADLER32"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_ssse3.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_ssse3.lo"
+            fi
+
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
                 SFLAGS="${SFLAGS} -DX86_SSE42_CRC_INTRIN"
@@ -1162,10 +1199,10 @@ case "${ARCH}" in
             fi
 
             if test ${HAVE_AVX2_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_AVX2"
-                SFLAGS="${SFLAGS} -DX86_AVX2"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_avx.o slide_avx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_avx.lo slide_avx.lo"
+                CFLAGS="${CFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
+                SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_avx.o slide_avx.o adler32_avx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_avx.lo slide_avx.lo adler32_avx.lo"
             fi
 
             if test ${HAVE_SSE42CMPSTR_INTRIN} -eq 1; then
@@ -1442,6 +1479,7 @@ echo prefix = $prefix >> configure.log
 echo sharedlibdir = $sharedlibdir >> configure.log
 echo uname = $uname >> configure.log
 echo sse2flag = $sse2flag >> configure.log
+echo ssse3flag = $ssse3flag >> configure.log
 echo sse4flag = $sse4flag >> configure.log
 echo pclmulflag = $pclmulflag >> configure.log
 echo ARCHDIR = ${ARCHDIR} >> configure.log
@@ -1571,6 +1609,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^TOPDIR *=/s#=.*#=$BUILDDIR#
 /^AVX2FLAG *=/s#=.*#=$avx2flag#
 /^SSE2FLAG *=/s#=.*#=$sse2flag#
+/^SSSE3FLAG *=/s#=.*#=$ssse3flag#
 /^SSE4FLAG *=/s#=.*#=$sse4flag#
 /^PCLMULFLAG *=/s#=.*#=$pclmulflag#
 " > $ARCHDIR/Makefile

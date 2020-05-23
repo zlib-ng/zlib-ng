@@ -8,6 +8,7 @@
 
 extern int x86_cpu_has_avx2;
 extern int x86_cpu_has_sse2;
+extern int x86_cpu_has_ssse3;
 extern int x86_cpu_has_sse42;
 extern int x86_cpu_has_pclmulqdq;
 extern int x86_cpu_has_tzcnt;
