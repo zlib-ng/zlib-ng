@@ -456,7 +456,7 @@ if(BASEARCH_X86_FOUND)
         }"
         HAVE_SSE42CRC_INLINE_ASM
     )
-    # Check whether compiler supports SSE4 CRC instrinics
+    # Check whether compiler supports SSE4 CRC intrinsics
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void)
@@ -489,7 +489,7 @@ if(BASEARCH_X86_FOUND)
     )
     set(CMAKE_REQUIRED_FLAGS)
 
-    # Check whether compiler supports PCLMULQDQ intrinics
+    # Check whether compiler supports PCLMULQDQ intrinsics
     if(WITH_NATIVE_INSTRUCTIONS)
         set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
     else()
