@@ -83,11 +83,11 @@ typedef void  (*free_func)  (void *opaque, void *address);
 struct internal_state;
 
 typedef struct zng_stream_s {
-    const unsigned char   *next_in;   /* next input byte */
+    const uint8_t         *next_in;   /* next input byte */
     uint32_t              avail_in;   /* number of bytes available at next_in */
     size_t                total_in;   /* total number of input bytes read so far */
 
-    unsigned char         *next_out;  /* next output byte will go here */
+    uint8_t               *next_out;  /* next output byte will go here */
     uint32_t              avail_out;  /* remaining free space at next_out */
     size_t                total_out;  /* total number of bytes output so far */
 
@@ -111,19 +111,19 @@ typedef zng_stream *zng_streamp;  /* Obsolete type, retained for compatibility o
   for more details on the meanings of these fields.
 */
 typedef struct zng_gz_header_s {
-    int             text;       /* true if compressed data believed to be text */
+    int32_t         text;       /* true if compressed data believed to be text */
     unsigned long   time;       /* modification time */
-    int             xflags;     /* extra flags (not used when writing a gzip file) */
-    int             os;         /* operating system */
-    unsigned char   *extra;     /* pointer to extra field or NULL if none */
-    unsigned int    extra_len;  /* extra field length (valid if extra != NULL) */
-    unsigned int    extra_max;  /* space at extra (only when reading header) */
-    unsigned char   *name;      /* pointer to zero-terminated file name or NULL */
-    unsigned int    name_max;   /* space at name (only when reading header) */
-    unsigned char   *comment;   /* pointer to zero-terminated comment or NULL */
-    unsigned int    comm_max;   /* space at comment (only when reading header) */
-    int             hcrc;       /* true if there was or will be a header crc */
-    int             done;       /* true when done reading gzip header (not used when writing a gzip file) */
+    int32_t         xflags;     /* extra flags (not used when writing a gzip file) */
+    int32_t         os;         /* operating system */
+    uint8_t         *extra;     /* pointer to extra field or NULL if none */
+    uint32_t        extra_len;  /* extra field length (valid if extra != NULL) */
+    uint32_t        extra_max;  /* space at extra (only when reading header) */
+    uint8_t         *name;      /* pointer to zero-terminated file name or NULL */
+    uint32_t        name_max;   /* space at name (only when reading header) */
+    uint8_t         *comment;   /* pointer to zero-terminated comment or NULL */
+    uint32_t        comm_max;   /* space at comment (only when reading header) */
+    int32_t         hcrc;       /* true if there was or will be a header crc */
+    int32_t         done;       /* true when done reading gzip header (not used when writing a gzip file) */
 } zng_gz_header;
 
 typedef zng_gz_header *zng_gz_headerp;
@@ -236,7 +236,7 @@ int zng_deflateInit(zng_stream *strm, int level);
 
 
 ZEXTERN ZEXPORT
-int zng_deflate(zng_stream *strm, int flush);
+int32_t zng_deflate(zng_stream *strm, int32_t flush);
 /*
     deflate compresses as much data as possible, and stops when the input
   buffer becomes empty or the output buffer becomes full.  It may introduce
@@ -350,7 +350,7 @@ int zng_deflate(zng_stream *strm, int flush);
 
 
 ZEXTERN ZEXPORT
-int zng_deflateEnd(zng_stream *strm);
+int32_t zng_deflateEnd(zng_stream *strm);
 /*
      All dynamically allocated data structures for this stream are freed.
    This function discards any unprocessed input and does not flush any pending
@@ -389,7 +389,7 @@ int zng_inflateInit(zng_stream *strm);
 
 
 ZEXTERN ZEXPORT
-int zng_inflate(zng_stream *strm, int flush);
+int32_t zng_inflate(zng_stream *strm, int32_t flush);
 /*
     inflate decompresses as much data as possible, and stops when the input
   buffer becomes empty or the output buffer becomes full.  It may introduce
@@ -510,7 +510,7 @@ int zng_inflate(zng_stream *strm, int flush);
 
 
 ZEXTERN ZEXPORT
-int zng_inflateEnd(zng_stream *strm);
+int32_t zng_inflateEnd(zng_stream *strm);
 /*
      All dynamically allocated data structures for this stream are freed.
    This function discards any unprocessed input and does not flush any pending
@@ -597,7 +597,7 @@ int zng_deflateInit2(zng_stream *strm, int  level, int  method, int  windowBits,
 */
 
 ZEXTERN ZEXPORT
-int zng_deflateSetDictionary(zng_stream *strm, const unsigned char *dictionary, unsigned int dictLength);
+int32_t zng_deflateSetDictionary(zng_stream *strm, const uint8_t *dictionary, uint32_t dictLength);
 /*
      Initializes the compression dictionary from the given byte sequence
    without producing any compressed output.  When using the zlib format, this
@@ -640,7 +640,7 @@ int zng_deflateSetDictionary(zng_stream *strm, const unsigned char *dictionary, 
 */
 
 ZEXTERN ZEXPORT
-int zng_deflateGetDictionary(zng_stream *strm, unsigned char *dictionary, unsigned int *dictLength);
+int32_t zng_deflateGetDictionary(zng_stream *strm, uint8_t *dictionary, uint32_t *dictLength);
 /*
      Returns the sliding dictionary being maintained by deflate.  dictLength is
    set to the number of bytes in the dictionary, and that many bytes are copied
@@ -661,7 +661,7 @@ int zng_deflateGetDictionary(zng_stream *strm, unsigned char *dictionary, unsign
 */
 
 ZEXTERN ZEXPORT
-int zng_deflateCopy(zng_stream *dest, zng_stream *source);
+int32_t zng_deflateCopy(zng_stream *dest, zng_stream *source);
 /*
      Sets the destination stream as a complete copy of the source stream.
 
@@ -679,7 +679,7 @@ int zng_deflateCopy(zng_stream *dest, zng_stream *source);
 */
 
 ZEXTERN ZEXPORT
-int zng_deflateReset(zng_stream *strm);
+int32_t zng_deflateReset(zng_stream *strm);
 /*
      This function is equivalent to deflateEnd followed by deflateInit, but
    does not free and reallocate the internal compression state.  The stream
@@ -691,7 +691,7 @@ int zng_deflateReset(zng_stream *strm);
 */
 
 ZEXTERN ZEXPORT
-int zng_deflateParams(zng_stream *strm, int level, int strategy);
+int32_t zng_deflateParams(zng_stream *strm, int32_t level, int32_t strategy);
 /*
      Dynamically update the compression level and compression strategy.  The
    interpretation of level and strategy is as in deflateInit2().  This can be
@@ -728,7 +728,7 @@ int zng_deflateParams(zng_stream *strm, int level, int strategy);
 */
 
 ZEXTERN ZEXPORT
-int zng_deflateTune(zng_stream *strm, int good_length, int max_lazy, int nice_length, int max_chain);
+int32_t zng_deflateTune(zng_stream *strm, int32_t good_length, int32_t max_lazy, int32_t nice_length, int32_t max_chain);
 /*
      Fine tune deflate's internal compression parameters.  This should only be
    used by someone who understands the algorithm used by zlib's deflate for
@@ -757,7 +757,7 @@ unsigned long zng_deflateBound(zng_stream *strm, unsigned long sourceLen);
 */
 
 ZEXTERN ZEXPORT
-int zng_deflatePending(zng_stream *strm, uint32_t *pending, int *bits);
+int32_t zng_deflatePending(zng_stream *strm, uint32_t *pending, int32_t *bits);
 /*
      deflatePending() returns the number of bytes and bits of output that have
    been generated, but not yet provided in the available output.  The bytes not
@@ -771,7 +771,7 @@ int zng_deflatePending(zng_stream *strm, uint32_t *pending, int *bits);
  */
 
 ZEXTERN ZEXPORT
-int zng_deflatePrime(zng_stream *strm, int bits, int value);
+int32_t zng_deflatePrime(zng_stream *strm, int32_t bits, int32_t value);
 /*
      deflatePrime() inserts bits in the deflate output stream.  The intent
    is that this function is used to start off the deflate output with the bits
@@ -787,7 +787,7 @@ int zng_deflatePrime(zng_stream *strm, int bits, int value);
 */
 
 ZEXTERN ZEXPORT
-int zng_deflateSetHeader(zng_stream *strm, zng_gz_headerp head);
+int32_t zng_deflateSetHeader(zng_stream *strm, zng_gz_headerp head);
 /*
      deflateSetHeader() provides gzip header information for when a gzip
    stream is requested by deflateInit2().  deflateSetHeader() may be called
@@ -866,7 +866,7 @@ int zng_inflateInit2(zng_stream *strm, int  windowBits);
 */
 
 ZEXTERN ZEXPORT
-int zng_inflateSetDictionary(zng_stream *strm, const unsigned char *dictionary, unsigned int dictLength);
+int32_t zng_inflateSetDictionary(zng_stream *strm, const uint8_t *dictionary, uint32_t dictLength);
 /*
      Initializes the decompression dictionary from the given uncompressed byte
    sequence.  This function must be called immediately after a call of inflate,
@@ -888,7 +888,7 @@ int zng_inflateSetDictionary(zng_stream *strm, const unsigned char *dictionary, 
 */
 
 ZEXTERN ZEXPORT
-int zng_inflateGetDictionary(zng_stream *strm, unsigned char *dictionary, unsigned int *dictLength);
+int32_t zng_inflateGetDictionary(zng_stream *strm, uint8_t *dictionary, uint32_t *dictLength);
 /*
      Returns the sliding dictionary being maintained by inflate.  dictLength is
    set to the number of bytes in the dictionary, and that many bytes are copied
@@ -902,7 +902,7 @@ int zng_inflateGetDictionary(zng_stream *strm, unsigned char *dictionary, unsign
 */
 
 ZEXTERN ZEXPORT
-int zng_inflateSync(zng_stream *strm);
+int32_t zng_inflateSync(zng_stream *strm);
 /*
      Skips invalid compressed data until a possible full flush point (see above
    for the description of deflate with Z_FULL_FLUSH) can be found, or until all
@@ -922,7 +922,7 @@ int zng_inflateSync(zng_stream *strm);
 */
 
 ZEXTERN ZEXPORT
-int zng_inflateCopy(zng_stream *dest, zng_stream *source);
+int32_t zng_inflateCopy(zng_stream *dest, zng_stream *source);
 /*
      Sets the destination stream as a complete copy of the source stream.
 
@@ -938,7 +938,7 @@ int zng_inflateCopy(zng_stream *dest, zng_stream *source);
 */
 
 ZEXTERN ZEXPORT
-int zng_inflateReset(zng_stream *strm);
+int32_t zng_inflateReset(zng_stream *strm);
 /*
      This function is equivalent to inflateEnd followed by inflateInit,
    but does not free and reallocate the internal decompression state.  The
@@ -949,7 +949,7 @@ int zng_inflateReset(zng_stream *strm);
 */
 
 ZEXTERN ZEXPORT
-int zng_inflateReset2(zng_stream *strm, int windowBits);
+int32_t zng_inflateReset2(zng_stream *strm, int32_t windowBits);
 /*
      This function is the same as inflateReset, but it also permits changing
    the wrap and window size requests.  The windowBits parameter is interpreted
@@ -963,7 +963,7 @@ int zng_inflateReset2(zng_stream *strm, int windowBits);
 */
 
 ZEXTERN ZEXPORT
-int zng_inflatePrime(zng_stream *strm, int bits, int value);
+int32_t zng_inflatePrime(zng_stream *strm, int32_t bits, int32_t value);
 /*
      This function inserts bits in the inflate input stream.  The intent is
    that this function is used to start inflating at a bit position in the
@@ -1012,7 +1012,7 @@ long zng_inflateMark(zng_stream *strm);
 */
 
 ZEXTERN ZEXPORT
-int zng_inflateGetHeader(zng_stream *strm, zng_gz_headerp head);
+int32_t zng_inflateGetHeader(zng_stream *strm, zng_gz_headerp head);
 /*
      inflateGetHeader() requests that gzip header information be stored in the
    provided zng_gz_header structure.  inflateGetHeader() may be called after
@@ -1073,11 +1073,11 @@ int zng_inflateBackInit(zng_stream *strm, int windowBits, unsigned char *window)
    the version of the header file.
 */
 
-typedef uint32_t (*in_func) (void *, const unsigned char * *);
-typedef int (*out_func) (void *, unsigned char *, uint32_t);
+typedef uint32_t (*in_func) (void *, const uint8_t * *);
+typedef int32_t  (*out_func) (void *, uint8_t *, uint32_t);
 
 ZEXTERN ZEXPORT
-int zng_inflateBack(zng_stream *strm, in_func in, void *in_desc, out_func out, void *out_desc);
+int32_t zng_inflateBack(zng_stream *strm, in_func in, void *in_desc, out_func out, void *out_desc);
 /*
      inflateBack() does a raw inflate with a single call using a call-back
    interface for input and output.  This is potentially more efficient than
@@ -1146,7 +1146,7 @@ int zng_inflateBack(zng_stream *strm, in_func in, void *in_desc, out_func out, v
 */
 
 ZEXTERN ZEXPORT
-int zng_inflateBackEnd(zng_stream *strm);
+int32_t zng_inflateBackEnd(zng_stream *strm);
 /*
      All memory allocated by inflateBackInit() is freed.
 
@@ -1208,7 +1208,7 @@ unsigned long zng_zlibCompileFlags(void);
 */
 
 ZEXTERN ZEXPORT
-int zng_compress(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen);
+int32_t zng_compress(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t sourceLen);
 /*
      Compresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
@@ -1223,7 +1223,7 @@ int zng_compress(unsigned char *dest, size_t *destLen, const unsigned char *sour
 */
 
 ZEXTERN ZEXPORT
-int zng_compress2(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen, int level);
+int32_t zng_compress2(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t sourceLen, int32_t level);
 /*
      Compresses the source buffer into the destination buffer.  The level
    parameter has the same meaning as in deflateInit.  sourceLen is the byte
@@ -1246,7 +1246,7 @@ size_t zng_compressBound(size_t sourceLen);
 */
 
 ZEXTERN ZEXPORT
-int zng_uncompress(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t sourceLen);
+int32_t zng_uncompress(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t sourceLen);
 /*
      Decompresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
@@ -1265,7 +1265,7 @@ int zng_uncompress(unsigned char *dest, size_t *destLen, const unsigned char *so
 
 
 ZEXTERN ZEXPORT
-int zng_uncompress2(unsigned char *dest, size_t *destLen, const unsigned char *source, size_t *sourceLen);
+int32_t zng_uncompress2(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t *sourceLen);
 /*
      Same as uncompress, except that sourceLen is a pointer, where the
    length of the source is *sourceLen.  On return, *sourceLen is the number of
@@ -1348,7 +1348,7 @@ gzFile zng_gzdopen(int fd, const char *mode);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzbuffer(gzFile file, unsigned size);
+int32_t zng_gzbuffer(gzFile file, uint32_t size);
 /*
      Set the internal buffer size used by this library's functions.  The
    default buffer size is 8192 bytes.  This function must be called after
@@ -1365,7 +1365,7 @@ int zng_gzbuffer(gzFile file, unsigned size);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzsetparams(gzFile file, int level, int strategy);
+int32_t zng_gzsetparams(gzFile file, int32_t level, int32_t strategy);
 /*
      Dynamically update the compression level or strategy.  See the description
    of deflateInit2 for the meaning of these parameters.  Previously provided
@@ -1377,7 +1377,7 @@ int zng_gzsetparams(gzFile file, int level, int strategy);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzread(gzFile file, void *buf, unsigned len);
+int32_t zng_gzread(gzFile file, void *buf, uint32_t len);
 /*
      Reads the given number of uncompressed bytes from the compressed file.  If
    the input file is not in gzip format, gzread copies the given number of
@@ -1432,7 +1432,7 @@ size_t zng_gzfread(void *buf, size_t size, size_t nitems, gzFile file);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzwrite(gzFile file, void const *buf, unsigned len);
+int32_t zng_gzwrite(gzFile file, void const *buf, uint32_t len);
 /*
      Writes the given number of uncompressed bytes into the compressed file.
    gzwrite returns the number of uncompressed bytes written or 0 in case of
@@ -1452,7 +1452,7 @@ size_t zng_gzfwrite(void const *buf, size_t size, size_t nitems, gzFile file);
 */
 
 ZEXTERN ZEXPORTVA
-int zng_gzprintf(gzFile file, const char *format, ...);
+int32_t zng_gzprintf(gzFile file, const char *format, ...);
 /*
      Converts, formats, and writes the arguments to the compressed file under
    control of the format string, as in fprintf.  gzprintf returns the number of
@@ -1468,7 +1468,7 @@ int zng_gzprintf(gzFile file, const char *format, ...);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzputs(gzFile file, const char *s);
+int32_t zng_gzputs(gzFile file, const char *s);
 /*
      Writes the given null-terminated string to the compressed file, excluding
    the terminating null character.
@@ -1477,7 +1477,7 @@ int zng_gzputs(gzFile file, const char *s);
 */
 
 ZEXTERN ZEXPORT
-char * zng_gzgets(gzFile file, char *buf, int len);
+char * zng_gzgets(gzFile file, char *buf, int32_t len);
 /*
      Reads bytes from the compressed file until len-1 characters are read, or a
    newline character is read and transferred to buf, or an end-of-file
@@ -1491,14 +1491,14 @@ char * zng_gzgets(gzFile file, char *buf, int len);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzputc(gzFile file, int c);
+int32_t zng_gzputc(gzFile file, int32_t c);
 /*
      Writes c, converted to an unsigned char, into the compressed file.  gzputc
    returns the value that was written, or -1 in case of error.
 */
 
 ZEXTERN ZEXPORT
-int zng_gzgetc(gzFile file);
+int32_t zng_gzgetc(gzFile file);
 /*
      Reads one byte from the compressed file.  gzgetc returns this byte or -1
    in case of end of file or error.  This is implemented as a macro for speed.
@@ -1508,7 +1508,7 @@ int zng_gzgetc(gzFile file);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzungetc(int c, gzFile file);
+int32_t zng_gzungetc(int32_t c, gzFile file);
 /*
      Push one character back onto the stream to be read as the first character
    on the next read.  At least one character of push-back is allowed.
@@ -1521,7 +1521,7 @@ int zng_gzungetc(int c, gzFile file);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzflush(gzFile file, int flush);
+int32_t zng_gzflush(gzFile file, int32_t flush);
 /*
      Flushes all pending output into the compressed file.  The parameter flush
    is as in the deflate() function.  The return value is the zlib error number
@@ -1556,7 +1556,7 @@ z_off64_t zng_gzseek(gzFile file, z_off64_t offset, int whence);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzrewind(gzFile file);
+int32_t zng_gzrewind(gzFile file);
 /*
      Rewinds the given file. This function is supported only for reading.
 
@@ -1585,7 +1585,7 @@ z_off64_t zng_gzoffset(gzFile file);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzeof(gzFile file);
+int32_t zng_gzeof(gzFile file);
 /*
      Returns true (1) if the end-of-file indicator has been set while reading,
    false (0) otherwise.  Note that the end-of-file indicator is set only if the
@@ -1601,7 +1601,7 @@ int zng_gzeof(gzFile file);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzdirect(gzFile file);
+int32_t zng_gzdirect(gzFile file);
 /*
      Returns true (1) if file is being copied directly while reading, or false
    (0) if file is a gzip stream being decompressed.
@@ -1623,7 +1623,7 @@ int zng_gzdirect(gzFile file);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzclose(gzFile file);
+int32_t zng_gzclose(gzFile file);
 /*
      Flushes all pending output if necessary, closes the compressed file and
    deallocates the (de)compression state.  Note that once file is closed, you
@@ -1637,9 +1637,9 @@ int zng_gzclose(gzFile file);
 */
 
 ZEXTERN ZEXPORT
-int zng_gzclose_r(gzFile file);
+int32_t zng_gzclose_r(gzFile file);
 ZEXTERN ZEXPORT
-int zng_gzclose_w(gzFile file);
+int32_t zng_gzclose_w(gzFile file);
 /*
      Same as gzclose(), but gzclose_r() is only for use when reading, and
    gzclose_w() is only for use when writing or appending.  The advantage to
@@ -1651,7 +1651,7 @@ int zng_gzclose_w(gzFile file);
 */
 
 ZEXTERN ZEXPORT
-const char * zng_gzerror(gzFile file, int *errnum);
+const char * zng_gzerror(gzFile file, int32_t *errnum);
 /*
      Returns the error message for the last error which occurred on the given
    compressed file.  errnum is set to zlib error number.  If an error occurred
@@ -1686,7 +1686,7 @@ void zng_gzclearerr(gzFile file);
 */
 
 ZEXTERN ZEXPORT
-uint32_t zng_adler32(uint32_t adler, const unsigned char *buf, uint32_t len);
+uint32_t zng_adler32(uint32_t adler, const uint8_t *buf, uint32_t len);
 /*
      Update a running Adler-32 checksum with the bytes buf[0..len-1] and
    return the updated checksum.  If buf is NULL, this function returns the
@@ -1706,7 +1706,7 @@ uint32_t zng_adler32(uint32_t adler, const unsigned char *buf, uint32_t len);
 */
 
 ZEXTERN ZEXPORT
-uint32_t zng_adler32_z(uint32_t adler, const unsigned char *buf, size_t len);
+uint32_t zng_adler32_z(uint32_t adler, const uint8_t *buf, size_t len);
 /*
      Same as adler32(), but with a size_t length.
 */
@@ -1723,7 +1723,7 @@ uint32_t zng_adler32_combine(uint32_t adler1, uint32_t adler2, z_off64_t len2);
 */
 
 ZEXTERN ZEXPORT
-uint32_t zng_crc32(uint32_t crc, const unsigned char *buf, uint32_t len);
+uint32_t zng_crc32(uint32_t crc, const uint8_t *buf, uint32_t len);
 /*
      Update a running CRC-32 with the bytes buf[0..len-1] and return the
    updated CRC-32.  If buf is NULL, this function returns the required
@@ -1741,7 +1741,7 @@ uint32_t zng_crc32(uint32_t crc, const unsigned char *buf, uint32_t len);
 */
 
 ZEXTERN ZEXPORT
-uint32_t zng_crc32_z(uint32_t crc, const unsigned char *buf, size_t len);
+uint32_t zng_crc32_z(uint32_t crc, const uint8_t *buf, size_t len);
 /*
      Same as crc32(), but with a size_t length.
 */
@@ -1779,22 +1779,22 @@ uint32_t zng_crc32_combine_op(uint32_t crc1, uint32_t crc2, const uint32_t *op);
 /* zng_deflateInit and zng_inflateInit are macros to allow checking the zlib version
  * and the compiler's view of zng_stream:
  */
-ZEXTERN ZEXPORT int zng_deflateInit_(zng_stream *strm, int level, const char *version, int stream_size);
-ZEXTERN ZEXPORT int zng_inflateInit_(zng_stream *strm, const char *version, int stream_size);
-ZEXTERN ZEXPORT int zng_deflateInit2_(zng_stream *strm, int  level, int  method, int windowBits, int memLevel,
-                                      int strategy, const char *version, int stream_size);
-ZEXTERN ZEXPORT int zng_inflateInit2_(zng_stream *strm, int  windowBits, const char *version, int stream_size);
-ZEXTERN ZEXPORT int zng_inflateBackInit_(zng_stream *strm, int windowBits, unsigned char *window,
-                                         const char *version, int stream_size);
+ZEXTERN ZEXPORT int32_t zng_deflateInit_(zng_stream *strm, int32_t level, const char *version, int32_t stream_size);
+ZEXTERN ZEXPORT int32_t zng_inflateInit_(zng_stream *strm, const char *version, int32_t stream_size);
+ZEXTERN ZEXPORT int32_t zng_deflateInit2_(zng_stream *strm, int32_t  level, int32_t  method, int32_t windowBits, int32_t memLevel,
+                                         int32_t strategy, const char *version, int32_t stream_size);
+ZEXTERN ZEXPORT int32_t zng_inflateInit2_(zng_stream *strm, int32_t  windowBits, const char *version, int32_t stream_size);
+ZEXTERN ZEXPORT int32_t zng_inflateBackInit_(zng_stream *strm, int32_t windowBits, uint8_t *window,
+                                         const char *version, int32_t stream_size);
 
-#define zng_deflateInit(strm, level) zng_deflateInit_((strm), (level), ZLIBNG_VERSION, (int)sizeof(zng_stream))
-#define zng_inflateInit(strm) zng_inflateInit_((strm), ZLIBNG_VERSION, (int)sizeof(zng_stream))
+#define zng_deflateInit(strm, level) zng_deflateInit_((strm), (level), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
+#define zng_inflateInit(strm) zng_inflateInit_((strm), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
 #define zng_deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
         zng_deflateInit2_((strm), (level), (method), (windowBits), (memLevel), \
-                     (strategy), ZLIBNG_VERSION, (int)sizeof(zng_stream))
-#define zng_inflateInit2(strm, windowBits) zng_inflateInit2_((strm), (windowBits), ZLIBNG_VERSION, (int)sizeof(zng_stream))
+                     (strategy), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
+#define zng_inflateInit2(strm, windowBits) zng_inflateInit2_((strm), (windowBits), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
 #define zng_inflateBackInit(strm, windowBits, window) \
-                        zng_inflateBackInit_((strm), (windowBits), (window), ZLIBNG_VERSION, (int)sizeof(zng_stream))
+                        zng_inflateBackInit_((strm), (windowBits), (window), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
 
 #ifdef WITH_GZFILEOP
 
@@ -1810,7 +1810,7 @@ struct gzFile_s {
     unsigned char *next;
     z_off64_t pos;
 };
-ZEXTERN ZEXPORT int zng_gzgetc_(gzFile file);  /* backward compatibility */
+ZEXTERN ZEXPORT int32_t zng_gzgetc_(gzFile file);  /* backward compatibility */
 #  define zng_gzgetc(g) ((g)->have ? ((g)->have--, (g)->pos++, *((g)->next)++) : (zng_gzgetc)(g))
 
 #endif /* WITH_GZFILEOP */
@@ -1830,13 +1830,13 @@ typedef enum {
 
 typedef struct {
     zng_deflate_param param;  /* parameter ID */
-    void *buf;                /* parameter value */
-    size_t size;              /* parameter value size */
-    int status;               /* result of the last set/get call */
+    void   *buf;              /* parameter value */
+    size_t  size;             /* parameter value size */
+    int32_t status;           /* result of the last set/get call */
 } zng_deflate_param_value;
 
 ZEXTERN ZEXPORT
-int zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count);
+int32_t zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count);
 /*
      Sets the values of the given zlib-ng deflate stream parameters. All the buffers are copied internally, so the
    caller still owns them after this function returns. Returns Z_OK if success.
@@ -1856,7 +1856,7 @@ int zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value *params, size
 */
 
 ZEXTERN ZEXPORT
-int zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count);
+int32_t zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count);
 /*
      Copies the values of the given zlib-ng deflate stream parameters into the user-provided buffers. Returns Z_OK if
    success, Z_VERSION_ERROR if at least one parameter is not supported by the current zlib-ng version, Z_STREAM_ERROR
@@ -1865,20 +1865,20 @@ int zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value *params, size
 */
 
 /* undocumented functions */
-ZEXTERN ZEXPORT const char *     zng_zError           (int);
-ZEXTERN ZEXPORT int              zng_inflateSyncPoint (zng_stream *);
+ZEXTERN ZEXPORT const char *     zng_zError           (int32_t);
+ZEXTERN ZEXPORT int32_t          zng_inflateSyncPoint (zng_stream *);
 ZEXTERN ZEXPORT const uint32_t * zng_get_crc_table    (void);
-ZEXTERN ZEXPORT int              zng_inflateUndermine (zng_stream *, int);
-ZEXTERN ZEXPORT int              zng_inflateValidate  (zng_stream *, int);
+ZEXTERN ZEXPORT int32_t          zng_inflateUndermine (zng_stream *, int32_t);
+ZEXTERN ZEXPORT int32_t          zng_inflateValidate  (zng_stream *, int32_t);
 ZEXTERN ZEXPORT unsigned long    zng_inflateCodesUsed (zng_stream *);
-ZEXTERN ZEXPORT int              zng_inflateResetKeep (zng_stream *);
-ZEXTERN ZEXPORT int              zng_deflateResetKeep (zng_stream *);
+ZEXTERN ZEXPORT int32_t          zng_inflateResetKeep (zng_stream *);
+ZEXTERN ZEXPORT int32_t          zng_deflateResetKeep (zng_stream *);
 
 #ifdef WITH_GZFILEOP
 #  if defined(_WIN32)
      ZEXTERN ZEXPORT gzFile zng_gzopen_w(const wchar_t *path, const char *mode);
 #  endif
-ZEXTERN ZEXPORTVA int zng_gzvprintf(gzFile file, const char *format, va_list va);
+ZEXTERN ZEXPORTVA int32_t zng_gzvprintf(gzFile file, const char *format, va_list va);
 #endif
 
 #ifdef __cplusplus

@@ -249,14 +249,14 @@ ZLIB_INTERNAL void slide_hash_c(deflate_state *s) {
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflateInit_)(PREFIX3(stream) *strm, int level, const char *version, int stream_size) {
+int32_t ZEXPORT PREFIX(deflateInit_)(PREFIX3(stream) *strm, int32_t level, const char *version, int32_t stream_size) {
     return PREFIX(deflateInit2_)(strm, level, Z_DEFLATED, MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY, version, stream_size);
     /* Todo: ignore strm->next_in if we use it as window */
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, int windowBits,
-                           int memLevel, int strategy, const char *version, int stream_size) {
+int32_t ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int32_t method, int32_t windowBits,
+                           int32_t memLevel, int32_t strategy, const char *version, int32_t stream_size) {
     uint32_t window_padding = 0;
     deflate_state *s;
     int wrap = 1;
@@ -432,7 +432,7 @@ static int deflateStateCheck (PREFIX3(stream) *strm) {
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const unsigned char *dictionary, unsigned int dictLength) {
+int32_t ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8_t *dictionary, uint32_t dictLength) {
     deflate_state *s;
     unsigned int str, n;
     int wrap;
@@ -491,7 +491,7 @@ int ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const unsigned c
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflateGetDictionary)(PREFIX3(stream) *strm, unsigned char *dictionary, unsigned int *dictLength) {
+int32_t ZEXPORT PREFIX(deflateGetDictionary)(PREFIX3(stream) *strm, uint8_t *dictionary, uint32_t *dictLength) {
     deflate_state *s;
     unsigned int len;
 
@@ -510,7 +510,7 @@ int ZEXPORT PREFIX(deflateGetDictionary)(PREFIX3(stream) *strm, unsigned char *d
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
+int32_t ZEXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
     deflate_state *s;
 
     if (deflateStateCheck(strm)) {
@@ -550,7 +550,7 @@ int ZEXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflateReset)(PREFIX3(stream) *strm) {
+int32_t ZEXPORT PREFIX(deflateReset)(PREFIX3(stream) *strm) {
     int ret;
 
     ret = PREFIX(deflateResetKeep)(strm);
@@ -560,7 +560,7 @@ int ZEXPORT PREFIX(deflateReset)(PREFIX3(stream) *strm) {
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflateSetHeader)(PREFIX3(stream) *strm, PREFIX(gz_headerp) head) {
+int32_t ZEXPORT PREFIX(deflateSetHeader)(PREFIX3(stream) *strm, PREFIX(gz_headerp) head) {
     if (deflateStateCheck(strm) || strm->state->wrap != 2)
         return Z_STREAM_ERROR;
     strm->state->gzhead = head;
@@ -568,7 +568,7 @@ int ZEXPORT PREFIX(deflateSetHeader)(PREFIX3(stream) *strm, PREFIX(gz_headerp) h
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflatePending)(PREFIX3(stream) *strm, uint32_t *pending, int *bits) {
+int32_t ZEXPORT PREFIX(deflatePending)(PREFIX3(stream) *strm, uint32_t *pending, int32_t *bits) {
     if (deflateStateCheck(strm))
         return Z_STREAM_ERROR;
     if (pending != NULL)
@@ -579,7 +579,7 @@ int ZEXPORT PREFIX(deflatePending)(PREFIX3(stream) *strm, uint32_t *pending, int
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int bits, int value) {
+int32_t ZEXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32_t value) {
     deflate_state *s;
     int32_t put;
 
@@ -603,7 +603,7 @@ int ZEXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int bits, int value) {
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int level, int strategy) {
+int32_t ZEXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int32_t strategy) {
     deflate_state *s;
     compress_func func;
 
@@ -648,7 +648,7 @@ int ZEXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int level, int strategy
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflateTune)(PREFIX3(stream) *strm, int good_length, int max_lazy, int nice_length, int max_chain) {
+int32_t ZEXPORT PREFIX(deflateTune)(PREFIX3(stream) *strm, int32_t good_length, int32_t max_lazy, int32_t nice_length, int32_t max_chain) {
     deflate_state *s;
 
     if (deflateStateCheck(strm))
@@ -776,8 +776,8 @@ ZLIB_INTERNAL void flush_pending(PREFIX3(stream) *strm) {
     } while (0)
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
-    int old_flush; /* value of flush param for previous deflate call */
+int32_t ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
+    int32_t old_flush; /* value of flush param for previous deflate call */
     deflate_state *s;
 
     if (deflateStateCheck(strm) || flush > Z_BLOCK || flush < 0) {
@@ -1074,8 +1074,8 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
 }
 
 /* ========================================================================= */
-int ZEXPORT PREFIX(deflateEnd)(PREFIX3(stream) *strm) {
-    int status;
+int32_t ZEXPORT PREFIX(deflateEnd)(PREFIX3(stream) *strm) {
+    int32_t status;
 
     if (deflateStateCheck(strm))
         return Z_STREAM_ERROR;
@@ -1097,7 +1097,7 @@ int ZEXPORT PREFIX(deflateEnd)(PREFIX3(stream) *strm) {
 /* =========================================================================
  * Copy the source state to the destination state.
  */
-int ZEXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *source) {
+int32_t ZEXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *source) {
     deflate_state *ds;
     deflate_state *ss;
     uint32_t window_padding = 0;
@@ -1657,8 +1657,8 @@ static block_state deflate_huff(deflate_state *s, int flush) {
 /* =========================================================================
  * Checks whether buffer size is sufficient and whether this parameter is a duplicate.
  */
-static int deflateSetParamPre(zng_deflate_param_value **out, size_t min_size, zng_deflate_param_value *param) {
-    int buf_error = param->size < min_size;
+static int32_t deflateSetParamPre(zng_deflate_param_value **out, size_t min_size, zng_deflate_param_value *param) {
+    int32_t buf_error = param->size < min_size;
 
     if (*out != NULL) {
         (*out)->status = Z_BUF_ERROR;
@@ -1669,7 +1669,7 @@ static int deflateSetParamPre(zng_deflate_param_value **out, size_t min_size, zn
 }
 
 /* ========================================================================= */
-int ZEXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count) {
+int32_t ZEXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count) {
     size_t i;
     deflate_state *s;
     zng_deflate_param_value *new_level = NULL;
@@ -1745,11 +1745,11 @@ int ZEXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value *para
 }
 
 /* ========================================================================= */
-int ZEXPORT zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count) {
+int32_t ZEXPORT zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value *params, size_t count) {
     deflate_state *s;
     size_t i;
-    int buf_error = 0;
-    int version_error = 0;
+    int32_t buf_error = 0;
+    int32_t version_error = 0;
 
     /* Initialize the statuses. */
     for (i = 0; i < count; i++)
