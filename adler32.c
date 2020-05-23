@@ -27,15 +27,15 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
     adler &= 0xffff;
 
     /* in case user likes doing a byte at a time, keep it fast */
-    if (len == 1)
+    if (UNLIKELY(len == 1))
         return adler32_len_1(adler, buf, sum2);
 
     /* initial Adler-32 value (deferred check for len == 1 speed) */
-    if (buf == NULL)
+    if (UNLIKELY(buf == NULL))
         return 1L;
 
     /* in case short lengths are provided, keep it somewhat fast */
-    if (len < 16)
+    if (UNLIKELY(len < 16))
         return adler32_len_16(adler, buf, len, sum2);
 
     /* do length NMAX blocks -- requires just one modulo operation */
