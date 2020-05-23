@@ -53,7 +53,7 @@ static int inflateStateCheck(PREFIX3(stream) *strm) {
     return 0;
 }
 
-int ZEXPORT PREFIX(inflateResetKeep)(PREFIX3(stream) *strm) {
+int32_t ZEXPORT PREFIX(inflateResetKeep)(PREFIX3(stream) *strm) {
     struct inflate_state *state;
 
     if (inflateStateCheck(strm))
@@ -80,7 +80,7 @@ int ZEXPORT PREFIX(inflateResetKeep)(PREFIX3(stream) *strm) {
     return Z_OK;
 }
 
-int ZEXPORT PREFIX(inflateReset)(PREFIX3(stream) *strm) {
+int32_t ZEXPORT PREFIX(inflateReset)(PREFIX3(stream) *strm) {
     struct inflate_state *state;
 
     if (inflateStateCheck(strm))
@@ -92,7 +92,7 @@ int ZEXPORT PREFIX(inflateReset)(PREFIX3(stream) *strm) {
     return PREFIX(inflateResetKeep)(strm);
 }
 
-int ZEXPORT PREFIX(inflateReset2)(PREFIX3(stream) *strm, int windowBits) {
+int32_t ZEXPORT PREFIX(inflateReset2)(PREFIX3(stream) *strm, int32_t windowBits) {
     int wrap;
     struct inflate_state *state;
 
@@ -127,8 +127,8 @@ int ZEXPORT PREFIX(inflateReset2)(PREFIX3(stream) *strm, int windowBits) {
     return PREFIX(inflateReset)(strm);
 }
 
-int ZEXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int windowBits, const char *version, int stream_size) {
-    int ret;
+int32_t ZEXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int32_t windowBits, const char *version, int32_t stream_size) {
+    int32_t ret;
     struct inflate_state *state;
 
 #if defined(X86_CPUID)
@@ -164,11 +164,11 @@ int ZEXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int windowBits, const c
     return ret;
 }
 
-int ZEXPORT PREFIX(inflateInit_)(PREFIX3(stream) *strm, const char *version, int stream_size) {
+int32_t ZEXPORT PREFIX(inflateInit_)(PREFIX3(stream) *strm, const char *version, int32_t stream_size) {
     return PREFIX(inflateInit2_)(strm, DEF_WBITS, version, stream_size);
 }
 
-int ZEXPORT PREFIX(inflatePrime)(PREFIX3(stream) *strm, int bits, int value) {
+int32_t ZEXPORT PREFIX(inflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32_t value) {
     struct inflate_state *state;
 
     if (inflateStateCheck(strm))
@@ -240,7 +240,7 @@ int ZLIB_INTERNAL inflate_ensure_window(struct inflate_state *state) {
    output will fall in the output data, making match copies simpler and faster.
    The advantage may be dependent on the size of the processor's data caches.
  */
-static int updatewindow(PREFIX3(stream) *strm, const unsigned char *end, uint32_t copy) {
+static int32_t updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t copy) {
     struct inflate_state *state;
     uint32_t dist;
 
@@ -371,7 +371,7 @@ static int updatewindow(PREFIX3(stream) *strm, const unsigned char *end, uint32_
    will return Z_BUF_ERROR if it has not reached the end of the stream.
  */
 
-int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
+int32_t ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
     struct inflate_state *state;
     const unsigned char *next;  /* next input */
     unsigned char *put;         /* next output */
@@ -384,7 +384,7 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
     code here;                  /* current decoding table entry */
     code last;                  /* parent table entry */
     unsigned len;               /* length to copy for repeats, bits to drop */
-    int ret;                    /* return code */
+    int32_t ret;                /* return code */
 #ifdef GUNZIP
     unsigned char hbuf[4];      /* buffer for gzip header crc calculation */
 #endif
@@ -1098,7 +1098,7 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
     return ret;
 }
 
-int ZEXPORT PREFIX(inflateEnd)(PREFIX3(stream) *strm) {
+int32_t ZEXPORT PREFIX(inflateEnd)(PREFIX3(stream) *strm) {
     struct inflate_state *state;
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
@@ -1111,7 +1111,7 @@ int ZEXPORT PREFIX(inflateEnd)(PREFIX3(stream) *strm) {
     return Z_OK;
 }
 
-int ZEXPORT PREFIX(inflateGetDictionary)(PREFIX3(stream) *strm, unsigned char *dictionary, unsigned int *dictLength) {
+int32_t ZEXPORT PREFIX(inflateGetDictionary)(PREFIX3(stream) *strm, uint8_t *dictionary, uint32_t *dictLength) {
     struct inflate_state *state;
 
     /* check state */
@@ -1129,10 +1129,10 @@ int ZEXPORT PREFIX(inflateGetDictionary)(PREFIX3(stream) *strm, unsigned char *d
     return Z_OK;
 }
 
-int ZEXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const unsigned char *dictionary, unsigned int dictLength) {
+int32_t ZEXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8_t *dictionary, uint32_t dictLength) {
     struct inflate_state *state;
     unsigned long dictid;
-    int ret;
+    int32_t ret;
 
     /* check state */
     if (inflateStateCheck(strm))
@@ -1160,7 +1160,7 @@ int ZEXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const unsigned c
     return Z_OK;
 }
 
-int ZEXPORT PREFIX(inflateGetHeader)(PREFIX3(stream) *strm, PREFIX(gz_headerp) head) {
+int32_t ZEXPORT PREFIX(inflateGetHeader)(PREFIX3(stream) *strm, PREFIX(gz_headerp) head) {
     struct inflate_state *state;
 
     /* check state */
@@ -1187,7 +1187,7 @@ int ZEXPORT PREFIX(inflateGetHeader)(PREFIX3(stream) *strm, PREFIX(gz_headerp) h
    called again with more data and the *have state.  *have is initialized to
    zero for the first call.
  */
-static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len) {
+static uint32_t syncsearch(uint32_t *have, const uint8_t *buf, uint32_t len) {
     uint32_t got;
     uint32_t next;
 
@@ -1206,7 +1206,7 @@ static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t le
     return next;
 }
 
-int ZEXPORT PREFIX(inflateSync)(PREFIX3(stream) *strm) {
+int32_t ZEXPORT PREFIX(inflateSync)(PREFIX3(stream) *strm) {
     unsigned len;               /* number of bytes to look at or looked at */
     int flags;                  /* temporary to save header status */
     size_t in, out;             /* temporary to save total_in and total_out */
@@ -1267,7 +1267,7 @@ int ZEXPORT PREFIX(inflateSync)(PREFIX3(stream) *strm) {
    block. When decompressing, PPP checks that at the end of input packet,
    inflate is waiting for these length bytes.
  */
-int ZEXPORT PREFIX(inflateSyncPoint)(PREFIX3(stream) *strm) {
+int32_t ZEXPORT PREFIX(inflateSyncPoint)(PREFIX3(stream) *strm) {
     struct inflate_state *state;
 
     if (inflateStateCheck(strm))
@@ -1276,7 +1276,7 @@ int ZEXPORT PREFIX(inflateSyncPoint)(PREFIX3(stream) *strm) {
     return state->mode == STORED && state->bits == 0;
 }
 
-int ZEXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *source) {
+int32_t ZEXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *source) {
     struct inflate_state *state;
     struct inflate_state *copy;
     unsigned char *window;
@@ -1319,7 +1319,7 @@ int ZEXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *source) 
     return Z_OK;
 }
 
-int ZEXPORT PREFIX(inflateUndermine)(PREFIX3(stream) *strm, int subvert) {
+int32_t ZEXPORT PREFIX(inflateUndermine)(PREFIX3(stream) *strm, int32_t subvert) {
     struct inflate_state *state;
 
     if (inflateStateCheck(strm))
@@ -1335,7 +1335,7 @@ int ZEXPORT PREFIX(inflateUndermine)(PREFIX3(stream) *strm, int subvert) {
 #endif
 }
 
-int ZEXPORT PREFIX(inflateValidate)(PREFIX3(stream) *strm, int check) {
+int32_t ZEXPORT PREFIX(inflateValidate)(PREFIX3(stream) *strm, int32_t check) {
     struct inflate_state *state;
 
     if (inflateStateCheck(strm))

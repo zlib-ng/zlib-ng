@@ -83,9 +83,9 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
 #else
     int err, read;
     size_t len = strlen(hello)+1;
-    size_t comprLen;
+    z_off64_t comprLen;
     gzFile file;
-    z_off_t pos;
+    z_off64_t pos;
 
     /* Write gz file with test data */
     file = PREFIX(gzopen)(fname, "wb");
