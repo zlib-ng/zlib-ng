@@ -44,7 +44,7 @@ static inline int32_t compare256_unaligned_avx2_static(const unsigned char *src0
         src0 += 32, src1 += 32, len += 32;
     } while (len < 256);
 
-    return len;
+    return 256;
 }
 
 static inline int32_t compare258_unaligned_avx2_static(const unsigned char *src0, const unsigned char *src1) { 
