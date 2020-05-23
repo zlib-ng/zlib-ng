@@ -121,7 +121,7 @@ extern const char * const zng_errmsg[10]; /* indexed by 2-zlib_error */
 
 /* MS Visual Studio does not allow inline in C, only C++.
    But it provides __inline instead, so use that. */
-#if defined(_MSC_VER) && !defined(inline)
+#if defined(_MSC_VER) && !defined(inline) && !defined(__cplusplus) 
 #  define inline __inline
 #endif
 
