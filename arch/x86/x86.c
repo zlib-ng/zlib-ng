@@ -19,6 +19,7 @@
 
 ZLIB_INTERNAL int x86_cpu_has_avx2;
 ZLIB_INTERNAL int x86_cpu_has_sse2;
+ZLIB_INTERNAL int x86_cpu_has_ssse3;
 ZLIB_INTERNAL int x86_cpu_has_sse42;
 ZLIB_INTERNAL int x86_cpu_has_pclmulqdq;
 ZLIB_INTERNAL int x86_cpu_has_tzcnt;
@@ -60,6 +61,7 @@ void ZLIB_INTERNAL x86_check_features(void) {
     cpuid(1 /*CPU_PROCINFO_AND_FEATUREBITS*/, &eax, &ebx, &ecx, &edx);
 
     x86_cpu_has_sse2 = edx & 0x4000000;
+    x86_cpu_has_ssse3 = ecx & 0x200;
     x86_cpu_has_sse42 = ecx & 0x100000;
     x86_cpu_has_pclmulqdq = ecx & 0x2;
 

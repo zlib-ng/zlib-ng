@@ -47,6 +47,12 @@ extern uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 #if (defined(__ARM_NEON__) || defined(__ARM_NEON)) && defined(ARM_NEON_ADLER32)
 extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
+#ifdef X86_SSSE3_ADLER32
+extern uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len);
+#endif
+#ifdef X86_AVX2_ADLER32
+extern uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t len);
+#endif
 
 /* CRC32 */
 ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
@@ -194,6 +200,14 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
     if (arm_cpu_has_neon)
 #  endif
         functable.adler32 = &adler32_neon;
+#endif
+#ifdef X86_SSSE3_ADLER32
+    if (x86_cpu_has_ssse3)
+        functable.adler32 = &adler32_ssse3;
+#endif
+#ifdef X86_AVX2_ADLER32
+    if (x86_cpu_has_avx2)
+        functable.adler32 = &adler32_avx2;
 #endif
 
     return functable.adler32(adler, buf, len);

@@ -99,12 +99,13 @@ elseif(BASEARCH_S360_FOUND AND "${ARCH}" MATCHES "s390x")
 elseif(BASEARCH_X86_FOUND)
     option(WITH_AVX2 "Build with AVX2" ON)
     option(WITH_SSE2 "Build with SSE2" ON)
+    option(WITH_SSSE3 "Build with SSSE3" ON)
     option(WITH_SSE4 "Build with SSE4" ON)
     option(WITH_PCLMULQDQ "Build with PCLMULQDQ" ON)
 endif()
 
 mark_as_advanced(FORCE ZLIB_DUAL_LINK WITH_ACLE WITH_NEON WITH_DFLTCC_DEFLATE WITH_DFLTCC_INFLATE
-    WITH_AVX2 WITH_SSE2 WITH_SSE4 WITH_PCLMULQDQ WITH_POWER8 WITH_INFLATE_STRICT WITH_INFLATE_ALLOW_INVALID_DIST)
+    WITH_AVX2 WITH_SSE2 WITH_SSSE3 WITH_SSE4 WITH_PCLMULQDQ WITH_POWER8 WITH_INFLATE_STRICT WITH_INFLATE_ALLOW_INVALID_DIST)
 
 add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Provide a zlib-compatible API")
 add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile-related functions")
@@ -145,6 +146,7 @@ if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${
         if(BASEARCH_X86_FOUND)
             set(AVX2FLAG "-mavx2")
             set(SSE2FLAG "-msse2")
+            set(SSSE3FLAG "-mssse3")
             set(SSE4FLAG "-msse4.2")
         endif()
     else()
@@ -154,6 +156,7 @@ if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${
         if(BASEARCH_X86_FOUND)
             set(AVX2FLAG "/arch:AVX2")
             set(SSE2FLAG "/arch:SSE2")
+            set(SSSE3FLAG "/arch:SSSE3")
             set(SSE4FLAG "/arch:SSE4.2")
         endif()
     endif()
@@ -232,6 +235,7 @@ else()
             elseif(BASEARCH_X86_FOUND)
                 set(AVX2FLAG "-mavx2")
                 set(SSE2FLAG "-msse2")
+                set(SSSE3FLAG "-mssse3")
                 set(SSE4FLAG "-msse4")
                 set(PCLMULFLAG "-mpclmul")
             endif()
@@ -245,6 +249,7 @@ else()
         elseif(BASEARCH_X86_FOUND)
             set(AVX2FLAG ${NATIVEFLAG})
             set(SSE2FLAG ${NATIVEFLAG})
+            set(SSSE3FLAG ${NATIVEFLAG})
             set(SSE4FLAG ${NATIVEFLAG})
             set(PCLMULFLAG ${NATIVEFLAG})
         endif()
@@ -456,8 +461,26 @@ elseif(BASEARCH_X86_FOUND)
         }"
         HAVE_SSE2_INTRIN
     )
-    set(CMAKE_REQUIRED_FLAGS)
+    # Check whether compiler supports SSSE3 intrinsics
+    if(WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+    else()
+        set(CMAKE_REQUIRED_FLAGS "${SSSE3FLAG}")
+    endif()
+    check_c_source_compile_or_run(
+        "#include <immintrin.h>
 
+        int main(void)
+        {
+            __m128i u, v, w;
+            u = _mm_set1_epi32(1);
+            v = _mm_set1_epi32(2);
+            w = _mm_hadd_epi32(u, v);
+            (void)w;
+            return 0;
+        }"
+        HAVE_SSSE3_INTRIN
+    )
     # Check whether compiler supports SSE4 CRC inline asm
     if(WITH_NATIVE_INSTRUCTIONS)
         set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
@@ -508,8 +531,6 @@ elseif(BASEARCH_X86_FOUND)
         }"
         HAVE_SSE42CMPSTR_INTRIN
     )
-    set(CMAKE_REQUIRED_FLAGS)
-
     # Check whether compiler supports PCLMULQDQ intrinsics
     if(WITH_NATIVE_INSTRUCTIONS)
         set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
@@ -533,8 +554,6 @@ elseif(BASEARCH_X86_FOUND)
     else()
         set(HAVE_PCLMULQDQ_INTRIN NO)
     endif()
-    set(CMAKE_REQUIRED_FLAGS)
-
     # Check whether compiler supports AVX2 intrinics
     if(WITH_NATIVE_INSTRUCTIONS)
         set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
@@ -679,11 +698,12 @@ if(WITH_OPTIM)
             list(APPEND ZLIB_ARCH_HDRS fallback_builtins.h)
         endif()
         if(WITH_AVX2 AND HAVE_AVX2_INTRIN)
-            add_definitions(-DX86_AVX2)
-            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/slide_avx.c)
+            add_definitions(-DX86_AVX2 -DX86_AVX2_ADLER32)
+            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/slide_avx.c ${ARCHDIR}/adler32_avx.c)
             add_feature_info(AVX2_SLIDEHASH 1 "Support AVX2 optimized slide_hash, using \"${AVX2FLAG}\"")
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/compare258_avx.c)
             add_feature_info(AVX2_COMPARE258 1 "Support AVX2 optimized compare258, using \"${AVX2FLAG}\"")
+            add_feature_info(AVX2_ADLER32 1 "Support AVX2-accelerated adler32, using \"${AVX2FLAG}\"")
             add_intrinsics_option("${AVX2FLAG}")
         endif()
         if(WITH_SSE4 AND (HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN))
@@ -710,6 +730,12 @@ if(WITH_OPTIM)
                     add_definitions(-DX86_NOCHECK_SSE2)
                 endif()
             endif()
+        endif()
+        if(WITH_SSSE3 AND HAVE_SSSE3_INTRIN)
+            add_definitions(-DX86_SSSE3 -DX86_SSSE3_ADLER32)
+            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/adler32_ssse3.c)
+            add_feature_info(SSSE3_ADLER32 1 "Support SSSE3-accelerated adler32, using \"${SSSE3FLAG}\"")
+            add_intrinsics_option("${SSSE3FLAG}")
         endif()
         if(WITH_PCLMULQDQ AND HAVE_PCLMULQDQ_INTRIN)
             add_definitions(-DX86_PCLMULQDQ_CRC)
