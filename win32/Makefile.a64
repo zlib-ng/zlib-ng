@@ -36,6 +36,7 @@ SUFFIX =
 OBJS = \
 	adler32.obj \
 	armfeature.obj \
+	compare258.obj \
 	compress.obj \
 	crc32.obj \
 	deflate.obj \
