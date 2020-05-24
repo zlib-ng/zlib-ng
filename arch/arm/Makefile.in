@@ -12,7 +12,12 @@ SRCDIR=.
 SRCTOP=../..
 TOPDIR=$(SRCTOP)
 
-all: adler32_neon.o adler32_neon.lo armfeature.o armfeature.lo crc32_acle.o crc32_acle.lo slide_neon.o slide_neon.lo insert_string_acle.o insert_string_acle.lo
+all: \
+	adler32_neon.o adler32_neon.lo \
+	armfeature.o armfeature.lo \
+	crc32_acle.o crc32_acle.lo \
+	slide_neon.o slide_neon.lo \
+	insert_string_acle.o insert_string_acle.lo
 
 adler32_neon.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_neon.c
