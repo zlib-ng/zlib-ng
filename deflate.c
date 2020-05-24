@@ -144,7 +144,7 @@ static const config configuration_table[10] = {
 /*      good lazy nice chain */
 /* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
 
-#ifdef X86_QUICK_STRATEGY
+#ifndef NO_QUICK_STRATEGY
 /* 1 */ {4,    4,  8,    4, deflate_quick},
 /* 2 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
 #else
@@ -302,7 +302,7 @@ int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, 
     if (windowBits == 8)
         windowBits = 9;  /* until 256-byte window bug fixed */
 
-#ifdef X86_QUICK_STRATEGY
+#ifndef NO_QUICK_STRATEGY
     if (level == 1)
         windowBits = 13;
 #endif
@@ -1002,8 +1002,8 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
                  s->level == 0 ? deflate_stored(s, flush) :
                  s->strategy == Z_HUFFMAN_ONLY ? deflate_huff(s, flush) :
                  s->strategy == Z_RLE ? deflate_rle(s, flush) :
-#ifdef X86_QUICK_STRATEGY
-                 (s->level == 1 && !x86_cpu_has_sse42) ? deflate_fast(s, flush) :
+#ifndef NO_QUICK_STRATEGY
+                 s->level == 1 ? deflate_fast(s, flush) :
 #endif
                  (*(configuration_table[s->level].func))(s, flush);
 

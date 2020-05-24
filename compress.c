@@ -73,7 +73,7 @@ int ZEXPORT PREFIX(compress)(unsigned char *dest, z_size_t *destLen, const unsig
    this function needs to be updated.
  */
 z_size_t ZEXPORT PREFIX(compressBound)(z_size_t sourceLen) {
-#ifdef X86_QUICK_STRATEGY
+#ifndef NO_QUICK_STRATEGY
     /* Quick deflate strategy worse case is 9 bits per literal, rounded to nearest byte,
        plus the size of block & gzip headers and footers */
     return sourceLen + ((sourceLen + 13 + 7) >> 3) + 18;

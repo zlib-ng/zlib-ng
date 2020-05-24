@@ -988,6 +988,11 @@ EOF
             HAVE_PCLMULQDQ_INTRIN=0
         fi
 
+        # Enable deflate_medium at level 1
+        if test $without_new_strategies -eq 1; then
+            CFLAGS="${CFLAGS} -DNO_QUICK_STRATEGY"
+            SFLAGS="${SFLAGS} -DNO_QUICK_STRATEGY"
+        fi
         # Enable deflate_medium at level 4-6
         if test $without_new_strategies -eq 1; then
             CFLAGS="${CFLAGS} -DNO_MEDIUM_STRATEGY"
@@ -1096,15 +1101,6 @@ case "${ARCH}" in
                     CFLAGS="${CFLAGS} -DX86_NOCHECK_SSE2"
                     SFLAGS="${SFLAGS} -DX86_NOCHECK_SSE2"
                 fi
-
-                # Enable deflate_quick at level 1?
-                if test $without_new_strategies -eq 0; then
-                    CFLAGS="${CFLAGS} -DX86_QUICK_STRATEGY"
-                    SFLAGS="${SFLAGS} -DX86_QUICK_STRATEGY"
-
-                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} deflate_quick.o"
-                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} deflate_quick.lo"
-                fi
             fi
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
@@ -1182,15 +1178,6 @@ case "${ARCH}" in
 
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_sse.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_sse.lo"
-            fi
-
-            # Enable deflate_quick at level 1?
-            if test $without_new_strategies -eq 0; then
-                CFLAGS="${CFLAGS} -DX86_QUICK_STRATEGY"
-                SFLAGS="${SFLAGS} -DX86_QUICK_STRATEGY"
-
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} deflate_quick.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} deflate_quick.lo"
             fi
         fi
     ;;
