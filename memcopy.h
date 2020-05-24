@@ -50,7 +50,13 @@ static inline inffast_chunk_t loadchunk(unsigned char const* s) {
    instruction appropriate for the inffast_chunk_t type.
  */
 static inline void storechunk(unsigned char* d, inffast_chunk_t c) {
+#ifdef _MSC_VER
+    /* Cast to inffast_chunk_t pointer to avoid compiler error on MSVC ARM */
+    inffast_chunk_t *dst_chunk = (inffast_chunk_t *)d;
+    memcpy(dst_chunk, &c, sizeof(c));
+#else
     memcpy(d, &c, sizeof(c));
+#endif
 }
 
 /*
