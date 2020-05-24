@@ -17,16 +17,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "../../zbuild.h"
-#include <immintrin.h>
-#ifdef _MSC_VER
-#  include <nmmintrin.h>
-#endif
-#include "../../deflate.h"
-#include "../../deflate_p.h"
-#include "../../functable.h"
-#include "../../memcopy.h"
-#include "../../trees_emit.h"
+#include "zbuild.h"
+#include "deflate.h"
+#include "deflate_p.h"
+#include "functable.h"
+#include "trees_emit.h"
 
 extern const ct_data static_ltree[L_CODES+2];
 extern const ct_data static_dtree[D_CODES];

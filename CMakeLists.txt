@@ -540,6 +540,12 @@ if(BASEARCH_X86_FOUND)
 endif()
 
 #
+# Enable deflate_quick at level 1
+#
+if(NOT WITH_NEW_STRATEGIES)
+    add_definitions(-DNO_QUICK_STRATEGY)
+endif()
+#
 # Enable deflate_medium at level 4-6
 #
 if(NOT WITH_NEW_STRATEGIES)
@@ -652,11 +658,6 @@ if(WITH_OPTIM)
             add_intrinsics_option("${SSE4FLAG}")
             if(HAVE_SSE42CRC_INTRIN)
                 add_definitions(-DX86_SSE42_CRC_INTRIN)
-            endif()
-            if(WITH_NEW_STRATEGIES)
-                add_definitions(-DX86_QUICK_STRATEGY)
-                list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/deflate_quick.c)
-                add_feature_info(SSE42_DEFLATE_QUICK 1 "Support SSE4.2 accelerated quick compression")
             endif()
         endif()
         if(HAVE_SSE42CMPSTR_INTRIN)
@@ -776,6 +777,7 @@ set(ZLIB_SRCS
     compress.c
     crc32.c
     deflate.c
+    deflate_quick.c
     deflate_fast.c
     deflate_medium.c
     deflate_slow.c

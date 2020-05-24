@@ -23,7 +23,7 @@ AR = lib
 RC = rc
 CP = copy /y
 CFLAGS  = -nologo -MD -W3 -O2 -Oy- -Zi -Fd"zlib" $(LOC)
-WFLAGS  = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DX86_PCLMULQDQ_CRC -DX86_SSE2 -DX86_CPUID -DX86_SSE42_CRC_INTRIN -DX86_SSE42_CRC_HASH -DX86_AVX2 -DUNALIGNED_OK -DX86_QUICK_STRATEGY
+WFLAGS  = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DX86_PCLMULQDQ_CRC -DX86_SSE2 -DX86_CPUID -DX86_SSE42_CRC_INTRIN -DX86_SSE42_CRC_HASH -DX86_AVX2 -DUNALIGNED_OK
 LDFLAGS = -nologo -debug -incremental:no -opt:ref -manifest
 ARFLAGS = -nologo
 RCFLAGS = /dWIN32 /r
@@ -155,7 +155,7 @@ crc32.obj: $(SRCDIR)/crc32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zendian.h $(SRCDIR)/de
 deflate.obj: $(SRCDIR)/deflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_fast.obj: $(SRCDIR)/deflate_fast.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_medium.obj: $(SRCDIR)/deflate_medium.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
-deflate_quick.obj: $(SRCDIR)/arch/x86/deflate_quick.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/memcopy.h
+deflate_quick.obj: $(SRCDIR)/deflate_quick.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/trees_emit.h
 deflate_slow.obj: $(SRCDIR)/deflate_slow.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 infback.obj: $(SRCDIR)/infback.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h
 inffast.obj: $(SRCDIR)/inffast.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/memcopy.h

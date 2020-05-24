@@ -79,6 +79,7 @@ OBJZ = \
 	deflate.o \
 	deflate_fast.o \
 	deflate_medium.o \
+	deflate_quick.o \
 	deflate_slow.o \
 	functable.o \
 	infback.o \
@@ -107,6 +108,7 @@ PIC_OBJZ = \
 	deflate.lo \
 	deflate_fast.lo \
 	deflate_medium.lo \
+	deflate_quick.lo \
 	deflate_slow.lo \
 	functable.lo \
 	infback.lo \
