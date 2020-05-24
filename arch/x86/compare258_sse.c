@@ -69,6 +69,6 @@ int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char
 #define COMPARE256      compare256_unaligned_sse4_static
 #define COMPARE258      compare258_unaligned_sse4_static
 
-#include "match_p.h"
+#include "match_tpl.h"
 
 #endif
