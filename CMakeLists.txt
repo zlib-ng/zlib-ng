@@ -764,7 +764,7 @@ set(ZLIB_PRIVATE_HDRS
     inflate_p.h
     inftrees.h
     insert_string_tpl.h
-    match_p.h
+    match_tpl.h
     memcopy.h
     trees.h
     trees_emit.h
