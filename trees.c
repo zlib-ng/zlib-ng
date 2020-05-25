@@ -75,6 +75,7 @@ static int  build_bl_tree    (deflate_state *s);
 static void send_all_trees   (deflate_state *s, int lcodes, int dcodes, int blcodes);
 static void compress_block   (deflate_state *s, const ct_data *ltree, const ct_data *dtree);
 static int  detect_data_type (deflate_state *s);
+static void bi_flush         (deflate_state *s);
 
 /* ===========================================================================
  * Initialize the tree data structures for a new zlib stream.
@@ -776,6 +777,34 @@ static int detect_data_type(deflate_state *s) {
      * this stream either is empty or has tolerated ("gray-listed") bytes only.
      */
     return Z_BINARY;
+}
+
+/* ===========================================================================
+ * Flush the bit buffer, keeping at most 7 bits in it.
+ */
+static void bi_flush(deflate_state *s) {
+    if (s->bi_valid == 64) {
+        put_uint64(s, s->bi_buf);
+        s->bi_buf = 0;
+        s->bi_valid = 0;
+    }
+    else {
+        if (s->bi_valid >= 32) {
+            put_uint32(s, (uint32_t)s->bi_buf);
+            s->bi_buf >>= 32;
+            s->bi_valid -= 32;
+        }
+        if (s->bi_valid >= 16) {
+            put_short(s, (uint16_t)s->bi_buf);
+            s->bi_buf >>= 16;
+            s->bi_valid -= 16;
+        }
+        if (s->bi_valid >= 8) {
+            put_byte(s, s->bi_buf);
+            s->bi_buf >>= 8;
+            s->bi_valid -= 8;
+        }
+    }
 }
 
 /* ===========================================================================
