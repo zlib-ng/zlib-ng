@@ -39,8 +39,8 @@ static inline int zng_tr_tally_lit(deflate_state *s, unsigned char c) {
 static inline int zng_tr_tally_dist(deflate_state *s, unsigned dist, unsigned char len) {
     /* dist: distance of matched string */
     /* len: match length-MIN_MATCH */
-    s->sym_buf[s->sym_next++] = dist;
-    s->sym_buf[s->sym_next++] = dist >> 8;
+    s->sym_buf[s->sym_next++] = (uint8_t)(dist);
+    s->sym_buf[s->sym_next++] = (uint8_t)(dist >> 8);
     s->sym_buf[s->sym_next++] = len;
     s->matches++;
     dist--;
