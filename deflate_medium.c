@@ -261,11 +261,6 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                 else
                     fizzle_matches(s, &current_match, &next_match);
             }
-
-            /* short matches with a very long distance are rarely a good idea encoding wise */
-            /* distances 8193–16384 take 12 extra bits, distances 16385–32768 take 13 extra bits */
-            if (next_match.match_length == 3 && (next_match.strstart - next_match.match_start) > 12000)
-                    next_match.match_length = 1;
             s->strstart = current_match.strstart;
 
         } else {
