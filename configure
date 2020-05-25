@@ -326,6 +326,12 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       else
         ARCH=native
       fi ;;
+    powerpc | ppc)
+      ARCH=powerpc ;;
+    powerpc64 | ppc64)
+      ARCH=powerpc64 ;;
+    powerpc64le | ppc64le)
+      ARCH=powerpc64le ;;
   esac
   CFLAGS="-O2 ${CFLAGS}"
   if test -n "${ARCHS}"; then
@@ -335,8 +341,14 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   CFLAGS="${CFLAGS} -Wall"
   SFLAGS="${CFLAGS} -fPIC"
   if test $native -eq 1; then
-    CFLAGS="${CFLAGS} -march=native"
-    SFLAGS="${SFLAGS} -march=native"
+    case $ARCH in
+      powerpc*)
+        NATIVE_FLAG="-mcpu=native" ;;
+      *)
+        NATIVE_FLAG="-march=native" ;;
+    esac
+    CFLAGS="${CFLAGS} ${NATIVE_FLAG}"
+    SFLAGS="${SFLAGS} ${NATIVE_FLAG}"
   fi
   if test "$warn" -eq 1; then
     CFLAGS="${CFLAGS} -Wextra -Wpedantic -Wno-implicit-fallthrough"
@@ -1024,6 +1036,22 @@ EOF
         ;;
 esac
 
+# Check whether features needed by POWER optimisations are available
+case "${ARCH}" in
+    powerpc*)
+        cat > $test.c << EOF
+#include <sys/auxv.h>
+int main() { return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07); }
+EOF
+        if try $CC -c $CFLAGS -mcpu=power8 $test.c; then
+            HAVE_POWER8=1
+            echo "Check whether POWER8 instructions are available ... Yes." | tee -a configure.log
+        else
+            HAVE_POWER8=0
+            echo "Check whether POWER8 instructions are available ... No." | tee -a configure.log
+        fi
+esac
+
 # Check whether sys/sdt.h is available
 cat > $test.c << EOF
 #include <sys/sdt.h>
@@ -1325,11 +1353,33 @@ case "${ARCH}" in
         CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK"
         SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK"
     ;;
-    powerpc)
-        [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=ppc
-    ;;
-    powerpc64)
-        [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=ppc64
+    powerpc*)
+        case "${ARCH}" in
+            powerpc)
+                [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=ppc
+            ;;
+            powerpc64)
+                [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=ppc64
+            ;;
+            powerpc64le)
+                [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=ppc64le
+                CFLAGS="${CFLAGS} -DUNALIGNED_OK"
+                SFLAGS="${SFLAGS} -DUNALIGNED_OK"
+            ;;
+        esac
+
+        ARCHDIR=arch/power
+
+        if test $without_optimizations -eq 0; then
+            if test $HAVE_POWER8 -eq 1; then
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power.lo"
+                POWERFLAGS="-DPOWER_FEATURES -DPOWER8"
+            fi
+        fi
+
+        CFLAGS="${CFLAGS} ${POWERFLAGS}"
+        SFLAGS="${SFLAGS} ${POWERFLAGS}"
     ;;
     s390x)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=s390x

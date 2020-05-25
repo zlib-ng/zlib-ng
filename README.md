@@ -200,6 +200,7 @@ Advanced Build Options
 | WITH_PCLMULQDQ                  |                       | Build with PCLMULQDQ intrinsics                                     | ON                     |
 | WITH_ACLE                       | --without-acle        | Build with ACLE intrinsics                                          | ON                     |
 | WITH_NEON                       | --without-neon        | Build with NEON intrinsics                                          | ON                     |
+| WITH_POWER8                     |                       | Build with POWER8 optimisations                                     | ON
 | WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | Use DEFLATE COMPRESSION CALL instruction for compression on IBM Z   | OFF                    |
 | WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z | OFF                    |
 | WITH_INFLATE_STRICT             |                       | Build with strict inflate distance checking                         | OFF                    |

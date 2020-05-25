@@ -64,6 +64,7 @@ a.out
 /Makefile
 /arch/arm/Makefile
 /arch/generic/Makefile
+/arch/power/Makefile
 /arch/x86/Makefile
 .kdev4
 *.kdev4
