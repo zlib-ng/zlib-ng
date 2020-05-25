@@ -37,8 +37,8 @@ uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t len) {
         return adler32_len_16(adler, buf, len, sum2);
 
     uint32_t ALIGNED_(32) s1[8], s2[8];
-    memset(s1, '\0', sizeof(uint32_t)*7); s1[7] = adler; // TODO: would a masked load be faster?
-    memset(s2, '\0', sizeof(uint32_t)*7); s2[7] = sum2;
+    memset(s1, 0, sizeof(s1)); s1[7] = adler; // TODO: would a masked load be faster?
+    memset(s2, 0, sizeof(s2)); s2[7] = sum2;
     char ALIGNED_(32) dot1[32] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     __m256i dot1v = _mm256_load_si256((__m256i*)dot1);
     char ALIGNED_(32) dot2[32] = {32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
