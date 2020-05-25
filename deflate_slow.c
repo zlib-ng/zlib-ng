@@ -10,15 +10,6 @@
 #include "functable.h"
 
 /* ===========================================================================
- * Local data
- */
-
-#ifndef TOO_FAR
-#  define TOO_FAR 4096
-#endif
-/* Matches of length 3 are discarded if their distance exceeds TOO_FAR */
-
-/* ===========================================================================
  * Same as deflate_medium, but achieves better compression. We use a lazy
  * evaluation for matches: a match is finally adopted only if there is
  * no better match at the next window position.
@@ -64,12 +55,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
             s->match_length = functable.longest_match(s, hash_head);
             /* longest_match() sets match_start */
 
-            if (s->match_length <= 5 && (s->strategy == Z_FILTERED
-#if TOO_FAR <= 32767
-                || (s->match_length == MIN_MATCH && s->strstart - s->match_start > TOO_FAR)
-#endif
-                )) {
-
+            if (s->match_length <= 5 && (s->strategy == Z_FILTERED)) {
                 /* If prev_match is also MIN_MATCH, match_start is garbage
                  * but we will ignore the current match anyway.
                  */
