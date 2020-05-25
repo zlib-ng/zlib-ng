@@ -248,6 +248,8 @@ void ZLIB_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #  include "arch/x86/x86.h"
 #elif defined(ARM_CPUID)
 #  include "arch/arm/arm.h"
+#elif defined(POWER_FEATURES)
+#  include "arch/power/power.h"
 #endif
 
 #endif /* ZUTIL_H_ */

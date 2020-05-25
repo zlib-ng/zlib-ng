@@ -29,6 +29,7 @@ extern Pos quick_insert_string_sse4(deflate_state *const s, const Pos str);
 #elif defined(ARM_ACLE_CRC_HASH)
 extern Pos quick_insert_string_acle(deflate_state *const s, const Pos str);
 #endif
+
 /* slide_hash */
 #ifdef X86_SSE2
 void slide_hash_sse2(deflate_state *s);
@@ -115,6 +116,8 @@ ZLIB_INTERNAL void cpu_check_features(void)
     x86_check_features();
 #elif ARM_CPUID
     arm_check_features();
+#elif POWER_FEATURES
+    power_check_features();
 #endif
     features_checked = 1;
 }

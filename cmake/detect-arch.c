@@ -34,7 +34,11 @@
 // PowerPC
 #elif defined(__powerpc__) || defined(_ppc__) || defined(__PPC__)
     #if defined(__64BIT__) || defined(__powerpc64__) || defined(__ppc64__)
-        #error archfound ppc64
+        #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+            #error archfound ppc64le
+        #else 
+            #error archfound ppc64
+        #endif
     #else
         #error archfound ppc
     #endif
