@@ -257,7 +257,7 @@ int ZEXPORT PREFIX(deflateInit_)(PREFIX3(stream) *strm, int level, const char *v
 /* ========================================================================= */
 int ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int level, int method, int windowBits,
                            int memLevel, int strategy, const char *version, int stream_size) {
-    unsigned window_padding = 0;
+    uint32_t window_padding = 0;
     deflate_state *s;
     int wrap = 1;
     static const char my_version[] = PREFIX2(VERSION);
@@ -1102,6 +1102,7 @@ int ZEXPORT PREFIX(deflateEnd)(PREFIX3(stream) *strm) {
 int ZEXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *source) {
     deflate_state *ds;
     deflate_state *ss;
+    uint32_t window_padding = 0;
 
     if (deflateStateCheck(source) || dest == NULL) {
         return Z_STREAM_ERROR;
@@ -1118,7 +1119,11 @@ int ZEXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *source) 
     ZCOPY_STATE((void *)ds, (void *)ss, sizeof(deflate_state));
     ds->strm = dest;
 
-    ds->window = (unsigned char *) ZALLOC_WINDOW(dest, ds->w_size, 2*sizeof(unsigned char));
+#ifdef X86_PCLMULQDQ_CRC
+    window_padding = 8;
+#endif
+
+    ds->window = (unsigned char *) ZALLOC_WINDOW(dest, ds->w_size + window_padding, 2*sizeof(unsigned char));
     ds->prev   = (Pos *)  ZALLOC(dest, ds->w_size, sizeof(Pos));
     ds->head   = (Pos *)  ZALLOC(dest, ds->hash_size, sizeof(Pos));
     ds->pending_buf = (unsigned char *) ZALLOC(dest, ds->lit_bufsize, 4);
