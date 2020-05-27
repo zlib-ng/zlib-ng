@@ -35,6 +35,8 @@ extern Pos quick_insert_string_acle(deflate_state *const s, const Pos str);
 void slide_hash_sse2(deflate_state *s);
 #elif defined(ARM_NEON_SLIDEHASH)
 void slide_hash_neon(deflate_state *s);
+#elif defined(POWER8)
+void slide_hash_power8(deflate_state *s);
 #endif
 #ifdef X86_AVX2
 void slide_hash_avx2(deflate_state *s);
@@ -173,6 +175,10 @@ ZLIB_INTERNAL void slide_hash_stub(deflate_state *s) {
 #ifdef X86_AVX2
     if (x86_cpu_has_avx2)
         functable.slide_hash = &slide_hash_avx2;
+#endif
+#ifdef POWER8
+    if (power_cpu_has_arch_2_07)
+        functable.slide_hash = &slide_hash_power8;
 #endif
 
     functable.slide_hash(s);

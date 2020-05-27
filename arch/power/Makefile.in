@@ -15,13 +15,21 @@ TOPDIR=$(SRCTOP)
 P8FLAGS=-mcpu=power8
 
 all: power.o \
-     power.lo
+     power.lo \
+     slide_hash_power8.o \
+     slide_hash_power8.lo
 
 power.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/power.c
 
 power.lo:
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/power.c
+
+slide_hash_power8.o:
+	$(CC) $(CFLAGS) $(P8FLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_power8.c
+
+slide_hash_power8.lo:
+	$(CC) $(SFLAGS) $(P8FLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_power8.c
 
 mostlyclean: clean
 clean:

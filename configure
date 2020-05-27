@@ -1372,8 +1372,8 @@ case "${ARCH}" in
 
         if test $without_optimizations -eq 0; then
             if test $HAVE_POWER8 -eq 1; then
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power.o slide_hash_power8.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power.lo slide_hash_power8.lo"
                 POWERFLAGS="-DPOWER_FEATURES -DPOWER8"
             fi
         fi
