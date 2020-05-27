@@ -413,9 +413,9 @@ static void scan_tree(deflate_state *s, ct_data *tree, int max_code) {
     int prevlen = -1;          /* last emitted length */
     int curlen;                /* length of current code */
     int nextlen = tree[0].Len; /* length of next code */
-    int count = 0;             /* repeat count of the current code */
-    int max_count = 7;         /* max repeat count */
-    int min_count = 4;         /* min repeat count */
+    uint16_t count = 0;        /* repeat count of the current code */
+    uint16_t max_count = 7;    /* max repeat count */
+    uint16_t min_count = 4;    /* min repeat count */
 
     if (nextlen == 0)
         max_count = 138, min_count = 3;
