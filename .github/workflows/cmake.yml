@@ -69,7 +69,7 @@ jobs:
           - name: Ubuntu GCC Link Zlib
             os: ubuntu-latest
             compiler: gcc
-            cmake-args: -DZLIB_LINK_SYSLIB=ON
+            cmake-args: -DZLIB_DUAL_LINK=ON
 
           - name: Ubuntu GCC No AVX2
             os: ubuntu-latest
