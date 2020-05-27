@@ -1415,10 +1415,9 @@ static block_state deflate_stored(deflate_state *s, int flush) {
         zng_tr_stored_block(s, (char *)0, 0L, last);
 
         /* Replace the lengths in the dummy stored block with len. */
-        s->pending_buf[s->pending - 4] = len;
-        s->pending_buf[s->pending - 3] = len >> 8;
-        s->pending_buf[s->pending - 2] = ~len;
-        s->pending_buf[s->pending - 1] = ~len >> 8;
+        s->pending -= 4;
+        put_short(s, (uint16_t)len);
+        put_short(s, (uint16_t)~len);
 
         /* Write the stored block header bytes. */
         flush_pending(s->strm);
