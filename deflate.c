@@ -842,7 +842,7 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
         if (s->strstart != 0) header |= PRESET_DICT;
         header += 31 - (header % 31);
 
-        put_short_msb(s, header);
+        put_short_msb(s, (uint16_t)header);
 
         /* Save the adler32 of the preset dictionary: */
         if (s->strstart != 0) {
@@ -891,7 +891,7 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
                      (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ? 4 : 0));
             put_byte(s, s->gzhead->os & 0xff);
             if (s->gzhead->extra != NULL) {
-                put_short(s, s->gzhead->extra_len);
+                put_short(s, (uint16_t)s->gzhead->extra_len);
             }
             if (s->gzhead->hcrc)
                 strm->adler = PREFIX(crc32)(strm->adler, s->pending_buf, s->pending);
