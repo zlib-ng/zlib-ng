@@ -62,7 +62,7 @@ Features
   * Intel CRC32-B implementation using PCLMULQDQ
   * Intel CRC32-C intrinics for hash tables
   * ARM CRC32-B implementation using ACLE
-  * Slide hash implementations using AVX2, SSE2, & ARM Neon
+  * Slide hash implementations using AVX2, SSE2, ARM Neon, & VSX
   * Inflate fast using SSE2, ARM Neon
   * Deflate hooks for IBM Z DFLTCC
 * Code sanitizers, fuzzing, and coverage

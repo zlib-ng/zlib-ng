@@ -647,7 +647,8 @@ if(WITH_OPTIM)
         if(WITH_POWER8 AND HAVE_POWER8)
             add_definitions(-DPOWER_FEATURES)
             add_definitions(-DPOWER8)
-            set(ZLIB_POWER8_SRCS )
+            set(ZLIB_POWER8_SRCS
+                ${ARCHDIR}/slide_hash_power8.c)
             set_source_files_properties(
                 ${ZLIB_POWER8_SRCS}
                 PROPERTIES COMPILE_FLAGS ${POWER8FLAG})
