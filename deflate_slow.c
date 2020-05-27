@@ -24,7 +24,7 @@
  * no better match at the next window position.
  */
 ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
-    IPos hash_head;          /* head of hash chain */
+    Pos hash_head;           /* head of hash chain */
     int bflush = 0;          /* set if current block must be flushed */
 
     /* Process the input block. */

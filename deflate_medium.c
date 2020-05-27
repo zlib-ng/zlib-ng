@@ -98,7 +98,7 @@ static void insert_match(deflate_state *s, struct match match) {
 }
 
 static void fizzle_matches(deflate_state *s, struct match *current, struct match *next) {
-    IPos limit;
+    Pos limit;
     unsigned char *match, *orig;
     int changed = 0;
     struct match c, n;
@@ -169,7 +169,7 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
     memset(&next_match, 0, sizeof(struct match));
 
     for (;;) {
-        IPos hash_head = 0;   /* head of the hash chain */
+        Pos hash_head = 0;    /* head of the hash chain */
         int bflush = 0;       /* set if current block must be flushed */
 
         /* Make sure that we always have enough lookahead, except

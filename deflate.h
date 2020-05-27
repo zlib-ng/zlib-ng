@@ -95,10 +95,9 @@ typedef struct tree_desc_s {
 } tree_desc;
 
 typedef uint16_t Pos;
-typedef unsigned IPos;
 
 /* A Pos is an index in the character window. We use short instead of int to
- * save space in the various tables. IPos is used only for parameter passing.
+ * save space in the various tables. 
  */
 
 typedef struct internal_state {
@@ -157,7 +156,7 @@ typedef struct internal_state {
      */
 
     unsigned int match_length;       /* length of best match */
-    IPos         prev_match;         /* previous match */
+    Pos          prev_match;         /* previous match */
     int          match_available;    /* set if previous match exists */
     unsigned int strstart;           /* start of string to insert */
     unsigned int match_start;        /* start of matching string */

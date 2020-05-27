@@ -12,7 +12,7 @@
 /* Forward declare common non-inlined functions declared in deflate.c */
 
 #ifdef ZLIB_DEBUG
-void check_match(deflate_state *s, IPos start, IPos match, int length);
+void check_match(deflate_state *s, Pos start, Pos match, int length);
 #else
 #define check_match(s, start, match, length)
 #endif

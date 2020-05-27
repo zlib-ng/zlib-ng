@@ -16,7 +16,7 @@ typedef uint8_t         bestcmp_t;
 #endif
 #else
 typedef uint8_t         bestcmp_t;
-#endif 
+#endif
 
 #endif
 
@@ -29,14 +29,14 @@ typedef uint8_t         bestcmp_t;
  * string (strstart) and its distance is <= MAX_DIST, and prev_length >=1
  * OUT assertion: the match length is not greater than s->lookahead
  */
-int32_t LONGEST_MATCH(deflate_state *const s, IPos cur_match) {
+int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     unsigned int strstart = s->strstart;
     const unsigned wmask = s->w_mask;
     unsigned char *window = s->window;
     unsigned char *scan = window + strstart;
     const Pos *prev = s->prev;
     unsigned chain_length;
-    IPos limit;
+    Pos limit;
     unsigned int len, best_len, nice_match;
     bestcmp_t scan_end, scan_start;
 

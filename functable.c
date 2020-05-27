@@ -73,16 +73,16 @@ extern int32_t compare258_unaligned_avx2(const unsigned char *src0, const unsign
 #endif
 
 /* longest_match */
-extern int32_t longest_match_c(deflate_state *const s, IPos cur_match);
+extern int32_t longest_match_c(deflate_state *const s, Pos cur_match);
 #ifdef UNALIGNED_OK
-extern int32_t longest_match_unaligned_16(deflate_state *const s, IPos cur_match);
-extern int32_t longest_match_unaligned_32(deflate_state *const s, IPos cur_match);
-extern int32_t longest_match_unaligned_64(deflate_state *const s, IPos cur_match);
+extern int32_t longest_match_unaligned_16(deflate_state *const s, Pos cur_match);
+extern int32_t longest_match_unaligned_32(deflate_state *const s, Pos cur_match);
+extern int32_t longest_match_unaligned_64(deflate_state *const s, Pos cur_match);
 #ifdef X86_SSE42_CMP_STR
-extern int32_t longest_match_unaligned_sse4(deflate_state *const s, IPos cur_match);
+extern int32_t longest_match_unaligned_sse4(deflate_state *const s, Pos cur_match);
 #endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-extern int32_t longest_match_unaligned_avx2(deflate_state *const s, IPos cur_match);
+extern int32_t longest_match_unaligned_avx2(deflate_state *const s, Pos cur_match);
 #endif
 #endif
 
@@ -93,7 +93,7 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
 ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len);
 ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
 ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned char *src1);
-ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, IPos cur_match);
+ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, Pos cur_match);
 
 /* functable init */
 ZLIB_INTERNAL __thread struct functable_s functable = {
@@ -242,7 +242,7 @@ ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned 
     return functable.compare258(src0, src1);
 }
 
-ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, IPos cur_match) {
+ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
 
     functable.longest_match = &longest_match_c;
 
@@ -266,4 +266,3 @@ ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, IPos cur_match)
 
     return functable.longest_match(s, cur_match);
 }
-
