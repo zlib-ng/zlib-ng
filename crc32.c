@@ -181,11 +181,13 @@ static uint32_t crc32_combine_(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
 }
 
 /* ========================================================================= */
+#ifdef ZLIB_COMPAT
 uint32_t ZEXPORT PREFIX(crc32_combine)(uint32_t crc1, uint32_t crc2, z_off_t len2) {
     return crc32_combine_(crc1, crc2, len2);
 }
+#endif
 
-uint32_t ZEXPORT PREFIX(crc32_combine64)(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
+uint32_t ZEXPORT PREFIX4(crc32_combine)(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
     return crc32_combine_(crc1, crc2, len2);
 }
 
@@ -266,11 +268,13 @@ static void crc32_combine_gen_(uint32_t *op, z_off64_t len2) {
 
 /* ========================================================================= */
 
+#ifdef ZLIB_COMPAT
 void ZEXPORT PREFIX(crc32_combine_gen)(uint32_t *op, z_off_t len2) {
     crc32_combine_gen_(op, len2);
 }
+#endif
 
-void ZEXPORT PREFIX(crc32_combine_gen64)(uint32_t *op, z_off64_t len2) {
+void ZEXPORT PREFIX4(crc32_combine_gen)(uint32_t *op, z_off64_t len2) {
     crc32_combine_gen_(op, len2);
 }
 

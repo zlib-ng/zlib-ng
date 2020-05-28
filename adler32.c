@@ -121,10 +121,12 @@ static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len
 }
 
 /* ========================================================================= */
+#ifdef ZLIB_COMPAT
 uint32_t ZEXPORT PREFIX(adler32_combine)(uint32_t adler1, uint32_t adler2, z_off_t len2) {
     return adler32_combine_(adler1, adler2, len2);
 }
+#endif
 
-uint32_t ZEXPORT PREFIX(adler32_combine64)(uint32_t adler1, uint32_t adler2, z_off64_t len2) {
+uint32_t ZEXPORT PREFIX4(adler32_combine)(uint32_t adler1, uint32_t adler2, z_off64_t len2) {
     return adler32_combine_(adler1, adler2, len2);
 }

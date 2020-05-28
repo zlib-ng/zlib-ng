@@ -114,13 +114,6 @@ extern const char * const zng_errmsg[10]; /* indexed by 2-zlib_error */
 #  define fdopen(fd, type)  _fdopen(fd, type)
 #endif
 
-/* provide prototypes for these when building zlib without LFS */
-#if !defined(_WIN32) && !defined(__MSYS__) && (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0)
-#  include "zbuild.h"  /* For PREFIX() */
-    ZEXTERN uint32_t ZEXPORT PREFIX(adler32_combine64)(uint32_t, uint32_t, z_off_t);
-    ZEXTERN uint32_t ZEXPORT PREFIX(crc32_combine64)(uint32_t, uint32_t, z_off_t);
-#endif
-
 /* MS Visual Studio does not allow inline in C, only C++.
    But it provides __inline instead, so use that. */
 #if defined(_MSC_VER) && !defined(inline) && !defined(__cplusplus) 

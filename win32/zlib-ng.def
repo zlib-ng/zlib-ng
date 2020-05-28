@@ -37,9 +37,6 @@ EXPORTS
     zng_compressBound
     zng_uncompress
     zng_uncompress2
-; large file functions
-    zng_adler32_combine64
-    zng_crc32_combine64
 ; checksum functions
     zng_adler32
     zng_adler32_z
