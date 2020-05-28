@@ -539,7 +539,7 @@ int ZEXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
         crc_reset(s);
     else
 #endif
-        strm->adler = functable.adler32(0L, NULL, 0);
+        strm->adler = ADLER32_INITIAL_VALUE;
     s->last_flush = -2;
 
     zng_tr_init(s);
@@ -848,7 +848,7 @@ int ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int flush) {
         if (s->strstart != 0) {
             put_uint32_msb(s, strm->adler);
         }
-        strm->adler = functable.adler32(0L, NULL, 0);
+        strm->adler = ADLER32_INITIAL_VALUE;
         s->status = BUSY_STATE;
 
         /* Compression must start with an empty pending buffer */

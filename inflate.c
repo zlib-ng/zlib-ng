@@ -64,7 +64,7 @@ int ZEXPORT PREFIX(inflateResetKeep)(PREFIX3(stream) *strm) {
     if (state->wrap)        /* to support ill-conceived Java test suite */
         strm->adler = state->wrap & 1;
     state->mode = HEAD;
-    state->check = functable.adler32(0L, NULL, 0);
+    state->check = ADLER32_INITIAL_VALUE;
     state->last = 0;
     state->havedict = 0;
     state->flags = -1;
@@ -448,7 +448,7 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
             state->dmax = 1U << len;
             state->flags = 0;               /* indicate zlib header */
             Tracev((stderr, "inflate:   zlib header ok\n"));
-            strm->adler = state->check = functable.adler32(0L, NULL, 0);
+            strm->adler = state->check = ADLER32_INITIAL_VALUE;
             state->mode = hold & 0x200 ? DICTID : TYPE;
             INITBITS();
             break;
@@ -604,7 +604,7 @@ int ZEXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int flush) {
                 RESTORE();
                 return Z_NEED_DICT;
             }
-            strm->adler = state->check = functable.adler32(0L, NULL, 0);
+            strm->adler = state->check = ADLER32_INITIAL_VALUE;
             state->mode = TYPE;
 
         case TYPE:
@@ -1143,8 +1143,7 @@ int ZEXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const unsigned c
 
     /* check for correct dictionary identifier */
     if (state->mode == DICT) {
-        dictid = functable.adler32(0L, NULL, 0);
-        dictid = functable.adler32(dictid, dictionary, dictLength);
+        dictid = functable.adler32(ADLER32_INITIAL_VALUE, dictionary, dictLength);
         if (dictid != state->check)
             return Z_DATA_ERROR;
     }
