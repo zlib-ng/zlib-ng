@@ -78,14 +78,6 @@
 #  define zstrerror() "stdio error (consult errno)"
 #endif
 
-/* provide prototypes for these when building zlib without LFS */
-#if (!defined(_LARGEFILE64_SOURCE) || _LFS64_LARGEFILE-0 == 0) && defined(WITH_GZFILEOP)
-    ZEXTERN gzFile ZEXPORT PREFIX(gzopen64)(const char *, const char *);
-    ZEXTERN z_off64_t ZEXPORT PREFIX(gzseek64)(gzFile, z_off64_t, int);
-    ZEXTERN z_off64_t ZEXPORT PREFIX(gztell64)(gzFile);
-    ZEXTERN z_off64_t ZEXPORT PREFIX(gzoffset64)(gzFile);
-#endif
-
 /* default memLevel */
 #if MAX_MEM_LEVEL >= 8
 #  define DEF_MEM_LEVEL 8

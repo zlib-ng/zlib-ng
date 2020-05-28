@@ -1285,10 +1285,9 @@ int zng_uncompress2(unsigned char *dest, size_t *destLen, const unsigned char *s
 
 typedef struct gzFile_s *gzFile;    /* semi-opaque gzip file descriptor */
 
-/*
 ZEXTERN ZEXPORT
 gzFile zng_gzopen(const char *path, const char *mode);
-
+/*
      Opens a gzip (.gz) file for reading or writing.  The mode parameter is as
    in fopen ("rb" or "wb") but can also include a compression level ("wb9") or
    a strategy: 'f' for filtered data as in "wb6f", 'h' for Huffman-only
@@ -1537,10 +1536,9 @@ int zng_gzflush(gzFile file, int flush);
    degrade compression if called too often.
 */
 
-/*
 ZEXTERN ZEXPORT
-z_off_t zng_gzseek(gzFile file, z_off_t offset, int whence);
-
+z_off64_t zng_gzseek(gzFile file, z_off64_t offset, int whence);
+/*
      Sets the starting position for the next gzread or gzwrite on the given
    compressed file.  The offset represents a number of bytes in the
    uncompressed data stream.  The whence parameter is defined as in lseek(2);
@@ -1565,10 +1563,9 @@ int zng_gzrewind(gzFile file);
      gzrewind(file) is equivalent to (int)gzseek(file, 0L, SEEK_SET)
 */
 
-/*
 ZEXTERN ZEXPORT
-z_off_t zng_gztell(gzFile file);
-
+z_off64_t zng_gztell(gzFile file);
+/*
      Returns the starting position for the next gzread or gzwrite on the given
    compressed file.  This position represents a number of bytes in the
    uncompressed data stream, and is zero when starting, even if appending or
@@ -1577,10 +1574,9 @@ z_off_t zng_gztell(gzFile file);
      gztell(file) is equivalent to gzseek(file, 0L, SEEK_CUR)
 */
 
-/*
 ZEXTERN ZEXPORT
-z_off_t zng_gzoffset(gzFile file);
-
+z_off64_t zng_gzoffset(gzFile file);
+/*
      Returns the current offset in the file being read or written.  This offset
    includes the count of bytes that precede the gzip stream, for example when
    appending or when using gzdopen() for reading.  When reading, the offset
@@ -1715,10 +1711,9 @@ uint32_t zng_adler32_z(uint32_t adler, const unsigned char *buf, size_t len);
      Same as adler32(), but with a size_t length.
 */
 
-/*
 ZEXTERN ZEXPORT
-uint32_t zng_adler32_combine(uint32_t adler1, uint32_t adler2, z_off_t len2);
-
+uint32_t zng_adler32_combine(uint32_t adler1, uint32_t adler2, z_off64_t len2);
+/*
      Combine two Adler-32 checksums into one.  For two sequences of bytes, seq1
    and seq2 with lengths len1 and len2, Adler-32 checksums were calculated for
    each, adler1 and adler2.  adler32_combine() returns the Adler-32 checksum of
@@ -1751,10 +1746,10 @@ uint32_t zng_crc32_z(uint32_t crc, const unsigned char *buf, size_t len);
      Same as crc32(), but with a size_t length.
 */
 
-/*
 ZEXTERN ZEXPORT
 uint32_t zng_crc32_combine(uint32_t crc1, uint32_t crc2, z_off64_t len2);
 
+/*
      Combine two CRC-32 check values into one.  For two sequences of bytes,
    seq1 and seq2 with lengths len1 and len2, CRC-32 check values were
    calculated for each, crc1 and crc2.  crc32_combine() returns the CRC-32
@@ -1762,10 +1757,10 @@ uint32_t zng_crc32_combine(uint32_t crc1, uint32_t crc2, z_off64_t len2);
    len2.
 */
 
-/*
 ZEXTERN ZEXPORT
-void zng_crc32_combine_gen(uint32_t op[32], z_off_t len2);
+void zng_crc32_combine_gen(uint32_t op[32], z_off64_t len2);
 
+/*
      Generate the operator op corresponding to length len2, to be used with
    crc32_combine_op(). op must have room for 32 uint32_t values. (32 is the
    number of bits in the CRC.)
@@ -1818,36 +1813,6 @@ struct gzFile_s {
 ZEXTERN ZEXPORT int zng_gzgetc_(gzFile file);  /* backward compatibility */
 #  define zng_gzgetc(g) ((g)->have ? ((g)->have--, (g)->pos++, *((g)->next)++) : (zng_gzgetc)(g))
 
-/* provide 64-bit offset functions if _LARGEFILE64_SOURCE defined, and/or
- * change the regular functions to 64 bits if _FILE_OFFSET_BITS is 64 (if
- * both are true, the application gets the *64 functions, and the regular
- * functions are changed to 64 bits) -- in case these are set on systems
- * without large file support, _LFS64_LARGEFILE must also be true
- */
-#ifdef Z_LARGE64
-    ZEXTERN ZEXPORT gzFile zng_gzopen64(const char *, const char *);
-    ZEXTERN ZEXPORT z_off64_t zng_gzseek64(gzFile, z_off64_t, int);
-    ZEXTERN ZEXPORT z_off64_t zng_gztell64(gzFile);
-    ZEXTERN ZEXPORT z_off64_t zng_gzoffset64(gzFile);
-#endif
-
-#if !defined(ZLIB_INTERNAL) && defined(Z_WANT64)
-#    define zng_gzopen zng_gzopen64
-#    define zng_gzseek zng_gzseek64
-#    define zng_gztell zng_gztell64
-#    define zng_gzoffset zng_gzoffset64
-#  ifndef Z_LARGE64
-     ZEXTERN ZEXPORT gzFile zng_gzopen64(const char *, const char *);
-     ZEXTERN ZEXPORT z_off_t zng_gzseek64(gzFile, z_off_t, int);
-     ZEXTERN ZEXPORT z_off_t zng_gztell64(gzFile);
-     ZEXTERN ZEXPORT z_off_t zng_gzoffset64(gzFile);
-#  endif
-#else
-    ZEXTERN ZEXPORT gzFile zng_gzopen(const char *, const char *);
-    ZEXTERN ZEXPORT z_off_t zng_gzseek(gzFile, z_off_t, int);
-    ZEXTERN ZEXPORT z_off_t zng_gztell(gzFile);
-    ZEXTERN ZEXPORT z_off_t zng_gzoffset(gzFile);
-#endif
 #endif /* WITH_GZFILEOP */
 
 
@@ -1898,35 +1863,6 @@ int zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value *params, size
    if the stream state is inconsistent, and Z_BUF_ERROR if the size of at least one buffer is too small to hold the
    entire value of the corresponding parameter.
 */
-
-
-/* provide 64-bit offset functions if _LARGEFILE64_SOURCE defined, and/or
- * change the regular functions to 64 bits if _FILE_OFFSET_BITS is 64 (if
- * both are true, the application gets the *64 functions, and the regular
- * functions are changed to 64 bits) -- in case these are set on systems
- * without large file support, _LFS64_LARGEFILE must also be true
- */
-#ifdef Z_LARGE64
-    ZEXTERN ZEXPORT uint32_t zng_adler32_combine64(uint32_t, uint32_t, z_off64_t);
-    ZEXTERN ZEXPORT uint32_t zng_crc32_combine64(uint32_t, uint32_t, z_off64_t);
-    ZEXTERN ZEXPORT void zng_crc32_combine_gen64(uint32_t *op, z_off64_t);
-#endif
-
-#if !defined(ZLIB_INTERNAL) && defined(Z_WANT64)
-#    define zng_adler32_combine zng_adler32_combine64
-#    define zng_crc32_combine zng_crc32_combine64
-#    define zng_crc32_combine_gen zng_crc32_combine_gen64
-#  ifndef Z_LARGE64
-     ZEXTERN ZEXPORT uint32_t zng_adler32_combine64(uint32_t, uint32_t, z_off_t);
-     ZEXTERN ZEXPORT uint32_t zng_crc32_combine64(uint32_t, uint32_t, z_off_t);
-     ZEXTERN ZEXPORT void zng_crc32_combine_gen64(uint32_t *op, z_off64_t);
-#  endif
-#else
-   ZEXTERN ZEXPORT uint32_t zng_adler32_combine(uint32_t, uint32_t, z_off_t);
-   ZEXTERN ZEXPORT uint32_t zng_crc32_combine(uint32_t, uint32_t, z_off_t);
-   ZEXTERN ZEXPORT void zng_crc32_combine_gen(uint32_t *op, z_off_t);
-#endif
-
 
 /* undocumented functions */
 ZEXTERN ZEXPORT const char *     zng_zError           (int);
