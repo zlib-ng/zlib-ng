@@ -1001,37 +1001,18 @@ if(ZLIB_ENABLE_TESTS)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
     endforeach()
 
-    macro(minigzip_deflate_file target name path)
-        set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}>
-            ${CMAKE_CURRENT_SOURCE_DIR}/${path})
-        add_test(NAME ${target}-${name}-file-compr
-            COMMAND ${CMAKE_COMMAND}
-            "-DCOMMAND=${GZ_COMMAND}"
-            "-DSUCCESS_EXIT=0;1"
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-    endmacro()
-    macro(minigzip_inflate_file target name path)
-        set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}>
-            -d ${CMAKE_CURRENT_SOURCE_DIR}/${path})
-        add_test(NAME ${target}-${name}-file-uncompr
-            COMMAND ${CMAKE_COMMAND}
-            "-DCOMMAND=${GZ_COMMAND}"
-            "-DSUCCESS_EXIT=0;1"
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-    endmacro()
-
-    minigzip_deflate_file(minigzip "lcet10" "test/data/lcet10.txt")
-    minigzip_inflate_file(minigzip "lcet10" "test/data/lcet10.txt.gz")
-
     macro(minigzip_stdio_cmp target name path)
         set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}> -c)
         foreach(EXTRA_ARG IN ITEMS "${ARGN}")
             list(APPEND GZ_COMMAND ${EXTRA_ARG})
         endforeach()
-        string(REPLACE ";" "" GZ_ARGS "${ARGN}")
-        string(REPLACE "-" "" GZ_ARGS "${GZ_ARGS}")
-        # Test minigzip can decompress minigzip compressed
-        add_test(NAME ${target}-${name}-${GZ_ARGS}-compr
+
+        string(REPLACE ";" "" arg_list "${ARGN}")
+        string(REPLACE "-" "" arg_list "${arg_list}")
+        set(test_basename ${target}-${name}-${arg_list})
+
+        # Test minigzip can decompress minigzip compressed output
+        add_test(NAME ${test_basename}-compr
             COMMAND ${CMAKE_COMMAND}
             "-DCOMMAND=${GZ_COMMAND}"
             -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
@@ -1039,37 +1020,39 @@ if(ZLIB_ENABLE_TESTS)
             "-DSUCCESS_EXIT=0;1"
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
         set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}> -d)
-        add_test(NAME ${target}-${name}-${GZ_ARGS}-uncompr
+        add_test(NAME ${test_basename}-uncompr
             COMMAND ${CMAKE_COMMAND}
             "-DCOMMAND=${GZ_COMMAND}"
             -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gz
             -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.out
             "-DSUCCESS_EXIT=0;1"
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-        add_test(NAME ${target}-${name}-${GZ_ARGS}-cmp
+        add_test(NAME ${test_basename}-cmp
         COMMAND ${CMAKE_COMMAND} -E compare_files
             ${CMAKE_CURRENT_SOURCE_DIR}/${path}
             ${CMAKE_CURRENT_SOURCE_DIR}/${path}.out)
+
         if(NOT "${ARGN}" MATCHES "-T")
             # Transparent writing does not use gzip format
             find_program(GZIP gzip)
             if(GZIP)
-                # Test gzip can decompress minigzip compressed
+                # Test gzip can decompress minigzip compressed output
                 set(GZ_COMMAND ${GZIP} --decompress)
-                add_test(NAME ${target}-${name}-${GZ_ARGS}-gzip-uncompr
+                add_test(NAME ${test_basename}-gzip-uncompr
                     COMMAND ${CMAKE_COMMAND}
                     "-DCOMMAND=${GZ_COMMAND}"
                     -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gz
                     -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out
                     "-DSUCCESS_EXIT=0;1"
                     -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-                add_test(NAME ${target}-${name}-${GZ_ARGS}-gzip-uncompr-cmp
+                add_test(NAME ${test_basename}-gzip-uncompr-cmp
                     COMMAND ${CMAKE_COMMAND} -E compare_files
                         ${CMAKE_CURRENT_SOURCE_DIR}/${path}
                         ${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out)
-                # Test minigzip can decompress gzip compressed
+
+                # Test minigzip can decompress gzip compressed output
                 set(GZ_COMMAND ${GZIP} --stdout)
-                add_test(NAME ${target}-${name}-${GZ_ARGS}-gzip-compr
+                add_test(NAME ${test_basename}-gzip-compr
                     COMMAND ${CMAKE_COMMAND}
                     "-DCOMMAND=${GZ_COMMAND}"
                     -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
@@ -1077,14 +1060,14 @@ if(ZLIB_ENABLE_TESTS)
                     "-DSUCCESS_EXIT=0;1"
                     -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
                 set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}> -d)
-                add_test(NAME ${target}-${name}-${GZ_ARGS}-minigzip-uncompr
+                add_test(NAME ${test_basename}-minigzip-uncompr
                     COMMAND ${CMAKE_COMMAND}
                     "-DCOMMAND=${GZ_COMMAND}"
                     -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.gz
                     -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out
                     "-DSUCCESS_EXIT=0;1"
                     -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-                add_test(NAME ${target}-${name}-${GZ_ARGS}-minigzip-cmp
+                add_test(NAME ${test_basename}-minigzip-cmp
                     COMMAND ${CMAKE_COMMAND} -E compare_files
                         ${CMAKE_CURRENT_SOURCE_DIR}/${path}
                         ${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out)
@@ -1092,13 +1075,17 @@ if(ZLIB_ENABLE_TESTS)
         endif()
     endmacro()
 
+    set(TEST_FILES "test/data/lcet10.txt" "test/data/fireworks.jpg" "test/data/paper-100k.pdf")
     set(OPEN_MODES -f -h -R -F -T)
-    set(COMPRESSION_LEVELS -0 -1 -6 -9)
-    foreach(OPEN_MODE ${OPEN_MODES})
+    set(COMPRESSION_LEVELS -0 -1 -3 -6 -9)
+
+    foreach(TEST_FILE ${TEST_FILES})
         foreach(COMPRESSION_LEVEL ${COMPRESSION_LEVELS})
-            minigzip_stdio_cmp(minigzip "lcet10" "test/data/lcet10.txt" ${OPEN_MODE} ${COMPRESSION_LEVEL})
-            minigzip_stdio_cmp(minigzip "fireworks" "test/data/fireworks.jpg" ${OPEN_MODE} ${COMPRESSION_LEVEL})
-            minigzip_stdio_cmp(minigzip "paper-100k" "test/data/paper-100k.pdf" ${OPEN_MODE} ${COMPRESSION_LEVEL})
+            get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
+            minigzip_stdio_cmp(minigzip ${TEST_NAME} ${TEST_FILE} ${COMPRESSION_LEVEL})
+            foreach(OPEN_MODE ${OPEN_MODES})
+                minigzip_stdio_cmp(minigzip ${TEST_NAME} ${TEST_FILE} ${COMPRESSION_LEVEL} ${OPEN_MODE})
+            endforeach()
         endforeach()
     endforeach()
 
@@ -1106,7 +1093,7 @@ if(ZLIB_ENABLE_TESTS)
         minigzip_stdio_cmp(minigzip64 "offset64" "test/data/paper-100k.pdf")
     endif()
 
-    minigzip_stdio_cmp(minigzip "detect-text" "test/data/lcet10.txt" -A)
+    minigzip_stdio_cmp(minigzip "detect-text" "test/data/lcet10.txt" -A)	
     minigzip_stdio_cmp(minigzip "detect-binary" "test/data/paper-100k.pdf" -A)
 
     if(NOT WIN32 AND ZLIB_COMPAT)
