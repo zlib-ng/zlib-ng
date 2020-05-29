@@ -57,6 +57,15 @@ static int compress_chunk(PREFIX3(stream) *strm, int level, int size, int last) 
     unsigned long compsize;
     unsigned char *buf;
 
+    if (size <= 0) {
+        fprintf(stderr, "compress_chunk() invalid size %d\n", size);
+        goto done;
+    }
+    if (level < 0 || level > 9) {
+        fprintf(stderr, "compress_chunk() invalid level %d\n", level);
+        goto done;
+    }
+
     err = PREFIX(deflateParams)(strm, level, Z_DEFAULT_STRATEGY);
     if (err != Z_OK) {
         fprintf(stderr, "deflateParams() failed with code %d\n", err);
@@ -99,12 +108,17 @@ done:
 }
 
 /* ===========================================================================
- * Usage:  switchlevels level1 size1 [level2 size2 ...]
+ * Usage:  switchlevels [-w bits] level1 size1 [level2 size2 ...]
+ *   -w : window bits
  */
 
 int main(int argc, char **argv) {
     int ret = EXIT_FAILURE;
     int err = 0;
+    int size = 0;
+    int level = Z_DEFAULT_COMPRESSION;
+    int level_arg = 1;
+    int window_bits = MAX_WBITS + 16;
     PREFIX3(stream) strm;
 
     SET_BINARY_MODE(stdin);
@@ -112,14 +126,25 @@ int main(int argc, char **argv) {
 
     memset(&strm, 0, sizeof(strm));
 
-    err = PREFIX(deflateInit2)(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS + 16, 8, Z_DEFAULT_STRATEGY);
+    for (int i = 1; i < argc - 1; i++) {
+        if (strcmp(argv[i], "-w") == 0 && i+1 < argc) {
+            window_bits = atoi(argv[++i]);
+        } else {
+            level_arg = i;
+            level = atoi(argv[i]);
+            break;
+        }
+    }
+
+    err = PREFIX(deflateInit2)(&strm, level, Z_DEFLATED, window_bits, 8, Z_DEFAULT_STRATEGY);
     if (err != Z_OK) {
         fprintf(stderr, "deflateInit() failed with code %d\n", err);
         goto done;
     }
-    for (int i = 1; i < argc - 1; i += 2) {
-        int level = atoi(argv[i]);
-        int size = atoi(argv[i + 1]);
+
+    for (int i = level_arg; i < argc - 1; i += 2) {
+        level = atoi(argv[i]);
+        size = atoi(argv[i + 1]);
         if (compress_chunk(&strm, level, size, i + 2 >= argc - 1) != 0) {
             goto deflate_end;
         }
