@@ -139,8 +139,6 @@ static: example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) mak
 
 shared: examplesh$(EXE) minigzipsh$(EXE)
 
-all64: example64$(EXE) minigzip64$(EXE)
-
 check: test
 
 .SECONDARY:
@@ -237,12 +235,6 @@ example.o:
 minigzip.o:
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
 
-example64.o:
-	$(CC) $(CFLAGS) -DWITH_GZFILEOP -D_FILE_OFFSET_BITS=64 $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
-
-minigzip64.o:
-	$(CC) $(CFLAGS) -DWITH_GZFILEOP -D_FILE_OFFSET_BITS=64 $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
-
 makefixed.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/tools/makefixed.c
 
@@ -299,18 +291,6 @@ endif
 
 minigzipsh$(EXE): minigzip.o $(OBJG) $(SHAREDTARGET)
 	$(CC) $(LDFLAGS) -o $@ minigzip.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
-ifneq ($(STRIP),)
-	$(STRIP) $@
-endif
-
-example64$(EXE): example64.o $(OBJG) $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ example64.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
-ifneq ($(STRIP),)
-	$(STRIP) $@
-endif
-
-minigzip64$(EXE): minigzip64.o $(OBJG) $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ minigzip64.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -404,7 +384,6 @@ clean:
 	@if [ -f test/Makefile ]; then $(MAKE) -C test clean; fi
 	rm -f *.o *.lo *~ \
 	   example$(EXE) minigzip$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
-	   example64$(EXE) minigzip64$(EXE) \
 	   checksum_fuzzer$(EXE) compress_fuzzer$(EXE) example_small_fuzzer$(EXE) example_large_fuzzer$(EXE) \
 	   example_flush_fuzzer$(EXE) example_dict_fuzzer$(EXE) minigzip_fuzzer$(EXE) \
 	   infcover makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) \

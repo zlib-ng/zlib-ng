@@ -67,15 +67,6 @@ testshared: check_cross_dep
 	fi
 	@rm -f tmpsh_$$
 
-test64: check_cross_dep
-	@TMP64=tmp64_$$; \
-	if echo hello world | ${QEMU_RUN} ../minigzip64$(EXE) | ${QEMU_RUN} ../minigzip64$(EXE) -d && ${QEMU_RUN} ../example64$(EXE) $$TMP64; then \
-	  echo '		*** zlib 64-bit test OK ***'; \
-	else \
-	  echo '		*** zlib 64-bit test FAILED ***'; exit 1; \
-	fi
-	@rm -f tmp64_$$
-
 cvetests: testCVEinputs
 
 # Tests requiring zlib-ng to be built with --zlib-compat
