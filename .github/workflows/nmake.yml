@@ -23,7 +23,8 @@ jobs:
             vc-vars: x86_amd64
 
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout repository
+      uses: actions/checkout@v1
 
     - name: Compile source code
       shell: cmd

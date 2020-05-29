@@ -333,7 +333,8 @@ jobs:
             codecov: macos_gcc
 
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout repository
+      uses: actions/checkout@v1
 
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages
