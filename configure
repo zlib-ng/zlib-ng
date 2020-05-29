@@ -656,8 +656,6 @@ EOF
 if try $CC -c $CFLAGS -D_LARGEFILE64_SOURCE=1 $test.c; then
   CFLAGS="${CFLAGS} -D_LARGEFILE64_SOURCE=1"
   SFLAGS="${SFLAGS} -D_LARGEFILE64_SOURCE=1"
-  ALL="${ALL} all64"
-  TEST="${TEST} test64"
   echo "Checking for off64_t... Yes." | tee -a configure.log
   echo "Checking for fseeko... Yes." | tee -a configure.log
 else
@@ -672,8 +670,6 @@ int main() {
 EOF
   if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
     echo "Checking for _off64_t... Yes." | tee -a configure.log
-    ALL="${ALL} all64"
-    TEST="${TEST} test64"
   else
     echo "Checking for _off64_t... No." | tee -a configure.log
   fi
@@ -1536,16 +1532,6 @@ for file in $(ls -1 $SRCDIR/*.c $SRCDIR/test/*.c $SRCDIR/test/fuzz/*.c $SRCDIR/$
     if grep -q "^$obj:" Makefile; then
         # Replace the existing line with a line with all dependences.
         $(replace_in_file "s#$obj:.*#$obj: \$(SRCDIR)/$short_name $includes#g" Makefile)
-
-        # Special case example64 and minigzip64.
-        case "$obj" in
-            example.o)
-                $(replace_in_file "s#example64.o:.*#example64.o: \$(SRCDIR)/$short_name $includes#g" Makefile)
-                ;;
-            minigzip.o)
-                $(replace_in_file "s#minigzip64.o:.*#minigzip64.o: \$(SRCDIR)/$short_name $includes#g" Makefile)
-                ;;
-        esac
     else
         # Append at the end of Makefile a new line with the header dependences.
         echo "$obj: \$(SRCDIR)/$short_name $includes" >> Makefile
