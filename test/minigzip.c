@@ -60,7 +60,7 @@ extern int unlink (const char *);
 #define SUFFIX_LEN (sizeof(GZ_SUFFIX)-1)
 
 #ifndef BUFLEN
-#  define BUFLEN      16384      /* read buffer size */
+#  define BUFLEN     16384       /* read buffer size */
 #endif
 #define BUFLENW     (BUFLEN * 3) /* write buffer size */
 #define MAX_NAME_LEN 1024
@@ -90,7 +90,7 @@ void error(const char *msg) {
  */
 
 void gz_compress(FILE *in, gzFile out) {
-    char buf[BUFLEN];
+    char *buf = (char *)malloc(BUFLEN);
     int len;
     int err;
 
@@ -102,9 +102,9 @@ void gz_compress(FILE *in, gzFile out) {
 #endif
     /* Clear out the contents of buf before reading from the file to avoid
        MemorySanitizer: use-of-uninitialized-value warnings. */
-    memset(buf, 0, sizeof(buf));
+    memset(buf, 0, BUFLEN);
     for (;;) {
-        len = (int)fread(buf, 1, sizeof(buf), in);
+        len = (int)fread(buf, 1, BUFLEN, in);
         if (ferror(in)) {
             perror("fread");
             exit(1);
@@ -113,6 +113,7 @@ void gz_compress(FILE *in, gzFile out) {
 
         if (PREFIX(gzwrite)(out, buf, (unsigned)len) != len) error(PREFIX(gzerror)(out, &err));
     }
+    free(buf);
     fclose(in);
     if (PREFIX(gzclose)(out) != Z_OK) error("failed gzclose");
 }
@@ -155,12 +156,12 @@ int gz_compress_mmap(FILE *in, gzFile out) {
  * Uncompress input to output then close both files.
  */
 void gz_uncompress(gzFile in, FILE *out) {
-    char buf[BUFLENW];
+    char *buf = (char *)malloc(BUFLENW);
     int len;
     int err;
 
     for (;;) {
-        len = PREFIX(gzread)(in, buf, sizeof(buf));
+        len = PREFIX(gzread)(in, buf, BUFLENW);
         if (len < 0) error (PREFIX(gzerror)(in, &err));
         if (len == 0) break;
 
@@ -168,6 +169,7 @@ void gz_uncompress(gzFile in, FILE *out) {
             error("failed fwrite");
         }
     }
+    free(buf);
     if (fclose(out)) error("failed fclose");
 
     if (PREFIX(gzclose)(in) != Z_OK) error("failed gzclose");
