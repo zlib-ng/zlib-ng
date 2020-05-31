@@ -23,12 +23,10 @@
 #else
 #  ifdef _MSC_VER
 #    define UPDATE_HASH(s, h, val) {\
-        __asm {\
-            mov edx, h\
-            mov eax, val\
-            crc32 eax, edx\
-            mov val, eax\
-        };\
+        __asm mov edx, h\
+        __asm mov eax, val\
+        __asm crc32 eax, edx\
+        __asm mov val, eax\
     }
 #  else
 #    define UPDATE_HASH(s, h, val) \
