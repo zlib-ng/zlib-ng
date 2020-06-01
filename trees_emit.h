@@ -196,7 +196,8 @@ static inline void zng_tr_emit_dist(deflate_state *s, const ct_data *ltree, cons
 static inline void zng_tr_emit_tree(deflate_state *s, int type, const int last) {
     uint32_t bi_valid = s->bi_valid;
     uint64_t bi_buf = s->bi_buf;
-    send_bits(s, (type << 1) + last, 3, bi_buf, bi_valid);
+    uint32_t header_bits = (type << 1) + last;
+    send_bits(s, header_bits, 3, bi_buf, bi_valid);
     cmpr_bits_add(s, 3);
     s->bi_valid = bi_valid;
     s->bi_buf = bi_buf;
