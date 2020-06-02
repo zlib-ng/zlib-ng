@@ -787,8 +787,7 @@ static void bi_flush(deflate_state *s) {
         put_uint64(s, s->bi_buf);
         s->bi_buf = 0;
         s->bi_valid = 0;
-    }
-    else {
+    } else {
         if (s->bi_valid >= 32) {
             put_uint32(s, (uint32_t)s->bi_buf);
             s->bi_buf >>= 32;
