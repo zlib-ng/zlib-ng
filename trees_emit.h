@@ -144,7 +144,7 @@ static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, con
     send_code_trace(s, code);
 
     /* Send the distance code */
-    match_bits |= (dtree[code].Code << match_bits_len);
+    match_bits |= ((uint64_t)dtree[code].Code << match_bits_len);
     match_bits_len += dtree[code].Len;
     extra = extra_dbits[code];
     if (extra != 0) {
