@@ -32,6 +32,7 @@ static inline int zng_tr_tally_lit(deflate_state *s, unsigned char c) {
     s->sym_buf[s->sym_next++] = 0;
     s->sym_buf[s->sym_next++] = c;
     s->dyn_ltree[c].Freq++;
+    Tracevv((stderr, "%c", c));
     Assert(c <= (MAX_MATCH-MIN_MATCH), "zng_tr_tally: bad literal");
     return (s->sym_next == s->sym_end);
 }

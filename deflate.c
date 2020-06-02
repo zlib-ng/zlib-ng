@@ -1602,7 +1602,6 @@ static block_state deflate_rle(deflate_state *s, int flush) {
             s->match_length = 0;
         } else {
             /* No match, output a literal byte */
-            Tracevv((stderr, "%c", s->window[s->strstart]));
             bflush = zng_tr_tally_lit(s, s->window[s->strstart]);
             s->lookahead--;
             s->strstart++;
@@ -1640,7 +1639,6 @@ static block_state deflate_huff(deflate_state *s, int flush) {
 
         /* Output a literal byte */
         s->match_length = 0;
-        Tracevv((stderr, "%c", s->window[s->strstart]));
         bflush = zng_tr_tally_lit(s, s->window[s->strstart]);
         s->lookahead--;
         s->strstart++;
