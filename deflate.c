@@ -754,6 +754,7 @@ ZLIB_INTERNAL void flush_pending(PREFIX3(stream) *strm) {
     if (len == 0)
         return;
 
+    Tracev((stderr, "[FLUSH]"));
     memcpy(strm->next_out, s->pending_out, len);
     strm->next_out  += len;
     s->pending_out  += len;
