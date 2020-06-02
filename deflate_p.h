@@ -65,7 +65,6 @@ static inline int zng_tr_tally_dist(deflate_state *s, unsigned dist, unsigned ch
                    (last)); \
     s->block_start = s->strstart; \
     flush_pending(s->strm); \
-    Tracev((stderr, "[FLUSH]")); \
 }
 
 /* Same but force premature exit if necessary. */
