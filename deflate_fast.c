@@ -85,7 +85,6 @@ ZLIB_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
             }
         } else {
             /* No match, output a literal byte */
-            Tracevv((stderr, "%c", s->window[s->strstart]));
             bflush = zng_tr_tally_lit(s, s->window[s->strstart]);
             s->lookahead--;
             s->strstart++;
