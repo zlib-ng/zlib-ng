@@ -68,9 +68,6 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
                     if (match_len > s->lookahead)
                         match_len = s->lookahead;
 
-                    if (match_len > MAX_MATCH)
-                        match_len = MAX_MATCH;
-
                     check_match(s, s->strstart, hash_head, match_len);
 
                     zng_tr_emit_dist(s, static_ltree, static_dtree, match_len - MIN_MATCH, dist);

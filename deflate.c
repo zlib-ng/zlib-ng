@@ -1216,6 +1216,11 @@ static void lm_init(deflate_state *s) {
  * Check that the match at match_start is indeed a match.
  */
 void check_match(deflate_state *s, Pos start, Pos match, int length) {
+    /* check that the match length is valid*/
+    if (length < MIN_MATCH || length > MAX_MATCH) {
+        fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
+        z_error("invalid match length");
+    }
     /* check that the match is indeed a match */
     if (memcmp(s->window + match, s->window + start, length) != EQUAL) {
         fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
