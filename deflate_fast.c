@@ -38,22 +38,22 @@ ZLIB_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
         /* Insert the string window[strstart .. strstart+2] in the
          * dictionary, and set hash_head to the head of the hash chain:
          */
-        hash_head = NIL;
+        s->match_length = 0;
         if (s->lookahead >= MIN_MATCH) {
             hash_head = functable.quick_insert_string(s, s->strstart);
+            /* Find the longest match, discarding those <= prev_length.
+             * At this point we have always match_length < MIN_MATCH
+             */
+            if (hash_head != 0 && s->strstart - hash_head <= MAX_DIST(s)) {
+                /* To simplify the code, we prevent matches with the string
+                 * of window index 0 (in particular we have to avoid a match
+                 * of the string with itself at the start of the input file).
+                 */
+                s->match_length = functable.longest_match(s, hash_head);
+                /* longest_match() sets match_start */
+            }
         }
 
-        /* Find the longest match, discarding those <= prev_length.
-         * At this point we have always match_length < MIN_MATCH
-         */
-        if (hash_head != NIL && s->strstart - hash_head <= MAX_DIST(s)) {
-            /* To simplify the code, we prevent matches with the string
-             * of window index 0 (in particular we have to avoid a match
-             * of the string with itself at the start of the input file).
-             */
-            s->match_length = functable.longest_match(s, hash_head);
-            /* longest_match() sets match_start */
-        }
         if (s->match_length >= MIN_MATCH) {
             check_match(s, s->strstart, s->match_start, s->match_length);
 
