@@ -143,8 +143,8 @@ int32_t compare258_unaligned_32(const unsigned char *src0, const unsigned char *
 
 #endif
 
-#ifdef HAVE_BUILTIN_CTZLL
-/* UNALIGNED_OK, 64-bit integer comparison */
+#if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
+/* UNALIGNED64_OK, 64-bit integer comparison */
 static inline int32_t compare256_unaligned_64_static(const unsigned char *src0, const unsigned char *src1) {
     int32_t len = 0;
 

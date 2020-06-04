@@ -72,7 +72,9 @@ extern int32_t compare258_c(const unsigned char *src0, const unsigned char *src1
 #ifdef UNALIGNED_OK
 extern int32_t compare258_unaligned_16(const unsigned char *src0, const unsigned char *src1);
 extern int32_t compare258_unaligned_32(const unsigned char *src0, const unsigned char *src1);
+#ifdef UNALIGNED64_OK
 extern int32_t compare258_unaligned_64(const unsigned char *src0, const unsigned char *src1);
+#endif
 #ifdef X86_SSE42_CMP_STR
 extern int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1);
 #endif
@@ -86,7 +88,9 @@ extern int32_t longest_match_c(deflate_state *const s, Pos cur_match);
 #ifdef UNALIGNED_OK
 extern int32_t longest_match_unaligned_16(deflate_state *const s, Pos cur_match);
 extern int32_t longest_match_unaligned_32(deflate_state *const s, Pos cur_match);
+#ifdef UNALIGNED64_OK
 extern int32_t longest_match_unaligned_64(deflate_state *const s, Pos cur_match);
+#endif
 #ifdef X86_SSE42_CMP_STR
 extern int32_t longest_match_unaligned_sse4(deflate_state *const s, Pos cur_match);
 #endif
@@ -245,7 +249,7 @@ ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned 
     functable.compare258 = &compare258_c;
 
 #ifdef UNALIGNED_OK
-#  ifdef HAVE_BUILTIN_CTZLL
+#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
     functable.compare258 = &compare258_unaligned_64;
 #  elif defined(HAVE_BUILTIN_CTZ)
     functable.compare258 = &compare258_unaligned_32;
@@ -270,7 +274,7 @@ ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, Pos cur_match) 
     functable.longest_match = &longest_match_c;
 
 #ifdef UNALIGNED_OK
-#  ifdef HAVE_BUILTIN_CTZLL
+#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
     functable.longest_match = &longest_match_unaligned_64;
 #  elif defined(HAVE_BUILTIN_CTZ)
     functable.longest_match = &longest_match_unaligned_32;
