@@ -196,16 +196,12 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         if (next_match.match_length > 0) {
             current_match = next_match;
             next_match.match_length = 0;
-
         } else {
             hash_head = 0;
             if (s->lookahead >= MIN_MATCH) {
                 hash_head = functable.quick_insert_string(s, s->strstart);
             }
 
-            /* set up the initial match to be a 1 byte literal */
-            current_match.match_start = 0;
-            current_match.match_length = 1;
             current_match.strstart = s->strstart;
             current_match.orgstart = current_match.strstart;
 
@@ -226,6 +222,10 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                     /* this can happen due to some restarts */
                     current_match.match_length = 1;
                 }
+            } else {
+                /* Set up the match to be a 1 byte literal */
+                current_match.match_start = 0;
+                current_match.match_length = 1;
             }
         }
 
@@ -236,9 +236,6 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
             s->strstart = current_match.strstart + current_match.match_length;
             hash_head = functable.quick_insert_string(s, s->strstart);
 
-            /* set up the initial match to be a 1 byte literal */
-            next_match.match_start = 0;
-            next_match.match_length = 1;
             next_match.strstart = s->strstart;
             next_match.orgstart = next_match.strstart;
 
@@ -260,9 +257,13 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                     next_match.match_length = 1;
                 else
                     fizzle_matches(s, &current_match, &next_match);
+            } else {
+                /* Set up the match to be a 1 byte literal */
+                next_match.match_start = 0;
+                next_match.match_length = 1;
             }
-            s->strstart = current_match.strstart;
 
+            s->strstart = current_match.strstart;
         } else {
             next_match.match_length = 0;
         }
