@@ -250,20 +250,19 @@ void file_uncompress(char *file, int keep) {
         unlink(infile);
 }
 
-
-/* ===========================================================================
- * Usage:  minigzip [-c] [-d] [-f] [-h] [-r] [-1 to -9] [files...]
- *   -c : write to standard output
- *   -d : decompress
- *   -k : Keep input files
- *   -f : compress with Z_FILTERED
- *   -h : compress with Z_HUFFMAN_ONLY
- *   -R : compress with Z_RLE
- *   -F : compress with Z_FIXED
- *   -T : stored raw
- *   -A : auto detect type
- *   -0 to -9 : compression level
- */
+void show_help(void) {
+    printf("Usage: minigzip [-c] [-d] [-k] [-f|-h|-R|-F|-T] [-A] [-0 to -9] [files...]\n\n" \
+           "  -c : write to standard output\n" \
+           "  -d : decompress\n" \
+           "  -k : keep input files\n" \
+           "  -f : compress with Z_FILTERED\n" \
+           "  -h : compress with Z_HUFFMAN_ONLY\n" \
+           "  -R : compress with Z_RLE\n" \
+           "  -F : compress with Z_FIXED\n" \
+           "  -T : stored raw\n" \
+           "  -A : auto detect type\n" \
+           "  -0 to -9 : compression level\n\n");
+}
 
 int main(int argc, char *argv[]) {
     int copyout = 0;
@@ -275,6 +274,11 @@ int main(int argc, char *argv[]) {
     char *strategy = "";
     char *level = "6";
     char *type = "b";
+
+    if ((argc == 1) || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
+        show_help();
+        return 0;
+    }
 
     prog = argv[i];
     bname = strrchr(argv[i], '/');
