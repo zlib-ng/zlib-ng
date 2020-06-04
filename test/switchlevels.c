@@ -107,10 +107,11 @@ done:
     return ret;
 }
 
-/* ===========================================================================
- * Usage:  switchlevels [-w bits] level1 size1 [level2 size2 ...]
- *   -w : window bits
- */
+void show_help(void)
+{
+    printf("Usage: switchlevels [-w bits] level1 size1 [level2 size2 ...]\n\n" \
+           "  -w : window bits (8 to 15 for gzip, -8 to -15 for zlib)\n\n");
+}
 
 int main(int argc, char **argv) {
     int ret = EXIT_FAILURE;
@@ -120,6 +121,12 @@ int main(int argc, char **argv) {
     int level_arg = 1;
     int window_bits = MAX_WBITS + 16;
     PREFIX3(stream) strm;
+
+
+    if ((argc == 1) || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
+        show_help();
+        return 0;
+    }
 
     SET_BINARY_MODE(stdin);
     SET_BINARY_MODE(stdout);
