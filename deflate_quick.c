@@ -106,7 +106,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         s->lookahead--;
     } while (s->strm->avail_out != 0);
 
-    s->insert = s->strstart < MIN_MATCH - 1 ? s->strstart : MIN_MATCH-1;
+    s->insert = s->strstart < MIN_MATCH-1 ? s->strstart : MIN_MATCH-1;
 
     last = (flush == Z_FINISH) ? 1 : 0;
     QUICK_END_BLOCK(s, last);
