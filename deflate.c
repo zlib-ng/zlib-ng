@@ -1554,6 +1554,7 @@ static block_state deflate_rle(deflate_state *s, int flush) {
     int bflush = 0;                 /* set if current block must be flushed */
     unsigned int prev;              /* byte at distance one to match */
     unsigned char *scan, *strend;   /* scan goes up to strend for length of run */
+    uint32_t match_len = 0;
 
     for (;;) {
         /* Make sure that we always have enough lookahead, except
@@ -1570,7 +1571,6 @@ static block_state deflate_rle(deflate_state *s, int flush) {
         }
 
         /* See how many times the previous byte repeats */
-        s->match_length = 0;
         if (s->lookahead >= MIN_MATCH && s->strstart > 0) {
             scan = s->window + s->strstart - 1;
             prev = *scan;
@@ -1582,22 +1582,22 @@ static block_state deflate_rle(deflate_state *s, int flush) {
                          prev == *++scan && prev == *++scan &&
                          prev == *++scan && prev == *++scan &&
                          scan < strend);
-                s->match_length = MAX_MATCH - (unsigned int)(strend - scan);
-                if (s->match_length > s->lookahead)
-                    s->match_length = s->lookahead;
+                match_len = MAX_MATCH - (unsigned int)(strend - scan);
+                if (match_len > s->lookahead)
+                    match_len = s->lookahead;
             }
             Assert(scan <= s->window+(unsigned int)(s->window_size-1), "wild scan");
         }
 
         /* Emit match if have run of MIN_MATCH or longer, else emit literal */
-        if (s->match_length >= MIN_MATCH) {
-            check_match(s, s->strstart, s->strstart - 1, s->match_length);
+        if (match_len >= MIN_MATCH) {
+            check_match(s, s->strstart, s->strstart - 1, match_len);
 
-            bflush = zng_tr_tally_dist(s, 1, s->match_length - MIN_MATCH);
+            bflush = zng_tr_tally_dist(s, 1, match_len - MIN_MATCH);
 
-            s->lookahead -= s->match_length;
-            s->strstart += s->match_length;
-            s->match_length = 0;
+            s->lookahead -= match_len;
+            s->strstart += match_len;
+            match_len = 0;
         } else {
             /* No match, output a literal byte */
             bflush = zng_tr_tally_lit(s, s->window[s->strstart]);
