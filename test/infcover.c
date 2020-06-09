@@ -464,6 +464,7 @@ static unsigned pull(void *desc, const unsigned char **buf) {
 
 static int push(void *desc, unsigned char *buf, unsigned len) {
     buf += len;
+    (void)buf;
     return desc != NULL;        /* force error if desc not null */
 }
 
