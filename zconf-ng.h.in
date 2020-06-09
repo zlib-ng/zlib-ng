@@ -18,6 +18,13 @@
 #  endif
 #endif
 
+/* Clang macro for detecting declspec support
+ * https://clang.llvm.org/docs/LanguageExtensions.html#has-declspec-attribute
+ */
+#ifndef __has_declspec_attribute
+#  define __has_declspec_attribute(x) 0
+#endif
+
 /* Maximum value for memLevel in deflateInit2 */
 #ifndef MAX_MEM_LEVEL
 #  define MAX_MEM_LEVEL 9
@@ -48,28 +55,27 @@
 /* Type declarations */
 
 
-#if defined(_WIN32)
-   /* If building or using zlib as a DLL, define ZLIB_DLL.
-    * This is not mandatory, but it offers a little performance increase.
-    */
-#  if defined(ZLIB_DLL)
-#    ifdef ZLIB_INTERNAL
-#      define ZEXTERN extern __declspec(dllexport)
-#    else
-#      define ZEXTERN extern __declspec(dllimport)
-#    endif
-#  endif  /* ZLIB_DLL */
-   /* If building or using zlib with the WINAPI/WINAPIV calling convention,
-    * define ZLIB_WINAPI.
-    * Caution: the standard ZLIB1.DLL is NOT compiled using ZLIB_WINAPI.
-    */
-#  ifdef ZLIB_WINAPI
-#    include <windows.h>
-     /* No need for _export, use ZLIB.DEF instead. */
-     /* For complete Windows compatibility, use WINAPI, not __stdcall. */
-#    define ZEXPORT WINAPI
-#    define ZEXPORTVA WINAPIV
+/* If building or using zlib as a DLL, define ZLIB_DLL.
+ * This is not mandatory, but it offers a little performance increase.
+ */
+#if defined(ZLIB_DLL) && (defined(_WIN32) || (__has_declspec_attribute(dllexport) && __has_declspec_attribute(dllimport)))
+#  ifdef ZLIB_INTERNAL
+#    define ZEXTERN extern __declspec(dllexport)
+#  else
+#    define ZEXTERN extern __declspec(dllimport)
 #  endif
+#endif
+
+/* If building or using zlib with the WINAPI/WINAPIV calling convention,
+ * define ZLIB_WINAPI.
+ * Caution: the standard ZLIB1.DLL is NOT compiled using ZLIB_WINAPI.
+ */
+#if defined(ZLIB_WINAPI) && defined(_WIN32)
+#  include <windows.h>
+   /* No need for _export, use ZLIB.DEF instead. */
+   /* For complete Windows compatibility, use WINAPI, not __stdcall. */
+#  define ZEXPORT WINAPI
+#  define ZEXPORTVA WINAPIV
 #endif
 
 #ifndef ZEXTERN
