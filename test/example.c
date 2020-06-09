@@ -227,7 +227,7 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
         fprintf(stderr, "gzclose unexpected return when handle null\n");
         exit(1);
     }
-
+    (void)read;
 #endif
 }
 
