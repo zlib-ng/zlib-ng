@@ -56,7 +56,7 @@
    /* If building or using zlib as a DLL, define ZLIB_DLL.
     * This is not mandatory, but it offers a little performance increase.
     */
-#  if defined(ZLIB_DLL) && (!defined(__BORLANDC__) || (__BORLANDC__ >= 0x500))
+#  if defined(ZLIB_DLL)
 #    ifdef ZLIB_INTERNAL
 #      define ZEXTERN extern __declspec(dllexport)
 #    else
