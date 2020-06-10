@@ -275,11 +275,6 @@ int main(int argc, char *argv[]) {
     char *level = "6";
     char *type = "b";
 
-    if ((argc == 1) || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
-        show_help();
-        return 0;
-    }
-
     prog = argv[i];
     bname = strrchr(argv[i], '/');
     if (bname)
@@ -306,8 +301,15 @@ int main(int argc, char *argv[]) {
             strategy = argv[i] + 1;
         else if (argv[i][0] == '-' && argv[i][1] >= '0' && argv[i][1] <= '9' && argv[i][2] == 0)
             level = argv[i] + 1;
-        else
+        else if (strcmp(argv[i], "--help") == 0) {
+            show_help();
+            return 0;
+        } else if (argv[i][0] == '-') {
+            show_help();
+            return 64;   /* EX_USAGE */
+        } else {
             break;
+        }
     }
 
     snprintf(outmode, sizeof(outmode), "w%s%s%s", type, strategy, level);
