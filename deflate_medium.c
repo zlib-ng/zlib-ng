@@ -186,7 +186,6 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                 break; /* flush the current block */
             next_match.match_length = 0;
         }
-        s->prev_length = 2;
 
         /* Insert the string window[strstart .. strstart+2] in the
          * dictionary, and set hash_head to the head of the hash chain:
