@@ -817,11 +817,18 @@ if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     endif()
 endif()
 
-set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.pc)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
-    ${ZLIB_PC} @ONLY)
-configure_file(${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
-    ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
+# Refer to prefix symbolically to ease relocation by end user,
+# as Makefile-generated .pc file does.
+if(INSTALL_INC_DIR STREQUAL "${CMAKE_INSTALL_PREFIX}/include")
+  set(PC_INSTALL_INC_DIR "\${prefix}/include")
+else()
+  set(PC_INSTALL_INC_DIR "${INSTALL_INC_DIR}")
+endif()
+if(INSTALL_LIB_DIR STREQUAL "${CMAKE_INSTALL_PREFIX}/lib")
+  set(PC_INSTALL_LIB_DIR "\${exec_prefix}/lib")
+else()
+  set(PC_INSTALL_LIB_DIR "${INSTALL_LIB_DIR}")
+endif()
 
 #============================================================================
 # zlib
@@ -967,6 +974,12 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
         set_target_properties(zlib PROPERTIES SUFFIX "1.dll")
     endif()
 endif()
+
+set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.pc)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
+    ${ZLIB_PC} @ONLY)
+configure_file(${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
+    ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
 
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     install(TARGETS ${ZLIB_INSTALL_LIBRARIES}
