@@ -16,7 +16,7 @@
  */
 ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     Pos hash_head;           /* head of hash chain */
-    int bflush = 0;          /* set if current block must be flushed */
+    int bflush;              /* set if current block must be flushed */
 
     /* Process the input block. */
     for (;;) {
