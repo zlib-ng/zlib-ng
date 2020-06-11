@@ -641,7 +641,9 @@ macro(add_intrinsics_option flag)  # Remaining arguments are in ${ARGN}
     else()
         if(NOT "${CMAKE_C_FLAGS} " MATCHES ".*${flag} .*")
             message("add_intrinsic_option: Applying ${flag} to ${ARGN}")
-            set_property(SOURCE ${ARGN} APPEND PROPERTY COMPILE_OPTIONS ${flag})
+	    # set_property wants a list, not a space-separated string, so replace spaces with cmake list separators
+            STRING(REPLACE " " ";" _splitflag "${flag}")
+            set_property(SOURCE ${ARGN} APPEND PROPERTY COMPILE_OPTIONS ${_splitflag})
         endif()
     endif()
 endmacro()
