@@ -334,7 +334,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
     powerpc64le | ppc64le)
       ARCH=powerpc64le ;;
   esac
-  CFLAGS="-O2 ${CFLAGS}"
+  CFLAGS="-O3 ${CFLAGS}"
   if test -n "${ARCHS}"; then
     CFLAGS="${CFLAGS} ${ARCHS}"
     LDFLAGS="${LDFLAGS} ${ARCHS}"
