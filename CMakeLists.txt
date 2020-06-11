@@ -236,7 +236,7 @@ else()
                 set(AVX2FLAG "-mavx2")
                 set(SSE2FLAG "-msse2")
                 set(SSSE3FLAG "-mssse3")
-                set(SSE4FLAG "-msse4")
+                set(SSE4FLAG "-msse4.2")
                 set(PCLMULFLAG "-mpclmul")
             endif()
         endif()
@@ -628,20 +628,20 @@ if(WITH_INFLATE_ALLOW_INVALID_DIST)
 endif()
 
 #
-# Macro to add either the given intrinsics option to the global compiler options,
-# or ${NATIVEFLAG} (-march=native) if that is appropriate and possible.
-# An alternative version of this macro would take a file argument, and set ${flag}
-# only for that file as opposed to ${NATIVEFLAG} globally, to limit side-effect of
-# using ${flag} globally.
+# Macro to add either the given intrinsics option,
+# or ${NATIVEFLAG} (-march=native) if that is appropriate and possible,
+# to the source files listed after the flag.
 #
-macro(add_intrinsics_option flag)
+macro(add_intrinsics_option flag)  # Remaining arguments are in ${ARGN}
     if(WITH_NATIVE_INSTRUCTIONS AND NATIVEFLAG)
         if(NOT "${CMAKE_C_FLAGS} " MATCHES ".*${NATIVEFLAG} .*")
-            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NATIVEFLAG}")
+            message("add_intrinsic_option: Applying ${NATIVEFLAG} to ${ARGN}")
+            set_property(SOURCE ${ARGN} APPEND PROPERTY COMPILE_OPTIONS ${NATIVEFLAG})
         endif()
     else()
         if(NOT "${CMAKE_C_FLAGS} " MATCHES ".*${flag} .*")
-            set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}")
+            message("add_intrinsic_option: Applying ${flag} to ${ARGN}")
+            set_property(SOURCE ${ARGN} APPEND PROPERTY COMPILE_OPTIONS ${flag})
         endif()
     endif()
 endmacro()
@@ -673,7 +673,7 @@ if(WITH_OPTIM)
             list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/adler32_neon.h)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/adler32_neon.c ${ARCHDIR}/slide_neon.c)
             add_definitions(-DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH)
-            add_intrinsics_option("${NEONFLAG}")
+            add_intrinsics_option("${NEONFLAG}" ${ZLIB_ARCH_SRCS})
             if(MSVC)
                 add_definitions(-D__ARM_NEON__)
             endif()
@@ -685,7 +685,7 @@ if(WITH_OPTIM)
             add_definitions(-DARM_ACLE_CRC_HASH)
             # For ARM aarch64, we need to check WITH_NEON first
             if("${ARCH}" MATCHES "arm" OR NOT WITH_NEON)
-                add_intrinsics_option("${ACLEFLAG}")
+                add_intrinsics_option("${ACLEFLAG}" ${ZLIB_ARCH_SRCS})
             endif()
             add_feature_info(ACLE_CRC 1 "Support ACLE optimized CRC hash generation, using \"${ACLEFLAG}\"")
         endif()
@@ -721,34 +721,20 @@ if(WITH_OPTIM)
         if(MSVC)
             list(APPEND ZLIB_ARCH_HDRS fallback_builtins.h)
         endif()
-        if(WITH_AVX2 AND HAVE_AVX2_INTRIN)
-            add_definitions(-DX86_AVX2 -DX86_AVX2_ADLER32)
-            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/slide_avx.c ${ARCHDIR}/adler32_avx.c)
-            add_feature_info(AVX2_SLIDEHASH 1 "Support AVX2 optimized slide_hash, using \"${AVX2FLAG}\"")
-            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/compare258_avx.c)
-            add_feature_info(AVX2_COMPARE258 1 "Support AVX2 optimized compare258, using \"${AVX2FLAG}\"")
-            add_feature_info(AVX2_ADLER32 1 "Support AVX2-accelerated adler32, using \"${AVX2FLAG}\"")
-            add_intrinsics_option("${AVX2FLAG}")
-        endif()
         if(WITH_SSE4 AND (HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN))
             add_definitions(-DX86_SSE42_CRC_HASH)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/insert_string_sse.c)
+            add_intrinsics_option("${SSE4FLAG}" ${ARCHDIR}/insert_string_sse.c)
             add_feature_info(SSE42_CRC 1 "Support SSE4.2 optimized CRC hash generation, using \"${SSE4FLAG}\"")
-            add_intrinsics_option("${SSE4FLAG}")
             if(HAVE_SSE42CRC_INTRIN)
                 add_definitions(-DX86_SSE42_CRC_INTRIN)
             endif()
-        endif()
-        if(HAVE_SSE42CMPSTR_INTRIN)
-            add_definitions(-DX86_SSE42_CMP_STR)
-            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/compare258_sse.c)
-            add_feature_info(SSE42_COMPARE258 1 "Support SSE4.2 optimized compare258, using \"${SSE4FLAG}\"")
         endif()
         if(WITH_SSE2 AND HAVE_SSE2_INTRIN)
             add_definitions(-DX86_SSE2)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/slide_sse.c)
             if(NOT ${ARCH} MATCHES "x86_64")
-                add_intrinsics_option("${SSE2FLAG}")
+                add_intrinsics_option("${SSE2FLAG}" ${ARCHDIR}/slide_sse.c)
                 add_feature_info(FORCE_SSE2 FORCE_SSE2 "Assume CPU is SSE2 capable")
                 if(FORCE_SSE2)
                     add_definitions(-DX86_NOCHECK_SSE2)
@@ -758,18 +744,37 @@ if(WITH_OPTIM)
         if(WITH_SSSE3 AND HAVE_SSSE3_INTRIN)
             add_definitions(-DX86_SSSE3 -DX86_SSSE3_ADLER32)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/adler32_ssse3.c)
+            add_intrinsics_option("${SSSE3FLAG}" ${ARCHDIR}/adler32_ssse3.c)
             add_feature_info(SSSE3_ADLER32 1 "Support SSSE3-accelerated adler32, using \"${SSSE3FLAG}\"")
-            add_intrinsics_option("${SSSE3FLAG}")
         endif()
         if(WITH_PCLMULQDQ AND HAVE_PCLMULQDQ_INTRIN)
             add_definitions(-DX86_PCLMULQDQ_CRC)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/crc_folding.c)
-            add_intrinsics_option("${PCLMULFLAG}")
+            add_intrinsics_option("${PCLMULFLAG}" ${ARCHDIR}/crc_folding.c)
+            add_intrinsics_option("${SSE4FLAG}" ${ARCHDIR}/crc_folding.c)
             if(HAVE_SSE42CRC_INLINE_ASM)
                 add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG}\"")
             else()
                 add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${PCLMULFLAG} ${SSE4FLAG}\"")
             endif()
+        endif()
+        if(WITH_AVX2 AND HAVE_AVX2_INTRIN)
+            add_definitions(-DX86_AVX2 -DX86_AVX2_ADLER32)
+            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/compare258_avx.c)
+            add_intrinsics_option("${AVX2FLAG}" ${ARCHDIR}/compare258_avx.c)
+            add_feature_info(AVX2_COMPARE258 1 "Support AVX2 optimized compare258, using \"${AVX2FLAG}\"")
+            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/slide_avx.c)
+            add_intrinsics_option("${AVX2FLAG}" ${ARCHDIR}/slide_avx.c)
+            add_feature_info(AVX2_SLIDEHASH 1 "Support AVX2 optimized slide_hash, using \"${AVX2FLAG}\"")
+            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/adler32_avx.c)
+            add_intrinsics_option("${AVX2FLAG}" ${ARCHDIR}/adler32_avx.c)
+            add_feature_info(AVX2_ADLER32 1 "Support AVX2-accelerated adler32, using \"${AVX2FLAG}\"")
+        endif()
+        if(HAVE_SSE42CMPSTR_INTRIN)
+            add_definitions(-DX86_SSE42_CMP_STR)
+            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/compare258_sse.c)
+            add_intrinsics_option("${SSE4FLAG}" ${ARCHDIR}/compare258_sse.c)
+            add_feature_info(SSE42_COMPARE258 1 "Support SSE4.2 optimized compare258, using \"${SSE4FLAG}\"")
         endif()
     endif()
 endif()
@@ -867,15 +872,15 @@ set(ZLIB_SRCS
     compress.c
     crc32.c
     deflate.c
-    deflate_quick.c
     deflate_fast.c
     deflate_medium.c
+    deflate_quick.c
     deflate_slow.c
     functable.c
-    inflate.c
     infback.c
-    inftrees.c
     inffast.c
+    inflate.c
+    inftrees.c
     insert_string.c
     trees.c
     uncompr.c
