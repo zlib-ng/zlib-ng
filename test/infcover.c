@@ -242,8 +242,11 @@ static void mem_done(PREFIX3(stream) *strm, char *prefix) {
 static unsigned char *h2b(const char *hex, unsigned *len) {
     unsigned char *in, *re;
     unsigned next, val;
+    unsigned inlen;
 
-    in = malloc((strlen(hex) + 1) >> 1);
+    inlen = (strlen(hex) + 1) >> 1;
+    assert(inlen != 0);     /* tell static analyzer we won't call malloc(0) */
+    in = malloc(inlen);
     if (in == NULL)
         return NULL;
     next = 0;
@@ -264,6 +267,7 @@ static unsigned char *h2b(const char *hex, unsigned *len) {
     } while (*hex++);       /* go through the loop with the terminating null */
     if (len != NULL)
         *len = next;
+    assert(next != 0);      /* tell static analyzer we won't call realloc(in, 0) */
     re = realloc(in, next);
     return re == NULL ? in : re;
 }
