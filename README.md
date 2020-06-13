@@ -58,12 +58,12 @@ Features
 * Modernized native API based on zlib API for ease of porting
 * Intel deflate medium and quick algorithms
 * Support for CPU intrinsics when available
-  * Adler32 implementation using ARM Neon
+  * Adler32 implementation using SSSE3, AVX2, & Neon
   * Intel CRC32-B implementation using PCLMULQDQ
   * Intel CRC32-C intrinics for hash tables
   * ARM CRC32-B implementation using ACLE
-  * Slide hash implementations using AVX2, SSE2, ARM Neon, & VSX
-  * Inflate fast using SSE2, ARM Neon
+  * Slide hash implementations using SSE2, AVX2, Neon, & VSX
+  * Inflate chunk copying using SSE2 & Neon
   * Deflate hooks for IBM Z DFLTCC
 * Code sanitizers, fuzzing, and coverage
 * GitHub Actions continuous integration on Windows, macOS, and Linux
