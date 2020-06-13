@@ -119,7 +119,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     }
     Assert(flush != Z_NO_FLUSH, "no flush?");
     if (s->match_available) {
-        bflush = zng_tr_tally_lit(s, s->window[s->strstart-1]);
+        (void) zng_tr_tally_lit(s, s->window[s->strstart-1]);
         s->match_available = 0;
     }
     s->insert = s->strstart < MIN_MATCH-1 ? s->strstart : MIN_MATCH-1;
