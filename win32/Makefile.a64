@@ -23,7 +23,13 @@ AR = lib
 RC = rc
 CP = copy /y
 CFLAGS  = -nologo -MD -W3 -O2 -Oy- -Zi -Fd"zlib" $(LOC)
-WFLAGS  = -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE -DUNALIGNED_OK -DUNALIGNED64_OK -D_ARM64_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1
+WFLAGS  = \
+	-D_CRT_SECURE_NO_DEPRECATE \
+	-D_CRT_NONSTDC_NO_DEPRECATE \
+	-DUNALIGNED_OK \
+	-DUNALIGNED64_OK \
+	-D_ARM64_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1 \
+	#
 LDFLAGS = -nologo -debug -incremental:no -opt:ref -manifest
 ARFLAGS = -nologo
 RCFLAGS = /dARM64 /r
@@ -53,7 +59,7 @@ OBJS = \
 	trees.obj \
 	uncompr.obj \
 	zutil.obj \
-
+	#
 !if "$(WITH_GZFILEOP)" != ""
 WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
 OBJS = $(OBJS) gzclose.obj gzlib.obj gzread.obj gzwrite.obj
@@ -67,7 +73,13 @@ RCFILE = zlib-ng1.rc
 RESFILE = zlib-ng1.res
 SUFFIX = -ng
 !endif
-WFLAGS = $(WFLAGS) -DARM_ACLE_CRC_HASH -D__ARM_NEON__=1 -DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH -DARM_NOCHECK_NEON
+WFLAGS = $(WFLAGS) \
+	-DARM_ACLE_CRC_HASH \
+	-D__ARM_NEON__=1 \
+	-DARM_NEON_ADLER32 \
+	-DARM_NEON_SLIDEHASH \
+	-DARM_NOCHECK_NEON \
+	#
 OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj slide_neon.obj adler32_neon.obj
 
 # targets
