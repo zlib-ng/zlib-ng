@@ -46,6 +46,7 @@ OBJS = \
 	deflate.obj \
 	deflate_fast.obj \
 	deflate_slow.obj \
+	deflate_quick.obj \
 	deflate_medium.obj \
 	functable.obj \
 	infback.obj \
