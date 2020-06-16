@@ -44,7 +44,23 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     Pos hash_head;
     unsigned dist, match_len, last;
 
+
+    if (s->block_open == 0 && s->lookahead > 0) {
+        /* Start new block only when we have lookahead data, so that if no
+           input data is given an empty block will not be written */
+        last = (flush == Z_FINISH) ? 1 : 0;
+        QUICK_START_BLOCK(s, last);
+    }
+
     do {
+        if (s->pending + ((BIT_BUF_SIZE + 7) >> 3) >= s->pending_buf_size) {
+            flush_pending(s->strm);
+            if (s->strm->avail_out == 0 && flush != Z_FINISH) {
+                /* Break to emit end block and return need_more */
+                break;
+            }
+        }
+
         if (s->lookahead < MIN_LOOKAHEAD) {
             fill_window(s);
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
@@ -55,21 +71,13 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
             }
             if (s->lookahead == 0)
                 break;
-        }
 
-        if (s->pending + ((BIT_BUF_SIZE + 7) >> 3) >= s->pending_buf_size) {
-            flush_pending(s->strm);
-            if (s->strm->avail_out == 0 && flush != Z_FINISH) {
-                /* Break to emit end block and return need_more */
-                break;
+            if (s->block_open == 0) {
+                /* Start new block when we have lookahead data, so that if no
+                   input data is given an empty block will not be written */
+                last = (flush == Z_FINISH) ? 1 : 0;
+                QUICK_START_BLOCK(s, last);
             }
-        }
-
-        if (s->block_open == 0) {
-            /* Start new block when we have lookahead data, so that if no
-               input data is given an empty block will not be written */
-            last = (flush == Z_FINISH) ? 1 : 0;
-            QUICK_START_BLOCK(s, last);
         }
 
         if (s->lookahead >= MIN_MATCH) {
