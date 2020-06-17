@@ -1,0 +1,79 @@
+name: CI Release
+on:
+  push:
+    tags:
+    - '*'
+jobs:
+  ci-cmake:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [
+          Windows MSVC Win32,
+          Windows MSVC Win32 Compat,
+          Windows MSVC Win64,
+          Windows MSVC Win64 Compat
+        ]
+        include:
+          - name: Windows MSVC Win32
+            os: windows-latest
+            compiler: cl
+            cmake-args: -A Win32
+            deploy-name: win32
+
+          - name: Windows MSVC Win32 Compat
+            os: windows-latest
+            compiler: cl
+            cmake-args: -A Win32 -DZLIB_COMPAT=ON
+            deploy-name: win32-compat
+
+          - name: Windows MSVC Win64
+            os: windows-latest
+            compiler: cl
+            cmake-args: -A x64
+            deploy-name: win64
+
+          - name: Windows MSVC Win64 Compat
+            os: windows-latest
+            compiler: cl
+            cmake-args: -A x64 -DZLIB_COMPAT=ON
+            deploy-name: win64-compat
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v1
+
+    - name: Set environment variables
+      shell: bash
+      run:  echo "::set-env name=tag::${GITHUB_REF/refs\/tags\//}"
+
+    - name: Generate project files
+      run: |
+        cmake . ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=Release -DWITH_GZFILEOP=ON -DZLIB_ENABLE_TESTS=ON -DCMAKE_INSTALL_PREFIX=out
+      env:
+        CC: ${{ matrix.compiler }}
+        CI: true
+
+    - name: Compile source code
+      run: |
+        cmake --build . --config Release --target install
+
+    - name: Package release (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        cd out
+        7z a -tzip ../zlib-ng-${{ matrix.deploy-name }}.zip bin include lib ../LICENSE.md ../README.md
+
+    - name: Upload release (Windows)
+      uses: svenstaro/upload-release-action@v1-release
+      if: runner.os == 'Windows'
+      with:
+        asset_name: zlib-ng-${{ matrix.deploy-name }}.zip
+        file: zlib-ng-${{ matrix.deploy-name }}.zip
+        tag: ${{env.tag}}
+        repo_token: ${{ secrets.GITHUB_TOKEN }}
+        overwrite: true
+      env:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
