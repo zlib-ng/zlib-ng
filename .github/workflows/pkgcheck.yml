@@ -1,0 +1,35 @@
+name: CI Pkgcheck
+on: [push, pull_request]
+jobs:
+  ci-pkgcheck:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        name: [
+          Ubuntu GCC
+        ]
+        include:
+          - name: Ubuntu GCC
+            os: ubuntu-latest
+            compiler: gcc
+            packages: ninja-build
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v1
+
+    - name: Install packages (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.packages }}
+
+    - name: Compare output of configure and cmake
+      run: |
+        mkdir ${{ matrix.build-dir || '.not-used' }}
+        cd ${{ matrix.build-dir || '.' }}
+        sh ${{ matrix.build-src-dir || '.' }}/test/pkgcheck.sh
+      env:
+        CC: ${{ matrix.compiler }}
