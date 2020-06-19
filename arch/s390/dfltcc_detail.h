@@ -51,12 +51,12 @@ static inline dfltcc_cc dfltcc(int fn, void *param,
     size_t t3 = len1 ? *len1 : 0;
     const unsigned char *t4 = op2 ? *op2 : NULL;
     size_t t5 = len2 ? *len2 : 0;
-    register int r0 __asm__("r0") = fn;
-    register void *r1 __asm__("r1") = param;
-    register unsigned char *r2 __asm__("r2") = t2;
-    register size_t r3 __asm__("r3") = t3;
-    register const unsigned char *r4 __asm__("r4") = t4;
-    register size_t r5 __asm__("r5") = t5;
+    ZLIB_REGISTER int r0 __asm__("r0") = fn;
+    ZLIB_REGISTER void *r1 __asm__("r1") = param;
+    ZLIB_REGISTER unsigned char *r2 __asm__("r2") = t2;
+    ZLIB_REGISTER size_t r3 __asm__("r3") = t3;
+    ZLIB_REGISTER const unsigned char *r4 __asm__("r4") = t4;
+    ZLIB_REGISTER size_t r5 __asm__("r5") = t5;
     int cc;
 
     __asm__ volatile(
