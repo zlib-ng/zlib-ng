@@ -103,6 +103,7 @@ elseif(BASEARCH_X86_FOUND)
     option(WITH_SSE4 "Build with SSE4" ON)
     option(WITH_PCLMULQDQ "Build with PCLMULQDQ" ON)
 endif()
+option(INSTALL_UTILS "Copy minigzip and minideflate during install" OFF)
 
 mark_as_advanced(FORCE
     ZLIB_DUAL_LINK
@@ -115,6 +116,7 @@ mark_as_advanced(FORCE
     WITH_POWER8
     WITH_INFLATE_STRICT
     WITH_INFLATE_ALLOW_INVALID_DIST
+    INSTALL_UTILS
     )
 
 add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Provide a zlib-compatible API")
@@ -1079,6 +1081,13 @@ if(ZLIB_ENABLE_TESTS)
     add_executable(minideflate test/minideflate.c)
     configure_test_executable(minideflate)
     target_link_libraries(minideflate zlib)
+
+    if(INSTALL_UTILS)
+        install(TARGETS minigzip minideflate
+            RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
+            ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
+            LIBRARY DESTINATION "${INSTALL_LIB_DIR}")
+    endif()
 
     add_executable(switchlevels test/switchlevels.c)
     configure_test_executable(switchlevels)
