@@ -32,12 +32,12 @@ typedef uint8_t         bestcmp_t;
 int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     unsigned int strstart = s->strstart;
     const unsigned wmask = s->w_mask;
-    unsigned char *window = s->window;
-    unsigned char *scan = window + strstart;
+    ZLIB_REGISTER unsigned char *window = s->window;
+    ZLIB_REGISTER unsigned char *scan = window + strstart;
     const Pos *prev = s->prev;
     unsigned chain_length;
     Pos limit;
-    unsigned int len, best_len, nice_match;
+    unsigned int best_len, nice_match;
     bestcmp_t scan_end, scan_start;
 
     /*
@@ -73,7 +73,8 @@ int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 
     Assert((unsigned long)strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     do {
-        unsigned char *match;
+        ZLIB_REGISTER unsigned char *match;
+        ZLIB_REGISTER unsigned int len;
         int cont;
         if (cur_match >= strstart)
             break;

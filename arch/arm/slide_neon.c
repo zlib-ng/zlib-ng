@@ -19,8 +19,8 @@
 
 /* SIMD version of hash_chain rebase */
 static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t window_size) {
-    register uint16x8_t v, *p;
-    register size_t n;
+    ZLIB_REGISTER uint16x8_t v, *p;
+    ZLIB_REGISTER size_t n;
 
     size_t size = entries*sizeof(table[0]);
     Assert((size % sizeof(uint16x8_t) * 8 == 0), "hash table size err");

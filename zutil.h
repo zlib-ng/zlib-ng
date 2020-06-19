@@ -18,6 +18,12 @@
 #  define ZLIB_INTERNAL
 #endif
 
+#ifndef __cplusplus
+#  define ZLIB_REGISTER register
+#else
+#  define ZLIB_REGISTER
+#endif
+
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>

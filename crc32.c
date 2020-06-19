@@ -92,8 +92,8 @@ uint32_t ZEXPORT PREFIX(crc32)(uint32_t crc, const unsigned char *buf, uint32_t 
 
 /* ========================================================================= */
 ZLIB_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, uint64_t len) {
-    register uint32_t c;
-    register const uint32_t *buf4;
+    ZLIB_REGISTER uint32_t c;
+    ZLIB_REGISTER const uint32_t *buf4;
 
     c = crc;
     c = ~c;
@@ -134,8 +134,8 @@ ZLIB_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, uint
 
 /* ========================================================================= */
 ZLIB_INTERNAL uint32_t crc32_big(uint32_t crc, const unsigned char *buf, uint64_t len) {
-    register uint32_t c;
-    register const uint32_t *buf4;
+    ZLIB_REGISTER uint32_t c;
+    ZLIB_REGISTER const uint32_t *buf4;
 
     c = ZSWAP32(crc);
     c = ~c;

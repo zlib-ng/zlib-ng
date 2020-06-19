@@ -9,13 +9,12 @@
 #ifndef _MSC_VER
 #  include <arm_acle.h>
 #endif
-#include "../../zbuild.h"
 #include "../../zutil.h"
 
 uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
-    register uint32_t c;
-    register const uint16_t *buf2;
-    register const uint32_t *buf4;
+    ZLIB_REGISTER uint32_t c;
+    ZLIB_REGISTER const uint16_t *buf2;
+    ZLIB_REGISTER const uint32_t *buf4;
 
     c = ~crc;
     if (len && ((ptrdiff_t)buf & 1)) {
