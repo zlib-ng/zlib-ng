@@ -456,10 +456,10 @@ if(NOT HAVE_PTRDIFF_T)
     endif()
 endif()
 
-# Macro to check if source compiles when cross-compiling
-# or runs when compiling natively
+# Macro to check if source compiles
+# (and, when compiling very natively, also runs).
 macro(check_c_source_compile_or_run source flag)
-    if(CMAKE_CROSSCOMPILING)
+    if(CMAKE_CROSSCOMPILING OR NOT WITH_NATIVE_INSTRUCTIONS)
         check_c_source_compiles("${source}" ${flag})
     else()
         check_c_source_runs("${source}" ${flag})
@@ -927,7 +927,7 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     set_target_properties(zlib PROPERTIES SOVERSION 1)
 
     if(ZLIB_COMPAT)
-        set(ZLIB_FULL_VERSION ${ZLIB_HEADER_VERSION})
+        set(ZLIB_FULL_VERSION ${ZLIB_HEADER_VERSION}.zlib-ng)
     else()
         set(ZLIB_FULL_VERSION ${ZLIBNG_HEADER_VERSION})
     endif()
