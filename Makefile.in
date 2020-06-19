@@ -413,6 +413,7 @@ clean:
 	rm -f a.out a.exe
 	rm -f *.pc
 	rm -f *._h
+	rm -rf btmp1 btmp2 pkgtmp1 pkgtmp2
 
 maintainer-clean: distclean
 distclean: clean

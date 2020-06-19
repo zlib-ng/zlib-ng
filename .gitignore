@@ -79,6 +79,8 @@ a.out
 /win32/Debug
 /build/
 /build[.-]*/
+/btmp[12]/
+/pkgtmp[12]/
 
 /.idea
 /cmake-build-debug
