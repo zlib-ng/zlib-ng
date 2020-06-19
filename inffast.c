@@ -270,7 +270,7 @@ void ZLIB_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) 
                        operations can write beyond `out+len` so long as they
                        stay within 258 bytes of `out`.
                     */
-                    if (dist >= len || dist >= functable.chunksize())
+                    if (dist >= len || dist >= state->chunksize)
                         out = functable.chunkcopy(out, out - dist, len);
                     else
                         out = functable.chunkmemset(out, dist, len);

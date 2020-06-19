@@ -126,6 +126,7 @@ struct inflate_state {
     int sane;                   /* if false, allow invalid distance too far */
     int back;                   /* bits back of last unprocessed length/lit */
     unsigned was;               /* initial length of match */
+    uint32_t chunksize;         /* size of memory copying chunk */
 };
 
 int ZLIB_INTERNAL inflate_ensure_window(struct inflate_state *state);
