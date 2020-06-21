@@ -1363,10 +1363,10 @@ case "${ARCH}" in
                 if test $native -eq 0; then
                     ARCH="${ARCH}+simd"
                 fi
-                CFLAGS="${CFLAGS} -DARM_NEON_ADLER32"
-                SFLAGS="${SFLAGS} -DARM_NEON_ADLER32"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo"
+                CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH"
+                SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_SLIDEHASH"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o slide_neon.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo slide_neon.lo"
             fi
         fi
 
