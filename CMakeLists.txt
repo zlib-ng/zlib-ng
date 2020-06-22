@@ -705,6 +705,7 @@ if(WITH_OPTIM)
             add_definitions(-DPOWER8)
             add_definitions(-DPOWER_FEATURES)
             add_definitions(-DPOWER8_VSX_ADLER32)
+            add_definitions(-DPOWER8_VSX_SLIDEHASH)
             set(ZLIB_POWER8_SRCS
                 ${ARCHDIR}/adler32_power8.c
                 ${ARCHDIR}/slide_hash_power8.c)
