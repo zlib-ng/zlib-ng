@@ -1,7 +1,10 @@
 /* Optimized slide_hash for POWER processors
- * Copyright (C) 2019-2020 Matheus Castanho <msc@linux.ibm.com>, IBM
+ * Copyright (C) 2019-2020 IBM Corporation
+ * Author: Matheus Castanho <msc@linux.ibm.com>
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
+
+#ifdef POWER8_VSX_SLIDEHASH
 
 #include <altivec.h>
 #include "zbuild.h"
@@ -53,3 +56,5 @@ void ZLIB_INTERNAL slide_hash_power8(deflate_state *s) {
     p = &s->prev[n];
     slide_hash_power8_loop(s,n,p);
 }
+
+#endif /* POWER8_VSX_SLIDEHASH */
