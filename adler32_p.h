@@ -80,4 +80,14 @@ static inline uint32_t adler32_len_16(uint32_t adler, const unsigned char *buf, 
     return adler | (sum2 << 16);
 }
 
+static inline uint32_t adler32_len_64(uint32_t adler, const unsigned char *buf, size_t len, uint32_t sum2) {
+    while (len >= 16) {
+        len -= 16;
+        DO16(adler, sum2, buf);
+        buf += 16;
+    }
+    /* Process tail (len < 16).  */
+    return adler32_len_16(adler, buf, len, sum2);
+}
+
 #endif /* ADLER32_P_H */
