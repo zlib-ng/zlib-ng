@@ -66,91 +66,86 @@ uint32_t adler32_power8(uint32_t adler, const unsigned char* buf, size_t len) {
         return 1;
 
     /* This is faster than VSX code for len < 64.  */
-    if (len < 64) {
+    if (len < 64)
+        return adler32_len_64(s1, buf, len, s2);
+
+    /* Use POWER VSX instructions for len >= 64. */
+    const vector unsigned int v_zeros = { 0 };
+    const vector unsigned char v_mul = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7,
+         6, 5, 4, 3, 2, 1};
+    const vector unsigned char vsh = vec_splat_u8(4);
+    const vector unsigned int vmask = {0xffffffff, 0x0, 0x0, 0x0};
+    vector unsigned int vs1 = { 0 };
+    vector unsigned int vs2 = { 0 };
+    vector unsigned int vs1_save = { 0 };
+    vector unsigned int vsum1, vsum2;
+    vector unsigned char vbuf;
+    int n;
+
+    vs1[0] = s1;
+    vs2[0] = s2;
+
+    /* Do length bigger than NMAX in blocks of NMAX size.  */
+    while (len >= NMAX) {
+        len -= NMAX;
+        n = NMAX / 16;
+        do {
+            vbuf = vec_xl(0, (unsigned char *) buf);
+            vsum1 = vec_sum4s(vbuf, v_zeros); /* sum(i=1 to 16) buf[i].  */
+            /* sum(i=1 to 16) buf[i]*(16-i+1).  */
+            vsum2 = vec_msum(vbuf, v_mul, v_zeros);
+            /* Save vs1.  */
+            vs1_save = vec_add(vs1_save, vs1);
+            /* Accumulate the sums.  */
+            vs1 = vec_add(vsum1, vs1);
+            vs2 = vec_add(vsum2, vs2);
+
+            buf += 16;
+        } while (--n);
+        /* Once each block of NMAX size.  */
+        vs1 = vec_sumsu(vs1, vsum1);
+        vs1_save = vec_sll(vs1_save, vsh); /* 16*vs1_save.  */
+        vs2 = vec_add(vs1_save, vs2);
+        vs2 = vec_sumsu(vs2, vsum2);
+
+        /* vs1[0] = (s1_i + sum(i=1 to 16)buf[i]) mod 65521.  */
+        vs1[0] = vs1[0] % BASE;
+        /* vs2[0] = s2_i + 16*s1_save +
+           sum(i=1 to 16)(16-i+1)*buf[i] mod 65521.  */
+        vs2[0] = vs2[0] % BASE;
+
+        vs1 = vec_and(vs1, vmask);
+        vs2 = vec_and(vs2, vmask);
+        vs1_save = v_zeros;
+    }
+
+    /* len is less than NMAX one modulo is needed.  */
+    if (len >= 16) {
         while (len >= 16) {
             len -= 16;
-            DO16(s1,s2,buf);
+
+            vbuf = vec_xl(0, (unsigned char *) buf);
+
+            vsum1 = vec_sum4s(vbuf, v_zeros); /* sum(i=1 to 16) buf[i].  */
+            /* sum(i=1 to 16) buf[i]*(16-i+1).  */
+            vsum2 = vec_msum(vbuf, v_mul, v_zeros);
+            /* Save vs1.  */
+            vs1_save = vec_add(vs1_save, vs1);
+            /* Accumulate the sums.  */
+            vs1 = vec_add(vsum1, vs1);
+            vs2 = vec_add(vsum2, vs2);
+
             buf += 16;
         }
-    } else {
-        /* Use POWER VSX instructions for len >= 64. */
-        const vector unsigned int v_zeros = { 0 };
-        const vector unsigned char v_mul = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7,
-             6, 5, 4, 3, 2, 1};
-        const vector unsigned char vsh = vec_splat_u8(4);
-        const vector unsigned int vmask = {0xffffffff, 0x0, 0x0, 0x0};
-        vector unsigned int vs1 = { 0 };
-        vector unsigned int vs2 = { 0 };
-        vector unsigned int vs1_save = { 0 };
-        vector unsigned int vsum1, vsum2;
-        vector unsigned char vbuf;
-        int n;
-
-        vs1[0] = s1;
-        vs2[0] = s2;
-
-        /* Do length bigger than NMAX in blocks of NMAX size.  */
-        while (len >= NMAX) {
-            len -= NMAX;
-            n = NMAX / 16;
-            do {
-                vbuf = vec_xl(0, (unsigned char *) buf);
-                vsum1 = vec_sum4s(vbuf, v_zeros); /* sum(i=1 to 16) buf[i].  */
-                /* sum(i=1 to 16) buf[i]*(16-i+1).  */
-                vsum2 = vec_msum(vbuf, v_mul, v_zeros);
-                /* Save vs1.  */
-                vs1_save = vec_add(vs1_save, vs1);
-                /* Accumulate the sums.  */
-                vs1 = vec_add(vsum1, vs1);
-                vs2 = vec_add(vsum2, vs2);
-
-                buf += 16;
-            } while (--n);
-            /* Once each block of NMAX size.  */
-            vs1 = vec_sumsu(vs1, vsum1);
-            vs1_save = vec_sll(vs1_save, vsh); /* 16*vs1_save.  */
-            vs2 = vec_add(vs1_save, vs2);
-            vs2 = vec_sumsu(vs2, vsum2);
-
-            /* vs1[0] = (s1_i + sum(i=1 to 16)buf[i]) mod 65521.  */
-            vs1[0] = vs1[0] % BASE;
-            /* vs2[0] = s2_i + 16*s1_save +
-               sum(i=1 to 16)(16-i+1)*buf[i] mod 65521.  */
-            vs2[0] = vs2[0] % BASE;
-
-            vs1 = vec_and(vs1, vmask);
-            vs2 = vec_and(vs2, vmask);
-            vs1_save = v_zeros;
-        }
-
-        /* len is less than NMAX one modulo is needed.  */
-        if (len >= 16) {
-            while (len >= 16) {
-                len -= 16;
-
-                vbuf = vec_xl(0, (unsigned char *) buf);
-
-                vsum1 = vec_sum4s(vbuf, v_zeros); /* sum(i=1 to 16) buf[i].  */
-                /* sum(i=1 to 16) buf[i]*(16-i+1).  */
-                vsum2 = vec_msum(vbuf, v_mul, v_zeros);
-                /* Save vs1.  */
-                vs1_save = vec_add(vs1_save, vs1);
-                /* Accumulate the sums.  */
-                vs1 = vec_add(vsum1, vs1);
-                vs2 = vec_add(vsum2, vs2);
-
-                buf += 16;
-            }
-            /* Since the size will be always less than NMAX we do this once.  */
-            vs1 = vec_sumsu(vs1, vsum1);
-            vs1_save = vec_sll(vs1_save, vsh); /* 16*vs1_save.  */
-            vs2 = vec_add(vs1_save, vs2);
-            vs2 = vec_sumsu(vs2, vsum2);
-        }
-        /* Copy result back to s1, s2 (mod 65521).  */
-        s1 = vs1[0] % BASE;
-        s2 = vs2[0] % BASE;
+        /* Since the size will be always less than NMAX we do this once.  */
+        vs1 = vec_sumsu(vs1, vsum1);
+        vs1_save = vec_sll(vs1_save, vsh); /* 16*vs1_save.  */
+        vs2 = vec_add(vs1_save, vs2);
+        vs2 = vec_sumsu(vs2, vsum2);
     }
+    /* Copy result back to s1, s2 (mod 65521).  */
+    s1 = vs1[0] % BASE;
+    s2 = vs2[0] % BASE;
 
     /* Process tail (len < 16).and return  */
     return adler32_len_16(s1, buf, len, s2);
