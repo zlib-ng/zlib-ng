@@ -43,12 +43,6 @@
 #include "zutil.h"
 #include "adler32_p.h"
 
-#define DO1(s1,s2,buf,i)  {(s1) += buf[(i)]; (s2) += (s1);}
-#define DO2(s1,s2,buf,i)  {DO1(s1,s2,buf,i); DO1(s1,s2,buf,i+1);}
-#define DO4(s1,s2,buf,i)  {DO2(s1,s2,buf,i); DO2(s1,s2,buf,i+2);}
-#define DO8(s1,s2,buf,i)  {DO4(s1,s2,buf,i); DO4(s1,s2,buf,i+4);}
-#define DO16(s1,s2,buf)   {DO8(s1,s2,buf,0); DO8(s1,s2,buf,8);}
-
 /* Vector across sum unsigned int (saturate).  */
 inline vector unsigned int vec_sumsu(vector unsigned int __a, vector unsigned int __b) {
     __b = vec_sld(__a, __a, 8);

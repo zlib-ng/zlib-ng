@@ -12,6 +12,12 @@
 #define NMAX 5552
 /* NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 */
 
+#define DO1(sum1, sum2, buf, i)  {(sum1) += buf[(i)]; (sum2) += (sum1);}
+#define DO2(sum1, sum2, buf, i)  {DO1(sum1, sum2, buf, i); DO1(sum1, sum2, buf, i+1);}
+#define DO4(sum1, sum2, buf, i)  {DO2(sum1, sum2, buf, i); DO2(sum1, sum2, buf, i+2);}
+#define DO8(sum1, sum2, buf, i)  {DO4(sum1, sum2, buf, i); DO4(sum1, sum2, buf, i+4);}
+#define DO16(sum1, sum2, buf)    {DO8(sum1, sum2, buf, 0); DO8(sum1, sum2, buf, 8);}
+
 /* use NO_DIVIDE if your processor does not do division in hardware --
    try it both ways to see which is faster */
 #ifdef NO_DIVIDE

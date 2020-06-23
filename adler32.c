@@ -11,12 +11,6 @@
 uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len2);
 
-#define DO1(buf, i)  {adler += (buf)[i]; sum2 += adler;}
-#define DO2(buf, i)  DO1(buf, i); DO1(buf, i+1);
-#define DO4(buf, i)  DO2(buf, i); DO2(buf, i+2);
-#define DO8(buf, i)  DO4(buf, i); DO4(buf, i+4);
-#define DO16(buf)    DO8(buf, 0); DO8(buf, 8);
-
 /* ========================================================================= */
 uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
     uint32_t sum2;
@@ -48,10 +42,10 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
 #endif
         do {
 #ifdef UNROLL_MORE
-            DO16(buf);          /* 16 sums unrolled */
+            DO16(adler, sum2, buf);          /* 16 sums unrolled */
             buf += 16;
 #else
-            DO8(buf, 0);         /* 8 sums unrolled */
+            DO8(adler, sum2, buf, 0);         /* 8 sums unrolled */
             buf += 8;
 #endif
         } while (--n);
@@ -64,12 +58,12 @@ uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
 #ifdef UNROLL_MORE
         while (len >= 16) {
             len -= 16;
-            DO16(buf);
+            DO16(adler, sum2, buf);
             buf += 16;
 #else
         while (len >= 8) {
             len -= 8;
-            DO8(buf, 0);
+            DO8(adler, sum2, buf, 0);
             buf += 8;
 #endif
         }
