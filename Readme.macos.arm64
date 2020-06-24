@@ -1,0 +1,17 @@
+Source: git clone https://github.com/zlib-ng/zlib-ng.git
+
+Export following environment variables before building on Apple Silicon based Macs
+export ARCH_FLAGS="-arch arm64"
+export SDK_NAME=macosx
+export SDK_PATH=$(xcrun --show-sdk-path --sdk $SDK_NAME)
+export CFLAGS="$ARCH_FLAGS -isysroot $SDK_PATH -I$SDK_PATH/usr/include"
+export CXXFLAGS=$CFLAGS
+export LDFLAGS="$ARCH_FLAGS"
+export CC="$(xcrun -sdk $SDK_PATH --find clang) $CFLAGS"
+export CXX="$(xcrun -sdk $SDK_PATH --find clang++) $CXXFLAGS"
+export LD="$(xcrun -sdk $SDK_PATH --find ld) $LDFLAGS"
+
+$ ./configure
+$ make
+$ make test
+$ make install
