@@ -2,14 +2,14 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifndef MEMCHUNK_NEON_H_
-#define MEMCHUNK_NEON_H_
-
 #ifdef ARM_NEON_MEMCHUNK
-#include "zbuild.h"
-#include "zutil.h"
-
-#include <arm_neon.h>
+#ifdef _M_ARM64
+#  include <arm64_neon.h>
+#else
+#  include <arm_neon.h>
+#endif
+#include "../../zbuild.h"
+#include "../../zutil.h"
 
 typedef uint8x16_t memchunk_t;
 
@@ -118,10 +118,15 @@ static inline void loadchunk(uint8_t const *s, memchunk_t *chunk) {
 }
 
 static inline void storechunk(uint8_t *out, memchunk_t *chunk) {
+#ifdef _MSC_VER
+    /* Cast to memchunk_t pointer to avoid compiler error on MSVC ARM */
+    memchunk_t *target = (memchunk_t *)chunk;
+    memcpy(target, &chunk, sizeof(chunk));
+#else
     memcpy(out, chunk, sizeof(memchunk_t));
+#endif
 }
 
 #include "memchunk_tpl.h"
 
-#endif
 #endif

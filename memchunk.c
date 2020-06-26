@@ -1,8 +1,6 @@
 /* memchunk.c -- inline functions to copy small data chunks.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-#ifndef MEMCHUNK_H_
-#define MEMCHUNK_H_
 
 #include "zbuild.h"
 #include "zutil.h"
@@ -69,5 +67,3 @@ static inline void storechunk(uint8_t *out, memchunk_t *chunk) {
 #define CHUNKMEMSET_SAFE chunkmemset_safe_c
 
 #include "memchunk_tpl.h"
-
-#endif
