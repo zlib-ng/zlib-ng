@@ -46,6 +46,7 @@ SUFFIX =
 OBJS = \
 	adler32.obj \
 	armfeature.obj \
+	chunkset.obj \
 	compare258.obj \
 	compress.obj \
 	crc32.obj \
@@ -60,7 +61,6 @@ OBJS = \
 	inftrees.obj \
 	inffast.obj \
 	insert_string.obj \
-	memchunk.obj \
 	trees.obj \
 	uncompr.obj \
 	zutil.obj \
@@ -90,11 +90,11 @@ CFLAGS = $(CFLAGS) $(NEON_ARCH)
 WFLAGS = $(WFLAGS) \
 	-D__ARM_NEON__=1 \
 	-DARM_NEON_ADLER32 \
-	-DARM_NEON_MEMCHUNK \
+	-DARM_NEON_CHUNKSET \
 	-DARM_NEON_SLIDEHASH \
 	-DARM_NOCHECK_NEON \
 	#
-OBJS = $(OBJS) adler32_neon.obj memchunk_neon.obj slide_neon.obj
+OBJS = $(OBJS) adler32_neon.obj chunkset_neon.obj slide_neon.obj
 !endif
 
 # targets
@@ -168,6 +168,7 @@ gzread.obj: $(SRCDIR)/gzread.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h
 gzwrite.obj: $(SRCDIR)/gzwrite.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h
 compress.obj: $(SRCDIR)/compress.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 uncompr.obj: $(SRCDIR)/uncompr.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
+chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 crc32.obj: $(SRCDIR)/crc32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zendian.h $(SRCDIR)/deflate.h $(SRCDIR)/functable.h $(SRCDIR)/crc32.h
 deflate.obj: $(SRCDIR)/deflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_fast.obj: $(SRCDIR)/deflate_fast.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
@@ -178,7 +179,6 @@ infback.obj: $(SRCDIR)/infback.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/
 inffast.obj: $(SRCDIR)/inffast.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h
 inflate.obj: $(SRCDIR)/inflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h $(SRCDIR)/functable.h
 inftrees.obj: $(SRCDIR)/inftrees.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h
-memchunk.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 trees.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/trees.h
 zutil.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h
 

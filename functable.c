@@ -64,7 +64,7 @@ extern uint8_t* chunkcopy_safe_c(uint8_t *out, uint8_t const *from, unsigned len
 extern uint8_t* chunkunroll_c(uint8_t *out, unsigned *dist, unsigned *len);
 extern uint8_t* chunkmemset_c(uint8_t *out, unsigned dist, unsigned len);
 extern uint8_t* chunkmemset_safe_c(uint8_t *out, unsigned dist, unsigned len, unsigned left);
-#ifdef X86_SSE2_MEMCHUNK
+#ifdef X86_SSE2_CHUNKSET
 extern uint32_t chunksize_sse2(void);
 extern uint8_t* chunkcopy_sse2(uint8_t *out, uint8_t const *from, unsigned len);
 extern uint8_t* chunkcopy_safe_sse2(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe);
@@ -72,7 +72,7 @@ extern uint8_t* chunkunroll_sse2(uint8_t *out, unsigned *dist, unsigned *len);
 extern uint8_t* chunkmemset_sse2(uint8_t *out, unsigned dist, unsigned len);
 extern uint8_t* chunkmemset_safe_sse2(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 #endif
-#ifdef ARM_NEON_MEMCHUNK
+#ifdef ARM_NEON_CHUNKSET
 extern uint32_t chunksize_neon(void);
 extern uint8_t* chunkcopy_neon(uint8_t *out, uint8_t const *from, unsigned len);
 extern uint8_t* chunkcopy_safe_neon(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe);
@@ -264,13 +264,13 @@ ZLIB_INTERNAL uint32_t chunksize_stub(void) {
     // Initialize default
     functable.chunksize = &chunksize_c;
 
-#ifdef X86_SSE2_MEMCHUNK
+#ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 # endif
         functable.chunksize = &chunksize_sse2;
 #endif
-#ifdef ARM_NEON_MEMCHUNK
+#ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
         functable.chunksize = &chunksize_neon;
 #endif
@@ -282,13 +282,13 @@ ZLIB_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigne
     // Initialize default
     functable.chunkcopy = &chunkcopy_c;
 
-#ifdef X86_SSE2_MEMCHUNK
+#ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 # endif
         functable.chunkcopy = &chunkcopy_sse2;
 #endif
-#ifdef ARM_NEON_MEMCHUNK
+#ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
         functable.chunkcopy = &chunkcopy_neon;
 #endif
@@ -300,13 +300,13 @@ ZLIB_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, un
     // Initialize default
     functable.chunkcopy_safe = &chunkcopy_safe_c;
 
-#ifdef X86_SSE2_MEMCHUNK
+#ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 # endif
         functable.chunkcopy_safe = &chunkcopy_safe_sse2;
 #endif
-#ifdef ARM_NEON_MEMCHUNK
+#ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
         functable.chunkcopy_safe = &chunkcopy_safe_neon;
 #endif
@@ -318,13 +318,13 @@ ZLIB_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *
     // Initialize default
     functable.chunkunroll = &chunkunroll_c;
 
-#ifdef X86_SSE2_MEMCHUNK
+#ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 # endif
         functable.chunkunroll = &chunkunroll_sse2;
 #endif
-#ifdef ARM_NEON_MEMCHUNK
+#ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
         functable.chunkunroll = &chunkunroll_neon;
 #endif
@@ -336,13 +336,13 @@ ZLIB_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned le
     // Initialize default
     functable.chunkmemset = &chunkmemset_c;
 
-#ifdef X86_SSE2_MEMCHUNK
+#ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 # endif
         functable.chunkmemset = &chunkmemset_sse2;
 #endif
-#ifdef ARM_NEON_MEMCHUNK
+#ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
         functable.chunkmemset = &chunkmemset_neon;
 #endif
@@ -354,13 +354,13 @@ ZLIB_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsign
     // Initialize default
     functable.chunkmemset_safe = &chunkmemset_safe_c;
 
-#ifdef X86_SSE2_MEMCHUNK
+#ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 # endif
         functable.chunkmemset_safe = &chunkmemset_safe_sse2;
 #endif
-#ifdef ARM_NEON_MEMCHUNK
+#ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
         functable.chunkmemset_safe = &chunkmemset_safe_neon;
 #endif

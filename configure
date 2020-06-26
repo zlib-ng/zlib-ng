@@ -1111,10 +1111,10 @@ case "${ARCH}" in
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo"
 
             if test ${HAVE_SSE2_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE2 -DX86_SSE2_MEMCHUNK"
-                SFLAGS="${SFLAGS} -DX86_SSE2 -DX86_SSE2_MEMCHUNK"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_sse.o memchunk_sse.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_sse.lo memchunk_sse.lo"
+                CFLAGS="${CFLAGS} -DX86_SSE2 -DX86_SSE2_CHUNKSET"
+                SFLAGS="${SFLAGS} -DX86_SSE2 -DX86_SSE2_CHUNKSET"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chunkset_sse.o slide_sse.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chunkset_sse.lo slide_sse.lo"
 
                 if test $forcesse2 -eq 1; then
                     CFLAGS="${CFLAGS} -DX86_NOCHECK_SSE2"
@@ -1173,11 +1173,11 @@ case "${ARCH}" in
 
         # Enable arch-specific optimizations?
         if test $without_optimizations -eq 0; then
-            CFLAGS="${CFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE2_MEMCHUNK -DX86_SSE42_CRC_HASH"
-            SFLAGS="${SFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE2_MEMCHUNK -DX86_SSE42_CRC_HASH"
+            CFLAGS="${CFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE2_CHUNKSET -DX86_SSE42_CRC_HASH"
+            SFLAGS="${SFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE2_CHUNKSET -DX86_SSE42_CRC_HASH"
 
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o insert_string_sse.o memchunk_sse.o slide_sse.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo insert_string_sse.lo memchunk_sse.lo slide_sse.lo"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o chunkset_sse.o insert_string_sse.o slide_sse.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo chunkset_sse.lo insert_string_sse.lo slide_sse.lo"
 
             if test ${HAVE_SSSE3_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSSE3 -DX86_SSSE3_ADLER32"
@@ -1274,11 +1274,11 @@ case "${ARCH}" in
                     fi
 
                     if test $buildneon -eq 1; then
-                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_MEMCHUNK -DARM_NEON_SLIDEHASH"
-                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_MEMCHUNK -DARM_NEON_SLIDEHASH"
+                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
+                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
 
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o memchunk_neon.o slide_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo memchunk_neon.lo slide_neon.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o slide_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo slide_neon.lo"
                     fi
                 fi
             ;;
@@ -1297,11 +1297,11 @@ case "${ARCH}" in
                             SFLAGS="${SFLAGS} -mfpu=neon"
                         fi
 
-                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_MEMCHUNK -DARM_NEON_SLIDEHASH"
-                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_MEMCHUNK -DARM_NEON_SLIDEHASH"
+                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
+                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
 
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o memchunk_neon.o slide_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo memchunk_neon.lo slide_neon.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o slide_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo slide_neon.lo"
                     fi
                 fi
             ;;
@@ -1321,11 +1321,11 @@ case "${ARCH}" in
                             SFLAGS="${SFLAGS} -mfpu=neon"
                         fi
 
-                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_MEMCHUNK -DARM_NEON_SLIDEHASH"
-                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_MEMCHUNK -DARM_NEON_SLIDEHASH"
+                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
+                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
 
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o memchunk_neon.o slide_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo memchunk_neon.lo slide_neon.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o slide_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo slide_neon.lo"
                     fi
                 fi
             ;;
@@ -1363,10 +1363,10 @@ case "${ARCH}" in
                 if test $native -eq 0; then
                     ARCH="${ARCH}+simd"
                 fi
-                CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_MEMCHUNK -DARM_NEON_SLIDEHASH"
-                SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_MEMCHUNK -DARM_NEON_SLIDEHASH"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o memchunk_neon.o slide_neon.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo memchunk_neon.lo slide_neon.lo"
+                CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
+                SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o slide_neon.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo slide_neon.lo"
             fi
         fi
 

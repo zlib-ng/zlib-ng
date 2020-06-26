@@ -43,6 +43,7 @@ SUFFIX =
 OBJS = \
 	adler32.obj \
 	armfeature.obj \
+	chunkset.obj \
 	compare258.obj \
 	compress.obj \
 	crc32.obj \
@@ -57,7 +58,6 @@ OBJS = \
 	inftrees.obj \
 	inffast.obj \
 	insert_string.obj \
-	memchunk.obj \
 	trees.obj \
 	uncompr.obj \
 	zutil.obj \
@@ -79,11 +79,11 @@ WFLAGS = $(WFLAGS) \
 	-DARM_ACLE_CRC_HASH \
 	-D__ARM_NEON__=1 \
 	-DARM_NEON_ADLER32 \
-	-DARM_NEON_MEMCHUNK \
+	-DARM_NEON_CHUNKSET \
 	-DARM_NEON_SLIDEHASH \
 	-DARM_NOCHECK_NEON \
 	#
-OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj adler32_neon.obj memchunk_neon.obj slide_neon.obj
+OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj adler32_neon.obj chunkset_neon.obj slide_neon.obj
 
 # targets
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) \
@@ -149,6 +149,7 @@ $(TOP)/zconf$(SUFFIX).h: zconf
 SRCDIR = $(TOP)
 # Keep the dependences in sync with top-level Makefile.in
 adler32.obj: $(SRCDIR)/adler32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/functable.h $(SRCDIR)/adler32_p.h
+chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 functable.obj: $(SRCDIR)/functable.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zendian.h $(SRCDIR)/arch/x86/x86.h
 gzclose.obj: $(SRCDIR)/gzclose.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h
 gzlib.obj: $(SRCDIR)/gzlib.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h
@@ -166,7 +167,6 @@ infback.obj: $(SRCDIR)/infback.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/
 inffast.obj: $(SRCDIR)/inffast.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h
 inflate.obj: $(SRCDIR)/inflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h $(SRCDIR)/functable.h
 inftrees.obj: $(SRCDIR)/inftrees.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h
-memchunk.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 trees.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/trees.h
 zutil.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h
 

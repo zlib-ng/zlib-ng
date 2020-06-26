@@ -1,35 +1,35 @@
-/* memchunk_tpl.h -- inline functions to copy small data chunks.
+/* chunkset_tpl.h -- inline functions to copy small data chunks.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
 /* Returns the chunk size */
 uint32_t CHUNKSIZE(void) {
-    return sizeof(memchunk_t);
+    return sizeof(chunk_t);
 }
 
 /* Behave like memcpy, but assume that it's OK to overwrite at least
-   memchunk_t bytes of output even if the length is shorter than this,
+   chunk_t bytes of output even if the length is shorter than this,
    that the length is non-zero, and that `from` lags `out` by at least
-   sizeof memchunk_t bytes (or that they don't overlap at all or simply that
+   sizeof chunk_t bytes (or that they don't overlap at all or simply that
    the distance is less than the length of the copy).
 
    Aside from better memory bus utilisation, this means that short copies
-   (memchunk_t bytes or fewer) will fall straight through the loop
+   (chunk_t bytes or fewer) will fall straight through the loop
    without iteration, which will hopefully make the branch prediction more
    reliable. */
 uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
-    memchunk_t chunk;
+    chunk_t chunk;
     --len;
     loadchunk(from, &chunk);
     storechunk(out, &chunk);
-    out += (len % sizeof(memchunk_t)) + 1;
-    from += (len % sizeof(memchunk_t)) + 1;
-    len /= sizeof(memchunk_t);
+    out += (len % sizeof(chunk_t)) + 1;
+    from += (len % sizeof(chunk_t)) + 1;
+    len /= sizeof(chunk_t);
     while (len > 0) {
         loadchunk(from, &chunk);
         storechunk(out, &chunk);
-        out += sizeof(memchunk_t);
-        from += sizeof(memchunk_t);
+        out += sizeof(chunk_t);
+        from += sizeof(chunk_t);
         --len;
     }
     return out;
@@ -37,7 +37,7 @@ uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
 uint8_t* CHUNKCOPY_SAFE(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
-    if ((safe - out) < (ptrdiff_t)sizeof(memchunk_t)) {
+    if ((safe - out) < (ptrdiff_t)sizeof(chunk_t)) {
         if (len & 8) {
             memcpy(out, from, 8);
             out += 8;
@@ -62,17 +62,17 @@ uint8_t* CHUNKCOPY_SAFE(uint8_t *out, uint8_t const *from, unsigned len, uint8_t
 }
 
 /* Perform short copies until distance can be rewritten as being at least
-   sizeof memchunk_t.
+   sizeof chunk_t.
 
    This assumes that it's OK to overwrite at least the first
-   2*sizeof(memchunk_t) bytes of output even if the copy is shorter than this.
+   2*sizeof(chunk_t) bytes of output even if the copy is shorter than this.
    This assumption holds because inflate_fast() starts every iteration with at
    least 258 bytes of output space available (258 being the maximum length
    output from a single token; see inflate_fast()'s assumptions below). */
 uint8_t* CHUNKUNROLL(uint8_t *out, unsigned *dist, unsigned *len) {
     unsigned char const *from = out - *dist;
-    memchunk_t chunk;
-    while (*dist < *len && *dist < sizeof(memchunk_t)) {
+    chunk_t chunk;
+    while (*dist < *len && *dist < sizeof(chunk_t)) {
         loadchunk(from, &chunk);
         storechunk(out, &chunk);
         out += *dist;
@@ -90,7 +90,7 @@ uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
     Assert(dist > 0, "cannot have a distance 0");
 
     unsigned char *from = out - dist;
-    memchunk_t chunk;
+    chunk_t chunk;
     unsigned sz = sizeof(chunk);
     if (len < sz) {
         do {
@@ -154,7 +154,7 @@ uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
 }
 
 uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, unsigned dist, unsigned len, unsigned left) {
-    if (left < (unsigned)(3 * sizeof(memchunk_t))) {
+    if (left < (unsigned)(3 * sizeof(chunk_t))) {
         while (len > 0) {
             *out = *(out - dist);
             out++;
