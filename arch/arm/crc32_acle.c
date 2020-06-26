@@ -6,15 +6,11 @@
 */
 
 #ifdef ARM_ACLE_CRC_HASH
-# include <arm_acle.h>
-# ifdef ZLIB_COMPAT
-#  include <zconf.h>
-# else
-#  include <zconf-ng.h>
-# endif
-# ifdef __linux__
-#  include <stddef.h>
-# endif
+#ifndef _MSC_VER
+#  include <arm_acle.h>
+#endif
+#include "../../zbuild.h"
+#include "../../zutil.h"
 
 uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
     register uint32_t c;
@@ -36,7 +32,7 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
         buf4 = (const uint32_t *) buf;
     }
 
-# if defined(__aarch64__)
+#if defined(__aarch64__)
     if ((len > sizeof(uint32_t)) && ((ptrdiff_t)buf & sizeof(uint32_t))) {
         c = __crc32w(c, *buf4++);
         len -= sizeof(uint32_t);
@@ -44,7 +40,7 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
 
     const uint64_t *buf8 = (const uint64_t *) buf4;
 
-#  ifdef UNROLL_MORE
+#ifdef UNROLL_MORE
     while (len >= 4 * sizeof(uint64_t)) {
         c = __crc32d(c, *buf8++);
         c = __crc32d(c, *buf8++);
@@ -52,7 +48,7 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
         c = __crc32d(c, *buf8++);
         len -= 4 * sizeof(uint64_t);
     }
-#  endif
+#endif
 
     while (len >= sizeof(uint64_t)) {
         c = __crc32d(c, *buf8++);
@@ -74,7 +70,7 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
     }
 
     buf = (const unsigned char *) buf2;
-# else /* __aarch64__ */
+#else /* __aarch64__ */
 
 #  ifdef UNROLL_MORE
     while (len >= 8 * sizeof(uint32_t)) {
@@ -103,7 +99,7 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
     } else {
         buf = (const unsigned char *) buf4;
     }
-# endif /* __aarch64__ */
+#endif /* __aarch64__ */
 
     if (len) {
         c = __crc32b(c, *buf);

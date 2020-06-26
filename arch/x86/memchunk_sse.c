@@ -1,8 +1,6 @@
 /* memchunk_sse.c -- SSE inline functions to copy small data chunks.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-#ifndef MEMCHUNK_SSE_H_
-#define MEMCHUNK_SSE_H_
 
 #include "zbuild.h"
 #include "zutil.h"
@@ -50,5 +48,4 @@ static inline void storechunk(uint8_t *out, memchunk_t *chunk) {
 
 #include "memchunk_tpl.h"
 
-#endif
 #endif

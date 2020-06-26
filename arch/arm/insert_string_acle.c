@@ -6,7 +6,9 @@
  */
 
 #ifdef ARM_ACLE_CRC_HASH
-#include <arm_acle.h>
+#ifndef _MSC_VER
+#  include <arm_acle.h>
+#endif
 #include "../../zbuild.h"
 #include "../../deflate.h"
 
