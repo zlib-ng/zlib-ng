@@ -15,8 +15,8 @@ TOPDIR=$(SRCTOP)
 all: \
 	adler32_neon.o adler32_neon.lo \
 	armfeature.o armfeature.lo \
+	chunkset_neon.o chunkset_neon.lo \
 	crc32_acle.o crc32_acle.lo \
-	memchunk_neon.o memchunk_neon.lo \
 	slide_neon.o slide_neon.lo \
 	insert_string_acle.o insert_string_acle.lo
 
@@ -31,6 +31,12 @@ armfeature.o:
 
 armfeature.lo:
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/armfeature.c
+
+chunkset_neon.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_neon.c
+
+chunkset_neon.lo:
+	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_neon.c
 
 crc32_acle.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
@@ -49,12 +55,6 @@ insert_string_acle.o:
 
 insert_string_acle.lo:
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_acle.c
-
-memchunk_neon.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/memchunk_neon.c
-
-memchunk_neon.lo:
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/memchunk_neon.c
 
 mostlyclean: clean
 clean:

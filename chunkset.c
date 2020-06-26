@@ -1,4 +1,4 @@
-/* memchunk.c -- inline functions to copy small data chunks.
+/* chunkset.c -- inline functions to copy small data chunks.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -6,24 +6,24 @@
 #include "zutil.h"
 
 #ifdef UNALIGNED_OK
-typedef uint64_t memchunk_t;
+typedef uint64_t chunk_t;
 #else
-typedef uint8_t memchunk_t[8];
+typedef uint8_t chunk_t[8];
 #endif
 
 #define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
 
-static inline void chunkmemset_1(uint8_t *from, memchunk_t *chunk) {
+static inline void chunkmemset_1(uint8_t *from, chunk_t *chunk) {
 #ifdef UNALIGNED_OK
     *chunk = 0x0101010101010101 * (uint8_t)*from;
 #else
-    memset(chunk, *from, sizeof(memchunk_t));
+    memset(chunk, *from, sizeof(chunk_t));
 #endif
 }
 
-static inline void chunkmemset_4(uint8_t *from, memchunk_t *chunk) {
+static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
 #ifdef UNALIGNED_OK
     uint32_t half_chunk;
     half_chunk = *(uint32_t *)from;
@@ -35,27 +35,24 @@ static inline void chunkmemset_4(uint8_t *from, memchunk_t *chunk) {
 #endif
 }
 
-static inline void chunkmemset_8(uint8_t *from, memchunk_t *chunk) {
+static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
 #ifdef UNALIGNED_OK
     *chunk = *(uint64_t *)from;
 #else
-    memcpy(chunk, from, sizeof(memchunk_t));
+    memcpy(chunk, from, sizeof(chunk_t));
 #endif
 }
 
-static inline void loadchunk(uint8_t const *s, memchunk_t *chunk) {
+static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
     chunkmemset_8((uint8_t *)s, chunk);
 }
 
-static inline void storechunk(uint8_t *out, memchunk_t *chunk) {
+static inline void storechunk(uint8_t *out, chunk_t *chunk) {
 #ifdef UNALIGNED_OK
     *(uint64_t *)out = *chunk;
-#elif defined(_MSC_VER)
-    /* Cast to memchunk_t pointer to avoid compiler error on MSVC ARM */
-    memchunk_t *target = (memchunk_t *)chunk;
-    memcpy(target, &chunk, sizeof(chunk));
 #else
-    memcpy(out, chunk, sizeof(memchunk_t));
+    /* Cast to chunk_t pointer to avoid compiler error on MSVC ARM */
+    memcpy((chunk_t *)out, chunk, sizeof(chunk_t ));
 #endif
 }
 
@@ -66,4 +63,4 @@ static inline void storechunk(uint8_t *out, memchunk_t *chunk) {
 #define CHUNKMEMSET      chunkmemset_c
 #define CHUNKMEMSET_SAFE chunkmemset_safe_c
 
-#include "memchunk_tpl.h"
+#include "chunkset_tpl.h"

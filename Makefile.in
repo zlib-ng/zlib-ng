@@ -73,6 +73,7 @@ pkgconfigdir = ${libdir}/pkgconfig
 
 OBJZ = \
 	adler32.o \
+	chunkset.o \
 	compare258.o \
 	compress.o \
 	crc32.o \
@@ -87,7 +88,6 @@ OBJZ = \
 	inflate.o \
 	inftrees.o \
 	insert_string.o \
-	memchunk.o \
 	trees.o \
 	uncompr.o \
 	zutil.o \
@@ -103,6 +103,7 @@ OBJC = $(OBJZ) $(OBJG)
 
 PIC_OBJZ = \
 	adler32.lo \
+	chunkset.lo \
 	compare258.lo \
 	compress.lo \
 	crc32.lo \
@@ -117,7 +118,6 @@ PIC_OBJZ = \
 	inflate.lo \
 	inftrees.lo \
 	insert_string.lo \
-	memchunk.lo \
 	trees.lo \
 	uncompr.lo \
 	zutil.lo \

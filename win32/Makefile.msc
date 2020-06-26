@@ -32,7 +32,7 @@ WFLAGS  = \
 	-DX86_SSE42_CRC_INTRIN \
 	-DX86_SSE42_CRC_HASH \
 	-DX86_AVX2 \
-	-DX86_SSE2_MEMCHUNK \
+	-DX86_SSE2_CHUNKSET \
 	-DUNALIGNED_OK \
 	-DUNALIGNED64_OK \
 	#
@@ -48,6 +48,8 @@ SUFFIX =
 
 OBJS = \
 	adler32.obj \
+	chunkset.obj \
+	chunkset_sse.obj \
 	compare258.obj \
 	compare258_avx.obj \
 	compare258_sse.obj \
@@ -66,8 +68,6 @@ OBJS = \
 	inffast.obj \
 	insert_string.obj \
 	insert_string_sse.obj \
-	memchunk.obj \
-	memchunk_sse.obj \
 	slide_avx.obj \
 	slide_sse.obj \
 	trees.obj \
@@ -165,6 +165,8 @@ gzread.obj: $(SRCDIR)/gzread.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h
 gzwrite.obj: $(SRCDIR)/gzwrite.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h
 compress.obj: $(SRCDIR)/compress.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 uncompr.obj: $(SRCDIR)/uncompr.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
+chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
+chunkset_sse.obj: $(SRCDIR)/arch/x86/chunkset_sse.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 crc32.obj: $(SRCDIR)/crc32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zendian.h $(SRCDIR)/deflate.h $(SRCDIR)/functable.h $(SRCDIR)/crc32.h
 deflate.obj: $(SRCDIR)/deflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_fast.obj: $(SRCDIR)/deflate_fast.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
@@ -175,8 +177,6 @@ infback.obj: $(SRCDIR)/infback.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/
 inffast.obj: $(SRCDIR)/inffast.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h
 inflate.obj: $(SRCDIR)/inflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h $(SRCDIR)/functable.h
 inftrees.obj: $(SRCDIR)/inftrees.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h
-memchunk.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
-memchunk_sse.obj: $(SRCDIR)/arch/x86/memchunk_sse.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 slide_sse.obj: $(SRCDIR)/arch/x86/slide_sse.c $(SRCDIR)/deflate.h
 trees.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/trees.h
 zutil.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/gzguts.h

@@ -675,8 +675,8 @@ if(WITH_OPTIM)
         list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm.h)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/armfeature.c)
         if(WITH_NEON)
-            add_definitions(-DARM_NEON_ADLER32 -DARM_NEON_MEMCHUNK -DARM_NEON_SLIDEHASH)
-            set(NEON_SRCS ${ARCHDIR}/adler32_neon.c ${ARCHDIR}/memchunk_neon.c ${ARCHDIR}/slide_neon.c)
+            add_definitions(-DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH)
+            set(NEON_SRCS ${ARCHDIR}/adler32_neon.c ${ARCHDIR}/chunkset_neon.c ${ARCHDIR}/slide_neon.c)
             list(APPEND ZLIB_ARCH_SRCS ${NEON_SRCS})
             set_intrinsics_option("${NEONFLAG}" ${NEON_SRCS})
             if(MSVC)
@@ -753,8 +753,8 @@ if(WITH_OPTIM)
             set_intrinsics_option("${SSE4FLAG}" ${SSE42_SRCS})
         endif()
         if(WITH_SSE2 AND HAVE_SSE2_INTRIN)
-            add_definitions(-DX86_SSE2 -DX86_SSE2_MEMCHUNK)
-            set(SSE2_SRCS ${ARCHDIR}/memchunk_sse.c ${ARCHDIR}/slide_sse.c)
+            add_definitions(-DX86_SSE2 -DX86_SSE2_CHUNKSET -DX86_SSE2_SLIDEHASH)
+            set(SSE2_SRCS ${ARCHDIR}/chunkset_sse.c ${ARCHDIR}/slide_sse.c)
             list(APPEND ZLIB_ARCH_SRCS ${SSE2_SRCS})
             if(NOT ${ARCH} MATCHES "x86_64")
                 set_intrinsics_option("${SSE2FLAG}" ${SSE2_SRCS})
@@ -851,6 +851,7 @@ set(ZLIB_PUBLIC_HDRS
 )
 set(ZLIB_PRIVATE_HDRS
     adler32_p.h
+    chunkset_tpl.h
     crc32.h
     crc32_p.h
     deflate.h
@@ -864,7 +865,6 @@ set(ZLIB_PRIVATE_HDRS
     inftrees.h
     insert_string_tpl.h
     match_tpl.h
-    memchunk_tpl.h
     trees.h
     trees_emit.h
     trees_p.h
@@ -874,6 +874,7 @@ set(ZLIB_PRIVATE_HDRS
 )
 set(ZLIB_SRCS
     adler32.c
+    chunkset.c
     compare258.c
     compress.c
     crc32.c
@@ -888,7 +889,6 @@ set(ZLIB_SRCS
     inftrees.c
     inffast.c
     insert_string.c
-    memchunk.c
     trees.c
     uncompr.c
     zutil.c
