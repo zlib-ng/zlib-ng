@@ -37,6 +37,7 @@ extern const ct_data static_dtree[D_CODES];
         zng_tr_emit_end_block(s, static_ltree, last); \
         s->block_open = 0; \
         s->block_start = s->strstart; \
+        flush_pending(s->strm); \
     } \
 } 
 
@@ -108,15 +109,14 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
 
     s->insert = s->strstart < MIN_MATCH-1 ? s->strstart : MIN_MATCH-1;
 
-    QUICK_END_BLOCK(s, last);
-    flush_pending(s->strm);
-
     if (last) {
         if (s->strm->avail_out == 0)
             return s->strm->avail_in == 0 ? finish_started : need_more;
-        else
-            return finish_done;
+
+        QUICK_END_BLOCK(s, 1);
+        return finish_done;
     }
 
+    QUICK_END_BLOCK(s, 0);
     return block_done;
 }
