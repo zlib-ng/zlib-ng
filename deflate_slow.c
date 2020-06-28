@@ -17,6 +17,7 @@
 ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     Pos hash_head;           /* head of hash chain */
     int bflush;              /* set if current block must be flushed */
+    uint32_t match_len;
 
     /* Process the input block. */
     for (;;) {
@@ -44,28 +45,28 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
 
         /* Find the longest match, discarding those <= prev_length.
          */
-        s->prev_length = s->match_length, s->prev_match = s->match_start;
-        s->match_length = MIN_MATCH-1;
+        s->prev_match = s->match_start;
+        match_len = MIN_MATCH-1;
 
         if (hash_head != NIL && s->prev_length < s->max_lazy_match && s->strstart - hash_head <= MAX_DIST(s)) {
             /* To simplify the code, we prevent matches with the string
              * of window index 0 (in particular we have to avoid a match
              * of the string with itself at the start of the input file).
              */
-            s->match_length = functable.longest_match(s, hash_head);
+            match_len = functable.longest_match(s, hash_head);
             /* longest_match() sets match_start */
 
-            if (s->match_length <= 5 && (s->strategy == Z_FILTERED)) {
+            if (match_len <= 5 && (s->strategy == Z_FILTERED)) {
                 /* If prev_match is also MIN_MATCH, match_start is garbage
                  * but we will ignore the current match anyway.
                  */
-                s->match_length = MIN_MATCH-1;
+                match_len = MIN_MATCH-1;
             }
         }
         /* If there was a match at the previous step and the current
          * match is not better, output the previous match:
          */
-        if (s->prev_length >= MIN_MATCH && s->match_length <= s->prev_length) {
+        if (s->prev_length >= MIN_MATCH && match_len <= s->prev_length) {
             unsigned int max_insert = s->strstart + s->lookahead - MIN_MATCH;
             /* Do not insert strings in hash table beyond this. */
 
@@ -90,7 +91,6 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
             }
             s->prev_length = 0;
             s->match_available = 0;
-            s->match_length = MIN_MATCH-1;
             s->strstart += mov_fwd + 1;
 
             if (bflush)
@@ -104,6 +104,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
             bflush = zng_tr_tally_lit(s, s->window[s->strstart-1]);
             if (bflush)
                 FLUSH_BLOCK_ONLY(s, 0);
+            s->prev_length = match_len;
             s->strstart++;
             s->lookahead--;
             if (s->strm->avail_out == 0)
@@ -112,6 +113,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
             /* There is no previous match to compare with, wait for
              * the next step to decide.
              */
+            s->prev_length = match_len;
             s->match_available = 1;
             s->strstart++;
             s->lookahead--;
