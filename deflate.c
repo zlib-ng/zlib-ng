@@ -482,7 +482,7 @@ int32_t ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8_
     s->block_start = (long)s->strstart;
     s->insert = s->lookahead;
     s->lookahead = 0;
-    s->match_length = s->prev_length = MIN_MATCH-1;
+    s->prev_length = MIN_MATCH-1;
     s->match_available = 0;
     strm->next_in = next;
     strm->avail_in = avail;
@@ -1201,7 +1201,7 @@ static void lm_init(deflate_state *s) {
     s->block_start = 0L;
     s->lookahead = 0;
     s->insert = 0;
-    s->match_length = s->prev_length = MIN_MATCH-1;
+    s->prev_length = MIN_MATCH-1;
     s->match_available = 0;
     s->match_start = 0;
 }
