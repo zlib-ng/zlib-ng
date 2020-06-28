@@ -855,7 +855,7 @@ void test_deflate_prime(unsigned char *compr, size_t comprLen) {
  * Test deflateSetHeader() with small buffers
  */
 void test_deflate_set_header(unsigned char *compr, size_t comprLen) {
-    PREFIX(gz_header) *head = calloc(256, 1);
+    PREFIX(gz_header) *head = calloc(1, sizeof(PREFIX(gz_header)));
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
     size_t len = strlen(hello)+1;
