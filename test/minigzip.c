@@ -90,7 +90,7 @@ void error(const char *msg) {
  */
 
 void gz_compress(FILE *in, gzFile out) {
-    char *buf = (char *)malloc(BUFLEN);
+    char *buf = (char *)calloc(BUFLEN, 1);
     int len;
     int err;
 
@@ -100,9 +100,6 @@ void gz_compress(FILE *in, gzFile out) {
      */
     if (gz_compress_mmap(in, out) == Z_OK) return;
 #endif
-    /* Clear out the contents of buf before reading from the file to avoid
-       MemorySanitizer: use-of-uninitialized-value warnings. */
-    memset(buf, 0, BUFLEN);
     for (;;) {
         len = (int)fread(buf, 1, BUFLEN, in);
         if (ferror(in)) {
