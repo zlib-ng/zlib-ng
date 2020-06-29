@@ -1136,10 +1136,10 @@ case "${ARCH}" in
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo"
 
             if test ${HAVE_AVX2_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
-                SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_avx.o compare258_avx.o adler32_avx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_avx.lo compare258_avx.lo adler32_avx.lo"
+                CFLAGS="${CFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32 -DX86_AVX_CHUNKSET"
+                SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32 -DX86_AVX_CHUNKSET"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_avx.o chunkset_avx.o compare258_avx.o adler32_avx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_avx.lo chunkset_avx.lo compare258_avx.lo adler32_avx.lo"
             fi
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1 || test ${HAVE_SSE42CRC_INLINE_ASM} -eq 1; then

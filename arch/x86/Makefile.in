@@ -22,6 +22,7 @@ all: \
 	x86.o x86.lo \
 	adler32_avx.o adler32.lo \
 	adler32_ssse3.o adler32_ssse3.lo \
+	chunkset_avx.o chunkset_avx.lo \
 	chunkset_sse.o chunkset_sse.lo \
 	compare258_avx.o compare258_avx.lo \
 	compare258_sse.o compare258_sse.lo \
@@ -35,6 +36,12 @@ x86.o:
 
 x86.lo:
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86.c
+
+chunkset_avx.o:
+	$(CC) $(CFLAGS) $(AVX2FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_avx.c
+
+chunkset_avx.lo:
+	$(CC) $(SFLAGS) $(AVX2FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_avx.c
 
 chunkset_sse.o:
 	$(CC) $(CFLAGS) $(SSE2FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_sse.c
