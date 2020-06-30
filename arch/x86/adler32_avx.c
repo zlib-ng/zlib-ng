@@ -42,18 +42,18 @@ uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t len) {
     memset(s2, 0, sizeof(s2)); s2[7] = sum2;
 
     char ALIGNED_(32) dot1[32] = \
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
+        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
          1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
     __m256i dot1v = _mm256_load_si256((__m256i*)dot1);
     char ALIGNED_(32) dot2[32] = \
-        {32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 
+        {32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17,
          16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
     __m256i dot2v = _mm256_load_si256((__m256i*)dot2);
     short ALIGNED_(32) dot3[16] = \
         {1, 1, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1};
     __m256i dot3v = _mm256_load_si256((__m256i*)dot3);
 
-    // We will need to multiply by 
+    // We will need to multiply by
     char ALIGNED_(32) shift[16] = {5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     __m128i shiftv = _mm_load_si128((__m128i*)shift);
 
@@ -94,21 +94,21 @@ uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t len) {
        _mm256_store_si256((__m256i*)s1_unpack, vs1);
        _mm256_store_si256((__m256i*)s2_unpack, vs2);
 
-       adler = (s1_unpack[0] % BASE) + (s1_unpack[1] % BASE) + (s1_unpack[2] % BASE) + (s1_unpack[3] % BASE) + 
+       adler = (s1_unpack[0] % BASE) + (s1_unpack[1] % BASE) + (s1_unpack[2] % BASE) + (s1_unpack[3] % BASE) +
                (s1_unpack[4] % BASE) + (s1_unpack[5] % BASE) + (s1_unpack[6] % BASE) + (s1_unpack[7] % BASE);
        MOD(adler);
        s1[7] = adler;
 
-       sum2 = (s2_unpack[0] % BASE) + (s2_unpack[1] % BASE) + (s2_unpack[2] % BASE) + (s2_unpack[3] % BASE) + 
+       sum2 = (s2_unpack[0] % BASE) + (s2_unpack[1] % BASE) + (s2_unpack[2] % BASE) + (s2_unpack[3] % BASE) +
               (s2_unpack[4] % BASE) + (s2_unpack[5] % BASE) + (s2_unpack[6] % BASE) + (s2_unpack[7] % BASE);
        MOD(sum2);
        s2[7] = sum2;
     }
 
     while (len) {
-       len--;
-       adler += *buf++;
-       sum2 += adler;
+        len--;
+        adler += *buf++;
+        sum2 += adler;
     }
     MOD(adler);
     MOD(sum2);
