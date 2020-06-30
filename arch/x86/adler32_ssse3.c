@@ -106,7 +106,8 @@ uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len) {
        s2[3] = sum2;
     }
 
-    while (len--) {
+    while (len) {
+       len--;
        adler += *buf++;
        sum2 += adler;
     }
