@@ -105,7 +105,8 @@ uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t len) {
        s2[7] = sum2;
     }
 
-    while (len--) {
+    while (len) {
+       len--;
        adler += *buf++;
        sum2 += adler;
     }
