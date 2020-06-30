@@ -289,12 +289,14 @@ if(UNALIGNED64_OK)
     message(STATUS "Architecture supports unaligned reads of > 4 bytes")
 endif()
 
-# Apply warning flags to cflags
+# Apply warning compiler flags
 if(WITH_MAINTAINER_WARNINGS)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS} ${WARNFLAGS_MAINTAINER} ${WARNFLAGS_DISABLE}")
 else()
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS} ${WARNFLAGS_DISABLE}")
 endif()
+
+# Set code coverage compiler flags
 if(WITH_CODE_COVERAGE)
     if(CMAKE_C_COMPILER_ID MATCHES "Clang")
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -coverage")
