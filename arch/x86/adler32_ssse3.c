@@ -48,7 +48,7 @@ uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len) {
     short ALIGNED_(16) dot3[8] = {1, 1, 1, 1, 1, 1, 1, 1};
     __m128i dot3v = _mm_load_si128((__m128i*)dot3);
 
-    // We will need to multiply by 
+    // We will need to multiply by
     //char ALIGNED_(16) shift[4] = {0, 0, 0, 4}; //{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4};
 
     char ALIGNED_(16) shift[16] = {4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -107,9 +107,9 @@ uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len) {
     }
 
     while (len) {
-       len--;
-       adler += *buf++;
-       sum2 += adler;
+        len--;
+        adler += *buf++;
+        sum2 += adler;
     }
     MOD(adler);
     MOD(sum2);
