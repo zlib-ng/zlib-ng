@@ -28,10 +28,10 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
          */
         if (s->lookahead < MIN_LOOKAHEAD) {
             fill_window(s);
-            if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
+            if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH)) {
                 return need_more;
             }
-            if (s->lookahead == 0)
+            if (UNLIKELY(s->lookahead == 0))
                 break; /* flush the current block */
         }
 
@@ -39,7 +39,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
          * dictionary, and set hash_head to the head of the hash chain:
          */
         hash_head = NIL;
-        if (s->lookahead >= MIN_MATCH) {
+        if (LIKELY(s->lookahead >= MIN_MATCH)) {
             hash_head = functable.quick_insert_string(s, s->strstart);
         }
 
@@ -93,7 +93,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
             s->match_available = 0;
             s->strstart += mov_fwd + 1;
 
-            if (bflush)
+            if (UNLIKELY(bflush))
                 FLUSH_BLOCK(s, 0);
 
         } else if (s->match_available) {
@@ -102,12 +102,12 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
              * is longer, truncate the previous match to a single literal.
              */
             bflush = zng_tr_tally_lit(s, s->window[s->strstart-1]);
-            if (bflush)
+            if (UNLIKELY(bflush))
                 FLUSH_BLOCK_ONLY(s, 0);
             s->prev_length = match_len;
             s->strstart++;
             s->lookahead--;
-            if (s->strm->avail_out == 0)
+            if (UNLIKELY(s->strm->avail_out == 0))
                 return need_more;
         } else {
             /* There is no previous match to compare with, wait for
@@ -120,16 +120,16 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
         }
     }
     Assert(flush != Z_NO_FLUSH, "no flush?");
-    if (s->match_available) {
+    if (UNLIKELY(s->match_available)) {
         (void) zng_tr_tally_lit(s, s->window[s->strstart-1]);
         s->match_available = 0;
     }
     s->insert = s->strstart < MIN_MATCH-1 ? s->strstart : MIN_MATCH-1;
-    if (flush == Z_FINISH) {
+    if (UNLIKELY(flush == Z_FINISH)) {
         FLUSH_BLOCK(s, 1);
         return finish_done;
     }
-    if (s->sym_next)
+    if (UNLIKELY(s->sym_next))
         FLUSH_BLOCK(s, 0);
     return block_done;
 }

@@ -47,10 +47,10 @@ static void insert_match(deflate_state *s, struct match match) {
         return;
 
     /* matches that are not long enough we need to emit as literals */
-    if (match.match_length < MIN_MATCH) {
+    if (LIKELY(match.match_length < MIN_MATCH)) {
         match.strstart++;
         match.match_length--;
-        if (match.match_length > 0) {
+        if (UNLIKELY(match.match_length > 0)) {
             if (match.strstart >= match.orgstart) {
                 if (match.strstart + match.match_length - 1 >= match.orgstart) {
                     functable.insert_string(s, match.strstart, match.match_length);
@@ -130,13 +130,13 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
     orig = s->window + n.strstart - 1;
 
     while (*match == *orig) {
-        if (c.match_length < 1)
+        if (UNLIKELY(c.match_length < 1))
             break;
-        if (n.strstart <= limit)
+        if (UNLIKELY(n.strstart <= limit))
             break;
-        if (n.match_length >= 256)
+        if (UNLIKELY(n.match_length >= 256))
             break;
-        if (n.match_start <= 1)
+        if (UNLIKELY(n.match_start <= 1))
             break;
 
         n.strstart--;
@@ -182,7 +182,7 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
             if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
                 return need_more;
             }
-            if (s->lookahead == 0)
+            if (UNLIKELY(s->lookahead == 0))
                 break; /* flush the current block */
             next_match.match_length = 0;
         }
@@ -215,9 +215,9 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                  */
                 current_match.match_length = functable.longest_match(s, hash_head);
                 current_match.match_start = s->match_start;
-                if (current_match.match_length < MIN_MATCH)
+                if (UNLIKELY(current_match.match_length < MIN_MATCH))
                     current_match.match_length = 1;
-                if (current_match.match_start >= current_match.strstart) {
+                if (UNLIKELY(current_match.match_start >= current_match.strstart)) {
                     /* this can happen due to some restarts */
                     current_match.match_length = 1;
                 }
@@ -231,7 +231,7 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         insert_match(s, current_match);
 
         /* now, look ahead one */
-        if (s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < (s->window_size - MIN_LOOKAHEAD)) {
+        if (LIKELY(s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < (s->window_size - MIN_LOOKAHEAD))) {
             s->strstart = current_match.strstart + current_match.match_length;
             hash_head = functable.quick_insert_string(s, s->strstart);
 
@@ -248,7 +248,7 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                  */
                 next_match.match_length = functable.longest_match(s, hash_head);
                 next_match.match_start = s->match_start;
-                if (next_match.match_start >= next_match.strstart) {
+                if (UNLIKELY(next_match.match_start >= next_match.strstart)) {
                     /* this can happen due to some restarts */
                     next_match.match_length = 1;
                 }
@@ -273,7 +273,7 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         /* move the "cursor" forward */
         s->strstart += current_match.match_length;
 
-        if (bflush)
+        if (UNLIKELY(bflush))
             FLUSH_BLOCK(s, 0);
     }
     s->insert = s->strstart < MIN_MATCH-1 ? s->strstart : MIN_MATCH-1;
@@ -281,7 +281,7 @@ ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         FLUSH_BLOCK(s, 1);
         return finish_done;
     }
-    if (s->sym_next)
+    if (UNLIKELY(s->sym_next))
         FLUSH_BLOCK(s, 0);
 
     return block_done;

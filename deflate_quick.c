@@ -47,41 +47,41 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
 
 
     last = (flush == Z_FINISH) ? 1 : 0;
-    if (last && s->block_open != 2) {
+    if (UNLIKELY(last && s->block_open != 2)) {
         /* Emit end of previous block */
         QUICK_END_BLOCK(s, 0);
         /* Emit start of last block */
         QUICK_START_BLOCK(s, last);
-    } else if (s->block_open == 0 && s->lookahead > 0) {
+    } else if (UNLIKELY(s->block_open == 0 && s->lookahead > 0)) {
         /* Start new block only when we have lookahead data, so that if no
            input data is given an empty block will not be written */
         QUICK_START_BLOCK(s, last);
     }
 
     do {
-        if (s->pending + ((BIT_BUF_SIZE + 7) >> 3) >= s->pending_buf_size) {
+        if (UNLIKELY(s->pending + ((BIT_BUF_SIZE + 7) >> 3) >= s->pending_buf_size)) {
             flush_pending(s->strm);
             if (s->strm->avail_out == 0 && flush != Z_FINISH) {
                 return need_more;
             }
         }
 
-        if (s->lookahead < MIN_LOOKAHEAD) {
+        if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD)) {
             fill_window(s);
-            if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
+            if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH)) {
                 return need_more;
             }
-            if (s->lookahead == 0)
+            if (UNLIKELY(s->lookahead == 0))
                 break;
 
-            if (s->block_open == 0) {
+            if (UNLIKELY(s->block_open == 0)) {
                 /* Start new block when we have lookahead data, so that if no
                    input data is given an empty block will not be written */
                 QUICK_START_BLOCK(s, last);
             }
         }
 
-        if (s->lookahead >= MIN_MATCH) {
+        if (LIKELY(s->lookahead >= MIN_MATCH)) {
             hash_head = functable.quick_insert_string(s, s->strstart);
             dist = s->strstart - hash_head;
 
@@ -89,7 +89,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
                 match_len = functable.compare258(s->window + s->strstart, s->window + hash_head);
 
                 if (match_len >= MIN_MATCH) {
-                    if (match_len > s->lookahead)
+                    if (UNLIKELY(match_len > s->lookahead))
                         match_len = s->lookahead;
 
                     check_match(s, s->strstart, hash_head, match_len);
@@ -109,7 +109,7 @@ ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
 
     s->insert = s->strstart < MIN_MATCH-1 ? s->strstart : MIN_MATCH-1;
 
-    if (last) {
+    if (UNLIKELY(last)) {
         if (s->strm->avail_out == 0)
             return s->strm->avail_in == 0 ? finish_started : need_more;
 
