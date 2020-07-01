@@ -15,22 +15,14 @@ jobs:
           Ubuntu GCC No SSE2,
           Ubuntu GCC No SSE4,
           Ubuntu GCC No PCLMULQDQ,
-          Ubuntu GCC No Opt,
-          Ubuntu GCC Compat,
           Ubuntu GCC Compat No Opt,
-          Ubuntu GCC Compat,
           Ubuntu GCC ARM SF,
           Ubuntu GCC ARM SF No ACLE,
-          Ubuntu GCC ARM SF No Opt,
-          Ubuntu GCC ARM SF Compat,
           Ubuntu GCC ARM SF Compat No Opt,
           Ubuntu GCC ARM HF,
           Ubuntu GCC ARM HF No NEON,
-          Ubuntu GCC ARM HF No Opt,
-          Ubuntu GCC ARM HF Compat,
           Ubuntu GCC ARM HF Compat No Opt,
-          Ubuntu GCC ARM HF Compat No Neon,
-          Ubuntu GCC AARCH64 Compat,
+          Ubuntu GCC AARCH64,
           Ubuntu GCC AARCH64 Compat No Opt,
           Ubuntu GCC PPC Compat,
           Ubuntu GCC PPC64 Compat,
@@ -97,29 +89,11 @@ jobs:
             cmake-args: -DWITH_SANITIZERS=ON -DWITH_PCLMULQDQ=OFF
             codecov: ubuntu_gcc_no_pclmulqdq
 
-          - name: Ubuntu GCC No Opt
-            os: ubuntu-latest
-            compiler: gcc
-            cmake-args: -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
-            codecov: ubuntu_gcc_no_opt
-
-          - name: Ubuntu GCC Compat
-            os: ubuntu-latest
-            compiler: gcc
-            cmake-args: -DZLIB_COMPAT=ON
-            codecov: ubuntu_gcc_compat
-
           - name: Ubuntu GCC Compat No Opt
             os: ubuntu-latest
             compiler: gcc
             cmake-args: -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
             codecov: ubuntu_gcc_compat_no_opt
-
-          - name: Ubuntu GCC Compat
-            os: ubuntu-latest
-            compiler: gcc
-            cmake-args: -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
-            codecov: ubuntu_gcc_compat_sani
 
           - name: Ubuntu GCC ARM SF
             os: ubuntu-latest
@@ -134,20 +108,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_SANITIZERS=ON -DWITH_ACLE=OFF
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf_no_acle
-
-          - name: Ubuntu GCC ARM SF No Opt
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabi-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
-            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
-            codecov: ubuntu_gcc_armsf_no_opt
-
-          - name: Ubuntu GCC ARM SF Compat
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabi-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
-            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
-            codecov: ubuntu_gcc_armsf_compat
 
           - name: Ubuntu GCC ARM SF Compat No Opt
             os: ubuntu-latest
@@ -170,20 +130,6 @@ jobs:
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_no_neon
 
-          - name: Ubuntu GCC ARM HF No Opt
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
-            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            codecov: ubuntu_gcc_armhf_no_opt
-
-          - name: Ubuntu GCC ARM HF Compat
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
-            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            codecov: ubuntu_gcc_armhf_compat
-
           - name: Ubuntu GCC ARM HF Compat No Opt
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
@@ -191,20 +137,13 @@ jobs:
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_compat_no_opt
 
-          - name: Ubuntu GCC ARM HF Compat No Neon
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_NEON=OFF -DWITH_SANITIZERS=ON
-            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            codecov: ubuntu_gcc_armhf_compat_no_neon
-
-          - name: Ubuntu GCC AARCH64 Compat
+          - name: Ubuntu GCC AARCH64
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZERS=ON
             asan-options: detect_leaks=0
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            codecov: ubuntu_gcc_aarch64_compat
+            codecov: ubuntu_gcc_aarch64
 
           - name: Ubuntu GCC AARCH64 Compat No Opt
             os: ubuntu-latest

@@ -10,21 +10,14 @@ jobs:
         name: [
           Ubuntu GCC,
           Ubuntu GCC OSB,
-          Ubuntu GCC No Opt,
-          Ubuntu GCC Compat,
           Ubuntu GCC Compat No Opt,
-          Ubuntu GCC Compat,
           Ubuntu GCC ARM SF,
-          Ubuntu GCC ARM SF No Opt,
-          Ubuntu GCC ARM SF Compat,
           Ubuntu GCC ARM SF Compat No Opt,
           Ubuntu GCC ARM HF,
-          Ubuntu GCC ARM HF No Opt,
-          Ubuntu GCC ARM HF Compat,
+          Ubuntu GCC ARM HF No NEON,
           Ubuntu GCC ARM HF Compat No Opt,
-          Ubuntu GCC ARM HF Compat No Neon,
+          Ubuntu GCC AARCH64,
           Ubuntu GCC AARCH64 Compat No Opt,
-          Ubuntu GCC AARCH64 Compat,
           macOS GCC
         ]
         include:
@@ -40,44 +33,15 @@ jobs:
             build-dir: ../build
             build-src-dir: ../zlib-ng
 
-          - name: Ubuntu GCC No Opt
-            os: ubuntu-latest
-            compiler: gcc
-            configure-args: --warn --without-optimizations --without-new-strategies
-
-          - name: Ubuntu GCC Compat
-            os: ubuntu-latest
-            compiler: gcc
-            configure-args: --warn --zlib-compat
-
           - name: Ubuntu GCC Compat No Opt
             os: ubuntu-latest
             compiler: gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
 
-          - name: Ubuntu GCC Compat
-            os: ubuntu-latest
-            compiler: gcc
-            configure-args: --warn --zlib-compat
-
           - name: Ubuntu GCC ARM SF
             os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn
-            chost: arm-linux-gnueabi
-            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
-
-          - name: Ubuntu GCC ARM SF No Opt
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabi-gcc
-            configure-args: --warn --without-optimizations --without-new-strategies
-            chost: arm-linux-gnueabi
-            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
-
-          - name: Ubuntu GCC ARM SF Compat
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabi-gcc
-            configure-args: --warn --zlib-compat
             chost: arm-linux-gnueabi
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
 
@@ -95,17 +59,10 @@ jobs:
             chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu GCC ARM HF No Opt
+          - name: Ubuntu GCC ARM HF No NEON
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
-            configure-args: --warn --without-optimizations --without-new-strategies
-            chost: arm-linux-gnueabihf
-            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
-
-          - name: Ubuntu GCC ARM HF Compat
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabihf-gcc
-            configure-args: --warn --zlib-compat
+            configure-args: --warn --without-neon
             chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
@@ -116,17 +73,10 @@ jobs:
             chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu GCC ARM HF Compat No Neon
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabihf-gcc
-            configure-args: --warn --zlib-compat --without-neon
-            chost: arm-linux-gnueabihf
-            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
-
-          - name: Ubuntu GCC AARCH64 Compat
+          - name: Ubuntu GCC AARCH64
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
-            configure-args: --warn --zlib-compat
+            configure-args: --warn
             chost: aarch64-linux-gnu
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
