@@ -81,11 +81,12 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
 #ifdef NO_GZCOMPRESS
     fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
 #else
-    int err, read;
+    int err;
+    size_t read;
     size_t len = strlen(hello)+1;
-    z_off64_t comprLen;
     gzFile file;
     z_off64_t pos;
+    z_off64_t comprLen;
 
     /* Write gz file with test data */
     file = PREFIX(gzopen)(fname, "wb");
@@ -203,7 +204,7 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
         printf("gzgets(): %s\n", (char*)uncompr);
     }
     pos = PREFIX(gzoffset)(file);
-    if (pos < 0 || (size_t)pos != (comprLen + 10)) {
+    if (pos < 0 || pos != (comprLen + 10)) {
         fprintf(stderr, "gzoffset err: wrong offset at end\n");
         exit(1);
     }
