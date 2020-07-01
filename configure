@@ -1293,8 +1293,7 @@ case "${ARCH}" in
 
                     if test $buildneon -eq 1; then
                         if test $MFPU_NEON_AVAILABLE -eq 1;then
-                            CFLAGS="${CFLAGS} -mfpu=neon"
-                            SFLAGS="${SFLAGS} -mfpu=neon"
+                            NEONFLAG="-mfpu=neon"
                         fi
 
                         CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
@@ -1317,8 +1316,7 @@ case "${ARCH}" in
 
                     if test $buildneon -eq 1; then
                         if test $MFPU_NEON_AVAILABLE -eq 1;then
-                            CFLAGS="${CFLAGS} -mfpu=neon"
-                            SFLAGS="${SFLAGS} -mfpu=neon"
+                            NEONFLAG="-mfpu=neon"
                         fi
 
                         CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
@@ -1600,6 +1598,7 @@ if [ "$SRCDIR" != "$BUILDDIR" ]; then ARCHINCLUDES="-I$BUILDDIR ${ARCHINCLUDES}"
 sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
+/^NEONFLAG *=/s#=.*#=$NEONFLAG#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^INCLUDES *=/s#=.*#=$ARCHINCLUDES#
