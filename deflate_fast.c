@@ -29,10 +29,10 @@ ZLIB_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
          */
         if (s->lookahead < MIN_LOOKAHEAD) {
             fill_window(s);
-            if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
+            if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH)) {
                 return need_more;
             }
-            if (s->lookahead == 0)
+            if (UNLIKELY(s->lookahead == 0))
                 break; /* flush the current block */
         }
 
@@ -88,15 +88,15 @@ ZLIB_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
             s->lookahead--;
             s->strstart++;
         }
-        if (bflush)
+        if (UNLIKELY(bflush))
             FLUSH_BLOCK(s, 0);
     }
     s->insert = s->strstart < MIN_MATCH-1 ? s->strstart : MIN_MATCH-1;
-    if (flush == Z_FINISH) {
+    if (UNLIKELY(flush == Z_FINISH)) {
         FLUSH_BLOCK(s, 1);
         return finish_done;
     }
-    if (s->sym_next)
+    if (UNLIKELY(s->sym_next))
         FLUSH_BLOCK(s, 0);
     return block_done;
 }
