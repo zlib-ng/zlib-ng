@@ -106,6 +106,8 @@ ssse3flag="-mssse3"
 sse4flag="-msse4"
 sse42flag="-msse4.2"
 pclmulflag="-mpclmul"
+acleflag=
+neonflag=
 without_optimizations=0
 without_new_strategies=0
 gcc=0
@@ -1227,7 +1229,6 @@ case "${ARCH}" in
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo"
         fi
 
-
         GCC_MACHINE=$(${CC} -dumpmachine)
         case "${GCC_MACHINE}" in
             *gnueabihf)
@@ -1274,6 +1275,10 @@ case "${ARCH}" in
                     fi
 
                     if test $buildneon -eq 1; then
+                        if test $MFPU_NEON_AVAILABLE -eq 1;then
+                            neonflag="-mfpu=neon"
+                        fi
+
                         CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
                         SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
 
@@ -1293,7 +1298,7 @@ case "${ARCH}" in
 
                     if test $buildneon -eq 1; then
                         if test $MFPU_NEON_AVAILABLE -eq 1;then
-                            NEONFLAG="-mfpu=neon"
+                            neonflag="-mfpu=neon"
                         fi
 
                         CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
@@ -1305,18 +1310,21 @@ case "${ARCH}" in
                 fi
             ;;
             armv8-a+crc | armv8-a+crc+simd | armv8.[1234]-a | armv8.[1234]-a+simd)
-                CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNALIGNED64_OK"
-                SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNALIGNED64_OK"
+                CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNALIGNED64_OK"
+                SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNALIGNED64_OK"
+
+                acleflag="-march=${ARCH}"
 
                 if test $without_optimizations -eq 0; then
                     CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
                     SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
+
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
 
                     if test $buildneon -eq 1; then
                         if test $MFPU_NEON_AVAILABLE -eq 1;then
-                            NEONFLAG="-mfpu=neon"
+                            neonflag="-mfpu=neon"
                         fi
 
                         CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
@@ -1368,8 +1376,11 @@ case "${ARCH}" in
             fi
         fi
 
-        CFLAGS="-march=${ARCH} ${CFLAGS} -DUNALIGNED_OK -DUNALIGNED64_OK"
-        SFLAGS="-march=${ARCH} ${SFLAGS} -DUNALIGNED_OK -DUNALIGNED64_OK"
+        neonflag="-march=${ARCH}"
+        acleflag="-march=${ARCH}"
+
+        CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNALIGNED64_OK"
+        SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNALIGNED64_OK"
     ;;
     powerpc*)
         case "${ARCH}" in
@@ -1480,6 +1491,8 @@ echo sse2flag = $sse2flag >> configure.log
 echo ssse3flag = $ssse3flag >> configure.log
 echo sse4flag = $sse4flag >> configure.log
 echo pclmulflag = $pclmulflag >> configure.log
+echo acleflag = $acleflag >> configure.log
+echo neonflag = $neonflag >> configure.log
 echo ARCHDIR = ${ARCHDIR} >> configure.log
 echo ARCH_STATIC_OBJS = ${ARCH_STATIC_OBJS} >> configure.log
 echo ARCH_SHARED_OBJS = ${ARCH_SHARED_OBJS} >> configure.log
@@ -1598,7 +1611,6 @@ if [ "$SRCDIR" != "$BUILDDIR" ]; then ARCHINCLUDES="-I$BUILDDIR ${ARCHINCLUDES}"
 sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
-/^NEONFLAG *=/s#=.*#=$NEONFLAG#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^INCLUDES *=/s#=.*#=$ARCHINCLUDES#
@@ -1611,6 +1623,8 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SSSE3FLAG *=/s#=.*#=$ssse3flag#
 /^SSE4FLAG *=/s#=.*#=$sse4flag#
 /^PCLMULFLAG *=/s#=.*#=$pclmulflag#
+/^ACLEFLAG *=/s#=.*#=$acleflag#
+/^NEONFLAG *=/s#=.*#=$neonflag#
 " > $ARCHDIR/Makefile
 
 # Append header files dependences.

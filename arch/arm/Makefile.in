@@ -6,6 +6,7 @@ CC=
 CFLAGS=
 SFLAGS=
 INCLUDES=
+ACLEFLAG=
 NEONFLAG=
 SUFFIX=
 
@@ -40,10 +41,10 @@ chunkset_neon.lo:
 	$(CC) $(SFLAGS) $(NEONFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_neon.c
 
 crc32_acle.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
+	$(CC) $(CFLAGS) $(ACLEFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
 
 crc32_acle.lo:
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
+	$(CC) $(SFLAGS) $(ACLEFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
 
 slide_neon.o:
 	$(CC) $(CFLAGS) $(NEONFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_neon.c
@@ -52,10 +53,10 @@ slide_neon.lo:
 	$(CC) $(SFLAGS) $(NEONFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_neon.c
 
 insert_string_acle.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_acle.c
+	$(CC) $(CFLAGS) $(ACLEFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_acle.c
 
 insert_string_acle.lo:
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_acle.c
+	$(CC) $(SFLAGS) $(ACLEFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_acle.c
 
 mostlyclean: clean
 clean:
