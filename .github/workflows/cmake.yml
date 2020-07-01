@@ -17,12 +17,14 @@ jobs:
           Ubuntu GCC No PCLMULQDQ,
           Ubuntu GCC Compat No Opt,
           Ubuntu GCC ARM SF,
-          Ubuntu GCC ARM SF No ACLE,
           Ubuntu GCC ARM SF Compat No Opt,
           Ubuntu GCC ARM HF,
+          Ubuntu GCC ARM HF No ACLE,
           Ubuntu GCC ARM HF No NEON,
           Ubuntu GCC ARM HF Compat No Opt,
           Ubuntu GCC AARCH64,
+          Ubuntu GCC AARCH64 No ACLE,
+          Ubuntu GCC AARCH64 No NEON,
           Ubuntu GCC AARCH64 Compat No Opt,
           Ubuntu GCC PPC,
           Ubuntu GCC PPC64,
@@ -101,13 +103,6 @@ jobs:
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf
 
-          - name: Ubuntu GCC ARM SF No ACLE
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabi-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_SANITIZERS=ON -DWITH_ACLE=OFF
-            packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
-            codecov: ubuntu_gcc_armsf_no_acle
-
           - name: Ubuntu GCC ARM SF Compat No Opt
             os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
@@ -121,6 +116,13 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_SANITIZERS=ON
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf
+
+          - name: Ubuntu GCC ARM HF No ACLE
+            os: ubuntu-latest
+            compiler: arm-linux-gnueabihf-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_SANITIZERS=ON -DWITH_ACLE=OFF
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+            codecov: ubuntu_gcc_armhf_no_acle
 
           - name: Ubuntu GCC ARM HF No NEON
             os: ubuntu-latest
@@ -143,6 +145,22 @@ jobs:
             asan-options: detect_leaks=0
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64
+
+          - name: Ubuntu GCC AARCH64 No ACLE
+            os: ubuntu-latest
+            compiler: aarch64-linux-gnu-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZERS=ON -DWITH_ACLE=OFF
+            asan-options: detect_leaks=0
+            packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
+            codecov: ubuntu_gcc_aarch64_no_acle
+
+          - name: Ubuntu GCC AARCH64 No NEON
+            os: ubuntu-latest
+            compiler: aarch64-linux-gnu-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZERS=ON -DWITH_NEON=OFF
+            asan-options: detect_leaks=0
+            packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
+            codecov: ubuntu_gcc_aarch64_no_neon
 
           - name: Ubuntu GCC AARCH64 Compat No Opt
             os: ubuntu-latest
