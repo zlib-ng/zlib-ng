@@ -805,50 +805,96 @@ void test_deflate_pending(unsigned char *compr, size_t comprLen) {
 }
 
 /* ===========================================================================
- * Test deflatePrime() with small buffers
+ * Test deflatePrime() wrapping gzip around deflate stream
  */
-void test_deflate_prime(unsigned char *compr, size_t comprLen) {
+void test_deflate_prime(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen) {
     PREFIX3(stream) c_stream; /* compression stream */
+    PREFIX3(stream) d_stream; /* decompression stream */
     int err;
-    int bits = 0;
-    int values = 0;
     size_t len = strlen(hello)+1;
+    uint32_t crc = 0;
 
 
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
     c_stream.opaque = (voidpf)0;
 
-    // windowBits can also be -8..-15 for raw deflate,The default value is 15
+    /* Raw deflate windowBits is -15 */
     err = PREFIX(deflateInit2)(&c_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY);
     CHECK_ERR(err, "deflateInit2");
 
-    err = PREFIX(deflatePrime)(&c_stream, bits,values);
+    /* Gzip magic number */
+    err = PREFIX(deflatePrime)(&c_stream, 16, 0x8b1f);
     CHECK_ERR(err, "deflatePrime");
+    /* Gzip compression method (deflate) */
+    err = PREFIX(deflatePrime)(&c_stream, 8, 0x08);
+    CHECK_ERR(err, "deflatePrime");
+    /* Gzip flags (one byte, using two odd bit calls) */
+    err = PREFIX(deflatePrime)(&c_stream, 3, 0x0);
+    CHECK_ERR(err, "deflatePrime");
+    err = PREFIX(deflatePrime)(&c_stream, 5, 0x0);
+    CHECK_ERR(err, "deflatePrime");
+    /* Gzip modified time */
+    err = PREFIX(deflatePrime)(&c_stream, 32, 0x0);
+    CHECK_ERR(err, "deflatePrime");
+    /* Gzip extra flags */
+    err = PREFIX(deflatePrime)(&c_stream, 8, 0x0);
+    CHECK_ERR(err, "deflatePrime");
+    /* Gzip operating system */
+    err = PREFIX(deflatePrime)(&c_stream, 8, 255);
+    CHECK_ERR(err, "deflatePrime");
+
+    c_stream.next_in = (const unsigned char *)hello;
+    c_stream.avail_in = (uint32_t)len;
+    c_stream.next_out = compr;
+    c_stream.avail_out = (uint32_t)comprLen;
+
+    err = PREFIX(deflate)(&c_stream, Z_FINISH);
+    if (err != Z_STREAM_END)
+        CHECK_ERR(err, "deflate");
+
+    /* Gzip uncompressed data crc32 */
+    crc = PREFIX(crc32)(0, hello, (uint32_t)len);
+    err = PREFIX(deflatePrime)(&c_stream, 32, crc);
+    CHECK_ERR(err, "deflatePrime");
+    /* Gzip uncompressed data length */
+    err = PREFIX(deflatePrime)(&c_stream, 32, (uint32_t)len);
+    CHECK_ERR(err, "deflatePrime");
+
+    err = PREFIX(deflateEnd)(&c_stream);
+    CHECK_ERR(err, "deflateEnd");
+
+    d_stream.zalloc = zalloc;
+    d_stream.zfree = zfree;
+    d_stream.opaque = (void *)0;
+
+    d_stream.next_in  = (const uint8_t *)compr;
+    d_stream.avail_in = (uint32_t)c_stream.total_out;
+    d_stream.next_out = uncompr;
+    d_stream.avail_out = (uint32_t)uncomprLen;
+    d_stream.total_in = 0;
+    d_stream.total_out = 0;
+
+    /* Inflate with gzip header */
+    err = PREFIX(inflateInit2)(&d_stream, MAX_WBITS + 32);
+    CHECK_ERR(err, "inflateInit");
+
+    err = PREFIX(inflate)(&d_stream, Z_FINISH);
+    if (err != Z_BUF_ERROR) {
+        CHECK_ERR(err, "inflate");
+    }
+
+    err = PREFIX(inflateEnd)(&d_stream);
+    CHECK_ERR(err, "inflateEnd");
+
+    if (strcmp((const char *)uncompr, hello) != 0) {
+        fprintf(stderr, "bad deflatePrime\n");
+        exit(1);
+    }
 
     if (err == Z_OK) {
         printf("deflatePrime(): OK\n");
     }
-
-    c_stream.next_in = (const unsigned char *)hello;
-    c_stream.next_out = compr;
-
-    while (c_stream.total_in != len && c_stream.total_out < comprLen) {
-        c_stream.avail_in = c_stream.avail_out = 1; /* force small buffers */
-        err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
-        CHECK_ERR(err, "deflate");
-    }
-
-    /* Finish the stream, still forcing small buffers: */
-    for (;;) {
-        c_stream.avail_out = 1;
-        err = PREFIX(deflate)(&c_stream, Z_FINISH);
-        if (err == Z_STREAM_END) break;
-        CHECK_ERR(err, "deflate");
-    }
-
-    err = PREFIX(deflateEnd)(&c_stream);
-    CHECK_ERR(err, "deflateEnd");
 }
 
 /* ===========================================================================
@@ -1005,7 +1051,7 @@ int main(int argc, char *argv[]) {
     test_deflate_set_header(compr, comprLen);
     test_deflate_tune(compr, comprLen);
     test_deflate_pending(compr, comprLen);
-    test_deflate_prime(compr, comprLen);
+    test_deflate_prime(compr, comprLen, uncompr, uncomprLen);
 
     free(compr);
     free(uncompr);
