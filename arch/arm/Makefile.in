@@ -6,6 +6,7 @@ CC=
 CFLAGS=
 SFLAGS=
 INCLUDES=
+NEONFLAG=
 SUFFIX=
 
 SRCDIR=.
@@ -21,10 +22,10 @@ all: \
 	insert_string_acle.o insert_string_acle.lo
 
 adler32_neon.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_neon.c
+	$(CC) $(CFLAGS) $(NEONFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_neon.c
 
 adler32_neon.lo:
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_neon.c
+	$(CC) $(SFLAGS) $(NEONFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_neon.c
 
 armfeature.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/armfeature.c
@@ -33,10 +34,10 @@ armfeature.lo:
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/armfeature.c
 
 chunkset_neon.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_neon.c
+	$(CC) $(CFLAGS) $(NEONFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_neon.c
 
 chunkset_neon.lo:
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_neon.c
+	$(CC) $(SFLAGS) $(NEONFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_neon.c
 
 crc32_acle.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
@@ -45,10 +46,10 @@ crc32_acle.lo:
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
 
 slide_neon.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_neon.c
+	$(CC) $(CFLAGS) $(NEONFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_neon.c
 
 slide_neon.lo:
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_neon.c
+	$(CC) $(SFLAGS) $(NEONFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_neon.c
 
 insert_string_acle.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_acle.c
