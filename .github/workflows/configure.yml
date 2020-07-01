@@ -14,9 +14,12 @@ jobs:
           Ubuntu GCC ARM SF,
           Ubuntu GCC ARM SF Compat No Opt,
           Ubuntu GCC ARM HF,
+          Ubuntu GCC ARM HF No ACLE,
           Ubuntu GCC ARM HF No NEON,
           Ubuntu GCC ARM HF Compat No Opt,
           Ubuntu GCC AARCH64,
+          Ubuntu GCC AARCH64 No ACLE,
+          Ubuntu GCC AARCH64 No NEON,
           Ubuntu GCC AARCH64 Compat No Opt,
           macOS GCC
         ]
@@ -59,6 +62,13 @@ jobs:
             chost: arm-linux-gnueabihf
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
+          - name: Ubuntu GCC ARM HF No ACLE
+            os: ubuntu-latest
+            compiler: arm-linux-gnueabihf-gcc
+            configure-args: --warn --without-acle
+            chost: arm-linux-gnueabihf
+            packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
+
           - name: Ubuntu GCC ARM HF No NEON
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
@@ -77,6 +87,20 @@ jobs:
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
             configure-args: --warn
+            chost: aarch64-linux-gnu
+            packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
+
+          - name: Ubuntu GCC AARCH64 No ACLE
+            os: ubuntu-latest
+            compiler: aarch64-linux-gnu-gcc
+            configure-args: --warn --without-acle
+            chost: aarch64-linux-gnu
+            packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
+
+          - name: Ubuntu GCC AARCH64 No NEON
+            os: ubuntu-latest
+            compiler: aarch64-linux-gnu-gcc
+            configure-args: --warn --without-neon
             chost: aarch64-linux-gnu
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
