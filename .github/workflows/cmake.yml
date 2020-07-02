@@ -24,11 +24,11 @@ jobs:
           Ubuntu GCC ARM HF Compat No Opt,
           Ubuntu GCC AARCH64,
           Ubuntu GCC AARCH64 Compat No Opt,
-          Ubuntu GCC PPC Compat,
-          Ubuntu GCC PPC64 Compat,
-          Ubuntu GCC PPC64LE Compat,
-          Ubuntu GCC SPARC64 Compat,
-          Ubuntu GCC S390X Compat,
+          Ubuntu GCC PPC,
+          Ubuntu GCC PPC64,
+          Ubuntu GCC PPC64LE,
+          Ubuntu GCC SPARC64,
+          Ubuntu GCC S390X,
           Ubuntu Clang,
           Ubuntu Clang Inflate Strict,
           Ubuntu Clang Inflate Allow Invalid Dist,
@@ -153,45 +153,44 @@ jobs:
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64_compat_no_opt
 
-          - name: Ubuntu GCC PPC Compat
+          - name: Ubuntu GCC PPC
             os: ubuntu-latest
             compiler: powerpc-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake -DZLIB_COMPAT=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake
             packages: qemu gcc-powerpc-linux-gnu libc-dev-powerpc-cross
-            codecov: ubuntu_gcc_ppc_compat
+            ldflags: -static
+            codecov: ubuntu_gcc_ppc
 
-            cflags: -static
-          - name: Ubuntu GCC PPC64 Compat
+          - name: Ubuntu GCC PPC64
             os: ubuntu-latest
             compiler: powerpc64-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64.cmake -DZLIB_COMPAT=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64.cmake
             packages: qemu gcc-powerpc64-linux-gnu libc-dev-ppc64-cross
-            cflags: -static
-            codecov: ubuntu_gcc_ppc64_compat
+            ldflags: -static
+            codecov: ubuntu_gcc_ppc64
 
-          - name: Ubuntu GCC PPC64LE Compat
+          - name: Ubuntu GCC PPC64LE
             os: ubuntu-latest
             compiler: powerpc64le-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake -DZLIB_COMPAT=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
             packages: qemu gcc-powerpc64le-linux-gnu libc-dev-ppc64el-cross
-            cflags: -static
-            codecov: ubuntu_gcc_ppc64le_compat
+            codecov: ubuntu_gcc_ppc64le
 
-          - name: Ubuntu GCC SPARC64 Compat
+          - name: Ubuntu GCC SPARC64
             os: ubuntu-latest
             compiler: sparc64-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake -DZLIB_COMPAT=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake
             packages: qemu gcc-sparc64-linux-gnu libc-dev-sparc64-cross
-            cflags: -static
-            codecov: ubuntu_gcc_sparc64_compat
+            ldflags: -static
+            codecov: ubuntu_gcc_sparc64
 
-          - name: Ubuntu GCC S390X Compat
+          - name: Ubuntu GCC S390X
             os: ubuntu-latest
             compiler: s390x-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake
             packages: qemu gcc-s390x-linux-gnu libc-dev-s390x-cross
-            cflags: -static
-            codecov: ubuntu_gcc_s390x_compat
+            ldflags: -static
+            codecov: ubuntu_gcc_s390x
 
           - name: Ubuntu Clang
             os: ubuntu-latest
