@@ -39,7 +39,6 @@ jobs:
           Windows MSVC ARM No Test,
           Windows MSVC ARM64 No Test,
           Windows GCC,
-          Windows GCC Compat,
           Windows GCC Compat No Opt,
           macOS Clang,
           macOS GCC
@@ -257,12 +256,6 @@ jobs:
             compiler: gcc
             cmake-args: -G Ninja
             codecov: win64_gcc
-
-          - name: Windows GCC Compat
-            os: windows-latest
-            compiler: gcc
-            cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF
-            codecov: win64_gcc_compat
 
           - name: Windows GCC Compat No Opt
             os: windows-latest
