@@ -18,6 +18,9 @@ jobs:
           Ubuntu GCC ARM HF Compat No Opt,
           Ubuntu GCC AARCH64,
           Ubuntu GCC AARCH64 Compat No Opt,
+          Ubuntu GCC PPC,
+          Ubuntu GCC PPC64,
+          Ubuntu GCC PPC64LE,
           macOS GCC
         ]
         include:
@@ -87,6 +90,31 @@ jobs:
             chost: aarch64-linux-gnu
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
+          - name: Ubuntu GCC PPC
+            os: ubuntu-latest
+            compiler: powerpc-linux-gnu-gcc
+            configure-args: --warn --static
+            chost: powerpc-linux-gnu
+            packages: qemu gcc-powerpc-linux-gnu libc-dev-powerpc-cross
+            cflags: -static
+            ldflags: -static
+
+          - name: Ubuntu GCC PPC64
+            os: ubuntu-latest
+            compiler: powerpc64-linux-gnu-gcc
+            configure-args: --warn --static
+            chost: powerpc-linux-gnu
+            packages: qemu gcc-powerpc64-linux-gnu libc-dev-ppc64-cross
+            cflags: -static
+            ldflags: -static
+
+          - name: Ubuntu GCC PPC64LE
+            os: ubuntu-latest
+            compiler: powerpc64le-linux-gnu-gcc
+            configure-args: --warn
+            chost: powerpc64le-linux-gnu
+            packages: qemu gcc-powerpc64le-linux-gnu libc-dev-ppc64el-cross
+
           - name: macOS GCC
             os: macOS-latest
             compiler: gcc
@@ -109,6 +137,8 @@ jobs:
         ${{ matrix.build-src-dir || '.' }}/configure ${{ matrix.configure-args }}
       env:
         CC: ${{ matrix.compiler }}
+        CFLAGS: ${{ matrix.cflags }}
+        LDFLAGS: ${{ matrix.ldflags }}
         CHOST: ${{ matrix.chost }}
         CI: true
 
