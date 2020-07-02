@@ -902,7 +902,7 @@ fi
 
 # Check for SSE2 intrinsics
 case "${ARCH}" in
-    i386 | i486 | i586 | i686)
+    i386 | i486 | i586 | i686 | x86_64)
         cat > $test.c << EOF
 #include <immintrin.h>
 int main(void) {
@@ -1120,8 +1120,8 @@ ARCH_SHARED_OBJS=''
 
 # Set ARCH specific FLAGS
 case "${ARCH}" in
-    # x86 specific optimizations
-    i386 | i486 | i586 | i686)
+    # x86/amd64 specific optimizations
+    i386 | i486 | i586 | i686 |x86_64)
         ARCHDIR=arch/x86
 
         CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNALIGNED64_OK"
@@ -1134,6 +1134,34 @@ case "${ARCH}" in
 
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo"
+
+            if test ${HAVE_AVX2_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
+                SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_avx.o compare258_avx.o adler32_avx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_avx.lo compare258_avx.lo adler32_avx.lo"
+            fi
+
+            if test ${HAVE_SSE42CRC_INTRIN} -eq 1 || test ${HAVE_SSE42CRC_INLINE_ASM} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSE42_CRC_HASH"
+                SFLAGS="${SFLAGS} -DX86_SSE42_CRC_HASH"
+
+                if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
+                  CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
+                  SFLAGS="${SFLAGS} -DX86_SSE42_CRC_INTRIN"
+                fi
+
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} insert_string_sse.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} insert_string_sse.lo"
+            fi
+
+            if test ${HAVE_SSE42CMPSTR_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSE42_CMP_STR"
+                SFLAGS="${SFLAGS} -DX86_SSE42_CMP_STR"
+
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_sse.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_sse.lo"
+            fi
 
             if test ${HAVE_SSE2_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE2 -DX86_SSE2_CHUNKSET"
@@ -1154,106 +1182,12 @@ case "${ARCH}" in
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_ssse3.lo"
             fi
 
-            if test ${HAVE_SSE42CMPSTR_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE42_CMP_STR"
-                SFLAGS="${SFLAGS} -DX86_SSE42_CMP_STR"
-
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_sse.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_sse.lo"
-            fi
-
-            if test ${HAVE_SSE42CRC_INTRIN} -eq 1 || test ${HAVE_SSE42CRC_INLINE_ASM} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE42_CRC_HASH"
-                SFLAGS="${SFLAGS} -DX86_SSE42_CRC_HASH"
-
-                if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
-                  CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
-                  SFLAGS="${SFLAGS} -DX86_SSE42_CRC_INTRIN"
-                fi
-
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} insert_string_sse.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} insert_string_sse.lo"
-            fi
-
-            if test ${HAVE_AVX2_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
-                SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_avx.o slide_avx.o adler32_avx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_avx.lo slide_avx.lo adler32_avx.lo"
-            fi
-
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo"
             fi
-
-        fi
-    ;;
-
-    # x86_64 specific optimizations
-    x86_64)
-        ARCHDIR=arch/x86
-
-        CFLAGS="${CFLAGS} -DUNALIGNED_OK -DUNALIGNED64_OK"
-        SFLAGS="${SFLAGS} -DUNALIGNED_OK -DUNALIGNED64_OK"
-
-        # Enable arch-specific optimizations
-        if test $without_optimizations -eq 0; then
-            CFLAGS="${CFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE2_CHUNKSET"
-            SFLAGS="${SFLAGS} -DX86_CPUID -DX86_SSE2 -DX86_SSE2_CHUNKSET"
-
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o chunkset_sse.o slide_sse.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo chunkset_sse.lo slide_sse.lo"
-
-            if test ${HAVE_SSSE3_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSSE3 -DX86_SSSE3_ADLER32"
-                SFLAGS="${SFLAGS} -DX86_SSSE3 -DX86_SSSE3_ADLER32"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_ssse3.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_ssse3.lo"
-            fi
-
-            if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
-                SFLAGS="${SFLAGS} -DX86_SSE42_CRC_INTRIN"
-            fi
-
-            if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
-                SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo"
-            fi
-
-            if test ${HAVE_AVX2_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
-                SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_avx.o slide_avx.o adler32_avx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_avx.lo slide_avx.lo adler32_avx.lo"
-            fi
-
-            if test ${HAVE_SSE42CMPSTR_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE42_CMP_STR"
-                SFLAGS="${SFLAGS} -DX86_SSE42_CMP_STR"
-
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_sse.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_sse.lo"
-            fi
-
-            if test ${HAVE_SSE42CRC_INTRIN} -eq 1 || test ${HAVE_SSE42CRC_INLINE_ASM} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE42_CRC_HASH"
-                SFLAGS="${SFLAGS} -DX86_SSE42_CRC_HASH"
-
-                if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
-                  CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
-                  SFLAGS="${SFLAGS} -DX86_SSE42_CRC_INTRIN"
-                fi
-
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} insert_string_sse.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} insert_string_sse.lo"
-            fi
-
         fi
     ;;
 
@@ -1444,8 +1378,8 @@ case "${ARCH}" in
                 CFLAGS="${CFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_SLIDEHASH"
                 SFLAGS="${SFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_SLIDEHASH"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_power8.o power.o slide_hash_power8.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_power8.lo power.lo slide_hash_power8.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power.o adler32_power8.o slide_hash_power8.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power.lo adler32_power8.lo slide_hash_power8.lo"
             fi
         fi
     ;;

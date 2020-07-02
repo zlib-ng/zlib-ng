@@ -648,6 +648,13 @@ if(WITH_OPTIM)
         add_definitions(-DARM_CPUID)
         list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm.h)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/armfeature.c)
+        if(WITH_ACLE AND NOT MSVC)
+            add_definitions(-DARM_ACLE_CRC_HASH)
+            set(ACLE_SRCS ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
+            set_property(SOURCE ${ACLE_SRCS} PROPERTY COMPILE_FLAGS "${ACLEFLAG}")
+            list(APPEND ZLIB_ARCH_SRCS ${ACLE_SRCS})
+            add_feature_info(ACLE_CRC 1 "Support ACLE optimized CRC hash generation, using \"${ACLEFLAG}\"")
+        endif()
         if(WITH_NEON)
             add_definitions(-DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH)
             set(NEON_SRCS ${ARCHDIR}/adler32_neon.c ${ARCHDIR}/chunkset_neon.c ${ARCHDIR}/slide_neon.c)
@@ -658,13 +665,6 @@ if(WITH_OPTIM)
             endif()
             add_feature_info(NEON_ALDER32 1 "Support NEON instructions in adler32, using \"${NEONFLAG}\"")
             add_feature_info(NEON_SLIDEHASH 1 "Support NEON instructions in slide_hash, using \"${NEONFLAG}\"")
-        endif()
-        if(WITH_ACLE AND NOT MSVC)
-            add_definitions(-DARM_ACLE_CRC_HASH)
-            set(ACLE_SRCS ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
-            set_property(SOURCE ${ACLE_SRCS} PROPERTY COMPILE_FLAGS "${ACLEFLAG}")
-            list(APPEND ZLIB_ARCH_SRCS ${ACLE_SRCS})
-            add_feature_info(ACLE_CRC 1 "Support ACLE optimized CRC hash generation, using \"${ACLEFLAG}\"")
         endif()
     elseif(BASEARCH_PPC_FOUND)
         if(WITH_POWER8 AND HAVE_POWER8)
@@ -849,15 +849,15 @@ set(ZLIB_SRCS
     compress.c
     crc32.c
     deflate.c
-    deflate_quick.c
     deflate_fast.c
     deflate_medium.c
+    deflate_quick.c
     deflate_slow.c
     functable.c
-    inflate.c
     infback.c
-    inftrees.c
     inffast.c
+    inflate.c
+    inftrees.c
     insert_string.c
     trees.c
     uncompr.c
