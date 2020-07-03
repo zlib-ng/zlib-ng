@@ -1148,7 +1148,7 @@ case "${ARCH}" in
                 CFLAGS="${CFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
                 SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_avx.o slide_avx.o adler32_avx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_avx.lo slide_avx.lo adler32_avx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_avx.lo slide_avx.lo adler32_avx.lo"
             fi
 
             CFLAGS="${CFLAGS} -DX86_SSE42_CRC_HASH"
