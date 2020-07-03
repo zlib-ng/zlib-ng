@@ -39,6 +39,7 @@ int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     Pos limit;
     unsigned int best_len, nice_match;
     bestcmp_t scan_end, scan_start;
+    uint32_t offset;
 
     /*
      * The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple
@@ -68,8 +69,9 @@ int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
      */
     limit = strstart > MAX_DIST(s) ? strstart - MAX_DIST(s) : 0;
 
+    offset = best_len-1;
     scan_start = *(bestcmp_t *)(scan);
-    scan_end = *(bestcmp_t *)(scan+best_len-1);
+    scan_end = *(bestcmp_t *)(scan+offset);
 
     Assert((unsigned long)strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     do {
@@ -92,7 +94,7 @@ int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
         cont = 1;
         do {
             match = window + cur_match;
-            if (LIKELY(*(bestcmp_t *)(match+best_len-1) != scan_end ||
+            if (LIKELY(*(bestcmp_t *)(match+offset) != scan_end ||
                        *(bestcmp_t *)(match) != scan_start)) {
                 if ((cur_match = prev[cur_match & wmask]) > limit && --chain_length != 0) {
                     continue;
@@ -118,7 +120,8 @@ int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
             best_len = len;
             if (len >= nice_match)
                 break;
-            scan_end = *(bestcmp_t *)(scan+best_len-1);
+            offset = best_len-1;
+            scan_end = *(bestcmp_t *)(scan+offset);
         } else {
             /*
              * The probability of finding a match later if we here
