@@ -375,7 +375,7 @@ static void cover_support(void) {
     mem_setup(&strm);
     strm.avail_in = 0;
     strm.next_in = NULL;
-    ret = PREFIX(inflateInit_)(&strm, PREFIX2(VERSION) + 1, (int)sizeof(PREFIX3(stream)));
+    ret = PREFIX(inflateInit_)(&strm, &PREFIX2(VERSION)[1], (int)sizeof(PREFIX3(stream)));
                                                 assert(ret == Z_VERSION_ERROR);
     mem_done(&strm, "wrong version");
 
