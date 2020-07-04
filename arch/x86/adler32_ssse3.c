@@ -5,9 +5,6 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifndef ADLER32_SSSE3_H
-#define ADLER32_SSSE3_H
-
 #include "../../zbuild.h"
 #include "../../zutil.h"
 
@@ -117,7 +114,5 @@ ZLIB_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, s
     /* return recombined sums */
     return adler | (sum2 << 16);
 }
-
-#endif
 
 #endif

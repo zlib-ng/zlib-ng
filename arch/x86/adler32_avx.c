@@ -5,9 +5,6 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifndef ADLER32_AVX2_H
-#define ADLER32_AVX2_H
-
 #include "../../zbuild.h"
 #include "../../zutil.h"
 
@@ -116,7 +113,5 @@ ZLIB_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, si
     /* return recombined sums */
     return adler | (sum2 << 16);
 }
-
-#endif
 
 #endif
