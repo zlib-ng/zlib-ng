@@ -587,7 +587,7 @@ int32_t ZEXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32_
     if (deflateStateCheck(strm))
         return Z_STREAM_ERROR;
     s = strm->state;
-    if (bits < 0 || bits > BIT_BUF_SIZE || bits > (sizeof(value) << 3) ||
+    if (bits < 0 || bits > BIT_BUF_SIZE || bits > (int32_t)(sizeof(value) << 3) ||
         s->sym_buf < s->pending_out + ((BIT_BUF_SIZE + 7) >> 3))
         return Z_BUF_ERROR;
     do {
