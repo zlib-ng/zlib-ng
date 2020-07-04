@@ -66,7 +66,7 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
      * Stop when cur_match becomes <= limit. To simplify the code,
      * we prevent matches with the string of window index 0
      */
-    limit = strstart > MAX_DIST(s) ? strstart - MAX_DIST(s) : 0;
+    limit = strstart > MAX_DIST(s) ? (Pos)(strstart - MAX_DIST(s)) : 0;
 
     scan_start = *(bestcmp_t *)(scan);
     scan_end = *(bestcmp_t *)(scan+best_len-1);
