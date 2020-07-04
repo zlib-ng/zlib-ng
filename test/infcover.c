@@ -242,7 +242,7 @@ static void mem_done(PREFIX3(stream) *strm, char *prefix) {
 static unsigned char *h2b(const char *hex, unsigned *len) {
     unsigned char *in, *re;
     unsigned next, val;
-    unsigned inlen;
+    size_t inlen;
 
     inlen = (strlen(hex) + 1) >> 1;
     assert(inlen != 0);     /* tell static analyzer we won't call malloc(0) */
