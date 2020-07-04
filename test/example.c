@@ -855,7 +855,7 @@ void test_deflate_prime(unsigned char *compr, size_t comprLen, unsigned char *un
         CHECK_ERR(err, "deflate");
 
     /* Gzip uncompressed data crc32 */
-    crc = PREFIX(crc32)(0, hello, (uint32_t)len);
+    crc = PREFIX(crc32)(0, (const uint8_t *)hello, (uint32_t)len);
     err = PREFIX(deflatePrime)(&c_stream, 32, crc);
     CHECK_ERR(err, "deflatePrime");
     /* Gzip uncompressed data length */
