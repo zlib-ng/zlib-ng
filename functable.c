@@ -15,19 +15,19 @@
 #endif
 
 /* insert_string */
-extern Pos insert_string_c(deflate_state *const s, const Pos str, unsigned int count);
+extern Pos insert_string_c(deflate_state *const s, const uint32_t str, uint32_t count);
 #ifdef X86_SSE42_CRC_HASH
-extern Pos insert_string_sse4(deflate_state *const s, const Pos str, unsigned int count);
+extern Pos insert_string_sse4(deflate_state *const s, const uint32_t str, uint32_t count);
 #elif defined(ARM_ACLE_CRC_HASH)
-extern Pos insert_string_acle(deflate_state *const s, const Pos str, unsigned int count);
+extern Pos insert_string_acle(deflate_state *const s, const uint32_t str, uint32_t count);
 #endif
 
 /* quick_insert_string */
-extern Pos quick_insert_string_c(deflate_state *const s, const Pos str);
+extern Pos quick_insert_string_c(deflate_state *const s, const uint32_t str);
 #ifdef X86_SSE42_CRC_HASH
-extern Pos quick_insert_string_sse4(deflate_state *const s, const Pos str);
+extern Pos quick_insert_string_sse4(deflate_state *const s, const uint32_t str);
 #elif defined(ARM_ACLE_CRC_HASH)
-extern Pos quick_insert_string_acle(deflate_state *const s, const Pos str);
+extern Pos quick_insert_string_acle(deflate_state *const s, const uint32_t str);
 #endif
 
 /* slide_hash */
@@ -144,7 +144,7 @@ ZLIB_INTERNAL void cpu_check_features(void)
 }
 
 /* stub functions */
-ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count) {
+ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const uint32_t str, uint32_t count) {
     // Initialize default
 
     functable.insert_string = &insert_string_c;
@@ -161,7 +161,7 @@ ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsi
     return functable.insert_string(s, str, count);
 }
 
-ZLIB_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const Pos str) {
+ZLIB_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const uint32_t str) {
     functable.quick_insert_string = &quick_insert_string_c;
 
 #ifdef X86_SSE42_CRC_HASH
