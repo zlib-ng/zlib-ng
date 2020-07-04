@@ -581,6 +581,7 @@ int32_t ZEXPORT PREFIX(deflatePending)(PREFIX3(stream) *strm, uint32_t *pending,
 /* ========================================================================= */
 int32_t ZEXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32_t value) {
     deflate_state *s;
+    uint64_t value64 = (uint64_t)value;
     int32_t put;
 
     if (deflateStateCheck(strm))
@@ -594,12 +595,12 @@ int32_t ZEXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32_
         if (put > bits)
             put = bits;
         if (s->bi_valid == 0)
-            s->bi_buf = (uint64_t)value;
+            s->bi_buf = value64;
         else
-            s->bi_buf |= (((uint64_t)value & ((UINT64_C(1) << put) - 1)) << s->bi_valid);
+            s->bi_buf |= (value64 & ((UINT64_C(1) << put) - 1)) << s->bi_valid;
         s->bi_valid += put;
         zng_tr_flush_bits(s);
-        value >>= put;
+        value64 >>= put;
         bits -= put;
     } while (bits);
     return Z_OK;
