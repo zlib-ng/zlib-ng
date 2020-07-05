@@ -9,7 +9,7 @@
 #  include "gzguts.h"
 #endif
 
-const char * const zng_errmsg[10] = {
+const char * const PREFIX(z_errmsg)[10] = {
     (const char *)"need dictionary",     /* Z_NEED_DICT       2  */
     (const char *)"stream end",          /* Z_STREAM_END      1  */
     (const char *)"",                    /* Z_OK              0  */
@@ -23,7 +23,7 @@ const char * const zng_errmsg[10] = {
 };
 
 const char zlibng_string[] =
-    " zlib-ng 1.9.9 forked from zlib 1.2.11 ";
+    " zlib-ng 1.9.9 forked from zlib 1.2.12.f ";
 
 #ifdef ZLIB_COMPAT
 const char * ZEXPORT zlibVersion(void) {

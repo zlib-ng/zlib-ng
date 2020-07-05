@@ -3,7 +3,7 @@
  */
 
 /* Returns the chunk size */
-uint32_t CHUNKSIZE(void) {
+ZLIB_INTERNAL uint32_t CHUNKSIZE(void) {
     return sizeof(chunk_t);
 }
 
@@ -17,7 +17,7 @@ uint32_t CHUNKSIZE(void) {
    (chunk_t bytes or fewer) will fall straight through the loop
    without iteration, which will hopefully make the branch prediction more
    reliable. */
-uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
+ZLIB_INTERNAL uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
     chunk_t chunk;
     --len;
     loadchunk(from, &chunk);
@@ -36,7 +36,7 @@ uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
 }
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
-uint8_t* CHUNKCOPY_SAFE(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
+ZLIB_INTERNAL uint8_t* CHUNKCOPY_SAFE(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
     if ((safe - out) < (ptrdiff_t)sizeof(chunk_t)) {
         if (len & 8) {
             memcpy(out, from, 8);
@@ -69,7 +69,7 @@ uint8_t* CHUNKCOPY_SAFE(uint8_t *out, uint8_t const *from, unsigned len, uint8_t
    This assumption holds because inflate_fast() starts every iteration with at
    least 258 bytes of output space available (258 being the maximum length
    output from a single token; see inflate_fast()'s assumptions below). */
-uint8_t* CHUNKUNROLL(uint8_t *out, unsigned *dist, unsigned *len) {
+ZLIB_INTERNAL uint8_t* CHUNKUNROLL(uint8_t *out, unsigned *dist, unsigned *len) {
     unsigned char const *from = out - *dist;
     chunk_t chunk;
     while (*dist < *len && *dist < sizeof(chunk_t)) {
@@ -84,7 +84,7 @@ uint8_t* CHUNKUNROLL(uint8_t *out, unsigned *dist, unsigned *len) {
 
 /* Copy DIST bytes from OUT - DIST into OUT + DIST * k, for 0 <= k < LEN/DIST.
    Return OUT + LEN. */
-uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
+ZLIB_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
     /* Debug performance related issues when len < sizeof(uint64_t):
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
     Assert(dist > 0, "cannot have a distance 0");
@@ -153,7 +153,7 @@ uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
     return out;
 }
 
-uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, unsigned dist, unsigned len, unsigned left) {
+ZLIB_INTERNAL uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, unsigned dist, unsigned len, unsigned left) {
     if (left < (unsigned)(3 * sizeof(chunk_t))) {
         while (len > 0) {
             *out = *(out - dist);
