@@ -8,11 +8,8 @@
 #include "functable.h"
 #include "adler32_p.h"
 
-uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
-static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len2);
-
 /* ========================================================================= */
-uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
+ZLIB_INTERNAL uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
     uint32_t sum2;
     unsigned n;
 

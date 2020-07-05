@@ -61,7 +61,7 @@ static inline int32_t compare258_unaligned_sse4_static(const unsigned char *src0
     return compare256_unaligned_sse4_static(src0+2, src1+2) + 2;
 }
 
-int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1) {
+ZLIB_INTERNAL int32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1) {
     return compare258_unaligned_sse4_static(src0, src1);
 }
 

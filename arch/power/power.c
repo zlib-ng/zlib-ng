@@ -4,7 +4,7 @@
  */
 
 #include <sys/auxv.h>
-#include "zutil.h"
+#include "../../zutil.h"
 
 ZLIB_INTERNAL int power_cpu_has_arch_2_07;
 

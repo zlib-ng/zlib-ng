@@ -17,7 +17,7 @@
 
 #include <immintrin.h>
 
-uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len) {
+ZLIB_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len) {
     uint32_t sum2;
 
      /* split Adler-32 into component sums */

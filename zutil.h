@@ -33,15 +33,16 @@
 #else
 #  include "zlib-ng.h"
 #endif
+#include "zbuild.h"
 
 typedef unsigned char uch; /* Included for compatibility with external code only */
 typedef uint16_t ush;      /* Included for compatibility with external code only */
 typedef unsigned long ulg;
 
-extern const char * const zng_errmsg[10]; /* indexed by 2-zlib_error */
+extern const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 /* (size given to avoid silly warnings with Visual C++) */
 
-#define ERR_MSG(err) zng_errmsg[Z_NEED_DICT-(err)]
+#define ERR_MSG(err) PREFIX(z_errmsg)[Z_NEED_DICT-(err)]
 
 #define ERR_RETURN(strm, err) return (strm->msg = ERR_MSG(err), (err))
 /* To be used only when the state is known to be valid */
@@ -122,7 +123,7 @@ extern const char * const zng_errmsg[10]; /* indexed by 2-zlib_error */
 
 /* MS Visual Studio does not allow inline in C, only C++.
    But it provides __inline instead, so use that. */
-#if defined(_MSC_VER) && !defined(inline) && !defined(__cplusplus) 
+#if defined(_MSC_VER) && !defined(inline) && !defined(__cplusplus)
 #  define inline __inline
 #endif
 
@@ -200,7 +201,7 @@ void ZLIB_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #else
 #  define ZSWAP16(q) ((((q) & 0xff) << 8) | (((q) & 0xff00) >> 8))
 #  define ZSWAP32(q) ((((q) >> 24) & 0xff) + (((q) >> 8) & 0xff00) + \
-                    (((q) & 0xff00) << 8) + (((q) & 0xff) << 24))
+                     (((q) & 0xff00) << 8) + (((q) & 0xff) << 24))
 #  define ZSWAP64(q)                           \
           ((q & 0xFF00000000000000u) >> 56u) | \
           ((q & 0x00FF000000000000u) >> 40u) | \
