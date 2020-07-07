@@ -16,6 +16,7 @@
 #include "inflate.h"
 #include "inffast.h"
 #include "inflate_p.h"
+#include "functable.h"
 
 /*
    strm provides memory allocation functions in zalloc and zfree, or
@@ -50,6 +51,7 @@ int32_t ZEXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowBi
     state->window = window;
     state->wnext = 0;
     state->whave = 0;
+    state->chunksize = functable.chunksize();
     return Z_OK;
 }
 
