@@ -219,7 +219,7 @@ jobs:
           - name: Ubuntu Clang Inflate Strict
             os: ubuntu-latest
             compiler: clang
-            cmake-args: -DWITH_INFLATE_STRICT=ON
+            cflags: -DINFLATE_STRICT
             packages: llvm-6.0
             gcov-exec: llvm-cov-6.0 gcov
             codecov: ubuntu_clang_inflate_strict
@@ -227,7 +227,7 @@ jobs:
           - name: Ubuntu Clang Inflate Allow Invalid Dist
             os: ubuntu-latest
             compiler: clang
-            cmake-args: -DWITH_INFLATE_ALLOW_INVALID_DIST=ON
+            cflags: -DINFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
             packages: llvm-6.0
             gcov-exec: llvm-cov-6.0 gcov
             codecov: ubuntu_clang_inflate_allow_invalid_dist
