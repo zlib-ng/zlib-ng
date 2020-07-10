@@ -68,7 +68,7 @@ fi
 
 # set defaults before processing command line options
 LDCONFIG=${LDCONFIG-"ldconfig"}
-LDFLAGS=${LDFLAGS-"-L."}
+LDFLAGS=${LDFLAGS}
 LDSHAREDLIBC="${LDSHAREDLIBC--lc}"
 DEFFILE=
 RC=
