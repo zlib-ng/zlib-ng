@@ -366,10 +366,8 @@ jobs:
 
     - name: Install codecov.io tools
       if: matrix.codecov
-      # Need to use special fork of codecov-python for Windows
-      # https://github.com/codecov/codecov-python/pull/169
       run: |
-        python -u -m pip install git+https://github.com/nmoinvaz/codecov-python.git@master
+        python -u -m pip install git+https://github.com/codecov/codecov-python.git
 
     - name: Generate project files
       # Shared libaries turned off for qemu ppc* and sparc & reduce code coverage sources
