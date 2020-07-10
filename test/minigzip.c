@@ -134,7 +134,7 @@ int gz_compress_mmap(FILE *in, gzFile out) {
     if (buf_len <= 0) return Z_ERRNO;
 
     /* Now do the actual mmap: */
-    buf = mmap((char *) 0, buf_len, PROT_READ, MAP_SHARED, ifd, (off_t)0);
+    buf = mmap((void *)0, buf_len, PROT_READ, MAP_SHARED, ifd, (off_t)0);
     if (buf == (char *)(-1)) return Z_ERRNO;
 
     /* Compress the whole file at once: */
