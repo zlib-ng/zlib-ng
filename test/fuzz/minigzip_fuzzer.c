@@ -12,6 +12,8 @@
  * real thing.
  */
 
+#define _POSIX_SOURCE 1  /* This file needs POSIX for fileno(). */
+
 #include "zbuild.h"
 #ifdef ZLIB_COMPAT
 #  include "zlib.h"
