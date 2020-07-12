@@ -232,7 +232,7 @@ else()
                 endif()
                 # NEON
                 if("${ARCH}" MATCHES "aarch64")
-                    set(NEONFLAG "-march=armv8-a+crc+simd")
+                    set(NEONFLAG "-march=armv8-a+simd")
                 else()
                     # Check whether -mfpu=neon is available
                     set(CMAKE_REQUIRED_FLAGS "-mfpu=neon")
