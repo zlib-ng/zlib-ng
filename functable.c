@@ -126,37 +126,7 @@ extern int32_t longest_match_unaligned_avx2(deflate_state *const s, Pos cur_matc
 #endif
 #endif
 
-/* stub definitions */
-ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const Pos str, unsigned int count);
-ZLIB_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const Pos str);
-ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len);
-ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len);
-ZLIB_INTERNAL void slide_hash_stub(deflate_state *s);
-ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned char *src1);
-ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, Pos cur_match);
-ZLIB_INTERNAL uint32_t chunksize_stub(void);
-ZLIB_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned len);
-ZLIB_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe);
-ZLIB_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len);
-ZLIB_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len);
-ZLIB_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned len, unsigned left);
-
-/* functable init */
-ZLIB_INTERNAL __thread struct functable_s functable = {
-    insert_string_stub,
-    quick_insert_string_stub,
-    adler32_stub,
-    crc32_stub,
-    slide_hash_stub,
-    compare258_stub,
-    longest_match_stub,
-    chunksize_stub,
-    chunkcopy_stub,
-    chunkcopy_safe_stub,
-    chunkunroll_stub,
-    chunkmemset_stub,
-    chunkmemset_safe_stub
-};
+ZLIB_INTERNAL __thread struct functable_s functable;
 
 ZLIB_INTERNAL void cpu_check_features(void)
 {
@@ -444,3 +414,20 @@ ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, Pos cur_match) 
 
     return functable.longest_match(s, cur_match);
 }
+
+/* functable init */
+ZLIB_INTERNAL __thread struct functable_s functable = {
+    insert_string_stub,
+    quick_insert_string_stub,
+    adler32_stub,
+    crc32_stub,
+    slide_hash_stub,
+    compare258_stub,
+    longest_match_stub,
+    chunksize_stub,
+    chunkcopy_stub,
+    chunkcopy_safe_stub,
+    chunkunroll_stub,
+    chunkmemset_stub,
+    chunkmemset_safe_stub
+};
