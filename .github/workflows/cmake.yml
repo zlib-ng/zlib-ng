@@ -370,7 +370,7 @@ jobs:
       if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false
       run: |
         cd ${{ matrix.build-dir || '.' }}
-        ctest -C Release --output-on-failure --max-width 120
+        ctest -C Release --output-on-failure --max-width 120 -j 6
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=1' }}
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=1' }}
