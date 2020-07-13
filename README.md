@@ -72,7 +72,7 @@ Features
 * Includes improvements from Cloudflare and Intel forks
 * Configure, CMake, and NMake build system support
 * Modern C99 syntax and a clean code layout
-* Over 200 CMake unit tests
+* Comprehensive set of CMake unit tests
 
 Build
 -----

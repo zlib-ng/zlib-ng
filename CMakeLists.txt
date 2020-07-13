@@ -1033,6 +1033,7 @@ if(ZLIB_ENABLE_TESTS)
     set(EXAMPLE_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:example>)
     add_test(NAME example COMMAND ${EXAMPLE_COMMAND})
 
+    set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip>)
     add_executable(minigzip test/minigzip.c)
     configure_test_executable(minigzip)
     if(NOT DEFINED BUILD_SHARED_LIBS)
@@ -1046,6 +1047,7 @@ if(ZLIB_ENABLE_TESTS)
         endif()
     endif()
 
+    set(MINIDEFLATE_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minideflate>)
     add_executable(minideflate test/minideflate.c)
     configure_test_executable(minideflate)
     target_link_libraries(minideflate zlib)
@@ -1057,6 +1059,7 @@ if(ZLIB_ENABLE_TESTS)
             LIBRARY DESTINATION "${INSTALL_LIB_DIR}")
     endif()
 
+    set(SWITCHLEVELS_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels>)
     add_executable(switchlevels test/switchlevels.c)
     configure_test_executable(switchlevels)
     target_link_libraries(switchlevels zlib)
@@ -1086,6 +1089,47 @@ if(ZLIB_ENABLE_TESTS)
         endforeach()
     endif()
 
+    macro(test_minigzip name path)
+        # Construct compression arguments for minigzip
+        set(compress_args -k -c)
+        foreach(extra_arg IN ITEMS "${ARGN}")
+            list(APPEND compress_args ${extra_arg})
+        endforeach()
+
+        # Create unique friendly string for test
+        string(REPLACE ";" "" arg_list "${ARGN}")
+        string(REPLACE " " "" arg_list "${arg_list}")
+        string(REPLACE "-" "" arg_list "${arg_list}")
+
+        set(test_id minigzip-${name}-${arg_list})
+
+        add_test(NAME ${test_id}
+            COMMAND ${CMAKE_COMMAND}
+            "-DTARGET=${MINIGZIP_COMMAND}"
+            "-DCOMPRESS_ARGS=${compress_args}"
+            "-DDECOMPRESS_ARGS=-d;-c"
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
+            -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}-${test_id}.gz
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+    endmacro()
+
+    set(TEST_FILES "test/data/lcet10.txt" "test/data/fireworks.jpg" "test/data/paper-100k.pdf")
+    set(OPEN_MODES -f -h -R -F -T)
+    set(COMPRESSION_LEVELS -0 -1 -3 -6 -9)
+
+    foreach(TEST_FILE ${TEST_FILES})
+        foreach(COMPRESSION_LEVEL ${COMPRESSION_LEVELS})
+            get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
+            test_minigzip(${TEST_NAME} ${TEST_FILE} ${COMPRESSION_LEVEL})
+            foreach(OPEN_MODE ${OPEN_MODES})
+                test_minigzip(${TEST_NAME} ${TEST_FILE} ${COMPRESSION_LEVEL} ${OPEN_MODE})
+            endforeach()
+        endforeach()
+    endforeach()
+
+    test_minigzip("detect-text" "test/data/lcet10.txt" -A)
+    test_minigzip("detect-binary" "test/data/paper-100k.pdf" -A)
+
     set(CVES CVE-2002-0059 CVE-2004-0797 CVE-2005-1849 CVE-2005-2096)
     foreach(CVE ${CVES})
         set(CVE_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -d)
@@ -1096,97 +1140,6 @@ if(ZLIB_ENABLE_TESTS)
             "-DSUCCESS_EXIT=0;1"
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
     endforeach()
-
-    macro(minigzip_stdio_cmp target name path)
-        set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}> -c)
-        foreach(EXTRA_ARG IN ITEMS "${ARGN}")
-            list(APPEND GZ_COMMAND ${EXTRA_ARG})
-        endforeach()
-
-        string(REPLACE ";" "" arg_list "${ARGN}")
-        string(REPLACE "-" "" arg_list "${arg_list}")
-        set(test_basename ${target}-${name}-${arg_list})
-
-        # Test minigzip can decompress minigzip compressed output
-        add_test(NAME ${test_basename}-compr
-            COMMAND ${CMAKE_COMMAND}
-            "-DCOMMAND=${GZ_COMMAND}"
-            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
-            -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gz
-            "-DSUCCESS_EXIT=0;1"
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-        set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}> -d)
-        add_test(NAME ${test_basename}-uncompr
-            COMMAND ${CMAKE_COMMAND}
-            "-DCOMMAND=${GZ_COMMAND}"
-            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gz
-            -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.out
-            "-DSUCCESS_EXIT=0;1"
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-        add_test(NAME ${test_basename}-cmp
-        COMMAND ${CMAKE_COMMAND} -E compare_files
-            ${CMAKE_CURRENT_SOURCE_DIR}/${path}
-            ${CMAKE_CURRENT_SOURCE_DIR}/${path}.out)
-
-        if(NOT "${ARGN}" MATCHES "-T")
-            # Transparent writing does not use gzip format
-            find_program(GZIP gzip)
-            if(GZIP)
-                # Test gzip can decompress minigzip compressed output
-                set(GZ_COMMAND ${GZIP} --decompress)
-                add_test(NAME ${test_basename}-gzip-uncompr
-                    COMMAND ${CMAKE_COMMAND}
-                    "-DCOMMAND=${GZ_COMMAND}"
-                    -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gz
-                    -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out
-                    "-DSUCCESS_EXIT=0;1"
-                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-                add_test(NAME ${test_basename}-gzip-uncompr-cmp
-                    COMMAND ${CMAKE_COMMAND} -E compare_files
-                        ${CMAKE_CURRENT_SOURCE_DIR}/${path}
-                        ${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out)
-
-                # Test minigzip can decompress gzip compressed output
-                set(GZ_COMMAND ${GZIP} --stdout)
-                add_test(NAME ${test_basename}-gzip-compr
-                    COMMAND ${CMAKE_COMMAND}
-                    "-DCOMMAND=${GZ_COMMAND}"
-                    -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
-                    -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.gz
-                    "-DSUCCESS_EXIT=0;1"
-                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-                set(GZ_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}> -d)
-                add_test(NAME ${test_basename}-minigzip-uncompr
-                    COMMAND ${CMAKE_COMMAND}
-                    "-DCOMMAND=${GZ_COMMAND}"
-                    -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.gz
-                    -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out
-                    "-DSUCCESS_EXIT=0;1"
-                    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-                add_test(NAME ${test_basename}-minigzip-cmp
-                    COMMAND ${CMAKE_COMMAND} -E compare_files
-                        ${CMAKE_CURRENT_SOURCE_DIR}/${path}
-                        ${CMAKE_CURRENT_SOURCE_DIR}/${path}.gzip.out)
-            endif()
-        endif()
-    endmacro()
-
-    set(TEST_FILES "test/data/lcet10.txt" "test/data/fireworks.jpg" "test/data/paper-100k.pdf")
-    set(OPEN_MODES -f -h -R -F -T)
-    set(COMPRESSION_LEVELS -0 -1 -3 -6 -9)
-
-    foreach(TEST_FILE ${TEST_FILES})
-        foreach(COMPRESSION_LEVEL ${COMPRESSION_LEVELS})
-            get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
-            minigzip_stdio_cmp(minigzip ${TEST_NAME} ${TEST_FILE} ${COMPRESSION_LEVEL})
-            foreach(OPEN_MODE ${OPEN_MODES})
-                minigzip_stdio_cmp(minigzip ${TEST_NAME} ${TEST_FILE} ${COMPRESSION_LEVEL} ${OPEN_MODE})
-            endforeach()
-        endforeach()
-    endforeach()
-
-    minigzip_stdio_cmp(minigzip "detect-text" "test/data/lcet10.txt" -A)
-    minigzip_stdio_cmp(minigzip "detect-binary" "test/data/paper-100k.pdf" -A)
 
     if(NOT WIN32 AND ZLIB_COMPAT)
         add_executable(CVE-2003-0107 test/CVE-2003-0107.c)
@@ -1200,104 +1153,75 @@ if(ZLIB_ENABLE_TESTS)
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKEFIXED_COMMAND}"
         -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/inffixed._h
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-
-    add_test(NAME makefixed-cmp
-        COMMAND ${CMAKE_COMMAND} -E compare_files
-            ${CMAKE_CURRENT_SOURCE_DIR}/inffixed.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/inffixed._h)
+        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/inffixed.h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees>)
     add_test(NAME maketrees
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKETREES_COMMAND}"
         -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/trees._h
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-
-    add_test(NAME maketrees-cmp
-        COMMAND ${CMAKE_COMMAND} -E compare_files
-            ${CMAKE_CURRENT_SOURCE_DIR}/trees.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/trees._h)
+        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/trees.h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct>)
     add_test(NAME makecrct
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKECRCT_COMMAND}"
         -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32._h
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-
-    add_test(NAME makecrct-cmp
-        COMMAND ${CMAKE_COMMAND} -E compare_files
-            ${CMAKE_CURRENT_SOURCE_DIR}/crc32.h
-            ${CMAKE_CURRENT_SOURCE_DIR}/crc32._h)
+        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32.h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     set(INFCOVER_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
     add_test(NAME infcover COMMAND ${INFCOVER_COMMAND})
 
-    set(GH_361_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -4)
     add_test(NAME GH-361
         COMMAND ${CMAKE_COMMAND}
-        "-DCOMMAND=${GH_361_COMMAND}"
+        "-DTARGET=${MINIGZIP_COMMAND}"
+        "-DCOMPRESS_ARGS=-c;-d;-4"
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-361/test.txt
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
-    set(GH_364_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels> 1 5 9 3)
     add_test(NAME GH-364
-            COMMAND ${CMAKE_COMMAND}
-            "-DCOMMAND=${GH_364_COMMAND}"
-            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-364/test.bin
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-
-    set(GH_382_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minideflate> -c -m 1 -w -15 -1 -s 4)
-    add_test(NAME GH-382-deflate COMMAND
-            COMMAND ${CMAKE_COMMAND}
-            "-DCOMMAND=${GH_382_COMMAND}"
-            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat
-            -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat.zz
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-
-    set(GH_382_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minideflate> -c -d -m 1 -w -15)
-    add_test(NAME GH-382-inflate COMMAND
-            COMMAND ${CMAKE_COMMAND}
-            "-DCOMMAND=${GH_382_COMMAND}"
-            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat.zz
-            -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat.out
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-
-    add_test(NAME GH-382-cmp
-            COMMAND ${CMAKE_COMMAND} -E compare_files
-            ${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat
-            ${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat.out)
-
-    set(GH_536_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels> 6 9744 1 91207)
-    add_test(NAME GH-536-segfault
-            COMMAND ${CMAKE_COMMAND}
-            "-DCOMMAND=${GH_536_COMMAND}"
-            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-
-    set(GH_536_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels> 6 88933 1 195840 2 45761)
-    add_test(NAME GH-536-incomplete-read
-            COMMAND ${CMAKE_COMMAND}
-            "-DCOMMAND=${GH_536_COMMAND}"
-            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-
-    set(GH_536_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels> 6 15248 1 1050 2 25217)
-    add_test(NAME GH-536-deflate-zero-stored-block
-            COMMAND ${CMAKE_COMMAND}
-            "-DCOMMAND=${GH_536_COMMAND}"
-            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
-            -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10-zl.txt.gz
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-
-    set(GH_536_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> -d)
-    add_test(NAME GH-536-inflate-zero-stored-block
         COMMAND ${CMAKE_COMMAND}
-        "-DCOMMAND=${GH_536_COMMAND}"
-        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10-zl.txt.gz
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+        "-DCOMPRESS_TARGET=${SWITCHLEVELS_COMMAND}"
+        "-DCOMPRESS_ARGS=1;5;9;3"
+        "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
+        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-364/test.bin
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
+    add_test(NAME GH-382
+        COMMAND ${CMAKE_COMMAND}
+        "-DTARGET=${MINIDEFLATE_COMMAND}"
+        "-DCOMPRESS_ARGS=-c;-m;1;-w;-15;-1;-s;4"
+        "-DDECOMPRESS_ARGS=-c;-d;-m;1;-w;-15"
+        -DGZIP_VERIFY=OFF
+        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+
+    add_test(NAME GH-536-segfault
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMPRESS_TARGET=${SWITCHLEVELS_COMMAND}"
+        "-DCOMPRESS_ARGS=6;9744;1;91207"
+        "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
+        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+
+    add_test(NAME GH-536-incomplete-read
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMPRESS_TARGET=${SWITCHLEVELS_COMMAND}"
+        "-DCOMPRESS_ARGS=6;88933;1;195840;2;45761"
+        "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
+        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+
+    add_test(NAME GH-536-zero-stored-block
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMPRESS_TARGET=${SWITCHLEVELS_COMMAND}"
+        "-DCOMPRESS_ARGS=6;15248;1;1050;2;25217"
+        "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
+        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
