@@ -1103,27 +1103,45 @@ if(ZLIB_ENABLE_TESTS)
 
         set(test_id minigzip-${name}-${arg_list})
 
-        add_test(NAME ${test_id}
-            COMMAND ${CMAKE_COMMAND}
-            "-DTARGET=${MINIGZIP_COMMAND}"
-            "-DCOMPRESS_ARGS=${compress_args}"
-            "-DDECOMPRESS_ARGS=-d;-c"
-            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
-            -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}-${test_id}.gz
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+        if(NOT TEST ${test_id})
+            add_test(NAME ${test_id}
+                COMMAND ${CMAKE_COMMAND}
+                "-DTARGET=${MINIGZIP_COMMAND}"
+                "-DCOMPRESS_ARGS=${compress_args}"
+                "-DDECOMPRESS_ARGS=-d;-c"
+                -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
+                -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}-${test_id}.gz
+                "-DSUCCESS_EXIT=0;1"
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+        endif()
     endmacro()
 
-    set(TEST_FILES "test/data/lcet10.txt" "test/data/fireworks.jpg" "test/data/paper-100k.pdf")
-    set(OPEN_MODES -f -h -R -F -T)
-    set(COMPRESSION_LEVELS -0 -1 -3 -6 -9)
+    set(TEST_CONFIGS
+        -R      # Z_RLE
+        -h      # Z_HUFFMAN_ONLY
+        -T      # Direct store
+        -0      # No compression
+        -1      # Deflate quick
+        -4      # Deflate medium (lazy matches)
+        "-5 -F" # Deflate medium (Z_FIXED)
+        -6      # Deflate medium
+        -9      # Deflate slow
+        "-9 -f" # Deflate slow (Z_FILTERED)
+    )
 
-    foreach(TEST_FILE ${TEST_FILES})
-        foreach(COMPRESSION_LEVEL ${COMPRESSION_LEVELS})
-            get_filename_component(TEST_NAME ${TEST_FILE} NAME_WE)
-            test_minigzip(${TEST_NAME} ${TEST_FILE} ${COMPRESSION_LEVEL})
-            foreach(OPEN_MODE ${OPEN_MODES})
-                test_minigzip(${TEST_NAME} ${TEST_FILE} ${COMPRESSION_LEVEL} ${OPEN_MODE})
-            endforeach()
+    file(GLOB_RECURSE TEST_FILE_PATHS
+        LIST_DIRECTORIES false
+        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/data/*)
+
+    foreach(TEST_FILE_PATH ${TEST_FILE_PATHS})
+        if(${TEST_FILE_PATH} MATCHES "$.gz" OR ${TEST_FILE_PATH} MATCHES "$.out" OR
+           ${TEST_FILE_PATH} MATCHES "/.git/" OR ${TEST_FILE_PATH} MATCHES "$.md")
+            continue()
+        endif()
+        foreach(TEST_CONFIG ${TEST_CONFIGS})
+            get_filename_component(TEST_NAME ${TEST_FILE_PATH} NAME_WE)
+            test_minigzip(${TEST_NAME} ${TEST_FILE_PATH} ${TEST_CONFIG})
         endforeach()
     endforeach()
 

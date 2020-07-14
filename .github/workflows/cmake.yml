@@ -304,7 +304,13 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
+
+    - name: Checkout test corpora
+      uses: actions/checkout@v2
+      with:
+        repository: nmoinvaz/corpora
+        path: test/data
 
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages
