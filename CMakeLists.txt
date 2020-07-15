@@ -947,6 +947,9 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
         if(NOT APPLE)
             set_target_properties(zlib PROPERTIES LINK_FLAGS
                 "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map\"")
+        else()
+            # Match configure/make's behavior (i.e. don't use @rpath on mac).
+            set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "${INSTALL_LIB_DIR}")
         endif()
     elseif(MSYS)
         # Suppress version number from shared library name
