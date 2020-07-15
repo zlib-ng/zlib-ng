@@ -24,7 +24,7 @@ BUILDDIR=$(pwd)
 # set command prefix for cross-compilation
 if [ -n "${CHOST}" ]; then
     # normalize the chost before parsing it
-    NORM_CHOST=$(sh "$SRCDIR"/config.sub $CHOST)
+    NORM_CHOST=$(sh "$SRCDIR"/tools/config.sub $CHOST)
     uname="$(echo "${NORM_CHOST}" | sed -e 's/^[^-]*-\([^-]*\)$/\1/' -e 's/^[^-]*-[^-]*-\([^-]*\)$/\1/' -e 's/^[^-]*-[^-]*-\([^-]*\)-.*$/\1/')"
     CROSS_PREFIX="${CHOST}-"
     ARCH="$(echo "${NORM_CHOST}" | sed -e 's/-.*//')"
