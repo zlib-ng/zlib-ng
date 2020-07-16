@@ -69,7 +69,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends ninja-build ${{ matrix.packages }}
+        sudo apt-get install -y --no-install-recommends abigail-tools ninja-build ${{ matrix.packages }}
 
     - name: Install packages (macOS)
       if: runner.os == 'macOS'
@@ -94,4 +94,22 @@ jobs:
         CFLAGS: ${{ matrix.cflags }}
         CHOST: ${{ matrix.chost }}
         CMAKE_ARGS: ${{ matrix.cmake-args }}
+        LDFLAGS: ${{ matrix.ldflags }}
+
+    - name: Check ABI
+      run: |
+        sh test/abicheck.sh --refresh_if
+      env:
+        CC: ${{ matrix.compiler }}
+        CFLAGS: ${{ matrix.cflags }}
+        CHOST: ${{ matrix.chost }}
+        LDFLAGS: ${{ matrix.ldflags }}
+
+    - name: Check ABI (compat)
+      run: |
+        if test "$CHOST" = "powerpc-linux-gnu" || test "$CFLAGS" = "-m32"; then echo "SKIP 32 bit compat broken, see issue 705"; else sh test/abicheck.sh --zlib-compat --refresh_if; fi
+      env:
+        CC: ${{ matrix.compiler }}
+        CFLAGS: ${{ matrix.cflags }}
+        CHOST: ${{ matrix.chost }}
         LDFLAGS: ${{ matrix.ldflags }}
