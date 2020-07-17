@@ -33,7 +33,7 @@ const uint32_t * ZEXPORT PREFIX(get_crc_table)(void) {
 unsigned long ZEXPORT PREFIX(crc32_z)(unsigned long crc, const unsigned char *buf, size_t len) {
     if (buf == NULL) return 0;
 
-    return (unsigned long) functable.crc32((uint32_t) crc, buf, len);
+    return (unsigned long)functable.crc32((uint32_t)crc, buf, len);
 }
 #else
 uint32_t ZEXPORT PREFIX(crc32_z)(uint32_t crc, const unsigned char *buf, size_t len) {
@@ -71,7 +71,7 @@ ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, uin
 
 #ifdef ZLIB_COMPAT
 unsigned long ZEXPORT PREFIX(crc32)(unsigned long crc, const unsigned char *buf, unsigned int len) {
-    return (unsigned long) PREFIX(crc32_z)((uint32_t) crc, buf, len);
+    return (unsigned long)PREFIX(crc32_z)((uint32_t)crc, buf, len);
 }
 #else
 uint32_t ZEXPORT PREFIX(crc32)(uint32_t crc, const unsigned char *buf, uint32_t len) {
@@ -191,11 +191,11 @@ static uint32_t crc32_combine_(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
 /* ========================================================================= */
 #ifdef ZLIB_COMPAT
 unsigned long ZEXPORT PREFIX(crc32_combine)(unsigned long crc1, unsigned long crc2, z_off_t len2) {
-    return (unsigned long) crc32_combine_((uint32_t) crc1, (uint32_t) crc2, len2);
+    return (unsigned long)crc32_combine_((uint32_t)crc1, (uint32_t)crc2, len2);
 }
 
 unsigned long ZEXPORT PREFIX4(crc32_combine)(unsigned long crc1, unsigned long crc2, z_off64_t len2) {
-    return (unsigned long) crc32_combine_((uint32_t) crc1, (uint32_t) crc2, len2);
+    return (unsigned long)crc32_combine_((uint32_t)crc1, (uint32_t)crc2, len2);
 }
 #else
 uint32_t ZEXPORT PREFIX4(crc32_combine)(uint32_t crc1, uint32_t crc2, z_off64_t len2) {

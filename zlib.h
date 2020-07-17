@@ -1697,7 +1697,7 @@ ZEXTERN unsigned long ZEXPORT crc32(unsigned long crc, const unsigned char *buf,
      if (crc != original_crc) error();
 */
 
-ZEXTERN unsigned long ZEXPORT crc32_z (unsigned long crc, const unsigned char *buf, size_t len);
+ZEXTERN unsigned long ZEXPORT crc32_z(unsigned long crc, const unsigned char *buf, size_t len);
 /*
      Same as crc32(), but with a size_t length.
 */
