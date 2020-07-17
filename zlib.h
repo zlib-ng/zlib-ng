@@ -1697,13 +1697,13 @@ ZEXTERN unsigned long ZEXPORT crc32(unsigned long crc, const unsigned char *buf,
      if (crc != original_crc) error();
 */
 
-ZEXTERN uint32_t ZEXPORT crc32_z (uint32_t crc, const unsigned char *buf, size_t len);
+ZEXTERN unsigned long ZEXPORT crc32_z (unsigned long crc, const unsigned char *buf, size_t len);
 /*
      Same as crc32(), but with a size_t length.
 */
 
 /*
-ZEXTERN uint32_t ZEXPORT crc32_combine(uint32_t crc1, uint32_t crc2, z_off64_t len2);
+ZEXTERN unsigned long ZEXPORT crc32_combine(unsigned long crc1, unsigned long crc2, z_off64_t len2);
 
      Combine two CRC-32 check values into one.  For two sequences of bytes,
    seq1 and seq2 with lengths len1 and len2, CRC-32 check values were
@@ -1778,7 +1778,7 @@ ZEXTERN int ZEXPORT gzgetc_(gzFile file);  /* backward compatibility */
    ZEXTERN z_off64_t ZEXPORT gztell64(gzFile);
    ZEXTERN z_off64_t ZEXPORT gzoffset64(gzFile);
    ZEXTERN unsigned long ZEXPORT adler32_combine64(unsigned long, unsigned long, z_off64_t);
-   ZEXTERN uint32_t ZEXPORT crc32_combine64(uint32_t, uint32_t, z_off64_t);
+   ZEXTERN unsigned long ZEXPORT crc32_combine64(unsigned long, unsigned long, z_off64_t);
    ZEXTERN void ZEXPORT crc32_combine_gen64(uint32_t *op, z_off64_t);
 #endif
 
@@ -1796,7 +1796,7 @@ ZEXTERN int ZEXPORT gzgetc_(gzFile file);  /* backward compatibility */
      ZEXTERN z_off_t ZEXPORT gztell64(gzFile);
      ZEXTERN z_off_t ZEXPORT gzoffset64(gzFile);
      ZEXTERN unsigned long ZEXPORT adler32_combine64(unsigned long, unsigned long, z_off_t);
-     ZEXTERN uint32_t ZEXPORT crc32_combine64(uint32_t, uint32_t, z_off_t);
+     ZEXTERN unsigned long ZEXPORT crc32_combine64(unsigned long, unsigned long, z_off_t);
      ZEXTERN void ZEXPORT crc32_combine_gen64(uint32_t *op, z_off64_t);
 #  endif
 #else
@@ -1805,7 +1805,7 @@ ZEXTERN int ZEXPORT gzgetc_(gzFile file);  /* backward compatibility */
    ZEXTERN z_off_t ZEXPORT gztell(gzFile);
    ZEXTERN z_off_t ZEXPORT gzoffset(gzFile);
    ZEXTERN unsigned long ZEXPORT adler32_combine(unsigned long, unsigned long, z_off_t);
-   ZEXTERN uint32_t ZEXPORT crc32_combine(uint32_t, uint32_t, z_off_t);
+   ZEXTERN unsigned long ZEXPORT crc32_combine(unsigned long, unsigned long, z_off_t);
    ZEXTERN void ZEXPORT crc32_combine_gen(uint32_t *op, z_off_t);
 #endif
 

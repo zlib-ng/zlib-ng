@@ -29,11 +29,19 @@ const uint32_t * ZEXPORT PREFIX(get_crc_table)(void) {
     return (const uint32_t *)crc_table;
 }
 
+#ifdef ZLIB_COMPAT
+unsigned long ZEXPORT PREFIX(crc32_z)(unsigned long crc, const unsigned char *buf, size_t len) {
+    if (buf == NULL) return 0;
+
+    return (unsigned long) functable.crc32((uint32_t) crc, buf, len);
+}
+#else
 uint32_t ZEXPORT PREFIX(crc32_z)(uint32_t crc, const unsigned char *buf, size_t len) {
     if (buf == NULL) return 0;
 
     return functable.crc32(crc, buf, len);
 }
+#endif
 /* ========================================================================= */
 #define DO1 crc = crc_table[0][((int)crc ^ (*buf++)) & 0xff] ^ (crc >> 8)
 #define DO8 DO1; DO1; DO1; DO1; DO1; DO1; DO1; DO1
@@ -182,14 +190,18 @@ static uint32_t crc32_combine_(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
 
 /* ========================================================================= */
 #ifdef ZLIB_COMPAT
-uint32_t ZEXPORT PREFIX(crc32_combine)(uint32_t crc1, uint32_t crc2, z_off_t len2) {
-    return crc32_combine_(crc1, crc2, len2);
+unsigned long ZEXPORT PREFIX(crc32_combine)(unsigned long crc1, unsigned long crc2, z_off_t len2) {
+    return (unsigned long) crc32_combine_((uint32_t) crc1, (uint32_t) crc2, len2);
 }
-#endif
 
+unsigned long ZEXPORT PREFIX4(crc32_combine)(unsigned long crc1, unsigned long crc2, z_off64_t len2) {
+    return (unsigned long) crc32_combine_((uint32_t) crc1, (uint32_t) crc2, len2);
+}
+#else
 uint32_t ZEXPORT PREFIX4(crc32_combine)(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
     return crc32_combine_(crc1, crc2, len2);
 }
+#endif
 
 #ifdef X86_PCLMULQDQ_CRC
 #include "arch/x86/x86.h"
