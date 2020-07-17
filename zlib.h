@@ -1664,7 +1664,7 @@ ZEXTERN unsigned long ZEXPORT adler32(unsigned long adler, const unsigned char *
      if (adler != original_adler) error();
 */
 
-ZEXTERN unsigned long ZEXPORT adler32_z (unsigned long adler, const unsigned char *buf, size_t len);
+ZEXTERN unsigned long ZEXPORT adler32_z(unsigned long adler, const unsigned char *buf, size_t len);
 /*
      Same as adler32(), but with a size_t length.
 */
