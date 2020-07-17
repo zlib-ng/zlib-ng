@@ -42,7 +42,7 @@ int ZEXPORT PREFIX(compress2)(unsigned char *dest, z_size_t *destLen, const unsi
 
     stream.next_out = dest;
     stream.avail_out = 0;
-    stream.next_in = (const unsigned char *)source;
+    stream.next_in = C_CONST_UCP(source);
     stream.avail_in = 0;
 
     do {

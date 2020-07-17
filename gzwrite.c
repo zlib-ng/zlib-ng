@@ -212,7 +212,7 @@ static size_t gz_write(gz_state *state, void const *buf, size_t len) {
             return 0;
 
         /* directly compress user buffer to file */
-        state->strm.next_in = (const unsigned char *)buf;
+        state->strm.next_in = C_CONST_UCP(buf);
         do {
             unsigned n = (unsigned)-1;
             if (n > len)
