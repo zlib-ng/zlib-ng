@@ -24,7 +24,7 @@ extern ZLIB_INTERNAL const int base_dist[D_CODES];
 /* Bit buffer and deflate code stderr tracing */
 #ifdef ZLIB_DEBUG
 #  define send_bits_trace(s, value, length) { \
-        Tracevv((stderr, " l %2d v %4llx ", length, value)); \
+        Tracevv((stderr, " l %2d v %4llx ", (int)(length), (long long)(value))); \
         Assert(length > 0 && length <= BIT_BUF_SIZE, "invalid length"); \
     }
 #  define send_code_trace(s, c) \
