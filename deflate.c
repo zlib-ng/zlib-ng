@@ -80,7 +80,9 @@ const char PREFIX(deflate_copyright)[] = " deflate 1.2.12.f Copyright 1995-2016 
 /* Invoked at the end of deflateResetKeep(). Useful for initializing arch-specific extension blocks. */
 #  define DEFLATE_RESET_KEEP_HOOK(strm) do {} while (0)
 /* Invoked at the beginning of deflateParams(). Useful for updating arch-specific compression parameters. */
-#  define DEFLATE_PARAMS_HOOK(strm, level, strategy) do {} while (0)
+#  define DEFLATE_PARAMS_HOOK(strm, level, strategy, hook_flush) do {} while (0)
+/* Returns whether the last deflate(flush) operation did everything it's supposed to do. */
+# define DEFLATE_DONE(strm, flush) 1
 /* Adjusts the upper bound on compressed data length based on compression parameters and uncompressed data length.
  * Useful when arch-specific deflation code behaves differently than regular zlib-ng algorithms. */
 #  define DEFLATE_BOUND_ADJUST_COMPLEN(strm, complen, sourceLen) do {} while (0)
@@ -610,6 +612,7 @@ int32_t ZEXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32_
 int32_t ZEXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int32_t strategy) {
     deflate_state *s;
     compress_func func;
+    int hook_flush = Z_NO_FLUSH;
 
     if (deflateStateCheck(strm))
         return Z_STREAM_ERROR;
@@ -620,16 +623,17 @@ int32_t ZEXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int3
     if (level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED) {
         return Z_STREAM_ERROR;
     }
-    DEFLATE_PARAMS_HOOK(strm, level, strategy);  /* hook for IBM Z DFLTCC */
+    DEFLATE_PARAMS_HOOK(strm, level, strategy, &hook_flush);  /* hook for IBM Z DFLTCC */
     func = configuration_table[s->level].func;
 
-    if ((strategy != s->strategy || func != configuration_table[level].func) &&
-        s->last_flush != -2) {
-        /* Flush the last buffer: */
-        int err = PREFIX(deflate)(strm, Z_BLOCK);
+    if (((strategy != s->strategy || func != configuration_table[level].func) && s->last_flush != -2) ||
+        hook_flush != Z_NO_FLUSH) {
+        /* Flush the last buffer. Use Z_BLOCK mode, unless the hook requests a "stronger" one. */
+        int flush = RANK(hook_flush) > RANK(Z_BLOCK) ? hook_flush : Z_BLOCK;
+        int err = PREFIX(deflate)(strm, flush);
         if (err == Z_STREAM_ERROR)
             return err;
-        if (strm->avail_in || (s->strstart - s->block_start) + s->lookahead)
+        if (strm->avail_in || (s->strstart - s->block_start) + s->lookahead || !DEFLATE_DONE(strm, flush))
             return Z_BUF_ERROR;
     }
     if (s->level != level) {
