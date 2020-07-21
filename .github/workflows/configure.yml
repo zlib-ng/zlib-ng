@@ -24,6 +24,9 @@ jobs:
           Ubuntu GCC PPC,
           Ubuntu GCC PPC64,
           Ubuntu GCC PPC64LE,
+          Ubuntu GCC S390X,
+          Ubuntu GCC S390X DFLTCC,
+          Ubuntu GCC S390X DFLTCC Compat,
           macOS GCC
         ]
         include:
@@ -138,6 +141,33 @@ jobs:
             configure-args: --warn
             chost: powerpc64le-linux-gnu
             packages: qemu gcc-powerpc64le-linux-gnu libc-dev-ppc64el-cross
+
+          - name: Ubuntu GCC S390X
+            os: ubuntu-latest
+            compiler: s390x-linux-gnu-gcc
+            configure-args: --warn --static
+            chost: s390x-linux-gnu
+            packages: qemu gcc-s390x-linux-gnu libc-dev-s390x-cross
+            cflags: -static
+            ldflags: -static
+
+          - name: Ubuntu GCC S390X DFLTCC
+            os: ubuntu-latest
+            compiler: s390x-linux-gnu-gcc
+            configure-args: --warn --static --with-dfltcc-deflate --with-dfltcc-inflate
+            chost: s390x-linux-gnu
+            packages: qemu gcc-s390x-linux-gnu libc-dev-s390x-cross
+            cflags: -static
+            ldflags: -static
+
+          - name: Ubuntu GCC S390X DFLTCC Compat
+            os: ubuntu-latest
+            compiler: s390x-linux-gnu-gcc
+            configure-args: --warn --zlib-compat --static --with-dfltcc-deflate --with-dfltcc-inflate
+            chost: s390x-linux-gnu
+            packages: qemu gcc-s390x-linux-gnu libc-dev-s390x-cross
+            cflags: -static
+            ldflags: -static
 
           - name: macOS GCC
             os: macOS-latest
