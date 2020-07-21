@@ -302,7 +302,7 @@ int32_t ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int3
     if (windowBits == 8)
         windowBits = 9;  /* until 256-byte window bug fixed */
 
-#ifndef NO_QUICK_STRATEGY
+#if !defined(NO_QUICK_STRATEGY) && !defined(S390_DFLTCC_DEFLATE)
     if (level == 1)
         windowBits = 13;
 #endif
