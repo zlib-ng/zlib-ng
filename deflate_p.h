@@ -33,7 +33,10 @@ static inline int zng_tr_tally_lit(deflate_state *s, unsigned char c) {
     s->sym_buf[s->sym_next++] = c;
     s->dyn_ltree[c].Freq++;
     Tracevv((stderr, "%c", c));
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wtype-limits"
     Assert(c <= (MAX_MATCH-MIN_MATCH), "zng_tr_tally: bad literal");
+#pragma GCC diagnostic pop
     return (s->sym_next == s->sym_end);
 }
 
