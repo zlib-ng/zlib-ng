@@ -1056,8 +1056,6 @@ int32_t ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
 
     if (flush != Z_FINISH)
         return Z_OK;
-    if (s->wrap <= 0)
-        return Z_STREAM_END;
 
     /* Write the trailer */
 #ifdef GZIP
@@ -1069,7 +1067,7 @@ int32_t ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
         put_uint32(s, (uint32_t)strm->total_in);
     } else
 #endif
-    {
+    if (s->wrap == 1) {
         put_uint32_msb(s, strm->adler);
     }
     flush_pending(strm);
@@ -1078,7 +1076,11 @@ int32_t ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
      */
     if (s->wrap > 0)
         s->wrap = -s->wrap; /* write the trailer only once! */
-    return s->pending != 0 ? Z_OK : Z_STREAM_END;
+    if (s->pending == 0) {
+        Assert(s->bi_valid == 0, "bi_buf not flushed");
+        return Z_STREAM_END;
+    }
+    return Z_OK;
 }
 
 /* ========================================================================= */
