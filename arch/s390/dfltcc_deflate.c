@@ -20,22 +20,19 @@
 #include "dfltcc_deflate.h"
 #include "dfltcc_detail.h"
 
-static inline int dfltcc_are_params_ok(int level, uInt window_bits, int strategy, uint16_t level_mask,
+static inline int dfltcc_can_deflate_with_params(PREFIX3(streamp) strm, int level, uInt window_bits, int strategy,
                                        int reproducible) {
-    return (level_mask & ((uint16_t)1 << level)) != 0 &&
-        (window_bits == HB_BITS) &&
-        (strategy == Z_FIXED || strategy == Z_DEFAULT_STRATEGY) &&
-        !reproducible;
-}
-
-
-int ZLIB_INTERNAL dfltcc_can_deflate(PREFIX3(streamp) strm) {
     deflate_state *state = (deflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
 
     /* Unsupported compression settings */
-    if (!dfltcc_are_params_ok(state->level, state->w_bits, state->strategy, dfltcc_state->level_mask,
-                              state->reproducible))
+    if ((dfltcc_state->level_mask & (1 << level)) == 0)
+        return 0;
+    if (window_bits != HB_BITS)
+        return 0;
+    if (strategy != Z_FIXED && strategy != Z_DEFAULT_STRATEGY)
+        return 0;
+    if (reproducible)
         return 0;
 
     /* Unsupported hardware */
@@ -45,6 +42,12 @@ int ZLIB_INTERNAL dfltcc_can_deflate(PREFIX3(streamp) strm) {
         return 0;
 
     return 1;
+}
+
+int ZLIB_INTERNAL dfltcc_can_deflate(PREFIX3(streamp) strm) {
+    deflate_state *state = (deflate_state *)strm->state;
+
+    return dfltcc_can_deflate_with_params(strm, state->level, state->w_bits, state->strategy, state->reproducible);
 }
 
 static inline void dfltcc_gdht(PREFIX3(streamp) strm) {
@@ -284,10 +287,8 @@ static int dfltcc_was_deflate_used(PREFIX3(streamp) strm) {
 
 int ZLIB_INTERNAL dfltcc_deflate_params(PREFIX3(streamp) strm, int level, int strategy) {
     deflate_state *state = (deflate_state *)strm->state;
-    struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
     int could_deflate = dfltcc_can_deflate(strm);
-    int can_deflate = dfltcc_are_params_ok(level, state->w_bits, strategy, dfltcc_state->level_mask,
-                                           state->reproducible);
+    int can_deflate = dfltcc_can_deflate_with_params(strm, level, state->w_bits, strategy, state->reproducible);
 
     if (can_deflate == could_deflate)
         /* We continue to work in the same mode - no changes needed */
