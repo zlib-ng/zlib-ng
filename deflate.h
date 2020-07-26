@@ -404,8 +404,6 @@ void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
  * used.
  */
 
-#define TRIGGER_LEVEL 5
-
 /* Bit buffer and compress bits calculation debugging */
 #ifdef ZLIB_DEBUG
 #  define cmpr_bits_add(s, len)     s->compressed_len += (len)
