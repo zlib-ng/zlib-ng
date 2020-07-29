@@ -3,8 +3,8 @@
 #include "deflate.h"
 #include "functable.h"
 
-#ifndef BESTCMP_TYPE
-#define BESTCMP_TYPE
+#ifndef MATCH_TPL_H
+#define MATCH_TPL_H
 
 #ifdef UNALIGNED_OK
 #  ifdef UNALIGNED64_OK
@@ -15,6 +15,8 @@ typedef uint32_t        bestcmp_t;
 #else
 typedef uint8_t         bestcmp_t;
 #endif
+
+#define EARLY_EXIT_TRIGGER_LEVEL 5
 
 #endif
 
@@ -35,6 +37,7 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     const Pos *prev = s->prev;
     Pos limit;
     uint32_t chain_length, nice_match, best_len, offset;
+    uint32_t lookahead = s->lookahead;
     bestcmp_t scan_end;
 #ifndef UNALIGNED_OK
     bestcmp_t scan_end0;
@@ -42,17 +45,10 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     bestcmp_t scan_start;
 #endif
 
-#define EARLY_EXIT_TRIGGER_LEVEL 5
-
-#define RETURN_BEST_LEN \
-    if (best_len <= s->lookahead) \
-        return best_len; \
-    return s->lookahead;
-
 #define GOTO_NEXT_CHAIN \
     if (--chain_length && (cur_match = prev[cur_match & wmask]) > limit) \
         continue; \
-    RETURN_BEST_LEN;
+    return best_len;
 
     /*
      * The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple
@@ -90,12 +86,7 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     chain_length = s->max_chain_length;
     if (best_len >= s->good_match)
         chain_length >>= 2;
-
-    /*
-     * Do not look for matches beyond the end of the input. This is
-     * necessary to make deflate deterministic
-     */
-    nice_match = (uint32_t)s->nice_match > s->lookahead ? s->lookahead : (uint32_t)s->nice_match;
+    nice_match = (uint32_t)s->nice_match;
 
     /*
      * Stop when cur_match becomes <= limit. To simplify the code,
@@ -162,9 +153,13 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 
         if (len > best_len) {
             s->match_start = cur_match;
+            /* Do not look for matches beyond the end of the input. */
+            if (len > lookahead)
+                return lookahead;
             best_len = len;
             if (best_len >= nice_match)
-                break;
+                return best_len;
+
             offset = best_len-1;
 #ifdef UNALIGNED_OK
             if (best_len >= sizeof(uint32_t)) {
@@ -191,7 +186,7 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
         GOTO_NEXT_CHAIN;
     }
 
-    RETURN_BEST_LEN;
+    return best_len;
 }
 
 #undef LONGEST_MATCH
