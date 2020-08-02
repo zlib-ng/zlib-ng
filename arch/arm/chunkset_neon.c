@@ -114,12 +114,11 @@ static inline uint8_t *chunkmemset_6(uint8_t *out, uint8_t *from, unsigned dist,
 #endif
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
-    *chunk = *(chunk_t *)s;
+    *chunk = vld1q_u8(s);
 }
 
 static inline void storechunk(uint8_t *out, chunk_t *chunk) {
-    /* Cast to chunk_t pointer to avoid compiler error on MSVC ARM */
-    memcpy((chunk_t *)out, chunk, sizeof(chunk_t));
+    vst1q_u8(out, *chunk);
 }
 
 #include "chunkset_tpl.h"
