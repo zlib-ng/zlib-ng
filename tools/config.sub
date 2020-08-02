@@ -10,8 +10,8 @@
 # https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain;f=config.sub
 
 case "$1" in
-*-*-linux-gnu) echo $1;;
-i686-linux-gnu|x86_64-linux-gnu*) echo $1 | sed 's/-linux-gnu/-pc-linux-gnu/';;
+*-*-linux-gnu*) echo $1;;
+i686-linux-gnu*|x86_64-linux-gnu*) echo $1 | sed 's/-linux-gnu/-pc-linux-gnu/';;
 *-linux-gnu*) echo $1 | sed 's/-linux-gnu/-unknown-linux-gnu/';;
 *) echo $1;;
 esac
