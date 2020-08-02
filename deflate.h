@@ -351,9 +351,14 @@ static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint64(deflate_state *s, uint64_t lld) {
-#if defined(UNALIGNED_OK)
+#if defined(UNALIGNED64_OK)
     *(uint64_t *)(&s->pending_buf[s->pending]) = lld;
     s->pending += 8;
+#elif defined(UNALIGNED_OK)
+    *(uint32_t *)(&s->pending_buf[s->pending]) = lld & 0xffffffff;
+    s->pending += 4;
+    *(uint32_t *)(&s->pending_buf[s->pending]) = (lld >> 32) & 0xffffffff;
+    s->pending += 4;
 #else
     put_byte(s, (lld & 0xff));
     put_byte(s, ((lld >> 8) & 0xff));
