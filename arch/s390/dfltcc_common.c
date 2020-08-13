@@ -22,10 +22,15 @@ static inline int is_dfltcc_enabled(void) {
      * compiling with -m31, gcc defaults to ESA mode, however, since the kernel
      * is 64-bit, it's always z/Architecture mode at runtime.
      */
-    __asm__ volatile(".machinemode push\n"
+    __asm__ volatile(
+#ifndef __clang__
+                     ".machinemode push\n"
                      ".machinemode zarch\n"
+#endif
                      "stfle %[facilities]\n"
+#ifndef __clang__
                      ".machinemode pop\n"
+#endif
                      : [facilities] "=Q" (facilities), [r0] "+r" (r0) :: "cc");
     return is_bit_set((const char *)facilities, DFLTCC_FACILITY);
 }
