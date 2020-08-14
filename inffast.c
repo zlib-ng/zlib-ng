@@ -171,15 +171,13 @@ void ZLIB_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) 
         } else if (op & 16) {                     /* length base */
             len = here->val;
             op &= 15;                           /* number of extra bits */
-            if (op) {
-                if (bits < op) {
-                    hold |= load_64_bits(in, bits);
-                    in += 6;
-                    bits += 48;
-                }
-                len += BITS(op);
-                DROPBITS(op);
+            if (bits < op) {
+                hold |= load_64_bits(in, bits);
+                in += 6;
+                bits += 48;
             }
+            len += BITS(op);
+            DROPBITS(op);
             Tracevv((stderr, "inflate:         length %u\n", len));
             if (bits < 15) {
                 hold |= load_64_bits(in, bits);
