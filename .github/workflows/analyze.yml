@@ -20,7 +20,7 @@ jobs:
     - name: Compile source code
       run: |
         cmake --build . --config Release > /dev/null
-  Clang-11:
+  Clang-12:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
@@ -28,12 +28,12 @@ jobs:
       run: |
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
         sudo apt-add-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main" -y
-        sudo apt install clang-tools-11 -y
+        sudo apt install clang-tools-12 -y
     - name: Generate project files
       run: |
-        scan-build-11 --status-bugs cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_GZFILEOP=ON -DWITH_FUZZERS=OFF -DWITH_CODE_COVERAGE=OFF -DWITH_MAINTAINER_WARNINGS=OFF
+        scan-build-12 --status-bugs cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_GZFILEOP=ON -DWITH_FUZZERS=OFF -DWITH_CODE_COVERAGE=OFF -DWITH_MAINTAINER_WARNINGS=OFF
       env:
         CI: true
     - name: Compile source code
       run: |
-        scan-build-11 --status-bugs cmake --build . --config Release > /dev/null
+        scan-build-12 --status-bugs cmake --build . --config Release > /dev/null
