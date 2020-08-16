@@ -109,7 +109,7 @@ void test_large_inflate(unsigned char *compr, size_t comprLen, unsigned char *un
     CHECK_ERR(err, "inflateEnd");
 
     if (d_stream.total_out != 2 * uncomprLen + diff) {
-        fprintf(stderr, "bad large inflate: %zu\n", d_stream.total_out);
+        fprintf(stderr, "bad large inflate: %" PRIu64 "\n", (uint64_t)d_stream.total_out);
         exit(1);
     }
 }

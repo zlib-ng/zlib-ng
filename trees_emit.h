@@ -6,7 +6,10 @@
 
 #ifdef ZLIB_DEBUG
 #  include <ctype.h>
+#  include <inttypes.h>
+#  include <stdint.h>
 #endif
+
 
 /* trees.h */
 extern ZLIB_INTERNAL const ct_data static_ltree[L_CODES+2];
@@ -170,8 +173,8 @@ static inline void zng_emit_end_block(deflate_state *s, const ct_data *ltree, co
     send_code(s, END_BLOCK, ltree, bi_buf, bi_valid);
     s->bi_valid = bi_valid;
     s->bi_buf = bi_buf;
-    Tracev((stderr, "\n+++ Emit End Block: Last: %u Pending: %u Total Out: %zu\n",
-        last, s->pending, s->strm->total_out));
+    Tracev((stderr, "\n+++ Emit End Block: Last: %u Pending: %u Total Out: %" PRIu64 "\n",
+        last, s->pending, (uint64_t)s->strm->total_out));
     (void)last;
 }
 
