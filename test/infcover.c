@@ -10,6 +10,8 @@
 #include <string.h>
 #undef NDEBUG
 #include <assert.h>
+#include <inttypes.h>
+#include <stdint.h>
 
 /* get definition of internal structure so we can mess with it (see pull()),
    and so we can call inflate_trees() (see cover5()) */
@@ -184,14 +186,14 @@ static void mem_limit(PREFIX3(stream) *strm, size_t limit) {
 static void mem_used(PREFIX3(stream) *strm, char *prefix) {
     struct mem_zone *zone = strm->opaque;
 
-    fprintf(stderr, "%s: %zu allocated\n", prefix, zone->total);
+    fprintf(stderr, "%s: %" PRIu64 " allocated\n", prefix, (uint64_t)zone->total);
 }
 
 /* show the high water allocation in bytes */
 static void mem_high(PREFIX3(stream) *strm, char *prefix) {
     struct mem_zone *zone = strm->opaque;
 
-    fprintf(stderr, "%s: %zu high water mark\n", prefix, zone->highwater);
+    fprintf(stderr, "%s: %" PRIu64 " high water mark\n", prefix, (uint64_t)zone->highwater);
 }
 
 /* release the memory allocation zone -- if there are any surprises, notify */
@@ -215,8 +217,8 @@ static void mem_done(PREFIX3(stream) *strm, char *prefix) {
 
     /* issue alerts about anything unexpected */
     if (count || zone->total)
-        fprintf(stderr, "** %s: %zu bytes in %d blocks not freed\n",
-                prefix, zone->total, count);
+        fprintf(stderr, "** %s: %" PRIu64 " bytes in %d blocks not freed\n",
+                prefix, (uint64_t)zone->total, count);
     if (zone->notlifo)
         fprintf(stderr, "** %s: %d frees not LIFO\n", prefix, zone->notlifo);
     if (zone->rogue)
