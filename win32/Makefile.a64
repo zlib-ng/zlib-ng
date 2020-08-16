@@ -29,7 +29,7 @@ WFLAGS  = \
 	-DUNALIGNED_OK \
 	-DUNALIGNED64_OK \
 	-D_ARM64_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1 \
-	-DARM_CPUID \
+	-DARM_FEATURES \
 	#
 LDFLAGS = -nologo -debug -incremental:no -opt:ref -manifest
 ARFLAGS = -nologo

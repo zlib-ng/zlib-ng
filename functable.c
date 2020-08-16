@@ -10,7 +10,7 @@
 
 #include "functable.h"
 
-#ifdef X86_CPUID
+#ifdef X86_FEATURES
 #  include "fallback_builtins.h"
 #endif
 
@@ -133,11 +133,11 @@ ZLIB_INTERNAL void cpu_check_features(void)
     static int features_checked = 0;
     if (features_checked)
         return;
-#ifdef X86_CPUID
+#if defined(X86_FEATURES)
     x86_check_features();
-#elif ARM_CPUID
+#elif defined(ARM_FEATURES)
     arm_check_features();
-#elif POWER_FEATURES
+#elif defined(POWER_FEATURES)
     power_check_features();
 #endif
     features_checked = 1;

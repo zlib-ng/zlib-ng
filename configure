@@ -1129,8 +1129,8 @@ case "${ARCH}" in
 
         # Enable arch-specific optimizations
         if test $without_optimizations -eq 0; then
-            CFLAGS="${CFLAGS} -DX86_CPUID"
-            SFLAGS="${SFLAGS} -DX86_CPUID"
+            CFLAGS="${CFLAGS} -DX86_FEATURES"
+            SFLAGS="${SFLAGS} -DX86_FEATURES"
 
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo"
@@ -1197,8 +1197,8 @@ case "${ARCH}" in
         ARCHDIR=arch/arm
 
         if test $without_optimizations -eq 0; then
-            CFLAGS="${CFLAGS} -DARM_CPUID"
-            SFLAGS="${SFLAGS} -DARM_CPUID"
+            CFLAGS="${CFLAGS} -DARM_FEATURES"
+            SFLAGS="${SFLAGS} -DARM_FEATURES"
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo"
         fi
@@ -1324,8 +1324,8 @@ case "${ARCH}" in
         fi
 
         if test $without_optimizations -eq 0; then
-            CFLAGS="${CFLAGS} -DARM_CPUID"
-            SFLAGS="${SFLAGS} -DARM_CPUID"
+            CFLAGS="${CFLAGS} -DARM_FEATURES"
+            SFLAGS="${SFLAGS} -DARM_FEATURES"
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo"
 

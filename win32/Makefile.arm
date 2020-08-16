@@ -28,7 +28,7 @@ WFLAGS  = \
 	-D_CRT_NONSTDC_NO_DEPRECATE \
 	-DUNALIGNED_OK \
 	-D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1 \
-	-DARM_CPUID \
+	-DARM_FEATURES \
 	#
 LDFLAGS = -nologo -debug -incremental:no -opt:ref -manifest
 ARFLAGS = -nologo

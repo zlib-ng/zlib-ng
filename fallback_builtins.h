@@ -5,7 +5,7 @@
 #if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64) ||  defined(_M_ARM) || defined(_M_ARM64)
 
 #include <intrin.h>
-#ifdef X86_CPUID
+#ifdef X86_FEATURES
 #  include "arch/x86/x86.h"
 #endif
 
@@ -13,7 +13,7 @@
  * Because of that assumption trailing_zero is not initialized and the return value of _BitScanForward is not checked
  */
 static __forceinline unsigned long __builtin_ctz(uint32_t value) {
-#ifdef X86_CPUID
+#ifdef X86_FEATURES
     if (x86_cpu_has_tzcnt)
         return _tzcnt_u32(value);
 #endif
@@ -28,7 +28,7 @@ static __forceinline unsigned long __builtin_ctz(uint32_t value) {
  * Because of that assumption trailing_zero is not initialized and the return value of _BitScanForward64 is not checked
  */
 static __forceinline unsigned long long __builtin_ctzll(uint64_t value) {
-#ifdef X86_CPUID
+#ifdef X86_FEATURES
     if (x86_cpu_has_tzcnt)
         return _tzcnt_u64(value);
 #endif
