@@ -46,8 +46,8 @@ ZLIB_INTERNAL uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_
             buf += 8;
 #endif
         } while (--n);
-        MOD(adler);
-        MOD(sum2);
+        adler %= BASE;
+        sum2 %= BASE;
     }
 
     /* do remaining bytes (less than NMAX, still just one modulo) */
@@ -69,8 +69,8 @@ ZLIB_INTERNAL uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_
             adler += *buf++;
             sum2 += adler;
         }
-        MOD(adler);
-        MOD(sum2);
+        adler %= BASE;
+        sum2 %= BASE;
     }
 
     /* return recombined sums */
@@ -109,11 +109,11 @@ static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len
         return 0xffffffff;
 
     /* the derivation of this formula is left as an exercise for the reader */
-    MOD63(len2);                /* assumes len2 >= 0 */
+    len2 %= BASE;                 /* assumes len2 >= 0 */
     rem = (unsigned)len2;
     sum1 = adler1 & 0xffff;
     sum2 = rem * sum1;
-    MOD(sum2);
+    sum2 %= BASE;
     sum1 += (adler2 & 0xffff) + BASE - 1;
     sum2 += ((adler1 >> 16) & 0xffff) + ((adler2 >> 16) & 0xffff) + BASE - rem;
     if (sum1 >= BASE) sum1 -= BASE;

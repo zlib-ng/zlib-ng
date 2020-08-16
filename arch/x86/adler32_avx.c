@@ -96,12 +96,12 @@ ZLIB_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, si
 
        adler = (s1_unpack[0] % BASE) + (s1_unpack[1] % BASE) + (s1_unpack[2] % BASE) + (s1_unpack[3] % BASE) +
                (s1_unpack[4] % BASE) + (s1_unpack[5] % BASE) + (s1_unpack[6] % BASE) + (s1_unpack[7] % BASE);
-       MOD(adler);
+       adler %= BASE;
        s1[7] = adler;
 
        sum2 = (s2_unpack[0] % BASE) + (s2_unpack[1] % BASE) + (s2_unpack[2] % BASE) + (s2_unpack[3] % BASE) +
               (s2_unpack[4] % BASE) + (s2_unpack[5] % BASE) + (s2_unpack[6] % BASE) + (s2_unpack[7] % BASE);
-       MOD(sum2);
+       sum2 %= BASE;
        s2[7] = sum2;
     }
 
@@ -110,8 +110,8 @@ ZLIB_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, si
         adler += *buf++;
         sum2 += adler;
     }
-    MOD(adler);
-    MOD(sum2);
+    adler %= BASE;
+    sum2 %= BASE;
 
     /* return recombined sums */
     return adler | (sum2 << 16);
