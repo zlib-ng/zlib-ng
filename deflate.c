@@ -262,9 +262,9 @@ int32_t ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int3
     int wrap = 1;
     static const char my_version[] = PREFIX2(VERSION);
 
-#if defined(X86_CPUID)
+#if defined(X86_FEATURES)
     x86_check_features();
-#elif defined(ARM_CPUID)
+#elif defined(ARM_FEATURES)
     arm_check_features();
 #endif
 

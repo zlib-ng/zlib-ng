@@ -246,9 +246,9 @@ void ZLIB_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #  endif
 #endif
 
-#if defined(X86_CPUID)
+#if defined(X86_FEATURES)
 #  include "arch/x86/x86.h"
-#elif defined(ARM_CPUID)
+#elif defined(ARM_FEATURES)
 #  include "arch/arm/arm.h"
 #elif defined(POWER_FEATURES)
 #  include "arch/power/power.h"
