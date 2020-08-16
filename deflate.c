@@ -186,6 +186,8 @@ static const config configuration_table[10] = {
     memset((unsigned char *)s->head, 0, (unsigned)(s->hash_size - 1) * sizeof(*s->head)); \
   } while (0)
 
+#define HASH_TRIGGER_LEVEL 6
+
 /* ===========================================================================
  * Slide the hash table when sliding the window down (could be avoided with 32
  * bit values at the expense of memory usage). We slide even when level == 0 to
@@ -402,6 +404,7 @@ int32_t ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int3
     s->level = level;
     s->strategy = strategy;
     s->method = (unsigned char)method;
+    s->hash_mask_val = (s->level > HASH_TRIGGER_LEVEL) ? 0x00ffffff : 0xffffffff;
     s->block_open = 0;
     s->reproducible = 0;
 
@@ -642,6 +645,7 @@ int32_t ZEXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int3
             s->matches = 0;
         }
         s->level = level;
+        s->hash_mask_val    = (s->level > HASH_TRIGGER_LEVEL) ? 0x00ffffff : 0xffffffff;
         s->max_lazy_match   = configuration_table[level].max_lazy;
         s->good_match       = configuration_table[level].good_length;
         s->nice_match       = configuration_table[level].nice_length;

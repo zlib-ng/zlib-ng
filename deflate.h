@@ -97,7 +97,7 @@ typedef struct tree_desc_s {
 typedef uint16_t Pos;
 
 /* A Pos is an index in the character window. We use short instead of int to
- * save space in the various tables. 
+ * save space in the various tables.
  */
 
 typedef struct internal_state {
@@ -149,6 +149,7 @@ typedef struct internal_state {
     unsigned int  hash_size;         /* number of elements in hash table */
     unsigned int  hash_bits;         /* log2(hash_size) */
     unsigned int  hash_mask;         /* hash_size-1 */
+    unsigned int  hash_mask_val;     /* mask for hash input */
 
     long block_start;
     /* Window position at the beginning of the current output block. Gets
