@@ -32,8 +32,10 @@ typedef uint8_t         bestcmp_t;
 ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     unsigned int strstart = s->strstart;
     const unsigned wmask = s->w_mask;
-    ZLIB_REGISTER unsigned char *window = s->window;
-    ZLIB_REGISTER unsigned char *scan = window + strstart;
+    unsigned char *window = s->window;
+    unsigned char *scan = window + strstart;
+    ZLIB_REGISTER unsigned char *mbase_start = window;
+    ZLIB_REGISTER unsigned char *mbase_end;
     const Pos *prev = s->prev;
     Pos limit;
     uint32_t chain_length, nice_match, best_len, offset;
@@ -79,6 +81,7 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #else
     scan_start = *(bestcmp_t *)(scan);
 #endif
+    mbase_end  = (mbase_start+offset);
 
     /*
      * Do not waste too much time if we already have a good match
@@ -96,7 +99,6 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 
     Assert((unsigned long)strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     for (;;) {
-        ZLIB_REGISTER unsigned char *match;
         ZLIB_REGISTER unsigned int len;
         if (cur_match >= strstart)
             break;
@@ -114,41 +116,37 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #ifdef UNALIGNED_OK
         if (best_len < sizeof(uint32_t)) {
             for (;;) {
-                match = window + cur_match;
-                if (UNLIKELY(*(uint16_t *)(match+offset) == (uint16_t)scan_end &&
-                             *(uint16_t *)(match) == (uint16_t)scan_start))
+                if (UNLIKELY(*(uint16_t *)(mbase_end+cur_match) == (uint16_t)scan_end &&
+                             *(uint16_t *)(mbase_start+cur_match) == (uint16_t)scan_start))
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  ifdef UNALIGNED64_OK
         } else if (best_len >= sizeof(uint64_t)) {
             for (;;) {
-                match = window + cur_match;
-                if (UNLIKELY(*(uint64_t *)(match+offset) == (uint64_t)scan_end &&
-                             *(uint64_t *)(match) == (uint64_t)scan_start))
+                if (UNLIKELY(*(uint64_t *)(mbase_end+cur_match) == (uint64_t)scan_end &&
+                             *(uint64_t *)(mbase_start+cur_match) == (uint64_t)scan_start))
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  endif
         } else {
             for (;;) {
-                match = window + cur_match;
-                if (UNLIKELY(*(uint32_t *)(match+offset) == (uint32_t)scan_end &&
-                             *(uint32_t *)(match) == (uint32_t)scan_start))
+                if (UNLIKELY(*(uint32_t *)(mbase_end+cur_match) == (uint32_t)scan_end &&
+                             *(uint32_t *)(mbase_start+cur_match) == (uint32_t)scan_start))
                     break;
                 GOTO_NEXT_CHAIN;
             }
         }
 #else
         for (;;) {
-            match = window + cur_match;
-            if (UNLIKELY(match[offset] == scan_end && match[offset+1] == scan_end0 &&
-                         match[0] == scan[0] && match[1] == scan[1]))
+            if (UNLIKELY(mbase_end[cur_match] == scan_end && mbase_end[cur_match+1] == scan_end0 &&
+                         mbase_start[cur_match] == scan[0] && mbase_start[cur_match+1] == scan[1]))
                 break;
             GOTO_NEXT_CHAIN;
         }
 #endif
-        len = COMPARE256(scan+2, match+2) + 2;
+        len = COMPARE256(scan+2, mbase_start+cur_match+2) + 2;
         Assert(scan+len <= window+(unsigned)(s->window_size-1), "wild scan");
 
         if (len > best_len) {
@@ -174,6 +172,7 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #ifndef UNALIGNED_OK
             scan_end0 = *(bestcmp_t *)(scan+offset+1);
 #endif
+            mbase_end = (mbase_start+offset);
         } else {
             /*
              * The probability of finding a match later if we here
