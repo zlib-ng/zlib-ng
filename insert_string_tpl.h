@@ -64,6 +64,7 @@ ZLIB_INTERNAL Pos INSERT_STRING(deflate_state *const s, const uint32_t str, uint
     Pos idx, ret = 0;
     uint8_t *strstart = s->window + str;
     uint8_t *strend = strstart + count - 1; /* last position */
+    uint32_t hash_mask = s->hash_mask;
 
     for (idx = str; strstart <= strend; idx++, strstart++) {
         uint32_t val, hm, h = 0;
@@ -78,7 +79,7 @@ ZLIB_INTERNAL Pos INSERT_STRING(deflate_state *const s, const uint32_t str, uint
 #endif
 
         UPDATE_HASH(s, h, val);
-        hm = h & s->hash_mask;
+        hm = h & hash_mask;
 
         Pos head = s->head[hm];
         if (head != idx) {
