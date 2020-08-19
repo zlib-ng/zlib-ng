@@ -1316,8 +1316,10 @@ void ZLIB_INTERNAL fill_window(deflate_state *s) {
             } else {
                 count = s->insert;
             }
-            functable.insert_string(s, str, count);
-            s->insert -= count;
+            if (count > 0) {
+                functable.insert_string(s, str, count);
+                s->insert -= count;
+            }
 #endif
         }
         /* If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
