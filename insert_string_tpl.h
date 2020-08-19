@@ -61,17 +61,11 @@ ZLIB_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, const uint32_t str
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
 ZLIB_INTERNAL Pos INSERT_STRING(deflate_state *const s, const uint32_t str, uint32_t count) {
-    Pos idx, ret;
-    uint8_t *strstart, *strend;
+    Pos idx, ret = 0;
+    uint8_t *strstart = s->window + str;
+    uint8_t *strend = strstart + count - 1; /* last position */
 
-    if (UNLIKELY(count == 0)) {
-        return s->prev[str & s->w_mask];
-    }
-
-    strstart = s->window + str;
-    strend = strstart + count - 1; /* last position */
-
-    for (ret = 0, idx = str; strstart <= strend; idx++, strstart++) {
+    for (idx = str; strstart <= strend; idx++, strstart++) {
         uint32_t val, hm, h = 0;
 
 #ifdef UNALIGNED_OK
