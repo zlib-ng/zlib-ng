@@ -60,13 +60,12 @@ ZLIB_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, const uint32_t str
  *    input characters and the first MIN_MATCH bytes of str are valid
  *    (except for the last MIN_MATCH-1 bytes of the input file).
  */
-ZLIB_INTERNAL Pos INSERT_STRING(deflate_state *const s, const uint32_t str, uint32_t count) {
-    Pos head = 0, idx;
+ZLIB_INTERNAL void INSERT_STRING(deflate_state *const s, const uint32_t str, uint32_t count) {
     uint8_t *strstart = s->window + str;
     uint8_t *strend = strstart + count - 1; /* last position */
     uint32_t hash_mask = s->hash_mask;
 
-    for (idx = str; strstart <= strend; idx++, strstart++) {
+    for (Pos idx = str; strstart <= strend; idx++, strstart++) {
         uint32_t val, hm, h = 0;
 
 #ifdef UNALIGNED_OK
@@ -81,13 +80,11 @@ ZLIB_INTERNAL Pos INSERT_STRING(deflate_state *const s, const uint32_t str, uint
         UPDATE_HASH(s, h, val);
         hm = h & hash_mask;
 
-        head = s->head[hm];
+        Pos head = s->head[hm];
         if (LIKELY(head != idx)) {
             s->prev[idx & s->w_mask] = head;
             s->head[hm] = idx;
         }
     }
-
-    return head;
 }
 #endif
