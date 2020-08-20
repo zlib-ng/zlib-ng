@@ -60,7 +60,7 @@ Features
 * Support for CPU intrinsics when available
   * Adler32 implementation using SSSE3, AVX2, Neon, & VSX
   * Intel CRC32-B implementation using PCLMULQDQ
-  * Intel CRC32-C intrinics for hash tables
+  * Intel CRC32-C intrinsics for hash tables
   * ARM CRC32-B implementation using ACLE
   * Slide hash implementations using SSE2, AVX2, Neon, & VSX
   * Inflate chunk copying using SSE2 & Neon
@@ -89,7 +89,7 @@ cmake --build . --config Release
 ctest --verbose -C Release
 ```
 
-Alternatively, yuou can use the cmake configuration GUI tool ccmake:
+Alternatively, you can use the cmake configuration GUI tool ccmake:
 
 ```
 ccmake .
@@ -126,7 +126,7 @@ Install
 
 WARNING: We do not recommend manually installing unless you really
 know what you are doing, because this can potentially override the system
-default zlib library, and any incompatability or wrong configuration of
+default zlib library, and any incompatibility or wrong configuration of
 zlib-ng can make the whole system unusable, requiring recovery or reinstall.
 If you still want a manual install, we recommend using the /opt/ path prefix.
 
