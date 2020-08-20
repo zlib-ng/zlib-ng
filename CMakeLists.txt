@@ -147,7 +147,7 @@ if(WITH_GZFILEOP)
     add_definitions(-DWITH_GZFILEOP)
 endif()
 
-if(${CMAKE_C_COMPILER} MATCHES "icc" OR ${CMAKE_C_COMPILER} MATCHES "icpc" OR ${CMAKE_C_COMPILER} MATCHES "icl")
+if("${CMAKE_C_COMPILER}" MATCHES "icc" OR "${CMAKE_C_COMPILER}" MATCHES "icpc" OR "${CMAKE_C_COMPILER}" MATCHES "icl")
     if(CMAKE_HOST_UNIX OR APPLE)
         set(WARNFLAGS "-w3")
         set(WARNFLAGS_MAINTAINER "-w3 -Wcheck -Wremarks")
@@ -182,11 +182,11 @@ elseif(MSVC)
     set(WARNFLAGS_DISABLE "")
     if(BASEARCH_ARM_FOUND)
         add_definitions(-D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE)
-        if(NOT ${ARCH} MATCHES "aarch64")
+        if(NOT "${ARCH}" MATCHES "aarch64")
             set(NEONFLAG "/arch:VFPv4")
         endif()
     elseif(BASEARCH_X86_FOUND)
-        if(NOT ${ARCH} MATCHES "x86_64")
+        if(NOT "${ARCH}" MATCHES "x86_64")
             set(SSE2FLAG "/arch:SSE2")
         endif()
     endif()
@@ -562,7 +562,7 @@ elseif(BASEARCH_X86_FOUND)
     )
     # Check whether compiler supports PCLMULQDQ intrinsics
     set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
-    if(NOT (APPLE AND ${ARCH} MATCHES "i386"))
+    if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
         # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
         check_c_source_compile_or_run(
             "#include <immintrin.h>
@@ -1138,8 +1138,8 @@ if(ZLIB_ENABLE_TESTS)
         ${CMAKE_CURRENT_SOURCE_DIR}/test/data/*)
 
     foreach(TEST_FILE_PATH ${TEST_FILE_PATHS})
-        if(${TEST_FILE_PATH} MATCHES "$.gz" OR ${TEST_FILE_PATH} MATCHES "$.out" OR
-           ${TEST_FILE_PATH} MATCHES "/.git/" OR ${TEST_FILE_PATH} MATCHES "$.md")
+        if("${TEST_FILE_PATH}" MATCHES "$.gz" OR "${TEST_FILE_PATH}" MATCHES "$.out" OR
+           "${TEST_FILE_PATH}" MATCHES "/.git/" OR "${TEST_FILE_PATH}" MATCHES "$.md")
             continue()
         endif()
         foreach(TEST_CONFIG ${TEST_CONFIGS})
