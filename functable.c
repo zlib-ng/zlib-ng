@@ -15,11 +15,11 @@
 #endif
 
 /* insert_string */
-extern Pos insert_string_c(deflate_state *const s, const uint32_t str, uint32_t count);
+extern void insert_string_c(deflate_state *const s, const uint32_t str, uint32_t count);
 #ifdef X86_SSE42_CRC_HASH
-extern Pos insert_string_sse4(deflate_state *const s, const uint32_t str, uint32_t count);
+extern void insert_string_sse4(deflate_state *const s, const uint32_t str, uint32_t count);
 #elif defined(ARM_ACLE_CRC_HASH)
-extern Pos insert_string_acle(deflate_state *const s, const uint32_t str, uint32_t count);
+extern void insert_string_acle(deflate_state *const s, const uint32_t str, uint32_t count);
 #endif
 
 /* quick_insert_string */
@@ -144,7 +144,7 @@ ZLIB_INTERNAL void cpu_check_features(void)
 }
 
 /* stub functions */
-ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const uint32_t str, uint32_t count) {
+ZLIB_INTERNAL void insert_string_stub(deflate_state *const s, const uint32_t str, uint32_t count) {
     // Initialize default
 
     functable.insert_string = &insert_string_c;
@@ -158,7 +158,7 @@ ZLIB_INTERNAL Pos insert_string_stub(deflate_state *const s, const uint32_t str,
         functable.insert_string = &insert_string_acle;
 #endif
 
-    return functable.insert_string(s, str, count);
+    functable.insert_string(s, str, count);
 }
 
 ZLIB_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const uint32_t str) {

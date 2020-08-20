@@ -9,7 +9,7 @@
 #include "deflate.h"
 
 struct functable_s {
-    Pos      (* insert_string)      (deflate_state *const s, const uint32_t str, uint32_t count);
+    void     (* insert_string)      (deflate_state *const s, const uint32_t str, uint32_t count);
     Pos      (* quick_insert_string)(deflate_state *const s, const uint32_t str);
     uint32_t (* adler32)            (uint32_t adler, const unsigned char *buf, size_t len);
     uint32_t (* crc32)              (uint32_t crc, const unsigned char *buf, uint64_t len);
