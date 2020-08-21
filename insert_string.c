@@ -15,7 +15,7 @@
  *    previous key instead of complete recalculation each time.
  */
 #define UPDATE_HASH(s, h, val) \
-    h = ((val * 2654435761U) >> (32 - s->hash_bits));
+    h = ((val * 2654435761U) >> (32 - HASH_BITS));
 
 #define INSERT_STRING       insert_string_c
 #define QUICK_INSERT_STRING quick_insert_string_c

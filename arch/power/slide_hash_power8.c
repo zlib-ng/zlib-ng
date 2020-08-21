@@ -48,7 +48,7 @@ void ZLIB_INTERNAL slide_hash_power8(deflate_state *s) {
     unsigned int n;
     Pos *p;
 
-    n = s->hash_size;
+    n = HASH_SIZE;
     p = &s->head[n];
     slide_hash_power8_loop(s,n,p);
 

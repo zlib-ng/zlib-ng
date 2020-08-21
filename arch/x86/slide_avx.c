@@ -20,7 +20,7 @@ ZLIB_INTERNAL void slide_hash_avx2(deflate_state *s) {
     uint16_t wsize = (uint16_t)s->w_size;
     const __m256i zmm_wsize = _mm256_set1_epi16(wsize);
 
-    n = s->hash_size;
+    n = HASH_SIZE;
     p = &s->head[n] - 16;
     do {
         __m256i value, result;

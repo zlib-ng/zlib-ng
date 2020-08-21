@@ -68,6 +68,10 @@
 #define FINISH_STATE 666    /* stream complete */
 /* Stream status */
 
+#define HASH_BITS 15        /* log2(HASH_SIZE) */
+#define HASH_SIZE 32768     /* number of elements in hash table */
+#define HASH_MASK 0x7FFF    /* HASH_SIZE-1 */
+
 
 /* Data structure describing a single value and its code string. */
 typedef struct ct_data_s {
@@ -145,10 +149,6 @@ typedef struct internal_state {
      */
 
     Pos *head; /* Heads of the hash chains or NIL. */
-
-    unsigned int  hash_size;         /* number of elements in hash table */
-    unsigned int  hash_bits;         /* log2(hash_size) */
-    unsigned int  hash_mask;         /* hash_size-1 */
 
     long block_start;
     /* Window position at the beginning of the current output block. Gets

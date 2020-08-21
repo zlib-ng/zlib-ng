@@ -41,10 +41,9 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     bestcmp_t scan_end, scan_start;
 
     /*
-     * The code is optimized for HASH_BITS >= 8 and MAX_MATCH-2 multiple
-     * of 16. It is easy to get rid of this optimization if necessary.
+     * The code is optimized for MAX_MATCH-2 multiple of 16.
      */
-    Assert(s->hash_bits >= 8 && MAX_MATCH == 258, "Code too clever");
+    Assert(MAX_MATCH == 258, "Code too clever");
 
     /*
      * Do not waste too much time if we already have a good match

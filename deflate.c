@@ -178,12 +178,10 @@ static const config configuration_table[10] = {
 
 
 /* ===========================================================================
- * Initialize the hash table (avoiding 64K overflow for 16 bit systems).
- * prev[] will be initialized on the fly.
+ * Initialize the hash table. prev[] will be initialized on the fly.
  */
 #define CLEAR_HASH(s) do {                                                                \
-    s->head[s->hash_size - 1] = NIL;                                                      \
-    memset((unsigned char *)s->head, 0, (unsigned)(s->hash_size - 1) * sizeof(*s->head)); \
+    memset((unsigned char *)s->head, 0, HASH_SIZE * sizeof(*s->head)); \
   } while (0)
 
 /* ===========================================================================
@@ -192,11 +190,11 @@ static const config configuration_table[10] = {
  * keep the hash table consistent if we switch back to level > 0 later.
  */
 ZLIB_INTERNAL void slide_hash_c(deflate_state *s) {
-    unsigned n;
     Pos *p;
+    unsigned n;
     unsigned int wsize = s->w_size;
 
-    n = s->hash_size;
+    n = HASH_SIZE;
     p = &s->head[n];
 #ifdef NOT_TWEAK_COMPILER
     do {
@@ -320,16 +318,6 @@ int32_t ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int3
     s->w_size = 1 << s->w_bits;
     s->w_mask = s->w_size - 1;
 
-#ifdef X86_SSE42_CRC_HASH
-    if (x86_cpu_has_sse42)
-        s->hash_bits = (unsigned int)15;
-    else
-#endif
-        s->hash_bits = (unsigned int)memLevel + 7;
-
-    s->hash_size = 1 << s->hash_bits;
-    s->hash_mask = s->hash_size - 1;
-
 #ifdef X86_PCLMULQDQ_CRC
     window_padding = 8;
 #endif
@@ -337,7 +325,7 @@ int32_t ZEXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int3
     s->window = (unsigned char *) ZALLOC_WINDOW(strm, s->w_size + window_padding, 2*sizeof(unsigned char));
     s->prev   = (Pos *)  ZALLOC(strm, s->w_size, sizeof(Pos));
     memset(s->prev, 0, s->w_size * sizeof(Pos));
-    s->head   = (Pos *)  ZALLOC(strm, s->hash_size, sizeof(Pos));
+    s->head   = (Pos *)  ZALLOC(strm, HASH_SIZE, sizeof(Pos));
 
     s->high_water = 0;      /* nothing written to s->window yet */
 
@@ -734,7 +722,7 @@ unsigned long ZEXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long 
 
     /* if not default parameters, return conservative bound */
     if (DEFLATE_NEED_CONSERVATIVE_BOUND(strm) ||  /* hook for IBM Z DFLTCC */
-            s->w_bits != 15 || s->hash_bits != 8 + 7)
+            s->w_bits != 15 || HASH_BITS < 15)
         return complen + wraplen;
 
     /* default settings: return tight bound for that case */
@@ -1127,7 +1115,7 @@ int32_t ZEXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sour
 
     ds->window = (unsigned char *) ZALLOC_WINDOW(dest, ds->w_size + window_padding, 2*sizeof(unsigned char));
     ds->prev   = (Pos *)  ZALLOC(dest, ds->w_size, sizeof(Pos));
-    ds->head   = (Pos *)  ZALLOC(dest, ds->hash_size, sizeof(Pos));
+    ds->head   = (Pos *)  ZALLOC(dest, HASH_SIZE, sizeof(Pos));
     ds->pending_buf = (unsigned char *) ZALLOC(dest, ds->lit_bufsize, 4);
 
     if (ds->window == NULL || ds->prev == NULL || ds->head == NULL || ds->pending_buf == NULL) {
@@ -1137,7 +1125,7 @@ int32_t ZEXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sour
 
     memcpy(ds->window, ss->window, ds->w_size * 2 * sizeof(unsigned char));
     memcpy((void *)ds->prev, (void *)ss->prev, ds->w_size * sizeof(Pos));
-    memcpy((void *)ds->head, (void *)ss->head, ds->hash_size * sizeof(Pos));
+    memcpy((void *)ds->head, (void *)ss->head, HASH_SIZE * sizeof(Pos));
     memcpy(ds->pending_buf, ss->pending_buf, (unsigned int)ds->pending_buf_size);
 
     ds->pending_out = ds->pending_buf + (ss->pending_out - ss->pending_buf);
