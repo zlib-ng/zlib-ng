@@ -19,7 +19,7 @@ ZLIB_INTERNAL void slide_hash_sse2(deflate_state *s) {
     uint16_t wsize = (uint16_t)s->w_size;
     const __m128i xmm_wsize = _mm_set1_epi16(wsize);
 
-    n = s->hash_size;
+    n = HASH_SIZE;
     p = &s->head[n] - 8;
     do {
         __m128i value, result;
