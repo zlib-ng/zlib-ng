@@ -68,9 +68,9 @@
 #define FINISH_STATE 666    /* stream complete */
 /* Stream status */
 
-#define HASH_BITS 15        /* log2(HASH_SIZE) */
-#define HASH_SIZE 32768     /* number of elements in hash table */
-#define HASH_MASK 0x7FFF    /* HASH_SIZE-1 */
+#define HASH_BITS    16u           /* log2(HASH_SIZE) */
+#define HASH_SIZE 65536u           /* number of elements in hash table */
+#define HASH_MASK (HASH_SIZE - 1u) /* HASH_SIZE-1 */
 
 
 /* Data structure describing a single value and its code string. */
