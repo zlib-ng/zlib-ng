@@ -39,10 +39,10 @@ typedef unsigned char uch; /* Included for compatibility with external code only
 typedef uint16_t ush;      /* Included for compatibility with external code only */
 typedef unsigned long ulg;
 
-extern const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
+extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 /* (size given to avoid silly warnings with Visual C++) */
 
-#define ERR_MSG(err) C_CONST_CP(PREFIX(z_errmsg)[Z_NEED_DICT-(err)])
+#define ERR_MSG(err) PREFIX(z_errmsg)[Z_NEED_DICT-(err)]
 
 #define ERR_RETURN(strm, err) return (strm->msg = ERR_MSG(err), (err))
 /* To be used only when the state is known to be valid */

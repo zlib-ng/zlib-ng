@@ -18,15 +18,6 @@
 #  define PREFIX4(x) x ## 64
 #  define zVersion zlibVersion
 #  define z_size_t unsigned long
-#  if ZLIB_CONST
-#    define C_CONST_CP(x)  (const char *) x
-#    define C_CONST_UCP(x) (const unsigned char *) x
-#    define T_CONST_UCP(x) const unsigned char * x
-#  else
-#    define C_CONST_CP(x)  (char *) x
-#    define C_CONST_UCP(x) (unsigned char *) x
-#    define T_CONST_UCP(x) unsigned char * x
-#  endif
 #else
 #  define PREFIX(x) zng_ ## x
 #  define PREFIX2(x) ZLIBNG_ ## x
@@ -34,9 +25,6 @@
 #  define PREFIX4(x) zng_ ## x
 #  define zVersion zlibng_version
 #  define z_size_t size_t
-#  define C_CONST_CP(x)  (const char *) x
-#  define C_CONST_UCP(x) (const unsigned char *) x
-#  define T_CONST_UCP(x) const unsigned char * x
 #endif
 
 #endif

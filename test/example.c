@@ -249,7 +249,7 @@ void test_deflate(unsigned char *compr, size_t comprLen) {
     err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    c_stream.next_in  = C_CONST_UCP(hello);
+    c_stream.next_in  = (z_const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
@@ -282,7 +282,7 @@ void test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
     d_stream.zfree = zfree;
     d_stream.opaque = (void *)0;
 
-    d_stream.next_in  = C_CONST_UCP(compr);
+    d_stream.next_in  = compr;
     d_stream.avail_in = 0;
     d_stream.next_out = uncompr;
     d_stream.total_in = 0;
@@ -344,7 +344,7 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
     /* At this point, uncompr is still mostly zeroes, so it should compress
      * very well:
      */
-    c_stream.next_in = C_CONST_UCP(uncompr);
+    c_stream.next_in = uncompr;
     c_stream.avail_in = (unsigned int)uncomprLen;
     err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
     CHECK_ERR(err, "deflate");
@@ -375,7 +375,7 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
     } else {
         PREFIX(deflateParams)(&c_stream, Z_NO_COMPRESSION, Z_DEFAULT_STRATEGY);
     }
-    c_stream.next_in = C_CONST_UCP(compr);
+    c_stream.next_in = compr;
     diff = (unsigned int)(c_stream.next_out - compr);
     c_stream.avail_in = diff;
     err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
@@ -405,7 +405,7 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
     } else {
         PREFIX(deflateParams)(&c_stream, Z_BEST_COMPRESSION, Z_FILTERED);
     }
-    c_stream.next_in = C_CONST_UCP(uncompr);
+    c_stream.next_in = uncompr;
     c_stream.avail_in = (unsigned int)uncomprLen;
     err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
     CHECK_ERR(err, "deflate");
@@ -432,7 +432,7 @@ void test_large_inflate(unsigned char *compr, size_t comprLen, unsigned char *un
     d_stream.zfree = zfree;
     d_stream.opaque = (void *)0;
 
-    d_stream.next_in  = C_CONST_UCP(compr);
+    d_stream.next_in  = compr;
     d_stream.avail_in = (unsigned int)comprLen;
     d_stream.total_in = 0;
     d_stream.total_out = 0;
@@ -474,7 +474,7 @@ void test_flush(unsigned char *compr, z_size_t *comprLen) {
     err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    c_stream.next_in  = C_CONST_UCP(hello);
+    c_stream.next_in  = (z_const unsigned char *)hello;
     c_stream.next_out = compr;
     c_stream.avail_in = 3;
     c_stream.avail_out = (unsigned int)*comprLen;
@@ -507,7 +507,7 @@ void test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr, si
     d_stream.zfree = zfree;
     d_stream.opaque = (void *)0;
 
-    d_stream.next_in  = C_CONST_UCP(compr);
+    d_stream.next_in  = compr;
     d_stream.avail_in = 2; /* just read the zlib header */
 
     err = PREFIX(inflateInit)(&d_stream);
@@ -557,7 +557,7 @@ void test_dict_deflate(unsigned char *compr, size_t comprLen) {
     c_stream.next_out = compr;
     c_stream.avail_out = (unsigned int)comprLen;
 
-    c_stream.next_in = C_CONST_UCP(hello);
+    c_stream.next_in = (z_const unsigned char *)hello;
     c_stream.avail_in = (unsigned int)strlen(hello)+1;
 
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
@@ -582,7 +582,7 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
     d_stream.zfree = zfree;
     d_stream.opaque = (void *)0;
     d_stream.adler = 0;
-    d_stream.next_in  = C_CONST_UCP(compr);
+    d_stream.next_in  = compr;
     d_stream.avail_in = (unsigned int)comprLen;
 
     err = PREFIX(inflateInit)(&d_stream);
@@ -630,7 +630,7 @@ void test_deflate_bound(void) {
     c_stream.zfree = zfree;
     c_stream.opaque = (voidpf)0;
     c_stream.avail_in = len;
-    c_stream.next_in = C_CONST_UCP(hello);
+    c_stream.next_in = (z_const unsigned char *)hello;
     c_stream.avail_out = 0;
     c_stream.next_out = outBuf;
 
@@ -678,7 +678,7 @@ void test_deflate_copy(unsigned char *compr, size_t comprLen) {
     err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    c_stream.next_in = C_CONST_UCP(hello);
+    c_stream.next_in = (z_const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
@@ -728,7 +728,7 @@ void test_deflate_get_dict(unsigned char *compr, size_t comprLen) {
     c_stream.next_out = compr;
     c_stream.avail_out = (uInt)comprLen;
 
-    c_stream.next_in = C_CONST_UCP(hello);
+    c_stream.next_in = (z_const unsigned char *)hello;
     c_stream.avail_in = (unsigned int)strlen(hello)+1;
 
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
@@ -772,7 +772,7 @@ void test_deflate_pending(unsigned char *compr, size_t comprLen) {
     err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    c_stream.next_in = C_CONST_UCP(hello);
+    c_stream.next_in = (z_const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {
@@ -845,7 +845,7 @@ void test_deflate_prime(unsigned char *compr, size_t comprLen, unsigned char *un
     err = PREFIX(deflatePrime)(&c_stream, 8, 255);
     CHECK_ERR(err, "deflatePrime");
 
-    c_stream.next_in = C_CONST_UCP(hello);
+    c_stream.next_in = (z_const unsigned char *)hello;
     c_stream.avail_in = (uint32_t)len;
     c_stream.next_out = compr;
     c_stream.avail_out = (uint32_t)comprLen;
@@ -869,7 +869,7 @@ void test_deflate_prime(unsigned char *compr, size_t comprLen, unsigned char *un
     d_stream.zfree = zfree;
     d_stream.opaque = (void *)0;
 
-    d_stream.next_in  = C_CONST_UCP(compr);
+    d_stream.next_in  = compr;
     d_stream.avail_in = (uint32_t)c_stream.total_out;
     d_stream.next_out = uncompr;
     d_stream.avail_out = (uint32_t)uncomprLen;
@@ -972,7 +972,7 @@ void test_deflate_tune(unsigned char *compr, size_t comprLen) {
         printf("deflateTune(): OK\n");
     }
 
-    c_stream.next_in = C_CONST_UCP(hello);
+    c_stream.next_in = (z_const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < comprLen) {

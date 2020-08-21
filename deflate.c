@@ -468,7 +468,7 @@ int32_t ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8_
     avail = strm->avail_in;
     next = strm->next_in;
     strm->avail_in = dictLength;
-    strm->next_in = C_CONST_UCP(dictionary);
+    strm->next_in = (z_const unsigned char *)dictionary;
     fill_window(s);
     while (s->lookahead >= MIN_MATCH) {
         str = s->strstart;
@@ -484,7 +484,7 @@ int32_t ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8_
     s->lookahead = 0;
     s->prev_length = MIN_MATCH-1;
     s->match_available = 0;
-    strm->next_in = C_CONST_UCP(next);
+    strm->next_in = (z_const unsigned char *)next;
     strm->avail_in = avail;
     s->wrap = wrap;
     return Z_OK;
