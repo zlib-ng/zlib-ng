@@ -24,6 +24,6 @@ struct functable_s {
     uint8_t* (* chunkmemset_safe)   (uint8_t *out, unsigned dist, unsigned len, unsigned left);
 };
 
-ZLIB_INTERNAL extern Z_TLS struct functable_s functable;
+Z_INTERNAL extern Z_TLS struct functable_s functable;
 
 #endif

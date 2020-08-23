@@ -80,7 +80,7 @@ static void bi_flush         (deflate_state *s);
 /* ===========================================================================
  * Initialize the tree data structures for a new zlib stream.
  */
-void ZLIB_INTERNAL zng_tr_init(deflate_state *s) {
+void Z_INTERNAL zng_tr_init(deflate_state *s) {
     s->l_desc.dyn_tree = s->dyn_ltree;
     s->l_desc.stat_desc = &static_l_desc;
 
@@ -278,7 +278,7 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
  * OUT assertion: the field code is set for all tree elements of non
  *     zero code length.
  */
-ZLIB_INTERNAL void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
+Z_INTERNAL void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
     /* tree: the tree to decorate */
     /* max_code: largest code with non zero frequency */
     /* bl_count: number of codes at each bit length */
@@ -589,7 +589,7 @@ static void send_all_trees(deflate_state *s, int lcodes, int dcodes, int blcodes
 /* ===========================================================================
  * Send a stored block
  */
-void ZLIB_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored_len, int last) {
+void Z_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored_len, int last) {
     /* buf: input block */
     /* stored_len: length of input block */
     /* last: one if this is the last block for a file */
@@ -611,7 +611,7 @@ void ZLIB_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t sto
 /* ===========================================================================
  * Flush the bits in the bit buffer to pending output (leaves at most 7 bits)
  */
-void ZLIB_INTERNAL zng_tr_flush_bits(deflate_state *s) {
+void Z_INTERNAL zng_tr_flush_bits(deflate_state *s) {
     bi_flush(s);
 }
 
@@ -619,7 +619,7 @@ void ZLIB_INTERNAL zng_tr_flush_bits(deflate_state *s) {
  * Send one empty static block to give enough lookahead for inflate.
  * This takes 10 bits, of which 7 may remain in the bit buffer.
  */
-void ZLIB_INTERNAL zng_tr_align(deflate_state *s) {
+void Z_INTERNAL zng_tr_align(deflate_state *s) {
     zng_tr_emit_tree(s, STATIC_TREES, 0);
     zng_tr_emit_end_block(s, static_ltree, 0);
     bi_flush(s);
@@ -629,7 +629,7 @@ void ZLIB_INTERNAL zng_tr_align(deflate_state *s) {
  * Determine the best encoding for the current block: dynamic trees, static
  * trees or store, and write out the encoded block.
  */
-void ZLIB_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_len, int last) {
+void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_len, int last) {
     /* buf: input block, or NULL if too old */
     /* stored_len: length of input block */
     /* last: one if this is the last block for a file */
@@ -813,7 +813,7 @@ static void bi_flush(deflate_state *s) {
  * method would use a table)
  * IN assertion: 1 <= len <= 15
  */
-ZLIB_INTERNAL unsigned bi_reverse(unsigned code, int len) {
+Z_INTERNAL unsigned bi_reverse(unsigned code, int len) {
     /* code: the value to invert */
     /* len: its bit length */
     Z_REGISTER unsigned res = 0;

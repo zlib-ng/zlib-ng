@@ -14,7 +14,7 @@
  * evaluation for matches: a match is finally adopted only if there is
  * no better match at the next window position.
  */
-ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
+Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     Pos hash_head;           /* head of hash chain */
     int bflush;              /* set if current block must be flushed */
     uint32_t match_len;

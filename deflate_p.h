@@ -23,8 +23,8 @@ void flush_pending(PREFIX3(stream) *strm);
  * the current block must be flushed.
  */
 
-extern const unsigned char ZLIB_INTERNAL zng_length_code[];
-extern const unsigned char ZLIB_INTERNAL zng_dist_code[];
+extern const unsigned char Z_INTERNAL zng_length_code[];
+extern const unsigned char Z_INTERNAL zng_dist_code[];
 
 static inline int zng_tr_tally_lit(deflate_state *s, unsigned char c) {
     /* c is the unmatched char */

@@ -62,7 +62,7 @@ static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
-void ZLIB_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
+void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
     z_const unsigned char *in;  /* local strm->next_in */

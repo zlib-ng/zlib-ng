@@ -13,7 +13,7 @@
 
 #include <immintrin.h>
 
-ZLIB_INTERNAL void slide_hash_sse2(deflate_state *s) {
+Z_INTERNAL void slide_hash_sse2(deflate_state *s) {
     Pos *p;
     unsigned n;
     uint16_t wsize = (uint16_t)s->w_size;

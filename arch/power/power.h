@@ -8,6 +8,6 @@
 
 extern int power_cpu_has_arch_2_07;
 
-void ZLIB_INTERNAL power_check_features(void);
+void Z_INTERNAL power_check_features(void);
 
 #endif /* POWER_H_ */

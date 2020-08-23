@@ -44,7 +44,7 @@ static inline int dfltcc_can_deflate_with_params(PREFIX3(streamp) strm, int leve
     return 1;
 }
 
-int ZLIB_INTERNAL dfltcc_can_deflate(PREFIX3(streamp) strm) {
+int Z_INTERNAL dfltcc_can_deflate(PREFIX3(streamp) strm) {
     deflate_state *state = (deflate_state *)strm->state;
 
     return dfltcc_can_deflate_with_params(strm, state->level, state->w_bits, state->strategy, state->reproducible);
@@ -95,7 +95,7 @@ static inline void send_eobs(PREFIX3(streamp) strm, const struct dfltcc_param_v0
 #endif
 }
 
-int ZLIB_INTERNAL dfltcc_deflate(PREFIX3(streamp) strm, int flush, block_state *result) {
+int Z_INTERNAL dfltcc_deflate(PREFIX3(streamp) strm, int flush, block_state *result) {
     deflate_state *state = (deflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
     struct dfltcc_param_v0 *param = &dfltcc_state->param;
@@ -297,7 +297,7 @@ static int dfltcc_was_deflate_used(PREFIX3(streamp) strm) {
     return strm->total_in > 0 || param->nt == 0 || param->hl > 0;
 }
 
-int ZLIB_INTERNAL dfltcc_deflate_params(PREFIX3(streamp) strm, int level, int strategy, int *flush) {
+int Z_INTERNAL dfltcc_deflate_params(PREFIX3(streamp) strm, int level, int strategy, int *flush) {
     deflate_state *state = (deflate_state *)strm->state;
     int could_deflate = dfltcc_can_deflate(strm);
     int can_deflate = dfltcc_can_deflate_with_params(strm, level, state->w_bits, strategy, state->reproducible);
@@ -315,7 +315,7 @@ int ZLIB_INTERNAL dfltcc_deflate_params(PREFIX3(streamp) strm, int level, int st
     return Z_OK;
 }
 
-int ZLIB_INTERNAL dfltcc_deflate_done(PREFIX3(streamp) strm, int flush) {
+int Z_INTERNAL dfltcc_deflate_done(PREFIX3(streamp) strm, int flush) {
     deflate_state *state = (deflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
     struct dfltcc_param_v0 *param = &dfltcc_state->param;
@@ -334,7 +334,7 @@ int ZLIB_INTERNAL dfltcc_deflate_done(PREFIX3(streamp) strm, int flush) {
     return !dfltcc_can_deflate(strm) || (!param->cf && !param->bcf);
 }
 
-int ZLIB_INTERNAL dfltcc_can_set_reproducible(PREFIX3(streamp) strm, int reproducible) {
+int Z_INTERNAL dfltcc_can_set_reproducible(PREFIX3(streamp) strm, int reproducible) {
     deflate_state *state = (deflate_state *)strm->state;
 
     return reproducible != state->reproducible && !dfltcc_was_deflate_used(strm);
@@ -373,7 +373,7 @@ static void append_history(struct dfltcc_param_v0 *param, unsigned char *history
     }
 }
 
-int ZLIB_INTERNAL dfltcc_deflate_set_dictionary(PREFIX3(streamp) strm,
+int Z_INTERNAL dfltcc_deflate_set_dictionary(PREFIX3(streamp) strm,
                                                 const unsigned char *dictionary, uInt dict_length) {
     deflate_state *state = (deflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
@@ -385,7 +385,7 @@ int ZLIB_INTERNAL dfltcc_deflate_set_dictionary(PREFIX3(streamp) strm,
     return Z_OK;
 }
 
-int ZLIB_INTERNAL dfltcc_deflate_get_dictionary(PREFIX3(streamp) strm, unsigned char *dictionary, uInt *dict_length) {
+int Z_INTERNAL dfltcc_deflate_get_dictionary(PREFIX3(streamp) strm, unsigned char *dictionary, uInt *dict_length) {
     deflate_state *state = (deflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
     struct dfltcc_param_v0 *param = &dfltcc_state->param;

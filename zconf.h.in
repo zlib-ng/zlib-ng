@@ -65,11 +65,15 @@
 #  define OF(args)  args
 #endif
 
+#ifdef ZLIB_INTERNAL
+#  define Z_INTERNAL ZLIB_INTERNAL
+#endif
+
 /* If building or using zlib as a DLL, define ZLIB_DLL.
  * This is not mandatory, but it offers a little performance increase.
  */
 #if defined(ZLIB_DLL) && (defined(_WIN32) || (__has_declspec_attribute(dllexport) && __has_declspec_attribute(dllimport)))
-#  ifdef ZLIB_INTERNAL
+#  ifdef Z_INTERNAL
 #    define ZEXTERN extern __declspec(dllexport)
 #  else
 #    define ZEXTERN extern __declspec(dllimport)

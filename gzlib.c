@@ -480,7 +480,7 @@ void ZEXPORT PREFIX(gzclearerr)(gzFile file) {
    memory).  Simply save the error message as a static string.  If there is an
    allocation failure constructing the error message, then convert the error to
    out of memory. */
-void ZLIB_INTERNAL gz_error(gz_state *state, int err, const char *msg) {
+void Z_INTERNAL gz_error(gz_state *state, int err, const char *msg) {
     /* free previously allocated message and clear */
     if (state->msg != NULL) {
         if (state->err != Z_MEM_ERROR)
@@ -514,7 +514,7 @@ void ZLIB_INTERNAL gz_error(gz_state *state, int err, const char *msg) {
    available) -- we need to do this to cover cases where 2's complement not
    used, since C standard permits 1's complement and sign-bit representations,
    otherwise we could just use ((unsigned)-1) >> 1 */
-unsigned ZLIB_INTERNAL gz_intmax() {
+unsigned Z_INTERNAL gz_intmax() {
     unsigned p, q;
 
     p = 1;

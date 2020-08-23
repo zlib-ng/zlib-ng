@@ -160,7 +160,7 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
     }
 }
 
-ZLIB_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
+Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
     /* Align the first struct to start on a new cacheline, this allows us to fit both structs in one cacheline */
     ALIGNED_(16) struct match current_match;
                  struct match next_match;

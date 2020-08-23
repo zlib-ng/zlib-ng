@@ -11,11 +11,11 @@
  */
 
 #if defined(HAVE_VISIBILITY_INTERNAL)
-#  define ZLIB_INTERNAL __attribute__((visibility ("internal")))
+#  define Z_INTERNAL __attribute__((visibility ("internal")))
 #elif defined(HAVE_VISIBILITY_HIDDEN)
-#  define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
+#  define Z_INTERNAL __attribute__((visibility ("hidden")))
 #else
-#  define ZLIB_INTERNAL
+#  define Z_INTERNAL
 #endif
 
 #ifndef __cplusplus
@@ -146,8 +146,8 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 /* Diagnostic functions */
 #ifdef ZLIB_DEBUG
 #  include <stdio.h>
-   extern int ZLIB_INTERNAL z_verbose;
-   extern void ZLIB_INTERNAL z_error(char *m);
+   extern int Z_INTERNAL z_verbose;
+   extern void Z_INTERNAL z_error(char *m);
 #  define Assert(cond, msg) {if (!(cond)) z_error(msg);}
 #  define Trace(x) {if (z_verbose >= 0) fprintf x;}
 #  define Tracev(x) {if (z_verbose > 0) fprintf x;}
@@ -163,8 +163,8 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 #  define Tracecv(c, x)
 #endif
 
-void ZLIB_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size);
-void ZLIB_INTERNAL   zng_cfree(void *opaque, void *ptr);
+void Z_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size);
+void Z_INTERNAL   zng_cfree(void *opaque, void *ptr);
 
 #define ZALLOC(strm, items, size) (*((strm)->zalloc))((strm)->opaque, (items), (size))
 #define ZFREE(strm, addr)         (*((strm)->zfree))((strm)->opaque, (void *)(addr))

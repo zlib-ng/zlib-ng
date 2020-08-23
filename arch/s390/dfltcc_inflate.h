@@ -3,15 +3,15 @@
 
 #include "dfltcc_common.h"
 
-int ZLIB_INTERNAL dfltcc_can_inflate(PREFIX3(streamp) strm);
+int Z_INTERNAL dfltcc_can_inflate(PREFIX3(streamp) strm);
 typedef enum {
     DFLTCC_INFLATE_CONTINUE,
     DFLTCC_INFLATE_BREAK,
     DFLTCC_INFLATE_SOFTWARE,
 } dfltcc_inflate_action;
-dfltcc_inflate_action ZLIB_INTERNAL dfltcc_inflate(PREFIX3(streamp) strm, int flush, int *ret);
-int ZLIB_INTERNAL dfltcc_was_inflate_used(PREFIX3(streamp) strm);
-int ZLIB_INTERNAL dfltcc_inflate_disable(PREFIX3(streamp) strm);
+dfltcc_inflate_action Z_INTERNAL dfltcc_inflate(PREFIX3(streamp) strm, int flush, int *ret);
+int Z_INTERNAL dfltcc_was_inflate_used(PREFIX3(streamp) strm);
+int Z_INTERNAL dfltcc_inflate_disable(PREFIX3(streamp) strm);
 
 #define INFLATE_RESET_KEEP_HOOK(strm) \
     dfltcc_reset((strm), sizeof(struct inflate_state))

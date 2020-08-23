@@ -106,32 +106,32 @@ static void gen_trees_header() {
 
     printf("/* header created automatically with maketrees.c */\n\n");
 
-    printf("ZLIB_INTERNAL const ct_data static_ltree[L_CODES+2] = {\n");
+    printf("Z_INTERNAL const ct_data static_ltree[L_CODES+2] = {\n");
     for (i = 0; i < L_CODES+2; i++) {
         printf("{{%3u},{%u}}%s", static_ltree[i].Code, static_ltree[i].Len, SEPARATOR(i, L_CODES+1, 5));
     }
 
-    printf("ZLIB_INTERNAL const ct_data static_dtree[D_CODES] = {\n");
+    printf("Z_INTERNAL const ct_data static_dtree[D_CODES] = {\n");
     for (i = 0; i < D_CODES; i++) {
         printf("{{%2u},{%u}}%s", static_dtree[i].Code, static_dtree[i].Len, SEPARATOR(i, D_CODES-1, 5));
     }
 
-    printf("const unsigned char ZLIB_INTERNAL zng_dist_code[DIST_CODE_LEN] = {\n");
+    printf("const unsigned char Z_INTERNAL zng_dist_code[DIST_CODE_LEN] = {\n");
     for (i = 0; i < DIST_CODE_LEN; i++) {
         printf("%2u%s", dist_code[i], SEPARATOR(i, DIST_CODE_LEN-1, 20));
     }
 
-    printf("const unsigned char ZLIB_INTERNAL zng_length_code[MAX_MATCH-MIN_MATCH+1] = {\n");
+    printf("const unsigned char Z_INTERNAL zng_length_code[MAX_MATCH-MIN_MATCH+1] = {\n");
     for (i = 0; i < MAX_MATCH-MIN_MATCH+1; i++) {
         printf("%2u%s", length_code[i], SEPARATOR(i, MAX_MATCH-MIN_MATCH, 20));
     }
 
-    printf("ZLIB_INTERNAL const int base_length[LENGTH_CODES] = {\n");
+    printf("Z_INTERNAL const int base_length[LENGTH_CODES] = {\n");
     for (i = 0; i < LENGTH_CODES; i++) {
         printf("%d%s", base_length[i], SEPARATOR(i, LENGTH_CODES-1, 20));
     }
 
-    printf("ZLIB_INTERNAL const int base_dist[D_CODES] = {\n");
+    printf("Z_INTERNAL const int base_dist[D_CODES] = {\n");
     for (i = 0; i < D_CODES; i++) {
         printf("%5d%s", base_dist[i], SEPARATOR(i, D_CODES-1, 10));
     }
