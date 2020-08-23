@@ -82,7 +82,7 @@ extern uint8_t* chunkmemset_safe_neon(uint8_t *out, unsigned dist, unsigned len,
 #endif
 
 /* CRC32 */
-ZLIB_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
+Z_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
 
 #ifdef ARM_ACLE_CRC_HASH
 extern uint32_t crc32_acle(uint32_t, const unsigned char *, uint64_t);
@@ -126,9 +126,9 @@ extern int32_t longest_match_unaligned_avx2(deflate_state *const s, Pos cur_matc
 #endif
 #endif
 
-ZLIB_INTERNAL Z_TLS struct functable_s functable;
+Z_INTERNAL Z_TLS struct functable_s functable;
 
-ZLIB_INTERNAL void cpu_check_features(void)
+Z_INTERNAL void cpu_check_features(void)
 {
     static int features_checked = 0;
     if (features_checked)
@@ -144,7 +144,7 @@ ZLIB_INTERNAL void cpu_check_features(void)
 }
 
 /* stub functions */
-ZLIB_INTERNAL void insert_string_stub(deflate_state *const s, const uint32_t str, uint32_t count) {
+Z_INTERNAL void insert_string_stub(deflate_state *const s, const uint32_t str, uint32_t count) {
     // Initialize default
 
     functable.insert_string = &insert_string_c;
@@ -161,7 +161,7 @@ ZLIB_INTERNAL void insert_string_stub(deflate_state *const s, const uint32_t str
     functable.insert_string(s, str, count);
 }
 
-ZLIB_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const uint32_t str) {
+Z_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const uint32_t str) {
     functable.quick_insert_string = &quick_insert_string_c;
 
 #ifdef X86_SSE42_CRC_HASH
@@ -175,7 +175,7 @@ ZLIB_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const uint32_
     return functable.quick_insert_string(s, str);
 }
 
-ZLIB_INTERNAL void slide_hash_stub(deflate_state *s) {
+Z_INTERNAL void slide_hash_stub(deflate_state *s) {
 
     functable.slide_hash = &slide_hash_c;
     cpu_check_features();
@@ -203,7 +203,7 @@ ZLIB_INTERNAL void slide_hash_stub(deflate_state *s) {
     functable.slide_hash(s);
 }
 
-ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len) {
+Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len) {
     // Initialize default
     functable.adler32 = &adler32_c;
     cpu_check_features();
@@ -230,7 +230,7 @@ ZLIB_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, si
     return functable.adler32(adler, buf, len);
 }
 
-ZLIB_INTERNAL uint32_t chunksize_stub(void) {
+Z_INTERNAL uint32_t chunksize_stub(void) {
     // Initialize default
     functable.chunksize = &chunksize_c;
 
@@ -248,7 +248,7 @@ ZLIB_INTERNAL uint32_t chunksize_stub(void) {
     return functable.chunksize();
 }
 
-ZLIB_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned len) {
+Z_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned len) {
     // Initialize default
     functable.chunkcopy = &chunkcopy_c;
 
@@ -266,7 +266,7 @@ ZLIB_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigne
     return functable.chunkcopy(out, from, len);
 }
 
-ZLIB_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
+Z_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
     // Initialize default
     functable.chunkcopy_safe = &chunkcopy_safe_c;
 
@@ -284,7 +284,7 @@ ZLIB_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, un
     return functable.chunkcopy_safe(out, from, len, safe);
 }
 
-ZLIB_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len) {
+Z_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len) {
     // Initialize default
     functable.chunkunroll = &chunkunroll_c;
 
@@ -302,7 +302,7 @@ ZLIB_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *
     return functable.chunkunroll(out, dist, len);
 }
 
-ZLIB_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len) {
+Z_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len) {
     // Initialize default
     functable.chunkmemset = &chunkmemset_c;
 
@@ -320,7 +320,7 @@ ZLIB_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned le
     return functable.chunkmemset(out, dist, len);
 }
 
-ZLIB_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned len, unsigned left) {
+Z_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned len, unsigned left) {
     // Initialize default
     functable.chunkmemset_safe = &chunkmemset_safe_c;
 
@@ -338,7 +338,7 @@ ZLIB_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsign
     return functable.chunkmemset_safe(out, dist, len, left);
 }
 
-ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len) {
+Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len) {
 
     Assert(sizeof(uint64_t) >= sizeof(size_t),
            "crc32_z takes size_t but internally we have a uint64_t len");
@@ -365,7 +365,7 @@ ZLIB_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64
     return functable.crc32(crc, buf, len);
 }
 
-ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned char *src1) {
+Z_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned char *src1) {
 
     functable.compare258 = &compare258_c;
 
@@ -390,7 +390,7 @@ ZLIB_INTERNAL int32_t compare258_stub(const unsigned char *src0, const unsigned 
     return functable.compare258(src0, src1);
 }
 
-ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
+Z_INTERNAL int32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
 
     functable.longest_match = &longest_match_c;
 
@@ -416,7 +416,7 @@ ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, Pos cur_match) 
 }
 
 /* functable init */
-ZLIB_INTERNAL Z_TLS struct functable_s functable = {
+Z_INTERNAL Z_TLS struct functable_s functable = {
     insert_string_stub,
     quick_insert_string_stub,
     adler32_stub,

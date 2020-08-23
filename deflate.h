@@ -101,7 +101,7 @@ typedef struct tree_desc_s {
 typedef uint16_t Pos;
 
 /* A Pos is an index in the character window. We use short instead of int to
- * save space in the various tables. 
+ * save space in the various tables.
  */
 
 typedef struct internal_state {
@@ -385,18 +385,17 @@ static inline void put_uint64(deflate_state *s, uint64_t lld) {
    memory checker errors from longest match routines */
 
 
-void ZLIB_INTERNAL fill_window(deflate_state *s);
-void ZLIB_INTERNAL slide_hash_c(deflate_state *s);
+void Z_INTERNAL fill_window(deflate_state *s);
+void Z_INTERNAL slide_hash_c(deflate_state *s);
 
         /* in trees.c */
-void ZLIB_INTERNAL zng_tr_init(deflate_state *s);
-void ZLIB_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_len, int last);
-void ZLIB_INTERNAL zng_tr_flush_bits(deflate_state *s);
-void ZLIB_INTERNAL zng_tr_align(deflate_state *s);
-void ZLIB_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored_len, int last);
-unsigned ZLIB_INTERNAL bi_reverse(unsigned code, int len);
-void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
-
+void Z_INTERNAL zng_tr_init(deflate_state *s);
+void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_len, int last);
+void Z_INTERNAL zng_tr_flush_bits(deflate_state *s);
+void Z_INTERNAL zng_tr_align(deflate_state *s);
+void Z_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored_len, int last);
+unsigned Z_INTERNAL bi_reverse(unsigned code, int len);
+void Z_INTERNAL flush_pending(PREFIX3(streamp) strm);
 #define d_code(dist) ((dist) < 256 ? zng_dist_code[dist] : zng_dist_code[256+((dist)>>7)])
 /* Mapping from a distance to a distance code. dist is the distance - 1 and
  * must not have side effects. zng_dist_code[256] and zng_dist_code[257] are never

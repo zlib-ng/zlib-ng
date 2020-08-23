@@ -43,7 +43,7 @@ extern const ct_data static_dtree[D_CODES];
     } \
 }
 
-ZLIB_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
+Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     Pos hash_head;
     unsigned dist, match_len, last;
 

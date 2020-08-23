@@ -3,7 +3,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#define ZLIB_INTERNAL
+#define Z_INTERNAL
 #include "zbuild.h"
 #ifdef ZLIB_COMPAT
 #  include "zlib.h"

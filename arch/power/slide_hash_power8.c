@@ -44,7 +44,7 @@ static inline void slide_hash_power8_loop(deflate_state *s, unsigned n_elems, Po
     } while (--chunks);
 }
 
-void ZLIB_INTERNAL slide_hash_power8(deflate_state *s) {
+void Z_INTERNAL slide_hash_power8(deflate_state *s) {
     unsigned int n;
     Pos *p;
 

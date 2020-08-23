@@ -48,7 +48,7 @@ uint32_t ZEXPORT PREFIX(crc32_z)(uint32_t crc, const unsigned char *buf, size_t 
 #define DO4 DO1; DO1; DO1; DO1
 
 /* ========================================================================= */
-ZLIB_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, uint64_t len) {
+Z_INTERNAL uint32_t crc32_generic(uint32_t crc, const unsigned char *buf, uint64_t len) {
     crc = crc ^ 0xffffffff;
 
 #ifdef UNROLL_MORE
@@ -99,7 +99,7 @@ uint32_t ZEXPORT PREFIX(crc32)(uint32_t crc, const unsigned char *buf, uint32_t 
 #define DOLIT32 DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4; DOLIT4
 
 /* ========================================================================= */
-ZLIB_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, uint64_t len) {
+Z_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, uint64_t len) {
     Z_REGISTER uint32_t c;
     Z_REGISTER const uint32_t *buf4;
 
@@ -141,7 +141,7 @@ ZLIB_INTERNAL uint32_t crc32_little(uint32_t crc, const unsigned char *buf, uint
 #define DOBIG32 DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4; DOBIG4
 
 /* ========================================================================= */
-ZLIB_INTERNAL uint32_t crc32_big(uint32_t crc, const unsigned char *buf, uint64_t len) {
+Z_INTERNAL uint32_t crc32_big(uint32_t crc, const unsigned char *buf, uint64_t len) {
     Z_REGISTER uint32_t c;
     Z_REGISTER const uint32_t *buf4;
 
@@ -207,13 +207,13 @@ uint32_t ZEXPORT PREFIX4(crc32_combine)(uint32_t crc1, uint32_t crc2, z_off64_t 
 #include "arch/x86/x86.h"
 #include "arch/x86/crc_folding.h"
 
-ZLIB_INTERNAL void crc_finalize(deflate_state *const s) {
+Z_INTERNAL void crc_finalize(deflate_state *const s) {
     if (x86_cpu_has_pclmulqdq)
         s->strm->adler = crc_fold_512to32(s);
 }
 #endif
 
-ZLIB_INTERNAL void crc_reset(deflate_state *const s) {
+Z_INTERNAL void crc_reset(deflate_state *const s) {
 #ifdef X86_PCLMULQDQ_CRC
     x86_check_features();
     if (x86_cpu_has_pclmulqdq) {
@@ -224,7 +224,7 @@ ZLIB_INTERNAL void crc_reset(deflate_state *const s) {
     s->strm->adler = PREFIX(crc32)(0L, NULL, 0);
 }
 
-ZLIB_INTERNAL void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size) {
+Z_INTERNAL void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size) {
 #ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq) {
         crc_fold_copy(strm->state, dst, strm->next_in, size);

@@ -20,7 +20,7 @@
 #include "dfltcc_inflate.h"
 #include "dfltcc_detail.h"
 
-int ZLIB_INTERNAL dfltcc_can_inflate(PREFIX3(streamp) strm) {
+int Z_INTERNAL dfltcc_can_inflate(PREFIX3(streamp) strm) {
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
 
@@ -47,7 +47,7 @@ static inline dfltcc_cc dfltcc_xpnd(PREFIX3(streamp) strm) {
     return cc;
 }
 
-dfltcc_inflate_action ZLIB_INTERNAL dfltcc_inflate(PREFIX3(streamp) strm, int flush, int *ret) {
+dfltcc_inflate_action Z_INTERNAL dfltcc_inflate(PREFIX3(streamp) strm, int flush, int *ret) {
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
     struct dfltcc_param_v0 *param = &dfltcc_state->param;
@@ -112,14 +112,14 @@ dfltcc_inflate_action ZLIB_INTERNAL dfltcc_inflate(PREFIX3(streamp) strm, int fl
         DFLTCC_INFLATE_BREAK : DFLTCC_INFLATE_CONTINUE;
 }
 
-int ZLIB_INTERNAL dfltcc_was_inflate_used(PREFIX3(streamp) strm) {
+int Z_INTERNAL dfltcc_was_inflate_used(PREFIX3(streamp) strm) {
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_param_v0 *param = &GET_DFLTCC_STATE(state)->param;
 
     return !param->nt;
 }
 
-int ZLIB_INTERNAL dfltcc_inflate_disable(PREFIX3(streamp) strm) {
+int Z_INTERNAL dfltcc_inflate_disable(PREFIX3(streamp) strm) {
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
 

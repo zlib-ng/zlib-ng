@@ -87,9 +87,9 @@ unsigned long ZEXPORT PREFIX(zlibCompileFlags)(void) {
 #  ifndef verbose
 #    define verbose 0
 #  endif
-int ZLIB_INTERNAL z_verbose = verbose;
+int Z_INTERNAL z_verbose = verbose;
 
-void ZLIB_INTERNAL z_error(char *m) {
+void Z_INTERNAL z_error(char *m) {
     fprintf(stderr, "%s\n", m);
     exit(1);
 }
@@ -115,7 +115,7 @@ const char * ZEXPORT PREFIX(zError)(int err) {
 #  endif
 #endif
 
-void ZLIB_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size)
+void Z_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size)
 {
     (void)opaque;
 #ifndef UNALIGNED_OK
@@ -126,7 +126,7 @@ void ZLIB_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size)
 #endif
 }
 
-void ZLIB_INTERNAL zng_cfree(void *opaque, void *ptr) {
+void Z_INTERNAL zng_cfree(void *opaque, void *ptr) {
     (void)opaque;
 #ifndef UNALIGNED_OK
     zng_align_free(ptr);

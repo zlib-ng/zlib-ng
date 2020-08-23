@@ -35,7 +35,7 @@ static inline int is_dfltcc_enabled(void) {
     return is_bit_set((const char *)facilities, DFLTCC_FACILITY);
 }
 
-void ZLIB_INTERNAL dfltcc_reset(PREFIX3(streamp) strm, uInt size) {
+void Z_INTERNAL dfltcc_reset(PREFIX3(streamp) strm, uInt size) {
     struct dfltcc_state *dfltcc_state = (struct dfltcc_state *)((char *)strm->state + ALIGN_UP(size, 8));
     struct dfltcc_qaf_param *param = (struct dfltcc_qaf_param *)&dfltcc_state->param;
 
@@ -58,17 +58,17 @@ void ZLIB_INTERNAL dfltcc_reset(PREFIX3(streamp) strm, uInt size) {
     dfltcc_state->param.ribm = DFLTCC_RIBM;
 }
 
-void ZLIB_INTERNAL *dfltcc_alloc_state(PREFIX3(streamp) strm, uInt items, uInt size) {
+void Z_INTERNAL *dfltcc_alloc_state(PREFIX3(streamp) strm, uInt items, uInt size) {
     return ZALLOC(strm, ALIGN_UP(items * size, 8) + sizeof(struct dfltcc_state), sizeof(unsigned char));
 }
 
-void ZLIB_INTERNAL dfltcc_copy_state(void *dst, const void *src, uInt size) {
+void Z_INTERNAL dfltcc_copy_state(void *dst, const void *src, uInt size) {
     memcpy(dst, src, ALIGN_UP(size, 8) + sizeof(struct dfltcc_state));
 }
 
 static const int PAGE_ALIGN = 0x1000;
 
-void ZLIB_INTERNAL *dfltcc_alloc_window(PREFIX3(streamp) strm, uInt items, uInt size) {
+void Z_INTERNAL *dfltcc_alloc_window(PREFIX3(streamp) strm, uInt items, uInt size) {
     void *p;
     void *w;
 
@@ -83,7 +83,7 @@ void ZLIB_INTERNAL *dfltcc_alloc_window(PREFIX3(streamp) strm, uInt items, uInt 
     return w;
 }
 
-void ZLIB_INTERNAL dfltcc_free_window(PREFIX3(streamp) strm, void *w) {
+void Z_INTERNAL dfltcc_free_window(PREFIX3(streamp) strm, void *w) {
     if (w)
         ZFREE(strm, *(void **)((unsigned char *)w - sizeof(void *)));
 }

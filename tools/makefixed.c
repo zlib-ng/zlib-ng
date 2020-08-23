@@ -5,7 +5,7 @@
 #include "inflate.h"
 
 // Build and return state with length and distance decoding tables and index sizes set to fixed code decoding.
-void ZLIB_INTERNAL buildfixedtables(struct inflate_state *state) {
+void Z_INTERNAL buildfixedtables(struct inflate_state *state) {
     static code *lenfix, *distfix;
     static code fixed[544];
 

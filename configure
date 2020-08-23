@@ -832,8 +832,8 @@ fi
 if test "$gcc" -eq 1; then
   echo >> configure.log
   cat > $test.c <<EOF
-#define ZLIB_INTERNAL __attribute__((visibility ("hidden")))
-int ZLIB_INTERNAL foo;
+#define Z_INTERNAL __attribute__((visibility ("hidden")))
+int Z_INTERNAL foo;
 int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then
@@ -851,8 +851,8 @@ fi
 if test "$gcc" -eq 1; then
   echo >> configure.log
   cat > $test.c <<EOF
-#define ZLIB_INTERNAL __attribute__((visibility ("internal")))
-int ZLIB_INTERNAL foo;
+#define Z_INTERNAL __attribute__((visibility ("internal")))
+int Z_INTERNAL foo;
 int main() { return 0; }
 EOF
   if tryboth $CC -c $CFLAGS $test.c; then

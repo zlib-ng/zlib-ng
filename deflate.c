@@ -105,16 +105,16 @@ typedef block_state (*compress_func) (deflate_state *s, int flush);
 
 static int deflateStateCheck      (PREFIX3(stream) *strm);
 static block_state deflate_stored (deflate_state *s, int flush);
-ZLIB_INTERNAL block_state deflate_fast         (deflate_state *s, int flush);
-ZLIB_INTERNAL block_state deflate_quick        (deflate_state *s, int flush);
+Z_INTERNAL block_state deflate_fast         (deflate_state *s, int flush);
+Z_INTERNAL block_state deflate_quick        (deflate_state *s, int flush);
 #ifndef NO_MEDIUM_STRATEGY
-ZLIB_INTERNAL block_state deflate_medium       (deflate_state *s, int flush);
+Z_INTERNAL block_state deflate_medium       (deflate_state *s, int flush);
 #endif
-ZLIB_INTERNAL block_state deflate_slow         (deflate_state *s, int flush);
+Z_INTERNAL block_state deflate_slow         (deflate_state *s, int flush);
 static block_state deflate_rle   (deflate_state *s, int flush);
 static block_state deflate_huff  (deflate_state *s, int flush);
 static void lm_init              (deflate_state *s);
-ZLIB_INTERNAL unsigned read_buf  (PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
+Z_INTERNAL unsigned read_buf  (PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
 extern void crc_reset(deflate_state *const s);
 #ifdef X86_PCLMULQDQ_CRC
@@ -191,7 +191,7 @@ static const config configuration_table[10] = {
  * bit values at the expense of memory usage). We slide even when level == 0 to
  * keep the hash table consistent if we switch back to level > 0 later.
  */
-ZLIB_INTERNAL void slide_hash_c(deflate_state *s) {
+Z_INTERNAL void slide_hash_c(deflate_state *s) {
     Pos *p;
     unsigned n;
     unsigned int wsize = s->w_size;
@@ -739,7 +739,7 @@ unsigned long ZEXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long 
  * applications may wish to modify it to avoid allocating a large
  * strm->next_out buffer and copying into it. (See also read_buf()).
  */
-ZLIB_INTERNAL void flush_pending(PREFIX3(stream) *strm) {
+Z_INTERNAL void flush_pending(PREFIX3(stream) *strm) {
     uint32_t len;
     deflate_state *s = strm->state;
 
@@ -1151,7 +1151,7 @@ int32_t ZEXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sour
  * allocating a large strm->next_in buffer and copying from it.
  * (See also flush_pending()).
  */
-ZLIB_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size) {
+Z_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size) {
     uint32_t len = strm->avail_in;
 
     if (len > size)
@@ -1247,7 +1247,7 @@ void check_match(deflate_state *s, Pos start, Pos match, int length) {
  *    option -- not supported here).
  */
 
-void ZLIB_INTERNAL fill_window(deflate_state *s) {
+void Z_INTERNAL fill_window(deflate_state *s) {
     unsigned n;
     unsigned int more;    /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;

@@ -17,12 +17,12 @@
 #  include <cpuid.h>
 #endif
 
-ZLIB_INTERNAL int x86_cpu_has_avx2;
-ZLIB_INTERNAL int x86_cpu_has_sse2;
-ZLIB_INTERNAL int x86_cpu_has_ssse3;
-ZLIB_INTERNAL int x86_cpu_has_sse42;
-ZLIB_INTERNAL int x86_cpu_has_pclmulqdq;
-ZLIB_INTERNAL int x86_cpu_has_tzcnt;
+Z_INTERNAL int x86_cpu_has_avx2;
+Z_INTERNAL int x86_cpu_has_sse2;
+Z_INTERNAL int x86_cpu_has_ssse3;
+Z_INTERNAL int x86_cpu_has_sse42;
+Z_INTERNAL int x86_cpu_has_pclmulqdq;
+Z_INTERNAL int x86_cpu_has_tzcnt;
 
 static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
 #ifdef _MSC_VER
@@ -52,7 +52,7 @@ static void cpuidex(int info, int subinfo, unsigned* eax, unsigned* ebx, unsigne
 #endif
 }
 
-void ZLIB_INTERNAL x86_check_features(void) {
+void Z_INTERNAL x86_check_features(void) {
     unsigned eax, ebx, ecx, edx;
     unsigned maxbasic;
 

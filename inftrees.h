@@ -60,7 +60,7 @@ typedef enum {
     DISTS
 } codetype;
 
-int ZLIB_INTERNAL zng_inflate_table (codetype type, uint16_t *lens, unsigned codes,
+int Z_INTERNAL zng_inflate_table (codetype type, uint16_t *lens, unsigned codes,
                                   code * *table, unsigned *bits, uint16_t *work);
 
 #endif /* INFTREES_H_ */

@@ -43,7 +43,7 @@ static inline void slide_hash_chain(Pos *table, unsigned int entries, uint16_t w
     } while (--n);
 }
 
-ZLIB_INTERNAL void slide_hash_neon(deflate_state *s) {
+Z_INTERNAL void slide_hash_neon(deflate_state *s) {
     unsigned int wsize = s->w_size;
 
     slide_hash_chain(s->head, HASH_SIZE, wsize);

@@ -193,14 +193,14 @@ int32_t ZEXPORT PREFIX(inflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32_
    fixed code decoding.  This returns fixed tables from inffixed_tbl.h.
  */
 
-void ZLIB_INTERNAL fixedtables(struct inflate_state *state) {
+void Z_INTERNAL fixedtables(struct inflate_state *state) {
     state->lencode = lenfix;
     state->lenbits = 9;
     state->distcode = distfix;
     state->distbits = 5;
 }
 
-int ZLIB_INTERNAL inflate_ensure_window(struct inflate_state *state) {
+int Z_INTERNAL inflate_ensure_window(struct inflate_state *state) {
     /* if it hasn't been done already, allocate space for the window */
     if (state->window == NULL) {
         unsigned wsize = 1U << state->wbits;

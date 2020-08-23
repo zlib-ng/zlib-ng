@@ -374,8 +374,8 @@ endif()
 # Check if we can hide zlib internal symbols that are linked between separate source files using hidden
 #
 check_c_source_compiles(
-    "#define ZLIB_INTERNAL __attribute__((visibility (\"hidden\")))
-    int ZLIB_INTERNAL foo;
+    "#define Z_INTERNAL __attribute__((visibility (\"hidden\")))
+    int Z_INTERNAL foo;
     int main()
     {
       return 0;
@@ -389,8 +389,8 @@ endif()
 # Check if we can hide zlib internal symbols that are linked between separate source files using internal
 #
 check_c_source_compiles(
-    "#define ZLIB_INTERNAL __attribute__((visibility (\"internal\")))
-    int ZLIB_INTERNAL foo;
+    "#define Z_INTERNAL __attribute__((visibility (\"internal\")))
+    int Z_INTERNAL foo;
     int main()
     {
       return 0;
