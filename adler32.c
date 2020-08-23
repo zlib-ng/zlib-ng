@@ -78,22 +78,22 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t l
 }
 
 #ifdef ZLIB_COMPAT
-unsigned long ZEXPORT PREFIX(adler32_z)(unsigned long adler, const unsigned char *buf, size_t len) {
+unsigned long Z_EXPORT PREFIX(adler32_z)(unsigned long adler, const unsigned char *buf, size_t len) {
     return (unsigned long)functable.adler32((uint32_t)adler, buf, len);
 }
 #else
-uint32_t ZEXPORT PREFIX(adler32_z)(uint32_t adler, const unsigned char *buf, size_t len) {
+uint32_t Z_EXPORT PREFIX(adler32_z)(uint32_t adler, const unsigned char *buf, size_t len) {
     return functable.adler32(adler, buf, len);
 }
 #endif
 
 /* ========================================================================= */
 #ifdef ZLIB_COMPAT
-unsigned long ZEXPORT PREFIX(adler32)(unsigned long adler, const unsigned char *buf, unsigned int len) {
+unsigned long Z_EXPORT PREFIX(adler32)(unsigned long adler, const unsigned char *buf, unsigned int len) {
     return (unsigned long)functable.adler32((uint32_t)adler, buf, len);
 }
 #else
-uint32_t ZEXPORT PREFIX(adler32)(uint32_t adler, const unsigned char *buf, uint32_t len) {
+uint32_t Z_EXPORT PREFIX(adler32)(uint32_t adler, const unsigned char *buf, uint32_t len) {
     return functable.adler32(adler, buf, len);
 }
 #endif
@@ -125,15 +125,15 @@ static uint32_t adler32_combine_(uint32_t adler1, uint32_t adler2, z_off64_t len
 
 /* ========================================================================= */
 #ifdef ZLIB_COMPAT
-unsigned long ZEXPORT PREFIX(adler32_combine)(unsigned long adler1, unsigned long adler2, z_off_t len2) {
+unsigned long Z_EXPORT PREFIX(adler32_combine)(unsigned long adler1, unsigned long adler2, z_off_t len2) {
     return (unsigned long)adler32_combine_((uint32_t)adler1, (uint32_t)adler2, len2);
 }
 
-unsigned long ZEXPORT PREFIX4(adler32_combine)(unsigned long adler1, unsigned long adler2, z_off64_t len2) {
+unsigned long Z_EXPORT PREFIX4(adler32_combine)(unsigned long adler1, unsigned long adler2, z_off64_t len2) {
     return (unsigned long)adler32_combine_((uint32_t)adler1, (uint32_t)adler2, len2);
 }
 #else
-uint32_t ZEXPORT PREFIX4(adler32_combine)(uint32_t adler1, uint32_t adler2, z_off64_t len2) {
+uint32_t Z_EXPORT PREFIX4(adler32_combine)(uint32_t adler1, uint32_t adler2, z_off64_t len2) {
     return adler32_combine_(adler1, adler2, len2);
 }
 #endif

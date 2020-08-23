@@ -83,7 +83,7 @@ in the zlib distribution, or at the following location:
     an old ZLIB.DLL, that was built from zlib-1.1.4 or earlier?
 
   - In principle, you can do it by assigning calling convention
-    keywords to the macros ZEXPORT and ZEXPORTVA.  In practice,
+    keywords to the macros Z_EXPORT and Z_EXPORTVA.  In practice,
     it depends on what you mean by "an old ZLIB.DLL", because the
     old DLL exists in several mutually-incompatible versions.
     You have to find out first what kind of calling convention is
