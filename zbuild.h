@@ -8,7 +8,6 @@
 #  else
     typedef long ssize_t;
 #  endif
-#  define __thread __declspec(thread)
 #endif
 
 #if defined(ZLIB_COMPAT)

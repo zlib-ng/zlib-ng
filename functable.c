@@ -126,7 +126,7 @@ extern int32_t longest_match_unaligned_avx2(deflate_state *const s, Pos cur_matc
 #endif
 #endif
 
-ZLIB_INTERNAL __thread struct functable_s functable;
+ZLIB_INTERNAL Z_TLS struct functable_s functable;
 
 ZLIB_INTERNAL void cpu_check_features(void)
 {
@@ -416,7 +416,7 @@ ZLIB_INTERNAL int32_t longest_match_stub(deflate_state *const s, Pos cur_match) 
 }
 
 /* functable init */
-ZLIB_INTERNAL __thread struct functable_s functable = {
+ZLIB_INTERNAL Z_TLS struct functable_s functable = {
     insert_string_stub,
     quick_insert_string_stub,
     adler32_stub,
