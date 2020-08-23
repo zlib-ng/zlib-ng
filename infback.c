@@ -25,7 +25,7 @@
    windowBits is in the range 8..15, and window is a user-supplied
    window and output buffer that is 2**windowBits bytes.
  */
-int32_t ZEXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowBits, uint8_t *window,
+int32_t Z_EXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowBits, uint8_t *window,
                               const char *version, int32_t stream_size) {
     struct inflate_state *state;
 
@@ -127,7 +127,7 @@ int32_t ZEXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowBi
    inflateBack() can also return Z_STREAM_ERROR if the input parameters
    are not correct, i.e. strm is NULL or the state was not initialized.
  */
-int32_t ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc, out_func out, void *out_desc) {
+int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc, out_func out, void *out_desc) {
     struct inflate_state *state;
     z_const unsigned char *next; /* next input */
     unsigned char *put;          /* next output */
@@ -500,7 +500,7 @@ int32_t ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_
     return ret;
 }
 
-int32_t ZEXPORT PREFIX(inflateBackEnd)(PREFIX3(stream) *strm) {
+int32_t Z_EXPORT PREFIX(inflateBackEnd)(PREFIX3(stream) *strm) {
     if (strm == NULL || strm->state == NULL || strm->zfree == NULL)
         return Z_STREAM_ERROR;
     ZFREE(strm, strm->state);

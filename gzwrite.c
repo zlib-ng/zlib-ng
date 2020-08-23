@@ -230,7 +230,7 @@ static size_t gz_write(gz_state *state, void const *buf, size_t len) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT PREFIX(gzwrite)(gzFile file, void const *buf, unsigned len) {
+int Z_EXPORT PREFIX(gzwrite)(gzFile file, void const *buf, unsigned len) {
     gz_state *state;
 
     /* get internal structure */
@@ -254,7 +254,7 @@ int ZEXPORT PREFIX(gzwrite)(gzFile file, void const *buf, unsigned len) {
 }
 
 /* -- see zlib.h -- */
-size_t ZEXPORT PREFIX(gzfwrite)(void const *buf, size_t size, size_t nitems, gzFile file) {
+size_t Z_EXPORT PREFIX(gzfwrite)(void const *buf, size_t size, size_t nitems, gzFile file) {
     size_t len;
     gz_state *state;
 
@@ -283,7 +283,7 @@ size_t ZEXPORT PREFIX(gzfwrite)(void const *buf, size_t size, size_t nitems, gzF
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT PREFIX(gzputc)(gzFile file, int c) {
+int Z_EXPORT PREFIX(gzputc)(gzFile file, int c) {
     unsigned have;
     unsigned char buf[1];
     gz_state *state;
@@ -328,7 +328,7 @@ int ZEXPORT PREFIX(gzputc)(gzFile file, int c) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT PREFIX(gzputs)(gzFile file, const char *s) {
+int Z_EXPORT PREFIX(gzputs)(gzFile file, const char *s) {
     size_t len, put;
     gz_state *state;
 
@@ -352,7 +352,7 @@ int ZEXPORT PREFIX(gzputs)(gzFile file, const char *s) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list va) {
+int Z_EXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list va) {
     int len;
     unsigned left;
     char *next;
@@ -408,7 +408,7 @@ int ZEXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list va) {
     return len;
 }
 
-int ZEXPORTVA PREFIX(gzprintf)(gzFile file, const char *format, ...) {
+int Z_EXPORTVA PREFIX(gzprintf)(gzFile file, const char *format, ...) {
     va_list va;
     int ret;
 
@@ -419,7 +419,7 @@ int ZEXPORTVA PREFIX(gzprintf)(gzFile file, const char *format, ...) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT PREFIX(gzflush)(gzFile file, int flush) {
+int Z_EXPORT PREFIX(gzflush)(gzFile file, int flush) {
     gz_state *state;
 
     /* get internal structure */
@@ -448,7 +448,7 @@ int ZEXPORT PREFIX(gzflush)(gzFile file, int flush) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT PREFIX(gzsetparams)(gzFile file, int level, int strategy) {
+int Z_EXPORT PREFIX(gzsetparams)(gzFile file, int level, int strategy) {
     gz_state *state;
     PREFIX3(stream) *strm;
 
@@ -486,7 +486,7 @@ int ZEXPORT PREFIX(gzsetparams)(gzFile file, int level, int strategy) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT PREFIX(gzclose_w)(gzFile file) {
+int Z_EXPORT PREFIX(gzclose_w)(gzFile file) {
     int ret = Z_OK;
     gz_state *state;
 

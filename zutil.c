@@ -26,16 +26,16 @@ const char zlibng_string[] =
     " zlib-ng 1.9.9 forked from zlib 1.2.12.f ";
 
 #ifdef ZLIB_COMPAT
-const char * ZEXPORT zlibVersion(void) {
+const char * Z_EXPORT zlibVersion(void) {
     return ZLIB_VERSION;
 }
 #endif
 
-const char * ZEXPORT zlibng_version(void) {
+const char * Z_EXPORT zlibng_version(void) {
     return ZLIBNG_VERSION;
 }
 
-unsigned long ZEXPORT PREFIX(zlibCompileFlags)(void) {
+unsigned long Z_EXPORT PREFIX(zlibCompileFlags)(void) {
     unsigned long flags;
 
     flags = 0;
@@ -98,7 +98,7 @@ void Z_INTERNAL z_error(char *m) {
 /* exported to allow conversion of error code to string for compress() and
  * uncompress()
  */
-const char * ZEXPORT PREFIX(zError)(int err) {
+const char * Z_EXPORT PREFIX(zError)(int err) {
     return ERR_MSG(err);
 }
 

@@ -74,9 +74,9 @@
  */
 #if defined(ZLIB_DLL) && (defined(_WIN32) || (__has_declspec_attribute(dllexport) && __has_declspec_attribute(dllimport)))
 #  ifdef Z_INTERNAL
-#    define ZEXTERN extern __declspec(dllexport)
+#    define Z_EXTERN extern __declspec(dllexport)
 #  else
-#    define ZEXTERN extern __declspec(dllimport)
+#    define Z_EXTERN extern __declspec(dllimport)
 #  endif
 #endif
 
@@ -88,18 +88,18 @@
 #  include <windows.h>
    /* No need for _export, use ZLIB.DEF instead. */
    /* For complete Windows compatibility, use WINAPI, not __stdcall. */
-#  define ZEXPORT WINAPI
-#  define ZEXPORTVA WINAPIV
+#  define Z_EXPORT WINAPI
+#  define Z_EXPORTVA WINAPIV
 #endif
 
-#ifndef ZEXTERN
-#  define ZEXTERN extern
+#ifndef Z_EXTERN
+#  define Z_EXTERN extern
 #endif
-#ifndef ZEXPORT
-#  define ZEXPORT
+#ifndef Z_EXPORT
+#  define Z_EXPORT
 #endif
-#ifndef ZEXPORTVA
-#  define ZEXPORTVA
+#ifndef Z_EXPORTVA
+#  define Z_EXPORTVA
 #endif
 
 /* Fallback for something that includes us. */

@@ -22,7 +22,7 @@
    memory, Z_BUF_ERROR if there was not enough room in the output buffer,
    Z_STREAM_ERROR if the level parameter is invalid.
 */
-int ZEXPORT PREFIX(compress2)(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
+int Z_EXPORT PREFIX(compress2)(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
                         z_size_t sourceLen, int level) {
     PREFIX3(stream) stream;
     int err;
@@ -64,7 +64,7 @@ int ZEXPORT PREFIX(compress2)(unsigned char *dest, z_size_t *destLen, const unsi
 
 /* ===========================================================================
  */
-int ZEXPORT PREFIX(compress)(unsigned char *dest, z_size_t *destLen, const unsigned char *source, z_size_t sourceLen) {
+int Z_EXPORT PREFIX(compress)(unsigned char *dest, z_size_t *destLen, const unsigned char *source, z_size_t sourceLen) {
     return PREFIX(compress2)(dest, destLen, source, sourceLen, Z_DEFAULT_COMPRESSION);
 }
 
@@ -72,7 +72,7 @@ int ZEXPORT PREFIX(compress)(unsigned char *dest, z_size_t *destLen, const unsig
    If the default memLevel or windowBits for deflateInit() is changed, then
    this function needs to be updated.
  */
-z_size_t ZEXPORT PREFIX(compressBound)(z_size_t sourceLen) {
+z_size_t Z_EXPORT PREFIX(compressBound)(z_size_t sourceLen) {
 #ifndef NO_QUICK_STRATEGY
     /* Quick deflate strategy worse case is 9 bits per literal, rounded to nearest byte,
        plus the size of block & gzip headers and footers */

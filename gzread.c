@@ -343,7 +343,7 @@ static size_t gz_read(gz_state *state, void *buf, size_t len) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT PREFIX(gzread)(gzFile file, void *buf, unsigned len) {
+int Z_EXPORT PREFIX(gzread)(gzFile file, void *buf, unsigned len) {
     gz_state *state;
 
     /* get internal structure */
@@ -375,7 +375,7 @@ int ZEXPORT PREFIX(gzread)(gzFile file, void *buf, unsigned len) {
 }
 
 /* -- see zlib.h -- */
-size_t ZEXPORT PREFIX(gzfread)(void *buf, size_t size, size_t nitems, gzFile file) {
+size_t Z_EXPORT PREFIX(gzfread)(void *buf, size_t size, size_t nitems, gzFile file) {
     size_t len;
     gz_state *state;
 
@@ -407,7 +407,7 @@ size_t ZEXPORT PREFIX(gzfread)(void *buf, size_t size, size_t nitems, gzFile fil
 /* -- see zlib.h -- */
 #undef gzgetc
 #undef zng_gzgetc
-int ZEXPORT PREFIX(gzgetc)(gzFile file) {
+int Z_EXPORT PREFIX(gzgetc)(gzFile file) {
     unsigned char buf[1];
     gz_state *state;
 
@@ -431,12 +431,12 @@ int ZEXPORT PREFIX(gzgetc)(gzFile file) {
     return gz_read(state, buf, 1) < 1 ? -1 : buf[0];
 }
 
-int ZEXPORT PREFIX(gzgetc_)(gzFile file) {
+int Z_EXPORT PREFIX(gzgetc_)(gzFile file) {
     return PREFIX(gzgetc)(file);
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT PREFIX(gzungetc)(int c, gzFile file) {
+int Z_EXPORT PREFIX(gzungetc)(int c, gzFile file) {
     gz_state *state;
 
     /* get internal structure */
@@ -492,7 +492,7 @@ int ZEXPORT PREFIX(gzungetc)(int c, gzFile file) {
 }
 
 /* -- see zlib.h -- */
-char * ZEXPORT PREFIX(gzgets)(gzFile file, char *buf, int len) {
+char * Z_EXPORT PREFIX(gzgets)(gzFile file, char *buf, int len) {
     unsigned left, n;
     char *str;
     unsigned char *eol;
@@ -553,7 +553,7 @@ char * ZEXPORT PREFIX(gzgets)(gzFile file, char *buf, int len) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT PREFIX(gzdirect)(gzFile file) {
+int Z_EXPORT PREFIX(gzdirect)(gzFile file) {
     gz_state *state;
 
     /* get internal structure */
@@ -572,7 +572,7 @@ int ZEXPORT PREFIX(gzdirect)(gzFile file) {
 }
 
 /* -- see zlib.h -- */
-int ZEXPORT PREFIX(gzclose_r)(gzFile file) {
+int Z_EXPORT PREFIX(gzclose_r)(gzFile file) {
     int ret, err;
     gz_state *state;
 
