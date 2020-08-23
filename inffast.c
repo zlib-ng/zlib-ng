@@ -65,7 +65,7 @@ static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
 void ZLIB_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
-    const unsigned char *in;    /* local strm->next_in */
+    z_const unsigned char *in;  /* local strm->next_in */
     const unsigned char *last;  /* have enough input while in < last */
     unsigned char *out;         /* local strm->next_out */
     unsigned char *beg;         /* inflate()'s initial strm->next_out */

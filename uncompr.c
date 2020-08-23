@@ -43,7 +43,7 @@ int ZEXPORT PREFIX(uncompress2)(unsigned char *dest, z_size_t *destLen, const un
         dest = buf;
     }
 
-    stream.next_in = (const unsigned char *)source;
+    stream.next_in = (z_const unsigned char *)source;
     stream.avail_in = 0;
     stream.zalloc = NULL;
     stream.zfree = NULL;

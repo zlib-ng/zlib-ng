@@ -129,17 +129,17 @@ int32_t ZEXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowBi
  */
 int32_t ZEXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in_desc, out_func out, void *out_desc) {
     struct inflate_state *state;
-    const unsigned char *next;  /* next input */
-    unsigned char *put;         /* next output */
-    unsigned have, left;        /* available input and output */
-    uint32_t hold;              /* bit buffer */
-    unsigned bits;              /* bits in bit buffer */
-    unsigned copy;              /* number of stored or match bytes to copy */
-    unsigned char *from;        /* where to copy match bytes from */
-    code here;                  /* current decoding table entry */
-    code last;                  /* parent table entry */
-    unsigned len;               /* length to copy for repeats, bits to drop */
-    int32_t ret;                /* return code */
+    z_const unsigned char *next; /* next input */
+    unsigned char *put;          /* next output */
+    unsigned have, left;         /* available input and output */
+    uint32_t hold;               /* bit buffer */
+    unsigned bits;               /* bits in bit buffer */
+    unsigned copy;               /* number of stored or match bytes to copy */
+    unsigned char *from;         /* where to copy match bytes from */
+    code here;                   /* current decoding table entry */
+    code last;                   /* parent table entry */
+    unsigned len;                /* length to copy for repeats, bits to drop */
+    int32_t ret;                 /* return code */
     static const uint16_t order[19] = /* permutation of code lengths */
         {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 

@@ -52,7 +52,7 @@
     do { \
         strm->next_out = put; \
         strm->avail_out = left; \
-        strm->next_in = next; \
+        strm->next_in = (z_const unsigned char *)next; \
         strm->avail_in = have; \
         state->hold = hold; \
         state->bits = bits; \

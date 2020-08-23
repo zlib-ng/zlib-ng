@@ -25,6 +25,9 @@
 #  define __has_declspec_attribute(x) 0
 #endif
 
+/* Always define z_const as const */
+#define z_const const
+
 /* Maximum value for memLevel in deflateInit2 */
 #ifndef MAX_MEM_LEVEL
 #  define MAX_MEM_LEVEL 9
