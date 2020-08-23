@@ -19,9 +19,9 @@
 #endif
 
 #ifndef __cplusplus
-#  define ZLIB_REGISTER register
+#  define Z_REGISTER register
 #else
-#  define ZLIB_REGISTER
+#  define Z_REGISTER
 #endif
 
 #ifndef Z_TLS

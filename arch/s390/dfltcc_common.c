@@ -14,7 +14,7 @@
 */
 static inline int is_dfltcc_enabled(void) {
     uint64_t facilities[(DFLTCC_FACILITY / 64) + 1];
-    ZLIB_REGISTER uint8_t r0 __asm__("r0");
+    Z_REGISTER uint8_t r0 __asm__("r0");
 
     memset(facilities, 0, sizeof(facilities));
     r0 = sizeof(facilities) / sizeof(facilities[0]) - 1;

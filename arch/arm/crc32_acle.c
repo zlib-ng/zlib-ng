@@ -12,9 +12,9 @@
 #include "../../zutil.h"
 
 uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
-    ZLIB_REGISTER uint32_t c;
-    ZLIB_REGISTER const uint16_t *buf2;
-    ZLIB_REGISTER const uint32_t *buf4;
+    Z_REGISTER uint32_t c;
+    Z_REGISTER const uint16_t *buf2;
+    Z_REGISTER const uint32_t *buf4;
 
     c = ~crc;
     if (len && ((ptrdiff_t)buf & 1)) {

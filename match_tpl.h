@@ -34,8 +34,8 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     const unsigned wmask = s->w_mask;
     unsigned char *window = s->window;
     unsigned char *scan = window + strstart;
-    ZLIB_REGISTER unsigned char *mbase_start = window;
-    ZLIB_REGISTER unsigned char *mbase_end;
+    Z_REGISTER unsigned char *mbase_start = window;
+    Z_REGISTER unsigned char *mbase_end;
     const Pos *prev = s->prev;
     Pos limit;
     uint32_t chain_length, nice_match, best_len, offset;
@@ -98,7 +98,7 @@ ZLIB_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 
     Assert((unsigned long)strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     for (;;) {
-        ZLIB_REGISTER unsigned int len;
+        Z_REGISTER unsigned int len;
         if (cur_match >= strstart)
             break;
 
