@@ -112,9 +112,9 @@ static void make_crc_table() {
 
 static void print_crc32_tables() {
     int k;
-    printf("#ifndef CRC32_H_\n");
-    printf("#define CRC32_H_\n\n");
-    printf("/* crc32.h -- tables for rapid CRC calculation\n");
+    printf("#ifndef CRC32_TBL_H_\n");
+    printf("#define CRC32_TBL_H_\n\n");
+    printf("/* crc32_tbl.h -- tables for rapid CRC calculation\n");
     printf(" * Generated automatically by makecrct.c\n */\n\n");
 
     /* print CRC table */
@@ -136,7 +136,7 @@ static void print_crc32_tables() {
         write_table(crc_comb[k], GF2_DIM);
     }
     printf("  }\n};\n");
-    printf("#endif /* CRC32_H_ */\n");
+    printf("#endif /* CRC32_TBL_H_ */\n");
 }
 
 static void write_table(const uint32_t *table, int k) {

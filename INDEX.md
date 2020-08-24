@@ -27,7 +27,7 @@ Contents
 | infback.*        | Inflate using a callback interface                             |
 | inflate.*        | Decompress data                                                |
 | inffast.*        | Decompress data with speed optimizations                       |
-| inffixed.h       | Table for decoding fixed codes                                 |
+| inffixed_tbl.h   | Table for decoding fixed codes                                 |
 | inftrees.h       | Generate Huffman trees for efficient decoding                  |
 | trees.*          | Output deflated data using Huffman coding                      |
 | uncompr.c        | Decompress a memory buffer                                     |

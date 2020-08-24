@@ -822,20 +822,20 @@ set(ZLIB_PUBLIC_HDRS
 set(ZLIB_PRIVATE_HDRS
     adler32_p.h
     chunkset_tpl.h
-    crc32.h
     crc32_p.h
+    crc32_tbl.h
     deflate.h
     deflate_p.h
     functable.h
     gzguts.h
     inffast.h
-    inffixed.h
+    inffixed_tbl.h
     inflate.h
     inflate_p.h
     inftrees.h
     insert_string_tpl.h
     match_tpl.h
-    trees.h
+    trees_tbl.h
     trees_emit.h
     trees_p.h
     zbuild.h
@@ -1173,24 +1173,24 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME makefixed
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKEFIXED_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/inffixed._h
-        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/inffixed.h
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl._h
+        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl.h
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees>)
     add_test(NAME maketrees
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKETREES_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/trees._h
-        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/trees.h
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl._h
+        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl.h
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct>)
     add_test(NAME makecrct
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKECRCT_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32._h
-        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32.h
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl._h
+        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl.h
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     set(INFCOVER_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
