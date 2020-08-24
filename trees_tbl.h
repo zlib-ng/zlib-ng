@@ -1,5 +1,5 @@
-#ifndef TREES_H_
-#define TREES_H_
+#ifndef TREES_TBL_H_
+#define TREES_TBL_H_
 
 /* header created automatically with maketrees.c */
 
@@ -129,4 +129,4 @@ ZLIB_INTERNAL const int base_dist[D_CODES] = {
  1024,  1536,  2048,  3072,  4096,  6144,  8192, 12288, 16384, 24576
 };
 
-#endif /* TREES_H_ */
+#endif /* TREES_TBL_H_ */

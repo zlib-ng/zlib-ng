@@ -1,7 +1,7 @@
-#ifndef CRC32_H_
-#define CRC32_H_
+#ifndef CRC32_TBL_H_
+#define CRC32_TBL_H_
 
-/* crc32.h -- tables for rapid CRC calculation
+/* crc32_tbl.h -- tables for rapid CRC calculation
  * Generated automatically by makecrct.c
  */
 
@@ -732,4 +732,4 @@ static const uint32_t crc_comb[32][32] =
     0x04000000, 0x08000000
   }
 };
-#endif /* CRC32_H_ */
+#endif /* CRC32_TBL_H_ */

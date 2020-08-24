@@ -101,8 +101,8 @@ static void tr_static_init(void) {
 static void gen_trees_header() {
     int i;
 
-    printf("#ifndef TREES_H_\n");
-    printf("#define TREES_H_\n\n");
+    printf("#ifndef TREES_TBL_H_\n");
+    printf("#define TREES_TBL_H_\n\n");
 
     printf("/* header created automatically with maketrees.c */\n\n");
 
@@ -136,7 +136,7 @@ static void gen_trees_header() {
         printf("%5d%s", base_dist[i], SEPARATOR(i, D_CODES-1, 10));
     }
 
-    printf("#endif /* TREES_H_ */\n");
+    printf("#endif /* TREES_TBL_H_ */\n");
 }
 
 // The output of this application can be piped out to recreate trees.h

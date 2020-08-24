@@ -15,7 +15,7 @@
 #include "deflate.h"
 #include "functable.h"
 #include "crc32_p.h"
-#include "crc32.h"
+#include "crc32_tbl.h"
 
 
 /* Local functions for crc concatenation */

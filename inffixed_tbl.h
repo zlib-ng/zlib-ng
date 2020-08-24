@@ -1,4 +1,4 @@
-    /* inffixed.h -- table for decoding fixed codes
+    /* inffixed_tbl.h -- table for decoding fixed codes
      * Generated automatically by makefixed().
      */
 

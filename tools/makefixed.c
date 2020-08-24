@@ -38,15 +38,15 @@ void ZLIB_INTERNAL buildfixedtables(struct inflate_state *state) {
 }
 
 
-//  Create fixed tables on the fly and write out a inffixed.h file that is #include'd above.
-//  makefixed() writes those tables to stdout, which would be piped to inffixed.h.
+//  Create fixed tables on the fly and write out a inffixed_tbl.h file that is #include'd above.
+//  makefixed() writes those tables to stdout, which would be piped to inffixed_tbl.h.
 void makefixed(void) {
     unsigned low, size;
     struct inflate_state state;
 
     memset(&state, 0, sizeof(state));
     buildfixedtables(&state);
-    puts("    /* inffixed.h -- table for decoding fixed codes");
+    puts("    /* inffixed_tbl.h -- table for decoding fixed codes");
     puts("     * Generated automatically by makefixed().");
     puts("     */");
     puts("");
@@ -82,9 +82,8 @@ void makefixed(void) {
     puts("\n    };");
 }
 
-// The output of this application can be piped out to recreate inffixed.h
+// The output of this application can be piped out to recreate inffixed_tbl.h
 int main(void) {
     makefixed();
     return 0;
 }
-

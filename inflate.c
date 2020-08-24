@@ -9,7 +9,7 @@
 #include "inflate.h"
 #include "inffast.h"
 #include "inflate_p.h"
-#include "inffixed.h"
+#include "inffixed_tbl.h"
 #include "functable.h"
 
 /* Architecture-specific hooks. */
@@ -190,7 +190,7 @@ int32_t ZEXPORT PREFIX(inflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32_
 
 /*
    Return state with length and distance decoding tables and index sizes set to
-   fixed code decoding.  This returns fixed tables from inffixed.h.
+   fixed code decoding.  This returns fixed tables from inffixed_tbl.h.
  */
 
 void ZLIB_INTERNAL fixedtables(struct inflate_state *state) {

@@ -34,7 +34,7 @@
 #include "deflate.h"
 #include "trees_p.h"
 #include "trees_emit.h"
-#include "trees.h"
+#include "trees_tbl.h"
 
 /* The lengths of the bit length codes are sent in order of decreasing
  * probability, to avoid transmitting the lengths for unused bit length codes.
