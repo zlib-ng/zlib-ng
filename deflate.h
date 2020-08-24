@@ -106,7 +106,6 @@ typedef uint16_t Pos;
 
 typedef struct internal_state {
     PREFIX3(stream)      *strm;            /* pointer back to this zlib stream */
-    int                  status;           /* as the name implies */
     unsigned char        *pending_buf;     /* output still pending */
     unsigned long        pending_buf_size; /* size of pending_buf */
     unsigned char        *pending_out;     /* next pending byte to output to the stream */
@@ -114,18 +113,28 @@ typedef struct internal_state {
     int                  wrap;             /* bit 0 true for zlib, bit 1 true for gzip */
     PREFIX(gz_headerp)   gzhead;           /* gzip header information to write */
     uint32_t             gzindex;          /* where in extra, name, or comment */
+    int                  status;           /* as the name implies */
     unsigned char        method;           /* can only be DEFLATED */
     int                  last_flush;       /* value of flush param for previous deflate call */
-
-#ifdef X86_PCLMULQDQ_CRC
-    unsigned crc0[4 * 5];
-#endif
 
                 /* used by deflate.c: */
 
     unsigned int  w_size;            /* LZ77 window size (32K by default) */
     unsigned int  w_bits;            /* log2(w_size)  (8..16) */
     unsigned int  w_mask;            /* w_size - 1 */
+    unsigned int  lookahead;         /* number of valid bytes ahead in window */
+
+    unsigned int high_water;
+    /* High water mark offset in window for initialized bytes -- bytes above
+     * this are set to zero in order to avoid memory check warnings when
+     * longest match routines access bytes past the input.  This is then
+     * updated to the new high water mark.
+     */
+
+    unsigned int window_size;
+    /* Actual size of window: 2*wSize, except when the user input buffer
+     * is directly used as sliding window.
+     */
 
     unsigned char *window;
     /* Sliding window. Input bytes are read into the second half of the window,
@@ -137,11 +146,6 @@ typedef struct internal_state {
      * To do: use the user input buffer as sliding window.
      */
 
-    unsigned long window_size;
-    /* Actual size of window: 2*wSize, except when the user input buffer
-     * is directly used as sliding window.
-     */
-
     Pos *prev;
     /* Link to older string with same hash index. To limit the size of this
      * array to 64K, this link is maintained only for the last 32K strings.
@@ -150,7 +154,7 @@ typedef struct internal_state {
 
     Pos *head; /* Heads of the hash chains or NIL. */
 
-    long block_start;
+    int block_start;
     /* Window position at the beginning of the current output block. Gets
      * negative when the window is moved backwards.
      */
@@ -160,7 +164,6 @@ typedef struct internal_state {
     int          match_available;    /* set if previous match exists */
     unsigned int strstart;           /* start of string to insert */
     unsigned int match_start;        /* start of matching string */
-    unsigned int lookahead;          /* number of valid bytes ahead in window */
 
     unsigned int prev_length;
     /* Length of the best match at previous step. Matches not greater than this
@@ -192,6 +195,9 @@ typedef struct internal_state {
 
     int nice_match; /* Stop searching when current match exceeds this */
 
+#ifdef X86_PCLMULQDQ_CRC
+    unsigned crc0[4 * 5];
+#endif
                 /* used by trees.c: */
     /* Didn't use ct_data typedef below to suppress compiler warning */
     struct ct_data_s dyn_ltree[HEAP_SIZE];   /* literal and length tree */
@@ -216,8 +222,6 @@ typedef struct internal_state {
     /* Depth of each subtree used as tie breaker for trees of equal frequency
      */
 
-    unsigned char *sym_buf;       /* buffer for distances and literals/lengths */
-
     unsigned int  lit_bufsize;
     /* Size of match buffer for literals/lengths.  There are 4 reasons for
      * limiting lit_bufsize to 64K:
@@ -238,8 +242,9 @@ typedef struct internal_state {
      *   - I can't count above 4
      */
 
-    unsigned int sym_next;      /* running index in sym_buf */
-    unsigned int sym_end;       /* symbol table full when sym_next reaches this */
+    unsigned char *sym_buf;       /* buffer for distances and literals/lengths */
+    unsigned int sym_next;        /* running index in sym_buf */
+    unsigned int sym_end;         /* symbol table full when sym_next reaches this */
 
     unsigned long opt_len;        /* bit length of current block with optimal trees */
     unsigned long static_len;     /* bit length of current block with static trees */
@@ -260,12 +265,6 @@ typedef struct internal_state {
      * are always zero.
      */
 
-    unsigned long high_water;
-    /* High water mark offset in window for initialized bytes -- bytes above
-     * this are set to zero in order to avoid memory check warnings when
-     * longest match routines access bytes past the input.  This is then
-     * updated to the new high water mark.
-     */
     int block_open;
     /* Whether or not a block is currently open for the QUICK deflation scheme.
      * This is set to 1 if there is an active block, or 0 if the block was just
