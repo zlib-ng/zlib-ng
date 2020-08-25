@@ -64,7 +64,7 @@ static inline int zng_tr_tally_dist(deflate_state *s, unsigned dist, unsigned ch
     zng_tr_flush_block(s, (s->block_start >= 0 ? \
                    (char *)&s->window[(unsigned)s->block_start] : \
                    NULL), \
-                   (unsigned long)((int)s->strstart - s->block_start), \
+                   (uint32_t)((int)s->strstart - s->block_start), \
                    (last)); \
     s->block_start = (int)s->strstart; \
     flush_pending(s->strm); \
