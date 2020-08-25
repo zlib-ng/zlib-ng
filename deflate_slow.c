@@ -45,7 +45,7 @@ ZLIB_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
 
         /* Find the longest match, discarding those <= prev_length.
          */
-        s->prev_match = s->match_start;
+        s->prev_match = (Pos)s->match_start;
         match_len = MIN_MATCH-1;
 
         if (hash_head != NIL && s->prev_length < s->max_lazy_match && s->strstart - hash_head <= MAX_DIST(s)) {
