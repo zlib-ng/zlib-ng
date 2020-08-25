@@ -260,7 +260,7 @@ typedef struct internal_state {
     /* Output buffer. bits are inserted starting at the bottom (least
      * significant bits).
      */
-    int bi_valid;
+    int32_t bi_valid;
     /* Number of valid bits in bi_buf.  All bits above the last valid bit
      * are always zero.
      */
@@ -390,10 +390,10 @@ void ZLIB_INTERNAL slide_hash_c(deflate_state *s);
 
         /* in trees.c */
 void ZLIB_INTERNAL zng_tr_init(deflate_state *s);
-void ZLIB_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, unsigned long stored_len, int last);
+void ZLIB_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_len, int last);
 void ZLIB_INTERNAL zng_tr_flush_bits(deflate_state *s);
 void ZLIB_INTERNAL zng_tr_align(deflate_state *s);
-void ZLIB_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, unsigned long stored_len, int last);
+void ZLIB_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored_len, int last);
 unsigned ZLIB_INTERNAL bi_reverse(unsigned code, int len);
 void ZLIB_INTERNAL flush_pending(PREFIX3(streamp) strm);
 
