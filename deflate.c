@@ -447,7 +447,7 @@ int32_t ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8_
         if (wrap == 0) {            /* already empty otherwise */
             CLEAR_HASH(s);
             s->strstart = 0;
-            s->block_start = 0L;
+            s->block_start = 0;
             s->insert = 0;
         }
         dictionary += dictLength - s->w_size;  /* use the tail */
@@ -469,7 +469,7 @@ int32_t ZEXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8_
         fill_window(s);
     }
     s->strstart += s->lookahead;
-    s->block_start = (long)s->strstart;
+    s->block_start = (int)s->strstart;
     s->insert = s->lookahead;
     s->lookahead = 0;
     s->prev_length = MIN_MATCH-1;
@@ -621,7 +621,7 @@ int32_t ZEXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int3
         int err = PREFIX(deflate)(strm, flush);
         if (err == Z_STREAM_ERROR)
             return err;
-        if (strm->avail_in || (s->strstart - s->block_start) + s->lookahead || !DEFLATE_DONE(strm, flush))
+        if (strm->avail_in || ((int)s->strstart - s->block_start) + s->lookahead || !DEFLATE_DONE(strm, flush))
             return Z_BUF_ERROR;
     }
     if (s->level != level) {
@@ -1029,7 +1029,7 @@ int32_t ZEXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
                     CLEAR_HASH(s);             /* forget history */
                     if (s->lookahead == 0) {
                         s->strstart = 0;
-                        s->block_start = 0L;
+                        s->block_start = 0;
                         s->insert = 0;
                     }
                 }
@@ -1184,7 +1184,7 @@ ZLIB_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsig
  * Initialize the "longest match" routines for a new zlib stream
  */
 static void lm_init(deflate_state *s) {
-    s->window_size = (unsigned long)2L*s->w_size;
+    s->window_size = 2 * s->w_size;
 
     CLEAR_HASH(s);
 
@@ -1196,7 +1196,7 @@ static void lm_init(deflate_state *s) {
     s->max_chain_length = configuration_table[s->level].max_chain;
 
     s->strstart = 0;
-    s->block_start = 0L;
+    s->block_start = 0;
     s->lookahead = 0;
     s->insert = 0;
     s->prev_length = MIN_MATCH-1;
@@ -1249,7 +1249,7 @@ void check_match(deflate_state *s, Pos start, Pos match, int length) {
 
 void ZLIB_INTERNAL fill_window(deflate_state *s) {
     unsigned n;
-    unsigned long more;    /* Amount of free space at the end of the window. */
+    unsigned int more;    /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;
 
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
@@ -1264,7 +1264,7 @@ void ZLIB_INTERNAL fill_window(deflate_state *s) {
             memcpy(s->window, s->window+wsize, (unsigned)wsize);
             s->match_start = (s->match_start >= wsize) ? s->match_start - wsize : 0;
             s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
-            s->block_start -= (long) wsize;
+            s->block_start -= (int)wsize;
             if (s->insert > s->strstart)
                 s->insert = s->strstart;
             functable.slide_hash(s);
@@ -1329,8 +1329,8 @@ void ZLIB_INTERNAL fill_window(deflate_state *s) {
      * routines allow scanning to strstart + MAX_MATCH, ignoring lookahead.
      */
     if (s->high_water < s->window_size) {
-        unsigned long curr = s->strstart + (unsigned long)s->lookahead;
-        unsigned long init;
+        unsigned int curr = s->strstart + s->lookahead;
+        unsigned int init;
 
         if (s->high_water < curr) {
             /* Previous high water mark below current data -- zero WIN_INIT
@@ -1346,7 +1346,7 @@ void ZLIB_INTERNAL fill_window(deflate_state *s) {
              * plus WIN_INIT -- zero out to current data plus WIN_INIT, or up
              * to end of window, whichever is less.
              */
-            init = (unsigned long)curr + WIN_INIT - s->high_water;
+            init = curr + WIN_INIT - s->high_water;
             if (init > s->window_size - s->high_water)
                 init = s->window_size - s->high_water;
             memset(s->window + s->high_water, 0, init);
@@ -1397,7 +1397,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
             break;
             /* maximum stored block length that will fit in avail_out: */
         have = s->strm->avail_out - have;
-        left = s->strstart - s->block_start;    /* bytes left in window */
+        left = (int)s->strstart - s->block_start;    /* bytes left in window */
         if (len > (unsigned long)left + s->strm->avail_in)
             len = left + s->strm->avail_in;     /* limit len to the input */
         if (len > have)
@@ -1437,7 +1437,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
             s->strm->next_out += left;
             s->strm->avail_out -= left;
             s->strm->total_out += left;
-            s->block_start += left;
+            s->block_start += (int)left;
             len -= left;
         }
 
@@ -1482,7 +1482,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
             s->strstart += used;
             s->insert += MIN(used, s->w_size - s->insert);
         }
-        s->block_start = s->strstart;
+        s->block_start = (int)s->strstart;
     }
     if (s->high_water < s->strstart)
         s->high_water = s->strstart;
@@ -1493,14 +1493,14 @@ static block_state deflate_stored(deflate_state *s, int flush) {
 
     /* If flushing and all input has been consumed, then done. */
     if (flush != Z_NO_FLUSH && flush != Z_FINISH &&
-        s->strm->avail_in == 0 && (long)s->strstart == s->block_start)
+        s->strm->avail_in == 0 && (int)s->strstart == s->block_start)
         return block_done;
 
     /* Fill the window with any remaining input. */
     have = s->window_size - s->strstart;
-    if (s->strm->avail_in > have && s->block_start >= (long)s->w_size) {
+    if (s->strm->avail_in > have && s->block_start >= (int)s->w_size) {
         /* Slide the window down. */
-        s->block_start -= s->w_size;
+        s->block_start -= (int)s->w_size;
         s->strstart -= s->w_size;
         memcpy(s->window, s->window + s->w_size, s->strstart);
         if (s->matches < 2)
@@ -1528,7 +1528,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
         /* maximum stored block length that will fit in pending: */
     have = MIN(s->pending_buf_size - have, MAX_STORED);
     min_block = MIN(have, s->w_size);
-    left = s->strstart - s->block_start;
+    left = (int)s->strstart - s->block_start;
     if (left >= min_block ||
         ((left || flush == Z_FINISH) && flush != Z_NO_FLUSH &&
          s->strm->avail_in == 0 && left <= have)) {
@@ -1536,7 +1536,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
         last = flush == Z_FINISH && s->strm->avail_in == 0 &&
                len == left ? 1 : 0;
         zng_tr_stored_block(s, (char *)s->window + s->block_start, len, last);
-        s->block_start += len;
+        s->block_start += (int)len;
         flush_pending(s->strm);
     }
 
@@ -1586,7 +1586,7 @@ static block_state deflate_rle(deflate_state *s, int flush) {
                 if (match_len > s->lookahead)
                     match_len = s->lookahead;
             }
-            Assert(scan <= s->window+(unsigned int)(s->window_size-1), "wild scan");
+            Assert(scan <= s->window + s->window_size - 1, "wild scan");
         }
 
         /* Emit match if have run of MIN_MATCH or longer, else emit literal */
