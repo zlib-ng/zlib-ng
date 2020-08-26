@@ -835,9 +835,9 @@ set(ZLIB_PRIVATE_HDRS
     inftrees.h
     insert_string_tpl.h
     match_tpl.h
-    trees_tbl.h
+    trees.h
     trees_emit.h
-    trees_p.h
+    trees_tbl.h
     zbuild.h
     zendian.h
     zutil.h

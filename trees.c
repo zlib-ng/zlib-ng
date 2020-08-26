@@ -32,7 +32,7 @@
 
 #include "zbuild.h"
 #include "deflate.h"
-#include "trees_p.h"
+#include "trees.h"
 #include "trees_emit.h"
 #include "trees_tbl.h"
 
