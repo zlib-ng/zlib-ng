@@ -1,5 +1,5 @@
-#ifndef TREES_P_H_
-#define TREES_P_H_
+#ifndef TREES_H_
+#define TREES_H_
 
 /* Constants */
 

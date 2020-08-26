@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include "zbuild.h"
 #include "deflate.h"
-#include "trees_p.h"
+#include "trees.h"
 
 static ct_data static_ltree[L_CODES+2];
 /* The static literal tree. Since the bit lengths are imposed, there is no
