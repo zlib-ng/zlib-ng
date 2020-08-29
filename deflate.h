@@ -115,6 +115,12 @@ typedef struct internal_state {
     PREFIX(gz_headerp)   gzhead;           /* gzip header information to write */
     int                  status;           /* as the name implies */
     int                  last_flush;       /* value of flush param for previous deflate call */
+    int                  reproducible;     /* Whether reproducible compression results are required. */
+
+    int block_open;
+    /* Whether or not a block is currently open for the QUICK deflation scheme.
+     * This is set to 1 if there is an active block, or 0 if the block was just closed.
+     */
 
                 /* used by deflate.c: */
 
@@ -197,6 +203,7 @@ typedef struct internal_state {
 #ifdef X86_PCLMULQDQ_CRC
     unsigned crc0[4 * 5];
 #endif
+
                 /* used by trees.c: */
     /* Didn't use ct_data typedef below to suppress compiler warning */
     struct ct_data_s dyn_ltree[HEAP_SIZE];   /* literal and length tree */
@@ -262,15 +269,6 @@ typedef struct internal_state {
     int32_t bi_valid;
     /* Number of valid bits in bi_buf.  All bits above the last valid bit
      * are always zero.
-     */
-
-    int block_open;
-    /* Whether or not a block is currently open for the QUICK deflation scheme.
-     * This is set to 1 if there is an active block, or 0 if the block was just
-     * closed.
-     */
-    int reproducible;
-    /* Whether reproducible compression results are required.
      */
 
 } deflate_state;
