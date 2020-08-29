@@ -17,7 +17,7 @@ Z_INTERNAL void slide_hash_sse2(deflate_state *s) {
     Pos *p;
     unsigned n;
     uint16_t wsize = (uint16_t)s->w_size;
-    const __m128i xmm_wsize = _mm_set1_epi16(wsize);
+    const __m128i xmm_wsize = _mm_set1_epi16((short)wsize);
 
     n = HASH_SIZE;
     p = &s->head[n] - 8;

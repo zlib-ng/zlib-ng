@@ -213,7 +213,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                  * of window index 0 (in particular we have to avoid a match
                  * of the string with itself at the start of the input file).
                  */
-                current_match.match_length = functable.longest_match(s, hash_head);
+                current_match.match_length = (uint16_t)functable.longest_match(s, hash_head);
                 current_match.match_start = s->match_start;
                 if (UNLIKELY(current_match.match_length < MIN_MATCH))
                     current_match.match_length = 1;
@@ -246,7 +246,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                  * of window index 0 (in particular we have to avoid a match
                  * of the string with itself at the start of the input file).
                  */
-                next_match.match_length = functable.longest_match(s, hash_head);
+                next_match.match_length = (uint16_t)functable.longest_match(s, hash_head);
                 next_match.match_start = s->match_start;
                 if (UNLIKELY(next_match.match_start >= next_match.strstart)) {
                     /* this can happen due to some restarts */

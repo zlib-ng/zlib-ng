@@ -28,7 +28,7 @@ typedef uint8_t         bestcmp_t;
  * string (strstart) and its distance is <= MAX_DIST, and prev_length >=1
  * OUT assertion: the match length is not greater than s->lookahead
  */
-Z_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
+Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     unsigned int strstart = s->strstart;
     const unsigned wmask = s->w_mask;
     unsigned char *window = s->window;
