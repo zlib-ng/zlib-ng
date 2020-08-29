@@ -114,7 +114,6 @@ typedef struct internal_state {
     uint32_t             gzindex;          /* where in extra, name, or comment */
     PREFIX(gz_headerp)   gzhead;           /* gzip header information to write */
     int                  status;           /* as the name implies */
-    unsigned char        method;           /* can only be DEFLATED */
     int                  last_flush;       /* value of flush param for previous deflate call */
 
                 /* used by deflate.c: */
