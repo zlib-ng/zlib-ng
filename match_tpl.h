@@ -91,7 +91,6 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 
     Assert((unsigned long)strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     for (;;) {
-        Z_REGISTER unsigned int len;
         if (cur_match >= strstart)
             break;
 
@@ -105,37 +104,37 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #ifdef UNALIGNED_OK
         if (best_len < sizeof(uint32_t)) {
             for (;;) {
-                if (UNLIKELY(*(uint16_t *)(mbase_end+cur_match) == (uint16_t)scan_end &&
-                             *(uint16_t *)(mbase_start+cur_match) == (uint16_t)scan_start))
+                if (*(uint16_t *)(mbase_end+cur_match) == (uint16_t)scan_end &&
+                    *(uint16_t *)(mbase_start+cur_match) == (uint16_t)scan_start)
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  ifdef UNALIGNED64_OK
         } else if (best_len >= sizeof(uint64_t)) {
             for (;;) {
-                if (UNLIKELY(*(uint64_t *)(mbase_end+cur_match) == (uint64_t)scan_end &&
-                             *(uint64_t *)(mbase_start+cur_match) == (uint64_t)scan_start))
+                if (*(uint64_t *)(mbase_end+cur_match) == (uint64_t)scan_end &&
+                    *(uint64_t *)(mbase_start+cur_match) == (uint64_t)scan_start)
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  endif
         } else {
             for (;;) {
-                if (UNLIKELY(*(uint32_t *)(mbase_end+cur_match) == (uint32_t)scan_end &&
-                             *(uint32_t *)(mbase_start+cur_match) == (uint32_t)scan_start))
+                if (*(uint32_t *)(mbase_end+cur_match) == (uint32_t)scan_end &&
+                    *(uint32_t *)(mbase_start+cur_match) == (uint32_t)scan_start)
                     break;
                 GOTO_NEXT_CHAIN;
             }
         }
 #else
         for (;;) {
-            if (UNLIKELY(mbase_end[cur_match] == scan_end && mbase_end[cur_match+1] == scan_end0 &&
-                         mbase_start[cur_match] == scan[0] && mbase_start[cur_match+1] == scan[1]))
+            if (mbase_end[cur_match] == scan_end && mbase_end[cur_match+1] == scan_end0 &&
+                mbase_start[cur_match] == scan[0] && mbase_start[cur_match+1] == scan[1])
                 break;
             GOTO_NEXT_CHAIN;
         }
 #endif
-        len = COMPARE256(scan+2, mbase_start+cur_match+2) + 2;
+        uint32_t len = COMPARE256(scan+2, mbase_start+cur_match+2) + 2;
         Assert(scan+len <= window+(unsigned)(s->window_size-1), "wild scan");
 
         if (len > best_len) {
@@ -162,12 +161,11 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
             scan_end0 = *(bestcmp_t *)(scan+offset+1);
 #endif
             mbase_end = (mbase_start+offset);
-        } else {
+        } else if (UNLIKELY(s->level < EARLY_EXIT_TRIGGER_LEVEL)) {
             /* The probability of finding a match later if we here is pretty low, so for
              * performance it's best to outright stop here for the lower compression levels
              */
-            if (s->level < EARLY_EXIT_TRIGGER_LEVEL)
-                break;
+            break;
         }
         GOTO_NEXT_CHAIN;
     }
