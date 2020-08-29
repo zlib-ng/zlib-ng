@@ -20,8 +20,7 @@ typedef uint8_t         bestcmp_t;
 
 #endif
 
-/*
- * Set match_start to the longest match starting at the given string and
+/* Set match_start to the longest match starting at the given string and
  * return its length. Matches shorter or equal to prev_length are discarded,
  * in which case the result is equal to prev_length and match_start is garbage.
  *
@@ -52,15 +51,12 @@ Z_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
         continue; \
     return best_len;
 
-    /*
-     * The code is optimized for MAX_MATCH-2 multiple of 16.
-     */
+    /* The code is optimized for MAX_MATCH-2 multiple of 16. */
     Assert(MAX_MATCH == 258, "Code too clever");
 
     best_len = s->prev_length ? s->prev_length : 1;
 
-    /* 
-     * Calculate read offset which should only extend an extra byte 
+    /* Calculate read offset which should only extend an extra byte
      * to find the next best match length.
      */
     offset = best_len-1;
@@ -82,16 +78,13 @@ Z_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #endif
     mbase_end  = (mbase_start+offset);
 
-    /*
-     * Do not waste too much time if we already have a good match
-     */
+    /* Do not waste too much time if we already have a good match */
     chain_length = s->max_chain_length;
     if (best_len >= s->good_match)
         chain_length >>= 2;
     nice_match = (uint32_t)s->nice_match;
 
-    /*
-     * Stop when cur_match becomes <= limit. To simplify the code,
+    /* Stop when cur_match becomes <= limit. To simplify the code,
      * we prevent matches with the string of window index 0
      */
     limit = strstart > MAX_DIST(s) ? (Pos)(strstart - MAX_DIST(s)) : 0;
@@ -102,15 +95,12 @@ Z_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
         if (cur_match >= strstart)
             break;
 
-        /*
-         * Skip to next match if the match length cannot increase
-         * or if the match length is less than 2. Note that the checks
-         * below for insufficient lookahead only occur occasionally
-         * for performance reasons. Therefore uninitialized memory
-         * will be accessed and conditional jumps will be made that
-         * depend on those values. However the length of the match
-         * is limited to the lookahead, so the output of deflate is not
-         * affected by the uninitialized values.
+        /* Skip to next match if the match length cannot increase or if the match length is
+         * less than 2. Note that the checks below for insufficient lookahead only occur
+         * occasionally for performance reasons.
+         * Therefore uninitialized memory will be accessed and conditional jumps will be made
+         * that depend on those values. However the length of the match is limited to the
+         * lookahead, so the output of deflate is not affected by the uninitialized values.
          */
 #ifdef UNALIGNED_OK
         if (best_len < sizeof(uint32_t)) {
@@ -173,10 +163,8 @@ Z_INTERNAL int32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #endif
             mbase_end = (mbase_start+offset);
         } else {
-            /*
-             * The probability of finding a match later if we here
-             * is pretty low, so for performance it's best to
-             * outright stop here for the lower compression levels
+            /* The probability of finding a match later if we here is pretty low, so for
+             * performance it's best to outright stop here for the lower compression levels
              */
             if (s->level < EARLY_EXIT_TRIGGER_LEVEL)
                 break;

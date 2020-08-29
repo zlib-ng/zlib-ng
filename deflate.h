@@ -176,15 +176,13 @@ typedef struct internal_state {
      */
 
     unsigned int max_chain_length;
-    /* To speed up deflation, hash chains are never searched beyond this
-     * length.  A higher limit improves compression ratio but degrades the
-     * speed.
+    /* To speed up deflation, hash chains are never searched beyond this length.
+     * A higher limit improves compression ratio but degrades the speed.
      */
 
     unsigned int max_lazy_match;
-    /* Attempt to find a better match only when the current match is strictly
-     * smaller than this value. This mechanism is used only for compression
-     * levels >= 4.
+    /* Attempt to find a better match only when the current match is strictly smaller
+     * than this value. This mechanism is used only for compression levels >= 4.
      */
 #   define max_insert_length  max_lazy_match
     /* Insert new strings in the hash table only if the match length is not
@@ -263,13 +261,10 @@ typedef struct internal_state {
 #endif
 
     uint64_t bi_buf;
-    /* Output buffer. bits are inserted starting at the bottom (least
-     * significant bits).
-     */
+    /* Output buffer. bits are inserted starting at the bottom (least significant bits). */
+
     int32_t bi_valid;
-    /* Number of valid bits in bi_buf.  All bits above the last valid bit
-     * are always zero.
-     */
+    /* Number of valid bits in bi_buf.  All bits above the last valid bit are always zero. */
 
 } deflate_state;
 
