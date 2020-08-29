@@ -391,7 +391,6 @@ int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int
 
     s->level = level;
     s->strategy = strategy;
-    s->method = (unsigned char)method;
     s->block_open = 0;
     s->reproducible = 0;
 
