@@ -375,8 +375,7 @@ int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int
     s->pending_buf = (unsigned char *) ZALLOC(strm, s->lit_bufsize, 4);
     s->pending_buf_size = s->lit_bufsize * 4;
 
-    if (s->window == NULL || s->prev == NULL || s->head == NULL ||
-        s->pending_buf == NULL) {
+    if (s->window == NULL || s->prev == NULL || s->head == NULL || s->pending_buf == NULL) {
         s->status = FINISH_STATE;
         strm->msg = ERR_MSG(Z_MEM_ERROR);
         PREFIX(deflateEnd)(strm);
@@ -402,8 +401,7 @@ int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int
  */
 static int deflateStateCheck (PREFIX3(stream) *strm) {
     deflate_state *s;
-    if (strm == NULL ||
-        strm->zalloc == (alloc_func)0 || strm->zfree == (free_func)0)
+    if (strm == NULL || strm->zalloc == (alloc_func)0 || strm->zfree == (free_func)0)
         return 1;
     s = strm->state;
     if (s == NULL || s->strm != strm || (s->status != INIT_STATE &&
@@ -502,9 +500,8 @@ int32_t Z_EXPORT PREFIX(deflateGetDictionary)(PREFIX3(stream) *strm, uint8_t *di
 int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
     deflate_state *s;
 
-    if (deflateStateCheck(strm)) {
+    if (deflateStateCheck(strm))
         return Z_STREAM_ERROR;
-    }
 
     strm->total_in = strm->total_out = 0;
     strm->msg = NULL; /* use zfree if we ever allocate msg dynamically */
@@ -514,9 +511,9 @@ int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
     s->pending = 0;
     s->pending_out = s->pending_buf;
 
-    if (s->wrap < 0) {
+    if (s->wrap < 0)
         s->wrap = -s->wrap; /* was made negative by deflate(..., Z_FINISH); */
-    }
+
     s->status =
 #ifdef GZIP
         s->wrap == 2 ? GZIP_STATE :
@@ -607,14 +604,13 @@ int32_t Z_EXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int
 
     if (level == Z_DEFAULT_COMPRESSION)
         level = 6;
-    if (level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED) {
+    if (level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED)
         return Z_STREAM_ERROR;
-    }
     DEFLATE_PARAMS_HOOK(strm, level, strategy, &hook_flush);  /* hook for IBM Z DFLTCC */
     func = configuration_table[s->level].func;
 
-    if (((strategy != s->strategy || func != configuration_table[level].func) && s->last_flush != -2) ||
-        hook_flush != Z_NO_FLUSH) {
+    if (((strategy != s->strategy || func != configuration_table[level].func) && s->last_flush != -2)
+        || hook_flush != Z_NO_FLUSH) {
         /* Flush the last buffer. Use Z_BLOCK mode, unless the hook requests a "stronger" one. */
         int flush = RANK(hook_flush) > RANK(Z_BLOCK) ? hook_flush : Z_BLOCK;
         int err = PREFIX(deflate)(strm, flush);
@@ -756,9 +752,8 @@ Z_INTERNAL void flush_pending(PREFIX3(stream) *strm) {
     strm->total_out += len;
     strm->avail_out -= len;
     s->pending      -= len;
-    if (s->pending == 0) {
+    if (s->pending == 0)
         s->pending_out = s->pending_buf;
-    }
 }
 
 /* ===========================================================================
@@ -775,17 +770,17 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
     int32_t old_flush; /* value of flush param for previous deflate call */
     deflate_state *s;
 
-    if (deflateStateCheck(strm) || flush > Z_BLOCK || flush < 0) {
+    if (deflateStateCheck(strm) || flush > Z_BLOCK || flush < 0)
         return Z_STREAM_ERROR;
-    }
     s = strm->state;
 
-    if (strm->next_out == NULL || (strm->avail_in != 0 && strm->next_in == NULL) ||
-        (s->status == FINISH_STATE && flush != Z_FINISH)) {
+    if (strm->next_out == NULL || (strm->avail_in != 0 && strm->next_in == NULL)
+        || (s->status == FINISH_STATE && flush != Z_FINISH)) {
         ERR_RETURN(strm, Z_STREAM_ERROR);
     }
-    if (strm->avail_out == 0)
+    if (strm->avail_out == 0) {
         ERR_RETURN(strm, Z_BUF_ERROR);
+    }
 
     old_flush = s->last_flush;
     s->last_flush = flush;
@@ -808,13 +803,12 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
          * flushes. For repeated and useless calls with Z_FINISH, we keep
          * returning Z_STREAM_END instead of Z_BUF_ERROR.
          */
-    } else if (strm->avail_in == 0 && RANK(flush) <= RANK(old_flush) &&
-               flush != Z_FINISH) {
+    } else if (strm->avail_in == 0 && RANK(flush) <= RANK(old_flush) && flush != Z_FINISH) {
         ERR_RETURN(strm, Z_BUF_ERROR);
     }
 
     /* User must not provide more input after the first FINISH: */
-    if (s->status == FINISH_STATE && strm->avail_in != 0) {
+    if (s->status == FINISH_STATE && strm->avail_in != 0)   {
         ERR_RETURN(strm, Z_BUF_ERROR);
     }
 
@@ -835,15 +829,15 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
         else
             level_flags = 3;
         header |= (level_flags << 6);
-        if (s->strstart != 0) header |= PRESET_DICT;
+        if (s->strstart != 0)
+            header |= PRESET_DICT;
         header += 31 - (header % 31);
 
         put_short_msb(s, (uint16_t)header);
 
         /* Save the adler32 of the preset dictionary: */
-        if (s->strstart != 0) {
+        if (s->strstart != 0)
             put_uint32_msb(s, strm->adler);
-        }
         strm->adler = ADLER32_INITIAL_VALUE;
         s->status = BUSY_STATE;
 
@@ -883,12 +877,10 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
                      (s->gzhead->comment == NULL ? 0 : 16)
                      );
             put_uint32(s, s->gzhead->time);
-            put_byte(s, s->level == 9 ? 2 :
-                     (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ? 4 : 0));
+            put_byte(s, s->level == 9 ? 2 : (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2 ? 4 : 0));
             put_byte(s, s->gzhead->os & 0xff);
-            if (s->gzhead->extra != NULL) {
+            if (s->gzhead->extra != NULL)
                 put_short(s, (uint16_t)s->gzhead->extra_len);
-            }
             if (s->gzhead->hcrc)
                 strm->adler = PREFIX(crc32)(strm->adler, s->pending_buf, s->pending);
             s->gzindex = 0;
@@ -1054,9 +1046,8 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
         put_uint32(s, (uint32_t)strm->total_in);
     } else
 #endif
-    if (s->wrap == 1) {
+    if (s->wrap == 1)
         put_uint32_msb(s, strm->adler);
-    }
     flush_pending(strm);
     /* If avail_out is zero, the application will call deflate again
      * to flush the rest.
@@ -1099,9 +1090,8 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     deflate_state *ss;
     uint32_t window_padding = 0;
 
-    if (deflateStateCheck(source) || dest == NULL) {
+    if (deflateStateCheck(source) || dest == NULL)
         return Z_STREAM_ERROR;
-    }
 
     ss = source->state;
 
@@ -1162,13 +1152,11 @@ Z_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned
 
     if (!DEFLATE_NEED_CHECKSUM(strm)) {
         memcpy(buf, strm->next_in, len);
-    } else
 #ifdef GZIP
-    if (strm->state->wrap == 2)
+    } else if (strm->state->wrap == 2) {
         copy_with_crc(strm, buf, len);
-    else
 #endif
-    {
+    } else {
         memcpy(buf, strm->next_in, len);
         if (strm->state->wrap == 1)
             strm->adler = functable.adler32(strm->adler, buf, len);
@@ -1491,8 +1479,7 @@ static block_state deflate_stored(deflate_state *s, int flush) {
         return finish_done;
 
     /* If flushing and all input has been consumed, then done. */
-    if (flush != Z_NO_FLUSH && flush != Z_FINISH &&
-        s->strm->avail_in == 0 && (int)s->strstart == s->block_start)
+    if (flush != Z_NO_FLUSH && flush != Z_FINISH && s->strm->avail_in == 0 && (int)s->strstart == s->block_start)
         return block_done;
 
     /* Fill the window with any remaining input. */
@@ -1528,12 +1515,9 @@ static block_state deflate_stored(deflate_state *s, int flush) {
     have = MIN(s->pending_buf_size - have, MAX_STORED);
     min_block = MIN(have, s->w_size);
     left = (int)s->strstart - s->block_start;
-    if (left >= min_block ||
-        ((left || flush == Z_FINISH) && flush != Z_NO_FLUSH &&
-         s->strm->avail_in == 0 && left <= have)) {
+    if (left >= min_block || ((left || flush == Z_FINISH) && flush != Z_NO_FLUSH && s->strm->avail_in == 0 && left <= have)) {
         len = MIN(left, have);
-        last = flush == Z_FINISH && s->strm->avail_in == 0 &&
-               len == left ? 1 : 0;
+        last = flush == Z_FINISH && s->strm->avail_in == 0 && len == left ? 1 : 0;
         zng_tr_stored_block(s, (char *)s->window + s->block_start, len, last);
         s->block_start += (int)len;
         flush_pending(s->strm);
@@ -1562,9 +1546,8 @@ static block_state deflate_rle(deflate_state *s, int flush) {
          */
         if (s->lookahead <= MAX_MATCH) {
             fill_window(s);
-            if (s->lookahead <= MAX_MATCH && flush == Z_NO_FLUSH) {
+            if (s->lookahead <= MAX_MATCH && flush == Z_NO_FLUSH)
                 return need_more;
-            }
             if (s->lookahead == 0)
                 break; /* flush the current block */
         }
@@ -1730,9 +1713,9 @@ int32_t Z_EXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value 
     }
     if (new_reproducible != NULL) {
         val = *(int *)new_reproducible->buf;
-        if (DEFLATE_CAN_SET_REPRODUCIBLE(strm, val))
+        if (DEFLATE_CAN_SET_REPRODUCIBLE(strm, val)) {
             s->reproducible = val;
-        else {
+        } else {
             new_reproducible->status = Z_STREAM_ERROR;
             stream_error = 1;
         }
