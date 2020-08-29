@@ -107,12 +107,12 @@ typedef uint16_t Pos;
 typedef struct internal_state {
     PREFIX3(stream)      *strm;            /* pointer back to this zlib stream */
     unsigned char        *pending_buf;     /* output still pending */
-    unsigned long        pending_buf_size; /* size of pending_buf */
     unsigned char        *pending_out;     /* next pending byte to output to the stream */
+    uint32_t             pending_buf_size; /* size of pending_buf */
     uint32_t             pending;          /* nb of bytes in the pending buffer */
     int                  wrap;             /* bit 0 true for zlib, bit 1 true for gzip */
-    PREFIX(gz_headerp)   gzhead;           /* gzip header information to write */
     uint32_t             gzindex;          /* where in extra, name, or comment */
+    PREFIX(gz_headerp)   gzhead;           /* gzip header information to write */
     int                  status;           /* as the name implies */
     unsigned char        method;           /* can only be DEFLATED */
     int                  last_flush;       /* value of flush param for previous deflate call */
