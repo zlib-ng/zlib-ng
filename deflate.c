@@ -373,7 +373,7 @@ int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int
      */
 
     s->pending_buf = (unsigned char *) ZALLOC(strm, s->lit_bufsize, 4);
-    s->pending_buf_size = (unsigned long)s->lit_bufsize * 4;
+    s->pending_buf_size = s->lit_bufsize * 4;
 
     if (s->window == NULL || s->prev == NULL || s->head == NULL ||
         s->pending_buf == NULL) {
@@ -1132,7 +1132,7 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     memcpy(ds->window, ss->window, ds->w_size * 2 * sizeof(unsigned char));
     memcpy((void *)ds->prev, (void *)ss->prev, ds->w_size * sizeof(Pos));
     memcpy((void *)ds->head, (void *)ss->head, HASH_SIZE * sizeof(Pos));
-    memcpy(ds->pending_buf, ss->pending_buf, (unsigned int)ds->pending_buf_size);
+    memcpy(ds->pending_buf, ss->pending_buf, ds->pending_buf_size);
 
     ds->pending_out = ds->pending_buf + (ss->pending_out - ss->pending_buf);
     ds->sym_buf = ds->pending_buf + ds->lit_bufsize;
