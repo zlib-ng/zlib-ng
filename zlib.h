@@ -1271,14 +1271,14 @@ typedef struct gzFile_s *gzFile;    /* semi-opaque gzip file descriptor */
 /*
 Z_EXTERN gzFile Z_EXPORT gzopen(const char *path, const char *mode);
 
-     Opens a gzip (.gz) file for reading or writing.  The mode parameter is as
-   in fopen ("rb" or "wb") but can also include a compression level ("wb9") or
-   a strategy: 'f' for filtered data as in "wb6f", 'h' for Huffman-only
-   compression as in "wb1h", 'R' for run-length encoding as in "wb1R", or 'F'
-   for fixed code compression as in "wb9F".  (See the description of
-   deflateInit2 for more information about the strategy parameter.)  'T' will
-   request transparent writing or appending with no compression and not using
-   the gzip format.
+     Open the gzip (.gz) file at path for reading and decompressing, or
+   compressing and writing.  The mode parameter is as in fopen ("rb" or "wb")
+   but can also include a compression level ("wb9") or a strategy: 'f' for
+   filtered data as in "wb6f", 'h' for Huffman-only compression as in "wb1h",
+   'R' for run-length encoding as in "wb1R", or 'F' for fixed code compression
+   as in "wb9F".  (See the description of deflateInit2 for more information
+   about the strategy parameter.)  'T' will request transparent writing or
+   appending with no compression and not using the gzip format.
 
      "a" can be used instead of "w" to request that the gzip stream that will
    be written be appended to the file.  "+" will result in an error, since
@@ -1308,9 +1308,9 @@ Z_EXTERN gzFile Z_EXPORT gzopen(const char *path, const char *mode);
 
 Z_EXTERN gzFile Z_EXPORT gzdopen(int fd, const char *mode);
 /*
-     gzdopen associates a gzFile with the file descriptor fd.  File descriptors
-   are obtained from calls like open, dup, creat, pipe or fileno (if the file
-   has been previously opened with fopen).  The mode parameter is as in gzopen.
+     Associate a gzFile with the file descriptor fd.  File descriptors are
+   obtained from calls like open, dup, creat, pipe or fileno (if the file has
+   been previously opened with fopen).  The mode parameter is as in gzopen.
 
      The next call of gzclose on the returned gzFile will also close the file
    descriptor fd, just like fclose(fdopen(fd, mode)) closes the file descriptor
@@ -1331,13 +1331,13 @@ Z_EXTERN gzFile Z_EXPORT gzdopen(int fd, const char *mode);
 
 Z_EXTERN int Z_EXPORT gzbuffer(gzFile file, unsigned size);
 /*
-     Set the internal buffer size used by this library's functions.  The
-   default buffer size is 8192 bytes.  This function must be called after
-   gzopen() or gzdopen(), and before any other calls that read or write the
-   file.  The buffer memory allocation is always deferred to the first read or
-   write.  Three times that size in buffer space is allocated.  A larger buffer
-   size of, for example, 64K or 128K bytes will noticeably increase the speed
-   of decompression (reading).
+     Set the internal buffer size used by this library's functions for file to
+   size.  The default buffer size is 8192 bytes.  This function must be called
+   after gzopen() or gzdopen(), and before any other calls that read or write
+   the file.  The buffer memory allocation is always deferred to the first read
+   or write.  Three times that size in buffer space is allocated.  A larger
+   buffer size of, for example, 64K or 128K bytes will noticeably increase the
+   speed of decompression (reading).
 
      The new buffer size also affects the maximum length for gzprintf().
 
@@ -1347,9 +1347,9 @@ Z_EXTERN int Z_EXPORT gzbuffer(gzFile file, unsigned size);
 
 Z_EXTERN int Z_EXPORT gzsetparams(gzFile file, int level, int strategy);
 /*
-     Dynamically update the compression level or strategy.  See the description
-   of deflateInit2 for the meaning of these parameters.  Previously provided
-   data is flushed before the parameter change.
+     Dynamically update the compression level and strategy for file.  See the
+   description of deflateInit2 for the meaning of these parameters. Previously
+   provided data is flushed before applying the parameter changes.
 
      gzsetparams returns Z_OK if success, Z_STREAM_ERROR if the file was not
    opened for writing, Z_ERRNO if there is an error writing the flushed data,
@@ -1358,7 +1358,7 @@ Z_EXTERN int Z_EXPORT gzsetparams(gzFile file, int level, int strategy);
 
 Z_EXTERN int Z_EXPORT gzread(gzFile file, void *buf, unsigned len);
 /*
-     Reads the given number of uncompressed bytes from the compressed file.  If
+     Read and decompress up to len uncompressed bytes from file into buf.  If
    the input file is not in gzip format, gzread copies the given number of
    bytes into the buffer directly from the file.
 
@@ -1388,9 +1388,11 @@ Z_EXTERN int Z_EXPORT gzread(gzFile file, void *buf, unsigned len);
 
 Z_EXTERN size_t Z_EXPORT gzfread (void *buf, size_t size, size_t nitems, gzFile file);
 /*
-     Read up to nitems items of size size from file to buf, otherwise operating
-   as gzread() does.  This duplicates the interface of stdio's fread(), with
-   size_t request and return types.
+     Read and decompress up to nitems items of size size from file into buf,
+   otherwise operating as gzread() does.  This duplicates the interface of
+   stdio's fread(), with size_t request and return types.  If the library
+   defines size_t, then z_size_t is identical to size_t.  If not, then z_size_t
+   is an unsigned integer type that can contain a pointer.
 
      gzfread() returns the number of full items read of size size, or zero if
    the end of the file was reached and a full item could not be read, or if
@@ -1411,14 +1413,13 @@ Z_EXTERN size_t Z_EXPORT gzfread (void *buf, size_t size, size_t nitems, gzFile 
 
 Z_EXTERN int Z_EXPORT gzwrite(gzFile file, void const *buf, unsigned len);
 /*
-     Writes the given number of uncompressed bytes into the compressed file.
-   gzwrite returns the number of uncompressed bytes written or 0 in case of
-   error.
+     Compress and write the len uncompressed bytes at buf to file. gzwrite
+   returns the number of uncompressed bytes written or 0 in case of error.
 */
 
 Z_EXTERN size_t Z_EXPORT gzfwrite(void const *buf, size_t size, size_t nitems, gzFile file);
 /*
-     gzfwrite() writes nitems items of size size from buf to file, duplicating
+     Compress and write nitems items of size size from buf to file, duplicating
    the interface of stdio's fwrite(), with size_t request and return types.
 
      gzfwrite() returns the number of full items written of size size, or zero
@@ -1429,22 +1430,22 @@ Z_EXTERN size_t Z_EXPORT gzfwrite(void const *buf, size_t size, size_t nitems, g
 
 Z_EXTERN int Z_EXPORTVA gzprintf(gzFile file, const char *format, ...);
 /*
-     Converts, formats, and writes the arguments to the compressed file under
-   control of the format string, as in fprintf.  gzprintf returns the number of
+     Convert, format, compress, and write the arguments (...) to file under
+   control of the string format, as in fprintf.  gzprintf returns the number of
    uncompressed bytes actually written, or a negative zlib error code in case
    of error.  The number of uncompressed bytes written is limited to 8191, or
    one less than the buffer size given to gzbuffer().  The caller should assure
    that this limit is not exceeded.  If it is exceeded, then gzprintf() will
    return an error (0) with nothing written.  In this case, there may also be a
    buffer overflow with unpredictable consequences, which is possible only if
-   zlib was compiled with the insecure functions sprintf() or vsprintf()
+   zlib was compiled with the insecure functions sprintf() or vsprintf(),
    because the secure snprintf() or vsnprintf() functions were not available.
    This can be determined using zlibCompileFlags().
 */
 
 Z_EXTERN int Z_EXPORT gzputs(gzFile file, const char *s);
 /*
-     Writes the given null-terminated string to the compressed file, excluding
+     Compress and write the given null-terminated string s to file, excluding
    the terminating null character.
 
      gzputs returns the number of characters written, or -1 in case of error.
@@ -1452,11 +1453,12 @@ Z_EXTERN int Z_EXPORT gzputs(gzFile file, const char *s);
 
 Z_EXTERN char * Z_EXPORT gzgets(gzFile file, char *buf, int len);
 /*
-     Reads bytes from the compressed file until len-1 characters are read, or a
-   newline character is read and transferred to buf, or an end-of-file
-   condition is encountered.  If any characters are read or if len == 1, the
-   string is terminated with a null character.  If no characters are read due
-   to an end-of-file or len < 1, then the buffer is left untouched.
+     Read and decompress bytes from file into buf, until len-1 characters are
+   read, or until a newline character is read and transferred to buf, or an
+   end-of-file condition is encountered.  If any characters are read or if len
+   is one, the string is terminated with a null character.  If no characters
+   are read due to an end-of-file or len is less than one, then the buffer is
+   left untouched.
 
      gzgets returns buf which is a null-terminated string, or it returns NULL
    for end-of-file or in case of error.  If there was an error, the contents at
@@ -1465,13 +1467,13 @@ Z_EXTERN char * Z_EXPORT gzgets(gzFile file, char *buf, int len);
 
 Z_EXTERN int Z_EXPORT gzputc(gzFile file, int c);
 /*
-     Writes c, converted to an unsigned char, into the compressed file.  gzputc
+     Compress and write c, converted to an unsigned char, into file.  gzputc
    returns the value that was written, or -1 in case of error.
 */
 
 Z_EXTERN int Z_EXPORT gzgetc(gzFile file);
 /*
-     Reads one byte from the compressed file.  gzgetc returns this byte or -1
+     Read and decompress one byte from file.  gzgetc returns this byte or -1
    in case of end of file or error.  This is implemented as a macro for speed.
    As such, it does not do all of the checking the other functions do.  I.e.
    it does not check to see if file is NULL, nor whether the structure file
@@ -1480,8 +1482,8 @@ Z_EXTERN int Z_EXPORT gzgetc(gzFile file);
 
 Z_EXTERN int Z_EXPORT gzungetc(int c, gzFile file);
 /*
-     Push one character back onto the stream to be read as the first character
-   on the next read.  At least one character of push-back is allowed.
+     Push c back onto the stream for file to be read as the first character on
+   the next read.  At least one character of push-back is always allowed.
    gzungetc() returns the character pushed, or -1 on failure.  gzungetc() will
    fail if c is -1, and may fail if a character has been pushed but not read
    yet.  If gzungetc is used immediately after gzopen or gzdopen, at least the
@@ -1492,9 +1494,9 @@ Z_EXTERN int Z_EXPORT gzungetc(int c, gzFile file);
 
 Z_EXTERN int Z_EXPORT gzflush(gzFile file, int flush);
 /*
-     Flushes all pending output into the compressed file.  The parameter flush
-   is as in the deflate() function.  The return value is the zlib error number
-   (see function gzerror below).  gzflush is only permitted when writing.
+     Flush all pending output to file.  The parameter flush is as in the
+   deflate() function.  The return value is the zlib error number (see function
+   gzerror below).  gzflush is only permitted when writing.
 
      If the flush parameter is Z_FINISH, the remaining data is written and the
    gzip stream is completed in the output.  If gzwrite() is called again, a new
@@ -1508,8 +1510,8 @@ Z_EXTERN int Z_EXPORT gzflush(gzFile file, int flush);
 /*
 Z_EXTERN z_off_t Z_EXPORT gzseek (gzFile file, z_off_t offset, int whence);
 
-     Sets the starting position for the next gzread or gzwrite on the given
-   compressed file.  The offset represents a number of bytes in the
+     Set the starting position to offset relative to whence for the next gzread
+   or gzwrite on file.  The offset represents a number of bytes in the
    uncompressed data stream.  The whence parameter is defined as in lseek(2);
    the value SEEK_END is not supported.
 
@@ -1526,18 +1528,18 @@ Z_EXTERN z_off_t Z_EXPORT gzseek (gzFile file, z_off_t offset, int whence);
 
 Z_EXTERN int Z_EXPORT gzrewind(gzFile file);
 /*
-     Rewinds the given file. This function is supported only for reading.
+     Rewind file. This function is supported only for reading.
 
-     gzrewind(file) is equivalent to (int)gzseek(file, 0L, SEEK_SET)
+     gzrewind(file) is equivalent to (int)gzseek(file, 0L, SEEK_SET).
 */
 
 /*
 Z_EXTERN z_off_t Z_EXPORT gztell(gzFile file);
 
-     Returns the starting position for the next gzread or gzwrite on the given
-   compressed file.  This position represents a number of bytes in the
-   uncompressed data stream, and is zero when starting, even if appending or
-   reading a gzip stream from the middle of a file using gzdopen().
+     Return the starting position for the next gzread or gzwrite on file.
+   This position represents a number of bytes in the uncompressed data stream,
+   and is zero when starting, even if appending or reading a gzip stream from
+   the middle of a file using gzdopen().
 
      gztell(file) is equivalent to gzseek(file, 0L, SEEK_CUR)
 */
@@ -1545,22 +1547,22 @@ Z_EXTERN z_off_t Z_EXPORT gztell(gzFile file);
 /*
 Z_EXTERN z_off_t Z_EXPORT gzoffset(gzFile file);
 
-     Returns the current offset in the file being read or written.  This offset
-   includes the count of bytes that precede the gzip stream, for example when
-   appending or when using gzdopen() for reading.  When reading, the offset
-   does not include as yet unused buffered input.  This information can be used
-   for a progress indicator.  On error, gzoffset() returns -1.
+     Return the current compressed (actual) read or write offset of file.  This
+   offset includes the count of bytes that precede the gzip stream, for example
+   when appending or when using gzdopen() for reading.  When reading, the
+   offset does not include as yet unused buffered input.  This information can
+   be used for a progress indicator.  On error, gzoffset() returns -1.
 */
 
 Z_EXTERN int Z_EXPORT gzeof(gzFile file);
 /*
-     Returns true (1) if the end-of-file indicator has been set while reading,
-   false (0) otherwise.  Note that the end-of-file indicator is set only if the
-   read tried to go past the end of the input, but came up short.  Therefore,
-   just like feof(), gzeof() may return false even if there is no more data to
-   read, in the event that the last read request was for the exact number of
-   bytes remaining in the input file.  This will happen if the input file size
-   is an exact multiple of the buffer size.
+     Return true (1) if the end-of-file indicator for file has been set while
+   reading, false (0) otherwise.  Note that the end-of-file indicator is set
+   only if the read tried to go past the end of the input, but came up short.
+   Therefore, just like feof(), gzeof() may return false even if there is no
+   more data to read, in the event that the last read request was for the exact
+   number of bytes remaining in the input file.  This will happen if the input
+   file size is an exact multiple of the buffer size.
 
      If gzeof() returns true, then the read functions will return no more data,
    unless the end-of-file indicator is reset by gzclearerr() and the input file
@@ -1569,7 +1571,7 @@ Z_EXTERN int Z_EXPORT gzeof(gzFile file);
 
 Z_EXTERN int Z_EXPORT gzdirect(gzFile file);
 /*
-     Returns true (1) if file is being copied directly while reading, or false
+     Return true (1) if file is being copied directly while reading, or false
    (0) if file is a gzip stream being decompressed.
 
      If the input file is empty, gzdirect() will return true, since the input
@@ -1590,8 +1592,8 @@ Z_EXTERN int Z_EXPORT gzdirect(gzFile file);
 
 Z_EXTERN int Z_EXPORT gzclose(gzFile file);
 /*
-     Flushes all pending output if necessary, closes the compressed file and
-   deallocates the (de)compression state.  Note that once file is closed, you
+     Flush all pending output for file, if necessary, close file and
+   deallocate the (de)compression state.  Note that once file is closed, you
    cannot call gzerror with file, since its structures have been deallocated.
    gzclose must not be called more than once on the same file, just as free
    must not be called more than once on the same allocation.
@@ -1615,10 +1617,10 @@ Z_EXTERN int Z_EXPORT gzclose_w(gzFile file);
 
 Z_EXTERN const char * Z_EXPORT gzerror(gzFile file, int *errnum);
 /*
-     Returns the error message for the last error which occurred on the given
-   compressed file.  errnum is set to zlib error number.  If an error occurred
-   in the file system and not in the compression library, errnum is set to
-   Z_ERRNO and the application may consult errno to get the exact error code.
+     Return the error message for the last error which occurred on file.
+   errnum is set to zlib error number.  If an error occurred in the file system
+   and not in the compression library, errnum is set to Z_ERRNO and the
+   application may consult errno to get the exact error code.
 
      The application must not modify the returned string.  Future calls to
    this function may invalidate the previously returned string.  If file is
@@ -1631,7 +1633,7 @@ Z_EXTERN const char * Z_EXPORT gzerror(gzFile file, int *errnum);
 
 Z_EXTERN void Z_EXPORT gzclearerr(gzFile file);
 /*
-     Clears the error and end-of-file flags for file.  This is analogous to the
+     Clear the error and end-of-file flags for file.  This is analogous to the
    clearerr() function in stdio.  This is useful for continuing to read a gzip
    file that is being written concurrently.
 */
