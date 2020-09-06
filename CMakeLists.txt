@@ -72,7 +72,7 @@ endif()
 #
 # Options parsing
 #
-option(WITH_GZFILEOP "Compile with support for gzFile related functions" OFF)
+option(WITH_GZFILEOP "Compile with support for gzFile related functions" ON)
 option(ZLIB_COMPAT "Compile with zlib compatible API" OFF)
 option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 option(ZLIB_DUAL_LINK "Dual link tests against system zlib" OFF)

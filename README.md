@@ -111,7 +111,7 @@ Build Options
 |:-------------------------|:-------------------------|:--------------------------------------------------------------------------------------|---------|
 | ZLIB_COMPAT              | --zlib-compat            | Compile with zlib compatible API                                                      | OFF     |
 | ZLIB_ENABLE_TESTS        |                          | Build test binaries                                                                   | ON      |
-| WITH_GZFILEOP            | --with-gzfileops         | Compile with support for gzFile related functions                                     | OFF     |
+| WITH_GZFILEOP            | --without-gzfileops      | Compile with support for gzFile related functions                                     | ON     |
 | WITH_MSAN                | --with-msan              | Build with memory sanitizer                                                           | OFF     |
 | WITH_OPTIM               | --without-optimizations  | Build with optimisations                                                              | ON      |
 | WITH_NEW_STRATEGIES      | --without-new-strategies | Use new strategies                                                                    | ON      |
