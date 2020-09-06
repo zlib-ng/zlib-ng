@@ -18,7 +18,7 @@ Z_INTERNAL void slide_hash_avx2(deflate_state *s) {
     Pos *p;
     unsigned n;
     uint16_t wsize = (uint16_t)s->w_size;
-    const __m256i zmm_wsize = _mm256_set1_epi16((short)wsize);
+    const __m256i ymm_wsize = _mm256_set1_epi16((short)wsize);
 
     n = HASH_SIZE;
     p = &s->head[n] - 16;
@@ -26,7 +26,7 @@ Z_INTERNAL void slide_hash_avx2(deflate_state *s) {
         __m256i value, result;
 
         value = _mm256_loadu_si256((__m256i *)p);
-        result= _mm256_subs_epu16(value, zmm_wsize);
+        result= _mm256_subs_epu16(value, ymm_wsize);
         _mm256_storeu_si256((__m256i *)p, result);
         p -= 16;
         n -= 16;
@@ -38,7 +38,7 @@ Z_INTERNAL void slide_hash_avx2(deflate_state *s) {
         __m256i value, result;
 
         value = _mm256_loadu_si256((__m256i *)p);
-        result= _mm256_subs_epu16(value, zmm_wsize);
+        result= _mm256_subs_epu16(value, ymm_wsize);
         _mm256_storeu_si256((__m256i *)p, result);
 
         p -= 16;
