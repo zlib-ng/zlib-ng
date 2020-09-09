@@ -51,7 +51,7 @@ jobs:
 
     - name: Generate project files
       run: |
-        cmake . ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=Release -DWITH_GZFILEOP=ON -DZLIB_ENABLE_TESTS=ON -DCMAKE_INSTALL_PREFIX=out -DINSTALL_UTILS=ON
+        cmake . ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=Release -DZLIB_ENABLE_TESTS=ON -DCMAKE_INSTALL_PREFIX=out -DINSTALL_UTILS=ON
       env:
         CC: ${{ matrix.compiler }}
         CI: true
