@@ -11,7 +11,7 @@ jobs:
 
     - name: Generate project files (zlib-ng)
       run: |
-        cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_GZFILEOP=ON -DZLIB_COMPAT=ON -DZLIB_ENABLE_TESTS=OFF
+        cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DZLIB_COMPAT=ON -DZLIB_ENABLE_TESTS=OFF
       env:
         CC: clang
         CFLAGS: -fPIC
