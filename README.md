@@ -12,6 +12,29 @@ Maintained by Hans Kristian Rosbach
 |OSS-Fuzz|[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/zlib-ng.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:zlib-ng)
 |Codecov|[![codecov.io](https://codecov.io/github/zlib-ng/zlib-ng/coverage.svg?branch=develop)](https://codecov.io/github/zlib-ng/zlib-ng/)|
 
+Features
+--------
+
+* Zlib compatible API with support for dual-linking
+* Modernized native API based on zlib API for ease of porting
+* Intel deflate medium and quick algorithms
+* Support for CPU intrinsics when available
+  * Adler32 implementation using SSSE3, AVX2, Neon, & VSX
+  * Intel CRC32-B implementation using PCLMULQDQ
+  * Intel CRC32-C intrinsics for hash tables
+  * ARM CRC32-B implementation using ACLE
+  * Slide hash implementations using SSE2, AVX2, Neon, & VSX
+  * Inflate chunk copying using SSE2 & Neon
+  * Deflate hooks for IBM Z DFLTCC
+* Code sanitizers, fuzzing, and coverage
+* GitHub Actions continuous integration on Windows, macOS, and Linux
+  * Emulated CI for ARM, AARCH64, PPC, PPC64, SPARC64, S390x using qemu
+* Unaligned memory read/writes and large bit buffer improvements
+* Includes improvements from Cloudflare and Intel forks
+* Configure, CMake, and NMake build system support
+* Modern C99 syntax and a clean code layout
+* Comprehensive set of CMake unit tests
+
 Fork Motivation
 ---------------------------
 
@@ -50,29 +73,6 @@ numerous people have contributed both small and big improvements,
 or valuable testing.
 
 Please read LICENSE.md, it is very simple and very liberal.
-
-Features
---------
-
-* Zlib compatible API with support for dual-linking
-* Modernized native API based on zlib API for ease of porting
-* Intel deflate medium and quick algorithms
-* Support for CPU intrinsics when available
-  * Adler32 implementation using SSSE3, AVX2, Neon, & VSX
-  * Intel CRC32-B implementation using PCLMULQDQ
-  * Intel CRC32-C intrinsics for hash tables
-  * ARM CRC32-B implementation using ACLE
-  * Slide hash implementations using SSE2, AVX2, Neon, & VSX
-  * Inflate chunk copying using SSE2 & Neon
-  * Deflate hooks for IBM Z DFLTCC
-* Code sanitizers, fuzzing, and coverage
-* GitHub Actions continuous integration on Windows, macOS, and Linux
-  * Emulated CI for ARM, AARCH64, PPC, PPC64, SPARC64, S390x using qemu
-* Unaligned memory read/writes and large bit buffer improvements
-* Includes improvements from Cloudflare and Intel forks
-* Configure, CMake, and NMake build system support
-* Modern C99 syntax and a clean code layout
-* Comprehensive set of CMake unit tests
 
 Build
 -----
