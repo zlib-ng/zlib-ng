@@ -17,23 +17,23 @@ Features
 
 * Zlib compatible API with support for dual-linking
 * Modernized native API based on zlib API for ease of porting
-* Intel deflate medium and quick algorithms
+* Modern C99 syntax and a clean code layout
+* Deflate medium and quick algorithms based on Intels zlib fork
 * Support for CPU intrinsics when available
-  * Adler32 implementation using SSSE3, AVX2, Neon, & VSX
-  * Intel CRC32-B implementation using PCLMULQDQ
-  * Intel CRC32-C intrinsics for hash tables
-  * ARM CRC32-B implementation using ACLE
-  * Slide hash implementations using SSE2, AVX2, Neon, & VSX
-  * Inflate chunk copying using SSE2 & Neon
-  * Deflate hooks for IBM Z DFLTCC
-* Code sanitizers, fuzzing, and coverage
-* GitHub Actions continuous integration on Windows, macOS, and Linux
-  * Emulated CI for ARM, AARCH64, PPC, PPC64, SPARC64, S390x using qemu
+  * Adler32 implementation using SSSE3, AVX2, Neon & VSX
+  * CRC32-B implementation using PCLMULQDQ & ACLE
+  * Hash table implementation using CRC32-C intrinsics on x86 and ARM
+  * Slide hash implementations using SSE2, AVX2, Neon & VSX
+  * Compare256/258 implementations using SSE4.2 & AVX2
+  * Inflate chunk copying using SSE2, AVX2 & Neon
+  * Support for hardware-accelerated deflate using IBM Z DFLTCC
 * Unaligned memory read/writes and large bit buffer improvements
 * Includes improvements from Cloudflare and Intel forks
 * Configure, CMake, and NMake build system support
-* Modern C99 syntax and a clean code layout
 * Comprehensive set of CMake unit tests
+* Code sanitizers, fuzzing, and coverage
+* GitHub Actions continuous integration on Windows, macOS, and Linux
+  * Emulated CI for ARM, AARCH64, PPC, PPC64, SPARC64, S390x using qemu
 
 Fork Motivation
 ---------------------------
@@ -69,8 +69,8 @@ various dead code, all contrib and example code as there is little
 point in having those in this fork for various reasons.
 
 A lot of improvements have gone into zlib-ng since its start, and
-numerous people have contributed both small and big improvements,
-or valuable testing.
+numerous people and companies have contributed both small and big
+improvements, or valuable testing.
 
 Please read LICENSE.md, it is very simple and very liberal.
 
@@ -159,8 +159,8 @@ make install
 Contributing
 ------------
 
-Zlib-ng is a young project, and we aim to be open to contributions,
-and we would be delighted to receive pull requests on github.
+Zlib-ng is a aiming to be open to contributions, and we would be
+delighted to receive pull requests on github.
 Just remember that any code you submit must be your own and it must
 be zlib licensed.
 Help with testing and reviewing of pull requests etc is also very
