@@ -37,6 +37,7 @@ DEFFILE = zlib.def
 RCFILE = zlib1.rc
 RESFILE = zlib1.res
 WITH_GZFILEOP =
+ZLIB_COMPAT =
 WITH_ACLE =
 WITH_NEON =
 WITH_VFPV3 =
@@ -65,9 +66,9 @@ OBJS = \
 	uncompr.obj \
 	zutil.obj \
 	#
-!if "$(WITH_GZFILEOP)" != ""
-WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
-OBJS = $(OBJS) gzclose.obj gzlib.obj gzread.obj gzwrite.obj
+!if "$(ZLIB_COMPAT)" != ""
+WITH_GZFILEOP = yes
+WFLAGS = $(WFLAGS) -DZLIB_COMPAT
 DEFFILE = zlibcompat.def
 !else
 STATICLIB = zlib-ng.lib
@@ -78,6 +79,12 @@ RCFILE = zlib-ng1.rc
 RESFILE = zlib-ng1.res
 SUFFIX = -ng
 !endif
+
+!if "$(WITH_GZFILEOP)" != ""
+WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
+OBJS = $(OBJS) gzclose.obj gzlib.obj gzread.obj gzwrite.obj
+!endif
+
 !if "$(WITH_ACLE)" != ""
 WFLAGS = $(WFLAGS) -DARM_ACLE_CRC_HASH
 OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj
