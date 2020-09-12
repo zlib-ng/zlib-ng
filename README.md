@@ -204,4 +204,4 @@ Advanced Build Options
 | WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z | OFF                    |
 | WITH_INFLATE_STRICT             |                       | Build with strict inflate distance checking                         | OFF                    |
 | WITH_INFLATE_ALLOW_INVALID_DIST |                       | Build with zero fill for inflate invalid distances                  | OFF                    |
-| INSTALL_UTILS                   |                       | Copy minigzip and minigzip during install                           | OFF                    |
+| INSTALL_UTILS                   |                       | Copy minigzip and minideflate during install                        | OFF                    |
