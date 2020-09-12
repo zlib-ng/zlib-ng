@@ -309,12 +309,12 @@ endif()
 # Set code coverage compiler flags
 if(WITH_CODE_COVERAGE)
     if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -coverage")
+        set(CMAKE_C_FLAGS "-O0 ${CMAKE_C_FLAGS} -coverage")
     elseif(__GNUC__)
         # Some versions of GCC don't support -coverage shorthand
-        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov")
-        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lgcov")
+        set(CMAKE_C_FLAGS "-O0 ${CMAKE_C_FLAGS} -ftest-coverage -fprofile-arcs -fprofile-values")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov -fprofile-arcs")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -lgcov -fprofile-arcs")
     endif()
 endif()
 
