@@ -5,6 +5,7 @@
 
 #include "zbuild.h"
 #include "zutil.h"
+#include "zutil_p.h"
 #ifdef WITH_GZFILEOP
 #  include "gzguts.h"
 #endif
@@ -102,37 +103,12 @@ const char * Z_EXPORT PREFIX(zError)(int err) {
     return ERR_MSG(err);
 }
 
-#ifndef MY_ZCALLOC /* Any system without a special alloc function */
-
-#ifndef UNALIGNED_OK
-#  include <malloc.h>
-#  if defined(_WIN32)
-#    define zng_align_alloc(align, size) _aligned_malloc(size, align)
-#    define zng_align_free(ptr)          _aligned_free(ptr)
-#  else
-#    define zng_align_alloc              memalign
-#    define zng_align_free(ptr)          free(ptr)
-#  endif
-#endif
-
-void Z_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size)
-{
+void Z_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size) {
     (void)opaque;
-#ifndef UNALIGNED_OK
-    return zng_align_alloc(16, items * size);
-#else
-    return sizeof(unsigned int) > 2 ? (void *)malloc(items * size) :
-                              (void *)calloc(items, size);
-#endif
+    return zng_alloc((size_t)items * (size_t)size);
 }
 
 void Z_INTERNAL zng_cfree(void *opaque, void *ptr) {
     (void)opaque;
-#ifndef UNALIGNED_OK
-    zng_align_free(ptr);
-#else
-    free(ptr);
-#endif
+    zng_free(ptr);
 }
-
-#endif /* MY_ZCALLOC */
