@@ -4,6 +4,7 @@
  */
 
 #include "zbuild.h"
+#include "zutil_p.h"
 #include <stdarg.h>
 #include "gzguts.h"
 
@@ -21,7 +22,7 @@ static int gz_init(gz_state *state) {
     PREFIX3(stream) *strm = &(state->strm);
 
     /* allocate input buffer (double size for gzprintf) */
-    state->in = (unsigned char *)malloc(state->want << 1);
+    state->in = (unsigned char *)zng_alloc(state->want << 1);
     if (state->in == NULL) {
         gz_error(state, Z_MEM_ERROR, "out of memory");
         return -1;
@@ -31,9 +32,9 @@ static int gz_init(gz_state *state) {
     /* only need output buffer and deflate state if compressing */
     if (!state->direct) {
         /* allocate output buffer */
-        state->out = (unsigned char *)malloc(state->want);
+        state->out = (unsigned char *)zng_alloc(state->want);
         if (state->out == NULL) {
-            free(state->in);
+            zng_free(state->in);
             gz_error(state, Z_MEM_ERROR, "out of memory");
             return -1;
         }
@@ -44,8 +45,8 @@ static int gz_init(gz_state *state) {
         strm->opaque = NULL;
         ret = PREFIX(deflateInit2)(strm, state->level, Z_DEFLATED, MAX_WBITS + 16, DEF_MEM_LEVEL, state->strategy);
         if (ret != Z_OK) {
-            free(state->out);
-            free(state->in);
+            zng_free(state->out);
+            zng_free(state->in);
             gz_error(state, Z_MEM_ERROR, "out of memory");
             return -1;
         }
@@ -512,14 +513,14 @@ int Z_EXPORT PREFIX(gzclose_w)(gzFile file) {
     if (state->size) {
         if (!state->direct) {
             (void)PREFIX(deflateEnd)(&(state->strm));
-            free(state->out);
+            zng_free(state->out);
         }
-        free(state->in);
+        zng_free(state->in);
     }
     gz_error(state, Z_OK, NULL);
     free(state->path);
     if (close(state->fd) == -1)
         ret = Z_ERRNO;
-    free(state);
+    zng_free(state);
     return ret;
 }

@@ -4,6 +4,7 @@
  */
 
 #include "zbuild.h"
+#include "zutil_p.h"
 #include "gzguts.h"
 
 /* Local functions */
@@ -83,11 +84,11 @@ static int gz_look(gz_state *state) {
     /* allocate read buffers and inflate memory */
     if (state->size == 0) {
         /* allocate buffers */
-        state->in = (unsigned char *)malloc(state->want);
-        state->out = (unsigned char *)malloc(state->want << 1);
+        state->in = (unsigned char *)zng_alloc(state->want);
+        state->out = (unsigned char *)zng_alloc(state->want << 1);
         if (state->in == NULL || state->out == NULL) {
-            free(state->out);
-            free(state->in);
+            zng_free(state->out);
+            zng_free(state->in);
             gz_error(state, Z_MEM_ERROR, "out of memory");
             return -1;
         }
@@ -100,8 +101,8 @@ static int gz_look(gz_state *state) {
         state->strm.avail_in = 0;
         state->strm.next_in = NULL;
         if (PREFIX(inflateInit2)(&(state->strm), 15 + 16) != Z_OK) {    /* gunzip */
-            free(state->out);
-            free(state->in);
+            zng_free(state->out);
+            zng_free(state->in);
             state->size = 0;
             gz_error(state, Z_MEM_ERROR, "out of memory");
             return -1;
@@ -589,13 +590,13 @@ int Z_EXPORT PREFIX(gzclose_r)(gzFile file) {
     /* free memory and close file */
     if (state->size) {
         PREFIX(inflateEnd)(&(state->strm));
-        free(state->out);
-        free(state->in);
+        zng_free(state->out);
+        zng_free(state->in);
     }
     err = state->err == Z_BUF_ERROR ? Z_BUF_ERROR : Z_OK;
     gz_error(state, Z_OK, NULL);
     free(state->path);
     ret = close(state->fd);
-    free(state);
+    zng_free(state);
     return ret ? Z_ERRNO : err;
 }
