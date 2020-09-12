@@ -37,7 +37,7 @@ RCFLAGS = /dARM64 /r
 DEFFILE = zlib.def
 RCFILE = zlib1.rc
 RESFILE = zlib1.res
-WITH_GZFILEOP =
+WITH_GZFILEOP = yes
 ZLIB_COMPAT =
 SUFFIX =
 
