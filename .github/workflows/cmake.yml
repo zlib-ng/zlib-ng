@@ -9,7 +9,7 @@ jobs:
       matrix:
         name: [
           Ubuntu GCC,
-          Ubuntu GCC OSB -O1,
+          Ubuntu GCC OSB,
           Ubuntu GCC Link Zlib,
           Ubuntu GCC No AVX2,
           Ubuntu GCC No SSE2,
@@ -55,14 +55,13 @@ jobs:
             cmake-args: -DWITH_SANITIZERS=ON
             codecov: ubuntu_gcc
 
-          - name: Ubuntu GCC OSB -O1
+          - name: Ubuntu GCC OSB
             os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_SANITIZERS=ON
             build-dir: ../build
             build-src-dir: ../zlib-ng
             codecov: ubuntu_gcc_osb
-            cflags: -O1 -g3
 
           - name: Ubuntu GCC Link Zlib
             os: ubuntu-latest
@@ -331,10 +330,10 @@ jobs:
         path: test/data
 
     - name: Install packages (Ubuntu)
-      if: runner.os == 'Linux' && matrix.packages
+      if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y ${{ matrix.packages }}
+        sudo apt-get install -y lcov ${{ matrix.packages }}
 
     - name: Set environment variables (Windows)
       run:  echo "::set-env name=temp::$($env:TEMP)"
@@ -398,7 +397,18 @@ jobs:
         TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=1' }}
         LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=1' }}
 
-    - name: Upload coverage report
+    - name: Generate lcov.info file
+      run: |
+        mkdir coverage
+        lcov -c --directory ${{ matrix.build-dir || '.' }} --output-file coverage/lcov.info
+
+    - name: Upload Coveralls coverage report
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        flag-name: run-${{ matrix.name }}
+
+    - name: Upload Codecov.io coverage report
       if: matrix.codecov && ( env.CODECOV_TOKEN_SECRET != '' || github.repository == 'zlib-ng/zlib-ng' )
       shell: bash
       run: |
