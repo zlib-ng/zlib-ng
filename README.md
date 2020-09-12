@@ -190,7 +190,8 @@ Advanced Build Options
 | CMake                           | configure             | Description                                                         | Default                |
 |:--------------------------------|:----------------------|:--------------------------------------------------------------------|------------------------|
 | ZLIB_DUAL_LINK                  |                       | Dual link tests with system zlib                                    | OFF                    |
-|                                 | --force-sse2          | Assume SSE2 instructions are always available                       | ON (x86), OFF (x86_64) |
+| UNALIGNED_OK                    |                       | Allow unaligned reads                                               | ON (x86, arm)          |
+|                                 | --force-sse2          | Skip runtime check for SSE2 instructions (Always on for x86_64)     | OFF (x86)              |
 | WITH_AVX2                       |                       | Build with AVX2 intrinsics                                          | ON                     |
 | WITH_SSE2                       |                       | Build with SSE2 intrinsics                                          | ON                     |
 | WITH_SSE4                       |                       | Build with SSE4 intrinsics                                          | ON                     |
@@ -198,9 +199,9 @@ Advanced Build Options
 | WITH_ACLE                       | --without-acle        | Build with ACLE intrinsics                                          | ON                     |
 | WITH_NEON                       | --without-neon        | Build with NEON intrinsics                                          | ON                     |
 | WITH_POWER8                     |                       | Build with POWER8 optimisations                                     | ON                     |
-| WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | Use DEFLATE COMPRESSION CALL instruction for compression on IBM Z   | OFF                    |
-| WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | Use DEFLATE COMPRESSION CALL instruction for decompression on IBM Z | OFF                    |
-| WITH_UNALIGNED                  |                       | Allow optimizations that use unaligned reads if safe on current arch| ON                    |
+| WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | Build with DFLTCC intrinsics for compression on IBM Z               | OFF                    |
+| WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | Build with DFLTCC intrinsics for decompression on IBM Z             | OFF                    |
+| WITH_UNALIGNED                  |                       | Allow optimizations that use unaligned reads if safe on current arch| ON                     |
 | WITH_INFLATE_STRICT             |                       | Build with strict inflate distance checking                         | OFF                    |
 | WITH_INFLATE_ALLOW_INVALID_DIST |                       | Build with zero fill for inflate invalid distances                  | OFF                    |
 | INSTALL_UTILS                   |                       | Copy minigzip and minideflate during install                        | OFF                    |
