@@ -34,6 +34,8 @@ jobs:
           Ubuntu GCC S390X,
           Ubuntu GCC S390X DFLTCC,
           Ubuntu GCC S390X DFLTCC Compat,
+          Ubuntu MinGW i686,
+          Ubuntu MinGW x86_64,
           Ubuntu Clang,
           Ubuntu Clang Inflate Strict,
           Ubuntu Clang Inflate Allow Invalid Dist,
@@ -237,6 +239,20 @@ jobs:
             ldflags: -static
             codecov: ubuntu_gcc_s390x
 
+          - name: Ubuntu MinGW i686
+            os: ubuntu-latest
+            compiler: i686-w64-mingw32-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-i686.cmake
+            packages: wine32 gcc-mingw-w64
+            codecov: ubuntu_gcc_mingw_i686
+
+          - name: Ubuntu MinGW x86_64
+            os: ubuntu-latest
+            compiler: x86_64-w64-mingw32-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-x86_64.cmake
+            packages: wine-stable gcc-mingw-w64
+            codecov: ubuntu_gcc_mingw_x86_64
+
           - name: Ubuntu Clang
             os: ubuntu-latest
             compiler: clang
@@ -342,6 +358,7 @@ jobs:
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages
       run: |
+        sudo dpkg --add-architecture i386 # Required for wine32
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.packages }}
 
