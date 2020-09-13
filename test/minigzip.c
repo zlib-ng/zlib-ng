@@ -90,7 +90,7 @@ void error(const char *msg) {
  */
 
 void gz_compress(FILE *in, gzFile out) {
-    char *buf = (char *)calloc(BUFLEN, 1);
+    char *buf;
     int len;
     int err;
 
@@ -100,6 +100,7 @@ void gz_compress(FILE *in, gzFile out) {
      */
     if (gz_compress_mmap(in, out) == Z_OK) return;
 #endif
+    buf = (char *)calloc(BUFLEN, 1);
     for (;;) {
         len = (int)fread(buf, 1, BUFLEN, in);
         if (ferror(in)) {
