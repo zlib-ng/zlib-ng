@@ -93,7 +93,7 @@ SUFFIX = -ng
 
 !if "$(WITH_GZFILEOP)" != ""
 WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
-OBJS = $(OBJS) gzclose.obj gzlib.obj gzread.obj gzwrite.obj
+OBJS = $(OBJS) gzlib.obj gzread.obj gzwrite.obj
 !endif
 
 # targets
@@ -114,31 +114,28 @@ $(SHAREDLIB): zconf $(TOP)/win32/$(DEFFILE) $(OBJS) $(RESFILE)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;2
 
-example.exe: example.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
-	$(LD) $(LDFLAGS) example.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
+example.exe: example.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) example.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;1
 
-minigzip.exe: minigzip.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
-	$(LD) $(LDFLAGS) minigzip.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
+minigzip.exe: minigzip.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) minigzip.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;1
 
-example_d.exe: example.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
-	$(LD) $(LDFLAGS) -out:$@ example.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
+example_d.exe: example.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
+	$(LD) $(LDFLAGS) -out:$@ example.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;1
 
-minigzip_d.exe: minigzip.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
-	$(LD) $(LDFLAGS) -out:$@ minigzip.obj gzclose2.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
+minigzip_d.exe: minigzip.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
+	$(LD) $(LDFLAGS) -out:$@ minigzip.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;1
 
 {$(TOP)}.c.obj:
 	$(CC) -c $(WFLAGS) $(CFLAGS) $<
-
-gzclose2.obj: gzclose.c
-	$(CC) -c $(WFLAGS) $(CFLAGS) -DWITH_GZFILEOP -Fogzclose2.obj gzclose.c
 
 gzlib2.obj: gzlib.c
 	$(CC) -c $(WFLAGS) $(CFLAGS) -DWITH_GZFILEOP -Fogzlib2.obj gzlib.c
@@ -161,7 +158,6 @@ SRCDIR = $(TOP)
 # Keep the dependences in sync with top-level Makefile.in
 adler32.obj: $(SRCDIR)/adler32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/functable.h $(SRCDIR)/adler32_p.h
 functable.obj: $(SRCDIR)/functable.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zendian.h $(SRCDIR)/arch/x86/x86.h
-gzclose.obj: $(SRCDIR)/gzclose.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h
 gzlib.obj: $(SRCDIR)/gzlib.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h
 gzread.obj: $(SRCDIR)/gzread.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h
 gzwrite.obj: $(SRCDIR)/gzwrite.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h

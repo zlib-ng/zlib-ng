@@ -19,7 +19,6 @@ Contents
 | deflate_medium.c | Compress data using the deflate algorithm with medium stragety |
 | deflate_slow.c   | Compress data using the deflate algorithm with slow strategy   |
 | functable.*      | Struct containing function pointers to optimized functions     |
-| gzclose.c        | Close gzip files                                               |
 | gzguts.h         | Internal definitions for gzip operations                       |
 | gzlib.c          | Functions common to reading and writing gzip files             |
 | gzread.c         | Read gzip files                                                |

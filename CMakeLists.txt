@@ -875,7 +875,6 @@ set(ZLIB_GZFILE_PRIVATE_HDRS
     gzguts.h
 )
 set(ZLIB_GZFILE_SRCS
-    gzclose.c
     gzlib.c
     gzread.c
     gzwrite.c
