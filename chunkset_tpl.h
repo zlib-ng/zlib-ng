@@ -115,19 +115,9 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
         chunkmemset_2(from, &chunk);
     } else
 #endif
-#ifdef HAVE_CHUNKMEMSET_3
-    if (dist == 3) {
-        return chunkmemset_3(out, from, dist, len);
-    } else
-#endif
 #ifdef HAVE_CHUNKMEMSET_4
     if (dist == 4) {
         chunkmemset_4(from, &chunk);
-    } else
-#endif
-#ifdef HAVE_CHUNKMEMSET_6
-    if (dist == 6) {
-        return chunkmemset_6(out, from, dist, len);
     } else
 #endif
 #ifdef HAVE_CHUNKMEMSET_8
@@ -137,6 +127,16 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
 #endif
     if (dist == sz) {
         loadchunk(from, &chunk);
+    } else if (dist < sz) {
+        unsigned char *end = out + len - 1;
+        while (len > dist) {
+            out = CHUNKCOPY_SAFE(out, from, dist, end);
+            len -= dist;
+        }
+        if (len > 0) {
+            out = CHUNKCOPY_SAFE(out, from, len, end);
+        }
+        return out;
     } else {
         out = CHUNKUNROLL(out, &dist, &len);
         return CHUNKCOPY(out, out - dist, len);

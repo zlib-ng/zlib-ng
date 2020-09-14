@@ -1252,6 +1252,12 @@ if(ZLIB_ENABLE_TESTS)
         "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+
+    add_test(NAME GH-751
+        COMMAND ${CMAKE_COMMAND}
+        "-DTARGET=${MINIGZIP_COMMAND}"
+        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-751/test.txt
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)

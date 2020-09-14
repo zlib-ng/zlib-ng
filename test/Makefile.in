@@ -91,7 +91,7 @@ CVE-2003-0107$(EXE): CVE-2003-0107.o
 	$(CC) $(CFLAGS) -o $@ CVE-2003-0107.o $(TEST_LDFLAGS)
 
 .PHONY: ghtests
-ghtests: testGH-361 testGH-364
+ghtests: testGH-361 testGH-364 testGH-751
 
 .PHONY: testGH-361
 testGH-361:
@@ -103,6 +103,10 @@ switchlevels$(EXE): $(SRCDIR)/switchlevels.c
 .PHONY: testGH-364
 testGH-364: switchlevels$(EXE)
 	$(QEMU_RUN) ./switchlevels$(EXE) 1 5 9 3 <$(SRCDIR)/GH-364/test.bin >/dev/null
+
+.PHONY: testGH-751
+testGH-751:
+	$(QEMU_RUN) ../minigzip$(EXE) <$(SRCDIR)/GH-751/test.txt | $(QEMU_RUN) ../minigzip$(EXE) -d >/dev/null
 
 clean:
 	rm -f *.o *.gcda *.gcno *.gcov
