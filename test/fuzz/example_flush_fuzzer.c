@@ -40,7 +40,7 @@ void test_flush(unsigned char *compr, z_size_t *comprLen) {
     err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    c_stream.next_in = (const unsigned char *)data;
+    c_stream.next_in = (z_const unsigned char *)data;
     c_stream.next_out = compr;
     c_stream.avail_in = 3;
     c_stream.avail_out = (unsigned int)*comprLen;

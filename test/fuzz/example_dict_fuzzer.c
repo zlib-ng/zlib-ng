@@ -79,7 +79,7 @@ void test_dict_deflate(unsigned char **compr, size_t *comprLen) {
     c_stream.next_out = *compr;
     c_stream.avail_out = (unsigned int)(*comprLen);
 
-    c_stream.next_in = data;
+    c_stream.next_in = (z_const unsigned char *)data;
     c_stream.avail_in = (uint32_t)dataLen;
 
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
