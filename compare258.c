@@ -155,7 +155,7 @@ static inline uint32_t compare256_unaligned_64_static(const unsigned char *src0,
 
         if (diff) {
             uint64_t match_byte = __builtin_ctzll(diff) / 8;
-            return len + match_byte;
+            return len + (uint32_t)match_byte;
         }
 
         src0 += 8, src1 += 8, len += 8;
