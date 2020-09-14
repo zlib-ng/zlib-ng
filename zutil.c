@@ -6,9 +6,6 @@
 #include "zbuild.h"
 #include "zutil.h"
 #include "zutil_p.h"
-#ifdef WITH_GZFILEOP
-#  include "gzguts.h"
-#endif
 
 z_const char * const PREFIX(z_errmsg)[10] = {
     (z_const char *)"need dictionary",     /* Z_NEED_DICT       2  */

@@ -835,7 +835,6 @@ set(ZLIB_PRIVATE_HDRS
     deflate.h
     deflate_p.h
     functable.h
-    gzguts.h
     inffast.h
     inffixed_tbl.h
     inflate.h
@@ -872,6 +871,9 @@ set(ZLIB_SRCS
     zutil.c
 )
 
+set(ZLIB_GZFILE_PRIVATE_HDRS 
+    gzguts.h
+)
 set(ZLIB_GZFILE_SRCS
     gzclose.c
     gzlib.c
@@ -904,7 +906,7 @@ endif()
 set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_HDRS} ${ZLIB_ARCH_SRCS} ${ZLIB_DLL_SRCS}
     ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 if(WITH_GZFILEOP)
-    list(APPEND ZLIB_ALL_SRCS ${ZLIB_GZFILE_SRCS})
+    list(APPEND ZLIB_ALL_SRCS ${ZLIB_GZFILE_PRIVATE_HDRS} ${ZLIB_GZFILE_SRCS})
 endif()
 
 if(NOT DEFINED BUILD_SHARED_LIBS)
@@ -1020,7 +1022,7 @@ if(ZLIB_ENABLE_TESTS)
         target_include_directories(${target} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
         if(NOT WITH_GZFILEOP)
             target_compile_definitions(${target} PUBLIC -DWITH_GZFILEOP)
-            target_sources(${target} PRIVATE ${ZLIB_GZFILE_SRCS})
+            target_sources(${target} PRIVATE ${ZLIB_GZFILE_PRIVATE_HDRS} ${ZLIB_GZFILE_SRCS})
         endif()
         if(ZLIB_DUAL_LINK)
             find_package(ZLIB)

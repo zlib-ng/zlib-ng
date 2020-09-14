@@ -187,7 +187,7 @@ inffast.obj: $(SRCDIR)/inffast.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/
 inflate.obj: $(SRCDIR)/inflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h $(SRCDIR)/functable.h
 inftrees.obj: $(SRCDIR)/inftrees.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h
 trees.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/trees_tbl.h
-zutil.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/zutil_p.h $(SRCDIR)/gzguts.h
+zutil.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/zutil_p.h
 
 example.obj: $(TOP)/test/example.c $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
 
