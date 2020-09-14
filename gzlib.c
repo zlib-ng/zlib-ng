@@ -242,6 +242,20 @@ gzFile Z_EXPORT PREFIX(gzopen_w)(const wchar_t *path, const char *mode) {
 }
 #endif
 
+int Z_EXPORT PREFIX(gzclose)(gzFile file) {
+#ifndef NO_GZCOMPRESS
+    gz_state *state;
+
+    if (file == NULL)
+        return Z_STREAM_ERROR;
+    state = (gz_state *)file;
+
+    return state->mode == GZ_READ ? PREFIX(gzclose_r)(file) : PREFIX(gzclose_w)(file);
+#else
+    return PREFIX(gzclose_r)(file);
+#endif
+}
+
 /* -- see zlib.h -- */
 int Z_EXPORT PREFIX(gzbuffer)(gzFile file, unsigned size) {
     gz_state *state;

@@ -94,7 +94,6 @@ OBJZ = \
 	$(ARCH_STATIC_OBJS)
 
 OBJG = \
-	gzclose.o \
 	gzlib.o \
 	gzread.o \
 	gzwrite.o
@@ -124,7 +123,6 @@ PIC_OBJZ = \
 	$(ARCH_SHARED_OBJS)
 
 PIC_OBJG = \
-	gzclose.lo \
 	gzlib.lo \
 	gzread.lo \
 	gzwrite.lo

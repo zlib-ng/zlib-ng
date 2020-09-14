@@ -873,7 +873,6 @@ set(ZLIB_SRCS
 )
 
 set(ZLIB_GZFILE_SRCS
-    gzclose.c
     gzlib.c
     gzread.c
     gzwrite.c
