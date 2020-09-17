@@ -1208,7 +1208,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME GH-361
         COMMAND ${CMAKE_COMMAND}
         "-DTARGET=${MINIGZIP_COMMAND}"
-        "-DCOMPRESS_ARGS=-c;-d;-4"
+        "-DCOMPRESS_ARGS=-c;-k;-4"
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-361/test.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
