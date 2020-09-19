@@ -36,7 +36,12 @@ execute_process(COMMAND ${CMAKE_COMMAND}
     -DINPUT=${INPUT}
     -DOUTPUT=${OUTPUT}.gz
     "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+    RESULT_VARIABLE CMD_RESULT)
+
+if(CMD_RESULT)
+    message(FATAL_ERROR "Compress failed: ${CMD_RESULT}")
+endif()
 
 # Decompress output
 set(DECOMPRESS_COMMAND ${DECOMPRESS_TARGET} ${DECOMPRESS_ARGS})
@@ -46,11 +51,21 @@ execute_process(COMMAND ${CMAKE_COMMAND}
     -DINPUT=${OUTPUT}.gz
     -DOUTPUT=${OUTPUT}.out
     "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+    RESULT_VARIABLE CMD_RESULT)
+
+if(CMD_RESULT)
+    message(FATAL_ERROR "Decompress failed: ${CMD_RESULT}")
+endif()
 
 # Compare decompressed output with original input file
 execute_process(COMMAND ${CMAKE_COMMAND}
-    -E compare_files ${INPUT} ${OUTPUT}.out)
+    -E compare_files ${INPUT} ${OUTPUT}.out
+    RESULT_VARIABLE CMD_RESULT)
+
+if(CMD_RESULT)
+    message(FATAL_ERROR "Compare minigzip decompress failed: ${CMD_RESULT}")
+endif()
 
 if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
     # Transparent writing does not use gzip format
@@ -64,11 +79,21 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             -DINPUT=${OUTPUT}.gz
             -DOUTPUT=${OUTPUT}.gzip.out
             "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+            RESULT_VARIABLE CMD_RESULT)
+
+        if(CMD_RESULT)
+            message(FATAL_ERROR "Gzip decompress failed: ${CMD_RESULT}")
+        endif()
 
         # Compare gzip output with original input file
         execute_process(COMMAND ${CMAKE_COMMAND}
-            -E compare_files ${INPUT} ${OUTPUT}.gzip.out)
+            -E compare_files ${INPUT} ${OUTPUT}.gzip.out
+            RESULT_VARIABLE CMD_RESULT)
+
+        if(CMD_RESULT)
+            message(FATAL_ERROR "Compare gzip decompress failed: ${CMD_RESULT}")
+        endif()
 
         # Compress input file with gzip
         set(GZ_COMPRESS_COMMAND ${GZIP} --stdout)
@@ -78,7 +103,12 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             -DINPUT=${INPUT}
             -DOUTPUT=${OUTPUT}.gzip.gz
             "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+            RESULT_VARIABLE CMD_RESULT)
+
+        if(CMD_RESULT)
+            message(FATAL_ERROR "Gzip compress failed: ${CMD_RESULT}")
+        endif()
 
         # Check minigzip can decompress gzip compressed output
         execute_process(COMMAND ${CMAKE_COMMAND}
@@ -86,11 +116,21 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             -DINPUT=${OUTPUT}.gzip.gz
             -DOUTPUT=${OUTPUT}.gzip.out
             "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+            RESULT_VARIABLE CMD_RESULT)
+
+        if(CMD_RESULT)
+            message(FATAL_ERROR "Minigzip decompress gzip failed: ${CMD_RESULT}")
+        endif()
 
         # Compare original input file with gzip decompressed output
         execute_process(COMMAND ${CMAKE_COMMAND}
-            -E compare_files ${INPUT} ${OUTPUT}.gzip.out)
+            -E compare_files ${INPUT} ${OUTPUT}.gzip.out
+            RESULT_VARIABLE CMD_RESULT)
+
+        if(CMD_RESULT)
+            message(FATAL_ERROR "Compare minigzip decompress gzip failed: ${CMD_RESULT}")
+        endif()
 
         # Cleanup temporary files
         file(REMOVE ${OUTPUT}.gzip.gz ${OUTPUT}.gzip.out)
