@@ -28,6 +28,13 @@ if(NOT OUTPUT)
 endif()
 string(REPLACE ".gz" "" OUTPUT "${OUTPUT}")
 
+macro(cleanup)
+    # Cleanup temporary mingizip files
+    file(REMOVE ${OUTPUT}.gz ${OUTPUT}.out)
+    # Cleanup temporary gzip files
+    file(REMOVE ${OUTPUT}.gzip.gz ${OUTPUT}.gzip.out)
+endmacro()
+
 # Compress input file
 set(COMPRESS_COMMAND ${COMPRESS_TARGET} ${COMPRESS_ARGS})
 
@@ -40,6 +47,7 @@ execute_process(COMMAND ${CMAKE_COMMAND}
     RESULT_VARIABLE CMD_RESULT)
 
 if(CMD_RESULT)
+    cleanup()
     message(FATAL_ERROR "Compress failed: ${CMD_RESULT}")
 endif()
 
@@ -55,6 +63,7 @@ execute_process(COMMAND ${CMAKE_COMMAND}
     RESULT_VARIABLE CMD_RESULT)
 
 if(CMD_RESULT)
+    cleanup()
     message(FATAL_ERROR "Decompress failed: ${CMD_RESULT}")
 endif()
 
@@ -64,6 +73,7 @@ execute_process(COMMAND ${CMAKE_COMMAND}
     RESULT_VARIABLE CMD_RESULT)
 
 if(CMD_RESULT)
+    cleanup()
     message(FATAL_ERROR "Compare minigzip decompress failed: ${CMD_RESULT}")
 endif()
 
@@ -83,6 +93,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             RESULT_VARIABLE CMD_RESULT)
 
         if(CMD_RESULT)
+            cleanup()
             message(FATAL_ERROR "Gzip decompress failed: ${CMD_RESULT}")
         endif()
 
@@ -92,6 +103,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             RESULT_VARIABLE CMD_RESULT)
 
         if(CMD_RESULT)
+            cleanup()
             message(FATAL_ERROR "Compare gzip decompress failed: ${CMD_RESULT}")
         endif()
 
@@ -107,6 +119,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             RESULT_VARIABLE CMD_RESULT)
 
         if(CMD_RESULT)
+            cleanup()
             message(FATAL_ERROR "Gzip compress failed: ${CMD_RESULT}")
         endif()
 
@@ -120,6 +133,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             RESULT_VARIABLE CMD_RESULT)
 
         if(CMD_RESULT)
+            cleanup()
             message(FATAL_ERROR "Minigzip decompress gzip failed: ${CMD_RESULT}")
         endif()
 
@@ -129,13 +143,10 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             RESULT_VARIABLE CMD_RESULT)
 
         if(CMD_RESULT)
+            cleanup()
             message(FATAL_ERROR "Compare minigzip decompress gzip failed: ${CMD_RESULT}")
         endif()
-
-        # Cleanup temporary files
-        file(REMOVE ${OUTPUT}.gzip.gz ${OUTPUT}.gzip.out)
     endif()
 endif()
 
-# Cleanup temporary files
-file(REMOVE ${OUTPUT}.gz ${OUTPUT}.out)
+cleanup()
