@@ -1147,8 +1147,8 @@ if(ZLIB_ENABLE_TESTS)
         ${CMAKE_CURRENT_SOURCE_DIR}/test/data/*)
 
     foreach(TEST_FILE_PATH ${TEST_FILE_PATHS})
-        if("${TEST_FILE_PATH}" MATCHES "$.gz" OR "${TEST_FILE_PATH}" MATCHES "$.out" OR
-           "${TEST_FILE_PATH}" MATCHES "/.git/" OR "${TEST_FILE_PATH}" MATCHES "$.md")
+        if("${TEST_FILE_PATH}" MATCHES ".gz$" OR "${TEST_FILE_PATH}" MATCHES ".out$" OR
+           "${TEST_FILE_PATH}" MATCHES "/.git/" OR "${TEST_FILE_PATH}" MATCHES ".md$")
             continue()
         endif()
         foreach(TEST_CONFIG ${TEST_CONFIGS})
