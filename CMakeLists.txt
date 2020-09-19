@@ -1123,7 +1123,6 @@ if(ZLIB_ENABLE_TESTS)
                 "-DDECOMPRESS_ARGS=-d;-c"
                 -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
                 -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}-${test_id}.gz
-                "-DSUCCESS_EXIT=0;1"
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
         endif()
     endmacro()
