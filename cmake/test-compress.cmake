@@ -8,6 +8,9 @@ if(NOT DEFINED INPUT OR NOT DEFINED COMPRESS_TARGET OR NOT DEFINED DECOMPRESS_TA
 endif()
 
 # Set default values
+if(NOT DEFINED COMPARE)
+    set(COMPARE ON)
+endif()
 if(NOT DEFINED COMPRESS_ARGS)
     set(COMPRESS_ARGS -c -k)
 endif()
@@ -67,14 +70,16 @@ if(CMD_RESULT)
     message(FATAL_ERROR "Decompress failed: ${CMD_RESULT}")
 endif()
 
-# Compare decompressed output with original input file
-execute_process(COMMAND ${CMAKE_COMMAND}
-    -E compare_files ${INPUT} ${OUTPUT}.out
-    RESULT_VARIABLE CMD_RESULT)
+if(COMPARE)
+    # Compare decompressed output with original input file
+    execute_process(COMMAND ${CMAKE_COMMAND}
+        -E compare_files ${INPUT} ${OUTPUT}.out
+        RESULT_VARIABLE CMD_RESULT)
 
-if(CMD_RESULT)
-    cleanup()
-    message(FATAL_ERROR "Compare minigzip decompress failed: ${CMD_RESULT}")
+    if(CMD_RESULT)
+        cleanup()
+        message(FATAL_ERROR "Compare minigzip decompress failed: ${CMD_RESULT}")
+    endif()
 endif()
 
 if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
@@ -137,14 +142,16 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             message(FATAL_ERROR "Minigzip decompress gzip failed: ${CMD_RESULT}")
         endif()
 
-        # Compare original input file with gzip decompressed output
-        execute_process(COMMAND ${CMAKE_COMMAND}
-            -E compare_files ${INPUT} ${OUTPUT}.gzip.out
-            RESULT_VARIABLE CMD_RESULT)
+        if(COMPARE)
+            # Compare original input file with gzip decompressed output
+            execute_process(COMMAND ${CMAKE_COMMAND}
+                -E compare_files ${INPUT} ${OUTPUT}.gzip.out
+                RESULT_VARIABLE CMD_RESULT)
 
-        if(CMD_RESULT)
-            cleanup()
-            message(FATAL_ERROR "Compare minigzip decompress gzip failed: ${CMD_RESULT}")
+            if(CMD_RESULT)
+                cleanup()
+                message(FATAL_ERROR "Compare minigzip decompress gzip failed: ${CMD_RESULT}")
+            endif()
         endif()
     endif()
 endif()
