@@ -39,6 +39,10 @@ macro(cleanup)
 endmacro()
 
 # Compress input file
+if(NOT EXISTS ${INPUT})
+    message(FATAL_ERROR "Cannot find compress input: ${INPUT}")
+endif()
+
 set(COMPRESS_COMMAND ${COMPRESS_TARGET} ${COMPRESS_ARGS})
 
 execute_process(COMMAND ${CMAKE_COMMAND}
@@ -55,6 +59,11 @@ if(CMD_RESULT)
 endif()
 
 # Decompress output
+if(NOT EXISTS ${OUTPUT}.gz)
+    cleanup()
+    message(FATAL_ERROR "Cannot find decompress input: ${OUTPUT}.gz")
+endif()
+
 set(DECOMPRESS_COMMAND ${DECOMPRESS_TARGET} ${DECOMPRESS_ARGS})
 
 execute_process(COMMAND ${CMAKE_COMMAND}
@@ -86,6 +95,11 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
     # Transparent writing does not use gzip format
     find_program(GZIP gzip)
     if(GZIP)
+        if(NOT EXISTS ${OUTPUT}.gz)
+            cleanup()
+            message(FATAL_ERROR "Cannot find gzip decompress input: ${OUTPUT}.gz")
+        endif()
+
         # Check gzip can decompress our compressed output
         set(GZ_DECOMPRESS_COMMAND ${GZIP} --decompress)
 
@@ -112,6 +126,11 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             message(FATAL_ERROR "Compare gzip decompress failed: ${CMD_RESULT}")
         endif()
 
+        if(NOT EXISTS ${OUTPUT}.gz)
+            cleanup()
+            message(FATAL_ERROR "Cannot find gzip compress input: ${INPUT}")
+        endif()
+
         # Compress input file with gzip
         set(GZ_COMPRESS_COMMAND ${GZIP} --stdout)
 
@@ -126,6 +145,11 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
         if(CMD_RESULT)
             cleanup()
             message(FATAL_ERROR "Gzip compress failed: ${CMD_RESULT}")
+        endif()
+
+        if(NOT EXISTS ${OUTPUT}.gz)
+            cleanup()
+            message(FATAL_ERROR "Cannot find minigzip decompress input: ${OUTPUT}.gzip.gz")
         endif()
 
         # Check minigzip can decompress gzip compressed output
