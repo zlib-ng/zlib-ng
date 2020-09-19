@@ -1,4 +1,4 @@
-if(NOT OUTPUT OR NOT COMPARE OR NOT COMMAND)
+if(NOT DEFINED OUTPUT OR NOT DEFINED COMPARE OR NOT DEFINED COMMAND)
     message(FATAL_ERROR "Run and compare arguments missing")
 endif()
 

@@ -1,5 +1,5 @@
 # If no output is specified, discard output
-if(NOT OUTPUT)
+if(NOT DEFINED OUTPUT)
     if(WIN32)
         set(OUTPUT NUL)
     else()
