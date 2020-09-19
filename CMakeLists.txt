@@ -1135,10 +1135,10 @@ if(ZLIB_ENABLE_TESTS)
         -0      # No compression
         -1      # Deflate quick
         -4      # Deflate medium (lazy matches)
-        "-5 -F" # Deflate medium (Z_FIXED)
+        "-5;-F" # Deflate medium (Z_FIXED)
         -6      # Deflate medium
         -9      # Deflate slow
-        "-9 -f" # Deflate slow (Z_FILTERED)
+        "-9;-f" # Deflate slow (Z_FILTERED)
     )
 
     file(GLOB_RECURSE TEST_FILE_PATHS
