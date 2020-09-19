@@ -871,7 +871,7 @@ set(ZLIB_SRCS
     zutil.c
 )
 
-set(ZLIB_GZFILE_PRIVATE_HDRS 
+set(ZLIB_GZFILE_PRIVATE_HDRS
     gzguts.h
 )
 set(ZLIB_GZFILE_SRCS
