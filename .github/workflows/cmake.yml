@@ -386,7 +386,7 @@ jobs:
     - name: Install codecov.io tools
       if: matrix.codecov
       run: |
-        python -u -m pip install git+https://github.com/codecov/codecov-python.git
+        python -u -m pip install codecov
 
     - name: Generate project files
       # Shared libaries turned off for qemu ppc* and sparc & reduce code coverage sources
