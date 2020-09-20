@@ -134,10 +134,6 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE  3  /* assume Unix */
 #endif
 
-#ifndef F_OPEN
-#  define F_OPEN(name, mode) fopen((name), (mode))
-#endif
-
          /* functions */
 
 /* Diagnostic functions */
