@@ -171,6 +171,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
     for (;;) {
         Pos hash_head = 0;    /* head of the hash chain */
         int bflush = 0;       /* set if current block must be flushed */
+        int64_t dist;
 
         /* Make sure that we always have enough lookahead, except
          * at the end of the input file. We need MAX_MATCH bytes
@@ -208,7 +209,8 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
              * At this point we have always match_length < MIN_MATCH
              */
 
-            if (hash_head != 0 && s->strstart - hash_head <= MAX_DIST(s)) {
+            dist = (int64_t)s->strstart - hash_head;
+            if (dist <= MAX_DIST(s) && dist > 0) {
                 /* To simplify the code, we prevent matches with the string
                  * of window index 0 (in particular we have to avoid a match
                  * of the string with itself at the start of the input file).
@@ -241,7 +243,9 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
             /* Find the longest match, discarding those <= prev_length.
              * At this point we have always match_length < MIN_MATCH
              */
-            if (hash_head != 0 && s->strstart - hash_head <= MAX_DIST(s)) {
+
+            dist = (int64_t)s->strstart - hash_head;
+            if (dist <= MAX_DIST(s) && dist > 0) {
                 /* To simplify the code, we prevent matches with the string
                  * of window index 0 (in particular we have to avoid a match
                  * of the string with itself at the start of the input file).
