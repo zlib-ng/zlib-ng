@@ -1089,6 +1089,7 @@ if(ZLIB_ENABLE_TESTS)
         "-DCOMMAND=${MAKEFIXED_COMMAND}"
         -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl.h
+        -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     add_executable(maketrees tools/maketrees.c trees.c zutil.c)
@@ -1100,6 +1101,7 @@ if(ZLIB_ENABLE_TESTS)
         "-DCOMMAND=${MAKETREES_COMMAND}"
         -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl.h
+        -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     add_executable(makecrct tools/makecrct.c)
@@ -1111,6 +1113,7 @@ if(ZLIB_ENABLE_TESTS)
         "-DCOMMAND=${MAKECRCT_COMMAND}"
         -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl.h
+        -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     if(WITH_FUZZERS)
