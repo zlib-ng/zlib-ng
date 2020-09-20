@@ -33,7 +33,11 @@
 #endif
 
 #ifndef UNALIGNED_OK
+#ifdef __FreeBSD__
+#  include <stdlib.h>
+#else
 #  include <malloc.h>
+#endif
 #endif
 
 #if defined(_WIN32) || defined(__CYGWIN__)
