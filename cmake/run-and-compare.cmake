@@ -25,10 +25,23 @@ if(CMD_RESULT)
     message(FATAL_ERROR "Run before compare failed: ${CMD_RESULT}")
 endif()
 
+# Use configure_file to normalize line-endings
+if(IGNORE_LINE_ENDINGS)
+    configure_file(${COMPARE} ${COMPARE}.cmp NEWLINE_STYLE LF)
+    set(COMPARE ${COMPARE}.cmp)
+    configure_file(${OUTPUT} ${OUTPUT}.cmp NEWLINE_STYLE LF)
+    set(OUTPUT ${OUTPUT}.cmp)
+endif()
+
 # Compare that output is equal to specified file
 execute_process(COMMAND ${CMAKE_COMMAND}
     -E compare_files ${COMPARE} ${OUTPUT}
     RESULT_VARIABLE CMD_RESULT)
+
+# Delete temporary files used to normalize line-endings
+if(IGNORE_LINE_ENDINGS)
+    file(REMOVE ${COMPARE} ${OUTPUT})
+endif()
 
 if(CMD_RESULT)
     message(FATAL_ERROR "Run compare failed: ${CMD_RESULT}")
