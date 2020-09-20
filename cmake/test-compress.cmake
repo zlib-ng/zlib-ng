@@ -26,8 +26,13 @@ endif()
 
 # Generate unique output path so multiple tests can be executed at the same time
 if(NOT OUTPUT)
+    # Output name based on input and unique id
     string(RANDOM UNIQUE_ID)
     set(OUTPUT ${INPUT}-${UNIQUE_ID})
+else()
+    # Output name appends unique id in case multiple tests with same output name
+    string(RANDOM LENGTH 6 UNIQUE_ID)
+    set(OUTPUT ${OUTPUT}-${UNIQUE_ID})
 endif()
 string(REPLACE ".gz" "" OUTPUT "${OUTPUT}")
 
