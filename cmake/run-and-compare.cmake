@@ -9,7 +9,7 @@ if(INPUT)
         -DINPUT=${INPUT}
         -DOUTPUT=${OUTPUT}
         "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+        -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
         RESULT_VARIABLE CMD_RESULT)
 else()
     # Run command and redirect stdout to output
@@ -17,7 +17,7 @@ else()
         "-DCOMMAND=${COMMAND}"
         -DOUTPUT=${OUTPUT}
         "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+        -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
         RESULT_VARIABLE CMD_RESULT)
 endif()
 
