@@ -21,10 +21,6 @@
 #  define GZIP
 #endif
 
-#define NIL 0
-/* Tail of hash chains */
-
-
 /* ===========================================================================
  * Internal compression state.
  */
@@ -157,7 +153,7 @@ typedef struct internal_state {
      * An index in this array is thus a window index modulo 32K.
      */
 
-    Pos *head; /* Heads of the hash chains or NIL. */
+    Pos *head; /* Heads of the hash chains or 0. */
 
     int block_start;
     /* Window position at the beginning of the current output block. Gets

@@ -38,7 +38,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
         /* Insert the string window[strstart .. strstart+2] in the
          * dictionary, and set hash_head to the head of the hash chain:
          */
-        hash_head = NIL;
+        hash_head = 0;
         if (LIKELY(s->lookahead >= MIN_MATCH)) {
             hash_head = functable.quick_insert_string(s, s->strstart);
         }
@@ -48,7 +48,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
         s->prev_match = (Pos)s->match_start;
         match_len = MIN_MATCH-1;
 
-        if (hash_head != NIL && s->prev_length < s->max_lazy_match && s->strstart - hash_head <= MAX_DIST(s)) {
+        if (hash_head != 0 && s->prev_length < s->max_lazy_match && s->strstart - hash_head <= MAX_DIST(s)) {
             /* To simplify the code, we prevent matches with the string
              * of window index 0 (in particular we have to avoid a match
              * of the string with itself at the start of the input file).
