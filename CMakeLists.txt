@@ -1083,11 +1083,35 @@ if(ZLIB_ENABLE_TESTS)
     add_executable(makefixed tools/makefixed.c inftrees.c)
     target_include_directories(makefixed PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
+    set(MAKEFIXED_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makefixed>)
+    add_test(NAME makefixed
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${MAKEFIXED_COMMAND}"
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl._h
+        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl.h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
+
     add_executable(maketrees tools/maketrees.c trees.c zutil.c)
     target_include_directories(maketrees PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
+    set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees>)
+    add_test(NAME maketrees
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${MAKETREES_COMMAND}"
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl._h
+        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl.h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
+
     add_executable(makecrct tools/makecrct.c)
     target_include_directories(makecrct PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+
+    set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct>)
+    add_test(NAME makecrct
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${MAKECRCT_COMMAND}"
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl._h
+        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl.h
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     if(WITH_FUZZERS)
         set(FUZZERS checksum compress example_small example_large example_flush example_dict minigzip)
@@ -1179,30 +1203,6 @@ if(ZLIB_ENABLE_TESTS)
         set(CVE20030107_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:CVE-2003-0107>)
         add_test(NAME CVE-2003-0107 COMMAND ${CVE20030107_COMMAND})
     endif()
-
-    set(MAKEFIXED_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makefixed>)
-    add_test(NAME makefixed
-        COMMAND ${CMAKE_COMMAND}
-        "-DCOMMAND=${MAKEFIXED_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl._h
-        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl.h
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
-
-    set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees>)
-    add_test(NAME maketrees
-        COMMAND ${CMAKE_COMMAND}
-        "-DCOMMAND=${MAKETREES_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl._h
-        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl.h
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
-
-    set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct>)
-    add_test(NAME makecrct
-        COMMAND ${CMAKE_COMMAND}
-        "-DCOMMAND=${MAKECRCT_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl._h
-        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl.h
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
     set(INFCOVER_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
     add_test(NAME infcover COMMAND ${INFCOVER_COMMAND})
