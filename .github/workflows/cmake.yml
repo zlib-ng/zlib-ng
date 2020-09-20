@@ -362,17 +362,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.packages }}
 
-    - name: Set environment variables (Windows)
-      run:  echo "::set-env name=temp::$($env:TEMP)"
-
-    - name: Cache packages (Windows)
-      uses: actions/cache@v2
-      if: runner.os == 'Windows'
-      with:
-        key: zlib-ng-win-choco-${{matrix.compiler}}
-        path: |
-          ${{env.temp}}\chocolatey\
-
     - name: Install packages (Windows)
       if: runner.os == 'Windows'
       run: |
