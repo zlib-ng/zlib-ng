@@ -126,9 +126,6 @@ extern void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned lo
  * Local data
  */
 
-#define NIL 0
-/* Tail of hash chains */
-
 /* Values for max_lazy_match, good_match and max_chain_length, depending on
  * the desired pack level (0..9). The values given below have been tuned to
  * exclude worst case performance for pathological files. Better values may be
@@ -202,7 +199,7 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
     do {
         unsigned m;
         m = *--p;
-        *p = (Pos)(m >= wsize ? m-wsize : NIL);
+        *p = (Pos)(m >= wsize ? m-wsize : 0);
     } while (--n);
 #else
     /* As of I make this change, gcc (4.8.*) isn't able to vectorize
@@ -219,7 +216,7 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
         for (i = 0; i < n; i++) {
             Pos m = *q;
             Pos t = wsize;
-            *q++ = (Pos)(m >= t ? m-t: NIL);
+            *q++ = (Pos)(m >= t ? m-t: 0);
         }
     }
 #endif /* NOT_TWEAK_COMPILER */
@@ -230,7 +227,7 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
     do {
         unsigned m;
         m = *--p;
-        *p = (Pos)(m >= wsize ? m-wsize : NIL);
+        *p = (Pos)(m >= wsize ? m-wsize : 0);
         /* If n is not on any hash chain, prev[n] is garbage but
          * its value will never be used.
          */
@@ -242,7 +239,7 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
         for (i = 0; i < n; i++) {
             Pos m = *q;
             Pos t = wsize;
-            *q++ = (Pos)(m >= t ? m-t: NIL);
+            *q++ = (Pos)(m >= t ? m-t: 0);
         }
     }
 #endif /* NOT_TWEAK_COMPILER */
