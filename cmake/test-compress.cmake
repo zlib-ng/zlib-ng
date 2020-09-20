@@ -55,7 +55,7 @@ execute_process(COMMAND ${CMAKE_COMMAND}
     -DINPUT=${INPUT}
     -DOUTPUT=${OUTPUT}.gz
     "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+    -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
     RESULT_VARIABLE CMD_RESULT)
 
 if(CMD_RESULT)
@@ -76,7 +76,7 @@ execute_process(COMMAND ${CMAKE_COMMAND}
     -DINPUT=${OUTPUT}.gz
     -DOUTPUT=${OUTPUT}.out
     "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+    -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
     RESULT_VARIABLE CMD_RESULT)
 
 if(CMD_RESULT)
@@ -113,7 +113,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             -DINPUT=${OUTPUT}.gz
             -DOUTPUT=${OUTPUT}.gzip.out
             "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+            -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
             RESULT_VARIABLE CMD_RESULT)
 
         if(CMD_RESULT)
@@ -144,7 +144,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             -DINPUT=${INPUT}
             -DOUTPUT=${OUTPUT}.gzip.gz
             "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+            -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
             RESULT_VARIABLE CMD_RESULT)
 
         if(CMD_RESULT)
@@ -163,7 +163,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             -DINPUT=${OUTPUT}.gzip.gz
             -DOUTPUT=${OUTPUT}.gzip.out
             "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+            -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
             RESULT_VARIABLE CMD_RESULT)
 
         if(CMD_RESULT)
