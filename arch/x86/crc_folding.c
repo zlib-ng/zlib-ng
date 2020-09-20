@@ -249,7 +249,7 @@ Z_INTERNAL void crc_fold_copy(deflate_state *const s, unsigned char *dst, const 
         goto partial;
     }
 
-    algn_diff = ((uintptr_t)0 - (uintptr_t)src) & 0xF;
+    algn_diff = ((uintptr_t)16 - ((uintptr_t)src & 0xF)) & 0xF;
     if (algn_diff) {
         xmm_crc_part = _mm_loadu_si128((__m128i *)src);
         _mm_storeu_si128((__m128i *)dst, xmm_crc_part);
