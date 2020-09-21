@@ -158,6 +158,8 @@ void gz_uncompress(gzFile in, FILE *out) {
     int len;
     int err;
 
+    if (buf == NULL) error("out of memory");
+
     for (;;) {
         len = PREFIX(gzread)(in, buf, BUFLENW);
         if (len < 0) error (PREFIX(gzerror)(in, &err));
