@@ -74,7 +74,7 @@ jobs:
     - name: Install packages (macOS)
       if: runner.os == 'macOS'
       run: |
-        brew install ninja ${{ matrix.packages }}
+        brew install ninja diffoscope ${{ matrix.packages }}
 
     - name: Compare builds
       run: |
@@ -97,6 +97,8 @@ jobs:
         LDFLAGS: ${{ matrix.ldflags }}
 
     - name: Check ABI
+      # macOS runner does not contain abigail
+      if: runner.os != 'macOS'
       run: |
         sh test/abicheck.sh --refresh_if
       env:
@@ -106,6 +108,8 @@ jobs:
         LDFLAGS: ${{ matrix.ldflags }}
 
     - name: Check ABI (compat)
+      # macOS runner does not contain abigail
+      if: runner.os != 'macOS'
       run: |
         if test "$CHOST" = "powerpc-linux-gnu" || test "$CFLAGS" = "-m32"; then echo "SKIP 32 bit compat broken, see issue 705"; else sh test/abicheck.sh --zlib-compat --refresh_if; fi
       env:
