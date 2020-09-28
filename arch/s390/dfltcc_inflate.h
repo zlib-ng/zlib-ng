@@ -41,4 +41,9 @@ int Z_INTERNAL dfltcc_inflate_disable(PREFIX3(streamp) strm);
         if (dfltcc_was_inflate_used((strm))) return -(1L << 16); \
     } while (0)
 
+#define INFLATE_SYNC_POINT_HOOK(strm) \
+    do { \
+        if (dfltcc_was_inflate_used((strm))) return Z_STREAM_ERROR; \
+    } while (0)
+
 #endif

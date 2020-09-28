@@ -35,6 +35,8 @@
 #  define INFLATE_NEED_UPDATEWINDOW(strm) 1
 /* Invoked at the beginning of inflateMark(). Useful for updating arch-specific pointers and offsets. */
 #  define INFLATE_MARK_HOOK(strm) do {} while (0)
+/* Invoked at the beginning of inflateSyncPoint(). Useful for performing arch-specific state checks. */
+#define INFLATE_SYNC_POINT_HOOK(strm) do {} while (0)
 #endif
 
 /* function prototypes */
@@ -1254,6 +1256,7 @@ int32_t Z_EXPORT PREFIX(inflateSyncPoint)(PREFIX3(stream) *strm) {
 
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
+    INFLATE_SYNC_POINT_HOOK(strm);
     state = (struct inflate_state *)strm->state;
     return state->mode == STORED && state->bits == 0;
 }
