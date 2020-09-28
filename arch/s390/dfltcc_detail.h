@@ -46,16 +46,16 @@ typedef enum {
 #define DFLTCC_FACILITY 151
 
 static inline dfltcc_cc dfltcc(int fn, void *param,
-                               unsigned char **op1, size_t *len1, const unsigned char **op2, size_t *len2, void *hist) {
+                               unsigned char **op1, size_t *len1, z_const unsigned char **op2, size_t *len2, void *hist) {
     unsigned char *t2 = op1 ? *op1 : NULL;
     size_t t3 = len1 ? *len1 : 0;
-    const unsigned char *t4 = op2 ? *op2 : NULL;
+    z_const unsigned char *t4 = op2 ? *op2 : NULL;
     size_t t5 = len2 ? *len2 : 0;
     Z_REGISTER int r0 __asm__("r0") = fn;
     Z_REGISTER void *r1 __asm__("r1") = param;
     Z_REGISTER unsigned char *r2 __asm__("r2") = t2;
     Z_REGISTER size_t r3 __asm__("r3") = t3;
-    Z_REGISTER const unsigned char *r4 __asm__("r4") = t4;
+    Z_REGISTER z_const unsigned char *r4 __asm__("r4") = t4;
     Z_REGISTER size_t r5 __asm__("r5") = t5;
     int cc;
 
@@ -172,7 +172,7 @@ struct dfltcc_param_v0 {
 
 static_assert(sizeof(struct dfltcc_param_v0) == 1536, sizeof_struct_dfltcc_param_v0_is_1536);
 
-static inline const char *oesc_msg(char *buf, int oesc) {
+static inline z_const char *oesc_msg(char *buf, int oesc) {
     if (oesc == 0x00)
         return NULL; /* Successful completion */
     else {
