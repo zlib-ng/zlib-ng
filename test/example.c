@@ -909,6 +909,11 @@ void test_deflate_set_header(unsigned char *compr, size_t comprLen) {
     size_t len = strlen(hello)+1;
 
 
+    if (head == NULL) {
+        printf("out of memory\n");
+        exit(1);
+    }
+
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
     c_stream.opaque = (voidpf)0;
