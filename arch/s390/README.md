@@ -48,6 +48,7 @@ DFLTCC does not support every single zlib-ng feature, in particular:
 * `inflate(Z_BLOCK)` and `inflate(Z_TREES)`
 * `inflateMark()`
 * `inflatePrime()`
+* `inflateSyncPoint()`
 
 When used, these functions will either switch to software, or, in case
 this is not possible, gracefully fail.
@@ -75,8 +76,9 @@ macros.
 parameter block using `DEFLATE_RESET_KEEP_HOOK()` and
 `INFLATE_RESET_KEEP_HOOK()` macros.
 
-`INFLATE_PRIME_HOOK()` and `INFLATE_MARK_HOOK()` macros make the
-unsupported `inflatePrime()` and `inflateMark()` calls fail gracefully.
+`INFLATE_PRIME_HOOK()`, `INFLATE_MARK_HOOK()` and
+`INFLATE_SYNC_POINT_HOOK()` macros make the respective unsupported
+calls gracefully fail.
 
 `DEFLATE_PARAMS_HOOK()` implements switching between hardware and
 software compression mid-stream using `deflateParams()`. Switching
