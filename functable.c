@@ -371,6 +371,7 @@ Z_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned 
 }
 
 Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len) {
+    int32_t use_byfour = sizeof(void *) == sizeof(ptrdiff_t);
 
     Assert(sizeof(uint64_t) >= sizeof(size_t),
            "crc32_z takes size_t but internally we have a uint64_t len");
@@ -378,7 +379,7 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
 
     cpu_check_features();
 
-    if (sizeof(void *) == sizeof(ptrdiff_t)) {
+    if (use_byfour) {
 #if BYTE_ORDER == LITTLE_ENDIAN
         functable.crc32 = crc32_little;
 #  if defined(ARM_ACLE_CRC_HASH)
