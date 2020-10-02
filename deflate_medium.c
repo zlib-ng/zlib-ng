@@ -202,7 +202,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                 hash_head = functable.quick_insert_string(s, s->strstart);
             }
 
-            current_match.strstart = s->strstart;
+            current_match.strstart = (uint16_t)s->strstart;
             current_match.orgstart = current_match.strstart;
 
             /* Find the longest match, discarding those <= prev_length.
@@ -216,7 +216,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                  * of the string with itself at the start of the input file).
                  */
                 current_match.match_length = (uint16_t)functable.longest_match(s, hash_head);
-                current_match.match_start = s->match_start;
+                current_match.match_start = (uint16_t)s->match_start;
                 if (UNLIKELY(current_match.match_length < MIN_MATCH))
                     current_match.match_length = 1;
                 if (UNLIKELY(current_match.match_start >= current_match.strstart)) {
@@ -237,7 +237,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
             s->strstart = current_match.strstart + current_match.match_length;
             hash_head = functable.quick_insert_string(s, s->strstart);
 
-            next_match.strstart = s->strstart;
+            next_match.strstart = (uint16_t)s->strstart;
             next_match.orgstart = next_match.strstart;
 
             /* Find the longest match, discarding those <= prev_length.
@@ -251,7 +251,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                  * of the string with itself at the start of the input file).
                  */
                 next_match.match_length = (uint16_t)functable.longest_match(s, hash_head);
-                next_match.match_start = s->match_start;
+                next_match.match_start = (uint16_t)s->match_start;
                 if (UNLIKELY(next_match.match_start >= next_match.strstart)) {
                     /* this can happen due to some restarts */
                     next_match.match_length = 1;
