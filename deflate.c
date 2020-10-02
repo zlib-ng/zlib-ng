@@ -215,7 +215,7 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
         Pos *q = p - n;
         for (i = 0; i < n; i++) {
             Pos m = *q;
-            Pos t = wsize;
+            Pos t = (Pos)wsize;
             *q++ = (Pos)(m >= t ? m-t: 0);
         }
     }
@@ -238,7 +238,7 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
         Pos *q = p - n;
         for (i = 0; i < n; i++) {
             Pos m = *q;
-            Pos t = wsize;
+            Pos t = (Pos)wsize;
             *q++ = (Pos)(m >= t ? m-t: 0);
         }
     }
