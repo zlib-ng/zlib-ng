@@ -124,7 +124,7 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
     n = *next;
 
     /* step one: try to move the "next" match to the left as much as possible */
-    limit = next->strstart > MAX_DIST(s) ? next->strstart - MAX_DIST(s) : 0;
+    limit = next->strstart > MAX_DIST(s) ? next->strstart - (Pos)MAX_DIST(s) : 0;
 
     match = s->window + n.match_start - 1;
     orig = s->window + n.strstart - 1;
