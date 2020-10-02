@@ -47,7 +47,7 @@ Z_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, const uint32_t str) {
     head = s->head[hm];
     if (LIKELY(head != str)) {
         s->prev[str & s->w_mask] = head;
-        s->head[hm] = str;
+        s->head[hm] = (Pos)str;
     }
     return head;
 }
@@ -64,7 +64,7 @@ Z_INTERNAL void INSERT_STRING(deflate_state *const s, const uint32_t str, uint32
     uint8_t *strstart = s->window + str;
     uint8_t *strend = strstart + count - 1; /* last position */
 
-    for (Pos idx = str; strstart <= strend; idx++, strstart++) {
+    for (Pos idx = (Pos)str; strstart <= strend; idx++, strstart++) {
         uint32_t val, hm, h = 0;
 
 #ifdef UNALIGNED_OK
