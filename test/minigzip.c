@@ -162,10 +162,14 @@ void gz_uncompress(gzFile in, FILE *out) {
 
     for (;;) {
         len = PREFIX(gzread)(in, buf, BUFLENW);
-        if (len < 0) error (PREFIX(gzerror)(in, &err));
+        if (len < 0) {
+            free(buf);
+            error(PREFIX(gzerror)(in, &err));
+        }
         if (len == 0) break;
 
         if ((int)fwrite(buf, 1, (unsigned)len, out) != len) {
+            free(buf);
             error("failed fwrite");
         }
     }
