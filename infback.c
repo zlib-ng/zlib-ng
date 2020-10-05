@@ -80,7 +80,7 @@ int32_t Z_EXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowB
     do { \
         PULL(); \
         have--; \
-        hold += (*next++ << bits); \
+        hold += ((unsigned)(*next++) << bits); \
         bits += 8; \
     } while (0)
 
