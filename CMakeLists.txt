@@ -444,7 +444,7 @@ endif()
 #
 check_c_source_compiles(
     "#include <stddef.h>
-     int main() { ptrdiff_t *a; return 0; }"
+     int main() { ptrdiff_t *a; (void)a; return 0; }"
     HAVE_PTRDIFF_T
 )
 if(NOT HAVE_PTRDIFF_T)
