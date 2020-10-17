@@ -382,9 +382,8 @@ endif()
 check_c_source_compiles(
     "#define Z_INTERNAL __attribute__((visibility (\"hidden\")))
     int Z_INTERNAL foo;
-    int main()
-    {
-      return 0;
+    int main() {
+        return 0;
     }"
     HAVE_ATTRIBUTE_VISIBILITY_HIDDEN FAIL_REGEX "not supported")
 if(HAVE_ATTRIBUTE_VISIBILITY_HIDDEN)
@@ -397,9 +396,8 @@ endif()
 check_c_source_compiles(
     "#define Z_INTERNAL __attribute__((visibility (\"internal\")))
     int Z_INTERNAL foo;
-    int main()
-    {
-      return 0;
+    int main() {
+        return 0;
     }"
     HAVE_ATTRIBUTE_VISIBILITY_INTERNAL FAIL_REGEX "not supported")
 if(HAVE_ATTRIBUTE_VISIBILITY_INTERNAL)
@@ -410,8 +408,7 @@ endif()
 # check for __builtin_ctz() support in the compiler
 #
 check_c_source_compiles(
-    "int main(void)
-    {
+    "int main(void) {
         unsigned int zero = 0;
         long test = __builtin_ctz(zero);
         (void)test;
@@ -426,8 +423,7 @@ endif()
 # check for __builtin_ctzll() support in the compiler
 #
 check_c_source_compiles(
-    "int main(void)
-    {
+    "int main(void) {
         unsigned int zero = 0;
         long test = __builtin_ctzll(zero);
         (void)test;
@@ -444,7 +440,11 @@ endif()
 #
 check_c_source_compiles(
     "#include <stddef.h>
-     int main() { ptrdiff_t *a; (void)a; return 0; }"
+     int main() {
+         ptrdiff_t *a;
+         (void)a;
+         return 0;
+    }"
     HAVE_PTRDIFF_T
 )
 if(NOT HAVE_PTRDIFF_T)
@@ -486,7 +486,7 @@ if(BASEARCH_PPC_FOUND)
     check_c_source_compiles(
         "#include <sys/auxv.h>
         int main() {
-          return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
+            return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
         }"
         HAVE_POWER8
     )
@@ -496,8 +496,7 @@ elseif(BASEARCH_X86_FOUND)
     set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
     check_c_source_compile_or_run(
         "#include <immintrin.h>
-        int main(void)
-        {
+        int main(void) {
             __m128i zero = _mm_setzero_si128();
             (void)zero;
             return 0;
@@ -508,9 +507,7 @@ elseif(BASEARCH_X86_FOUND)
     set(CMAKE_REQUIRED_FLAGS "${SSSE3FLAG}")
     check_c_source_compile_or_run(
         "#include <immintrin.h>
-
-        int main(void)
-        {
+        int main(void) {
             __m128i u, v, w;
             u = _mm_set1_epi32(1);
             v = _mm_set1_epi32(2);
@@ -523,23 +520,21 @@ elseif(BASEARCH_X86_FOUND)
     # Check whether compiler supports SSE4 CRC inline asm
     set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
     check_c_source_compile_or_run(
-        "int main(void)
-        {
+        "int main(void) {
             unsigned val = 0, h = 0;
         #if defined(_MSC_VER)
             { __asm mov edx, h __asm mov eax, val __asm crc32 eax, edx __asm mov val, eax }
         #else
             __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
         #endif
-            return (int) h;
+            return (int)h;
         }"
         HAVE_SSE42CRC_INLINE_ASM
     )
     # Check whether compiler supports SSE4 CRC intrinsics
     check_c_source_compile_or_run(
         "#include <immintrin.h>
-        int main(void)
-        {
+        int main(void) {
             unsigned crc = 0;
             char c = 'c';
         #if defined(_MSC_VER)
@@ -555,8 +550,7 @@ elseif(BASEARCH_X86_FOUND)
     # Check whether compiler supports SSE4.2 compare string instrinics
     check_c_source_compile_or_run(
         "#include <immintrin.h>
-        int main(void)
-        {
+        int main(void) {
             unsigned char a[64] = { 0 };
             unsigned char b[64] = { 0 };
             __m128i xmm_src0, xmm_src1;
@@ -572,8 +566,7 @@ elseif(BASEARCH_X86_FOUND)
         # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
         check_c_source_compile_or_run(
             "#include <immintrin.h>
-            int main(void)
-            {
+            int main(void) {
                 __m128i a = _mm_setzero_si128();
                 __m128i b = _mm_setzero_si128();
                 __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
