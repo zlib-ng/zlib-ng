@@ -92,3 +92,10 @@
     } while (0)
 
 #endif
+
+/* Set mode=BAD and prepare error message */
+#define SET_BAD(errmsg) \
+    do { \
+        state->mode = BAD; \
+        strm->msg = (char *)errmsg; \
+    } while (0)
