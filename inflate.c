@@ -505,8 +505,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 if (copy > have)
                     copy = have;
                 if (copy) {
-                    if (state->head != NULL &&
-                        state->head->extra != NULL) {
+                    if (state->head != NULL && state->head->extra != NULL) {
                         len = state->head->extra_len - state->length;
                         memcpy(state->head->extra + len, next,
                                 len + copy > state->head->extra_max ?
@@ -798,8 +797,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
 
         case LEN:
             /* use inflate_fast() if we have enough input and output */
-            if (have >= INFLATE_FAST_MIN_HAVE &&
-                left >= INFLATE_FAST_MIN_LEFT) {
+            if (have >= INFLATE_FAST_MIN_HAVE && left >= INFLATE_FAST_MIN_LEFT) {
                 RESTORE();
                 zng_inflate_fast(strm, out);
                 LOAD();
@@ -1151,8 +1149,7 @@ int32_t Z_EXPORT PREFIX(inflateGetHeader)(PREFIX3(stream) *strm, PREFIX(gz_heade
    zero for the first call.
  */
 static uint32_t syncsearch(uint32_t *have, const uint8_t *buf, uint32_t len) {
-    uint32_t got;
-    uint32_t next;
+    uint32_t got, next;
 
     got = *have;
     next = 0;
@@ -1252,13 +1249,12 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     state = (struct inflate_state *)source->state;
 
     /* allocate space */
-    copy = (struct inflate_state *)
-           ZALLOC_STATE(source, 1, sizeof(struct inflate_state));
+    copy = (struct inflate_state *)ZALLOC_STATE(source, 1, sizeof(struct inflate_state));
     if (copy == NULL)
         return Z_MEM_ERROR;
     window = NULL;
     if (state->window != NULL) {
-        window = (unsigned char *) ZALLOC_WINDOW(source, 1U << state->wbits, sizeof(unsigned char));
+        window = (unsigned char *)ZALLOC_WINDOW(source, 1U << state->wbits, sizeof(unsigned char));
         if (window == NULL) {
             ZFREE_STATE(source, copy);
             return Z_MEM_ERROR;
