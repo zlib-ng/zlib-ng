@@ -199,8 +199,7 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
                 dist += BITS(op);
 #ifdef INFLATE_STRICT
                 if (dist > dmax) {
-                    strm->msg = (char *)"invalid distance too far back";
-                    state->mode = BAD;
+                    SET_BAD("invalid distance too far back");
                     break;
                 }
 #endif
@@ -211,8 +210,7 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
                     op = dist - op;             /* distance back in window */
                     if (op > whave) {
                         if (state->sane) {
-                            strm->msg = (char *)"invalid distance too far back";
-                            state->mode = BAD;
+                            SET_BAD("invalid distance too far back");
                             break;
                         }
 #ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
@@ -277,8 +275,7 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
                 here = dcode + here->val + BITS(op);
                 goto dodist;
             } else {
-                strm->msg = (char *)"invalid distance code";
-                state->mode = BAD;
+                SET_BAD("invalid distance code");
                 break;
             }
         } else if ((op & 64) == 0) {              /* 2nd level length code */
@@ -289,8 +286,7 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
             state->mode = TYPE;
             break;
         } else {
-            strm->msg = (char *)"invalid literal/length code";
-            state->mode = BAD;
+            SET_BAD("invalid literal/length code");
             break;
         }
     } while (in < last && out < end);
