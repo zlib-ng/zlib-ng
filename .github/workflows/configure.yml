@@ -205,3 +205,38 @@ jobs:
       run: |
         cd ${{ matrix.build-dir || '.' }}
         make test
+
+  ci-configure-emscripten:
+    name: Emscripten
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Emscripten
+      run: |
+        git clone https://github.com/emscripten-core/emsdk.git
+        cd emsdk
+        ./emsdk install latest
+        ./emsdk activate latest
+        source ./emsdk_env.sh
+        echo "${PATH}" > $GITHUB_PATH
+        echo "EMSDK=${EMSDK}" >> $GITHUB_ENV
+        echo "EM_CONFIG=${EM_CONFIG}" >> $GITHUB_ENV
+        echo "EM_CACHE=${EM_CACHE}" >> $GITHUB_ENV
+        echo "EMSDK_NODE=${EMSDK_NODE}" >> $GITHUB_ENV
+        cd ..
+
+    - name: Generate project files
+      run: |
+        emconfigure ./configure --warn --zlib-compat --static
+      env:
+        CHOST: wasm32
+        CFLAGS: -static
+        LDFLAGS: -static
+        CI: true
+
+    - name: Compile source code
+      run: |
+        make -j2

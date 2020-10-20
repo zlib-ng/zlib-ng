@@ -93,6 +93,10 @@
 #elif defined(__THW_RS6000)
     #error archfound rs6000
 
+// Emscripten (WebAssembly)
+#elif defined(__EMSCRIPTEN__)
+    #error archfound wasm32
+
 // return 'unrecognized' if we do not know what architecture this is
 #else
     #error archfound unrecognized

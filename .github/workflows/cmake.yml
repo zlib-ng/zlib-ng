@@ -419,3 +419,36 @@ jobs:
         CODECOV_NAME:  "${{ matrix.name }}"
         CODECOV_EXEC:  "${{ matrix.gcov-exec || 'gcov' }}"
         CODECOV_DIR:   "${{ matrix.build-dir || '.' }}"
+
+  ci-cmake-emscripten:
+    name: Emscripten
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Emscripten
+      run: |
+        git clone https://github.com/emscripten-core/emsdk.git
+        cd emsdk
+        ./emsdk install latest
+        ./emsdk activate latest
+        source ./emsdk_env.sh
+        echo "${PATH}" > $GITHUB_PATH
+        echo "EMSDK=${EMSDK}" >> $GITHUB_ENV
+        echo "EM_CONFIG=${EM_CONFIG}" >> $GITHUB_ENV
+        echo "EM_CACHE=${EM_CACHE}" >> $GITHUB_ENV
+        echo "EMSDK_NODE=${EMSDK_NODE}" >> $GITHUB_ENV
+        cd ..
+
+    - name: Generate project files
+      # Shared libaries turned off for Emscripten
+      run: |
+        emcmake cmake . -DCMAKE_C_COMPILER_TARGET=wasm32 -DZLIB_COMPAT=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_MAINTAINER_WARNINGS=ON
+      env:
+        CI: true
+
+    - name: Compile source code
+      run: |
+        cmake --build . --config Release
