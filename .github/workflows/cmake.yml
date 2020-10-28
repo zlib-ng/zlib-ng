@@ -445,10 +445,14 @@ jobs:
     - name: Generate project files
       # Shared libaries turned off for Emscripten
       run: |
-        emcmake cmake . -DCMAKE_C_COMPILER_TARGET=wasm32 -DZLIB_COMPAT=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_MAINTAINER_WARNINGS=ON
+        cmake . -DZLIB_COMPAT=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_MAINTAINER_WARNINGS=ON -DCMAKE_C_COMPILER_TARGET=wasm32 -DCMAKE_TOOLCHAIN_FILE=${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_CROSSCOMPILING_EMULATOR=${EMSDK_NODE}
       env:
         CI: true
 
     - name: Compile source code
       run: |
         cmake --build . --config Release
+
+    - name: Run test cases
+      run: |
+        ctest --verbose -C Release --output-on-failure --max-width 120 -j 6
