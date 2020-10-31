@@ -662,7 +662,7 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
         opt_lenb = (s->opt_len+3+7) >> 3;
         static_lenb = (s->static_len+3+7) >> 3;
 
-        Tracev((stderr, "\nopt %lu(%lu) stat %lu(%lu) stored %lu lit %u ",
+        Tracev((stderr, "\nopt %lu(%lu) stat %lu(%lu) stored %u lit %u ",
                 opt_lenb, s->opt_len, static_lenb, s->static_len, stored_len,
                 s->sym_next / 3));
 
