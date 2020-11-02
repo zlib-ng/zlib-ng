@@ -7,50 +7,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [
-          Ubuntu GCC,
-          Ubuntu GCC OSB -O1 No Unaligned,
-          Ubuntu GCC -O3 No Unaligned,
-          Ubuntu GCC Link Zlib,
-          Ubuntu GCC No AVX2,
-          Ubuntu GCC No SSE2,
-          Ubuntu GCC No SSE4,
-          Ubuntu GCC No PCLMULQDQ,
-          Ubuntu GCC Compat No Opt,
-          Ubuntu GCC ARM SF,
-          Ubuntu GCC ARM SF Compat No Opt,
-          Ubuntu GCC ARM HF,
-          Ubuntu GCC ARM HF No ACLE,
-          Ubuntu GCC ARM HF No NEON,
-          Ubuntu GCC ARM HF Compat No Opt,
-          Ubuntu GCC AARCH64,
-          Ubuntu GCC AARCH64 No ACLE,
-          Ubuntu GCC AARCH64 No NEON,
-          Ubuntu GCC AARCH64 Compat No Opt,
-          Ubuntu GCC PPC,
-          Ubuntu GCC PPC64,
-          Ubuntu GCC PPC64LE,
-          Ubuntu GCC SPARC64,
-          Ubuntu GCC S390X,
-          Ubuntu GCC S390X DFLTCC,
-          Ubuntu GCC S390X DFLTCC Compat,
-          Ubuntu MinGW i686,
-          Ubuntu MinGW x86_64,
-          Ubuntu Clang,
-          Ubuntu Clang Inflate Strict,
-          Ubuntu Clang Inflate Allow Invalid Dist,
-          Ubuntu Clang Memory Map,
-          Ubuntu Clang Debug,
-          Ubuntu Clang MSAN,
-          Windows MSVC Win32,
-          Windows MSVC Win64,
-          Windows MSVC ARM No Test,
-          Windows MSVC ARM64 No Test,
-          Windows GCC,
-          Windows GCC Compat No Opt,
-          macOS Clang,
-          macOS GCC
-        ]
         include:
           - name: Ubuntu GCC
             os: ubuntu-latest

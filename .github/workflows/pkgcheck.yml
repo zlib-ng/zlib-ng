@@ -7,15 +7,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [
-          Ubuntu GCC,
-          Ubuntu GCC -m32,
-          Ubuntu GCC ARM HF,
-          Ubuntu GCC AARCH64,
-          Ubuntu GCC PPC,
-          Ubuntu GCC PPC64LE,
-          macOS Clang
-        ]
         include:
           - name: Ubuntu GCC
             os: ubuntu-latest
