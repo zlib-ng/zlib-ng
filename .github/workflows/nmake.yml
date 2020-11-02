@@ -7,12 +7,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [
-          Windows NMake x86,
-          Windows NMake x64,
-          Windows NMake ARM No Test,
-          Windows NMake ARM64 No Test
-        ]
         include:
           - name: Windows NMake x86
             os: windows-latest

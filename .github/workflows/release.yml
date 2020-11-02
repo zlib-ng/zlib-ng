@@ -10,12 +10,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name: [
-          Windows MSVC Win32,
-          Windows MSVC Win32 Compat,
-          Windows MSVC Win64,
-          Windows MSVC Win64 Compat
-        ]
         include:
           - name: Windows MSVC Win32
             os: windows-latest
