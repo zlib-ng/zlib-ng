@@ -357,10 +357,10 @@ jobs:
         cd ${{ matrix.build-dir || '.' }}
         ctest --verbose -C Release --output-on-failure --max-width 120 -j 6
       env:
-        ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=1' }}:abort_on_error=1
-        MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=1' }}:abort_on_error=1
-        TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=1' }}:abort_on_error=1
-        LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=1' }}:abort_on_error=1
+        ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1
+        MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1
+        TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=0' }}:abort_on_error=1
+        LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=0' }}:abort_on_error=1
 
     - name: Upload coverage report
       if: matrix.codecov && ( env.CODECOV_TOKEN_SECRET != '' || github.repository == 'zlib-ng/zlib-ng' )
