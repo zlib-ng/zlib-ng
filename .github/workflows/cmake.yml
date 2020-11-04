@@ -200,7 +200,7 @@ jobs:
             compiler: i686-w64-mingw32-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-i686.cmake
             packages: wine32 gcc-mingw-w64
-            codecov: ubuntu_gcc_mingw_i686
+            # Codecov disabled due to gcov locking issue error
 
           - name: Ubuntu MinGW x86_64
             os: ubuntu-latest
