@@ -101,7 +101,10 @@ void gz_compress(FILE *in, gzFile out) {
     if (gz_compress_mmap(in, out) == Z_OK) return;
 #endif
     buf = (char *)calloc(BUFLEN, 1);
-    if (buf == NULL) perror("out of memory");
+    if (buf == NULL) {
+        perror("out of memory");
+        exit(1);
+    }
 
     for (;;) {
         len = (int)fread(buf, 1, BUFLEN, in);
