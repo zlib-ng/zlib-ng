@@ -51,6 +51,7 @@ OBJS = \
 	compare258.obj \
 	compress.obj \
 	crc32.obj \
+	crc32_comb.obj \
 	deflate.obj \
 	deflate_fast.obj \
 	deflate_slow.obj \
@@ -173,6 +174,7 @@ compress.obj: $(SRCDIR)/compress.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 uncompr.obj: $(SRCDIR)/uncompr.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 crc32.obj: $(SRCDIR)/crc32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zendian.h $(SRCDIR)/deflate.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_tbl.h
+crc32_comb.obj: $(SRCDIR)/crc32_comb.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/crc32_comb_tbl.h
 deflate.obj: $(SRCDIR)/deflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_fast.obj: $(SRCDIR)/deflate_fast.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_medium.obj: $(SRCDIR)/deflate_medium.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h

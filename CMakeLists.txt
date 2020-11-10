@@ -814,6 +814,7 @@ set(ZLIB_PRIVATE_HDRS
     chunkset_tpl.h
     crc32_p.h
     crc32_tbl.h
+    crc32_comb_tbl.h
     deflate.h
     deflate_p.h
     functable.h
@@ -837,6 +838,7 @@ set(ZLIB_SRCS
     compare258.c
     compress.c
     crc32.c
+    crc32_comb.c
     deflate.c
     deflate_fast.c
     deflate_medium.c
@@ -1090,11 +1092,20 @@ if(ZLIB_ENABLE_TESTS)
     target_include_directories(makecrct PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
 
     set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct>)
-    add_test(NAME makecrct
+    add_test(NAME makecrct-crc32
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKECRCT_COMMAND}"
         -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl.h
+        -DIGNORE_LINE_ENDINGS=ON
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
+
+    set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct> -c)
+    add_test(NAME makecrct-crc32-combine
+        COMMAND ${CMAKE_COMMAND}
+        "-DCOMMAND=${MAKECRCT_COMMAND}"
+        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32_comb_tbl._h
+        -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_comb_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
 
