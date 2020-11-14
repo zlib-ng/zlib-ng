@@ -3,6 +3,11 @@
 #if defined(__linux__)
 #  include <sys/auxv.h>
 #  include <asm/hwcap.h>
+#elif defined(__FreeBSD__) && defined(__aarch64__)
+#  include <machine/armreg.h>
+#  ifndef ID_AA64ISAR0_CRC32_VAL
+#    define ID_AA64ISAR0_CRC32_VAL ID_AA64ISAR0_CRC32
+#  endif
 #elif defined(_WIN32)
 #  include <winapifamily.h>
 #endif
@@ -10,6 +15,9 @@
 static int arm_has_crc32() {
 #if defined(__linux__) && defined(HWCAP2_CRC32)
     return (getauxval(AT_HWCAP2) & HWCAP2_CRC32) != 0 ? 1 : 0;
+#elif defined(__FreeBSD__) && defined(__aarch64__)
+    return getenv("QEMU_EMULATING") == NULL
+      && ID_AA64ISAR0_CRC32_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_CRC32_BASE;
 #elif defined(ARM_NOCHECK_ACLE)
     return 1;
 #else
