@@ -11,13 +11,13 @@ jobs:
           - name: Ubuntu GCC
             os: ubuntu-latest
             compiler: gcc
-            cmake-args: -DWITH_SANITIZERS=ON
+            cmake-args: -DWITH_SANITIZER=Address
             codecov: ubuntu_gcc
 
           - name: Ubuntu GCC OSB -O1 No Unaligned64
             os: ubuntu-latest
             compiler: gcc
-            cmake-args: -DWITH_SANITIZERS=ON -DWITH_UNALIGNED=ON -DUNALIGNED64_OK=OFF
+            cmake-args: -DWITH_UNALIGNED=ON -DUNALIGNED64_OK=OFF -DWITH_SANITIZER=Undefined
             build-dir: ../build
             build-src-dir: ../zlib-ng
             codecov: ubuntu_gcc_osb
@@ -26,7 +26,7 @@ jobs:
           - name: Ubuntu GCC -O3 No Unaligned
             os: ubuntu-latest
             compiler: gcc
-            cmake-args: -DWITH_SANITIZERS=ON -DWITH_UNALIGNED=OFF
+            cmake-args: -DWITH_UNALIGNED=OFF
             codecov: ubuntu_gcc_o3
             cflags: -O3
 
@@ -38,80 +38,80 @@ jobs:
           - name: Ubuntu GCC No AVX2
             os: ubuntu-latest
             compiler: gcc
-            cmake-args: -DWITH_SANITIZERS=ON -DWITH_AVX2=OFF
+            cmake-args: -DWITH_AVX2=OFF -DWITH_SANITIZER=Undefined
             codecov: ubuntu_gcc_no_avx2
 
           - name: Ubuntu GCC No SSE2
             os: ubuntu-latest
             compiler: gcc
-            cmake-args: -DWITH_SANITIZERS=ON -DWITH_SSE2=OFF
+            cmake-args: -DWITH_SSE2=OFF -DWITH_SANITIZER=Undefined
             codecov: ubuntu_gcc_no_sse2
 
           - name: Ubuntu GCC No SSE4
             os: ubuntu-latest
             compiler: gcc
-            cmake-args: -DWITH_SANITIZERS=ON -DWITH_SSE4=OFF
+            cmake-args: -DWITH_SSE4=OFF -DWITH_SANITIZER=Undefined
             codecov: ubuntu_gcc_no_sse4
 
           - name: Ubuntu GCC No PCLMULQDQ
             os: ubuntu-latest
             compiler: gcc
-            cmake-args: -DWITH_SANITIZERS=ON -DWITH_PCLMULQDQ=OFF
+            cmake-args: -DWITH_PCLMULQDQ=OFF -DWITH_SANITIZER=Undefined
             codecov: ubuntu_gcc_no_pclmulqdq
 
           - name: Ubuntu GCC Compat No Opt
             os: ubuntu-latest
             compiler: gcc
-            cmake-args: -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
+            cmake-args: -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Address
             codecov: ubuntu_gcc_compat_no_opt
             cflags: -DNOT_TWEAK_COMPILER
 
           - name: Ubuntu GCC ARM SF
             os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_SANITIZER=Address
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf
 
           - name: Ubuntu GCC ARM SF Compat No Opt
             os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
             packages: qemu gcc-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf_compat_no_opt
 
           - name: Ubuntu GCC ARM HF
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_SANITIZER=Address
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf
 
           - name: Ubuntu GCC ARM HF No ACLE
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_SANITIZERS=ON -DWITH_ACLE=OFF
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_ACLE=OFF -DWITH_SANITIZER=Address
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_no_acle
 
           - name: Ubuntu GCC ARM HF No NEON
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_SANITIZERS=ON -DWITH_NEON=OFF
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_NEON=OFF -DWITH_SANITIZER=Address
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_no_neon
 
           - name: Ubuntu GCC ARM HF Compat No Opt
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
             packages: qemu gcc-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_compat_no_opt
 
           - name: Ubuntu GCC AARCH64
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64
@@ -119,7 +119,7 @@ jobs:
           - name: Ubuntu GCC AARCH64 No ACLE
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZERS=ON -DWITH_ACLE=OFF
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_ACLE=OFF -DWITH_SANITIZER=Undefined
             asan-options: detect_leaks=0
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64_no_acle
@@ -127,7 +127,7 @@ jobs:
           - name: Ubuntu GCC AARCH64 No NEON
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZERS=ON -DWITH_NEON=OFF
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_NEON=OFF -DWITH_SANITIZER=Undefined
             asan-options: detect_leaks=0
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64_no_neon
@@ -135,7 +135,7 @@ jobs:
           - name: Ubuntu GCC AARCH64 Compat No Opt
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
             asan-options: detect_leaks=0
             packages: qemu gcc-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64_compat_no_opt
@@ -174,7 +174,7 @@ jobs:
           - name: Ubuntu GCC S390X
             os: ubuntu-latest
             compiler: s390x-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_SANITIZER=Address
             packages: qemu gcc-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
             codecov: ubuntu_gcc_s390x
@@ -182,7 +182,7 @@ jobs:
           - name: Ubuntu GCC S390X DFLTCC
             os: ubuntu-latest
             compiler: s390x-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Address
             packages: qemu gcc-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
             codecov: ubuntu_gcc_s390x
@@ -190,7 +190,7 @@ jobs:
           - name: Ubuntu GCC S390X DFLTCC Compat
             os: ubuntu-latest
             compiler: s390x-linux-gnu-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZERS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Undefined
             packages: qemu gcc-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
             codecov: ubuntu_gcc_s390x
@@ -251,7 +251,7 @@ jobs:
           - name: Ubuntu Clang MSAN
             os: ubuntu-latest
             compiler: clang
-            cmake-args: -GNinja -DWITH_MSAN=ON
+            cmake-args: -GNinja -DWITH_SANITIZER=Memory
             packages:  ninja-build llvm-6.0
             gcov-exec: llvm-cov-6.0 gcov
             cflags: -g3 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-memory-track-origins
@@ -290,15 +290,15 @@ jobs:
             codecov: win64_gcc_compat_no_opt
 
           - name: macOS Clang
-            os: macOS-latest
+            os: macos-latest
             compiler: clang
-            cmake-args: -DWITH_SANITIZERS=ON
+            cmake-args: -DWITH_SANITIZER=Address
             codecov: macos_clang
 
           - name: macOS GCC
-            os: macOS-latest
+            os: macos-latest
             compiler: gcc
-            cmake-args: -DWITH_SANITIZERS=ON
+            cmake-args: -DWITH_SANITIZER=Undefined
             codecov: macos_gcc
 
     steps:

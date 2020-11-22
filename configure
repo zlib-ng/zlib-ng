@@ -96,8 +96,7 @@ buildacle=1
 buildneon=1
 builddfltccdeflate=0
 builddfltccinflate=0
-with_sanitizers=0
-with_msan=0
+with_sanitizer=""
 with_fuzzers=0
 floatabi=
 native=0
@@ -157,8 +156,7 @@ case "$1" in
       echo '    [--with-dfltcc-deflate]     Use DEFLATE CONVERSION CALL instruction for compression on IBM Z' | tee -a configure.log
       echo '    [--with-dfltcc-inflate]     Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z' | tee -a configure.log
       echo '    [--force-sse2]              Assume SSE2 instructions are always available (disabled by default on x86, enabled on x86_64)' | tee -a configure.log
-      echo '    [--with-sanitizers]         Build with address sanitizer and all supported sanitizers other than memory sanitizer (disabled by default)' | tee -a configure.log
-      echo '    [--with-msan]               Build with memory sanitizer (disabled by default)' | tee -a configure.log
+      echo '    [--with-sanitizer]          Build with sanitizer (memory, address, undefined)' | tee -a configure.log
       echo '    [--with-fuzzers]            Build test/fuzz (disabled by default)' | tee -a configure.log
       echo '    [--native]                  Compiles with full instruction set supported on this host' | tee -a configure.log
         exit 0 ;;
@@ -192,8 +190,7 @@ case "$1" in
     -oldstrat | --without-new-strategies) without_new_strategies=1; shift;;
     -w* | --warn) warn=1; shift ;;
     -d* | --debug) debug=1; shift ;;
-    --with-sanitizers) with_sanitizers=1; shift ;;
-    --with-msan) with_msan=1; shift ;;
+    --with-sanitizer=*) with_sanitizer=`echo $1 | sed 's/.*=//'`; shift ;;
     --with-fuzzers) with_fuzzers=1; shift ;;
 
     *)
@@ -574,14 +571,10 @@ fi
 
 echo >> configure.log
 
-if test $with_sanitizers -eq 1; then
-    if test $with_msan -eq 1; then
-        echo "Error: --with-sanitizers and --with-msan cannot be used together"
-        exit 1
-    fi
-    echo -n "Checking for sanitizers ASan/UBSan... " | tee -a configure.log
+if test "$with_sanitizer" = "address"; then
+    echo -n "Checking for address sanitizer... " | tee -a configure.log
     sanitizers=""
-    for san in bool address array-bounds float-divide-by-zero function integer-divide-by-zero return shift signed-integer-overflow undefined unsigned-integer-overflow vla-bound vptr; do
+    for san in address pointer-compare pointer-subtract; do
         if try $CC -c $CFLAGS $test.c -fsanitize=$san ; then
             if test -n "$sanitizers"; then
                 sanitizers="$sanitizers,$san"
@@ -600,16 +593,51 @@ if test $with_sanitizers -eq 1; then
         echo No | tee -a configure.log
     fi
 
+    echo -n "Checking for leak sanitizer... " | tee -a configure.log
+    if try $CC -c $CFLAGS $test.c -fsanitize=leak; then
+        echo "-fsanitize=leak" | tee -a configure.log
+        CFLAGS="$CFLAGS -fsanitize=leak"
+        SFLAGS="$SFLAGS -fsanitize=leak"
+        LDFLAGS="$LDFLAGS -fsanitize=leak"
+    else
+        echo No | tee -a configure.log
+    fi
+
     echo >> configure.log
 fi
 
-if test $with_msan -eq 1; then
-    echo -n "Checking for MSan... " | tee -a configure.log
+if test "$with_sanitizer" = "memory"; then
+    echo -n "Checking for memory sanitizer... " | tee -a configure.log
     if try $CC -c $CFLAGS $test.c -fsanitize=memory ; then
         echo "-fsanitize=memory" | tee -a configure.log
         CFLAGS="$CFLAGS -fsanitize=memory"
         SFLAGS="$SFLAGS -fsanitize=memory"
         LDFLAGS="$LDFLAGS -fsanitize=memory"
+    else
+        echo No | tee -a configure.log
+    fi
+
+    echo >> configure.log
+fi
+
+if test "$with_sanitizer" = "undefined"; then
+    echo -n "Checking for undefined behavior sanitizer... " | tee -a configure.log
+    sanitizers=""
+    for san in array-bounds bool bounds builtin enum float-cast-overflow float-divide-by-zero function integer-divide-by-zero local-bounds null nonnull-attribute object-size pointer-overflow return returns-nonnull-attribute shift shift-base shift-exponent signed-integer-overflow undefined unsigned-integer-overflow unsigned-shift-base vla-bound vptr; do
+        if try $CC -c $CFLAGS $test.c -fsanitize=$san; then
+            if test -n "$sanitizers"; then
+                sanitizers="$sanitizers,$san"
+            else
+                sanitizers="$san"
+            fi
+        fi
+    done
+
+    if test -n "$sanitizers"; then
+        echo "-fsanitize=$sanitizers" | tee -a configure.log
+        CFLAGS="$CFLAGS -fsanitize=$sanitizers"
+        SFLAGS="$SFLAGS -fsanitize=$sanitizers"
+        LDFLAGS="$LDFLAGS -fsanitize=$sanitizers"
     else
         echo No | tee -a configure.log
     fi
