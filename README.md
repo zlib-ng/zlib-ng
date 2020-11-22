@@ -111,12 +111,11 @@ Build Options
 |:-------------------------|:-------------------------|:--------------------------------------------------------------------------------------|---------|
 | ZLIB_COMPAT              | --zlib-compat            | Compile with zlib compatible API                                                      | OFF     |
 | ZLIB_ENABLE_TESTS        |                          | Build test binaries                                                                   | ON      |
-| WITH_GZFILEOP            | --without-gzfileops      | Compile with support for gzFile related functions                                     | ON     |
-| WITH_MSAN                | --with-msan              | Build with memory sanitizer                                                           | OFF     |
+| WITH_GZFILEOP            | --without-gzfileops      | Compile with support for gzFile related functions                                     | ON      |
 | WITH_OPTIM               | --without-optimizations  | Build with optimisations                                                              | ON      |
 | WITH_NEW_STRATEGIES      | --without-new-strategies | Use new strategies                                                                    | ON      |
 | WITH_NATIVE_INSTRUCTIONS | --native                 | Compiles with full instruction set supported on this host (gcc/clang -march=native)   | OFF     |
-| WITH_SANITIZERS          | --with-sanitizers        | Build with address sanitizer and all supported sanitizers other than memory sanitizer | OFF     |
+| WITH_SANITIZER           | --with-sanitizer         | Build with sanitizer (memory, address, undefined)                                     | OFF     |
 | WITH_FUZZERS             | --with-fuzzers           | Build test/fuzz                                                                       | OFF     |
 | WITH_MAINTAINER_WARNINGS |                          | Build with project maintainer warnings                                                | OFF     |
 | WITH_CODE_COVERAGE       |                          | Enable code coverage reporting                                                        | OFF     |
