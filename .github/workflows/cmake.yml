@@ -297,8 +297,10 @@ jobs:
 
           - name: macOS GCC
             os: macos-latest
-            compiler: gcc
+            compiler: gcc-10
             cmake-args: -DWITH_SANITIZER=Undefined
+            packages: gcc@10
+            gcov-exec: gcov-10
             codecov: macos_gcc
 
     steps:
