@@ -1203,9 +1203,10 @@ void check_match(deflate_state *s, Pos start, Pos match, int length) {
     }
     /* check that the match is indeed a match */
     if (memcmp(s->window + match, s->window + start, length) != EQUAL) {
+        int32_t i = 0;
         fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
         do {
-            fprintf(stderr, "%c%c", s->window[match++], s->window[start++]);
+            fprintf(stderr, "  %03d: match [%02x] start [%02x]\n", i++, s->window[match++], s->window[start++]);
         } while (--length != 0);
         z_error("invalid match");
     }
