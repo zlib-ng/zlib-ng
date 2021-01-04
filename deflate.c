@@ -1254,7 +1254,12 @@ void Z_INTERNAL fill_window(deflate_state *s) {
          */
         if (s->strstart >= wsize+MAX_DIST(s)) {
             memcpy(s->window, s->window+wsize, (unsigned)wsize);
-            s->match_start = (s->match_start >= wsize) ? s->match_start - wsize : 0;
+            if (s->match_start >= wsize) {
+                s->match_start -= wsize;
+            } else {
+                s->match_start = 0;
+                s->prev_length = 0;
+            }
             s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
             s->block_start -= (int)wsize;
             if (s->insert > s->strstart)
