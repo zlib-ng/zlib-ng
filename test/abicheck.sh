@@ -75,7 +75,7 @@ else
   # but until that bright, shining day, use some
   # random recent SHA.  Annoyingly, can't shorten it.
   ABI_GIT_REPO=https://github.com/zlib-ng/zlib-ng.git
-  ABI_GIT_COMMIT=1d2504ddc4894786fdf61d41a9bfa435cd8b1935
+  ABI_GIT_COMMIT=56ce27343bf295ae9457f8e3d38ec96d2f949a1c
 fi
 # FIXME: even when using a tag, check the hash.
 
