@@ -856,6 +856,18 @@ else
   leave 1
 fi
 
+# Check for -fno-semantic-interposition compiler support
+echo "" > test.c
+  cat > $test.c <<EOF
+int main() { return 0; }
+EOF
+if test "$gcc" -eq 1 && ($cc $CFLAGS -fno-semantic-interposition -c $test.c) >> configure.log 2>&1; then
+  echo "Checking for -no-semantic-interposition... Yes." | tee -a configure.log
+  SFLAGS="$SFLAGS -fno-semantic-interposition"
+else
+  echo "Checking for -no-semantic-interposition... No." | tee -a configure.log
+fi
+
 # see if we can hide zlib internal symbols that are linked between separate source files using hidden
 if test "$gcc" -eq 1; then
   echo >> configure.log
