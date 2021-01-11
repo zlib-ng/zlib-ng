@@ -927,12 +927,13 @@ endif()
 
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
-    set_target_properties(zlib PROPERTIES SOVERSION 1)
 
     if(ZLIB_COMPAT)
         set(ZLIB_FULL_VERSION ${ZLIB_HEADER_VERSION}.zlib-ng)
+        set_target_properties(zlib PROPERTIES SOVERSION 1)
     else()
         set(ZLIB_FULL_VERSION ${ZLIBNG_HEADER_VERSION})
+        set_target_properties(zlib PROPERTIES SOVERSION 2)
     endif()
 
     if(NOT CYGWIN)
@@ -962,7 +963,11 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
         set(CMAKE_SHARED_LIBRARY_NAME_WITH_VERSION 0)
     elseif(WIN32)
         # Creates zlib1.dll when building shared library version
-        set_target_properties(zlib PROPERTIES SUFFIX "1.dll")
+        if(ZLIB_COMPAT)
+            set_target_properties(zlib PROPERTIES SUFFIX "1.dll")
+        else()
+            set_target_properties(zlib PROPERTIES SUFFIX "2.dll")
+        endif()
     endif()
 endif()
 
