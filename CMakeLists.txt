@@ -364,6 +364,17 @@ elseif(WITH_SANITIZER STREQUAL "Memory")
 elseif(WITH_SANITIZER STREQUAL "Undefined")
     add_undefined_sanitizer()
 endif()
+
+#
+# Check whether compiler supports -fno-semantic-interposition parameter
+#
+set(CMAKE_REQUIRED_FLAGS "-fno-semantic-interposition")
+check_c_source_compiles(
+    "int main() { return 0; }"
+    HAVE_NO_INTERPOSITION
+)
+set(CMAKE_REQUIRED_FLAGS)
+
 #
 # Check if we can hide zlib internal symbols that are linked between separate source files using hidden
 #
@@ -936,6 +947,9 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     endif()
 
     if(UNIX)
+        if(HAVE_NO_INTERPOSITION)
+            set_target_properties(zlib PROPERTIES COMPILE_FLAGS "-fno-semantic-interposition")
+        endif()
         if(NOT APPLE)
             set_target_properties(zlib PROPERTIES LINK_FLAGS
                 "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map\"")
