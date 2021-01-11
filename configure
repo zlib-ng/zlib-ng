@@ -366,10 +366,10 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   case "$uname" in
   Linux* | linux* | GNU | GNU/* | solaris*)
         LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.1,--version-script,${SRCDIR}/${MAPNAME}" ;;
+        LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.2,--version-script,${SRCDIR}/${MAPNAME}" ;;
   *BSD | *bsd* | DragonFly)
         LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.1,--version-script,${SRCDIR}/${MAPNAME}"
+        LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.2,--version-script,${SRCDIR}/${MAPNAME}"
         LDCONFIG="ldconfig -m" ;;
   CYGWIN* | Cygwin* | cygwin*)
         ARFLAGS="rcs"
@@ -445,7 +445,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   QNX*)  # This is for QNX6. I suppose that the QNX rule below is for QNX2,QNX4
          # (alain.bonnefoy@icbt.com)
                  LDSHARED=${LDSHARED-"$cc"}
-                 LDSHAREDFLAGS="-shared -Wl,-h${LIBNAME}.so.1" ;;
+                 LDSHAREDFLAGS="-shared -Wl,-h${LIBNAME}.so.2" ;;
   HP-UX*)
          LDSHARED=${LDSHARED-"$cc"}
          LDSHAREDFLAGS="-shared"
@@ -473,7 +473,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
              ARFLAGS="-o" ;;
   aarch64)
              LDSHARED=${LDSHARED-"$cc"}
-             LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.1 -Wl,--version-script,${SRCDIR}/${MAPNAME}"
+             LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.2 -Wl,--version-script,${SRCDIR}/${MAPNAME}"
              LDSHAREDLIBC="-Wl,--start-group -lc -lrdimon -Wl,--end-group" ;;
   *)
              LDSHARED=${LDSHARED-"$cc"}

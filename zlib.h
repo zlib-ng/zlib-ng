@@ -38,11 +38,11 @@
 extern "C" {
 #endif
 
-#define ZLIBNG_VERSION "1.9.9"
-#define ZLIBNG_VERNUM 0x1990
-#define ZLIBNG_VER_MAJOR 1
-#define ZLIBNG_VER_MINOR 9
-#define ZLIBNG_VER_REVISION 9
+#define ZLIBNG_VERSION "2.0.0-RC1"
+#define ZLIBNG_VERNUM 0x2000
+#define ZLIBNG_VER_MAJOR 2
+#define ZLIBNG_VER_MINOR 0
+#define ZLIBNG_VER_REVISION 0
 #define ZLIBNG_VER_SUBREVISION 0
 
 #define ZLIB_VERSION "1.2.11.zlib-ng"

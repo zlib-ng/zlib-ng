@@ -1,4 +1,4 @@
-ZLIB_NG_1.9.9 {
+ZLIB_NG_2.0.0 {
   global:
     zng_adler32;
     zng_adler32_c;
@@ -70,7 +70,7 @@ ZLIB_NG_1.9.9 {
     _*;
 };
 
-ZLIB_NG_GZ_1.9.9 {
+ZLIB_NG_GZ_2.0.0 {
   global:
     zng_gzbuffer;
     zng_gzclearerr;
