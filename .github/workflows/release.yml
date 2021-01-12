@@ -41,7 +41,7 @@ jobs:
 
     - name: Set environment variables
       shell: bash
-      run:  echo "::set-env name=tag::${GITHUB_REF/refs\/tags\//}"
+      run:  echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
 
     - name: Generate project files
       run: |
