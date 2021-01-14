@@ -36,11 +36,11 @@ message(STATUS "ZLIBNG_HEADER_VERSION: ${ZLIBNG_HEADER_VERSION}")
 
 project(zlib VERSION ${ZLIB_HEADER_VERSION} LANGUAGES C)
 
-set(INSTALL_BIN_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
-set(INSTALL_LIB_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Installation directory for libraries")
-set(INSTALL_INC_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "Installation directory for headers")
-set(INSTALL_MAN_DIR "${CMAKE_INSTALL_PREFIX}/share/man" CACHE PATH "Installation directory for manual pages")
-set(INSTALL_PKGCONFIG_DIR "${INSTALL_LIB_DIR}/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
+set(BIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
+set(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Installation directory for libraries")
+set(INC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "Installation directory for headers")
+set(MAN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/share/man" CACHE PATH "Installation directory for manual pages")
+set(PKGCONFIG_INSTALL_DIR "${LIB_INSTALL_DIR}/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
 
 include(CheckTypeSize)
 include(CheckSymbolExists)
@@ -800,15 +800,15 @@ endif()
 
 # Refer to prefix symbolically to ease relocation by end user,
 # as Makefile-generated .pc file does.
-if(INSTALL_INC_DIR STREQUAL "${CMAKE_INSTALL_PREFIX}/include")
-  set(PC_INSTALL_INC_DIR "\${prefix}/include")
+if(INC_INSTALL_DIR STREQUAL "${CMAKE_INSTALL_PREFIX}/include")
+  set(PC_INC_INSTALL_DIR "\${prefix}/include")
 else()
-  set(PC_INSTALL_INC_DIR "${INSTALL_INC_DIR}")
+  set(PC_INC_INSTALL_DIR "${INSTALL_INC_DIR}")
 endif()
-if(INSTALL_LIB_DIR STREQUAL "${CMAKE_INSTALL_PREFIX}/lib")
-  set(PC_INSTALL_LIB_DIR "\${exec_prefix}/lib")
+if(LIB_INSTALL_DIR STREQUAL "${CMAKE_INSTALL_PREFIX}/lib")
+  set(PC_LIB_INSTALL_DIR "\${exec_prefix}/lib")
 else()
-  set(PC_INSTALL_LIB_DIR "${INSTALL_LIB_DIR}")
+  set(PC_LIB_INSTALL_DIR "${INSTALL_LIB_DIR}")
 endif()
 
 #============================================================================
@@ -956,7 +956,7 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
                 "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map\"")
         else()
             # Match configure/make's behavior (i.e. don't use @rpath on mac).
-            set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "${INSTALL_LIB_DIR}")
+            set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "${LIB_INSTALL_DIR}")
         endif()
     elseif(MSYS)
         # Suppress version number from shared library name
@@ -995,21 +995,21 @@ configure_file(${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
 
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     install(TARGETS ${ZLIB_INSTALL_LIBRARIES}
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
-        ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}")
+        RUNTIME DESTINATION "${BIN_INSTALL_DIR}"
+        ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
+        LIBRARY DESTINATION "${LIB_INSTALL_DIR}")
 endif()
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
     install(FILES zlib${SUFFIX}.h
-        DESTINATION "${INSTALL_INC_DIR}" RENAME zlib${SUFFIX}.h)
+        DESTINATION "${INC_INSTALL_DIR}" RENAME zlib${SUFFIX}.h)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h
-        DESTINATION "${INSTALL_INC_DIR}" RENAME zconf${SUFFIX}.h)
+        DESTINATION "${INC_INSTALL_DIR}" RENAME zconf${SUFFIX}.h)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
-    install(FILES zlib.3 DESTINATION "${INSTALL_MAN_DIR}/man3" RENAME zlib${SUFFIX}.3)
+    install(FILES zlib.3 DESTINATION "${MAN_INSTALL_DIR}/man3" RENAME zlib${SUFFIX}.3)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
-    install(FILES ${ZLIB_PC} DESTINATION "${INSTALL_PKGCONFIG_DIR}")
+    install(FILES ${ZLIB_PC} DESTINATION "${PKGCONFIG_INSTALL_DIR}")
 endif()
 
 #============================================================================
@@ -1068,9 +1068,9 @@ if(ZLIB_ENABLE_TESTS)
 
     if(INSTALL_UTILS)
         install(TARGETS minigzip minideflate
-            RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
-            ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
-            LIBRARY DESTINATION "${INSTALL_LIB_DIR}")
+            RUNTIME DESTINATION "${BIN_INSTALL_DIR}"
+            ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
+            LIBRARY DESTINATION "${LIB_INSTALL_DIR}")
     endif()
 
     set(SWITCHLEVELS_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels>)
