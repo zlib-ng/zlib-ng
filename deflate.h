@@ -194,7 +194,8 @@ typedef struct internal_state {
 
     int nice_match; /* Stop searching when current match exceeds this */
 
-#ifdef X86_PCLMULQDQ_CRC
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
+    /* Only used if X86_PCLMULQDQ_CRC is defined */
     unsigned crc0[4 * 5];
 #endif
 
@@ -251,10 +252,12 @@ typedef struct internal_state {
     unsigned int matches;         /* number of string matches in current block */
     unsigned int insert;          /* bytes at end of window left to insert */
 
-#ifdef ZLIB_DEBUG
+    /* compressed_len and bits_sent are only used if ZLIB_DEBUG is defined */
     unsigned long compressed_len; /* total bit length of compressed file mod 2^32 */
     unsigned long bits_sent;      /* bit length of compressed data sent mod 2^32 */
-#endif
+
+    /* Reserved for future use and alignment purposes */
+    char *reserved_p;
 
     uint64_t bi_buf;
     /* Output buffer. bits are inserted starting at the bottom (least significant bits). */
@@ -262,7 +265,9 @@ typedef struct internal_state {
     int32_t bi_valid;
     /* Number of valid bits in bi_buf.  All bits above the last valid bit are always zero. */
 
-} deflate_state;
+    /* Reserved for future use and alignment purposes */
+    int32_t reserved[11];
+} ALIGNED_(8) deflate_state;
 
 typedef enum {
     need_more,      /* block not completed, need more input or more output */
