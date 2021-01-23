@@ -16,8 +16,6 @@ typedef uint32_t        bestcmp_t;
 typedef uint8_t         bestcmp_t;
 #endif
 
-#define EARLY_EXIT_TRIGGER_LEVEL 5
-
 #endif
 
 /* Set match_start to the longest match starting at the given string and
@@ -161,11 +159,6 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
             scan_end0 = *(bestcmp_t *)(scan+offset+1);
 #endif
             mbase_end = (mbase_start+offset);
-        } else if (UNLIKELY(s->level < EARLY_EXIT_TRIGGER_LEVEL)) {
-            /* The probability of finding a match later if we here is pretty low, so for
-             * performance it's best to outright stop here for the lower compression levels
-             */
-            break;
         }
         GOTO_NEXT_CHAIN;
     }
