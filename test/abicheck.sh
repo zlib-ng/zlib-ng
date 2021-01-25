@@ -91,11 +91,11 @@ then
   *-m32*) M32="-m32";;
   *) M32="";;
   esac
-else
-  # Canonicalize CHOST to work around bug in original
-  # zlib's configure
-  export CHOST=$(sh $TESTDIR/../tools/config.sub $CHOST)
 fi
+
+# Canonicalize CHOST to work around bug in original zlib's configure
+export CHOST=$(sh $TESTDIR/../tools/config.sub $CHOST)
+
 if test "$CHOST" = ""
 then
   echo "abicheck: SKIP, as we don't know CHOST"
