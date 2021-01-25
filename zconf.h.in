@@ -148,6 +148,18 @@ typedef PTRDIFF_TYPE ptrdiff_t;
 #  endif
 #endif
 
+#if defined(_LFS64_LARGEFILE) && _LFS64_LARGEFILE-0
+#  define Z_LFS64
+#endif
+
+#if defined(_LARGEFILE64_SOURCE) && defined(Z_LFS64)
+#  define Z_LARGE64
+#endif
+
+#if defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS-0 == 64 && defined(Z_LFS64)
+#  define Z_WANT64
+#endif
+
 #if !defined(SEEK_SET)
 #  define SEEK_SET        0       /* Seek from beginning of file.  */
 #  define SEEK_CUR        1       /* Seek from current position.  */
