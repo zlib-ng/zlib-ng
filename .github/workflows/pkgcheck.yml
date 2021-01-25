@@ -102,7 +102,7 @@ jobs:
       # macOS runner does not contain abigail
       if: runner.os != 'macOS'
       run: |
-        if test "$CHOST" = "powerpc-linux-gnu" || test "$CFLAGS" = "-m32"; then echo "SKIP 32 bit compat broken, see issue 705"; else sh test/abicheck.sh --zlib-compat --refresh_if; fi
+        sh test/abicheck.sh --zlib-compat --refresh_if
       env:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
