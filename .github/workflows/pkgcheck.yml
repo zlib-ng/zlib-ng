@@ -66,6 +66,8 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install ninja diffoscope ${{ matrix.packages }}
+      env:
+        HOMEBREW_NO_INSTALL_CLEANUP: 1
 
     - name: Compare builds
       run: |

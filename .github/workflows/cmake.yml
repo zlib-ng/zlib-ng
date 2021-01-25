@@ -329,6 +329,8 @@ jobs:
       if: runner.os == 'macOS'
       run: |
         brew install ninja ${{ matrix.packages }}
+      env:
+        HOMEBREW_NO_INSTALL_CLEANUP: 1
 
     - name: Install codecov.io tools
       if: matrix.codecov
