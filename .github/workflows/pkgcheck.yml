@@ -69,6 +69,15 @@ jobs:
       env:
         HOMEBREW_NO_INSTALL_CLEANUP: 1
 
+    - name: Select Xcode version (macOS)
+      # Use a version of Xcode that supports ZERO_AR_DATE until CMake supports
+      # AppleClang linking with libtool using -D argument
+      # https://gitlab.kitware.com/cmake/cmake/-/issues/19852
+      if: runner.os == 'macOS'
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '12.1.1'
+
     - name: Compare builds
       run: |
         sh test/pkgcheck.sh
