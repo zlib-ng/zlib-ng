@@ -1201,10 +1201,8 @@ void check_match(deflate_state *s, Pos start, Pos match, int length) {
         fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
         z_error("invalid match length");
     }
-    /* check that the match isn't at the beginning of the window and that it isn't at
-     * the same position as the start string
-     */
-    if (match == 0 || match == start) {
+    /* check that the match isn't at the same position as the start string */
+    if (match == start) {
         fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
         z_error("invalid match position");
     }
