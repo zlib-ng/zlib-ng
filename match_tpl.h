@@ -37,6 +37,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     Z_REGISTER unsigned char *mbase_end;
     const Pos *prev = s->prev;
     Pos limit;
+    int32_t early_exit;
     uint32_t chain_length, nice_match, best_len, offset;
     uint32_t lookahead = s->lookahead;
     bestcmp_t scan_end;
@@ -80,6 +81,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 
     /* Do not waste too much time if we already have a good match */
     chain_length = s->max_chain_length;
+    early_exit = s->level < EARLY_EXIT_TRIGGER_LEVEL;
     if (best_len >= s->good_match)
         chain_length >>= 2;
     nice_match = (uint32_t)s->nice_match;
@@ -161,7 +163,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
             scan_end0 = *(bestcmp_t *)(scan+offset+1);
 #endif
             mbase_end = (mbase_start+offset);
-        } else if (UNLIKELY(s->level < EARLY_EXIT_TRIGGER_LEVEL)) {
+        } else if (UNLIKELY(early_exit)) {
             /* The probability of finding a match later if we here is pretty low, so for
              * performance it's best to outright stop here for the lower compression levels
              */
