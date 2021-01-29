@@ -36,7 +36,7 @@
 extern "C" {
 #endif
 
-#define ZLIBNG_VERSION "2.0.0-RC1"
+#define ZLIBNG_VERSION "2.0.0-RC2"
 #define ZLIBNG_VERNUM 0x2000
 #define ZLIBNG_VER_MAJOR 2
 #define ZLIBNG_VER_MINOR 0
