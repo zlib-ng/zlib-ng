@@ -1,15 +1,16 @@
 name: CI Static Analysis
 on: [push, pull_request]
 jobs:
-  GCC-10:
+  GCC:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
     - name: Install packages (Ubuntu)
       run: |
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-        sudo apt-get update
         sudo apt-get install -y gcc-10
+
     - name: Generate project files
       run: |
         cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_FUZZERS=OFF -DWITH_CODE_COVERAGE=OFF -DWITH_MAINTAINER_WARNINGS=OFF
@@ -17,23 +18,27 @@ jobs:
         CC: gcc-10
         CFLAGS: "-fanalyzer -Werror -Wanalyzer-double-fclose -Wanalyzer-double-free -Wanalyzer-exposure-through-output-file -Wanalyzer-file-leak -Wanalyzer-free-of-non-heap -Wanalyzer-malloc-leak -Wanalyzer-null-argument -Wanalyzer-null-dereference -Wanalyzer-possible-null-argument -Wanalyzer-possible-null-dereference -Wanalyzer-stale-setjmp-buffer -Wanalyzer-tainted-array-index -Wanalyzer-unsafe-call-within-signal-handler -Wanalyzer-use-after-free -Wanalyzer-use-of-pointer-in-stale-stack-frame"
         CI: true
+
     - name: Compile source code
       run: |
         cmake --build . --config Release > /dev/null
-  Clang-12:
+
+  Clang:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
     - name: Install packages (Ubuntu)
       run: |
-        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key|sudo apt-key add -
-        sudo apt-add-repository "deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic main" -y
-        sudo apt install clang-tools-12 -y
+        sudo apt-get install clang-tools -y
+
     - name: Generate project files
       run: |
-        scan-build-12 --status-bugs cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_FUZZERS=OFF -DWITH_CODE_COVERAGE=OFF -DWITH_MAINTAINER_WARNINGS=OFF
+        scan-build --status-bugs cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_FUZZERS=OFF -DWITH_CODE_COVERAGE=OFF -DWITH_MAINTAINER_WARNINGS=OFF
       env:
         CI: true
+
     - name: Compile source code
       run: |
-        scan-build-12 --status-bugs cmake --build . --config Release > /dev/null
+        scan-build --status-bugs cmake --build . --config Release > /dev/null
