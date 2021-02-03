@@ -65,6 +65,40 @@ Z_INTERNAL uint32_t compare258_unaligned_sse4(const unsigned char *src0, const u
     return compare258_unaligned_sse4_static(src0, src1);
 }
 
+Z_INTERNAL uint32_t compare258_rle_unaligned_sse4(const unsigned char *src0, const unsigned char *src1) {
+    uint32_t len = 2;
+    uint16_t src0_comp = ((uint16_t)*src0 << 8) | *src0;
+    __m128i xmm_src0;
+
+    if (src0_comp != *(uint16_t *)src1)
+        return (*src0 == *src1);
+
+    src1 += 2;
+    xmm_src0 = _mm_set1_epi16(src0_comp);
+
+    do {
+        #define mode _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY
+        __m128i xmm_src1;
+        uint32_t ret;
+
+        xmm_src1 = _mm_loadu_si128((__m128i *)src1);
+        ret = (uint32_t)_mm_cmpestri(xmm_src0, 16, xmm_src1, 16, mode);
+        if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, mode)) {
+            return len + ret;
+        }
+        src1 += 16, len += 16;
+
+        xmm_src1 = _mm_loadu_si128((__m128i *)src1);
+        ret = (uint32_t)_mm_cmpestri(xmm_src0, 16, xmm_src1, 16, mode);
+        if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, mode)) {
+            return len + ret;
+        }
+        src1 += 16, len += 16;
+    } while (len < 258);
+
+    return 258;
+}
+
 #define LONGEST_MATCH   longest_match_unaligned_sse4
 #define COMPARE256      compare256_unaligned_sse4_static
 #define COMPARE258      compare258_unaligned_sse4_static

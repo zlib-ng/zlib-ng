@@ -118,6 +118,19 @@ extern uint32_t compare258_unaligned_avx2(const unsigned char *src0, const unsig
 #endif
 #endif
 
+/* compare258_rle */
+extern uint32_t compare258_rle_c(const unsigned char *src0, const unsigned char *src1);
+#ifdef UNALIGNED_OK
+extern uint32_t compare258_rle_unaligned_16(const unsigned char *src0, const unsigned char *src1);
+extern uint32_t compare258_rle_unaligned_32(const unsigned char *src0, const unsigned char *src1);
+#ifdef UNALIGNED64_OK
+extern uint32_t compare258_rle_unaligned_64(const unsigned char *src0, const unsigned char *src1);
+#endif
+#ifdef X86_SSE42_CMP_STR
+extern uint32_t compare258_rle_unaligned_sse4(const unsigned char *src0, const unsigned char *src1);
+#endif
+#endif
+
 /* longest_match */
 extern uint32_t longest_match_c(deflate_state *const s, Pos cur_match);
 #ifdef UNALIGNED_OK
@@ -423,6 +436,26 @@ Z_INTERNAL uint32_t compare258_stub(const unsigned char *src0, const unsigned ch
     return functable.compare258(src0, src1);
 }
 
+Z_INTERNAL uint32_t compare258_rle_stub(const unsigned char *src0, const unsigned char *src1) {
+
+    functable.compare258_rle = &compare258_rle_c;
+
+#ifdef UNALIGNED_OK
+#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
+    functable.compare258_rle = &compare258_rle_unaligned_64;
+#  elif defined(HAVE_BUILTIN_CTZ)
+    functable.compare258_rle = &compare258_rle_unaligned_32;
+#  else
+    functable.compare258_rle = &compare258_rle_unaligned_16;
+#  endif
+#  ifdef X86_SSE42_CMP_STR
+    if (x86_cpu_has_sse42)
+        functable.compare258_rle = &compare258_rle_unaligned_sse4;
+#  endif
+#endif
+
+    return functable.compare258_rle(src0, src1);
+}
 Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
 
     functable.longest_match = &longest_match_c;
@@ -456,6 +489,7 @@ Z_INTERNAL Z_TLS struct functable_s functable = {
     crc32_stub,
     slide_hash_stub,
     compare258_stub,
+    compare258_rle_stub,
     longest_match_stub,
     chunksize_stub,
     chunkcopy_stub,
