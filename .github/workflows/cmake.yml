@@ -8,6 +8,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - name: Ubuntu 16.04 GCC
+            os: ubuntu-16.04
+            compiler: gcc
+
           - name: Ubuntu GCC
             os: ubuntu-latest
             compiler: gcc
@@ -242,6 +246,11 @@ jobs:
             codecov: ubuntu_gcc_mingw_x86_64
              # Limit parallel test jobs to prevent wine errors
             parallels-jobs: 2
+
+          - name: Ubuntu 16.04 Clang
+            os: ubuntu-16.04
+            compiler: clang-6.0
+            # note: github preinstalls compilers now, see https://github.com/actions/virtual-environments/pull/369/
 
           - name: Ubuntu Clang
             os: ubuntu-latest

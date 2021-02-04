@@ -13,6 +13,11 @@ jobs:
             compiler: gcc
             configure-args: --warn
 
+          - name: Ubuntu 16.04 GCC
+            os: ubuntu-16.04
+            compiler: gcc
+            configure-args: --warn
+
           - name: Ubuntu GCC OSB
             os: ubuntu-latest
             compiler: gcc
