@@ -120,6 +120,32 @@ Build Options
 | WITH_MAINTAINER_WARNINGS |                          | Build with project maintainer warnings                                                | OFF     |
 | WITH_CODE_COVERAGE       |                          | Enable code coverage reporting                                                        | OFF     |
 
+Build Requirements
+------------------
+
+Below is a list of the build environment minimums necessary to build zlib-ng. It is possible to build zlib-ng outside of these requirements, however support for doing so is limited.
+
+Minimum build system versions:
+
+* CMake 3.5.1
+* Configure script (bash/gmake)
+* NMake
+
+Minimum compiler versions:
+
+* Clang 6.0
+* GCC 5.5
+* MSVC 12.0
+
+Compiler must support the C99 standard.
+
+Minimum platform versions:
+
+* Android 18
+* macOS 10.9
+* Ubuntu 12.04
+* Windows 7
+
 Install
 -------
 
