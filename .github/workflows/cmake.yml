@@ -410,3 +410,12 @@ jobs:
         CODECOV_NAME:  "${{ matrix.name }}"
         CODECOV_EXEC:  "${{ matrix.gcov-exec || 'gcov' }}"
         CODECOV_DIR:   "${{ matrix.build-dir || '.' }}"
+
+    - name: Upload build errors
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: ${{ matrix.name }} (cmake)
+        path: |
+          ${{ matrix.build-dir || '.' }}/CMakeFiles/CMakeOutput.log
+          ${{ matrix.build-dir || '.' }}/CMakeFiles/CMakeError.log
