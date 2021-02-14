@@ -201,3 +201,11 @@ jobs:
         make test
       env:
         QEMU_RUN: ${{ matrix.qemu-run }}
+
+    - name: Upload build errors
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: ${{ matrix.name }} (configure)
+        path: |
+          ${{ matrix.build-dir || '.' }}/configure.log
