@@ -209,3 +209,4 @@ jobs:
         name: ${{ matrix.name }} (configure)
         path: |
           ${{ matrix.build-dir || '.' }}/configure.log
+        retention-days: 30
