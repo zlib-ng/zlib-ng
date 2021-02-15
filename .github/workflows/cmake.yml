@@ -419,3 +419,4 @@ jobs:
         path: |
           ${{ matrix.build-dir || '.' }}/CMakeFiles/CMakeOutput.log
           ${{ matrix.build-dir || '.' }}/CMakeFiles/CMakeError.log
+        retention-days: 30
