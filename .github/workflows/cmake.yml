@@ -367,6 +367,12 @@ jobs:
       run: |
         python -u -m pip install codecov
 
+    - name: Initialize Wine
+      # Prevent parallel test jobs from initializing Wine at the same time
+      if: contains(matrix.packages, 'wine')
+      run: |
+        wineboot --init
+
     - name: Generate project files
       # Shared libaries turned off for qemu ppc* and sparc & reduce code coverage sources
       run: |
