@@ -231,6 +231,8 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-i686.cmake
             packages: wine32 gcc-mingw-w64
             # Codecov disabled due to gcov locking issue error
+            # Limit parallel test jobs to prevent wine errors
+            parallels-jobs: 3
 
           - name: Ubuntu MinGW x86_64
             os: ubuntu-latest
@@ -238,6 +240,8 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-x86_64.cmake
             packages: wine-stable gcc-mingw-w64
             codecov: ubuntu_gcc_mingw_x86_64
+             # Limit parallel test jobs to prevent wine errors
+            parallels-jobs: 3
 
           - name: Ubuntu Clang
             os: ubuntu-latest
@@ -395,7 +399,7 @@ jobs:
       if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false
       run: |
         cd ${{ matrix.build-dir || '.' }}
-        ctest --verbose -C Release --output-on-failure --max-width 120 -j 6
+        ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '6' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1
