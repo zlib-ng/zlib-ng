@@ -363,12 +363,7 @@ endif()
 #
 # Check whether compiler supports -fno-semantic-interposition parameter
 #
-set(CMAKE_REQUIRED_FLAGS "-fno-semantic-interposition")
-check_c_source_compiles(
-    "int main() { return 0; }"
-    HAVE_NO_INTERPOSITION
-)
-set(CMAKE_REQUIRED_FLAGS)
+check_c_compiler_flag(-fno-semantic-interposition HAVE_NO_INTERPOSITION)
 
 #
 # Check if we can hide zlib internal symbols that are linked between separate source files using hidden
