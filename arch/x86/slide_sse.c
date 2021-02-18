@@ -13,34 +13,26 @@
 
 #include <immintrin.h>
 
+static inline void slide_hash_sse2_chain(Pos *table, uint32_t entries, const __m128i wsize) {
+    table += entries;
+    table -= 8;
+
+    do {
+        __m128i value, result;
+
+        value = _mm_loadu_si128((__m128i *)table);
+        result= _mm_subs_epu16(value, wsize);
+        _mm_storeu_si128((__m128i *)table, result);
+
+        table -= 8;
+        entries -= 8;
+    } while (entries > 0);
+}
+
 Z_INTERNAL void slide_hash_sse2(deflate_state *s) {
-    Pos *p;
-    unsigned n;
     uint16_t wsize = (uint16_t)s->w_size;
     const __m128i xmm_wsize = _mm_set1_epi16((short)wsize);
 
-    n = HASH_SIZE;
-    p = &s->head[n] - 8;
-    do {
-        __m128i value, result;
-
-        value = _mm_loadu_si128((__m128i *)p);
-        result= _mm_subs_epu16(value, xmm_wsize);
-        _mm_storeu_si128((__m128i *)p, result);
-        p -= 8;
-        n -= 8;
-    } while (n > 0);
-
-    n = wsize;
-    p = &s->prev[n] - 8;
-    do {
-        __m128i value, result;
-
-        value = _mm_loadu_si128((__m128i *)p);
-        result= _mm_subs_epu16(value, xmm_wsize);
-        _mm_storeu_si128((__m128i *)p, result);
-
-        p -= 8;
-        n -= 8;
-    } while (n > 0);
+    slide_hash_sse2_chain(s->head, HASH_SIZE, xmm_wsize);
+    slide_hash_sse2_chain(s->prev, wsize, xmm_wsize);
 }
