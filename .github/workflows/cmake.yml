@@ -241,7 +241,7 @@ jobs:
             packages: wine-stable gcc-mingw-w64
             codecov: ubuntu_gcc_mingw_x86_64
              # Limit parallel test jobs to prevent wine errors
-            parallels-jobs: 3
+            parallels-jobs: 2
 
           - name: Ubuntu Clang
             os: ubuntu-latest
