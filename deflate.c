@@ -179,7 +179,7 @@ static const config configuration_table[10] = {
 /* ===========================================================================
  * Initialize the hash table. prev[] will be initialized on the fly.
  */
-#define CLEAR_HASH(s) do {                                                                \
+#define CLEAR_HASH(s) do { \
     memset((unsigned char *)s->head, 0, HASH_SIZE * sizeof(*s->head)); \
   } while (0)
 
