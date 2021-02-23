@@ -131,3 +131,17 @@ jobs:
         CMAKE_ARGS: ${{ matrix.cmake-args }}
         CONFIGURE_ARGS: ${{ matrix.configure-args }}
         LDFLAGS: ${{ matrix.ldflags }}
+
+    - name: Upload build errors
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: ${{ matrix.name }}
+        path: |
+          btmp1/configure.log
+          btmp1/CMakeFiles/CMakeOutput.log
+          btmp1/CMakeFiles/CMakeError.log
+          btmp2/configure.log
+          btmp2/CMakeFiles/CMakeOutput.log
+          btmp2/CMakeFiles/CMakeError.log
+        retention-days: 30
