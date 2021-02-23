@@ -232,6 +232,15 @@ case `$cc -v 2>&1` in
   *clang*) gcc=1 ;;
 esac
 
+if test $native -eq 1; then
+  avx2flag=""
+  sse2flag=""
+  ssse3flag=""
+  sse4flag=""
+  sse42flag=""
+  pclmulflag=""
+fi
+
 if test $build32 -eq 1; then
   CFLAGS="${CFLAGS} -m32"
   SFLAGS="${SFLAGS} -m32"
