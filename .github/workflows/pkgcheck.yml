@@ -86,6 +86,7 @@ jobs:
         CFLAGS: ${{ matrix.cflags }}
         CHOST: ${{ matrix.chost }}
         CMAKE_ARGS: ${{ matrix.cmake-args }}
+        CONFIGURE_ARGS: ${{ matrix.configure-args }}
         LDFLAGS: ${{ matrix.ldflags }}
 
     - name: Compare builds (compat)
@@ -96,6 +97,7 @@ jobs:
         CFLAGS: ${{ matrix.cflags }}
         CHOST: ${{ matrix.chost }}
         CMAKE_ARGS: ${{ matrix.cmake-args }}
+        CONFIGURE_ARGS: ${{ matrix.configure-args }}
         LDFLAGS: ${{ matrix.ldflags }}
 
     - name: Check ABI
@@ -107,6 +109,8 @@ jobs:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
         CHOST: ${{ matrix.chost }}
+        CMAKE_ARGS: ${{ matrix.cmake-args }}
+        CONFIGURE_ARGS: ${{ matrix.configure-args }}
         LDFLAGS: ${{ matrix.ldflags }}
 
     - name: Check ABI (compat)
@@ -118,4 +122,6 @@ jobs:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
         CHOST: ${{ matrix.chost }}
+        CMAKE_ARGS: ${{ matrix.cmake-args }}
+        CONFIGURE_ARGS: ${{ matrix.configure-args }}
         LDFLAGS: ${{ matrix.ldflags }}
