@@ -52,6 +52,12 @@ jobs:
             os: macOS-latest
             compiler: clang
 
+          - name: macOS Clang Native
+            os: macOS-latest
+            compiler: clang
+            cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
+            configure-args: --native
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v1
