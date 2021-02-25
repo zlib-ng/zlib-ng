@@ -38,7 +38,7 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize
 
         /* This is equivalent to: m >= wsize ? m - wsize : 0
          * Since we are using a saturated unsigned subtraction, any
-         * values that are > wsize will be set to 0, while the others
+         * values that are <= wsize will be set to 0, while the others
          * will be subtracted by wsize. */
         *vp = vec_subs(vm,vw);
     } while (--chunks);
