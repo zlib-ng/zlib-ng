@@ -10,7 +10,7 @@
 #include "zbuild.h"
 #include "deflate.h"
 
-static inline void slide_hash_power8_chain(Pos *table, uint32_t entries, uint16_t wsize) {
+static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize) {
     vector unsigned short vw, vm, *vp;
     unsigned chunks;
 
@@ -49,8 +49,8 @@ static inline void slide_hash_power8_chain(Pos *table, uint32_t entries, uint16_
 void Z_INTERNAL slide_hash_power8(deflate_state *s) {
     uint16_t wsize = s->w_size;
 
-    slide_hash_power8_chain(s->head, HASH_SIZE, wsize);
-    slide_hash_power8_chain(s->prev, wsize, wsize);
+    slide_hash_chain(s->head, HASH_SIZE, wsize);
+    slide_hash_chain(s->prev, wsize, wsize);
 }
 
 #endif /* POWER8_VSX_SLIDEHASH */

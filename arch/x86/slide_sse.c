@@ -13,7 +13,7 @@
 
 #include <immintrin.h>
 
-static inline void slide_hash_sse2_chain(Pos *table, uint32_t entries, const __m128i wsize) {
+static inline void slide_hash_chain(Pos *table, uint32_t entries, const __m128i wsize) {
     table += entries;
     table -= 8;
 
@@ -33,6 +33,6 @@ Z_INTERNAL void slide_hash_sse2(deflate_state *s) {
     uint16_t wsize = (uint16_t)s->w_size;
     const __m128i xmm_wsize = _mm_set1_epi16((short)wsize);
 
-    slide_hash_sse2_chain(s->head, HASH_SIZE, xmm_wsize);
-    slide_hash_sse2_chain(s->prev, wsize, xmm_wsize);
+    slide_hash_chain(s->head, HASH_SIZE, xmm_wsize);
+    slide_hash_chain(s->prev, wsize, xmm_wsize);
 }
