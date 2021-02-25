@@ -14,7 +14,7 @@
 
 #include <immintrin.h>
 
-static inline void slide_hash_avx2_chain(Pos *table, uint32_t entries, const __m256i wsize) {
+static inline void slide_hash_chain(Pos *table, uint32_t entries, const __m256i wsize) {
     table += entries;
     table -= 16;
 
@@ -34,6 +34,6 @@ Z_INTERNAL void slide_hash_avx2(deflate_state *s) {
     uint16_t wsize = (uint16_t)s->w_size;
     const __m256i ymm_wsize = _mm256_set1_epi16((short)wsize);
 
-    slide_hash_avx2_chain(s->head, HASH_SIZE, ymm_wsize);
-    slide_hash_avx2_chain(s->prev, wsize, ymm_wsize);
+    slide_hash_chain(s->head, HASH_SIZE, ymm_wsize);
+    slide_hash_chain(s->prev, wsize, ymm_wsize);
 }
