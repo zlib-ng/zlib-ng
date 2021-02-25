@@ -26,8 +26,6 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize
     chunks = entries >> 3;
     Assert(entries % 8 == 0, "Weird hash table size!");
 
-    /* This type casting is safe since wsize is always <= 64KB
-     * as defined by deflateInit2_() and Posf == unsigned short */
     vw[0] = wsize;
     vw = vec_splat(vw,0);
 
