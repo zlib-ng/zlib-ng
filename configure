@@ -29,7 +29,7 @@ if [ -n "${CHOST}" ]; then
     CROSS_PREFIX="${CHOST}-"
     ARCH="$(echo "${NORM_CHOST}" | sed -e 's/-.*//')"
 else
-    ARCH="`uname -m`"
+    ARCH="$(uname -m)"
 fi
 
 case "${ARCH}" in
@@ -160,12 +160,12 @@ case "$1" in
       echo '    [--with-fuzzers]            Build test/fuzz (disabled by default)' | tee -a configure.log
       echo '    [--native]                  Compiles with full instruction set supported on this host' | tee -a configure.log
         exit 0 ;;
-    -p*=* | --prefix=*) prefix=`echo $1 | sed 's/.*=//'`; shift ;;
-    -e*=* | --eprefix=*) exec_prefix=`echo $1 | sed 's/.*=//'`; shift ;;
-    -l*=* | --libdir=*) libdir=`echo $1 | sed 's/.*=//'`; shift ;;
-    --sharedlibdir=*) sharedlibdir=`echo $1 | sed 's/.*=//'`; shift ;;
-    -i*=* | --includedir=*) includedir=`echo $1 | sed 's/.*=//'`;shift ;;
-    -u*=* | --uname=*) uname=`echo $1 | sed 's/.*=//'`;shift ;;
+    -p*=* | --prefix=*) prefix=$(echo $1 | sed 's/.*=//'); shift ;;
+    -e*=* | --eprefix=*) exec_prefix=$(echo $1 | sed 's/.*=//'); shift ;;
+    -l*=* | --libdir=*) libdir=$(echo $1 | sed 's/.*=//'); shift ;;
+    --sharedlibdir=*) sharedlibdir=$(echo $1 | sed 's/.*=//'); shift ;;
+    -i*=* | --includedir=*) includedir=$(echo $1 | sed 's/.*=//');shift ;;
+    -u*=* | --uname=*) uname=$(echo $1 | sed 's/.*=//');shift ;;
     -p* | --prefix) prefix="$2"; shift; shift ;;
     -e* | --eprefix) exec_prefix="$2"; shift; shift ;;
     -l* | --libdir) libdir="$2"; shift; shift ;;
@@ -183,14 +183,14 @@ case "$1" in
     --with-dfltcc-inflate) builddfltccinflate=1; shift ;;
     --force-sse2) forcesse2=1; shift ;;
     -n | --native) native=1; shift ;;
-    -a*=* | --archs=*) ARCHS=`echo $1 | sed 's/.*=//'`; shift ;;
+    -a*=* | --archs=*) ARCHS=$(echo $1 | sed 's/.*=//'); shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
     --localstatedir=*) echo "ignored option: --localstatedir" | tee -a configure.log; shift ;;
     -noopt | --without-optimizations) without_optimizations=1; shift;;
     -oldstrat | --without-new-strategies) without_new_strategies=1; shift;;
     -w* | --warn) warn=1; shift ;;
     -d* | --debug) debug=1; shift ;;
-    --with-sanitizer=*) with_sanitizer=`echo $1 | sed 's/.*=//'`; shift ;;
+    --with-sanitizer=*) with_sanitizer=$(echo $1 | sed 's/.*=//'); shift ;;
     --with-fuzzers) with_fuzzers=1; shift ;;
 
     *)
@@ -227,7 +227,7 @@ case "$cc" in
   *gcc*) gcc=1 ;;
   *clang*) gcc=1 ;;
 esac
-case `$cc -v 2>&1` in
+case $($cc -v 2>&1) in
   *gcc*) gcc=1 ;;
   *clang*) gcc=1 ;;
 esac
@@ -259,15 +259,15 @@ MAPNAME=${LIBNAME2}.map
 
 # extract zlib version numbers from zlib.h
 if test $compat -eq 0; then
-  VER=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib-ng.h`
-  VER3=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib-ng.h`
-  VER2=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib-ng.h`
-  VER1=`sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib-ng.h`
+  VER=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib-ng.h)
+  VER3=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib-ng.h)
+  VER2=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\.[0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib-ng.h)
+  VER1=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib-ng.h)
 else
-  VER=`sed -n -e '/ZLIB_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib.h`
-  VER3=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib.h`
-  VER2=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\\.[0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
-  VER1=`sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\)\\..*/\1/p' < ${SRCDIR}/zlib.h`
+  VER=$(sed -n -e '/ZLIB_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib.h)
+  VER3=$(sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib.h)
+  VER2=$(sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\.[0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib.h)
+  VER1=$(sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib.h)
 fi
 
 show $cc -c $test.c
@@ -278,9 +278,9 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
 
   # Re-check ARCH if the compiler is a cross-compiler.
   if $CC -print-multiarch 1> /dev/null 2>&1 && test -n "$($CC -print-multiarch)" 1> /dev/null 2>&1; then
-      CC_ARCH=`$CC $CFLAGS -print-multiarch | sed 's/-.*//g'`
+      CC_ARCH=$($CC $CFLAGS -print-multiarch | sed 's/-.*//g')
   else
-      CC_ARCH=`$CC $CFLAGS -dumpmachine | sed 's/-.*//g'`
+      CC_ARCH=$($CC $CFLAGS -dumpmachine | sed 's/-.*//g')
   fi
   case $CC_ARCH in
     i386 | i486 | i586 | i686)
@@ -361,7 +361,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
     SFLAGS="${SFLAGS} -DZLIB_DEBUG"
   fi
   if test -z "$uname"; then
-    uname=`(uname -s || echo unknown) 2>/dev/null`
+    uname=$((uname -s || echo unknown) 2>/dev/null)
   fi
   case "$uname" in
   Linux* | linux* | GNU | GNU/* | solaris*)
@@ -449,7 +449,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   HP-UX*)
          LDSHARED=${LDSHARED-"$cc"}
          LDSHAREDFLAGS="-shared"
-         case `(uname -m || echo unknown) 2>/dev/null` in
+         case $((uname -m || echo unknown) 2>/dev/null) in
          ia64)
                  shared_ext='.so'
                  SHAREDLIB='${LIBNAME}.so' ;;
@@ -485,14 +485,14 @@ else
   gcc=0
   echo "$CC" | tee -a configure.log
   if test -z "$uname"; then
-    uname=`(uname -sr || echo unknown) 2>/dev/null`
+    uname=$((uname -sr || echo unknown) 2>/dev/null)
   fi
   case "$uname" in
   HP-UX*)    SFLAGS=${CFLAGS-"-O +z"}
              CFLAGS=${CFLAGS-"-O"}
              LDSHARED=${LDSHARED-"ld"}
              LDSHAREDFLAGS="-b"
-         case `(uname -m || echo unknown) 2>/dev/null` in
+         case $((uname -m || echo unknown) 2>/dev/null) in
          ia64)
              shared_ext='.so'
              SHAREDLIB='${LIBNAME}.so' ;;
@@ -530,7 +530,7 @@ if ($CC -c $CFLAGS $test.c) 2>/dev/null; then
   try()
   {
     show $*
-    test "`( $* ) 2>&1 | tee -a configure.log`" = ""
+    test "$(\( $* \) 2>&1 | tee -a configure.log)" = ""
   }
   echo - using any output from compiler to indicate an error >> configure.log
 else
@@ -549,7 +549,7 @@ fi
 tryboth()
 {
   show $*
-  got=`( $* ) 2>&1`
+  got=$(( $* ) 2>&1)
   ret=$?
   printf %s "$got" >> configure.log
   if test $ret -ne 0; then
