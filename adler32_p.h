@@ -20,11 +20,9 @@
 
 static inline uint32_t adler32_len_1(uint32_t adler, const unsigned char *buf, uint32_t sum2) {
     adler += buf[0];
-    if (adler >= BASE)
-        adler -= BASE;
+    adler %= BASE;
     sum2 += adler;
-    if (sum2 >= BASE)
-        sum2 -= BASE;
+    sum2 %= BASE;
     return adler | (sum2 << 16);
 }
 
@@ -34,8 +32,7 @@ static inline uint32_t adler32_len_16(uint32_t adler, const unsigned char *buf, 
         adler += *buf++;
         sum2 += adler;
     }
-    if (adler >= BASE)
-        adler -= BASE;
+    adler %= BASE;
     sum2 %= BASE;            /* only added so many BASE's */
     return adler | (sum2 << 16);
 }
