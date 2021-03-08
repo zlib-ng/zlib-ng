@@ -32,6 +32,5 @@ Contents
 | uncompr.c        | Decompress a memory buffer                                     |
 | zconf.h.cmakein  | zconf.h template for cmake                                     |
 | zendian.h        | BYTE_ORDER for endian tests                                    |
-| zlib.3           | Man page for zlib                                              |
 | zlib.map         | Linux symbol information                                       |
 | zlib.pc.in       | Pkg-config template                                            |

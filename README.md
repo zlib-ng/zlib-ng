@@ -12,6 +12,7 @@ Maintained by Hans Kristian Rosbach
 |OSS-Fuzz|[![Fuzzing Status](https://oss-fuzz-build-logs.storage.googleapis.com/badges/zlib-ng.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:zlib-ng)
 |Codecov|[![codecov.io](https://codecov.io/github/zlib-ng/zlib-ng/coverage.svg?branch=develop)](https://codecov.io/github/zlib-ng/zlib-ng/)|
 
+
 Features
 --------
 
@@ -35,10 +36,11 @@ Features
 * GitHub Actions continuous integration on Windows, macOS, and Linux
   * Emulated CI for ARM, AARCH64, PPC, PPC64, SPARC64, S390x using qemu
 
-Fork Motivation
----------------------------
 
-The motivation for this fork was due to seeing several 3rd party
+History
+-------
+
+The motivation for this fork came after seeing several 3rd party
 contributions containing new optimizations not getting implemented
 into the official zlib repository.
 
@@ -74,6 +76,7 @@ improvements, or valuable testing.
 
 Please read LICENSE.md, it is very simple and very liberal.
 
+
 Build
 -----
 
@@ -107,6 +110,7 @@ make test
 
 Build Options
 -------------
+
 | CMake                    | configure                | Description                                                                           | Default |
 |:-------------------------|:-------------------------|:--------------------------------------------------------------------------------------|---------|
 | ZLIB_COMPAT              | --zlib-compat            | Compile with zlib compatible API                                                      | OFF     |
@@ -119,6 +123,7 @@ Build Options
 | WITH_FUZZERS             | --with-fuzzers           | Build test/fuzz                                                                       | OFF     |
 | WITH_MAINTAINER_WARNINGS |                          | Build with project maintainer warnings                                                | OFF     |
 | WITH_CODE_COVERAGE       |                          | Enable code coverage reporting                                                        | OFF     |
+
 
 Install
 -------
@@ -158,12 +163,10 @@ make install
 Contributing
 ------------
 
-Zlib-ng is a aiming to be open to contributions, and we would be
-delighted to receive pull requests on github.
-Just remember that any code you submit must be your own and it must
-be zlib licensed.
-Help with testing and reviewing of pull requests etc is also very
-much appreciated.
+Zlib-ng is a aiming to be open to contributions, and we would be delighted to
+receive pull requests on github.
+Just remember that any code you submit must be your own and it must be zlib licensed.
+Help with testing and reviewing of pull requests etc is also very much appreciated.
 
 If you are interested in contributing, please consider joining our
 IRC channel #zlib-ng on the Freenode IRC network.
@@ -174,15 +177,15 @@ Acknowledgments
 
 Thanks to Servebolt.com for sponsoring my maintainership of zlib-ng.
 
-Thanks go out to all the people and companies who have taken the time
-to contribute code reviews, testing and/or patches. Zlib-ng would not
-have been nearly as good without you.
+Thanks go out to all the people and companies who have taken the time to contribute
+code reviews, testing and/or patches. Zlib-ng would not have been nearly as good without you.
 
 The deflate format used by zlib was defined by Phil Katz.
 The deflate and zlib specifications were written by L. Peter Deutsch.
 
 zlib was originally created by Jean-loup Gailly (compression)
 and Mark Adler (decompression).
+
 
 Advanced Build Options
 ----------------------
@@ -205,3 +208,13 @@ Advanced Build Options
 | WITH_INFLATE_STRICT             |                       | Build with strict inflate distance checking                         | OFF                    |
 | WITH_INFLATE_ALLOW_INVALID_DIST |                       | Build with zero fill for inflate invalid distances                  | OFF                    |
 | INSTALL_UTILS                   |                       | Copy minigzip and minideflate during install                        | OFF                    |
+
+
+Related Projects
+----------------
+
+* Fork of the popular minigzip                  https://github.com/zlib-ng/minizip-ng
+* Python tool to benchmark minigzip/minideflate https://github.com/zlib-ng/deflatebench
+* Python tool to benchmark pigz                 https://github.com/zlib-ng/pigzbench
+* 3rd party patches for zlib-ng compatibility   https://github.com/zlib-ng/patches
+

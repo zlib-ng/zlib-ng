@@ -360,9 +360,6 @@ install-static: $(STATICLIB)
 install-libs: install-shared install-static
 	-@if [ ! -d $(DESTDIR)$(man3dir)      ]; then mkdir -p $(DESTDIR)$(man3dir); fi
 	-@if [ ! -d $(DESTDIR)$(pkgconfigdir) ]; then mkdir -p $(DESTDIR)$(pkgconfigdir); fi
-	rm -f $(DESTDIR)$(man3dir)/zlib$(SUFFIX).3
-	cp $(SRCDIR)/zlib.3 $(DESTDIR)$(man3dir)/zlib$(SUFFIX).3
-	chmod 644 $(DESTDIR)$(man3dir)/zlib$(SUFFIX).3
 	rm -f $(DESTDIR)$(pkgconfigdir)/$(PKGFILE)
 	cp $(PKGFILE) $(DESTDIR)$(pkgconfigdir)
 	chmod 644 $(DESTDIR)$(pkgconfigdir)/$(PKGFILE)
@@ -387,13 +384,7 @@ endif
 
 uninstall: uninstall-static uninstall-shared
 	cd $(DESTDIR)$(includedir) && rm -f zlib$(SUFFIX).h zconf$(SUFFIX).h
-	cd $(DESTDIR)$(man3dir) && rm -f zlib$(SUFFIX).3
 	cd $(DESTDIR)$(pkgconfigdir) && rm -f $(PKGFILE)
-
-docs: zlib.3.pdf
-
-zlib.3.pdf: $(SRCDIR)/zlib.3
-	groff -mandoc -f H -T ps $(SRCDIR)/zlib.3 | ps2pdf - zlib.3.pdf
 
 mostlyclean: clean
 clean:
@@ -432,7 +423,7 @@ distclean: clean
 	grep -v '^#cmakedefine' $(SRCDIR)/zconf.h.in > zconf.h.cmakein &&\
 	touch -r $(SRCDIR)/zconf.h.in zconf.h.cmakein ; fi
 # Cleanup these files if building outside source tree
-	@if [ ! -f zlib.3 ]; then rm -f zlib.3.pdf Makefile; fi
+	@if [ ! -f README.md ]; then rm -f Makefile; fi
 # Remove arch and test directory if building outside source tree
 	@if [ ! -f $(ARCHDIR)/Makefile.in ]; then rm -rf arch; fi
 	@if [ ! -f test/Makefile.in ]; then rm -rf test; fi
