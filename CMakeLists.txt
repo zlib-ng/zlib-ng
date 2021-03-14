@@ -900,6 +900,10 @@ if(NOT DEFINED BUILD_SHARED_LIBS)
 else()
     add_library(zlib ${ZLIB_ALL_SRCS})
 
+    if(NOT BUILD_SHARED_LIBS)
+        add_library(zlibstatic ALIAS zlib)
+    endif()
+
     set(ZLIB_INSTALL_LIBRARIES zlib)
 endif()
 
