@@ -353,7 +353,7 @@ jobs:
     - name: Checkout test corpora
       uses: actions/checkout@v2
       with:
-        repository: nmoinvaz/corpora
+        repository: zlib-ng/corpora
         path: test/data/corpora
 
     - name: Install packages (Ubuntu)
