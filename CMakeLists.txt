@@ -1271,6 +1271,12 @@ if(ZLIB_ENABLE_TESTS)
         "-DTARGET=${MINIGZIP_COMMAND}"
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-751/test.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+
+    add_executable(deflate_quick_bi_valid test/deflate_quick_bi_valid.c)
+    configure_test_executable(deflate_quick_bi_valid)
+    target_link_libraries(deflate_quick_bi_valid zlib)
+    set(DEFLATE_QUICK_BI_VALID_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:deflate_quick_bi_valid>)
+    add_test(NAME deflate_quick_bi_valid COMMAND ${DEFLATE_QUICK_BI_VALID_COMMAND})
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
