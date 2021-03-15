@@ -254,7 +254,7 @@ endif()
 # Replace optimization level 3 added by default with level 2
 if(NOT MSVC AND NOT CMAKE_C_FLAGS MATCHES "([\\/\\-]O)3")
     string(REGEX REPLACE "([\\/\\-]O)3" "\\12"
-        CMAKE_C_FLAGS_RELEASE ${CMAKE_C_FLAGS_RELEASE})
+        CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
 endif()
 
 # Set architecture alignment requirements
