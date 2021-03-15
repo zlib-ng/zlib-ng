@@ -1202,6 +1202,9 @@ if(ZLIB_ENABLE_TESTS)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
     endforeach()
 
+    # Run tests targeting tools
+    include(cmake/test-tools.cmake)
+
     if(NOT WIN32 AND ZLIB_COMPAT)
         add_executable(CVE-2003-0107 test/CVE-2003-0107.c)
         target_link_libraries(CVE-2003-0107 zlib)
