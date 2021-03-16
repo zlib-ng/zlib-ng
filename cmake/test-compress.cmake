@@ -1,3 +1,28 @@
+# test-compress.cmake -- Runs a test against an input file to make sure that the specified
+#   targets are able to to compress and then decompress it successfully. Optionally verify
+#   the results with gzip. Output files are generated with unique names to prevent parallel
+#   tests from corrupting one another. Default target arguments are compatible with minigzip.
+
+# Copyright (C) 2021 Nathan Moinvaziri
+# Licensed under the Zlib license, see LICENSE.md for details
+
+# that test a specific input file for compression or decompression.
+
+# Required Variables
+#   INPUT                   - Input file to test
+#   TARGET or               - Command to run for both compress and decompress
+#     COMPRESS_TARGET and   - Command to run to compress input file
+#     DECOMPRESS_TARGET     - Command to run to decompress output file
+
+# Optional Variables
+#   COMPRESS_ARGS           - Arguments to pass for compress command (default: -c -k)
+#   DECOMPRESS_ARGS         - Arguments to pass to decompress command (default: -d -c)
+
+#   GZIP_VERIFY             - Verify that gzip can decompress the COMPRESS_TARGET output and
+#                             verify that DECOMPRESS_TARGET can decompress gzip output of INPUT
+#   COMPARE                 - Verify decompressed output is the same as input
+#   SUCCESS_EXIT            - List of successful exit codes (default: 0, ie: 0;1)
+
 if(TARGET)
     set(COMPRESS_TARGET ${TARGET})
     set(DECOMPRESS_TARGET ${TARGET})
@@ -157,7 +182,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             message(FATAL_ERROR "Cannot find minigzip decompress input: ${OUTPUT}.gzip.gz")
         endif()
 
-        # Check minigzip can decompress gzip compressed output
+        # Check decompress target can handle gzip compressed output
         execute_process(COMMAND ${CMAKE_COMMAND}
             "-DCOMMAND=${DECOMPRESS_COMMAND}"
             -DINPUT=${OUTPUT}.gzip.gz
