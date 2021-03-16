@@ -316,10 +316,7 @@ endif()
 #
 # Check for standard/system includes
 #
-check_include_file(sys/types.h HAVE_SYS_TYPES_H)
 check_include_file(stdarg.h    HAVE_STDARG_H)
-check_include_file(stdint.h    HAVE_STDINT_H)
-check_include_file(stddef.h    HAVE_STDDEF_H)
 check_include_file(sys/sdt.h   HAVE_SYS_SDT_H)
 if(HAVE_SYS_SDT_H)
     add_definitions(-DHAVE_SYS_SDT_H)
