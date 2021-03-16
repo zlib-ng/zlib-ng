@@ -1,3 +1,17 @@
+# run-and-compare.cmake -- Runs a command and compares its output to an expected value
+
+# Copyright (C) 2021 Nathan Moinvaziri
+# Licensed under the Zlib license, see LICENSE.md for details
+
+# Required Variables
+#   COMMAND             - Command to run
+#   OUTPUT              - Standard output
+#   COMPARE             - String to compare output against
+
+# Optional Variables
+#   INPUT               - Standard intput
+#   IGNORE_LINE_ENDINGS - Ignore line endings when comparing output
+
 if(NOT DEFINED OUTPUT OR NOT DEFINED COMPARE OR NOT DEFINED COMMAND)
     message(FATAL_ERROR "Run and compare arguments missing")
 endif()
