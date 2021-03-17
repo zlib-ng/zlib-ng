@@ -65,7 +65,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         if (UNLIKELY(s->pending + ((BIT_BUF_SIZE + 7) >> 3) >= s->pending_buf_size)) {
             flush_pending(s->strm);
             if (s->strm->avail_out == 0) {
-                return (last && s->strm->avail_in == 0 && s->bi_valid == 0) ? finish_started : need_more;
+                return (last && s->strm->avail_in == 0 && s->bi_valid == 0 && s->block_open == 0) ? finish_started : need_more;
             }
         }
 
