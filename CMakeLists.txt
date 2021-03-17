@@ -36,12 +36,6 @@ message(STATUS "ZLIBNG_HEADER_VERSION: ${ZLIBNG_HEADER_VERSION}")
 
 project(zlib VERSION ${ZLIB_HEADER_VERSION} LANGUAGES C)
 
-set(BIN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/bin" CACHE PATH "Installation directory for executables")
-set(LIB_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib" CACHE PATH "Installation directory for libraries")
-set(INC_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/include" CACHE PATH "Installation directory for headers")
-set(MAN_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/share/man" CACHE PATH "Installation directory for manual pages")
-set(PKGCONFIG_INSTALL_DIR "${LIB_INSTALL_DIR}/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
-
 include(CheckTypeSize)
 include(CheckSymbolExists)
 include(CheckFunctionExists)
@@ -53,6 +47,7 @@ include(CMakeDependentOption)
 include(FeatureSummary)
 
 include(cmake/detect-arch.cmake)
+include(cmake/detect-install-dirs.cmake)
 include(cmake/detect-coverage.cmake)
 include(cmake/detect-sanitizer.cmake)
 
