@@ -1283,6 +1283,12 @@ if(ZLIB_ENABLE_TESTS)
     target_link_libraries(deflate_quick_bi_valid zlib)
     set(DEFLATE_QUICK_BI_VALID_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:deflate_quick_bi_valid>)
     add_test(NAME deflate_quick_bi_valid COMMAND ${DEFLATE_QUICK_BI_VALID_COMMAND})
+
+    add_executable(deflate_quick_block_open test/deflate_quick_block_open.c)
+    configure_test_executable(deflate_quick_block_open)
+    target_link_libraries(deflate_quick_block_open zlib)
+    set(DEFLATE_QUICK_BLOCK_OPEN_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:deflate_quick_block_open>)
+    add_test(NAME deflate_quick_block_open COMMAND ${DEFLATE_QUICK_BLOCK_OPEN_COMMAND})
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
