@@ -29,8 +29,16 @@
   (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
 */
 
+#ifdef ZLIB_H_
+#  error Include zlib-ng.h for zlib-ng API or zlib.h for zlib-compat API but not both
+#endif
+
 #include <stdint.h>
 #include "zconf-ng.h"
+
+#ifndef ZCONFNG_H
+#  error Missing zconf-ng.h add binary output directory to include directories
+#endif
 
 #ifdef __cplusplus
 extern "C" {
