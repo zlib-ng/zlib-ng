@@ -49,6 +49,7 @@ include(FeatureSummary)
 include(cmake/detect-arch.cmake)
 include(cmake/detect-install-dirs.cmake)
 include(cmake/detect-coverage.cmake)
+include(cmake/detect-malloc.cmake)
 include(cmake/detect-sanitizer.cmake)
 
 if(CMAKE_TOOLCHAIN_FILE)
