@@ -1019,19 +1019,15 @@ if(ZLIB_ENABLE_TESTS)
         endif()
     endmacro()
 
-    add_executable(adler32_test test/adler32_test.c)
-    configure_test_executable(adler32_test)
-    target_link_libraries(adler32_test zlib)
+    macro(add_simple_test_executable target)
+        add_executable(${target} test/${target}.c)
+        configure_test_executable(${target})
+        target_link_libraries(${target} zlib)
+        add_test(NAME ${target} COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}>)
+    endmacro()
 
-    set(ADLER32TEST_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:adler32_test>)
-    add_test(NAME adler32_test COMMAND ${ADLER32TEST_COMMAND})
-
-    add_executable(example test/example.c)
-    configure_test_executable(example)
-    target_link_libraries(example zlib)
-
-    set(EXAMPLE_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:example>)
-    add_test(NAME example COMMAND ${EXAMPLE_COMMAND})
+    add_simple_test_executable(adler32_test)
+    add_simple_test_executable(example)
 
     set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip>)
     add_executable(minigzip test/minigzip.c)
@@ -1064,9 +1060,8 @@ if(ZLIB_ENABLE_TESTS)
     configure_test_executable(switchlevels)
     target_link_libraries(switchlevels zlib)
 
-    add_executable(infcover test/infcover.c inftrees.c)
-    configure_test_executable(infcover)
-    target_link_libraries(infcover zlib)
+    add_simple_test_executable(infcover)
+    target_sources(infcover PRIVATE inftrees.c)
 
     add_executable(makefixed tools/makefixed.c inftrees.c)
     target_include_directories(makefixed PUBLIC ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
@@ -1201,14 +1196,8 @@ if(ZLIB_ENABLE_TESTS)
     include(cmake/test-tools.cmake)
 
     if(NOT WIN32 AND ZLIB_COMPAT)
-        add_executable(CVE-2003-0107 test/CVE-2003-0107.c)
-        target_link_libraries(CVE-2003-0107 zlib)
-        set(CVE20030107_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:CVE-2003-0107>)
-        add_test(NAME CVE-2003-0107 COMMAND ${CVE20030107_COMMAND})
+        add_simple_test_executable(CVE-2003-0107)
     endif()
-
-    set(INFCOVER_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
-    add_test(NAME infcover COMMAND ${INFCOVER_COMMAND})
 
     add_test(NAME GH-361
         COMMAND ${CMAKE_COMMAND}
@@ -1270,17 +1259,8 @@ if(ZLIB_ENABLE_TESTS)
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-751/test.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
-    add_executable(deflate_quick_bi_valid test/deflate_quick_bi_valid.c)
-    configure_test_executable(deflate_quick_bi_valid)
-    target_link_libraries(deflate_quick_bi_valid zlib)
-    set(DEFLATE_QUICK_BI_VALID_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:deflate_quick_bi_valid>)
-    add_test(NAME deflate_quick_bi_valid COMMAND ${DEFLATE_QUICK_BI_VALID_COMMAND})
-
-    add_executable(deflate_quick_block_open test/deflate_quick_block_open.c)
-    configure_test_executable(deflate_quick_block_open)
-    target_link_libraries(deflate_quick_block_open zlib)
-    set(DEFLATE_QUICK_BLOCK_OPEN_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:deflate_quick_block_open>)
-    add_test(NAME deflate_quick_block_open COMMAND ${DEFLATE_QUICK_BLOCK_OPEN_COMMAND})
+    add_simple_test_executable(deflate_quick_bi_valid)
+    add_simple_test_executable(deflate_quick_block_open)
 endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
