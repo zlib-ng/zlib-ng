@@ -210,7 +210,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
              */
 
             dist = (int64_t)s->strstart - hash_head;
-            if (dist <= MAX_DIST(s) && dist > 0) {
+            if (dist <= MAX_DIST(s) && dist > 0 && hash_head != 0) {
                 /* To simplify the code, we prevent matches with the string
                  * of window index 0 (in particular we have to avoid a match
                  * of the string with itself at the start of the input file).
@@ -245,7 +245,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
              */
 
             dist = (int64_t)s->strstart - hash_head;
-            if (dist <= MAX_DIST(s) && dist > 0) {
+            if (dist <= MAX_DIST(s) && dist > 0 && hash_head != 0) {
                 /* To simplify the code, we prevent matches with the string
                  * of window index 0 (in particular we have to avoid a match
                  * of the string with itself at the start of the input file).
