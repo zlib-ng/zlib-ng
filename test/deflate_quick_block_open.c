@@ -59,7 +59,7 @@ int main() {
 
     strm.avail_in = sizeof(next_in);
     while (1) {
-        strm.avail_out = next_out + sizeof(next_out) - strm.next_out;
+        strm.avail_out = (uint32_t)(next_out + sizeof(next_out) - strm.next_out);
         if (strm.avail_out > 38)
             strm.avail_out = 38;
         ret = PREFIX(deflate)(&strm, Z_FINISH);
@@ -70,7 +70,7 @@ int main() {
             return EXIT_FAILURE;
         }
     }
-    uint32_t compressed_size = strm.next_out - next_out;
+    uint32_t compressed_size = (uint32_t)(strm.next_out - next_out);
 
     ret = PREFIX(deflateEnd)(&strm);
     if (ret != Z_OK) {
