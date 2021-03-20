@@ -205,8 +205,8 @@ else()
     if(NOT NATIVEFLAG)
         if(__GNUC__)
             if(BASEARCH_ARM_FOUND)
-                if(NOT CMAKE_C_FLAGS MATCHES "-mfloat-abi")
-                    # Check support for ARM floating point
+                if("${ARCH}" MATCHES "arm" AND NOT CMAKE_C_FLAGS MATCHES "-mfloat-abi")
+                    # Check support for ARM floating point ABI
                     execute_process(COMMAND ${CMAKE_C_COMPILER} "-dumpmachine"
                                     OUTPUT_VARIABLE GCC_MACHINE)
                     if("${GCC_MACHINE}" MATCHES "gnueabihf")
