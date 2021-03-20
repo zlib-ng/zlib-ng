@@ -14,28 +14,28 @@ static inline uint32_t compare256_c_static(const unsigned char *src0, const unsi
 
     do {
         if (*src0 != *src1)
-            return len + (*src0 == *src1);
+            return len;
         src0 += 1, src1 += 1, len += 1;
         if (*src0 != *src1)
-            return len + (*src0 == *src1);
+            return len;
         src0 += 1, src1 += 1, len += 1;
         if (*src0 != *src1)
-            return len + (*src0 == *src1);
+            return len;
         src0 += 1, src1 += 1, len += 1;
         if (*src0 != *src1)
-            return len + (*src0 == *src1);
+            return len;
         src0 += 1, src1 += 1, len += 1;
         if (*src0 != *src1)
-            return len + (*src0 == *src1);
+            return len;
         src0 += 1, src1 += 1, len += 1;
         if (*src0 != *src1)
-            return len + (*src0 == *src1);
+            return len;
         src0 += 1, src1 += 1, len += 1;
         if (*src0 != *src1)
-            return len + (*src0 == *src1);
+            return len;
         src0 += 1, src1 += 1, len += 1;
         if (*src0 != *src1)
-            return len + (*src0 == *src1);
+            return len;
         src0 += 1, src1 += 1, len += 1;
     } while (len < 256);
 
