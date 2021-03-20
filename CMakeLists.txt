@@ -49,6 +49,7 @@ include(FeatureSummary)
 include(cmake/detect-arch.cmake)
 include(cmake/detect-install-dirs.cmake)
 include(cmake/detect-coverage.cmake)
+include(cmake/detect-intrinsics.cmake)
 include(cmake/detect-sanitizer.cmake)
 
 if(CMAKE_TOOLCHAIN_FILE)
@@ -139,23 +140,11 @@ if(CMAKE_C_COMPILER_ID MATCHES "Intel")
         set(WARNFLAGS "-w3")
         set(WARNFLAGS_MAINTAINER "-w3 -Wcheck -Wremarks")
         set(WARNFLAGS_DISABLE "")
-        if(BASEARCH_X86_FOUND)
-            set(AVX2FLAG "-mavx2")
-            set(SSE2FLAG "-msse2")
-            set(SSSE3FLAG "-mssse3")
-            set(SSE4FLAG "-msse4.2")
-        endif()
     else()
         set(WARNFLAGS "/W3")
         set(WARNFLAGS_MAINTAINER "/W5")
         set(WARNFLAGS_DISABLE "")
-        if(BASEARCH_X86_FOUND)
-            set(AVX2FLAG "/arch:AVX2")
-            set(SSE2FLAG "/arch:SSE2")
-            set(SSSE3FLAG "/arch:SSSE3")
-            set(SSE4FLAG "/arch:SSE4.2")
         endif()
-    endif()
     if(WITH_NATIVE_INSTRUCTIONS)
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
     endif()
@@ -177,38 +166,22 @@ elseif(MSVC)
         if(NOT "${ARCH}" MATCHES "aarch64")
             set(NEONFLAG "/arch:VFPv4")
         endif()
-    elseif(BASEARCH_X86_FOUND)
-        if(NOT "${ARCH}" MATCHES "x86_64")
-            set(SSE2FLAG "/arch:SSE2")
         endif()
-    endif()
     if(WITH_NATIVE_INSTRUCTIONS)
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
     endif()
-else()
-    # catch all GNU C compilers as well as Clang and AppleClang
-    if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-        set(__GNUC__ ON)
-    endif()
+elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     # Enable warnings in GCC and Clang
-    if(__GNUC__)
         set(WARNFLAGS "-Wall")
         set(WARNFLAGS_MAINTAINER "-Wextra -Wpedantic")
         set(WARNFLAGS_DISABLE "-Wno-implicit-fallthrough")
-    endif()
     if(WITH_NATIVE_INSTRUCTIONS)
-        if(__GNUC__)
             if(BASEARCH_PPC_FOUND)
                 set(NATIVEFLAG "-mcpu=native")
             else()
                 set(NATIVEFLAG "-march=native")
             endif()
         else()
-            message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not implemented yet on this configuration")
-        endif()
-    endif()
-    if(NOT NATIVEFLAG)
-        if(__GNUC__)
             if(BASEARCH_ARM_FOUND)
                 if("${ARCH}" MATCHES "arm" AND NOT CMAKE_C_FLAGS MATCHES "-mfloat-abi")
                     # Auto-detect support for ARM floating point ABI
@@ -228,31 +201,7 @@ else()
                         message(STATUS "ARM floating point arch not auto-detected")
                     endif()
                 endif()
-                # NEON
-                if("${ARCH}" MATCHES "aarch64")
-                    set(NEONFLAG "-march=armv8-a+simd")
-                else()
-                    # Check whether -mfpu=neon is available
-                    set(CMAKE_REQUIRED_FLAGS "-mfpu=neon")
-                    check_c_source_compiles(
-                        "int main() { return 0; }"
-                        MFPU_NEON_AVAILABLE FAIL_REGEX "not supported")
-                    set(CMAKE_REQUIRED_FLAGS)
-                    if(MFPU_NEON_AVAILABLE)
-                        set(NEONFLAG "-mfpu=neon")
                     endif()
-                endif()
-                # ACLE
-                set(ACLEFLAG "-march=armv8-a+crc")
-            elseif(BASEARCH_PPC_FOUND)
-                set(POWER8FLAG "-mcpu=power8")
-            elseif(BASEARCH_X86_FOUND)
-                set(AVX2FLAG "-mavx2")
-                set(SSE2FLAG "-msse2")
-                set(SSSE3FLAG "-mssse3")
-                set(SSE4FLAG "-msse4")
-                set(PCLMULFLAG "-mpclmul")
-            endif()
             # Check whether -fno-lto is available
             set(CMAKE_REQUIRED_FLAGS "-fno-lto")
             check_c_source_compiles(
@@ -263,6 +212,9 @@ else()
                 set(NOLTOFLAG "-fno-lto")
             endif()
         endif()
+else()
+    if(WITH_NATIVE_INSTRUCTIONS)
+        message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not implemented yet on this configuration")
     endif()
 endif()
 
@@ -483,119 +435,7 @@ if(MSVC)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
 
-if(BASEARCH_PPC_FOUND)
-    # Check if we have what we need for POWER8 optimizations
-    set(CMAKE_REQUIRED_FLAGS "${POWER8FLAG}")
-    check_c_source_compiles(
-        "#include <sys/auxv.h>
-        int main() {
-            return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
-        }"
-        HAVE_POWER8
-    )
-    set(CMAKE_REQUIRED_FLAGS)
-elseif(BASEARCH_X86_FOUND)
-    # Check whether compiler supports SSE2 instrinics
-    set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
-    check_c_source_compile_or_run(
-        "#include <immintrin.h>
-        int main(void) {
-            __m128i zero = _mm_setzero_si128();
-            (void)zero;
-            return 0;
-        }"
-        HAVE_SSE2_INTRIN
-    )
-    # Check whether compiler supports SSSE3 intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${SSSE3FLAG}")
-    check_c_source_compile_or_run(
-        "#include <immintrin.h>
-        int main(void) {
-            __m128i u, v, w;
-            u = _mm_set1_epi32(1);
-            v = _mm_set1_epi32(2);
-            w = _mm_hadd_epi32(u, v);
-            (void)w;
-            return 0;
-        }"
-        HAVE_SSSE3_INTRIN
-    )
-    # Check whether compiler supports SSE4 CRC inline asm
-    set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
-    check_c_source_compile_or_run(
-        "int main(void) {
-            unsigned val = 0, h = 0;
-        #if defined(_MSC_VER)
-            { __asm mov edx, h __asm mov eax, val __asm crc32 eax, edx __asm mov val, eax }
-        #else
-            __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
-        #endif
-            return (int)h;
-        }"
-        HAVE_SSE42CRC_INLINE_ASM
-    )
-    # Check whether compiler supports SSE4 CRC intrinsics
-    check_c_source_compile_or_run(
-        "#include <immintrin.h>
-        int main(void) {
-            unsigned crc = 0;
-            char c = 'c';
-        #if defined(_MSC_VER)
-            crc = _mm_crc32_u32(crc, c);
-        #else
-            crc = __builtin_ia32_crc32qi(crc, c);
-        #endif
-            (void)crc;
-            return 0;
-        }"
-        HAVE_SSE42CRC_INTRIN
-    )
-    # Check whether compiler supports SSE4.2 compare string instrinics
-    check_c_source_compile_or_run(
-        "#include <immintrin.h>
-        int main(void) {
-            unsigned char a[64] = { 0 };
-            unsigned char b[64] = { 0 };
-            __m128i xmm_src0, xmm_src1;
-            xmm_src0 = _mm_loadu_si128((__m128i *)(char *)a);
-            xmm_src1 = _mm_loadu_si128((__m128i *)(char *)b);
-            return _mm_cmpestri(xmm_src0, 16, xmm_src1, 16, 0);
-        }"
-        HAVE_SSE42CMPSTR_INTRIN
-    )
-    # Check whether compiler supports PCLMULQDQ intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
-    if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
-        # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
-        check_c_source_compile_or_run(
-            "#include <immintrin.h>
-            int main(void) {
-                __m128i a = _mm_setzero_si128();
-                __m128i b = _mm_setzero_si128();
-                __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-                (void)c;
-                return 0;
-            }"
-            HAVE_PCLMULQDQ_INTRIN
-        )
-    else()
-        set(HAVE_PCLMULQDQ_INTRIN NO)
-    endif()
-    # Check whether compiler supports AVX2 intrinics
-    set(CMAKE_REQUIRED_FLAGS "${AVX2FLAG}")
-    check_c_source_compile_or_run(
-        "#include <immintrin.h>
-        int main(void) {
-            __m256i x = _mm256_set1_epi16(2);
-            const __m256i y = _mm256_set1_epi16(1);
-            x = _mm256_subs_epu16(x, y);
-            (void)x;
-            return 0;
-        }"
-        HAVE_AVX2_INTRIN
-    )
-    set(CMAKE_REQUIRED_FLAGS)
-
+if(BASEARCH_X86_FOUND)
     # FORCE_SSE2 option will only be shown if HAVE_SSE2_INTRIN is true
     if("${ARCH}" MATCHES "i[3-6]86")
         cmake_dependent_option(FORCE_SSE2 "Always assume CPU is SSE2 capable" OFF "HAVE_SSE2_INTRIN" OFF)
@@ -717,13 +557,18 @@ if(WITH_OPTIM)
         list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm.h)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/armfeature.c)
         if(WITH_ACLE AND NOT MSVC)
+            check_acle_intrinsics()
+            if(HAVE_ACLE_INTRIN)
             add_definitions(-DARM_ACLE_CRC_HASH)
             set(ACLE_SRCS ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
             set_property(SOURCE ${ACLE_SRCS} PROPERTY COMPILE_FLAGS "${ACLEFLAG} ${NOLTOFLAG}")
             list(APPEND ZLIB_ARCH_SRCS ${ACLE_SRCS})
             add_feature_info(ACLE_CRC 1 "Support ACLE optimized CRC hash generation, using \"${ACLEFLAG}\"")
         endif()
+        endif()
         if(WITH_NEON)
+            check_neon_intrinsics()
+            if(MFPU_NEON_AVAILABLE)
             add_definitions(-DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH)
             set(NEON_SRCS ${ARCHDIR}/adler32_neon.c ${ARCHDIR}/chunkset_neon.c ${ARCHDIR}/slide_neon.c)
             list(APPEND ZLIB_ARCH_SRCS ${NEON_SRCS})
@@ -734,8 +579,11 @@ if(WITH_OPTIM)
             add_feature_info(NEON_ADLER32 1 "Support NEON instructions in adler32, using \"${NEONFLAG}\"")
             add_feature_info(NEON_SLIDEHASH 1 "Support NEON instructions in slide_hash, using \"${NEONFLAG}\"")
         endif()
+        endif()
     elseif(BASEARCH_PPC_FOUND)
-        if(WITH_POWER8 AND HAVE_POWER8)
+        if(WITH_POWER8)
+            check_power8_intrinsics()
+            if(HAVE_POWER8_INTRIN)
             add_definitions(-DPOWER8)
             add_definitions(-DPOWER_FEATURES)
             add_definitions(-DPOWER8_VSX_ADLER32)
@@ -745,6 +593,7 @@ if(WITH_OPTIM)
             set(POWER8_SRCS ${ARCHDIR}/adler32_power8.c ${ARCHDIR}/slide_power8.c)
             list(APPEND ZLIB_ARCH_SRCS ${POWER8_SRCS})
             set_property(SOURCE ${POWER8_SRCS} PROPERTY COMPILE_FLAGS "${POWER8FLAG} ${NOLTOFLAG}")
+        endif()
         endif()
     elseif(BASEARCH_S360_FOUND)
         if(WITH_DFLTCC_DEFLATE OR WITH_DFLTCC_INFLATE)
@@ -765,7 +614,9 @@ if(WITH_OPTIM)
         if(MSVC)
             list(APPEND ZLIB_ARCH_HDRS fallback_builtins.h)
         endif()
-        if(WITH_AVX2 AND HAVE_AVX2_INTRIN)
+        if(WITH_AVX2)
+            check_avx2_intrinsics()
+                if(HAVE_AVX2_INTRIN)
             add_definitions(-DX86_AVX2 -DX86_AVX2_ADLER32 -DX86_AVX_CHUNKSET)
             set(AVX2_SRCS ${ARCHDIR}/slide_avx.c)
             add_feature_info(AVX2_SLIDEHASH 1 "Support AVX2 optimized slide_hash, using \"${AVX2FLAG}\"")
@@ -778,7 +629,10 @@ if(WITH_OPTIM)
             list(APPEND ZLIB_ARCH_SRCS ${AVX2_SRCS})
             set_property(SOURCE ${AVX2_SRCS} PROPERTY COMPILE_FLAGS "${AVX2FLAG} ${NOLTOFLAG}")
         endif()
-        if(WITH_SSE4 AND (HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN))
+        endif()
+        if(WITH_SSE4)
+            check_sse4_intrinsics()
+            if(HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN)
             add_definitions(-DX86_SSE42_CRC_HASH)
             set(SSE42_SRCS ${ARCHDIR}/insert_string_sse.c)
             add_feature_info(SSE42_CRC 1 "Support SSE4.2 optimized CRC hash generation, using \"${SSE4FLAG}\"")
@@ -795,7 +649,10 @@ if(WITH_OPTIM)
             list(APPEND ZLIB_ARCH_SRCS ${SSE42_SRCS})
             set_property(SOURCE ${SSE42_SRCS} PROPERTY COMPILE_FLAGS "${SSE4FLAG} ${NOLTOFLAG}")
         endif()
-        if(WITH_SSE2 AND HAVE_SSE2_INTRIN)
+        endif()
+        if(WITH_SSE2)
+            check_sse2_intrinsics()
+            if(HAVE_SSE2_INTRIN)
             add_definitions(-DX86_SSE2 -DX86_SSE2_CHUNKSET -DX86_SSE2_SLIDEHASH)
             set(SSE2_SRCS ${ARCHDIR}/chunkset_sse.c ${ARCHDIR}/slide_sse.c)
             list(APPEND ZLIB_ARCH_SRCS ${SSE2_SRCS})
@@ -807,14 +664,20 @@ if(WITH_OPTIM)
                 endif()
             endif()
         endif()
-        if(WITH_SSSE3 AND HAVE_SSSE3_INTRIN)
+        endif()
+        if(WITH_SSSE3)
+            check_ssse3_intrinsics()
+            if(HAVE_SSSE3_INTRIN)
             add_definitions(-DX86_SSSE3 -DX86_SSSE3_ADLER32)
             set(SSSE3_SRCS ${ARCHDIR}/adler32_ssse3.c)
             add_feature_info(SSSE3_ADLER32 1 "Support SSSE3-accelerated adler32, using \"${SSSE3FLAG}\"")
             list(APPEND ZLIB_ARCH_SRCS ${SSSE3_SRCS})
             set_property(SOURCE ${SSSE3_SRCS} PROPERTY COMPILE_FLAGS "${SSSE3FLAG} ${NOLTOFLAG}")
         endif()
-        if(WITH_PCLMULQDQ AND HAVE_PCLMULQDQ_INTRIN AND WITH_SSSE3 AND WITH_SSE4)
+        endif()
+        if(WITH_PCLMULQDQ AND WITH_SSSE3 AND WITH_SSE4)
+            check_pclmulqdq_intrinsics()
+            if(HAVE_PCLMULQDQ_INTRIN AND HAVE_SSSE3_INTRIN)
             add_definitions(-DX86_PCLMULQDQ_CRC)
             set(PCLMULQDQ_SRCS ${ARCHDIR}/crc_folding.c)
             add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${SSSE3FLAG} ${SSE4FLAG} ${PCLMULFLAG}\"")
@@ -823,6 +686,8 @@ if(WITH_OPTIM)
         endif()
     endif()
 endif()
+endif()
+
 message(STATUS "Architecture-specific source files: ${ZLIB_ARCH_SRCS}")
 
 #============================================================================

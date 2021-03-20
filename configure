@@ -972,10 +972,81 @@ else
     echo "Checking for __builtin_ctzll ... No." | tee -a configure.log
 fi
 
-# Check for SSE2 intrinsics
-case "${ARCH}" in
-    i386 | i486 | i586 | i686 | x86_64)
-        cat > $test.c << EOF
+check_avx2_intrinsics() {
+    # Check whether compiler supports AVX2 intrinsics
+    cat > $test.c << EOF
+#include <immintrin.h>
+int main(void) {
+    __m256i x = _mm256_set1_epi16(2);
+    const __m256i y = _mm256_set1_epi16(1);
+    x = _mm256_subs_epu16(x, y);
+    (void)x;
+    return 0;
+}
+EOF
+    if try ${CC} ${CFLAGS} ${avx2flag} $test.c; then
+        echo "Checking for AVX2 intrinsics ... Yes." | tee -a configure.log
+        HAVE_AVX2_INTRIN=1
+    else
+        echo "Checking for AVX2 intrinsics ... No." | tee -a configure.log
+        HAVE_AVX2_INTRIN=0
+    fi
+}
+
+check_neon_intrinsics() {
+    # Check whether -mfpu=neon is available on ARM processors.
+    cat > $test.c << EOF
+int main() { return 0; }
+EOF
+    if try $CC -c $CFLAGS -mfpu=neon $test.c; then
+        MFPU_NEON_AVAILABLE=1
+        echo "Check whether -mfpu=neon is available ... Yes." | tee -a configure.log
+    else
+        MFPU_NEON_AVAILABLE=0
+        echo "Check whether -mfpu=neon is available ... No." | tee -a configure.log
+    fi
+}
+
+check_pclmulqdq_intrinsics() {
+    # Check whether compiler supports PCLMULQDQ intrinsics
+    cat > $test.c << EOF
+#include <immintrin.h>
+#include <wmmintrin.h>
+int main(void) {
+    __m128i a = _mm_setzero_si128();
+    __m128i b = _mm_setzero_si128();
+    __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
+    (void)c;
+    return 0;
+}
+EOF
+    if try ${CC} ${CFLAGS} ${pclmulflag} $test.c; then
+        echo "Checking for PCLMULQDQ intrinsics ... Yes." | tee -a configure.log
+        HAVE_PCLMULQDQ_INTRIN=1
+    else
+        echo "Checking for PCLMULQDQ intrinsics ... No." | tee -a configure.log
+        HAVE_PCLMULQDQ_INTRIN=0
+    fi
+}
+
+check_power8_intrinsics() {
+    # Check whether features needed by POWER optimisations are available
+    cat > $test.c << EOF
+#include <sys/auxv.h>
+int main() { return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07); }
+EOF
+    if try $CC -c $CFLAGS -mcpu=power8 $test.c; then
+        HAVE_POWER8_INTRIN=1
+        echo "Check whether POWER8 instructions are available ... Yes." | tee -a configure.log
+    else
+        HAVE_POWER8_INTRIN=0
+        echo "Check whether POWER8 instructions are available ... No." | tee -a configure.log
+    fi
+}
+
+check_sse2_intrinsics() {
+    # Check whether compiler supports SSE2 intrinsics
+    cat > $test.c << EOF
 #include <immintrin.h>
 int main(void) {
     __m128i zero = _mm_setzero_si128();
@@ -983,65 +1054,34 @@ int main(void) {
     return 0;
 }
 EOF
-        if try ${CC} ${CFLAGS} ${sse2flag} $test.c; then
-            echo "Checking for SSE2 intrinsics ... Yes." | tee -a configure.log
-            HAVE_SSE2_INTRIN=1
-        else
-            echo "Checking for SSE2 intrinsics ... No." | tee -a configure.log
-            HAVE_SSE2_INTRIN=0
-        fi
-        ;;
-esac
-
-# Check for SSSE3 intrinsics
-case "${ARCH}" in
-    i386 | i486 | i586 | i686 | x86_64)
-        cat > $test.c << EOF
-#include <x86intrin.h>
-int main(void)
-{
-    __m128i u, v, w;
-    u = _mm_set1_epi32(1);
-    v = _mm_set1_epi32(2);
-    w = _mm_hadd_epi32(u, v);
-    (void)w;
-    return 0;
+    if try ${CC} ${CFLAGS} ${sse2flag} $test.c; then
+        echo "Checking for SSE2 intrinsics ... Yes." | tee -a configure.log
+        HAVE_SSE2_INTRIN=1
+    else
+        echo "Checking for SSE2 intrinsics ... No." | tee -a configure.log
+        HAVE_SSE2_INTRIN=0
+    fi
 }
-EOF
-        if try ${CC} ${CFLAGS} ${ssse3flag} $test.c; then
-            echo "Checking for SSSE3 intrinsics ... Yes." | tee -a configure.log
-            HAVE_SSSE3_INTRIN=1
-        else
-            echo "Checking for SSSE3 intrinsics ... No." | tee -a configure.log
-            HAVE_SSSE3_INTRIN=0
-        fi
-        ;;
-esac
 
-# Check for SSE4.2 CRC inline assembly
-case "${ARCH}" in
-    i386 | i486 | i586 | i686 | x86_64)
-        cat > $test.c << EOF
+check_sse4_intrinsics() {
+    # Check whether compiler supports SSE4 CRC inline asm
+    cat > $test.c << EOF
 int main(void) {
     unsigned val = 0, h = 0;
     __asm__ __volatile__ ( "crc32 %1,%0" : "+r" (h) : "r" (val) );
     return (int) h;
 }
 EOF
-        if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
-            echo "Checking for SSE4.2 CRC inline assembly ... Yes." | tee -a configure.log
-            HAVE_SSE42CRC_INLINE_ASM=1
-        else
-            echo "Checking for SSE4.2 CRC inline assembly ... No." | tee -a configure.log
-            HAVE_SSE42CRC_INLINE_ASM=0
-        fi
-        ;;
-esac
+    if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
+        echo "Checking for SSE4.2 CRC inline assembly ... Yes." | tee -a configure.log
+        HAVE_SSE42CRC_INLINE_ASM=1
+    else
+        echo "Checking for SSE4.2 CRC inline assembly ... No." | tee -a configure.log
+        HAVE_SSE42CRC_INLINE_ASM=0
+    fi
 
-# Check for SSE4.2 CRC intrinsics
-case "${ARCH}" in
-    i386 | i486 | i586 | i686 | x86_64)
-        cat > $test.c << EOF
+    # Check whether compiler supports SSE4.2 CRC intrinsics
+    cat > $test.c << EOF
 int main(void) {
     unsigned crc = 0;
     char c = 'c';
@@ -1050,20 +1090,16 @@ int main(void) {
     return 0;
 }
 EOF
-        if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
-            echo "Checking for SSE4.2 CRC intrinsics ... Yes." | tee -a configure.log
-            HAVE_SSE42CRC_INTRIN=1
-        else
-            echo "Checking for SSE4.2 CRC intrinsics ... No." | tee -a configure.log
-            HAVE_SSE42CRC_INTRIN=0
-        fi
-        ;;
-esac
+    if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
+        echo "Checking for SSE4.2 CRC intrinsics ... Yes." | tee -a configure.log
+        HAVE_SSE42CRC_INTRIN=1
+    else
+        echo "Checking for SSE4.2 CRC intrinsics ... No." | tee -a configure.log
+        HAVE_SSE42CRC_INTRIN=0
+    fi
 
-# Check for SSE4.2 compare string intrinsics
-case "${ARCH}" in
-    i386 | i486 | i586 | i686 | x86_64)
-        cat > $test.c << EOF
+    # Check whether compiler supports SSE4.2 compare string intrinsics
+    cat > $test.c << EOF
 #include <immintrin.h>
 int main(void)
 {
@@ -1075,38 +1111,40 @@ int main(void)
     return _mm_cmpestri(xmm_src0, 16, xmm_src1, 16, 0);
 }
 EOF
-        if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
-            echo "Checking for SSE4.2 compare string intrinsics ... Yes." | tee -a configure.log
-            HAVE_SSE42CMPSTR_INTRIN=1
-        else
-            echo "Checking for SSE4.2 compare string intrinsics ... No." | tee -a configure.log
-            HAVE_SSE42CMPSTR_INTRIN=0
-        fi
-        ;;
-esac
+    if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
+        echo "Checking for SSE4.2 compare string intrinsics ... Yes." | tee -a configure.log
+        HAVE_SSE42CMPSTR_INTRIN=1
+    else
+        echo "Checking for SSE4.2 compare string intrinsics ... No." | tee -a configure.log
+        HAVE_SSE42CMPSTR_INTRIN=0
+    fi
+}
 
-# Check for PCLMULQDQ intrinsics
-case "${ARCH}" in
-    i386 | i486 | i586 | i686 | x86_64)
-        cat > $test.c << EOF
-#include <immintrin.h>
-#include <wmmintrin.h>
-int main(void) {
-    __m128i a = _mm_setzero_si128();
-    __m128i b = _mm_setzero_si128();
-    __m128i c = _mm_clmulepi64_si128(a, b, 0x10);
-    (void)c;
+check_ssse3_intrinsics() {
+    # Check whether compiler supports SSSE3 intrinsics
+    cat > $test.c << EOF
+#include <x86intrin.h>
+int main(void)
+{
+    __m128i u, v, w;
+    u = _mm_set1_epi32(1);
+    v = _mm_set1_epi32(2);
+    w = _mm_hadd_epi32(u, v);
+    (void)w;
     return 0;
 }
 EOF
-        if try ${CC} ${CFLAGS} ${pclmulflag} $test.c; then
-            echo "Checking for PCLMULQDQ intrinsics ... Yes." | tee -a configure.log
-            HAVE_PCLMULQDQ_INTRIN=1
-        else
-            echo "Checking for PCLMULQDQ intrinsics ... No." | tee -a configure.log
-            HAVE_PCLMULQDQ_INTRIN=0
-        fi
+    if try ${CC} ${CFLAGS} ${ssse3flag} $test.c; then
+        echo "Checking for SSSE3 intrinsics ... Yes." | tee -a configure.log
+        HAVE_SSSE3_INTRIN=1
+    else
+        echo "Checking for SSSE3 intrinsics ... No." | tee -a configure.log
+        HAVE_SSSE3_INTRIN=0
+    fi
+}
 
+case "${ARCH}" in
+    i386 | i486 | i586 | i686 | x86_64)
         # Enable deflate_medium at level 1
         if test $without_new_strategies -eq 1; then
             CFLAGS="${CFLAGS} -DNO_QUICK_STRATEGY"
@@ -1119,75 +1157,6 @@ EOF
         fi
         ;;
 esac
-
-# Check for AVX2 intrinsics
-case "${ARCH}" in
-    i386 | i486 | i586 | i686 | x86_64)
-        cat > $test.c << EOF
-#include <immintrin.h>
-int main(void) {
-    __m256i x = _mm256_set1_epi16(2);
-    const __m256i y = _mm256_set1_epi16(1);
-    x = _mm256_subs_epu16(x, y);
-    (void)x;
-    return 0;
-}
-EOF
-        if try ${CC} ${CFLAGS} ${avx2flag} $test.c; then
-            echo "Checking for AVX2 intrinsics ... Yes." | tee -a configure.log
-            HAVE_AVX2_INTRIN=1
-        else
-            echo "Checking for AVX2 intrinsics ... No." | tee -a configure.log
-            HAVE_AVX2_INTRIN=0
-        fi
-        ;;
-esac
-
-
-# Check whether -mfpu=neon is available on ARM processors.
-case "${ARCH}" in
-    arm*)
-        cat > $test.c << EOF
-int main() { return 0; }
-EOF
-        if try $CC -c $CFLAGS -mfpu=neon $test.c; then
-            MFPU_NEON_AVAILABLE=1
-            echo "Check whether -mfpu=neon is available ... Yes." | tee -a configure.log
-        else
-            MFPU_NEON_AVAILABLE=0
-            echo "Check whether -mfpu=neon is available ... No." | tee -a configure.log
-        fi
-        ;;
-esac
-
-# Check whether features needed by POWER optimisations are available
-case "${ARCH}" in
-    powerpc*)
-        cat > $test.c << EOF
-#include <sys/auxv.h>
-int main() { return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07); }
-EOF
-        if try $CC -c $CFLAGS -mcpu=power8 $test.c; then
-            HAVE_POWER8=1
-            echo "Check whether POWER8 instructions are available ... Yes." | tee -a configure.log
-        else
-            HAVE_POWER8=0
-            echo "Check whether POWER8 instructions are available ... No." | tee -a configure.log
-        fi
-esac
-
-# Check whether sys/sdt.h is available
-cat > $test.c << EOF
-#include <sys/sdt.h>
-int main() { return 0; }
-EOF
-if try ${CC} ${CFLAGS} $test.c; then
-    echo "Checking for sys/sdt.h ... Yes." | tee -a configure.log
-    CFLAGS="$CFLAGS -DHAVE_SYS_SDT_H"
-    SFLAGS="$SFLAGS -DHAVE_SYS_SDT_H"
-else
-    echo "Checking for sys/sdt.h ... No." | tee -a configure.log
-fi
 
 ARCHDIR='arch/generic'
 ARCH_STATIC_OBJS=''
@@ -1210,12 +1179,16 @@ case "${ARCH}" in
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo"
 
+            check_avx2_intrinsics
+
             if test ${HAVE_AVX2_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32 -DX86_AVX_CHUNKSET"
                 SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32 -DX86_AVX_CHUNKSET"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_avx.o chunkset_avx.o compare258_avx.o adler32_avx.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_avx.lo chunkset_avx.lo compare258_avx.lo adler32_avx.lo"
             fi
+
+            check_sse4_intrinsics
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1 || test ${HAVE_SSE42CRC_INLINE_ASM} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE42_CRC_HASH"
@@ -1230,6 +1203,8 @@ case "${ARCH}" in
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} insert_string_sse.lo"
             fi
 
+            check_sse4_intrinsics
+
             if test ${HAVE_SSE42CMPSTR_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE42_CMP_STR"
                 SFLAGS="${SFLAGS} -DX86_SSE42_CMP_STR"
@@ -1237,6 +1212,8 @@ case "${ARCH}" in
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_sse.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_sse.lo"
             fi
+
+            check_sse2_intrinsics
 
             if test ${HAVE_SSE2_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE2 -DX86_SSE2_CHUNKSET"
@@ -1250,12 +1227,16 @@ case "${ARCH}" in
                 fi
             fi
 
+            check_ssse3_intrinsics
+
             if test ${HAVE_SSSE3_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSSE3 -DX86_SSSE3_ADLER32"
                 SFLAGS="${SFLAGS} -DX86_SSSE3 -DX86_SSSE3_ADLER32"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_ssse3.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_ssse3.lo"
             fi
+
+            check_pclmulqdq_intrinsics
 
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
@@ -1349,6 +1330,10 @@ EOF
 
             CFLAGS="${CFLAGS} ${floatabi}"
             SFLAGS="${SFLAGS} ${floatabi}"
+        fi
+
+        if test $without_optimizations -eq 0; then
+            check_neon_intrinsics
         fi
 
         case "${ARCH}" in
@@ -1527,7 +1512,10 @@ EOF
         ARCHDIR=arch/power
 
         if test $without_optimizations -eq 0; then
-            if test $HAVE_POWER8 -eq 1; then
+
+            check_power8_intrinsics
+
+            if test $HAVE_POWER8_INTRIN -eq 1; then
                 CFLAGS="${CFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_SLIDEHASH"
                 SFLAGS="${SFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_SLIDEHASH"
 
