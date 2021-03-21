@@ -160,6 +160,11 @@ if("${CMAKE_C_COMPILER}" MATCHES "icc" OR "${CMAKE_C_COMPILER}" MATCHES "icpc" O
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
     endif()
 elseif(MSVC)
+    # Minimum supported MSVC version is 1800 = Visual Studio 12.0/2013
+    # See also https://cmake.org/cmake/help/latest/variable/MSVC_VERSION.html
+    if(MSVC_VERSION VERSION_LESS 1800)
+        message(SEND_ERROR "Unsupported Visual Studio compiler version (requires 2013 or later).")
+    endif()
     # TODO. ICC can be used through MSVC. I'm not sure if we'd ever see that combination
     # (who'd use cmake from an IDE...) but checking for ICC before checking for MSVC should
     # avoid mistakes.
