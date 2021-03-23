@@ -1558,6 +1558,8 @@ esac
 
 echo "ARCH: ${ARCH}"
 echo "Using arch directory: ${ARCHDIR}"
+echo "Architecture-specific static object files:${ARCH_STATIC_OBJS}"
+echo "Architecture-specific shared object files:${ARCH_SHARED_OBJS}"
 
 # show the results in the log
 echo >> configure.log
