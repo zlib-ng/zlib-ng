@@ -1,0 +1,97 @@
+codecov:
+  max_report_age: 72h
+  
+coverage:
+  status:
+    project:
+      default:
+        threshold: 0.07%
+      zlib-ng:
+        target: 80%
+        flags:
+          - zlib-ng
+      tests:
+        target: 50%
+        flags:
+          - tests
+        
+comment:
+    require_head: no     # default yes
+    require_base: no     # default yes
+
+flags:
+  zlib-ng:
+    paths:
+      - arch/
+      - adler32.c
+      - adler32_p.h
+      - chunkset.c
+      - chunkset_tpl.h
+      - compare258.c
+      - compress.c
+      - crc32.c
+      - crc32_comb.c
+      - crc32_comb_tbl.h
+      - crc32_p.h
+      - crc32_tbl.h
+      - deflate.c
+      - deflate_fast.c
+      - deflate.h
+      - deflate_medium.c
+      - deflate_p.h
+      - deflate_quick.c
+      - deflate_slow.c
+      - fallback_builtins.h
+      - functable.c
+      - functable.h
+      - gzguts.h
+      - gzlib.c
+      - gzread.c
+      - gzwrite.c
+      - infback.c
+      - inffast.c
+      - inffast.h
+      - inffixed_tbl.h
+      - inflate.c
+      - inflate.h
+      - inflate_p.h
+      - inftrees.c
+      - inftrees.h
+      - insert_string.c
+      - insert_string_tpl.h
+      - match_tpl.h
+      - trees.c
+      - trees_emit.h
+      - trees.h
+      - trees_tbl.h
+      - uncompr.c
+      - zbuild.h
+      - zconf.h
+      - zconf-ng.h
+      - zendian.h
+      - zlib.h
+      - zlib-ng.h
+      - zutil.c
+      - zutil.h
+      - zutil_p.h
+  tests:
+    paths:
+      - test/
+      - tools/
+  
+fixes:
+  - "/home/runner/work/zlib-ng/zlib-ng/::"
+  - "/home/runner/work/zlib-ng/build/::"
+  - "/build/home/runner/work/zlib-ng/zlib-ng/::"
+  - "/build/home/runner/work/zlib-ng/build/::"
+
+ignore:
+  - "usr/include/.*"
+  - "/usr/include/.*"
+  - "/build/usr/include/.*"
+  - "usr/lib/.*"
+  - "/usr/lib/.*"
+  - "/build/usr/lib/.*"
+  - "usr/lib64/.*"
+  - "/usr/lib64/.*"
+  - "/build/usr/lib64/.*"
