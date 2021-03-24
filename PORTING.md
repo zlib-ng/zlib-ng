@@ -1,5 +1,5 @@
 Porting applications to use zlib-ng
------------------------------------
+===================================
 
 Zlib-ng can be used/compiled in two different modes, that require some
 consideration by the application developer.
@@ -13,11 +13,6 @@ Please note that zlib-ng in zlib-compat mode is API-compatible but not
 ABI-compatible, meaning that you cannot simply replace the zlib library/dll
 files and expect the application to work. The application will need to be
 recompiled against the zlib-ng headers and libs to ensure full compatability.
-
-Zlib-ng can be distinguished from other zlib implementations at compile-time
-by checking for the existence of ZLIBNG_VERSION defined in the zlib.h header.
-
-Compile against the *zlib.h* provided by zlib-ng.
 
 **Advantages:**
 - Easy to port to, since it only requires a recompile of the application and
@@ -34,6 +29,13 @@ Compile against the *zlib.h* provided by zlib-ng.
   Cloudflares zlib forks. Doing this is not recommended since it makes it
   very hard to maintain compatibility over time.
 
+**Build Considerations:**
+- Compile against the *zlib.h* provided by zlib-ng
+- Configuration header is named *zconf.h*
+- Static library is *libz.a* on Unix and macOS, or *zlib.lib* on Windows
+- Shared library is *libz.so* on Unix, *libz.dylib* on macOS, or *zlib1.dll*
+  on Windows
+- Type `z_size_t` is *unsigned long*
 
 zlib-ng native mode
 -------------------
@@ -42,8 +44,6 @@ library, allowing applications to implement support and testing separately.
 
 The zlib-ng native has implemented some modernization and simplifications
 in its API, intended to make life easier for application developers.
-
-Compile against *zlib-ng.h*.
 
 **Advantages:**
 - Does not conflict with other zlib implementations, and can co-exist as a
@@ -54,3 +54,17 @@ Compile against *zlib-ng.h*.
 **Disadvantages:**
 - Requires minor changes to applications to use the prefixed zlib-ng
   function calls and structs. Usually this means a small prefix `zng_` has to be added.
+
+**Build Considerations:**
+- Compile against *zlib-ng.h*
+- Configuration header is named *zconf-ng.h*
+- Static library is *libz-ng.a* on Unix and macOS, or *zlib-ng.lib* on Windows
+- Shared library is *libz-ng.so* on Unix, *libz-ng.dylib* on macOS, or
+  *zlib-ng2.dll* on Windows
+- Type `z_size_t` is *size_t*
+
+zlib-ng compile-time detection
+------------------------------
+
+To distinguish zlib-ng from other zlib implementations at compile-time check for the
+existence of `ZLIBNG_VERSION` defined in the zlib header.
