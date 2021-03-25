@@ -102,6 +102,18 @@
 #  define Z_EXPORTVA
 #endif
 
+/* For backwards compatibility */
+
+#ifndef ZEXTERN
+#  define ZEXTERN Z_EXTERN
+#endif
+#ifndef ZEXPORT
+#  define ZEXPORT Z_EXPORT
+#endif
+#ifndef ZEXPORTVA
+#  define ZEXPORTVA Z_EXPORTVA
+#endif
+
 /* Fallback for something that includes us. */
 typedef unsigned char Byte;
 typedef Byte Bytef;
