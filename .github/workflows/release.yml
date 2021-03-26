@@ -15,25 +15,49 @@ jobs:
             os: windows-latest
             compiler: cl
             cmake-args: -A Win32
-            deploy-name: win32
+            deploy-name: win-x86
 
           - name: Windows MSVC Win32 Compat
             os: windows-latest
             compiler: cl
             cmake-args: -A Win32 -DZLIB_COMPAT=ON
-            deploy-name: win32-compat
+            deploy-name: win-x86-compat
 
           - name: Windows MSVC Win64
             os: windows-latest
             compiler: cl
             cmake-args: -A x64
-            deploy-name: win64
+            deploy-name: win-x86-64
 
           - name: Windows MSVC Win64 Compat
             os: windows-latest
             compiler: cl
             cmake-args: -A x64 -DZLIB_COMPAT=ON
-            deploy-name: win64-compat
+            deploy-name: win-x86-64-compat
+
+          - name: Windows MSVC ARM
+            os: windows-latest
+            compiler: cl
+            cmake-args: -A ARM
+            deploy-name: win-arm
+
+          - name: Windows MSVC ARM Compat
+            os: windows-latest
+            compiler: cl
+            cmake-args: -A ARM -DZLIB_COMPAT=ON
+            deploy-name: win-arm-compat
+
+          - name: Windows MSVC ARM64
+            os: windows-latest
+            compiler: cl
+            cmake-args: -A ARM64
+            deploy-name: win-arm64
+
+          - name: Windows MSVC ARM64 Compat
+            os: windows-latest
+            compiler: cl
+            cmake-args: -A ARM64 -DZLIB_COMPAT=ON
+            deploy-name: win-arm64-compat
 
     steps:
     - name: Checkout repository
