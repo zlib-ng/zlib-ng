@@ -143,12 +143,12 @@ static const config configuration_table[10] = {
 /*      good lazy nice chain */
 /* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
 
-#ifndef NO_QUICK_STRATEGY
-/* 1 */ {0,    0,  0,    0, deflate_quick},
-/* 2 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
-#else
+#ifdef NO_QUICK_STRATEGY
 /* 1 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
 /* 2 */ {4,    5, 16,    8, deflate_fast},
+#else
+/* 1 */ {0,    0,  0,    0, deflate_quick},
+/* 2 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
 #endif
 
 #ifdef NO_MEDIUM_STRATEGY
