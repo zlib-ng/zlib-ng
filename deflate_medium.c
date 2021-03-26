@@ -165,6 +165,9 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
     ALIGNED_(16) struct match current_match;
                  struct match next_match;
 
+    /* For levels below 5, don't check the next position for a better match */
+    int early_exit = s->level < 5;
+
     memset(&current_match, 0, sizeof(struct match));
     memset(&next_match, 0, sizeof(struct match));
 
@@ -193,7 +196,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
          */
 
         /* If we already have a future match from a previous round, just use that */
-        if (next_match.match_length > 0) {
+        if (!early_exit && next_match.match_length > 0) {
             current_match = next_match;
             next_match.match_length = 0;
         } else {
@@ -233,7 +236,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         insert_match(s, current_match);
 
         /* now, look ahead one */
-        if (LIKELY(s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < (s->window_size - MIN_LOOKAHEAD))) {
+        if (LIKELY(!early_exit && s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < (s->window_size - MIN_LOOKAHEAD))) {
             s->strstart = current_match.strstart + current_match.match_length;
             hash_head = functable.quick_insert_string(s, s->strstart);
 

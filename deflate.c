@@ -144,21 +144,21 @@ static const config configuration_table[10] = {
 /* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
 
 #ifndef NO_QUICK_STRATEGY
-/* 1 */ {4,    4,  8,    4, deflate_quick},
+/* 1 */ {0,    0,  0,    0, deflate_quick},
 /* 2 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
 #else
 /* 1 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
 /* 2 */ {4,    5, 16,    8, deflate_fast},
 #endif
 
-/* 3 */ {4,    6, 32,   32, deflate_fast},
-
 #ifdef NO_MEDIUM_STRATEGY
+/* 3 */ {4,    6, 32,   32, deflate_fast},
 /* 4 */ {4,    4, 16,   16, deflate_slow},  /* lazy matches */
 /* 5 */ {8,   16, 32,   32, deflate_slow},
 /* 6 */ {8,   16, 128, 128, deflate_slow},
 #else
-/* 4 */ {4,    4, 16,   16, deflate_medium},  /* lazy matches */
+/* 3 */ {4,    6, 16,    6, deflate_medium},
+/* 4 */ {4,   12, 32,   24, deflate_medium},  /* lazy matches */
 /* 5 */ {8,   16, 32,   32, deflate_medium},
 /* 6 */ {8,   16, 128, 128, deflate_medium},
 #endif
@@ -280,11 +280,6 @@ int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int
     }
     if (windowBits == 8)
         windowBits = 9;  /* until 256-byte window bug fixed */
-
-#if !defined(NO_QUICK_STRATEGY) && !defined(S390_DFLTCC_DEFLATE)
-    if (level == 1)
-        windowBits = 13;
-#endif
 
     s = (deflate_state *) ZALLOC_STATE(strm, 1, sizeof(deflate_state));
     if (s == NULL)
