@@ -1081,7 +1081,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME makefixed
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKEFIXED_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/inffixed_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/inffixed_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1093,7 +1093,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME maketrees
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKETREES_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/trees_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/trees_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1105,7 +1105,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME makecrct-crc32
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKECRCT_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/crc32_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1114,7 +1114,7 @@ if(ZLIB_ENABLE_TESTS)
     add_test(NAME makecrct-crc32-combine
         COMMAND ${CMAKE_COMMAND}
         "-DCOMMAND=${MAKECRCT_COMMAND}"
-        -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/crc32_comb_tbl._h
+        -DOUTPUT=${CMAKE_CURRENT_BINARY_DIR}/crc32_comb_tbl._h
         -DCOMPARE=${CMAKE_CURRENT_SOURCE_DIR}/crc32_comb_tbl.h
         -DIGNORE_LINE_ENDINGS=ON
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
@@ -1152,7 +1152,7 @@ if(ZLIB_ENABLE_TESTS)
                 "-DCOMPRESS_ARGS=${compress_args}"
                 "-DDECOMPRESS_ARGS=-d;-c"
                 -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
-                -DOUTPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}-${test_id}.gz
+                -DTEST_NAME=${test_id}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
         endif()
     endmacro()
@@ -1181,7 +1181,7 @@ if(ZLIB_ENABLE_TESTS)
             continue()
         endif()
         foreach(TEST_CONFIG ${TEST_CONFIGS})
-            get_filename_component(TEST_NAME ${TEST_FILE_PATH} NAME_WE)
+            get_filename_component(TEST_NAME ${TEST_FILE_PATH} NAME)
             if (TEST_NAME STREQUAL "")
                 continue()
             endif()
@@ -1214,6 +1214,7 @@ if(ZLIB_ENABLE_TESTS)
         COMMAND ${CMAKE_COMMAND}
         "-DTARGET=${MINIGZIP_COMMAND}"
         "-DCOMPRESS_ARGS=-c;-k;-4"
+        -DTEST_NAME=GH-361-test-txt
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-361/test.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
@@ -1222,6 +1223,7 @@ if(ZLIB_ENABLE_TESTS)
         "-DCOMPRESS_TARGET=${SWITCHLEVELS_COMMAND}"
         "-DCOMPRESS_ARGS=1;5;9;3"
         "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
+        -DTEST_NAME=GH-364-test-bin
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-364/test.bin
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
@@ -1231,6 +1233,7 @@ if(ZLIB_ENABLE_TESTS)
         "-DCOMPRESS_ARGS=-c;-m;1;-w;-15;-1;-s;4"
         "-DDECOMPRESS_ARGS=-c;-d;-m;1;-w;-15"
         -DGZIP_VERIFY=OFF
+        -DTEST_NAME=GH-382-defneg3-dat
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-382/defneg3.dat
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
@@ -1241,6 +1244,7 @@ if(ZLIB_ENABLE_TESTS)
         "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
         -DCOMPARE=OFF
         -DGZIP_VERIFY=OFF
+        -DTEST_NAME=GH-536-segfault-lcet10-txt
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
@@ -1251,6 +1255,7 @@ if(ZLIB_ENABLE_TESTS)
         "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
         -DCOMPARE=OFF
         -DGZIP_VERIFY=OFF
+        -DTEST_NAME=GH-536-incomplete-read-lcet10-txt
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
@@ -1261,12 +1266,14 @@ if(ZLIB_ENABLE_TESTS)
         "-DDECOMPRESS_TARGET=${MINIGZIP_COMMAND}"
         -DCOMPARE=OFF
         -DGZIP_VERIFY=OFF
+        -DTEST_NAME=GH-536-zero-stored-block-lcet10-txt
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/data/lcet10.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
     add_test(NAME GH-751
         COMMAND ${CMAKE_COMMAND}
         "-DTARGET=${MINIGZIP_COMMAND}"
+        -DTEST_NAME=GH-751-test-txt
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-751/test.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
