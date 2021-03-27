@@ -32,10 +32,6 @@
 #  include <sys/stat.h>
 #endif
 
-#ifndef UNALIGNED_OK
-#  include <malloc.h>
-#endif
-
 #if defined(_WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
 #  include <io.h>
