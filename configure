@@ -1252,15 +1252,27 @@ case "${ARCH}" in
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo"
         fi
 
-        GCC_MACHINE=$(${CC} -dumpmachine)
-        case "${GCC_MACHINE}" in
-            *gnueabihf)
-                floatabi="-mfloat-abi=hard" ;;
-            *gnueabi)
-                floatabi="-mfloat-abi=softfp" ;;
-        esac
-        CFLAGS="${CFLAGS} ${floatabi}"
-        SFLAGS="${SFLAGS} ${floatabi}"
+        cat > $test.c << EOF
+int main() { return 0; }
+EOF
+        if try $CC -w -c $SFLAGS $test.c -mfloat-abi=softfp &&
+           try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
+            floatabi="-mfloat-abi=softfp"
+        else
+            if try $CC -w -c $SFLAGS $test.c -mfloat-abi=hard &&
+               try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
+                floatabi="-mfloat-abi=hard"
+            fi
+        fi
+
+        if [ -z $floatabi ]; then
+            echo "ARM floating point arch not auto-detected" | tee -a configure.log
+        else
+            echo "ARM floating point arch: ${floatabi}" | tee -a configure.log
+
+            CFLAGS="${CFLAGS} ${floatabi}"
+            SFLAGS="${SFLAGS} ${floatabi}"
+        fi
 
         case "${ARCH}" in
             armv[345]*)
