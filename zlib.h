@@ -1794,7 +1794,7 @@ Z_EXTERN int Z_EXPORT gzgetc_(gzFile file);  /* backward compatibility */
    Z_EXTERN void Z_EXPORT crc32_combine_gen64(uint32_t *op, z_off64_t);
 #endif
 
-#if !defined(ZLIB_INTERNAL) && defined(Z_WANT64)
+#if !defined(Z_INTERNAL) && defined(Z_WANT64)
 #    define gzopen gzopen64
 #    define gzseek gzseek64
 #    define gztell gztell64
