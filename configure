@@ -94,6 +94,7 @@ buildacle=1
 buildneon=1
 builddfltccdeflate=0
 builddfltccinflate=0
+buildcrc32vx=1
 with_sanitizer=""
 with_fuzzers=0
 floatabi=
@@ -108,6 +109,7 @@ pclmulflag="-mpclmul"
 acleflag=
 neonflag=
 noltoflag="-fno-lto"
+vgfmaflag="-march=z13"
 without_optimizations=0
 without_new_strategies=0
 reducedmem=0
@@ -155,6 +157,7 @@ case "$1" in
       echo '    [--without-neon]            Compiles without ARM Neon SIMD instruction set' | tee -a configure.log
       echo '    [--with-dfltcc-deflate]     Use DEFLATE CONVERSION CALL instruction for compression on IBM Z' | tee -a configure.log
       echo '    [--with-dfltcc-inflate]     Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z' | tee -a configure.log
+      echo '    [--without-crc32-vx]        Build without vectorized CRC32 on IBM Z' | tee -a configure.log
       echo '    [--with-reduced-mem]        Reduced memory usage for special cases (reduces performance)' | tee -a configure.log
       echo '    [--force-sse2]              Assume SSE2 instructions are always available (disabled by default on x86, enabled on x86_64)' | tee -a configure.log
       echo '    [--with-sanitizer]          Build with sanitizer (memory, address, undefined)' | tee -a configure.log
@@ -182,6 +185,7 @@ case "$1" in
     --without-neon) buildneon=0; shift ;;
     --with-dfltcc-deflate) builddfltccdeflate=1; shift ;;
     --with-dfltcc-inflate) builddfltccinflate=1; shift ;;
+    --without-crc32-vx) buildcrc32vx=0; shift ;;
     --with-reduced-mem) reducedmem=1; shift ;;
     --force-sse2) forcesse2=1; shift ;;
     -n | --native) native=1; shift ;;
@@ -1152,6 +1156,42 @@ EOF
     fi
 }
 
+check_vgfma_intrinsics() {
+    # Check whether "VECTOR GALOIS FIELD MULTIPLY SUM AND ACCUMULATE" intrinsic is available
+    echo -n "Checking for -mzarch... " | tee -a configure.log
+    if try $CC -x c -c /dev/null -o /dev/null -mzarch; then
+        echo Yes. | tee -a configure.log
+        vgfmaflag="${vgfmaflag} -mzarch"
+    else
+        echo No. | tee -a configure.log
+    fi
+    echo -n "Checking for -fzvector... " | tee -a configure.log
+    if try $CC -x c -c /dev/null -o /dev/null -fzvector; then
+        echo Yes. | tee -a configure.log
+        vgfmaflag="${vgfmaflag} -fzvector"
+    else
+        echo No. | tee -a configure.log
+    fi
+    cat > $test.c << EOF
+#include <vecintrin.h>
+int main(void) {
+    unsigned long long a __attribute__((vector_size(16))) = { 0 };
+    unsigned long long b __attribute__((vector_size(16))) = { 0 };
+    unsigned char c __attribute__((vector_size(16))) = { 0 };
+    c = vec_gfmsum_accum_128(a, b, c);
+    return c[0];
+}
+EOF
+    echo -n "Checking for VGFMA support... " | tee -a configure.log
+    if try $CC -c $CFLAGS $vgfmaflag $test.c; then
+        HAVE_VGFMA_INTRIN=1
+        echo "Yes." | tee -a configure.log
+    else
+        HAVE_VGFMA_INTRIN=0
+        echo "No." | tee -a configure.log
+    fi
+}
+
 case "${ARCH}" in
     i386 | i486 | i586 | i686 | x86_64)
         # Enable deflate_medium at level 1
@@ -1538,6 +1578,13 @@ EOF
         ARCHDIR=arch/s390
 
         if test $without_optimizations -eq 0; then
+            if test $buildcrc32vx -eq 1; then
+                CFLAGS="${CFLAGS} -DS390_FEATURES"
+                SFLAGS="${SFLAGS} -DS390_FEATURES"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} s390.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} s390.lo"
+            fi
+
             if test $builddfltccdeflate -eq 1 -o $builddfltccinflate -eq 1; then
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_common.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_common.lo"
@@ -1557,6 +1604,17 @@ EOF
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_inflate.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_inflate.lo"
                 ARCH="${ARCH}+dfltcc-inflate"
+            fi
+
+            if test $buildcrc32vx -eq 1; then
+                check_vgfma_intrinsics
+                if test $HAVE_VGFMA_INTRIN -eq 1; then
+                    CFLAGS="${CFLAGS} -DS390_CRC32_VX"
+                    SFLAGS="${SFLAGS} -DS390_CRC32_VX"
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32-vx.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32-vx.lo"
+                    ARCH="${ARCH}+crc32-vx"
+                fi
             fi
         fi
     ;;
@@ -1751,6 +1809,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^ACLEFLAG *=/s#=.*#=$acleflag#
 /^NEONFLAG *=/s#=.*#=$neonflag#
 /^NOLTOFLAG *=/s#=.*#=$noltoflag#
+/^VGFMAFLAG *=/s#=.*#=$vgfmaflag#
 " > $ARCHDIR/Makefile
 
 # Append header files dependences.

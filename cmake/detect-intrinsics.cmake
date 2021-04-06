@@ -219,3 +219,28 @@ macro(check_sse4_intrinsics)
     )
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
+
+macro(check_vgfma_intrinsics)
+    if(NOT NATIVEFLAG)
+        set(VGFMAFLAG "-march=z13")
+        if(CMAKE_C_COMPILER_ID MATCHES "GNU")
+            set(VGFMAFLAG "${VGFMAFLAG} -mzarch")
+        endif()
+        if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+            set(VGFMAFLAG "${VGFMAFLAG} -fzvector")
+        endif()
+    endif()
+    # Check whether compiler supports "VECTOR GALOIS FIELD MULTIPLY SUM AND ACCUMULATE" intrinsic
+    set(CMAKE_REQUIRED_FLAGS "${VGFMAFLAG}")
+    check_c_source_compiles(
+        "#include <vecintrin.h>
+        int main(void) {
+            unsigned long long a __attribute__((vector_size(16))) = { 0 };
+            unsigned long long b __attribute__((vector_size(16))) = { 0 };
+            unsigned char c __attribute__((vector_size(16))) = { 0 };
+            c = vec_gfmsum_accum_128(a, b, c);
+            return c[0];
+        }"
+        HAVE_VGFMA_INTRIN FAIL_REGEX "not supported")
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()

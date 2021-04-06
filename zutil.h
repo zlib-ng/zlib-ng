@@ -252,6 +252,8 @@ void Z_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #  include "arch/arm/arm.h"
 #elif defined(POWER_FEATURES)
 #  include "arch/power/power.h"
+#elif defined(S390_FEATURES)
+#  include "arch/s390/s390.h"
 #endif
 
 #endif /* ZUTIL_H_ */
