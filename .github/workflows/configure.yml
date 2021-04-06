@@ -148,6 +148,16 @@ jobs:
             cflags: -static
             ldflags: -static
 
+          - name: Ubuntu GCC S390X No vectorized CRC32
+            os: ubuntu-latest
+            compiler: s390x-linux-gnu-gcc
+            configure-args: --warn --static --without-crc32-vx
+            chost: s390x-linux-gnu
+            packages: qemu qemu-user gcc-s390x-linux-gnu libc-dev-s390x-cross
+            qemu-run: qemu-s390x
+            cflags: -static
+            ldflags: -static
+
           - name: Ubuntu GCC S390X DFLTCC
             os: ubuntu-latest
             compiler: s390x-linux-gnu-gcc
