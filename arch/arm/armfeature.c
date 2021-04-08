@@ -14,6 +14,8 @@
 #  include <winapifamily.h>
 #endif
 
+ZLIB_INTERNAL void dummy_linker_glue(void) {}
+
 static int arm_has_crc32() {
 #if defined(__linux__) && defined(HWCAP2_CRC32)
     return (getauxval(AT_HWCAP2) & HWCAP2_CRC32) != 0 ? 1 : 0;
