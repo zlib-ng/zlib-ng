@@ -23,11 +23,15 @@ static inline void chunkmemset_1(uint8_t *from, chunk_t *chunk) {
 }
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
-    *chunk = vreinterpretq_u8_s16(vdupq_n_s16(*(int16_t *)from));
+    int16_t tmp;
+    memcpy(&tmp, from, 2);
+    *chunk = vreinterpretq_u8_s16(vdupq_n_s16(tmp));
 }
 
 static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
-    *chunk = vreinterpretq_u8_s32(vdupq_n_s32(*(int32_t *)from));
+    int32_t tmp;
+    memcpy(&tmp, from, 4);
+    *chunk = vreinterpretq_u8_s32(vdupq_n_s32(tmp));
 }
 
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
