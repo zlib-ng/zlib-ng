@@ -271,7 +271,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     /* Compression level: [0..9]. */
     outmode[2] = data[0] % 10;
 
-    switch (data[0] % 4) {
+    switch (data[dataLen-1] % 4) {
     default:
     case 0:
         outmode[3] = 0;
