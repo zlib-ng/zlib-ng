@@ -319,6 +319,7 @@ Z_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len
         functable.chunkunroll = &chunkunroll_avx;
 #endif
 #ifdef ARM_NEON_CHUNKSET
+    dummy_linker_glue();
     if (arm_cpu_has_neon)
         functable.chunkunroll = &chunkunroll_neon;
 #endif
