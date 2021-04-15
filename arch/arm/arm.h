@@ -8,6 +8,4 @@
 extern int arm_cpu_has_neon;
 extern int arm_cpu_has_crc32;
 
-void Z_INTERNAL arm_check_features(void);
-
 #endif /* ARM_H_ */

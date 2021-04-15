@@ -52,7 +52,7 @@ static void cpuidex(int info, int subinfo, unsigned* eax, unsigned* ebx, unsigne
 #endif
 }
 
-void Z_INTERNAL x86_check_features(void) {
+static void __attribute__((constructor)) x86_check_features(void) {
     unsigned eax, ebx, ecx, edx;
     unsigned maxbasic;
 

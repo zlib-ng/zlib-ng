@@ -136,27 +136,11 @@ extern uint32_t longest_match_unaligned_avx2(deflate_state *const s, Pos cur_mat
 
 Z_INTERNAL Z_TLS struct functable_s functable;
 
-Z_INTERNAL void cpu_check_features(void)
-{
-    static int features_checked = 0;
-    if (features_checked)
-        return;
-#if defined(X86_FEATURES)
-    x86_check_features();
-#elif defined(ARM_FEATURES)
-    arm_check_features();
-#elif defined(POWER_FEATURES)
-    power_check_features();
-#endif
-    features_checked = 1;
-}
-
 /* stub functions */
 Z_INTERNAL void insert_string_stub(deflate_state *const s, const uint32_t str, uint32_t count) {
     // Initialize default
 
     functable.insert_string = &insert_string_c;
-    cpu_check_features();
 
 #ifdef X86_SSE42_CRC_HASH
     if (x86_cpu_has_sse42)
@@ -186,7 +170,6 @@ Z_INTERNAL Pos quick_insert_string_stub(deflate_state *const s, const uint32_t s
 Z_INTERNAL void slide_hash_stub(deflate_state *s) {
 
     functable.slide_hash = &slide_hash_c;
-    cpu_check_features();
 
 #ifdef X86_SSE2
 #  if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
@@ -214,7 +197,6 @@ Z_INTERNAL void slide_hash_stub(deflate_state *s) {
 Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len) {
     // Initialize default
     functable.adler32 = &adler32_c;
-    cpu_check_features();
 
 #ifdef ARM_NEON_ADLER32
 #  ifndef ARM_NOCHECK_NEON
@@ -376,8 +358,6 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
     Assert(sizeof(uint64_t) >= sizeof(size_t),
            "crc32_z takes size_t but internally we have a uint64_t len");
     /* return a function pointer for optimized arches here after a capability test */
-
-    cpu_check_features();
 
     if (use_byfour) {
 #if BYTE_ORDER == LITTLE_ENDIAN
