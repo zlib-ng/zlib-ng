@@ -8,7 +8,7 @@
 
 Z_INTERNAL int power_cpu_has_arch_2_07;
 
-void Z_INTERNAL power_check_features(void) {
+static void __attribute__((constructor)) power_check_features(void) {
     unsigned long hwcap2;
     hwcap2 = getauxval(AT_HWCAP2);
 
