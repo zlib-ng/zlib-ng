@@ -135,21 +135,7 @@ extern uint32_t longest_match_unaligned_avx2(deflate_state *const s, Pos cur_mat
 #endif
 
 /* functable init */
-Z_INTERNAL Z_TLS struct functable_s functable = {
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL,
-    NULL
-};
+Z_INTERNAL struct functable_s functable = {};
 
 /* stub functions */
 static void __attribute__((constructor)) insert_string_stub() {
@@ -166,7 +152,7 @@ static void __attribute__((constructor)) insert_string_stub() {
 #endif
 }
 
-static Pos __attribute__((constructor)) quick_insert_string_stub_init() {
+static void __attribute__((constructor)) quick_insert_string_stub_init() {
     functable.quick_insert_string = &quick_insert_string_c;
 
 #ifdef X86_SSE42_CRC_HASH
@@ -203,7 +189,7 @@ static void __attribute__((constructor)) slide_hash_stub_init() {
 #endif
 }
 
-static uint32_t __attribute__((constructor)) adler32_stub_init() {
+static void __attribute__((constructor)) adler32_stub_init() {
     // Initialize default
     functable.adler32 = &adler32_c;
 
@@ -227,7 +213,7 @@ static uint32_t __attribute__((constructor)) adler32_stub_init() {
 #endif
 }
 
-static uint32_t __attribute__((constructor)) chunksize_stub_init(void) {
+static void __attribute__((constructor)) chunksize_stub_init(void) {
     // Initialize default
     functable.chunksize = &chunksize_c;
 
@@ -245,11 +231,9 @@ static uint32_t __attribute__((constructor)) chunksize_stub_init(void) {
     if (arm_cpu_has_neon)
         functable.chunksize = &chunksize_neon;
 #endif
-
-    return functable.chunksize();
 }
 
-static uint8_t* __attribute__((constructor)) chunkcopy_stub_init() {
+static void __attribute__((constructor)) chunkcopy_stub_init() {
     // Initialize default
     functable.chunkcopy = &chunkcopy_c;
 
@@ -269,7 +253,7 @@ static uint8_t* __attribute__((constructor)) chunkcopy_stub_init() {
 #endif
 }
 
-static uint8_t* __attribute__((constructor)) chunkcopy_safe_stub_init() {
+static void __attribute__((constructor)) chunkcopy_safe_stub_init() {
     // Initialize default
     functable.chunkcopy_safe = &chunkcopy_safe_c;
 
@@ -289,7 +273,7 @@ static uint8_t* __attribute__((constructor)) chunkcopy_safe_stub_init() {
 #endif
 }
 
-static uint8_t* __attribute__((constructor)) chunkunroll_stub_init() {
+static void __attribute__((constructor)) chunkunroll_stub_init() {
     // Initialize default
     functable.chunkunroll = &chunkunroll_c;
 
@@ -310,7 +294,7 @@ static uint8_t* __attribute__((constructor)) chunkunroll_stub_init() {
 #endif
 }
 
-static uint8_t* __attribute__((constructor)) chunkmemset_stub_init() {
+static void __attribute__((constructor)) chunkmemset_stub_init() {
     // Initialize default
     functable.chunkmemset = &chunkmemset_c;
 
@@ -330,7 +314,7 @@ static uint8_t* __attribute__((constructor)) chunkmemset_stub_init() {
 #endif
 }
 
-static uint8_t* __attribute__((constructor)) chunkmemset_safe_stub_init() {
+static void __attribute__((constructor)) chunkmemset_safe_stub_init() {
     // Initialize default
     functable.chunkmemset_safe = &chunkmemset_safe_c;
 
@@ -350,7 +334,7 @@ static uint8_t* __attribute__((constructor)) chunkmemset_safe_stub_init() {
 #endif
 }
 
-static uint32_t __attribute__((constructor)) crc32_stub_init() {
+static void __attribute__((constructor)) crc32_stub_init() {
     int32_t use_byfour = sizeof(void *) == sizeof(ptrdiff_t);
 
     Assert(sizeof(uint64_t) >= sizeof(size_t),
@@ -374,7 +358,7 @@ static uint32_t __attribute__((constructor)) crc32_stub_init() {
     }
 }
 
-static uint32_t __attribute__((constructor)) compare258_stub_init() {
+static void __attribute__((constructor)) compare258_stub_init() {
 
     functable.compare258 = &compare258_c;
 
@@ -397,7 +381,7 @@ static uint32_t __attribute__((constructor)) compare258_stub_init() {
 #endif
 }
 
-static uint32_t __attribute__((constructor)) longest_match_stub_init() {
+static void __attribute__((constructor)) longest_match_stub_init() {
 
     functable.longest_match = &longest_match_c;
 
