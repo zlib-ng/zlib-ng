@@ -135,7 +135,7 @@ extern uint32_t longest_match_unaligned_avx2(deflate_state *const s, Pos cur_mat
 #endif
 
 /* functable init */
-Z_INTERNAL struct functable_s functable = {};
+Z_INTERNAL struct functable_s functable;
 
 /* stub functions */
 static void __attribute__((constructor)) insert_string_stub() {
