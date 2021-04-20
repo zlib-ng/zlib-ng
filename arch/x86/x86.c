@@ -17,6 +17,8 @@
 #  include <cpuid.h>
 #endif
 
+Z_INTERNAL void dummy_linker_glue_y(void) {}
+
 Z_INTERNAL int x86_cpu_has_avx2;
 Z_INTERNAL int x86_cpu_has_sse2;
 Z_INTERNAL int x86_cpu_has_ssse3;
