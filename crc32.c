@@ -187,6 +187,11 @@ Z_INTERNAL void crc_reset(deflate_state *const s) {
     }
 #endif
     s->strm->adler = PREFIX(crc32)(0L, NULL, 0);
+
+#if defined(__APPLE__)
+    dummy_linker_glue_x();
+    dummy_linker_glue_y();
+#endif
 }
 
 Z_INTERNAL void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size) {

@@ -8,6 +8,13 @@
 
 #include "deflate.h"
 
+/*
+ A hack that helps AppleClang linker to see functable.
+ A single call to dummy_linker_glue_x() in the compilation unit that reads
+ functable will resolve "undefined symbol" link error.
+*/
+void dummy_linker_glue_x();
+
 struct functable_s {
     void     (* insert_string)      (deflate_state *const s, const uint32_t str, uint32_t count);
     Pos      (* quick_insert_string)(deflate_state *const s, const uint32_t str);
@@ -24,6 +31,6 @@ struct functable_s {
     uint8_t* (* chunkmemset_safe)   (uint8_t *out, unsigned dist, unsigned len, unsigned left);
 };
 
-Z_INTERNAL extern struct functable_s functable;
+extern struct functable_s functable;
 
 #endif
