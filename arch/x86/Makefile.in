@@ -13,6 +13,7 @@ SSE2FLAG=-msse2
 SSSE3FLAG=-mssse3
 SSE4FLAG=-msse4
 PCLMULFLAG=-mpclmul
+NOLTOFLAG=
 
 SRCDIR=.
 SRCTOP=../..
@@ -38,64 +39,64 @@ x86.lo:
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86.c
 
 chunkset_avx.o:
-	$(CC) $(CFLAGS) $(AVX2FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_avx.c
+	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_avx.c
 
 chunkset_avx.lo:
-	$(CC) $(SFLAGS) $(AVX2FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_avx.c
+	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_avx.c
 
 chunkset_sse.o:
-	$(CC) $(CFLAGS) $(SSE2FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_sse.c
+	$(CC) $(CFLAGS) $(SSE2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_sse.c
 
 chunkset_sse.lo:
-	$(CC) $(SFLAGS) $(SSE2FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_sse.c
+	$(CC) $(SFLAGS) $(SSE2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_sse.c
 
 compare258_avx.o:
-	$(CC) $(CFLAGS) $(AVX2FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_avx.c
+	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_avx.c
 
 compare258_avx.lo:
-	$(CC) $(SFLAGS) $(AVX2FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_avx.c
+	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_avx.c
 
 compare258_sse.o:
-	$(CC) $(CFLAGS) $(SSE4FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_sse.c
+	$(CC) $(CFLAGS) $(SSE4FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_sse.c
 
 compare258_sse.lo:
-	$(CC) $(SFLAGS) $(SSE4FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_sse.c
+	$(CC) $(SFLAGS) $(SSE4FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_sse.c
 
 insert_string_sse.o:
-	$(CC) $(CFLAGS) $(SSE4FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
+	$(CC) $(CFLAGS) $(SSE4FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
 
 insert_string_sse.lo:
-	$(CC) $(SFLAGS) $(SSE4FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
+	$(CC) $(SFLAGS) $(SSE4FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
 
 crc_folding.o:
-	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE4FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
+	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE4FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
 
 crc_folding.lo:
-	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE4FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
+	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE4FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
 
 slide_avx.o:
-	$(CC) $(CFLAGS) $(AVX2FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_avx.c
+	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_avx.c
 
 slide_avx.lo:
-	$(CC) $(SFLAGS) $(AVX2FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/slide_avx.c
+	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/slide_avx.c
 
 slide_sse.o:
-	$(CC) $(CFLAGS) $(SSE2FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_sse.c
+	$(CC) $(CFLAGS) $(SSE2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_sse.c
 
 slide_sse.lo:
-	$(CC) $(SFLAGS) $(SSE2FLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/slide_sse.c
+	$(CC) $(SFLAGS) $(SSE2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/slide_sse.c
 
 adler32_avx.o: $(SRCDIR)/adler32_avx.c
-	$(CC) $(CFLAGS) $(AVX2FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx.c
+	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx.c
 
 adler32_avx.lo: $(SRCDIR)/adler32_avx.c
-	$(CC) $(SFLAGS) $(AVX2FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx.c
+	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx.c
 
 adler32_ssse3.o: $(SRCDIR)/adler32_ssse3.c
-	$(CC) $(CFLAGS) $(SSSE3FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_ssse3.c
+	$(CC) $(CFLAGS) $(SSSE3FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_ssse3.c
 
 adler32_ssse3.lo: $(SRCDIR)/adler32_ssse3.c
-	$(CC) $(SFLAGS) $(SSSE3FLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_ssse3.c
+	$(CC) $(SFLAGS) $(SSSE3FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_ssse3.c
 
 mostlyclean: clean
 clean:

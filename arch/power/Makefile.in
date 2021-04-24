@@ -8,11 +8,12 @@ SFLAGS=
 INCLUDES=
 SUFFIX=
 
+P8FLAGS=-mcpu=power8
+NOLTOFLAG=
+
 SRCDIR=.
 SRCTOP=../..
 TOPDIR=$(SRCTOP)
-
-P8FLAGS=-mcpu=power8
 
 all: power.o \
      power.lo \
@@ -28,16 +29,16 @@ power.lo:
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/power.c
 
 adler32_power8.o:
-	$(CC) $(CFLAGS) $(P8FLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_power8.c
+	$(CC) $(CFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_power8.c
 
 adler32_power8.lo:
-	$(CC) $(SFLAGS) $(P8FLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_power8.c
+	$(CC) $(SFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_power8.c
 
 slide_hash_power8.o:
-	$(CC) $(CFLAGS) $(P8FLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_power8.c
+	$(CC) $(CFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_power8.c
 
 slide_hash_power8.lo:
-	$(CC) $(SFLAGS) $(P8FLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_power8.c
+	$(CC) $(SFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_power8.c
 
 mostlyclean: clean
 clean:
