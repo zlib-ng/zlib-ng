@@ -85,11 +85,17 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     }
 #endif
 
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
     scan_end   = *(bestcmp_t *)(scan+offset);
+#else
+    memcpy(&scan_end, scan+offset, sizeof(bestcmp_t));
+#endif
 #ifndef UNALIGNED_OK
     scan_end0  = *(bestcmp_t *)(scan+offset+1);
-#else
+#elif defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
     scan_start = *(bestcmp_t *)(scan);
+#else
+    memcpy(&scan_start, scan, sizeof(bestcmp_t));
 #endif
     mbase_end  = (mbase_start+offset);
 
@@ -153,24 +159,39 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #ifdef UNALIGNED_OK
         if (best_len < sizeof(uint32_t)) {
             for (;;) {
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
                 if (*(uint16_t *)(mbase_end+cur_match) == (uint16_t)scan_end &&
                     *(uint16_t *)(mbase_start+cur_match) == (uint16_t)scan_start)
+#else
+                if (!memcmp(mbase_end+cur_match, &scan_end, 2) &&
+                    !memcmp(mbase_start+cur_match, &scan_start, 2))
+#endif
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  ifdef UNALIGNED64_OK
         } else if (best_len >= sizeof(uint64_t)) {
             for (;;) {
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
                 if (*(uint64_t *)(mbase_end+cur_match) == (uint64_t)scan_end &&
                     *(uint64_t *)(mbase_start+cur_match) == (uint64_t)scan_start)
+#else
+                if (!memcmp(mbase_end+cur_match, &scan_end, 8) &&
+                    !memcmp(mbase_start+cur_match, &scan_start, 8))
+#endif
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  endif
         } else {
             for (;;) {
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
                 if (*(uint32_t *)(mbase_end+cur_match) == (uint32_t)scan_end &&
                     *(uint32_t *)(mbase_start+cur_match) == (uint32_t)scan_start)
+#else
+                if (!memcmp(mbase_end+cur_match, &scan_end, 4) &&
+                    !memcmp(mbase_start+cur_match, &scan_start, 4))
+#endif
                     break;
                 GOTO_NEXT_CHAIN;
             }
@@ -207,7 +228,11 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #endif
             }
 #endif
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
             scan_end = *(bestcmp_t *)(scan+offset);
+#else
+            memcpy(&scan_end, scan+offset, sizeof(bestcmp_t));
+#endif
 #ifndef UNALIGNED_OK
             scan_end0 = *(bestcmp_t *)(scan+offset+1);
 #endif

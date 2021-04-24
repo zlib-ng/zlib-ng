@@ -302,8 +302,12 @@ typedef enum {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_short(deflate_state *s, uint16_t w) {
-#if defined(UNALIGNED_OK)
+#if BYTE_ORDER == LITTLE_ENDIAN
+#if defined(UNALIGNED_OK) && defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
     *(uint16_t *)(&s->pending_buf[s->pending]) = w;
+#else
+    memcpy(&s->pending_buf[s->pending], &w, 2);
+#endif
     s->pending += 2;
 #else
     put_byte(s, (w & 0xff));
@@ -325,8 +329,12 @@ static inline void put_short_msb(deflate_state *s, uint16_t w) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint32(deflate_state *s, uint32_t dw) {
-#if defined(UNALIGNED_OK)
+#if BYTE_ORDER == LITTLE_ENDIAN
+#if defined(UNALIGNED_OK) && defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
     *(uint32_t *)(&s->pending_buf[s->pending]) = dw;
+#else
+    memcpy(&s->pending_buf[s->pending], &dw, 4);
+#endif
     s->pending += 4;
 #else
     put_byte(s, (dw & 0xff));
@@ -341,14 +349,26 @@ static inline void put_uint32(deflate_state *s, uint32_t dw) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
-#if defined(UNALIGNED_OK)
+#if BYTE_ORDER == LITTLE_ENDIAN
+#if defined(UNALIGNED_OK) && defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
     *(uint32_t *)(&s->pending_buf[s->pending]) = ZSWAP32(dw);
-    s->pending += 4;
 #else
+    uint32_t msb = ZSWAP32(dw);
+    memcpy(&s->pending_buf[s->pending], &msb, 4);
+    s->pending += 4;
+#endif
+#elif BYTE_ORDER == BIG_ENDIAN
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
     put_byte(s, ((dw >> 24) & 0xff));
     put_byte(s, ((dw >> 16) & 0xff));
     put_byte(s, ((dw >> 8) & 0xff));
     put_byte(s, (dw & 0xff));
+#else
+    memcpy(&s->pending_buf[s->pending], &dw, 4);
+    s->pending += 4;
+#endif
+#else
+#  error No endian defined
 #endif
 }
 
@@ -357,14 +377,16 @@ static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint64(deflate_state *s, uint64_t lld) {
-#if defined(UNALIGNED64_OK)
+#if BYTE_ORDER == LITTLE_ENDIAN
+#if defined(UNALIGNED64_OK) && defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
     *(uint64_t *)(&s->pending_buf[s->pending]) = lld;
-    s->pending += 8;
-#elif defined(UNALIGNED_OK)
+#elif defined(UNALIGNED_OK) && defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 8
     *(uint32_t *)(&s->pending_buf[s->pending]) = lld & 0xffffffff;
-    s->pending += 4;
-    *(uint32_t *)(&s->pending_buf[s->pending]) = (lld >> 32) & 0xffffffff;
-    s->pending += 4;
+    *(uint32_t *)(&s->pending_buf[s->pending+4]) = (lld >> 32) & 0xffffffff;
+#else
+    memcpy(&s->pending_buf[s->pending], &lld, 8);
+#endif
+    s->pending += 8;
 #else
     put_byte(s, (lld & 0xff));
     put_byte(s, ((lld >> 8) & 0xff));
