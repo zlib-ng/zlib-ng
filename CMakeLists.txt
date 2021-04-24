@@ -1150,7 +1150,6 @@ if(ZLIB_ENABLE_TESTS)
                 COMMAND ${CMAKE_COMMAND}
                 "-DTARGET=${MINIGZIP_COMMAND}"
                 "-DCOMPRESS_ARGS=${compress_args}"
-                "-DDECOMPRESS_ARGS=-d;-c"
                 -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
                 -DTEST_NAME=${test_id}
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
