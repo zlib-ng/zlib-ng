@@ -1,0 +1,145 @@
+# This is the workflow for cmake builds to be run on our private runners.
+name: CI CMake Priv aarch64y
+on: [push, pull_request]
+jobs:
+  ci-cmake:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu GCC AARCH64
+            os: el8-aarch64
+            #os: ubuntu-latest
+            #compiler: aarch64-linux-gnu-gcc
+            compiler: gcc
+            cmake-args: -DWITH_SANITIZER=Address
+            asan-options: detect_leaks=0
+            codecov: t_ubuntu_gcc_aarch64
+
+          - name: Ubuntu GCC AARCH64 No ACLE
+            os: el8-aarch64
+            #os: ubuntu-latest
+            #compiler: aarch64-linux-gnu-gcc
+            compiler: gcc
+            cmake-args: -DWITH_ACLE=OFF -DWITH_SANITIZER=Undefined
+            asan-options: detect_leaks=0
+            codecov: t_ubuntu_gcc_aarch64_no_acle
+
+          - name: Ubuntu GCC AARCH64 No NEON
+            os: el8-aarch64
+            #os: ubuntu-latest
+            #compiler: aarch64-linux-gnu-gcc
+            compiler: gcc
+            cmake-args: -DWITH_NEON=OFF -DWITH_SANITIZER=Undefined
+            asan-options: detect_leaks=0
+            codecov: t_ubuntu_gcc_aarch64_no_neon
+
+          - name: Ubuntu GCC AARCH64 Compat No Opt
+            os: el8-aarch64
+            #os: ubuntu-latest
+            #compiler: aarch64-linux-gnu-gcc
+            compiler: gcc
+            cmake-args: -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
+            asan-options: detect_leaks=0
+            codecov: t_ubuntu_gcc_aarch64_compat_no_opt
+             # Limit parallel test jobs to prevent wine errors
+            #parallels-jobs: 1
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Checkout test corpora
+      uses: actions/checkout@v2
+      # Don't test against all corpora with MinGW due to Wine being unable to run parallel jobs
+      # without connection timeout. Without parallel jobs test runs using Wine take close to an hour.
+      if: contains(matrix.name, 'MinGW') == false
+      with:
+        repository: zlib-ng/corpora
+        path: test/data/corpora
+
+    - name: Install packages (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages
+      run: |
+        sudo dpkg --add-architecture i386 # Required for wine32
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.packages }}
+
+    - name: Install packages (Windows)
+      if: runner.os == 'Windows'
+      run: |
+        choco install ninja ${{ matrix.packages }} --no-progress
+
+    - name: Install packages (macOS)
+      if: runner.os == 'macOS'
+      run: |
+        brew install ninja ${{ matrix.packages }}
+      env:
+        HOMEBREW_NO_INSTALL_CLEANUP: 1
+
+    - name: Install codecov.io tools
+      if: matrix.codecov
+      run: |
+        python -u -m pip install codecov
+
+    - name: Initialize Wine
+      # Prevent parallel test jobs from initializing Wine at the same time
+      if: contains(matrix.packages, 'wine')
+      run: |
+        wineboot --init
+
+    - name: Generate project files
+      # Shared libaries turned off for qemu ppc* and sparc & reduce code coverage sources
+      run: |
+        mkdir ${{ matrix.build-dir || '.not-used' }}
+        cd ${{ matrix.build-dir || '.' }}
+        cmake ${{ matrix.build-src-dir || '.' }} ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} -DBUILD_SHARED_LIBS=OFF -DWITH_FUZZERS=ON -DWITH_CODE_COVERAGE=ON -DWITH_MAINTAINER_WARNINGS=ON
+      env:
+        CC: ${{ matrix.compiler }}
+        CFLAGS: ${{ matrix.cflags }}
+        LDFLAGS: ${{ matrix.ldflags }}
+        CI: true
+
+    - name: Compile source code
+      run: |
+        cd ${{ matrix.build-dir || '.' }}
+        cmake --build . --config ${{ matrix.build-config || 'Release' }}
+
+    - name: Run test cases
+      # Don't run tests on Windows ARM
+      if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false
+      run: |
+        cd ${{ matrix.build-dir || '.' }}
+        ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '6' }}
+      env:
+        ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1
+        MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1
+        TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=0' }}:abort_on_error=1
+        LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=0' }}:abort_on_error=1
+        QEMU_RUN: ${{ matrix.qemu-run }}
+
+    - name: Upload coverage report
+      if: matrix.codecov && ( env.CODECOV_TOKEN_SECRET != '' || github.repository == 'zlib-ng/zlib-ng' )
+      shell: bash
+      run: |
+        bash tools/codecov-upload.sh
+      env:
+        # Codecov does not yet support GitHub Actions
+        CODECOV_TOKEN_SECRET: "${{secrets.CODECOV_TOKEN}}"
+        CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}"
+        CODECOV_FLAGS: "${{ matrix.codecov }}"
+        CODECOV_NAME:  "${{ matrix.name }}"
+        CODECOV_EXEC:  "${{ matrix.gcov-exec || 'gcov' }}"
+        CODECOV_DIR:   "${{ matrix.build-dir || '.' }}"
+
+    - name: Upload build errors
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: ${{ matrix.name }} (cmake)
+        path: |
+          ${{ matrix.build-dir || '.' }}/CMakeFiles/CMakeOutput.log
+          ${{ matrix.build-dir || '.' }}/CMakeFiles/CMakeError.log
+        retention-days: 30
