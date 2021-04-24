@@ -71,11 +71,11 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     }
 #endif
 
-    scan_end   = *(bestcmp_t *)(scan+offset);
+    memcpy(&scan_end, scan+offset, sizeof(bestcmp_t));
 #ifndef UNALIGNED_OK
-    scan_end0  = *(bestcmp_t *)(scan+offset+1);
+    memcpy(&scan_end0, scan+offset+1, sizeof(bestcmp_t));
 #else
-    scan_start = *(bestcmp_t *)(scan);
+    memcpy(&scan_start, scan, sizeof(bestcmp_t));
 #endif
     mbase_end  = (mbase_start+offset);
 
@@ -106,24 +106,24 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #ifdef UNALIGNED_OK
         if (best_len < sizeof(uint32_t)) {
             for (;;) {
-                if (*(uint16_t *)(mbase_end+cur_match) == (uint16_t)scan_end &&
-                    *(uint16_t *)(mbase_start+cur_match) == (uint16_t)scan_start)
+                if (!memcmp(mbase_end+cur_match, &scan_end, 2) &&
+                    !memcmp(mbase_start+cur_match, &scan_start, 2))
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  ifdef UNALIGNED64_OK
         } else if (best_len >= sizeof(uint64_t)) {
             for (;;) {
-                if (*(uint64_t *)(mbase_end+cur_match) == (uint64_t)scan_end &&
-                    *(uint64_t *)(mbase_start+cur_match) == (uint64_t)scan_start)
+                if (!memcmp(mbase_end+cur_match, &scan_end, 8) &&
+                    !memcmp(mbase_start+cur_match, &scan_start, 8))
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  endif
         } else {
             for (;;) {
-                if (*(uint32_t *)(mbase_end+cur_match) == (uint32_t)scan_end &&
-                    *(uint32_t *)(mbase_start+cur_match) == (uint32_t)scan_start)
+                if (!memcmp(mbase_end+cur_match, &scan_end, 4) &&
+                    !memcmp(mbase_start+cur_match, &scan_start, 4))
                     break;
                 GOTO_NEXT_CHAIN;
             }
@@ -158,9 +158,9 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #endif
             }
 #endif
-            scan_end = *(bestcmp_t *)(scan+offset);
+            memcpy(&scan_end, scan+offset, sizeof(bestcmp_t));
 #ifndef UNALIGNED_OK
-            scan_end0 = *(bestcmp_t *)(scan+offset+1);
+            memcpy(&scan_end0, scan+offset+1, sizeof(bestcmp_t));
 #endif
             mbase_end = (mbase_start+offset);
         } else if (UNLIKELY(early_exit)) {
