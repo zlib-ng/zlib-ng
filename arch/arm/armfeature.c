@@ -2,7 +2,6 @@
 
 #if defined(__linux__)
 #  include <sys/auxv.h>
-#  include <asm/hwcap.h>
 #elif defined(__FreeBSD__) && defined(__aarch64__)
 #  include <machine/armreg.h>
 #  ifndef ID_AA64ISAR0_CRC32_VAL
