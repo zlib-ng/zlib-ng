@@ -109,6 +109,7 @@ sse42flag="-msse4.2"
 pclmulflag="-mpclmul"
 acleflag=
 neonflag=
+noltoflag="-fno-lto"
 without_optimizations=0
 without_new_strategies=0
 gcc=0
@@ -239,6 +240,7 @@ if test $native -eq 1; then
   sse4flag=""
   sse42flag=""
   pclmulflag=""
+  noltoflag=""
 fi
 
 if test $build32 -eq 1; then
@@ -871,10 +873,23 @@ echo "" > test.c
 int main() { return 0; }
 EOF
 if test "$gcc" -eq 1 && ($cc $CFLAGS -fno-semantic-interposition -c $test.c) >> configure.log 2>&1; then
-  echo "Checking for -no-semantic-interposition... Yes." | tee -a configure.log
+  echo "Checking for -fno-semantic-interposition... Yes." | tee -a configure.log
   SFLAGS="$SFLAGS -fno-semantic-interposition"
 else
-  echo "Checking for -no-semantic-interposition... No." | tee -a configure.log
+  echo "Checking for -fno-semantic-interposition... No." | tee -a configure.log
+fi
+
+# Check for -fno-lto compiler support
+if test $gcc -eq 1 -a $without_optimizations -eq 0 -a $native -eq 0; then
+  cat > $test.c <<EOF
+int main() { return 0; }
+EOF
+  if $cc $CFLAGS -fno-lto -c $test.c >> configure.log 2>&1; then
+    echo "Checking for -fno-lto... Yes." | tee -a configure.log
+  else
+    echo "Checking for -fno-lto... No." | tee -a configure.log
+    noltoflag=""
+  fi
 fi
 
 # see if we can hide zlib internal symbols that are linked between separate source files using hidden
@@ -1659,6 +1674,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^PCLMULFLAG *=/s#=.*#=$pclmulflag#
 /^ACLEFLAG *=/s#=.*#=$acleflag#
 /^NEONFLAG *=/s#=.*#=$neonflag#
+/^NOLTOFLAG *=/s#=.*#=$noltoflag#
 " > $ARCHDIR/Makefile
 
 # Append header files dependences.
