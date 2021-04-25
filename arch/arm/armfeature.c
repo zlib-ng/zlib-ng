@@ -14,7 +14,7 @@
 #endif
 
 static int arm_has_crc32() {
-#if defined(__linux__) && defined(HWCAP2_CRC32)
+#if defined(__linux__) && defined(ARM_AUXV_HAS_CRC32)
     return (getauxval(AT_HWCAP2) & HWCAP2_CRC32) != 0 ? 1 : 0;
 #elif defined(__FreeBSD__) && defined(__aarch64__)
     return getenv("QEMU_EMULATING") == NULL
@@ -34,7 +34,7 @@ static int arm_has_crc32() {
 /* AArch64 has neon. */
 #if !defined(__aarch64__) && !defined(_M_ARM64)
 static inline int arm_has_neon() {
-#if defined(__linux__) && defined(HWCAP_NEON)
+#if defined(__linux__) && defined(ARM_AUXV_HAS_NEON)
     return (getauxval(AT_HWCAP) & HWCAP_NEON) != 0 ? 1 : 0;
 #elif defined(__APPLE__)
     int hasneon;

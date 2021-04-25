@@ -524,6 +524,14 @@ else
   esac
 fi
 
+# Simplify some later conditionals
+case "$uname" in
+Linux* | linux*)
+  LINUX=1 ;;
+*)
+  LINUX=0 ;;
+esac
+
 # destination names for shared library if not defined above
 SHAREDLIB=${SHAREDLIB-"${LIBNAME}$shared_ext"}
 SHAREDLIBV=${SHAREDLIBV-"${LIBNAME}$shared_ext.$VER"}
@@ -1265,6 +1273,34 @@ case "${ARCH}" in
             SFLAGS="${SFLAGS} -DARM_FEATURES"
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo"
+
+            if test $LINUX -eq 1; then
+                cat > $test.c <<EOF
+#include <sys/auxv.h>
+int main() {
+    return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
+}
+EOF
+                if try $CC -c $CFLAGS $test.c; then
+                    CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
+                    SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
+                else
+                    echo "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                fi
+
+                cat > $test.c <<EOF
+#include <sys/auxv.h>
+int main() {
+    return (getauxval(AT_HWCAP) & HWCAP_NEON);
+}
+EOF
+                if try $CC -c $CFLAGS $test.c; then
+                    CFLAGS="${CFLAGS} -DARM_AUXV_HAS_NEON"
+                    SFLAGS="${SFLAGS} -DARM_AUXV_HAS_NEON"
+                else
+                    echo "HWCAP_NEON not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                fi
+            fi
         fi
 
         cat > $test.c << EOF
@@ -1404,6 +1440,21 @@ EOF
             SFLAGS="${SFLAGS} -DARM_FEATURES"
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo"
+
+            if test $LINUX -eq 1; then
+                cat > $test.c <<EOF
+#include <sys/auxv.h>
+int main() {
+    return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
+}
+EOF
+                if try $CC -c $CFLAGS $test.c; then
+                    CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
+                    SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
+                else
+                    echo "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                fi
+            fi
 
             if test $buildacle -eq 1; then
                 if test $native -eq 0; then
