@@ -10,6 +10,8 @@
 #elif defined(__FreeBSD__)
 #  include <stdlib.h>
 #  include <malloc_np.h>
+#elif defined(__sun)
+#  include <stdlib.h>
 #else
 #  include <malloc.h>
 #endif
