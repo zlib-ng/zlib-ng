@@ -183,7 +183,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             message(FATAL_ERROR "Gzip compress failed: ${CMD_RESULT}")
         endif()
 
-        if(NOT EXISTS ${OUTPUT_BASE}.gz)
+        if(NOT EXISTS ${OUTPUT_BASE}.gzip.gz)
             cleanup()
             message(FATAL_ERROR "Cannot find decompress gzip input: ${OUTPUT_BASE}.gzip.gz")
         endif()
