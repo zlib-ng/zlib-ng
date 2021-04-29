@@ -185,7 +185,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
 
         if(NOT EXISTS ${OUTPUT_BASE}.gz)
             cleanup()
-            message(FATAL_ERROR "Cannot find minigzip decompress input: ${OUTPUT_BASE}.gzip.gz")
+            message(FATAL_ERROR "Cannot find decompress gzip input: ${OUTPUT_BASE}.gzip.gz")
         endif()
 
         # Check decompress target can handle gzip compressed output
@@ -199,7 +199,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
 
         if(CMD_RESULT)
             cleanup()
-            message(FATAL_ERROR "Minigzip decompress gzip failed: ${CMD_RESULT}")
+            message(FATAL_ERROR "Decompress gzip failed: ${CMD_RESULT}")
         endif()
 
         if(COMPARE)
@@ -210,7 +210,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
 
             if(CMD_RESULT)
                 cleanup()
-                message(FATAL_ERROR "Compare minigzip decompress gzip failed: ${CMD_RESULT}")
+                message(FATAL_ERROR "Compare decompress gzip failed: ${CMD_RESULT}")
             endif()
         endif()
     endif()
