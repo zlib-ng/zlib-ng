@@ -65,10 +65,13 @@ get_filename_component(OUTPUT_DIR "${OUTPUT_BASE}" DIRECTORY)
 file(MAKE_DIRECTORY "${OUTPUT_DIR}")
 
 macro(cleanup)
-    # Cleanup temporary mingizip files
-    file(REMOVE ${OUTPUT_BASE}.gz ${OUTPUT_BASE}.out)
-    # Cleanup temporary gzip files
-    file(REMOVE ${OUTPUT_BASE}.gzip.gz ${OUTPUT_BASE}.gzip.out)
+    # Cleanup temporary files
+    file(REMOVE
+        ${OUTPUT_BASE}.gz
+        ${OUTPUT_BASE}.out
+        ${OUTPUT_BASE}.gzip
+        ${OUTPUT_BASE}.gzip.gz
+        ${OUTPUT_BASE}.gzip.out)
 endmacro()
 
 # Compress input file
@@ -189,7 +192,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
         execute_process(COMMAND ${CMAKE_COMMAND}
             "-DCOMMAND=${DECOMPRESS_COMMAND}"
             -DINPUT=${OUTPUT_BASE}.gzip.gz
-            -DOUTPUT=${OUTPUT_BASE}.gzip.out
+            -DOUTPUT=${OUTPUT_BASE}.gzip
             "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
             -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
             RESULT_VARIABLE CMD_RESULT)
@@ -202,7 +205,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
         if(COMPARE)
             # Compare original input file with gzip decompressed output
             execute_process(COMMAND ${CMAKE_COMMAND}
-                -E compare_files ${INPUT} ${OUTPUT_BASE}.gzip.out
+                -E compare_files ${INPUT} ${OUTPUT_BASE}.gzip
                 RESULT_VARIABLE CMD_RESULT)
 
             if(CMD_RESULT)
