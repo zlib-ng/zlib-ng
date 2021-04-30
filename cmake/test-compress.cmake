@@ -58,7 +58,7 @@ endif()
 # Generate unique output path so multiple tests can be executed at the same time
 string(RANDOM LENGTH 6 UNIQUE_ID)
 string(REPLACE "." "-" TEST_NAME "${TEST_NAME}")
-set(OUTPUT_BASE "${CMAKE_CURRENT_BINARY_DIR}/test/${TEST_NAME}-${UNIQUE_ID}")
+set(OUTPUT_BASE "${CMAKE_CURRENT_BINARY_DIR}/Testing/Temporary/${TEST_NAME}-${UNIQUE_ID}")
 
 # Ensure directory exists for output files
 get_filename_component(OUTPUT_DIR "${OUTPUT_BASE}" DIRECTORY)
