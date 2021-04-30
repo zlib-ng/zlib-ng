@@ -92,7 +92,7 @@ macro(diff src1 src2)
                 OUTPUT_FILE ${src2}.diff)
 
             file(READ ${src2}.diff DIFF_OUTPUT)
-            message(STATUS ${DIFF_OUTPUT})
+            message(STATUS "Diff:\n${DIFF_OUTPUT}")
 
             if(NOT DEFINED ENV{CI})
                 file(REMOVE ${src1}.hex ${src2}.hex ${src2}.diff)
@@ -107,6 +107,10 @@ if(NOT EXISTS ${INPUT})
 endif()
 
 set(COMPRESS_COMMAND ${COMPRESS_TARGET} ${COMPRESS_ARGS})
+
+message(STATUS "Compress ${COMPRESS_COMMAND}")
+message(STATUS "  Input: ${INPUT}")
+message(STATUS "  Output: ${OUTPUT_BASE}.gz")
 
 execute_process(COMMAND ${CMAKE_COMMAND}
     "-DCOMMAND=${COMPRESS_COMMAND}"
@@ -129,10 +133,14 @@ endif()
 
 set(DECOMPRESS_COMMAND ${DECOMPRESS_TARGET} ${DECOMPRESS_ARGS})
 
+message(STATUS "Decompress ${DECOMPRESS_COMMAND}")
+message(STATUS "  Input: ${OUTPUT_BASE}.gz")
+message(STATUS "  Output: ${OUTPUT_BASE}")
+
 execute_process(COMMAND ${CMAKE_COMMAND}
     "-DCOMMAND=${DECOMPRESS_COMMAND}"
     -DINPUT=${OUTPUT_BASE}.gz
-    -DOUTPUT=${OUTPUT_BASE}.out
+    -DOUTPUT=${OUTPUT_BASE}
     "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
     -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
     RESULT_VARIABLE CMD_RESULT)
@@ -145,13 +153,13 @@ endif()
 if(COMPARE)
     # Compare decompressed output with original input file
     execute_process(COMMAND ${CMAKE_COMMAND}
-        -E compare_files ${INPUT} ${OUTPUT_BASE}.out
+        -E compare_files ${INPUT} ${OUTPUT_BASE}
         RESULT_VARIABLE CMD_RESULT)
 
     if(CMD_RESULT)
-        diff(${INPUT} ${OUTPUT_BASE}.out)
+        diff(${INPUT} ${OUTPUT_BASE})
         cleanup()
-        message(FATAL_ERROR "Compare minigzip decompress failed: ${CMD_RESULT}")
+        message(FATAL_ERROR "Compare decompress failed: ${CMD_RESULT}")
     endif()
 endif()
 
@@ -167,10 +175,14 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
         # Check gzip can decompress our compressed output
         set(GZ_DECOMPRESS_COMMAND ${GZIP} --decompress)
 
+        message(STATUS "Gzip decompress ${GZ_DECOMPRESS_COMMAND}")
+        message(STATUS "  Input: ${OUTPUT_BASE}.gz")
+        message(STATUS "  Output: ${OUTPUT_BASE}-ungzip")
+
         execute_process(COMMAND ${CMAKE_COMMAND}
             "-DCOMMAND=${GZ_DECOMPRESS_COMMAND}"
             -DINPUT=${OUTPUT_BASE}.gz
-            -DOUTPUT=${OUTPUT_BASE}.gzip.out
+            -DOUTPUT=${OUTPUT_BASE}-ungzip
             "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
             -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
             RESULT_VARIABLE CMD_RESULT)
@@ -182,27 +194,26 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
 
         # Compare gzip output with original input file
         execute_process(COMMAND ${CMAKE_COMMAND}
-            -E compare_files ${INPUT} ${OUTPUT_BASE}.gzip.out
+            -E compare_files ${INPUT} ${OUTPUT_BASE}-ungzip
             RESULT_VARIABLE CMD_RESULT)
 
         if(CMD_RESULT)
-            diff(${INPUT} ${OUTPUT_BASE}.gzip.out)
+            diff(${INPUT} ${OUTPUT_BASE}-ungzip)
             cleanup()
             message(FATAL_ERROR "Compare gzip decompress failed: ${CMD_RESULT}")
-        endif()
-
-        if(NOT EXISTS ${OUTPUT_BASE}.gz)
-            cleanup()
-            message(FATAL_ERROR "Cannot find gzip compress input: ${INPUT}")
         endif()
 
         # Compress input file with gzip
         set(GZ_COMPRESS_COMMAND ${GZIP} --stdout)
 
+        message(STATUS "Gzip compress ${GZ_COMPRESS_COMMAND}")
+        message(STATUS "  Input: ${INPUT}")
+        message(STATUS "  Output: ${OUTPUT_BASE}-gzip.gz")
+
         execute_process(COMMAND ${CMAKE_COMMAND}
             "-DCOMMAND=${GZ_COMPRESS_COMMAND}"
             -DINPUT=${INPUT}
-            -DOUTPUT=${OUTPUT_BASE}.gzip.gz
+            -DOUTPUT=${OUTPUT_BASE}-gzip.gz
             "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
             -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
             RESULT_VARIABLE CMD_RESULT)
@@ -212,16 +223,20 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             message(FATAL_ERROR "Gzip compress failed: ${CMD_RESULT}")
         endif()
 
-        if(NOT EXISTS ${OUTPUT_BASE}.gzip.gz)
+        if(NOT EXISTS ${OUTPUT_BASE}-gzip.gz)
             cleanup()
-            message(FATAL_ERROR "Cannot find decompress gzip input: ${OUTPUT_BASE}.gzip.gz")
+            message(FATAL_ERROR "Cannot find decompress gzip input: ${OUTPUT_BASE}-gzip.gz")
         endif()
+
+        message(STATUS "Decompress gzip ${DECOMPRESS_COMMAND}")
+        message(STATUS "  Input: ${OUTPUT_BASE}-gzip.gz")
+        message(STATUS "  Output: ${OUTPUT_BASE}-gzip")
 
         # Check decompress target can handle gzip compressed output
         execute_process(COMMAND ${CMAKE_COMMAND}
             "-DCOMMAND=${DECOMPRESS_COMMAND}"
-            -DINPUT=${OUTPUT_BASE}.gzip.gz
-            -DOUTPUT=${OUTPUT_BASE}.gzip
+            -DINPUT=${OUTPUT_BASE}-gzip.gz
+            -DOUTPUT=${OUTPUT_BASE}-gzip
             "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
             -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
             RESULT_VARIABLE CMD_RESULT)
@@ -234,17 +249,16 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
         if(COMPARE)
             # Compare original input file with gzip decompressed output
             execute_process(COMMAND ${CMAKE_COMMAND}
-                -E compare_files ${INPUT} ${OUTPUT_BASE}.gzip
+                -E compare_files ${INPUT} ${OUTPUT_BASE}-gzip
                 RESULT_VARIABLE CMD_RESULT)
 
             if(CMD_RESULT)
-                diff(${INPUT} ${OUTPUT_BASE}.gzip)
+                diff(${INPUT} ${OUTPUT_BASE}-gzip)
                 cleanup()
                 message(FATAL_ERROR "Compare decompress gzip failed: ${CMD_RESULT}")
             endif()
         endif()
     endif()
 endif()
-
 
 cleanup_always()
