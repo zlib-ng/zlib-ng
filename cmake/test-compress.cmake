@@ -65,14 +65,14 @@ get_filename_component(OUTPUT_DIR "${OUTPUT_BASE}" DIRECTORY)
 file(MAKE_DIRECTORY "${OUTPUT_DIR}")
 
 # Cleanup temporary files
+macro(cleanup_always)
+    file(GLOB TEMP_FILES ${OUTPUT_BASE}*)
+    file(REMOVE ${TEMP_FILES})
+endmacro()
+# Clean up temporary files if not on CI
 macro(cleanup)
     if(NOT DEFINED ENV{CI})
-        file(REMOVE
-            ${OUTPUT_BASE}.gz
-            ${OUTPUT_BASE}.out
-            ${OUTPUT_BASE}.gzip
-            ${OUTPUT_BASE}.gzip.gz
-            ${OUTPUT_BASE}.gzip.out)
+        cleanup_always()
     endif()
 endmacro()
 
@@ -246,4 +246,5 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
     endif()
 endif()
 
-cleanup()
+
+cleanup_always()
