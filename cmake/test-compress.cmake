@@ -64,14 +64,41 @@ set(OUTPUT_BASE "${CMAKE_CURRENT_BINARY_DIR}/test/${TEST_NAME}-${UNIQUE_ID}")
 get_filename_component(OUTPUT_DIR "${OUTPUT_BASE}" DIRECTORY)
 file(MAKE_DIRECTORY "${OUTPUT_DIR}")
 
+# Cleanup temporary files
 macro(cleanup)
-    # Cleanup temporary files
-    file(REMOVE
-        ${OUTPUT_BASE}.gz
-        ${OUTPUT_BASE}.out
-        ${OUTPUT_BASE}.gzip
-        ${OUTPUT_BASE}.gzip.gz
-        ${OUTPUT_BASE}.gzip.out)
+    if(NOT DEFINED ENV{CI})
+        file(REMOVE
+            ${OUTPUT_BASE}.gz
+            ${OUTPUT_BASE}.out
+            ${OUTPUT_BASE}.gzip
+            ${OUTPUT_BASE}.gzip.gz
+            ${OUTPUT_BASE}.gzip.out)
+    endif()
+endmacro()
+
+# Show differences between two files
+macro(diff src1 src2)
+    find_program(XXD xxd)
+    if(XXD)
+        find_program(DIFF diff)
+        if(DIFF)
+            set(XXD_COMMAND ${XXD} ${src1} ${src1}.hex)
+            execute_process(COMMAND ${XXD_COMMAND})
+            set(XXD_COMMAND ${XXD} ${src2} ${src2}.hex)
+            execute_process(COMMAND ${XXD_COMMAND})
+
+            set(DIFF_COMMAND ${DIFF} -u ${src1}.hex ${src2}.hex)
+            execute_process(COMMAND ${DIFF_COMMAND}
+                OUTPUT_FILE ${src2}.diff)
+
+            file(READ ${src2}.diff DIFF_OUTPUT)
+            message(STATUS ${DIFF_OUTPUT})
+
+            if(NOT DEFINED ENV{CI})
+                file(REMOVE ${src1}.hex ${src2}.hex ${src2}.diff)
+            endif()
+        endif()
+    endif()
 endmacro()
 
 # Compress input file
@@ -122,6 +149,7 @@ if(COMPARE)
         RESULT_VARIABLE CMD_RESULT)
 
     if(CMD_RESULT)
+        diff(${INPUT} ${OUTPUT_BASE}.out)
         cleanup()
         message(FATAL_ERROR "Compare minigzip decompress failed: ${CMD_RESULT}")
     endif()
@@ -158,6 +186,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
             RESULT_VARIABLE CMD_RESULT)
 
         if(CMD_RESULT)
+            diff(${INPUT} ${OUTPUT_BASE}.gzip.out)
             cleanup()
             message(FATAL_ERROR "Compare gzip decompress failed: ${CMD_RESULT}")
         endif()
@@ -209,6 +238,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
                 RESULT_VARIABLE CMD_RESULT)
 
             if(CMD_RESULT)
+                diff(${INPUT} ${OUTPUT_BASE}.gzip)
                 cleanup()
                 message(FATAL_ERROR "Compare decompress gzip failed: ${CMD_RESULT}")
             endif()

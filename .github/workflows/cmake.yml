@@ -441,4 +441,9 @@ jobs:
         path: |
           ${{ matrix.build-dir || '.' }}/CMakeFiles/CMakeOutput.log
           ${{ matrix.build-dir || '.' }}/CMakeFiles/CMakeError.log
+          ${{ matrix.build-dir || '.' }}/Testing/Temporary/*.log
+          ${{ matrix.build-dir || '.' }}/test/**/*.diff
+          ${{ matrix.build-dir || '.' }}/test/**/*.hex
+          ${{ matrix.build-dir || '.' }}/test/**/*.gz*
+          ${{ matrix.build-dir || '.' }}/test/**/*.out
         retention-days: 30
