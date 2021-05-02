@@ -93,6 +93,13 @@
 #elif defined(__THW_RS6000)
     #error archfound rs6000
 
+// RISC-V
+#elif defined(__riscv) 
+    #if __riscv_xlen == 64
+        #error archfound riscv64
+    #elif __riscv_xlen == 32
+        #error archfound riscv32
+
 // return 'unrecognized' if we do not know what architecture this is
 #else
     #error archfound unrecognized
