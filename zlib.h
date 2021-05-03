@@ -1192,6 +1192,8 @@ Z_EXTERN unsigned long Z_EXPORT zlibCompileFlags(void);
  */
 
 
+#ifndef Z_SOLO
+
                         /* utility functions */
 
 /*
@@ -1646,6 +1648,7 @@ Z_EXTERN void Z_EXPORT gzclearerr(gzFile file);
    file that is being written concurrently.
 */
 
+#endif
 
                         /* checksum functions */
 
