@@ -90,7 +90,7 @@ static void tr_static_init(void) {
     /* The static distance tree is trivial: */
     for (n = 0; n < D_CODES; n++) {
         static_dtree[n].Len = 5;
-        static_dtree[n].Code = (uint16_t)bi_reverse((unsigned)n, 5);
+        static_dtree[n].Code = bi_reverse((unsigned)n, 5);
     }
 }
 
