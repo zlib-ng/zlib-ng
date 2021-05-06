@@ -420,7 +420,7 @@ RFC 1952             GZIP File Format Specification             May 1996
             This contains a Cyclic Redundancy Check value of the
             uncompressed data computed according to CRC-32 algorithm
             used in the ISO 3309 standard and in section 8.1.1.6.2 of
-            ITU-T recommendation V.42.  (See http://www.iso.ch for
+            ITU-T recommendation V.42.  (See https://www.iso.org/ for
             ordering ISO documents. See gopher://info.itu.ch for an
             online version of ITU-T V.42.)
 

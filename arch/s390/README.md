@@ -23,7 +23,7 @@ https://www.ibm.com/products/z15) and newer machines under the name [
 https://www.ibm.com/support/z-content-solutions/compression/). The
 programming interface to it is a machine instruction called DEFLATE
 CONVERSION CALL (DFLTCC). It is documented in Chapter 26 of [Principles
-of Operation](http://publibfp.dhe.ibm.com/epubs/pdf/a227832c.pdf). Both
+of Operation](https://publibfp.dhe.ibm.com/epubs/pdf/a227832c.pdf). Both
 the code and the rest of this document refer to this feature simply as
 "DFLTCC".
 
