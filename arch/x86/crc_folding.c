@@ -3,7 +3,7 @@
  * instruction.
  *
  * A white paper describing this algorithm can be found at:
- * http://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf
+ * https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf
  *
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
  * Authors:
