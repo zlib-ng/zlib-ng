@@ -994,8 +994,9 @@ EOF
 esac
 
 # Check for SSSE3 intrinsics
-
-cat > $test.c << EOF
+case "${ARCH}" in
+    i386 | i486 | i586 | i686 | x86_64)
+        cat > $test.c << EOF
 #include <x86intrin.h>
 int main(void)
 {
@@ -1007,13 +1008,15 @@ int main(void)
     return 0;
 }
 EOF
-if try ${CC} ${CFLAGS} ${ssse3flag} $test.c; then
-    echo "Checking for SSSE3 intrinsics ... Yes." | tee -a configure.log
-    HAVE_SSSE3_INTRIN=1
-else
-    echo "Checking for SSSE3 intrinsics ... No." | tee -a configure.log
-    HAVE_SSSE3_INTRIN=0
-fi
+        if try ${CC} ${CFLAGS} ${ssse3flag} $test.c; then
+            echo "Checking for SSSE3 intrinsics ... Yes." | tee -a configure.log
+            HAVE_SSSE3_INTRIN=1
+        else
+            echo "Checking for SSSE3 intrinsics ... No." | tee -a configure.log
+            HAVE_SSSE3_INTRIN=0
+        fi
+        ;;
+esac
 
 # Check for SSE4.2 CRC inline assembly
 case "${ARCH}" in
