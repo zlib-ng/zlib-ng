@@ -1288,20 +1288,43 @@ EOF
                     CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
                     SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
                 else
-                    echo "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                    cat > $test.c <<EOF
+#include <sys/auxv.h>
+#include <asm/hwcap.h>
+int main() {
+    return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
+}
+EOF
+                    if try $CC -c $CFLAGS $test.c; then
+                        CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32 -DARM_ASM_HWCAP"
+                        SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32 -DARM_ASM_HWCAP"
+                    else
+                        echo "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                    fi
                 fi
 
                 cat > $test.c <<EOF
 #include <sys/auxv.h>
 int main() {
-    return (getauxval(AT_HWCAP) & HWCAP_NEON);
+    return (getauxval(AT_HWCAP) & HWCAP_ARM_NEON);
 }
 EOF
                 if try $CC -c $CFLAGS $test.c; then
                     CFLAGS="${CFLAGS} -DARM_AUXV_HAS_NEON"
                     SFLAGS="${SFLAGS} -DARM_AUXV_HAS_NEON"
                 else
-                    echo "HWCAP_NEON not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                    cat > $test.c <<EOF
+#include <sys/auxv.h>
+int main() {
+    return (getauxval(AT_HWCAP) & HWCAP_NEON);
+}
+EOF
+                    if try $CC -c $CFLAGS $test.c; then
+                        CFLAGS="${CFLAGS} -DARM_AUXV_HAS_NEON"
+                        SFLAGS="${SFLAGS} -DARM_AUXV_HAS_NEON"
+                    else
+                        echo "Neither HWCAP_ARM_NEON or HWCAP_NEON present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                    fi
                 fi
             fi
         fi
@@ -1448,14 +1471,14 @@ EOF
                 cat > $test.c <<EOF
 #include <sys/auxv.h>
 int main() {
-    return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
+    return (getauxval(AT_HWCAP) & HWCAP_CRC32);
 }
 EOF
                 if try $CC -c $CFLAGS $test.c; then
                     CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
                     SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
                 else
-                    echo "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                    echo "HWCAP_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
                 fi
             fi
 

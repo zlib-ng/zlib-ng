@@ -2,6 +2,9 @@
 
 #if defined(__linux__)
 #  include <sys/auxv.h>
+#  ifdef ARM_ASM_HWCAP
+#    include <asm/hwcap.h>
+#  endif
 #elif defined(__FreeBSD__) && defined(__aarch64__)
 #  include <machine/armreg.h>
 #  ifndef ID_AA64ISAR0_CRC32_VAL
@@ -15,7 +18,11 @@
 
 static int arm_has_crc32() {
 #if defined(__linux__) && defined(ARM_AUXV_HAS_CRC32)
+#  ifdef HWCAP_CRC32
+    return (getauxval(AT_HWCAP) & HWCAP_CRC32) != 0 ? 1 : 0;
+#  else
     return (getauxval(AT_HWCAP2) & HWCAP2_CRC32) != 0 ? 1 : 0;
+#  endif
 #elif defined(__FreeBSD__) && defined(__aarch64__)
     return getenv("QEMU_EMULATING") == NULL
       && ID_AA64ISAR0_CRC32_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_CRC32_BASE;
@@ -35,7 +42,11 @@ static int arm_has_crc32() {
 #if !defined(__aarch64__) && !defined(_M_ARM64)
 static inline int arm_has_neon() {
 #if defined(__linux__) && defined(ARM_AUXV_HAS_NEON)
+#  ifdef HWCAP_ARM_NEON
+    return (getauxval(AT_HWCAP) & HWCAP_ARM_NEON) != 0 ? 1 : 0;
+#  else
     return (getauxval(AT_HWCAP) & HWCAP_NEON) != 0 ? 1 : 0;
+#  endif
 #elif defined(__APPLE__)
     int hasneon;
     size_t size = sizeof(hasneon);
