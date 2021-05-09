@@ -650,30 +650,68 @@ if(WITH_OPTIM)
     if(BASEARCH_ARM_FOUND)
         add_definitions(-DARM_FEATURES)
         if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-            check_c_source_compiles(
-                "#include <sys/auxv.h>
-                int main() {
-                    return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
-                }"
-                ARM_AUXV_HAS_CRC32
-            )
-            if(ARM_AUXV_HAS_CRC32)
-                add_definitions(-DARM_AUXV_HAS_CRC32)
+            if(NOT "${ARCH}" MATCHES "aarch64")
+                check_c_source_compiles(
+                    "#include <sys/auxv.h>
+                    int main() {
+                        return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
+                    }"
+                    ARM_AUXV_HAS_CRC32
+                )
+                if(ARM_AUXV_HAS_CRC32)
+                    add_definitions(-DARM_AUXV_HAS_CRC32)
+                else()
+                    check_c_source_compiles(
+                        "#include <sys/auxv.h>
+                        #include <asm/hwcap.h>
+                        int main() {
+                            return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
+                        }"
+                        ARM_HWCAP_HAS_CRC32
+                    )
+                    if (ARM_HWCAP_HAS_CRC32)
+                        add_definitions(-DARM_AUXV_HAS_CRC32 -DARM_ASM_HWCAP)
+                    else()
+                        message(STATUS "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime.")
+                    endif()
+                endif()
             else()
-                message(STATUS "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime.")
+                check_c_source_compiles(
+                    "#include <sys/auxv.h>
+                    int main() {
+                        return (getauxval(AT_HWCAP) & HWCAP_CRC32);
+                    }"
+                    ARM_AUXV_HAS_CRC32
+                )
+                if(ARM_AUXV_HAS_CRC32)
+                    add_definitions(-DARM_AUXV_HAS_CRC32)
+                else()
+                   message(STATUS "HWCAP_CRC32 not present in sys/auxv.h; cannot detect support at runtime.")
+                endif()
             endif()
             if(NOT "${ARCH}" MATCHES "aarch64")
                 check_c_source_compiles(
                     "#include <sys/auxv.h>
                     int main() {
-                      return (getauxval(AT_HWCAP) & HWCAP_NEON);
+                      return (getauxval(AT_HWCAP) & HWCAP_ARM_NEON);
                     }"
                     ARM_AUXV_HAS_NEON
                 )
                 if(ARM_AUXV_HAS_NEON)
                     add_definitions(-DARM_AUXV_HAS_NEON)
                 else()
-                    message(STATUS "HWCAP_NEON not present in sys/auxv.h; cannot detect support at runtime.")
+                    check_c_source_compiles(
+                        "#include <sys/auxv.h>
+                        int main() {
+                          return (getauxval(AT_HWCAP) & HWCAP_NEON);
+                        }"
+                        ARM_AUXV_HAS_NEON
+                    )
+                    if (ARM_AUXV_HAS_NEON)
+                        add_definitions(-DARM_AUXV_HAS_NEON)
+                    else()
+                        message(STATUS "Neither HWCAP_ARM_NEON or HWCAP_NEON present in sys/auxv.h; cannot detect support at runtime.")
+                    endif()
                 endif()
             endif()
         endif()
