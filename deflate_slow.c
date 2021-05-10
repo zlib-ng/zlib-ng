@@ -47,7 +47,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
         /* Find the longest match, discarding those <= prev_length.
          */
         s->prev_match = (Pos)s->match_start;
-        match_len = STD_MIN_MATCH-1;
+        match_len = STD_MIN_MATCH - 1;
         dist = (int64_t)s->strstart - hash_head;
 
         if (dist <= MAX_DIST(s) && dist > 0 && s->prev_length < s->max_lazy_match && hash_head != 0) {
@@ -62,7 +62,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
                 /* If prev_match is also WANT_MIN_MATCH, match_start is garbage
                  * but we will ignore the current match anyway.
                  */
-                match_len = STD_MIN_MATCH-1;
+                match_len = STD_MIN_MATCH - 1;
             }
         }
         /* If there was a match at the previous step and the current
@@ -126,7 +126,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
         (void) zng_tr_tally_lit(s, s->window[s->strstart-1]);
         s->match_available = 0;
     }
-    s->insert = s->strstart < STD_MIN_MATCH-1 ? s->strstart : STD_MIN_MATCH-1;
+    s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
     if (UNLIKELY(flush == Z_FINISH)) {
         FLUSH_BLOCK(s, 1);
         return finish_done;
