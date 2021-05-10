@@ -85,12 +85,10 @@ static void insert_match(deflate_state *s, struct match match) {
     } else {
         match.strstart += match.match_length;
         match.match_length = 0;
+
         if (match.strstart >= (STD_MIN_MATCH - 2))
-#if STD_MIN_MATCH != 3
-            functable.insert_string(s, match.strstart + 2 - STD_MIN_MATCH, STD_MIN_MATCH - 2);
-#else
             functable.quick_insert_string(s, match.strstart + 2 - STD_MIN_MATCH);
-#endif
+
         /* If lookahead < WANT_MIN_MATCH, ins_h is garbage, but it does not
          * matter since it will be recomputed at next deflate call.
          */

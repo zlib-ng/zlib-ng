@@ -76,11 +76,8 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
                 s->strstart += match_len;
             } else {
                 s->strstart += match_len;
-#if STD_MIN_MATCH != 3
-                functable.insert_string(s, s->strstart + 2 - STD_MIN_MATCH, STD_MIN_MATCH - 2);
-#else
                 functable.quick_insert_string(s, s->strstart + 2 - STD_MIN_MATCH);
-#endif
+
                 /* If lookahead < STD_MIN_MATCH, ins_h is garbage, but it does not
                  * matter since it will be recomputed at next deflate call.
                  */

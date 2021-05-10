@@ -1228,15 +1228,6 @@ void Z_INTERNAL fill_window(deflate_state *s) {
             unsigned int str = s->strstart - s->insert;
             if (str >= 1)
                 functable.quick_insert_string(s, str + 2 - STD_MIN_MATCH);
-#if STD_MIN_MATCH != 3
-            while (s->insert) {
-                functable.quick_insert_string(s, str);
-                str++;
-                s->insert--;
-                if (s->lookahead + s->insert < STD_MIN_MATCH)
-                    break;
-            }
-#else
             unsigned int count;
             if (UNLIKELY(s->lookahead == 1)) {
                 count = s->insert - 1;
@@ -1247,7 +1238,6 @@ void Z_INTERNAL fill_window(deflate_state *s) {
                 functable.insert_string(s, str, count);
                 s->insert -= count;
             }
-#endif
         }
         /* If the whole input has less than STD_MIN_MATCH bytes, ins_h is garbage,
          * but this is not important since only literal bytes will be emitted.
