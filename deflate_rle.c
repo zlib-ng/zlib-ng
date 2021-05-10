@@ -22,40 +22,40 @@ Z_INTERNAL block_state deflate_rle(deflate_state *s, int flush) {
 
     for (;;) {
         /* Make sure that we always have enough lookahead, except
-         * at the end of the input file. We need MAX_MATCH bytes
+         * at the end of the input file. We need STD_MAX_MATCH bytes
          * for the longest run, plus one for the unrolled loop.
          */
-        if (s->lookahead <= MAX_MATCH) {
+        if (s->lookahead <= STD_MAX_MATCH) {
             fill_window(s);
-            if (s->lookahead <= MAX_MATCH && flush == Z_NO_FLUSH)
+            if (s->lookahead <= STD_MAX_MATCH && flush == Z_NO_FLUSH)
                 return need_more;
             if (s->lookahead == 0)
                 break; /* flush the current block */
         }
 
         /* See how many times the previous byte repeats */
-        if (s->lookahead >= MIN_MATCH && s->strstart > 0) {
+        if (s->lookahead >= STD_MIN_MATCH && s->strstart > 0) {
             scan = s->window + s->strstart - 1;
             prev = *scan;
             if (prev == *++scan && prev == *++scan && prev == *++scan) {
-                strend = s->window + s->strstart + MAX_MATCH;
+                strend = s->window + s->strstart + STD_MAX_MATCH;
                 do {
                 } while (prev == *++scan && prev == *++scan &&
                          prev == *++scan && prev == *++scan &&
                          prev == *++scan && prev == *++scan &&
                          prev == *++scan && prev == *++scan &&
                          scan < strend);
-                match_len = MAX_MATCH - (unsigned int)(strend - scan);
+                match_len = STD_MAX_MATCH - (unsigned int)(strend - scan);
                 match_len = MIN(match_len, s->lookahead);
             }
             Assert(scan <= s->window + s->window_size - 1, "wild scan");
         }
 
-        /* Emit match if have run of MIN_MATCH or longer, else emit literal */
-        if (match_len >= MIN_MATCH) {
+        /* Emit match if have run of STD_MIN_MATCH or longer, else emit literal */
+        if (match_len >= STD_MIN_MATCH) {
             check_match(s, s->strstart, s->strstart - 1, match_len);
 
-            bflush = zng_tr_tally_dist(s, 1, match_len - MIN_MATCH);
+            bflush = zng_tr_tally_dist(s, 1, match_len - STD_MIN_MATCH);
 
             s->lookahead -= match_len;
             s->strstart += match_len;

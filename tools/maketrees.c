@@ -23,11 +23,11 @@ static unsigned char dist_code[DIST_CODE_LEN];
  * the last 256 values correspond to the top 8 bits of the 15 bit distances.
  */
 
-static unsigned char length_code[MAX_MATCH-MIN_MATCH+1];
-/* length code for each normalized match length (0 == MIN_MATCH) */
+static unsigned char length_code[STD_MAX_MATCH-STD_MIN_MATCH+1];
+/* length code for each normalized match length (0 == STD_MIN_MATCH) */
 
 static int base_length[LENGTH_CODES];
-/* First normalized length for each code (0 = MIN_MATCH) */
+/* First normalized length for each code (0 = STD_MIN_MATCH) */
 
 static int base_dist[D_CODES];
 /* First normalized distance for each code (0 = distance of 1) */
@@ -121,9 +121,9 @@ static void gen_trees_header() {
         printf("%2u%s", dist_code[i], SEPARATOR(i, DIST_CODE_LEN-1, 20));
     }
 
-    printf("const unsigned char Z_INTERNAL zng_length_code[MAX_MATCH-MIN_MATCH+1] = {\n");
-    for (i = 0; i < MAX_MATCH-MIN_MATCH+1; i++) {
-        printf("%2u%s", length_code[i], SEPARATOR(i, MAX_MATCH-MIN_MATCH, 20));
+    printf("const unsigned char Z_INTERNAL zng_length_code[STD_MAX_MATCH-STD_MIN_MATCH+1] = {\n");
+    for (i = 0; i < STD_MAX_MATCH-STD_MIN_MATCH+1; i++) {
+        printf("%2u%s", length_code[i], SEPARATOR(i, STD_MAX_MATCH-STD_MIN_MATCH, 20));
     }
 
     printf("Z_INTERNAL const int base_length[LENGTH_CODES] = {\n");
