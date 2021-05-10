@@ -110,7 +110,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         s->lookahead--;
     }
 
-    s->insert = s->strstart < STD_MIN_MATCH-1 ? s->strstart : STD_MIN_MATCH-1;
+    s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
     if (UNLIKELY(last)) {
         QUICK_END_BLOCK(s, 1);
         return finish_done;

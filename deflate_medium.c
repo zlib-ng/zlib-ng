@@ -67,7 +67,7 @@ static void insert_match(deflate_state *s, struct match match) {
     /* Insert new strings in the hash table only if the match length
      * is not too large. This saves time but degrades compression.
      */
-    if (match.match_length <= 16* s->max_insert_length && s->lookahead >= WANT_MIN_MATCH) {
+    if (match.match_length <= 16 * s->max_insert_length && s->lookahead >= WANT_MIN_MATCH) {
         match.match_length--; /* string at strstart already in table */
         match.strstart++;
 
@@ -283,7 +283,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         if (UNLIKELY(bflush))
             FLUSH_BLOCK(s, 0);
     }
-    s->insert = s->strstart < STD_MIN_MATCH-1 ? s->strstart : STD_MIN_MATCH-1;
+    s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
     if (flush == Z_FINISH) {
         FLUSH_BLOCK(s, 1);
         return finish_done;
