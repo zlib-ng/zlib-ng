@@ -141,7 +141,7 @@ typedef struct internal_state {
     /* Sliding window. Input bytes are read into the second half of the window,
      * and move to the first half later to keep a dictionary of at least wSize
      * bytes. With this organization, matches are limited to a distance of
-     * wSize-MAX_MATCH bytes, but this ensures that IO is always
+     * wSize-STD_MAX_MATCH bytes, but this ensures that IO is always
      * performed with a length multiple of the block size. Also, it limits
      * the window size to 64K, which is quite useful on MSDOS.
      * To do: use the user input buffer as sliding window.
@@ -363,17 +363,17 @@ static inline void put_uint64(deflate_state *s, uint64_t lld) {
 #endif
 }
 
-#define MIN_LOOKAHEAD (MAX_MATCH+MIN_MATCH+1)
+#define MIN_LOOKAHEAD (STD_MAX_MATCH + STD_MIN_MATCH + 1)
 /* Minimum amount of lookahead, except at the end of the input file.
- * See deflate.c for comments about the MIN_MATCH+1.
+ * See deflate.c for comments about the STD_MIN_MATCH+1.
  */
 
-#define MAX_DIST(s)  ((s)->w_size-MIN_LOOKAHEAD)
+#define MAX_DIST(s)  ((s)->w_size - MIN_LOOKAHEAD)
 /* In order to simplify the code, particularly on 16 bit machines, match
  * distances are limited to MAX_DIST instead of WSIZE.
  */
 
-#define WIN_INIT MAX_MATCH
+#define WIN_INIT STD_MAX_MATCH
 /* Number of bytes after end of data in window to initialize in order to avoid
    memory checker errors from longest match routines */
 

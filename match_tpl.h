@@ -52,8 +52,8 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
         continue; \
     return best_len;
 
-    /* The code is optimized for MAX_MATCH-2 multiple of 16. */
-    Assert(MAX_MATCH == 258, "Code too clever");
+    /* The code is optimized for STD_MAX_MATCH-2 multiple of 16. */
+    Assert(STD_MAX_MATCH == 258, "Code too clever");
 
     best_len = s->prev_length ? s->prev_length : 1;
 

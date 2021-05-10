@@ -57,8 +57,8 @@ Z_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, const uint32_t str) {
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
  * IN  assertion: all calls to to INSERT_STRING are made with consecutive
- *    input characters and the first MIN_MATCH bytes of str are valid
- *    (except for the last MIN_MATCH-1 bytes of the input file).
+ *    input characters and the first STD_MIN_MATCH bytes of str are valid
+ *    (except for the last STD_MIN_MATCH-1 bytes of the input file).
  */
 Z_INTERNAL void INSERT_STRING(deflate_state *const s, const uint32_t str, uint32_t count) {
     uint8_t *strstart = s->window + str;

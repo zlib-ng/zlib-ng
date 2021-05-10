@@ -167,7 +167,7 @@ static const config configuration_table[10] = {
 /* 8 */ {32, 128, 258, 1024, deflate_slow},
 /* 9 */ {32, 258, 258, 4096, deflate_slow}}; /* max compression */
 
-/* Note: the deflate() code requires max_lazy >= MIN_MATCH and max_chain >= 4
+/* Note: the deflate() code requires max_lazy >= STD_MIN_MATCH and max_chain >= 4
  * For deflate_fast() (levels <= 3) good is ignored and lazy has a different
  * meaning.
  */
@@ -431,19 +431,19 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     strm->avail_in = dictLength;
     strm->next_in = (z_const unsigned char *)dictionary;
     fill_window(s);
-    while (s->lookahead >= MIN_MATCH) {
+    while (s->lookahead >= STD_MIN_MATCH) {
         str = s->strstart;
-        n = s->lookahead - (MIN_MATCH-1);
+        n = s->lookahead - (STD_MIN_MATCH-1);
         functable.insert_string(s, str, n);
         s->strstart = str + n;
-        s->lookahead = MIN_MATCH-1;
+        s->lookahead = STD_MIN_MATCH-1;
         fill_window(s);
     }
     s->strstart += s->lookahead;
     s->block_start = (int)s->strstart;
     s->insert = s->lookahead;
     s->lookahead = 0;
-    s->prev_length = MIN_MATCH-1;
+    s->prev_length = STD_MIN_MATCH-1;
     s->match_available = 0;
     strm->next_in = (z_const unsigned char *)next;
     strm->avail_in = avail;
@@ -1160,7 +1160,7 @@ static void lm_init(deflate_state *s) {
     s->block_start = 0;
     s->lookahead = 0;
     s->insert = 0;
-    s->prev_length = MIN_MATCH-1;
+    s->prev_length = STD_MIN_MATCH-1;
     s->match_available = 0;
     s->match_start = 0;
 }
@@ -1224,17 +1224,16 @@ void Z_INTERNAL fill_window(deflate_state *s) {
         s->lookahead += n;
 
         /* Initialize the hash value now that we have some input: */
-        if (s->lookahead + s->insert >= MIN_MATCH) {
+        if (s->lookahead + s->insert >= STD_MIN_MATCH) {
             unsigned int str = s->strstart - s->insert;
             if (str >= 1)
-                functable.quick_insert_string(s, str + 2 - MIN_MATCH);
-#if MIN_MATCH != 3
-#error Call insert_string() MIN_MATCH-3 more times
+                functable.quick_insert_string(s, str + 2 - STD_MIN_MATCH);
+#if STD_MIN_MATCH != 3
             while (s->insert) {
                 functable.quick_insert_string(s, str);
                 str++;
                 s->insert--;
-                if (s->lookahead + s->insert < MIN_MATCH)
+                if (s->lookahead + s->insert < STD_MIN_MATCH)
                     break;
             }
 #else
@@ -1250,7 +1249,7 @@ void Z_INTERNAL fill_window(deflate_state *s) {
             }
 #endif
         }
-        /* If the whole input has less than MIN_MATCH bytes, ins_h is garbage,
+        /* If the whole input has less than STD_MIN_MATCH bytes, ins_h is garbage,
          * but this is not important since only literal bytes will be emitted.
          */
     } while (s->lookahead < MIN_LOOKAHEAD && s->strm->avail_in != 0);
@@ -1259,8 +1258,8 @@ void Z_INTERNAL fill_window(deflate_state *s) {
      * written, then zero those bytes in order to avoid memory check reports of
      * the use of uninitialized (or uninitialised as Julian writes) bytes by
      * the longest match routines.  Update the high water mark for the next
-     * time through here.  WIN_INIT is set to MAX_MATCH since the longest match
-     * routines allow scanning to strstart + MAX_MATCH, ignoring lookahead.
+     * time through here.  WIN_INIT is set to STD_MAX_MATCH since the longest match
+     * routines allow scanning to strstart + STD_MAX_MATCH, ignoring lookahead.
      */
     if (s->high_water < s->window_size) {
         unsigned int curr = s->strstart + s->lookahead;
@@ -1291,8 +1290,6 @@ void Z_INTERNAL fill_window(deflate_state *s) {
     Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD,
            "not enough room for search");
 }
-
-
 
 #ifndef ZLIB_COMPAT
 /* =========================================================================

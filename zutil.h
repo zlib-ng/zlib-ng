@@ -70,9 +70,12 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 #define DYN_TREES    2
 /* The three kinds of block type */
 
-#define MIN_MATCH  3
-#define MAX_MATCH  258
-/* The minimum and maximum match lengths */
+#define STD_MIN_MATCH  3
+#define STD_MAX_MATCH  258
+/* The minimum and maximum match lengths mandated by the deflate standard */
+
+#define WANT_MIN_MATCH  4
+/* The minimum wanted match length, affects deflate_quick, deflate_fast, deflate_medium and deflate_slow  */
 
 #define PRESET_DICT 0x20 /* preset dictionary flag in zlib header */
 

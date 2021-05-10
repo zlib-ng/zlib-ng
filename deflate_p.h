@@ -17,7 +17,7 @@
  */
 static inline void check_match(deflate_state *s, Pos start, Pos match, int length) {
     /* check that the match length is valid*/
-    if (length < MIN_MATCH || length > MAX_MATCH) {
+    if (length < STD_MIN_MATCH || length > STD_MAX_MATCH) {
         fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
         z_error("invalid match length");
     }
@@ -65,13 +65,13 @@ static inline int zng_tr_tally_lit(deflate_state *s, unsigned char c) {
     s->sym_buf[s->sym_next++] = c;
     s->dyn_ltree[c].Freq++;
     Tracevv((stderr, "%c", c));
-    Assert(c <= (MAX_MATCH-MIN_MATCH), "zng_tr_tally: bad literal");
+    Assert(c <= (STD_MAX_MATCH-STD_MIN_MATCH), "zng_tr_tally: bad literal");
     return (s->sym_next == s->sym_end);
 }
 
 static inline int zng_tr_tally_dist(deflate_state *s, uint32_t dist, uint32_t len) {
     /* dist: distance of matched string */
-    /* len: match length-MIN_MATCH */
+    /* len: match length-STD_MIN_MATCH */
     s->sym_buf[s->sym_next++] = (uint8_t)(dist);
     s->sym_buf[s->sym_next++] = (uint8_t)(dist >> 8);
     s->sym_buf[s->sym_next++] = (uint8_t)len;
