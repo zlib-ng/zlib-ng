@@ -134,7 +134,7 @@ if(WITH_GZFILEOP)
     add_definitions(-DWITH_GZFILEOP)
 endif()
 
-if("${CMAKE_C_COMPILER}" MATCHES "icc" OR "${CMAKE_C_COMPILER}" MATCHES "icpc" OR "${CMAKE_C_COMPILER}" MATCHES "icl")
+if(("${CMAKE_C_COMPILER}" MATCHES "icc" AND NOT "${CMAKE_C_COMPILER}" MATCHES "mpicc") OR "${CMAKE_C_COMPILER}" MATCHES "icpc" OR "${CMAKE_C_COMPILER}" MATCHES "icl")
     if(CMAKE_HOST_UNIX OR APPLE)
         set(WARNFLAGS "-w3")
         set(WARNFLAGS_MAINTAINER "-w3 -Wcheck -Wremarks")
