@@ -135,7 +135,7 @@ if(WITH_GZFILEOP)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "Intel")
-    if(CMAKE_HOST_UNIX OR CMAKE_HOST_APPLE)
+    if(CMAKE_HOST_UNIX)
         set(WARNFLAGS "-w3")
         set(WARNFLAGS_MAINTAINER "-w3 -Wcheck -Wremarks")
         set(WARNFLAGS_DISABLE "")
