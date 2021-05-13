@@ -273,7 +273,7 @@ int32_t zng_deflate(zng_stream *strm, int32_t flush);
   == 0), or after each call of deflate().  If deflate returns Z_OK and with
   zero avail_out, it must be called again after making room in the output
   buffer because there might be more output pending. See deflatePending(),
-  which can be used if desired to determine whether or not there is more ouput
+  which can be used if desired to determine whether or not there is more output
   in that case.
 
     Normally the parameter flush is set to Z_NO_FLUSH, which allows deflate to
@@ -655,7 +655,7 @@ int32_t zng_deflateGetDictionary(zng_stream *strm, uint8_t *dictionary, uint32_t
    to dictionary.  dictionary must have enough space, where 32768 bytes is
    always enough.  If deflateGetDictionary() is called with dictionary equal to
    Z_NULL, then only the dictionary length is returned, and nothing is copied.
-   Similary, if dictLength is Z_NULL, then it is not set.
+   Similarly, if dictLength is Z_NULL, then it is not set.
 
      deflateGetDictionary() may return a length less than the window size, even
    when more than the window size in input has been provided. It may return up
@@ -903,7 +903,7 @@ int32_t zng_inflateGetDictionary(zng_stream *strm, uint8_t *dictionary, uint32_t
    to dictionary.  dictionary must have enough space, where 32768 bytes is
    always enough.  If inflateGetDictionary() is called with dictionary equal to
    NULL, then only the dictionary length is returned, and nothing is copied.
-   Similary, if dictLength is NULL, then it is not set.
+   Similarly, if dictLength is NULL, then it is not set.
 
      inflateGetDictionary returns Z_OK on success, or Z_STREAM_ERROR if the
    stream state is inconsistent.
@@ -1438,7 +1438,7 @@ size_t zng_gzfread(void *buf, size_t size, size_t nitems, gzFile file);
    provided, but could be inferred from the result of gztell().  This behavior
    is the same as the behavior of fread() implementations in common libraries,
    but it prevents the direct use of gzfread() to read a concurrently written
-   file, reseting and retrying on end-of-file, when size is not 1.
+   file, resetting and retrying on end-of-file, when size is not 1.
 */
 
 Z_EXTERN Z_EXPORT

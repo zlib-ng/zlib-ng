@@ -12,7 +12,7 @@ in a single application or system-wide.
 Please note that zlib-ng in zlib-compat mode is API-compatible but not
 ABI-compatible, meaning that you cannot simply replace the zlib library/dll
 files and expect the application to work. The application will need to be
-recompiled against the zlib-ng headers and libs to ensure full compatability.
+recompiled against the zlib-ng headers and libs to ensure full compatibility.
 
 **Advantages:**
 - Easy to port to, since it only requires a recompile of the application and

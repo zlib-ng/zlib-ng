@@ -897,7 +897,7 @@ current difficulty in exchanging electronically computer-based
 instructional software, which in turn makes it difficult for one scholar
 to build upon the work of others, will be resolved before too long. 
 Stand-alone curricular applications that involve electronic text will be
-sharable through networks, reinforcing their significance as intellectual
+shareable through networks, reinforcing their significance as intellectual
 products as well as instructional tools.
 
 The second aspect of electronic learning involves the use of research and
@@ -1587,7 +1587,7 @@ Bowdoin.
 CALALUCA * PLD's principal focus and contribution to scholarship *
 Various questions preparatory to beginning the project * Basis for
 project * Basic rule in converting PLD * Concerning the images in PLD *
-Running PLD under a variety of retrieval softwares * Encoding the
+Running PLD under a variety of retrieval software * Encoding the
 database a hard-fought issue * Various features demonstrated * Importance
 of user documentation * Limitations of the CD-ROM version *   
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1654,7 +1654,7 @@ anything demonstrated at the Workshop.
 What cannot practically be done is go back and reconvert and re-encode
 data, a time-consuming and extremely costly enterprise.  CALALUCA sees
 PLD as a database that can, and should, be run under a variety of
-retrieval softwares.  This will permit the widest possible searches. 
+retrieval software.  This will permit the widest possible searches. 
 Consequently, the need to produce a CD-ROM of PLD, as well as to develop
 software that could handle some 1.3 gigabyte of heavily encoded text,
 developed out of conversations with collection development and reference
@@ -5034,7 +5034,7 @@ schemes every single discrete area of a text that might someday be
 searched.  That was another decision.  Searching by a column number, an
 author, a word, a volume, permitting combination searches, and tagging
 notations seemed logical choices as core elements.  3) How does one make
-the data available?  Tieing it to a CD-ROM edition creates limitations,
+the data available?  Tying it to a CD-ROM edition creates limitations,
 but a magnetic tape file that is very large, is accompanied by the
 encoding specifications, and that allows one to make local modifications
 also allows one to incorporate any changes one may desire within the
