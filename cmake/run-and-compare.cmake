@@ -9,7 +9,7 @@
 #   COMPARE             - String to compare output against
 
 # Optional Variables
-#   INPUT               - Standard intput
+#   INPUT               - Standard input
 #   IGNORE_LINE_ENDINGS - Ignore line endings when comparing output
 
 if(NOT DEFINED OUTPUT OR NOT DEFINED COMPARE OR NOT DEFINED COMMAND)

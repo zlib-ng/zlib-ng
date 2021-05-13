@@ -208,7 +208,7 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
      *    o. the pointer advance forward, and
      *    o. demote the variable 'm' to be local to the loop, and
      *       choose type "Pos" (instead of 'unsigned int') for the
-     *       variable to avoid unncessary zero-extension.
+     *       variable to avoid unnecessary zero-extension.
      */
     {
         unsigned int i;

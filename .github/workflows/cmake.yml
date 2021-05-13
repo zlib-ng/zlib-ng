@@ -390,7 +390,7 @@ jobs:
         wineboot --init
 
     - name: Generate project files
-      # Shared libaries turned off for qemu ppc* and sparc & reduce code coverage sources
+      # Shared libraries turned off for qemu ppc* and sparc & reduce code coverage sources
       run: |
         mkdir ${{ matrix.build-dir || '.not-used' }}
         cd ${{ matrix.build-dir || '.' }}

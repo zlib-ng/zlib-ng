@@ -10,7 +10,7 @@
 #   COMMAND      - Command to run
 
 # Optional Variables
-#   INPUT        - Standard intput
+#   INPUT        - Standard input
 #   OUTPUT       - Standard output (default: /dev/null)
 #   SUCCESS_EXIT - List of successful exit codes (default: 0, ie: 0;1)
 
