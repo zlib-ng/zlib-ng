@@ -16,7 +16,7 @@
 
 /* Function to allocate 16 or 64-byte aligned memory */
 static inline void *zng_alloc(size_t size) {
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__)
     void *ptr;
     return posix_memalign(&ptr, 64, size) ? NULL : ptr;
 #elif defined(_WIN32)
