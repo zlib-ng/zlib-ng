@@ -1016,8 +1016,8 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "warning: different zlib version\n");
     }
 
-    printf("zlib version %s = 0x%04x, compile flags = 0x%lx\n",
-            PREFIX2(VERSION), PREFIX2(VERNUM), PREFIX(zlibCompileFlags)());
+    printf("zlib-ng version %s = 0x%08lx, compile flags = 0x%lx\n",
+            ZLIBNG_VERSION, ZLIBNG_VERNUM, PREFIX(zlibCompileFlags)());
 
     compr    = (unsigned char*)calloc((unsigned int)comprLen, 1);
     uncompr  = (unsigned char*)calloc((unsigned int)uncomprLen, 1);
