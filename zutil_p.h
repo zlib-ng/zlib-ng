@@ -5,7 +5,7 @@
 #ifndef ZUTIL_P_H
 #define ZUTIL_P_H
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__OpenBSD__)
 #  include <stdlib.h>
 #elif defined(__FreeBSD__)
 #  include <stdlib.h>
@@ -16,7 +16,7 @@
 
 /* Function to allocate 16 or 64-byte aligned memory */
 static inline void *zng_alloc(size_t size) {
-#if defined(__FreeBSD__) || defined(__NetBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
     void *ptr;
     return posix_memalign(&ptr, 64, size) ? NULL : ptr;
 #elif defined(_WIN32)

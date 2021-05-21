@@ -183,12 +183,16 @@ void Z_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #  define ZSWAP32(q) bswap_32(q)
 #  define ZSWAP64(q) bswap_64(q)
 
-#elif defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
 #  include <sys/endian.h>
 #  define ZSWAP16(q) bswap16(q)
 #  define ZSWAP32(q) bswap32(q)
 #  define ZSWAP64(q) bswap64(q)
-
+#elif defined(__OpenBSD__)
+#  include <sys/endian.h>
+#  define ZSWAP16(q) swap16(q)
+#  define ZSWAP32(q) swap32(q)
+#  define ZSWAP64(q) swap64(q)
 #elif defined(__INTEL_COMPILER)
 /* ICC does not provide a two byte swap. */
 #  define ZSWAP16(q) ((((q) & 0xff) << 8) | (((q) & 0xff00) >> 8))
