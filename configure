@@ -70,8 +70,6 @@ fi
 
 # set defaults before processing command line options
 LDCONFIG=${LDCONFIG-"ldconfig"}
-LDFLAGS=${LDFLAGS}
-LDSHAREDLIBC="${LDSHAREDLIBC}"
 DEFFILE=
 RC=
 RCFLAGS=
@@ -209,9 +207,9 @@ show()
 {
   case "$*" in
     *$test.c*)
-      echo === $test.c === >> configure.log
+      echo "=== $test.c ===" >> configure.log
       cat $test.c >> configure.log
-      echo === >> configure.log;;
+      echo "===" >> configure.log;;
   esac
   echo $* >> configure.log
 }
