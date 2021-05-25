@@ -945,13 +945,13 @@ set(ZLIB_GZFILE_SRCS
     gzwrite.c
 )
 
-if(NOT MINGW AND NOT MSYS)
+if(NOT MINGW AND NOT MSYS AND NOT CYGWIN)
     set(ZLIB_DLL_SRCS
         win32/zlib${SUFFIX}1.rc # If present will override custom build rule below.
     )
 endif()
 
-if(MINGW OR MSYS)
+if(MINGW OR MSYS OR CYGWIN)
     # This gets us DLL resource information when compiling on MinGW.
     if(NOT CMAKE_RC_COMPILER)
         set(CMAKE_RC_COMPILER windres.exe)
@@ -1033,7 +1033,8 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
             # Match configure/make's behavior (i.e. don't use @rpath on mac).
             set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "${LIB_INSTALL_DIR}")
         endif()
-    elseif(MSYS)
+    endif()
+    if(MSYS OR CYGWIN)
         # Suppress version number from shared library name
         set(CMAKE_SHARED_LIBRARY_NAME_WITH_VERSION 0)
     elseif(WIN32)
