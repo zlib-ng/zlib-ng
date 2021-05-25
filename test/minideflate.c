@@ -3,6 +3,9 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#define _POSIX_SOURCE 1  /* This file needs POSIX for fileno(). */
+#define _POSIX_C_SOURCE 200112  /* For snprintf(). */
+
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
