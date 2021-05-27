@@ -42,13 +42,13 @@ void test_dict_deflate(unsigned char **compr, size_t *comprLen) {
 
     int method = Z_DEFLATED; /* The deflate compression method (the only one
                                 supported in this version) */
-    int windowBits = 8 + data[0] % 8; /* The windowBits parameter is the base
+    int windowBits = 8 + data[(dataLen > 1) ? 1:0] % 8; /* The windowBits parameter is the base
       two logarithm of the window size (the size of the history buffer).  It
       should be in the range 8..15 for this version of the library. */
-    int memLevel = 1 + data[0] % 9;   /* memLevel=1 uses minimum memory but is
+    int memLevel = 1 + data[(dataLen > 2) ? 2:0] % 9;   /* memLevel=1 uses minimum memory but is
       slow and reduces compression ratio; memLevel=9 uses maximum memory for
       optimal speed. */
-    int strategy = data[0] % 5;       /* [0..4]
+    int strategy = data[(dataLen > 3) ? 3:0] % 5;       /* [0..4]
       #define Z_FILTERED            1
       #define Z_HUFFMAN_ONLY        2
       #define Z_RLE                 3
