@@ -295,7 +295,12 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     }
 
     file_compress(inFileName, outmode);
-    file_uncompress(outFileName);
+
+    /* gzopen does not support reading in direct mode */
+    if (outmode[3] == 'T')
+        inFileName = outFileName;
+    else
+        file_uncompress(outFileName);
 
     /* Check that the uncompressed file matches the input data. */
     in = fopen(inFileName, "rb");
