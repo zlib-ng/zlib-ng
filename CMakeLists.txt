@@ -920,9 +920,12 @@ set(ZLIB_SRCS
     crc32_comb.c
     deflate.c
     deflate_fast.c
+    deflate_huff.c
     deflate_medium.c
     deflate_quick.c
+    deflate_rle.c
     deflate_slow.c
+    deflate_stored.c
     functable.c
     infback.c
     inffast.c

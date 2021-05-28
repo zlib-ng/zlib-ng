@@ -80,9 +80,12 @@ OBJZ = \
 	crc32_comb.o \
 	deflate.o \
 	deflate_fast.o \
+	deflate_huff.o \
 	deflate_medium.o \
 	deflate_quick.o \
+	deflate_rle.o \
 	deflate_slow.o \
+	deflate_stored.o \
 	functable.o \
 	infback.o \
 	inffast.o \
@@ -110,9 +113,12 @@ PIC_OBJZ = \
 	crc32_comb.lo \
 	deflate.lo \
 	deflate_fast.lo \
+	deflate_huff.lo \
 	deflate_medium.lo \
 	deflate_quick.lo \
+	deflate_rle.lo \
 	deflate_slow.lo \
+	deflate_stored.lo \
 	functable.lo \
 	infback.lo \
 	inffast.lo \
