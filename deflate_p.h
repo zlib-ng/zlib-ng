@@ -12,11 +12,43 @@
 /* Forward declare common non-inlined functions declared in deflate.c */
 
 #ifdef ZLIB_DEBUG
-void check_match(deflate_state *s, Pos start, Pos match, int length);
+/* ===========================================================================
+ * Check that the match at match_start is indeed a match.
+ */
+static inline void check_match(deflate_state *s, Pos start, Pos match, int length) {
+    /* check that the match length is valid*/
+    if (length < MIN_MATCH || length > MAX_MATCH) {
+        fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
+        z_error("invalid match length");
+    }
+    /* check that the match isn't at the same position as the start string */
+    if (match == start) {
+        fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
+        z_error("invalid match position");
+    }
+    /* check that the match is indeed a match */
+    if (memcmp(s->window + match, s->window + start, length) != 0) {
+        int32_t i = 0;
+        fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
+        do {
+            fprintf(stderr, "  %03d: match [%02x] start [%02x]\n", i++,
+                s->window[match++], s->window[start++]);
+        } while (--length != 0);
+        z_error("invalid match");
+    }
+    if (z_verbose > 1) {
+        fprintf(stderr, "\\[%u,%d]", start-match, length);
+        do {
+            putc(s->window[start++], stderr);
+        } while (--length != 0);
+    }
+}
 #else
 #define check_match(s, start, match, length)
 #endif
-void flush_pending(PREFIX3(stream) *strm);
+
+Z_INTERNAL void flush_pending(PREFIX3(stream) *strm);
+Z_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
 /* ===========================================================================
  * Save the match info and tally the frequency counts. Return true if
@@ -45,7 +77,7 @@ static inline int zng_tr_tally_dist(deflate_state *s, uint32_t dist, uint32_t le
     s->sym_buf[s->sym_next++] = (uint8_t)len;
     s->matches++;
     dist--;
-    Assert(dist < MAX_DIST(s) && (uint16_t)d_code(dist) < (uint16_t)D_CODES, 
+    Assert(dist < MAX_DIST(s) && (uint16_t)d_code(dist) < (uint16_t)D_CODES,
         "zng_tr_tally: bad match");
 
     s->dyn_ltree[zng_length_code[len]+LITERALS+1].Freq++;
