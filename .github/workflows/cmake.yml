@@ -254,14 +254,14 @@ jobs:
 
           - name: Ubuntu Clang
             os: ubuntu-latest
-            compiler: clang
+            compiler: clang-11
             packages: llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang
 
           - name: Ubuntu Clang Inflate Strict
             os: ubuntu-latest
-            compiler: clang
+            compiler: clang-11
             cmake-args: -DWITH_INFLATE_STRICT=ON
             packages: llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
@@ -269,7 +269,7 @@ jobs:
 
           - name: Ubuntu Clang Inflate Allow Invalid Dist
             os: ubuntu-latest
-            compiler: clang
+            compiler: clang-11
             cmake-args: -DWITH_INFLATE_ALLOW_INVALID_DIST=ON
             packages: llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
@@ -277,7 +277,7 @@ jobs:
 
           - name: Ubuntu Clang Memory Map
             os: ubuntu-latest
-            compiler: clang
+            compiler: clang-11
             cflags: -DUSE_MMAP
             packages: llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
@@ -285,7 +285,7 @@ jobs:
 
           - name: Ubuntu Clang Debug
             os: ubuntu-latest
-            compiler: clang
+            compiler: clang-11
             packages: llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_debug
@@ -293,7 +293,7 @@ jobs:
 
           - name: Ubuntu Clang MSAN
             os: ubuntu-latest
-            compiler: clang
+            compiler: clang-11
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
             packages:  ninja-build llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
