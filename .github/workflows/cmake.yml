@@ -255,39 +255,39 @@ jobs:
           - name: Ubuntu Clang
             os: ubuntu-latest
             compiler: clang
-            packages: llvm-6.0
-            gcov-exec: llvm-cov-6.0 gcov
+            packages: llvm-11-tools
+            gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang
 
           - name: Ubuntu Clang Inflate Strict
             os: ubuntu-latest
             compiler: clang
             cmake-args: -DWITH_INFLATE_STRICT=ON
-            packages: llvm-6.0
-            gcov-exec: llvm-cov-6.0 gcov
+            packages: llvm-11-tools
+            gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_inflate_strict
 
           - name: Ubuntu Clang Inflate Allow Invalid Dist
             os: ubuntu-latest
             compiler: clang
             cmake-args: -DWITH_INFLATE_ALLOW_INVALID_DIST=ON
-            packages: llvm-6.0
-            gcov-exec: llvm-cov-6.0 gcov
+            packages: llvm-11-tools
+            gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_inflate_allow_invalid_dist
 
           - name: Ubuntu Clang Memory Map
             os: ubuntu-latest
             compiler: clang
             cflags: -DUSE_MMAP
-            packages: llvm-6.0
-            gcov-exec: llvm-cov-6.0 gcov
+            packages: llvm-11-tools
+            gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_mmap
 
           - name: Ubuntu Clang Debug
             os: ubuntu-latest
             compiler: clang
-            packages: llvm-6.0
-            gcov-exec: llvm-cov-6.0 gcov
+            packages: llvm-11-tools
+            gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_debug
             build-config: Debug
 
@@ -295,8 +295,8 @@ jobs:
             os: ubuntu-latest
             compiler: clang
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
-            packages:  ninja-build llvm-6.0
-            gcov-exec: llvm-cov-6.0 gcov
+            packages:  ninja-build llvm-11-tools
+            gcov-exec: llvm-cov-11 gcov
             cflags: -g3 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-memory-track-origins
             codecov: ubuntu_clang_msan
 
