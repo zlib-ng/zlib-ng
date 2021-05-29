@@ -51,8 +51,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
         left = (int)s->strstart - s->block_start;    /* bytes left in window */
         if (len > (unsigned long)left + s->strm->avail_in)
             len = left + s->strm->avail_in;     /* limit len to the input */
-        if (len > have)
-            len = have;                         /* limit len to the output */
+        len = MIN(len, have);                   /* limit len to the output */
 
         /* If the stored block would be less than min_block in length, or if
          * unable to copy all of the available input when flushing, then try
@@ -82,8 +81,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
 
         /* Copy uncompressed bytes from the window to next_out. */
         if (left) {
-            if (left > len)
-                left = len;
+            left = MIN(left, len);
             memcpy(s->strm->next_out, s->window + s->block_start, left);
             s->strm->next_out += left;
             s->strm->avail_out -= left;
@@ -126,8 +124,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
                 memcpy(s->window, s->window + s->w_size, s->strstart);
                 if (s->matches < 2)
                     s->matches++;   /* add a pending slide_hash() */
-                if (s->insert > s->strstart)
-                    s->insert = s->strstart;
+                s->insert = MIN(s->insert, s->strstart);
             }
             memcpy(s->window + s->strstart, s->strm->next_in - used, used);
             s->strstart += used;
@@ -135,8 +132,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
         }
         s->block_start = (int)s->strstart;
     }
-    if (s->high_water < s->strstart)
-        s->high_water = s->strstart;
+    s->high_water = MIN(s->high_water, s->strstart);
 
     /* If the last block was written to next_out, then done. */
     if (last)
@@ -156,18 +152,16 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
         if (s->matches < 2)
             s->matches++;           /* add a pending slide_hash() */
         have += s->w_size;          /* more space now */
-        if (s->insert > s->strstart)
-            s->insert = s->strstart;
+        s->insert = MIN(s->insert, s->strstart);
     }
-    if (have > s->strm->avail_in)
-        have = s->strm->avail_in;
+
+    have = MIN(have, s->strm->avail_in);
     if (have) {
         read_buf(s->strm, s->window + s->strstart, have);
         s->strstart += have;
         s->insert += MIN(have, s->w_size - s->insert);
     }
-    if (s->high_water < s->strstart)
-        s->high_water = s->strstart;
+    s->high_water = MIN(s->high_water, s->strstart);
 
     /* There was not enough avail_out to write a complete worthy or flushed
      * stored block to next_out. Write a stored block to pending instead, if we
