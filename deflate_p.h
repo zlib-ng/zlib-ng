@@ -76,7 +76,4 @@ static inline int zng_tr_tally_dist(deflate_state *s, uint32_t dist, uint32_t le
 /* Maximum stored block length in deflate format (not including header). */
 #define MAX_STORED 65535
 
-/* Minimum of a and b. */
-#define MIN(a, b) ((a) > (b) ? (b) : (a))
-
 #endif

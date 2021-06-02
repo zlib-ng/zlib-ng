@@ -26,4 +26,7 @@
 #  define z_size_t size_t
 #endif
 
+/* Minimum of a and b. */
+#define MIN(a, b) ((a) > (b) ? (b) : (a))
+
 #endif
