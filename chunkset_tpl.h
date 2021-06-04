@@ -152,9 +152,10 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
     }
 
     /* Last, deal with the case when LEN is not a multiple of SZ. */
-    if (rem)
+    if (rem) {
         memcpy(out, from, rem);
-    out += rem;
+        out += rem;
+    }
 
     return out;
 }
