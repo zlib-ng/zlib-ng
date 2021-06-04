@@ -1,0 +1,87 @@
+name: CI Pigz
+on: [push, pull_request]
+jobs:
+  ci-cmake:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu GCC
+            os: ubuntu-latest
+            compiler: gcc
+            codecov: ubuntu_gcc_pigz
+
+          - name: Ubuntu Clang
+            os: ubuntu-latest
+            compiler: clang
+            packages: llvm-11-tools
+            gcov-exec: llvm-cov-11 gcov
+            codecov: ubuntu_clang_pigz
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Checkout test corpora
+      uses: actions/checkout@v2
+      with:
+        repository: zlib-ng/corpora
+        path: test/data/corpora
+
+    - name: Install packages (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.packages }}
+
+    - name: Install codecov.io tools
+      if: matrix.codecov
+      run: |
+        python -u -m pip install codecov
+
+    - name: Generate project files
+      run: |
+        cd test/pigz
+        cmake ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} -DBUILD_SHARED_LIBS=OFF -DZLIB_ROOT=../.. -DWITH_CODE_COVERAGE=ON -DWITH_MAINTAINER_WARNINGS=ON
+      env:
+        CC: ${{ matrix.compiler }}
+        CFLAGS: ${{ matrix.cflags }}
+        LDFLAGS: ${{ matrix.ldflags }}
+        CI: true
+
+    - name: Compile source code
+      run: |
+        cd test/pigz
+        cmake --build . --config ${{ matrix.build-config || 'Release' }}
+
+    - name: Run test cases
+      run: |
+        cd test/pigz
+        ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '2' }}
+
+    - name: Upload coverage report
+      if: matrix.codecov && ( env.CODECOV_TOKEN_SECRET != '' || github.repository == 'zlib-ng/zlib-ng' )
+      shell: bash
+      run: |
+        bash tools/codecov-upload.sh
+      env:
+        # Codecov does not yet support GitHub Actions
+        CODECOV_TOKEN_SECRET: "${{secrets.CODECOV_TOKEN}}"
+        CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}"
+        CODECOV_FLAGS: "${{ matrix.codecov }}"
+        CODECOV_NAME:  "${{ matrix.name }}"
+        CODECOV_EXEC:  "${{ matrix.gcov-exec || 'gcov' }}"
+        CODECOV_DIR:   "."
+
+    - name: Upload build errors
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: ${{ matrix.name }} (cmake)
+        path: |
+          **/CMakeFiles/CMakeOutput.log
+          **/CMakeFiles/CMakeError.log
+          **/Testing/Temporary/*
+        retention-days: 30
