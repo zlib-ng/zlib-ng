@@ -19,11 +19,11 @@ Z_INTERNAL uint32_t CHUNKSIZE(void) {
    reliable. */
 Z_INTERNAL uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
     chunk_t chunk;
-    --len;
+    int32_t align = (--len % sizeof(chunk_t)) + 1;
     loadchunk(from, &chunk);
     storechunk(out, &chunk);
-    out += (len % sizeof(chunk_t)) + 1;
-    from += (len % sizeof(chunk_t)) + 1;
+    out += align;
+    from += align;
     len /= sizeof(chunk_t);
     while (len > 0) {
         loadchunk(from, &chunk);
