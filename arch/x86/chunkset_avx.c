@@ -9,6 +9,8 @@
 
 typedef __m256i chunk_t;
 
+#define CSUFFIX(func) func##_avx
+
 #define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
@@ -38,12 +40,6 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
     _mm256_storeu_si256((__m256i *)out, *chunk);
 }
 
-#define CHUNKSIZE        chunksize_avx
-#define CHUNKCOPY        chunkcopy_avx
-#define CHUNKCOPY_SAFE   chunkcopy_safe_avx
-#define CHUNKUNROLL      chunkunroll_avx
-#define CHUNKMEMSET      chunkmemset_avx
-#define CHUNKMEMSET_SAFE chunkmemset_safe_avx
 
 #include "chunkset_tpl.h"
 

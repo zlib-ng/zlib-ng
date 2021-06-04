@@ -13,6 +13,8 @@
 
 typedef uint8x16_t chunk_t;
 
+#define CSUFFIX(func) func##_neon
+
 #define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
@@ -37,13 +39,6 @@ static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
     *chunk = vcombine_u8(vld1_u8(from), vld1_u8(from));
 }
-
-#define CHUNKSIZE        chunksize_neon
-#define CHUNKCOPY        chunkcopy_neon
-#define CHUNKCOPY_SAFE   chunkcopy_safe_neon
-#define CHUNKUNROLL      chunkunroll_neon
-#define CHUNKMEMSET      chunkmemset_neon
-#define CHUNKMEMSET_SAFE chunkmemset_safe_neon
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
     *chunk = vld1q_u8(s);

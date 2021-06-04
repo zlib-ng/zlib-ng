@@ -14,6 +14,8 @@ typedef struct chunk_t { uint32_t u32[2]; } chunk_t;
 typedef struct chunk_t { uint8_t u8[8]; } chunk_t;
 #endif
 
+#define CSUFFIX(func) func##_c
+
 #define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
@@ -70,12 +72,5 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
     memcpy(out, chunk, sizeof(chunk_t));
 #endif
 }
-
-#define CHUNKSIZE        chunksize_c
-#define CHUNKCOPY        chunkcopy_c
-#define CHUNKCOPY_SAFE   chunkcopy_safe_c
-#define CHUNKUNROLL      chunkunroll_c
-#define CHUNKMEMSET      chunkmemset_c
-#define CHUNKMEMSET_SAFE chunkmemset_safe_c
 
 #include "chunkset_tpl.h"

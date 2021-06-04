@@ -10,6 +10,8 @@
 
 typedef __m128i chunk_t;
 
+#define CSUFFIX(func) func##_sse2
+
 #define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
@@ -38,13 +40,6 @@ static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
 static inline void storechunk(uint8_t *out, chunk_t *chunk) {
     _mm_storeu_si128((__m128i *)out, *chunk);
 }
-
-#define CHUNKSIZE        chunksize_sse2
-#define CHUNKCOPY        chunkcopy_sse2
-#define CHUNKCOPY_SAFE   chunkcopy_safe_sse2
-#define CHUNKUNROLL      chunkunroll_sse2
-#define CHUNKMEMSET      chunkmemset_sse2
-#define CHUNKMEMSET_SAFE chunkmemset_safe_sse2
 
 #include "chunkset_tpl.h"
 
