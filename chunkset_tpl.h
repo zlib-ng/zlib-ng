@@ -2,6 +2,35 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+/* Copies a partial chunk, all bytes minus one */
+static uint8_t* chunkcopy_partial(uint8_t *out, uint8_t const *from, unsigned len) {
+    int32_t use_chunk16 = sizeof(chunk_t) > 16 && (len & 16);
+    if (use_chunk16) {
+        memcpy(out, from, 16);
+        out += 16;
+        from += 16;
+    }
+    if (len & 8) {
+        memcpy(out, from, 8);
+        out += 8;
+        from += 8;
+    }
+    if (len & 4) {
+        memcpy(out, from, 4);
+        out += 4;
+        from += 4;
+    }
+    if (len & 2) {
+        memcpy(out, from, 2);
+        out += 2;
+        from += 2;
+    }
+    if (len & 1) {
+        *out++ = *from++;
+    }
+    return out;
+}
+
 /* Returns the chunk size */
 Z_INTERNAL uint32_t CHUNKSIZE(void) {
     return sizeof(chunk_t);
@@ -37,33 +66,8 @@ Z_INTERNAL uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
 Z_INTERNAL uint8_t* CHUNKCOPY_SAFE(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
-    if ((safe - out) < (ptrdiff_t)sizeof(chunk_t)) {
-        int32_t use_chunk16 = sizeof(chunk_t) > 16 && (len & 16);
-        if (use_chunk16) {
-            memcpy(out, from, 16);
-            out += 16;
-            from += 16;
-        }
-        if (len & 8) {
-            memcpy(out, from, 8);
-            out += 8;
-            from += 8;
-        }
-        if (len & 4) {
-            memcpy(out, from, 4);
-            out += 4;
-            from += 4;
-        }
-        if (len & 2) {
-            memcpy(out, from, 2);
-            out += 2;
-            from += 2;
-        }
-        if (len & 1) {
-            *out++ = *from++;
-        }
-        return out;
-    }
+    if ((safe - out) < (ptrdiff_t)sizeof(chunk_t))
+        return chunkcopy_partial(out, from, len);
     return CHUNKCOPY(out, from, len);
 }
 
