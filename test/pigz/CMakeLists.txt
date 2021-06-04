@@ -7,6 +7,8 @@
 # pthread libraries if installed.
 
 # Optional Variables
+#   WITH_CODE_COVERAGE  - Enable code coverage reporting
+#   WITH_THREADS        - Enable threading support
 #   PIGZ_ENABLE_TESTS   - Enable adding unit tests
 #   ZLIB_ROOT           - Path to the zlib source directory
 #   PTHREADS4W_ROOT     - Path to pthreads4w source directory on Windows.
@@ -21,6 +23,7 @@ include(FetchContent)
 include(../../cmake/detect-coverage.cmake)
 
 option(WITH_CODE_COVERAGE "Enable code coverage reporting" OFF)
+option(WITH_THREADS "Enable threading support" ON)
 option(PIGZ_ENABLE_TESTS "Build unit tests" ON)
 
 project(pigz LANGUAGES C)
@@ -40,8 +43,11 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     if(NOT CMAKE_C_COMPILER_VERSION VERSION_LESS 4.8.0)
         add_definitions(-fno-diagnostics-show-caret)
     endif()
-elseif(MSVC)
-    add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+elseif(WIN32)
+    add_definitions(-D_TIMESPEC_DEFINED)
+    if(MSVC)
+        add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
+    endif()
 endif()
 
 # Fetch pigz source code from official repository
@@ -56,37 +62,44 @@ endif()
 
 set(PIGZ_SRCS
     ${pigz_SOURCE_DIR}/pigz.c
-    ${pigz_SOURCE_DIR}/try.c
-    ${pigz_SOURCE_DIR}/yarn.c)
+    ${pigz_SOURCE_DIR}/try.c)
 
 set(PIGZ_HDRS
-    ${pigz_SOURCE_DIR}/try.h
-    ${pigz_SOURCE_DIR}/yarn.h)
+    ${pigz_SOURCE_DIR}/try.h)
 
 add_executable(${PROJECT_NAME} ${PIGZ_SRCS} ${PIGZ_HDRS})
 add_definitions(-DNOZOPFLI)
 
 # Find and link against pthreads or pthreads4w
-if(WIN32)
-    add_definitions(-D_TIMESPEC_DEFINED)
+if(WITH_THREADS)
+    if(WIN32)
+        if(DEFINED PTHREADS4W_ROOT)
+            set(CLEANUP_STYLE VC)
+            set(PTHREADS4W_VERSION 3)
 
-    if(DEFINED PTHREADS4W_ROOT)
-        set(CLEANUP_STYLE VC)
-        set(PTHREADS4W_VERSION 3)
-
-        add_subdirectory(${PTHREADS4W_ROOT} ${PTHREADS4W_ROOT} EXCLUDE_FROM_ALL)
-        target_link_libraries(${PROJECT_NAME} pthreadVC3)
-        target_include_directories(${PROJECT_NAME} PRIVATE win ${PTHREADS4W_ROOT})
+            add_subdirectory(${PTHREADS4W_ROOT} ${PTHREADS4W_ROOT} EXCLUDE_FROM_ALL)
+            target_link_libraries(${PROJECT_NAME} pthreadVC3)
+            target_include_directories(${PROJECT_NAME} PRIVATE win ${PTHREADS4W_ROOT})
+        else()
+            message(WARNING "Missing pthreads4w root directory")
+            set(WITH_THREADS OFF)
+        endif()
     else()
-        message(WARNING "Missing pthreads4w root directory, disabling threading")
-        add_definitions(-DNOTHREAD)
+        find_package(Threads REQUIRED)
+        target_link_libraries(${PROJECT_NAME} Threads::Threads)
+        if(NOT APPLE)
+            target_link_libraries(${PROJECT_NAME} m)
+        endif()
     endif()
+endif()
+
+# Disable threading support
+if(NOT WITH_THREADS)
+    add_definitions(-DNOTHREAD)
 else()
-    find_package(Threads REQUIRED)
-    target_link_libraries(${PROJECT_NAME} Threads::Threads)
-    if(NOT APPLE)
-        target_link_libraries(${PROJECT_NAME} m)
-    endif()
+    set_property(TARGET ${PROJECT_NAME} APPEND PROPERTY SOURCES
+        ${pigz_SOURCE_DIR}/yarn.c
+        ${pigz_SOURCE_DIR}/yarn.h)
 endif()
 
 # Find and link against zlib
@@ -179,6 +192,7 @@ if(PIGZ_ENABLE_TESTS)
 endif()
 
 add_feature_info(WITH_CODE_COVERAGE WITH_CODE_COVERAGE "Enable code coverage reporting")
+add_feature_info(WITH_THREADS WITH_THREADS "Enable threading support")
 add_feature_info(PIGZ_ENABLE_TESTS PIGZ_ENABLE_TESTS "Build unit tests")
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
