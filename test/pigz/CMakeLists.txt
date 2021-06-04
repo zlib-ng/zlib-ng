@@ -172,6 +172,10 @@ if(PIGZ_ENABLE_TESTS)
             test_pigz(${TEST_NAME} ${TEST_FILE_PATH} ${TEST_CONFIG})
         endforeach()
     endforeach()
+
+    set(GH979_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:pigz>
+        -d -k -f ${CMAKE_CURRENT_SOURCE_DIR}/../GH-979/pigz-2.6.tar.gz)
+    add_test(NAME GH-979 COMMAND ${GH979_COMMAND})
 endif()
 
 add_feature_info(WITH_CODE_COVERAGE WITH_CODE_COVERAGE "Enable code coverage reporting")
