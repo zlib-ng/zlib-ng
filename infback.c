@@ -210,8 +210,8 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                 copy = state->length;
                 PULL();
                 ROOM();
-                if (copy > have) copy = have;
-                if (copy > left) copy = left;
+                copy = MIN(copy, have);
+                copy = MIN(copy, left);
                 memcpy(put, next, copy);
                 have -= copy;
                 next += copy;
@@ -453,8 +453,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                     from = put - state->offset;
                     copy = left;
                 }
-                if (copy > state->length)
-                    copy = state->length;
+                copy = MIN(copy, state->length);
                 state->length -= copy;
                 left -= copy;
                 do {

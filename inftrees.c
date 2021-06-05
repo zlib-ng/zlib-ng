@@ -107,7 +107,7 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     root = *bits;
     for (max = MAXBITS; max >= 1; max--)
         if (count[max] != 0) break;
-    if (root > max) root = max;
+    root = MIN(root, max);
     if (max == 0) {                     /* no symbols to code at all */
         here.op = (unsigned char)64;    /* invalid code marker */
         here.bits = (unsigned char)1;
@@ -119,7 +119,7 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     }
     for (min = 1; min < max; min++)
         if (count[min] != 0) break;
-    if (root < min) root = min;
+    root = MAX(root, min);
 
     /* check for an over-subscribed or incomplete set of lengths */
     left = 1;

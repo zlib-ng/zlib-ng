@@ -132,7 +132,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
         }
         s->block_start = (int)s->strstart;
     }
-    s->high_water = MIN(s->high_water, s->strstart);
+    s->high_water = MAX(s->high_water, s->strstart);
 
     /* If the last block was written to next_out, then done. */
     if (last)
@@ -161,7 +161,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
         s->strstart += have;
         s->insert += MIN(have, s->w_size - s->insert);
     }
-    s->high_water = MIN(s->high_water, s->strstart);
+    s->high_water = MAX(s->high_water, s->strstart);
 
     /* There was not enough avail_out to write a complete worthy or flushed
      * stored block to next_out. Write a stored block to pending instead, if we

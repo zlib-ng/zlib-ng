@@ -28,5 +28,7 @@
 
 /* Minimum of a and b. */
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
+/* Maximum of a and b. */
+#define MAX(a, b) ((a) < (b) ? (b) : (a))
 
 #endif

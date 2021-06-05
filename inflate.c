@@ -657,8 +657,8 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             /* copy stored block from input to output */
             copy = state->length;
             if (copy) {
-                if (copy > have) copy = have;
-                if (copy > left) copy = left;
+                copy = MIN(copy, have);
+                copy = MIN(copy, left);
                 if (copy == 0) goto inf_leave;
                 memcpy(put, next, copy);
                 have -= copy;
@@ -928,10 +928,8 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
 #ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
                     Trace((stderr, "inflate.c too far\n"));
                     copy -= state->whave;
-                    if (copy > state->length)
-                        copy = state->length;
-                    if (copy > left)
-                        copy = left;
+                    copy = MIN(copy, state->length);
+                    copy = MIN(copy, left);
                     left -= copy;
                     state->length -= copy;
                     do {
@@ -948,16 +946,12 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 } else {
                     from = state->window + (state->wnext - copy);
                 }
-                if (copy > state->length)
-                    copy = state->length;
-                if (copy > left)
-                    copy = left;
+                copy = MIN(copy, state->length);
+                copy = MIN(copy, left);
 
                 put = functable.chunkcopy_safe(put, from, copy, put + left);
             } else {                             /* copy from output */
-                copy = state->length;
-                if (copy > left)
-                    copy = left;
+                copy = MIN(state->length, left);
 
                 put = functable.chunkmemset_safe(put, state->offset, copy, left);
             }
