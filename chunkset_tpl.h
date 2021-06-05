@@ -69,7 +69,8 @@ Z_INTERNAL uint8_t* CSUFFIX(chunkcopy)(uint8_t *out, uint8_t const *from, unsign
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
 static inline uint8_t* CSUFFIX(chunkcopy_safe_static)(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
-    if ((safe - out) < (ptrdiff_t)sizeof(chunk_t))
+    len = MIN(len, (unsigned)(safe - out) + 1);
+    if (len < (ptrdiff_t)sizeof(chunk_t))
         return CSUFFIX(chunkcopy_partial)(out, from, len);
     return CSUFFIX(chunkcopy_static)(out, from, len);
 }
