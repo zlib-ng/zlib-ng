@@ -260,15 +260,11 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
                         out = functable.chunkcopy_safe(out, from, len, safe);
                     }
                 } else {
-                    /* Whole reference is in range of current output.  No range checks are
-                       necessary because we start with room for at least 258 bytes of output,
-                       so unroll and roundoff operations can write beyond `out+len` so long
-                       as they stay within 258 bytes of `out`.
-                    */
+                    /* Whole reference is in range of current output. */
                     if (dist >= len || dist >= state->chunksize)
-                        out = functable.chunkcopy(out, out - dist, len);
+                        out = functable.chunkcopy_safe(out, out - dist, len, safe);
                     else
-                        out = functable.chunkmemset(out, dist, len);
+                        out = functable.chunkmemset_safe(out, dist, len, safe - out + 1);
                 }
             } else if ((op & 64) == 0) {          /* 2nd level distance code */
                 here = dcode + here->val + BITS(op);
