@@ -99,6 +99,7 @@
         #error archfound riscv64
     #elif __riscv_xlen == 32
         #error archfound riscv32
+    #endif
 
 // return 'unrecognized' if we do not know what architecture this is
 #else
