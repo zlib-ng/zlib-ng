@@ -58,13 +58,13 @@ static inline uint8_t* CSUFFIX(chunkcopy_static)(uint8_t *out, uint8_t const *fr
     storechunk(out, &chunk);
     out += align;
     from += align;
-    len /= sizeof(chunk_t);
+    len -= align;
     while (len > 0) {
         loadchunk(from, &chunk);
         storechunk(out, &chunk);
         out += sizeof(chunk_t);
         from += sizeof(chunk_t);
-        --len;
+        len -= sizeof(chunk_t);
     }
     return out;
 }
