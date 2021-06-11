@@ -128,6 +128,7 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
     unsigned len;               /* match length, unused bytes */
     unsigned dist;              /* match distance */
     unsigned char *from;        /* where to copy match from */
+    unsigned extra_safe;        /* copy chunks safely in all cases */
 
     /* copy state to local variables */
     state = (struct inflate_state *)strm->state;
@@ -150,6 +151,11 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
     dcode = state->distcode;
     lmask = (1U << state->lenbits) - 1;
     dmask = (1U << state->distbits) - 1;
+
+    /* Detect if out and window point to the same memory allocation. In this instance it is 
+       necessary to use safe chunk copy functions to prevent overwriting the window. If the 
+       window is overwritten then future matches with far distances will fail to copy correctly. */
+    extra_safe = (out >= window && out + INFLATE_FAST_MIN_LEFT <= window + wsize);
 
     /* decode literals and length/distances until end-of-block or not enough
        input data or output space */
@@ -259,12 +265,22 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
                     } else {
                         out = functable.chunkcopy_safe(out, from, len, safe);
                     }
-                } else {
+                } else if (extra_safe) {
                     /* Whole reference is in range of current output. */
                     if (dist >= len || dist >= state->chunksize)
                         out = functable.chunkcopy_safe(out, out - dist, len, safe);
                     else
                         out = functable.chunkmemset_safe(out, dist, len, safe - out + 1);
+                } else {
+                    /* Whole reference is in range of current output.  No range checks are
+                       necessary because we start with room for at least 258 bytes of output,
+                       so unroll and roundoff operations can write beyond `out+len` so long
+                       as they stay within 258 bytes of `out`.
+                    */
+                    if (dist >= len || dist >= state->chunksize)
+                        out = functable.chunkcopy(out, out - dist, len);
+                    else
+                        out = functable.chunkmemset(out, dist, len);
                 }
             } else if ((op & 64) == 0) {          /* 2nd level distance code */
                 here = dcode + here->val + BITS(op);
