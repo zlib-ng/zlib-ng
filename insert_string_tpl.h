@@ -22,27 +22,40 @@
  *
  */
 
+#ifndef HASH_CALC_OFFSET
+#  define HASH_CALC_OFFSET 0 
+#endif
+#ifndef HASH_CALC_MASK
+#  define HASH_CALC_MASK HASH_MASK
+#endif
+#ifndef HASH_CALC_READ
+#  ifdef UNALIGNED_OK
+#    define HASH_CALC_READ \
+        val = *(uint32_t *)(strstart);
+#  else
+#    define HASH_CALC_READ \
+        val  = ((uint32_t)(strstart[0])); \
+        val |= ((uint32_t)(strstart[1]) << 8); \
+        val |= ((uint32_t)(strstart[2]) << 16); \
+        val |= ((uint32_t)(strstart[3]) << 24);
+#  endif
+#endif
+
 /* ===========================================================================
  * Quick insert string str in the dictionary and set match_head to the previous head
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
  */
-Z_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, const uint32_t str) {
+Z_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, uint32_t str) {
     Pos head;
-    uint8_t *strstart = s->window + str;
-    uint32_t val, hm, h = 0;
+    uint8_t *strstart = s->window + str + HASH_CALC_OFFSET;
+    uint32_t val, hm;
 
-#ifdef UNALIGNED_OK
-    val = *(uint32_t *)(strstart);
-#else
-    val  = ((uint32_t)(strstart[0]));
-    val |= ((uint32_t)(strstart[1]) << 8);
-    val |= ((uint32_t)(strstart[2]) << 16);
-    val |= ((uint32_t)(strstart[3]) << 24);
-#endif
-
-    UPDATE_HASH(s, h, val);
-    hm = h & HASH_MASK;
+    HASH_CALC_VAR_INIT;
+    HASH_CALC_READ;
+    HASH_CALC(s, HASH_CALC_VAR, val);
+    HASH_CALC_VAR &= HASH_CALC_MASK;
+    hm = HASH_CALC_VAR;
 
     head = s->head[hm];
     if (LIKELY(head != str)) {
@@ -60,24 +73,18 @@ Z_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, const uint32_t str) {
  *    input characters and the first STD_MIN_MATCH bytes of str are valid
  *    (except for the last STD_MIN_MATCH-1 bytes of the input file).
  */
-Z_INTERNAL void INSERT_STRING(deflate_state *const s, const uint32_t str, uint32_t count) {
-    uint8_t *strstart = s->window + str;
-    uint8_t *strend = strstart + count - 1; /* last position */
+Z_INTERNAL void INSERT_STRING(deflate_state *const s, uint32_t str, uint32_t count) {
+    uint8_t *strstart = s->window + str + HASH_CALC_OFFSET;
+    uint8_t *strend = strstart + count;
 
-    for (Pos idx = (Pos)str; strstart <= strend; idx++, strstart++) {
-        uint32_t val, hm, h = 0;
+    for (Pos idx = (Pos)str; strstart < strend; idx++, strstart++) {
+        uint32_t val, hm;
 
-#ifdef UNALIGNED_OK
-        val = *(uint32_t *)(strstart);
-#else
-        val  = ((uint32_t)(strstart[0]));
-        val |= ((uint32_t)(strstart[1]) << 8);
-        val |= ((uint32_t)(strstart[2]) << 16);
-        val |= ((uint32_t)(strstart[3]) << 24);
-#endif
-
-        UPDATE_HASH(s, h, val);
-        hm = h & HASH_MASK;
+        HASH_CALC_VAR_INIT;
+        HASH_CALC_READ;
+        HASH_CALC(s, HASH_CALC_VAR, val);
+        HASH_CALC_VAR &= HASH_CALC_MASK;
+        hm = HASH_CALC_VAR;
 
         Pos head = s->head[hm];
         if (LIKELY(head != idx)) {
