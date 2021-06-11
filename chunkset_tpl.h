@@ -53,7 +53,7 @@ Z_INTERNAL uint32_t CSUFFIX(chunksize)(void) {
 static inline uint8_t* CSUFFIX(chunkcopy_static)(uint8_t *out, uint8_t const *from, unsigned len) {
     Assert(len > 0, "chunkcopy length should never be zero");
     chunk_t chunk;
-    int32_t align = (--len % sizeof(chunk_t)) + 1;
+    int32_t align = len % sizeof(chunk_t);
     loadchunk(from, &chunk);
     storechunk(out, &chunk);
     out += align;
@@ -73,14 +73,14 @@ Z_INTERNAL uint8_t* CSUFFIX(chunkcopy)(uint8_t *out, uint8_t const *from, unsign
 }
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
-static inline uint8_t* CSUFFIX(chunkcopy_safe_static)(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
-    len = MIN(len, (unsigned)(safe - out) + 1);
-    if (len < (ptrdiff_t)sizeof(chunk_t))
+static inline uint8_t* CSUFFIX(chunkcopy_safe_static)(uint8_t *out, uint8_t const *from, unsigned len, unsigned left) {
+    len = MIN(len, left);
+    if (len < sizeof(chunk_t))
         return CSUFFIX(chunkcopy_partial)(out, from, len);
     return CSUFFIX(chunkcopy_static)(out, from, len);
 }
-Z_INTERNAL uint8_t* CSUFFIX(chunkcopy_safe)(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
-    return CSUFFIX(chunkcopy_safe_static)(out, from, len, safe);
+Z_INTERNAL uint8_t* CSUFFIX(chunkcopy_safe)(uint8_t *out, uint8_t const *from, unsigned len, unsigned left) {
+    return CSUFFIX(chunkcopy_safe_static)(out, from, len, left);
 }
 
 /* Perform short copies until distance can be rewritten as being at least
@@ -147,13 +147,12 @@ static inline uint8_t* CSUFFIX(chunkmemset_static)(uint8_t *out, unsigned dist, 
     if (dist == sz) {
         loadchunk(from, &chunk);
     } else if (dist < sz) {
-        unsigned char *end = out + len - 1;
         while (len > dist) {
-            out = CSUFFIX(chunkcopy_safe_static)(out, from, dist, end);
+            out = CSUFFIX(chunkcopy_safe_static)(out, from, dist, dist);
             len -= dist;
         }
         if (len > 0) {
-            out = CSUFFIX(chunkcopy_safe_static)(out, from, len, end);
+            out = CSUFFIX(chunkcopy_safe_static)(out, from, len, len);
         }
         return out;
     } else {

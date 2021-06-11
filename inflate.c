@@ -953,7 +953,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 if (copy > left)
                     copy = left;
 
-                put = functable.chunkcopy_safe(put, from, copy, put + left);
+                put = functable.chunkcopy_safe(put, from, copy, left);
             } else {                             /* copy from output */
                 copy = state->length;
                 if (copy > left)
