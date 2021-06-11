@@ -16,6 +16,8 @@ typedef struct chunk_t { uint8_t u8[8]; } chunk_t;
 
 #define CSUFFIX(func) func##_c
 
+#define CHUNK_SIZE 8
+
 #define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8

@@ -12,6 +12,8 @@ typedef __m128i chunk_t;
 
 #define CSUFFIX(func) func##_sse2
 
+#define CHUNK_SIZE 16
+
 #define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4

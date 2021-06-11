@@ -4,17 +4,20 @@
 
 /* Copies a partial chunk, all bytes minus one */
 static inline uint8_t* CSUFFIX(chunkcopy_partial)(uint8_t *out, uint8_t const *from, unsigned len) {
-    int32_t use_chunk16 = sizeof(chunk_t) > 16 && (len & 16);
-    if (use_chunk16) {
+#if CHUNK_SIZE > 16
+    if (len & 16) {
         memcpy(out, from, 16);
         out += 16;
         from += 16;
     }
+#endif
+#if CHUNK_SIZE > 8
     if (len & 8) {
         memcpy(out, from, 8);
         out += 8;
         from += 8;
     }
+#endif
     if (len & 4) {
         memcpy(out, from, 4);
         out += 4;

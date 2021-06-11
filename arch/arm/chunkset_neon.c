@@ -15,6 +15,8 @@ typedef uint8x16_t chunk_t;
 
 #define CSUFFIX(func) func##_neon
 
+#define CHUNK_SIZE 16
+
 #define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
