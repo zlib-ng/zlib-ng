@@ -4,6 +4,7 @@
 
 /* Copies a partial chunk, all bytes minus one */
 static inline uint8_t* CSUFFIX(chunkcopy_partial)(uint8_t *out, uint8_t const *from, unsigned len) {
+    Assert(len > 0, "chunkcopy length should never be zero");
 #if CHUNK_SIZE > 16
     if (len & 16) {
         memcpy(out, from, 16);
@@ -50,6 +51,7 @@ Z_INTERNAL uint32_t CSUFFIX(chunksize)(void) {
    without iteration, which will hopefully make the branch prediction more
    reliable. */
 static inline uint8_t* CSUFFIX(chunkcopy_static)(uint8_t *out, uint8_t const *from, unsigned len) {
+    Assert(len > 0, "chunkcopy length should never be zero");
     chunk_t chunk;
     int32_t align = (--len % sizeof(chunk_t)) + 1;
     loadchunk(from, &chunk);
@@ -110,8 +112,7 @@ Z_INTERNAL uint8_t* CSUFFIX(chunkunroll)(uint8_t *out, unsigned *dist, unsigned 
 static inline uint8_t* CSUFFIX(chunkmemset_static)(uint8_t *out, unsigned dist, unsigned len) {
     /* Debug performance related issues when len < sizeof(uint64_t):
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
-    Assert(dist > 0, "cannot have a distance 0");
-
+    Assert(dist > 0, "chunkmemset cannot have a distance 0");
     unsigned char *from = out - dist;
     chunk_t chunk;
     unsigned sz = sizeof(chunk);
