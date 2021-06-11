@@ -18,6 +18,7 @@ Z_INTERNAL uint32_t CHUNKSIZE(void) {
    without iteration, which will hopefully make the branch prediction more
    reliable. */
 Z_INTERNAL uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
+    Assert(len > 0, "chunkcopy should never have a length 0");
     chunk_t chunk;
     int32_t align = (--len % sizeof(chunk_t)) + 1;
     loadchunk(from, &chunk);
@@ -94,7 +95,7 @@ Z_INTERNAL uint8_t* CHUNKUNROLL(uint8_t *out, unsigned *dist, unsigned *len) {
 Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
     /* Debug performance related issues when len < sizeof(uint64_t):
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
-    Assert(dist > 0, "cannot have a distance 0");
+    Assert(dist > 0, "chunkmemset cannot have a distance 0");
 
     unsigned char *from = out - dist;
     chunk_t chunk;
