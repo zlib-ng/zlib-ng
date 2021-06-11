@@ -73,6 +73,7 @@ OBJS = \
 	inftrees.obj \
 	inffast.obj \
 	insert_string.obj \
+	insert_string_roll.obj \
 	insert_string_sse.obj \
 	slide_avx.obj \
 	slide_sse.obj \

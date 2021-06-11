@@ -155,6 +155,8 @@ typedef struct internal_state {
 
     Pos *head; /* Heads of the hash chains or 0. */
 
+    uint32_t ins_h; /* hash index of string to be inserted */
+
     int block_start;
     /* Window position at the beginning of the current output block. Gets
      * negative when the window is moved backwards.

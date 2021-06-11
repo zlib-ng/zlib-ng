@@ -821,6 +821,7 @@ set(ZLIB_SRCS
     inflate.c
     inftrees.c
     insert_string.c
+    insert_string_roll.c
     trees.c
     uncompr.c
     zutil.c

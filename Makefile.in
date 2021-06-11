@@ -92,6 +92,7 @@ OBJZ = \
 	inflate.o \
 	inftrees.o \
 	insert_string.o \
+	insert_string_roll.o \
 	trees.o \
 	uncompr.o \
 	zutil.o \
@@ -125,6 +126,7 @@ PIC_OBJZ = \
 	inflate.lo \
 	inftrees.lo \
 	insert_string.lo \
+	insert_string_roll.lo \
 	trees.lo \
 	uncompr.lo \
 	zutil.lo \

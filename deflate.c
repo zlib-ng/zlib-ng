@@ -1162,6 +1162,7 @@ static void lm_init(deflate_state *s) {
     s->prev_length = 0;
     s->match_available = 0;
     s->match_start = 0;
+    s->ins_h = 0;
 }
 
 /* ===========================================================================

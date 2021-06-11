@@ -66,6 +66,7 @@ OBJS = \
 	inftrees.obj \
 	inffast.obj \
 	insert_string.obj \
+	insert_string_roll.obj \
 	trees.obj \
 	uncompr.obj \
 	zutil.obj \
