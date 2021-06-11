@@ -152,8 +152,8 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
     lmask = (1U << state->lenbits) - 1;
     dmask = (1U << state->distbits) - 1;
 
-    /* Detect if out and window point to the same memory allocation. In this instance it is 
-       necessary to use safe chunk copy functions to prevent overwriting the window. If the 
+    /* Detect if out and window point to the same memory allocation. In this instance it is
+       necessary to use safe chunk copy functions to prevent overwriting the window. If the
        window is overwritten then future matches with far distances will fail to copy correct. */
     extra_safe = (out >= window && out + INFLATE_FAST_MIN_LEFT <= window + wsize);
 
@@ -249,7 +249,7 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
                         from += wsize - op;
                         if (op < len) {         /* some from end of window */
                             len -= op;
-                            out = functable.chunkcopy_safe(out, from, op, (unsigned)(safe - out) + 1);
+                            out = functable.chunkcopy_safe(out, from, op, (uint32_t)(safe - out) + 1);
                             from = window;      /* more from start of window */
                             op = wnext;
                             /* This (rare) case can create a situation where
@@ -259,18 +259,18 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
                     }
                     if (op < len) {             /* still need some from output */
                         len -= op;
-                        out = functable.chunkcopy_safe(out, from, op, (unsigned)(safe - out) + 1);
+                        out = functable.chunkcopy_safe(out, from, op, (uint32_t)(safe - out) + 1);
                         out = functable.chunkunroll(out, &dist, &len);
-                        out = functable.chunkcopy_safe(out, out - dist, len, (unsigned)(safe - out) + 1);
+                        out = functable.chunkcopy_safe(out, out - dist, len, (uint32_t)(safe - out) + 1);
                     } else {
-                        out = functable.chunkcopy_safe(out, from, len, (unsigned)(safe - out) + 1);
+                        out = functable.chunkcopy_safe(out, from, len, (uint32_t)(safe - out) + 1);
                     }
                 } else if (extra_safe) {
                     /* Whole reference is in range of current output. */
                     if (dist >= len || dist >= state->chunksize)
-                        out = functable.chunkcopy_safe(out, out - dist, len, (unsigned)(safe - out) + 1);
+                        out = functable.chunkcopy_safe(out, out - dist, len, (uint32_t)(safe - out) + 1);
                     else
-                        out = functable.chunkmemset_safe(out, dist, len, (unsigned)(safe - out) + 1);
+                        out = functable.chunkmemset_safe(out, dist, len, (uint32_t)(safe - out) + 1);
                 } else {
                     /* Whole reference is in range of current output.  No range checks are
                        necessary because we start with room for at least 258 bytes of output,

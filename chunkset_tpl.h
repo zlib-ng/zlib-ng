@@ -3,7 +3,7 @@
  */
 
 /* Copies a partial chunk, all bytes minus one */
-static inline uint8_t* CSUFFIX(chunkcopy_partial)(uint8_t *out, uint8_t const *from, unsigned len) {
+static inline uint8_t* CSUFFIX(chunkcopy_partial)(uint8_t *out, uint8_t const *from, uint32_t len) {
     Assert(len > 0, "chunkcopy length should never be zero");
 #if CHUNK_SIZE > 16
     if (len & 16) {
@@ -50,7 +50,7 @@ Z_INTERNAL uint32_t CSUFFIX(chunksize)(void) {
    (chunk_t bytes or fewer) will fall straight through the loop
    without iteration, which will hopefully make the branch prediction more
    reliable. */
-static inline uint8_t* CSUFFIX(chunkcopy_static)(uint8_t *out, uint8_t const *from, unsigned len) {
+static inline uint8_t* CSUFFIX(chunkcopy_static)(uint8_t *out, uint8_t const *from, uint32_t len) {
     Assert(len > 0, "chunkcopy length should never be zero");
     chunk_t chunk;
     int32_t align = len % sizeof(chunk_t);
@@ -68,18 +68,18 @@ static inline uint8_t* CSUFFIX(chunkcopy_static)(uint8_t *out, uint8_t const *fr
     }
     return out;
 }
-Z_INTERNAL uint8_t* CSUFFIX(chunkcopy)(uint8_t *out, uint8_t const *from, unsigned len) {
+Z_INTERNAL uint8_t* CSUFFIX(chunkcopy)(uint8_t *out, uint8_t const *from, uint32_t len) {
     return CSUFFIX(chunkcopy_static)(out, from, len);
 }
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
-static inline uint8_t* CSUFFIX(chunkcopy_safe_static)(uint8_t *out, uint8_t const *from, unsigned len, unsigned left) {
+static inline uint8_t* CSUFFIX(chunkcopy_safe_static)(uint8_t *out, uint8_t const *from, uint32_t len, uint32_t left) {
     len = MIN(len, left);
     if (len < sizeof(chunk_t))
         return CSUFFIX(chunkcopy_partial)(out, from, len);
     return CSUFFIX(chunkcopy_static)(out, from, len);
 }
-Z_INTERNAL uint8_t* CSUFFIX(chunkcopy_safe)(uint8_t *out, uint8_t const *from, unsigned len, unsigned left) {
+Z_INTERNAL uint8_t* CSUFFIX(chunkcopy_safe)(uint8_t *out, uint8_t const *from, uint32_t len, uint32_t left) {
     return CSUFFIX(chunkcopy_safe_static)(out, from, len, left);
 }
 
@@ -91,7 +91,7 @@ Z_INTERNAL uint8_t* CSUFFIX(chunkcopy_safe)(uint8_t *out, uint8_t const *from, u
    This assumption holds because inflate_fast() starts every iteration with at
    least 258 bytes of output space available (258 being the maximum length
    output from a single token; see inflate_fast()'s assumptions below). */
-static inline uint8_t* CSUFFIX(chunkunroll_static)(uint8_t *out, unsigned *dist, unsigned *len) {
+static inline uint8_t* CSUFFIX(chunkunroll_static)(uint8_t *out, uint32_t *dist, uint32_t *len) {
     unsigned char const *from = out - *dist;
     chunk_t chunk;
     while (*dist < *len && *dist < sizeof(chunk_t)) {
@@ -103,19 +103,19 @@ static inline uint8_t* CSUFFIX(chunkunroll_static)(uint8_t *out, unsigned *dist,
     }
     return out;
 }
-Z_INTERNAL uint8_t* CSUFFIX(chunkunroll)(uint8_t *out, unsigned *dist, unsigned *len) {
+Z_INTERNAL uint8_t* CSUFFIX(chunkunroll)(uint8_t *out, uint32_t *dist, uint32_t *len) {
     return CSUFFIX(chunkunroll_static)(out, dist, len);
 }
 
 /* Copy DIST bytes from OUT - DIST into OUT + DIST * k, for 0 <= k < LEN/DIST.
    Return OUT + LEN. */
-static inline uint8_t* CSUFFIX(chunkmemset_static)(uint8_t *out, unsigned dist, unsigned len) {
+static inline uint8_t* CSUFFIX(chunkmemset_static)(uint8_t *out, uint32_t dist, uint32_t len) {
     /* Debug performance related issues when len < sizeof(uint64_t):
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
     Assert(dist > 0, "chunkmemset cannot have a distance 0");
     unsigned char *from = out - dist;
     chunk_t chunk;
-    unsigned sz = sizeof(chunk);
+    uint32_t sz = sizeof(chunk);
     if (len < sz) {
         do {
             *out++ = *from++;
@@ -160,7 +160,7 @@ static inline uint8_t* CSUFFIX(chunkmemset_static)(uint8_t *out, unsigned dist, 
         return CSUFFIX(chunkcopy_static)(out, out - dist, len);
     }
 
-    unsigned rem = len % sz;
+    uint32_t rem = len % sz;
     len -= rem;
     while (len) {
         storechunk(out, &chunk);
@@ -176,11 +176,11 @@ static inline uint8_t* CSUFFIX(chunkmemset_static)(uint8_t *out, unsigned dist, 
 
     return out;
 }
-Z_INTERNAL uint8_t* CSUFFIX(chunkmemset)(uint8_t *out, unsigned dist, unsigned len) {
+Z_INTERNAL uint8_t* CSUFFIX(chunkmemset)(uint8_t *out, uint32_t dist, uint32_t len) {
     return CSUFFIX(chunkmemset_static)(out, dist, len);
 }
 
-Z_INTERNAL uint8_t* CSUFFIX(chunkmemset_safe)(uint8_t *out, unsigned dist, unsigned len, unsigned left) {
+Z_INTERNAL uint8_t* CSUFFIX(chunkmemset_safe)(uint8_t *out, uint32_t dist, uint32_t len, uint32_t left) {
     if (left < (unsigned)(3 * sizeof(chunk_t))) {
         unsigned char *from = out - dist;
         while (len > 0) {

@@ -59,34 +59,34 @@ extern uint32_t adler32_power8(uint32_t adler, const unsigned char* buf, size_t 
 
 /* memory chunking */
 extern uint32_t chunksize_c(void);
-extern uint8_t* chunkcopy_c(uint8_t *out, uint8_t const *from, unsigned len);
-extern uint8_t* chunkcopy_safe_c(uint8_t *out, uint8_t const *from, unsigned len, unsigned left);
-extern uint8_t* chunkunroll_c(uint8_t *out, unsigned *dist, unsigned *len);
-extern uint8_t* chunkmemset_c(uint8_t *out, unsigned dist, unsigned len);
-extern uint8_t* chunkmemset_safe_c(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+extern uint8_t* chunkcopy_c(uint8_t *out, uint8_t const *from, uint32_t len);
+extern uint8_t* chunkcopy_safe_c(uint8_t *out, uint8_t const *from, uint32_t len, uint32_t left);
+extern uint8_t* chunkunroll_c(uint8_t *out, uint32_t *dist, uint32_t *len);
+extern uint8_t* chunkmemset_c(uint8_t *out, uint32_t dist, uint32_t len);
+extern uint8_t* chunkmemset_safe_c(uint8_t *out, uint32_t dist, uint32_t len, uint32_t left);
 #ifdef X86_SSE2_CHUNKSET
 extern uint32_t chunksize_sse2(void);
-extern uint8_t* chunkcopy_sse2(uint8_t *out, uint8_t const *from, unsigned len);
-extern uint8_t* chunkcopy_safe_sse2(uint8_t *out, uint8_t const *from, unsigned len, unsigned left);
-extern uint8_t* chunkunroll_sse2(uint8_t *out, unsigned *dist, unsigned *len);
-extern uint8_t* chunkmemset_sse2(uint8_t *out, unsigned dist, unsigned len);
-extern uint8_t* chunkmemset_safe_sse2(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+extern uint8_t* chunkcopy_sse2(uint8_t *out, uint8_t const *from, uint32_t len);
+extern uint8_t* chunkcopy_safe_sse2(uint8_t *out, uint8_t const *from, uint32_t len, uint32_t left);
+extern uint8_t* chunkunroll_sse2(uint8_t *out, uint32_t *dist, uint32_t *len);
+extern uint8_t* chunkmemset_sse2(uint8_t *out, uint32_t dist, uint32_t len);
+extern uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint32_t dist, uint32_t len, uint32_t left);
 #endif
 #ifdef X86_AVX_CHUNKSET
 extern uint32_t chunksize_avx(void);
-extern uint8_t* chunkcopy_avx(uint8_t *out, uint8_t const *from, unsigned len);
-extern uint8_t* chunkcopy_safe_avx(uint8_t *out, uint8_t const *from, unsigned len, unsigned left);
-extern uint8_t* chunkunroll_avx(uint8_t *out, unsigned *dist, unsigned *len);
-extern uint8_t* chunkmemset_avx(uint8_t *out, unsigned dist, unsigned len);
-extern uint8_t* chunkmemset_safe_avx(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+extern uint8_t* chunkcopy_avx(uint8_t *out, uint8_t const *from, uint32_t len);
+extern uint8_t* chunkcopy_safe_avx(uint8_t *out, uint8_t const *from, uint32_t len, uint32_t left);
+extern uint8_t* chunkunroll_avx(uint8_t *out, uint32_t *dist, uint32_t *len);
+extern uint8_t* chunkmemset_avx(uint8_t *out, uint32_t dist, uint32_t len);
+extern uint8_t* chunkmemset_safe_avx(uint8_t *out, uint32_t dist, uint32_t len, uint32_t left);
 #endif
 #ifdef ARM_NEON_CHUNKSET
 extern uint32_t chunksize_neon(void);
-extern uint8_t* chunkcopy_neon(uint8_t *out, uint8_t const *from, unsigned len);
-extern uint8_t* chunkcopy_safe_neon(uint8_t *out, uint8_t const *from, unsigned len, unsigned left);
-extern uint8_t* chunkunroll_neon(uint8_t *out, unsigned *dist, unsigned *len);
-extern uint8_t* chunkmemset_neon(uint8_t *out, unsigned dist, unsigned len);
-extern uint8_t* chunkmemset_safe_neon(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+extern uint8_t* chunkcopy_neon(uint8_t *out, uint8_t const *from, uint32_t len);
+extern uint8_t* chunkcopy_safe_neon(uint8_t *out, uint8_t const *from, uint32_t len, uint32_t left);
+extern uint8_t* chunkunroll_neon(uint8_t *out, uint32_t *dist, uint32_t *len);
+extern uint8_t* chunkmemset_neon(uint8_t *out, uint32_t dist, uint32_t len);
+extern uint8_t* chunkmemset_safe_neon(uint8_t *out, uint32_t dist, uint32_t len, uint32_t left);
 #endif
 
 /* CRC32 */
@@ -260,7 +260,7 @@ Z_INTERNAL uint32_t chunksize_stub(void) {
     return functable.chunksize();
 }
 
-Z_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned len) {
+Z_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, uint32_t len) {
     // Initialize default
     functable.chunkcopy = &chunkcopy_c;
 
@@ -282,7 +282,7 @@ Z_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned l
     return functable.chunkcopy(out, from, len);
 }
 
-Z_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsigned len, unsigned left) {
+Z_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, uint32_t len, uint32_t left) {
     // Initialize default
     functable.chunkcopy_safe = &chunkcopy_safe_c;
 
@@ -304,7 +304,7 @@ Z_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsig
     return functable.chunkcopy_safe(out, from, len, left);
 }
 
-Z_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len) {
+Z_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, uint32_t *dist, uint32_t *len) {
     // Initialize default
     functable.chunkunroll = &chunkunroll_c;
 
@@ -326,7 +326,7 @@ Z_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len
     return functable.chunkunroll(out, dist, len);
 }
 
-Z_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len) {
+Z_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, uint32_t dist, uint32_t len) {
     // Initialize default
     functable.chunkmemset = &chunkmemset_c;
 
@@ -348,7 +348,7 @@ Z_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len) 
     return functable.chunkmemset(out, dist, len);
 }
 
-Z_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned len, unsigned left) {
+Z_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, uint32_t dist, uint32_t len, uint32_t left) {
     // Initialize default
     functable.chunkmemset_safe = &chunkmemset_safe_c;
 
