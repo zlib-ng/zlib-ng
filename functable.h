@@ -19,11 +19,11 @@ struct functable_s {
     uint32_t (* longest_match)      (deflate_state *const s, Pos cur_match);
     uint32_t (* longest_match_slow) (deflate_state *const s, Pos cur_match);
     uint32_t (* chunksize)          (void);
-    uint8_t* (* chunkcopy)          (uint8_t *out, uint8_t const *from, unsigned len);
-    uint8_t* (* chunkcopy_safe)     (uint8_t *out, uint8_t const *from, unsigned len, unsigned left);
-    uint8_t* (* chunkunroll)        (uint8_t *out, unsigned *dist, unsigned *len);
-    uint8_t* (* chunkmemset)        (uint8_t *out, unsigned dist, unsigned len);
-    uint8_t* (* chunkmemset_safe)   (uint8_t *out, unsigned dist, unsigned len, unsigned left);
+    uint8_t* (* chunkcopy)          (uint8_t *out, uint8_t const *from, uint32_t len);
+    uint8_t* (* chunkcopy_safe)     (uint8_t *out, uint8_t const *from, uint32_t len, uint32_t left);
+    uint8_t* (* chunkunroll)        (uint8_t *out, uint32_t *dist, uint32_t *len);
+    uint8_t* (* chunkmemset)        (uint8_t *out, uint32_t dist, uint32_t len);
+    uint8_t* (* chunkmemset_safe)   (uint8_t *out, uint32_t dist, uint32_t len, uint32_t left);
 };
 
 Z_INTERNAL extern Z_TLS struct functable_s functable;
