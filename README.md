@@ -21,10 +21,10 @@ Features
 * Modern C11 syntax and a clean code layout
 * Deflate medium and quick algorithms based on Intels zlib fork
 * Support for CPU intrinsics when available
-  * Adler32 implementation using SSSE3, AVX2, Neon & VSX
+  * Adler32 implementation using SSSE3, AVX2, Neon, VMX & VSX
   * CRC32-B implementation using PCLMULQDQ & ACLE
   * Hash table implementation using CRC32-C intrinsics on x86 and ARM
-  * Slide hash implementations using SSE2, AVX2, Neon & VSX
+  * Slide hash implementations using SSE2, AVX2, Neon, VMX & VSX
   * Compare256/258 implementations using SSE4.2 & AVX2
   * Inflate chunk copying using SSE2, AVX2, Neon & VSX
   * CRC32 implementation using IBM Z vector instructions
@@ -202,7 +202,8 @@ Advanced Build Options
 | WITH_PCLMULQDQ                  |                       | Build with PCLMULQDQ intrinsics                                     | ON                     |
 | WITH_ACLE                       | --without-acle        | Build with ACLE intrinsics                                          | ON                     |
 | WITH_NEON                       | --without-neon        | Build with NEON intrinsics                                          | ON                     |
-| WITH_POWER8                     |                       | Build with POWER8 optimisations                                     | ON                     |
+| WITH_ALTIVEC                    | --without-altivec     | Build with AltiVec (VMX) intrinsics                                 | ON                     |
+| WITH_POWER8                     | --without-power8      | Build with POWER8 optimisations                                     | ON                     |
 | WITH_CRC32_VX                   | --without-crc32-vx    | Build with vectorized CRC32 on IBM Z                                | ON                     |
 | WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | Build with DFLTCC intrinsics for compression on IBM Z               | OFF                    |
 | WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | Build with DFLTCC intrinsics for decompression on IBM Z             | OFF                    |
