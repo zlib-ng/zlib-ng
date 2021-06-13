@@ -92,6 +92,7 @@ build32=0
 build64=0
 buildacle=1
 buildaltivec=1
+buildpower8=1
 buildneon=1
 builddfltccdeflate=0
 builddfltccinflate=0
@@ -158,6 +159,7 @@ case "$1" in
       echo '    [--without-acle]            Compiles without ARM C Language Extensions' | tee -a configure.log
       echo '    [--without-neon]            Compiles without ARM Neon SIMD instruction set' | tee -a configure.log
       echo '    [--without-altivec]         Compiles without PPC AltiVec support' | tee -a configure.log
+      echo '    [--without-power8]          Compiles without Power8 instruction set' | tee -a configure.log
       echo '    [--with-dfltcc-deflate]     Use DEFLATE CONVERSION CALL instruction for compression on IBM Z' | tee -a configure.log
       echo '    [--with-dfltcc-inflate]     Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z' | tee -a configure.log
       echo '    [--without-crc32-vx]        Build without vectorized CRC32 on IBM Z' | tee -a configure.log
@@ -187,6 +189,7 @@ case "$1" in
     --without-acle) buildacle=0; shift ;;
     --without-neon) buildneon=0; shift ;;
     --without-altivec) buildaltivec=0 ; shift ;;
+    --without-power8) buildpower8=0 ; shift ;;
     --with-dfltcc-deflate) builddfltccdeflate=1; shift ;;
     --with-dfltcc-inflate) builddfltccinflate=1; shift ;;
     --without-crc32-vx) buildcrc32vx=0; shift ;;
@@ -1108,7 +1111,7 @@ check_power8_intrinsics() {
 #include <sys/auxv.h>
 int main() { return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07); }
 EOF
-    if try $CC -c $CFLAGS -mcpu=power8 $test.c; then
+    if test $buildpower8 -eq 1 && try $CC -c $CFLAGS -mcpu=power8 $test.c; then
         HAVE_POWER8_INTRIN=1
         echo "Check whether POWER8 instructions are available ... Yes." | tee -a configure.log
     else

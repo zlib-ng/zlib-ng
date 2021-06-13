@@ -120,6 +120,14 @@ jobs:
             cflags: -static
             ldflags: -static
 
+          - name: Ubuntu GCC PPC No Power8
+            os: ubuntu-latest
+            compiler: powerpc-linux-gnu-gcc
+            configure-args: --warn --without-power8
+            chost: powerpc-linux-gnu
+            packages: qemu qemu-user gcc-powerpc-linux-gnu libc-dev-powerpc-cross
+            qemu-run: qemu-ppc
+
           - name: Ubuntu GCC PPC64
             os: ubuntu-latest
             compiler: powerpc64-linux-gnu-gcc
