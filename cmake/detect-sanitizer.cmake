@@ -69,6 +69,16 @@ macro(add_memory_sanitizer)
     endif()
 endmacro()
 
+macro(add_thread_sanitizer)
+    check_sanitizer_support("thread" supported_checks)
+    if(NOT ${supported_checks} STREQUAL "")
+        message(STATUS "Thread sanitizer is enabled: ${supported_checks}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=${supported_checks}")
+    else()
+        message(STATUS "Thread sanitizer is not supported")
+    endif()
+endmacro()
+
 macro(add_undefined_sanitizer)
     set(known_checks
         array-bounds
