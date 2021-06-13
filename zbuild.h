@@ -1,6 +1,20 @@
 #ifndef _ZBUILD_H
 #define _ZBUILD_H
 
+/* Determine compiler version of C Standard */
+#ifdef __STDC_VERSION__
+#  if __STDC_VERSION__ >= 199901L
+#    ifndef STDC99
+#      define STDC99
+#    endif
+#  endif
+#  if __STDC_VERSION__ >= 201112L
+#    ifndef STDC11
+#      define STDC11
+#    endif
+#  endif
+#endif
+
 /* This has to be first include that defines any types */
 #if defined(_MSC_VER)
 #  if defined(_WIN64)

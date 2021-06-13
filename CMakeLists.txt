@@ -8,11 +8,11 @@ message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
 set(CMAKE_MACOSX_RPATH 1)
 
-# If not specified on the command line, enable C99 as the default
+# If not specified on the command line, enable C11 as the default
 # Configuration items that affect the global compiler environment standards
 # should be issued before the "project" command.
 if(NOT CMAKE_C_STANDARD)
-    set(CMAKE_C_STANDARD 99)          # The C standard whose features are requested to build this target
+    set(CMAKE_C_STANDARD 11)          # The C standard whose features are requested to build this target
 endif()
 if(NOT CMAKE_C_STANDARD_REQUIRED)
     set(CMAKE_C_STANDARD_REQUIRED ON) # Boolean describing whether the value of C_STANDARD is a requirement
@@ -22,7 +22,7 @@ if(NOT CMAKE_C_EXTENSIONS)
 endif()
 set(VALID_C_STANDARDS "99" "11")
 if(NOT CMAKE_C_STANDARD IN_LIST VALID_C_STANDARDS)
-    MESSAGE(FATAL_ERROR "CMAKE_C_STANDARD:STRING=${CMAKE_C_STANDARD} not in know standards list\n ${VALID_C_STANDARDS}")
+    MESSAGE(FATAL_ERROR "CMAKE_C_STANDARD:STRING=${CMAKE_C_STANDARD} not in known standards list\n ${VALID_C_STANDARDS}")
 endif()
 
 # Parse the full version number from zlib.h and include in ZLIB_FULL_VERSION

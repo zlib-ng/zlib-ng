@@ -18,7 +18,7 @@ Features
 
 * Zlib compatible API with support for dual-linking
 * Modernized native API based on zlib API for ease of porting
-* Modern C99 syntax and a clean code layout
+* Modern C11 syntax and a clean code layout
 * Deflate medium and quick algorithms based on Intels zlib fork
 * Support for CPU intrinsics when available
   * Adler32 implementation using SSSE3, AVX2, Neon & VSX
