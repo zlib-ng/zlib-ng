@@ -24,10 +24,6 @@
 #  define Z_REGISTER
 #endif
 
-#ifndef Z_TLS
-#  define Z_TLS
-#endif
-
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
