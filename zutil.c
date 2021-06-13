@@ -101,11 +101,11 @@ const char * Z_EXPORT PREFIX(zError)(int err) {
 }
 
 void Z_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size) {
-    (void)opaque;
+    Z_UNUSED(opaque);
     return zng_alloc((size_t)items * (size_t)size);
 }
 
 void Z_INTERNAL zng_cfree(void *opaque, void *ptr) {
-    (void)opaque;
+    Z_UNUSED(opaque);
     zng_free(ptr);
 }

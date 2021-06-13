@@ -30,5 +30,7 @@
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 /* Maximum of a and b. */
 #define MAX(a, b) ((a) < (b) ? (b) : (a))
+/* Ignore unused variable warning */
+#define Z_UNUSED(var) (void)(var)
 
 #endif
