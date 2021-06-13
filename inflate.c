@@ -1289,7 +1289,7 @@ int32_t Z_EXPORT PREFIX(inflateUndermine)(PREFIX3(stream) *strm, int32_t subvert
     state->sane = !subvert;
     return Z_OK;
 #else
-    (void)subvert;
+    Z_UNUSED(subvert);
     state->sane = 1;
     return Z_DATA_ERROR;
 #endif
