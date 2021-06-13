@@ -175,7 +175,7 @@ static inline void zng_emit_end_block(deflate_state *s, const ct_data *ltree, co
     s->bi_buf = bi_buf;
     Tracev((stderr, "\n+++ Emit End Block: Last: %u Pending: %u Total Out: %" PRIu64 "\n",
         last, s->pending, (uint64_t)s->strm->total_out));
-    (void)last;
+    Z_UNUSED(last);
 }
 
 /* ===========================================================================
