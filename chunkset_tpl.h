@@ -40,17 +40,20 @@ Z_INTERNAL uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
 Z_INTERNAL uint8_t* CHUNKCOPY_SAFE(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
     len = MIN(len, safe - out + 1);
     if (len < sizeof(chunk_t)) {
-        int32_t use_chunk16 = sizeof(chunk_t) > 16 && (len & 16);
-        if (use_chunk16) {
+#if CHUNK_SIZE > 16
+        if (len & 16) {
             memcpy(out, from, 16);
             out += 16;
             from += 16;
         }
+#endif
+#if CHUNK_SIZE > 8
         if (len & 8) {
             memcpy(out, from, 8);
             out += 8;
             from += 8;
         }
+#endif
         if (len & 4) {
             memcpy(out, from, 4);
             out += 4;
