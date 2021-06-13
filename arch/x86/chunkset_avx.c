@@ -9,6 +9,8 @@
 
 typedef __m256i chunk_t;
 
+#define CHUNK_SIZE 32
+
 #define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4

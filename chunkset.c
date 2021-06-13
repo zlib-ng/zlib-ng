@@ -14,6 +14,8 @@ typedef struct chunk_t { uint32_t u32[2]; } chunk_t;
 typedef struct chunk_t { uint8_t u8[8]; } chunk_t;
 #endif
 
+#define CHUNK_SIZE 8
+
 #define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
