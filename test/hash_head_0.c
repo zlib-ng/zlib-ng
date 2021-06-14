@@ -63,14 +63,14 @@ int main() {
         return EXIT_FAILURE;
     }
 
-    strm.avail_in = next_in + sizeof(next_in) - strm.next_in;
-    strm.avail_out = next_out + sizeof(next_out) - strm.next_out;
+    strm.avail_in = (uint32_t)(next_in + sizeof(next_in) - strm.next_in);
+    strm.avail_out = (uint32_t)(next_out + sizeof(next_out) - strm.next_out);
     ret = PREFIX(deflate)(&strm, Z_FINISH);
     if (ret != Z_STREAM_END) {
         fprintf(stderr, "deflate() failed with code %d\n", ret);
         return EXIT_FAILURE;
     }
-    uint32_t compressed_size = strm.next_out - next_out;
+    uint32_t compressed_size = (uint32_t)(strm.next_out - next_out);
 
     ret = PREFIX(deflateEnd)(&strm);
     if (ret != Z_OK) {
