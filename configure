@@ -285,6 +285,16 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   CC="$cc"
   CFLAGS="${CFLAGS} -std=c99"
 
+  # Detect compiler version
+  CCVER=$($CC --version)
+  if [ $? -eq 0 ]; then
+    IFS= read -r -a verarr <<< $CCVER
+    unset IFS
+    echo "Detected compiler version: ${verarr[0]}"
+  else
+    echo "Failed to detect compiler version."
+  fi
+
   # Re-check ARCH if the compiler is a cross-compiler.
   if $CC -print-multiarch 1> /dev/null 2>&1 && test -n "$($CC -print-multiarch)" 1> /dev/null 2>&1; then
       CC_ARCH=$($CC $CFLAGS -print-multiarch | sed 's/-.*//g')
