@@ -14,6 +14,14 @@
 #  include "fallback_builtins.h"
 #endif
 
+/* update_hash */
+extern uint32_t update_hash_c(deflate_state *const s, uint32_t h, uint32_t val);
+#ifdef X86_SSE42_CRC_HASH
+extern uint32_t update_hash_sse4(deflate_state *const s, uint32_t h, uint32_t val);
+#elif defined(ARM_ACLE_CRC_HASH)
+extern uint32_t update_hash_acle(deflate_state *const s, uint32_t h, uint32_t val);
+#endif
+
 /* insert_string */
 extern void insert_string_c(deflate_state *const s, const uint32_t str, uint32_t count);
 #ifdef X86_SSE42_CRC_HASH
@@ -152,7 +160,24 @@ Z_INTERNAL void cpu_check_features(void)
 }
 
 /* stub functions */
-Z_INTERNAL void insert_string_stub(deflate_state *const s, const uint32_t str, uint32_t count) {
+Z_INTERNAL uint32_t update_hash_stub(deflate_state *const s, uint32_t h, uint32_t val) {
+    // Initialize default
+
+    functable.update_hash = &update_hash_c;
+    cpu_check_features();
+
+#ifdef X86_SSE42_CRC_HASH
+    if (x86_cpu_has_sse42)
+        functable.update_hash = &update_hash_sse4;
+#elif defined(ARM_ACLE_CRC_HASH)
+    if (arm_cpu_has_crc32)
+        functable.update_hash = &update_hash_acle;
+#endif
+
+    return functable.update_hash(s, h, val);
+}
+
+Z_INTERNAL void insert_string_stub(deflate_state *const s, uint32_t str, uint32_t count) {
     // Initialize default
 
     functable.insert_string = &insert_string_c;
@@ -451,6 +476,7 @@ Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
 
 /* functable init */
 Z_INTERNAL Z_TLS struct functable_s functable = {
+    update_hash_stub,
     insert_string_stub,
     quick_insert_string_stub,
     adler32_stub,
