@@ -93,6 +93,7 @@ OBJZ = \
 	inftrees.o \
 	insert_string.o \
 	insert_string_roll.o \
+	slide_hash.o \
 	trees.o \
 	uncompr.o \
 	zutil.o \
@@ -127,6 +128,7 @@ PIC_OBJZ = \
 	inftrees.lo \
 	insert_string.lo \
 	insert_string_roll.lo \
+	slide_hash.lo \
 	trees.lo \
 	uncompr.lo \
 	zutil.lo \
