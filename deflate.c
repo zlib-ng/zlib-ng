@@ -123,6 +123,10 @@ extern void crc_finalize(deflate_state *const s);
 #endif
 extern void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size);
 
+extern uint32_t update_hash_roll        (deflate_state *const s, uint32_t h, uint32_t val);
+extern void     insert_string_roll      (deflate_state *const s, uint32_t str, uint32_t count);
+extern Pos      quick_insert_string_roll(deflate_state *const s, uint32_t str);
+
 /* ===========================================================================
  * Local data
  */
@@ -1147,9 +1151,18 @@ static void lm_set_level(deflate_state *s, int level) {
     s->nice_match       = configuration_table[level].nice_length;
     s->max_chain_length = configuration_table[level].max_chain;
 
-    s->update_hash = functable.update_hash;
-    s->insert_string = functable.insert_string;
-    s->quick_insert_string = functable.quick_insert_string;
+    /* Use rolling hash for deflate_slow algorithm with level 9. It allows us to
+     * properly lookup different hash chains to speed up longest_match search. Since hashing
+     * method changes depending on the level we cannot put this into functable. */
+    if (s->max_chain_length > 1024) {
+        s->update_hash = &update_hash_roll;
+        s->insert_string = &insert_string_roll;
+        s->quick_insert_string = &quick_insert_string_roll;
+    } else {
+        s->update_hash = functable.update_hash;
+        s->insert_string = functable.insert_string;
+        s->quick_insert_string = functable.quick_insert_string;
+    }
 
     s->level = level;
 }
@@ -1237,8 +1250,11 @@ void Z_INTERNAL fill_window(deflate_state *s) {
         /* Initialize the hash value now that we have some input: */
         if (s->lookahead + s->insert >= STD_MIN_MATCH) {
             unsigned int str = s->strstart - s->insert;
-            if (str >= 1)
+            if (s->max_chain_length > 1024) {
+                s->ins_h = s->update_hash(s, s->window[str], s->window[str+1]);
+            } else if (str >= 1) {
                 s->quick_insert_string(s, str + 2 - STD_MIN_MATCH);
+            }
             unsigned int count;
             if (UNLIKELY(s->lookahead == 1)) {
                 count = s->insert - 1;
