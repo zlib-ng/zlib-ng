@@ -96,7 +96,7 @@ WFLAGS = $(WFLAGS) \
 	-DARM_NEON_SLIDEHASH \
 	-DARM_NOCHECK_NEON \
 	#
-OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj adler32_neon.obj chunkset_neon.obj slide_neon.obj
+OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj adler32_neon.obj chunkset_neon.obj slide_hash_neon.obj
 
 # targets
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) \
@@ -181,6 +181,7 @@ inffast.obj: $(SRCDIR)/inffast.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/
 inflate.obj: $(SRCDIR)/inflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h $(SRCDIR)/functable.h
 inftrees.obj: $(SRCDIR)/inftrees.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h
 slide_hash.obj: $(SRCDIR)/slide_hash.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h
+slide_hash_neon.obj: $(SRCDIR)/arch/arm/slide_hash_neon.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h
 trees.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/trees_tbl.h
 zutil.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/zutil_p.h
 
