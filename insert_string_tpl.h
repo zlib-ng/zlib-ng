@@ -42,6 +42,18 @@
 #endif
 
 /* ===========================================================================
+ * Update a hash value with the given input byte
+ * IN  assertion: all calls to to UPDATE_HASH are made with consecutive
+ *    input characters, so that a running hash key can be computed from the
+ *    previous key instead of complete recalculation each time.
+ */
+Z_INTERNAL uint32_t UPDATE_HASH(deflate_state *const s, uint32_t h, uint32_t val) {
+    (void)s;
+    HASH_CALC(s, h, val);
+    return h & HASH_CALC_MASK;
+}
+
+/* ===========================================================================
  * Quick insert string str in the dictionary and set match_head to the previous head
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
