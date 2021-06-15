@@ -75,6 +75,7 @@ OBJS = \
 	insert_string.obj \
 	insert_string_roll.obj \
 	insert_string_sse.obj \
+	slide_hash.obj \
 	slide_avx.obj \
 	slide_sse.obj \
 	trees.obj \
@@ -185,6 +186,7 @@ infback.obj: $(SRCDIR)/infback.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/
 inffast.obj: $(SRCDIR)/inffast.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h
 inflate.obj: $(SRCDIR)/inflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h $(SRCDIR)/functable.h
 inftrees.obj: $(SRCDIR)/inftrees.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h
+slide_hash.obj: $(SRCDIR)/slide_hash.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h
 slide_sse.obj: $(SRCDIR)/arch/x86/slide_sse.c $(SRCDIR)/deflate.h
 trees.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/trees_tbl.h
 zutil.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/zutil_p.h
