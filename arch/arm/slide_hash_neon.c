@@ -1,4 +1,4 @@
-/* slide_neon.c -- Optimized hash table shifting for ARM with support for NEON instructions
+/* slide_hash_neon.c -- Optimized hash table shifting for ARM with support for NEON instructions
  * Copyright (C) 2017-2020 Mika T. Lindqvist
  *
  * Authors:

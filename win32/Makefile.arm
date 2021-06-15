@@ -107,7 +107,7 @@ WFLAGS = $(WFLAGS) \
 	-DARM_NEON_SLIDEHASH \
 	-DARM_NOCHECK_NEON \
 	#
-OBJS = $(OBJS) adler32_neon.obj chunkset_neon.obj slide_neon.obj
+OBJS = $(OBJS) adler32_neon.obj chunkset_neon.obj slide_hash_neon.obj
 !endif
 
 # targets
