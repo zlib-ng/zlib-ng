@@ -41,7 +41,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
          */
         hash_head = 0;
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
-            hash_head = functable.quick_insert_string(s, s->strstart);
+            hash_head = s->quick_insert_string(s, s->strstart);
         }
 
         /* Find the longest match, discarding those <= prev_length.
@@ -88,8 +88,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
                 unsigned int insert_cnt = mov_fwd;
                 if (UNLIKELY(insert_cnt > max_insert - s->strstart))
                     insert_cnt = max_insert - s->strstart;
-
-                functable.insert_string(s, s->strstart + 1, insert_cnt);
+                s->insert_string(s, s->strstart + 1, insert_cnt);
             }
             s->prev_length = 0;
             s->match_available = 0;

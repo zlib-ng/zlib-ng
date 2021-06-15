@@ -113,6 +113,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_slow  (deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_rle   (deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_huff  (deflate_state *s, int flush);
+static void lm_set_level         (deflate_state *s, int level);
 static void lm_init              (deflate_state *s);
 Z_INTERNAL unsigned read_buf  (PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
@@ -602,11 +603,8 @@ int32_t Z_EXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int
             }
             s->matches = 0;
         }
-        s->level = level;
-        s->max_lazy_match   = configuration_table[level].max_lazy;
-        s->good_match       = configuration_table[level].good_length;
-        s->nice_match       = configuration_table[level].nice_length;
-        s->max_chain_length = configuration_table[level].max_chain;
+
+        lm_set_level(s, level);
     }
     s->strategy = strategy;
     return Z_OK;
@@ -1141,6 +1139,22 @@ Z_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned
 }
 
 /* ===========================================================================
+ * Set longest match variables based on level configuration
+ */
+static void lm_set_level(deflate_state *s, int level) {
+    s->max_lazy_match   = configuration_table[level].max_lazy;
+    s->good_match       = configuration_table[level].good_length;
+    s->nice_match       = configuration_table[level].nice_length;
+    s->max_chain_length = configuration_table[level].max_chain;
+
+    s->update_hash = functable.update_hash;
+    s->insert_string = functable.insert_string;
+    s->quick_insert_string = functable.quick_insert_string;
+
+    s->level = level;
+}
+
+/* ===========================================================================
  * Initialize the "longest match" routines for a new zlib stream
  */
 static void lm_init(deflate_state *s) {
@@ -1150,10 +1164,7 @@ static void lm_init(deflate_state *s) {
 
     /* Set the default configuration parameters:
      */
-    s->max_lazy_match   = configuration_table[s->level].max_lazy;
-    s->good_match       = configuration_table[s->level].good_length;
-    s->nice_match       = configuration_table[s->level].nice_length;
-    s->max_chain_length = configuration_table[s->level].max_chain;
+    lm_set_level(s, s->level);
 
     s->strstart = 0;
     s->block_start = 0;
@@ -1227,7 +1238,7 @@ void Z_INTERNAL fill_window(deflate_state *s) {
         if (s->lookahead + s->insert >= STD_MIN_MATCH) {
             unsigned int str = s->strstart - s->insert;
             if (str >= 1)
-                functable.quick_insert_string(s, str + 2 - STD_MIN_MATCH);
+                s->quick_insert_string(s, str + 2 - STD_MIN_MATCH);
             unsigned int count;
             if (UNLIKELY(s->lookahead == 1)) {
                 count = s->insert - 1;
@@ -1235,7 +1246,7 @@ void Z_INTERNAL fill_window(deflate_state *s) {
                 count = s->insert;
             }
             if (count > 0) {
-                functable.insert_string(s, str, count);
+                s->insert_string(s, str, count);
                 s->insert -= count;
             }
         }
