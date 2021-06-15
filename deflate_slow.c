@@ -81,9 +81,10 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
              * enough lookahead, the last two strings are not inserted in
              * the hash table.
              */
-            s->lookahead -= s->prev_length-1;
+            s->prev_length -= 1;
+            s->lookahead -= s->prev_length;
 
-            unsigned int mov_fwd = s->prev_length - 2;
+            unsigned int mov_fwd = s->prev_length - 1;
             if (max_insert > s->strstart) {
                 unsigned int insert_cnt = mov_fwd;
                 if (UNLIKELY(insert_cnt > max_insert - s->strstart))
