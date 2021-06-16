@@ -36,6 +36,14 @@ jobs:
             codecov: ubuntu_clang_pigz_no_threads
             cmake-args: -DWITH_THREADS=OFF
 
+          - name: Ubuntu GCC AARCH64
+            os: ubuntu-latest
+            compiler: aarch64-linux-gnu-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=../../cmake/toolchain-aarch64.cmake
+            packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
+            qemu-run: qemu-aarch64
+            codecov: ubuntu_gcc_pigz_aarch64
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
