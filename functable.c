@@ -467,6 +467,7 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
            "crc32_z takes size_t but internally we have a uint64_t len");
     /* return a function pointer for optimized arches here after a capability test */
 
+    functable.crc32 = &crc32_generic;
     cpu_check_features();
 
     if (use_byfour) {
@@ -485,8 +486,6 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
 #else
 #  error No endian defined
 #endif
-    } else {
-        functable.crc32 = crc32_generic;
     }
 
     return functable.crc32(crc, buf, len);
