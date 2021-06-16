@@ -48,7 +48,7 @@ endif
 teststatic: check_cross_dep
 	@TMPST=tmpst_$$$$; \
 	HELLOST=tmphellost_$$$$; \
-	if echo hello world | ${QEMU_RUN} ../minigzip$(EXE) > $$HELLOST && ${QEMU_RUN} ../minigzip$(EXE) -d < $$HELLOST && ${QEMU_RUN} ../example$(EXE) $$TMPST && ${QEMU_RUN} ../adler32_test$(EXE); then \
+	if echo hello world | ${QEMU_RUN} ../minigzip$(EXE) > $$HELLOST && ${QEMU_RUN} ../minigzip$(EXE) -d < $$HELLOST && ${QEMU_RUN} ../example$(EXE) $$TMPST && ${QEMU_RUN} ../adler32_test$(EXE) && ${QEMU_RUN} ../crc32_test$(EXE); then \
 	  echo '		*** zlib test OK ***'; \
 	else \
 	  echo '		*** zlib test FAILED ***'; exit 1; \
@@ -62,7 +62,7 @@ testshared: check_cross_dep
 	SHLIB_PATH=`pwd`/..:$(SHLIB_PATH) ; export SHLIB_PATH; \
 	TMPSH=tmpsh_$$$$; \
 	HELLOSH=tmphellosh_$$$$; \
-	if echo hello world | ${QEMU_RUN} ../minigzipsh$(EXE) > $$HELLOSH && ${QEMU_RUN} ../minigzipsh$(EXE) -d < $$HELLOSH && ${QEMU_RUN} ../examplesh$(EXE) $$TMPSH && ${QEMU_RUN} ../adler32_testsh$(EXE); then \
+	if echo hello world | ${QEMU_RUN} ../minigzipsh$(EXE) > $$HELLOSH && ${QEMU_RUN} ../minigzipsh$(EXE) -d < $$HELLOSH && ${QEMU_RUN} ../examplesh$(EXE) $$TMPSH && ${QEMU_RUN} ../adler32_testsh$(EXE) && ${QEMU_RUN} ../crc32_testsh$(EXE); then \
 	  echo '		*** zlib shared test OK ***'; \
 	else \
 	  echo '		*** zlib shared test FAILED ***'; exit 1; \
