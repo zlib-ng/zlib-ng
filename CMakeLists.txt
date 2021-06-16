@@ -1084,6 +1084,7 @@ if(ZLIB_ENABLE_TESTS)
     endmacro()
 
     add_simple_test_executable(adler32_test)
+    add_simple_test_executable(crc32_test)
     add_simple_test_executable(example)
 
     set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip>)
