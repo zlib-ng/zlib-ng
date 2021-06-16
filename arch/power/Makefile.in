@@ -25,6 +25,8 @@ all: power.o \
      adler32_vmx.lo \
      chunkset_power8.o \
      chunkset_power8.lo \
+     crc32_power8.o \
+     crc32_power8.lo \
      slide_hash_power8.o \
      slide_hash_power8.lo \
      slide_hash_vmx.o \
@@ -53,6 +55,12 @@ chunkset_power8.o:
 
 chunkset_power8.lo:
 	$(CC) $(SFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_power8.c
+
+crc32_power8.o:
+	$(CC) $(CFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_power8.c
+
+crc32_power8.lo:
+	$(CC) $(SFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_power8.c
 
 slide_hash_power8.o:
 	$(CC) $(CFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_power8.c
