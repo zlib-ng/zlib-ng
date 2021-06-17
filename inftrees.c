@@ -108,7 +108,7 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     for (max = MAXBITS; max >= 1; max--)
         if (count[max] != 0) break;
     root = MIN(root, max);
-    if (max == 0) {                     /* no symbols to code at all */
+    if (UNLIKELY(max == 0)) {           /* no symbols to code at all */
         here.op = (unsigned char)64;    /* invalid code marker */
         here.bits = (unsigned char)1;
         here.val = (uint16_t)0;
@@ -208,12 +208,12 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     for (;;) {
         /* create table entry */
         here.bits = (unsigned char)(len - drop);
-        if (work[sym] + 1U < match) {
-            here.op = (unsigned char)0;
-            here.val = work[sym];
-        } else if (work[sym] >= match) {
+        if (LIKELY(work[sym] >= match)) {
             here.op = (unsigned char)(extra[work[sym] - match]);
             here.val = base[work[sym] - match];
+        } else if (work[sym] + 1U < match) {
+            here.op = (unsigned char)0;
+            here.val = work[sym];
         } else {
             here.op = (unsigned char)(32 + 64);         /* end of block */
             here.val = 0;
@@ -283,7 +283,7 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     /* fill in remaining table entry if code is incomplete (guaranteed to have
        at most one remaining entry, since if the code is incomplete, the
        maximum code length that was allowed to get this far is one bit) */
-    if (huff != 0) {
+    if (UNLIKELY(huff != 0)) {
         here.op = (unsigned char)64;            /* invalid code marker */
         here.bits = (unsigned char)(len - drop);
         here.val = (uint16_t)0;
