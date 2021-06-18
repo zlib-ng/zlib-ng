@@ -37,7 +37,9 @@ static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
 }
 
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
-    *chunk = vcombine_u8(vld1_u8(from), vld1_u8(from));
+    uint64_t tmp;
+    memcpy(&tmp, from, 8);
+    *chunk = vreinterpretq_u8_u64(vdupq_n_u64(tmp));
 }
 
 #define CHUNKSIZE        chunksize_neon
