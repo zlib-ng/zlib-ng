@@ -1525,11 +1525,11 @@ EOF
             check_power8_intrinsics
 
             if test $HAVE_POWER8_INTRIN -eq 1; then
-                CFLAGS="${CFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_SLIDEHASH"
-                SFLAGS="${SFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_SLIDEHASH"
+                CFLAGS="${CFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_CHUNKSET -DPOWER8_VSX_SLIDEHASH"
+                SFLAGS="${SFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_CHUNKSET -DPOWER8_VSX_SLIDEHASH"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power.o adler32_power8.o slide_power8.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power.lo adler32_power8.lo slide_power8.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power.o adler32_power8.o chunkset_power8.o slide_power8.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power.lo adler32_power8.lo chunkset_power8.lo slide_power8.lo"
             fi
         fi
     ;;

@@ -26,7 +26,7 @@ Features
   * Hash table implementation using CRC32-C intrinsics on x86 and ARM
   * Slide hash implementations using SSE2, AVX2, Neon & VSX
   * Compare256/258 implementations using SSE4.2 & AVX2
-  * Inflate chunk copying using SSE2, AVX2 & Neon
+  * Inflate chunk copying using SSE2, AVX2, Neon & VSX
   * Support for hardware-accelerated deflate using IBM Z DFLTCC
 * Unaligned memory read/writes and large bit buffer improvements
 * Includes improvements from Cloudflare and Intel forks
