@@ -19,6 +19,8 @@ all: power.o \
      power.lo \
      adler32_power8.o \
      adler32_power8.lo \
+     chunkset_power8.o \
+     chunkset_power8.lo \
      slide_power8.o \
      slide_power8.lo
 
@@ -33,6 +35,12 @@ adler32_power8.o:
 
 adler32_power8.lo:
 	$(CC) $(SFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_power8.c
+
+chunkset_power8.o:
+	$(CC) $(CFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_power8.c
+
+chunkset_power8.lo:
+	$(CC) $(SFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_power8.c
 
 slide_power8.o:
 	$(CC) $(CFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_power8.c

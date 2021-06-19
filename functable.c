@@ -88,6 +88,14 @@ extern uint8_t* chunkunroll_neon(uint8_t *out, unsigned *dist, unsigned *len);
 extern uint8_t* chunkmemset_neon(uint8_t *out, unsigned dist, unsigned len);
 extern uint8_t* chunkmemset_safe_neon(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 #endif
+#ifdef POWER8_VSX_CHUNKSET
+extern uint32_t chunksize_power8(void);
+extern uint8_t* chunkcopy_power8(uint8_t *out, uint8_t const *from, unsigned len);
+extern uint8_t* chunkcopy_safe_power8(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe);
+extern uint8_t* chunkunroll_power8(uint8_t *out, unsigned *dist, unsigned *len);
+extern uint8_t* chunkmemset_power8(uint8_t *out, unsigned dist, unsigned len);
+extern uint8_t* chunkmemset_safe_power8(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+#endif
 
 /* CRC32 */
 Z_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
@@ -257,6 +265,10 @@ Z_INTERNAL uint32_t chunksize_stub(void) {
     if (arm_cpu_has_neon)
         functable.chunksize = &chunksize_neon;
 #endif
+#ifdef POWER8_VSX_CHUNKSET
+    if (power_cpu_has_arch_2_07)
+        functable.chunksize = &chunksize_power8;
+#endif
 
     return functable.chunksize();
 }
@@ -278,6 +290,10 @@ Z_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned l
 #ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
         functable.chunkcopy = &chunkcopy_neon;
+#endif
+#ifdef POWER8_VSX_CHUNKSET
+    if (power_cpu_has_arch_2_07)
+        functable.chunkcopy = &chunkcopy_power8;
 #endif
 
     return functable.chunkcopy(out, from, len);
@@ -301,6 +317,10 @@ Z_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsig
     if (arm_cpu_has_neon)
         functable.chunkcopy_safe = &chunkcopy_safe_neon;
 #endif
+#ifdef POWER8_VSX_CHUNKSET
+    if (power_cpu_has_arch_2_07)
+        functable.chunkcopy_safe = &chunkcopy_safe_power8;
+#endif
 
     return functable.chunkcopy_safe(out, from, len, safe);
 }
@@ -322,6 +342,10 @@ Z_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len
 #ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
         functable.chunkunroll = &chunkunroll_neon;
+#endif
+#ifdef POWER8_VSX_CHUNKSET
+    if (power_cpu_has_arch_2_07)
+        functable.chunkunroll = &chunkunroll_power8;
 #endif
 
     return functable.chunkunroll(out, dist, len);
@@ -345,6 +369,11 @@ Z_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len) 
     if (arm_cpu_has_neon)
         functable.chunkmemset = &chunkmemset_neon;
 #endif
+#ifdef POWER8_VSX_CHUNKSET
+    if (power_cpu_has_arch_2_07)
+        functable.chunkmemset = &chunkmemset_power8;
+#endif
+
 
     return functable.chunkmemset(out, dist, len);
 }
@@ -366,6 +395,10 @@ Z_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned 
 #ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
         functable.chunkmemset_safe = &chunkmemset_safe_neon;
+#endif
+#ifdef POWER8_VSX_CHUNKSET
+    if (power_cpu_has_arch_2_07)
+        functable.chunkmemset_safe = &chunkmemset_safe_power8;
 #endif
 
     return functable.chunkmemset_safe(out, dist, len, left);
