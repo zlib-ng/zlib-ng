@@ -111,7 +111,7 @@ $(IMPLIB): $(SHAREDLIB)
 
 $(SHAREDLIB): zconf $(TOP)/win32/$(DEFFILE) $(OBJS) $(RESFILE)
 	$(LD) $(LDFLAGS) -def:$(TOP)/win32/$(DEFFILE) -dll -implib:$(IMPLIB) \
-	  -out:$@ -base:0x5A4C0000 $(OBJS) $(RESFILE)
+	  -out:$@ $(OBJS) $(RESFILE)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;2
 
