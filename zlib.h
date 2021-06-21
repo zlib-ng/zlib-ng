@@ -46,11 +46,11 @@
 extern "C" {
 #endif
 
-#define ZLIBNG_VERSION "2.0.4"
-#define ZLIBNG_VERNUM 0x2040
+#define ZLIBNG_VERSION "2.0.5"
+#define ZLIBNG_VERNUM 0x2050
 #define ZLIBNG_VER_MAJOR 2
 #define ZLIBNG_VER_MINOR 0
-#define ZLIBNG_VER_REVISION 4
+#define ZLIBNG_VER_REVISION 5
 #define ZLIBNG_VER_SUBREVISION 0
 
 #define ZLIB_VERSION "1.2.11.zlib-ng"
