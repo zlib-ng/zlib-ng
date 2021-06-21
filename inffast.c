@@ -270,7 +270,7 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
                     if (dist >= len || dist >= state->chunksize)
                         out = functable.chunkcopy_safe(out, out - dist, len, safe);
                     else
-                        out = functable.chunkmemset_safe(out, dist, len, safe - out + 1);
+                        out = functable.chunkmemset_safe(out, dist, len, (unsigned)((safe - out) + 1));
                 } else {
                     /* Whole reference is in range of current output.  No range checks are
                        necessary because we start with room for at least 258 bytes of output,
