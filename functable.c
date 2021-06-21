@@ -241,6 +241,7 @@ Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_
 Z_INTERNAL uint32_t chunksize_stub(void) {
     // Initialize default
     functable.chunksize = &chunksize_c;
+    cpu_check_features();
 
 #ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
