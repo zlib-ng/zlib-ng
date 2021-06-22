@@ -17,6 +17,7 @@ struct functable_s {
     void     (* slide_hash)         (deflate_state *s);
     uint32_t (* compare258)         (const unsigned char *src0, const unsigned char *src1);
     uint32_t (* longest_match)      (deflate_state *const s, Pos cur_match);
+    uint32_t (* longest_match_slow) (deflate_state *const s, Pos cur_match);
     uint32_t (* chunksize)          (void);
     uint8_t* (* chunkcopy)          (uint8_t *out, uint8_t const *from, unsigned len);
     uint8_t* (* chunkcopy_safe)     (uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe);
