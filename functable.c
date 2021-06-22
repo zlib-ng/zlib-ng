@@ -142,6 +142,22 @@ extern uint32_t longest_match_unaligned_avx2(deflate_state *const s, Pos cur_mat
 #endif
 #endif
 
+/* longest_match_slow */
+extern uint32_t longest_match_slow_c(deflate_state *const s, Pos cur_match);
+#ifdef UNALIGNED_OK
+extern uint32_t longest_match_slow_unaligned_16(deflate_state *const s, Pos cur_match);
+extern uint32_t longest_match_slow_unaligned_32(deflate_state *const s, Pos cur_match);
+#ifdef UNALIGNED64_OK
+extern uint32_t longest_match_slow_unaligned_64(deflate_state *const s, Pos cur_match);
+#endif
+#ifdef X86_SSE42_CMP_STR
+extern uint32_t longest_match_slow_unaligned_sse4(deflate_state *const s, Pos cur_match);
+#endif
+#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+extern uint32_t longest_match_slow_unaligned_avx2(deflate_state *const s, Pos cur_match);
+#endif
+#endif
+
 Z_INTERNAL Z_TLS struct functable_s functable;
 
 Z_INTERNAL void cpu_check_features(void)
@@ -474,6 +490,31 @@ Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
     return functable.longest_match(s, cur_match);
 }
 
+Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_match) {
+
+    functable.longest_match_slow = &longest_match_slow_c;
+
+#ifdef UNALIGNED_OK
+#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
+    functable.longest_match_slow = &longest_match_slow_unaligned_64;
+#  elif defined(HAVE_BUILTIN_CTZ)
+    functable.longest_match_slow = &longest_match_slow_unaligned_32;
+#  else
+    functable.longest_match_slow = &longest_match_slow_unaligned_16;
+#  endif
+#  ifdef X86_SSE42_CMP_STR
+    if (x86_cpu_has_sse42)
+        functable.longest_match_slow = &longest_match_slow_unaligned_sse4;
+#  endif
+#  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_avx2)
+        functable.longest_match_slow = &longest_match_slow_unaligned_avx2;
+#  endif
+#endif
+
+    return functable.longest_match_slow(s, cur_match);
+}
+
 /* functable init */
 Z_INTERNAL Z_TLS struct functable_s functable = {
     update_hash_stub,
@@ -484,6 +525,7 @@ Z_INTERNAL Z_TLS struct functable_s functable = {
     slide_hash_stub,
     compare258_stub,
     longest_match_stub,
+    longest_match_slow_stub,
     chunksize_stub,
     chunkcopy_stub,
     chunkcopy_safe_stub,
