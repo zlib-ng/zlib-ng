@@ -217,7 +217,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #endif
 #ifdef LONGEST_MATCH_SLOW
             /* Look for a better string offset */
-            if (len > STD_MIN_MATCH && match_start + len < strstart && rolling_hash) {
+            if (UNLIKELY(len > STD_MIN_MATCH && match_start + len < strstart && rolling_hash)) {
                 Pos pos, next_pos;
                 uint32_t i, hash;
                 unsigned char *scan_endstr;

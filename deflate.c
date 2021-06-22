@@ -1250,7 +1250,7 @@ void Z_INTERNAL fill_window(deflate_state *s) {
         /* Initialize the hash value now that we have some input: */
         if (s->lookahead + s->insert >= STD_MIN_MATCH) {
             unsigned int str = s->strstart - s->insert;
-            if (s->max_chain_length > 1024) {
+            if (UNLIKELY(s->max_chain_length > 1024)) {
                 s->ins_h = s->update_hash(s, s->window[str], s->window[str+1]);
             } else if (str >= 1) {
                 s->quick_insert_string(s, str + 2 - STD_MIN_MATCH);
