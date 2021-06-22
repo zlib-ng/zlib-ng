@@ -32,8 +32,8 @@ Z_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, const uint32_t str) {
     uint8_t *strstart = s->window + str;
     uint32_t val, hm, h = 0;
 
-#ifdef UNALIGNED_OK
-    val = *(uint32_t *)(strstart);
+#if BYTE_ORDER == LITTLE_ENDIAN
+    memcpy(&val, strstart, 4);
 #else
     val  = ((uint32_t)(strstart[0]));
     val |= ((uint32_t)(strstart[1]) << 8);
@@ -67,8 +67,8 @@ Z_INTERNAL void INSERT_STRING(deflate_state *const s, const uint32_t str, uint32
     for (Pos idx = (Pos)str; strstart <= strend; idx++, strstart++) {
         uint32_t val, hm, h = 0;
 
-#ifdef UNALIGNED_OK
-        val = *(uint32_t *)(strstart);
+#if BYTE_ORDER == LITTLE_ENDIAN
+        memcpy(&val, strstart, 4);
 #else
         val  = ((uint32_t)(strstart[0]));
         val |= ((uint32_t)(strstart[1]) << 8);

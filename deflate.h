@@ -288,8 +288,8 @@ typedef enum {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_short(deflate_state *s, uint16_t w) {
-#if defined(UNALIGNED_OK)
-    *(uint16_t *)(&s->pending_buf[s->pending]) = w;
+#if BYTE_ORDER == LITTLE_ENDIAN
+    memcpy(&s->pending_buf[s->pending], &w, 2);
     s->pending += 2;
 #else
     put_byte(s, (w & 0xff));
@@ -311,8 +311,8 @@ static inline void put_short_msb(deflate_state *s, uint16_t w) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint32(deflate_state *s, uint32_t dw) {
-#if defined(UNALIGNED_OK)
-    *(uint32_t *)(&s->pending_buf[s->pending]) = dw;
+#if BYTE_ORDER == LITTLE_ENDIAN
+    memcpy(&s->pending_buf[s->pending], &dw, 4);
     s->pending += 4;
 #else
     put_byte(s, (dw & 0xff));
@@ -327,14 +327,15 @@ static inline void put_uint32(deflate_state *s, uint32_t dw) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
-#if defined(UNALIGNED_OK)
-    *(uint32_t *)(&s->pending_buf[s->pending]) = ZSWAP32(dw);
+#if BYTE_ORDER == LITTLE_ENDIAN
+    uint32_t msb = ZSWAP32(dw);
+    memcpy(&s->pending_buf[s->pending], &msb, 4);
+    s->pending += 4;
+#elif BYTE_ORDER == BIG_ENDIAN
+    memcpy(&s->pending_buf[s->pending], &dw, 4);
     s->pending += 4;
 #else
-    put_byte(s, ((dw >> 24) & 0xff));
-    put_byte(s, ((dw >> 16) & 0xff));
-    put_byte(s, ((dw >> 8) & 0xff));
-    put_byte(s, (dw & 0xff));
+#  error No endian defined
 #endif
 }
 
@@ -343,14 +344,9 @@ static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint64(deflate_state *s, uint64_t lld) {
-#if defined(UNALIGNED64_OK)
-    *(uint64_t *)(&s->pending_buf[s->pending]) = lld;
+#if BYTE_ORDER == LITTLE_ENDIAN
+    memcpy(&s->pending_buf[s->pending], &lld, 8);
     s->pending += 8;
-#elif defined(UNALIGNED_OK)
-    *(uint32_t *)(&s->pending_buf[s->pending]) = lld & 0xffffffff;
-    s->pending += 4;
-    *(uint32_t *)(&s->pending_buf[s->pending]) = (lld >> 32) & 0xffffffff;
-    s->pending += 4;
 #else
     put_byte(s, (lld & 0xff));
     put_byte(s, ((lld >> 8) & 0xff));
