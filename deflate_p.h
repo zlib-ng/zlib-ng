@@ -108,4 +108,9 @@ static inline int zng_tr_tally_dist(deflate_state *s, uint32_t dist, uint32_t le
 /* Maximum stored block length in deflate format (not including header). */
 #define MAX_STORED 65535
 
+/* Compression function. Returns the block state after the call. */
+typedef block_state (*compress_func) (deflate_state *s, int flush);
+/* Match function. Returns the longest match. */
+typedef uint32_t    (*match_func)    (deflate_state *const s, Pos cur_match);
+
 #endif
