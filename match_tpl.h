@@ -48,7 +48,6 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     Pos limit;
 #ifdef LONGEST_MATCH_SLOW
     Pos limit_base;
-    int32_t rolling_hash;
 #else
     int32_t early_exit;
 #endif
@@ -96,11 +95,6 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 
     /* Do not waste too much time if we already have a good match */
     chain_length = s->max_chain_length;
-#ifdef LONGEST_MATCH_SLOW
-    rolling_hash = chain_length > 1024;
-#else
-    early_exit = s->level < EARLY_EXIT_TRIGGER_LEVEL;
-#endif
     if (best_len >= s->good_match)
         chain_length >>= 2;
     nice_match = (uint32_t)s->nice_match;
@@ -111,7 +105,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     limit = strstart > MAX_DIST(s) ? (Pos)(strstart - MAX_DIST(s)) : 0;
 #ifdef LONGEST_MATCH_SLOW
     limit_base = limit;
-    if (best_len >= STD_MIN_MATCH && rolling_hash) {
+    if (best_len >= STD_MIN_MATCH) {
         /* We're continuing search (lazy evaluation). */
         uint32_t i, hash;
         Pos pos;
@@ -141,6 +135,8 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
         mbase_start -= match_offset;
         mbase_end -= match_offset;
     }
+#else
+    early_exit = s->level < EARLY_EXIT_TRIGGER_LEVEL;
 #endif
     Assert((unsigned long)strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     for (;;) {
@@ -217,7 +213,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #endif
 #ifdef LONGEST_MATCH_SLOW
             /* Look for a better string offset */
-            if (UNLIKELY(len > STD_MIN_MATCH && match_start + len < strstart && rolling_hash)) {
+            if (UNLIKELY(len > STD_MIN_MATCH && match_start + len < strstart)) {
                 Pos pos, next_pos;
                 uint32_t i, hash;
                 unsigned char *scan_endstr;

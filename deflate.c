@@ -100,9 +100,6 @@ const char PREFIX(deflate_copyright)[] = " deflate 1.2.11.f Copyright 1995-2016 
 /* ===========================================================================
  *  Function prototypes.
  */
-typedef block_state (*compress_func) (deflate_state *s, int flush);
-/* Compression function. Returns the block state after the call. */
-
 static int deflateStateCheck      (PREFIX3(stream) *strm);
 Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_fast  (deflate_state *s, int flush);
