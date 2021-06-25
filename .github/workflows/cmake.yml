@@ -275,6 +275,14 @@ jobs:
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_inflate_allow_invalid_dist
 
+          - name: Ubuntu Clang Reduced Memory
+            os: ubuntu-latest
+            compiler: clang-11
+            cmake-args: -DWITH_REDUCED_MEM=ON
+            packages: llvm-11-tools
+            gcov-exec: llvm-cov-11 gcov
+            codecov: ubuntu_clang_reduced_mem
+
           - name: Ubuntu Clang Memory Map
             os: ubuntu-latest
             compiler: clang-11
