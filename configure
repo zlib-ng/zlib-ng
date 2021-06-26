@@ -743,7 +743,26 @@ EOF
     echo "Checking for fseeko... No." | tee -a configure.log
   fi
 fi
+echo >> configure.log
 
+cat > $test.c <<EOF
+#define _POSIX_C_SOURCE 200112L
+#include <stdlib.h>
+int main(void) {
+  void *ptr = 0;
+  int ret = posix_memalign(&ptr, 64, 10);
+  if (ptr)
+    free(ptr);
+  return ret;
+}
+EOF
+if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
+  echo "Checking for posix_memalign... Yes." | tee -a configure.log
+  CFLAGS="${CFLAGS} -DHAVE_POSIX_MEMALIGN"
+  SFLAGS="${SFLAGS} -DHAVE_POSIX_MEMALIGN"
+else
+  echo "Checking for posix_memalign... No." | tee -a configure.log
+fi
 echo >> configure.log
 
 # check for strerror() for use by gz* functions
