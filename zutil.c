@@ -4,8 +4,8 @@
  */
 
 #include "zbuild.h"
-#include "zutil.h"
 #include "zutil_p.h"
+#include "zutil.h"
 
 z_const char * const PREFIX(z_errmsg)[10] = {
     (z_const char *)"need dictionary",     /* Z_NEED_DICT       2  */
