@@ -203,14 +203,14 @@ void Z_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #  define ZSWAP32(q) ((((q) >> 24) & 0xff) + (((q) >> 8) & 0xff00) + \
                      (((q) & 0xff00) << 8) + (((q) & 0xff) << 24))
 #  define ZSWAP64(q)                           \
-          ((q & 0xFF00000000000000u) >> 56u) | \
+         (((q & 0xFF00000000000000u) >> 56u) | \
           ((q & 0x00FF000000000000u) >> 40u) | \
           ((q & 0x0000FF0000000000u) >> 24u) | \
           ((q & 0x000000FF00000000u) >> 8u)  | \
           ((q & 0x00000000FF000000u) << 8u)  | \
           ((q & 0x0000000000FF0000u) << 24u) | \
           ((q & 0x000000000000FF00u) << 40u) | \
-          ((q & 0x00000000000000FFu) << 56u)
+          ((q & 0x00000000000000FFu) << 56u))
 #endif
 
 /* Only enable likely/unlikely if the compiler is known to support it */
