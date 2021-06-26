@@ -65,7 +65,9 @@
 /* Stream status */
 
 #define HASH_BITS    16u           /* log2(HASH_SIZE) */
-#define HASH_SIZE 65536u           /* number of elements in hash table */
+#ifndef HASH_SIZE
+#  define HASH_SIZE 65536u         /* number of elements in hash table */
+#endif
 #define HASH_MASK (HASH_SIZE - 1u) /* HASH_SIZE-1 */
 
 
