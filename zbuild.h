@@ -17,7 +17,7 @@
 
 /* Determine compiler support for TLS */
 #ifndef Z_TLS
-#  if __STDC_VERSION__ >= 201112 && !defined __STDC_NO_THREADS__
+#  if defined(STDC11) && !defined(__STDC_NO_THREADS__)
 #    define Z_TLS _Thread_local
 #  elif defined(__GNUC__) || defined(__SUNPRO_C)
 #    define Z_TLS __thread
