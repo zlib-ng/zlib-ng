@@ -12,36 +12,8 @@
 #include "inffixed_tbl.h"
 #include "functable.h"
 
-/* Architecture-specific hooks. */
-#ifdef S390_DFLTCC_INFLATE
-#  include "arch/s390/dfltcc_inflate.h"
-#else
-/* Memory management for the inflate state. Useful for allocating arch-specific extension blocks. */
-#  define ZALLOC_STATE(strm, items, size) ZALLOC(strm, items, size)
-#  define ZFREE_STATE(strm, addr) ZFREE(strm, addr)
-#  define ZCOPY_STATE(dst, src, size) memcpy(dst, src, size)
-/* Memory management for the window. Useful for allocation the aligned window. */
-#  define ZALLOC_WINDOW(strm, items, size) ZALLOC(strm, items, size)
-#  define ZFREE_WINDOW(strm, addr) ZFREE(strm, addr)
-/* Invoked at the end of inflateResetKeep(). Useful for initializing arch-specific extension blocks. */
-#  define INFLATE_RESET_KEEP_HOOK(strm) do {} while (0)
-/* Invoked at the beginning of inflatePrime(). Useful for updating arch-specific buffers. */
-#  define INFLATE_PRIME_HOOK(strm, bits, value) do {} while (0)
-/* Invoked at the beginning of each block. Useful for plugging arch-specific inflation code. */
-#  define INFLATE_TYPEDO_HOOK(strm, flush) do {} while (0)
-/* Returns whether zlib-ng should compute a checksum. Set to 0 if arch-specific inflation code already does that. */
-#  define INFLATE_NEED_CHECKSUM(strm) 1
-/* Returns whether zlib-ng should update a window. Set to 0 if arch-specific inflation code already does that. */
-#  define INFLATE_NEED_UPDATEWINDOW(strm) 1
-/* Invoked at the beginning of inflateMark(). Useful for updating arch-specific pointers and offsets. */
-#  define INFLATE_MARK_HOOK(strm) do {} while (0)
-/* Invoked at the beginning of inflateSyncPoint(). Useful for performing arch-specific state checks. */
-#define INFLATE_SYNC_POINT_HOOK(strm) do {} while (0)
-#endif
-
 /* function prototypes */
 static int inflateStateCheck(PREFIX3(stream) *strm);
-static int updatewindow(PREFIX3(stream) *strm, const unsigned char *end, uint32_t copy);
 static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len);
 
 static int inflateStateCheck(PREFIX3(stream) *strm) {
@@ -87,7 +59,6 @@ int32_t Z_EXPORT PREFIX(inflateReset)(PREFIX3(stream) *strm) {
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
-    state->wsize = 0;
     state->whave = 0;
     state->wnext = 0;
     return PREFIX(inflateResetKeep)(strm);
@@ -120,6 +91,7 @@ int32_t Z_EXPORT PREFIX(inflateReset2)(PREFIX3(stream) *strm, int32_t windowBits
     if (state->window != NULL && state->wbits != (unsigned)windowBits) {
         ZFREE_WINDOW(strm, state->window);
         state->window = NULL;
+        state->wsize = 0;
     }
 
     /* update state and reset the rest of it */
@@ -156,12 +128,14 @@ int32_t Z_EXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int32_t windowBits
     strm->state = (struct internal_state *)state;
     state->strm = strm;
     state->window = NULL;
+    state->wsize = 0;
     state->mode = HEAD;     /* to pass state test in inflateReset2() */
     state->chunksize = functable.chunksize();
     ret = PREFIX(inflateReset2)(strm, windowBits);
     if (ret != Z_OK) {
         ZFREE_STATE(strm, state);
         strm->state = NULL;
+        return ret;
     }
     return ret;
 }
@@ -206,9 +180,9 @@ int Z_INTERNAL inflate_ensure_window(struct inflate_state *state) {
     /* if it hasn't been done already, allocate space for the window */
     if (state->window == NULL) {
         unsigned wsize = 1U << state->wbits;
-        state->window = (unsigned char *) ZALLOC_WINDOW(state->strm, wsize + state->chunksize, sizeof(unsigned char));
-        if (state->window == Z_NULL)
-            return 1;
+        state->window = (unsigned char *)ZALLOC_WINDOW(state->strm, (wsize * 2) + state->chunksize, sizeof(unsigned char));
+        if (state->window == NULL)
+            return Z_MEM_ERROR;
         memset(state->window + wsize, 0, state->chunksize);
     }
 
@@ -219,57 +193,8 @@ int Z_INTERNAL inflate_ensure_window(struct inflate_state *state) {
         state->whave = 0;
     }
 
-    return 0;
+    return Z_OK;
 }
-
-/*
-   Update the window with the last wsize (normally 32K) bytes written before
-   returning.  If window does not exist yet, create it.  This is only called
-   when a window is already in use, or when output has been written during this
-   inflate call, but the end of the deflate stream has not been reached yet.
-   It is also called to create a window for dictionary data when a dictionary
-   is loaded.
-
-   Providing output buffers larger than 32K to inflate() should provide a speed
-   advantage, since only the last 32K of output is copied to the sliding window
-   upon return from inflate(), and since all distances after the first 32K of
-   output will fall in the output data, making match copies simpler and faster.
-   The advantage may be dependent on the size of the processor's data caches.
- */
-static int32_t updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t copy) {
-    struct inflate_state *state;
-    uint32_t dist;
-
-    state = (struct inflate_state *)strm->state;
-
-    if (inflate_ensure_window(state)) return 1;
-
-    /* copy state->wsize or less output bytes into the circular window */
-    if (copy >= state->wsize) {
-        memcpy(state->window, end - state->wsize, state->wsize);
-        state->wnext = 0;
-        state->whave = state->wsize;
-    } else {
-        dist = state->wsize - state->wnext;
-        if (dist > copy)
-            dist = copy;
-        memcpy(state->window + state->wnext, end - copy, dist);
-        copy -= dist;
-        if (copy) {
-            memcpy(state->window, end - copy, copy);
-            state->wnext = copy;
-            state->whave = state->wsize;
-        } else {
-            state->wnext += dist;
-            if (state->wnext == state->wsize)
-                state->wnext = 0;
-            if (state->whave < state->wsize)
-                state->whave += dist;
-        }
-    }
-    return 0;
-}
-
 
 /*
    Private macros for inflate()
@@ -376,7 +301,6 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
     unsigned bits;              /* bits in bit buffer */
     uint32_t in, out;           /* save starting available input and output */
     unsigned copy;              /* number of stored or match bytes to copy */
-    unsigned char *from;        /* where to copy match bytes from */
     code here;                  /* current decoding table entry */
     code last;                  /* parent table entry */
     unsigned len;               /* length to copy for repeats, bits to drop */
@@ -578,7 +502,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 state->head->hcrc = (int)((state->flags >> 9) & 1);
                 state->head->done = 1;
             }
-            strm->adler = state->check = CRC32_INITIAL_VALUE;
+            strm->adler = state->check = functable.crc32_fold_reset(&state->crc_fold);
             state->mode = TYPE;
             break;
 #endif
@@ -601,6 +525,17 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 goto inf_leave;
 
         case TYPEDO:
+            /* create window if it doesn't exist */
+            if (state->window == NULL) {
+                RESTORE();
+                ret = inflate_ensure_window(state);
+                if (ret != Z_OK) {
+                    ZFREE_STATE(strm, state);
+                    strm->state = NULL;
+                    return ret;
+                }
+                LOAD();
+            }
             /* determine and dispatch block type */
             INFLATE_TYPEDO_HOOK(strm, flush);  /* hook for IBM Z DFLTCC */
             if (state->last) {
@@ -657,13 +592,24 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             /* copy stored block from input to output */
             copy = state->length;
             if (copy) {
+                unsigned char *end = state->window + (state->wsize * 2);
+                int64_t diff = end - put;
+
                 copy = MIN(copy, have);
-                copy = MIN(copy, left);
-                if (copy == 0) goto inf_leave;
+                if (copy > diff) {
+                    if (left > 0) {
+                        RESTORE();
+                        window_output_flush(strm);
+                        LOAD();
+                        diff = end - put;
+                    }
+                    copy = MIN(copy, (uint32_t)diff);
+                }
+                if (copy == 0)
+                    goto inf_leave;
                 memcpy(put, next, copy);
                 have -= copy;
                 next += copy;
-                left -= copy;
                 put += copy;
                 state->length -= copy;
                 break;
@@ -799,7 +745,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             /* use inflate_fast() if we have enough input and output */
             if (have >= INFLATE_FAST_MIN_HAVE && left >= INFLATE_FAST_MIN_LEFT) {
                 RESTORE();
-                zng_inflate_fast(strm, out);
+                zng_inflate_fast(strm);
                 LOAD();
                 if (state->mode == TYPE)
                     state->back = -1;
@@ -914,69 +860,73 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             Tracevv((stderr, "inflate:         distance %u\n", state->offset));
             state->mode = MATCH;
 
-        case MATCH:
+        case MATCH: {
             /* copy match from window to output */
-            if (left == 0) goto inf_leave;
-            copy = out - left;
-            if (state->offset > copy) {         /* copy from window */
-                copy = state->offset - copy;
-                if (copy > state->whave) {
-                    if (state->sane) {
-                        SET_BAD("invalid distance too far back");
-                        break;
-                    }
-#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
-                    Trace((stderr, "inflate.c too far\n"));
-                    copy -= state->whave;
-                    copy = MIN(copy, state->length);
-                    copy = MIN(copy, left);
-                    left -= copy;
-                    state->length -= copy;
-                    do {
-                        *put++ = 0;
-                    } while (--copy);
-                    if (state->length == 0)
-                        state->mode = LEN;
-                    break;
-#endif
-                }
-                if (copy > state->wnext) {
-                    copy -= state->wnext;
-                    from = state->window + (state->wsize - copy);
-                } else {
-                    from = state->window + (state->wnext - copy);
-                }
-                copy = MIN(copy, state->length);
-                copy = MIN(copy, left);
+            if (left == 0)
+                goto inf_leave;
 
-                put = functable.chunkcopy_safe(put, from, copy, put + left);
-            } else {                             /* copy from output */
-                copy = MIN(state->length, left);
-
-                put = functable.chunkmemset_safe(put, state->offset, copy, left);
+            unsigned char *end = state->window + (state->wsize * 2);
+            int64_t buf_left = end - put;
+            copy = state->length;
+            RESTORE();
+            if (copy > buf_left) {
+                if (strm->avail_out > 0) {
+                    /* relies on RESTORE() above with no changes to those vars */
+                    window_output_flush(strm);
+                    LOAD();
+                    buf_left = end - put;
+                }
+                copy = MIN(copy, (uint32_t)buf_left);
             }
-            left -= copy;
+            if (copy == 0)
+                goto inf_leave;
+            if (state->offset > state->wnext + state->whave) {
+                if (state->sane) {
+                    SET_BAD("invalid distance too far back");
+                    break;
+                }
+            }
+            unsigned char *next_out = state->window + state->wsize + state->wnext;
+            if (copy <= state->offset) {
+                functable.chunkcopy_safe(next_out, next_out - state->offset, copy, put + buf_left);
+            } else {                             /* copy from output */
+                functable.chunkmemset_safe(next_out, state->offset, copy, (uint32_t)buf_left);
+            }
+            state->wnext += copy;
             state->length -= copy;
+            LOAD();
             if (state->length == 0)
                 state->mode = LEN;
             break;
-
+        }
         case LIT:
+            if (put >= state->window + (state->wsize * 2)) {
+                RESTORE();
+                window_output_flush(strm);
+                LOAD();
+            }
             if (left == 0)
                 goto inf_leave;
             *put++ = (unsigned char)(state->length);
-            left--;
             state->mode = LEN;
             break;
 
         case CHECK:
+            RESTORE();
+            window_output_flush(strm);
+            LOAD();
+            if (strm->avail_out == 0 && state->wnext)
+                goto inf_leave;
             if (state->wrap) {
                 NEEDBITS(32);
                 out -= left;
                 strm->total_out += out;
                 state->total += out;
-                if (INFLATE_NEED_CHECKSUM(strm) && (state->wrap & 4) && out)
-                    strm->adler = state->check = UPDATE(state->check, put - out, out);
+
+                if (INFLATE_NEED_CHECKSUM(strm) && strm->total_out) {
+                    if (state->wrap & 2)
+                        strm->adler = state->check = functable.crc32_fold_final(&state->crc_fold);
+                }
                 out = left;
                 if ((state->wrap & 4) && (
 #ifdef GUNZIP
@@ -1026,26 +976,21 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
     /*
        Return from inflate(), updating the total counts and the check value.
        If there was no progress during the inflate() call, return a buffer
-       error.  Call updatewindow() to create and/or update the window state.
+       error.
        Note: a memory error from inflate() is non-recoverable.
      */
   inf_leave:
     RESTORE();
-    if (INFLATE_NEED_UPDATEWINDOW(strm) &&
-            (state->wsize || (out != strm->avail_out && state->mode < BAD &&
-                 (state->mode < CHECK || flush != Z_FINISH)))) {
-        if (updatewindow(strm, strm->next_out, out - strm->avail_out)) {
-            state->mode = MEM;
-            return Z_MEM_ERROR;
-        }
-    }
+
+    if (strm->avail_out && state->wnext)
+        window_output_flush(strm);
+
     in -= strm->avail_in;
     out -= strm->avail_out;
     strm->total_in += in;
     strm->total_out += out;
     state->total += out;
-    if (INFLATE_NEED_CHECKSUM(strm) && (state->wrap & 4) && out)
-        strm->adler = state->check = UPDATE(state->check, strm->next_out - out, out);
+
     strm->data_type = (int)state->bits + (state->last ? 64 : 0) +
                       (state->mode == TYPE ? 128 : 0) + (state->mode == LEN_ || state->mode == COPY_ ? 256 : 0);
     if (((in == 0 && out == 0) || flush == Z_FINISH) && ret == Z_OK)
@@ -1086,8 +1031,10 @@ int32_t Z_EXPORT PREFIX(inflateGetDictionary)(PREFIX3(stream) *strm, uint8_t *di
 
 int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8_t *dictionary, uint32_t dictLength) {
     struct inflate_state *state;
-    unsigned long dictid;
-    int32_t ret;
+    unsigned long dictid, dict_copy, hist_copy;
+    const unsigned char *dict_from, *hist_from;
+    unsigned char *dict_to, *hist_to;
+    int ret;
 
     /* check state */
     if (inflateStateCheck(strm))
@@ -1102,14 +1049,33 @@ int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8
         if (dictid != state->check)
             return Z_DATA_ERROR;
     }
-
-    /* copy dictionary to window using updatewindow(), which will amend the
-       existing dictionary if appropriate */
-    ret = updatewindow(strm, dictionary + dictLength, dictLength);
-    if (ret) {
-        state->mode = MEM;
+    ret = inflate_ensure_window(state);
+    if (ret != Z_OK)
         return Z_MEM_ERROR;
+
+    Tracec(state->wnext != 0, (stderr, "Setting dictionary with unflushed output"));
+
+    /* copy dictionary to window and amend if necessary */
+    dict_from = dictionary;
+    dict_copy = dictLength;
+    if (dict_copy > state->wsize) {
+        dict_copy = state->wsize;
+        dict_from += (dictLength - dict_copy);
     }
+    dict_to = state->window + state->wsize - dict_copy;
+
+    hist_from = state->window + state->wsize - state->whave;
+    hist_copy = state->wsize - dict_copy;
+    if (hist_copy > state->whave)
+        hist_copy = state->whave;
+    hist_to = dict_to - hist_copy;
+
+    if (hist_copy)
+        memcpy(hist_to, hist_from, hist_copy);
+    if (dict_copy)
+        memcpy(dict_to, dict_from, dict_copy);
+
+    state->whave = hist_copy + dict_copy;
     state->havedict = 1;
     Tracev((stderr, "inflate:   dictionary set\n"));
     return Z_OK;
@@ -1248,7 +1214,8 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
         return Z_MEM_ERROR;
     window = NULL;
     if (state->window != NULL) {
-        window = (unsigned char *)ZALLOC_WINDOW(source, 1U << state->wbits, sizeof(unsigned char));
+        wsize = 1U << state->wbits;
+        window = (unsigned char *)ZALLOC_WINDOW(state->strm, (wsize * 2) + state->chunksize, sizeof(unsigned char));
         if (window == NULL) {
             ZFREE_STATE(source, copy);
             return Z_MEM_ERROR;
@@ -1266,7 +1233,7 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     copy->next = copy->codes + (state->next - state->codes);
     if (window != NULL) {
         wsize = 1U << state->wbits;
-        memcpy(window, state->window, wsize);
+        memcpy(window, state->window, (wsize * 2) + state->chunksize);
     }
     copy->window = window;
     dest->state = (struct internal_state *)copy;
