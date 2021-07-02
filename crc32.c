@@ -183,11 +183,10 @@ Z_INTERNAL void crc_reset(deflate_state *const s) {
 #ifdef X86_PCLMULQDQ_CRC
     x86_check_features();
     if (x86_cpu_has_pclmulqdq) {
-        s->strm->adler = crc_fold_init(s->crc0);
-        return;
+        crc_fold_init(s->crc0);
     }
 #endif
-    s->strm->adler = PREFIX(crc32)(0L, NULL, 0);
+    s->strm->adler = CRC32_INITIAL_VALUE;
 }
 
 Z_INTERNAL void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size) {

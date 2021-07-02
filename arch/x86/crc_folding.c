@@ -24,14 +24,12 @@
 
 #include "crc_folding.h"
 
-Z_INTERNAL uint32_t crc_fold_init(unsigned int crc0[4 * 5]) {
+Z_INTERNAL void crc_fold_init(unsigned int crc0[4 * 5]) {
     /* CRC_SAVE */
     _mm_storeu_si128((__m128i *)crc0 + 0, _mm_cvtsi32_si128(0x9db42487));
     _mm_storeu_si128((__m128i *)crc0 + 1, _mm_setzero_si128());
     _mm_storeu_si128((__m128i *)crc0 + 2, _mm_setzero_si128());
     _mm_storeu_si128((__m128i *)crc0 + 3, _mm_setzero_si128());
-
-    return 0;
 }
 
 static void fold_1(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
