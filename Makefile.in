@@ -78,6 +78,7 @@ OBJZ = \
 	compress.o \
 	crc32.o \
 	crc32_comb.o \
+	crc32_fold.o \
 	deflate.o \
 	deflate_fast.o \
 	deflate_huff.o \
@@ -113,6 +114,7 @@ PIC_OBJZ = \
 	compress.lo \
 	crc32.lo \
 	crc32_comb.lo \
+	crc32_fold.lo \
 	deflate.lo \
 	deflate_fast.lo \
 	deflate_huff.lo \
