@@ -86,6 +86,56 @@ macro(check_pclmulqdq_intrinsics)
     endif()
 endmacro()
 
+macro(check_ppc_intrinsics)
+    # Check if compiler supports AltiVec
+    set(CMAKE_REQUIRED_FLAGS "-maltivec")
+    check_c_source_compiles(
+        "#include <altivec.h>
+        int main(void)
+        {
+            vector int a = vec_splats(0);
+            vector int b = vec_splats(0);
+            a = vec_add(a, b);
+            return 0;
+        }"
+        HAVE_ALTIVEC
+        )
+    set(CMAKE_REQUIRED_FLAGS)
+
+    if(HAVE_ALTIVEC)
+        set(PPCFLAGS "-maltivec")
+    endif()
+
+    set(CMAKE_REQUIRED_FLAGS "-maltivec -mno-vsx")
+    check_c_source_compiles(
+        "#include <altivec.h>
+        int main(void)
+        {
+            vector int a = vec_splats(0);
+            vector int b = vec_splats(0);
+            a = vec_add(a, b);
+            return 0;
+        }"
+        HAVE_NOVSX
+        )
+    set(CMAKE_REQUIRED_FLAGS)
+
+    if(HAVE_NOVSX)
+        set(PPCFLAGS "${PPCFLAGS} -mno-vsx")
+    endif()
+
+    # Check if we have what we need for AltiVec optimizations
+    set(CMAKE_REQUIRED_FLAGS "${PPCFLAGS}")
+    check_c_source_compiles(
+        "#include <sys/auxv.h>
+        int main() {
+            return (getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC);
+        }"
+        HAVE_VMX
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
 macro(check_power8_intrinsics)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         if(NOT NATIVEFLAG)

@@ -44,7 +44,11 @@ extern Pos quick_insert_string_acle(deflate_state *const s, const uint32_t str);
 void slide_hash_sse2(deflate_state *s);
 #elif defined(ARM_NEON_SLIDEHASH)
 void slide_hash_neon(deflate_state *s);
-#elif defined(POWER8_VSX_SLIDEHASH)
+#endif
+#if defined(PPC_VMX_SLIDEHASH)
+void slide_hash_vmx(deflate_state *s);
+#endif
+#if defined(POWER8_VSX_SLIDEHASH)
 void slide_hash_power8(deflate_state *s);
 #endif
 #ifdef X86_AVX2
@@ -55,6 +59,9 @@ void slide_hash_avx2(deflate_state *s);
 extern uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 #ifdef ARM_NEON_ADLER32
 extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
+#endif
+#ifdef PPC_VMX_ADLER32
+extern uint32_t adler32_vmx(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
 #ifdef X86_SSSE3_ADLER32
 extern uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len);
@@ -175,7 +182,7 @@ Z_INTERNAL void cpu_check_features(void)
     x86_check_features();
 #elif defined(ARM_FEATURES)
     arm_check_features();
-#elif defined(POWER_FEATURES)
+#elif defined(PPC_FEATURES) || defined(POWER_FEATURES)
     power_check_features();
 #elif defined(S390_FEATURES)
     s390_check_features();
@@ -252,6 +259,10 @@ Z_INTERNAL void slide_hash_stub(deflate_state *s) {
     if (x86_cpu_has_avx2)
         functable.slide_hash = &slide_hash_avx2;
 #endif
+#ifdef PPC_VMX_SLIDEHASH
+    if (power_cpu_has_altivec)
+        functable.slide_hash = &slide_hash_vmx;
+#endif
 #ifdef POWER8_VSX_SLIDEHASH
     if (power_cpu_has_arch_2_07)
         functable.slide_hash = &slide_hash_power8;
@@ -278,6 +289,10 @@ Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_
 #ifdef X86_AVX2_ADLER32
     if (x86_cpu_has_avx2)
         functable.adler32 = &adler32_avx2;
+#endif
+#ifdef PPC_VMX_ADLER32
+    if (power_cpu_has_altivec)
+        functable.adler32 = &adler32_vmx;
 #endif
 #ifdef POWER8_VSX_ADLER32
     if (power_cpu_has_arch_2_07)

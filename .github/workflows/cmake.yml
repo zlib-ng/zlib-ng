@@ -170,6 +170,15 @@ jobs:
             ldflags: -static
             codecov: ubuntu_gcc_ppc
 
+          - name: Ubuntu GCC PPC No Power8
+            os: ubuntu-latest
+            compiler: powerpc-linux-gnu-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake -DWITH_POWER8=OFF
+            asan-options: detect_leaks=0
+            packages: qemu qemu-user gcc-powerpc-linux-gnu libc-dev-powerpc-cross
+            qemu-run: qemu-ppc
+            codecov: ubuntu_gcc_ppc_no_power8
+
           - name: Ubuntu GCC PPC64
             os: ubuntu-latest
             compiler: powerpc64-linux-gnu-gcc
