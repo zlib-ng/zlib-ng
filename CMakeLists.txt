@@ -733,7 +733,7 @@ if(WITH_OPTIM)
             check_pclmulqdq_intrinsics()
             if(HAVE_PCLMULQDQ_INTRIN AND HAVE_SSSE3_INTRIN)
                 add_definitions(-DX86_PCLMULQDQ_CRC)
-                set(PCLMULQDQ_SRCS ${ARCHDIR}/crc_folding.c)
+                set(PCLMULQDQ_SRCS ${ARCHDIR}/crc32_fold_pclmulqdq.c)
                 add_feature_info(PCLMUL_CRC 1 "Support CRC hash generation using PCLMULQDQ, using \"${SSSE3FLAG} ${SSE4FLAG} ${PCLMULFLAG}\"")
                 list(APPEND ZLIB_ARCH_SRCS ${PCLMULQDQ_SRCS})
                 set_property(SOURCE ${PCLMULQDQ_SRCS} PROPERTY COMPILE_FLAGS "${SSSE3FLAG} ${SSE4FLAG} ${PCLMULFLAG} ${NOLTOFLAG}")
@@ -816,6 +816,7 @@ set(ZLIB_PRIVATE_HDRS
     crc32_p.h
     crc32_tbl.h
     crc32_comb_tbl.h
+    crc32_fold.h
     deflate.h
     deflate_p.h
     functable.h
@@ -840,6 +841,7 @@ set(ZLIB_SRCS
     compress.c
     crc32.c
     crc32_comb.c
+    crc32_fold.c
     deflate.c
     deflate_fast.c
     deflate_huff.c

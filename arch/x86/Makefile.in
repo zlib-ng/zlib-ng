@@ -28,7 +28,7 @@ all: \
 	compare258_avx.o compare258_avx.lo \
 	compare258_sse.o compare258_sse.lo \
 	insert_string_sse.o insert_string_sse.lo \
-	crc_folding.o crc_folding.lo \
+	crc32_fold_pclmulqdq.o crc32_fold_pclmulqdq.lo \
 	slide_hash_avx.o slide_hash_avx.lo \
 	slide_hash_sse.o slide_hash_sse.lo
 
@@ -68,11 +68,11 @@ insert_string_sse.o:
 insert_string_sse.lo:
 	$(CC) $(SFLAGS) $(SSE4FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
 
-crc_folding.o:
-	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE4FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
+crc32_fold_pclmulqdq.o:
+	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE4FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_pclmulqdq.c
 
-crc_folding.lo:
-	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE4FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc_folding.c
+crc32_fold_pclmulqdq.lo:
+	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE4FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_pclmulqdq.c
 
 slide_hash_avx.o:
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_avx.c

@@ -114,12 +114,6 @@ static void lm_set_level         (deflate_state *s, int level);
 static void lm_init              (deflate_state *s);
 Z_INTERNAL unsigned read_buf  (PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
-extern void crc_reset(deflate_state *const s);
-#ifdef X86_PCLMULQDQ_CRC
-extern void crc_finalize(deflate_state *const s);
-#endif
-extern void copy_with_crc(PREFIX3(stream) *strm, unsigned char *dst, unsigned long size);
-
 extern uint32_t update_hash_roll        (deflate_state *const s, uint32_t h, uint32_t val);
 extern void     insert_string_roll      (deflate_state *const s, uint32_t str, uint32_t count);
 extern Pos      quick_insert_string_roll(deflate_state *const s, uint32_t str);
@@ -454,7 +448,7 @@ int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
 
 #ifdef GZIP
     if (s->wrap == 2)
-        crc_reset(s);
+        strm->adler = functable.crc32_fold_reset(&s->crc_fold);
     else
 #endif
         strm->adler = ADLER32_INITIAL_VALUE;
@@ -780,7 +774,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
 #ifdef GZIP
     if (s->status == GZIP_STATE) {
         /* gzip header */
-        crc_reset(s);
+        functable.crc32_fold_reset(&s->crc_fold);
         put_byte(s, 31);
         put_byte(s, 139);
         put_byte(s, 8);
@@ -897,7 +891,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
                 }
             }
             put_short(s, (uint16_t)strm->adler);
-            crc_reset(s);
+            functable.crc32_fold_reset(&s->crc_fold);
         }
         s->status = BUSY_STATE;
 
@@ -968,9 +962,8 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
     /* Write the trailer */
 #ifdef GZIP
     if (s->wrap == 2) {
-#  ifdef X86_PCLMULQDQ_CRC
-        crc_finalize(s);
-#  endif
+        strm->adler = functable.crc32_fold_final(&s->crc_fold);
+
         put_uint32(s, strm->adler);
         put_uint32(s, (uint32_t)strm->total_in);
     } else
@@ -1082,7 +1075,7 @@ Z_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned
         memcpy(buf, strm->next_in, len);
 #ifdef GZIP
     } else if (strm->state->wrap == 2) {
-        copy_with_crc(strm, buf, len);
+        functable.crc32_fold_copy(&strm->state->crc_fold, buf, strm->next_in, len);
 #endif
     } else {
         memcpy(buf, strm->next_in, len);

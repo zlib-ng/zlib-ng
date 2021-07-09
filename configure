@@ -1309,8 +1309,8 @@ case "${ARCH}" in
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc_folding.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc_folding.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_fold_pclmulqdq.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_fold_pclmulqdq.lo"
             fi
         fi
     ;;

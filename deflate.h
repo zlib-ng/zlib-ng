@@ -12,6 +12,7 @@
 
 #include "zutil.h"
 #include "zendian.h"
+#include "crc32_fold.h"
 
 /* define NO_GZIP when compiling if you want to disable gzip header and
    trailer creation by deflate().  NO_GZIP would be used to avoid linking in
@@ -210,10 +211,7 @@ struct internal_state {
 
     int nice_match; /* Stop searching when current match exceeds this */
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || defined(_M_IX86)
-    /* Only used if X86_PCLMULQDQ_CRC is defined */
-    unsigned crc0[4 * 5];
-#endif
+    crc32_fold ALIGNED_(16) crc_fold;
 
                 /* used by trees.c: */
     /* Didn't use ct_data typedef below to suppress compiler warning */

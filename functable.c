@@ -66,6 +66,17 @@ extern uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t le
 extern uint32_t adler32_power8(uint32_t adler, const unsigned char* buf, size_t len);
 #endif
 
+/* CRC32 folding */
+extern uint32_t crc32_fold_reset_c(crc32_fold *crc);
+extern void     crc32_fold_copy_c(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len);
+extern uint32_t crc32_fold_final_c(crc32_fold *crc);
+
+#ifdef X86_PCLMULQDQ_CRC
+extern uint32_t crc32_fold_reset_pclmulqdq(crc32_fold *crc);
+extern void     crc32_fold_copy_pclmulqdq(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len);
+extern uint32_t crc32_fold_final_pclmulqdq(crc32_fold *crc);
+#endif
+
 /* memory chunking */
 extern uint32_t chunksize_c(void);
 extern uint8_t* chunkcopy_c(uint8_t *out, uint8_t const *from, unsigned len);
@@ -285,6 +296,36 @@ Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_
 #endif
 
     return functable.adler32(adler, buf, len);
+}
+
+Z_INTERNAL uint32_t crc32_fold_reset_stub(crc32_fold *crc) {
+    functable.crc32_fold_reset = crc32_fold_reset_c;
+    cpu_check_features();
+#ifdef X86_PCLMULQDQ_CRC
+    if (x86_cpu_has_pclmulqdq)
+        functable.crc32_fold_reset = crc32_fold_reset_pclmulqdq;
+#endif
+    return functable.crc32_fold_reset(crc);
+}
+
+Z_INTERNAL void crc32_fold_copy_stub(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
+    functable.crc32_fold_copy = crc32_fold_copy_c;
+    cpu_check_features();
+#ifdef X86_PCLMULQDQ_CRC
+    if (x86_cpu_has_pclmulqdq)
+        functable.crc32_fold_copy = crc32_fold_copy_pclmulqdq;
+#endif
+    functable.crc32_fold_copy(crc, dst, src, len);
+}
+
+Z_INTERNAL uint32_t crc32_fold_final_stub(crc32_fold *crc) {
+    functable.crc32_fold_final = crc32_fold_final_c;
+    cpu_check_features();
+#ifdef X86_PCLMULQDQ_CRC
+    if (x86_cpu_has_pclmulqdq)
+        functable.crc32_fold_final = crc32_fold_final_pclmulqdq;
+#endif
+    return functable.crc32_fold_final(crc);
 }
 
 Z_INTERNAL uint32_t chunksize_stub(void) {
@@ -559,6 +600,9 @@ Z_INTERNAL Z_TLS struct functable_s functable = {
     quick_insert_string_stub,
     adler32_stub,
     crc32_stub,
+    crc32_fold_reset_stub,
+    crc32_fold_copy_stub,
+    crc32_fold_final_stub,
     slide_hash_stub,
     compare258_stub,
     longest_match_stub,

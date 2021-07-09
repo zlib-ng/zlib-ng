@@ -410,7 +410,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             if ((state->wrap & 2) && hold == 0x8b1f) {  /* gzip header */
                 if (state->wbits == 0)
                     state->wbits = 15;
-                state->check = PREFIX(crc32)(0L, NULL, 0);
+                state->check = CRC32_INITIAL_VALUE;
                 CRC2(state->check, hold);
                 INITBITS();
                 state->mode = FLAGS;
@@ -578,7 +578,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 state->head->hcrc = (int)((state->flags >> 9) & 1);
                 state->head->done = 1;
             }
-            strm->adler = state->check = PREFIX(crc32)(0L, NULL, 0);
+            strm->adler = state->check = CRC32_INITIAL_VALUE;
             state->mode = TYPE;
             break;
 #endif

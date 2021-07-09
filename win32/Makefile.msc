@@ -58,7 +58,8 @@ OBJS = \
 	compress.obj \
 	crc32.obj \
 	crc32_comb.obj \
-	crc_folding.obj \
+	crc32_fold.obj \
+	crc32_fold_pclmulqdq.obj \
 	deflate.obj \
 	deflate_fast.obj \
 	deflate_huff.obj \
@@ -174,6 +175,8 @@ chunkset_avx.obj: $(SRCDIR)/arch/x86/chunkset_avx.c $(SRCDIR)/zbuild.h $(SRCDIR)
 chunkset_sse.obj: $(SRCDIR)/arch/x86/chunkset_sse.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 crc32.obj: $(SRCDIR)/crc32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zendian.h $(SRCDIR)/deflate.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_tbl.h
 crc32_comb.obj: $(SRCDIR)/crc32_comb.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/crc32_comb_tbl.h
+crc32_fold.obj: $(SRCDIR)/crc32_fold.c $(SRCDIR)/zbuild.h
+crc32_fold_pclmulqdq.obj: $(SRCDIR)/arch/x86/crc32_fold_pclmulqdq.c $(SRCDIR)/crc32_fold.h $(SRCDIR)/zbuild.h
 deflate.obj: $(SRCDIR)/deflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_fast.obj: $(SRCDIR)/deflate_fast.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_huff.obj: $(SRCDIR)/deflate_huff.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
