@@ -575,6 +575,8 @@ void test_dict_deflate(unsigned char *compr, size_t comprLen) {
  */
 void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen) {
     int err;
+    uint8_t check_dictionary[10];
+    uint32_t check_dictionary_len = 0;
     PREFIX3(stream) d_stream; /* decompression stream */
 
     strcpy((char*)uncompr, "garbage garbage garbage");
@@ -604,6 +606,20 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
                                        (int)sizeof(dictionary));
         }
         CHECK_ERR(err, "inflate with dict");
+    }
+    
+    err = PREFIX(inflateGetDictionary)(&d_stream, NULL, &check_dictionary_len);
+    CHECK_ERR(err, "inflateGetDictionary");
+    if (check_dictionary_len != sizeof(dictionary)) {
+        fprintf(stderr, "bad dictionary length\n");
+        exit(1);
+    }
+    
+    err = PREFIX(inflateGetDictionary)(&d_stream, check_dictionary, &check_dictionary_len);
+    CHECK_ERR(err, "inflateGetDictionary");
+    if (memcmp(dictionary, check_dictionary, sizeof(dictionary)) != 0) {
+        fprintf(stderr, "bad dictionary\n");
+        exit(1);
     }
 
     err = PREFIX(inflateEnd)(&d_stream);
