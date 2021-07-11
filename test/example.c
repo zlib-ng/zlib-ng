@@ -923,6 +923,12 @@ void test_deflate_set_header(unsigned char *compr, size_t comprLen) {
     CHECK_ERR(err, "deflateInit2");
 
     head->text = 1;
+    head->comment = (uint8_t *)"comment";
+    head->name = (uint8_t *)"name";
+    head->hcrc = 1;
+    head->extra = (uint8_t *)"extra";
+    head->extra_len = (uint32_t)strlen((const char *)head->extra);
+
     err = PREFIX(deflateSetHeader)(&c_stream, head);
     CHECK_ERR(err, "deflateSetHeader");
     if (err == Z_OK) {
