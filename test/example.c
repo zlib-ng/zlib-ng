@@ -934,6 +934,7 @@ void test_deflate_set_header(unsigned char *compr, size_t comprLen) {
     if (err == Z_OK) {
         printf("deflateSetHeader(): OK\n");
     }
+    PREFIX(deflateBound)(&c_stream, (unsigned long)comprLen);
 
     c_stream.next_in  = (unsigned char *)hello;
     c_stream.next_out = compr;
