@@ -34,6 +34,18 @@ jobs:
             codecov: ubuntu_gcc_o3
             cflags: -O3
 
+          - name: Ubuntu GCC No CTZLL
+            os: ubuntu-latest
+            compiler: gcc
+            cmake-args: -DWITH_OPTIM=OFF -DHAVE_BUILTIN_CTZLL=OFF
+            codecov: ubuntu_gcc_no_ctzll
+
+          - name: Ubuntu GCC No CTZ
+            os: ubuntu-latest
+            compiler: gcc
+            cmake-args: -DWITH_OPTIM=OFF -DHAVE_BUILTIN_CTZLL=OFF -DHAVE_BUILTIN_CTZ=OFF
+            codecov: ubuntu_gcc_no_ctz
+
           - name: Ubuntu GCC Link Zlib
             os: ubuntu-latest
             compiler: gcc
