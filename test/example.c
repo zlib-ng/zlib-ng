@@ -17,15 +17,9 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <stdint.h>
+#include <stdarg.h>
 
 #define TESTFILE "foo.gz"
-
-#define CHECK_ERR(err, msg) { \
-    if (err != Z_OK) { \
-        fprintf(stderr, "%s error: %d\n", msg, err); \
-        exit(1); \
-    } \
-}
 
 static const char hello[] = "hello, hello!";
 /* "hello world" would be more standard, but the repeated "hello"
@@ -53,6 +47,24 @@ static alloc_func zalloc = NULL;
 static free_func zfree = NULL;
 
 /* ===========================================================================
+ * Display error message and exit
+ */
+void error(const char *format, ...) {
+    va_list va;
+
+    va_start(va, format);
+    vfprintf(stderr, format, va);
+    va_end(va);
+
+    exit(1);
+}
+
+#define CHECK_ERR(err, msg) { \
+    if (err != Z_OK) \
+        error("%s error: %d\n", msg, err); \
+}
+
+/* ===========================================================================
  * Test compress() and uncompress()
  */
 void test_compress(unsigned char *compr, z_size_t comprLen, unsigned char *uncompr, z_size_t uncomprLen) {
@@ -67,12 +79,10 @@ void test_compress(unsigned char *compr, z_size_t comprLen, unsigned char *uncom
     err = PREFIX(uncompress)(uncompr, &uncomprLen, compr, comprLen);
     CHECK_ERR(err, "uncompress");
 
-    if (strcmp((char*)uncompr, hello)) {
-        fprintf(stderr, "bad uncompress\n");
-        exit(1);
-    } else {
+    if (strcmp((char*)uncompr, hello))
+        error("bad uncompress\n");
+    else
         printf("uncompress(): %s\n", (char *)uncompr);
-    }
 }
 
 /* ===========================================================================
@@ -91,144 +101,95 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
 
     /* Write gz file with test data */
     file = PREFIX(gzopen)(fname, "wb");
-    if (file == NULL) {
-        fprintf(stderr, "gzopen error\n");
-        exit(1);
-    }
+    if (file == NULL)
+        error("gzopen error\n");
     /* Write hello, hello! using gzputs and gzprintf */
     PREFIX(gzputc)(file, 'h');
-    if (PREFIX(gzputs)(file, "ello") != 4) {
-        fprintf(stderr, "gzputs err: %s\n", PREFIX(gzerror)(file, &err));
-        exit(1);
-    }
-    if (PREFIX(gzprintf)(file, ", %s!", "hello") != 8) {
-        fprintf(stderr, "gzprintf err: %s\n", PREFIX(gzerror)(file, &err));
-        exit(1);
-    }
+    if (PREFIX(gzputs)(file, "ello") != 4)
+        error("gzputs err: %s\n", PREFIX(gzerror)(file, &err));
+    if (PREFIX(gzprintf)(file, ", %s!", "hello") != 8)
+        error("gzprintf err: %s\n", PREFIX(gzerror)(file, &err));
     /* Write string null-teriminator using gzseek */
     if (PREFIX(gzseek)(file, 1L, SEEK_CUR) < 0)
-    {
-        fprintf(stderr, "gzseek error, gztell=%ld\n", (long)PREFIX(gztell)(file));
-        exit(1);
-    }
+        error("gzseek error, gztell=%ld\n", (long)PREFIX(gztell)(file));
     /* Write hello, hello! using gzfwrite using best compression level */
-    if (PREFIX(gzsetparams)(file, Z_BEST_COMPRESSION, Z_DEFAULT_STRATEGY) != Z_OK) {
-        fprintf(stderr, "gzsetparams err: %s\n", PREFIX(gzerror)(file, &err));
-        exit(1);
-    }
-    if (PREFIX(gzfwrite)(hello, len, 1, file) == 0) {
-        fprintf(stderr, "gzfwrite err: %s\n", PREFIX(gzerror)(file, &err));
-        exit(1);
-    }
+    if (PREFIX(gzsetparams)(file, Z_BEST_COMPRESSION, Z_DEFAULT_STRATEGY) != Z_OK)
+        error("gzsetparams err: %s\n", PREFIX(gzerror)(file, &err));
+    if (PREFIX(gzfwrite)(hello, len, 1, file) == 0)
+        error("gzfwrite err: %s\n", PREFIX(gzerror)(file, &err));
     /* Flush compressed bytes to file */
-    if (PREFIX(gzflush)(file, Z_SYNC_FLUSH) != Z_OK) {
-        fprintf(stderr, "gzflush err: %s\n", PREFIX(gzerror)(file, &err));
-        exit(1);
-    }
+    if (PREFIX(gzflush)(file, Z_SYNC_FLUSH) != Z_OK)
+        error("gzflush err: %s\n", PREFIX(gzerror)(file, &err));
     comprLen = PREFIX(gzoffset)(file);
-    if (comprLen <= 0) {
-        fprintf(stderr, "gzoffset err: %s\n", PREFIX(gzerror)(file, &err));
-        exit(1);
-    }
+    if (comprLen <= 0)
+        error("gzoffset err: %s\n", PREFIX(gzerror)(file, &err));
     PREFIX(gzclose)(file);
 
     /* Open gz file we previously wrote */
     file = PREFIX(gzopen)(fname, "rb");
-    if (file == NULL) {
-        fprintf(stderr, "gzopen error\n");
-        exit(1);
-    }
+    if (file == NULL)
+        error("gzopen error\n");
+
     /* Read uncompressed data - hello, hello! string twice */
     strcpy((char*)uncompr, "garbages");
-    if (PREFIX(gzread)(file, uncompr, (unsigned)uncomprLen) != (int)(len + len)) {
-        fprintf(stderr, "gzread err: %s\n", PREFIX(gzerror)(file, &err));
-        exit(1);
-    }
-    if (strcmp((char*)uncompr, hello)) {
-        fprintf(stderr, "bad gzread: %s\n", (char*)uncompr);
-        exit(1);
-    } else {
+    if (PREFIX(gzread)(file, uncompr, (unsigned)uncomprLen) != (int)(len + len))
+        error("gzread err: %s\n", PREFIX(gzerror)(file, &err));
+    if (strcmp((char*)uncompr, hello))
+        error("bad gzread: %s\n", (char*)uncompr);
+    else
         printf("gzread(): %s\n", (char*)uncompr);
-    }
     /* Check position at the end of the gz file */
-    if (PREFIX(gzeof)(file) != 1) {
-        fprintf(stderr, "gzeof err: not reporting end of stream\n");
-        exit(1);
-    }
+    if (PREFIX(gzeof)(file) != 1)
+        error("gzeof err: not reporting end of stream\n");
+
     /* Seek backwards mid-string and check char reading with gzgetc and gzungetc */
     pos = PREFIX(gzseek)(file, -22L, SEEK_CUR);
-    if (pos != 6 || PREFIX(gztell)(file) != pos) {
-        fprintf(stderr, "gzseek error, pos=%ld, gztell=%ld\n",
-                (long)pos, (long)PREFIX(gztell)(file));
-        exit(1);
-    }
-    if (PREFIX(gzgetc)(file) != ' ') {
-        fprintf(stderr, "gzgetc error\n");
-        exit(1);
-    }
-    if (PREFIX(gzungetc)(' ', file) != ' ') {
-        fprintf(stderr, "gzungetc error\n");
-        exit(1);
-    }
+    if (pos != 6 || PREFIX(gztell)(file) != pos)
+        error("gzseek error, pos=%ld, gztell=%ld\n", (long)pos, (long)PREFIX(gztell)(file));
+    if (PREFIX(gzgetc)(file) != ' ')
+        error("gzgetc error\n");
+    if (PREFIX(gzungetc)(' ', file) != ' ')
+        error("gzungetc error\n");
     /* Read first hello, hello! string with gzgets */
     strcpy((char*)uncompr, "garbages");
     PREFIX(gzgets)(file, (char*)uncompr, (int)uncomprLen);
-    if (strlen((char*)uncompr) != 7) { /* " hello!" */
-        fprintf(stderr, "gzgets err after gzseek: %s\n", PREFIX(gzerror)(file, &err));
-        exit(1);
-    }
-    if (strcmp((char*)uncompr, hello + 6)) {
-        fprintf(stderr, "bad gzgets after gzseek\n");
-        exit(1);
-    } else {
+    if (strlen((char*)uncompr) != 7) /* " hello!" */
+        error("gzgets err after gzseek: %s\n", PREFIX(gzerror)(file, &err));
+    if (strcmp((char*)uncompr, hello + 6))
+        error("bad gzgets after gzseek\n");
+    else
         printf("gzgets() after gzseek: %s\n", (char*)uncompr);
-    }
     /* Seek to second hello, hello! string */
     pos = PREFIX(gzseek)(file, 14L, SEEK_SET);
-    if (pos != 14 || PREFIX(gztell)(file) != pos) {
-        fprintf(stderr, "gzseek error, pos=%ld, gztell=%ld\n",
-                (long)pos, (long)PREFIX(gztell)(file));
-        exit(1);
-    }
+    if (pos != 14 || PREFIX(gztell)(file) != pos)
+        error("gzseek error, pos=%ld, gztell=%ld\n", (long)pos, (long)PREFIX(gztell)(file));
     /* Check position not at end of file */
-    if (PREFIX(gzeof)(file) != 0) {
-        fprintf(stderr, "gzeof err: reporting end of stream\n");
-        exit(1);
-    }
+    if (PREFIX(gzeof)(file) != 0)
+        error("gzeof err: reporting end of stream\n");
     /* Read first hello, hello! string with gzfread */
     strcpy((char*)uncompr, "garbages");
     read = PREFIX(gzfread)(uncompr, uncomprLen, 1, file);
-    if (strcmp((const char *)uncompr, hello) != 0) {
-        fprintf(stderr, "bad gzgets\n");
-        exit(1);
-    } else {
+    if (strcmp((const char *)uncompr, hello) != 0)
+        error("bad gzgets\n");
+    else
         printf("gzgets(): %s\n", (char*)uncompr);
-    }
     pos = PREFIX(gzoffset)(file);
-    if (pos < 0 || pos != (comprLen + 10)) {
-        fprintf(stderr, "gzoffset err: wrong offset at end\n");
-        exit(1);
-    }
+    if (pos < 0 || pos != (comprLen + 10))
+        error("gzoffset err: wrong offset at end\n");
     /* Trigger an error and clear it with gzclearerr */
     PREFIX(gzfread)(uncompr, (size_t)-1, (size_t)-1, file);
     PREFIX(gzerror)(file, &err);
-    if (err == 0) {
-        fprintf(stderr, "gzerror err: no error returned\n");
-        exit(1);
-    }
+    if (err == 0)
+        error("gzerror err: no error returned\n");
     PREFIX(gzclearerr)(file);
     PREFIX(gzerror)(file, &err);
-    if (err != 0) {
-        fprintf(stderr, "gzclearerr err: not zero %d\n", err);
-        exit(1);
-    }
+    if (err != 0)
+        error("gzclearerr err: not zero %d\n", err);
 
     PREFIX(gzclose)(file);
 
-    if (PREFIX(gzclose)(NULL) != Z_STREAM_ERROR) {
-        fprintf(stderr, "gzclose unexpected return when handle null\n");
-        exit(1);
-    }
+    if (PREFIX(gzclose)(NULL) != Z_STREAM_ERROR)
+        error("gzclose unexpected return when handle null\n");
     Z_UNUSED(read);
 #endif
 }
@@ -302,12 +263,10 @@ void test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr,
     err = PREFIX(inflateEnd)(&d_stream);
     CHECK_ERR(err, "inflateEnd");
 
-    if (strcmp((char*)uncompr, hello)) {
-        fprintf(stderr, "bad inflate\n");
-        exit(1);
-    } else {
+    if (strcmp((char*)uncompr, hello))
+        error("bad inflate\n");
+    else
         printf("inflate(): %s\n", (char *)uncompr);
-    }
 }
 
 static unsigned int diff;
@@ -349,29 +308,22 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
     c_stream.avail_in = (unsigned int)uncomprLen;
     err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
     CHECK_ERR(err, "deflate");
-    if (c_stream.avail_in != 0) {
-        fprintf(stderr, "deflate not greedy\n");
-        exit(1);
-    }
+    if (c_stream.avail_in != 0)
+        error("deflate not greedy\n");
 
     /* Feed in already compressed data and switch to no compression: */
     if (zng_params) {
 #ifndef ZLIB_COMPAT
         zng_deflateGetParams(&c_stream, params, sizeof(params) / sizeof(params[0]));
-        if (level != Z_BEST_SPEED) {
-            fprintf(stderr, "Expected compression level Z_BEST_SPEED, got %d\n", level);
-            exit(1);
-        }
-        if (strategy != Z_DEFAULT_STRATEGY) {
-            fprintf(stderr, "Expected compression strategy Z_DEFAULT_STRATEGY, got %d\n", strategy);
-            exit(1);
-        }
+        if (level != Z_BEST_SPEED)
+            error("Expected compression level Z_BEST_SPEED, got %d\n", level);
+        if (strategy != Z_DEFAULT_STRATEGY)
+            error("Expected compression strategy Z_DEFAULT_STRATEGY, got %d\n", strategy);
         level = Z_NO_COMPRESSION;
         strategy = Z_DEFAULT_STRATEGY;
         zng_deflateSetParams(&c_stream, params, sizeof(params) / sizeof(params[0]));
 #else
-        fprintf(stderr, "test_large_deflate() called with zng_params=1 in compat mode\n");
-        exit(1);
+        error("test_large_deflate() called with zng_params=1 in compat mode\n");
 #endif
     } else {
         PREFIX(deflateParams)(&c_stream, Z_NO_COMPRESSION, Z_DEFAULT_STRATEGY);
@@ -388,20 +340,15 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
         level = -1;
         strategy = -1;
         zng_deflateGetParams(&c_stream, params, sizeof(params) / sizeof(params[0]));
-        if (level != Z_NO_COMPRESSION) {
-            fprintf(stderr, "Expected compression level Z_NO_COMPRESSION, got %d\n", level);
-            exit(1);
-        }
-        if (strategy != Z_DEFAULT_STRATEGY) {
-            fprintf(stderr, "Expected compression strategy Z_DEFAULT_STRATEGY, got %d\n", strategy);
-            exit(1);
-        }
+        if (level != Z_NO_COMPRESSION)
+            error("Expected compression level Z_NO_COMPRESSION, got %d\n", level);
+        if (strategy != Z_DEFAULT_STRATEGY)
+            error("Expected compression strategy Z_DEFAULT_STRATEGY, got %d\n", strategy);
         level = Z_BEST_COMPRESSION;
         strategy = Z_FILTERED;
         zng_deflateSetParams(&c_stream, params, sizeof(params) / sizeof(params[0]));
 #else
-        fprintf(stderr, "test_large_deflate() called with zng_params=1 in compat mode\n");
-        exit(1);
+        error("test_large_deflate() called with zng_params=1 in compat mode\n");
 #endif
     } else {
         PREFIX(deflateParams)(&c_stream, Z_BEST_COMPRESSION, Z_FILTERED);
@@ -412,10 +359,8 @@ void test_large_deflate(unsigned char *compr, size_t comprLen, unsigned char *un
     CHECK_ERR(err, "deflate");
 
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
-    if (err != Z_STREAM_END) {
-        fprintf(stderr, "deflate should report Z_STREAM_END\n");
-        exit(1);
-    }
+    if (err != Z_STREAM_END)
+        error("deflate should report Z_STREAM_END\n");
     err = PREFIX(deflateEnd)(&c_stream);
     CHECK_ERR(err, "deflateEnd");
 }
@@ -452,12 +397,10 @@ void test_large_inflate(unsigned char *compr, size_t comprLen, unsigned char *un
     err = PREFIX(inflateEnd)(&d_stream);
     CHECK_ERR(err, "inflateEnd");
 
-    if (d_stream.total_out != 2*uncomprLen + diff) {
-        fprintf(stderr, "bad large inflate: %" PRIu64 "\n", (uint64_t)d_stream.total_out);
-        exit(1);
-    } else {
+    if (d_stream.total_out != 2*uncomprLen + diff)
+        error("bad large inflate: %" PRIu64 "\n", (uint64_t)d_stream.total_out);
+    else
         printf("large_inflate(): OK\n");
-    }
 }
 
 /* ===========================================================================
@@ -525,10 +468,8 @@ void test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr, si
     CHECK_ERR(err, "inflateSync");
 
     err = PREFIX(inflate)(&d_stream, Z_FINISH);
-    if (err != Z_STREAM_END) {
-        fprintf(stderr, "inflate should report Z_STREAM_END\n");
-        exit(1);
-    }
+    if (err != Z_STREAM_END)
+        error("inflate should report Z_STREAM_END\n");
     err = PREFIX(inflateEnd)(&d_stream);
     CHECK_ERR(err, "inflateEnd");
 
@@ -562,10 +503,8 @@ void test_dict_deflate(unsigned char *compr, size_t comprLen) {
     c_stream.avail_in = (unsigned int)strlen(hello)+1;
 
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
-    if (err != Z_STREAM_END) {
-        fprintf(stderr, "deflate should report Z_STREAM_END\n");
-        exit(1);
-    }
+    if (err != Z_STREAM_END)
+        error("deflate should report Z_STREAM_END\n");
     err = PREFIX(deflateEnd)(&c_stream);
     CHECK_ERR(err, "deflateEnd");
 }
@@ -598,10 +537,8 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
         err = PREFIX(inflate)(&d_stream, Z_NO_FLUSH);
         if (err == Z_STREAM_END) break;
         if (err == Z_NEED_DICT) {
-            if (d_stream.adler != dictId) {
-                fprintf(stderr, "unexpected dictionary");
-                exit(1);
-            }
+            if (d_stream.adler != dictId)
+                error("unexpected dictionary");
             err = PREFIX(inflateSetDictionary)(&d_stream, (const unsigned char*)dictionary,
                                        (int)sizeof(dictionary));
         }
@@ -610,27 +547,21 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
     
     err = PREFIX(inflateGetDictionary)(&d_stream, NULL, &check_dictionary_len);
     CHECK_ERR(err, "inflateGetDictionary");
-    if (check_dictionary_len != sizeof(dictionary)) {
-        fprintf(stderr, "bad dictionary length\n");
-        exit(1);
-    }
+    if (check_dictionary_len != sizeof(dictionary))
+        error("bad dictionary length\n");
     
     err = PREFIX(inflateGetDictionary)(&d_stream, check_dictionary, &check_dictionary_len);
     CHECK_ERR(err, "inflateGetDictionary");
-    if (memcmp(dictionary, check_dictionary, sizeof(dictionary)) != 0) {
-        fprintf(stderr, "bad dictionary\n");
-        exit(1);
-    }
+    if (memcmp(dictionary, check_dictionary, sizeof(dictionary)) != 0)
+        error("bad dictionary\n");
 
     err = PREFIX(inflateEnd)(&d_stream);
     CHECK_ERR(err, "inflateEnd");
 
-    if (strncmp((char*)uncompr, hello, sizeof(hello))) {
-        fprintf(stderr, "bad inflate with dict\n");
-        exit(1);
-    } else {
+    if (strncmp((char*)uncompr, hello, sizeof(hello)))
+        error("bad inflate with dict\n");
+    else
         printf("inflate with dictionary: %s\n", (char *)uncompr);
-    }
 }
 
 /* ===========================================================================
@@ -750,10 +681,8 @@ void test_deflate_get_dict(unsigned char *compr, size_t comprLen) {
 
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
 
-    if (err != Z_STREAM_END) {
-        fprintf(stderr, "deflate should report Z_STREAM_END\n");
-        exit(1);
-    }
+    if (err != Z_STREAM_END)
+        error("deflate should report Z_STREAM_END\n");
 
     dictNew = calloc(256, 1);
     dictLen = (unsigned int *)calloc(4, 1);
@@ -905,14 +834,10 @@ void test_deflate_prime(unsigned char *compr, size_t comprLen, unsigned char *un
     err = PREFIX(inflateEnd)(&d_stream);
     CHECK_ERR(err, "inflateEnd");
 
-    if (strcmp((const char *)uncompr, hello) != 0) {
-        fprintf(stderr, "bad deflatePrime\n");
-        exit(1);
-    }
-
-    if (err == Z_OK) {
+    if (strcmp((const char *)uncompr, hello) != 0)
+        error("bad deflatePrime\n");
+    if (err == Z_OK)
         printf("deflatePrime(): OK\n");
-    }
 }
 
 /* ===========================================================================
@@ -925,10 +850,8 @@ void test_deflate_set_header(unsigned char *compr, size_t comprLen) {
     size_t len = strlen(hello)+1;
 
 
-    if (head == NULL) {
-        printf("out of memory\n");
-        exit(1);
-    }
+    if (head == NULL)
+        error("out of memory\n");
 
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
@@ -1047,10 +970,8 @@ int main(int argc, char *argv[]) {
     /* compr and uncompr are cleared to avoid reading uninitialized
      * data and to ensure that uncompr compresses well.
      */
-    if (compr == NULL || uncompr == NULL) {
-        printf("out of memory\n");
-        exit(1);
-    }
+    if (compr == NULL || uncompr == NULL)
+        error("out of memory\n");
 
     test_compress(compr, comprLen, uncompr, uncomprLen);
 
