@@ -111,6 +111,8 @@ Z_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
 
 #ifdef ARM_ACLE_CRC_HASH
 extern uint32_t crc32_acle(uint32_t, const unsigned char *, uint64_t);
+#elif defined(POWER8_VSX_CRC32)
+extern uint32_t crc32_power8(uint32_t, const unsigned char *, uint64_t);
 #endif
 #ifdef S390_CRC32_VX
 extern uint32_t s390_crc32_vx(uint32_t, const unsigned char *, uint64_t);
@@ -452,6 +454,7 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
            "crc32_z takes size_t but internally we have a uint64_t len");
     /* return a function pointer for optimized arches here after a capability test */
 
+    functable.crc32 = &crc32_generic;
     cpu_check_features();
 
     if (use_byfour) {
@@ -470,9 +473,11 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
 #else
 #  error No endian defined
 #endif
-    } else {
-        functable.crc32 = crc32_generic;
     }
+#if defined(POWER8_VSX_CRC32)
+    if (power_cpu_has_arch_2_07)
+        functable.crc32 = crc32_power8;
+#endif
 
     return functable.crc32(crc, buf, len);
 }
