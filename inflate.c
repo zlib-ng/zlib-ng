@@ -36,7 +36,7 @@
 /* Invoked at the beginning of inflateMark(). Useful for updating arch-specific pointers and offsets. */
 #  define INFLATE_MARK_HOOK(strm) do {} while (0)
 /* Invoked at the beginning of inflateSyncPoint(). Useful for performing arch-specific state checks. */
-#define INFLATE_SYNC_POINT_HOOK(strm) do {} while (0)
+#  define INFLATE_SYNC_POINT_HOOK(strm) do {} while (0)
 #endif
 
 /* function prototypes */
