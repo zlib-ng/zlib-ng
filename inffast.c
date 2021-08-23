@@ -155,7 +155,7 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
     /* Detect if out and window point to the same memory allocation. In this instance it is 
        necessary to use safe chunk copy functions to prevent overwriting the window. If the 
        window is overwritten then future matches with far distances will fail to copy correctly. */
-    extra_safe = (out >= window && out + INFLATE_FAST_MIN_LEFT <= window + wsize);
+    extra_safe = (wsize != 0 && out >= window && out + INFLATE_FAST_MIN_LEFT <= window + wsize);
 
     /* decode literals and length/distances until end-of-block or not enough
        input data or output space */
