@@ -644,7 +644,7 @@ unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long
 
     /* if not default parameters, return conservative bound */
     if (DEFLATE_NEED_CONSERVATIVE_BOUND(strm) ||  /* hook for IBM Z DFLTCC */
-            s->w_bits != 15 || HASH_BITS < 15)
+            s->w_bits != 15 || HASH_BITS != 15)
         return complen + wraplen;
 
     /* default settings: return tight bound for that case */
