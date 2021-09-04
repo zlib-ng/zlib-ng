@@ -47,7 +47,6 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
             /* Find the longest match, discarding those <= prev_length.
              * At this point we have always match length < WANT_MIN_MATCH
              */
-
             if (dist <= MAX_DIST(s) && dist > 0 && hash_head != 0) {
                 /* To simplify the code, we prevent matches with the string
                  * of window index 0 (in particular we have to avoid a match
