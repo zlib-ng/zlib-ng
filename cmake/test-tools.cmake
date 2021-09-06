@@ -32,4 +32,3 @@ add_test(NAME switchlevels-help
     COMMAND ${CMAKE_COMMAND}
      "-DCOMMAND=${TEST_COMMAND}"
      -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-
