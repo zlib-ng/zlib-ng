@@ -6,6 +6,8 @@
 #ifndef ZCONFNG_H
 #define ZCONFNG_H
 
+#include "zlib_name_mangling-ng.h"
+
 #if !defined(_WIN32) && defined(__WIN32__)
 #  define _WIN32
 #endif

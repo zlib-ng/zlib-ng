@@ -1757,13 +1757,13 @@ Z_EXTERN int Z_EXPORT deflateInit2_(z_stream *strm, int  level, int  method, int
 Z_EXTERN int Z_EXPORT inflateInit2_(z_stream *strm, int  windowBits, const char *version, int stream_size);
 Z_EXTERN int Z_EXPORT inflateBackInit_(z_stream *strm, int windowBits, unsigned char *window,
                                       const char *version, int stream_size);
-#define deflateInit(strm, level) deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))
-#define inflateInit(strm) inflateInit_((strm), ZLIB_VERSION, (int)sizeof(z_stream))
-#define deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
+#define @ZLIB_SYMBOL_PREFIX@deflateInit(strm, level) deflateInit_((strm), (level), ZLIB_VERSION, (int)sizeof(z_stream))
+#define @ZLIB_SYMBOL_PREFIX@inflateInit(strm) inflateInit_((strm), ZLIB_VERSION, (int)sizeof(z_stream))
+#define @ZLIB_SYMBOL_PREFIX@deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
         deflateInit2_((strm), (level), (method), (windowBits), (memLevel), \
                      (strategy), ZLIB_VERSION, (int)sizeof(z_stream))
-#define inflateInit2(strm, windowBits) inflateInit2_((strm), (windowBits), ZLIB_VERSION, (int)sizeof(z_stream))
-#define inflateBackInit(strm, windowBits, window) \
+#define @ZLIB_SYMBOL_PREFIX@inflateInit2(strm, windowBits) inflateInit2_((strm), (windowBits), ZLIB_VERSION, (int)sizeof(z_stream))
+#define @ZLIB_SYMBOL_PREFIX@inflateBackInit(strm, windowBits, window) \
                         inflateBackInit_((strm), (windowBits), (window), ZLIB_VERSION, (int)sizeof(z_stream))
 
 
@@ -1781,7 +1781,7 @@ struct gzFile_s {
     z_off64_t pos;
 };
 Z_EXTERN int Z_EXPORT gzgetc_(gzFile file);  /* backward compatibility */
-#  define gzgetc(g) ((g)->have ? ((g)->have--, (g)->pos++, *((g)->next)++) : (gzgetc)(g))
+#  define @ZLIB_SYMBOL_PREFIX@gzgetc(g) ((g)->have ? ((g)->have--, (g)->pos++, *((g)->next)++) : (@ZLIB_SYMBOL_PREFIX@gzgetc)(g))
 
 /* provide 64-bit offset functions if _LARGEFILE64_SOURCE defined, and/or
  * change the regular functions to 64 bits if _FILE_OFFSET_BITS is 64 (if
@@ -1801,21 +1801,21 @@ Z_EXTERN int Z_EXPORT gzgetc_(gzFile file);  /* backward compatibility */
 #endif
 
 #if !defined(Z_INTERNAL) && defined(Z_WANT64)
-#    define gzopen gzopen64
-#    define gzseek gzseek64
-#    define gztell gztell64
-#    define gzoffset gzoffset64
-#    define adler32_combine adler32_combine64
-#    define crc32_combine crc32_combine64
-#    define crc32_combine_gen crc32_combine_gen64
+#    define @ZLIB_SYMBOL_PREFIX@gzopen @ZLIB_SYMBOL_PREFIX@gzopen64
+#    define @ZLIB_SYMBOL_PREFIX@gzseek @ZLIB_SYMBOL_PREFIX@gzseek64
+#    define @ZLIB_SYMBOL_PREFIX@gztell @ZLIB_SYMBOL_PREFIX@gztell64
+#    define @ZLIB_SYMBOL_PREFIX@gzoffset @ZLIB_SYMBOL_PREFIX@gzoffset64
+#    define @ZLIB_SYMBOL_PREFIX@adler32_combine @ZLIB_SYMBOL_PREFIX@adler32_combine64
+#    define @ZLIB_SYMBOL_PREFIX@crc32_combine @ZLIB_SYMBOL_PREFIX@crc32_combine64
+#    define @ZLIB_SYMBOL_PREFIX@crc32_combine_gen @ZLIB_SYMBOL_PREFIX@crc32_combine_gen64
 #  ifndef Z_LARGE64
-     Z_EXTERN gzFile Z_EXPORT gzopen64(const char *, const char *);
-     Z_EXTERN z_off_t Z_EXPORT gzseek64(gzFile, z_off_t, int);
-     Z_EXTERN z_off_t Z_EXPORT gztell64(gzFile);
-     Z_EXTERN z_off_t Z_EXPORT gzoffset64(gzFile);
-     Z_EXTERN unsigned long Z_EXPORT adler32_combine64(unsigned long, unsigned long, z_off_t);
-     Z_EXTERN unsigned long Z_EXPORT crc32_combine64(unsigned long, unsigned long, z_off_t);
-     Z_EXTERN void Z_EXPORT crc32_combine_gen64(uint32_t *op, z_off64_t);
+     Z_EXTERN gzFile Z_EXPORT @ZLIB_SYMBOL_PREFIX@gzopen64(const char *, const char *);
+     Z_EXTERN z_off_t Z_EXPORT @ZLIB_SYMBOL_PREFIX@gzseek64(gzFile, z_off_t, int);
+     Z_EXTERN z_off_t Z_EXPORT @ZLIB_SYMBOL_PREFIX@gztell64(gzFile);
+     Z_EXTERN z_off_t Z_EXPORT @ZLIB_SYMBOL_PREFIX@gzoffset64(gzFile);
+     Z_EXTERN unsigned long Z_EXPORT @ZLIB_SYMBOL_PREFIX@adler32_combine64(unsigned long, unsigned long, z_off_t);
+     Z_EXTERN unsigned long Z_EXPORT @ZLIB_SYMBOL_PREFIX@crc32_combine64(unsigned long, unsigned long, z_off_t);
+     Z_EXTERN void Z_EXPORT @ZLIB_SYMBOL_PREFIX@crc32_combine_gen64(uint32_t *op, z_off64_t);
 #  endif
 #else
    Z_EXTERN gzFile Z_EXPORT gzopen(const char *, const char *);

@@ -1800,13 +1800,13 @@ Z_EXTERN Z_EXPORT int32_t zng_inflateInit2_(zng_stream *strm, int32_t  windowBit
 Z_EXTERN Z_EXPORT int32_t zng_inflateBackInit_(zng_stream *strm, int32_t windowBits, uint8_t *window,
                                          const char *version, int32_t stream_size);
 
-#define zng_deflateInit(strm, level) zng_deflateInit_((strm), (level), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
-#define zng_inflateInit(strm) zng_inflateInit_((strm), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
-#define zng_deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
+#define @ZLIB_SYMBOL_PREFIX@zng_deflateInit(strm, level) zng_deflateInit_((strm), (level), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
+#define @ZLIB_SYMBOL_PREFIX@zng_inflateInit(strm) zng_inflateInit_((strm), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
+#define @ZLIB_SYMBOL_PREFIX@zng_deflateInit2(strm, level, method, windowBits, memLevel, strategy) \
         zng_deflateInit2_((strm), (level), (method), (windowBits), (memLevel), \
                      (strategy), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
-#define zng_inflateInit2(strm, windowBits) zng_inflateInit2_((strm), (windowBits), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
-#define zng_inflateBackInit(strm, windowBits, window) \
+#define @ZLIB_SYMBOL_PREFIX@zng_inflateInit2(strm, windowBits) zng_inflateInit2_((strm), (windowBits), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
+#define @ZLIB_SYMBOL_PREFIX@zng_inflateBackInit(strm, windowBits, window) \
                         zng_inflateBackInit_((strm), (windowBits), (window), ZLIBNG_VERSION, (int32_t)sizeof(zng_stream))
 
 #ifdef WITH_GZFILEOP
@@ -1824,7 +1824,7 @@ struct gzFile_s {
     z_off64_t pos;
 };
 Z_EXTERN Z_EXPORT int32_t zng_gzgetc_(gzFile file);  /* backward compatibility */
-#  define zng_gzgetc(g) ((g)->have ? ((g)->have--, (g)->pos++, *((g)->next)++) : (zng_gzgetc)(g))
+#  define @ZLIB_SYMBOL_PREFIX@zng_gzgetc(g) ((g)->have ? ((g)->have--, (g)->pos++, *((g)->next)++) : (@ZLIB_SYMBOL_PREFIX@zng_gzgetc)(g))
 
 #endif /* WITH_GZFILEOP */
 

@@ -1,5 +1,6 @@
 prefix=@CMAKE_INSTALL_PREFIX@
 exec_prefix=${prefix}
+symbol_prefix=@ZLIB_SYMBOL_PREFIX@
 libdir=@PC_LIB_INSTALL_DIR@
 sharedlibdir=${libdir}
 includedir=@PC_INC_INSTALL_DIR@
