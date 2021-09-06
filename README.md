@@ -217,4 +217,3 @@ Related Projects
 * Python tool to benchmark minigzip/minideflate https://github.com/zlib-ng/deflatebench
 * Python tool to benchmark pigz                 https://github.com/zlib-ng/pigzbench
 * 3rd party patches for zlib-ng compatibility   https://github.com/zlib-ng/patches
-
