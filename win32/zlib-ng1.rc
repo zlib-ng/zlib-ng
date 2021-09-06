@@ -1,5 +1,5 @@
 #include <winver.h>
-#include "../zlib-ng.h"
+#include "zlib-ng.h"
 
 #ifdef GCC_WINDRES
 VS_VERSION_INFO		VERSIONINFO

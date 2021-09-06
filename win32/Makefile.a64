@@ -16,6 +16,7 @@ LOC =
 STATICLIB = zlib.lib
 SHAREDLIB = zlib1.dll
 IMPLIB    = zdll.lib
+SYMBOL_PREFIX =
 
 CC = cl
 LD = link
@@ -103,8 +104,25 @@ OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj adler32_neon.obj chunkset_n
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) \
      example.exe minigzip.exe example_d.exe minigzip_d.exe
 
-zconf: $(TOP)/zconf$(SUFFIX).h.in
-     $(CP) $(TOP)\zconf$(SUFFIX).h.in $(TOP)\zconf$(SUFFIX).h
+!if "$(SYMBOL_PREFIX)" != ""
+zlib_name_mangling$(SUFFIX).h: zlib_name_mangling$(SUFFIX).h.in
+	cscript $(TOP)\win32\replace.vbs $(TOP)\zlib_name_mangling$(SUFFIX).h.in zlib_name_mangling$(SUFFIX).h "@ZLIB_SYMBOL_PREFIX@" "$(SYMBOL_PREFIX)"
+!else
+zlib_name_mangling$(SUFFIX).h: zlib_name_mangling.h.empty
+	$(CP) $(TOP)\zlib_name_mangling.h.empty zlib_name_mangling$(SUFFIX).h
+!endif
+
+zlib$(SUFFIX).h: zlib$(SUFFIX).h.in
+	cscript $(TOP)\win32\replace.vbs $(TOP)\zlib$(SUFFIX).h.in zlib$(SUFFIX).h "@ZLIB_SYMBOL_PREFIX@" "$(SYMBOL_PREFIX)"
+
+gzread.c: gzread.c.in
+	cscript $(TOP)\win32\replace.vbs $(TOP)\gzread.c.in gzread.c "@ZLIB_SYMBOL_PREFIX@" "$(SYMBOL_PREFIX)"
+
+zconf: $(TOP)/zconf$(SUFFIX).h.in $(TOP)/zlib$(SUFFIX).h $(TOP)/zlib_name_mangling$(SUFFIX).h
+	$(CP) $(TOP)\zconf$(SUFFIX).h.in $(TOP)\zconf$(SUFFIX).h
+
+$(TOP)/win32/$(DEFFILE): $(TOP)/win32/$(DEFFILE).in
+	cscript $(TOP)\win32\replace.vbs $(TOP)/win32/$(DEFFILE).in $(TOP)/win32/$(DEFFILE) "@ZLIB_SYMBOL_PREFIX@" "$(SYMBOL_PREFIX)"
 
 $(STATICLIB): zconf $(OBJS)
 	$(AR) $(ARFLAGS) -out:$@ $(OBJS)
@@ -218,3 +236,9 @@ clean:
 
 distclean: clean
 	-del zconf$(SUFFIX).h
+	-del zlib$(SUFFIX).h
+	-del zlib_name_mangling$(SUFFIX).h
+	-del $(TOP)\win32\zlib.def
+	-del $(TOP)\win32\zlibcompat.def
+	-del $(TOP)\win32\zlib-ng.def
+	-del gzread.c

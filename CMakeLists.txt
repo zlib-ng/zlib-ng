@@ -26,7 +26,7 @@ if(NOT CMAKE_C_STANDARD IN_LIST VALID_C_STANDARDS)
 endif()
 
 # Parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h _zlib_h_contents)
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h.in _zlib_h_contents)
 string(REGEX REPLACE ".*#define[ \t]+ZLIB_VERSION[ \t]+\"([0-9]+.[0-9]+.[0-9]+).*\".*"
         "\\1" ZLIB_HEADER_VERSION ${_zlib_h_contents})
 string(REGEX REPLACE ".*#define[ \t]+ZLIBNG_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
@@ -86,6 +86,10 @@ option(WITH_INFLATE_STRICT "Build with strict inflate distance checking" OFF)
 option(WITH_INFLATE_ALLOW_INVALID_DIST "Build with zero fill for inflate invalid distances" OFF)
 option(WITH_UNALIGNED "Support unaligned reads on platforms that support it" ON)
 
+set(ZLIB_SYMBOL_PREFIX "" CACHE STRING "Give this prefix to all publicly exported symbols.
+Useful when embedding into a larger library.
+Default is no prefix (empty prefix).")
+
 # Add multi-choice option
 set(WITH_SANITIZER AUTO CACHE STRING "Enable sanitizer support")
 set_property(CACHE WITH_SANITIZER PROPERTY STRINGS "Memory" "Address" "Undefined" "Thread")
@@ -111,6 +115,7 @@ endif()
 option(INSTALL_UTILS "Copy minigzip and minideflate during install" OFF)
 
 mark_as_advanced(FORCE
+    ZLIB_SYMBOL_PREFIX
     ZLIB_DUAL_LINK
     WITH_REDUCED_MEM
     WITH_ACLE WITH_NEON
@@ -841,7 +846,8 @@ endif()
 
 set(ZLIB_PUBLIC_HDRS
     ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h
-    zlib${SUFFIX}.h
+    ${CMAKE_CURRENT_BINARY_DIR}/zlib_name_mangling${SUFFIX}.h
+    ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.h
 )
 set(ZLIB_PRIVATE_HDRS
     adler32_p.h
@@ -901,7 +907,7 @@ set(ZLIB_GZFILE_PRIVATE_HDRS
 )
 set(ZLIB_GZFILE_SRCS
     gzlib.c
-    gzread.c
+    ${CMAKE_CURRENT_BINARY_DIR}/gzread.c
     gzwrite.c
 )
 
@@ -1040,6 +1046,23 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
     ${ZLIB_PC} @ONLY)
 configure_file(${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h.cmakein
     ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h.in
+    ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.h @ONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gzread.c.in
+    ${CMAKE_CURRENT_BINARY_DIR}/gzread.c @ONLY)
+
+
+if (NOT ZLIB_SYMBOL_PREFIX STREQUAL "")
+    add_feature_info(ZLIB_SYMBOL_PREFIX ON "Publicly exported symbols have a custom prefix")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib_name_mangling${SUFFIX}.h.in
+        ${CMAKE_CURRENT_BINARY_DIR}/zlib_name_mangling${SUFFIX}.h @ONLY)
+else()
+    add_feature_info(ZLIB_SYMBOL_PREFIX OFF "Publicly exported symbols DO NOT have a custom prefix")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib_name_mangling.h.empty
+        ${CMAKE_CURRENT_BINARY_DIR}/zlib_name_mangling${SUFFIX}.h COPYONLY)
+endif()
+# add_definitions(-DZLIB_SYMBOL_PREFIX=${ZLIB_SYMBOL_PREFIX}) # not needed
+
 
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     install(TARGETS ${ZLIB_INSTALL_LIBRARIES}
@@ -1048,8 +1071,10 @@ if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
         LIBRARY DESTINATION "${LIB_INSTALL_DIR}")
 endif()
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
-    install(FILES zlib${SUFFIX}.h
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.h
         DESTINATION "${INC_INSTALL_DIR}" RENAME zlib${SUFFIX}.h)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zlib_name_mangling${SUFFIX}.h
+        DESTINATION "${INC_INSTALL_DIR}" RENAME zlib_name_mangling${SUFFIX}.h)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h
         DESTINATION "${INC_INSTALL_DIR}" RENAME zconf${SUFFIX}.h)
 endif()

@@ -113,6 +113,7 @@ neonflag=
 noltoflag="-fno-lto"
 vgfmaflag="-march=z13"
 vmxflag="-maltivec"
+symbol_prefix=""
 without_optimizations=0
 without_new_strategies=0
 reducedmem=0
@@ -150,6 +151,7 @@ case "$1" in
       echo '  configure [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
       echo '    [--static] [--32] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
       echo '    [--includedir=INCLUDEDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
+      echo '    [--sprefix=SYMBOL_PREFIX]   Adds a prefix to all exported symbols' | tee -a configure.log
       echo '    [--warn]                    Enables extra compiler warnings' | tee -a configure.log
       echo '    [--debug]                   Enables extra debug prints during operation' | tee -a configure.log
       echo '    [--zlib-compat]             Compiles for zlib-compatible API instead of zlib-ng API' | tee -a configure.log
@@ -171,12 +173,14 @@ case "$1" in
         exit 0 ;;
     -p*=* | --prefix=*) prefix=$(echo $1 | sed 's/.*=//'); shift ;;
     -e*=* | --eprefix=*) exec_prefix=$(echo $1 | sed 's/.*=//'); shift ;;
+    -m*=* | --sprefix=*) symbol_prefix=$(echo $1 | sed 's/.*=//'); shift ;;
     -l*=* | --libdir=*) libdir=$(echo $1 | sed 's/.*=//'); shift ;;
     --sharedlibdir=*) sharedlibdir=$(echo $1 | sed 's/.*=//'); shift ;;
     -i*=* | --includedir=*) includedir=$(echo $1 | sed 's/.*=//');shift ;;
     -u*=* | --uname=*) uname=$(echo $1 | sed 's/.*=//');shift ;;
     -p* | --prefix) prefix="$2"; shift; shift ;;
     -e* | --eprefix) exec_prefix="$2"; shift; shift ;;
+    -m* | --sprefix) symbol_prefix="$2"; shift; shift ;;
     -l* | --libdir) libdir="$2"; shift; shift ;;
     -i* | --includedir) includedir="$2"; shift; shift ;;
     -s* | --shared | --enable-shared) shared=1; shift ;;
@@ -282,15 +286,15 @@ MAPNAME=${LIBNAME2}.map
 
 # extract zlib version numbers from zlib.h
 if test $compat -eq 0; then
-  VER=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib-ng.h)
-  VER3=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib-ng.h)
-  VER2=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\.[0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib-ng.h)
-  VER1=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib-ng.h)
+  VER=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib-ng.h.in)
+  VER3=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib-ng.h.in)
+  VER2=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\.[0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib-ng.h.in)
+  VER1=$(sed -n -e '/ZLIBNG_VERSION "/s/.*"\([0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib-ng.h.in)
 else
-  VER=$(sed -n -e '/ZLIB_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib.h)
-  VER3=$(sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib.h)
-  VER2=$(sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\.[0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib.h)
-  VER1=$(sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib.h)
+  VER=$(sed -n -e '/ZLIB_VERSION "/s/.*"\(.*\)".*/\1/p' < ${SRCDIR}/zlib.h.in)
+  VER3=$(sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\.[0-9]*\.[0-9]*\).*/\1/p' < ${SRCDIR}/zlib.h.in)
+  VER2=$(sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\.[0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib.h.in)
+  VER1=$(sed -n -e '/ZLIB_VERSION "/s/.*"\([0-9]*\)\..*/\1/p' < ${SRCDIR}/zlib.h.in)
 fi
 
 show $cc -c $test.c
@@ -790,9 +794,21 @@ else
   echo "Checking for strerror... No." | tee -a configure.log
 fi
 
-# We need to remove zconf.h from source directory if building outside of it
+# We need to remove consigured files (zconf.h etc) from source directory if building outside of it
 if [ "$SRCDIR" != "$BUILDDIR" ]; then
     rm -f $SRCDIR/zconf${SUFFIX}.h
+    rm -f $SRCDIR/zlib${SUFFIX}.h
+    rm -f $SRCDIR/zlib_name_mangling${SUFFIX}.h
+fi
+
+# Rename @ZLIB_SYMBOL_PREFIX@ to $symbol_prefix in gzread.c, zlib.h and zlib_name_mangling.h
+sed < $SRCDIR/gzread.c.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > gzread.c
+sed < $SRCDIR/zlib${SUFFIX}.h.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > zlib${SUFFIX}.h
+if [[ ! -z $symbol_prefix ]]; then
+  sed < $SRCDIR/zlib_name_mangling${SUFFIX}.h.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > zlib_name_mangling${SUFFIX}.h
+else
+  # symbol_prefix is not set, copy the empty mangling header
+  cp -p $SRCDIR/zlib_name_mangling.h.empty zlib_name_mangling${SUFFIX}.h
 fi
 
 # copy clean zconf.h for subsequent edits
@@ -1755,6 +1771,7 @@ echo bindir = $bindir >> configure.log
 echo libdir = $libdir >> configure.log
 echo mandir = $mandir >> configure.log
 echo prefix = $prefix >> configure.log
+echo symbol_prefix = $symbol_prefix >> configure.log
 echo sharedlibdir = $sharedlibdir >> configure.log
 echo uname = $uname >> configure.log
 echo sse2flag = $sse2flag >> configure.log
@@ -1814,6 +1831,7 @@ sed < $SRCDIR/Makefile.in "
 /^prefix *=/s#=.*#= $prefix#
 /^exec_prefix *=/s#=.*#= $exec_prefix#
 /^bindir *=/s#=.*#= $bindir#
+/^symbol_prefix *=/s#=.*#= $symbol_prefix#
 /^libdir *=/s#=.*#= $libdir#
 /^sharedlibdir *=/s#=.*#= $sharedlibdir#
 /^includedir *=/s#=.*#= $includedir#
@@ -1887,7 +1905,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SUFFIX *=/s#=.*#=$SUFFIX#
 /^SRCDIR *=/s#=.*#=$SRCDIR/$ARCHDIR#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
-/^TOPDIR *=/s#=.*#=$BUILDDIR#
+/^BUILDDIR *=/s#=.*#=$BUILDDIR#
 /^AVX2FLAG *=/s#=.*#=$avx2flag#
 /^SSE2FLAG *=/s#=.*#=$sse2flag#
 /^SSSE3FLAG *=/s#=.*#=$ssse3flag#
@@ -1971,6 +1989,7 @@ sed < $SRCDIR/zlib.pc.in "
 /^prefix *=/s#=.*#=$prefix#
 /^exec_prefix *=/s#=.*#=$exec_prefix#
 /^bindir *=/s#=.*#=$bindir#
+/^symbol_prefix *=/s#=.*#=$symbol_prefix#
 /^libdir *=/s#=.*#=$libdir#
 /^sharedlibdir *=/s#=.*#=$sharedlibdir#
 /^includedir *=/s#=.*#=$includedir#
