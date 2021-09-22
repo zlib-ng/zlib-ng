@@ -13,6 +13,24 @@ jobs:
             makefile: win32/Makefile.msc
             vc-vars: x86
 
+          - name: Windows NMake x64 compat
+            os: windows-latest
+            makefile: win32/Makefile.msc
+            vc-vars: x86_amd64
+            additional-args: ZLIB_COMPAT=yes
+
+          - name: Windows NMake x64 sprefix
+            os: windows-latest
+            makefile: win32/Makefile.msc
+            vc-vars: x86_amd64
+            additional-args: SYMBOL_PREFIX=zTest_
+
+          - name: Windows NMake x64 sprefix compat
+            os: windows-latest
+            makefile: win32/Makefile.msc
+            vc-vars: x86_amd64
+            additional-args: ZLIB_COMPAT=yes SYMBOL_PREFIX=zTest_
+
           - name: Windows NMake x64
             os: windows-latest
             makefile: win32/Makefile.msc
@@ -36,7 +54,7 @@ jobs:
       shell: cmd
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vc-vars }}
-        nmake -f ${{ matrix.makefile }}
+        nmake -f ${{ matrix.makefile }} ${{ matrix.additional-args }}
 
     - name: Run test cases
       shell: cmd
@@ -44,5 +62,5 @@ jobs:
       if: contains(matrix.vc-vars, 'arm') == false
       run: |
         call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vc-vars }}
-        nmake -f ${{ matrix.makefile }} test
-        nmake -f ${{ matrix.makefile }} testdll
+        nmake -f ${{ matrix.makefile }} ${{ matrix.additional-args }} test
+        nmake -f ${{ matrix.makefile }} ${{ matrix.additional-args }} testdll
