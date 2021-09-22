@@ -58,6 +58,12 @@ jobs:
             cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
             configure-args: --native
 
+          - name: macOS Clang Symbol Prefix
+            os: macOS-latest
+            compiler: clang
+            cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_
+            configure-args: --sprefix=zTest_
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v1

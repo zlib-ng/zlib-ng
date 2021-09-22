@@ -13,6 +13,12 @@ jobs:
             compiler: gcc
             codecov: ubuntu_gcc_pigz
 
+          - name: Ubuntu GCC Symbol Prefix
+            os: ubuntu-latest
+            compiler: gcc
+            codecov: ubuntu_gcc_pigz
+            cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_
+
           - name: Ubuntu Clang
             os: ubuntu-latest
             compiler: clang
