@@ -1206,8 +1206,8 @@ int32_t Z_EXPORT PREFIX(inflateSync)(PREFIX3(stream) *strm) {
     in = strm->total_in;
     out = strm->total_out;
     PREFIX(inflateReset)(strm);
-    strm->total_in = in;
-    strm->total_out = out;
+    strm->total_in = (z_size_t)in;
+    strm->total_out = (z_size_t)out;
     state->flags = flags;
     state->mode = TYPE;
     return Z_OK;
