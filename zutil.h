@@ -78,6 +78,8 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 #define ADLER32_INITIAL_VALUE 1 /* initial adler-32 hash value */
 #define CRC32_INITIAL_VALUE   0 /* initial crc-32 hash value */
 
+#define ZLIB_WRAPLEN 6 /* zlib format overhead */
+
         /* target dependencies */
 
 #ifdef AMIGA
