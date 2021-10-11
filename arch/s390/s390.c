@@ -1,4 +1,4 @@
-#include "../../zutil.h"
+#include "zutil.h"
 #include "s390.h"
 
 #include <sys/auxv.h>
