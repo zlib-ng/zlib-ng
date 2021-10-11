@@ -29,6 +29,9 @@ static const char hello[] = "hello, hello!";
 static const char dictionary[] = "hello";
 static unsigned long dictId = 0; /* Adler32 value of the dictionary */
 
+/* Maximum dictionary size, according to inflateGetDictionary() description. */
+#define MAX_DICTIONARY_SIZE 32768
+
 
 void test_compress      (unsigned char *compr, z_size_t comprLen,unsigned char *uncompr, z_size_t uncomprLen);
 void test_gzio          (const char *fname, unsigned char *uncompr, z_size_t uncomprLen);
@@ -514,7 +517,7 @@ void test_dict_deflate(unsigned char *compr, size_t comprLen) {
  */
 void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen) {
     int err;
-    uint8_t check_dictionary[10];
+    uint8_t check_dictionary[MAX_DICTIONARY_SIZE];
     uint32_t check_dictionary_len = 0;
     PREFIX3(stream) d_stream; /* decompression stream */
 
@@ -547,13 +550,17 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
     
     err = PREFIX(inflateGetDictionary)(&d_stream, NULL, &check_dictionary_len);
     CHECK_ERR(err, "inflateGetDictionary");
+#ifndef S390_DFLTCC_INFLATE
     if (check_dictionary_len != sizeof(dictionary))
         error("bad dictionary length\n");
+#endif
     
     err = PREFIX(inflateGetDictionary)(&d_stream, check_dictionary, &check_dictionary_len);
     CHECK_ERR(err, "inflateGetDictionary");
+#ifndef S390_DFLTCC_INFLATE
     if (memcmp(dictionary, check_dictionary, sizeof(dictionary)) != 0)
         error("bad dictionary\n");
+#endif
 
     err = PREFIX(inflateEnd)(&d_stream);
     CHECK_ERR(err, "inflateEnd");
