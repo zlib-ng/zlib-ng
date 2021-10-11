@@ -3,12 +3,23 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#define ZLIB_INTERNAL
 #include "zbuild.h"
+#include "zutil.h"
 #if defined(ZLIB_COMPAT)
 #  include "zlib.h"
 #else
 #  include "zlib-ng.h"
+#endif
+
+/* ===========================================================================
+ *  Architecture-specific hooks.
+ */
+#ifdef S390_DFLTCC_DEFLATE
+#  include "arch/s390/dfltcc_common.h"
+#else
+/* Returns the upper bound on compressed data length based on uncompressed data length, assuming default settings.
+ * Zero means that arch-specific deflation code behaves identically to the regular zlib-ng algorithms. */
+#  define DEFLATE_BOUND_COMPLEN(source_len) 0
 #endif
 
 /* ===========================================================================
@@ -73,6 +84,12 @@ int Z_EXPORT PREFIX(compress)(unsigned char *dest, z_size_t *destLen, const unsi
    this function needs to be updated.
  */
 z_size_t Z_EXPORT PREFIX(compressBound)(z_size_t sourceLen) {
+    z_size_t complen = DEFLATE_BOUND_COMPLEN(sourceLen);
+
+    if (complen > 0)
+        /* Architecture-specific code provided an upper bound. */
+        return complen + ZLIB_WRAPLEN;
+
 #ifndef NO_QUICK_STRATEGY
     /* Quick deflate strategy worse case is 9 bits per literal, rounded to nearest byte,
        plus the size of block & gzip headers and footers */
