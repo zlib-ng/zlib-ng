@@ -217,7 +217,7 @@ infcover.o: $(SRCDIR)/test/infcover.c $(SRCDIR)/zlib$(SUFFIX).h zconf$(SUFFIX).h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/infcover.c
 
 infcover$(EXE): infcover.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ infcover.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ infcover.o $(STATICLIB)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -286,7 +286,7 @@ ifneq ($(STRIP),)
 endif
 
 crc32_test$(EXE): crc32_test.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ crc32_test.o $(TEST_LIBS) $(LDSHAREDLIBC)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ crc32_test.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
