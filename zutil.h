@@ -92,6 +92,8 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 /* deflate_quick worst-case overhead: 9 bits per literal, round up to next byte (+7) */
 
 
+#define ZLIB_WRAPLEN 6 /* zlib format overhead */
+
         /* target dependencies */
 
 #ifdef AMIGA

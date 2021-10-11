@@ -12,6 +12,17 @@
 #endif
 
 /* ===========================================================================
+ *  Architecture-specific hooks.
+ */
+#ifdef S390_DFLTCC_DEFLATE
+#  include "arch/s390/dfltcc_common.h"
+#else
+/* Returns the upper bound on compressed data length based on uncompressed data length, assuming default settings.
+ * Zero means that arch-specific deflation code behaves identically to the regular zlib-ng algorithms. */
+#  define DEFLATE_BOUND_COMPLEN(source_len) 0
+#endif
+
+/* ===========================================================================
      Compresses the source buffer into the destination buffer. The level
    parameter has the same meaning as in deflateInit.  sourceLen is the byte
    length of the source buffer. Upon entry, destLen is the total size of the
@@ -73,6 +84,12 @@ int Z_EXPORT PREFIX(compress)(unsigned char *dest, z_size_t *destLen, const unsi
    this function needs to be updated.
  */
 z_size_t Z_EXPORT PREFIX(compressBound)(z_size_t sourceLen) {
+    z_size_t complen = DEFLATE_BOUND_COMPLEN(sourceLen);
+
+    if (complen > 0)
+        /* Architecture-specific code provided an upper bound. */
+        return complen + ZLIB_WRAPLEN;
+
 #ifndef NO_QUICK_STRATEGY
     return sourceLen                       /* The source size itself */
       + DEFLATE_QUICK_OVERHEAD(sourceLen)  /* Source encoding overhead, padded to next full byte */
