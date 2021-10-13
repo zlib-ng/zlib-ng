@@ -8,8 +8,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Ubuntu 16.04 GCC
-            os: ubuntu-16.04
+          - name: Ubuntu 18.04 GCC
+            os: ubuntu-18.04
             compiler: gcc
 
           - name: Ubuntu GCC
@@ -290,8 +290,8 @@ jobs:
              # Limit parallel test jobs to prevent wine errors
             parallels-jobs: 1
 
-          - name: Ubuntu 16.04 Clang
-            os: ubuntu-16.04
+          - name: Ubuntu 18.04 Clang
+            os: ubuntu-18.04
             compiler: clang-6.0
             packages: clang-6.0
 
