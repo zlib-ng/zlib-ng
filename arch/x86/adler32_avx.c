@@ -50,9 +50,6 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_
         {1, 1, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1};
     __m256i dot3v = _mm256_load_si256((__m256i*)dot3);
 
-    // We will need to multiply by
-    char ALIGNED_(32) shift[16] = {5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-    __m128i shiftv = _mm_load_si128((__m128i*)shift);
 
     while (len >= 32) {
        __m256i vs1 = _mm256_load_si256((__m256i*)s1);
@@ -77,7 +74,7 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_
            __m256i v_short_sum2 = _mm256_maddubs_epi16(vbuf, dot2v);
            vs1 = _mm256_add_epi32(vsum1, vs1);
            __m256i vsum2 = _mm256_madd_epi16(v_short_sum2, dot3v);
-           vs1_0 = _mm256_sll_epi32(vs1_0, shiftv);
+           vs1_0 = _mm256_slli_epi32(vs1_0, 5);
            vsum2 = _mm256_add_epi32(vsum2, vs2);
            vs2   = _mm256_add_epi32(vsum2, vs1_0);
            vs1_0 = vs1;
