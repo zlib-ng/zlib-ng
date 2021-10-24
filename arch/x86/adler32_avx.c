@@ -33,27 +33,22 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_
     if (UNLIKELY(len < 16))
         return adler32_len_16(adler, buf, len, sum2);
 
-    uint32_t ALIGNED_(32) s1[8], s2[8];
+    __m256i vsMask = _mm256_setr_epi32(0, 0, 0, 0, 0, 0, 0, -1);
+    __m256i vs1 = _mm256_set1_epi32(adler);
+    __m256i vs2 = _mm256_set1_epi32(sum2);
+    vs1 = _mm256_and_si256(vs1, vsMask);
+    vs2 = _mm256_and_si256(vs2, vsMask);
 
-    memset(s1, 0, sizeof(s1)); s1[7] = adler; // TODO: would a masked load be faster?
-    memset(s2, 0, sizeof(s2)); s2[7] = sum2;
-
-    char ALIGNED_(32) dot1[32] = \
-        {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-         1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
-    __m256i dot1v = _mm256_load_si256((__m256i*)dot1);
-    char ALIGNED_(32) dot2[32] = \
-        {32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17,
-         16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
-    __m256i dot2v = _mm256_load_si256((__m256i*)dot2);
-    short ALIGNED_(32) dot3[16] = \
-        {1, 1, 1, 1, 1, 1, 1, 1,  1, 1, 1, 1, 1, 1, 1, 1};
-    __m256i dot3v = _mm256_load_si256((__m256i*)dot3);
+    const __m256i dot1v = _mm256_set1_epi8(1);
+    const __m256i dot2v = _mm256_setr_epi8(32, 31, 30, 29, 28, 27,
+                                           26, 25, 24, 23, 22, 21,
+                                           20, 19, 18, 17, 16, 15,
+                                           14, 13, 12, 11, 10, 9,
+                                           8, 7, 6, 5, 4, 3, 2, 1);
+    __m256i dot3v = _mm256_set1_epi16(1);
 
 
     while (len >= 32) {
-       __m256i vs1 = _mm256_load_si256((__m256i*)s1);
-       __m256i vs2 = _mm256_load_si256((__m256i*)s2);
        __m256i vs1_0 = vs1;
 
        int k = (len < NMAX ? (int)len : NMAX);
@@ -88,15 +83,20 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_
        _mm256_store_si256((__m256i*)s1_unpack, vs1);
        _mm256_store_si256((__m256i*)s2_unpack, vs2);
 
-       adler = (s1_unpack[0] % BASE) + (s1_unpack[1] % BASE) + (s1_unpack[2] % BASE) + (s1_unpack[3] % BASE) +
-               (s1_unpack[4] % BASE) + (s1_unpack[5] % BASE) + (s1_unpack[6] % BASE) + (s1_unpack[7] % BASE);
-       adler %= BASE;
-       s1[7] = adler;
+       uint64_t adler64 = ((uint64_t)s1_unpack[0] + (uint64_t)s1_unpack[1] + (uint64_t)s1_unpack[2] +
+                           (uint64_t)s1_unpack[3] + (uint64_t)s1_unpack[4] + (uint64_t)s1_unpack[5] +
+                           (uint64_t)s1_unpack[6] + (uint64_t)s1_unpack[7]) % BASE;
 
-       sum2 = (s2_unpack[0] % BASE) + (s2_unpack[1] % BASE) + (s2_unpack[2] % BASE) + (s2_unpack[3] % BASE) +
-              (s2_unpack[4] % BASE) + (s2_unpack[5] % BASE) + (s2_unpack[6] % BASE) + (s2_unpack[7] % BASE);
-       sum2 %= BASE;
-       s2[7] = sum2;
+       uint64_t sum264  = ((uint64_t)s2_unpack[0] + (uint64_t)s2_unpack[1] + (uint64_t)s2_unpack[2] +
+                           (uint64_t)s2_unpack[3] + (uint64_t)s2_unpack[4] + (uint64_t)s2_unpack[5] +
+                           (uint64_t)s2_unpack[6] + (uint64_t)s2_unpack[7]) % BASE;
+
+       adler = (uint32_t)adler64;
+       sum2 = (uint32_t)sum264;
+       vs1 = _mm256_set1_epi32(adler);
+       vs2 = _mm256_set1_epi32(sum2);
+       vs1 = _mm256_and_si256(vs1, vsMask);
+       vs2 = _mm256_and_si256(vs2, vsMask);
     }
 
     /* Process tail (len < 16).  */
