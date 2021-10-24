@@ -9,10 +9,21 @@
 #include "../../zutil.h"
 
 #include "../../adler32_p.h"
+#include <stdio.h>
 
 #include <immintrin.h>
 
 #ifdef X86_AVX2_ADLER32
+
+/* 64 bit horizontal sum, adapted from Agner Fog's
+ * vector library. */
+static inline uint64_t hsum(__m256i x)
+{
+    __m256i sum1 = _mm256_shuffle_epi32(x, 0x0E);
+    __m256i sum2 = _mm256_add_epi64(x, sum1);
+    __m128i sum3 = _mm256_extracti128_si256(sum2, 1);
+    return _mm_cvtsi128_si64(_mm_add_epi64(_mm256_castsi256_si128(sum2), sum3));
+}
 
 Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t len) {
     uint32_t sum2;
@@ -33,20 +44,18 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_
     if (UNLIKELY(len < 16))
         return adler32_len_16(adler, buf, len, sum2);
 
-    __m256i vsMask = _mm256_setr_epi32(0, 0, 0, 0, 0, 0, 0, -1);
+    /* If we could shift over 128 bit lanes, a broadcast + shift would be better */
+    const __m256i sMask = _mm256_setr_epi32(0, 0, 0, 0, 0, 0, 0, -1);
     __m256i vs1 = _mm256_set1_epi32(adler);
     __m256i vs2 = _mm256_set1_epi32(sum2);
-    vs1 = _mm256_and_si256(vs1, vsMask);
-    vs2 = _mm256_and_si256(vs2, vsMask);
+    vs1 = _mm256_and_si256(vs1, sMask);
+    vs2 = _mm256_and_si256(vs2, sMask);
 
     const __m256i dot1v = _mm256_set1_epi8(1);
-    const __m256i dot2v = _mm256_setr_epi8(32, 31, 30, 29, 28, 27,
-                                           26, 25, 24, 23, 22, 21,
-                                           20, 19, 18, 17, 16, 15,
-                                           14, 13, 12, 11, 10, 9,
-                                           8, 7, 6, 5, 4, 3, 2, 1);
-    __m256i dot3v = _mm256_set1_epi16(1);
-
+    const __m256i dot2v = _mm256_setr_epi8(32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22,
+                                           21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11,
+                                           10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
+    const __m256i dot3v = _mm256_set1_epi16(1);
 
     while (len >= 32) {
        __m256i vs1_0 = vs1;
@@ -75,28 +84,68 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_
            vs1_0 = vs1;
        }
 
-       // At this point, we have partial sums stored in vs1 and vs2.  There are AVX512 instructions that
-       // would allow us to sum these quickly (VP4DPWSSD).  For now, just unpack and move on.
-       uint32_t ALIGNED_(32) s1_unpack[8];
-       uint32_t ALIGNED_(32) s2_unpack[8];
+       /* The compiler is generating the following sequence for this integer modulus
+        * when done the scalar way, in GPRs:
+            mov    $0x80078071,%edi // move magic constant into 32 bit register %edi
+            ...
+            vmovd  %xmm1,%esi // move vector lane 0 to 32 bit register %esi
+            mov    %rsi,%rax  // zero-extend this value to 64 bit precision in %rax
+            imul   %rdi,%rsi // do a signed multiplication with magic constant and vector element 
+            shr    $0x2f,%rsi // shift right by 47
+            imul   $0xfff1,%esi,%esi // do a signed multiplication with value truncated to 32 bits with 0xfff1 
+            sub    %esi,%eax // subtract lower 32 bits of original vector value from modified one above
+            ...
+            // repeats for each element with vpextract instructions
 
-       _mm256_store_si256((__m256i*)s1_unpack, vs1);
-       _mm256_store_si256((__m256i*)s2_unpack, vs2);
+            This is tricky with AVX2 for a number of reasons:
+                1.) There's no 64 bit multiplication instruction, but there is a sequence to get there
+                2.) There's ways to extend vectors to 64 bit precision, but no simple way to truncate
+                    back down to 32 bit precision later (there is in AVX512) 
+                3.) Full width integer multiplications aren't cheap
+            */
 
-       uint64_t adler64 = ((uint64_t)s1_unpack[0] + (uint64_t)s1_unpack[1] + (uint64_t)s1_unpack[2] +
-                           (uint64_t)s1_unpack[3] + (uint64_t)s1_unpack[4] + (uint64_t)s1_unpack[5] +
-                           (uint64_t)s1_unpack[6] + (uint64_t)s1_unpack[7]) % BASE;
+            // At this point, we have partial sums stored in vs1 and vs2.  There are AVX512 instructions that
+            // would allow us to sum these quickly (VP4DPWSSD).  For now, just unpack and move on.
+            /*uint32_t ALIGNED_(32) s1_unpack[8];
+            uint32_t ALIGNED_(32) s2_unpack[8];
 
-       uint64_t sum264  = ((uint64_t)s2_unpack[0] + (uint64_t)s2_unpack[1] + (uint64_t)s2_unpack[2] +
-                           (uint64_t)s2_unpack[3] + (uint64_t)s2_unpack[4] + (uint64_t)s2_unpack[5] +
-                           (uint64_t)s2_unpack[6] + (uint64_t)s2_unpack[7]) % BASE;
+            _mm256_store_si256((__m256i*)s1_unpack, vs1);
+            _mm256_store_si256((__m256i*)s2_unpack, vs2);
+            
+ 
+            adler = (s1_unpack[0] % BASE) + (s1_unpack[1] % BASE) + (s1_unpack[2] % BASE) + (s1_unpack[3] % BASE) +
+                    (s1_unpack[4] % BASE) + (s1_unpack[5] % BASE) + (s1_unpack[6] % BASE) + (s1_unpack[7] % BASE);*/
 
-       adler = (uint32_t)adler64;
-       sum2 = (uint32_t)sum264;
-       vs1 = _mm256_set1_epi32(adler);
-       vs2 = _mm256_set1_epi32(sum2);
-       vs1 = _mm256_and_si256(vs1, vsMask);
-       vs2 = _mm256_and_si256(vs2, vsMask);
+            /* Will translate to nops */
+            __m128i s1lo = _mm256_castsi256_si128(vs1);
+            __m128i s2lo = _mm256_castsi256_si128(vs2);
+
+            __m128i s1hi = _mm256_extracti128_si256(vs1, 1);
+            __m128i s2hi = _mm256_extracti128_si256(vs2, 1);
+            
+            /* Convert up to 64 bit precision to prevent overflow */
+            __m256i s1lo256 = _mm256_cvtepi32_epi64(s1lo);
+            __m256i s1hi256 = _mm256_cvtepi32_epi64(s1hi);
+            __m256i s2lo256 = _mm256_cvtepi32_epi64(s2lo);
+            __m256i s2hi256 = _mm256_cvtepi32_epi64(s2hi);
+
+            /* sum vectors in existing lanes */
+            __m256i s1Sum = _mm256_add_epi64(s1lo256, s1hi256);
+            __m256i s2Sum = _mm256_add_epi64(s2lo256, s2hi256);
+            
+            /* In AVX2-land, this trip through GPRs will probably
+             * be unvoidable, as there's no cheap and easy conversion
+             * from 64 bit integer to 32 bit. This casting to 32 bit
+             * is cheap through GPRs (just register aliasing), and safe,
+             * as our base is significantly smaller than UINT32_MAX */
+            adler = (uint32_t)(hsum(s1Sum) % BASE);
+            sum2 = (uint32_t)(hsum(s2Sum) % BASE);
+
+            vs1 = _mm256_set1_epi32(adler);
+            vs1 = _mm256_and_si256(vs1, sMask);
+ 
+            vs2 = _mm256_set1_epi32(sum2);
+            vs2 = _mm256_and_si256(vs2, sMask);
     }
 
     /* Process tail (len < 16).  */
