@@ -82,7 +82,7 @@ const char PREFIX(deflate_copyright)[] = " deflate 1.2.11.f Copyright 1995-2016 
 /* Invoked at the beginning of deflateParams(). Useful for updating arch-specific compression parameters. */
 #  define DEFLATE_PARAMS_HOOK(strm, level, strategy, hook_flush) do {} while (0)
 /* Returns whether the last deflate(flush) operation did everything it's supposed to do. */
-# define DEFLATE_DONE(strm, flush) 1
+#  define DEFLATE_DONE(strm, flush) 1
 /* Adjusts the upper bound on compressed data length based on compression parameters and uncompressed data length.
  * Useful when arch-specific deflation code behaves differently than regular zlib-ng algorithms. */
 #  define DEFLATE_BOUND_ADJUST_COMPLEN(strm, complen, sourceLen) do {} while (0)
