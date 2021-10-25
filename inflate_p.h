@@ -27,12 +27,17 @@
 #  define INFLATE_TYPEDO_HOOK(strm, flush) do {} while (0)
 /* Returns whether zlib-ng should compute a checksum. Set to 0 if arch-specific inflation code already does that. */
 #  define INFLATE_NEED_CHECKSUM(strm) 1
-/* Returns whether zlib-ng should update a window. Set to 0 if arch-specific inflation code already does that. */
-#  define INFLATE_NEED_UPDATEWINDOW(strm) 1
+/* Returns whether zlib-ng should flush the window to the output buffer.
+   Set to 0 if arch-specific inflation code already does that. */
+#  define INFLATE_NEED_WINDOW_OUTPUT_FLUSH(strm) 1
 /* Invoked at the beginning of inflateMark(). Useful for updating arch-specific pointers and offsets. */
 #  define INFLATE_MARK_HOOK(strm) do {} while (0)
 /* Invoked at the beginning of inflateSyncPoint(). Useful for performing arch-specific state checks. */
-#define INFLATE_SYNC_POINT_HOOK(strm) do {} while (0)
+#  define INFLATE_SYNC_POINT_HOOK(strm) do {} while (0)
+/* Invoked at the beginning of inflateSetDictionary(). Useful for checking arch-specific window data. */
+#  define INFLATE_SET_DICTIONARY_HOOK(strm, dict, dict_len) do {} while (0)
+/* Invoked at the beginning of inflateGetDictionary(). Useful for adjusting arch-specific window data. */
+#  define INFLATE_GET_DICTIONARY_HOOK(strm, dict, dict_len) do {} while (0)
 #endif
 
 

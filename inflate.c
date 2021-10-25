@@ -912,11 +912,13 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             break;
 
         case CHECK:
-            RESTORE();
-            window_output_flush(strm);
-            LOAD();
-            if (strm->avail_out == 0 && state->wnext)
-                goto inf_leave;
+            if (INFLATE_NEED_WINDOW_OUTPUT_FLUSH(strm)) {
+                RESTORE();
+                window_output_flush(strm);
+                LOAD();
+                if (strm->avail_out == 0 && state->wnext)
+                    goto inf_leave;
+            }
             if (state->wrap) {
                 NEEDBITS(32);
                 out -= left;
@@ -982,7 +984,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
   inf_leave:
     RESTORE();
 
-    if (strm->avail_out && state->wnext)
+    if (INFLATE_NEED_WINDOW_OUTPUT_FLUSH(strm) && strm->avail_out && state->wnext)
         window_output_flush(strm);
 
     in -= strm->avail_in;
@@ -1017,13 +1019,12 @@ int32_t Z_EXPORT PREFIX(inflateGetDictionary)(PREFIX3(stream) *strm, uint8_t *di
     /* check state */
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
+    INFLATE_GET_DICTIONARY_HOOK(strm, dictionary, dictLength);  /* hook for IBM Z DFLTCC */
     state = (struct inflate_state *)strm->state;
 
     /* copy dictionary */
-    if (state->whave && dictionary != NULL) {
-        memcpy(dictionary, state->window + state->wnext, state->whave - state->wnext);
-        memcpy(dictionary + state->whave - state->wnext, state->window, state->wnext);
-    }
+    if (state->whave && dictionary != NULL)
+        memcpy(dictionary, state->window + state->wsize - state->whave, state->whave);
     if (dictLength != NULL)
         *dictLength = state->whave;
     return Z_OK;
@@ -1032,7 +1033,7 @@ int32_t Z_EXPORT PREFIX(inflateGetDictionary)(PREFIX3(stream) *strm, uint8_t *di
 int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8_t *dictionary, uint32_t dictLength) {
     struct inflate_state *state;
     unsigned long dictid, dict_copy, hist_copy;
-    const unsigned char *dict_from, *hist_from;
+    const unsigned char *dict_from;
     unsigned char *dict_to, *hist_to;
     int ret;
 
@@ -1055,6 +1056,8 @@ int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8
 
     Tracec(state->wnext != 0, (stderr, "Setting dictionary with unflushed output"));
 
+    INFLATE_SET_DICTIONARY_HOOK(strm, dictionary, dictLength);  /* hook for IBM Z DFLTCC */
+
     /* copy dictionary to window and amend if necessary */
     dict_from = dictionary;
     dict_copy = dictLength;
@@ -1064,14 +1067,13 @@ int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     }
     dict_to = state->window + state->wsize - dict_copy;
 
-    hist_from = state->window + state->wsize - state->whave;
     hist_copy = state->wsize - dict_copy;
     if (hist_copy > state->whave)
         hist_copy = state->whave;
     hist_to = dict_to - hist_copy;
 
     if (hist_copy)
-        memcpy(hist_to, hist_from, hist_copy);
+        memcpy(hist_to, state->window + state->wsize - hist_copy, hist_copy);
     if (dict_copy)
         memcpy(dict_to, dict_from, dict_copy);
 
