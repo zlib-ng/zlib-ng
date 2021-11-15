@@ -34,14 +34,22 @@ static inline uint32_t adler32_len_16(uint32_t adler, const unsigned char *buf, 
     }
     adler %= BASE;
     sum2 %= BASE;            /* only added so many BASE's */
+    /* return recombined sums */
     return adler | (sum2 << 16);
 }
 
 static inline uint32_t adler32_len_64(uint32_t adler, const unsigned char *buf, size_t len, uint32_t sum2) {
+#ifdef UNROLL_MORE
     while (len >= 16) {
         len -= 16;
         DO16(adler, sum2, buf);
         buf += 16;
+#else
+    while (len >= 8) {
+        len -= 8;
+        DO8(adler, sum2, buf, 0);
+        buf += 8;
+#endif
     }
     /* Process tail (len < 16).  */
     return adler32_len_16(adler, buf, len, sum2);
