@@ -926,7 +926,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 state->total += out;
 
                 if (INFLATE_NEED_CHECKSUM(strm) && strm->total_out) {
-                    if (state->wrap & 2)
+                    if (state->flags)
                         strm->adler = state->check = functable.crc32_fold_final(&state->crc_fold);
                 }
                 out = left;
