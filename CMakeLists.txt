@@ -1371,6 +1371,7 @@ if(ZLIB_ENABLE_TESTS)
 
     add_simple_test_executable(deflate_quick_bi_valid)
     add_simple_test_executable(deflate_quick_block_open)
+    add_simple_test_executable(inflate_adler32)
     add_simple_test_executable(hash_head_0)
 endif()
 
