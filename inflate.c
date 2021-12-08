@@ -502,7 +502,9 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 state->head->hcrc = (int)((state->flags >> 9) & 1);
                 state->head->done = 1;
             }
-            strm->adler = state->check = functable.crc32_fold_reset(&state->crc_fold);
+            /* compute crc32 checksum if not in raw mode */
+            if ((state->wrap & 4) && state->flags)
+                strm->adler = state->check = functable.crc32_fold_reset(&state->crc_fold);
             state->mode = TYPE;
             break;
 #endif
@@ -926,7 +928,8 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 state->total += out;
 
                 if (INFLATE_NEED_CHECKSUM(strm) && strm->total_out) {
-                    if (state->flags)
+                    /* compute crc32 final value if not in raw mode */
+                    if ((state->wrap & 4) && state->flags)
                         strm->adler = state->check = functable.crc32_fold_final(&state->crc_fold);
                 }
                 out = left;
