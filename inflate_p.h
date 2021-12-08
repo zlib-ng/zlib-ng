@@ -158,15 +158,20 @@ static inline void inf_crc_copy(PREFIX3(stream) *strm, unsigned char *const dst,
     if (!INFLATE_NEED_CHECKSUM(strm))
         return;
 
-    /* check function to use adler32() for zlib or crc32() for gzip */
+    /* compute checksum if not in raw mode */
+    if (state->wrap & 4) {
+        /* check flags to use adler32() for zlib or crc32() for gzip */
 #ifdef GUNZIP
-    if (state->flags)
-        functable.crc32_fold_copy(&state->crc_fold, dst, src, len);
-    else
+        if (state->flags)
+            functable.crc32_fold_copy(&state->crc_fold, dst, src, len);
+        else
 #endif
-    {
+        {
+            memcpy(dst, src, len);
+            strm->adler = state->check = functable.adler32(state->check, dst, len);
+        }
+    } else {
         memcpy(dst, src, len);
-        strm->adler = state->check = functable.adler32(state->check, dst, len);
     }
 }
 
