@@ -3,8 +3,8 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#define ZLIB_INTERNAL
 #include "zbuild.h"
+#include "zutil.h"
 #if defined(ZLIB_COMPAT)
 #  include "zlib.h"
 #else
@@ -74,10 +74,11 @@ int Z_EXPORT PREFIX(compress)(unsigned char *dest, z_size_t *destLen, const unsi
  */
 z_size_t Z_EXPORT PREFIX(compressBound)(z_size_t sourceLen) {
 #ifndef NO_QUICK_STRATEGY
-    /* Quick deflate strategy worse case is 9 bits per literal, rounded to nearest byte,
-       plus the size of block & gzip headers and footers */
-    return sourceLen + ((sourceLen + 13 + 7) >> 3) + 18;
+    return sourceLen                       /* The source size itself */
+      + DEFLATE_QUICK_OVERHEAD(sourceLen)  /* Source encoding overhead, padded to next full byte */
+      + DEFLATE_BLOCK_OVERHEAD             /* Deflate block overhead bytes */
+      + ZLIB_WRAPLEN;                      /* zlib wrapper */
 #else
-    return sourceLen + (sourceLen >> 12) + (sourceLen >> 14) + (sourceLen >> 25) + 13;
+    return sourceLen + (sourceLen >> 4) + 7 + ZLIB_WRAPLEN;
 #endif
 }
