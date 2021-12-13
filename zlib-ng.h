@@ -44,11 +44,11 @@
 extern "C" {
 #endif
 
-#define ZLIBNG_VERSION "2.0.5"
-#define ZLIBNG_VERNUM 0x2050
+#define ZLIBNG_VERSION "2.0.6"
+#define ZLIBNG_VERNUM 0x2060
 #define ZLIBNG_VER_MAJOR 2
 #define ZLIBNG_VER_MINOR 0
-#define ZLIBNG_VER_REVISION 5
+#define ZLIBNG_VER_REVISION 6
 #define ZLIBNG_VER_SUBREVISION 0
 
 /*
