@@ -48,7 +48,6 @@
 #define get_crc_table         @ZLIB_SYMBOL_PREFIX@get_crc_table
 #ifndef Z_SOLO
 #  define gz_error              @ZLIB_SYMBOL_PREFIX@gz_error
-#  define gz_intmax             @ZLIB_SYMBOL_PREFIX@gz_intmax
 #  define gz_strwinerror        @ZLIB_SYMBOL_PREFIX@gz_strwinerror
 #  define gzbuffer              @ZLIB_SYMBOL_PREFIX@gzbuffer
 #  define gzclearerr            @ZLIB_SYMBOL_PREFIX@gzclearerr
