@@ -78,7 +78,19 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 #define ADLER32_INITIAL_VALUE 1 /* initial adler-32 hash value */
 #define CRC32_INITIAL_VALUE   0 /* initial crc-32 hash value */
 
-#define ZLIB_WRAPLEN 6 /* zlib format overhead */
+#define ZLIB_WRAPLEN 6      /* zlib format overhead */
+#define GZIP_WRAPLEN 18     /* gzip format overhead */
+
+#define DEFLATE_HEADER_BITS 3
+#define DEFLATE_EOBS_BITS   15
+#define DEFLATE_PAD_BITS    6
+#define DEFLATE_BLOCK_OVERHEAD ((DEFLATE_HEADER_BITS + DEFLATE_EOBS_BITS + DEFLATE_PAD_BITS) >> 3)
+/* deflate block overhead: 3 bits for block start + 15 bits for block end + padding to nearest byte */
+
+#define DEFLATE_QUICK_LIT_MAX_BITS 9
+#define DEFLATE_QUICK_OVERHEAD(x) ((x * (DEFLATE_QUICK_LIT_MAX_BITS - 8) + 7) >> 3)
+/* deflate_quick worst-case overhead: 9 bits per literal, round up to next byte (+7) */
+
 
         /* target dependencies */
 
