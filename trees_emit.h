@@ -7,7 +7,6 @@
 #ifdef ZLIB_DEBUG
 #  include <ctype.h>
 #  include <inttypes.h>
-#  include <stdint.h>
 #endif
 
 
