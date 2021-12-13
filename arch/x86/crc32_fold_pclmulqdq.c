@@ -19,7 +19,7 @@
 #ifdef X86_PCLMULQDQ_CRC
 #include "../../zutil.h"
 
-#include <inttypes.h>
+#include <stdint.h>
 #include <immintrin.h>
 #include <wmmintrin.h>
 
