@@ -66,7 +66,6 @@ ZLIB_NG_2.0.0 {
     zng_zcfree;
     zng_z_errmsg;
     zng_gz_error;
-    zng_gz_intmax;
     _*;
 };
 
