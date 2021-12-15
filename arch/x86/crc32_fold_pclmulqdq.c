@@ -26,6 +26,11 @@
 
 #include "../../crc32_fold.h"
 
+#ifdef X86_VPCLMULQDQ_CRC
+extern size_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
+    __m128i *xmm_crc2, __m128i *xmm_crc3, uint8_t *dst, const uint8_t *src, size_t len);
+#endif
+
 static void fold_1(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold4 = _mm_set_epi32( 0x00000001, 0x54442bd4,
                                              0x00000001, 0xc6e41596);
@@ -274,6 +279,16 @@ Z_INTERNAL void crc32_fold_copy_pclmulqdq(crc32_fold *crc, uint8_t *dst, const u
     } else {
         xmm_crc_part = _mm_setzero_si128();
     }
+
+#ifdef X86_VPCLMULQDQ_CRC
+    if (x86_cpu_has_vpclmulqdq && x86_cpu_has_avx512 && (len >= 256)) {
+        size_t n = fold_16_vpclmulqdq(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, dst, src, len);
+
+        len -= n;
+        src += n;
+        dst += n;
+    }
+#endif
 
     while (len >= 64) {
         crc32_fold_load((__m128i *)src, &xmm_t0, &xmm_t1, &xmm_t2, &xmm_t3);

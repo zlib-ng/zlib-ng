@@ -90,6 +90,7 @@ compat=0
 cover=0
 build32=0
 build64=0
+buildvpclmulqdq=1
 buildacle=1
 buildaltivec=1
 buildpower8=1
@@ -112,6 +113,7 @@ ssse3flag="-mssse3"
 sse41flag="-msse4.1"
 sse42flag="-msse4.2"
 pclmulflag="-mpclmul"
+vpclmulflag="-mvpclmulqdq"
 acleflag=
 neonflag=
 noltoflag="-fno-lto"
@@ -194,6 +196,7 @@ case "$1" in
     --cover) cover=1; shift ;;
     -3* | --32) build32=1; shift ;;
     -6* | --64) build64=1; shift ;;
+    --without-vpclmulqdq) buildvpclmulqdq=0; shift ;;
     --without-acle) buildacle=0; shift ;;
     --without-neon) buildneon=0; shift ;;
     --without-altivec) buildaltivec=0 ; shift ;;
@@ -262,6 +265,7 @@ if test $native -eq 1; then
   sse4flag=""
   sse42flag=""
   pclmulflag=""
+  vpclmulflag=""
   noltoflag=""
 fi
 
@@ -1161,6 +1165,28 @@ EOF
     fi
 }
 
+check_vpclmulqdq_intrinsics() {
+    # Check whether compiler supports VPCLMULQDQ intrinsics
+    cat > $test.c << EOF
+#include <immintrin.h>
+#include <wmmintrin.h>
+int main(void) {
+    __m512i a = _mm512_setzero_si512();
+    __m512i b = _mm512_setzero_si512();
+    __m512i c = _mm512_clmulepi64_epi128(a, b, 0x10);
+    (void)c;
+    return 0;
+}
+EOF
+    if try ${CC} ${CFLAGS} ${vpclmulflag} $test.c; then
+        echo "Checking for VPCLMULQDQ intrinsics ... Yes." | tee -a configure.log
+        HAVE_VPCLMULQDQ_INTRIN=1
+    else
+        echo "Checking for VPCLMULQDQ intrinsics ... No." | tee -a configure.log
+        HAVE_VPCLMULQDQ_INTRIN=0
+    fi
+}
+
 check_ppc_intrinsics() {
         cat > $test.c << EOF
 #include <altivec.h>
@@ -1503,6 +1529,17 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_fold_pclmulqdq.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_fold_pclmulqdq.lo"
+
+                if test $buildvpclmulqdq -eq 1; then
+                    check_vpclmulqdq_intrinsics
+
+                    if test ${HAVE_VPCLMULQDQ_INTRIN} -eq 1 && test ${HAVE_AVX512_INTRIN} -eq 1; then
+                        CFLAGS="${CFLAGS} -DX86_VPCLMULQDQ_CRC"
+                        SFLAGS="${SFLAGS} -DX86_VPCLMULQDQ_CRC"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_fold_vpclmulqdq.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_fold_vpclmulqdq.lo"
+                    fi
+                fi
             fi
         fi
     ;;
@@ -1912,6 +1949,7 @@ echo ssse3flag = $ssse3flag >> configure.log
 echo sse41flag = $sse41flag >> configure.log
 echo sse42flag = $sse42flag >> configure.log
 echo pclmulflag = $pclmulflag >> configure.log
+echo vpclmulflag = $vpclmulflag >> configure.log
 echo acleflag = $acleflag >> configure.log
 echo neonflag = $neonflag >> configure.log
 echo ARCHDIR = ${ARCHDIR} >> configure.log
@@ -2049,6 +2087,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SSE41FLAG *=/s#=.*#=$sse41flag#
 /^SSE42FLAG *=/s#=.*#=$sse42flag#
 /^PCLMULFLAG *=/s#=.*#=$pclmulflag#
+/^VPCLMULFLAG *=/s#=.*#=$vpclmulflag#
 /^ACLEFLAG *=/s#=.*#=$acleflag#
 /^NEONFLAG *=/s#=.*#=$neonflag#
 /^NOLTOFLAG *=/s#=.*#=$noltoflag#

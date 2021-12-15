@@ -27,6 +27,7 @@ Z_INTERNAL int x86_cpu_has_ssse3;
 Z_INTERNAL int x86_cpu_has_sse41;
 Z_INTERNAL int x86_cpu_has_sse42;
 Z_INTERNAL int x86_cpu_has_pclmulqdq;
+Z_INTERNAL int x86_cpu_has_vpclmulqdq;
 Z_INTERNAL int x86_cpu_has_tzcnt;
 Z_INTERNAL int x86_cpu_well_suited_avx512;
 
@@ -98,9 +99,11 @@ void Z_INTERNAL x86_check_features(void) {
         x86_cpu_has_avx2 = ebx & 0x20;
         x86_cpu_has_avx512 = ebx & 0x00010000;
         x86_cpu_has_avx512vnni = ecx & 0x800;
+        x86_cpu_has_vpclmulqdq = ecx & 0x400;
     } else {
         x86_cpu_has_tzcnt = 0;
         x86_cpu_has_avx2 = 0;
+        x86_cpu_has_vpclmulqdq = 0;
     }
 
 
