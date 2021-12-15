@@ -14,6 +14,7 @@ extern int x86_cpu_has_ssse3;
 extern int x86_cpu_has_sse41;
 extern int x86_cpu_has_sse42;
 extern int x86_cpu_has_pclmulqdq;
+extern int x86_cpu_has_vpclmulqdq;
 extern int x86_cpu_has_tzcnt;
 extern int x86_cpu_well_suited_avx512;
 

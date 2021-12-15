@@ -168,6 +168,32 @@ macro(check_pclmulqdq_intrinsics)
     endif()
 endmacro()
 
+macro(check_vpclmulqdq_intrinsics)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+        if(NOT NATIVEFLAG)
+            set(VPCLMULFLAG "-mvpclmulqdq")
+        endif()
+    endif()
+    # Check whether compiler supports VPCLMULQDQ intrinsics
+    if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
+        set(CMAKE_REQUIRED_FLAGS "${VPCLMULFLAG}")
+        check_c_source_compile_or_run(
+            "#include <immintrin.h>
+            int main(void) {
+                __m512i a = _mm512_setzero_si512();
+                __m512i b = _mm512_setzero_si512();
+                __m512i c = _mm512_clmulepi64_epi128(a, b, 0x10);
+                (void)c;
+                return 0;
+            }"
+            HAVE_VPCLMULQDQ_INTRIN
+        )
+        set(CMAKE_REQUIRED_FLAGS)
+    else()
+        set(HAVE_VPCLMULQDQ_INTRIN OFF)
+    endif()
+endmacro()
+
 macro(check_ppc_intrinsics)
     # Check if compiler supports AltiVec
     set(CMAKE_REQUIRED_FLAGS "-maltivec")
