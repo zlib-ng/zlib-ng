@@ -34,6 +34,7 @@
 #  error Include zlib-ng.h for zlib-ng API or zlib.h for zlib-compat API but not both
 #endif
 
+#ifndef RC_INVOKED
 #include "zconf.h"
 
 #include <stdint.h>
@@ -42,6 +43,7 @@
 #ifndef ZCONF_H
 #  error Missing zconf.h add binary output directory to include directories
 #endif
+#endif  /* RC_INVOKED */
 
 #ifdef __cplusplus
 extern "C" {
