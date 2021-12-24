@@ -253,12 +253,10 @@ void Z_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #  define PREFETCH_RW(addr)     addr
 #endif /* (un)likely */
 
-#if defined(_MSC_VER)
+#if defined(__clang__) || defined(__GNUC__)
+#  define ALIGNED_(x) __attribute__ ((aligned(x)))
+#elif defined(_MSC_VER)
 #  define ALIGNED_(x) __declspec(align(x))
-#else
-#  if defined(__GNUC__)
-#    define ALIGNED_(x) __attribute__ ((aligned(x)))
-#  endif
 #endif
 
 #if defined(X86_FEATURES)
