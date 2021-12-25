@@ -34,9 +34,10 @@
 #  error Include zlib-ng.h for zlib-ng API or zlib.h for zlib-compat API but not both
 #endif
 
+#include "zconf.h"
+
 #include <stdint.h>
 #include <stdarg.h>
-#include "zconf.h"
 
 #ifndef ZCONF_H
 #  error Missing zconf.h add binary output directory to include directories
