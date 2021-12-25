@@ -1158,7 +1158,9 @@ if(ZLIB_ENABLE_TESTS)
     target_link_libraries(switchlevels zlib)
 
     add_simple_test_executable(infcover)
-    target_sources(infcover PRIVATE inftrees.c)
+    if(NOT BUILD_SHARED_LIBS)
+        target_sources(infcover PRIVATE inftrees.c)
+    endif()
 
     add_executable(makefixed tools/makefixed.c inftrees.c)
     target_include_directories(makefixed PUBLIC
