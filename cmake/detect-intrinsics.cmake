@@ -221,7 +221,7 @@ macro(check_sse4_intrinsics)
         endif()
     elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         if(NOT NATIVEFLAG)
-            set(SSE4FLAG "-msse4")
+            set(SSE4FLAG "-msse4.2")
         endif()
     endif()
     # Check whether compiler supports SSE4 CRC inline asm
