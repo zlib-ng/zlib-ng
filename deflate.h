@@ -302,13 +302,11 @@ typedef enum {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_short(deflate_state *s, uint16_t w) {
-#if defined(UNALIGNED_OK)
-    *(uint16_t *)(&s->pending_buf[s->pending]) = w;
-    s->pending += 2;
-#else
-    put_byte(s, (w & 0xff));
-    put_byte(s, ((w >> 8) & 0xff));
+#if BYTE_ORDER == BIG_ENDIAN
+    w = ZSWAP16(w);
 #endif
+    memcpy(&s->pending_buf[s->pending], &w, sizeof(w));
+    s->pending += 2;
 }
 
 /* ===========================================================================
@@ -316,8 +314,11 @@ static inline void put_short(deflate_state *s, uint16_t w) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_short_msb(deflate_state *s, uint16_t w) {
-    put_byte(s, ((w >> 8) & 0xff));
-    put_byte(s, (w & 0xff));
+#if BYTE_ORDER == LITTLE_ENDIAN
+    w = ZSWAP16(w);
+#endif
+    memcpy(&s->pending_buf[s->pending], &w, sizeof(w));
+    s->pending += 2;
 }
 
 /* ===========================================================================
@@ -325,15 +326,11 @@ static inline void put_short_msb(deflate_state *s, uint16_t w) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint32(deflate_state *s, uint32_t dw) {
-#if defined(UNALIGNED_OK)
-    *(uint32_t *)(&s->pending_buf[s->pending]) = dw;
-    s->pending += 4;
-#else
-    put_byte(s, (dw & 0xff));
-    put_byte(s, ((dw >> 8) & 0xff));
-    put_byte(s, ((dw >> 16) & 0xff));
-    put_byte(s, ((dw >> 24) & 0xff));
+#if BYTE_ORDER == BIG_ENDIAN
+    dw = ZSWAP32(dw);
 #endif
+    memcpy(&s->pending_buf[s->pending], &dw, sizeof(dw));
+    s->pending += 4;
 }
 
 /* ===========================================================================
@@ -341,15 +338,11 @@ static inline void put_uint32(deflate_state *s, uint32_t dw) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
-#if defined(UNALIGNED_OK)
-    *(uint32_t *)(&s->pending_buf[s->pending]) = ZSWAP32(dw);
-    s->pending += 4;
-#else
-    put_byte(s, ((dw >> 24) & 0xff));
-    put_byte(s, ((dw >> 16) & 0xff));
-    put_byte(s, ((dw >> 8) & 0xff));
-    put_byte(s, (dw & 0xff));
+#if BYTE_ORDER == LITTLE_ENDIAN
+    dw = ZSWAP32(dw);
 #endif
+    memcpy(&s->pending_buf[s->pending], &dw, sizeof(dw));
+    s->pending += 4;
 }
 
 /* ===========================================================================
@@ -357,24 +350,11 @@ static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint64(deflate_state *s, uint64_t lld) {
-#if defined(UNALIGNED64_OK)
-    *(uint64_t *)(&s->pending_buf[s->pending]) = lld;
-    s->pending += 8;
-#elif defined(UNALIGNED_OK)
-    *(uint32_t *)(&s->pending_buf[s->pending]) = lld & 0xffffffff;
-    s->pending += 4;
-    *(uint32_t *)(&s->pending_buf[s->pending]) = (lld >> 32) & 0xffffffff;
-    s->pending += 4;
-#else
-    put_byte(s, (lld & 0xff));
-    put_byte(s, ((lld >> 8) & 0xff));
-    put_byte(s, ((lld >> 16) & 0xff));
-    put_byte(s, ((lld >> 24) & 0xff));
-    put_byte(s, ((lld >> 32) & 0xff));
-    put_byte(s, ((lld >> 40) & 0xff));
-    put_byte(s, ((lld >> 48) & 0xff));
-    put_byte(s, ((lld >> 56) & 0xff));
+#if BYTE_ORDER == BIG_ENDIAN
+    lld = ZSWAP64(lld);
 #endif
+    memcpy(&s->pending_buf[s->pending], &lld, sizeof(lld));
+    s->pending += 8;
 }
 
 #define MIN_LOOKAHEAD (STD_MAX_MATCH + STD_MIN_MATCH + 1)
