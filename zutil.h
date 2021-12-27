@@ -261,6 +261,23 @@ void Z_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #  endif
 #endif
 
+/* GCC < 7 doesn't optimize memcmp with unaligned instructions if the architecture
+ * supports it. This can result in negative performance impact of around 36%. */
+#if defined(UNALIGNED_OK) && (defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7)
+#  define zmemcmp_2(str1, str2) (*(uint16_t *)(str1) != *(uint16_t *)(str2))
+#  define zmemcmp_4(str1, str2) (*(uint32_t *)(str1) != *(uint32_t *)(str2))
+#  ifdef UNALIGNED64_OK
+#    define zmemcmp_8(str1, str2) (*(uint64_t *)(str1) != *(uint64_t *)(str2))
+#  else
+#    define zmemcmp_8(str1, str2) (((uint32_t *)(str1))[0] != ((uint32_t *)(str2))[0] || \
+                                   ((uint32_t *)(str1))[1] != ((uint32_t *)(str2))[1])
+#  endif
+#else
+#  define zmemcmp_2(str1, str2) memcmp((uint8_t *)(str1), (uint8_t *)(str2), 2)
+#  define zmemcmp_4(str1, str2) memcmp((uint8_t *)(str1), (uint8_t *)(str2), 4)
+#  define zmemcmp_8(str1, str2) memcmp((uint8_t *)(str1), (uint8_t *)(str2), 8)
+#endif
+
 #if defined(X86_FEATURES)
 #  include "arch/x86/x86.h"
 #elif defined(ARM_FEATURES)

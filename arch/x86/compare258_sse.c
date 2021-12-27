@@ -55,7 +55,7 @@ static inline uint32_t compare256_unaligned_sse4_static(const unsigned char *src
 }
 
 static inline uint32_t compare258_unaligned_sse4_static(const unsigned char *src0, const unsigned char *src1) {
-    if (*(uint16_t *)src0 != *(uint16_t *)src1)
+    if (zmemcmp_2(src0, src1) != 0)
         return (*src0 == *src1);
 
     return compare256_unaligned_sse4_static(src0+2, src1+2) + 2;

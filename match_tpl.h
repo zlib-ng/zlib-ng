@@ -15,16 +15,6 @@
 #ifndef MATCH_TPL_H
 #define MATCH_TPL_H
 
-#ifdef UNALIGNED_OK
-#  ifdef UNALIGNED64_OK
-typedef uint64_t        bestcmp_t;
-#  else
-typedef uint32_t        bestcmp_t;
-#  endif
-#else
-typedef uint8_t         bestcmp_t;
-#endif
-
 #define EARLY_EXIT_TRIGGER_LEVEL 5
 
 #endif
@@ -54,11 +44,14 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     uint32_t chain_length, nice_match, best_len, offset;
     uint32_t lookahead = s->lookahead;
     Pos match_offset = 0;
-    bestcmp_t scan_end;
-#ifndef UNALIGNED_OK
-    bestcmp_t scan_end0;
+#ifdef UNALIGNED_OK
+    uint16_t scan_start2, scan_end2;
+    uint32_t scan_start4, scan_end4;
+#  if defined(UNALIGNED64_OK)
+    uint64_t scan_start8, scan_end8;
+#  endif
 #else
-    bestcmp_t scan_start;
+    uint8_t scan_end, scan_end0;
 #endif
 
 #define GOTO_NEXT_CHAIN \
@@ -85,13 +78,23 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     }
 #endif
 
-    scan_end   = *(bestcmp_t *)(scan+offset);
-#ifndef UNALIGNED_OK
-    scan_end0  = *(bestcmp_t *)(scan+offset+1);
+#ifdef UNALIGNED64_OK
+    memcpy(&scan_start8, scan, sizeof(scan_start8));
+    memcpy(&scan_end8, scan+offset, sizeof(scan_end8));
+    scan_start4 = (uint32_t)scan_start8;
+    scan_end4 = (uint32_t)scan_start8;
+    scan_start2 = (uint16_t)scan_start4;
+    scan_end2 = (uint16_t)scan_end4;
+#elif defined(UNALIGNED_OK)
+    memcpy(&scan_start4, scan, sizeof(scan_start4));
+    memcpy(&scan_end4, scan+offset, sizeof(scan_end4));
+    scan_start2 = (uint16_t)scan_start4;
+    scan_end2 = (uint16_t)scan_end4;
 #else
-    scan_start = *(bestcmp_t *)(scan);
+    scan_end  = *(scan+offset);
+    scan_end0 = *(scan+offset+1);
 #endif
-    mbase_end  = (mbase_start+offset);
+    mbase_end = (mbase_start+offset);
 
     /* Do not waste too much time if we already have a good match */
     chain_length = s->max_chain_length;
@@ -153,24 +156,24 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #ifdef UNALIGNED_OK
         if (best_len < sizeof(uint32_t)) {
             for (;;) {
-                if (*(uint16_t *)(mbase_end+cur_match) == (uint16_t)scan_end &&
-                    *(uint16_t *)(mbase_start+cur_match) == (uint16_t)scan_start)
+                if (zmemcmp_2(mbase_end+cur_match, &scan_end2) == 0 &&
+                    zmemcmp_2(mbase_start+cur_match, &scan_start2) == 0)
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  ifdef UNALIGNED64_OK
         } else if (best_len >= sizeof(uint64_t)) {
             for (;;) {
-                if (*(uint64_t *)(mbase_end+cur_match) == (uint64_t)scan_end &&
-                    *(uint64_t *)(mbase_start+cur_match) == (uint64_t)scan_start)
+                if (zmemcmp_8(mbase_end+cur_match, &scan_end8) == 0 &&
+                    zmemcmp_8(mbase_start+cur_match, &scan_start8) == 0)
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  endif
         } else {
             for (;;) {
-                if (*(uint32_t *)(mbase_end+cur_match) == (uint32_t)scan_end &&
-                    *(uint32_t *)(mbase_start+cur_match) == (uint32_t)scan_start)
+                if (zmemcmp_4(mbase_end+cur_match, &scan_end4) == 0 &&
+                    zmemcmp_4(mbase_start+cur_match, &scan_start4) == 0)
                     break;
                 GOTO_NEXT_CHAIN;
             }
@@ -207,9 +210,16 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #endif
             }
 #endif
-            scan_end = *(bestcmp_t *)(scan+offset);
-#ifndef UNALIGNED_OK
-            scan_end0 = *(bestcmp_t *)(scan+offset+1);
+#ifdef UNALIGNED64_OK
+            memcpy(&scan_end8, scan+offset, sizeof(scan_end8));
+            scan_end4 = (uint32_t)scan_end8;
+            scan_end2 = (uint16_t)scan_end4;
+#elif defined(UNALIGNED_OK)
+            memcpy(&scan_end4, scan+offset, sizeof(scan_end4));
+            scan_end2 = (uint16_t)scan_end4;
+#else
+            scan_end = *(scan+offset);
+            scan_end0 = *(scan+offset+1);
 #endif
 #ifdef LONGEST_MATCH_SLOW
             /* Look for a better string offset */
