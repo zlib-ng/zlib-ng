@@ -230,7 +230,7 @@ macro(check_sse4_intrinsics)
         "int main(void) {
             unsigned val = 0, h = 0;
         #if defined(_MSC_VER)
-            { __asm mov edx, h __asm mov eax, val __asm crc32 eax, edx __asm mov val, eax }
+            { __asm mov edx, h __asm mov eax, val __asm crc32 eax, edx __asm mov h, eax }
         #else
             __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
         #endif
