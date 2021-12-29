@@ -26,7 +26,7 @@
         __asm mov edx, h\
         __asm mov eax, val\
         __asm crc32 eax, edx\
-        __asm mov val, eax\
+        __asm mov h, eax\
     }
 #  else
 #    define HASH_CALC(s, h, val) \
