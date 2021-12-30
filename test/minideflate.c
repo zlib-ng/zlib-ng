@@ -111,7 +111,7 @@ void deflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
             err = PREFIX(deflate)(&c_stream, Z_FINISH);
             if (err == Z_STREAM_END) break;
             CHECK_ERR(err, "deflate");
-        } while (err == Z_OK);
+        } while (1);
     }
 
     /* Output remaining data in write buffer */
@@ -197,7 +197,7 @@ void inflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
             err = PREFIX(inflate)(&d_stream, Z_FINISH);
             if (err == Z_STREAM_END) break;
             CHECK_ERR(err, "inflate");
-        } while (err == Z_OK);
+        } while (1);
     }
 
     /* Output remaining data in write buffer */
