@@ -32,16 +32,16 @@ static unsigned long dict_id = 0; /* Adler32 value of the dictionary */
 #define MAX_DICTIONARY_SIZE 32768
 
 
-void test_compress      (unsigned char *compr, z_size_t compr_len,unsigned char *uncompr, z_size_t uncompr_len);
-void test_gzio          (const char *fname, unsigned char *uncompr, z_size_t uncompr_len);
-void test_deflate       (unsigned char *compr, size_t compr_len);
-void test_inflate       (unsigned char *compr, size_t compr_len, unsigned char *uncompr, size_t uncompr_len);
-void test_large_deflate (unsigned char *compr, size_t compr_len, unsigned char *uncompr, size_t uncompr_len, int zng_params);
-void test_large_inflate (unsigned char *compr, size_t compr_len, unsigned char *uncompr, size_t uncompr_len);
-void test_flush         (unsigned char *compr, z_size_t *compr_len);
-void test_sync          (unsigned char *compr, size_t compr_len, unsigned char *uncompr, size_t uncompr_len);
-void test_dict_deflate  (unsigned char *compr, size_t compr_len);
-void test_dict_inflate  (unsigned char *compr, size_t compr_len, unsigned char *uncompr, size_t uncompr_len);
+void test_compress      (uint8_t *compr, z_size_t compr_len, uint8_t *uncompr, z_size_t uncompr_len);
+void test_gzio          (const char *fname, uint8_t *uncompr, z_size_t uncompr_len);
+void test_deflate       (uint8_t *compr, size_t compr_len);
+void test_inflate       (uint8_t *compr, size_t compr_len, uint8_t *uncompr, size_t uncompr_len);
+void test_large_deflate (uint8_t *compr, size_t compr_len, uint8_t *uncompr, size_t uncompr_len, int zng_params);
+void test_large_inflate (uint8_t *compr, size_t compr_len, uint8_t *uncompr, size_t uncompr_len);
+void test_flush         (uint8_t *compr, z_size_t *compr_len);
+void test_sync          (uint8_t *compr, size_t compr_len, uint8_t *uncompr, size_t uncompr_len);
+void test_dict_deflate  (uint8_t *compr, size_t compr_len);
+void test_dict_inflate  (uint8_t *compr, size_t compr_len, uint8_t *uncompr, size_t uncompr_len);
 int  main               (int argc, char *argv[]);
 
 
@@ -69,7 +69,7 @@ void error(const char *format, ...) {
 /* ===========================================================================
  * Test compress() and uncompress()
  */
-void test_compress(unsigned char *compr, z_size_t compr_len, unsigned char *uncompr, z_size_t uncompr_len) {
+void test_compress(uint8_t *compr, z_size_t compr_len, uint8_t *uncompr, z_size_t uncompr_len) {
     int err;
     size_t len = strlen(hello)+1;
 
@@ -90,7 +90,7 @@ void test_compress(unsigned char *compr, z_size_t compr_len, unsigned char *unco
 /* ===========================================================================
  * Test read/write of .gz files
  */
-void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncompr_len) {
+void test_gzio(const char *fname, uint8_t *uncompr, z_size_t uncompr_len) {
 #ifdef NO_GZCOMPRESS
     fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
 #else
@@ -199,7 +199,7 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncompr_len) 
 /* ===========================================================================
  * Test deflate() with small buffers
  */
-void test_deflate(unsigned char *compr, size_t compr_len) {
+void test_deflate(uint8_t *compr, size_t compr_len) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
     size_t len = strlen(hello)+1;
@@ -236,7 +236,7 @@ void test_deflate(unsigned char *compr, size_t compr_len) {
 /* ===========================================================================
  * Test inflate() with small buffers
  */
-void test_inflate(unsigned char *compr, size_t compr_len, unsigned char *uncompr, size_t uncompr_len) {
+void test_inflate(uint8_t *compr, size_t compr_len, uint8_t *uncompr, size_t uncompr_len) {
     int err;
     PREFIX3(stream) d_stream; /* decompression stream */
 
@@ -276,7 +276,7 @@ static unsigned int diff;
 /* ===========================================================================
  * Test deflate() with large buffers and dynamic change of compression level
  */
-void test_large_deflate(unsigned char *compr, size_t compr_len, unsigned char *uncompr, size_t uncompr_len, int zng_params) {
+void test_large_deflate(uint8_t *compr, size_t compr_len, uint8_t *uncompr, size_t uncompr_len, int zng_params) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
 #ifndef ZLIB_COMPAT
@@ -370,7 +370,7 @@ void test_large_deflate(unsigned char *compr, size_t compr_len, unsigned char *u
 /* ===========================================================================
  * Test inflate() with large buffers
  */
-void test_large_inflate(unsigned char *compr, size_t compr_len, unsigned char *uncompr, size_t uncompr_len) {
+void test_large_inflate(uint8_t *compr, size_t compr_len, uint8_t *uncompr, size_t uncompr_len) {
     int err;
     PREFIX3(stream) d_stream; /* decompression stream */
 
@@ -408,7 +408,7 @@ void test_large_inflate(unsigned char *compr, size_t compr_len, unsigned char *u
 /* ===========================================================================
  * Test deflate() with full flush
  */
-void test_flush(unsigned char *compr, z_size_t *compr_len) {
+void test_flush(uint8_t *compr, z_size_t *compr_len) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
     unsigned int len = (unsigned int)strlen(hello)+1;
@@ -443,7 +443,7 @@ void test_flush(unsigned char *compr, z_size_t *compr_len) {
 /* ===========================================================================
  * Test inflateSync()
  */
-void test_sync(unsigned char *compr, size_t compr_len, unsigned char *uncompr, size_t uncompr_len) {
+void test_sync(uint8_t *compr, size_t compr_len, uint8_t *uncompr, size_t uncompr_len) {
     int err;
     PREFIX3(stream) d_stream; /* decompression stream */
 
@@ -481,7 +481,7 @@ void test_sync(unsigned char *compr, size_t compr_len, unsigned char *uncompr, s
 /* ===========================================================================
  * Test deflate() with preset dictionary
  */
-void test_dict_deflate(unsigned char *compr, size_t compr_len) {
+void test_dict_deflate(uint8_t *compr, size_t compr_len) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
 
@@ -514,7 +514,7 @@ void test_dict_deflate(unsigned char *compr, size_t compr_len) {
 /* ===========================================================================
  * Test inflate() with a preset dictionary
  */
-void test_dict_inflate(unsigned char *compr, size_t compr_len, unsigned char *uncompr, size_t uncompr_len) {
+void test_dict_inflate(uint8_t *compr, size_t compr_len, uint8_t *uncompr, size_t uncompr_len) {
     int err;
     uint8_t check_dictionary[MAX_DICTIONARY_SIZE];
     uint32_t check_dictionary_len = 0;
@@ -578,7 +578,7 @@ void test_deflate_bound(void) {
     int err;
     unsigned int len = (unsigned int)strlen(hello)+1;
     int estimate_len = 0;
-    unsigned char *out_buf = NULL;
+    uint8_t *out_buf = NULL;
 
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
@@ -618,7 +618,7 @@ void test_deflate_bound(void) {
 /* ===========================================================================
  * Test deflateCopy() with small buffers
  */
-void test_deflate_copy(unsigned char *compr, size_t compr_len) {
+void test_deflate_copy(uint8_t *compr, size_t compr_len) {
     PREFIX3(stream) c_stream, c_stream_copy; /* compression stream */
     int err;
     size_t len = strlen(hello)+1;
@@ -666,7 +666,7 @@ void test_deflate_copy(unsigned char *compr, size_t compr_len) {
 /* ===========================================================================
  * Test deflateGetDictionary() with small buffers
  */
-void test_deflate_get_dict(unsigned char *compr, size_t compr_len) {
+void test_deflate_get_dict(uint8_t *compr, size_t compr_len) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
     unsigned char *dict_new = NULL;
@@ -709,7 +709,7 @@ void test_deflate_get_dict(unsigned char *compr, size_t compr_len) {
 /* ===========================================================================
  * Test deflatePending() with small buffers
  */
-void test_deflate_pending(unsigned char *compr, size_t compr_len) {
+void test_deflate_pending(uint8_t *compr, size_t compr_len) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
     int *bits = calloc(256, 1);
@@ -760,7 +760,7 @@ void test_deflate_pending(unsigned char *compr, size_t compr_len) {
 /* ===========================================================================
  * Test deflatePrime() wrapping gzip around deflate stream
  */
-void test_deflate_prime(unsigned char *compr, size_t compr_len, unsigned char *uncompr, size_t uncompr_len) {
+void test_deflate_prime(uint8_t *compr, size_t compr_len, uint8_t *uncompr, size_t uncompr_len) {
     PREFIX3(stream) c_stream; /* compression stream */
     PREFIX3(stream) d_stream; /* decompression stream */
     int err;
@@ -849,7 +849,7 @@ void test_deflate_prime(unsigned char *compr, size_t compr_len, unsigned char *u
 /* ===========================================================================
  * Test deflateSetHeader() with small buffers
  */
-void test_deflate_set_header(unsigned char *compr, size_t compr_len) {
+void test_deflate_set_header(uint8_t *compr, size_t compr_len) {
     PREFIX(gz_header) *head = calloc(1, sizeof(PREFIX(gz_header)));
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
@@ -907,7 +907,7 @@ void test_deflate_set_header(unsigned char *compr, size_t compr_len) {
 /* ===========================================================================
  * Test deflateTune() with small buffers
  */
-void test_deflate_tune(unsigned char *compr, size_t compr_len) {
+void test_deflate_tune(uint8_t *compr, size_t compr_len) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
     int good_length = 3;
@@ -955,7 +955,7 @@ void test_deflate_tune(unsigned char *compr, size_t compr_len) {
  * Usage:  example [output.gz  [input.gz]]
  */
 int main(int argc, char *argv[]) {
-    unsigned char *compr, *uncompr;
+    uint8_t *compr, *uncompr;
     z_size_t compr_len = 10000*sizeof(int); /* don't overflow on MSDOS */
     z_size_t uncompr_len = compr_len;
     static const char* my_version = PREFIX2(VERSION);
@@ -971,8 +971,8 @@ int main(int argc, char *argv[]) {
     printf("zlib-ng version %s = 0x%08lx, compile flags = 0x%lx\n",
             ZLIBNG_VERSION, ZLIBNG_VERNUM, PREFIX(zlibCompileFlags)());
 
-    compr   = (unsigned char*)calloc((unsigned int)compr_len, 1);
-    uncompr = (unsigned char*)calloc((unsigned int)uncompr_len, 1);
+    compr   = (uint8_t *)calloc((unsigned int)compr_len, 1);
+    uncompr = (uint8_t *)calloc((unsigned int)uncompr_len, 1);
     /* compr and uncompr are cleared to avoid reading uninitialized
      * data and to ensure that uncompr compresses well.
      */
