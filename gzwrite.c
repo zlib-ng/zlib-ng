@@ -274,7 +274,7 @@ size_t Z_EXPORT PREFIX(gzfwrite)(void const *buf, size_t size, size_t nitems, gz
 
     /* compute bytes to read -- error on overflow */
     len = nitems * size;
-    if (size && len / size != nitems) {
+    if (len / size != nitems) {
         gz_error(state, Z_STREAM_ERROR, "request does not fit in a size_t");
         return 0;
     }
