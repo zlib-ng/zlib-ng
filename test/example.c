@@ -924,7 +924,7 @@ void test_deflate_tune(unsigned char *compr, size_t compr_len) {
     err = PREFIX(deflateInit)(&c_stream, Z_BEST_COMPRESSION);
     CHECK_ERR(err, "deflateInit");
 
-    err = PREFIX(deflateTune)(&c_stream,(uInt)good_length,(uInt)max_lazy,nice_length,(uInt)max_chain);
+    err = PREFIX(deflateTune)(&c_stream, (uInt)good_length, (uInt)max_lazy, nice_length, (uInt)max_chain);
     CHECK_ERR(err, "deflateTune");
     if (err == Z_OK) {
         printf("deflateTune(): OK\n");
@@ -971,8 +971,8 @@ int main(int argc, char *argv[]) {
     printf("zlib-ng version %s = 0x%08lx, compile flags = 0x%lx\n",
             ZLIBNG_VERSION, ZLIBNG_VERNUM, PREFIX(zlibCompileFlags)());
 
-    compr    = (unsigned char*)calloc((unsigned int)compr_len, 1);
-    uncompr  = (unsigned char*)calloc((unsigned int)uncompr_len, 1);
+    compr   = (unsigned char*)calloc((unsigned int)compr_len, 1);
+    uncompr = (unsigned char*)calloc((unsigned int)uncompr_len, 1);
     /* compr and uncompr are cleared to avoid reading uninitialized
      * data and to ensure that uncompr compresses well.
      */
@@ -981,8 +981,7 @@ int main(int argc, char *argv[]) {
 
     test_compress(compr, compr_len, uncompr, uncompr_len);
 
-    test_gzio((argc > 1 ? argv[1] : TESTFILE),
-              uncompr, uncompr_len);
+    test_gzio((argc > 1 ? argv[1] : TESTFILE), uncompr, uncompr_len);
 
     test_deflate(compr, compr_len);
     test_inflate(compr, compr_len, uncompr, uncompr_len);
