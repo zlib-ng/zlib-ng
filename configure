@@ -105,8 +105,7 @@ forcesse2=0
 avx2flag="-mavx2"
 sse2flag="-msse2"
 ssse3flag="-mssse3"
-sse4flag="-msse4"
-sse42flag="-msse4.2"
+sse4flag="-msse4.2"
 pclmulflag="-mpclmul"
 acleflag=
 neonflag=
@@ -254,7 +253,6 @@ if test $native -eq 1; then
   sse2flag=""
   ssse3flag=""
   sse4flag=""
-  sse42flag=""
   pclmulflag=""
   noltoflag=""
 fi
@@ -1164,7 +1162,7 @@ int main(void) {
     return (int) h;
 }
 EOF
-    if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
+    if try ${CC} ${CFLAGS} ${sse4flag} $test.c; then
         echo "Checking for SSE4.2 CRC inline assembly ... Yes." | tee -a configure.log
         HAVE_SSE42CRC_INLINE_ASM=1
     else
@@ -1182,7 +1180,7 @@ int main(void) {
     return 0;
 }
 EOF
-    if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
+    if try ${CC} ${CFLAGS} ${sse4flag} $test.c; then
         echo "Checking for SSE4.2 CRC intrinsics ... Yes." | tee -a configure.log
         HAVE_SSE42CRC_INTRIN=1
     else
@@ -1203,7 +1201,7 @@ int main(void)
     return _mm_cmpestri(xmm_src0, 16, xmm_src1, 16, 0);
 }
 EOF
-    if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
+    if try ${CC} ${CFLAGS} ${sse4flag} $test.c; then
         echo "Checking for SSE4.2 compare string intrinsics ... Yes." | tee -a configure.log
         HAVE_SSE42CMPSTR_INTRIN=1
     else
