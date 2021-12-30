@@ -881,7 +881,7 @@ void test_deflate_set_header(uint8_t *compr, size_t compr_len) {
     }
     PREFIX(deflateBound)(&c_stream, (unsigned long)compr_len);
 
-    c_stream.next_in  = (unsigned char *)hello;
+    c_stream.next_in  = (z_const unsigned char *)hello;
     c_stream.next_out = compr;
 
     while (c_stream.total_in != len && c_stream.total_out < compr_len) {
