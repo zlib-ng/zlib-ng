@@ -82,4 +82,5 @@ int main() {
         fprintf(stderr, "deflateEnd() failed with code %d\n", ret);
         return EXIT_FAILURE;
     }
+    return 0;
 }

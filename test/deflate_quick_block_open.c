@@ -107,4 +107,5 @@ int main() {
         fprintf(stderr, "Uncompressed data differs from the original\n");
         return EXIT_FAILURE;
     }
+    return 0;
 }
