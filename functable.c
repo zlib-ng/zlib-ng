@@ -137,8 +137,7 @@ Z_INTERNAL uint32_t crc32_generic(uint32_t, const unsigned char *, uint64_t);
 extern uint32_t crc32_acle(uint32_t, const unsigned char *, uint64_t);
 #elif defined(POWER8_VSX_CRC32)
 extern uint32_t crc32_power8(uint32_t, const unsigned char *, uint64_t);
-#endif
-#ifdef S390_CRC32_VX
+#elif defined(S390_CRC32_VX)
 extern uint32_t s390_crc32_vx(uint32_t, const unsigned char *, uint64_t);
 #endif
 
