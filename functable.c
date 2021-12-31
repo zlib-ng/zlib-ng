@@ -523,31 +523,28 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
 
     Assert(sizeof(uint64_t) >= sizeof(size_t),
            "crc32_z takes size_t but internally we have a uint64_t len");
-    /* return a function pointer for optimized arches here after a capability test */
-
-    functable.crc32 = &crc32_generic;
-    cpu_check_features();
 
     if (use_byfour) {
 #if BYTE_ORDER == LITTLE_ENDIAN
         functable.crc32 = crc32_little;
-#  if defined(ARM_ACLE_CRC_HASH)
-        if (arm_cpu_has_crc32)
-            functable.crc32 = crc32_acle;
-#  endif
 #elif BYTE_ORDER == BIG_ENDIAN
         functable.crc32 = crc32_big;
-#  if defined(S390_CRC32_VX)
-        if (s390_cpu_has_vx)
-            functable.crc32 = s390_crc32_vx;
-#  endif
 #else
 #  error No endian defined
 #endif
+    } else {
+        functable.crc32 = &crc32_generic;
     }
-#if defined(POWER8_VSX_CRC32)
+    cpu_check_features();
+#ifdef ARM_ACLE_CRC_HASH
+    if (arm_cpu_has_crc32)
+        functable.crc32 = crc32_acle;
+#elif defined(POWER8_VSX_CRC32)
     if (power_cpu_has_arch_2_07)
         functable.crc32 = crc32_power8;
+#elif defined(S390_CRC32_VX)
+    if (s390_cpu_has_vx)
+        functable.crc32 = s390_crc32_vx;
 #endif
 
     return functable.crc32(crc, buf, len);
