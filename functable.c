@@ -555,8 +555,6 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
 
 Z_INTERNAL uint32_t compare258_stub(const unsigned char *src0, const unsigned char *src1) {
 
-    functable.compare258 = &compare258_c;
-
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
     functable.compare258 = &compare258_unaligned_64;
@@ -573,14 +571,14 @@ Z_INTERNAL uint32_t compare258_stub(const unsigned char *src0, const unsigned ch
     if (x86_cpu_has_avx2)
         functable.compare258 = &compare258_unaligned_avx2;
 #  endif
+#else
+    functable.compare258 = &compare258_c;
 #endif
 
     return functable.compare258(src0, src1);
 }
 
 Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
-
-    functable.longest_match = &longest_match_c;
 
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
@@ -598,14 +596,14 @@ Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
     if (x86_cpu_has_avx2)
         functable.longest_match = &longest_match_unaligned_avx2;
 #  endif
+#else
+    functable.longest_match = &longest_match_c;
 #endif
 
     return functable.longest_match(s, cur_match);
 }
 
 Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_match) {
-
-    functable.longest_match_slow = &longest_match_slow_c;
 
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
@@ -623,6 +621,8 @@ Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_matc
     if (x86_cpu_has_avx2)
         functable.longest_match_slow = &longest_match_slow_unaligned_avx2;
 #  endif
+#else
+    functable.longest_match_slow = &longest_match_slow_c;
 #endif
 
     return functable.longest_match_slow(s, cur_match);
