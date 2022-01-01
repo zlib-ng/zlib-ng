@@ -1315,7 +1315,7 @@ EOF
 check_ssse3_intrinsics() {
     # Check whether compiler supports SSSE3 intrinsics
     cat > $test.c << EOF
-#include <x86intrin.h>
+#include <immintrin.h>
 int main(void)
 {
     __m128i u, v, w;
