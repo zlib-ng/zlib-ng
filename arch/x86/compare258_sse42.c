@@ -1,4 +1,4 @@
-/* compare258_sse.c -- SSE4.2 version of compare258
+/* compare258_sse42.c -- SSE4.2 version of compare258
  *
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
  * Authors:

@@ -1,4 +1,4 @@
-/* adler32.c -- compute the Adler-32 checksum of a data stream
+/* adler32_avx2.c -- compute the Adler-32 checksum of a data stream
  * Copyright (C) 1995-2011 Mark Adler
  * Authors:
  *   Brian Bockelman <bockelman@gmail.com>
