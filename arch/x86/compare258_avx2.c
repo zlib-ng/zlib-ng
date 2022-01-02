@@ -1,4 +1,4 @@
-/* compare258_avx.c -- AVX2 version of compare258
+/* compare258_avx2.c -- AVX2 version of compare258
  * Copyright Mika T. Lindqvist  <postmaster@raasu.org>
  * For conditions of distribution and use, see copyright notice in zlib.h
  */

@@ -1,4 +1,4 @@
-/* insert_string_sse.c -- insert_string integer hash variant using SSE4.2's CRC instructions
+/* insert_string_sse42.c -- insert_string integer hash variant using SSE4.2's CRC instructions
  *
  * Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h

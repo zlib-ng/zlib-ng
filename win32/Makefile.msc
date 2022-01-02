@@ -52,10 +52,10 @@ OBJS = \
 	adler32.obj \
 	chunkset.obj \
 	chunkset_avx.obj \
-	chunkset_sse.obj \
+	chunkset_sse2.obj \
 	compare258.obj \
-	compare258_avx.obj \
-	compare258_sse.obj \
+	compare258_avx2.obj \
+	compare258_sse42.obj \
 	compress.obj \
 	crc32.obj \
 	crc32_comb.obj \
@@ -76,10 +76,10 @@ OBJS = \
 	inffast.obj \
 	insert_string.obj \
 	insert_string_roll.obj \
-	insert_string_sse.obj \
+	insert_string_sse42.obj \
 	slide_hash.obj \
-	slide_hash_avx.obj \
-	slide_hash_sse.obj \
+	slide_hash_avx2.obj \
+	slide_hash_sse2.obj \
 	trees.obj \
 	uncompr.obj \
 	zutil.obj \
@@ -190,7 +190,7 @@ compress.obj: $(SRCDIR)/compress.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 uncompr.obj: $(SRCDIR)/uncompr.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 chunkset_avx.obj: $(SRCDIR)/arch/x86/chunkset_avx.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
-chunkset_sse.obj: $(SRCDIR)/arch/x86/chunkset_sse.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
+chunkset_sse2.obj: $(SRCDIR)/arch/x86/chunkset_sse2.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 crc32.obj: $(SRCDIR)/crc32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zendian.h $(SRCDIR)/deflate.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_tbl.h
 crc32_comb.obj: $(SRCDIR)/crc32_comb.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/crc32_comb_tbl.h
 crc32_fold.obj: $(SRCDIR)/crc32_fold.c $(SRCDIR)/zbuild.h
@@ -208,8 +208,8 @@ inffast.obj: $(SRCDIR)/inffast.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/
 inflate.obj: $(SRCDIR)/inflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h $(SRCDIR)/functable.h
 inftrees.obj: $(SRCDIR)/inftrees.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h
 slide_hash.obj: $(SRCDIR)/slide_hash.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h
-slide_hash_avx.obj: $(SRCDIR)/arch/x86/slide_hash_avx.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h
-slide_hash_sse.obj: $(SRCDIR)/arch/x86/slide_hash_sse.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h
+slide_hash_avx2.obj: $(SRCDIR)/arch/x86/slide_hash_avx2.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h
+slide_hash_sse2.obj: $(SRCDIR)/arch/x86/slide_hash_sse2.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h
 trees.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/trees_tbl.h
 zutil.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/zutil_p.h
 
