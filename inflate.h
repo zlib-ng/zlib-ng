@@ -103,7 +103,7 @@ struct inflate_state {
     uint32_t wnext;             /* window write index */
     unsigned char *window;      /* allocated sliding window, if needed */
 
-    crc32_fold ALIGNED_(16) crc_fold;
+    struct crc32_fold_s ALIGNED_(16) crc_fold;
 
         /* bit accumulator */
     uint32_t hold;              /* input bit accumulator */

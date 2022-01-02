@@ -244,7 +244,7 @@ static inline void crc32_fold_save_partial(__m128i *fold, __m128i foldp) {
 Z_INTERNAL uint32_t crc32_fold_reset_pclmulqdq(crc32_fold *crc) {
     __m128i xmm_crc0 = _mm_cvtsi32_si128(0x9db42487);
     __m128i xmm_zero = _mm_setzero_si128();
-    crc32_fold_save((__m128i *)&crc->fold, xmm_crc0, xmm_zero, xmm_zero, xmm_zero);
+    crc32_fold_save((__m128i *)crc->fold, xmm_crc0, xmm_zero, xmm_zero, xmm_zero);
     return 0;
 }
 
@@ -254,7 +254,7 @@ Z_INTERNAL void crc32_fold_copy_pclmulqdq(crc32_fold *crc, uint8_t *dst, const u
     __m128i xmm_crc0, xmm_crc1, xmm_crc2, xmm_crc3, xmm_crc_part;
     char ALIGNED_(16) partial_buf[16] = { 0 };
 
-    crc32_fold_load((__m128i *)&crc->fold, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
+    crc32_fold_load((__m128i *)crc->fold, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 
     if (len < 16) {
         if (len == 0)
@@ -375,8 +375,8 @@ Z_INTERNAL void crc32_fold_copy_pclmulqdq(crc32_fold *crc, uint8_t *dst, const u
 partial:
     partial_fold((size_t)len, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, &xmm_crc_part);
 done:
-    crc32_fold_save((__m128i *)&crc->fold, xmm_crc0, xmm_crc1, xmm_crc2, xmm_crc3);
-    crc32_fold_save_partial((__m128i *)&crc->fold, xmm_crc_part);
+    crc32_fold_save((__m128i *)crc->fold, xmm_crc0, xmm_crc1, xmm_crc2, xmm_crc3);
+    crc32_fold_save_partial((__m128i *)crc->fold, xmm_crc_part);
 }
 
 static const unsigned ALIGNED_(16) crc_k[] = {
@@ -402,7 +402,7 @@ Z_INTERNAL uint32_t crc32_fold_final_pclmulqdq(crc32_fold *crc) {
     __m128i xmm_crc0, xmm_crc1, xmm_crc2, xmm_crc3;
     __m128i x_tmp0, x_tmp1, x_tmp2, crc_fold;
 
-    crc32_fold_load((__m128i *)&crc->fold, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
+    crc32_fold_load((__m128i *)crc->fold, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 
     /*
      * k1
