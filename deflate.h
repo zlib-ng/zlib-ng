@@ -211,7 +211,7 @@ struct internal_state {
 
     int nice_match; /* Stop searching when current match exceeds this */
 
-    crc32_fold ALIGNED_(16) crc_fold;
+    struct crc32_fold_s ALIGNED_(16) crc_fold;
 
                 /* used by trees.c: */
     /* Didn't use ct_data typedef below to suppress compiler warning */

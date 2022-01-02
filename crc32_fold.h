@@ -5,8 +5,11 @@
 #ifndef CRC32_FOLD_H_
 #define CRC32_FOLD_H_
 
+#define CRC32_FOLD_BUFFER_SIZE (16 * 5)
+/* sizeof(__m128i) * (4 folds & 1 partial fold) */
+
 typedef struct crc32_fold_s {
-    uint32_t ALIGNED_(16) fold[4 * 5];
+    uint8_t fold[CRC32_FOLD_BUFFER_SIZE];
     uint32_t value;
 } crc32_fold;
 
