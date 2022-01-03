@@ -1,7 +1,4 @@
-/* example.c -- usage example of the zlib compression library
- * Copyright (C) 1995-2006, 2011, 2016 Jean-loup Gailly
- * For conditions of distribution and use, see copyright notice in zlib.h
- */
+/* test_gzio.c - Test read/write of .gz files */
 
 #include "zbuild.h"
 #ifdef ZLIB_COMPAT
@@ -9,64 +6,27 @@
 #else
 #  include "zlib-ng.h"
 #endif
-#include "deflate.h"
 
 #include <stdio.h>
-
-#include <string.h>
+#include <stdint.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <inttypes.h>
+#include <string.h>
+
+#include "test_shared.h"
 
 #define TESTFILE "foo.gz"
 
-static const char hello[] = "hello, hello!";
-/* "hello world" would be more standard, but the repeated "hello"
- * stresses the compression code better, sorry...
- */
-
-void test_gzio          (const char *fname, unsigned char *uncompr, z_size_t uncomprLen);
-void test_deflate       (unsigned char *compr, size_t comprLen);
-void test_inflate       (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
-void test_large_deflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen, int zng_params);
-void test_large_inflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
-int  main               (int argc, char *argv[]);
-
-
-static alloc_func zalloc = NULL;
-static free_func zfree = NULL;
-
-/* ===========================================================================
- * Display error message and exit
- */
-void error(const char *format, ...) {
-    va_list va;
-
-    va_start(va, format);
-    vfprintf(stderr, format, va);
-    va_end(va);
-
-    exit(1);
-}
-
-#define CHECK_ERR(err, msg) { \
-    if (err != Z_OK) \
-        error("%s error: %d\n", msg, err); \
-}
-
-/* ===========================================================================
- * Test read/write of .gz files
- */
-void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
+int main(int argc, char *argv[]) {
 #ifdef NO_GZCOMPRESS
     fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
 #else
-    int err;
+    const char *fname = (argc > 1 ? argv[1] : TESTFILE);
+    uint8_t compr[128], uncompr[128];
+    uint32_t compr_len = sizeof(compr), uncompr_len = sizeof(uncompr);
     size_t read;
-    size_t len = strlen(hello)+1;
+    int64_t pos;
     gzFile file;
-    z_off64_t pos;
-    z_off64_t comprLen;
+    int err;
 
     /* Write gz file with test data */
     file = PREFIX(gzopen)(fname, "wb");
@@ -84,13 +44,13 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
     /* Write hello, hello! using gzfwrite using best compression level */
     if (PREFIX(gzsetparams)(file, Z_BEST_COMPRESSION, Z_DEFAULT_STRATEGY) != Z_OK)
         error("gzsetparams err: %s\n", PREFIX(gzerror)(file, &err));
-    if (PREFIX(gzfwrite)(hello, len, 1, file) == 0)
+    if (PREFIX(gzfwrite)(hello, hello_len, 1, file) == 0)
         error("gzfwrite err: %s\n", PREFIX(gzerror)(file, &err));
     /* Flush compressed bytes to file */
     if (PREFIX(gzflush)(file, Z_SYNC_FLUSH) != Z_OK)
         error("gzflush err: %s\n", PREFIX(gzerror)(file, &err));
-    comprLen = PREFIX(gzoffset)(file);
-    if (comprLen <= 0)
+    compr_len = (uint32_t)PREFIX(gzoffset)(file);
+    if (compr_len <= 0)
         error("gzoffset err: %s\n", PREFIX(gzerror)(file, &err));
     PREFIX(gzclose)(file);
 
@@ -101,7 +61,7 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
 
     /* Read uncompressed data - hello, hello! string twice */
     strcpy((char*)uncompr, "garbages");
-    if (PREFIX(gzread)(file, uncompr, (unsigned)uncomprLen) != (int)(len + len))
+    if (PREFIX(gzread)(file, uncompr, (unsigned)uncompr_len) != (int)(hello_len + hello_len))
         error("gzread err: %s\n", PREFIX(gzerror)(file, &err));
     if (strcmp((char*)uncompr, hello))
         error("bad gzread: %s\n", (char*)uncompr);
@@ -121,7 +81,7 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
         error("gzungetc error\n");
     /* Read first hello, hello! string with gzgets */
     strcpy((char*)uncompr, "garbages");
-    PREFIX(gzgets)(file, (char*)uncompr, (int)uncomprLen);
+    PREFIX(gzgets)(file, (char*)uncompr, (int)uncompr_len);
     if (strlen((char*)uncompr) != 7) /* " hello!" */
         error("gzgets err after gzseek: %s\n", PREFIX(gzerror)(file, &err));
     if (strcmp((char*)uncompr, hello + 6))
@@ -137,13 +97,13 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
         error("gzeof err: reporting end of stream\n");
     /* Read first hello, hello! string with gzfread */
     strcpy((char*)uncompr, "garbages");
-    read = PREFIX(gzfread)(uncompr, uncomprLen, 1, file);
+    read = PREFIX(gzfread)(uncompr, uncompr_len, 1, file);
     if (strcmp((const char *)uncompr, hello) != 0)
         error("bad gzgets\n");
     else
         printf("gzgets(): %s\n", (char*)uncompr);
     pos = PREFIX(gzoffset)(file);
-    if (pos < 0 || pos != (comprLen + 10))
+    if (pos < 0 || pos != (compr_len + 10))
         error("gzoffset err: wrong offset at end\n");
     /* Trigger an error and clear it with gzclearerr */
     PREFIX(gzfread)(uncompr, (size_t)-1, (size_t)-1, file);
@@ -161,43 +121,5 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
         error("gzclose unexpected return when handle null\n");
     Z_UNUSED(read);
 #endif
-}
-
-/* ===========================================================================
- * Usage:  example [output.gz  [input.gz]]
- */
-int main(int argc, char *argv[]) {
-    unsigned char *compr, *uncompr;
-    z_size_t comprLen = 10000*sizeof(int); /* don't overflow on MSDOS */
-    z_size_t uncomprLen = comprLen;
-    static const char* myVersion = PREFIX2(VERSION);
-
-    if (zVersion()[0] != myVersion[0]) {
-        fprintf(stderr, "incompatible zlib version\n");
-        exit(1);
-
-    } else if (strcmp(zVersion(), PREFIX2(VERSION)) != 0) {
-        fprintf(stderr, "warning: different zlib version\n");
-    }
-
-    printf("zlib-ng version %s = 0x%08lx, compile flags = 0x%lx\n",
-            ZLIBNG_VERSION, ZLIBNG_VERNUM, PREFIX(zlibCompileFlags)());
-
-    compr    = (unsigned char*)calloc((unsigned int)comprLen, 1);
-    uncompr  = (unsigned char*)calloc((unsigned int)uncomprLen, 1);
-    /* compr and uncompr are cleared to avoid reading uninitialized
-     * data and to ensure that uncompr compresses well.
-     */
-    if (compr == NULL || uncompr == NULL)
-        error("out of memory\n");
-
-    test_gzio((argc > 1 ? argv[1] : TESTFILE),
-              uncompr, uncomprLen);
-
-    comprLen = uncomprLen;
-
-    free(compr);
-    free(uncompr);
-
     return 0;
 }
