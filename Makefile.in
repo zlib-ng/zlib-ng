@@ -191,7 +191,7 @@ else
 endif
 
 ifeq (1,$(WITH_FUZZERS))
-fuzzers: checksum_fuzzer$(EXE) compress_fuzzer$(EXE) example_small_fuzzer$(EXE) example_large_fuzzer$(EXE) example_flush_fuzzer$(EXE) example_dict_fuzzer$(EXE) minigzip_fuzzer$(EXE)
+fuzzers: fuzzer_checksum$(EXE) fuzzer_compress$(EXE) fuzzer_example_small$(EXE) fuzzer_example_large$(EXE) fuzzer_example_flush$(EXE) fuzzer_example_dict$(EXE) fuzzer_minigzip$(EXE)
 else
 fuzzers:
 endif
@@ -199,34 +199,34 @@ endif
 # The standalone fuzz target runner.
 standalone_fuzz_target_runner.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-checksum_fuzzer.o:
+fuzzer_checksum.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-compress_fuzzer.o:
+fuzzer_compress.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-example_small_fuzzer.o:
+fuzzer_example_small.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-example_large_fuzzer.o:
+fuzzer_example_large.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-example_flush_fuzzer.o:
+fuzzer_example_flush.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-example_dict_fuzzer.o:
+fuzzer_example_dict.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $<
-minigzip_fuzzer.o:
+fuzzer_minigzip.o:
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $<
-checksum_fuzzer$(EXE): checksum_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) checksum_fuzzer.o $(STATICLIB) -lpthread
-compress_fuzzer$(EXE): compress_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) compress_fuzzer.o $(STATICLIB) -lpthread
-example_small_fuzzer$(EXE): example_small_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) example_small_fuzzer.o $(STATICLIB) -lpthread
-example_large_fuzzer$(EXE): example_large_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) example_large_fuzzer.o $(STATICLIB) -lpthread
-example_flush_fuzzer$(EXE): example_flush_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) example_flush_fuzzer.o $(STATICLIB) -lpthread
-example_dict_fuzzer$(EXE): example_dict_fuzzer.o standalone_fuzz_target_runner.o $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) example_dict_fuzzer.o $(STATICLIB) -lpthread
-minigzip_fuzzer$(EXE): minigzip_fuzzer.o standalone_fuzz_target_runner.o $(OBJG) $(STATICLIB)
-	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) minigzip_fuzzer.o $(OBJG) $(STATICLIB) -lpthread
+fuzzer_checksum$(EXE): fuzzer_checksum.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) fuzzer_checksum.o $(STATICLIB) -lpthread
+fuzzer_compress$(EXE): fuzzer_compress.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) fuzzer_compress.o $(STATICLIB) -lpthread
+fuzzer_example_small$(EXE): fuzzer_example_small.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) fuzzer_example_small.o $(STATICLIB) -lpthread
+fuzzer_example_large$(EXE): fuzzer_example_large.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) fuzzer_example_large.o $(STATICLIB) -lpthread
+fuzzer_example_flush$(EXE): fuzzer_example_flush.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) fuzzer_example_flush.o $(STATICLIB) -lpthread
+fuzzer_example_dict$(EXE): fuzzer_example_dict.o standalone_fuzz_target_runner.o $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) fuzzer_example_dict.o $(STATICLIB) -lpthread
+fuzzer_minigzip$(EXE): fuzzer_minigzip.o standalone_fuzz_target_runner.o $(OBJG) $(STATICLIB)
+	$(CC) $(LDFLAGS) -o $@ $(LIB_FUZZING_ENGINE) fuzzer_minigzip.o $(OBJG) $(STATICLIB) -lpthread
 
 infcover.o: $(SRCDIR)/test/infcover.c zlib$(SUFFIX).h zconf$(SUFFIX).h zlib_name_mangling$(SUFFIX).h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/infcover.c
@@ -439,8 +439,8 @@ clean:
 	rm -f *.o *.lo *~ \
 	   adler32_test$(EXE) crc32_test$(EXE) example$(EXE) minigzip$(EXE) \
 	   adler32_testsh$(EXE) crc32_testsh$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
-	   checksum_fuzzer$(EXE) compress_fuzzer$(EXE) example_small_fuzzer$(EXE) example_large_fuzzer$(EXE) \
-	   example_flush_fuzzer$(EXE) example_dict_fuzzer$(EXE) minigzip_fuzzer$(EXE) \
+	   fuzzer_checksum$(EXE) fuzzer_compress$(EXE) fuzzer_example_small$(EXE) fuzzer_example_large$(EXE) \
+	   fuzzer_example_flush$(EXE) fuzzer_example_dict$(EXE) fuzzer_minigzip$(EXE) \
 	   infcover makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) \
 	   $(STATICLIB) $(IMPORTLIB) $(SHAREDLIB) $(SHAREDLIBV) $(SHAREDLIBM) \
 	   foo.gz so_locations \
