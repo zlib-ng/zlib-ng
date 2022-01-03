@@ -163,81 +163,6 @@ void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomprLen) {
 #endif
 }
 
-/* ===========================================================================
- * Test deflate() with small buffers
- */
-void test_deflate(unsigned char *compr, size_t comprLen) {
-    PREFIX3(stream) c_stream; /* compression stream */
-    int err;
-    size_t len = strlen(hello)+1;
-
-    c_stream.zalloc = zalloc;
-    c_stream.zfree = zfree;
-    c_stream.opaque = (void *)0;
-    c_stream.total_in = 0;
-    c_stream.total_out = 0;
-
-    err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
-    CHECK_ERR(err, "deflateInit");
-
-    c_stream.next_in  = (z_const unsigned char *)hello;
-    c_stream.next_out = compr;
-
-    while (c_stream.total_in != len && c_stream.total_out < comprLen) {
-        c_stream.avail_in = c_stream.avail_out = 1; /* force small buffers */
-        err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
-        CHECK_ERR(err, "deflate");
-    }
-    /* Finish the stream, still forcing small buffers: */
-    for (;;) {
-        c_stream.avail_out = 1;
-        err = PREFIX(deflate)(&c_stream, Z_FINISH);
-        if (err == Z_STREAM_END) break;
-        CHECK_ERR(err, "deflate");
-    }
-
-    err = PREFIX(deflateEnd)(&c_stream);
-    CHECK_ERR(err, "deflateEnd");
-}
-
-/* ===========================================================================
- * Test inflate() with small buffers
- */
-void test_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen) {
-    int err;
-    PREFIX3(stream) d_stream; /* decompression stream */
-
-    strcpy((char*)uncompr, "garbage");
-
-    d_stream.zalloc = zalloc;
-    d_stream.zfree = zfree;
-    d_stream.opaque = (void *)0;
-
-    d_stream.next_in  = compr;
-    d_stream.avail_in = 0;
-    d_stream.next_out = uncompr;
-    d_stream.total_in = 0;
-    d_stream.total_out = 0;
-
-    err = PREFIX(inflateInit)(&d_stream);
-    CHECK_ERR(err, "inflateInit");
-
-    while (d_stream.total_out < uncomprLen && d_stream.total_in < comprLen) {
-        d_stream.avail_in = d_stream.avail_out = 1; /* force small buffers */
-        err = PREFIX(inflate)(&d_stream, Z_NO_FLUSH);
-        if (err == Z_STREAM_END) break;
-        CHECK_ERR(err, "inflate");
-    }
-
-    err = PREFIX(inflateEnd)(&d_stream);
-    CHECK_ERR(err, "inflateEnd");
-
-    if (strcmp((char*)uncompr, hello))
-        error("bad inflate\n");
-    else
-        printf("inflate(): %s\n", (char *)uncompr);
-}
-
 static unsigned int diff;
 
 /* ===========================================================================
@@ -402,9 +327,6 @@ int main(int argc, char *argv[]) {
 
     test_gzio((argc > 1 ? argv[1] : TESTFILE),
               uncompr, uncomprLen);
-
-    test_deflate(compr, comprLen);
-    test_inflate(compr, comprLen, uncompr, uncomprLen);
 
     test_large_deflate(compr, comprLen, uncompr, uncomprLen, 0);
     test_large_inflate(compr, comprLen, uncompr, uncomprLen);
