@@ -25,19 +25,11 @@ static const char hello[] = "hello, hello!";
  * stresses the compression code better, sorry...
  */
 
-static const char dictionary[] = "hello";
-static unsigned long dictId = 0; /* Adler32 value of the dictionary */
-
-/* Maximum dictionary size, according to inflateGetDictionary() description. */
-#define MAX_DICTIONARY_SIZE 32768
-
 void test_gzio          (const char *fname, unsigned char *uncompr, z_size_t uncomprLen);
 void test_deflate       (unsigned char *compr, size_t comprLen);
 void test_inflate       (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
 void test_large_deflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen, int zng_params);
 void test_large_inflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
-void test_dict_deflate  (unsigned char *compr, size_t comprLen);
-void test_dict_inflate  (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
 int  main               (int argc, char *argv[]);
 
 
@@ -379,99 +371,6 @@ void test_large_inflate(unsigned char *compr, size_t comprLen, unsigned char *un
     else
         printf("large_inflate(): OK\n");
 }
-
-/* ===========================================================================
- * Test deflate() with preset dictionary
- */
-void test_dict_deflate(unsigned char *compr, size_t comprLen) {
-    PREFIX3(stream) c_stream; /* compression stream */
-    int err;
-
-    c_stream.zalloc = zalloc;
-    c_stream.zfree = zfree;
-    c_stream.opaque = (void *)0;
-    c_stream.adler = 0;
-
-    err = PREFIX(deflateInit)(&c_stream, Z_BEST_COMPRESSION);
-    CHECK_ERR(err, "deflateInit");
-
-    err = PREFIX(deflateSetDictionary)(&c_stream,
-                (const unsigned char*)dictionary, (int)sizeof(dictionary));
-    CHECK_ERR(err, "deflateSetDictionary");
-
-    dictId = c_stream.adler;
-    c_stream.next_out = compr;
-    c_stream.avail_out = (unsigned int)comprLen;
-
-    c_stream.next_in = (z_const unsigned char *)hello;
-    c_stream.avail_in = (unsigned int)strlen(hello)+1;
-
-    err = PREFIX(deflate)(&c_stream, Z_FINISH);
-    if (err != Z_STREAM_END)
-        error("deflate should report Z_STREAM_END\n");
-    err = PREFIX(deflateEnd)(&c_stream);
-    CHECK_ERR(err, "deflateEnd");
-}
-
-/* ===========================================================================
- * Test inflate() with a preset dictionary
- */
-void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen) {
-    int err;
-    uint8_t check_dictionary[MAX_DICTIONARY_SIZE];
-    uint32_t check_dictionary_len = 0;
-    PREFIX3(stream) d_stream; /* decompression stream */
-
-    strcpy((char*)uncompr, "garbage garbage garbage");
-
-    d_stream.zalloc = zalloc;
-    d_stream.zfree = zfree;
-    d_stream.opaque = (void *)0;
-    d_stream.adler = 0;
-    d_stream.next_in  = compr;
-    d_stream.avail_in = (unsigned int)comprLen;
-
-    err = PREFIX(inflateInit)(&d_stream);
-    CHECK_ERR(err, "inflateInit");
-
-    d_stream.next_out = uncompr;
-    d_stream.avail_out = (unsigned int)uncomprLen;
-
-    for (;;) {
-        err = PREFIX(inflate)(&d_stream, Z_NO_FLUSH);
-        if (err == Z_STREAM_END) break;
-        if (err == Z_NEED_DICT) {
-            if (d_stream.adler != dictId)
-                error("unexpected dictionary");
-            err = PREFIX(inflateSetDictionary)(&d_stream, (const unsigned char*)dictionary,
-                                       (int)sizeof(dictionary));
-        }
-        CHECK_ERR(err, "inflate with dict");
-    }
-    
-    err = PREFIX(inflateGetDictionary)(&d_stream, NULL, &check_dictionary_len);
-    CHECK_ERR(err, "inflateGetDictionary");
-#ifndef S390_DFLTCC_INFLATE
-    if (check_dictionary_len < sizeof(dictionary))
-        error("bad dictionary length\n");
-#endif
-    
-    err = PREFIX(inflateGetDictionary)(&d_stream, check_dictionary, &check_dictionary_len);
-    CHECK_ERR(err, "inflateGetDictionary");
-#ifndef S390_DFLTCC_INFLATE
-    if (memcmp(dictionary, check_dictionary, sizeof(dictionary)) != 0)
-        error("bad dictionary\n");
-#endif
-
-    err = PREFIX(inflateEnd)(&d_stream);
-    CHECK_ERR(err, "inflateEnd");
-
-    if (strncmp((char*)uncompr, hello, sizeof(hello)))
-        error("bad inflate with dict\n");
-    else
-        printf("inflate with dictionary: %s\n", (char *)uncompr);
-}
-
 /* ===========================================================================
  * Test deflateBound() with small buffers
  */
@@ -760,9 +659,6 @@ int main(int argc, char *argv[]) {
 #endif
 
     comprLen = uncomprLen;
-
-    test_dict_deflate(compr, comprLen);
-    test_dict_inflate(compr, comprLen, uncompr, uncomprLen);
 
     test_deflate_bound();
     test_deflate_copy(compr, comprLen);
