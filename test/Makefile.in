@@ -35,13 +35,13 @@ else
 fuzzer:
  else
 fuzzer:
-	@${QEMU_RUN} ../checksum_fuzzer$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../compress_fuzzer$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../example_small_fuzzer$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../example_large_fuzzer$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../example_flush_fuzzer$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../example_dict_fuzzer$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../minigzip_fuzzer$(EXE) $(ALL_SRC_FILES)
+	@${QEMU_RUN} ../fuzzer_checksumr$(EXE) $(ALL_SRC_FILES) && \
+	${QEMU_RUN} ../fuzzer_compress$(EXE) $(ALL_SRC_FILES) && \
+	${QEMU_RUN} ../fuzzer_example_small$(EXE) $(ALL_SRC_FILES) && \
+	${QEMU_RUN} ../fuzzer_example_large$(EXE) $(ALL_SRC_FILES) && \
+	${QEMU_RUN} ../fuzzer_example_flush$(EXE) $(ALL_SRC_FILES) && \
+	${QEMU_RUN} ../fuzzer_example_dict$(EXE) $(ALL_SRC_FILES) && \
+	${QEMU_RUN} ../fuzzer_minigzip$(EXE) $(ALL_SRC_FILES)
  endif
 endif
 
