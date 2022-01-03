@@ -807,53 +807,6 @@ void test_deflate_set_header(unsigned char *compr, size_t comprLen) {
 }
 
 /* ===========================================================================
- * Test deflateTune() with small buffers
- */
-void test_deflate_tune(unsigned char *compr, size_t comprLen) {
-    PREFIX3(stream) c_stream; /* compression stream */
-    int err;
-    int good_length = 3;
-    int max_lazy = 5;
-    int nice_length = 18;
-    int max_chain = 6;
-    size_t len = strlen(hello)+1;
-
-
-    c_stream.zalloc = zalloc;
-    c_stream.zfree = zfree;
-    c_stream.opaque = (voidpf)0;
-
-    err = PREFIX(deflateInit)(&c_stream, Z_BEST_COMPRESSION);
-    CHECK_ERR(err, "deflateInit");
-
-    err = PREFIX(deflateTune)(&c_stream,(uInt)good_length,(uInt)max_lazy,nice_length,(uInt)max_chain);
-    CHECK_ERR(err, "deflateTune");
-    if (err == Z_OK) {
-        printf("deflateTune(): OK\n");
-    }
-
-    c_stream.next_in = (z_const unsigned char *)hello;
-    c_stream.next_out = compr;
-
-    while (c_stream.total_in != len && c_stream.total_out < comprLen) {
-        c_stream.avail_in = c_stream.avail_out = 1; /* force small buffers */
-        err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
-        CHECK_ERR(err, "deflate");
-    }
-
-    /* Finish the stream, still forcing small buffers: */
-    for (;;) {
-        c_stream.avail_out = 1;
-        err = PREFIX(deflate)(&c_stream, Z_FINISH);
-        if (err == Z_STREAM_END) break;
-        CHECK_ERR(err, "deflate");
-    }
-
-    err = PREFIX(deflateEnd)(&c_stream);
-    CHECK_ERR(err, "deflateEnd");
-}
-
-/* ===========================================================================
  * Usage:  example [output.gz  [input.gz]]
  */
 int main(int argc, char *argv[]) {
@@ -904,7 +857,6 @@ int main(int argc, char *argv[]) {
     test_deflate_copy(compr, comprLen);
     test_deflate_get_dict(compr, comprLen);
     test_deflate_set_header(compr, comprLen);
-    test_deflate_tune(compr, comprLen);
     test_deflate_pending(compr, comprLen);
     test_deflate_prime(compr, comprLen, uncompr, uncomprLen);
 
