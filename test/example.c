@@ -415,63 +415,6 @@ void test_deflate_get_dict(unsigned char *compr, size_t comprLen) {
     free(dictLen);
 }
 
-/* ===========================================================================
- * Test deflateSetHeader() with small buffers
- */
-void test_deflate_set_header(unsigned char *compr, size_t comprLen) {
-    PREFIX(gz_header) *head = calloc(1, sizeof(PREFIX(gz_header)));
-    PREFIX3(stream) c_stream; /* compression stream */
-    int err;
-    size_t len = strlen(hello)+1;
-
-
-    if (head == NULL)
-        error("out of memory\n");
-
-    c_stream.zalloc = zalloc;
-    c_stream.zfree = zfree;
-    c_stream.opaque = (voidpf)0;
-
-    /* gzip */
-    err = PREFIX(deflateInit2)(&c_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS + 16, 8, Z_DEFAULT_STRATEGY);
-    CHECK_ERR(err, "deflateInit2");
-
-    head->text = 1;
-    head->comment = (uint8_t *)"comment";
-    head->name = (uint8_t *)"name";
-    head->hcrc = 1;
-    head->extra = (uint8_t *)"extra";
-    head->extra_len = (uint32_t)strlen((const char *)head->extra);
-
-    err = PREFIX(deflateSetHeader)(&c_stream, head);
-    CHECK_ERR(err, "deflateSetHeader");
-    if (err == Z_OK) {
-        printf("deflateSetHeader(): OK\n");
-    }
-    PREFIX(deflateBound)(&c_stream, (unsigned long)comprLen);
-
-    c_stream.next_in  = (unsigned char *)hello;
-    c_stream.next_out = compr;
-
-    while (c_stream.total_in != len && c_stream.total_out < comprLen) {
-        c_stream.avail_in = c_stream.avail_out = 1; /* force small buffers */
-        err = PREFIX(deflate)(&c_stream, Z_NO_FLUSH);
-        CHECK_ERR(err, "deflate");
-    }
-
-    /* Finish the stream, still forcing small buffers: */
-    for (;;) {
-        c_stream.avail_out = 1;
-        err = PREFIX(deflate)(&c_stream, Z_FINISH);
-        if (err == Z_STREAM_END) break;
-        CHECK_ERR(err, "deflate");
-    }
-
-    err = PREFIX(deflateEnd)(&c_stream);
-    CHECK_ERR(err, "deflateEnd");
-
-    free(head);
-}
 
 /* ===========================================================================
  * Usage:  example [output.gz  [input.gz]]
@@ -518,7 +461,6 @@ int main(int argc, char *argv[]) {
     comprLen = uncomprLen;
 
     test_deflate_get_dict(compr, comprLen);
-    test_deflate_set_header(compr, comprLen);
 
     free(compr);
     free(uncompr);
