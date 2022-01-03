@@ -154,9 +154,9 @@ PIC_OBJS = $(PIC_OBJC)
 
 all: static shared
 
-static: test_adler32$(EXE) test_crc32$(EXE) example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
+static: test_adler32$(EXE) test_crc32$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
 
-shared: examplesh$(EXE) minigzipsh$(EXE)
+shared: minigzipsh$(EXE)
 
 check: test
 
@@ -248,8 +248,46 @@ $(STATICLIB): $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
 
-example.o:
-	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
+test_adler32.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_adler32.c
+test_compress.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_compress.c
+test_crc32.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_crc32.c
+test_deflate_bound.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_deflate_bound.c
+test_deflate_copy.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_deflate_copy.c
+test_deflate_dict.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_deflate_dict.c
+test_deflate_header.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_deflate_header.c
+test_deflate_params.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_deflate_params.c
+test_deflate_pending.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_deflate_pending.c
+test_deflate_prime.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_deflate_prime.c
+test_deflate_quick_bi_valid.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_deflate_quick_bi_valid.c
+test_deflate_quick_block_open.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_deflate_quick_block_open.c
+test_deflate_tune.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_deflate_tune.c
+test_dict.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_dict.c
+test_gzio.o:
+	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_gzio.c
+test_hash_head_0.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_hash_head_0.c
+test_inflate_adler32.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_inflate_adler32.c
+test_inflate_sync.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_inflate_sync.c
+test_large_buffers.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_large_buffers.c
+test_small_buffers.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_small_buffers.c
 
 minigzip.o:
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
@@ -311,20 +349,14 @@ ifneq ($(SHAREDLIB),$(SHAREDTARGET))
 endif
 endif
 
-example$(EXE): example.o $(OBJG) $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+test_adler32$(EXE): test_adler32.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_adler32.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-minigzip$(EXE): minigzip.o $(OBJG) $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
-ifneq ($(STRIP),)
-	$(STRIP) $@
-endif
-
-test_adler32$(EXE): test_adler32.o $(OBJG) $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_adler32.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+test_compress$(EXE): test_compress.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_compress.o  $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -335,14 +367,116 @@ ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-examplesh$(EXE): example.o $(PIC_TESTOBJG) $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(PIC_TESTOBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
+test_deflate_bound$(EXE): test_deflate_bound.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_deflate_bound.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-minigzipsh$(EXE): minigzip.o $(PIC_TESTOBJG) $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(PIC_TESTOBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
+test_deflate_copy$(EXE): test_deflate_copy.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_deflate_copy.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_deflate_dict$(EXE): test_deflate_dict.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_deflate_dict.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_deflate_header$(EXE): test_deflate_header.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_deflate_header.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_deflate_params$(EXE): test_deflate_params.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_deflate_params.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_deflate_pending$(EXE): test_deflate_pending.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_deflate_pending.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_deflate_prime$(EXE): test_deflate_prime.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_deflate_prime.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_deflate_quick_bi_valid$(EXE): test_deflate_quick_bi_valid.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_deflate_quick_bi_valid.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_deflate_quick_block_open$(EXE): test_deflate_quick_block_open.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_deflate_quick_block_open.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_deflate_tune$(EXE): test_deflate_tune.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_deflate_tune.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_dict$(EXE): test_dict.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_dict.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_gzio$(EXE): test_gzio.o $(OBJG) $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_gzio.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_hash_head_0$(EXE): test_hash_head_0.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_hash_head_0.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_inflate_adler32$(EXE): test_inflate_adler32.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_inflate_adler32.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_inflate_sync$(EXE): test_inflate_sync.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_inflate_sync.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_large_buffers$(EXE): test_large_buffers.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_large_buffers.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_small_buffers$(EXE): test_small_buffers.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_small_buffers.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+minigzip$(EXE): minigzip.o $(OBJG) $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+minigzipsh$(EXE): minigzip.o $(OBJG) $(SHAREDTARGET)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -427,10 +561,7 @@ clean:
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) clean; fi
 	@if [ -f test/Makefile ]; then $(MAKE) -C test clean; fi
 	rm -f *.o *.lo *~ \
-	   test_adler32$(EXE) test_crc32$(EXE) example$(EXE) minigzip$(EXE) \
-	   examplesh$(EXE) minigzipsh$(EXE) \
-	   fuzzer_checksum$(EXE) fuzzer_compress$(EXE) fuzzer_example_small$(EXE) fuzzer_example_large$(EXE) \
-	   fuzzer_example_flush$(EXE) fuzzer_example_dict$(EXE) fuzzer_minigzip$(EXE) \
+	   test_*$(EXE) minigzip$(EXE) minigzipsh$(EXE) fuzzer_*$(EXE) \
 	   infcover makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) \
 	   $(STATICLIB) $(IMPORTLIB) $(SHAREDLIB) $(SHAREDLIBV) $(SHAREDLIBM) \
 	   foo.gz so_locations \
