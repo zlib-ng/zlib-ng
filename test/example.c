@@ -371,50 +371,6 @@ void test_large_inflate(unsigned char *compr, size_t comprLen, unsigned char *un
     else
         printf("large_inflate(): OK\n");
 }
-/* ===========================================================================
- * Test deflateBound() with small buffers
- */
-void test_deflate_bound(void) {
-    PREFIX3(stream) c_stream; /* compression stream */
-    int err;
-    unsigned int len = (unsigned int)strlen(hello)+1;
-    int estimateLen = 0;
-    unsigned char *outBuf = NULL;
-
-    c_stream.zalloc = zalloc;
-    c_stream.zfree = zfree;
-    c_stream.opaque = (voidpf)0;
-    c_stream.avail_in = len;
-    c_stream.next_in = (z_const unsigned char *)hello;
-    c_stream.avail_out = 0;
-    c_stream.next_out = outBuf;
-
-    err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
-    CHECK_ERR(err, "deflateInit");
-
-    /* calculate actual output length and update structure */
-    estimateLen = PREFIX(deflateBound)(&c_stream, len);
-    outBuf = malloc(estimateLen);
-
-    if (outBuf != NULL) {
-        /* update zlib configuration */
-        c_stream.avail_out = estimateLen;
-        c_stream.next_out = outBuf;
-
-        /* do the compression */
-        err = PREFIX(deflate)(&c_stream, Z_FINISH);
-        if (err == Z_STREAM_END) {
-            printf("deflateBound(): OK\n");
-        } else {
-            CHECK_ERR(err, "deflate");
-        }
-    }
-
-    err = PREFIX(deflateEnd)(&c_stream);
-    CHECK_ERR(err, "deflateEnd");
-
-    free(outBuf);
-}
 
 /* ===========================================================================
  * Test deflateCopy() with small buffers
@@ -609,7 +565,6 @@ int main(int argc, char *argv[]) {
 
     comprLen = uncomprLen;
 
-    test_deflate_bound();
     test_deflate_copy(compr, comprLen);
     test_deflate_get_dict(compr, comprLen);
     test_deflate_set_header(compr, comprLen);
