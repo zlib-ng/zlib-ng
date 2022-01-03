@@ -31,8 +31,6 @@ static unsigned long dictId = 0; /* Adler32 value of the dictionary */
 /* Maximum dictionary size, according to inflateGetDictionary() description. */
 #define MAX_DICTIONARY_SIZE 32768
 
-
-void test_compress      (unsigned char *compr, z_size_t comprLen,unsigned char *uncompr, z_size_t uncomprLen);
 void test_gzio          (const char *fname, unsigned char *uncompr, z_size_t uncomprLen);
 void test_deflate       (unsigned char *compr, size_t comprLen);
 void test_inflate       (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
@@ -62,27 +60,6 @@ void error(const char *format, ...) {
 #define CHECK_ERR(err, msg) { \
     if (err != Z_OK) \
         error("%s error: %d\n", msg, err); \
-}
-
-/* ===========================================================================
- * Test compress() and uncompress()
- */
-void test_compress(unsigned char *compr, z_size_t comprLen, unsigned char *uncompr, z_size_t uncomprLen) {
-    int err;
-    size_t len = strlen(hello)+1;
-
-    err = PREFIX(compress)(compr, &comprLen, (const unsigned char*)hello, (z_size_t)len);
-    CHECK_ERR(err, "compress");
-
-    strcpy((char*)uncompr, "garbage");
-
-    err = PREFIX(uncompress)(uncompr, &uncomprLen, compr, comprLen);
-    CHECK_ERR(err, "uncompress");
-
-    if (strcmp((char*)uncompr, hello))
-        error("bad uncompress\n");
-    else
-        printf("uncompress(): %s\n", (char *)uncompr);
 }
 
 /* ===========================================================================
@@ -903,8 +880,6 @@ int main(int argc, char *argv[]) {
      */
     if (compr == NULL || uncompr == NULL)
         error("out of memory\n");
-
-    test_compress(compr, comprLen, uncompr, uncomprLen);
 
     test_gzio((argc > 1 ? argv[1] : TESTFILE),
               uncompr, uncomprLen);
