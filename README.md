@@ -200,7 +200,8 @@ Advanced Build Options
 | WITH_AVX512                     |                       | Build with AVX512 intrinsics                                        | ON                     |
 | WITH_AVX512VNNI                 |                       | Build with AVX512VNNI intrinsics                                    | ON                     |
 | WITH_SSE2                       |                       | Build with SSE2 intrinsics                                          | ON                     |
-| WITH_SSE4                       |                       | Build with SSE4 intrinsics                                          | ON                     |
+| WITH_SSE41                      |                       | Build with SSE41 intrinsics                                         | ON                     |
+| WITH_SSE42                      |                       | Build with SSE42 intrinsics                                         | ON                     |
 | WITH_PCLMULQDQ                  |                       | Build with PCLMULQDQ intrinsics                                     | ON                     |
 | WITH_ACLE                       | --without-acle        | Build with ACLE intrinsics                                          | ON                     |
 | WITH_NEON                       | --without-neon        | Build with NEON intrinsics                                          | ON                     |

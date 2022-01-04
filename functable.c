@@ -63,6 +63,9 @@ extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t le
 #ifdef PPC_VMX_ADLER32
 extern uint32_t adler32_vmx(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
+#ifdef X86_SSE41_ADLER32
+extern uint32_t adler32_sse41(uint32_t adler, const unsigned char *buf, size_t len);
+#endif
 #ifdef X86_SSSE3_ADLER32
 extern uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
@@ -303,6 +306,10 @@ Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_
 #ifdef X86_SSSE3_ADLER32
     if (x86_cpu_has_ssse3)
         functable.adler32 = &adler32_ssse3;
+#endif
+#ifdef X86_SSE41_ADLER32
+    if (x86_cpu_has_sse41)
+        functable.adler32 = &adler32_sse41;
 #endif
 #ifdef X86_AVX2_ADLER32
     if (x86_cpu_has_avx2)

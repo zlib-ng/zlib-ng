@@ -13,7 +13,8 @@ AVX512VNNIFLAG=-mavx512vnni
 AVX2FLAG=-mavx2
 SSE2FLAG=-msse2
 SSSE3FLAG=-mssse3
-SSE4FLAG=-msse4
+SSE41FLAG=-msse4.1
+SSE42FLAG=-msse4.2
 PCLMULFLAG=-mpclmul
 NOLTOFLAG=
 
@@ -26,6 +27,7 @@ all: \
 	adler32_avx.o adler32_avx.lo \
 	adler32_avx512.o adler32_avx512.lo \
 	adler32_avx512_vnni.o adler32_avx512_vnni.lo \
+	adler32_sse41.o adler32_sse41.lo \
 	adler32_ssse3.o adler32_ssse3.lo \
 	chunkset_avx.o chunkset_avx.lo \
 	chunkset_sse.o chunkset_sse.lo \
@@ -61,22 +63,22 @@ compare258_avx.lo:
 	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_avx.c
 
 compare258_sse.o:
-	$(CC) $(CFLAGS) $(SSE4FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_sse.c
+	$(CC) $(CFLAGS) $(SSE42FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_sse.c
 
 compare258_sse.lo:
-	$(CC) $(SFLAGS) $(SSE4FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_sse.c
+	$(CC) $(SFLAGS) $(SSE42FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_sse.c
 
 insert_string_sse.o:
-	$(CC) $(CFLAGS) $(SSE4FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
+	$(CC) $(CFLAGS) $(SSE42FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
 
 insert_string_sse.lo:
-	$(CC) $(SFLAGS) $(SSE4FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
+	$(CC) $(SFLAGS) $(SSE42FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse.c
 
 crc32_fold_pclmulqdq.o:
-	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE4FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_pclmulqdq.c
+	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_pclmulqdq.c
 
 crc32_fold_pclmulqdq.lo:
-	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE4FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_pclmulqdq.c
+	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_pclmulqdq.c
 
 slide_hash_avx.o:
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_avx.c
@@ -107,6 +109,12 @@ adler32_avx512_vnni.o: $(SRCDIR)/adler32_avx512_vnni.c
 
 adler32_avx512_vnni.lo: $(SRCDIR)/adler32_avx512_vnni.c
 	$(CC) $(SFLAGS) $(AVX512VNNIFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx512_vnni.c
+
+adler32_sse41.o: $(SRCDIR)/adler32_sse41.c
+	$(CC) $(CFLAGS) $(SSE41FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_sse41.c
+
+adler32_sse41.lo: $(SRCDIR)/adler32_sse41.c
+	$(CC) $(SFLAGS) $(SSE41FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_sse41.c
 
 adler32_ssse3.o: $(SRCDIR)/adler32_ssse3.c
 	$(CC) $(CFLAGS) $(SSSE3FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_ssse3.c
