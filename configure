@@ -1330,9 +1330,6 @@ case "${ARCH}" in
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} insert_string_sse.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} insert_string_sse.lo"
             fi
-
-            check_sse4_intrinsics
-
             if test ${HAVE_SSE42CMPSTR_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE42_CMP_STR"
                 SFLAGS="${SFLAGS} -DX86_SSE42_CMP_STR"
