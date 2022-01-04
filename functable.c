@@ -504,22 +504,16 @@ Z_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned 
 }
 
 Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len) {
-    int32_t use_byfour = sizeof(void *) == sizeof(ptrdiff_t);
-
     Assert(sizeof(uint64_t) >= sizeof(size_t),
            "crc32_z takes size_t but internally we have a uint64_t len");
 
-    if (use_byfour) {
 #if BYTE_ORDER == LITTLE_ENDIAN
-        functable.crc32 = crc32_little;
+    functable.crc32 = crc32_little;
 #elif BYTE_ORDER == BIG_ENDIAN
-        functable.crc32 = crc32_big;
+    functable.crc32 = crc32_big;
 #else
-#  error No endian defined
+    functable.crc32 = &crc32_generic;
 #endif
-    } else {
-        functable.crc32 = &crc32_generic;
-    }
     cpu_check_features();
 #ifdef ARM_ACLE_CRC_HASH
     if (arm_cpu_has_crc32)
