@@ -294,20 +294,48 @@ macro(check_ssse3_intrinsics)
     )
 endmacro()
 
-macro(check_sse4_intrinsics)
+macro(check_sse41_intrinsics)
     if(CMAKE_C_COMPILER_ID MATCHES "Intel")
         if(CMAKE_HOST_UNIX OR APPLE)
-            set(SSE4FLAG "-msse4.2")
+            set(SSE41FLAG "-msse4.1")
         else()
-            set(SSE4FLAG "/arch:SSE4.2")
+            set(SSE41FLAG "/arch:SSE4.1")
         endif()
     elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         if(NOT NATIVEFLAG)
-            set(SSE4FLAG "-msse4.2")
+            set(SSE41FLAG "-msse4.1")
+        endif()
+    endif()
+    # Check whether compiler supports SSE4.1 intrinsics
+    set(CMAKE_REQUIRED_FLAGS "${SSE41FLAG}")
+    check_c_source_compile_or_run(
+        "#include <immintrin.h>
+        int main(void) {
+            __m128i u, v, w;
+            u = _mm_set1_epi8(1);
+            v = _mm_set1_epi8(2);
+            w = _mm_sad_epu8(u, v);
+            (void)w;
+            return 0;
+        }"
+        HAVE_SSE41_INTRIN
+    )
+endmacro()
+
+macro(check_sse42_intrinsics)
+    if(CMAKE_C_COMPILER_ID MATCHES "Intel")
+        if(CMAKE_HOST_UNIX OR APPLE)
+            set(SSE42FLAG "-msse4.2")
+        else()
+            set(SSE42FLAG "/arch:SSE4.2")
+        endif()
+    elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+        if(NOT NATIVEFLAG)
+            set(SSE42FLAG "-msse4.2")
         endif()
     endif()
     # Check whether compiler supports SSE4 CRC inline asm
-    set(CMAKE_REQUIRED_FLAGS "${SSE4FLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${SSE42FLAG}")
     check_c_source_compile_or_run(
         "int main(void) {
             unsigned val = 0, h = 0;
