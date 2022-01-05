@@ -103,7 +103,7 @@ OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj adler32_neon.obj chunkset_n
 
 # targets
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) \
-     example.exe minigzip.exe example_d.exe minigzip_d.exe
+     test_adler32.exe test_compress.exe test_crc32.exe test_deflate_bound.exe test_deflate_copy.exe test_deflate_dict.exe test_deflate_header.exe test_deflate_params.exe test_deflate_pending.exe test_deflate_prime.exe test_deflate_quick_bi_valid.exe test_deflate_quick_block_open.exe test_deflate_tune.exe test_dict.exe test_gzio.exe test_hash_head_0.exe test_inflate_adler32.exe test_inflate_sync.exe test_large_buffers.exe test_small_buffers.exe minigzip.exe minigzip_d.exe
 
 !if "$(SYMBOL_PREFIX)" != ""
 zlib_name_mangling$(SUFFIX).h: zlib_name_mangling$(SUFFIX).h.in
@@ -136,18 +136,108 @@ $(SHAREDLIB): zconf $(TOP)/win32/$(DEFFILE) $(OBJS) $(RESFILE)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;2
 
-example.exe: example.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
-	$(LD) $(LDFLAGS) example.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
+test_adler32.exe: test_adler32.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_adler32.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_compress.exe: test_compress.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_compress.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_crc32.exe: test_crc32.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_crc32.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_deflate_bound.exe: test_deflate_bound.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_deflate_bound.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_deflate_copy.exe: test_deflate_copy.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_deflate_copy.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_deflate_dict.exe: test_deflate_dict.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_deflate_dict.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_deflate_header.exe: test_deflate_header.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_deflate_header.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_deflate_params.exe: test_deflate_params.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_deflate_params.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_deflate_pending.exe: test_deflate_pending.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_deflate_pending.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_deflate_prime.exe: test_deflate_prime.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_deflate_prime.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_deflate_quick_bi_valid.exe: test_deflate_quick_bi_valid.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_deflate_quick_bi_valid.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_deflate_quick_block_open.exe: test_deflate_quick_block_open.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_deflate_quick_block_open.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_deflate_tune.exe: test_deflate_tune.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_deflate_tune.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_dict.exe: test_dict.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_dict.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_gzio.exe: test_gzio.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_gzio.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_hash_head_0.exe: test_hash_head_0.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_hash_head_0.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_inflate_adler32.exe: test_inflate_adler32.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_inflate_adler32.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_inflate_sync.exe: test_inflate_sync.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_inflate_sync.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_large_buffers.exe: test_large_buffers.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_large_buffers.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
+test_small_buffers.exe: test_small_buffers.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_small_buffers.obj $(STATICLIB)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;1
 
 minigzip.exe: minigzip.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
 	$(LD) $(LDFLAGS) minigzip.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
-	if exist $@.manifest \
-	  mt -nologo -manifest $@.manifest -outputresource:$@;1
-
-example_d.exe: example.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
-	$(LD) $(LDFLAGS) -out:$@ example.obj gzlib2.obj gzread2.obj gzwrite2.obj $(IMPLIB)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;1
 
@@ -207,7 +297,26 @@ slide_hash_neon.obj: $(SRCDIR)/arch/arm/slide_hash_neon.c $(SRCDIR)/zbuild.h $(S
 trees.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/trees_tbl.h
 zutil.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/zutil_p.h
 
-example.obj: $(TOP)/test/example.c $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_adler32.obj: $(TOP)/test/test_adler32.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_compress.obj: $(TOP)/test/test_compress.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_crc32.obj: $(TOP)/test/test_crc32.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_deflate_bound.obj: $(TOP)/test/test_deflate_bound.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_deflate_copy.obj: $(TOP)/test/test_deflate_copy.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_deflate_dict.obj: $(TOP)/test/test_deflate_dict.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_deflate_header.obj: $(TOP)/test/test_deflate_header.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_deflate_params.obj: $(TOP)/test/test_deflate_params.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_deflate_pending.obj: $(TOP)/test/test_deflate_pending.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_deflate_prime.obj: $(TOP)/test/test_deflate_prime.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_deflate_quick_bi_valid.obj: $(TOP)/test/test_deflate_quick_bi_valid.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_deflate_quick_block_open.obj: $(TOP)/test/test_deflate_quick_block_open.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_deflate_tune.obj: $(TOP)/test/test_deflate_tune.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_dict.obj: $(TOP)/test/test_dict.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_gzio.obj: $(TOP)/test/test_gzio.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_hash_head_0.obj: $(TOP)/test/test_hash_head_0.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_inflate_adler32.obj: $(TOP)/test/test_inflate_adler32.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_inflate_sync.obj: $(TOP)/test/test_inflate_sync.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_large_buffers.obj: $(TOP)/test/test_large_buffers.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_small_buffers.obj: $(TOP)/test/test_small_buffers.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
 
 minigzip.obj: $(TOP)/test/minigzip.c $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
 
@@ -215,12 +324,30 @@ $(RESFILE): $(TOP)/win32/$(RCFILE)
 	$(RC) $(RCFLAGS) /fo$@ $(TOP)/win32/$(RCFILE)
 
 # testing
-test: example.exe minigzip.exe
-	example
+test: test_adler32.exe test_compress.exe test_crc32.exe test_deflate_bound.exe test_deflate_copy.exe test_deflate_dict.exe test_deflate_header.exe test_deflate_params.exe test_deflate_pending.exe test_deflate_prime.exe test_deflate_quick_bi_valid.exe test_deflate_quick_block_open.exe test_deflate_tune.exe test_dict.exe test_gzio.exe test_hash_head_0.exe test_inflate_adler32.exe test_inflate_sync.exe test_large_buffers.exe test_small_buffers.exe minigzip.exe
+	test_adler32.exe
+	test_compress.exe
+	test_crc32.exe
+	test_deflate_bound.exe
+	test_deflate_copy.exe
+	test_deflate_dict.exe
+	test_deflate_header.exe
+	test_deflate_params.exe
+	test_deflate_pending.exe
+	test_deflate_prime.exe
+	test_deflate_quick_bi_valid.exe
+	test_deflate_quick_block_open.exe
+	test_deflate_tune.exe
+	test_dict.exe
+	test_gzio.exe
+	test_hash_head_0.exe
+	test_inflate_adler32.exe
+	test_inflate_sync.exe
+	test_large_buffers.exe
+	test_small_buffers.exe
 	echo hello world | minigzip | minigzip -d
 
-testdll: example_d.exe minigzip_d.exe
-	example_d
+testdll: minigzip_d.exe
 	echo hello world | minigzip_d | minigzip_d -d
 
 
