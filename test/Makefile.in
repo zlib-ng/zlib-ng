@@ -65,7 +65,8 @@ tests= \
 	${QEMU_RUN} ../test_inflate_adler32$(EXE) && \
 	${QEMU_RUN} ../test_inflate_sync$(EXE) && \
 	${QEMU_RUN} ../test_large_buffers$(EXE) && \
-	${QEMU_RUN} ../test_small_buffers$(EXE)
+	${QEMU_RUN} ../test_small_buffers$(EXE) && \
+	${QEMU_RUN} ../test_version$(EXE)
 
 teststatic: check_cross_dep
 	HELLOST=tmphellost_$$$$; \

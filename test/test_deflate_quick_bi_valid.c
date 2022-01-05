@@ -11,15 +11,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "test_shared.h"
+
 int main() {
     PREFIX3(stream) strm;
+    int err;
+
     memset(&strm, 0, sizeof(strm));
 
-    int ret = PREFIX(deflateInit2)(&strm, 1, Z_DEFLATED, 31, 1, Z_FILTERED);
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflateInit2() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflateInit2)(&strm, 1, Z_DEFLATED, 31, 1, Z_FILTERED);
+    CHECK_ERR(err, "deflateInit2");
 
     z_const unsigned char next_in[554] = {
         0x8d, 0xff, 0xff, 0xff, 0xa2, 0x00, 0x00, 0xff, 0x00, 0x15, 0x1b, 0x1b, 0xa2, 0xa2, 0xaf, 0xa2,
@@ -63,24 +64,18 @@ int main() {
 
     strm.avail_in = 554;
     strm.avail_out = 31;
-    ret = PREFIX(deflate)(&strm, Z_FINISH);
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflate() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflate)(&strm, Z_FINISH);
+    CHECK_ERR(err, "deflate");
 
     strm.avail_in = 0;
     strm.avail_out = 498;
-    ret = PREFIX(deflate)(&strm, Z_FINISH);
-    if (ret != Z_STREAM_END) {
-        fprintf(stderr, "deflate() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflate)(&strm, Z_FINISH);
+    if (err != Z_STREAM_END)
+        error("deflate() failed with code %d\n", err);
 
-    ret = PREFIX(deflateEnd)(&strm);
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflateEnd() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflateEnd)(&strm);
+    CHECK_ERR(err, "deflateEnd");
+    printf("deflate_quick bivalid: OK\n");
+    return 0;
     return 0;
 }

@@ -103,7 +103,7 @@ OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj adler32_neon.obj chunkset_n
 
 # targets
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) \
-     test_adler32.exe test_compress.exe test_crc32.exe test_deflate_bound.exe test_deflate_copy.exe test_deflate_dict.exe test_deflate_header.exe test_deflate_params.exe test_deflate_pending.exe test_deflate_prime.exe test_deflate_quick_bi_valid.exe test_deflate_quick_block_open.exe test_deflate_tune.exe test_dict.exe test_gzio.exe test_hash_head_0.exe test_inflate_adler32.exe test_inflate_sync.exe test_large_buffers.exe test_small_buffers.exe minigzip.exe minigzip_d.exe
+     test_adler32.exe test_compress.exe test_crc32.exe test_deflate_bound.exe test_deflate_copy.exe test_deflate_dict.exe test_deflate_header.exe test_deflate_params.exe test_deflate_pending.exe test_deflate_prime.exe test_deflate_quick_bi_valid.exe test_deflate_quick_block_open.exe test_deflate_tune.exe test_dict.exe test_gzio.exe test_hash_head_0.exe test_inflate_adler32.exe test_inflate_sync.exe test_large_buffers.exe test_small_buffers.exe test_version.exe minigzip.exe minigzip_d.exe
 
 !if "$(SYMBOL_PREFIX)" != ""
 zlib_name_mangling$(SUFFIX).h: zlib_name_mangling$(SUFFIX).h.in
@@ -236,6 +236,11 @@ test_small_buffers.exe: test_small_buffers.obj $(STATICLIB)
 	if exist $@.manifest \
 	  mt -nologo -manifest $@.manifest -outputresource:$@;1
 
+test_version.exe: test_version.obj $(STATICLIB)
+	$(LD) $(LDFLAGS) test_version.obj $(STATICLIB)
+	if exist $@.manifest \
+	  mt -nologo -manifest $@.manifest -outputresource:$@;1
+
 minigzip.exe: minigzip.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
 	$(LD) $(LDFLAGS) minigzip.obj gzlib2.obj gzread2.obj gzwrite2.obj $(STATICLIB)
 	if exist $@.manifest \
@@ -317,6 +322,7 @@ test_inflate_adler32.obj: $(TOP)/test/test_inflate_adler32.c $(TOP)/test/test_sh
 test_inflate_sync.obj: $(TOP)/test/test_inflate_sync.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
 test_large_buffers.obj: $(TOP)/test/test_large_buffers.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
 test_small_buffers.obj: $(TOP)/test/test_small_buffers.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
+test_version.obj: $(TOP)/test/test_version.c $(TOP)/test/test_shared.h $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
 
 minigzip.obj: $(TOP)/test/minigzip.c $(TOP)/zbuild.h $(TOP)/zlib$(SUFFIX).h
 
@@ -324,7 +330,7 @@ $(RESFILE): $(TOP)/win32/$(RCFILE)
 	$(RC) $(RCFLAGS) /fo$@ $(TOP)/win32/$(RCFILE)
 
 # testing
-test: test_adler32.exe test_compress.exe test_crc32.exe test_deflate_bound.exe test_deflate_copy.exe test_deflate_dict.exe test_deflate_header.exe test_deflate_params.exe test_deflate_pending.exe test_deflate_prime.exe test_deflate_quick_bi_valid.exe test_deflate_quick_block_open.exe test_deflate_tune.exe test_dict.exe test_gzio.exe test_hash_head_0.exe test_inflate_adler32.exe test_inflate_sync.exe test_large_buffers.exe test_small_buffers.exe minigzip.exe
+test: test_adler32.exe test_compress.exe test_crc32.exe test_deflate_bound.exe test_deflate_copy.exe test_deflate_dict.exe test_deflate_header.exe test_deflate_params.exe test_deflate_pending.exe test_deflate_prime.exe test_deflate_quick_bi_valid.exe test_deflate_quick_block_open.exe test_deflate_tune.exe test_dict.exe test_gzio.exe test_hash_head_0.exe test_inflate_adler32.exe test_inflate_sync.exe test_large_buffers.exe test_small_buffers.exe test_version.exe minigzip.exe
 	test_adler32.exe
 	test_compress.exe
 	test_crc32.exe
@@ -345,6 +351,7 @@ test: test_adler32.exe test_compress.exe test_crc32.exe test_deflate_bound.exe t
 	test_inflate_sync.exe
 	test_large_buffers.exe
 	test_small_buffers.exe
+	test_version.exe
 	echo hello world | minigzip | minigzip -d
 
 testdll: minigzip_d.exe

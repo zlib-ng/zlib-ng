@@ -154,7 +154,7 @@ PIC_OBJS = $(PIC_OBJC)
 
 all: static shared
 
-static: test_adler32$(EXE) test_crc32$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
+tests: test_adler32$(EXE) test_compress$(EXE) test_crc32$(EXE) test_deflate_bound$(EXE) test_deflate_copy$(EXE) test_deflate_dict$(EXE) test_deflate_header$(EXE) test_deflate_params$(EXE) test_deflate_pending$(EXE) test_deflate_prime$(EXE) test_deflate_quick_bi_valid$(EXE) test_deflate_quick_block_open$(EXE) test_deflate_tune$(EXE) test_dict$(EXE) test_gzio$(EXE) test_hash_head_0$(EXE) test_inflate_adler32$(EXE) test_inflate_sync$(EXE) test_large_buffers$(EXE) test_small_buffers$(EXE) test_version$(EXE)
 
 shared: minigzipsh$(EXE)
 
@@ -288,6 +288,8 @@ test_large_buffers.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_large_buffers.c
 test_small_buffers.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_small_buffers.c
+test_version.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_version.c
 
 minigzip.o:
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/minigzip.c
@@ -465,6 +467,12 @@ endif
 
 test_small_buffers$(EXE): test_small_buffers.o $(STATICLIB)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_small_buffers.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_version$(EXE): test_version.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_version.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
