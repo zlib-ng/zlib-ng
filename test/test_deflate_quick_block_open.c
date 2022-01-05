@@ -11,15 +11,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "test_shared.h"
+
 int main() {
     PREFIX3(stream) strm;
+    int err;
 
     memset(&strm, 0, sizeof(strm));
-    int ret = PREFIX(deflateInit2)(&strm, 1, Z_DEFLATED, -15, 1, Z_FILTERED);
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflateInit2() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflateInit2)(&strm, 1, Z_DEFLATED, -15, 1, Z_FILTERED);
+    CHECK_ERR(err, "deflateInit2");
 
     z_const unsigned char next_in[494] =
             "\x1d\x1d\x00\x00\x00\x4a\x4a\x4a\xaf\xaf\xaf\xaf\x4a\x4a\x4a\x4a"
@@ -62,28 +62,19 @@ int main() {
         strm.avail_out = (uint32_t)(next_out + sizeof(next_out) - strm.next_out);
         if (strm.avail_out > 38)
             strm.avail_out = 38;
-        ret = PREFIX(deflate)(&strm, Z_FINISH);
-        if (ret == Z_STREAM_END)
+        err = PREFIX(deflate)(&strm, Z_FINISH);
+        if (err == Z_STREAM_END)
             break;
-        if (ret != Z_OK) {
-            fprintf(stderr, "deflate() failed with code %d\n", ret);
-            return EXIT_FAILURE;
-        }
+        CHECK_ERR(err, "deflate");
     }
     uint32_t compressed_size = (uint32_t)(strm.next_out - next_out);
 
-    ret = PREFIX(deflateEnd)(&strm);
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflateEnd() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflateEnd)(&strm);
+    CHECK_ERR(err, "deflateEnd");
 
     memset(&strm, 0, sizeof(strm));
-    ret = PREFIX(inflateInit2)(&strm, -15);
-    if (ret != Z_OK) {
-        fprintf(stderr, "inflateInit2() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(inflateInit2)(&strm, -15);
+    CHECK_ERR(err, "inflateInit2");
 
     strm.next_in = next_out;
     strm.avail_in = compressed_size;
@@ -91,21 +82,17 @@ int main() {
     strm.next_out = uncompressed;
     strm.avail_out = sizeof(uncompressed);
 
-    ret = PREFIX(inflate)(&strm, Z_NO_FLUSH);
-    if (ret != Z_STREAM_END) {
-        fprintf(stderr, "inflate() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(inflate)(&strm, Z_NO_FLUSH);
+    if (err != Z_STREAM_END)
+        error("inflate() failed with code %d\n", err);
 
-    ret = PREFIX(inflateEnd)(&strm);
-    if (ret != Z_OK) {
-        fprintf(stderr, "inflateEnd() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(inflateEnd)(&strm);
+    CHECK_ERR(err, "inflateEnd");
 
-    if (memcmp(uncompressed, next_in, sizeof(uncompressed)) != 0) {
-        fprintf(stderr, "Uncompressed data differs from the original\n");
-        return EXIT_FAILURE;
-    }
+    if (memcmp(uncompressed, next_in, sizeof(uncompressed)) != 0)
+        error("Uncompressed data differs from the original\n");
+    else
+        printf("deflate_quick block open: OK\n");
+    return 0;
     return 0;
 }
