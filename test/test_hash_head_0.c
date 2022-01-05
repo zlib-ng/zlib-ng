@@ -11,15 +11,15 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "test_shared.h"
+
 int main() {
     PREFIX3(stream) strm;
     memset(&strm, 0, sizeof(strm));
+    int err;
 
-    int ret = PREFIX(deflateInit2)(&strm, 1, Z_DEFLATED, -15, 4, Z_HUFFMAN_ONLY);
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflateInit2() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflateInit2)(&strm, 1, Z_DEFLATED, -15, 4, Z_HUFFMAN_ONLY);
+    CHECK_ERR(err, "deflateInit2");
 
     unsigned char next_in[9698];
     memset(next_in, 0x30, sizeof(next_in));
@@ -33,57 +33,38 @@ int main() {
 
     strm.avail_in = 0;
     strm.avail_out = 1348;
-    ret = PREFIX(deflateParams(&strm, 3, Z_FILTERED));
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflateParams() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflateParams(&strm, 3, Z_FILTERED));
+    CHECK_ERR(err, "deflateParams");
 
     strm.avail_in = 6728;
     strm.avail_out = 2696;
-    ret = PREFIX(deflate(&strm, Z_SYNC_FLUSH));
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflate() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflate(&strm, Z_SYNC_FLUSH));
+    CHECK_ERR(err, "deflate");
 
     strm.avail_in = 15;
     strm.avail_out = 1348;
-    ret = PREFIX(deflateParams(&strm, 9, Z_FILTERED));
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflateParams() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflateParams(&strm, 9, Z_FILTERED));
+    CHECK_ERR(err, "deflateParams");
 
     strm.avail_in = 1453;
     strm.avail_out = 1348;
-    ret = PREFIX(deflate(&strm, Z_FULL_FLUSH));
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflate() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflate(&strm, Z_FULL_FLUSH));
+    CHECK_ERR(err, "deflate");
 
     strm.avail_in = (uint32_t)(next_in + sizeof(next_in) - strm.next_in);
     strm.avail_out = (uint32_t)(next_out + sizeof(next_out) - strm.next_out);
-    ret = PREFIX(deflate)(&strm, Z_FINISH);
-    if (ret != Z_STREAM_END) {
-        fprintf(stderr, "deflate() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflate)(&strm, Z_FINISH);
+    if (err != Z_STREAM_END)
+        error("deflate() failed with code %d\n", err);
+
     uint32_t compressed_size = (uint32_t)(strm.next_out - next_out);
 
-    ret = PREFIX(deflateEnd)(&strm);
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflateEnd() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflateEnd)(&strm);
+    CHECK_ERR(err, "deflateEnd");
 
     memset(&strm, 0, sizeof(strm));
-    ret = PREFIX(inflateInit2)(&strm, -15);
-    if (ret != Z_OK) {
-        fprintf(stderr, "inflateInit2() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(inflateInit2)(&strm, -15);
+    CHECK_ERR(err, "inflateInit2");
 
     strm.next_in = next_out;
     strm.avail_in = compressed_size;
@@ -91,20 +72,16 @@ int main() {
     strm.next_out = uncompressed;
     strm.avail_out = sizeof(uncompressed);
 
-    ret = PREFIX(inflate)(&strm, Z_NO_FLUSH);
-    if (ret != Z_STREAM_END) {
-        fprintf(stderr, "inflate() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(inflate)(&strm, Z_NO_FLUSH);
+    if (err != Z_STREAM_END)
+        error("inflate() failed with code %d\n", err);
 
-    ret = PREFIX(inflateEnd)(&strm);
-    if (ret != Z_OK) {
-        fprintf(stderr, "inflateEnd() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(inflateEnd)(&strm);
+    CHECK_ERR(err, "inflateEnd");
 
-    if (memcmp(uncompressed, next_in, sizeof(uncompressed)) != 0) {
-        fprintf(stderr, "Uncompressed data differs from the original\n");
-        return EXIT_FAILURE;
-    }
+    if (memcmp(uncompressed, next_in, sizeof(uncompressed)) != 0)
+        error("Uncompressed data differs from the original\n");
+    else
+        printf("hash head 0: OK\n");
+    return 0;
 }
