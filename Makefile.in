@@ -143,6 +143,7 @@ PIC_OBJG = \
 	gzread.lo \
 	gzwrite.lo
 
+PIC_TESTOBJG =
 PIC_OBJC = $(PIC_OBJZ) $(PIC_OBJG)
 
 OBJS = $(OBJC)
@@ -332,8 +333,8 @@ ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-adler32_testsh$(EXE): adler32_test.o $(OBJG) $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ adler32_test.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
+adler32_testsh$(EXE): adler32_test.o $(PIC_TESTOBJG) $(SHAREDTARGET)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ adler32_test.o $(PIC_TESTOBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -344,14 +345,14 @@ ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-examplesh$(EXE): example.o $(OBJG) $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
+examplesh$(EXE): example.o $(PIC_TESTOBJG) $(SHAREDTARGET)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(PIC_TESTOBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-minigzipsh$(EXE): minigzip.o $(OBJG) $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
+minigzipsh$(EXE): minigzip.o $(PIC_TESTOBJG) $(SHAREDTARGET)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(PIC_TESTOBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
