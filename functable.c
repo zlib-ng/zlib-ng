@@ -315,31 +315,31 @@ Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_
 }
 
 Z_INTERNAL uint32_t crc32_fold_reset_stub(crc32_fold *crc) {
-    functable.crc32_fold_reset = crc32_fold_reset_c;
+    functable.crc32_fold_reset = &crc32_fold_reset_c;
     cpu_check_features();
 #ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq)
-        functable.crc32_fold_reset = crc32_fold_reset_pclmulqdq;
+        functable.crc32_fold_reset = &crc32_fold_reset_pclmulqdq;
 #endif
     return functable.crc32_fold_reset(crc);
 }
 
 Z_INTERNAL void crc32_fold_copy_stub(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
-    functable.crc32_fold_copy = crc32_fold_copy_c;
+    functable.crc32_fold_copy = &crc32_fold_copy_c;
     cpu_check_features();
 #ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq)
-        functable.crc32_fold_copy = crc32_fold_copy_pclmulqdq;
+        functable.crc32_fold_copy = &crc32_fold_copy_pclmulqdq;
 #endif
     functable.crc32_fold_copy(crc, dst, src, len);
 }
 
 Z_INTERNAL uint32_t crc32_fold_final_stub(crc32_fold *crc) {
-    functable.crc32_fold_final = crc32_fold_final_c;
+    functable.crc32_fold_final = &crc32_fold_final_c;
     cpu_check_features();
 #ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq)
-        functable.crc32_fold_final = crc32_fold_final_pclmulqdq;
+        functable.crc32_fold_final = &crc32_fold_final_pclmulqdq;
 #endif
     return functable.crc32_fold_final(crc);
 }
@@ -507,22 +507,22 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
            "crc32_z takes size_t but internally we have a uint64_t len");
 
 #if BYTE_ORDER == LITTLE_ENDIAN
-    functable.crc32 = crc32_little;
+    functable.crc32 = &crc32_little;
 #elif BYTE_ORDER == BIG_ENDIAN
-    functable.crc32 = crc32_big;
+    functable.crc32 = &crc32_big;
 #else
     functable.crc32 = &crc32_generic;
 #endif
     cpu_check_features();
 #ifdef ARM_ACLE_CRC_HASH
     if (arm_cpu_has_crc32)
-        functable.crc32 = crc32_acle;
+        functable.crc32 = &crc32_acle;
 #elif defined(POWER8_VSX_CRC32)
     if (power_cpu_has_arch_2_07)
-        functable.crc32 = crc32_power8;
+        functable.crc32 = &crc32_power8;
 #elif defined(S390_CRC32_VX)
     if (s390_cpu_has_vx)
-        functable.crc32 = s390_crc32_vx;
+        functable.crc32 = &s390_crc32_vx;
 #endif
 
     return functable.crc32(crc, buf, len);
