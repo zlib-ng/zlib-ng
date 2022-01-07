@@ -13,6 +13,88 @@ macro(check_acle_intrinsics)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
+macro(check_avx512_intrinsics)
+    if(CMAKE_C_COMPILER_ID MATCHES "Intel")
+        if(CMAKE_HOST_UNIX OR APPLE)
+            set(AVX512FLAG "-mavx512f -mavx512dq -mavx512bw -mavx512vl")
+        else()
+            set(AVX512FLAG "/arch:AVX512")
+        endif()
+    elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+        if(NOT NATIVEFLAG)
+            # For CPUs that can benefit from AVX512, it seems GCC generates suboptimal
+            # instruction scheduling unless you specify a reasonable -mtune= target
+            set(AVX512FLAG "-mavx512f -mavx512dq -mavx512bw -mavx512vl -mtune=cascadelake")
+        endif()
+    elseif(MSVC)
+        set(AVX512FLAG "/ARCH:AVX512")
+    endif()
+    # Check whether compiler supports AVX512 intrinsics
+    set(CMAKE_REQUIRED_FLAGS "${AVX512FLAG}")
+    check_c_source_compile_or_run(
+        "#include <immintrin.h>
+        int main(void) {
+            __m512i x = _mm512_set1_epi8(2);
+            const __m512i y = _mm512_set_epi8(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                              20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
+                                              38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55,
+                                              56, 57, 58, 59, 60, 61, 62, 63, 64);
+            x = _mm512_sub_epi8(x, y);
+            (void)x;
+            return 0;
+        }"
+        HAVE_AVX512_INTRIN
+    )
+
+    # Evidently both GCC and clang were late to implementing these
+    check_c_source_compile_or_run(
+        "#include <immintrin.h>
+        int main(void) {
+            __mmask16 a = 0xFF;
+            a = _knot_mask16(a);
+            (void)a;
+            return 0;
+        }"
+        HAVE_MASK_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
+macro(check_avx512vnni_intrinsics)
+    if(CMAKE_C_COMPILER_ID MATCHES "Intel")
+        if(CMAKE_HOST_UNIX OR APPLE)
+            set(AVX512VNNIFLAG "-mavx512f -mavx512bw -mavx512dq -mavx512vl -mavx512vnni")
+        else()
+            set(AVX512FLAG "/ARCH:AVX512")
+        endif()
+    elseif(MSVC)
+        set(AVX512FLAG "/ARCH:AVX512")
+    elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+        if(NOT NATIVEFLAG)
+            set(AVX512VNNIFLAG "-mavx512f -mavx512dq -mavx512bw -mavx512vl -mavx512vnni -mtune=cascadelake")
+        endif()
+    endif()
+
+    # Check whether compiler supports AVX512vnni intrinsics
+    set(CMAKE_REQUIRED_FLAGS "${AVX512VNNIFLAG}")
+    check_c_source_compile_or_run(
+        "#include <immintrin.h>
+        int main(void) {
+            __m512i x = _mm512_set1_epi8(2);
+            const __m512i y = _mm512_set_epi8(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                              20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
+                                              38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55,
+                                              56, 57, 58, 59, 60, 61, 62, 63, 64);
+            __m512i z = _mm512_setzero_epi32();
+            z = _mm512_dpbusd_epi32(z, x, y);
+            (void)z;
+            return 0;
+        }"
+        HAVE_AVX512VNNI_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
 macro(check_avx2_intrinsics)
     if(CMAKE_C_COMPILER_ID MATCHES "Intel")
         if(CMAKE_HOST_UNIX OR APPLE)

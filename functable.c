@@ -69,6 +69,12 @@ extern uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t l
 #ifdef X86_AVX2_ADLER32
 extern uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
+#ifdef X86_AVX512_ADLER32
+extern uint32_t adler32_avx512(uint32_t adler, const unsigned char *buf, size_t len);
+#endif
+#ifdef X86_AVX512VNNI_ADLER32
+extern uint32_t adler32_avx512_vnni(uint32_t adler, const unsigned char *buf, size_t len);
+#endif
 #ifdef POWER8_VSX_ADLER32
 extern uint32_t adler32_power8(uint32_t adler, const unsigned char* buf, size_t len);
 #endif
@@ -302,6 +308,15 @@ Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_
 #ifdef X86_AVX2_ADLER32
     if (x86_cpu_has_avx2)
         functable.adler32 = &adler32_avx2;
+#endif
+#ifdef X86_AVX512_ADLER32
+    if (x86_cpu_has_avx512 && x86_cpu_well_suited_avx512)
+        functable.adler32 = &adler32_avx512;
+#endif
+#ifdef X86_AVX512VNNI_ADLER32
+    if (x86_cpu_has_avx512vnni && x86_cpu_well_suited_avx512) {
+        functable.adler32 = &adler32_avx512_vnni;
+    }
 #endif
 #ifdef PPC_VMX_ADLER32
     if (power_cpu_has_altivec)
