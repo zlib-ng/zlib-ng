@@ -102,6 +102,10 @@ with_fuzzers=0
 floatabi=
 native=0
 forcesse2=0
+# For CPUs that can benefit from AVX512, it seems GCC generates suboptimal
+# instruction scheduling unless you specify a reasonable -mtune= target
+avx512flag="-mavx512f -mavx512dq -mavx512bw -mavx512vl -mtune=cascadelake"
+avx512vnniflag="-mavx512vnni ${avx512flag}"
 avx2flag="-mavx2"
 sse2flag="-msse2"
 ssse3flag="-mssse3"
@@ -250,6 +254,8 @@ case $($cc -v 2>&1) in
 esac
 
 if test $native -eq 1; then
+  avx512flag=""
+  avx512vnniflag=""
   avx2flag=""
   sse2flag=""
   ssse3flag=""
@@ -1050,6 +1056,75 @@ EOF
     fi
 }
 
+check_avx512_intrinsics() {
+    # Check whether compiler supports AVX512 intrinsics
+    cat > $test.c << EOF
+#include <immintrin.h>
+int main(void) {
+    __m512i x = _mm512_set1_epi8(2);
+    const __m512i y = _mm512_set_epi8(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                      20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
+                                      38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55,
+                                      56, 57, 58, 59, 60, 61, 62, 63, 64);
+    x = _mm512_sub_epi8(x, y);
+    (void)x;
+    return 0;
+}
+EOF
+    if try ${CC} ${CFLAGS} ${avx512flag} $test.c; then
+        echo "Checking for AVX512 intrinsics ... Yes." | tee -a configure.log
+        HAVE_AVX512_INTRIN=1
+    else
+        echo "Checking for AVX512 intrinsics ... No." | tee -a configure.log
+        HAVE_AVX512_INTRIN=0
+    fi
+}
+
+check_avx512vnni_intrinsics() {
+    # Check whether compiler supports AVX512-VNNI intrinsics
+    cat > $test.c << EOF
+#include <immintrin.h>
+int main(void) {
+    __m512i x = _mm512_set1_epi8(2);
+    const __m512i y = _mm512_set_epi8(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
+                                      20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
+                                      38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55,
+                                      56, 57, 58, 59, 60, 61, 62, 63, 64);
+    __m512i z = _mm512_setzero_epi32();
+    z = _mm512_dpbusd_epi32(z, x, y);
+    (void)z;
+    return 0;
+}
+EOF
+    if try ${CC} ${CFLAGS} ${avx512vnniflag} $test.c; then
+        echo "Checking for AVX512VNNI intrinsics ... Yes." | tee -a configure.log
+        HAVE_AVX512VNNI_INTRIN=1
+    else
+        echo "Checking for AVX512VNNI intrinsics ... No." | tee -a configure.log
+        HAVE_AVX512VNNI_INTRIN=0
+    fi
+}
+
+check_mask_intrinsics() {
+    # Check whether compiler supports AVX512 k-mask intrinsics
+    cat > $test.c << EOF
+#include <immintrin.h>
+int main(void) {
+    __mmask16 a = 0xFF;
+    a = _knot_mask16(a);
+    (void)a;
+    return 0;
+}
+EOF
+    if try ${CC} ${CFLAGS} ${avx512flag} $test.c; then
+        echo "Checking for k-mask intrinsics ... Yes." | tee -a configure.log
+        HAVE_MASK_INTRIN=1
+    else
+        echo "Checking for k-mask intrinsics ... No." | tee -a configure.log
+        HAVE_MASK_INTRIN=0
+    fi
+}
+
 check_neon_intrinsics() {
     # Check whether -mfpu=neon is available on ARM processors.
     cat > $test.c << EOF
@@ -1316,6 +1391,31 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32 -DX86_AVX_CHUNKSET"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_hash_avx.o chunkset_avx.o compare258_avx.o adler32_avx.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_hash_avx.lo chunkset_avx.lo compare258_avx.lo adler32_avx.lo"
+            fi
+
+            check_avx512_intrinsics
+
+            if test ${HAVE_AVX512_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_AVX512 -DX86_AVX512_ADLER32"
+                SFLAGS="${SFLAGS} -DX86_AVX512 -DX86_AVX512_ADLER32"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_avx512.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_avx512.lo"
+
+                check_mask_intrinsics
+
+                if test ${HAVE_MASK_INTRIN} -eq 1; then
+                    CFLAGS="${CFLAGS} -DX86_MASK_INTRIN"
+                    SFLAGS="${SFLAGS} -DX86_MASK_INTRIN"
+                fi
+            fi
+
+            check_avx512vnni_intrinsics
+
+            if test ${HAVE_AVX512VNNI_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_AVX512VNNI -DX86_AVX512VNNI_ADLER32"
+                SFLAGS="${SFLAGS} -DX86_AVX512VNNI -DX86_AVX512VNNI_ADLER32"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_avx512_vnni.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_avx512_vnni.lo"
             fi
 
             check_sse4_intrinsics
@@ -1908,6 +2008,8 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^BUILDDIR *=/s#=.*#=$BUILDDIR#
 /^AVX2FLAG *=/s#=.*#=$avx2flag#
+/^AVX512FLAG *=/s#=.*#=$avx512flag#
+/^AVX512VNNIFLAG *=/s#=.*#=$avx512vnniflag#
 /^SSE2FLAG *=/s#=.*#=$sse2flag#
 /^SSSE3FLAG *=/s#=.*#=$ssse3flag#
 /^SSE4FLAG *=/s#=.*#=$sse4flag#
