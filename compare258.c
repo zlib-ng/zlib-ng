@@ -59,14 +59,12 @@ Z_INTERNAL uint32_t compare258_c(const unsigned char *src0, const unsigned char 
 
 #define LONGEST_MATCH       longest_match_c
 #define COMPARE256          compare256_c_static
-#define COMPARE258          compare258_c_static
 
 #include "match_tpl.h"
 
 #define LONGEST_MATCH_SLOW
 #define LONGEST_MATCH       longest_match_slow_c
 #define COMPARE256          compare256_c_static
-#define COMPARE258          compare258_c_staticc
 
 #include "match_tpl.h"
 
@@ -106,14 +104,12 @@ Z_INTERNAL uint32_t compare258_unaligned_16(const unsigned char *src0, const uns
 
 #define LONGEST_MATCH       longest_match_unaligned_16
 #define COMPARE256          compare256_unaligned_16_static
-#define COMPARE258          compare258_unaligned_16_static
 
 #include "match_tpl.h"
 
 #define LONGEST_MATCH_SLOW
 #define LONGEST_MATCH       longest_match_slow_unaligned_16
 #define COMPARE256          compare256_unaligned_16_static
-#define COMPARE258          compare258_unaligned_16_static
 
 #include "match_tpl.h"
 
@@ -151,14 +147,12 @@ Z_INTERNAL uint32_t compare258_unaligned_32(const unsigned char *src0, const uns
 
 #define LONGEST_MATCH       longest_match_unaligned_32
 #define COMPARE256          compare256_unaligned_32_static
-#define COMPARE258          compare258_unaligned_32_static
 
 #include "match_tpl.h"
 
 #define LONGEST_MATCH_SLOW
 #define LONGEST_MATCH       longest_match_slow_unaligned_32
 #define COMPARE256          compare256_unaligned_32_static
-#define COMPARE258          compare258_unaligned_32_static
 
 #include "match_tpl.h"
 
@@ -198,14 +192,12 @@ Z_INTERNAL uint32_t compare258_unaligned_64(const unsigned char *src0, const uns
 
 #define LONGEST_MATCH       longest_match_unaligned_64
 #define COMPARE256          compare256_unaligned_64_static
-#define COMPARE258          compare258_unaligned_64_static
 
 #include "match_tpl.h"
 
 #define LONGEST_MATCH_SLOW
 #define LONGEST_MATCH       longest_match_slow_unaligned_64
 #define COMPARE256          compare256_unaligned_64_static
-#define COMPARE258          compare258_unaligned_64_static
 
 #include "match_tpl.h"
 
