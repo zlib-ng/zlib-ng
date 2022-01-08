@@ -719,8 +719,8 @@ if(WITH_OPTIM)
                 add_feature_info(AVX2_SLIDEHASH 1 "Support AVX2 optimized slide_hash, using \"${AVX2FLAG}\"")
                 list(APPEND AVX2_SRCS ${ARCHDIR}/chunkset_avx.c)
                 add_feature_info(AVX_CHUNKSET 1 "Support AVX optimized chunkset, using \"${AVX2FLAG}\"")
-                list(APPEND AVX2_SRCS ${ARCHDIR}/compare258_avx2.c)
-                add_feature_info(AVX2_COMPARE258 1 "Support AVX2 optimized compare258, using \"${AVX2FLAG}\"")
+                list(APPEND AVX2_SRCS ${ARCHDIR}/compare256_avx2.c)
+                add_feature_info(AVX2_COMPARE256 1 "Support AVX2 optimized compare256, using \"${AVX2FLAG}\"")
                 list(APPEND AVX2_SRCS ${ARCHDIR}/adler32_avx2.c)
                 add_feature_info(AVX2_ADLER32 1 "Support AVX2-accelerated adler32, using \"${AVX2FLAG}\"")
                 list(APPEND ZLIB_ARCH_SRCS ${AVX2_SRCS})
@@ -782,8 +782,8 @@ if(WITH_OPTIM)
             endif()
             if(HAVE_SSE42CMPSTR_INTRIN)
                 add_definitions(-DX86_SSE42_CMP_STR)
-                set(SSE42_SRCS ${ARCHDIR}/compare258_sse42.c)
-                add_feature_info(SSE42_COMPARE258 1 "Support SSE4.2 optimized compare258, using \"${SSE42FLAG}\"")
+                set(SSE42_SRCS ${ARCHDIR}/compare256_sse42.c)
+                add_feature_info(SSE42_COMPARE256 1 "Support SSE4.2 optimized compare256, using \"${SSE42FLAG}\"")
                 list(APPEND ZLIB_ARCH_SRCS ${SSE42_SRCS})
                 set_property(SOURCE ${SSE42_SRCS} PROPERTY COMPILE_FLAGS "${SSE42FLAG} ${NOLTOFLAG}")
             endif()
@@ -946,7 +946,7 @@ set(ZLIB_PRIVATE_HDRS
 set(ZLIB_SRCS
     adler32.c
     chunkset.c
-    compare258.c
+    compare256.c
     compress.c
     crc32.c
     crc32_comb.c

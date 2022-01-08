@@ -1,4 +1,4 @@
-/* compare258.c -- aligned and unaligned versions of compare258
+/* compare256.c -- 256 byte memory comparison with match length return
  * Copyright (C) 2020 Nathan Moinvaziri
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -42,19 +42,8 @@ static inline uint32_t compare256_c_static(const unsigned char *src0, const unsi
     return 256;
 }
 
-static inline uint32_t compare258_c_static(const unsigned char *src0, const unsigned char *src1) {
-    if (*src0 != *src1)
-        return 0;
-    src0 += 1, src1 += 1;
-    if (*src0 != *src1)
-        return 1;
-    src0 += 1, src1 += 1;
-
-    return compare256_c_static(src0, src1) + 2;
-}
-
-Z_INTERNAL uint32_t compare258_c(const unsigned char *src0, const unsigned char *src1) {
-    return compare258_c_static(src0, src1);
+Z_INTERNAL uint32_t compare256_c(const unsigned char *src0, const unsigned char *src1) {
+    return compare256_c_static(src0, src1);
 }
 
 #define LONGEST_MATCH       longest_match_c
@@ -91,15 +80,8 @@ static inline uint32_t compare256_unaligned_16_static(const unsigned char *src0,
     return 256;
 }
 
-static inline uint32_t compare258_unaligned_16_static(const unsigned char *src0, const unsigned char *src1) {
-    if (*(uint16_t *)src0 != *(uint16_t *)src1)
-        return (*src0 == *src1);
-
-    return compare256_unaligned_16_static(src0+2, src1+2) + 2;
-}
-
-Z_INTERNAL uint32_t compare258_unaligned_16(const unsigned char *src0, const unsigned char *src1) {
-    return compare258_unaligned_16_static(src0, src1);
+Z_INTERNAL uint32_t compare256_unaligned_16(const unsigned char *src0, const unsigned char *src1) {
+    return compare256_unaligned_16_static(src0, src1);
 }
 
 #define LONGEST_MATCH       longest_match_unaligned_16
@@ -136,15 +118,8 @@ static inline uint32_t compare256_unaligned_32_static(const unsigned char *src0,
     return 256;
 }
 
-static inline uint32_t compare258_unaligned_32_static(const unsigned char *src0, const unsigned char *src1) {
-    if (*(uint16_t *)src0 != *(uint16_t *)src1)
-        return (*src0 == *src1);
-
-    return compare256_unaligned_32_static(src0+2, src1+2) + 2;
-}
-
-Z_INTERNAL uint32_t compare258_unaligned_32(const unsigned char *src0, const unsigned char *src1) {
-    return compare258_unaligned_32_static(src0, src1);
+Z_INTERNAL uint32_t compare256_unaligned_32(const unsigned char *src0, const unsigned char *src1) {
+    return compare256_unaligned_32_static(src0, src1);
 }
 
 #define LONGEST_MATCH       longest_match_unaligned_32
@@ -183,15 +158,8 @@ static inline uint32_t compare256_unaligned_64_static(const unsigned char *src0,
     return 256;
 }
 
-static inline uint32_t compare258_unaligned_64_static(const unsigned char *src0, const unsigned char *src1) {
-    if (*(uint16_t *)src0 != *(uint16_t *)src1)
-        return (*src0 == *src1);
-
-    return compare256_unaligned_64_static(src0+2, src1+2) + 2;
-}
-
-Z_INTERNAL uint32_t compare258_unaligned_64(const unsigned char *src0, const unsigned char *src1) {
-    return compare258_unaligned_64_static(src0, src1);
+Z_INTERNAL uint32_t compare256_unaligned_64(const unsigned char *src0, const unsigned char *src1) {
+    return compare256_unaligned_64_static(src0, src1);
 }
 
 #define LONGEST_MATCH       longest_match_unaligned_64

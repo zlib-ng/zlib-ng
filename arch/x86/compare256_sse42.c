@@ -1,4 +1,4 @@
-/* compare258_sse42.c -- SSE4.2 version of compare258
+/* compare256_sse42.c -- SSE4.2 version of compare256
  *
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
  * Authors:
@@ -54,15 +54,8 @@ static inline uint32_t compare256_unaligned_sse4_static(const unsigned char *src
     return 256;
 }
 
-static inline uint32_t compare258_unaligned_sse4_static(const unsigned char *src0, const unsigned char *src1) {
-    if (*(uint16_t *)src0 != *(uint16_t *)src1)
-        return (*src0 == *src1);
-
-    return compare256_unaligned_sse4_static(src0+2, src1+2) + 2;
-}
-
-Z_INTERNAL uint32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1) {
-    return compare258_unaligned_sse4_static(src0, src1);
+Z_INTERNAL uint32_t compare256_unaligned_sse4(const unsigned char *src0, const unsigned char *src1) {
+    return compare256_unaligned_sse4_static(src0, src1);
 }
 
 #define LONGEST_MATCH       longest_match_unaligned_sse4

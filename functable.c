@@ -144,19 +144,19 @@ extern uint32_t crc32_power8(uint32_t, const unsigned char *, uint64_t);
 extern uint32_t s390_crc32_vx(uint32_t, const unsigned char *, uint64_t);
 #endif
 
-/* compare258 */
-extern uint32_t compare258_c(const unsigned char *src0, const unsigned char *src1);
+/* compare256 */
+extern uint32_t compare256_c(const unsigned char *src0, const unsigned char *src1);
 #ifdef UNALIGNED_OK
-extern uint32_t compare258_unaligned_16(const unsigned char *src0, const unsigned char *src1);
-extern uint32_t compare258_unaligned_32(const unsigned char *src0, const unsigned char *src1);
+extern uint32_t compare256_unaligned_16(const unsigned char *src0, const unsigned char *src1);
+extern uint32_t compare256_unaligned_32(const unsigned char *src0, const unsigned char *src1);
 #ifdef UNALIGNED64_OK
-extern uint32_t compare258_unaligned_64(const unsigned char *src0, const unsigned char *src1);
+extern uint32_t compare256_unaligned_64(const unsigned char *src0, const unsigned char *src1);
 #endif
 #ifdef X86_SSE42_CMP_STR
-extern uint32_t compare258_unaligned_sse4(const unsigned char *src0, const unsigned char *src1);
+extern uint32_t compare256_unaligned_sse4(const unsigned char *src0, const unsigned char *src1);
 #endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-extern uint32_t compare258_unaligned_avx2(const unsigned char *src0, const unsigned char *src1);
+extern uint32_t compare256_unaligned_avx2(const unsigned char *src0, const unsigned char *src1);
 #endif
 #endif
 
@@ -550,29 +550,29 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
     return functable.crc32(crc, buf, len);
 }
 
-Z_INTERNAL uint32_t compare258_stub(const unsigned char *src0, const unsigned char *src1) {
+Z_INTERNAL uint32_t compare256_stub(const unsigned char *src0, const unsigned char *src1) {
 
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-    functable.compare258 = &compare258_unaligned_64;
+    functable.compare256 = &compare256_unaligned_64;
 #  elif defined(HAVE_BUILTIN_CTZ)
-    functable.compare258 = &compare258_unaligned_32;
+    functable.compare256 = &compare256_unaligned_32;
 #  else
-    functable.compare258 = &compare258_unaligned_16;
+    functable.compare256 = &compare256_unaligned_16;
 #  endif
 #  ifdef X86_SSE42_CMP_STR
     if (x86_cpu_has_sse42)
-        functable.compare258 = &compare258_unaligned_sse4;
+        functable.compare256 = &compare256_unaligned_sse4;
 #  endif
 #  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_avx2)
-        functable.compare258 = &compare258_unaligned_avx2;
+        functable.compare256 = &compare256_unaligned_avx2;
 #  endif
 #else
-    functable.compare258 = &compare258_c;
+    functable.compare256 = &compare256_c;
 #endif
 
-    return functable.compare258(src0, src1);
+    return functable.compare256(src0, src1);
 }
 
 Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
@@ -636,7 +636,7 @@ Z_INTERNAL Z_TLS struct functable_s functable = {
     crc32_fold_copy_stub,
     crc32_fold_final_stub,
     slide_hash_stub,
-    compare258_stub,
+    compare256_stub,
     longest_match_stub,
     longest_match_slow_stub,
     chunksize_stub,

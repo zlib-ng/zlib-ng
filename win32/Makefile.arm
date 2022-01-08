@@ -49,7 +49,7 @@ OBJS = \
 	adler32.obj \
 	armfeature.obj \
 	chunkset.obj \
-	compare258.obj \
+	compare256.obj \
 	compress.obj \
 	crc32.obj \
 	crc32_comb.obj \
