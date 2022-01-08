@@ -1438,8 +1438,8 @@ case "${ARCH}" in
             if test ${HAVE_AVX2_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32 -DX86_AVX_CHUNKSET"
                 SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32 -DX86_AVX_CHUNKSET"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_hash_avx2.o chunkset_avx.o compare258_avx2.o adler32_avx2.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_hash_avx2.lo chunkset_avx.lo compare258_avx2.lo adler32_avx2.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_hash_avx2.o chunkset_avx.o compare256_avx2.o adler32_avx2.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_hash_avx2.lo chunkset_avx.lo compare256_avx2.lo adler32_avx2.lo"
             fi
 
             check_avx512_intrinsics
@@ -1495,8 +1495,8 @@ case "${ARCH}" in
                 CFLAGS="${CFLAGS} -DX86_SSE42_CMP_STR"
                 SFLAGS="${SFLAGS} -DX86_SSE42_CMP_STR"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare258_sse42.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare258_sse42.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare256_sse42.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare256_sse42.lo"
             fi
 
             check_sse2_intrinsics

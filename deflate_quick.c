@@ -89,18 +89,23 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
             dist = (int64_t)s->strstart - hash_head;
 
             if (dist <= MAX_DIST(s) && dist > 0) {
-                match_len = functable.compare258(s->window + s->strstart, s->window + hash_head);
+                const uint8_t *str_start = s->window + s->strstart;
+                const uint8_t *match_start = s->window + hash_head;
 
-                if (match_len >= WANT_MIN_MATCH) {
-                    if (UNLIKELY(match_len > s->lookahead))
-                        match_len = s->lookahead;
+                if (*(uint16_t *)str_start == *(uint16_t *)match_start) {
+                    match_len = functable.compare256(str_start+2, match_start+2) + 2;
 
-                    check_match(s, s->strstart, hash_head, match_len);
+                    if (match_len >= WANT_MIN_MATCH) {
+                        if (UNLIKELY(match_len > s->lookahead))
+                            match_len = s->lookahead;
 
-                    zng_tr_emit_dist(s, static_ltree, static_dtree, match_len - STD_MIN_MATCH, (uint32_t)dist);
-                    s->lookahead -= match_len;
-                    s->strstart += match_len;
-                    continue;
+                        check_match(s, s->strstart, hash_head, match_len);
+
+                        zng_tr_emit_dist(s, static_ltree, static_dtree, match_len - STD_MIN_MATCH, (uint32_t)dist);
+                        s->lookahead -= match_len;
+                        s->strstart += match_len;
+                        continue;
+                    }
                 }
             }
         }

@@ -1,4 +1,4 @@
-/* compare258_avx2.c -- AVX2 version of compare258
+/* compare256_avx2.c -- AVX2 version of compare256
  * Copyright Mika T. Lindqvist  <postmaster@raasu.org>
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -47,15 +47,8 @@ static inline uint32_t compare256_unaligned_avx2_static(const unsigned char *src
     return 256;
 }
 
-static inline uint32_t compare258_unaligned_avx2_static(const unsigned char *src0, const unsigned char *src1) {
-    if (*(uint16_t *)src0 != *(uint16_t *)src1)
-        return (*src0 == *src1);
-
-    return compare256_unaligned_avx2_static(src0+2, src1+2) + 2;
-}
-
-Z_INTERNAL uint32_t compare258_unaligned_avx2(const unsigned char *src0, const unsigned char *src1) {
-    return compare258_unaligned_avx2_static(src0, src1);
+Z_INTERNAL uint32_t compare256_unaligned_avx2(const unsigned char *src0, const unsigned char *src1) {
+    return compare256_unaligned_avx2_static(src0, src1);
 }
 
 #define LONGEST_MATCH       longest_match_unaligned_avx2

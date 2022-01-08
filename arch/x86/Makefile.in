@@ -32,8 +32,8 @@ all: \
 	adler32_ssse3.o adler32_ssse3.lo \
 	chunkset_avx.o chunkset_avx.lo \
 	chunkset_sse2.o chunkset_sse2.lo \
-	compare258_avx2.o compare258_avx2.lo \
-	compare258_sse42.o compare258_sse42.lo \
+	compare256_avx2.o compare256_avx2.lo \
+	compare256_sse42.o compare256_sse42.lo \
 	insert_string_sse42.o insert_string_sse42.lo \
 	crc32_fold_pclmulqdq.o crc32_fold_pclmulqdq.lo \
 	crc32_fold_vpclmulqdq.o crc32_fold_vpclmulqdq.lo \
@@ -58,17 +58,17 @@ chunkset_sse2.o:
 chunkset_sse2.lo:
 	$(CC) $(SFLAGS) $(SSE2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_sse2.c
 
-compare258_avx2.o:
-	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_avx2.c
+compare256_avx2.o:
+	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_avx2.c
 
-compare258_avx2.lo:
-	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_avx2.c
+compare256_avx2.lo:
+	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_avx2.c
 
-compare258_sse42.o:
-	$(CC) $(CFLAGS) $(SSE42FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_sse42.c
+compare256_sse42.o:
+	$(CC) $(CFLAGS) $(SSE42FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_sse42.c
 
-compare258_sse42.lo:
-	$(CC) $(SFLAGS) $(SSE42FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare258_sse42.c
+compare256_sse42.lo:
+	$(CC) $(SFLAGS) $(SSE42FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_sse42.c
 
 insert_string_sse42.o:
 	$(CC) $(CFLAGS) $(SSE42FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse42.c

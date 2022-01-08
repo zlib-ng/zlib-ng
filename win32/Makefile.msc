@@ -53,9 +53,9 @@ OBJS = \
 	chunkset.obj \
 	chunkset_avx.obj \
 	chunkset_sse2.obj \
-	compare258.obj \
-	compare258_avx2.obj \
-	compare258_sse42.obj \
+	compare256.obj \
+	compare256_avx2.obj \
+	compare256_sse42.obj \
 	compress.obj \
 	crc32.obj \
 	crc32_comb.obj \
