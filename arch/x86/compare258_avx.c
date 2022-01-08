@@ -60,14 +60,12 @@ Z_INTERNAL uint32_t compare258_unaligned_avx2(const unsigned char *src0, const u
 
 #define LONGEST_MATCH       longest_match_unaligned_avx2
 #define COMPARE256          compare256_unaligned_avx2_static
-#define COMPARE258          compare258_unaligned_avx2_static
 
 #include "match_tpl.h"
 
 #define LONGEST_MATCH_SLOW
 #define LONGEST_MATCH       longest_match_slow_unaligned_avx2
 #define COMPARE256          compare256_unaligned_avx2_static
-#define COMPARE258          compare258_unaligned_avx2_static
 
 #include "match_tpl.h"
 
