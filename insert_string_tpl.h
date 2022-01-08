@@ -29,16 +29,7 @@
 #  define HASH_CALC_MASK HASH_MASK
 #endif
 #ifndef HASH_CALC_READ
-#  ifdef UNALIGNED_OK
-#    define HASH_CALC_READ \
-        memcpy(&val, strstart, sizeof(val));
-#  else
-#    define HASH_CALC_READ \
-        val  = ((uint32_t)(strstart[0])); \
-        val |= ((uint32_t)(strstart[1]) << 8); \
-        val |= ((uint32_t)(strstart[2]) << 16); \
-        val |= ((uint32_t)(strstart[3]) << 24);
-#  endif
+#  define HASH_CALC_READ memcpy(&val, strstart, sizeof(val))
 #endif
 
 /* ===========================================================================
