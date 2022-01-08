@@ -1,0 +1,84 @@
+/* benchmark_compare256.cc -- benchmark compare256 variants
+ * Copyright (C) 2022 Nathan Moinvaziri
+ * For conditions of distribution and use, see copyright notice in zlib.h
+ */
+
+#include <stdint.h>
+#include <stdio.h>
+#include <stdint.h>
+
+#include <benchmark/benchmark.h>
+
+extern "C" {
+#  include "zbuild.h"
+#  include "zutil.h"
+#  include "zutil_p.h"
+#  include "cpu_features.h"
+}
+
+#define MAX_COMPARE_SIZE (256)
+
+typedef uint32_t (*compare256_func)(const unsigned char *src0, const unsigned char *src1);
+
+class compare256: public benchmark::Fixture {
+private:
+    uint8_t *str1;
+    uint8_t *str2;
+
+public:
+    void SetUp(const ::benchmark::State& state) {
+        str1 = (uint8_t *)zng_alloc(MAX_COMPARE_SIZE);
+        assert(str1 != NULL);
+        memset(str1, 'a', MAX_COMPARE_SIZE);
+
+        str2 = (uint8_t *)zng_alloc(MAX_COMPARE_SIZE);
+        assert(str2 != NULL);
+        memset(str2, 'a', MAX_COMPARE_SIZE);
+    }
+
+    void Bench(benchmark::State& state, compare256_func compare256) {
+        int32_t match_len = (int32_t)state.range(0);
+        uint32_t len;
+
+        str2[match_len] = 0;
+        for (auto _ : state) {
+            len = compare256((const uint8_t *)str1, (const uint8_t *)str2);
+        }
+        str2[match_len] = 'a';
+
+        benchmark::DoNotOptimize(len);
+    }
+
+    void TearDown(const ::benchmark::State& state) {
+        zng_free(str1);
+        zng_free(str2);
+    }
+};
+
+#define BENCHMARK_COMPARE256(name, fptr, support_flag) \
+    BENCHMARK_DEFINE_F(compare256, name)(benchmark::State& state) { \
+        if (!support_flag) { \
+            state.SkipWithError("CPU does not support " #name); \
+        } \
+        Bench(state, fptr); \
+    } \
+    BENCHMARK_REGISTER_F(compare256, name)->Range(1, MAX_COMPARE_SIZE);
+
+BENCHMARK_COMPARE256(c, compare256_c, 1);
+
+#ifdef UNALIGNED_OK
+BENCHMARK_COMPARE256(unaligned_16, compare256_unaligned_16, 1);
+#ifdef HAVE_BUILTIN_CTZ
+BENCHMARK_COMPARE256(unaligned_32, compare256_unaligned_32, 1);
+#endif
+#if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
+BENCHMARK_COMPARE256(unaligned_64, compare256_unaligned_64, 1);
+#endif
+#endif
+
+#ifdef X86_SSE42_CMP_STR
+BENCHMARK_COMPARE256(unaligned_sse4, compare256_unaligned_sse4, x86_cpu_has_sse42);
+#endif
+#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+BENCHMARK_COMPARE256(unaligned_avx2, compare256_unaligned_avx2, x86_cpu_has_avx2);
+#endif

@@ -75,6 +75,7 @@ option(ZLIB_COMPAT "Compile with zlib compatible API" OFF)
 option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 option(ZLIB_DUAL_LINK "Dual link tests against system zlib" OFF)
 option(WITH_FUZZERS "Build test/fuzz" OFF)
+option(WITH_BENCHMARKS "Build test/benchmarks" OFF)
 option(WITH_OPTIM "Build with optimisation" ON)
 option(WITH_REDUCED_MEM "Reduced memory usage for special cases (reduces performance)" OFF)
 option(WITH_NEW_STRATEGIES "Use new strategies" ON)
@@ -922,6 +923,7 @@ set(ZLIB_PUBLIC_HDRS
 set(ZLIB_PRIVATE_HDRS
     adler32_p.h
     chunkset_tpl.h
+    cpu_features.h
     crc32_p.h
     crc32_tbl.h
     crc32_comb_tbl.h
@@ -948,6 +950,7 @@ set(ZLIB_SRCS
     chunkset.c
     compare256.c
     compress.c
+    cpu_features.c
     crc32.c
     crc32_comb.c
     crc32_fold.c
@@ -1288,6 +1291,10 @@ if(ZLIB_ENABLE_TESTS)
         endforeach()
     endif()
 
+    if(WITH_BENCHMARKS)
+        add_subdirectory(test/benchmarks)
+    endif()
+
     macro(test_minigzip name path)
         # Construct compression arguments for minigzip
         set(compress_args -k -c)
@@ -1446,6 +1453,7 @@ add_feature_info(ZLIB_ENABLE_TESTS ZLIB_ENABLE_TESTS "Build test binaries")
 add_feature_info(ZLIB_DUAL_LINK ZLIB_DUAL_LINK "Dual link tests against system zlib")
 add_feature_info(WITH_SANITIZER WITH_SANITIZER "Enable sanitizer support")
 add_feature_info(WITH_FUZZERS WITH_FUZZERS "Build test/fuzz")
+add_feature_info(WITH_BENCHMARKS WITH_BENCHMARKS "Build test/benchmarks")
 add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
 add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
 add_feature_info(WITH_NATIVE_INSTRUCTIONS WITH_NATIVE_INSTRUCTIONS

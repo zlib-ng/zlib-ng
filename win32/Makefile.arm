@@ -51,6 +51,7 @@ OBJS = \
 	chunkset.obj \
 	compare256.obj \
 	compress.obj \
+	cpu_features.obj \
 	crc32.obj \
 	crc32_comb.obj \
 	crc32_fold.obj \
@@ -197,6 +198,7 @@ gzwrite.obj: $(SRCDIR)/gzwrite.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)
 compress.obj: $(SRCDIR)/compress.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 uncompr.obj: $(SRCDIR)/uncompr.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
+cpu_features.obj: $(SRCDIR)/cpu_features.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 crc32.obj: $(SRCDIR)/crc32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zendian.h $(SRCDIR)/deflate.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_tbl.h
 crc32_comb.obj: $(SRCDIR)/crc32_comb.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/crc32_comb_tbl.h
 crc32_fold.obj: $(SRCDIR)/crc32_fold.c $(SRCDIR)/zbuild.h

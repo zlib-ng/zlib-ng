@@ -1,5 +1,4 @@
-/*
- * x86 feature check
+/* x86.c - x86 feature check
  *
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
  * Author:
@@ -119,7 +118,7 @@ void Z_INTERNAL x86_check_features(void) {
                 x86_cpu_well_suited_avx512 = 1;
             } else if (model == 0xa && extended_model == 0x6) {
                 /* Icelake server */
-                x86_cpu_well_suited_avx512 = 1; 
+                x86_cpu_well_suited_avx512 = 1;
             } else if (model == 0xf && extended_model == 0x8) {
                 /* Saphire rapids */
                 x86_cpu_well_suited_avx512 = 1;

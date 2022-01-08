@@ -18,13 +18,19 @@ jobs:
             cmake-args: -DWITH_SANITIZER=Address
             codecov: ubuntu_gcc
 
+          - name: Ubuntu GCC Benchmark
+            os: ubuntu-latest
+            compiler: gcc
+            cmake-args: -DWITH_BENCHMARKS=ON
+            codecov: ubuntu_gcc_benchmark
+
           - name: Ubuntu GCC Symbol Prefix
             os: ubuntu-latest
             compiler: gcc
             cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_
             codecov: ubuntu_gcc_sprefix
 
-          - name: Ubuntu GCC Compat SPrefix
+          - name: Ubuntu GCC Compat Symbol Prefix
             os: ubuntu-latest
             compiler: gcc
             cmake-args: -DZLIB_COMPAT=ON -DZLIB_SYMBOL_PREFIX=zTest_
