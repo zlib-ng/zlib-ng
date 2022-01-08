@@ -78,6 +78,7 @@ OBJZ = \
 	chunkset.o \
 	compare256.o \
 	compress.o \
+	cpu_features.o \
 	crc32.o \
 	crc32_comb.o \
 	crc32_fold.o \
@@ -114,6 +115,7 @@ PIC_OBJZ = \
 	chunkset.lo \
 	compare256.lo \
 	compress.lo \
+	cpu_features.lo \
 	crc32.lo \
 	crc32_comb.lo \
 	crc32_fold.lo \

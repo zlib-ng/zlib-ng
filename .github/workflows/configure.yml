@@ -176,12 +176,12 @@ jobs:
             compiler: gcc
             configure-args: --warn --zlib-compat --static --with-dfltcc-deflate --with-dfltcc-inflate
 
-          - name: macOS GCC symbol prefix
+          - name: macOS GCC Symbol Prefix
             os: macOS-latest
             compiler: gcc
             configure-args: --sprefix=zTest_
 
-          - name: macOS GCC symbol prefix & compat
+          - name: macOS GCC Symbol Prefix & Compat
             os: macOS-latest
             compiler: gcc
             configure-args: --zlib-compat --sprefix=zTest_

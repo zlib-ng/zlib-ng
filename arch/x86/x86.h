@@ -1,4 +1,4 @@
-/* cpu.h -- check for CPU features
+/* x86.h -- check for CPU features
 * Copyright (C) 2013 Intel Corporation Jim Kukunas
 * For conditions of distribution and use, see copyright notice in zlib.h
 */
