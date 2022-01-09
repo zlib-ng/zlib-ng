@@ -60,20 +60,20 @@ Z_INTERNAL uint8_t* CHUNKCOPY_SAFE(uint8_t *out, uint8_t const *from, unsigned l
 #endif
 #if CHUNK_SIZE >= 8
     while (len >= 8) {
-        memcpy(out, from, 8);
+        zmemcpy_8(out, from);
         out += 8;
         from += 8;
         len -= 8;
     }
 #endif
     if (len >= 4) {
-        memcpy(out, from, 4);
+        zmemcpy_4(out, from);
         out += 4;
         from += 4;
         len -= 4;
     }
     if (len >= 2) {
-        memcpy(out, from, 2);
+        zmemcpy_2(out, from);
         out += 2;
         from += 2;
         len -= 2;
