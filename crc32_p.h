@@ -19,10 +19,6 @@ static inline uint32_t gf2_matrix_times(const uint32_t *mat, uint32_t vec) {
 }
 
 
-#if BYTE_ORDER == LITTLE_ENDIAN
-extern uint32_t crc32_little(uint32_t, const unsigned char *, uint64_t);
-#elif BYTE_ORDER == BIG_ENDIAN
-extern uint32_t crc32_big(uint32_t, const unsigned char *, uint64_t);
-#endif
+extern uint32_t crc32_byfour(uint32_t, const unsigned char *, uint64_t);
 
 #endif /* CRC32_P_H_ */
