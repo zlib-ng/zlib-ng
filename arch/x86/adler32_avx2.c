@@ -14,19 +14,24 @@
 
 #ifdef X86_AVX2_ADLER32
 
-/* 64 bit horizontal sum, adapted from Agner Fog's vector library. */
-static inline uint64_t hsum(__m256i x) {
-    __m256i sum1 = _mm256_shuffle_epi32(x, 0x0E);
-    __m256i sum2 = _mm256_add_epi64(x, sum1);
-    __m128i sum3 = _mm256_extracti128_si256(sum2, 1);
-#if defined(__x86_64__) || defined(_M_X64)
-    return _mm_cvtsi128_si64(_mm_add_epi64(_mm256_castsi256_si128(sum2), sum3));
-#else
-    __m128i ret_vec = _mm_add_epi64(_mm256_castsi256_si128(sum2), sum3);
-    uint64_t ret_val;
-    _mm_storel_epi64((__m128i*)&ret_val, ret_vec);
-    return ret_val;
-#endif
+/* 32 bit horizontal sum, adapted from Agner Fog's vector library. */
+static inline uint32_t hsum(__m256i x) {
+    __m128i sum1  = _mm_add_epi32(_mm256_extracti128_si256(x, 1),
+                                  _mm256_castsi256_si128(x));
+    __m128i sum2  = _mm_add_epi32(sum1, _mm_unpackhi_epi64(sum1, sum1));
+    __m128i sum3  = _mm_add_epi32(sum2, _mm_shuffle_epi32(sum2, 1));
+    return (uint32_t)_mm_cvtsi128_si32(sum3);
+}
+
+static inline uint32_t partial_hsum(__m256i x) {
+    /* We need a permutation vector to extract every other integer. The
+     * rest are going to be zeros */
+    const __m256i perm_vec = _mm256_setr_epi32(0, 2, 4, 6, 1, 1, 1, 1);
+    __m256i non_zero = _mm256_permutevar8x32_epi32(x, perm_vec);
+    __m128i non_zero_sse = _mm256_castsi256_si128(non_zero);
+    __m128i sum2  = _mm_add_epi32(non_zero_sse,_mm_unpackhi_epi64(non_zero_sse, non_zero_sse));
+    __m128i sum3  = _mm_add_epi32(sum2, _mm_shuffle_epi32(sum2, 1));
+    return (uint32_t)_mm_cvtsi128_si32(sum3);
 }
 
 Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t len) {
@@ -48,19 +53,17 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_
     if (UNLIKELY(len < 16))
         return adler32_len_16(adler, buf, len, sum2);
 
-    const __m256i vs_mask = _mm256_setr_epi32(0, 0, 0, 0, 0, 0, 0, -1);
-    __m256i vs1 = _mm256_set1_epi32(adler);
-    __m256i vs2 = _mm256_set1_epi32(sum2);
-    vs1 = _mm256_and_si256(vs1, vs_mask);
-    vs2 = _mm256_and_si256(vs2, vs_mask);
+    __m256i vs1 = _mm256_castsi128_si256(_mm_cvtsi32_si128(adler));
+    __m256i vs2 = _mm256_castsi128_si256(_mm_cvtsi32_si128(sum2));
 
-    const __m256i dot1v = _mm256_set1_epi8(1);
     const __m256i dot2v = _mm256_setr_epi8(32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15,
                                            14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
     const __m256i dot3v = _mm256_set1_epi16(1);
+    const __m256i zero = _mm256_setzero_si256();
 
     while (len >= 32) {
        __m256i vs1_0 = vs1;
+       __m256i vs3 = _mm256_setzero_si256();
 
        int k = (len < NMAX ? (int)len : NMAX);
        k -= k % 32;
@@ -75,16 +78,18 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_
            buf += 32;
            k -= 32;
 
-           __m256i v_short_sum1 = _mm256_maddubs_epi16(vbuf, dot1v); // multiply-add, resulting in 8 shorts.
-           __m256i vsum1 = _mm256_madd_epi16(v_short_sum1, dot3v);   // sum 8 shorts to 4 int32_t;
-           __m256i v_short_sum2 = _mm256_maddubs_epi16(vbuf, dot2v);
-           vs1 = _mm256_add_epi32(vsum1, vs1);
-           __m256i vsum2 = _mm256_madd_epi16(v_short_sum2, dot3v);
-           vs1_0 = _mm256_slli_epi32(vs1_0, 5);
-           vsum2 = _mm256_add_epi32(vsum2, vs2);
-           vs2   = _mm256_add_epi32(vsum2, vs1_0);
+           __m256i vs1_sad = _mm256_sad_epu8(vbuf, zero); // Sum of abs diff, resulting in 2 x int32's
+           vs1 = _mm256_add_epi32(vs1, vs1_sad);
+           vs3 = _mm256_add_epi32(vs3, vs1_0);
+           __m256i v_short_sum2 = _mm256_maddubs_epi16(vbuf, dot2v); // sum 32 uint8s to 16 shorts
+           __m256i vsum2 = _mm256_madd_epi16(v_short_sum2, dot3v); // sum 16 shorts to 8 uint32s
+           vs2 = _mm256_add_epi32(vsum2, vs2);
            vs1_0 = vs1;
        }
+
+       /* Defer the multiplication with 32 to outside of the loop */
+       vs3 = _mm256_slli_epi32(vs3, 5);
+       vs2 = _mm256_add_epi32(vs2, vs3);
 
        /* The compiler is generating the following sequence for this integer modulus
         * when done the scalar way, in GPRs:
@@ -109,41 +114,23 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_
                 back down to 32 bit precision later (there is in AVX512) 
             3.) Full width integer multiplications aren't cheap
 
-        We can, however, cast up to 64 bit precision on all 8 integers at once, and do a relatively
-        cheap sequence for horizontal sums. Then, we simply do the integer modulus on the resulting
-        64 bit GPR, on a scalar value
+        We can, however, and do a relatively cheap sequence for horizontal sums. 
+        Then, we simply do the integer modulus on the resulting 64 bit GPR, on a scalar value. It was
+        previously thought that casting to 64 bit precision was needed prior to the horizontal sum, but
+        that is simply not the case, as NMAX is defined as the maximum number of scalar sums that can be
+        performed on the maximum possible inputs before overflow
         */
 
  
-        /* Will translate to nops */
-        __m128i s1lo = _mm256_castsi256_si128(vs1);
-        __m128i s2lo = _mm256_castsi256_si128(vs2);
-
-        /* Requires vextracti128 */
-        __m128i s1hi = _mm256_extracti128_si256(vs1, 1);
-        __m128i s2hi = _mm256_extracti128_si256(vs2, 1);
-        
-        /* Convert up to 64 bit precision to prevent overflow */
-        __m256i s1lo256 = _mm256_cvtepi32_epi64(s1lo);
-        __m256i s1hi256 = _mm256_cvtepi32_epi64(s1hi);
-        __m256i s2lo256 = _mm256_cvtepi32_epi64(s2lo);
-        __m256i s2hi256 = _mm256_cvtepi32_epi64(s2hi);
-
-        /* Sum vectors in existing lanes */
-        __m256i s1_sum = _mm256_add_epi64(s1lo256, s1hi256);
-        __m256i s2_sum = _mm256_add_epi64(s2lo256, s2hi256);
-        
         /* In AVX2-land, this trip through GPRs will probably be unvoidable, as there's no cheap and easy
-         * conversion from 64 bit integer to 32 bit. This casting to 32 bit is cheap through GPRs 
-         * (just register aliasing), and safe, as our base is significantly smaller than UINT32_MAX */
-        adler = (uint32_t)(hsum(s1_sum) % BASE);
-        sum2 = (uint32_t)(hsum(s2_sum) % BASE);
+         * conversion from 64 bit integer to 32 bit (needed for the inexpensive modulus with a constant).
+         * This casting to 32 bit is cheap through GPRs (just register aliasing). See above for exactly
+         * what the compiler is doing to avoid integer divisions. */
+        adler = partial_hsum(vs1) % BASE;
+        sum2 = hsum(vs2) % BASE;
 
-        vs1 = _mm256_set1_epi32(adler);
-        vs2 = _mm256_set1_epi32(sum2);
-
-        vs1 = _mm256_and_si256(vs1, vs_mask);
-        vs2 = _mm256_and_si256(vs2, vs_mask);
+        vs1 = _mm256_castsi128_si256(_mm_cvtsi32_si128(adler));
+        vs2 = _mm256_castsi128_si256(_mm_cvtsi32_si128(sum2));
     }
 
     /* Process tail (len < 16).  */
