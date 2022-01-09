@@ -194,4 +194,19 @@
 #  define Tracecv(c, x)
 #endif
 
+#ifdef UNALIGNED_OK
+#  define zmemcpy_2(dest, src) *((uint16_t *)dest) = *((uint16_t *)src)
+#  define zmemcpy_4(dest, src) *((uint32_t *)dest) = *((uint32_t *)src)
+#  if UINTPTR_MAX == UINT64_MAX
+#    define zmemcpy_8(dest, src) *((uint64_t *)dest) = *((uint64_t *)src)
+#  else
+#    define zmemcpy_8(dest, src) ((uint32_t *)dest)[0] = *((uint32_t *)src)[0] \
+                                 ((uint32_t *)dest)[1] = *((uint32_t *)src)[1]
+#  endif
+#else
+#  define zmemcpy_2(dest, src) memcpy(dest, src, 2)
+#  define zmemcpy_4(dest, src) memcpy(dest, src, 4)
+#  define zmemcpy_8(dest, src) memcpy(dest, src, 8)
+#endif
+
 #endif

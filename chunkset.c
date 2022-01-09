@@ -18,20 +18,20 @@ static inline void chunkmemset_1(uint8_t *from, chunk_t *chunk) {
 
 static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
     uint8_t *dest = (uint8_t *)chunk;
-    memcpy(dest, from, sizeof(uint32_t));
-    memcpy(dest+4, from, sizeof(uint32_t));
+    zmemcpy_4(dest, from);
+    zmemcpy_4(dest+4, from);
 }
 
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
-    memcpy(chunk, from, sizeof(uint64_t));
+    zmemcpy_8(chunk, from);
 }
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
-    chunkmemset_8((uint8_t *)s, chunk);
+    zmemcpy_8(chunk, (uint8_t *)s);
 }
 
 static inline void storechunk(uint8_t *out, chunk_t *chunk) {
-    memcpy(out, chunk, sizeof(uint64_t));
+    zmemcpy_8(out, chunk);
 }
 
 #define CHUNKSIZE        chunksize_c
