@@ -15,16 +15,6 @@
 #ifndef MATCH_TPL_H
 #define MATCH_TPL_H
 
-#ifdef UNALIGNED_OK
-#  ifdef UNALIGNED64_OK
-typedef uint64_t        bestcmp_t;
-#  else
-typedef uint32_t        bestcmp_t;
-#  endif
-#else
-typedef uint8_t         bestcmp_t;
-#endif
-
 #define EARLY_EXIT_TRIGGER_LEVEL 5
 
 #endif
@@ -54,12 +44,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     uint32_t chain_length, nice_match, best_len, offset;
     uint32_t lookahead = s->lookahead;
     Pos match_offset = 0;
-    bestcmp_t scan_end;
-#ifndef UNALIGNED_OK
-    bestcmp_t scan_end0;
-#else
-    bestcmp_t scan_start;
-#endif
+    uint8_t scan_start[8], scan_end[8];
 
 #define GOTO_NEXT_CHAIN \
     if (--chain_length && (cur_match = prev[cur_match & wmask]) > limit) \
@@ -85,11 +70,15 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     }
 #endif
 
-    memcpy(&scan_end, scan+offset, sizeof(bestcmp_t));
-#ifndef UNALIGNED_OK
-    memcpy(&scan_end0, scan+offset+1, sizeof(bestcmp_t));
+#ifdef UNALIGNED64_OK
+    memcpy(scan_start, scan, sizeof(uint64_t));
+    memcpy(scan_end, scan+offset, sizeof(uint64_t));
+#elif defined(UNALIGNED_OK)
+    memcpy(scan_start, scan, sizeof(uint32_t));
+    memcpy(scan_end, scan+offset, sizeof(uint32_t));
 #else
-    memcpy(&scan_start, scan, sizeof(bestcmp_t));
+    scan_end[0] = *(scan+offset);
+    scan_end[1] = *(scan+offset+1);
 #endif
     mbase_end  = (mbase_start+offset);
 
@@ -153,31 +142,31 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #ifdef UNALIGNED_OK
         if (best_len < sizeof(uint32_t)) {
             for (;;) {
-                if (*(uint16_t *)(mbase_end+cur_match) == (uint16_t)scan_end &&
-                    *(uint16_t *)(mbase_start+cur_match) == (uint16_t)scan_start)
+                if (*(uint16_t *)(mbase_end+cur_match) == *(uint16_t *)scan_end &&
+                    *(uint16_t *)(mbase_start+cur_match) == *(uint16_t *)scan_start)
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  ifdef UNALIGNED64_OK
         } else if (best_len >= sizeof(uint64_t)) {
             for (;;) {
-                if (*(uint64_t *)(mbase_end+cur_match) == (uint64_t)scan_end &&
-                    *(uint64_t *)(mbase_start+cur_match) == (uint64_t)scan_start)
+                if (*(uint64_t *)(mbase_end+cur_match) == *(uint64_t *)scan_end &&
+                    *(uint64_t *)(mbase_start+cur_match) == *(uint64_t *)scan_start)
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  endif
         } else {
             for (;;) {
-                if (*(uint32_t *)(mbase_end+cur_match) == (uint32_t)scan_end &&
-                    *(uint32_t *)(mbase_start+cur_match) == (uint32_t)scan_start)
+                if (*(uint32_t *)(mbase_end+cur_match) == *(uint32_t *)scan_end &&
+                    *(uint32_t *)(mbase_start+cur_match) == *(uint32_t *)scan_start)
                     break;
                 GOTO_NEXT_CHAIN;
             }
         }
 #else
         for (;;) {
-            if (mbase_end[cur_match] == scan_end && mbase_end[cur_match+1] == scan_end0 &&
+            if (mbase_end[cur_match] == scan_end[0] && mbase_end[cur_match+1] == scan_end[1] &&
                 mbase_start[cur_match] == scan[0] && mbase_start[cur_match+1] == scan[1])
                 break;
             GOTO_NEXT_CHAIN;
@@ -207,10 +196,16 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #endif
             }
 #endif
-            memcpy(&scan_end, scan+offset, sizeof(bestcmp_t));
-#ifndef UNALIGNED_OK
-            memcpy(&scan_end0, scan+offset+1, sizeof(bestcmp_t));
+
+#ifdef UNALIGNED64_OK
+            memcpy(scan_end, scan+offset, sizeof(uint64_t));
+#elif defined(UNALIGNED_OK)
+            memcpy(scan_end, scan+offset, sizeof(uint32_t));
+#else
+            scan_end[0] = *(scan+offset);
+            scan_end[1] = *(scan+offset+1);
 #endif
+
 #ifdef LONGEST_MATCH_SLOW
             /* Look for a better string offset */
             if (UNLIKELY(len > STD_MIN_MATCH && match_start + len < strstart)) {
