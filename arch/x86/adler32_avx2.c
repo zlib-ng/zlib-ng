@@ -9,6 +9,7 @@
 #include "../../zutil.h"
 
 #include "../../adler32_p.h"
+#include "../../fallback_builtins.h"
 
 #include <immintrin.h>
 
@@ -53,8 +54,8 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_
     if (UNLIKELY(len < 16))
         return adler32_len_16(adler, buf, len, sum2);
 
-    __m256i vs1 = _mm256_castsi128_si256(_mm_cvtsi32_si128(adler));
-    __m256i vs2 = _mm256_castsi128_si256(_mm_cvtsi32_si128(sum2));
+    __m256i vs1 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(adler));
+    __m256i vs2 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(sum2));
 
     const __m256i dot2v = _mm256_setr_epi8(32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15,
                                            14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
@@ -129,8 +130,8 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_
         adler = partial_hsum(vs1) % BASE;
         sum2 = hsum(vs2) % BASE;
 
-        vs1 = _mm256_castsi128_si256(_mm_cvtsi32_si128(adler));
-        vs2 = _mm256_castsi128_si256(_mm_cvtsi32_si128(sum2));
+        vs1 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(adler));
+        vs2 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(sum2));
     }
 
     /* Process tail (len < 16).  */
