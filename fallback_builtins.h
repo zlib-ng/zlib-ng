@@ -1,5 +1,5 @@
-#ifndef X86_BUILTIN_CTZ_H
-#define X86_BUILTIN_CTZ_H
+#ifndef FALLBACK_BUILTINS_H
+#define FALLBACK_BUILTINS_H
 
 #if defined(_MSC_VER) && !defined(__clang__)
 #if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64) ||  defined(_M_ARM) || defined(_M_ARM64)
@@ -41,4 +41,27 @@ static __forceinline unsigned long long __builtin_ctzll(uint64_t value) {
 
 #endif
 #endif
-#endif
+
+/* Unfortunately GCC _and_ clang didn't support these things until version
+ * 10 and 12, respectively */
+#ifdef __AVX2__
+#include <immintrin.h>
+
+#if (!defined(__clang__) && defined(__GNUC__) && __GNUC__ < 10)
+static inline __m256i _mm256_zextsi128_si256(__m128i a) {
+    __m128i r;
+    __asm__ volatile ("vmovdqa %1,%0" : "=x" (r) : "x" (a));
+    return _mm256_castsi128_si256(r);
+}
+
+#ifdef __AVX512F__
+static inline __m512i _mm512_zextsi128_si512(__m128i a) {
+    __m128i r;
+    __asm__ volatile ("vmovdqa %1,%0" : "=x" (r) : "x" (a));
+    return _mm512_castsi128_si512(r);
+}
+#endif // __AVX512F__
+#endif // __AVX2__
+
+#endif // clang/gcc test
+#endif // include guard FALLBACK_BUILTINS_H 
