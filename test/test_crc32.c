@@ -1,4 +1,4 @@
-/* crc32_test.c -- crc32 unit test
+/* test_crc32.c -- crc32 unit test
  * Copyright (C) 2019-2021 IBM Corporation
  * Authors: Rogerio Alves    <rogealve@br.ibm.com>
  *          Matheus Castanho <msc@linux.ibm.com>

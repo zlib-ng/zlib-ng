@@ -1188,8 +1188,20 @@ if(ZLIB_ENABLE_TESTS)
         add_test(NAME ${target} COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}>)
     endmacro()
 
-    add_simple_test_executable(adler32_test)
-    add_simple_test_executable(crc32_test)
+    file(GLOB TEST_SRCS
+        LIST_DIRECTORIES false
+        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/test
+        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_*.c)
+
+    foreach(TEST_SRC ${TEST_SRCS})
+        get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
+        add_simple_test_executable(${TEST_NAME})
+    endforeach()
+
+    if(NOT WIN32 AND ZLIB_COMPAT)
+        add_simple_test_executable(CVE-2003-0107)
+    endif()
+
     add_simple_test_executable(example)
 
     set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip>)
@@ -1370,10 +1382,6 @@ if(ZLIB_ENABLE_TESTS)
     # Run tests targeting tools
     include(cmake/test-tools.cmake)
 
-    if(NOT WIN32 AND ZLIB_COMPAT)
-        add_simple_test_executable(CVE-2003-0107)
-    endif()
-
     add_test(NAME GH-361
         COMMAND ${CMAKE_COMMAND}
         "-DTARGET=${MINIGZIP_COMMAND}"
@@ -1440,11 +1448,6 @@ if(ZLIB_ENABLE_TESTS)
         -DTEST_NAME=GH-751-test-txt
         -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/GH-751/test.txt
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
-
-    add_simple_test_executable(deflate_quick_bi_valid)
-    add_simple_test_executable(deflate_quick_block_open)
-    add_simple_test_executable(inflate_adler32)
-    add_simple_test_executable(hash_head_0)
 endif()
 
 add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile related functions")

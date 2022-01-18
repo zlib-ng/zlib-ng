@@ -154,9 +154,9 @@ PIC_OBJS = $(PIC_OBJC)
 
 all: static shared
 
-static: adler32_test$(EXE) crc32_test$(EXE) example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
+static: test_adler32$(EXE) test_crc32$(EXE) example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
 
-shared: adler32_testsh$(EXE) crc32_testsh$(EXE) examplesh$(EXE) minigzipsh$(EXE)
+shared: test_adler32sh$(EXE) test_crc32sh$(EXE) examplesh$(EXE) minigzipsh$(EXE)
 
 check: test
 
@@ -248,12 +248,6 @@ $(STATICLIB): $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
 
-adler32_test.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/adler32_test.c
-
-crc32_test.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/crc32_test.c
-
 example.o:
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
 
@@ -268,6 +262,12 @@ maketrees.o:
 
 makecrct.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/tools/makecrct.c
+
+test_adler32.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_adler32.c
+
+test_crc32.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_crc32.c
 
 zlibrc.o: win32/zlib$(SUFFIX)1.rc
 	$(RC) $(RCFLAGS) -o $@ win32/zlib$(SUFFIX)1.rc
@@ -311,18 +311,6 @@ ifneq ($(SHAREDLIB),$(SHAREDTARGET))
 endif
 endif
 
-adler32_test$(EXE): adler32_test.o $(OBJG) $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ adler32_test.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
-ifneq ($(STRIP),)
-	$(STRIP) $@
-endif
-
-crc32_test$(EXE): crc32_test.o $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ crc32_test.o $(TEST_LIBS) $(LDSHAREDLIBC)
-ifneq ($(STRIP),)
-	$(STRIP) $@
-endif
-
 example$(EXE): example.o $(OBJG) $(STATICLIB)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
@@ -335,14 +323,14 @@ ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-adler32_testsh$(EXE): adler32_test.o $(PIC_TESTOBJG) $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ adler32_test.o $(PIC_TESTOBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
+test_adler32$(EXE): test_adler32.o $(OBJG) $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_adler32.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-crc32_testsh$(EXE): crc32_test.o $(SHAREDTARGET)
-	$(CC) $(LDFLAGS) -o $@ crc32_test.o $(SHAREDTARGET) $(LDSHAREDLIBC)
+test_crc32$(EXE): test_crc32.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_crc32.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -355,6 +343,18 @@ endif
 
 minigzipsh$(EXE): minigzip.o $(PIC_TESTOBJG) $(SHAREDTARGET)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(PIC_TESTOBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_adler32sh$(EXE): test_adler32.o $(PIC_TESTOBJG) $(SHAREDTARGET)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_adler32.o $(PIC_TESTOBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+test_crc32sh$(EXE): test_crc32.o $(SHAREDTARGET)
+	$(CC) $(LDFLAGS) -o $@ test_crc32.o $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -439,8 +439,8 @@ clean:
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) clean; fi
 	@if [ -f test/Makefile ]; then $(MAKE) -C test clean; fi
 	rm -f *.o *.lo *~ \
-	   adler32_test$(EXE) crc32_test$(EXE) example$(EXE) minigzip$(EXE) \
-	   adler32_testsh$(EXE) crc32_testsh$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
+	   test_adler32$(EXE) test_crc32$(EXE) example$(EXE) minigzip$(EXE) \
+	   test_adler32sh$(EXE) test_crc32sh$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
 	   fuzzer_checksum$(EXE) fuzzer_compress$(EXE) fuzzer_example_small$(EXE) fuzzer_example_large$(EXE) \
 	   fuzzer_example_flush$(EXE) fuzzer_example_dict$(EXE) fuzzer_minigzip$(EXE) \
 	   infcover makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) \
