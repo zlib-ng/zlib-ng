@@ -62,7 +62,7 @@ testshared: check_cross_dep
 	SHLIB_PATH=`pwd`/..:$(SHLIB_PATH) ; export SHLIB_PATH; \
 	TMPSH=tmpsh_$$$$; \
 	HELLOSH=tmphellosh_$$$$; \
-	if echo hello world | ${QEMU_RUN} ../minigzipsh$(EXE) > $$HELLOSH && ${QEMU_RUN} ../minigzipsh$(EXE) -d < $$HELLOSH && ${QEMU_RUN} ../examplesh$(EXE) $$TMPSH && ${QEMU_RUN} ../test_adler32sh$(EXE) && ${QEMU_RUN} ../test_crc32sh$(EXE); then \
+	if echo hello world | ${QEMU_RUN} ../minigzipsh$(EXE) > $$HELLOSH && ${QEMU_RUN} ../minigzipsh$(EXE) -d < $$HELLOSH && ${QEMU_RUN} ../examplesh$(EXE) $$TMPSH; then \
 	  echo '		*** zlib shared test OK ***'; \
 	else \
 	  echo '		*** zlib shared test FAILED ***'; exit 1; \

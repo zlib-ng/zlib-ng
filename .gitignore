@@ -14,9 +14,7 @@
 *.gcov
 
 /test_adler32
-/test_adler32sh
 /test_crc32
-/test_crc32sh
 /example
 /example64
 /examplesh
