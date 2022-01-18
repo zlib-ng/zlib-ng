@@ -194,7 +194,6 @@ Advanced Build Options
 | CMake                           | configure             | Description                                                         | Default                |
 |:--------------------------------|:----------------------|:--------------------------------------------------------------------|------------------------|
 | ZLIB_DUAL_LINK                  |                       | Dual link tests with system zlib                                    | OFF                    |
-| UNALIGNED_OK                    |                       | Allow unaligned reads                                               | ON (x86, arm)          |
 | FORCE_SSE2                      | --force-sse2          | Skip runtime check for SSE2 instructions (Always on for x86_64)     | OFF (x86)              |
 | FORCE_TZCNT                     | --force-tzcnt         | Skip runtime check for TZCNT instructions                           | OFF                    |
 | WITH_AVX2                       |                       | Build with AVX2 intrinsics                                          | ON                     |
@@ -212,7 +211,6 @@ Advanced Build Options
 | WITH_CRC32_VX                   | --without-crc32-vx    | Build with vectorized CRC32 on IBM Z                                | ON                     |
 | WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | Build with DFLTCC intrinsics for compression on IBM Z               | OFF                    |
 | WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | Build with DFLTCC intrinsics for decompression on IBM Z             | OFF                    |
-| WITH_UNALIGNED                  |                       | Allow optimizations that use unaligned reads if safe on current arch| ON                     |
 | WITH_INFLATE_STRICT             |                       | Build with strict inflate distance checking                         | OFF                    |
 | WITH_INFLATE_ALLOW_INVALID_DIST |                       | Build with zero fill for inflate invalid distances                  | OFF                    |
 | INSTALL_UTILS                   |                       | Copy minigzip and minideflate during install                        | OFF                    |

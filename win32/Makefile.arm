@@ -30,7 +30,6 @@ WFLAGS  = \
 	-D_CRT_NONSTDC_NO_DEPRECATE \
 	-DARM_FEATURES \
 	-DARM_NEON_HASLD4 \
-	-DUNALIGNED_OK \
 	#
 LDFLAGS = -nologo -debug -incremental:no -opt:ref -manifest
 ARFLAGS = -nologo

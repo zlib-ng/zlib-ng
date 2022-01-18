@@ -41,21 +41,20 @@ jobs:
             cmake-args: -DZLIB_COMPAT=ON -DZLIB_SYMBOL_PREFIX=zTest_
             codecov: ubuntu_gcc_compat_sprefix
 
-          - name: Ubuntu GCC OSB -O1 No Unaligned64 UBSAN
+          - name: Ubuntu GCC OSB -O1 UBSAN
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DWITH_UNALIGNED=ON -DUNALIGNED64_OK=OFF -DWITH_SANITIZER=Undefined
+            cmake-args: -DWITH_SANITIZER=Undefined
             build-dir: ../build
             build-src-dir: ../zlib-ng
             codecov: ubuntu_gcc_osb
             cflags: -O1 -g3
 
-          - name: Ubuntu GCC -O3 No Unaligned
+          - name: Ubuntu GCC -O3
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DWITH_UNALIGNED=OFF
             codecov: ubuntu_gcc_o3
             cflags: -O3
 
