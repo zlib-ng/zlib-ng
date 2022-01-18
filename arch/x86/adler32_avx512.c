@@ -45,12 +45,12 @@ Z_INTERNAL uint32_t adler32_avx512(uint32_t adler, const unsigned char *buf, siz
      * to check for compile time support for these but they are likely there */
 #ifdef X86_SSE41_ADLER32 
     if (len < 32) 
-       return adler32_sse41(adler, buf, len);
+        return adler32_sse41(adler, buf, len);
 #endif
 
 #ifdef X86_AVX2_ADLER32
     if (len < 64)
-       return adler32_avx2(adler, buf, len);
+        return adler32_avx2(adler, buf, len);
 #endif
 
      /* split Adler-32 into component sums */

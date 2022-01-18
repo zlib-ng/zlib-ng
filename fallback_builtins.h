@@ -42,8 +42,7 @@ static __forceinline unsigned long long __builtin_ctzll(uint64_t value) {
 #endif
 #endif
 
-/* Unfortunately GCC _and_ clang didn't support these things until version
- * 10 and 12, respectively */
+/* Unfortunately GCC didn't support these things until version 10 */
 #ifdef __AVX2__
 #include <immintrin.h>
 
@@ -61,7 +60,7 @@ static inline __m512i _mm512_zextsi128_si512(__m128i a) {
     return _mm512_castsi128_si512(r);
 }
 #endif // __AVX512F__
-#endif // __AVX2__
+#endif // gcc version 10 test
 
-#endif // clang/gcc test
+#endif // __AVX2__
 #endif // include guard FALLBACK_BUILTINS_H 
