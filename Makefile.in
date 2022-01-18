@@ -156,7 +156,7 @@ all: static shared
 
 static: test_adler32$(EXE) test_crc32$(EXE) example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
 
-shared: test_adler32sh$(EXE) test_crc32sh$(EXE) examplesh$(EXE) minigzipsh$(EXE)
+shared: examplesh$(EXE) minigzipsh$(EXE)
 
 check: test
 
@@ -347,18 +347,6 @@ ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-test_adler32sh$(EXE): test_adler32.o $(PIC_TESTOBJG) $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_adler32.o $(PIC_TESTOBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
-ifneq ($(STRIP),)
-	$(STRIP) $@
-endif
-
-test_crc32sh$(EXE): test_crc32.o $(SHAREDTARGET)
-	$(CC) $(LDFLAGS) -o $@ test_crc32.o $(SHAREDTARGET) $(LDSHAREDLIBC)
-ifneq ($(STRIP),)
-	$(STRIP) $@
-endif
-
 makefixed$(EXE): makefixed.o $(OBJG) $(STATICLIB)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ makefixed.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
@@ -440,7 +428,7 @@ clean:
 	@if [ -f test/Makefile ]; then $(MAKE) -C test clean; fi
 	rm -f *.o *.lo *~ \
 	   test_adler32$(EXE) test_crc32$(EXE) example$(EXE) minigzip$(EXE) \
-	   test_adler32sh$(EXE) test_crc32sh$(EXE) examplesh$(EXE) minigzipsh$(EXE) \
+	   examplesh$(EXE) minigzipsh$(EXE) \
 	   fuzzer_checksum$(EXE) fuzzer_compress$(EXE) fuzzer_example_small$(EXE) fuzzer_example_large$(EXE) \
 	   fuzzer_example_flush$(EXE) fuzzer_example_dict$(EXE) fuzzer_minigzip$(EXE) \
 	   infcover makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) \
