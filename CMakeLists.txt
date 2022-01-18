@@ -87,7 +87,6 @@ option(WITH_MAINTAINER_WARNINGS "Build with project maintainer warnings" OFF)
 option(WITH_CODE_COVERAGE "Enable code coverage reporting" OFF)
 option(WITH_INFLATE_STRICT "Build with strict inflate distance checking" OFF)
 option(WITH_INFLATE_ALLOW_INVALID_DIST "Build with zero fill for inflate invalid distances" OFF)
-option(WITH_UNALIGNED "Support unaligned reads on platforms that support it" ON)
 
 set(ZLIB_SYMBOL_PREFIX "" CACHE STRING "Give this prefix to all publicly exported symbols.
 Useful when embedding into a larger library.
@@ -138,7 +137,6 @@ mark_as_advanced(FORCE
     WITH_POWER8
     WITH_INFLATE_STRICT
     WITH_INFLATE_ALLOW_INVALID_DIST
-    WITH_UNALIGNED
     INSTALL_UTILS
     )
 
@@ -247,46 +245,6 @@ else()
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not implemented yet on this configuration")
         set(WITH_NATIVE_INSTRUCTIONS OFF)
     endif()
-endif()
-
-# Set architecture alignment requirements
-if(WITH_UNALIGNED)
-    if((BASEARCH_ARM_FOUND AND NOT "${ARCH}" MATCHES "armv[2-7]") OR (BASEARCH_PPC_FOUND AND "${ARCH}" MATCHES "powerpc64le") OR BASEARCH_X86_FOUND)
-        if(NOT DEFINED UNALIGNED_OK)
-            set(UNALIGNED_OK TRUE)
-        endif()
-    endif()
-    if(UNALIGNED_OK)
-        add_definitions(-DUNALIGNED_OK)
-        message(STATUS "Architecture supports unaligned reads")
-    endif()
-    if(BASEARCH_ARM_FOUND)
-        if(NOT DEFINED UNALIGNED64_OK)
-            if("${ARCH}" MATCHES "armv[2-7]")
-                set(UNALIGNED64_OK FALSE)
-            elseif("${ARCH}" MATCHES "(arm(v[8-9])?|aarch64)")
-                set(UNALIGNED64_OK TRUE)
-            endif()
-        endif()
-    endif()
-    if(BASEARCH_PPC_FOUND)
-        if(NOT DEFINED UNALIGNED64_OK)
-            if("${ARCH}" MATCHES "powerpc64le")
-                set(UNALIGNED64_OK TRUE)
-            endif()
-        endif()
-    endif()
-    if(BASEARCH_X86_FOUND)
-        if(NOT DEFINED UNALIGNED64_OK)
-            set(UNALIGNED64_OK TRUE)
-        endif()
-    endif()
-    if(UNALIGNED64_OK)
-        add_definitions(-DUNALIGNED64_OK)
-        message(STATUS "Architecture supports unaligned reads of > 4 bytes")
-    endif()
-else()
-    message(STATUS "Unaligned reads manually disabled")
 endif()
 
 # Apply warning compiler flags
@@ -1459,8 +1417,6 @@ add_feature_info(WITH_MAINTAINER_WARNINGS WITH_MAINTAINER_WARNINGS "Build with p
 add_feature_info(WITH_CODE_COVERAGE WITH_CODE_COVERAGE "Enable code coverage reporting")
 add_feature_info(WITH_INFLATE_STRICT WITH_INFLATE_STRICT "Build with strict inflate distance checking")
 add_feature_info(WITH_INFLATE_ALLOW_INVALID_DIST WITH_INFLATE_ALLOW_INVALID_DIST "Build with zero fill for inflate invalid distances")
-add_feature_info(WITH_UNALIGNED UNALIGNED_OK "Support unaligned reads on platforms that support it")
-add_feature_info(WITH_UNALIGNED64 UNALIGNED64_OK "Support unaligned 64-bit reads on platforms that support it")
 
 if(BASEARCH_ARM_FOUND)
     add_feature_info(WITH_ACLE WITH_ACLE "Build with ACLE")

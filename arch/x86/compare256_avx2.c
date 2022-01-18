@@ -14,7 +14,7 @@
 #  include <nmmintrin.h>
 #endif
 
-/* UNALIGNED_OK, AVX2 intrinsic comparison */
+/* AVX2 unaligned intrinsic comparison */
 static inline uint32_t compare256_unaligned_avx2_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
