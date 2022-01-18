@@ -1,4 +1,4 @@
-/* adler32_test.c -- unit test for adler32 in the zlib compression library
+/* test_adler32.c -- unit test for adler32 in the zlib compression library
  * Copyright (C) 2020 IBM Corporation
  * Author: Rogerio Alves <rcardoso@linux.ibm.com>
  * For conditions of distribution and use, see copyright notice in zlib.h
