@@ -5,6 +5,7 @@
 
 #include "zbuild.h"
 #include "zutil.h"
+#include "cpu_features.h"
 #include "inftrees.h"
 #include "inflate.h"
 #include "inffast.h"

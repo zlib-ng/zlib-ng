@@ -24,6 +24,8 @@
 #include <wmmintrin.h>
 #include <smmintrin.h> // _mm_extract_epi32
 
+#include "x86.h"
+
 #include "../../crc32_fold.h"
 
 #ifdef X86_VPCLMULQDQ_CRC

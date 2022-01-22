@@ -4,7 +4,8 @@
  */
 
 #include "zbuild.h"
-#include "zutil.h"
+
+#include "cpu_features.h"
 
 Z_INTERNAL void cpu_check_features(void) {
     static int features_checked = 0;
