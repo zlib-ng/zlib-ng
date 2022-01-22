@@ -172,18 +172,18 @@ extern Pos quick_insert_string_acle(deflate_state *const s, const uint32_t str);
 
 /* slide_hash */
 #ifdef X86_SSE2
-void slide_hash_sse2(deflate_state *s);
+extern void slide_hash_sse2(deflate_state *s);
 #elif defined(ARM_NEON_SLIDEHASH)
-void slide_hash_neon(deflate_state *s);
+extern void slide_hash_neon(deflate_state *s);
 #endif
 #if defined(PPC_VMX_SLIDEHASH)
-void slide_hash_vmx(deflate_state *s);
+extern void slide_hash_vmx(deflate_state *s);
 #endif
 #if defined(POWER8_VSX_SLIDEHASH)
-void slide_hash_power8(deflate_state *s);
+extern void slide_hash_power8(deflate_state *s);
 #endif
 #ifdef X86_AVX2
-void slide_hash_avx2(deflate_state *s);
+extern void slide_hash_avx2(deflate_state *s);
 #endif
 
 /* update_hash */
