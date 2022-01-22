@@ -96,6 +96,56 @@ Z_INTERNAL void slide_hash_stub(deflate_state *s) {
     functable.slide_hash(s);
 }
 
+Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
+
+#ifdef UNALIGNED_OK
+#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
+    functable.longest_match = &longest_match_unaligned_64;
+#  elif defined(HAVE_BUILTIN_CTZ)
+    functable.longest_match = &longest_match_unaligned_32;
+#  else
+    functable.longest_match = &longest_match_unaligned_16;
+#  endif
+#  ifdef X86_SSE42_CMP_STR
+    if (x86_cpu_has_sse42)
+        functable.longest_match = &longest_match_unaligned_sse4;
+#  endif
+#  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_avx2)
+        functable.longest_match = &longest_match_unaligned_avx2;
+#  endif
+#else
+    functable.longest_match = &longest_match_c;
+#endif
+
+    return functable.longest_match(s, cur_match);
+}
+
+Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_match) {
+
+#ifdef UNALIGNED_OK
+#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
+    functable.longest_match_slow = &longest_match_slow_unaligned_64;
+#  elif defined(HAVE_BUILTIN_CTZ)
+    functable.longest_match_slow = &longest_match_slow_unaligned_32;
+#  else
+    functable.longest_match_slow = &longest_match_slow_unaligned_16;
+#  endif
+#  ifdef X86_SSE42_CMP_STR
+    if (x86_cpu_has_sse42)
+        functable.longest_match_slow = &longest_match_slow_unaligned_sse4;
+#  endif
+#  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_avx2)
+        functable.longest_match_slow = &longest_match_slow_unaligned_avx2;
+#  endif
+#else
+    functable.longest_match_slow = &longest_match_slow_c;
+#endif
+
+    return functable.longest_match_slow(s, cur_match);
+}
+
 Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len) {
     // Initialize default
     functable.adler32 = &adler32_c;
@@ -373,74 +423,24 @@ Z_INTERNAL uint32_t compare256_stub(const uint8_t *src0, const uint8_t *src1) {
     return functable.compare256(src0, src1);
 }
 
-Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
-
-#ifdef UNALIGNED_OK
-#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-    functable.longest_match = &longest_match_unaligned_64;
-#  elif defined(HAVE_BUILTIN_CTZ)
-    functable.longest_match = &longest_match_unaligned_32;
-#  else
-    functable.longest_match = &longest_match_unaligned_16;
-#  endif
-#  ifdef X86_SSE42_CMP_STR
-    if (x86_cpu_has_sse42)
-        functable.longest_match = &longest_match_unaligned_sse4;
-#  endif
-#  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_avx2)
-        functable.longest_match = &longest_match_unaligned_avx2;
-#  endif
-#else
-    functable.longest_match = &longest_match_c;
-#endif
-
-    return functable.longest_match(s, cur_match);
-}
-
-Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_match) {
-
-#ifdef UNALIGNED_OK
-#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-    functable.longest_match_slow = &longest_match_slow_unaligned_64;
-#  elif defined(HAVE_BUILTIN_CTZ)
-    functable.longest_match_slow = &longest_match_slow_unaligned_32;
-#  else
-    functable.longest_match_slow = &longest_match_slow_unaligned_16;
-#  endif
-#  ifdef X86_SSE42_CMP_STR
-    if (x86_cpu_has_sse42)
-        functable.longest_match_slow = &longest_match_slow_unaligned_sse4;
-#  endif
-#  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_avx2)
-        functable.longest_match_slow = &longest_match_slow_unaligned_avx2;
-#  endif
-#else
-    functable.longest_match_slow = &longest_match_slow_c;
-#endif
-
-    return functable.longest_match_slow(s, cur_match);
-}
-
 /* functable init */
 Z_INTERNAL Z_TLS struct functable_s functable = {
-    update_hash_stub,
-    insert_string_stub,
-    quick_insert_string_stub,
     adler32_stub,
     crc32_stub,
     crc32_fold_reset_stub,
     crc32_fold_copy_stub,
     crc32_fold_final_stub,
-    slide_hash_stub,
     compare256_stub,
-    longest_match_stub,
-    longest_match_slow_stub,
     chunksize_stub,
     chunkcopy_stub,
     chunkcopy_safe_stub,
     chunkunroll_stub,
     chunkmemset_stub,
-    chunkmemset_safe_stub
+    chunkmemset_safe_stub,
+    insert_string_stub,
+    longest_match_stub,
+    longest_match_slow_stub,
+    quick_insert_string_stub,
+    slide_hash_stub,
+    update_hash_stub
 };
