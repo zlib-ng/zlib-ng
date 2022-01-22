@@ -7,8 +7,6 @@
  */
 
 #include "../../zbuild.h"
-#include "../../zutil.h"
-
 #include "../../adler32_p.h"
 
 #ifdef X86_SSE41_ADLER32

@@ -17,7 +17,7 @@
  */
 
 #ifdef X86_PCLMULQDQ_CRC
-#include "../../zutil.h"
+#include "../../zbuild.h"
 
 #include <stdint.h>
 #include <immintrin.h>
