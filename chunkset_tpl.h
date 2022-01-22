@@ -2,6 +2,8 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#include "zbuild.h"
+
 /* Returns the chunk size */
 Z_INTERNAL uint32_t CHUNKSIZE(void) {
     return sizeof(chunk_t);

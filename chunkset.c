@@ -3,7 +3,6 @@
  */
 
 #include "zbuild.h"
-#include "zutil.h"
 
 /* Define 8 byte chunks differently depending on unaligned support */
 #if defined(UNALIGNED64_OK)
