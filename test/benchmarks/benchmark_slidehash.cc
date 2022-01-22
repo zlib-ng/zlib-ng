@@ -19,8 +19,6 @@ extern "C" {
 
 #define MAX_RANDOM_INTS 32768
 
-typedef void (*slide_hash_func)(deflate_state *s);
-
 class slide_hash: public benchmark::Fixture {
 private:
     uint16_t *l0;
