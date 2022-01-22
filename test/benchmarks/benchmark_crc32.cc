@@ -20,8 +20,6 @@ extern "C" {
 #define MAX_RANDOM_INTS (1024 * 1024)
 #define MAX_RANDOM_INTS_SIZE (MAX_RANDOM_INTS * sizeof(uint32_t))
 
-typedef uint32_t (*crc32_func)(uint32_t crc32, const unsigned char * buf, uint64_t len);
-
 class crc32: public benchmark::Fixture {
 private:
     uint32_t *random_ints;

@@ -20,8 +20,6 @@ extern "C" {
 #define MAX_RANDOM_INTS (1024 * 1024)
 #define MAX_RANDOM_INTS_SIZE (MAX_RANDOM_INTS * sizeof(uint32_t))
 
-typedef uint32_t (*adler32_func)(uint32_t adler, const unsigned char *buf, size_t len);
-
 class adler32: public benchmark::Fixture {
 private:
     uint32_t *random_ints;

@@ -23,6 +23,8 @@
 extern void cpu_check_features();
 
 /* adler32 */
+typedef uint32_t (*adler32_func)(uint32_t adler, const unsigned char *buf, size_t len);
+
 extern uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len);
 #ifdef ARM_NEON_ADLER32
 extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t len);
@@ -97,6 +99,8 @@ extern uint8_t* chunkmemset_safe_power8(uint8_t *out, unsigned dist, unsigned le
 #endif
 
 /* CRC32 */
+typedef uint32_t (*crc32_func)(uint32_t crc32, const unsigned char * buf, uint64_t len);
+
 extern uint32_t crc32_byfour(uint32_t crc, const unsigned char *buf, uint64_t len);
 #ifdef ARM_ACLE_CRC_HASH
 extern uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len);
@@ -107,6 +111,8 @@ extern uint32_t s390_crc32_vx(uint32_t crc, const unsigned char *buf, uint64_t l
 #endif
 
 /* compare256 */
+typedef uint32_t (*compare256_func)(const uint8_t *src0, const uint8_t *src1);
+
 extern uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1);
 #ifdef UNALIGNED_OK
 extern uint32_t compare256_unaligned_16(const uint8_t *src0, const uint8_t *src1);
@@ -171,6 +177,8 @@ extern Pos quick_insert_string_acle(deflate_state *const s, const uint32_t str);
 #endif
 
 /* slide_hash */
+typedef void (*slide_hash_func)(deflate_state *s);
+
 #ifdef X86_SSE2
 extern void slide_hash_sse2(deflate_state *s);
 #elif defined(ARM_NEON_SLIDEHASH)

@@ -18,8 +18,6 @@ extern "C" {
 
 #define MAX_COMPARE_SIZE (256)
 
-typedef uint32_t (*compare256_func)(const uint8_t *src0, const uint8_t *src1);
-
 class compare256: public benchmark::Fixture {
 private:
     uint8_t *str1;
