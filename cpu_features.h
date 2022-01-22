@@ -140,18 +140,18 @@ extern uint32_t s390_crc32_vx(uint32_t crc, const unsigned char *buf, uint64_t l
 #endif
 
 /* compare256 */
-extern uint32_t compare256_c(const unsigned char *src0, const unsigned char *src1);
+extern uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1);
 #ifdef UNALIGNED_OK
-extern uint32_t compare256_unaligned_16(const unsigned char *src0, const unsigned char *src1);
-extern uint32_t compare256_unaligned_32(const unsigned char *src0, const unsigned char *src1);
+extern uint32_t compare256_unaligned_16(const uint8_t *src0, const uint8_t *src1);
+extern uint32_t compare256_unaligned_32(const uint8_t *src0, const uint8_t *src1);
 #ifdef UNALIGNED64_OK
-extern uint32_t compare256_unaligned_64(const unsigned char *src0, const unsigned char *src1);
+extern uint32_t compare256_unaligned_64(const uint8_t *src0, const uint8_t *src1);
 #endif
 #ifdef X86_SSE42_CMP_STR
-extern uint32_t compare256_unaligned_sse4(const unsigned char *src0, const unsigned char *src1);
+extern uint32_t compare256_unaligned_sse4(const uint8_t *src0, const uint8_t *src1);
 #endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-extern uint32_t compare256_unaligned_avx2(const unsigned char *src0, const unsigned char *src1);
+extern uint32_t compare256_unaligned_avx2(const uint8_t *src0, const uint8_t *src1);
 #endif
 #endif
 
