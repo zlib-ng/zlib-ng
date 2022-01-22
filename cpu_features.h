@@ -9,8 +9,15 @@
 #include "deflate.h"
 #include "crc32_fold.h"
 
-#ifdef X86_FEATURES
+#if defined(X86_FEATURES)
+#  include "arch/x86/x86.h"
 #  include "fallback_builtins.h"
+#elif defined(ARM_FEATURES)
+#  include "arch/arm/arm.h"
+#elif defined(PPC_FEATURES) || defined(POWER_FEATURES)
+#  include "arch/power/power.h"
+#elif defined(S390_FEATURES)
+#  include "arch/s390/s390.h"
 #endif
 
 extern void cpu_check_features();

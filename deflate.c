@@ -48,6 +48,7 @@
  */
 
 #include "zbuild.h"
+#include "cpu_features.h"
 #include "deflate.h"
 #include "deflate_p.h"
 #include "functable.h"

@@ -259,14 +259,4 @@ void Z_INTERNAL   zng_cfree(void *opaque, void *ptr);
 #  define ALIGNED_(x) __declspec(align(x))
 #endif
 
-#if defined(X86_FEATURES)
-#  include "arch/x86/x86.h"
-#elif defined(ARM_FEATURES)
-#  include "arch/arm/arm.h"
-#elif defined(PPC_FEATURES) || defined(POWER_FEATURES)
-#  include "arch/power/power.h"
-#elif defined(S390_FEATURES)
-#  include "arch/s390/s390.h"
-#endif
-
 #endif /* ZUTIL_H_ */
