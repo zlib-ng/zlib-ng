@@ -13,6 +13,7 @@
 #   WITH_CODE_COVERAGE  - Enable code coverage reporting
 #   WITH_THREADS        - Enable threading support
 #   PIGZ_ENABLE_TESTS   - Enable adding unit tests
+#   PIGZ_VERSION        - Set the version of pigz to build
 #   ZLIB_ROOT           - Path to the zlib source directory
 #   PTHREADS4W_ROOT     - Path to pthreads4w source directory on Windows.
 #                         If not specified then threading will be disabled.
@@ -28,6 +29,7 @@ include(../../cmake/detect-coverage.cmake)
 option(WITH_CODE_COVERAGE "Enable code coverage reporting" OFF)
 option(WITH_THREADS "Enable threading support" ON)
 option(PIGZ_ENABLE_TESTS "Build unit tests" ON)
+option(PIGZ_VERSION "Set the version of pigz to build" "")
 
 project(pigz LANGUAGES C)
 
@@ -54,8 +56,14 @@ elseif(WIN32)
 endif()
 
 # Fetch pigz source code from official repository
+if(PIGZ_VERSION STREQUAL "")
+    set(PIGZ_TAG master)
+else()
+    set(PIGZ_TAG ${PIGZ_VERSION})
+endif()
 FetchContent_Declare(pigz
-    GIT_REPOSITORY https://github.com/madler/pigz.git)
+    GIT_REPOSITORY https://github.com/madler/pigz.git
+    GIT_TAG ${PIGZ_TAG})
 FetchContent_MakeAvailable(pigz)
 FetchContent_GetProperties(pigz)
 
