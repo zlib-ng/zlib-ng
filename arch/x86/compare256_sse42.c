@@ -16,7 +16,6 @@
  */
 
 #include "../../zbuild.h"
-#include "../../zutil.h"
 
 #ifdef X86_SSE42_CMP_STR
 
@@ -30,22 +29,22 @@ static inline uint32_t compare256_unaligned_sse4_static(const uint8_t *src0, con
     uint32_t len = 0;
 
     do {
-        #define mode _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY
+        #define cmp_mode _SIDD_UBYTE_OPS | _SIDD_CMP_EQUAL_EACH | _SIDD_NEGATIVE_POLARITY
         __m128i xmm_src0, xmm_src1;
         uint32_t ret;
 
         xmm_src0 = _mm_loadu_si128((__m128i *)src0);
         xmm_src1 = _mm_loadu_si128((__m128i *)src1);
-        ret = (uint32_t)_mm_cmpestri(xmm_src0, 16, xmm_src1, 16, mode);
-        if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, mode)) {
+        ret = (uint32_t)_mm_cmpestri(xmm_src0, 16, xmm_src1, 16, cmp_mode);
+        if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, cmp_mode)) {
             return len + ret;
         }
         src0 += 16, src1 += 16, len += 16;
 
         xmm_src0 = _mm_loadu_si128((__m128i *)src0);
         xmm_src1 = _mm_loadu_si128((__m128i *)src1);
-        ret = (uint32_t)_mm_cmpestri(xmm_src0, 16, xmm_src1, 16, mode);
-        if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, mode)) {
+        ret = (uint32_t)_mm_cmpestri(xmm_src0, 16, xmm_src1, 16, cmp_mode);
+        if (_mm_cmpestrc(xmm_src0, 16, xmm_src1, 16, cmp_mode)) {
             return len + ret;
         }
         src0 += 16, src1 += 16, len += 16;

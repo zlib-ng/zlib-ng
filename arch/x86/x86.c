@@ -7,7 +7,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "../../zutil.h"
+#include "../../zbuild.h"
 
 #ifdef _MSC_VER
 #  include <intrin.h>

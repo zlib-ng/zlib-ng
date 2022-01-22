@@ -1,7 +1,7 @@
 #ifndef CRC32_P_H_
 #define CRC32_P_H_
 
-#include "zutil.h"
+#include "zbuild.h"
 #include "zendian.h"
 
 #define GF2_DIM 32      /* dimension of GF(2) vectors (length of CRC) */

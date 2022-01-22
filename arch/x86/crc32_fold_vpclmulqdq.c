@@ -4,7 +4,7 @@
  */
 
 #ifdef X86_VPCLMULQDQ_CRC
-#include "../../zutil.h"
+#include "../../zbuild.h"
 
 #include <immintrin.h>
 
@@ -14,9 +14,9 @@ size_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
     __m512i zmm_t0, zmm_t1, zmm_t2, zmm_t3;
     __m512i zmm_crc0, zmm_crc1, zmm_crc2, zmm_crc3;
     __m512i z0, z1, z2, z3;
-    z_const __m512i zmm_fold4 = _mm512_set4_epi32(
+    const __m512i zmm_fold4 = _mm512_set4_epi32(
         0x00000001, 0x54442bd4, 0x00000001, 0xc6e41596);
-    z_const __m512i zmm_fold16 = _mm512_set4_epi32(
+    const __m512i zmm_fold16 = _mm512_set4_epi32(
         0x00000001, 0x1542778a, 0x00000001, 0x322d1430);
 
     // zmm register init
