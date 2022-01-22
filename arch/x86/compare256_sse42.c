@@ -26,7 +26,7 @@
 #endif
 
 /* UNALIGNED_OK, SSE4.2 intrinsic comparison */
-static inline uint32_t compare256_unaligned_sse4_static(const unsigned char *src0, const unsigned char *src1) {
+static inline uint32_t compare256_unaligned_sse4_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {
@@ -54,7 +54,7 @@ static inline uint32_t compare256_unaligned_sse4_static(const unsigned char *src
     return 256;
 }
 
-Z_INTERNAL uint32_t compare256_unaligned_sse4(const unsigned char *src0, const unsigned char *src1) {
+Z_INTERNAL uint32_t compare256_unaligned_sse4(const uint8_t *src0, const uint8_t *src1) {
     return compare256_unaligned_sse4_static(src0, src1);
 }
 

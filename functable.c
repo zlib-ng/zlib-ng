@@ -348,7 +348,7 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
     return functable.crc32(crc, buf, len);
 }
 
-Z_INTERNAL uint32_t compare256_stub(const unsigned char *src0, const unsigned char *src1) {
+Z_INTERNAL uint32_t compare256_stub(const uint8_t *src0, const uint8_t *src1) {
 
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)

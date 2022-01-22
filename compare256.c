@@ -9,7 +9,7 @@
 #include "fallback_builtins.h"
 
 /* ALIGNED, byte comparison */
-static inline uint32_t compare256_c_static(const unsigned char *src0, const unsigned char *src1) {
+static inline uint32_t compare256_c_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {
@@ -42,7 +42,7 @@ static inline uint32_t compare256_c_static(const unsigned char *src0, const unsi
     return 256;
 }
 
-Z_INTERNAL uint32_t compare256_c(const unsigned char *src0, const unsigned char *src1) {
+Z_INTERNAL uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1) {
     return compare256_c_static(src0, src1);
 }
 
@@ -59,7 +59,7 @@ Z_INTERNAL uint32_t compare256_c(const unsigned char *src0, const unsigned char 
 
 #ifdef UNALIGNED_OK
 /* UNALIGNED_OK, 16-bit integer comparison */
-static inline uint32_t compare256_unaligned_16_static(const unsigned char *src0, const unsigned char *src1) {
+static inline uint32_t compare256_unaligned_16_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {
@@ -80,7 +80,7 @@ static inline uint32_t compare256_unaligned_16_static(const unsigned char *src0,
     return 256;
 }
 
-Z_INTERNAL uint32_t compare256_unaligned_16(const unsigned char *src0, const unsigned char *src1) {
+Z_INTERNAL uint32_t compare256_unaligned_16(const uint8_t *src0, const uint8_t *src1) {
     return compare256_unaligned_16_static(src0, src1);
 }
 
@@ -97,7 +97,7 @@ Z_INTERNAL uint32_t compare256_unaligned_16(const unsigned char *src0, const uns
 
 #ifdef HAVE_BUILTIN_CTZ
 /* UNALIGNED_OK, 32-bit integer comparison */
-static inline uint32_t compare256_unaligned_32_static(const unsigned char *src0, const unsigned char *src1) {
+static inline uint32_t compare256_unaligned_32_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {
@@ -118,7 +118,7 @@ static inline uint32_t compare256_unaligned_32_static(const unsigned char *src0,
     return 256;
 }
 
-Z_INTERNAL uint32_t compare256_unaligned_32(const unsigned char *src0, const unsigned char *src1) {
+Z_INTERNAL uint32_t compare256_unaligned_32(const uint8_t *src0, const uint8_t *src1) {
     return compare256_unaligned_32_static(src0, src1);
 }
 
@@ -137,7 +137,7 @@ Z_INTERNAL uint32_t compare256_unaligned_32(const unsigned char *src0, const uns
 
 #if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
 /* UNALIGNED64_OK, 64-bit integer comparison */
-static inline uint32_t compare256_unaligned_64_static(const unsigned char *src0, const unsigned char *src1) {
+static inline uint32_t compare256_unaligned_64_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {
@@ -158,7 +158,7 @@ static inline uint32_t compare256_unaligned_64_static(const unsigned char *src0,
     return 256;
 }
 
-Z_INTERNAL uint32_t compare256_unaligned_64(const unsigned char *src0, const unsigned char *src1) {
+Z_INTERNAL uint32_t compare256_unaligned_64(const uint8_t *src0, const uint8_t *src1) {
     return compare256_unaligned_64_static(src0, src1);
 }
 
