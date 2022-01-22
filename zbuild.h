@@ -1,6 +1,11 @@
 #ifndef _ZBUILD_H
 #define _ZBUILD_H
 
+#include <stddef.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdint.h>
+
 /* Determine compiler version of C Standard */
 #ifdef __STDC_VERSION__
 #  if __STDC_VERSION__ >= 199901L
@@ -38,6 +43,12 @@
 #  endif
 #endif
 
+/* MS Visual Studio does not allow inline in C, only C++.
+   But it provides __inline instead, so use that. */
+#if defined(_MSC_VER) && !defined(inline) && !defined(__cplusplus)
+#  define inline __inline
+#endif
+
 #if defined(ZLIB_COMPAT)
 #  define PREFIX(x) x
 #  define PREFIX2(x) ZLIB_ ## x
@@ -60,5 +71,122 @@
 #define MAX(a, b) ((a) < (b) ? (b) : (a))
 /* Ignore unused variable warning */
 #define Z_UNUSED(var) (void)(var)
+
+#if defined(HAVE_VISIBILITY_INTERNAL)
+#  define Z_INTERNAL __attribute__((visibility ("internal")))
+#elif defined(HAVE_VISIBILITY_HIDDEN)
+#  define Z_INTERNAL __attribute__((visibility ("hidden")))
+#else
+#  define Z_INTERNAL
+#endif
+
+#ifndef __cplusplus
+#  define Z_REGISTER register
+#else
+#  define Z_REGISTER
+#endif
+
+/* Reverse the bytes in a value. Use compiler intrinsics when
+   possible to take advantage of hardware implementations. */
+#if defined(_MSC_VER) && (_MSC_VER >= 1300)
+#  include <stdlib.h>
+#  pragma intrinsic(_byteswap_ulong)
+#  define ZSWAP16(q) _byteswap_ushort(q)
+#  define ZSWAP32(q) _byteswap_ulong(q)
+#  define ZSWAP64(q) _byteswap_uint64(q)
+
+#elif defined(__Clang__) || (defined(__GNUC__) && \
+        (__GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 8)))
+#  define ZSWAP16(q) __builtin_bswap16(q)
+#  define ZSWAP32(q) __builtin_bswap32(q)
+#  define ZSWAP64(q) __builtin_bswap64(q)
+
+#elif defined(__GNUC__) && (__GNUC__ >= 2) && defined(__linux__)
+#  include <byteswap.h>
+#  define ZSWAP16(q) bswap_16(q)
+#  define ZSWAP32(q) bswap_32(q)
+#  define ZSWAP64(q) bswap_64(q)
+
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
+#  include <sys/endian.h>
+#  define ZSWAP16(q) bswap16(q)
+#  define ZSWAP32(q) bswap32(q)
+#  define ZSWAP64(q) bswap64(q)
+#elif defined(__OpenBSD__)
+#  include <sys/endian.h>
+#  define ZSWAP16(q) swap16(q)
+#  define ZSWAP32(q) swap32(q)
+#  define ZSWAP64(q) swap64(q)
+#elif defined(__INTEL_COMPILER)
+/* ICC does not provide a two byte swap. */
+#  define ZSWAP16(q) ((((q) & 0xff) << 8) | (((q) & 0xff00) >> 8))
+#  define ZSWAP32(q) _bswap(q)
+#  define ZSWAP64(q) _bswap64(q)
+
+#else
+#  define ZSWAP16(q) ((((q) & 0xff) << 8) | (((q) & 0xff00) >> 8))
+#  define ZSWAP32(q) ((((q) >> 24) & 0xff) + (((q) >> 8) & 0xff00) + \
+                     (((q) & 0xff00) << 8) + (((q) & 0xff) << 24))
+#  define ZSWAP64(q)                           \
+         (((q & 0xFF00000000000000u) >> 56u) | \
+          ((q & 0x00FF000000000000u) >> 40u) | \
+          ((q & 0x0000FF0000000000u) >> 24u) | \
+          ((q & 0x000000FF00000000u) >> 8u)  | \
+          ((q & 0x00000000FF000000u) << 8u)  | \
+          ((q & 0x0000000000FF0000u) << 24u) | \
+          ((q & 0x000000000000FF00u) << 40u) | \
+          ((q & 0x00000000000000FFu) << 56u))
+#endif
+
+/* Only enable likely/unlikely if the compiler is known to support it */
+#if (defined(__GNUC__) && (__GNUC__ >= 3)) || defined(__INTEL_COMPILER) || defined(__Clang__)
+#  define LIKELY_NULL(x)        __builtin_expect((x) != 0, 0)
+#  define LIKELY(x)             __builtin_expect(!!(x), 1)
+#  define UNLIKELY(x)           __builtin_expect(!!(x), 0)
+#  define PREFETCH_L1(addr)     __builtin_prefetch(addr, 0, 3)
+#  define PREFETCH_L2(addr)     __builtin_prefetch(addr, 0, 2)
+#  define PREFETCH_RW(addr)     __builtin_prefetch(addr, 1, 2)
+#elif defined(__WIN__)
+#  include <xmmintrin.h>
+#  define LIKELY_NULL(x)        x
+#  define LIKELY(x)             x
+#  define UNLIKELY(x)           x
+#  define PREFETCH_L1(addr)     _mm_prefetch((char *) addr, _MM_HINT_T0)
+#  define PREFETCH_L2(addr)     _mm_prefetch((char *) addr, _MM_HINT_T1)
+#  define PREFETCH_RW(addr)     _mm_prefetch((char *) addr, _MM_HINT_T1)
+#else
+#  define LIKELY_NULL(x)        x
+#  define LIKELY(x)             x
+#  define UNLIKELY(x)           x
+#  define PREFETCH_L1(addr)     addr
+#  define PREFETCH_L2(addr)     addr
+#  define PREFETCH_RW(addr)     addr
+#endif /* (un)likely */
+
+#if defined(__clang__) || defined(__GNUC__)
+#  define ALIGNED_(x) __attribute__ ((aligned(x)))
+#elif defined(_MSC_VER)
+#  define ALIGNED_(x) __declspec(align(x))
+#endif
+
+/* Diagnostic functions */
+#ifdef ZLIB_DEBUG
+#  include <stdio.h>
+   extern int Z_INTERNAL z_verbose;
+   extern void Z_INTERNAL z_error(char *m);
+#  define Assert(cond, msg) {if (!(cond)) z_error(msg);}
+#  define Trace(x) {if (z_verbose >= 0) fprintf x;}
+#  define Tracev(x) {if (z_verbose > 0) fprintf x;}
+#  define Tracevv(x) {if (z_verbose > 1) fprintf x;}
+#  define Tracec(c, x) {if (z_verbose > 0 && (c)) fprintf x;}
+#  define Tracecv(c, x) {if (z_verbose > 1 && (c)) fprintf x;}
+#else
+#  define Assert(cond, msg)
+#  define Trace(x)
+#  define Tracev(x)
+#  define Tracevv(x)
+#  define Tracec(c, x)
+#  define Tracecv(c, x)
+#endif
 
 #endif
