@@ -33,6 +33,7 @@ all: \
 	chunkset_avx.o chunkset_avx.lo \
 	chunkset_sse2.o chunkset_sse2.lo \
 	compare256_avx2.o compare256_avx2.lo \
+	compare256_sse2.o compare256_sse2.lo \
 	compare256_sse42.o compare256_sse42.lo \
 	insert_string_sse42.o insert_string_sse42.lo \
 	crc32_fold_pclmulqdq.o crc32_fold_pclmulqdq.lo \
@@ -63,6 +64,12 @@ compare256_avx2.o:
 
 compare256_avx2.lo:
 	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_avx2.c
+
+compare256_sse2.o:
+	$(CC) $(CFLAGS) $(SSE2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_sse2.c
+
+compare256_sse2.lo:
+	$(CC) $(SFLAGS) $(SSE2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_sse2.c
 
 compare256_sse42.o:
 	$(CC) $(CFLAGS) $(SSE42FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_sse42.c
