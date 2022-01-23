@@ -45,7 +45,6 @@ jobs:
 
           - name: Ubuntu GCC AARCH64
             os: ubuntu-latest
-            compiler: aarch64-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=../../cmake/toolchain-aarch64.cmake
             packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
             qemu-run: qemu-aarch64
