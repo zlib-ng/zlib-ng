@@ -37,10 +37,10 @@ static __forceinline unsigned long long __builtin_ctzll(uint64_t value) {
     return trailing_zero;
 }
 #define HAVE_BUILTIN_CTZLL
-#endif
+#endif // Microsoft AMD64 
 
-#endif
-#endif
+#endif // Microsoft AMD64/IA64/x86/ARM/ARM64 test
+#endif // _MSC_VER & !clang
 
 /* Unfortunately GCC didn't support these things until version 10 */
 #ifdef __AVX2__
@@ -63,4 +63,43 @@ static inline __m512i _mm512_zextsi128_si512(__m128i a) {
 #endif // gcc version 10 test
 
 #endif // __AVX2__
+
+#ifdef ARM_NEON_SLIDEHASH
+
+#define vqsubq_u16_x4_x1(out, a, b) do { \
+    out.val[0] = vqsubq_u16(a.val[0], b); \
+    out.val[1] = vqsubq_u16(a.val[1], b); \
+    out.val[2] = vqsubq_u16(a.val[2], b); \
+    out.val[3] = vqsubq_u16(a.val[3], b); \
+} while (0)
+
+/* Have to check for hard float ABI on GCC/clang, but not 
+ * on MSVC (we don't compile for the soft float ABI on windows)
+ */
+#if !defined(ARM_NEON_HASLD4) && (defined(__ARM_FP) || defined(_MSC_VER))
+
+#ifdef _M_ARM64
+#  include <arm64_neon.h>
+#else
+#  include <arm_neon.h>
+#endif
+
+static inline uint16x8x4_t vld1q_u16_x4(uint16_t *a) {
+    uint16x8x4_t ret = (uint16x8x4_t) {{
+                          vld1q_u16(a),
+                          vld1q_u16(a+8),
+                          vld1q_u16(a+16),
+                          vld1q_u16(a+24)}};
+    return ret;
+}
+
+static inline void vst1q_u16_x4(uint16_t *p, uint16x8x4_t a) {
+    vst1q_u16(p, a.val[0]);
+    vst1q_u16(p + 8, a.val[1]);
+    vst1q_u16(p + 16, a.val[2]);
+    vst1q_u16(p + 24, a.val[3]);
+}
+#endif // HASLD4 check and hard float
+#endif // ARM_NEON_SLIDEHASH
+
 #endif // include guard FALLBACK_BUILTINS_H 

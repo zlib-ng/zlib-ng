@@ -1169,6 +1169,29 @@ EOF
     fi
 }
 
+check_neon_ld4_intrinsics() {
+    cat > $test.c << EOF
+#ifdef _M_ARM64
+#  include <arm64_neon.h>
+#else
+#  include <arm_neon.h>
+#endif
+int main(void) {
+    int stack_var[16];
+    int32x4x4_t v = vld1q_s32_x4(stack_var);
+    (void)v;
+    return 0;
+}
+EOF
+    if try $CC -c $CFLAGS -march=native $test.c; then
+        NEON_HAS_LD4=1
+        echo "check whether compiler supports 4 wide register loads ... Yes." | tee -a configure.log
+    else
+        NEON_HAS_LD4=0
+        echo "check whether compiler supports 4 wide register loads ... No." | tee -a configure.log
+    fi
+}
+
 check_pclmulqdq_intrinsics() {
     # Check whether compiler supports PCLMULQDQ intrinsics
     cat > $test.c << EOF
@@ -1658,6 +1681,7 @@ EOF
         if test $without_optimizations -eq 0; then
             check_acle_compiler_flag
             check_neon_compiler_flag
+            check_neon_ld4_intrinsics
         fi
 
         case "${ARCH}" in
@@ -1700,6 +1724,11 @@ EOF
                             neonflag="-mfpu=neon"
                         fi
 
+                        if test $NEON_HAS_LD4 -eq 1; then
+                            CFLAGS="${CFLAGS} -DARM_NEON_HASLD4"
+                            SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
+                        fi
+
                         CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
                         SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
 
@@ -1720,6 +1749,11 @@ EOF
                     if test $buildneon -eq 1; then
                         if test $MFPU_NEON_AVAILABLE -eq 1;then
                             neonflag="-mfpu=neon"
+                        fi
+
+                        if test $NEON_HAS_LD4 -eq 1; then
+                            CFLAGS="${CFLAGS} -DARM_NEON_HASLD4"
+                            SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
                         fi
 
                         CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
@@ -1748,6 +1782,11 @@ EOF
                     if test $buildneon -eq 1; then
                         if test $MFPU_NEON_AVAILABLE -eq 1;then
                             neonflag="-mfpu=neon"
+                        fi
+
+                        if test $NEON_HAS_LD4 -eq 1; then
+                            CFLAGS="${CFLAGS} -DARM_NEON_HASLD4"
+                            SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
                         fi
 
                         CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
@@ -1791,6 +1830,11 @@ EOF
                 else
                     echo "HWCAP_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
                 fi
+            fi
+
+            if test $NEON_HAS_LD4 -eq 1; then
+                CFLAGS="${CFLAGS} -DARM_NEON_HASLD4"
+                SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
             fi
 
             if test $buildacle -eq 1; then
