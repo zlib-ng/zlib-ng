@@ -106,6 +106,10 @@ Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
 #  else
     functable.longest_match = &longest_match_unaligned_16;
 #  endif
+#  if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_sse2)
+        functable.longest_match = &longest_match_unaligned_sse2;
+#  endif
 #  ifdef X86_SSE42_CMP_STR
     if (x86_cpu_has_sse42)
         functable.longest_match = &longest_match_unaligned_sse4;
@@ -130,6 +134,10 @@ Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_matc
     functable.longest_match_slow = &longest_match_slow_unaligned_32;
 #  else
     functable.longest_match_slow = &longest_match_slow_unaligned_16;
+#  endif
+#  if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_sse2)
+        functable.longest_match = &longest_match_slow_unaligned_sse2;
 #  endif
 #  ifdef X86_SSE42_CMP_STR
     if (x86_cpu_has_sse42)
@@ -407,6 +415,10 @@ Z_INTERNAL uint32_t compare256_stub(const uint8_t *src0, const uint8_t *src1) {
     functable.compare256 = &compare256_unaligned_32;
 #  else
     functable.compare256 = &compare256_unaligned_16;
+#  endif
+#  if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_sse2)
+        functable.compare256 = &compare256_unaligned_sse2;
 #  endif
 #  ifdef X86_SSE42_CMP_STR
     if (x86_cpu_has_sse42)
