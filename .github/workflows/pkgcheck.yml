@@ -24,7 +24,7 @@ jobs:
             os: ubuntu-latest
             chost: arm-linux-gnueabihf
             compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake
             packages: qemu gcc-arm-linux-gnueabihf libc6-dev-armhf-cross
 
           - name: Ubuntu GCC AARCH64
