@@ -120,10 +120,7 @@ extern uint32_t compare256_unaligned_32(const uint8_t *src0, const uint8_t *src1
 extern uint32_t compare256_unaligned_64(const uint8_t *src0, const uint8_t *src1);
 #endif
 #if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
-extern uint32_t compare256_unaligned_sse2(const unsigned char *src0, const unsigned char *src1);
-#endif
-#ifdef X86_SSE42_CMP_STR
-extern uint32_t compare256_unaligned_sse4(const uint8_t *src0, const uint8_t *src1);
+extern uint32_t compare256_unaligned_sse2(const uint8_t *src0, const uint8_t *src1);
 #endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
 extern uint32_t compare256_unaligned_avx2(const uint8_t *src0, const uint8_t *src1);
@@ -150,9 +147,6 @@ extern uint32_t longest_match_unaligned_64(deflate_state *const s, Pos cur_match
 #if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
 extern uint32_t longest_match_unaligned_sse2(deflate_state *const s, Pos cur_match);
 #endif
-#ifdef X86_SSE42_CMP_STR
-extern uint32_t longest_match_unaligned_sse4(deflate_state *const s, Pos cur_match);
-#endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
 extern uint32_t longest_match_unaligned_avx2(deflate_state *const s, Pos cur_match);
 #endif
@@ -168,9 +162,6 @@ extern uint32_t longest_match_slow_unaligned_64(deflate_state *const s, Pos cur_
 #endif
 #if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
 extern uint32_t longest_match_slow_unaligned_sse2(deflate_state *const s, Pos cur_match);
-#endif
-#ifdef X86_SSE42_CMP_STR
-extern uint32_t longest_match_slow_unaligned_sse4(deflate_state *const s, Pos cur_match);
 #endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
 extern uint32_t longest_match_slow_unaligned_avx2(deflate_state *const s, Pos cur_match);
