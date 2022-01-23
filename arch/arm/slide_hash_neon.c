@@ -16,10 +16,12 @@
 #endif
 #include "../../zbuild.h"
 #include "../../deflate.h"
+#include "../../fallback_builtins.h"
 
 /* SIMD version of hash_chain rebase */
 static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize) {
-    Z_REGISTER uint16x8_t v, *p;
+    Z_REGISTER uint16x8_t v;
+    uint16x8x4_t p0, p1;
     Z_REGISTER size_t n;
 
     size_t size = entries*sizeof(table[0]);
@@ -28,18 +30,15 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize
     Assert(sizeof(Pos) == 2, "Wrong Pos size");
     v = vdupq_n_u16(wsize);
 
-    p = (uint16x8_t *)table;
     n = size / (sizeof(uint16x8_t) * 8);
     do {
-        p[0] = vqsubq_u16(p[0], v);
-        p[1] = vqsubq_u16(p[1], v);
-        p[2] = vqsubq_u16(p[2], v);
-        p[3] = vqsubq_u16(p[3], v);
-        p[4] = vqsubq_u16(p[4], v);
-        p[5] = vqsubq_u16(p[5], v);
-        p[6] = vqsubq_u16(p[6], v);
-        p[7] = vqsubq_u16(p[7], v);
-        p += 8;
+        p0 = vld1q_u16_x4(table); 
+        p1 = vld1q_u16_x4(table+32); 
+        vqsubq_u16_x4_x1(p0, p0, v);
+        vqsubq_u16_x4_x1(p1, p1, v);
+        vst1q_u16_x4(table, p0);
+        vst1q_u16_x4(table+32, p1);
+        table += 64;
     } while (--n);
 }
 

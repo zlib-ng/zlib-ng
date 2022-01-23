@@ -151,6 +151,34 @@ macro(check_neon_compiler_flag)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
+macro(check_neon_ld4_intrinsics)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+        if(NOT NATIVEFLAG)
+            if("${ARCH}" MATCHES "aarch64")
+                set(NEONFLAG "-march=armv8-a+simd")
+            else()
+                set(NEONFLAG "-mfpu=neon")
+            endif()
+        endif()
+    endif()
+    # Check whether compiler supports loading 4 neon vecs into a register range 
+    set(CMAKE_REQUIRED_FLAGS "${NEONFLAG}")
+    check_c_source_compiles(
+        "#ifdef _M_ARM64
+        #  include <arm64_neon.h>
+        #else
+        #  include <arm_neon.h>
+        #endif
+        int main(void) {
+            int stack_var[16];
+            int32x4x4_t v = vld1q_s32_x4(stack_var);
+            (void)v;
+            return 0;
+        }"
+        NEON_HAS_LD4)
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
 macro(check_pclmulqdq_intrinsics)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         if(NOT NATIVEFLAG)
