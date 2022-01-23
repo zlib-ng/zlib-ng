@@ -55,7 +55,7 @@ OBJS = \
 	chunkset_sse2.obj \
 	compare256.obj \
 	compare256_avx2.obj \
-	compare256_sse42.obj \
+	compare256_sse2.obj \
 	compress.obj \
 	cpu_features.obj \
 	crc32.obj \
