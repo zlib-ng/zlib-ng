@@ -12,7 +12,7 @@ macro(add_code_coverage)
     set(CMAKE_REQUIRED_LINK_OPTIONS)
 
     if(HAVE_COVERAGE)
-        set(CMAKE_C_FLAGS "-O0 ${CMAKE_C_FLAGS} -coverage")
+        add_compile_options(-O0 -coverage)
         add_link_options(-coverage)
     else()
         # Some versions of GCC don't support -coverage shorthand
@@ -21,7 +21,7 @@ macro(add_code_coverage)
         set(CMAKE_REQUIRED_LINK_OPTIONS)
 
         if(HAVE_TEST_COVERAGE)
-            set(CMAKE_C_FLAGS "-O0 ${CMAKE_C_FLAGS} -ftest-coverage -fprofile-arcs -fprofile-values")
+            add_compile_options(-O0 -ftest-coverage -fprofile-arcs -fprofile-values)
             add_link_options(-lgcov -fprofile-arcs)
         else()
             message(WARNING "Compiler does not support code coverage")
