@@ -62,6 +62,7 @@ void Z_INTERNAL x86_check_features(void) {
     unsigned maxbasic;
 
     cpuid(0, &maxbasic, &ebx, &ecx, &edx);
+    cpuid(1 /*CPU_PROCINFO_AND_FEATUREBITS*/, &eax, &ebx, &ecx, &edx);
 
     x86_cpu_has_sse2 = edx & 0x4000000;
     x86_cpu_has_ssse3 = ecx & 0x200;
