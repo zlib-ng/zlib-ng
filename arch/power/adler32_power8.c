@@ -44,7 +44,7 @@
 #include "adler32_p.h"
 
 /* Vector across sum unsigned int (saturate).  */
-inline vector unsigned int vec_sumsu(vector unsigned int __a, vector unsigned int __b) {
+static inline vector unsigned int vec_sumsu(vector unsigned int __a, vector unsigned int __b) {
     __b = vec_sld(__a, __a, 8);
     __b = vec_add(__b, __a);
     __a = vec_sld(__b, __b, 4);
