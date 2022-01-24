@@ -12,27 +12,51 @@
 #include "../../deflate.h"
 
 #include <immintrin.h>
+#include <assert.h>
 
-static inline void slide_hash_chain(Pos *table, uint32_t entries, const __m128i wsize) {
+static inline void slide_hash_chain(Pos *table0, Pos *table1, uint32_t entries0,
+                                    uint32_t entries1, const __m128i wsize) {
+    uint32_t entries;
+    Pos *table;
+    __m128i value0, value1, result0, result1;
+
+    int on_chain = 0;
+
+next_chain:
+    table = (on_chain) ? table1 : table0;
+    entries = (on_chain) ? entries1 : entries0;
+
     table += entries;
-    table -= 8;
+    table -= 16;
 
+    /* ZALLOC allocates this pointer unless the user chose a custom allocator.
+     * Our alloc function is aligned to 64 byte boundaries */
     do {
-        __m128i value, result;
+        value0 = _mm_load_si128((__m128i *)table);
+        value1 = _mm_load_si128((__m128i *)(table + 8));
+        result0 = _mm_subs_epu16(value0, wsize);
+        result1 = _mm_subs_epu16(value1, wsize);
+        _mm_store_si128((__m128i *)table, result0);
+        _mm_store_si128((__m128i *)(table + 8), result1);
 
-        value = _mm_loadu_si128((__m128i *)table);
-        result= _mm_subs_epu16(value, wsize);
-        _mm_storeu_si128((__m128i *)table, result);
-
-        table -= 8;
-        entries -= 8;
+        table -= 16;
+        entries -= 16;
     } while (entries > 0);
+
+    ++on_chain;
+    if (on_chain > 1) {
+        return;
+    } else {
+        goto next_chain;
+    }
 }
 
 Z_INTERNAL void slide_hash_sse2(deflate_state *s) {
     uint16_t wsize = (uint16_t)s->w_size;
     const __m128i xmm_wsize = _mm_set1_epi16((short)wsize);
 
-    slide_hash_chain(s->head, HASH_SIZE, xmm_wsize);
-    slide_hash_chain(s->prev, wsize, xmm_wsize);
+    assert(((uintptr_t)s->head) & 15 == 0);
+    assert(((uintptr_t)s->prev) & 15 == 0);
+
+    slide_hash_chain(s->head, s->prev, HASH_SIZE, wsize, xmm_wsize);
 }
