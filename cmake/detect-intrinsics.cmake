@@ -2,14 +2,24 @@
 # Licensed under the Zlib license, see LICENSE.md for details
 
 macro(check_acle_intrinsics)
-    if(NOT NATIVEFLAG)
-        set(ACLEFLAG "-march=armv8-a+crc")
+    if(NOT NATIVEFLAG AND NOT HAVE_ACLE_INTRIN)
+        set(ACLEFLAG "-march=armv8-a+crc" CACHE INTERNAL "Compiler option to enable ACLE support")
     endif()
     # Check whether compiler supports ACLE flag
     set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG} ${NATIVEFLAG}")
     check_c_source_compiles(
         "int main() { return 0; }"
         HAVE_ACLE_INTRIN FAIL_REGEX "not supported")
+    if(NOT NATIVEFLAG AND NOT HAVE_ACLE_INTRIN)
+        set(ACLEFLAG "-march=armv8-a+crc+simd" CACHE INTERNAL "Compiler option to enable ACLE support" FORCE)
+        # Check whether compiler supports ACLE flag
+        set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG}")
+        check_c_source_compiles(
+            "int main() { return 0; }"
+            HAVE_ACLE_INTRIN2 FAIL_REGEX "not supported")
+        set(HAVE_ACLE_INTRIN ${HAVE_ACLE_INTRIN2} CACHE INTERNAL "Have ACLE intrinsics" FORCE)
+        unset(HAVE_ACLE_INTRIN2 CACHE) # Don't cache this internal variable
+    endif()
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 

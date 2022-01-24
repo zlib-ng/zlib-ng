@@ -1132,6 +1132,29 @@ EOF
     fi
 }
 
+check_acle_intrinsics() {
+    # Check whether -march=armv8-a+crc works correctly
+    cat > $test.c << EOF
+int main() { return 0; }
+EOF
+    if try $CC -c $CFLAGS -march=armv8-a+crc $test.c; then
+        ACLE_AVAILABLE=1
+        echo "Check whether -march=armv8-a+crc works ... Yes." | tee -a configure.log
+    else
+        echo "Check whether -march=armv8-a+crc works ... No." | tee -a configure.log
+        if try $CC -c $CFLAGS -march=armv8-a+crc+simd $test.c; then
+            ACLE_AVAILABLE=1
+            echo "Check whether -march=armv8-a+crc+simd works ... Yes." | tee -a configure.log
+            if test "$ARCH" = "armv8-a+crc"; then
+                ARCH=armv8-a+crc+simd
+            fi
+        else
+            ACLE_AVAILABLE=0
+            echo "Check whether -march=armv8-a+crc+simd works ... No." | tee -a configure.log
+        fi
+    fi
+}
+
 check_neon_intrinsics() {
     # Check whether -mfpu=neon is available on ARM processors.
     cat > $test.c << EOF
@@ -1633,6 +1656,7 @@ EOF
         fi
 
         if test $without_optimizations -eq 0; then
+            check_acle_intrinsics
             check_neon_intrinsics
         fi
 
@@ -1713,11 +1737,13 @@ EOF
                 acleflag="-march=${ARCH}"
 
                 if test $without_optimizations -eq 0; then
-                    CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
-                    SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
+                    if test $ACLE_AVAILABLE -eq 1; then
+                        CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
+                        SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
 
-                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
-                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+                    fi
 
                     if test $buildneon -eq 1; then
                         if test $MFPU_NEON_AVAILABLE -eq 1;then
