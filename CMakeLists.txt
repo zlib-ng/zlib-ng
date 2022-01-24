@@ -51,6 +51,7 @@ include(cmake/detect-install-dirs.cmake)
 include(cmake/detect-coverage.cmake)
 include(cmake/detect-intrinsics.cmake)
 include(cmake/detect-sanitizer.cmake)
+include(cmake/fallback-macros.cmake)
 
 if(CMAKE_TOOLCHAIN_FILE)
     message(STATUS "Using CMake toolchain: ${CMAKE_TOOLCHAIN_FILE}")
