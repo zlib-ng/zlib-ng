@@ -44,7 +44,10 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     uint32_t chain_length, nice_match, best_len, offset;
     uint32_t lookahead = s->lookahead;
     Pos match_offset = 0;
-    uint8_t scan_start[8], scan_end[8];
+#ifdef UNALIGNED_OK
+    uint8_t scan_start[8];
+#endif
+    uint8_t scan_end[8];
 
 #define GOTO_NEXT_CHAIN \
     if (--chain_length && (cur_match = prev[cur_match & wmask]) > limit) \
