@@ -132,10 +132,6 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE 19
 #endif
 
-#if (defined(_MSC_VER) && (_MSC_VER > 600))
-#  define fdopen(fd, type)  _fdopen(fd, type)
-#endif
-
 /* MS Visual Studio does not allow inline in C, only C++.
    But it provides __inline instead, so use that. */
 #if defined(_MSC_VER) && !defined(inline) && !defined(__cplusplus)
