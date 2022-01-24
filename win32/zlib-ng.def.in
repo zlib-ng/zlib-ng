@@ -53,6 +53,7 @@ EXPORTS
     @ZLIB_SYMBOL_PREFIX@zng_zError
     @ZLIB_SYMBOL_PREFIX@zng_inflateSyncPoint
     @ZLIB_SYMBOL_PREFIX@zng_get_crc_table
+;    @ZLIB_SYMBOL_PREFIX@zng_inflate_table
     @ZLIB_SYMBOL_PREFIX@zng_inflateUndermine
     @ZLIB_SYMBOL_PREFIX@zng_inflateValidate
     @ZLIB_SYMBOL_PREFIX@zng_inflateCodesUsed
