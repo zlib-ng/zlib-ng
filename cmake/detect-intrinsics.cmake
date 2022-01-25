@@ -6,7 +6,7 @@ macro(check_acle_intrinsics)
         set(ACLEFLAG "-march=armv8-a+crc")
     endif()
     # Check whether compiler supports ACLE flag
-    set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG} ${NATIVEFLAG}")
     check_c_source_compiles(
         "int main() { return 0; }"
         HAVE_ACLE_INTRIN FAIL_REGEX "not supported")
@@ -30,7 +30,7 @@ macro(check_avx512_intrinsics)
         set(AVX512FLAG "/ARCH:AVX512")
     endif()
     # Check whether compiler supports AVX512 intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${AVX512FLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${AVX512FLAG} ${NATIVEFLAG}")
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void) {
@@ -76,7 +76,7 @@ macro(check_avx512vnni_intrinsics)
     endif()
 
     # Check whether compiler supports AVX512vnni intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${AVX512VNNIFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${AVX512VNNIFLAG} ${NATIVEFLAG}")
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void) {
@@ -108,7 +108,7 @@ macro(check_avx2_intrinsics)
         endif()
     endif()
     # Check whether compiler supports AVX2 intrinics
-    set(CMAKE_REQUIRED_FLAGS "${AVX2FLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${AVX2FLAG} ${NATIVEFLAG}")
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void) {
@@ -134,7 +134,7 @@ macro(check_neon_intrinsics)
         endif()
     endif()
     # Check whether compiler supports NEON flag
-    set(CMAKE_REQUIRED_FLAGS "${NEONFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${NEONFLAG} ${NATIVEFLAG}")
     check_c_source_compiles(
         "int main() { return 0; }"
         MFPU_NEON_AVAILABLE FAIL_REGEX "not supported")
@@ -150,7 +150,7 @@ macro(check_pclmulqdq_intrinsics)
     # Check whether compiler supports PCLMULQDQ intrinsics
     if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
         # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
-        set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG}")
+        set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG} ${NATIVEFLAG}")
         check_c_source_compile_or_run(
             "#include <immintrin.h>
             int main(void) {
@@ -176,7 +176,7 @@ macro(check_vpclmulqdq_intrinsics)
     endif()
     # Check whether compiler supports VPCLMULQDQ intrinsics
     if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
-        set(CMAKE_REQUIRED_FLAGS "${VPCLMULFLAG}")
+        set(CMAKE_REQUIRED_FLAGS "${VPCLMULFLAG} ${NATIVEFLAG}")
         check_c_source_compile_or_run(
             "#include <immintrin.h>
             int main(void) {
@@ -233,7 +233,7 @@ macro(check_ppc_intrinsics)
     endif()
 
     # Check if we have what we need for AltiVec optimizations
-    set(CMAKE_REQUIRED_FLAGS "${PPCFLAGS}")
+    set(CMAKE_REQUIRED_FLAGS "${PPCFLAGS} ${NATIVEFLAG}")
     check_c_source_compiles(
         "#include <sys/auxv.h>
         int main() {
@@ -251,7 +251,7 @@ macro(check_power8_intrinsics)
         endif()
     endif()
     # Check if we have what we need for POWER8 optimizations
-    set(CMAKE_REQUIRED_FLAGS "${POWER8FLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${POWER8FLAG} ${NATIVEFLAG}")
     check_c_source_compiles(
         "#include <sys/auxv.h>
         int main() {
@@ -279,7 +279,7 @@ macro(check_sse2_intrinsics)
         endif()
     endif()
     # Check whether compiler supports SSE2 instrinics
-    set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG} ${NATIVEFLAG}")
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void) {
@@ -305,7 +305,7 @@ macro(check_ssse3_intrinsics)
         endif()
     endif()
     # Check whether compiler supports SSSE3 intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${SSSE3FLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${SSSE3FLAG} ${NATIVEFLAG}")
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void) {
@@ -333,7 +333,7 @@ macro(check_sse41_intrinsics)
         endif()
     endif()
     # Check whether compiler supports SSE4.1 intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${SSE41FLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${SSE41FLAG} ${NATIVEFLAG}")
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void) {
@@ -361,7 +361,7 @@ macro(check_sse42_intrinsics)
         endif()
     endif()
     # Check whether compiler supports SSE4 CRC inline asm
-    set(CMAKE_REQUIRED_FLAGS "${SSE42FLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${SSE42FLAG} ${NATIVEFLAG}")
     check_c_source_compile_or_run(
         "int main(void) {
             unsigned val = 0, h = 0;
@@ -417,7 +417,7 @@ macro(check_vgfma_intrinsics)
         endif()
     endif()
     # Check whether compiler supports "VECTOR GALOIS FIELD MULTIPLY SUM AND ACCUMULATE" intrinsic
-    set(CMAKE_REQUIRED_FLAGS "${VGFMAFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${VGFMAFLAG} ${NATIVEFLAG}")
     check_c_source_compiles(
         "#include <vecintrin.h>
         int main(void) {
