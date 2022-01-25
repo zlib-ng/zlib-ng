@@ -396,6 +396,9 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   if test $debug -eq 1; then
     CFLAGS="${CFLAGS} -DZLIB_DEBUG"
     SFLAGS="${SFLAGS} -DZLIB_DEBUG"
+  else
+    CFLAGS="${CFLAGS} -DNDEBUG"
+    SFLAGS="${SFLAGS} -DNDEBUG"
   fi
   if test -z "$uname"; then
     uname=$((uname -s || echo unknown) 2>/dev/null)
