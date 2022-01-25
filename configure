@@ -1132,7 +1132,7 @@ EOF
     fi
 }
 
-check_acle_intrinsics() {
+check_acle_compiler_flag() {
     # Check whether -march=armv8-a+crc works correctly
     cat > $test.c << EOF
 int main() { return 0; }
@@ -1155,7 +1155,7 @@ EOF
     fi
 }
 
-check_neon_intrinsics() {
+check_neon_compiler_flag() {
     # Check whether -mfpu=neon is available on ARM processors.
     cat > $test.c << EOF
 int main() { return 0; }
@@ -1656,8 +1656,8 @@ EOF
         fi
 
         if test $without_optimizations -eq 0; then
-            check_acle_intrinsics
-            check_neon_intrinsics
+            check_acle_compiler_flag
+            check_neon_compiler_flag
         fi
 
         case "${ARCH}" in

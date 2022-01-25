@@ -1,24 +1,24 @@
 # detect-intrinsics.cmake -- Detect compiler intrinsics support
 # Licensed under the Zlib license, see LICENSE.md for details
 
-macro(check_acle_intrinsics)
-    if(NOT NATIVEFLAG AND NOT HAVE_ACLE_INTRIN)
+macro(check_acle_compiler_flag)
+    if(NOT NATIVEFLAG AND NOT HAVE_ACLE_FLAG)
         set(ACLEFLAG "-march=armv8-a+crc" CACHE INTERNAL "Compiler option to enable ACLE support")
     endif()
     # Check whether compiler supports ACLE flag
     set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG} ${NATIVEFLAG}")
     check_c_source_compiles(
         "int main() { return 0; }"
-        HAVE_ACLE_INTRIN FAIL_REGEX "not supported")
-    if(NOT NATIVEFLAG AND NOT HAVE_ACLE_INTRIN)
+        HAVE_ACLE_FLAG FAIL_REGEX "not supported")
+    if(NOT NATIVEFLAG AND NOT HAVE_ACLE_FLAG)
         set(ACLEFLAG "-march=armv8-a+crc+simd" CACHE INTERNAL "Compiler option to enable ACLE support" FORCE)
         # Check whether compiler supports ACLE flag
         set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG}")
         check_c_source_compiles(
             "int main() { return 0; }"
-            HAVE_ACLE_INTRIN2 FAIL_REGEX "not supported")
-        set(HAVE_ACLE_INTRIN ${HAVE_ACLE_INTRIN2} CACHE INTERNAL "Have ACLE intrinsics" FORCE)
-        unset(HAVE_ACLE_INTRIN2 CACHE) # Don't cache this internal variable
+            HAVE_ACLE_FLAG2 FAIL_REGEX "not supported")
+        set(HAVE_ACLE_FLAG ${HAVE_ACLE_FLAG2} CACHE INTERNAL "Have compiler option to enable ACLE intrinsics" FORCE)
+        unset(HAVE_ACLE_FLAG2 CACHE) # Don't cache this internal variable
     endif()
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
@@ -133,7 +133,7 @@ macro(check_avx2_intrinsics)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
-macro(check_neon_intrinsics)
+macro(check_neon_compiler_flag)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         if(NOT NATIVEFLAG)
             if("${ARCH}" MATCHES "aarch64")
