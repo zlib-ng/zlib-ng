@@ -117,6 +117,10 @@ void Z_INTERNAL *zng_calloc_aligned(zng_calloc_func zalloc, void *opaque, unsign
     int32_t alloc_size, align_diff;
     void *ptr;
 
+    /* If no custom calloc function used then call zlib-ng's aligned calloc */
+    if (zalloc == zng_calloc)
+        return zng_calloc(opaque, items, size);
+
     /* Allocate enough memory for proper alignment and to store the original memory pointer */
     alloc_size = sizeof(void *) + (items * size) + align;
     ptr = zalloc(opaque, 1, alloc_size);
@@ -138,6 +142,11 @@ void Z_INTERNAL *zng_calloc_aligned(zng_calloc_func zalloc, void *opaque, unsign
 }
 
 void Z_INTERNAL zng_cfree_aligned(zng_cfree_func zfree, void *opaque, void *ptr) {
+    /* If no custom cfree function used then call zlib-ng's aligned cfree */
+    if (zfree == zng_cfree) {
+        zng_cfree(opaque, ptr);
+        return;
+    }
     if (!ptr)
         return;
 
