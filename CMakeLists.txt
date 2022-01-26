@@ -153,14 +153,14 @@ endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^Intel")
     if(CMAKE_HOST_UNIX)
-        set(WARNFLAGS "-Wall")
-        set(WARNFLAGS_MAINTAINER "-Wall -Wcheck -Wremarks")
-        set(WARNFLAGS_DISABLE "")
+        set(WARNFLAGS -Wall)
+        set(WARNFLAGS_MAINTAINER -Wall -Wcheck -Wremarks)
+        set(WARNFLAGS_DISABLE)
     else()
-        set(WARNFLAGS "/Wall")
-        set(WARNFLAGS_MAINTAINER "/W5")
-        set(WARNFLAGS_DISABLE "")
-        endif()
+        set(WARNFLAGS /Wall)
+        set(WARNFLAGS_MAINTAINER /W5)
+        set(WARNFLAGS_DISABLE)
+    endif()
     if(WITH_NATIVE_INSTRUCTIONS)
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
         set(WITH_NATIVE_INSTRUCTIONS OFF)
@@ -175,9 +175,9 @@ elseif(MSVC)
     # (who'd use cmake from an IDE...) but checking for ICC before checking for MSVC should
     # avoid mistakes.
     # /Oi ?
-    set(WARNFLAGS "/W3")
-    set(WARNFLAGS_MAINTAINER "/W4")
-    set(WARNFLAGS_DISABLE "")
+    set(WARNFLAGS /W3)
+    set(WARNFLAGS_MAINTAINER /W4)
+    set(WARNFLAGS_DISABLE)
     if(BASEARCH_ARM_FOUND)
         add_definitions(-D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE)
         if(NOT "${ARCH}" MATCHES "aarch64")
@@ -190,9 +190,9 @@ elseif(MSVC)
     endif()
 elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     # Enable warnings in GCC and Clang
-    set(WARNFLAGS "-Wall")
-    set(WARNFLAGS_MAINTAINER "-Wextra -Wpedantic")
-    set(WARNFLAGS_DISABLE "-Wno-implicit-fallthrough")
+    set(WARNFLAGS -Wall)
+    set(WARNFLAGS_MAINTAINER -Wextra -Wpedantic)
+    set(WARNFLAGS_DISABLE -Wno-implicit-fallthrough)
     if(WITH_NATIVE_INSTRUCTIONS)
         if(BASEARCH_PPC_FOUND)
             set(NATIVEFLAG "-mcpu=native")
@@ -203,27 +203,27 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         if(BASEARCH_ARM_FOUND)
             if("${ARCH}" MATCHES "arm" AND NOT CMAKE_C_FLAGS MATCHES "-mfloat-abi")
                 # Auto-detect support for ARM floating point ABI
-                set(CMAKE_REQUIRED_FLAGS "-mfloat-abi=softfp")
+                set(CMAKE_REQUIRED_FLAGS -mfloat-abi=softfp)
                 check_c_source_compiles(
                     "#include <features.h>
                     int main() { return 0; }"
                     HAVE_FLOATABI_SOFTFP)
                 if(HAVE_FLOATABI_SOFTFP)
-                    set(FLOATABI "-mfloat-abi=softfp")
+                    set(FLOATABI -mfloat-abi=softfp)
                 else()
-                    set(CMAKE_REQUIRED_FLAGS "-mfloat-abi=hard")
+                    set(CMAKE_REQUIRED_FLAGS -mfloat-abi=hard)
                     check_c_source_compiles(
                         "#include <features.h>
                         int main() { return 0; }"
                         HAVE_FLOATABI_HARD)
                     if(HAVE_FLOATABI_HARD)
-                        set(FLOATABI "-mfloat-abi=hard")
+                        set(FLOATABI -mfloat-abi=hard)
                     endif()
                 endif()
                 set(CMAKE_REQUIRED_FLAGS)
                 if(FLOATABI)
                     message(STATUS "ARM floating point arch: ${FLOATABI}")
-                    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLOATABI}")
+                    add_compile_options(${FLOATABI})
                 else()
                     message(STATUS "ARM floating point arch not auto-detected")
                 endif()
@@ -244,12 +244,6 @@ else()
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not implemented yet on this configuration")
         set(WITH_NATIVE_INSTRUCTIONS OFF)
     endif()
-endif()
-
-# Replace optimization level 3 added by default with level 2
-if(NOT MSVC AND NOT CMAKE_C_FLAGS MATCHES "([\\/\\-]O)3")
-    string(REGEX REPLACE "([\\/\\-]O)3" "\\12"
-        CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
 endif()
 
 # Set architecture alignment requirements
@@ -294,9 +288,9 @@ endif()
 
 # Apply warning compiler flags
 if(WITH_MAINTAINER_WARNINGS)
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS} ${WARNFLAGS_MAINTAINER} ${WARNFLAGS_DISABLE}")
+    add_compile_options(${WARNFLAGS} ${WARNFLAGS_MAINTAINER} ${WARNFLAGS_DISABLE})
 else()
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${WARNFLAGS} ${WARNFLAGS_DISABLE}")
+    add_compile_options(${WARNFLAGS} ${WARNFLAGS_DISABLE})
 endif()
 
 # Set code coverage compiler flags
@@ -304,10 +298,16 @@ if(WITH_CODE_COVERAGE)
     add_code_coverage()
 endif()
 
+# Replace optimization level 3 added by default with level 2
+if(NOT WITH_CODE_COVERAGE AND NOT MSVC AND NOT CMAKE_C_FLAGS MATCHES "([\\/\\-]O)3")
+    string(REGEX REPLACE "([\\/\\-]O)3" "\\12"
+        CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
+endif()
+
 # Set native instruction set compiler flag
 if(WITH_NATIVE_INSTRUCTIONS AND DEFINED NATIVEFLAG)
     # Apply flag to all source files and compilation checks
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${NATIVEFLAG}")
+    add_compile_options(${NATIVEFLAG})
 endif()
 
 #
@@ -465,7 +465,7 @@ macro(check_c_source_compile_or_run source flag)
     endif()
 endmacro()
 
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DZLIB_DEBUG")
+add_compile_options($<$<CONFIG:Debug>:-DZLIB_DEBUG>)
 
 if(MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")
