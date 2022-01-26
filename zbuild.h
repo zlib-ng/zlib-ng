@@ -1,6 +1,11 @@
 #ifndef _ZBUILD_H
 #define _ZBUILD_H
 
+#define _POSIX_SOURCE 1  /* fileno */
+#ifndef _POSIX_C_SOURCE
+#  define _POSIX_C_SOURCE 200112L /* snprintf, posix_memalign */
+#endif
+
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>

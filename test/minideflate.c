@@ -3,15 +3,8 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#define _POSIX_SOURCE 1  /* This file needs POSIX for fileno(). */
-#define _POSIX_C_SOURCE 200112  /* For snprintf(). */
-
 #include <stdio.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
 #include <assert.h>
-#include <stdlib.h>
 
 #include "zbuild.h"
 #ifdef ZLIB_COMPAT
@@ -272,7 +265,7 @@ int main(int argc, char **argv) {
         } else if (argv[i][0] == '-') {
             show_help();
             return 64;   /* EX_USAGE */
-        } else 
+        } else
             break;
     }
 

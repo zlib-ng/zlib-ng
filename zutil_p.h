@@ -1,13 +1,9 @@
 /* zutil_p.h -- Private inline functions used internally in zlib-ng
- *
+ * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
 #ifndef ZUTIL_P_H
 #define ZUTIL_P_H
-
-#if defined(HAVE_POSIX_MEMALIGN) && !defined(_POSIX_C_SOURCE)
-#  define _POSIX_C_SOURCE 200112L  /* For posix_memalign(). */
-#endif
 
 #if defined(__APPLE__) || defined(HAVE_POSIX_MEMALIGN)
 #  include <stdlib.h>
