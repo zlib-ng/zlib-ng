@@ -92,7 +92,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
                 const uint8_t *str_start = s->window + s->strstart;
                 const uint8_t *match_start = s->window + hash_head;
 
-                if (*(uint16_t *)str_start == *(uint16_t *)match_start) {
+                if (zmemcmp_2(str_start, match_start) == 0) {
                     match_len = functable.compare256(str_start+2, match_start+2) + 2;
 
                     if (match_len >= WANT_MIN_MATCH) {
