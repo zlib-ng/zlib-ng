@@ -1,8 +1,5 @@
 #include <stdio.h>
-#include <stddef.h>
-#include <string.h>
 #include <assert.h>
-#include <stdlib.h>
 #include <inttypes.h>
 
 #include "zbuild.h"

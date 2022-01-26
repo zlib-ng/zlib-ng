@@ -4,16 +4,14 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-
 #include "zbuild.h"
 #ifdef ZLIB_COMPAT
 #  include "zlib.h"
 #else
 #  include "zlib-ng.h"
 #endif
+
+#include <stdio.h>
 
 typedef struct {
     uint32_t line;

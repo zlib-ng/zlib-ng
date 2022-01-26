@@ -12,9 +12,6 @@
  * real thing.
  */
 
-#define _POSIX_SOURCE 1  /* This file needs POSIX for fileno(). */
-#define _POSIX_C_SOURCE 200112  /* For snprintf(). */
-
 #include "zbuild.h"
 #ifdef ZLIB_COMPAT
 #  include "zlib.h"
@@ -23,8 +20,6 @@
 #endif
 #include <stdio.h>
 #include <assert.h>
-#include <string.h>
-#include <stdlib.h>
 
 #ifdef USE_MMAP
 #  include <sys/types.h>
