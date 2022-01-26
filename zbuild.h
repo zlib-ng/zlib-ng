@@ -194,19 +194,32 @@
 #  define Tracecv(c, x)
 #endif
 
+/* Force compiler to emit unaligned memory accesses if unaligned access is supported
+   on the architecture, otherwise don't assume unaligned access is supported. Older
+   compilers don't optimize memcpy and memcmp calls to unaligned access instructions
+   when it is supported on the architecture resulting in significant performance impact.
+   Newer compilers might optimize memcpy but not all optimize memcmp for all integer types. */
 #ifdef UNALIGNED_OK
-#  define zmemcpy_2(dest, src) *((uint16_t *)dest) = *((uint16_t *)src)
-#  define zmemcpy_4(dest, src) *((uint32_t *)dest) = *((uint32_t *)src)
+#  define zmemcpy_2(dest, src)    (*((uint16_t *)(dest)) = *((uint16_t *)(src)))
+#  define zmemcmp_2(str1, str2)   (*((uint16_t *)(str1)) != *((uint16_t *)(str2)))
+#  define zmemcpy_4(dest, src)    (*((uint32_t *)(dest)) = *((uint32_t *)(src)))
+#  define zmemcmp_4(str1, str2)   (*((uint32_t *)(str1)) != *((uint32_t *)(str2)))
 #  if UINTPTR_MAX == UINT64_MAX
-#    define zmemcpy_8(dest, src) *((uint64_t *)dest) = *((uint64_t *)src)
+#    define zmemcpy_8(dest, src)  (*((uint64_t *)(dest)) = *((uint64_t *)(src)))
+#    define zmemcmp_8(str1, str2) (*((uint64_t *)(str1)) != *((uint64_t *)(str2)))
 #  else
-#    define zmemcpy_8(dest, src) ((uint32_t *)dest)[0] = *((uint32_t *)src)[0] \
-                                 ((uint32_t *)dest)[1] = *((uint32_t *)src)[1]
+#    define zmemcpy_8(dest, src)  (((uint32_t *)(dest))[0] = ((uint32_t *)(src))[0], \
+                                   ((uint32_t *)(dest))[1] = ((uint32_t *)(src))[1])
+#    define zmemcmp_8(str1, str2) (((uint32_t *)(str1))[0] != ((uint32_t *)(str2))[0] || \
+                                   ((uint32_t *)(str1))[1] != ((uint32_t *)(str2))[1])
 #  endif
 #else
-#  define zmemcpy_2(dest, src) memcpy(dest, src, 2)
-#  define zmemcpy_4(dest, src) memcpy(dest, src, 4)
-#  define zmemcpy_8(dest, src) memcpy(dest, src, 8)
+#  define zmemcpy_2(dest, src)  memcpy(dest, src, 2)
+#  define zmemcmp_2(str1, str2) memcmp(str1, str2, 2)
+#  define zmemcpy_4(dest, src)  memcpy(dest, src, 4)
+#  define zmemcmp_4(str1, str2) memcmp(str1, str2, 4)
+#  define zmemcpy_8(dest, src)  memcpy(dest, src, 8)
+#  define zmemcmp_8(str1, str2) memcmp(str1, str2, 8)
 #endif
 
 #endif

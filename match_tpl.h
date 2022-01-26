@@ -145,24 +145,24 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #ifdef UNALIGNED_OK
         if (best_len < sizeof(uint32_t)) {
             for (;;) {
-                if (*(uint16_t *)(mbase_end+cur_match) == *(uint16_t *)scan_end &&
-                    *(uint16_t *)(mbase_start+cur_match) == *(uint16_t *)scan_start)
+                if (zmemcmp_2(mbase_end+cur_match, scan_end) == 0 &&
+                    zmemcmp_2(mbase_start+cur_match, scan_start) == 0)
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  ifdef UNALIGNED64_OK
         } else if (best_len >= sizeof(uint64_t)) {
             for (;;) {
-                if (*(uint64_t *)(mbase_end+cur_match) == *(uint64_t *)scan_end &&
-                    *(uint64_t *)(mbase_start+cur_match) == *(uint64_t *)scan_start)
+                if (zmemcmp_8(mbase_end+cur_match, scan_end) == 0 &&
+                    zmemcmp_8(mbase_start+cur_match, scan_start) == 0)
                     break;
                 GOTO_NEXT_CHAIN;
             }
 #  endif
         } else {
             for (;;) {
-                if (*(uint32_t *)(mbase_end+cur_match) == *(uint32_t *)scan_end &&
-                    *(uint32_t *)(mbase_start+cur_match) == *(uint32_t *)scan_start)
+                if (zmemcmp_4(mbase_end+cur_match, scan_end) == 0 &&
+                    zmemcmp_4(mbase_start+cur_match, scan_start) == 0)
                     break;
                 GOTO_NEXT_CHAIN;
             }
