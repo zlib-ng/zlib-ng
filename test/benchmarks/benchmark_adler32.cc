@@ -68,7 +68,7 @@ public:
 BENCHMARK_ADLER32(c, adler32_c, 1);
 
 #ifdef ARM_NEON_ADLER32
-BENCHMARK_ADLER32(neon, adler32_neon, arm_has_neon);
+BENCHMARK_ADLER32(neon, adler32_neon, arm_cpu_has_neon);
 #elif defined(POWER8_VSX_ADLER32)
 BENCHMARK_ADLER32(power8, adler32_power8, power_cpu_has_arch_2_07);
 #elif defined(PPC_VMX_ADLER32)
