@@ -257,7 +257,6 @@ jobs:
 
           - name: Ubuntu MinGW i686
             os: ubuntu-latest
-            compiler: i686-w64-mingw32-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-i686.cmake
             packages: wine32 gcc-mingw-w64
             codecov: ubuntu_gcc_mingw_i686
@@ -266,7 +265,6 @@ jobs:
 
           - name: Ubuntu MinGW x86_64
             os: ubuntu-latest
-            compiler: x86_64-w64-mingw32-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-x86_64.cmake
             packages: wine-stable gcc-mingw-w64
             codecov: ubuntu_gcc_mingw_x86_64
