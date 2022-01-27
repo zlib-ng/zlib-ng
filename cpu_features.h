@@ -6,7 +6,6 @@
 #ifndef CPU_FEATURES
 #define CPU_FEATURES
 
-#include "deflate.h"
 #include "crc32_fold.h"
 
 #if defined(X86_FEATURES)
@@ -128,6 +127,7 @@ extern uint32_t compare256_unaligned_avx2(const uint8_t *src0, const uint8_t *sr
 #endif
 #endif
 
+#ifdef DEFLATE_H_
 /* insert_string */
 extern void insert_string_c(deflate_state *const s, const uint32_t str, uint32_t count);
 #ifdef X86_SSE42_CRC_HASH
@@ -200,6 +200,7 @@ extern uint32_t update_hash_c(deflate_state *const s, uint32_t h, uint32_t val);
 extern uint32_t update_hash_sse4(deflate_state *const s, uint32_t h, uint32_t val);
 #elif defined(ARM_ACLE_CRC_HASH)
 extern uint32_t update_hash_acle(deflate_state *const s, uint32_t h, uint32_t val);
+#endif
 #endif
 
 #endif
