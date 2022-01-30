@@ -105,7 +105,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
-            qemu-run: qemu-arm
             codecov: ubuntu_gcc_armsf
 
           - name: Ubuntu GCC ARM SF Compat No Opt
@@ -113,7 +112,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
-            qemu-run: qemu-arm
             codecov: ubuntu_gcc_armsf_compat_no_opt
 
           - name: Ubuntu GCC ARM HF
@@ -121,7 +119,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
             codecov: ubuntu_gcc_armhf
 
           - name: Ubuntu GCC ARM HF No ACLE
@@ -129,7 +126,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_ACLE=OFF -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
             codecov: ubuntu_gcc_armhf_no_acle
 
           - name: Ubuntu GCC ARM HF No NEON
@@ -137,7 +133,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_NEON=OFF -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
             codecov: ubuntu_gcc_armhf_no_neon
 
           - name: Ubuntu GCC ARM HF Compat No Opt
@@ -145,7 +140,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
             codecov: ubuntu_gcc_armhf_compat_no_opt
 
           - name: Ubuntu GCC AARCH64
@@ -153,7 +147,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
             codecov: ubuntu_gcc_aarch64
 
           - name: Ubuntu GCC AARCH64 No ACLE
@@ -161,7 +154,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_ACLE=OFF -DWITH_SANITIZER=Undefined
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
             codecov: ubuntu_gcc_aarch64_no_acle
 
           - name: Ubuntu GCC AARCH64 No NEON
@@ -169,7 +161,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_NEON=OFF -DWITH_SANITIZER=Undefined
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
             codecov: ubuntu_gcc_aarch64_no_neon
 
           - name: Ubuntu GCC AARCH64 Compat No Opt
@@ -177,7 +168,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
             codecov: ubuntu_gcc_aarch64_compat_no_opt
 
           - name: Ubuntu GCC PPC
@@ -185,7 +175,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-powerpc-linux-gnu libc-dev-powerpc-cross
-            qemu-run: qemu-ppc
             ldflags: -static
             codecov: ubuntu_gcc_ppc
 
@@ -194,7 +183,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake -DWITH_POWER8=OFF
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-powerpc-linux-gnu libc-dev-powerpc-cross
-            qemu-run: qemu-ppc
             codecov: ubuntu_gcc_ppc_no_power8
 
           - name: Ubuntu GCC PPC64
@@ -202,7 +190,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64.cmake
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-powerpc64-linux-gnu libc-dev-ppc64-cross
-            qemu-run: qemu-ppc64
             ldflags: -static
             codecov: ubuntu_gcc_ppc64
 
@@ -211,7 +198,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-powerpc64le-linux-gnu libc-dev-ppc64el-cross
-            qemu-run: qemu-ppc64le
             codecov: ubuntu_gcc_ppc64le
 
           - name: Ubuntu GCC SPARC64
@@ -219,7 +205,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-sparc64-linux-gnu libc-dev-sparc64-cross
-            qemu-run: qemu-sparc64
             ldflags: -static
             codecov: ubuntu_gcc_sparc64
 
@@ -228,7 +213,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-s390x-linux-gnu libc-dev-s390x-cross
-            qemu-run: qemu-s390x
             ldflags: -static
             codecov: ubuntu_gcc_s390x
 
@@ -237,7 +221,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_CRC32_VX=OFF -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-s390x-linux-gnu libc-dev-s390x-cross
-            qemu-run: qemu-s390x
             ldflags: -static
             codecov: ubuntu_gcc_s390x
 
@@ -450,7 +433,6 @@ jobs:
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1
         TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=0' }}:abort_on_error=1
         LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=0' }}:abort_on_error=1
-        QEMU_RUN: ${{ matrix.qemu-run }}
 
     - name: Upload coverage report
       if: matrix.codecov && ( env.CODECOV_TOKEN_SECRET != '' || github.repository == 'zlib-ng/zlib-ng' )
