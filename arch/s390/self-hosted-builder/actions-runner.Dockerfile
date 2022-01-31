@@ -31,7 +31,7 @@ ENV QEMU_LD_PREFIX=/usr/x86_64-linux-gnu
 RUN useradd -m actions-runner
 USER actions-runner
 WORKDIR /home/actions-runner
-RUN curl -L https://github.com/actions/runner/releases/download/v2.283.2/actions-runner-linux-x64-2.283.2.tar.gz | tar -xz
+RUN curl -L https://github.com/actions/runner/releases/download/v2.287.1/actions-runner-linux-x64-2.287.1.tar.gz | tar -xz
 VOLUME /home/actions-runner
 
 # Scripts.
