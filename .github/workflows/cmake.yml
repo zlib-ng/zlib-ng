@@ -222,21 +222,21 @@ jobs:
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
-            codecov: ubuntu_gcc_s390x
+            codecov: ubuntu_gcc_s390x_no_crc32
 
           - name: Ubuntu GCC S390X DFLTCC
             os: z15
             compiler: gcc
             cmake-args: -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            codecov: ubuntu_gcc_s390x
+            codecov: ubuntu_gcc_s390x_dfltcc
 
           - name: Ubuntu GCC S390X DFLTCC Compat
             os: z15
             compiler: gcc
             cmake-args: -DZLIB_COMPAT=ON -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Undefined
             asan-options: detect_leaks=0
-            codecov: ubuntu_gcc_s390x
+            codecov: ubuntu_gcc_s390x_dfltcc_compat
 
           - name: Ubuntu MinGW i686
             os: ubuntu-latest
