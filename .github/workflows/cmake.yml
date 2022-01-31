@@ -190,7 +190,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake
             asan-options: detect_leaks=0
             packages: qemu qemu-user gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc-dev-powerpc-cross
-            ldflags: -static
             codecov: ubuntu_gcc_ppc
 
           - name: Ubuntu GCC PPC No Power8
@@ -245,6 +244,7 @@ jobs:
             cxx-compiler: g++
             cmake-args: -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
+            ldflags: -static
             codecov: ubuntu_gcc_s390x_dfltcc
 
           - name: Ubuntu GCC S390X DFLTCC Compat UBSAN
@@ -253,12 +253,14 @@ jobs:
             cxx-compiler: g++
             cmake-args: -DZLIB_COMPAT=ON -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Undefined
             asan-options: detect_leaks=0
+            ldflags: -static
             codecov: ubuntu_gcc_s390x_dfltcc_compat
 
           - name: Ubuntu MinGW i686
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-i686.cmake
             packages: wine32 gcc-mingw-w64-i686 g++-mingw-w64-i686
+            ldflags: -static
             codecov: ubuntu_gcc_mingw_i686
             # Limit parallel test jobs to prevent wine errors
             parallels-jobs: 1
@@ -267,6 +269,7 @@ jobs:
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-x86_64.cmake
             packages: wine-stable gcc-mingw-w64 g++-mingw-w64
+            ldflags: -static
             codecov: ubuntu_gcc_mingw_x86_64
              # Limit parallel test jobs to prevent wine errors
             parallels-jobs: 1
