@@ -313,7 +313,6 @@ jobs:
             packages:  ninja-build llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             cflags: -g3 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-memory-track-origins
-            codecov: ubuntu_clang_msan
 
           - name: Windows MSVC Win32
             os: windows-latest
