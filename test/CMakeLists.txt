@@ -7,6 +7,17 @@ enable_language(CXX)
 # Google test requires at least C++11
 set(CMAKE_CXX_STANDARD 11)
 
+# Google test requires MSAN instrumented LLVM C++ libraries
+if(WITH_SANITIZER STREQUAL "Memory")
+    if(NOT DEFINED ENV{LLVM_BUILD_DIR})
+        message(FATAL_ERROR "MSAN instrumented C++ libraries required!")
+    endif()
+
+    # Must set include and compile options before fetching googletest
+    include_directories($ENV{LLVM_BUILD_DIR}/include $ENV{LLVM_BUILD_DIR}/include/c++/v1)
+    add_compile_options(-stdlib=libc++ -g)
+endif()
+
 # Prevent overriding the parent project's compiler/linker settings for Windows
 set(gtest_force_shared_crt ON CACHE BOOL
     "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
@@ -35,6 +46,15 @@ add_executable(gtest_zlib ${TEST_SRCS})
 target_include_directories(gtest_zlib PRIVATE
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_BINARY_DIR})
+
+if(WITH_SANITIZER STREQUAL "Memory")
+    target_link_directories(gtest_zlib PRIVATE $ENV{LLVM_BUILD_DIR}/lib)
+    target_link_options(gtest_zlib PRIVATE
+        -stdlib=libc++
+        -lc++abi
+        -fsanitize=memory
+        -fsanitize-memory-track-origins)
+endif()
 
 target_link_libraries(gtest_zlib zlibstatic gtest)
 
