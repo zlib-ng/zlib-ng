@@ -410,7 +410,7 @@ jobs:
       run: |
         mkdir ${{ matrix.build-dir || '.not-used' }}
         cd ${{ matrix.build-dir || '.' }}
-        cmake ${{ matrix.build-src-dir || '.' }} ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} -DBUILD_SHARED_LIBS=OFF -DWITH_FUZZERS=ON -DWITH_CODE_COVERAGE=ON -DWITH_MAINTAINER_WARNINGS=ON
+        cmake ${{ matrix.build-src-dir || '.' }} ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} -DBUILD_SHARED_LIBS=OFF -DWITH_FUZZERS=ON ${{ matrix.codecov && '-DWITH_CODE_COVERAGE=ON' }} -DWITH_MAINTAINER_WARNINGS=ON
       env:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
