@@ -435,6 +435,20 @@ jobs:
       run: |
         wineboot --init
 
+    - name: Compile LLVM C++ libraries (MSAN)
+      if: contains(matrix.name, 'MSAN')
+      run: |
+        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-11.0.0
+        cd llvm-project
+        mkdir build
+        cd build
+        cmake -G Ninja ../llvm -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" -DLLVM_USE_SANITIZER=MemoryWithOrigins -DLLVM_LIBC_ENABLE_LINTING=OFF
+        cmake --build . -- cxx cxxabi
+        echo "LLVM_BUILD_DIR=`pwd`" >> $GITHUB_ENV
+      env:
+        CC: ${{ matrix.compiler }}
+        CXX: ${{ matrix.cxx-compiler }}
+
     - name: Generate project files
       # Shared libraries turned off for qemu ppc* and sparc & reduce code coverage sources
       run: |
