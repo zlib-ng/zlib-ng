@@ -21,7 +21,11 @@ static inline void vmx_handle_head_or_tail(uint32_t *pair, const unsigned char *
 }
 
 static void vmx_accum32(uint32_t *s, const unsigned char *buf, size_t len) {
-    const vector unsigned char t0 = {16, 15, 14, 13, 12, 11, 10,  9,  8,  7,  6,  5,  4,  3,  2,  1};
+    /* Different taps for the separable components of sums */
+    const vector unsigned char t0 = {64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49};
+    const vector unsigned char t1 = {48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33};
+    const vector unsigned char t2 = {32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17};
+    const vector unsigned char t3 = {16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
     /* As silly and inefficient as it seems, creating 1 permutation vector to permute
      * a 2 element vector from a single load + a subsequent shift is just barely faster
      * than doing 2 indexed insertions into zero initialized vectors from unaligned memory. */
@@ -32,38 +36,72 @@ static void vmx_accum32(uint32_t *s, const unsigned char *buf, size_t len) {
     adacc = vec_perm(pair_vec, pair_vec, s0_perm);
     s2acc = vec_slo(pair_vec, shift_vec);
     
-    vector unsigned int s3acc = vmx_zero();
-    vector unsigned int s2acc_0 = s3acc;
-    vector unsigned int adacc_0 = adacc;
+    vector unsigned int zero = vmx_zero();
+    vector unsigned int s3acc = zero;
+    vector unsigned int s3acc_0 = zero;
+    vector unsigned int adacc_prev = adacc;
+    vector unsigned int adacc_prev_0 = zero;
 
-    int num_iter = len / 2;
-    int rem = len & 1;
+    vector unsigned int s2acc_0 = zero;
+    vector unsigned int s2acc_1 = zero;
+    vector unsigned int s2acc_2 = zero;
+
+    /* Maintain a running sum of a second half, this might help use break yet another
+     * data dependency bubble in the sum */
+    vector unsigned int adacc_0 = zero;
+
+    int num_iter = len / 4;
+    int rem = len & 3;
 
     for (int i = 0; i < num_iter; ++i) {
         vector unsigned char d0 = vec_ld(0, buf);
         vector unsigned char d1 = vec_ld(16, buf);
+        vector unsigned char d2 = vec_ld(32, buf);
+        vector unsigned char d3 = vec_ld(48, buf);
 
+        /* The core operation of the loop, basically
+         * what is being unrolled below */
         adacc = vec_sum4s(d0, adacc);
-        s3acc = vec_add(s3acc, adacc_0);
+        s3acc = vec_add(s3acc, adacc_prev);
+        s3acc_0 = vec_add(s3acc_0, adacc_prev_0);
         s2acc = vec_msum(t0, d0, s2acc);
 
-        s3acc = vec_add(s3acc, adacc);
-        adacc = vec_sum4s(d1, adacc);
-        s2acc_0 = vec_msum(t0, d1, s2acc_0);
-        adacc_0 = adacc;
+        /* interleave dependent sums in here */
+        adacc_0 = vec_sum4s(d1, adacc_0);
+        s2acc_0 = vec_msum(t1, d1, s2acc_0);
+        adacc = vec_sum4s(d2, adacc);
+        s2acc_1 = vec_msum(t2, d2, s2acc_1);
+        s2acc_2 = vec_msum(t3, d3, s2acc_2);
+        adacc_0 = vec_sum4s(d3, adacc_0);
 
-        buf += 32;
+        adacc_prev = adacc;
+        adacc_prev_0 = adacc_0;
+        buf += 64;
     }
+
+    adacc = vec_add(adacc, adacc_0);
+    s3acc = vec_add(s3acc, s3acc_0);
+    s3acc = vec_sl(s3acc, vec_splat_u32(6));
 
     if (rem) {
-        vector unsigned char d0 = vec_ld(0, buf);
-        s3acc = vec_add(s3acc, adacc);
-        s2acc = vec_msum(t0, d0, s2acc);
-        adacc = vec_sum4s(d0, adacc);
+        adacc_prev = vec_add(adacc_prev_0, adacc_prev);
+        adacc_prev = vec_sl(adacc_prev, vec_splat_u32(4));
+        while (rem--) {
+            vector unsigned char d0 = vec_ld(0, buf);
+            adacc = vec_sum4s(d0, adacc);
+            s3acc = vec_add(s3acc, adacc_prev);
+            s2acc = vec_msum(t3, d0, s2acc);
+            adacc_prev = vec_sl(adacc, vec_splat_u32(4));
+            buf += 16;
+        }
     }
 
+
+    /* Sum up independent second sums */
     s2acc = vec_add(s2acc, s2acc_0);
-    s3acc = vec_sl(s3acc, vec_splat_u32(4));
+    s2acc_2 = vec_add(s2acc_1, s2acc_2);
+    s2acc = vec_add(s2acc, s2acc_2);
+
     s2acc = vec_add(s2acc, s3acc);
 
     adacc = vec_add(adacc, vec_sld(adacc, adacc, 8));
