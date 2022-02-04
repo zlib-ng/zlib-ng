@@ -7,7 +7,6 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 #ifndef NO_MEDIUM_STRATEGY
-#include <stdint.h>
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
