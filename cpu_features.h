@@ -3,8 +3,8 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifndef CPU_FEATURES
-#define CPU_FEATURES
+#ifndef CPU_FEATURES_H_
+#define CPU_FEATURES_H_
 
 #include "crc32_fold.h"
 
