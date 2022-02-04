@@ -397,11 +397,6 @@ jobs:
       env:
         HOMEBREW_NO_INSTALL_CLEANUP: 1
 
-    - name: Install codecov.io tools
-      if: matrix.codecov
-      run: |
-        python -u -m pip install --user codecov
-
     - name: Initialize Wine
       # Prevent parallel test jobs from initializing Wine at the same time
       if: contains(matrix.packages, 'wine')
@@ -441,6 +436,7 @@ jobs:
       if: matrix.codecov && ( env.CODECOV_TOKEN_SECRET != '' || github.repository == 'zlib-ng/zlib-ng' )
       shell: bash
       run: |
+        python -u -m pip install --user codecov
         bash tools/codecov-upload.sh
       env:
         # Codecov does not yet support GitHub Actions
