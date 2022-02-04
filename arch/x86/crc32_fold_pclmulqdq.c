@@ -19,7 +19,6 @@
 #ifdef X86_PCLMULQDQ_CRC
 #include "../../zbuild.h"
 
-#include <stdint.h>
 #include <immintrin.h>
 #include <wmmintrin.h>
 #include <smmintrin.h> // _mm_extract_epi32

@@ -11,7 +11,6 @@
 
 #include "zbuild.h"
 #include "zendian.h"
-#include <stdint.h>
 #include "deflate.h"
 #include "functable.h"
 #include "crc32_tbl.h"

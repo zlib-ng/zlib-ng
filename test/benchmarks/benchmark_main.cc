@@ -3,9 +3,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include <stdint.h>
 #include <stdio.h>
-#include <stdint.h>
 
 #include <benchmark/benchmark.h>
 
