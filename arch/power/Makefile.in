@@ -17,8 +17,8 @@ SRCDIR=.
 SRCTOP=../..
 TOPDIR=$(SRCTOP)
 
-all: power.o \
-     power.lo \
+all: power_features.o \
+     power_features.lo \
      adler32_power8.o \
      adler32_power8.lo \
      adler32_vmx.o \
@@ -32,11 +32,11 @@ all: power.o \
      slide_hash_vmx.o \
      slide_hash_vmx.lo
 
-power.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/power.c
+power_features.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/power_features.c
 
-power.lo:
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/power.c
+power_features.lo:
+	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/power_features.c
 
 adler32_power8.o:
 	$(CC) $(CFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_power8.c

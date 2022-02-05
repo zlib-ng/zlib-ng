@@ -1,5 +1,5 @@
 #include "zutil.h"
-#include "s390.h"
+#include "s390_features.h"
 
 #include <sys/auxv.h>
 

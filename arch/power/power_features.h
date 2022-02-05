@@ -1,4 +1,4 @@
-/* power.h -- check for POWER CPU features
+/* power_features.h -- check for POWER CPU features
  * Copyright (C) 2020 Matheus Castanho <msc@linux.ibm.com>, IBM
  * Copyright (C) 2021 Mika T. Lindqvist <postmaster@raasu.org>
  * For conditions of distribution and use, see copyright notice in zlib.h

@@ -1479,8 +1479,8 @@ case "${ARCH}" in
             CFLAGS="${CFLAGS} -DX86_FEATURES"
             SFLAGS="${SFLAGS} -DX86_FEATURES"
 
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86.lo"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86_features.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86_features.lo"
 
             check_avx2_intrinsics
 
@@ -1601,8 +1601,8 @@ case "${ARCH}" in
         if test $without_optimizations -eq 0; then
             CFLAGS="${CFLAGS} -DARM_FEATURES"
             SFLAGS="${SFLAGS} -DARM_FEATURES"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} arm_features.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} arm_features.lo"
 
             if test $LINUX -eq 1; then
                 cat > $test.c <<EOF
@@ -1814,8 +1814,8 @@ EOF
         if test $without_optimizations -eq 0; then
             CFLAGS="${CFLAGS} -DARM_FEATURES"
             SFLAGS="${SFLAGS} -DARM_FEATURES"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} armfeature.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} armfeature.lo"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} arm_features.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} arm_features.lo"
 
             if test $LINUX -eq 1; then
                 cat > $test.c <<EOF
@@ -1891,8 +1891,8 @@ EOF
                 SFLAGS="${SFLAGS} -DPPC_FEATURES"
             fi
             if test $HAVE_VMX -eq 1 -o $HAVE_POWER8_INTRIN -eq 1; then
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power_features.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power_features.lo"
             fi
             if test $HAVE_VMX -eq 1 -a $HAVE_ALTIVEC_INTRIN -eq 1; then
                 CFLAGS="${CFLAGS} -DPPC_VMX_ADLER32 -DPPC_VMX_SLIDEHASH"
@@ -1926,8 +1926,8 @@ EOF
             if test $buildcrc32vx -eq 1; then
                 CFLAGS="${CFLAGS} -DS390_FEATURES"
                 SFLAGS="${SFLAGS} -DS390_FEATURES"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} s390.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} s390.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} s390_features.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} s390_features.lo"
             fi
 
             if test $builddfltccdeflate -eq 1 -o $builddfltccinflate -eq 1; then
