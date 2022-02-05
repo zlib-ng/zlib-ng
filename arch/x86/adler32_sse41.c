@@ -50,63 +50,83 @@ Z_INTERNAL uint32_t adler32_sse41(uint32_t adler, const unsigned char *buf, size
     const __m128i dot3v = _mm_set1_epi16(1);
     const __m128i zero = _mm_setzero_si128();
 
-    __m128i vs1 = _mm_cvtsi32_si128(adler);
-    __m128i vs2 = _mm_cvtsi32_si128(sum2);
+    __m128i vbuf, vs1_0, vs3, vs1, vs2, v_sad_sum1, v_short_sum2, vsum2;
+
+    /* If our buffer is unaligned (likely), make the determination whether
+     * or not there's enough of a buffer to consume to make the scalar, aligning
+     * additions worthwhile or if it's worth it to just eat the cost of an unaligned
+     * load. This is a pretty simple test, just test if 16 - the remainder + len is
+     * < 16 */
+    int max_iters = NMAX;
+    int rem = (uintptr_t)buf & 15;
+    int align_offset = 16 - rem;
+    int k = 0;
+    if (rem) {
+        if (len < 16 + align_offset) {
+            /* Let's eat the cost of this one unaligned load so that
+             * we don't completely skip over the vectorization. Doing
+             * 16 bytes at a time unaligned is is better than 16 + <= 15
+             * sums */
+            vbuf = _mm_loadu_si128((__m128i*)buf);
+            len -= 16;
+            buf += 16;
+            vs1 = _mm_cvtsi32_si128(adler);
+            vs2 = _mm_cvtsi32_si128(sum2);
+            vs3 = _mm_setzero_si128();
+            vs1_0 = vs1;
+            goto unaligned_jmp;
+        }
+
+        for (int i = 0; i < align_offset; ++i) {
+            adler += *(buf++);
+            sum2 += adler;
+        }
+
+        /* lop off the max number of sums based on the scalar sums done
+         * above */
+        len -= align_offset;
+        max_iters -= align_offset; 
+    }
+
 
     while (len >= 16) {
-       __m128i vs1_0 = vs1;
-       __m128i vs3 = _mm_setzero_si128();
+        vs1 = _mm_cvtsi32_si128(adler);
+        vs2 = _mm_cvtsi32_si128(sum2);
+        vs3 = _mm_setzero_si128();
+        vs1_0 = vs1;
 
-       int k = (len < NMAX ? (int)len : NMAX);
-       k -= k % 16;
-       len -= k;
+        k = (len < max_iters ? (int)len : max_iters);
+        k -= k % 16;
+        len -= k;
 
-       /* Aligned version of the loop */
-       if (((uintptr_t)buf & 15) == 0) {
-           while (k >= 16) {
-               /*
-                  vs1 = adler + sum(c[i])
-                  vs2 = sum2 + 16 vs1 + sum( (16-i+1) c[i] )
-               */
-               __m128i vbuf = _mm_load_si128((__m128i*)buf);
-               buf += 16;
-               k -= 16;
+        while (k >= 16) {
+            /*
+               vs1 = adler + sum(c[i])
+               vs2 = sum2 + 16 vs1 + sum( (16-i+1) c[i] )
+            */
+            vbuf = _mm_load_si128((__m128i*)buf);
+            buf += 16;
+            k -= 16;
 
-               __m128i v_sad_sum1 = _mm_sad_epu8(vbuf, zero);
-               vs1 = _mm_add_epi32(v_sad_sum1, vs1);
-               vs3 = _mm_add_epi32(vs1_0, vs3);
-               __m128i v_short_sum2 = _mm_maddubs_epi16(vbuf, dot2v);
-               __m128i vsum2 = _mm_madd_epi16(v_short_sum2, dot3v);
-               vs2 = _mm_add_epi32(vsum2, vs2);
-               vs1_0 = vs1;
-           }
-       } else {
-           while (k >= 16) {
-               __m128i vbuf = _mm_loadu_si128((__m128i*)buf);
-               buf += 16;
-               k -= 16;
+unaligned_jmp:
+            v_sad_sum1 = _mm_sad_epu8(vbuf, zero);
+            vs1 = _mm_add_epi32(v_sad_sum1, vs1);
+            vs3 = _mm_add_epi32(vs1_0, vs3);
+            v_short_sum2 = _mm_maddubs_epi16(vbuf, dot2v);
+            vsum2 = _mm_madd_epi16(v_short_sum2, dot3v);
+            vs2 = _mm_add_epi32(vsum2, vs2);
+            vs1_0 = vs1;
+        }
 
-               __m128i v_sad_sum1 = _mm_sad_epu8(vbuf, zero);
-               vs1 = _mm_add_epi32(v_sad_sum1, vs1);
-               vs3 = _mm_add_epi32(vs1_0, vs3);
-               __m128i v_short_sum2 = _mm_maddubs_epi16(vbuf, dot2v);
-               __m128i vsum2 = _mm_madd_epi16(v_short_sum2, dot3v);
-               vs2 = _mm_add_epi32(vsum2, vs2);
-               vs1_0 = vs1;
-           }
-       }
+        vs3 = _mm_slli_epi32(vs3, 4);
+        vs2 = _mm_add_epi32(vs2, vs3);
 
-       vs3 = _mm_slli_epi32(vs3, 4);
-       vs2 = _mm_add_epi32(vs2, vs3);
-
-       /* We don't actually need to do a full horizontal sum, since psadbw is actually doing
-        * a partial reduction sum implicitly and only summing to integers in vector positions
-        * 0 and 2. This saves us some contention on the shuffle port(s) */
-       adler = partial_hsum(vs1) % BASE;
-       sum2 = hsum(vs2) % BASE;
-
-       vs1 = _mm_cvtsi32_si128(adler);
-       vs2 = _mm_cvtsi32_si128(sum2);
+        /* We don't actually need to do a full horizontal sum, since psadbw is actually doing
+         * a partial reduction sum implicitly and only summing to integers in vector positions
+         * 0 and 2. This saves us some contention on the shuffle port(s) */
+        adler = partial_hsum(vs1) % BASE;
+        sum2 = hsum(vs2) % BASE;
+        max_iters = NMAX;
     }
 
     /* Process tail (len < 16).  */
