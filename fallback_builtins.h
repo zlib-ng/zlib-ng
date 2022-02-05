@@ -6,7 +6,7 @@
 
 #include <intrin.h>
 #ifdef X86_FEATURES
-#  include "arch/x86/x86.h"
+#  include "arch/x86/x86_features.h"
 #endif
 
 /* This is not a general purpose replacement for __builtin_ctz. The function expects that value is != 0
@@ -37,7 +37,7 @@ static __forceinline unsigned long long __builtin_ctzll(uint64_t value) {
     return trailing_zero;
 }
 #define HAVE_BUILTIN_CTZLL
-#endif // Microsoft AMD64 
+#endif // Microsoft AMD64
 
 #endif // Microsoft AMD64/IA64/x86/ARM/ARM64 test
 #endif // _MSC_VER & !clang
@@ -73,7 +73,7 @@ static inline __m512i _mm512_zextsi128_si512(__m128i a) {
     out.val[3] = vqsubq_u16(a.val[3], b); \
 } while (0)
 
-/* Have to check for hard float ABI on GCC/clang, but not 
+/* Have to check for hard float ABI on GCC/clang, but not
  * on MSVC (we don't compile for the soft float ABI on windows)
  */
 #if !defined(ARM_NEON_HASLD4) && (defined(__ARM_FP) || defined(_MSC_VER))
@@ -102,4 +102,4 @@ static inline void vst1q_u16_x4(uint16_t *p, uint16x8x4_t a) {
 #endif // HASLD4 check and hard float
 #endif // ARM_NEON_SLIDEHASH
 
-#endif // include guard FALLBACK_BUILTINS_H 
+#endif // include guard FALLBACK_BUILTINS_H

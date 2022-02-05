@@ -10,14 +10,14 @@
 #include "crc32_fold.h"
 
 #if defined(X86_FEATURES)
-#  include "arch/x86/x86.h"
+#  include "arch/x86/x86_features.h"
 #  include "fallback_builtins.h"
 #elif defined(ARM_FEATURES)
-#  include "arch/arm/arm.h"
+#  include "arch/arm/arm_features.h"
 #elif defined(PPC_FEATURES) || defined(POWER_FEATURES)
-#  include "arch/power/power.h"
+#  include "arch/power/power_features.h"
 #elif defined(S390_FEATURES)
-#  include "arch/s390/s390.h"
+#  include "arch/s390/s390_features.h"
 #endif
 
 extern void cpu_check_features();

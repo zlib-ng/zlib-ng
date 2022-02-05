@@ -1,4 +1,4 @@
-/* x86.c - x86 feature check
+/* x86_features.c - x86 feature check
  *
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
  * Author:

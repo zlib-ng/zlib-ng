@@ -84,7 +84,7 @@ OBJS = \
 	trees.obj \
 	uncompr.obj \
 	zutil.obj \
-	x86.obj \
+	x86_features.obj \
 	#
 !if "$(ZLIB_COMPAT)" != ""
 WITH_GZFILEOP = yes
@@ -183,7 +183,7 @@ $(TOP)/zconf$(SUFFIX).h: zconf
 SRCDIR = $(TOP)
 # Keep the dependences in sync with top-level Makefile.in
 adler32.obj: $(SRCDIR)/adler32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/functable.h $(SRCDIR)/adler32_p.h
-functable.obj: $(SRCDIR)/functable.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zendian.h $(SRCDIR)/arch/x86/x86.h
+functable.obj: $(SRCDIR)/functable.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zendian.h $(SRCDIR)/arch/x86/x86_features.h
 gzlib.obj: $(SRCDIR)/gzlib.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h
 gzread.obj: $(SRCDIR)/gzread.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h
 gzwrite.obj: $(SRCDIR)/gzwrite.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h

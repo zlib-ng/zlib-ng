@@ -1,5 +1,5 @@
-#ifndef S390_H_
-#define S390_H_
+#ifndef S390_FEATURES_H_
+#define S390_FEATURES_H_
 
 #include "zutil.h"
 

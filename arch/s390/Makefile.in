@@ -14,11 +14,11 @@ SRCDIR=.
 SRCTOP=../..
 TOPDIR=$(SRCTOP)
 
-s390.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/s390.c
+s390_features.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/s390_features.c
 
-s390.lo:
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/s390.c
+s390_features.lo:
+	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/s390_features.c
 
 dfltcc_common.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/dfltcc_common.c

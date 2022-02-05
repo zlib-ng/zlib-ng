@@ -24,7 +24,7 @@ SRCTOP=../..
 TOPDIR=$(SRCTOP)
 
 all: \
-	x86.o x86.lo \
+	x86_features.o x86_features.lo \
 	adler32_avx2.o adler32_avx2.lo \
 	adler32_avx512.o adler32_avx512.lo \
 	adler32_avx512_vnni.o adler32_avx512_vnni.lo \
@@ -40,11 +40,11 @@ all: \
 	slide_hash_avx2.o slide_hash_avx2.lo \
 	slide_hash_sse2.o slide_hash_sse2.lo
 
-x86.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86.c
+x86_features.o:
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86_features.c
 
-x86.lo:
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86.c
+x86_features.lo:
+	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86_features.c
 
 chunkset_avx.o:
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_avx.c
