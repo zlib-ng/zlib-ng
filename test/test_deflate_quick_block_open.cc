@@ -11,17 +11,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-int main() {
+#include "test_shared.h"
+
+#include <gtest/gtest.h>
+
+TEST(deflate_quick, block_open) {
     PREFIX3(stream) strm;
+    int err;
 
     memset(&strm, 0, sizeof(strm));
-    int ret = PREFIX(deflateInit2)(&strm, 1, Z_DEFLATED, -15, 1, Z_FILTERED);
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflateInit2() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflateInit2)(&strm, 1, Z_DEFLATED, -15, 1, Z_FILTERED);
+    EXPECT_EQ(err, Z_OK);
 
-    z_const unsigned char next_in[494] =
+    z_const unsigned char next_in[495] =
             "\x1d\x1d\x00\x00\x00\x4a\x4a\x4a\xaf\xaf\xaf\xaf\x4a\x4a\x4a\x4a"
             "\x3f\x3e\xaf\xff\xff\xff\x11\xff\xff\xff\xff\xdf\x00\x00\x00\x01"
             "\x3f\x7d\x00\x50\x00\x00\xc8\x01\x2b\x60\xc8\x00\x24\x06\xff\xff"
@@ -62,28 +64,19 @@ int main() {
         strm.avail_out = (uint32_t)(next_out + sizeof(next_out) - strm.next_out);
         if (strm.avail_out > 38)
             strm.avail_out = 38;
-        ret = PREFIX(deflate)(&strm, Z_FINISH);
-        if (ret == Z_STREAM_END)
+        err = PREFIX(deflate)(&strm, Z_FINISH);
+        if (err == Z_STREAM_END)
             break;
-        if (ret != Z_OK) {
-            fprintf(stderr, "deflate() failed with code %d\n", ret);
-            return EXIT_FAILURE;
-        }
+        EXPECT_EQ(err, Z_OK);
     }
     uint32_t compressed_size = (uint32_t)(strm.next_out - next_out);
 
-    ret = PREFIX(deflateEnd)(&strm);
-    if (ret != Z_OK) {
-        fprintf(stderr, "deflateEnd() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(deflateEnd)(&strm);
+    EXPECT_EQ(err, Z_OK);
 
     memset(&strm, 0, sizeof(strm));
-    ret = PREFIX(inflateInit2)(&strm, -15);
-    if (ret != Z_OK) {
-        fprintf(stderr, "inflateInit2() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(inflateInit2)(&strm, -15);
+    EXPECT_EQ(err, Z_OK);
 
     strm.next_in = next_out;
     strm.avail_in = compressed_size;
@@ -91,21 +84,11 @@ int main() {
     strm.next_out = uncompressed;
     strm.avail_out = sizeof(uncompressed);
 
-    ret = PREFIX(inflate)(&strm, Z_NO_FLUSH);
-    if (ret != Z_STREAM_END) {
-        fprintf(stderr, "inflate() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(inflate)(&strm, Z_NO_FLUSH);
+    EXPECT_EQ(err, Z_STREAM_END);
 
-    ret = PREFIX(inflateEnd)(&strm);
-    if (ret != Z_OK) {
-        fprintf(stderr, "inflateEnd() failed with code %d\n", ret);
-        return EXIT_FAILURE;
-    }
+    err = PREFIX(inflateEnd)(&strm);
+    EXPECT_EQ(err, Z_OK);
 
-    if (memcmp(uncompressed, next_in, sizeof(uncompressed)) != 0) {
-        fprintf(stderr, "Uncompressed data differs from the original\n");
-        return EXIT_FAILURE;
-    }
-    return 0;
+    EXPECT_TRUE(memcmp(uncompressed, next_in, sizeof(uncompressed)) == 0);
 }
