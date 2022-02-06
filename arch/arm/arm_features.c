@@ -1,4 +1,4 @@
-#include "../../zutil.h"
+#include "../../zbuild.h"
 
 #if defined(__linux__)
 #  include <sys/auxv.h>

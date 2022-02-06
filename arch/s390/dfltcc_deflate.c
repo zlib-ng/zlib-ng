@@ -14,7 +14,6 @@
 */
 
 #include "zbuild.h"
-#include "zutil.h"
 #include "deflate.h"
 #include "trees_emit.h"
 #include "dfltcc_deflate.h"

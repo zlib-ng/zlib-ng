@@ -40,7 +40,6 @@
 
 #include <altivec.h>
 #include "zbuild.h"
-#include "zutil.h"
 #include "adler32_p.h"
 
 /* Vector across sum unsigned int (saturate).  */

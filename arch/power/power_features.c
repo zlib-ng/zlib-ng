@@ -5,7 +5,7 @@
  */
 
 #include <sys/auxv.h>
-#include "../../zutil.h"
+#include "../../zbuild.h"
 #include "power_features.h"
 
 Z_INTERNAL int power_cpu_has_altivec = 0;

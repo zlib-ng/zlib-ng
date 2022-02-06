@@ -9,7 +9,6 @@
 #  include <arm_neon.h>
 #endif
 #include "../../zbuild.h"
-#include "../../zutil.h"
 
 typedef uint8x16_t chunk_t;
 
