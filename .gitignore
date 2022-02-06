@@ -27,7 +27,6 @@
 /switchlevels
 /zlib.pc
 /zlib-ng.pc
-/CVE-2003-0107
 
 .DS_Store
 *_fuzzer

@@ -1193,11 +1193,6 @@ if(ZLIB_ENABLE_TESTS)
         add_test(NAME ${target} COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}>)
     endmacro()
 
-
-    if(NOT WIN32 AND ZLIB_COMPAT)
-        add_simple_test_executable(CVE-2003-0107)
-    endif()
-
     add_simple_test_executable(example)
 
     set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip>)

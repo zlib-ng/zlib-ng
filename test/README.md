@@ -3,7 +3,7 @@ Contents
 
 |Name|Description|
 |-|-|
-|[CVE-2003-0107.c](https://nvd.nist.gov/vuln/detail/CVE-2003-0107)|Buffer overflow in the gzprintf function, requires ZLIB_COMPAT|
+|[CVE-2003-0107](https://nvd.nist.gov/vuln/detail/CVE-2003-0107)|Buffer overflow in the gzprintf function, requires ZLIB_COMPAT|
 |[CVE-2002-0059](https://nvd.nist.gov/vuln/detail/CVE-2002-0059)|inflateEnd to release memory more than once|
 |[CVE-2004-0797](https://nvd.nist.gov/vuln/detail/CVE-2004-0797)|Error handling in inflate and inflateBack causes crash|
 |[CVE-2005-1849](https://nvd.nist.gov/vuln/detail/CVE-2005-1849)|inftrees.h bug causes crash|
@@ -28,7 +28,7 @@ Some of the files in _test_ are licensed differently:
    which is licensed under the CC-BY license. See
    https://www.ploscompbiol.org/static/license for more information.
 
- - test/data/lcet10.txt is from Project Gutenberg. It does not have expired 
+ - test/data/lcet10.txt is from Project Gutenberg. It does not have expired
    copyright, but is still in the public domain according to the license information.
    (https://www.gutenberg.org/ebooks/53).
 
