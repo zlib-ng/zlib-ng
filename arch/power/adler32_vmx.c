@@ -7,7 +7,7 @@
 
 #ifdef PPC_VMX_ADLER32
 #include <altivec.h>
-#include "zutil.h"
+#include "zbuild.h"
 #include "adler32_p.h"
 
 #define vmx_zero()  (vec_splat_u32(0))
@@ -35,7 +35,7 @@ static void vmx_accum32(uint32_t *s, const unsigned char *buf, size_t len) {
     vector unsigned int pair_vec = vec_ld(0, s);
     adacc = vec_perm(pair_vec, pair_vec, s0_perm);
     s2acc = vec_slo(pair_vec, shift_vec);
-    
+
     vector unsigned int zero = vmx_zero();
     vector unsigned int s3acc = zero;
     vector unsigned int s3acc_0 = zero;

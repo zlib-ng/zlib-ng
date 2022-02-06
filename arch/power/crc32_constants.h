@@ -7,7 +7,7 @@
  */
 
 #include "zendian.h"
-#include "zutil.h"
+#include "zbuild.h"
 
 /* Reduce 262144 kbits to 1024 bits */
 static const __vector unsigned long long vcrc_const[255] ALIGNED_(16) = {

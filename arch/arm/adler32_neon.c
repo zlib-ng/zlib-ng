@@ -10,7 +10,7 @@
 #else
 #  include <arm_neon.h>
 #endif
-#include "../../zutil.h"
+#include "../../zbuild.h"
 #include "../../adler32_p.h"
 
 static void NEON_accum32(uint32_t *s, const unsigned char *buf, size_t len) {

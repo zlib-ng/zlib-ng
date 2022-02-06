@@ -27,7 +27,7 @@
 
 #include <altivec.h>
 #include "zendian.h"
-#include "zutil.h"
+#include "zbuild.h"
 
 #include "crc32_constants.h"
 #include "crc32_tbl.h"

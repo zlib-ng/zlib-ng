@@ -12,7 +12,7 @@
  * relicensed under the zlib license.
  */
 
-#include "zutil.h"
+#include "../../zbuild.h"
 #include "crc32_p.h"
 
 #include <vecintrin.h>
