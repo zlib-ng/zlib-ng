@@ -13,11 +13,11 @@
 *.gcno
 *.gcov
 
-/test_adler32
-/test_crc32
+/benchmark_zlib
 /example
 /example64
 /examplesh
+/gtest_zlib
 /libz.so*
 /libz-ng.so*
 /makefixed

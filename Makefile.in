@@ -154,7 +154,7 @@ PIC_OBJS = $(PIC_OBJC)
 
 all: static shared
 
-static: test_adler32$(EXE) test_crc32$(EXE) example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
+static: example$(EXE) minigzip$(EXE) fuzzers makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
 
 shared: examplesh$(EXE) minigzipsh$(EXE)
 
@@ -263,12 +263,6 @@ maketrees.o:
 makecrct.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/tools/makecrct.c
 
-test_adler32.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_adler32.c
-
-test_crc32.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/test/test_crc32.c
-
 zlibrc.o: win32/zlib$(SUFFIX)1.rc
 	$(RC) $(RCFLAGS) -o $@ win32/zlib$(SUFFIX)1.rc
 
@@ -323,26 +317,15 @@ ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-test_adler32$(EXE): test_adler32.o $(OBJG) $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_adler32.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+minigzipsh$(EXE): minigzip.o $(OBJG) $(SHAREDTARGET)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-test_crc32$(EXE): test_crc32.o $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ test_crc32.o $(TEST_LIBS) $(LDSHAREDLIBC)
-ifneq ($(STRIP),)
-	$(STRIP) $@
-endif
 
 examplesh$(EXE): example.o $(PIC_TESTOBJG) $(SHAREDTARGET)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(PIC_TESTOBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
-ifneq ($(STRIP),)
-	$(STRIP) $@
-endif
-
-minigzipsh$(EXE): minigzip.o $(PIC_TESTOBJG) $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(PIC_TESTOBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -427,10 +410,7 @@ clean:
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) clean; fi
 	@if [ -f test/Makefile ]; then $(MAKE) -C test clean; fi
 	rm -f *.o *.lo *~ \
-	   test_adler32$(EXE) test_crc32$(EXE) example$(EXE) minigzip$(EXE) \
-	   examplesh$(EXE) minigzipsh$(EXE) \
-	   fuzzer_checksum$(EXE) fuzzer_compress$(EXE) fuzzer_example_small$(EXE) fuzzer_example_large$(EXE) \
-	   fuzzer_example_flush$(EXE) fuzzer_example_dict$(EXE) fuzzer_minigzip$(EXE) \
+	   example$(EXE) minigzip$(EXE) minigzipsh$(EXE) fuzzer_*$(EXE) \
 	   infcover makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) \
 	   $(STATICLIB) $(IMPORTLIB) $(SHAREDLIB) $(SHAREDLIBV) $(SHAREDLIBM) \
 	   foo.gz so_locations \

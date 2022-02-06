@@ -1165,6 +1165,12 @@ endif()
 option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 if(ZLIB_ENABLE_TESTS)
     enable_testing()
+
+    add_subdirectory(test)
+    if(WITH_BENCHMARKS)
+        add_subdirectory(test/benchmarks)
+    endif()
+
     macro(configure_test_executable target)
         target_include_directories(${target} PUBLIC
             "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>"
@@ -1188,15 +1194,6 @@ if(ZLIB_ENABLE_TESTS)
         add_test(NAME ${target} COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:${target}>)
     endmacro()
 
-    file(GLOB TEST_SRCS
-        LIST_DIRECTORIES false
-        RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/test
-        ${CMAKE_CURRENT_SOURCE_DIR}/test/test_*.c)
-
-    foreach(TEST_SRC ${TEST_SRCS})
-        get_filename_component(TEST_NAME ${TEST_SRC} NAME_WE)
-        add_simple_test_executable(${TEST_NAME})
-    endforeach()
 
     if(NOT WIN32 AND ZLIB_COMPAT)
         add_simple_test_executable(CVE-2003-0107)
@@ -1301,10 +1298,6 @@ if(ZLIB_ENABLE_TESTS)
             set(FUZZER_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:fuzzer_${FUZZER}> ${ALL_SRC_FILES})
             add_test(NAME fuzzer_${FUZZER} COMMAND ${FUZZER_COMMAND})
         endforeach()
-    endif()
-
-    if(WITH_BENCHMARKS)
-        add_subdirectory(test/benchmarks)
     endif()
 
     macro(test_minigzip name path)
