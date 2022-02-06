@@ -2205,7 +2205,6 @@ done
 
 # Generate Makefile in test dir
 mkdir -p test
-if test $compat -eq 1; then COMPATTESTS="compattests"; fi
 if test $QEMU_ARCH; then QEMU_RUN="qemu-$QEMU_ARCH -L /usr/${CHOST}/"; fi
 sed < $SRCDIR/test/Makefile.in "
 /^CC *=/s#=.*#=$CC#
@@ -2215,7 +2214,6 @@ sed < $SRCDIR/test/Makefile.in "
 /^oldtests: */s#:.*#: $TEST#
 /^SRCDIR *=/s#=.*#=$SRCDIR/test#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
-/^COMPATTESTS *=/s#=.*#=$COMPATTESTS#
 /^QEMU_RUN *=/s#=.*#=$QEMU_RUN#
 /^WITH_FUZZERS *=/s#=.*#=$with_fuzzers#
 /^LIBNAME *=/s#=.*#=$LIBNAME#
