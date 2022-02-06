@@ -16,9 +16,12 @@ RUN apt-get update && apt-get -y install \
         gcc \
         git \
         jq \
+        libxml2-dev \
+        libxslt-dev \
         ninja-build \
         python-is-python3 \
         python3 \
+        python3-dev \
         python3-pip
 
 # amd64 dependencies.
