@@ -54,7 +54,9 @@ extern uint32_t adler32_power8(uint32_t adler, const unsigned char* buf, size_t 
 #ifdef X86_PCLMULQDQ_CRC
 extern uint32_t crc32_fold_reset_pclmulqdq(crc32_fold *crc);
 extern void     crc32_fold_copy_pclmulqdq(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len);
+extern void     crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc);
 extern uint32_t crc32_fold_final_pclmulqdq(crc32_fold *crc);
+extern uint32_t crc32_pclmulqdq(uint32_t crc32, const unsigned char* buf, uint64_t len);
 #endif
 
 /* memory chunking */
