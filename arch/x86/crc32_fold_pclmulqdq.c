@@ -6,6 +6,7 @@
  * https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf
  *
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
+ * Copyright (C) 2016 Marian Beermann (support for initial value)
  * Authors:
  *     Wajdi Feghali   <wajdi.k.feghali@intel.com>
  *     Jim Guilford    <james.guilford@intel.com>
@@ -24,12 +25,18 @@
 #include <smmintrin.h> // _mm_extract_epi32
 
 #include "x86_features.h"
+#include "cpu_features.h"
 
 #include "../../crc32_fold.h"
+#include "../../crc32_p.h"
+#include <assert.h>
 
 #ifdef X86_VPCLMULQDQ_CRC
 extern size_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
     __m128i *xmm_crc2, __m128i *xmm_crc3, uint8_t *dst, const uint8_t *src, size_t len);
+extern size_t fold_16_vpclmulqdq_nocp(__m128i *xmm_crc0, __m128i *xmm_crc1,
+    __m128i *xmm_crc2, __m128i *xmm_crc3, const uint8_t *src, size_t len, __m128i init_crc,
+    int32_t first);
 #endif
 
 static void fold_1(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
@@ -380,6 +387,124 @@ done:
     crc32_fold_save_partial((__m128i *)crc->fold, xmm_crc_part);
 }
 
+#define ONCE(op) if (first) { \
+    first = 0; \
+    (op); \
+}
+#define XOR_INITIAL(where) ONCE(where = _mm_xor_si128(where, xmm_initial))
+
+Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc) {
+    unsigned long algn_diff;
+    __m128i xmm_t0, xmm_t1, xmm_t2, xmm_t3;
+    __m128i xmm_crc0, xmm_crc1, xmm_crc2, xmm_crc3, xmm_crc_part;
+    __m128i xmm_initial = _mm_cvtsi32_si128(init_crc);
+    int32_t first = 1;
+
+    /* Technically the CRC functions don't even call this for input < 64, but a bare minimum of 31
+     * bytes of input is needed for the aligning load that occurs.  If there's an initial CRC, to 
+     * carry it forward through the folded CRC there must be 16 - src % 16 + 16 bytes available, which
+     * by definition can be up to 15 bytes + one full vector load. */
+    assert(len >= 31);
+    crc32_fold_load((__m128i *)crc->fold, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
+
+    algn_diff = ((uintptr_t)16 - ((uintptr_t)src & 0xF)) & 0xF;
+    if (algn_diff) {
+        if (algn_diff >= 4) {
+            xmm_crc_part = _mm_loadu_si128((__m128i *)src);
+
+            src += algn_diff;
+            len -= algn_diff;
+
+            XOR_INITIAL(xmm_crc_part);
+            partial_fold(algn_diff, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, &xmm_crc_part);
+        } else {
+            xmm_t0 = _mm_loadu_si128((__m128i*)src);
+            xmm_crc_part = _mm_loadu_si128((__m128i*)src + 1);
+            XOR_INITIAL(xmm_t0);
+            fold_1(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
+            xmm_crc3 = _mm_xor_si128(xmm_crc3, xmm_t0);
+            partial_fold(algn_diff, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, &xmm_crc_part);
+
+            src += (algn_diff + 16);
+            len -= (algn_diff + 16);
+        }
+    }
+
+    xmm_crc_part = _mm_setzero_si128();
+
+#ifdef X86_VPCLMULQDQ_CRC
+    if (x86_cpu_has_vpclmulqdq && x86_cpu_has_avx512 && (len >= 256)) {
+        size_t n = fold_16_vpclmulqdq_nocp(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, src, len,
+                xmm_initial, first);
+        first = 0;
+
+        len -= n;
+        src += n;
+    }
+#endif
+
+    while (len >= 64) {
+        crc32_fold_load((__m128i *)src, &xmm_t0, &xmm_t1, &xmm_t2, &xmm_t3);
+        XOR_INITIAL(xmm_t0);
+        fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
+
+        xmm_crc0 = _mm_xor_si128(xmm_crc0, xmm_t0);
+        xmm_crc1 = _mm_xor_si128(xmm_crc1, xmm_t1);
+        xmm_crc2 = _mm_xor_si128(xmm_crc2, xmm_t2);
+        xmm_crc3 = _mm_xor_si128(xmm_crc3, xmm_t3);
+
+        src += 64;
+        len -= 64;
+    }
+
+    /*
+     * len = num bytes left - 64
+     */
+    if (len >= 48) {
+        xmm_t0 = _mm_load_si128((__m128i *)src);
+        xmm_t1 = _mm_load_si128((__m128i *)src + 1);
+        xmm_t2 = _mm_load_si128((__m128i *)src + 2);
+        XOR_INITIAL(xmm_t0);
+
+        fold_3(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
+
+        xmm_crc1 = _mm_xor_si128(xmm_crc1, xmm_t0);
+        xmm_crc2 = _mm_xor_si128(xmm_crc2, xmm_t1);
+        xmm_crc3 = _mm_xor_si128(xmm_crc3, xmm_t2);
+        len -= 48;
+        src += 48; 
+    } else if (len >= 32) {
+        xmm_t0 = _mm_load_si128((__m128i *)src);
+        xmm_t1 = _mm_load_si128((__m128i *)src + 1);
+        XOR_INITIAL(xmm_t0);
+
+        fold_2(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
+
+        xmm_crc2 = _mm_xor_si128(xmm_crc2, xmm_t0);
+        xmm_crc3 = _mm_xor_si128(xmm_crc3, xmm_t1);
+
+        len -= 32;
+        src += 32;
+    } else if (len >= 16) {
+        xmm_t0 = _mm_load_si128((__m128i *)src);
+        XOR_INITIAL(xmm_t0);
+
+        fold_1(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
+
+        xmm_crc3 = _mm_xor_si128(xmm_crc3, xmm_t0);
+
+        len -= 16;
+        src += 16;
+    }
+
+    if (len) {
+        memcpy(&xmm_crc_part, src, len);
+        partial_fold((size_t)len, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, &xmm_crc_part);
+    }
+
+    crc32_fold_save((__m128i *)crc->fold, xmm_crc0, xmm_crc1, xmm_crc2, xmm_crc3);
+}
+
 static const unsigned ALIGNED_(16) crc_k[] = {
     0xccaa009e, 0x00000000, /* rk1 */
     0x751997d0, 0x00000001, /* rk2 */
@@ -460,6 +585,18 @@ Z_INTERNAL uint32_t crc32_fold_final_pclmulqdq(crc32_fold *crc) {
     crc->value = ~((uint32_t)_mm_extract_epi32(xmm_crc3, 2));
 
     return crc->value;
+}
+
+uint32_t crc32_pclmulqdq(uint32_t crc32, const unsigned char* buf, uint64_t len) {
+    /* For lens < 64, crc32_byfour method is faster. The CRC32 instruction for
+     * these short lengths might also prove to be effective */
+    if (len < 64) 
+        return crc32_byfour(crc32, buf, len);
+
+    crc32_fold ALIGNED_(16) crc_state;
+    crc32_fold_reset_pclmulqdq(&crc_state);
+    crc32_fold_pclmulqdq(&crc_state, buf, len, crc32);
+    return crc32_fold_final_pclmulqdq(&crc_state);
 }
 
 #endif
