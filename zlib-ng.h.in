@@ -1791,7 +1791,6 @@ struct gzFile_s {
     unsigned char *next;
     z_off64_t pos;
 };
-Z_EXTERN Z_EXPORT int32_t zng_gzgetc_(gzFile file);  /* backward compatibility */
 #  define @ZLIB_SYMBOL_PREFIX@zng_gzgetc(g) ((g)->have ? ((g)->have--, (g)->pos++, *((g)->next)++) : (@ZLIB_SYMBOL_PREFIX@zng_gzgetc)(g))
 
 #endif /* WITH_GZFILEOP */
