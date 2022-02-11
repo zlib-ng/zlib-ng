@@ -13,6 +13,12 @@
 #include "inffixed_tbl.h"
 #include "functable.h"
 
+/* Avoid conflicts with zlib.h macros */
+#ifdef ZLIB_COMPAT
+# undef inflateInit
+# undef inflateInit2
+#endif
+
 /* function prototypes */
 static int inflateStateCheck(PREFIX3(stream) *strm);
 static int updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t len, int32_t cksum);
@@ -128,14 +134,13 @@ int32_t Z_EXPORT PREFIX(inflateReset2)(PREFIX3(stream) *strm, int32_t windowBits
     return PREFIX(inflateReset)(strm);
 }
 
-int32_t Z_EXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int32_t windowBits, const char *version, int32_t stream_size) {
+/* This function is hidden in ZLIB_COMPAT builds. */
+int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windowBits) {
     int32_t ret;
     struct inflate_state *state;
 
     cpu_check_features();
 
-    if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != (int)(sizeof(PREFIX3(stream))))
-        return Z_VERSION_ERROR;
     if (strm == NULL)
         return Z_STREAM_ERROR;
     strm->msg = NULL;                   /* in case we return an error */
@@ -162,8 +167,24 @@ int32_t Z_EXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int32_t windowBits
     return ret;
 }
 
+#ifndef ZLIB_COMPAT
+int32_t Z_EXPORT PREFIX(inflateInit)(PREFIX3(stream) *strm) {
+    return PREFIX(inflateInit2)(strm, DEF_WBITS);
+}
+#endif
+
+/* Function used by zlib.h and zlib-ng version 2.0 macros */
 int32_t Z_EXPORT PREFIX(inflateInit_)(PREFIX3(stream) *strm, const char *version, int32_t stream_size) {
-    return PREFIX(inflateInit2_)(strm, DEF_WBITS, version, stream_size);
+    if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != (int)(sizeof(PREFIX3(stream))))
+        return Z_VERSION_ERROR;
+    return PREFIX(inflateInit2)(strm, DEF_WBITS);
+}
+
+/* Function used by zlib.h and zlib-ng version 2.0 macros */
+int32_t Z_EXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int32_t windowBits, const char *version, int32_t stream_size) {
+    if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != (int)(sizeof(PREFIX3(stream))))
+        return Z_VERSION_ERROR;
+    return PREFIX(inflateInit2)(strm, windowBits);
 }
 
 int32_t Z_EXPORT PREFIX(inflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32_t value) {

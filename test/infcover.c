@@ -368,12 +368,14 @@ static void cover_support(void) {
     inf("3 0", "use fixed blocks", 0, -15, 1, Z_STREAM_END);
     inf("", "bad window size", 0, 1, 0, Z_STREAM_ERROR);
 
+#ifdef ZLIB_COMPAT
     mem_setup(&strm);
     strm.avail_in = 0;
     strm.next_in = NULL;
     ret = PREFIX(inflateInit_)(&strm, &PREFIX2(VERSION)[1], (int)sizeof(PREFIX3(stream)));
                                                 assert(ret == Z_VERSION_ERROR);
     mem_done(&strm, "wrong version");
+#endif
 
     strm.avail_in = 0;
     strm.next_in = NULL;
@@ -474,8 +476,11 @@ static void cover_back(void) {
     PREFIX3(stream) strm;
     unsigned char win[32768];
 
+#ifdef ZLIB_COMPAT
     ret = PREFIX(inflateBackInit_)(NULL, 0, win, 0, 0);
                                                 assert(ret == Z_VERSION_ERROR);
+#endif
+
     ret = PREFIX(inflateBackInit)(NULL, 0, win);
                                                 assert(ret == Z_STREAM_ERROR);
     ret = PREFIX(inflateBack)(NULL, NULL, NULL, NULL, NULL);
