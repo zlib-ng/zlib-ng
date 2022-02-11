@@ -325,18 +325,16 @@ int32_t Z_EXPORT PREFIX(deflateInit)(PREFIX3(stream) *strm, int32_t level) {
 
 /* Function used by zlib.h and zlib-ng version 2.0 macros */
 int32_t Z_EXPORT PREFIX(deflateInit_)(PREFIX3(stream) *strm, int32_t level, const char *version, int32_t stream_size) {
-    if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != sizeof(PREFIX3(stream))) {
+    if (CHECK_VER_STSIZE(version, stream_size))
         return Z_VERSION_ERROR;
-    }
     return PREFIX(deflateInit2)(strm, level, Z_DEFLATED, MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
 }
 
 /* Function used by zlib.h and zlib-ng version 2.0 macros */
 int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int32_t method, int32_t windowBits,
                            int32_t memLevel, int32_t strategy, const char *version, int32_t stream_size) {
-    if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != sizeof(PREFIX3(stream))) {
+    if (CHECK_VER_STSIZE(version, stream_size))
         return Z_VERSION_ERROR;
-    }
     return PREFIX(deflateInit2)(strm, level, method, windowBits, memLevel, strategy);
 }
 
