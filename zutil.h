@@ -120,6 +120,10 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 #  define OS_CODE  3  /* assume Unix */
 #endif
 
+         /* macros */
+
+#define CHECK_VER_STSIZE(_ver,_stsize) ((_ver) == NULL || (_ver)[0] != PREFIX2(VERSION)[0] || (_stsize) != (int32_t)sizeof(PREFIX3(stream)))
+
          /* memory allocation functions */
 
 void Z_INTERNAL *zng_calloc(void *opaque, unsigned items, unsigned size);

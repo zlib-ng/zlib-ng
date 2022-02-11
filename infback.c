@@ -62,9 +62,8 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateBackInit)(PREFIX3(stream) *strm, int32_t wi
 /* Function used by zlib.h and zlib-ng version 2.0 macros */
 int32_t Z_EXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowBits, uint8_t *window,
                               const char *version, int32_t stream_size) {
-    if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != (int)(sizeof(PREFIX3(stream)))) {
+    if (CHECK_VER_STSIZE(version, stream_size))
         return Z_VERSION_ERROR;
-    }
     return PREFIX(inflateBackInit)(strm, windowBits, window);
 }
 
