@@ -1,3 +1,12 @@
+ZLIB_NG_2.1.0 {
+  global:
+    zng_deflateInit;
+    zng_deflateInit2;
+    zng_inflateBackInit;
+    zng_inflateInit;
+    zng_inflateInit2;
+};
+
 ZLIB_NG_2.0.0 {
   global:
     zng_adler32;

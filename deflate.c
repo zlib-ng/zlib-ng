@@ -53,6 +53,12 @@
 #include "deflate_p.h"
 #include "functable.h"
 
+/* Avoid conflicts with zlib.h macros */
+#ifdef ZLIB_COMPAT
+# undef deflateInit
+# undef deflateInit2
+#endif
+
 const char PREFIX(deflate_copyright)[] = " deflate 1.2.11.f Copyright 1995-2016 Jean-loup Gailly and Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
@@ -181,24 +187,16 @@ static const config configuration_table[10] = {
   } while (0)
 
 /* ========================================================================= */
-int32_t Z_EXPORT PREFIX(deflateInit_)(PREFIX3(stream) *strm, int32_t level, const char *version, int32_t stream_size) {
-    return PREFIX(deflateInit2_)(strm, level, Z_DEFLATED, MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY, version, stream_size);
+/* This function is hidden in ZLIB_COMPAT builds. */
+int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level, int32_t method, int32_t windowBits,
+                                            int32_t memLevel, int32_t strategy) {
     /* Todo: ignore strm->next_in if we use it as window */
-}
-
-/* ========================================================================= */
-int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int32_t method, int32_t windowBits,
-                           int32_t memLevel, int32_t strategy, const char *version, int32_t stream_size) {
     uint32_t window_padding = 0;
     deflate_state *s;
     int wrap = 1;
-    static const char my_version[] = PREFIX2(VERSION);
 
     cpu_check_features();
 
-    if (version == NULL || version[0] != my_version[0] || stream_size != sizeof(PREFIX3(stream))) {
-        return Z_VERSION_ERROR;
-    }
     if (strm == NULL)
         return Z_STREAM_ERROR;
 
@@ -317,6 +315,29 @@ int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int
     s->reproducible = 0;
 
     return PREFIX(deflateReset)(strm);
+}
+
+#ifndef ZLIB_COMPAT
+int32_t Z_EXPORT PREFIX(deflateInit)(PREFIX3(stream) *strm, int32_t level) {
+    return PREFIX(deflateInit2)(strm, level, Z_DEFLATED, MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+}
+#endif
+
+/* Function used by zlib.h and zlib-ng version 2.0 macros */
+int32_t Z_EXPORT PREFIX(deflateInit_)(PREFIX3(stream) *strm, int32_t level, const char *version, int32_t stream_size) {
+    if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != sizeof(PREFIX3(stream))) {
+        return Z_VERSION_ERROR;
+    }
+    return PREFIX(deflateInit2)(strm, level, Z_DEFLATED, MAX_WBITS, DEF_MEM_LEVEL, Z_DEFAULT_STRATEGY);
+}
+
+/* Function used by zlib.h and zlib-ng version 2.0 macros */
+int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int32_t method, int32_t windowBits,
+                           int32_t memLevel, int32_t strategy, const char *version, int32_t stream_size) {
+    if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != sizeof(PREFIX3(stream))) {
+        return Z_VERSION_ERROR;
+    }
+    return PREFIX(deflateInit2)(strm, level, method, windowBits, memLevel, strategy);
 }
 
 /* =========================================================================

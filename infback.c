@@ -18,19 +18,23 @@
 #include "inflate_p.h"
 #include "functable.h"
 
+/* Avoid conflicts with zlib.h macros */
+#ifdef ZLIB_COMPAT
+# undef inflateBackInit
+#endif
+
 /*
    strm provides memory allocation functions in zalloc and zfree, or
    NULL to use the library memory allocation functions.
 
    windowBits is in the range 8..15, and window is a user-supplied
    window and output buffer that is 2**windowBits bytes.
+
+   This function is hidden in ZLIB_COMPAT builds.
  */
-int32_t Z_EXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowBits, uint8_t *window,
-                              const char *version, int32_t stream_size) {
+int32_t ZNG_CONDEXPORT PREFIX(inflateBackInit)(PREFIX3(stream) *strm, int32_t windowBits, uint8_t *window) {
     struct inflate_state *state;
 
-    if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != (int)(sizeof(PREFIX3(stream))))
-        return Z_VERSION_ERROR;
     if (strm == NULL || window == NULL || windowBits < 8 || windowBits > 15)
         return Z_STREAM_ERROR;
     strm->msg = NULL;                   /* in case we return an error */
@@ -53,6 +57,15 @@ int32_t Z_EXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowB
     state->whave = 0;
     state->chunksize = functable.chunksize();
     return Z_OK;
+}
+
+/* Function used by zlib.h and zlib-ng version 2.0 macros */
+int32_t Z_EXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowBits, uint8_t *window,
+                              const char *version, int32_t stream_size) {
+    if (version == NULL || version[0] != PREFIX2(VERSION)[0] || stream_size != (int)(sizeof(PREFIX3(stream)))) {
+        return Z_VERSION_ERROR;
+    }
+    return PREFIX(inflateBackInit)(strm, windowBits, window);
 }
 
 /*

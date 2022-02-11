@@ -88,6 +88,9 @@
 #  define Z_EXPORTVA
 #endif
 
+/* Conditional exports */
+#define ZNG_CONDEXPORT Z_EXPORT
+
 /* Fallback for something that includes us. */
 typedef unsigned char Byte;
 typedef Byte Bytef;

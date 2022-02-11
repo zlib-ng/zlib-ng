@@ -4,8 +4,13 @@ EXPORTS
     @ZLIB_SYMBOL_PREFIX@zlibng_version
     @ZLIB_SYMBOL_PREFIX@zng_deflate
     @ZLIB_SYMBOL_PREFIX@zng_deflateEnd
+    @ZLIB_SYMBOL_PREFIX@zng_deflateInit
+    @ZLIB_SYMBOL_PREFIX@zng_deflateInit2
     @ZLIB_SYMBOL_PREFIX@zng_inflate
     @ZLIB_SYMBOL_PREFIX@zng_inflateEnd
+    @ZLIB_SYMBOL_PREFIX@zng_inflateInit
+    @ZLIB_SYMBOL_PREFIX@zng_inflateInit2
+    @ZLIB_SYMBOL_PREFIX@zng_inflateBackInit
 ; advanced functions
     @ZLIB_SYMBOL_PREFIX@zng_deflateSetDictionary
     @ZLIB_SYMBOL_PREFIX@zng_deflateGetDictionary
@@ -45,11 +50,6 @@ EXPORTS
     @ZLIB_SYMBOL_PREFIX@zng_adler32_combine
     @ZLIB_SYMBOL_PREFIX@zng_crc32_combine
 ; various hacks, don't look :)
-    @ZLIB_SYMBOL_PREFIX@zng_deflateInit_
-    @ZLIB_SYMBOL_PREFIX@zng_deflateInit2_
-    @ZLIB_SYMBOL_PREFIX@zng_inflateInit_
-    @ZLIB_SYMBOL_PREFIX@zng_inflateInit2_
-    @ZLIB_SYMBOL_PREFIX@zng_inflateBackInit_
     @ZLIB_SYMBOL_PREFIX@zng_zError
     @ZLIB_SYMBOL_PREFIX@zng_inflateSyncPoint
     @ZLIB_SYMBOL_PREFIX@zng_get_crc_table
