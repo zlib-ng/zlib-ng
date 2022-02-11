@@ -93,7 +93,6 @@ ZLIB_NG_GZ_2.0.0 {
     zng_gzfread;
     zng_gzfwrite;
     zng_gzgetc;
-    zng_gzgetc_;
     zng_gzgets;
     zng_gzoffset;
     zng_gzoffset64;
