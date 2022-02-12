@@ -65,11 +65,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.packages }}
 
-    - name: Install codecov.io tools
-      if: matrix.codecov
-      run: |
-        python -u -m pip install codecov
-
     - name: Generate project files
       run: |
         cd test/pigz
@@ -90,19 +85,23 @@ jobs:
         cd test/pigz
         ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '2' }}
 
-    - name: Upload coverage report
-      if: matrix.codecov && ( env.CODECOV_TOKEN_SECRET != '' || github.repository == 'zlib-ng/zlib-ng' )
-      shell: bash
+    - name: Generate coverage report
+      if: matrix.codecov
       run: |
-        bash tools/codecov-upload.sh
+        python3 -u -m pip install --user gcovr
+        python3 -m gcovr --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" --root . --xml --output coverage.xml --verbose
+
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v2
+      if: matrix.codecov && (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
+      with:
+        token: ${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}
+        flags: ${{ matrix.codecov }}
+        name: ${{ matrix.name }}
+        verbose: true
+        fail_ci_if_error: true
       env:
-        # Codecov does not yet support GitHub Actions
-        CODECOV_TOKEN_SECRET: "${{secrets.CODECOV_TOKEN}}"
-        CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}"
-        CODECOV_FLAGS: "${{ matrix.codecov }}"
-        CODECOV_NAME:  "${{ matrix.name }}"
-        CODECOV_EXEC:  "${{ matrix.gcov-exec || 'gcov' }}"
-        CODECOV_DIR:   "."
+        CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
 
     - name: Upload build errors
       uses: actions/upload-artifact@v2
@@ -113,4 +112,5 @@ jobs:
           **/CMakeFiles/CMakeOutput.log
           **/CMakeFiles/CMakeError.log
           **/Testing/Temporary/*
+          coverage.xml
         retention-days: 30
