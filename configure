@@ -1170,6 +1170,13 @@ EOF
 }
 
 check_neon_ld4_intrinsics() {
+    if test $buildneon -eq 1 && test $native -eq 0; then
+        if test "$CC_ARCH" = "aarch64" || test "$CC_ARCH" = "aarch64_be"; then
+            neonflag="-march=armv8-a+simd"
+        elif test $MFPU_NEON_AVAILABLE -eq 1; then
+            neonflag="-mfpu=neon"
+        fi
+    fi
     cat > $test.c << EOF
 #ifdef _M_ARM64
 #  include <arm64_neon.h>
@@ -1183,7 +1190,7 @@ int main(void) {
     return 0;
 }
 EOF
-    if try $CC -c $CFLAGS -march=native $test.c; then
+    if try $CC -c $CFLAGS $neonflag $test.c; then
         NEON_HAS_LD4=1
         echo "check whether compiler supports 4 wide register loads ... Yes." | tee -a configure.log
     else
