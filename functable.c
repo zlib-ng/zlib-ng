@@ -8,6 +8,7 @@
 #include "crc32_p.h"
 #include "deflate.h"
 #include "deflate_p.h"
+#include <stdio.h>
 
 #include "functable.h"
 
@@ -97,7 +98,7 @@ Z_INTERNAL void slide_hash_stub(deflate_state *s) {
 }
 
 Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
-
+    cpu_check_features();
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
     functable.longest_match = &longest_match_unaligned_64;
@@ -122,6 +123,7 @@ Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
 }
 
 Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_match) {
+    cpu_check_features();
 
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
@@ -250,6 +252,7 @@ Z_INTERNAL uint32_t chunksize_stub(void) {
 Z_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned len) {
     // Initialize default
     functable.chunkcopy = &chunkcopy_c;
+    cpu_check_features();
 
 #ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
@@ -276,6 +279,7 @@ Z_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned l
 Z_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
     // Initialize default
     functable.chunkcopy_safe = &chunkcopy_safe_c;
+    cpu_check_features();
 
 #ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
@@ -286,6 +290,7 @@ Z_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsig
 #ifdef X86_AVX_CHUNKSET
     if (x86_cpu_has_avx2)
         functable.chunkcopy_safe = &chunkcopy_safe_avx;
+    
 #endif
 #ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
@@ -302,6 +307,7 @@ Z_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsig
 Z_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len) {
     // Initialize default
     functable.chunkunroll = &chunkunroll_c;
+    cpu_check_features();
 
 #ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
@@ -328,6 +334,7 @@ Z_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len
 Z_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len) {
     // Initialize default
     functable.chunkmemset = &chunkmemset_c;
+    cpu_check_features();
 
 #ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
@@ -355,6 +362,7 @@ Z_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len) 
 Z_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned len, unsigned left) {
     // Initialize default
     functable.chunkmemset_safe = &chunkmemset_safe_c;
+    cpu_check_features();
 
 #ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
@@ -399,6 +407,7 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
 }
 
 Z_INTERNAL uint32_t compare256_stub(const uint8_t *src0, const uint8_t *src1) {
+    cpu_check_features();
 
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
