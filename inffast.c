@@ -11,7 +11,6 @@
 #include "inflate_p.h"
 #include "functable.h"
 
-
 /* Load 64 bits from IN and place the bytes at offset BITS in the result. */
 static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
     uint64_t chunk;
@@ -430,7 +429,7 @@ void Z_INTERNAL zng_inflate_fast_back(PREFIX3(stream) *strm, unsigned long start
                         from += wsize - op;
                         if (op < len) {         /* some from end of window */
                             len -= op;
-                            out = functable.chunkcopy_safe(out, from, op, safe);
+                            out = chunkcopy_safe(out, from, op, safe);
                             from = window;      /* more from start of window */
                             op = wnext;
                             /* This (rare) case can create a situation where
@@ -440,16 +439,16 @@ void Z_INTERNAL zng_inflate_fast_back(PREFIX3(stream) *strm, unsigned long start
                     }
                     if (op < len) {             /* still need some from output */
                         len -= op;
-                        out = functable.chunkcopy_safe(out, from, op, safe);
+                        out = chunkcopy_safe(out, from, op, safe);
                         out = functable.chunkunroll(out, &dist, &len);
-                        out = functable.chunkcopy_safe(out, out - dist, len, safe);
+                        out = chunkcopy_safe(out, out - dist, len, safe);
                     } else {
-                        out = functable.chunkcopy_safe(out, from, len, safe);
+                        out = chunkcopy_safe(out, from, len, safe);
                     }
                 } else if (extra_safe) {
                     /* Whole reference is in range of current output. */
                     if (dist >= len || dist >= state->chunksize)
-                        out = functable.chunkcopy_safe(out, out - dist, len, safe);
+                        out = chunkcopy_safe(out, out - dist, len, safe);
                     else
                         out = functable.chunkmemset_safe(out, dist, len, (unsigned)((safe - out) + 1));
                 } else {

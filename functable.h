@@ -18,7 +18,6 @@ struct functable_s {
     uint32_t (* compare256)         (const uint8_t *src0, const uint8_t *src1);
     uint32_t (* chunksize)          (void);
     uint8_t* (* chunkcopy)          (uint8_t *out, uint8_t const *from, unsigned len);
-    uint8_t* (* chunkcopy_safe)     (uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe);
     uint8_t* (* chunkunroll)        (uint8_t *out, unsigned *dist, unsigned *len);
     uint8_t* (* chunkmemset)        (uint8_t *out, unsigned dist, unsigned len);
     uint8_t* (* chunkmemset_safe)   (uint8_t *out, unsigned dist, unsigned len, unsigned left);

@@ -3,6 +3,7 @@
  */
 
 #include "zbuild.h"
+#include <stdlib.h>
 
 /* Returns the chunk size */
 Z_INTERNAL uint32_t CHUNKSIZE(void) {
@@ -38,52 +39,6 @@ Z_INTERNAL uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
     return out;
 }
 
-/* Behave like chunkcopy, but avoid writing beyond of legal output. */
-Z_INTERNAL uint8_t* CHUNKCOPY_SAFE(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
-    unsigned safelen = (unsigned)((safe - out) + 1);
-    len = MIN(len, safelen);
-#if CHUNK_SIZE >= 32
-    while (len >= 32) {
-        memcpy(out, from, 32);
-        out += 32;
-        from += 32;
-        len -= 32;
-    }
-#endif
-#if CHUNK_SIZE >= 16
-    while (len >= 16) {
-        memcpy(out, from, 16);
-        out += 16;
-        from += 16;
-        len -= 16;
-    }
-#endif
-#if CHUNK_SIZE >= 8
-    while (len >= 8) {
-        zmemcpy_8(out, from);
-        out += 8;
-        from += 8;
-        len -= 8;
-    }
-#endif
-    if (len >= 4) {
-        zmemcpy_4(out, from);
-        out += 4;
-        from += 4;
-        len -= 4;
-    }
-    if (len >= 2) {
-        zmemcpy_2(out, from);
-        out += 2;
-        from += 2;
-        len -= 2;
-    }
-    if (len == 1) {
-        *out++ = *from++;
-    }
-    return out;
-}
-
 /* Perform short copies until distance can be rewritten as being at least
    sizeof chunk_t.
 
@@ -112,66 +67,80 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
     Assert(dist > 0, "chunkmemset cannot have a distance 0");
 
-    unsigned char *from = out - dist;
-    chunk_t chunk;
-    unsigned sz = sizeof(chunk);
-    if (len < sz) {
-        while (len != 0) {
-            *out++ = *from++;
-            --len;
-        }
-        return out;
+    uint8_t *from = out - dist;
+
+    if (dist == 1) {
+        memset(out, *from, len);
+        return out + len;
+    } else if (dist > sizeof(chunk_t)) {
+        return CHUNKCOPY(out, out - dist, len);
     }
 
-#ifdef HAVE_CHUNKMEMSET_1
-    if (dist == 1) {
-        chunkmemset_1(from, &chunk);
-    } else
-#endif
+    chunk_t chunk_load;
+    uint32_t chunk_mod = 0;
+
+    /* TODO: possibly build up a permutation table for this if not an even modulus */
 #ifdef HAVE_CHUNKMEMSET_2
     if (dist == 2) {
-        chunkmemset_2(from, &chunk);
+        chunkmemset_2(from, &chunk_load);
     } else
 #endif
 #ifdef HAVE_CHUNKMEMSET_4
     if (dist == 4) {
-        chunkmemset_4(from, &chunk);
+        chunkmemset_4(from, &chunk_load);
     } else
 #endif
 #ifdef HAVE_CHUNKMEMSET_8
     if (dist == 8) {
-        chunkmemset_8(from, &chunk);
+        chunkmemset_8(from, &chunk_load);
+    } else if (dist == sizeof(chunk_t)) {
+        loadchunk(from, &chunk_load);
     } else
 #endif
-    if (dist == sz) {
-        loadchunk(from, &chunk);
-    } else if (dist < sz) {
-        unsigned char *end = out + len - 1;
-        while (len > dist) {
-            out = CHUNKCOPY_SAFE(out, from, dist, end);
-            len -= dist;
+    {
+        /* This code takes string of length dist from "from" and repeats
+         * it for as many times as can fit in a chunk_t (vector register) */
+        int32_t cpy_dist;
+        int32_t bytes_remaining = sizeof(chunk_t);
+        uint8_t *cur_chunk = (uint8_t*)&chunk_load;
+        while (bytes_remaining) {
+            cpy_dist = MIN(dist, bytes_remaining);
+            memcpy(cur_chunk, from, cpy_dist);
+            bytes_remaining -= cpy_dist;
+            cur_chunk += cpy_dist;
+            /* This allows us to bypass an expensive integer division since we're effectively
+             * counting in this loop, anyway. However, we may have to derive a similarly 
+             * sensible solution for if we use a permutation table that allows us to construct
+             * this vector in one load and one permute instruction */
+            chunk_mod = cpy_dist;
         }
-        if (len > 0) {
-            out = CHUNKCOPY_SAFE(out, from, len, end);
-        }
-        return out;
-    } else {
-        out = CHUNKUNROLL(out, &dist, &len);
-        return CHUNKCOPY(out, out - dist, len);
     }
 
-    unsigned rem = len % sz;
-    len -= rem;
-    while (len) {
-        storechunk(out, &chunk);
-        out += sz;
-        len -= sz;
+    /* If we're lucky enough and dist happens to be an even modulus of our vector length,
+     * we can do two stores per loop iteration, which for most ISAs, especially x86, is beneficial */
+    if (chunk_mod == 0) {
+        while (len >= (2 * sizeof(chunk_t))) {
+            storechunk(out, &chunk_load);
+            storechunk(out + sizeof(chunk_t), &chunk_load);
+            out += 2 * sizeof(chunk_t);
+            len -= 2 * sizeof(chunk_t);
+        }
     }
 
-    /* Last, deal with the case when LEN is not a multiple of SZ. */
-    if (rem) {
-        memcpy(out, from, rem);
-        out += rem;
+    /* If we don't have a "dist" length that divides evenly into a vector
+     * register, we can write the whole vector register but we need only
+     * advance by the amount of the whole string that fits in our chunk_t.
+     * If we do divide evenly into the vector length, adv_amount = chunk_t size*/
+    uint32_t adv_amount = sizeof(chunk_t) - chunk_mod;
+    while (len >= sizeof(chunk_t)) {
+        storechunk(out, &chunk_load);
+        len -= adv_amount;
+        out += adv_amount;
+    }
+
+    if (len) {
+        memcpy(out, &chunk_load, len);
+        out += len;
     }
 
     return out;
