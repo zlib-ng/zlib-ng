@@ -19,12 +19,12 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     int bflush;              /* set if current block must be flushed */
     int64_t dist;
     uint32_t match_len;
-    match_func longest_match;
+    match_func *longest_match;
 
     if (s->max_chain_length <= 1024)
-        longest_match = functable.longest_match;
+        longest_match = &functable.longest_match;
     else
-        longest_match = functable.longest_match_slow;
+        longest_match = &functable.longest_match_slow;
 
     /* Process the input block. */
     for (;;) {
@@ -61,7 +61,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
              * of window index 0 (in particular we have to avoid a match
              * of the string with itself at the start of the input file).
              */
-            match_len = longest_match(s, hash_head);
+            match_len = (*longest_match)(s, hash_head);
             /* longest_match() sets match_start */
 
             if (match_len <= 5 && (s->strategy == Z_FILTERED)) {
