@@ -887,7 +887,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             }
             unsigned char *next_out = state->window + state->wsize + state->wnext;
             if (copy <= state->offset) {
-                functable.chunkcopy_safe(next_out, next_out - state->offset, copy, put + buf_left);
+                chunkcopy_safe(next_out, next_out - state->offset, copy, put + buf_left);
             } else {                             /* copy from output */
                 functable.chunkmemset_safe(next_out, state->offset, copy, (uint32_t)buf_left);
             }

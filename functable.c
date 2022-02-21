@@ -273,32 +273,6 @@ Z_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned l
     return functable.chunkcopy(out, from, len);
 }
 
-Z_INTERNAL uint8_t* chunkcopy_safe_stub(uint8_t *out, uint8_t const *from, unsigned len, uint8_t *safe) {
-    // Initialize default
-    functable.chunkcopy_safe = &chunkcopy_safe_c;
-
-#ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-        functable.chunkcopy_safe = &chunkcopy_safe_sse2;
-#endif
-#ifdef X86_AVX_CHUNKSET
-    if (x86_cpu_has_avx2)
-        functable.chunkcopy_safe = &chunkcopy_safe_avx;
-#endif
-#ifdef ARM_NEON_CHUNKSET
-    if (arm_cpu_has_neon)
-        functable.chunkcopy_safe = &chunkcopy_safe_neon;
-#endif
-#ifdef POWER8_VSX_CHUNKSET
-    if (power_cpu_has_arch_2_07)
-        functable.chunkcopy_safe = &chunkcopy_safe_power8;
-#endif
-
-    return functable.chunkcopy_safe(out, from, len, safe);
-}
-
 Z_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len) {
     // Initialize default
     functable.chunkunroll = &chunkunroll_c;
@@ -433,7 +407,6 @@ Z_INTERNAL Z_TLS struct functable_s functable = {
     compare256_stub,
     chunksize_stub,
     chunkcopy_stub,
-    chunkcopy_safe_stub,
     chunkunroll_stub,
     chunkmemset_stub,
     chunkmemset_safe_stub,
