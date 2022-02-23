@@ -89,7 +89,7 @@ jobs:
       if: matrix.codecov
       run: |
         python3 -u -m pip install --user gcovr
-        python3 -m gcovr --exclude-unreachable-branches --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" --root . --xml --output coverage.xml --verbose
+        python3 -m gcovr --exclude-unreachable-branches --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" --root . --xml --output coverage.xml -j 3 --verbose
 
     - name: Upload coverage report
       uses: codecov/codecov-action@v2
