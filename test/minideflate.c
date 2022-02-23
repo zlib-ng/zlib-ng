@@ -167,7 +167,7 @@ void inflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
         do {
             err = PREFIX(inflate)(&d_stream, flush);
             if (err == Z_STREAM_END) break;
-            CHECK_ERR(err, "deflate");
+            CHECK_ERR(err, "inflate");
 
             if (d_stream.next_out == write_buf + write_buf_size) {
                 fwrite(write_buf, 1, write_buf_size, fout);
