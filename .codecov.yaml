@@ -24,3 +24,4 @@ ignore:
 - usr/lib64/.*
 - /usr/lib64/.*
 - /build/usr/lib64/.*
+- _deps/**/*
