@@ -71,7 +71,6 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm) {
 #ifdef INFLATE_STRICT
     unsigned dmax;              /* maximum distance from zlib header */
 #endif
-    unsigned wsize;             /* window size or zero if not using window */
 
     /* hold is a local copy of strm->hold. By default, hold satisfies the same
        invariants that strm->hold does, namely that (hold >> bits) == 0. This
@@ -126,9 +125,8 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm) {
     state = (struct inflate_state *)strm->state;
     in = strm->next_in;
     last = in + (strm->avail_in - (INFLATE_FAST_MIN_HAVE - 1));
-    wsize = state->wsize;
-    out = state->window + wsize + state->wnext;
-    end = state->window + (wsize * 2) - (INFLATE_FAST_MIN_LEFT - 1);
+    out = state->pending;
+    end = state->pending_end - (INFLATE_FAST_MIN_LEFT - 1);
 #ifdef INFLATE_STRICT
     dmax = state->dmax;
 #endif
@@ -148,9 +146,9 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm) {
             bits += 48;
         }
         if (out >= end) {
-            state->wnext = (uint32_t)(out - (state->window + wsize));
+            state->pending = out;
             window_output_flush(strm);
-            out = state->window + state->wsize + state->wnext;
+            out = state->pending;
             if (strm->avail_out == 0)
                 break;
         }
@@ -201,7 +199,7 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm) {
                 DROPBITS(op);
                 Tracevv((stderr, "inflate:         distance %u\n", dist));
 
-                if (out - dist < ((state->window + state->wsize) - state->whave)) {
+                if (out - dist < (state->pending_buf - state->whave)) {
                     if (state->sane) {
                         SET_BAD("invalid distance too far back");
                         break;
@@ -244,7 +242,7 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm) {
     strm->avail_in = (unsigned)(in < last ? (INFLATE_FAST_MIN_HAVE - 1) + (last - in)
                                           : (INFLATE_FAST_MIN_HAVE - 1) - (in - last));
 
-    state->wnext = (uint32_t)(out - (state->window + state->wsize));
+    state->pending = out;
     Assert(bits <= 32, "Remaining bits greater than 32");
     state->hold = (uint32_t)hold;
     state->bits = bits;
@@ -264,7 +262,6 @@ void Z_INTERNAL zng_inflate_fast_back(PREFIX3(stream) *strm, unsigned long start
 #endif
     unsigned wsize;             /* window size or zero if not using window */
     unsigned whave;             /* valid bytes in the window */
-    unsigned wnext;             /* window write index */
     unsigned char *window;      /* allocated sliding window, if wsize != 0 */
 
     /* hold is a local copy of strm->hold. By default, hold satisfies the same
@@ -324,7 +321,6 @@ void Z_INTERNAL zng_inflate_fast_back(PREFIX3(stream) *strm, unsigned long start
 #endif
     wsize = state->wsize;
     whave = state->whave;
-    wnext = state->wnext;
     window = state->window;
     hold = state->hold;
     bits = state->bits;
@@ -421,18 +417,20 @@ void Z_INTERNAL zng_inflate_fast_back(PREFIX3(stream) *strm, unsigned long start
 #endif
                     }
                     from = window;
-                    if (wnext == 0) {           /* very common case */
+                    uint32_t pending_bytes = (uint32_t)(state->pending - state->pending_buf);
+                    if (pending_bytes == 0) {   /* very common case */
                         from += wsize - op;
-                    } else if (wnext >= op) {   /* contiguous in window */
-                        from += wnext - op;
+                    } else if (pending_bytes >= op) {
+                                                /* contiguous in window */
+                        from += pending_bytes - op;
                     } else {                    /* wrap around window */
-                        op -= wnext;
+                        op -= pending_bytes;
                         from += wsize - op;
                         if (op < len) {         /* some from end of window */
                             len -= op;
                             out = functable.chunkcopy_safe(out, from, op, safe);
                             from = window;      /* more from start of window */
-                            op = wnext;
+                            op = pending_bytes;
                             /* This (rare) case can create a situation where
                                the first chunkcopy below must be checked.
                              */
@@ -507,7 +505,7 @@ void Z_INTERNAL zng_inflate_fast_back(PREFIX3(stream) *strm, unsigned long start
    inflate_fast() speedups that turned out slower (on a PowerPC G3 750CXe):
    - Using bit fields for code structure
    - Different op definition to avoid & for extra bits (do & for table bits)
-   - Three separate decoding do-loops for direct, window, and wnext == 0
+   - Three separate decoding do-loops for direct, window, and pending == pending_buf
    - Special case for distance > 1 copies to do overlapped load and store copy
    - Explicit branch predictions (based on measured branch probabilities)
    - Deferring match copy and interspersed it with decoding subsequent codes

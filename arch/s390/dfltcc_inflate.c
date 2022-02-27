@@ -134,7 +134,7 @@ int Z_INTERNAL dfltcc_inflate_disable(PREFIX3(streamp) strm) {
     /* Convert window from hardware to software format. Use its second part as scratch space. */
     dfltcc_get_history(param, state->window, state->window + state->wsize, &count);
     state->whave = count;
-    state->wnext = 0;
+    state->pending = state->pending_buf;
     memcpy(state->window + state->wsize - state->whave, state->window + state->wsize, state->whave);
     return 0;
 }

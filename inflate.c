@@ -60,8 +60,8 @@ int32_t Z_EXPORT PREFIX(inflateReset)(PREFIX3(stream) *strm) {
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
+    state->pending = state->pending_buf;
     state->whave = 0;
-    state->wnext = 0;
     return PREFIX(inflateResetKeep)(strm);
 }
 
@@ -126,6 +126,8 @@ int32_t Z_EXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int32_t windowBits
     state->strm = strm;
     state->window = NULL;
     state->wsize = 0;
+    state->pending = NULL;
+    state->pending_buf = NULL;
     state->mode = HEAD;     /* to pass state test in inflateReset2() */
     state->chunksize = functable.chunksize();
     ret = PREFIX(inflateReset2)(strm, windowBits);
@@ -186,7 +188,9 @@ int Z_INTERNAL inflate_ensure_window(struct inflate_state *state) {
     /* if window not in use yet, initialize */
     if (state->wsize == 0) {
         state->wsize = 1U << state->wbits;
-        state->wnext = 0;
+        state->pending_buf = state->window + state->wsize;
+        state->pending = state->pending_buf;
+        state->pending_end = state->pending_buf + state->wsize;
         state->whave = 0;
     }
 
@@ -591,16 +595,14 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             /* copy stored block from input to output */
             copy = state->length;
             if (copy) {
-                unsigned char *end = state->window + (state->wsize * 2);
-                int64_t diff = end - put;
-
+                int64_t diff = state->pending_end - put;
                 copy = MIN(copy, have);
                 if (copy > diff) {
                     if (left > 0) {
                         RESTORE();
                         window_output_flush(strm);
                         LOAD();
-                        diff = end - put;
+                        diff = state->pending_end - put;
                     }
                     copy = MIN(copy, (uint32_t)diff);
                 }
@@ -863,9 +865,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             /* copy match from window to output */
             if (left == 0)
                 goto inf_leave;
-
-            unsigned char *end = state->window + (state->wsize * 2);
-            int64_t buf_left = end - put;
+            int64_t buf_left = state->pending_end - put;
             copy = state->length;
             RESTORE();
             if (copy > buf_left) {
@@ -873,25 +873,25 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                     /* relies on RESTORE() above with no changes to those vars */
                     window_output_flush(strm);
                     LOAD();
-                    buf_left = end - put;
+                    buf_left = state->pending_end - put;
                 }
                 copy = MIN(copy, (uint32_t)buf_left);
             }
             if (copy == 0)
                 goto inf_leave;
-            if (state->offset > state->wnext + state->whave) {
+            uint32_t pending_bytes = (uint32_t)(state->pending - state->pending_buf);
+            if (state->offset > pending_bytes + state->whave) {
                 if (state->sane) {
                     SET_BAD("invalid distance too far back");
                     break;
                 }
             }
-            unsigned char *next_out = state->window + state->wsize + state->wnext;
             if (copy <= state->offset) {
-                functable.chunkcopy_safe(next_out, next_out - state->offset, copy, put + buf_left);
+                functable.chunkcopy_safe(state->pending, state->pending - state->offset, copy, put + buf_left);
             } else {                             /* copy from output */
-                functable.chunkmemset_safe(next_out, state->offset, copy, (uint32_t)buf_left);
+                functable.chunkmemset_safe(state->pending, state->offset, copy, (uint32_t)buf_left);
             }
-            state->wnext += copy;
+            state->pending += copy;
             state->length -= copy;
             LOAD();
             if (state->length == 0)
@@ -899,7 +899,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             break;
         }
         case LIT:
-            if (put >= state->window + (state->wsize * 2)) {
+            if (put >= state->pending_end) {
                 RESTORE();
                 window_output_flush(strm);
                 LOAD();
@@ -915,7 +915,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 RESTORE();
                 window_output_flush(strm);
                 LOAD();
-                if (strm->avail_out == 0 && state->wnext)
+                if (strm->avail_out == 0 && state->pending > state->pending_buf)
                     goto inf_leave;
             }
             if (state->wrap) {
@@ -984,7 +984,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
   inf_leave:
     RESTORE();
 
-    if (INFLATE_NEED_WINDOW_OUTPUT_FLUSH(strm) && strm->avail_out && state->wnext)
+    if (INFLATE_NEED_WINDOW_OUTPUT_FLUSH(strm) && strm->avail_out && state->pending > state->pending_buf)
         window_output_flush(strm);
 
     in -= strm->avail_in;
@@ -1024,7 +1024,7 @@ int32_t Z_EXPORT PREFIX(inflateGetDictionary)(PREFIX3(stream) *strm, uint8_t *di
 
     /* copy dictionary */
     if (state->whave && dictionary != NULL)
-        memcpy(dictionary, state->window + state->wsize - state->whave, state->whave);
+        memcpy(dictionary, state->pending_buf - state->whave, state->whave);
     if (dictLength != NULL)
         *dictLength = state->whave;
     return Z_OK;
@@ -1054,7 +1054,7 @@ int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     if (ret != Z_OK)
         return Z_MEM_ERROR;
 
-    Tracec(state->wnext != 0, (stderr, "Setting dictionary with unflushed output"));
+    Tracec(state->pending_buf != state->pending, (stderr, "Setting dictionary with unflushed output"));
 
     INFLATE_SET_DICTIONARY_HOOK(strm, dictionary, dictLength);  /* hook for IBM Z DFLTCC */
 
@@ -1065,7 +1065,7 @@ int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8
         dict_copy = state->wsize;
         dict_from += (dictLength - dict_copy);
     }
-    dict_to = state->window + state->wsize - dict_copy;
+    dict_to = state->pending_buf - dict_copy;
 
     hist_copy = state->wsize - dict_copy;
     if (hist_copy > state->whave)
@@ -1073,7 +1073,7 @@ int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     hist_to = dict_to - hist_copy;
 
     if (hist_copy)
-        memcpy(hist_to, state->window + state->wsize - hist_copy, hist_copy);
+        memcpy(hist_to, state->pending_buf - hist_copy, hist_copy);
     if (dict_copy)
         memcpy(dict_to, dict_from, dict_copy);
 

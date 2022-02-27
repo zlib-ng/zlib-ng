@@ -67,7 +67,7 @@
 /* Load registers with state in inflate() for speed */
 #define LOAD() \
     do { \
-        put = state->window + state->wsize + state->wnext; \
+        put = state->pending; \
         left = strm->avail_out; \
         next = strm->next_in; \
         have = strm->avail_in; \
@@ -89,7 +89,7 @@
 /* Restore state from registers in inflate() */
 #define RESTORE() \
     do { \
-        state->wnext = (uint32_t)(put - (state->window + state->wsize)); \
+        state->pending = put; \
         strm->avail_out = left; \
         strm->next_in = (z_const unsigned char *)next; \
         strm->avail_in = have; \
@@ -178,18 +178,19 @@ static inline void inf_crc_copy(PREFIX3(stream) *strm, unsigned char *const dst,
 static inline void window_output_flush(PREFIX3(stream) *strm) {
     struct inflate_state *const state = (struct inflate_state *const)strm->state;
     size_t write_offset, read_offset, copy_size;
-    uint32_t out_bytes;
-
-    if (state->wnext > strm->avail_out) {
+    uint32_t out_bytes, pending_bytes;
+    
+    pending_bytes = (uint32_t)(state->pending - state->pending_buf);
+    if (pending_bytes > strm->avail_out) {
         out_bytes = strm->avail_out;
-        copy_size = state->wnext - out_bytes;
+        copy_size = pending_bytes - out_bytes;
     } else {
-        out_bytes = state->wnext;
+        out_bytes = pending_bytes;
         copy_size = 0;
     }
 
     /* Copy from pending buffer to stream output */
-    inf_crc_copy(strm, strm->next_out, state->window + state->wsize, out_bytes);
+    inf_crc_copy(strm, strm->next_out, state->pending_buf, out_bytes);
 
     strm->avail_out -= out_bytes;
     strm->next_out += out_bytes;
@@ -207,7 +208,8 @@ static inline void window_output_flush(PREFIX3(stream) *strm) {
 
     memmove(state->window + write_offset, state->window + read_offset, copy_size);
 
-    state->wnext -= out_bytes;
+    state->pending -= out_bytes;
+
     state->whave += out_bytes;
     state->whave = MIN(state->whave, state->wsize);
 }

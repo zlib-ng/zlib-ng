@@ -199,7 +199,7 @@ bits of deflate block header) and it's responsible for the following:
   the return value, which can be either `DFLTCC_INFLATE_BREAK` or
   `DFLTCC_INFLATE_CONTINUE`.
 * Converting software state fields into hardware parameter block fields,
-  and vice versa. For example, `whave` and History Length or `wnext` and
+  and vice versa. For example, `whave` and History Length or `pending` and
   History Offset.
 * Ending streams. This instructs `inflate()` to return `Z_STREAM_END`
   and is controlled by `last` state field.

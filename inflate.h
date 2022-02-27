@@ -100,8 +100,11 @@ struct inflate_state {
     unsigned wbits;             /* log base 2 of requested window size */
     uint32_t wsize;             /* window size or zero if not using window */
     uint32_t whave;             /* valid bytes in the window */
-    uint32_t wnext;             /* window write index */
     unsigned char *window;      /* allocated sliding window, if needed */
+
+    uint8_t *pending;           /* next pending output */
+    uint8_t *pending_buf;       /* pending output buffer pointer */
+    uint8_t *pending_end;       /* end of pending output buffer */
 
     struct crc32_fold_s ALIGNED_(16) crc_fold;
 
