@@ -222,7 +222,10 @@ void show_help(void) {
            "  -R : compress with Z_RLE\n" \
            "  -F : compress with Z_FIXED\n" \
            "  -m : memory level (1 to 8)\n" \
-           "  -w : window bits (8 to 15 for gzip, -8 to -15 for zlib)\n" \
+           "  -w : window bits..\n" \
+           "     :   -1 to -15 for raw deflate\n"
+           "     :    0 to  15 for deflate (adler32)\n"
+           "     :   16 to  31 for gzip (crc32)\n"
            "  -s : flush type (0 to 5)\n" \
            "  -r : read buffer size\n" \
            "  -t : write buffer size\n" \
