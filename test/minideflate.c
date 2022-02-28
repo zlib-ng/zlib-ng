@@ -227,7 +227,7 @@ void show_help(void) {
 int main(int argc, char **argv) {
     int32_t i;
     int32_t mem_level = DEF_MEM_LEVEL;
-    int32_t window_bits = MAX_WBITS;
+    int32_t window_bits = INT32_MAX;
     int32_t strategy = Z_DEFAULT_STRATEGY;
     int32_t level = Z_DEFAULT_COMPRESSION;
     int32_t read_buf_size = 4096;
@@ -274,6 +274,14 @@ int main(int argc, char **argv) {
 
     SET_BINARY_MODE(stdin);
     SET_BINARY_MODE(stdout);
+
+    if (window_bits == INT32_MAX) {
+        window_bits = MAX_WBITS;
+        /* Auto-detect wrapper for inflateInit */
+        if (uncompr)
+            window_bits += 32;
+    }
+
     if (i != argc) {
         fin = fopen(argv[i], "rb+");
         if (fin == NULL) {
