@@ -25,10 +25,23 @@ set(gtest_force_shared_crt ON CACHE BOOL
 set(gtest_disable_pthreads ON CACHE BOOL
     "Disable uses of pthreads in gtest." FORCE)
 
+# Allow specifying alternative Google test repository
+if(NOT DEFINED GTEST_REPOSITORY)
+    set(GTEST_REPOSITORY https://github.com/google/googletest.git)
+endif()
+if(NOT DEFINED GTEST_TAG)
+    # Use older version of Google test to support older versions of GCC
+    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQUAL 5.3)
+        set(GTEST_TAG release-1.10.0)
+    else()
+        set(GTEST_TAG main)
+    endif()
+endif()
+
 # Fetch Google test source code from official repository
 FetchContent_Declare(googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG main)
+    GIT_REPOSITORY ${GTEST_REPOSITORY}
+    GIT_TAG ${GTEST_TAG})
 
 FetchContent_GetProperties(googletest)
 if(NOT googletest_POPULATED)
