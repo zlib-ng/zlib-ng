@@ -11,7 +11,6 @@
  */
 
 void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm);
-void Z_INTERNAL zng_inflate_fast_back(PREFIX3(stream) *strm, unsigned long start);
 
 #define INFLATE_FAST_MIN_HAVE 8
 #define INFLATE_FAST_MIN_LEFT 258

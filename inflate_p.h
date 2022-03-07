@@ -70,32 +70,10 @@
         bits = state->bits; \
     } while (0)
 
-/* Load registers with state in inflateBack() for speed */
-#define LOAD_BACK() \
-    do { \
-        put = strm->next_out; \
-        left = strm->avail_out; \
-        next = strm->next_in; \
-        have = strm->avail_in; \
-        hold = state->hold; \
-        bits = state->bits; \
-    } while (0)
-
 /* Restore state from registers in inflate() */
 #define RESTORE() \
     do { \
         state->wnext = (uint32_t)(put - (state->window + state->wsize)); \
-        strm->avail_out = left; \
-        strm->next_in = (z_const unsigned char *)next; \
-        strm->avail_in = have; \
-        state->hold = hold; \
-        state->bits = bits; \
-    } while (0)
-
-/* Restore state from registers in inflateBack() */
-#define RESTORE_BACK() \
-    do { \
-        strm->next_out = put; \
         strm->avail_out = left; \
         strm->next_in = (z_const unsigned char *)next; \
         strm->avail_in = have; \
