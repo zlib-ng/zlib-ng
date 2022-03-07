@@ -66,10 +66,11 @@ buffer and a window. `ZALLOC_STATE()`, `ZFREE_STATE()`, `ZCOPY_STATE()`,
 details for the parameter block (which is allocated alongside zlib-ng
 state) and the window (which must be page-aligned).
 
-Software and hardware deflate window formats don't match, therefore,
-`deflateSetDictionary()` and `deflateGetDictionary()` need special handling,
-which is triggered using `DEFLATE_SET_DICTIONARY_HOOK()` and
-`DEFLATE_GET_DICTIONARY_HOOK()` macros.
+While inflate software and hardware window formats match, this is not
+the case for deflate. Therefore, `deflateSetDictionary()` and
+`deflateGetDictionary()` need special handling, which is triggered using
+`DEFLATE_SET_DICTIONARY_HOOK()` and `DEFLATE_GET_DICTIONARY_HOOK()`
+macros.
 
 `deflateResetKeep()` and `inflateResetKeep()` update the DFLTCC
 parameter block using `DEFLATE_RESET_KEEP_HOOK()` and
@@ -91,14 +92,9 @@ and `DEFLATE_NEED_CONSERVATIVE_BOUND()` macros make `deflateBound()`
 return the correct results for the hardware implementation.
 
 Actual compression and decompression are handled by `DEFLATE_HOOK()` and
-`INFLATE_TYPEDO_HOOK()` macros.
-
-Software and hardware inflate window formats don't match, therefore,
-`inflateSetDictionary()` and `inflateGetDictionary()` need special handling,
-which is triggered using `INFLATE_SET_DICTIONARY_HOOK()` and
-`INFLATE_GET_DICTIONARY_HOOK()` macros. Furthermore, calling
-`window_output_flush()` is suppressed using
-`INFLATE_NEED_WINDOW_OUTPUT_FLUSH()` macro.
+`INFLATE_TYPEDO_HOOK()` macros. Since inflation with DFLTCC manages the
+window on its own, calling `updatewindow()` is suppressed using
+`INFLATE_NEED_UPDATEWINDOW()` macro.
 
 In addition to compression, DFLTCC computes CRC-32 and Adler-32
 checksums, therefore, whenever it's used, software checksumming is
