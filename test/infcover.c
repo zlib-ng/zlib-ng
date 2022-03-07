@@ -287,10 +287,6 @@ static void inf(char *hex, char *what, unsigned step, int win, unsigned len, int
     mem_setup(&strm);
     strm.avail_in = 0;
     strm.next_in = NULL;
-
-    mem_limit(&strm, 1);
-    ret = PREFIX(inflateInit2)(&strm, win);     assert(ret == Z_MEM_ERROR);
-    mem_limit(&strm, 0);
     ret = PREFIX(inflateInit2)(&strm, win);
     if (ret != Z_OK) {
         mem_done(&strm, what);
@@ -323,6 +319,10 @@ static void inf(char *hex, char *what, unsigned step, int win, unsigned len, int
         if (ret == Z_NEED_DICT) {
             ret = PREFIX(inflateSetDictionary)(&strm, in, 1);
                                                 assert(ret == Z_DATA_ERROR);
+            mem_limit(&strm, 1);
+            ret = PREFIX(inflateSetDictionary)(&strm, out, 0);
+                                                assert(ret == Z_MEM_ERROR);
+            mem_limit(&strm, 0);
             ((struct inflate_state *)strm.state)->mode = DICT;
             ret = PREFIX(inflateSetDictionary)(&strm, out, 0);
                                                 assert(ret == Z_OK);
@@ -416,6 +416,10 @@ static void cover_wrap(void) {
     strm.next_in = (void *)"\x63";
     strm.avail_out = 1;
     strm.next_out = (void *)&ret;
+    mem_limit(&strm, 1);
+    ret = PREFIX(inflate)(&strm, Z_NO_FLUSH);   assert(ret == Z_MEM_ERROR);
+    ret = PREFIX(inflate)(&strm, Z_NO_FLUSH);   assert(ret == Z_MEM_ERROR);
+    mem_limit(&strm, 0);
     memset(dict, 0, 257);
     ret = PREFIX(inflateSetDictionary)(&strm, dict, 257);
                                                 assert(ret == Z_OK);
