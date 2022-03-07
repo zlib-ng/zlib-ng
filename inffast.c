@@ -61,16 +61,22 @@ static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
-void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm) {
+void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
+    /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
     z_const unsigned char *in;  /* local strm->next_in */
     const unsigned char *last;  /* have enough input while in < last */
     unsigned char *out;         /* local strm->next_out */
+    unsigned char *beg;         /* inflate()'s initial strm->next_out */
     unsigned char *end;         /* while out < end, enough space available */
+    unsigned char *safe;        /* can use chunkcopy provided out < safe */
 #ifdef INFLATE_STRICT
     unsigned dmax;              /* maximum distance from zlib header */
 #endif
     unsigned wsize;             /* window size or zero if not using window */
+    unsigned whave;             /* valid bytes in the window */
+    unsigned wnext;             /* window write index */
+    unsigned char *window;      /* allocated sliding window, if wsize != 0 */
 
     /* hold is a local copy of strm->hold. By default, hold satisfies the same
        invariants that strm->hold does, namely that (hold >> bits) == 0. This
@@ -120,23 +126,35 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm) {
                                 /*  window position, window bytes to copy */
     unsigned len;               /* match length, unused bytes */
     unsigned dist;              /* match distance */
+    unsigned char *from;        /* where to copy match from */
+    unsigned extra_safe;        /* copy chunks safely in all cases */
 
     /* copy state to local variables */
     state = (struct inflate_state *)strm->state;
     in = strm->next_in;
     last = in + (strm->avail_in - (INFLATE_FAST_MIN_HAVE - 1));
-    wsize = state->wsize;
-    out = state->window + wsize + state->wnext;
-    end = state->window + (wsize * 2) - (INFLATE_FAST_MIN_LEFT - 1);
+    out = strm->next_out;
+    beg = out - (start - strm->avail_out);
+    end = out + (strm->avail_out - (INFLATE_FAST_MIN_LEFT - 1));
+    safe = out + strm->avail_out;
 #ifdef INFLATE_STRICT
     dmax = state->dmax;
 #endif
+    wsize = state->wsize;
+    whave = state->whave;
+    wnext = state->wnext;
+    window = state->window;
     hold = state->hold;
     bits = state->bits;
     lcode = state->lencode;
     dcode = state->distcode;
     lmask = (1U << state->lenbits) - 1;
     dmask = (1U << state->distbits) - 1;
+
+    /* Detect if out and window point to the same memory allocation. In this instance it is
+       necessary to use safe chunk copy functions to prevent overwriting the window. If the
+       window is overwritten then future matches with far distances will fail to copy correctly. */
+    extra_safe = (wsize != 0 && out >= window && out + INFLATE_FAST_MIN_LEFT <= window + wsize);
 
     /* decode literals and length/distances until end-of-block or not enough
        input data or output space */
@@ -145,13 +163,6 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm) {
             hold |= load_64_bits(in, bits);
             in += 6;
             bits += 48;
-        }
-        if (out >= end) {
-            state->wnext = (uint32_t)(out - (state->window + wsize));
-            window_output_flush(strm);
-            out = state->window + state->wsize + state->wnext;
-            if (strm->avail_out == 0)
-                break;
         }
         here = lcode + (hold & lmask);
       dolen:
@@ -199,18 +210,76 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm) {
 #endif
                 DROPBITS(op);
                 Tracevv((stderr, "inflate:         distance %u\n", dist));
-
-                if (out - dist < ((state->window + state->wsize) - state->whave)) {
-                    if (state->sane) {
-                        SET_BAD("invalid distance too far back");
-                        break;
+                op = (unsigned)(out - beg);     /* max distance in output */
+                if (dist > op) {                /* see if copy from window */
+                    op = dist - op;             /* distance back in window */
+                    if (op > whave) {
+                        if (state->sane) {
+                            SET_BAD("invalid distance too far back");
+                            break;
+                        }
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+                        if (len <= op - whave) {
+                            do {
+                                *out++ = 0;
+                            } while (--len);
+                            continue;
+                        }
+                        len -= op - whave;
+                        do {
+                            *out++ = 0;
+                        } while (--op > whave);
+                        if (op == 0) {
+                            from = out - dist;
+                            do {
+                                *out++ = *from++;
+                            } while (--len);
+                            continue;
+                        }
+#endif
                     }
-                }
-
-                if (len > dist || dist < state->chunksize) {
-                    out = functable.chunkmemset(out, dist, len);
+                    from = window;
+                    if (wnext == 0) {           /* very common case */
+                        from += wsize - op;
+                    } else if (wnext >= op) {   /* contiguous in window */
+                        from += wnext - op;
+                    } else {                    /* wrap around window */
+                        op -= wnext;
+                        from += wsize - op;
+                        if (op < len) {         /* some from end of window */
+                            len -= op;
+                            out = chunkcopy_safe(out, from, op, safe);
+                            from = window;      /* more from start of window */
+                            op = wnext;
+                            /* This (rare) case can create a situation where
+                               the first chunkcopy below must be checked.
+                             */
+                        }
+                    }
+                    if (op < len) {             /* still need some from output */
+                        len -= op;
+                        out = chunkcopy_safe(out, from, op, safe);
+                        out = functable.chunkunroll(out, &dist, &len);
+                        out = chunkcopy_safe(out, out - dist, len, safe);
+                    } else {
+                        out = chunkcopy_safe(out, from, len, safe);
+                    }
+                } else if (extra_safe) {
+                    /* Whole reference is in range of current output. */
+                    if (dist >= len || dist >= state->chunksize)
+                        out = chunkcopy_safe(out, out - dist, len, safe);
+                    else
+                        out = functable.chunkmemset_safe(out, dist, len, (unsigned)((safe - out) + 1));
                 } else {
-                    out = functable.chunkcopy(out, out - dist, len);
+                    /* Whole reference is in range of current output.  No range checks are
+                       necessary because we start with room for at least 258 bytes of output,
+                       so unroll and roundoff operations can write beyond `out+len` so long
+                       as they stay within 258 bytes of `out`.
+                    */
+                    if (dist >= len || dist >= state->chunksize)
+                        out = functable.chunkcopy(out, out - dist, len);
+                    else
+                        out = functable.chunkmemset(out, dist, len);
                 }
             } else if ((op & 64) == 0) {          /* 2nd level distance code */
                 here = dcode + here->val + BITS(op);
@@ -230,7 +299,7 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm) {
             SET_BAD("invalid literal/length code");
             break;
         }
-    } while (in < last);
+    } while (in < last && out < end);
 
     /* return unused bytes (on entry, bits < 8, so in won't go too far back) */
     len = bits >> 3;
@@ -240,10 +309,12 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm) {
 
     /* update state and return */
     strm->next_in = in;
+    strm->next_out = out;
     strm->avail_in = (unsigned)(in < last ? (INFLATE_FAST_MIN_HAVE - 1) + (last - in)
                                           : (INFLATE_FAST_MIN_HAVE - 1) - (in - last));
+    strm->avail_out = (unsigned)(out < end ? (INFLATE_FAST_MIN_LEFT - 1) + (end - out)
+                                           : (INFLATE_FAST_MIN_LEFT - 1) - (out - end));
 
-    state->wnext = (uint32_t)(out - (state->window + state->wsize));
     Assert(bits <= 32, "Remaining bits greater than 32");
     state->hold = (uint32_t)hold;
     state->bits = bits;

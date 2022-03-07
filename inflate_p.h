@@ -5,9 +5,6 @@
 #ifndef INFLATE_P_H
 #define INFLATE_P_H
 
-#include "zbuild.h"
-#include "functable.h"
-
 /* Architecture-specific hooks. */
 #ifdef S390_DFLTCC_INFLATE
 #  include "arch/s390/dfltcc_inflate.h"
@@ -35,10 +32,17 @@
 #  define INFLATE_SYNC_POINT_HOOK(strm) do {} while (0)
 #endif
 
-
 /*
  *   Macros shared by inflate() and inflateBack()
  */
+
+/* check function to use adler32() for zlib or crc32() for gzip */
+#ifdef GUNZIP
+#  define UPDATE(check, buf, len) \
+    (state->flags ? PREFIX(crc32)(check, buf, len) : functable.adler32(check, buf, len))
+#else
+#  define UPDATE(check, buf, len) functable.adler32(check, buf, len)
+#endif
 
 /* check macros for header crc */
 #ifdef GUNZIP
@@ -62,7 +66,7 @@
 /* Load registers with state in inflate() for speed */
 #define LOAD() \
     do { \
-        put = state->window + state->wsize + state->wnext; \
+        put = strm->next_out; \
         left = strm->avail_out; \
         next = strm->next_in; \
         have = strm->avail_in; \
@@ -73,7 +77,7 @@
 /* Restore state from registers in inflate() */
 #define RESTORE() \
     do { \
-        state->wnext = (uint32_t)(put - (state->window + state->wsize)); \
+        strm->next_out = put; \
         strm->avail_out = left; \
         strm->next_in = (z_const unsigned char *)next; \
         strm->avail_in = have; \
@@ -122,68 +126,6 @@
         state->mode = BAD; \
         strm->msg = (char *)errmsg; \
     } while (0)
-
-
-static inline void inf_crc_copy(PREFIX3(stream) *strm, unsigned char *const dst,
-        const unsigned char *const src, size_t len) {
-    struct inflate_state *const state = (struct inflate_state *const)strm->state;
-
-    if (!INFLATE_NEED_CHECKSUM(strm))
-        return;
-
-    /* compute checksum if not in raw mode */
-    if (state->wrap & 4) {
-        /* check flags to use adler32() for zlib or crc32() for gzip */
-#ifdef GUNZIP
-        if (state->flags)
-            functable.crc32_fold_copy(&state->crc_fold, dst, src, len);
-        else
-#endif
-        {
-            memcpy(dst, src, len);
-            strm->adler = state->check = functable.adler32(state->check, dst, len);
-        }
-    } else {
-        memcpy(dst, src, len);
-    }
-}
-
-static inline void window_output_flush(PREFIX3(stream) *strm) {
-    struct inflate_state *const state = (struct inflate_state *const)strm->state;
-    size_t write_offset, read_offset, copy_size;
-    uint32_t out_bytes;
-
-    if (state->wnext > strm->avail_out) {
-        out_bytes = strm->avail_out;
-        copy_size = state->wnext - out_bytes;
-    } else {
-        out_bytes = state->wnext;
-        copy_size = 0;
-    }
-
-    /* Copy from pending buffer to stream output */
-    inf_crc_copy(strm, strm->next_out, state->window + state->wsize, out_bytes);
-
-    strm->avail_out -= out_bytes;
-    strm->next_out += out_bytes;
-
-    /* Discard bytes in sliding window */
-    if (state->whave + out_bytes > state->wsize) {
-        write_offset = 0;
-        read_offset = out_bytes;
-        copy_size += state->wsize;
-    } else {
-        read_offset = state->wsize - state->whave;
-        write_offset = read_offset - out_bytes;
-        copy_size += state->whave + out_bytes;
-    }
-
-    memmove(state->window + write_offset, state->window + read_offset, copy_size);
-
-    state->wnext -= out_bytes;
-    state->whave += out_bytes;
-    state->whave = MIN(state->whave, state->wsize);
-}
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
 static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, unsigned len, uint8_t *safe) {
