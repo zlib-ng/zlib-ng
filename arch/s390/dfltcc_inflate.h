@@ -12,8 +12,6 @@ typedef enum {
 dfltcc_inflate_action Z_INTERNAL dfltcc_inflate(PREFIX3(streamp) strm, int flush, int *ret);
 int Z_INTERNAL dfltcc_was_inflate_used(PREFIX3(streamp) strm);
 int Z_INTERNAL dfltcc_inflate_disable(PREFIX3(streamp) strm);
-int Z_INTERNAL dfltcc_inflate_set_dictionary(PREFIX3(streamp) strm, const unsigned char *dictionary, uInt dict_length);
-int Z_INTERNAL dfltcc_inflate_get_dictionary(PREFIX3(streamp) strm, unsigned char *dictionary, uInt* dict_length);
 
 #define INFLATE_RESET_KEEP_HOOK(strm) \
     dfltcc_reset((strm), sizeof(struct inflate_state))
@@ -36,7 +34,7 @@ int Z_INTERNAL dfltcc_inflate_get_dictionary(PREFIX3(streamp) strm, unsigned cha
 
 #define INFLATE_NEED_CHECKSUM(strm) (!dfltcc_can_inflate((strm)))
 
-#define INFLATE_NEED_WINDOW_OUTPUT_FLUSH(strm) (!dfltcc_can_inflate((strm)))
+#define INFLATE_NEED_UPDATEWINDOW(strm) (!dfltcc_can_inflate((strm)))
 
 #define INFLATE_MARK_HOOK(strm) \
     do { \
@@ -46,18 +44,6 @@ int Z_INTERNAL dfltcc_inflate_get_dictionary(PREFIX3(streamp) strm, unsigned cha
 #define INFLATE_SYNC_POINT_HOOK(strm) \
     do { \
         if (dfltcc_was_inflate_used((strm))) return Z_STREAM_ERROR; \
-    } while (0)
-
-#define INFLATE_SET_DICTIONARY_HOOK(strm, dict, dict_len) \
-    do { \
-        if (dfltcc_can_inflate((strm))) \
-            return dfltcc_inflate_set_dictionary((strm), (dict), (dict_len)); \
-    } while (0)
-
-#define INFLATE_GET_DICTIONARY_HOOK(strm, dict, dict_len) \
-    do { \
-        if (dfltcc_can_inflate((strm))) \
-            return dfltcc_inflate_get_dictionary((strm), (dict), (dict_len)); \
     } while (0)
 
 #endif
