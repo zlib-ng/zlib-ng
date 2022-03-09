@@ -22,6 +22,7 @@
 #  endif
 #else
 #  ifdef _MSC_VER
+#    undef crc32
 #    define HASH_CALC(s, h, val) {\
         __asm mov edx, h\
         __asm mov eax, val\
