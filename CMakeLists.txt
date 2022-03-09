@@ -1236,7 +1236,7 @@ if(ZLIB_ENABLE_TESTS)
     target_link_libraries(switchlevels zlib)
 
     add_simple_test_executable(infcover)
-    if(NOT BUILD_SHARED_LIBS)
+    if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
         target_sources(infcover PRIVATE inftrees.c)
     endif()
 
