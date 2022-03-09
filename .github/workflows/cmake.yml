@@ -334,6 +334,14 @@ jobs:
             compiler: cl
             cmake-args: -A ARM64
 
+          - name: Windows ClangCl Win32
+            os: windows-latest
+            cmake-args: -T ClangCl -A Win32
+
+          - name: Windows ClangCl Win64
+            os: windows-latest
+            cmake-args: -T ClangCl -A x64
+
           - name: Windows GCC
             os: windows-latest
             compiler: gcc
