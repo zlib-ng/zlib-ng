@@ -7,11 +7,7 @@
 #include <assert.h>
 
 #include "zbuild.h"
-#ifdef ZLIB_COMPAT
-#  include "zlib.h"
-#else
-#  include "zlib-ng.h"
-#endif
+#include "zutil.h"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
@@ -19,12 +15,6 @@
 #  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
 #else
 #  define SET_BINARY_MODE(file)
-#endif
-
-#if MAX_MEM_LEVEL >= 8
-#  define DEF_MEM_LEVEL 8
-#else
-#  define DEF_MEM_LEVEL  MAX_MEM_LEVEL
 #endif
 
 #define CHECK_ERR(err, msg) { \
