@@ -32,6 +32,9 @@
     } \
 }
 
+/* Default read/write i/o buffer size based on GZBUFSIZE */
+#define BUFSIZE 131072
+
 /* ===========================================================================
  * deflate() using specialized parameters
  */
@@ -228,8 +231,8 @@ int main(int argc, char **argv) {
     int32_t window_bits = INT32_MAX;
     int32_t strategy = Z_DEFAULT_STRATEGY;
     int32_t level = Z_DEFAULT_COMPRESSION;
-    int32_t read_buf_size = 4096;
-    int32_t write_buf_size = 4096;
+    int32_t read_buf_size = BUFSIZE;
+    int32_t write_buf_size = BUFSIZE;
     int32_t flush = Z_NO_FLUSH;
     uint8_t copyout = 0;
     uint8_t uncompr = 0;
