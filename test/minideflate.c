@@ -12,8 +12,13 @@
 #if defined(_WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
 #  include <io.h>
+#  include <string.h>
 #  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
+#  ifdef _MSC_VER
+#    define strcasecmp _stricmp
+#  endif
 #else
+#  include <strings.h>
 #  define SET_BINARY_MODE(file)
 #endif
 
@@ -277,13 +282,6 @@ int main(int argc, char **argv) {
     SET_BINARY_MODE(stdin);
     SET_BINARY_MODE(stdout);
 
-    if (window_bits == INT32_MAX) {
-        window_bits = MAX_WBITS;
-        /* Auto-detect wrapper for inflateInit */
-        if (uncompr)
-            window_bits += 32;
-    }
-
     if (i != argc) {
         fin = fopen(argv[i], "rb+");
         if (fin == NULL) {
@@ -307,8 +305,13 @@ int main(int argc, char **argv) {
                 }
             } else {
                 char *out_ext = strrchr(out_file, '.');
-                if (out_ext != NULL)
+                if (out_ext != NULL) {
+                    if (strcasecmp(out_ext, ".zraw") == 0 && window_bits == INT32_MAX) {
+                        fprintf(stderr, "Must specify window bits for raw deflate stream\n");
+                        exit(1);
+                    }
                     *out_ext = 0;
+                }
             }
             fout = fopen(out_file, "wb");
             if (fout == NULL) {
@@ -317,6 +320,13 @@ int main(int argc, char **argv) {
             }
             free(out_file);
         }
+    }
+    
+    if (window_bits == INT32_MAX) {
+        window_bits = MAX_WBITS;
+        /* Auto-detect wrapper for inflateInit */
+        if (uncompr)
+            window_bits += 32;
     }
 
     if (window_bits == INT32_MAX) {
