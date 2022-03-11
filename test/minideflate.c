@@ -238,7 +238,6 @@ int main(int argc, char **argv) {
     uint8_t copyout = 0;
     uint8_t uncompr = 0;
     uint8_t keep = 0;
-    char out_file[320];
     FILE *fin = stdin;
     FILE *fout = stdout;
 
@@ -296,12 +295,31 @@ int main(int argc, char **argv) {
             exit(1);
         }
         if (!copyout) {
-            snprintf(out_file, sizeof(out_file), "%s%s", argv[i], (window_bits < 0) ? ".zz" : ".gz");
+            char *out_file = (char *)calloc(1, strlen(argv[i]) + 6);
+            if (out_file == NULL) {
+                fprintf(stderr, "Not enough memory\n");
+                exit(1);
+            }
+            strcat(out_file, argv[i]);
+            if (!uncompr) {
+                if (window_bits < 0) {
+                    strcat(out_file, ".zraw");
+                } else if (window_bits > MAX_WBITS) {
+                    strcat(out_file, ".gz");
+                } else {
+                    strcat(out_file, ".z");
+                }
+            } else {
+                char *out_ext = strrchr(out_file, '.');
+                if (out_ext != NULL)
+                    *out_ext = 0;
+            }
             fout = fopen(out_file, "wb");
             if (fout == NULL) {
                 fprintf(stderr, "Failed to open file: %s\n", out_file);
                 exit(1);
             }
+            free(out_file);
         }
     }
 
