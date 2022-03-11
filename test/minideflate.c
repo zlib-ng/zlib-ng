@@ -241,6 +241,12 @@ int main(int argc, char **argv) {
     FILE *fin = stdin;
     FILE *fout = stdout;
 
+
+    if (argc == 1) {
+        show_help();
+        return 64;   /* EX_USAGE */
+    }
+
     for (i = 1; i < argc; i++) {
         if ((strcmp(argv[i], "-m") == 0) && (i + 1 < argc))
             mem_level = atoi(argv[++i]);
