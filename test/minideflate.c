@@ -233,6 +233,12 @@ int main(int argc, char **argv) {
     FILE *fin = stdin;
     FILE *fout = stdout;
 
+
+    if (argc == 1) {
+        show_help();
+        return 64;   /* EX_USAGE */
+    }
+
     for (i = 1; i < argc; i++) {
         if ((strcmp(argv[i], "-m") == 0) && (i + 1 < argc))
             mem_level = atoi(argv[++i]);
@@ -311,6 +317,13 @@ int main(int argc, char **argv) {
             }
             free(out_file);
         }
+    }
+
+    if (window_bits == INT32_MAX) {
+        window_bits = MAX_WBITS;
+        /* Auto-detect wrapper for inflateInit */
+        if (uncompr)
+            window_bits += 32;
     }
 
     if (uncompr) {
