@@ -199,9 +199,10 @@ void inflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
 }
 
 void show_help(void) {
-    printf("Usage: minideflate [-c] [-f|-h|-R|-F] [-m level] [-r/-t size] [-s flush] [-w bits] [-0 to -9] [input file]\n\n" \
+    printf("Usage: minideflate [-c][-d][-k] [-f|-h|-R|-F] [-m level] [-r/-t size] [-s flush] [-w bits] [-0 to -9] [input file]\n\n" \
            "  -c : write to standard output\n" \
            "  -d : decompress\n" \
+           "  -k : keep input file\n" \
            "  -f : compress with Z_FILTERED\n" \
            "  -h : compress with Z_HUFFMAN_ONLY\n" \
            "  -R : compress with Z_RLE\n" \
@@ -228,6 +229,7 @@ int main(int argc, char **argv) {
     int32_t flush = Z_NO_FLUSH;
     uint8_t copyout = 0;
     uint8_t uncompr = 0;
+    uint8_t keep = 0;
     char out_file[320];
     FILE *fin = stdin;
     FILE *fout = stdout;
@@ -247,6 +249,8 @@ int main(int argc, char **argv) {
             copyout = 1;
         else if (strcmp(argv[i], "-d") == 0)
             uncompr = 1;
+        else if (strcmp(argv[i], "-k") == 0)
+            keep = 1;
         else if (strcmp(argv[i], "-f") == 0)
             strategy = Z_FILTERED;
         else if (strcmp(argv[i], "-h") == 0)
@@ -299,6 +303,9 @@ int main(int argc, char **argv) {
 
     if (fin != stdin) {
         fclose(fin);
+        if (!keep) {
+            unlink(argv[i]);
+        }
     }
     if (fout != stdout) {
         fclose(fout);
