@@ -206,6 +206,16 @@ Z_INTERNAL void crc32_fold_copy_stub(crc32_fold *crc, uint8_t *dst, const uint8_
     functable.crc32_fold_copy(crc, dst, src, len);
 }
 
+Z_INTERNAL void crc32_fold_stub(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc) {
+    functable.crc32_fold = &crc32_fold_c;
+    cpu_check_features();
+#ifdef X86_PCLMULQDQ_CRC
+    if (x86_cpu_has_pclmulqdq)
+        functable.crc32_fold = &crc32_fold_pclmulqdq;
+#endif
+    functable.crc32_fold(crc, src, len, init_crc);
+}
+
 Z_INTERNAL uint32_t crc32_fold_final_stub(crc32_fold *crc) {
     functable.crc32_fold_final = &crc32_fold_final_c;
     cpu_check_features();
@@ -402,6 +412,7 @@ Z_INTERNAL Z_TLS struct functable_s functable = {
     crc32_stub,
     crc32_fold_reset_stub,
     crc32_fold_copy_stub,
+    crc32_fold_stub,
     crc32_fold_final_stub,
     compare256_stub,
     chunksize_stub,
