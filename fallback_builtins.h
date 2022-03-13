@@ -14,7 +14,9 @@
  */
 static __forceinline unsigned long __builtin_ctz(uint32_t value) {
 #ifdef X86_FEATURES
+#  ifndef X86_NOCHECK_TZCNT
     if (x86_cpu_has_tzcnt)
+#  endif
         return _tzcnt_u32(value);
 #endif
     unsigned long trailing_zero;
@@ -29,7 +31,9 @@ static __forceinline unsigned long __builtin_ctz(uint32_t value) {
  */
 static __forceinline unsigned long long __builtin_ctzll(uint64_t value) {
 #ifdef X86_FEATURES
+#  ifndef X86_NOCHECK_TZCNT
     if (x86_cpu_has_tzcnt)
+#  endif
         return _tzcnt_u64(value);
 #endif
     unsigned long trailing_zero;

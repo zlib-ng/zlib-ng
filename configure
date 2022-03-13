@@ -103,6 +103,7 @@ with_fuzzers=0
 floatabi=
 native=0
 forcesse2=0
+forcetzcnt=0
 # For CPUs that can benefit from AVX512, it seems GCC generates suboptimal
 # instruction scheduling unless you specify a reasonable -mtune= target
 avx512flag="-mavx512f -mavx512dq -mavx512bw -mavx512vl -mtune=cascadelake"
@@ -173,6 +174,7 @@ case "$1" in
       echo '    [--without-crc32-vx]        Build without vectorized CRC32 on IBM Z' | tee -a configure.log
       echo '    [--with-reduced-mem]        Reduced memory usage for special cases (reduces performance)' | tee -a configure.log
       echo '    [--force-sse2]              Assume SSE2 instructions are always available (disabled by default on x86, enabled on x86_64)' | tee -a configure.log
+      echo '    [--force-tzcnt]             Assume TZCNT instructions are always available (disabled by default)' | tee -a configure.log
       echo '    [--with-sanitizer]          Build with sanitizer (memory, address, undefined)' | tee -a configure.log
       echo '    [--with-fuzzers]            Build test/fuzz (disabled by default)' | tee -a configure.log
       echo '    [--native]                  Compiles with full instruction set supported on this host' | tee -a configure.log
@@ -206,6 +208,7 @@ case "$1" in
     --without-crc32-vx) buildcrc32vx=0; shift ;;
     --with-reduced-mem) reducedmem=1; shift ;;
     --force-sse2) forcesse2=1; shift ;;
+    --force-tzcnt) forcetzcnt=1; shift ;;
     -n | --native) native=1; shift ;;
     -a*=* | --archs=*) ARCHS=$(echo $1 | sed 's/.*=//'); shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
@@ -1588,6 +1591,11 @@ case "${ARCH}" in
                         ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_fold_vpclmulqdq.lo"
                     fi
                 fi
+            fi
+
+            if test $forcetzcnt -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_NOCHECK_TZCNT"
+                SFLAGS="${SFLAGS} -DX86_NOCHECK_TZCNT"
             fi
         fi
     ;;
