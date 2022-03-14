@@ -194,7 +194,7 @@ Advanced Build Options
 |:--------------------------------|:----------------------|:--------------------------------------------------------------------|------------------------|
 | ZLIB_DUAL_LINK                  |                       | Dual link tests with system zlib                                    | OFF                    |
 | UNALIGNED_OK                    |                       | Allow unaligned reads                                               | ON (x86, arm)          |
-|                                 | --force-sse2          | Skip runtime check for SSE2 instructions (Always on for x86_64)     | OFF (x86)              |
+| FORCE_SSE2                      | --force-sse2          | Skip runtime check for SSE2 instructions (Always on for x86_64)     | OFF (x86)              |
 | FORCE_TZCNT                     | --force-tzcnt         | Skip runtime check for TZCNT instructions                           | OFF                    |
 | WITH_AVX2                       |                       | Build with AVX2 intrinsics                                          | ON                     |
 | WITH_SSE2                       |                       | Build with SSE2 intrinsics                                          | ON                     |
