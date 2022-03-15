@@ -59,6 +59,14 @@ jobs:
             codecov: ubuntu_gcc_o3
             cflags: -O3
 
+          - name: Ubuntu GCC 32-bit
+            os: ubuntu-latest
+            compiler: gcc
+            cxx-compiler: g++
+            cmake-args: -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_SHARED_LINKER_FLAGS=-m32 -DCMAKE_EXE_LINKER_FLAGS=-m32
+            packages: gcc-multilib g++-multilib
+            codecov: ubuntu_gcc_m32
+
           - name: Ubuntu GCC No CTZLL
             os: ubuntu-latest
             compiler: gcc
