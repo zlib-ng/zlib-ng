@@ -228,7 +228,7 @@
 #  define zmemcmp_2(str1, str2)   (*((uint16_t *)(str1)) != *((uint16_t *)(str2)))
 #  define zmemcpy_4(dest, src)    (*((uint32_t *)(dest)) = *((uint32_t *)(src)))
 #  define zmemcmp_4(str1, str2)   (*((uint32_t *)(str1)) != *((uint32_t *)(str2)))
-#  if UINTPTR_MAX == UINT64_MAX
+#  if defined(UNALIGNED64_OK) && (UINTPTR_MAX == UINT64_MAX)
 #    define zmemcpy_8(dest, src)  (*((uint64_t *)(dest)) = *((uint64_t *)(src)))
 #    define zmemcmp_8(str1, str2) (*((uint64_t *)(str1)) != *((uint64_t *)(str2)))
 #  else
