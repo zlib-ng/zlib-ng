@@ -51,10 +51,11 @@ jobs:
             codecov: ubuntu_gcc_osb
             cflags: -O1 -g3
 
-          - name: Ubuntu GCC -O3
+          - name: Ubuntu GCC -O3 No Unaligned
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
+            cmake-args: -DWITH_UNALIGNED=OFF
             codecov: ubuntu_gcc_o3
             cflags: -O3
 

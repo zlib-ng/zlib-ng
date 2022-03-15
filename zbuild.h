@@ -194,25 +194,27 @@
 #  define Tracecv(c, x)
 #endif
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(__amd64__) || defined(_M_AMD64)
-#  define UNALIGNED_OK
-#  define UNALIGNED64_OK
-#elif defined(__i386__) || defined(__i486__) || defined(__i586__) || \
-      defined(__i686__) || defined(_X86_) || defined(_M_IX86)
-#  define UNALIGNED_OK
-#elif defined(__aarch64__) || defined(_M_ARM64)
-#  if (defined(__GNUC__) && defined(__ARM_FEATURE_UNALIGNED)) || !defined(__GNUC__)
+#ifndef NO_UNALIGNED
+#  if defined(__x86_64__) || defined(_M_X64) || defined(__amd64__) || defined(_M_AMD64)
 #    define UNALIGNED_OK
 #    define UNALIGNED64_OK
-#  endif
-#elif defined(__arm__) || (_M_ARM >= 7)
-#  if (defined(__GNUC__) && defined(__ARM_FEATURE_UNALIGNED)) || !defined(__GNUC__)
+#  elif defined(__i386__) || defined(__i486__) || defined(__i586__) || \
+        defined(__i686__) || defined(_X86_) || defined(_M_IX86)
 #    define UNALIGNED_OK
-#  endif
-#elif defined(__powerpc64__) || defined(__ppc64__)
-#  if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#    define UNALIGNED_OK
-#    define UNALIGNED64_OK
+#  elif defined(__aarch64__) || defined(_M_ARM64)
+#    if (defined(__GNUC__) && defined(__ARM_FEATURE_UNALIGNED)) || !defined(__GNUC__)
+#      define UNALIGNED_OK
+#      define UNALIGNED64_OK
+#    endif
+#  elif defined(__arm__) || (_M_ARM >= 7)
+#    if (defined(__GNUC__) && defined(__ARM_FEATURE_UNALIGNED)) || !defined(__GNUC__)
+#      define UNALIGNED_OK
+#    endif
+#  elif defined(__powerpc64__) || defined(__ppc64__)
+#    if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#      define UNALIGNED_OK
+#      define UNALIGNED64_OK
+#    endif
 #  endif
 #endif
 

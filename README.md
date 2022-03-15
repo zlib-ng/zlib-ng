@@ -211,6 +211,7 @@ Advanced Build Options
 | WITH_CRC32_VX                   | --without-crc32-vx    | Build with vectorized CRC32 on IBM Z                                | ON                     |
 | WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | Build with DFLTCC intrinsics for compression on IBM Z               | OFF                    |
 | WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | Build with DFLTCC intrinsics for decompression on IBM Z             | OFF                    |
+| WITH_UNALIGNED                  | --without-unaligned   | Allow optimizations that use unaligned reads if safe on current arch| ON                     |
 | WITH_INFLATE_STRICT             |                       | Build with strict inflate distance checking                         | OFF                    |
 | WITH_INFLATE_ALLOW_INVALID_DIST |                       | Build with zero fill for inflate invalid distances                  | OFF                    |
 | INSTALL_UTILS                   |                       | Copy minigzip and minideflate during install                        | OFF                    |
