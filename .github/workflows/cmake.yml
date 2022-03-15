@@ -259,7 +259,7 @@ jobs:
           - name: Ubuntu MinGW i686
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-i686.cmake
-            packages: wine32 gcc-mingw-w64-i686 g++-mingw-w64-i686
+            packages: wine32 gcc-mingw-w64-i686 g++-mingw-w64-i686 libpcre2-8-0=10.34-7 libpcre2-8-0:i386=10.34-7 libodbc1=2.3.6-0.1build1 libodbc1:i386=2.3.6-0.1build1
             ldflags: -static
             codecov: ubuntu_gcc_mingw_i686
             # Limit parallel test jobs to prevent wine errors
@@ -417,13 +417,12 @@ jobs:
       if: contains(matrix.packages, 'wine')
       run: |
         sudo dpkg --add-architecture i386
-        sudo apt-add-repository ppa:ondrej/php -y
 
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages
       run: |
         sudo apt-get update
-        sudo apt-get install -y ${{ matrix.packages }}
+        sudo apt-get install -y --allow-downgrades ${{ matrix.packages }}
 
     - name: Install packages (Windows)
       if: runner.os == 'Windows'
