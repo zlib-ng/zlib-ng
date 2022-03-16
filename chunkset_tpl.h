@@ -100,9 +100,9 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
     {
         /* This code takes string of length dist from "from" and repeats
          * it for as many times as can fit in a chunk_t (vector register) */
-        int32_t cpy_dist;
-        int32_t bytes_remaining = sizeof(chunk_t);
-        uint8_t *cur_chunk = (uint8_t*)&chunk_load;
+        uint32_t cpy_dist;
+        uint32_t bytes_remaining = sizeof(chunk_t);
+        uint8_t *cur_chunk = (uint8_t *)&chunk_load;
         while (bytes_remaining) {
             cpy_dist = MIN(dist, bytes_remaining);
             memcpy(cur_chunk, from, cpy_dist);
