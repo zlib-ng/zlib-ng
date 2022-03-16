@@ -128,12 +128,12 @@
     } while (0)
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
-static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, unsigned len, uint8_t *safe) {
+static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, size_t len, uint8_t *safe) {
     uint32_t safelen = (uint32_t)((safe - out) + 1);
     len = MIN(len, safelen);
-    int olap_src = from >= out && from < out + len;
-    int olap_dst = out >= from && out < from + len;
-    int tocopy;
+    int32_t olap_src = from >= out && from < out + len;
+    int32_t olap_dst = out >= from && out < from + len;
+    size_t tocopy;
 
     /* For all cases without overlap, memcpy is ideal */
     if (!(olap_src || olap_dst)) {
@@ -146,7 +146,7 @@ static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, unsigned len,
      * initial bulk memcpy of the nonoverlapping region. Then, we can leverage the size of this to determine the safest
      * atomic memcpy size we can pick such that we have non-overlapping regions. This effectively becomes a safe look
      * behind or lookahead distance */
-    int non_olap_size = (from > out) ? from - out : out - from;
+    int32_t non_olap_size = (int32_t)((from > out) ? from - out : out - from);
 
     memcpy(out, from, non_olap_size);
     out += non_olap_size;
