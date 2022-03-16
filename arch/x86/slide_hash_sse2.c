@@ -55,8 +55,8 @@ Z_INTERNAL void slide_hash_sse2(deflate_state *s) {
     uint16_t wsize = (uint16_t)s->w_size;
     const __m128i xmm_wsize = _mm_set1_epi16((short)wsize);
 
-    assert(((uintptr_t)s->head) & 15 == 0);
-    assert(((uintptr_t)s->prev) & 15 == 0);
+    assert(((uintptr_t)s->head & 15) == 0);
+    assert(((uintptr_t)s->prev & 15) == 0);
 
     slide_hash_chain(s->head, s->prev, HASH_SIZE, wsize, xmm_wsize);
 }
