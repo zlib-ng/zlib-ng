@@ -21,15 +21,21 @@ static inline void chunkmemset_1(uint8_t *from, chunk_t *chunk) {
 }
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
-    *chunk = _mm256_set1_epi16(*(int16_t *)from);
+    int16_t tmp;
+    memcpy(&tmp, from, sizeof(tmp));
+    *chunk = _mm256_set1_epi16(tmp);
 }
 
 static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
-    *chunk = _mm256_set1_epi32(*(int32_t *)from);
+    int32_t tmp;
+    memcpy(&tmp, from, sizeof(tmp));
+    *chunk = _mm256_set1_epi32(tmp);
 }
 
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
-    *chunk = _mm256_set1_epi64x(*(int64_t *)from);
+    int64_t tmp;
+    memcpy(&tmp, from, sizeof(tmp));
+    *chunk = _mm256_set1_epi64x(tmp);
 }
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
