@@ -112,7 +112,7 @@ macro(add_undefined_sanitizer)
         )
 
     # Only check for alignment sanitizer flag if unaligned access is not supported
-    if(NOT UNALIGNED_OK)
+    if(NOT WITH_UNALIGNED)
         list(APPEND known_checks alignment)
     endif()
     # Object size sanitizer has no effect at -O0 and produces compiler warning if enabled
@@ -129,7 +129,7 @@ macro(add_undefined_sanitizer)
 
         # Group sanitizer flag -fsanitize=undefined will automatically add alignment, even if
         # it is not in our sanitize flag list, so we need to explicitly disable alignment sanitizing.
-        if(UNALIGNED_OK)
+        if(WITH_UNALIGNED)
             add_compile_options(-fno-sanitize=alignment)
         endif()
     else()
