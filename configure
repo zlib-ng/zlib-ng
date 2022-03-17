@@ -915,7 +915,7 @@ fi
 
 # set architecture alignment requirements
 if test $unalignedok -eq 0; then
-  CFLAGS="${CFLAGS} -DNO_UANLIGNED"
+  CFLAGS="${CFLAGS} -DNO_UNALIGNED"
   SFLAGS="${SFLAGS} -DNO_UNALIGNED"
   echo "Unaligned reads manually disabled." | tee -a configure.log
 fi
