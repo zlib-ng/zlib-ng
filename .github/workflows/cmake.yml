@@ -41,21 +41,20 @@ jobs:
             cmake-args: -DZLIB_COMPAT=ON -DZLIB_SYMBOL_PREFIX=zTest_
             codecov: ubuntu_gcc_compat_sprefix
 
-          - name: Ubuntu GCC OSB -O1 UBSAN
+          - name: Ubuntu GCC -O1 OSB
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DWITH_SANITIZER=Undefined
             build-dir: ../build
             build-src-dir: ../zlib-ng
             codecov: ubuntu_gcc_osb
             cflags: -O1 -g3
 
-          - name: Ubuntu GCC -O3 No Unaligned
+          - name: Ubuntu GCC -O3 No Unaligned UBSAN
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DWITH_UNALIGNED=OFF
+            cmake-args: -DWITH_UNALIGNED=OFF -DWITH_SANITIZER=Undefined
             codecov: ubuntu_gcc_o3
             cflags: -O3
 
@@ -493,6 +492,7 @@ jobs:
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1
         TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=0' }}:abort_on_error=1
         LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=0' }}:abort_on_error=1
+        UBSAN_OPTIONS: ${{ matrix.ubsan-options || 'verbosity=0' }}:print_stacktrace=1:abort_on_error=1
 
     - name: Generate coverage report
       if: matrix.codecov

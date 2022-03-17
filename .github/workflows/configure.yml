@@ -30,6 +30,21 @@ jobs:
             compiler: gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
 
+          - name: Ubuntu GCC ASAN
+            os: ubuntu-latest
+            compiler: gcc
+            configure-args: --warn --with-sanitizer=address
+
+          - name: Ubuntu GCC MSAN
+            os: ubuntu-latest
+            compiler: gcc
+            configure-args: --warn --with-sanitizer=memory
+
+          - name: Ubuntu GCC No Unaligned UBSAN
+            os: ubuntu-latest
+            compiler: gcc
+            configure-args: --warn --without-unaligned --with-sanitizer=undefined
+
           - name: Ubuntu GCC ARM SF
             os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
@@ -224,6 +239,9 @@ jobs:
         make test
       env:
         QEMU_RUN: ${{ matrix.qemu-run }}
+        ASAN_OPTIONS: abort_on_error=1
+        MSAN_OPTIONS: abort_on_error=1
+        UBSAN_OPTIONS: print_stacktrace=1:abort_on_error=1
 
     - name: Upload build errors
       uses: actions/upload-artifact@v2
