@@ -11,6 +11,9 @@
 #    define ID_AA64ISAR0_CRC32_VAL ID_AA64ISAR0_CRC32
 #  endif
 #elif defined(__APPLE__)
+#  if !defined(_DARWIN_C_SOURCE)
+#    define _DARWIN_C_SOURCE /* enable types aliases (eg u_int) */
+#  endif
 #  include <sys/sysctl.h>
 #elif defined(_WIN32)
 #  include <winapifamily.h>
