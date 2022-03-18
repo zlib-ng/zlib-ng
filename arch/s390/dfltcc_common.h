@@ -1,11 +1,6 @@
 #ifndef DFLTCC_COMMON_H
 #define DFLTCC_COMMON_H
 
-#ifdef ZLIB_COMPAT
-#include "zlib.h"
-#else
-#include "zlib-ng.h"
-#endif
 #include "zutil.h"
 
 void Z_INTERNAL *dfltcc_alloc_state(PREFIX3(streamp) strm, uInt items, uInt size);
