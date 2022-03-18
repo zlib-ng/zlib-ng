@@ -200,5 +200,8 @@ Z_INTERNAL uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, unsigned dist, unsigned len, 
         }
         return out;
     }
-    return CHUNKMEMSET(out, dist, len);
+    if (len)
+        return CHUNKMEMSET(out, dist, len);
+
+    return out;
 }
