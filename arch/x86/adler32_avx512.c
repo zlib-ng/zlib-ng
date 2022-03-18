@@ -10,32 +10,10 @@
 #include "../../adler32_p.h"
 #include "../../cpu_features.h"
 #include "../../fallback_builtins.h"
-
 #include <immintrin.h>
+#include "adler32_avx512_p.h"
 
 #ifdef X86_AVX512_ADLER32
-static inline uint32_t partial_hsum(__m512i x) {
-    /* We need a permutation vector to extract every other integer. The
-     * rest are going to be zeros. Marking this const so the compiler stands
-     * a better chance of keeping this resident in a register through entire 
-     * loop execution. We certainly have enough zmm registers (32) */
-    const __m512i perm_vec = _mm512_setr_epi32(0, 2, 4, 6, 8, 10, 12, 14,
-                                               1, 1, 1, 1, 1,  1,  1,  1);
-
-    __m512i non_zero = _mm512_permutexvar_epi32(perm_vec, x);
-
-    /* From here, it's a simple 256 bit wide reduction sum */
-    __m256i non_zero_avx = _mm512_castsi512_si256(non_zero);
-    
-    /* See Agner Fog's vectorclass for a decent reference. Essentially, phadd is
-     * pretty slow, much slower than the longer instruction sequence below */
-    __m128i sum1  = _mm_add_epi32(_mm256_extracti128_si256(non_zero_avx, 1),
-                                  _mm256_castsi256_si128(non_zero_avx));
-    __m128i sum2  = _mm_add_epi32(sum1,_mm_unpackhi_epi64(sum1, sum1));
-    __m128i sum3  = _mm_add_epi32(sum2,_mm_shuffle_epi32(sum2, 1));
-    return (uint32_t)_mm_cvtsi128_si32(sum3);
-}
-
 Z_INTERNAL uint32_t adler32_avx512(uint32_t adler, const unsigned char *buf, size_t len) {
     uint32_t sum2;
 
@@ -112,7 +90,7 @@ Z_INTERNAL uint32_t adler32_avx512(uint32_t adler, const unsigned char *buf, siz
 
         adler = partial_hsum(vs1) % BASE;
         vs1 = _mm512_zextsi128_si512(_mm_cvtsi32_si128(adler));
-        sum2 = _mm512_reduce_add_epi32(vs2) % BASE;
+        sum2 = _mm512_reduce_add_epu32(vs2) % BASE;
         vs2 = _mm512_zextsi128_si512(_mm_cvtsi32_si128(sum2));
     }
 
