@@ -41,22 +41,22 @@ jobs:
             cmake-args: -DZLIB_COMPAT=ON -DZLIB_SYMBOL_PREFIX=zTest_
             codecov: ubuntu_gcc_compat_sprefix
 
-          - name: Ubuntu GCC -O1 OSB
+          - name: Ubuntu GCC -O3 OSB
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
             build-dir: ../build
             build-src-dir: ../zlib-ng
             codecov: ubuntu_gcc_osb
-            cflags: -O1 -g3
+            cflags: -O3
 
-          - name: Ubuntu GCC -O3 No Unaligned UBSAN
+          - name: Ubuntu GCC -O1 No Unaligned UBSAN
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
             cmake-args: -DWITH_UNALIGNED=OFF -DWITH_SANITIZER=Undefined
-            codecov: ubuntu_gcc_o3
-            cflags: -O3
+            codecov: ubuntu_gcc_o1
+            cflags: -O1
 
           - name: Ubuntu GCC 32-bit
             os: ubuntu-latest
@@ -347,7 +347,6 @@ jobs:
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
             packages:  ninja-build llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
-            cflags: -g3 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-memory-track-origins
 
           - name: Windows MSVC Win32
             os: windows-latest
