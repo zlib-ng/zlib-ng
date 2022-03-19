@@ -61,16 +61,16 @@ static inline uint32_t compare256_unaligned_16_static(const uint8_t *src0, const
     uint32_t len = 0;
 
     do {
-        if (*(uint16_t *)src0 != *(uint16_t *)src1)
+        if (zmemcmp_2(src0, src1) != 0)
             return len + (*src0 == *src1);
         src0 += 2, src1 += 2, len += 2;
-        if (*(uint16_t *)src0 != *(uint16_t *)src1)
+        if (zmemcmp_2(src0, src1) != 0)
             return len + (*src0 == *src1);
         src0 += 2, src1 += 2, len += 2;
-        if (*(uint16_t *)src0 != *(uint16_t *)src1)
+        if (zmemcmp_2(src0, src1) != 0)
             return len + (*src0 == *src1);
         src0 += 2, src1 += 2, len += 2;
-        if (*(uint16_t *)src0 != *(uint16_t *)src1)
+        if (zmemcmp_2(src0, src1) != 0)
             return len + (*src0 == *src1);
         src0 += 2, src1 += 2, len += 2;
     } while (len < 256);
