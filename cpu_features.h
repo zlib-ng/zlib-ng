@@ -117,8 +117,10 @@ typedef uint32_t (*compare256_func)(const uint8_t *src0, const uint8_t *src1);
 extern uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1);
 #ifdef UNALIGNED_OK
 extern uint32_t compare256_unaligned_16(const uint8_t *src0, const uint8_t *src1);
+#ifdef HAVE_BUILTIN_CTZ
 extern uint32_t compare256_unaligned_32(const uint8_t *src0, const uint8_t *src1);
-#ifdef UNALIGNED64_OK
+#endif
+#if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
 extern uint32_t compare256_unaligned_64(const uint8_t *src0, const uint8_t *src1);
 #endif
 #if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
@@ -142,8 +144,10 @@ extern void insert_string_acle(deflate_state *const s, const uint32_t str, uint3
 extern uint32_t longest_match_c(deflate_state *const s, Pos cur_match);
 #ifdef UNALIGNED_OK
 extern uint32_t longest_match_unaligned_16(deflate_state *const s, Pos cur_match);
+#ifdef HAVE_BUILTIN_CTZ
 extern uint32_t longest_match_unaligned_32(deflate_state *const s, Pos cur_match);
-#ifdef UNALIGNED64_OK
+#endif
+#if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
 extern uint32_t longest_match_unaligned_64(deflate_state *const s, Pos cur_match);
 #endif
 #if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
