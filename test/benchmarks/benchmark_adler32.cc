@@ -78,9 +78,6 @@ BENCHMARK_ADLER32(power8, adler32_power8, power_cpu_has_arch_2_07);
 #ifdef X86_SSSE3_ADLER32
 BENCHMARK_ADLER32(ssse3, adler32_ssse3, x86_cpu_has_ssse3);
 #endif
-#ifdef X86_SSE41_ADLER32
-BENCHMARK_ADLER32(sse41, adler32_sse41, x86_cpu_has_sse41);
-#endif
 #ifdef X86_AVX2_ADLER32
 BENCHMARK_ADLER32(avx2, adler32_avx2, x86_cpu_has_avx2);
 #endif
