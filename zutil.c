@@ -114,7 +114,7 @@ void Z_INTERNAL zng_cfree(void *opaque, void *ptr) {
  * we have to ask for extra memory and return an aligned pointer. */
 void Z_INTERNAL *zng_calloc_aligned(zng_calloc_func zalloc, void *opaque, unsigned items, unsigned size, unsigned align) {
     uintptr_t return_ptr, original_ptr;
-    int32_t alloc_size, align_diff;
+    uint32_t alloc_size, align_diff;
     void *ptr;
 
     /* If no custom calloc function used then call zlib-ng's aligned calloc */
