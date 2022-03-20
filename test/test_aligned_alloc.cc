@@ -13,6 +13,7 @@ extern "C" {
 
 void *zng_calloc_unaligned(void *opaque, unsigned items, unsigned size) {
     uint8_t *pointer = (uint8_t *)calloc(1, (items * size) + 2);
+    Z_UNUSED(opaque);
     if (pointer == NULL)
         return pointer;
     /* Store whether or not our allocation is aligned */
@@ -27,6 +28,7 @@ void *zng_calloc_unaligned(void *opaque, unsigned items, unsigned size) {
 
 void zng_cfree_unaligned(void *opaque, void *ptr) {
     uint8_t *pointer = (uint8_t *)ptr;
+    Z_UNUSED(opaque);
     pointer--;
     /* Get whether or not our original memory pointer was aligned */
     if (*pointer) {
