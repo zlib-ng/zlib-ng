@@ -28,7 +28,6 @@ all: \
 	adler32_avx2.o adler32_avx2.lo \
 	adler32_avx512.o adler32_avx512.lo \
 	adler32_avx512_vnni.o adler32_avx512_vnni.lo \
-	adler32_sse41.o adler32_sse41.lo \
 	adler32_ssse3.o adler32_ssse3.lo \
 	chunkset_avx.o chunkset_avx.lo \
 	chunkset_sse2.o chunkset_sse2.lo \
@@ -117,12 +116,6 @@ adler32_avx512_vnni.o: $(SRCDIR)/adler32_avx512_vnni.c
 
 adler32_avx512_vnni.lo: $(SRCDIR)/adler32_avx512_vnni.c
 	$(CC) $(SFLAGS) $(AVX512VNNIFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx512_vnni.c
-
-adler32_sse41.o: $(SRCDIR)/adler32_sse41.c
-	$(CC) $(CFLAGS) $(SSE41FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_sse41.c
-
-adler32_sse41.lo: $(SRCDIR)/adler32_sse41.c
-	$(CC) $(SFLAGS) $(SSE41FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_sse41.c
 
 adler32_ssse3.o: $(SRCDIR)/adler32_ssse3.c
 	$(CC) $(CFLAGS) $(SSSE3FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_ssse3.c

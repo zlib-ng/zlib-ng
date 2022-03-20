@@ -161,10 +161,6 @@ Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_
     if (x86_cpu_has_ssse3)
         functable.adler32 = &adler32_ssse3;
 #endif
-#ifdef X86_SSE41_ADLER32
-    if (x86_cpu_has_sse41)
-        functable.adler32 = &adler32_sse41;
-#endif
 #ifdef X86_AVX2_ADLER32
     if (x86_cpu_has_avx2)
         functable.adler32 = &adler32_avx2;

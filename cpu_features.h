@@ -31,9 +31,6 @@ extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, size_t le
 #ifdef PPC_VMX_ADLER32
 extern uint32_t adler32_vmx(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
-#ifdef X86_SSE41_ADLER32
-extern uint32_t adler32_sse41(uint32_t adler, const unsigned char *buf, size_t len);
-#endif
 #ifdef X86_SSSE3_ADLER32
 extern uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
