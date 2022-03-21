@@ -9,10 +9,18 @@ zlib-compat mode
 Zlib-ng can be compiled in zlib-compat mode, suitable for zlib-replacement
 in a single application or system-wide.
 
-Please note that zlib-ng in zlib-compat mode is API-compatible but not
-ABI-compatible, meaning that you cannot simply replace the zlib library/dll
-files and expect the application to work. The application will need to be
+Please note that zlib-ng in zlib-compat mode tries to maintain both API and
+ABI compatibility with the original zlib. Any issues regarding compatibility
+can be reported as bugs.
+
+In certain instances you may not be able to simply replace the zlib library/dll
+files and expect the application to work. The application may need to be
 recompiled against the zlib-ng headers and libs to ensure full compatibility.
+
+It is also possible for the deflate output stream to differ from the original
+zlib due to algorithmic differences between the two libraries. Any tests or
+applications that depend on the exact length of the deflate stream being a
+certain value will need to be updated.
 
 **Advantages:**
 - Easy to port to, since it only requires a recompile of the application and
