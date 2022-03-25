@@ -133,7 +133,7 @@ Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_matc
 #  endif
 #  if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_sse2)
-        functable.longest_match = &longest_match_slow_unaligned_sse2;
+        functable.longest_match_slow = &longest_match_slow_unaligned_sse2;
 #  endif
 #  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_avx2)
