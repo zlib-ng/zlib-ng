@@ -32,12 +32,12 @@ macro(check_sanitizer_support known_checks supported_checks)
 
         set(CMAKE_REQUIRED_FLAGS -fsanitize=${compile_checks})
 
-        check_c_source_compiles("int main() { return 0; }" HAS_SANITIZER_${check}
+        check_c_source_compiles("int main() { return 0; }" HAVE_SANITIZER_${check}
             FAIL_REGEX "not supported|unrecognized command|unknown option")
 
         set(CMAKE_REQUIRED_FLAGS)
 
-        if(HAS_SANITIZER_${check})
+        if(HAVE_SANITIZER_${check})
             set(available_checks ${compile_checks})
         endif()
     endforeach()
