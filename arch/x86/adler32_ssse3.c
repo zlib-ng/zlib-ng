@@ -59,10 +59,10 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size
      * additions worthwhile or if it's worth it to just eat the cost of an unaligned
      * load. This is a pretty simple test, just test if 16 - the remainder + len is
      * < 16 */
-    uint32_t max_iters = NMAX;
-    uint32_t rem = (uintptr_t)buf & 15;
-    uint32_t align_offset = 16 - rem;
-    uint32_t k = 0;
+    size_t max_iters = NMAX;
+    size_t rem = (uintptr_t)buf & 15;
+    size_t align_offset = 16 - rem;
+    size_t k = 0;
     if (rem) {
         if (len < 16 + align_offset) {
             /* Let's eat the cost of this one unaligned load so that
@@ -79,7 +79,7 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size
             goto unaligned_jmp;
         }
 
-        for (uint32_t i = 0; i < align_offset; ++i) {
+        for (size_t i = 0; i < align_offset; ++i) {
             adler += *(buf++);
             sum2 += adler;
         }
