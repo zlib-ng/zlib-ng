@@ -486,7 +486,7 @@ jobs:
       if: matrix.codecov
       shell: bash
       run: |
-        python3 -u -m pip install --user gcovr
+        python3 -u -m pip install --user gcovr==5.0
         python3 -m gcovr --exclude-unreachable-branches --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" --root ${{ matrix.build-src-dir || '.' }} --xml --output coverage.xml -j 3 --verbose
 
     - name: Upload coverage report
