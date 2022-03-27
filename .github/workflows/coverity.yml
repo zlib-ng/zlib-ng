@@ -1,0 +1,27 @@
+name: CI Coverity Scan
+# We only want to test official release code, not every pull request.
+on:
+  push:
+    branches:
+      - stable
+      - develop
+      - pre-release
+      - '2.*'
+    tags:
+      - '*'
+
+jobs:
+  coverity:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Generate project files
+      run: ./configure
+
+    - name: Run scan
+      uses: vapier/coverity-scan-action@v1
+      with:
+        email: ${{ secrets.COVERITY_SCAN_EMAIL }}
+        token: ${{ secrets.COVERITY_SCAN_TOKEN }}
