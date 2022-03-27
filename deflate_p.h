@@ -11,7 +11,7 @@
 
 /* Forward declare common non-inlined functions declared in deflate.c */
 
-#ifdef ZLIB_DEBUG
+#if defined(ZLIB_DEBUG) || defined(__COVERITY__)
 /* ===========================================================================
  * Check that the match at match_start is indeed a match.
  */
