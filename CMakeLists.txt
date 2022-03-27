@@ -1353,6 +1353,15 @@ if(ZLIB_ENABLE_TESTS)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
     endforeach()
 
+    add_test(NAME CVE-2018-25032
+        COMMAND ${CMAKE_COMMAND}
+        "-DTARGET=${MINIDEFLATE_COMMAND}"
+        "-DCOMPRESS_ARGS=-c;-k;-m;1;-w;-15;-s;4;-F"
+        "-DDECOMPRESS_ARGS=-c;-k;-d;-m;1;-w;-15"
+        -DGZIP_VERIFY=OFF
+        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/CVE-2018-25032/test.txt
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+
     # Run tests targeting tools
     include(cmake/test-tools.cmake)
 
