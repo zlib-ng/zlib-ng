@@ -69,10 +69,10 @@ BENCHMARK_COMPARE256(unaligned_32, compare256_unaligned_32, 1);
 #if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
 BENCHMARK_COMPARE256(unaligned_64, compare256_unaligned_64, 1);
 #endif
+#endif
 #if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
-BENCHMARK_COMPARE256(unaligned_sse2, compare256_unaligned_sse2, x86_cpu_has_sse2);
+BENCHMARK_COMPARE256(sse2, compare256_sse2, x86_cpu_has_sse2);
 #endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-BENCHMARK_COMPARE256(unaligned_avx2, compare256_unaligned_avx2, x86_cpu_has_avx2);
-#endif
+BENCHMARK_COMPARE256(avx2, compare256_avx2, x86_cpu_has_avx2);
 #endif

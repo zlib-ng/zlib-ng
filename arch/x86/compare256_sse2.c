@@ -11,7 +11,7 @@
 
 #include <emmintrin.h>
 
-static inline uint32_t compare256_unaligned_sse2_static(const uint8_t *src0, const uint8_t *src1) {
+static inline uint32_t compare256_sse2_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
     int align_offset = ((uintptr_t)src0) & 15;
     const uint8_t *end0 = src0 + 256;
@@ -78,18 +78,18 @@ static inline uint32_t compare256_unaligned_sse2_static(const uint8_t *src0, con
     return 256;
 }
 
-Z_INTERNAL uint32_t compare256_unaligned_sse2(const uint8_t *src0, const uint8_t *src1) {
-    return compare256_unaligned_sse2_static(src0, src1);
+Z_INTERNAL uint32_t compare256_sse2(const uint8_t *src0, const uint8_t *src1) {
+    return compare256_sse2_static(src0, src1);
 }
 
-#define LONGEST_MATCH       longest_match_unaligned_sse2
-#define COMPARE256          compare256_unaligned_sse2_static
+#define LONGEST_MATCH       longest_match_sse2
+#define COMPARE256          compare256_sse2_static
 
 #include "match_tpl.h"
 
 #define LONGEST_MATCH_SLOW
-#define LONGEST_MATCH       longest_match_slow_unaligned_sse2
-#define COMPARE256          compare256_unaligned_sse2_static
+#define LONGEST_MATCH       longest_match_slow_sse2
+#define COMPARE256          compare256_sse2_static
 
 #include "match_tpl.h"
 

@@ -106,16 +106,16 @@ Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
 #  else
     functable.longest_match = &longest_match_unaligned_16;
 #  endif
-#  if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_sse2)
-        functable.longest_match = &longest_match_unaligned_sse2;
-#  endif
-#  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_avx2)
-        functable.longest_match = &longest_match_unaligned_avx2;
-#  endif
 #else
     functable.longest_match = &longest_match_c;
+#endif
+#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_sse2)
+        functable.longest_match = &longest_match_sse2;
+#endif
+#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_avx2)
+        functable.longest_match = &longest_match_avx2;
 #endif
 
     return functable.longest_match(s, cur_match);
@@ -131,16 +131,16 @@ Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_matc
 #  else
     functable.longest_match_slow = &longest_match_slow_unaligned_16;
 #  endif
-#  if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_sse2)
-        functable.longest_match_slow = &longest_match_slow_unaligned_sse2;
-#  endif
-#  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_avx2)
-        functable.longest_match_slow = &longest_match_slow_unaligned_avx2;
-#  endif
 #else
     functable.longest_match_slow = &longest_match_slow_c;
+#endif
+#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_sse2)
+        functable.longest_match_slow = &longest_match_slow_sse2;
+#endif
+#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_avx2)
+        functable.longest_match_slow = &longest_match_slow_avx2;
 #endif
 
     return functable.longest_match_slow(s, cur_match);
@@ -391,16 +391,16 @@ Z_INTERNAL uint32_t compare256_stub(const uint8_t *src0, const uint8_t *src1) {
 #  else
     functable.compare256 = &compare256_unaligned_16;
 #  endif
-#  if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_sse2)
-        functable.compare256 = &compare256_unaligned_sse2;
-#  endif
-#  if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_avx2)
-        functable.compare256 = &compare256_unaligned_avx2;
-#  endif
 #else
     functable.compare256 = &compare256_c;
+#endif
+#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_sse2)
+        functable.compare256 = &compare256_sse2;
+#endif
+#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_avx2)
+        functable.compare256 = &compare256_avx2;
 #endif
 
     return functable.compare256(src0, src1);
