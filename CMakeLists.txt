@@ -249,10 +249,55 @@ else()
     endif()
 endif()
 
+# probe for NO_UNALIGNED
+if(NOT CMAKE_CROSSCOMPILING AND WITH_UNALIGNED)
+  include(CMakePushCheckState)
+  include(CheckCSourceRuns)
+  set(OLD_CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
+  cmake_push_check_state()
+  if(CMAKE_COMPILER_IS_GNUCC
+      OR (CMAKE_C_COMPILER_ID STREQUAL AppleClang)
+      OR (CMAKE_C_COMPILER_ID STREQUAL Clang))
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_DEBUG} -fno-sanitize-recover=undefined")
+    else()
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-sanitize-recover=undefined")
+    endif()
+  endif()
+  check_c_source_runs(
+    "
+#include <stdlib.h>
+int main() {
+    int i;
+    int *p;
+    int *q;
+    char *str;
+    str = (char *) malloc(40);
+    for (i = 0; i < 40; i++) {
+      *(str + i) = i;
+    }
+    p = (int *) (str + 1);
+    q = (int *) (str + 2);
+    return (*p == *q);
+}"
+    ALLOW_ALIGNED_ACCESS)
+  cmake_pop_check_state()
+  set(CMAKE_C_FLAGS "${OLD_CMAKE_C_FLAGS}")
+  if(NOT ALLOW_ALIGNED_ACCESS)
+    add_definitions(-DNO_UNALIGNED)
+    message(STATUS "Set NO_UNALIGNED (ubsan or strict hardware, like arm, sparc)")
+  else()
+    message(STATUS "NO_UNALIGNED not required")
+  endif()
+else()
+  add_definitions(-DNO_UNALIGNED)
+  message(STATUS "Assuming aligned access is required, as on arm with -maligned-access, ubsan or sparc")
+endif()
+
 # Set architecture alignment requirements
 if(NOT WITH_UNALIGNED)
     add_definitions(-DNO_UNALIGNED)
-    message(STATUS "Unaligned reads manually disabled")
+    message(STATUS "Unaligned reads disabled")
 endif()
 
 # Apply warning compiler flags
