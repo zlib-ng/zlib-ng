@@ -9,12 +9,11 @@ SRCDIR=
 SRCTOP=
 LIBNAME=
 TEST_LDFLAGS=-L.. ../$(LIBNAME).a
-WITH_FUZZERS=
 
 QEMU_RUN=
 QEMU_VER:=$(shell command -v $(QEMU_RUN) --version 2> /dev/null)
 
-all: oldtests cvetests fuzzer ghtests
+all: oldtests cvetests ghtests
 
 oldtests: #set by ../configure
 check_cross_dep:
@@ -25,24 +24,6 @@ endif
 endif
 
 ALL_SRC_FILES := $(wildcard ../*)
-
-# Only check the fuzzer when it is a stand-alone executable.
-ifneq (,$(LIB_FUZZING_ENGINE))
-fuzzer:
-else
- ifeq (0,$(WITH_FUZZERS))
-fuzzer:
- else
-fuzzer:
-	@${QEMU_RUN} ../fuzzer_checksumr$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../fuzzer_compress$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../fuzzer_example_small$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../fuzzer_example_large$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../fuzzer_example_flush$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../fuzzer_example_dict$(EXE) $(ALL_SRC_FILES) && \
-	${QEMU_RUN} ../fuzzer_minigzip$(EXE) $(ALL_SRC_FILES)
- endif
-endif
 
 teststatic: check_cross_dep
 	@TMPST=tmpst_$$$$; \
