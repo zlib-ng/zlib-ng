@@ -1353,23 +1353,26 @@ if(ZLIB_ENABLE_TESTS)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
     endforeach()
 
-    add_test(NAME CVE-2018-25032-fixed
-        COMMAND ${CMAKE_COMMAND}
-        "-DTARGET=${MINIDEFLATE_COMMAND}"
-        "-DCOMPRESS_ARGS=-c;-k;-m;1;-w;-15;-s;4;-F"
-        "-DDECOMPRESS_ARGS=-c;-k;-d;-m;1;-w;-15"
-        -DGZIP_VERIFY=OFF
-        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/CVE-2018-25032/fixed.txt
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+    set(TEST_LEVELS 6 1 2)
+    foreach(TEST_LEVEL ${TEST_LEVELS})
+        add_test(NAME CVE-2018-25032-fixed-level-${TEST_LEVEL}
+            COMMAND ${CMAKE_COMMAND}
+            "-DTARGET=${MINIDEFLATE_COMMAND}"
+            "-DCOMPRESS_ARGS=-c;-k;-m;1;-w;-15;-s;4;-F;-${TEST_LEVEL}"
+            "-DDECOMPRESS_ARGS=-c;-k;-d;-m;1;-w;-15;-${TEST_LEVEL}"
+            -DGZIP_VERIFY=OFF
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/CVE-2018-25032/fixed.txt
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
 
-    add_test(NAME CVE-2018-25032-default
-        COMMAND ${CMAKE_COMMAND}
-        "-DTARGET=${MINIDEFLATE_COMMAND}"
-        "-DCOMPRESS_ARGS=-c;-k;-m;1;-w;-15;-s;4;"
-        "-DDECOMPRESS_ARGS=-c;-k;-d;-m;1;-w;-15"
-        -DGZIP_VERIFY=OFF
-        -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/CVE-2018-25032/default.txt
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+        add_test(NAME CVE-2018-25032-default-level-${TEST_LEVEL}
+            COMMAND ${CMAKE_COMMAND}
+            "-DTARGET=${MINIDEFLATE_COMMAND}"
+            "-DCOMPRESS_ARGS=-c;-k;-m;1;-w;-15;-s;4;-${TEST_LEVEL}"
+            "-DDECOMPRESS_ARGS=-c;-k;-d;-m;1;-w;-15;-${TEST_LEVEL}"
+            -DGZIP_VERIFY=OFF
+            -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/test/CVE-2018-25032/default.txt
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/test-compress.cmake)
+    endforeach()
 
     # Run tests targeting tools
     include(cmake/test-tools.cmake)
