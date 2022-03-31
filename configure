@@ -100,7 +100,6 @@ builddfltccdeflate=0
 builddfltccinflate=0
 buildcrc32vx=1
 with_sanitizer=""
-with_fuzzers=0
 floatabi=
 native=0
 forcesse2=0
@@ -178,7 +177,6 @@ case "$1" in
       echo '    [--force-sse2]              Assume SSE2 instructions are always available (disabled by default on x86, enabled on x86_64)' | tee -a configure.log
       echo '    [--force-tzcnt]             Assume TZCNT instructions are always available (disabled by default)' | tee -a configure.log
       echo '    [--with-sanitizer]          Build with sanitizer (memory, address, undefined)' | tee -a configure.log
-      echo '    [--with-fuzzers]            Build test/fuzz (disabled by default)' | tee -a configure.log
       echo '    [--native]                  Compiles with full instruction set supported on this host' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=$(echo $1 | sed 's/.*=//'); shift ;;
@@ -221,7 +219,6 @@ case "$1" in
     -w* | --warn) warn=1; shift ;;
     -d* | --debug) debug=1; shift ;;
     --with-sanitizer=*) with_sanitizer=$(echo $1 | sed 's/.*=//'); shift ;;
-    --with-fuzzers) with_fuzzers=1; shift ;;
 
     *)
       echo "unknown option: $1" | tee -a configure.log
@@ -2043,7 +2040,6 @@ if [ "$SRCDIR" != "$BUILDDIR" ]; then INCLUDES="-I$BUILDDIR ${INCLUDES}"; fi
 sed < $SRCDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
-/^WITH_FUZZERS *=/s#=.*#=$with_fuzzers#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
@@ -2211,7 +2207,6 @@ sed < $SRCDIR/test/Makefile.in "
 /^SRCDIR *=/s#=.*#=$SRCDIR/test#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^QEMU_RUN *=/s#=.*#=$QEMU_RUN#
-/^WITH_FUZZERS *=/s#=.*#=$with_fuzzers#
 /^LIBNAME *=/s#=.*#=$LIBNAME#
 " > test/Makefile
 
