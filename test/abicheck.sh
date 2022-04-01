@@ -95,7 +95,7 @@ then
 fi
 
 # Canonicalize CHOST to work around bug in original zlib's configure
-export CHOST=$(sh $TESTDIR/../tools/config.sub $CHOST)
+CHOST=$(sh $TESTDIR/../tools/config.sub $CHOST)
 
 if test "$CHOST" = ""
 then
