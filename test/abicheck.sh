@@ -49,7 +49,10 @@ do
   --refresh)
     refresh=true
     ;;
-  --refresh_if)
+  --refresh-if)
+    refresh_if=true
+    ;;
+  --refresh_if)   # oops
     refresh_if=true
     ;;
   --help)
