@@ -128,7 +128,7 @@ jobs:
       # macOS runner does not contain abigail
       if: runner.os != 'macOS'
       run: |
-        sh test/abicheck.sh --refresh_if
+        sh test/abicheck.sh --refresh-if
       env:
         CC: ${{ matrix.compiler }}
         CXX: ${{ matrix.cxx-compiler }}
@@ -143,7 +143,7 @@ jobs:
       # macOS runner does not contain abigail
       if: runner.os != 'macOS'
       run: |
-        sh test/abicheck.sh --zlib-compat --refresh_if
+        sh test/abicheck.sh --zlib-compat --refresh-if
       env:
         CC: ${{ matrix.compiler }}
         CXX: ${{ matrix.cxx-compiler }}

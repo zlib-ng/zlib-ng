@@ -29,7 +29,7 @@ means someone has to check out and build
 the previous source tree and extract its .abi
 using abidw.  This can be slow.
 
-If you don't mind the slowness, run abicheck.sh --refresh_if,
+If you don't mind the slowness, run abicheck.sh --refresh-if,
 and it will download and build the reference version
 and extract the .abi on the spot if needed.
 (FIXME: should this be the default?)
