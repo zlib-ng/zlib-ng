@@ -12,6 +12,7 @@
 #define INFLATE_H_
 
 #include "crc32_fold.h"
+#include "adler32_fold.h"
 
 /* define NO_GZIP when compiling if you want to disable gzip header and trailer decoding by inflate().
    NO_GZIP would be used to avoid linking in the crc code when it is not needed.
@@ -103,6 +104,7 @@ struct inflate_state {
     uint32_t wnext;             /* window write index */
     unsigned char *window;      /* allocated sliding window, if needed */
 
+    struct adler32_fold_s ALIGNED_(64) adler_fold;
     struct crc32_fold_s ALIGNED_(16) crc_fold;
 
         /* bit accumulator */

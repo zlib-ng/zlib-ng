@@ -951,6 +951,7 @@ set(ZLIB_PRIVATE_HDRS
 )
 set(ZLIB_SRCS
     adler32.c
+    adler32_fold.c
     chunkset.c
     compare256.c
     compress.c
