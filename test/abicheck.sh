@@ -121,7 +121,7 @@ then
   git reset --hard FETCH_HEAD
   cd ..
   # Build unstripped, uninstalled, very debug shared library
-  CFLAGS="$CFLAGS -ggdb" sh src.d/configure $CONFIGURE_ARGS
+  CFLAGS="$CFLAGS -ggdb" src.d/configure $CONFIGURE_ARGS
   make -j2
   cd ..
   # Find shared library, extract its abi
