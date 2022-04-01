@@ -186,6 +186,26 @@ Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_
     return functable.adler32(adler, buf, len);
 }
 
+Z_INTERNAL void adler32_fold_reset_stub(adler32_fold *adler, uint32_t init_adler) {
+    functable.adler32_fold_reset = &adler32_fold_reset_c;
+    functable.adler32_fold_reset(adler, init_adler);
+}
+
+Z_INTERNAL void adler32_fold_copy_stub(adler32_fold *adler, uint8_t *dst, const uint8_t *src, size_t len) {
+    functable.adler32_fold_copy = &adler32_fold_copy_c;
+    functable.adler32_fold_copy(adler, dst, src, len);
+}
+
+Z_INTERNAL void adler32_fold_stub(adler32_fold *adler, const uint8_t *src, size_t len) {
+    functable.adler32_fold = &adler32_fold_c;
+    functable.adler32_fold(adler, src, len);
+}
+
+Z_INTERNAL uint32_t adler32_fold_final_stub(adler32_fold *adler) {
+    functable.adler32_fold_final = &adler32_fold_final_c;
+    return functable.adler32_fold_final(adler);
+}
+
 Z_INTERNAL uint32_t crc32_fold_reset_stub(crc32_fold *crc) {
     functable.crc32_fold_reset = &crc32_fold_reset_c;
     cpu_check_features();
@@ -409,6 +429,10 @@ Z_INTERNAL uint32_t compare256_stub(const uint8_t *src0, const uint8_t *src1) {
 /* functable init */
 Z_INTERNAL Z_TLS struct functable_s functable = {
     adler32_stub,
+    adler32_fold_reset_stub,
+    adler32_fold_copy_stub,
+    adler32_fold_stub,
+    adler32_fold_final_stub,
     crc32_stub,
     crc32_fold_reset_stub,
     crc32_fold_copy_stub,

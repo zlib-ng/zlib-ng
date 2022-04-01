@@ -75,6 +75,7 @@ pkgconfigdir = ${libdir}/pkgconfig
 
 OBJZ = \
 	adler32.o \
+	adler32_fold.o \
 	chunkset.o \
 	compare256.o \
 	compress.o \
@@ -112,6 +113,7 @@ OBJC = $(OBJZ) $(OBJG)
 
 PIC_OBJZ = \
 	adler32.lo \
+	adler32_fold.lo \
 	chunkset.lo \
 	compare256.lo \
 	compress.lo \

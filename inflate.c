@@ -27,8 +27,9 @@ static inline void inf_chksum_cpy(PREFIX3(stream) *strm, uint8_t *dst,
     } else
 #endif
     {
-        strm->adler = state->check = functable.adler32(state->check, src, copy);
-        memcpy(dst, src, copy);
+        /*strm->adler = state->check = functable.adler32(state->check, src, copy);
+        memcpy(dst, src, copy);*/
+        functable.adler32_fold_copy(&state->adler_fold, dst, src, copy);
     }
 }
 
@@ -40,7 +41,8 @@ static inline void inf_chksum(PREFIX3(stream) *strm, const uint8_t *src, uint32_
     } else
 #endif
     {
-        strm->adler = state->check = functable.adler32(state->check, src, len);
+        //strm->adler = state->check = functable.adler32(state->check, src, len);
+        functable.adler32_fold(&state->adler_fold, src, len);
     }
 }
 
@@ -463,6 +465,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             state->dmax = 1U << len;
             state->flags = 0;               /* indicate zlib header */
             Tracev((stderr, "inflate:   zlib header ok\n"));
+            functable.adler32_fold_reset(&state->adler_fold, ADLER32_INITIAL_VALUE);
             strm->adler = state->check = ADLER32_INITIAL_VALUE;
             state->mode = hold & 0x200 ? DICTID : TYPE;
             INITBITS();
@@ -609,7 +612,9 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
 #endif
         case DICTID:
             NEEDBITS(32);
+            //strm->adler = state->check = ZSWAP32(hold);
             strm->adler = state->check = ZSWAP32(hold);
+            functable.adler32_fold_reset(&state->adler_fold, strm->adler);
             INITBITS();
             state->mode = DICT;
 
@@ -619,6 +624,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 return Z_NEED_DICT;
             }
             strm->adler = state->check = ADLER32_INITIAL_VALUE;
+            functable.adler32_fold_reset(&state->adler_fold, ADLER32_INITIAL_VALUE);
             state->mode = TYPE;
 
         case TYPE:
@@ -1011,6 +1017,8 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
 #ifdef GUNZIP
                     if (state->flags)
                         strm->adler = state->check = functable.crc32_fold_final(&state->crc_fold);
+                    else
+                        strm->adler = state->check = functable.adler32_fold_final(&state->adler_fold);
 #endif
                 }
                 out = left;

@@ -8,9 +8,14 @@
 
 #include "deflate.h"
 #include "crc32_fold.h"
+#include "adler32_fold.h"
 
 struct functable_s {
     uint32_t (* adler32)            (uint32_t adler, const unsigned char *buf, size_t len);
+    void     (* adler32_fold_reset) (adler32_fold *adler, uint32_t init_adler);
+    void     (* adler32_fold_copy)    (adler32_fold *adler, uint8_t *dst, const uint8_t *src, size_t len);
+    void     (* adler32_fold)         (adler32_fold *adler, const uint8_t *src, size_t len);
+    uint32_t (* adler32_fold_final)   (adler32_fold *adler);
     uint32_t (* crc32)              (uint32_t crc, const unsigned char *buf, uint64_t len);
     uint32_t (* crc32_fold_reset)   (crc32_fold *crc);
     void     (* crc32_fold_copy)    (crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len);
