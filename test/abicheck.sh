@@ -49,7 +49,7 @@ do
   --refresh)
     refresh=true
     ;;
-  --refresh_if)
+  --refresh-if)
     refresh_if=true
     ;;
   --help)
@@ -134,12 +134,10 @@ then
   # caching abi files in git (but that would slow builds down).
 fi
 
-if test -f "$ABIFILE"
+if ! test -f "$ABIFILE"
 then
-  ABIFILE="$ABIFILE"
-else
-  echo "abicheck: SKIP: $ABIFILE not found; rerun with --refresh or --refresh_if"
-  exit 0
+  echo "abicheck: SKIP: $ABIFILE not found; rerun with --refresh or --refresh-if"
+  exit 1
 fi
 
 # Build unstripped, uninstalled, very debug shared library
