@@ -99,7 +99,6 @@ buildneon=1
 builddfltccdeflate=0
 builddfltccinflate=0
 buildcrc32vx=1
-with_sanitizer=""
 floatabi=
 native=0
 forcesse2=0
@@ -176,7 +175,6 @@ case "$1" in
       echo '    [--with-reduced-mem]        Reduced memory usage for special cases (reduces performance)' | tee -a configure.log
       echo '    [--force-sse2]              Assume SSE2 instructions are always available (disabled by default on x86, enabled on x86_64)' | tee -a configure.log
       echo '    [--force-tzcnt]             Assume TZCNT instructions are always available (disabled by default)' | tee -a configure.log
-      echo '    [--with-sanitizer]          Build with sanitizer (memory, address, undefined)' | tee -a configure.log
       echo '    [--native]                  Compiles with full instruction set supported on this host' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=$(echo $1 | sed 's/.*=//'); shift ;;
@@ -218,7 +216,6 @@ case "$1" in
     -oldstrat | --without-new-strategies) without_new_strategies=1; shift;;
     -w* | --warn) warn=1; shift ;;
     -d* | --debug) debug=1; shift ;;
-    --with-sanitizer=*) with_sanitizer=$(echo $1 | sed 's/.*=//'); shift ;;
 
     *)
       echo "unknown option: $1" | tee -a configure.log
@@ -621,80 +618,6 @@ else
 fi
 
 echo >> configure.log
-
-if test "$with_sanitizer" = "address"; then
-    echo -n "Checking for address sanitizer... " | tee -a configure.log
-    sanitizers=""
-    for san in address pointer-compare pointer-subtract; do
-        if try $CC -c $CFLAGS $test.c -fsanitize=$san ; then
-            if test -n "$sanitizers"; then
-                sanitizers="$sanitizers,$san"
-            else
-                sanitizers="$san"
-            fi
-        fi
-    done
-
-    if test -n "$sanitizers"; then
-        echo "-fsanitize=$sanitizers" | tee -a configure.log
-        CFLAGS="$CFLAGS -fsanitize=$sanitizers"
-        SFLAGS="$SFLAGS -fsanitize=$sanitizers"
-        LDFLAGS="$LDFLAGS -fsanitize=$sanitizers"
-    else
-        echo No | tee -a configure.log
-    fi
-
-    echo -n "Checking for leak sanitizer... " | tee -a configure.log
-    if try $CC -c $CFLAGS $test.c -fsanitize=leak; then
-        echo "-fsanitize=leak" | tee -a configure.log
-        CFLAGS="$CFLAGS -fsanitize=leak"
-        SFLAGS="$SFLAGS -fsanitize=leak"
-        LDFLAGS="$LDFLAGS -fsanitize=leak"
-    else
-        echo No | tee -a configure.log
-    fi
-
-    echo >> configure.log
-fi
-
-if test "$with_sanitizer" = "memory"; then
-    echo -n "Checking for memory sanitizer... " | tee -a configure.log
-    if try $CC -c $CFLAGS $test.c -fsanitize=memory ; then
-        echo "-fsanitize=memory" | tee -a configure.log
-        CFLAGS="$CFLAGS -fsanitize=memory"
-        SFLAGS="$SFLAGS -fsanitize=memory"
-        LDFLAGS="$LDFLAGS -fsanitize=memory"
-    else
-        echo No | tee -a configure.log
-    fi
-
-    echo >> configure.log
-fi
-
-if test "$with_sanitizer" = "undefined"; then
-    echo -n "Checking for undefined behavior sanitizer... " | tee -a configure.log
-    sanitizers=""
-    for san in array-bounds bool bounds builtin enum float-cast-overflow float-divide-by-zero function integer-divide-by-zero local-bounds null nonnull-attribute object-size pointer-overflow return returns-nonnull-attribute shift shift-base shift-exponent signed-integer-overflow undefined unsigned-integer-overflow unsigned-shift-base vla-bound vptr; do
-        if try $CC -c $CFLAGS $test.c -fsanitize=$san; then
-            if test -n "$sanitizers"; then
-                sanitizers="$sanitizers,$san"
-            else
-                sanitizers="$san"
-            fi
-        fi
-    done
-
-    if test -n "$sanitizers"; then
-        echo "-fsanitize=$sanitizers" | tee -a configure.log
-        CFLAGS="$CFLAGS -fsanitize=$sanitizers"
-        SFLAGS="$SFLAGS -fsanitize=$sanitizers"
-        LDFLAGS="$LDFLAGS -fsanitize=$sanitizers"
-    else
-        echo No | tee -a configure.log
-    fi
-
-    echo >> configure.log
-fi
 
 # see if shared library build supported
 cat > $test.c <<EOF
