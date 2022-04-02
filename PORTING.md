@@ -33,8 +33,8 @@ certain value will need to be updated.
 - If your application is pre-allocating a memory buffer and you are providing
   deflate/inflate init with your own allocator that allocates from that buffer
   (looking at you nginx), you should be aware that zlib-ng needs to allocate
-  more memory than stock zlib needs. The same problem exists with Intels and
-  Cloudflares zlib forks. Doing this is not recommended since it makes it
+  more memory than stock zlib needs. The same problem exists with Intel’s and
+  Cloudflare’s zlib forks. Doing this is not recommended since it makes it
   very hard to maintain compatibility over time.
 
 **Build Considerations:**
