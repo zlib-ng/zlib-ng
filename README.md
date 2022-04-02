@@ -119,7 +119,7 @@ Build Options
 | WITH_OPTIM               | --without-optimizations  | Build with optimisations                                                              | ON      |
 | WITH_NEW_STRATEGIES      | --without-new-strategies | Use new strategies                                                                    | ON      |
 | WITH_NATIVE_INSTRUCTIONS | --native                 | Compiles with full instruction set supported on this host (gcc/clang -march=native)   | OFF     |
-| WITH_SANITIZER           | --with-sanitizer         | Build with sanitizer (memory, address, undefined)                                     | OFF     |
+| WITH_SANITIZER           |                          | Build with sanitizer (memory, address, undefined)                                     | OFF     |
 | WITH_FUZZERS             |                          | Build test/fuzz                                                                       | OFF     |
 | WITH_BENCHMARKS          |                          | Build test/benchmarks                                                                 | OFF     |
 | WITH_MAINTAINER_WARNINGS |                          | Build with project maintainer warnings                                                | OFF     |
