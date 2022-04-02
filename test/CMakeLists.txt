@@ -49,12 +49,37 @@ if(NOT googletest_POPULATED)
     add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-file(GLOB TEST_SRCS
-    LIST_DIRECTORIES false
-    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/test_*.cc)
+set(TEST_SRCS
+    test_adler32.cc
+    test_aligned_alloc.cc
+    test_compare256.cc
+    test_compress.cc
+    test_crc32.cc
+    test_cve-2003-0107.cc
+    test_deflate_bound.cc
+    test_deflate_copy.cc
+    test_deflate_dict.cc
+    test_deflate_hash_head_0.cc
+    test_deflate_header.cc
+    test_deflate_params.cc
+    test_deflate_pending.cc
+    test_deflate_prime.cc
+    test_deflate_quick_bi_valid.cc
+    test_deflate_quick_block_open.cc
+    test_deflate_tune.cc
+    test_dict.cc
+    test_inflate_adler32.cc
+    test_inflate_sync.cc
+    test_large_buffers.cc
+    test_small_buffers.cc
+    test_version.cc
+    )
 
-add_executable(gtest_zlib ${TEST_SRCS})
+if(WITH_GZFILEOP)
+    list(APPEND TEST_SRCS test_gzio.cc)
+endif()
+
+add_executable(gtest_zlib test_main.cc ${TEST_SRCS})
 
 target_include_directories(gtest_zlib PRIVATE
     ${CMAKE_SOURCE_DIR}
