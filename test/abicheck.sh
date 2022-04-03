@@ -94,7 +94,11 @@ then
 fi
 
 # Canonicalize CHOST to work around bug in original zlib's configure
-export CHOST=$(sh $TESTDIR/../tools/config.sub $CHOST)
+# (Don't export it if it wasn't already exported, else may cause
+# default compiler detection failure and shared library link error
+# when building both zlib and zlib-ng.
+# See https://github.com/zlib-ng/zlib-ng/issues/1219)
+CHOST=$(sh $TESTDIR/../tools/config.sub $CHOST)
 
 if test "$CHOST" = ""
 then
