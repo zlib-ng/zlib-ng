@@ -20,6 +20,7 @@ static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t le
 
 static inline void inf_chksum_cpy(PREFIX3(stream) *strm, uint8_t *dst,
                            const uint8_t *src, uint32_t copy) {
+    if (!copy) return;
     struct inflate_state *state = (struct inflate_state*)strm->state;
 #ifdef GUNZIP
     if (state->flags) {
