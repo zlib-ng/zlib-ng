@@ -26,6 +26,9 @@
 #define zng_crc32                 @ZLIB_SYMBOL_PREFIX@zng_crc32
 #define zng_crc32_combine         @ZLIB_SYMBOL_PREFIX@zng_crc32_combine
 #define zng_crc32_combine64       @ZLIB_SYMBOL_PREFIX@zng_crc32_combine64
+#define zng_crc32_combine_gen     @ZLIB_SYMBOL_PREFIX@zng_crc32_combine_gen
+#define zng_crc32_combine_gen64   @ZLIB_SYMBOL_PREFIX@zng_crc32_combine_gen64
+#define zng_crc32_combine_op      @ZLIB_SYMBOL_PREFIX@zng_crc32_combine_op
 #define zng_crc32_z               @ZLIB_SYMBOL_PREFIX@zng_crc32_z
 #define zng_deflate               @ZLIB_SYMBOL_PREFIX@zng_deflate
 #define zng_deflateBound          @ZLIB_SYMBOL_PREFIX@zng_deflateBound
