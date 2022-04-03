@@ -26,6 +26,9 @@
 #define crc32                 @ZLIB_SYMBOL_PREFIX@crc32
 #define crc32_combine         @ZLIB_SYMBOL_PREFIX@crc32_combine
 #define crc32_combine64       @ZLIB_SYMBOL_PREFIX@crc32_combine64
+#define crc32_combine_gen     @ZLIB_SYMBOL_PREFIX@crc32_combine_gen
+#define crc32_combine_gen64   @ZLIB_SYMBOL_PREFIX@crc32_combine_gen64
+#define crc32_combine_op      @ZLIB_SYMBOL_PREFIX@crc32_combine_op
 #define crc32_z               @ZLIB_SYMBOL_PREFIX@crc32_z
 #define deflate               @ZLIB_SYMBOL_PREFIX@deflate
 #define deflateBound          @ZLIB_SYMBOL_PREFIX@deflateBound

@@ -69,6 +69,7 @@ EXPORTS
     @ZLIB_SYMBOL_PREFIX@gzoffset64
     @ZLIB_SYMBOL_PREFIX@adler32_combine64
     @ZLIB_SYMBOL_PREFIX@crc32_combine64
+    @ZLIB_SYMBOL_PREFIX@crc32_combine_gen64
 ; checksum functions
     @ZLIB_SYMBOL_PREFIX@adler32
     @ZLIB_SYMBOL_PREFIX@adler32_z
@@ -76,6 +77,8 @@ EXPORTS
     @ZLIB_SYMBOL_PREFIX@crc32_z
     @ZLIB_SYMBOL_PREFIX@adler32_combine
     @ZLIB_SYMBOL_PREFIX@crc32_combine
+    @ZLIB_SYMBOL_PREFIX@crc32_combine_gen
+    @ZLIB_SYMBOL_PREFIX@crc32_combine_op
 ; various hacks, don't look :)
     @ZLIB_SYMBOL_PREFIX@deflateInit_
     @ZLIB_SYMBOL_PREFIX@deflateInit2_
