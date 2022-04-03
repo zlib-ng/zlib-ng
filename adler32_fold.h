@@ -11,7 +11,9 @@
 typedef struct adler32_fold_s {
     uint8_t adler[64]; // First half of component sums
     uint8_t sum2[64]; // Second half of component sums
-    uint32_t nsums; // The number of scalar sums performed
+    uint8_t leftover[16]; // A buffer for sub 16 sized carry over, sized for full loads and alignment
+    uint32_t nsums; // The number of scalar sums leftover
+    uint32_t bytes_leftover; // The number of leftover bytes from the previous sum
 } adler32_fold;
 
 Z_INTERNAL void adler32_fold_reset_c(adler32_fold *adler, uint32_t init_adler);

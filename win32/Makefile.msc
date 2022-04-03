@@ -30,9 +30,12 @@ WFLAGS  = \
 	-DX86_FEATURES \
 	-DX86_PCLMULQDQ_CRC \
 	-DX86_SSE2 \
+    -DX86_SSE42_ADLER32 \
 	-DX86_SSE42_CRC_INTRIN \
 	-DX86_SSE42_CRC_HASH \
+    -DX86_SSSE3_ADLER32 \
 	-DX86_AVX2 \
+    -DX86_AVX2_ADLER32 \
 	-DX86_AVX_CHUNKSET \
 	-DX86_SSE2_CHUNKSET \
 	#
@@ -48,6 +51,11 @@ SUFFIX =
 
 OBJS = \
 	adler32.obj \
+    adler32_avx2.obj \
+    adler32_avx512.obj \
+    adler32_avx512_vnni.obj \
+    adler32_sse42.obj \
+    adler32_ssse3.obj \
     adler32_fold.obj \
 	chunkset.obj \
 	chunkset_avx.obj \
@@ -182,6 +190,13 @@ $(TOP)/zconf$(SUFFIX).h: zconf
 SRCDIR = $(TOP)
 # Keep the dependences in sync with top-level Makefile.in
 adler32.obj: $(SRCDIR)/adler32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/functable.h $(SRCDIR)/adler32_p.h
+adler32_avx2.obj: $(SRCDIR)/arch/x86/adler32_avx2.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/fallback_builtins.h
+adler32_avx512.obj: $(SRCDIR)/arch/x86/adler32_avx512.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/arch/x86/adler32_avx512_p.h
+adler32_avx512_vnni.obj: $(SRCDIR)/arch/x86/adler32_avx512_vnni.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/arch/x86/adler32_avx512_p.h
+adler32_sse42.obj: $(SRCDIR)/arch/x86/adler32_sse42.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/adler32_fold.h \
+                   $(SRCDIR)/arch/x86/adler32_ssse3_p.h $(SRCDIR)/arch/x86/adler32_sse42_tpl.h
+adler32_ssse3.obj: $(SRCDIR)/arch/x86/adler32_ssse3.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/adler32_fold.h \
+                   $(SRCDIR)/arch/x86/adler32_ssse3_p.h
 adler32_fold.obj: $(SRCDIR)/adler32_fold.c $(SRCDIR)/zbuild.h $(SRCDIR)/adler32_fold.h $(SRCDIR)/functable.h
 functable.obj: $(SRCDIR)/functable.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zendian.h $(SRCDIR)/arch/x86/x86_features.h
 gzlib.obj: $(SRCDIR)/gzlib.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h

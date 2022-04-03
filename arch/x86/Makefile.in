@@ -28,6 +28,7 @@ all: \
 	adler32_avx2.o adler32_avx2.lo \
 	adler32_avx512.o adler32_avx512.lo \
 	adler32_avx512_vnni.o adler32_avx512_vnni.lo \
+	adler32_sse42.o adler32_sse42.lo \
 	adler32_ssse3.o adler32_ssse3.lo \
 	chunkset_avx.o chunkset_avx.lo \
 	chunkset_sse2.o chunkset_sse2.lo \
@@ -110,25 +111,31 @@ adler32_avx2.o: $(SRCDIR)/adler32_avx2.c
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx2.c
 
 adler32_avx2.lo: $(SRCDIR)/adler32_avx2.c
-	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx2.c
+	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx2.c
 
 adler32_avx512.o: $(SRCDIR)/adler32_avx512.c
 	$(CC) $(CFLAGS) $(AVX512FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx512.c
 
 adler32_avx512.lo: $(SRCDIR)/adler32_avx512.c
-	$(CC) $(SFLAGS) $(AVX512FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx512.c
+	$(CC) $(SFLAGS) $(AVX512FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx512.c
 
 adler32_avx512_vnni.o: $(SRCDIR)/adler32_avx512_vnni.c
 	$(CC) $(CFLAGS) $(AVX512VNNIFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx512_vnni.c
 
 adler32_avx512_vnni.lo: $(SRCDIR)/adler32_avx512_vnni.c
-	$(CC) $(SFLAGS) $(AVX512VNNIFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx512_vnni.c
+	$(CC) $(SFLAGS) $(AVX512VNNIFLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx512_vnni.c
 
 adler32_ssse3.o: $(SRCDIR)/adler32_ssse3.c
 	$(CC) $(CFLAGS) $(SSSE3FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_ssse3.c
 
 adler32_ssse3.lo: $(SRCDIR)/adler32_ssse3.c
-	$(CC) $(SFLAGS) $(SSSE3FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_ssse3.c
+	$(CC) $(SFLAGS) $(SSSE3FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_ssse3.c
+
+adler32_sse42.o: $(SRCDIR)/adler32_sse42.c
+	$(CC) $(CFLAGS) $(SSE42FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_sse42.c
+
+adler32_sse42.lo: $(SRCDIR)/adler32_sse42.c
+	$(CC) $(SFLAGS) $(SSE42FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_sse42.c
 
 mostlyclean: clean
 clean:

@@ -10,6 +10,7 @@
    subject to change. Applications should only use zlib.h.
  */
 
+#include "adler32_fold.h"
 #include "zutil.h"
 #include "zendian.h"
 #include "crc32_fold.h"
@@ -211,6 +212,7 @@ struct internal_state {
 
     int nice_match; /* Stop searching when current match exceeds this */
 
+    struct adler32_fold_s ALIGNED_(64) adler_fold;
     struct crc32_fold_s ALIGNED_(16) crc_fold;
 
                 /* used by trees.c: */
