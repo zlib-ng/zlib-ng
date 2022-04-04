@@ -249,6 +249,14 @@ else()
     endif()
 endif()
 
+# Disable LTO
+if(NOT WITH_NATIVE_INSTRUCTIONS)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+    foreach(_cfg_name IN LISTS CMAKE_CONFIGURATION_TYPES)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${_cfg_name} OFF)
+    endforeach()
+endif()
+
 # Set architecture alignment requirements
 if(NOT WITH_UNALIGNED)
     add_definitions(-DNO_UNALIGNED)
