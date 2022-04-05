@@ -646,6 +646,8 @@ unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long
 
 #ifndef NO_QUICK_STRATEGY
     return sourceLen                       /* The source size itself */
+      + (sourceLen == 0 ? 1 : 0)           /* Always at least one byte for any input */
+      + (sourceLen < 9 ? 1 : 0)            /* One extra byte for lengths less than 9 */
       + DEFLATE_QUICK_OVERHEAD(sourceLen)  /* Source encoding overhead, padded to next full byte */
       + DEFLATE_BLOCK_OVERHEAD             /* Deflate block overhead bytes */
       + wraplen;                           /* none, zlib or gzip wrapper */
