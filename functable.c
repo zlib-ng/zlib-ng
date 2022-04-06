@@ -188,36 +188,52 @@ Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_
 
 Z_INTERNAL void adler32_fold_reset_stub(adler32_fold *adler, uint32_t init_adler) {
     functable.adler32_fold_reset = &adler32_fold_reset_c;
-#if (defined X86_SSE42_ADLER32) && !defined(X86_AVX2_ADLER32) && !defined(X86_AVX512_ADLER32) && !defined(X86_AVX512VNNI_ADLER32)
+#if (defined X86_SSE42_ADLER32) && !defined(X86_AVX512_ADLER32) && !defined(X86_AVX512VNNI_ADLER32)
     if (x86_cpu_has_sse42)
         functable.adler32_fold_reset = &adler32_fold_reset_sse42;
+#ifdef X86_AVX2_ADLER32
+    if (x86_cpu_has_avx2)
+        functable.adler32_fold_reset = &adler32_fold_reset_avx2;
+#endif
 #endif
     functable.adler32_fold_reset(adler, init_adler);
 }
 
 Z_INTERNAL void adler32_fold_copy_stub(adler32_fold *adler, uint8_t *dst, const uint8_t *src, size_t len) {
     functable.adler32_fold_copy = &adler32_fold_copy_c;
-#if (defined X86_SSE42_ADLER32) && !defined(X86_AVX2_ADLER32) && !defined(X86_AVX512_ADLER32) && !defined(X86_AVX512VNNI_ADLER32)
+#if (defined X86_SSE42_ADLER32) && !defined(X86_AVX512_ADLER32) && !defined(X86_AVX512VNNI_ADLER32)
     if (x86_cpu_has_sse42)
         functable.adler32_fold_copy = &adler32_fold_copy_sse42;
+#endif
+#ifdef X86_AVX2_ADLER32
+    if (x86_cpu_has_avx2)
+        functable.adler32_fold_copy = &adler32_fold_copy_avx2;
 #endif
     functable.adler32_fold_copy(adler, dst, src, len);
 }
 
 Z_INTERNAL void adler32_fold_stub(adler32_fold *adler, const uint8_t *src, size_t len) {
     functable.adler32_fold = &adler32_fold_c;
-#if (defined X86_SSE42_ADLER32) && !defined(X86_AVX2_ADLER32) && !defined(X86_AVX512_ADLER32) && !defined(X86_AVX512VNNI_ADLER32)
+#if (defined X86_SSE42_ADLER32) && !defined(X86_AVX512_ADLER32) && !defined(X86_AVX512VNNI_ADLER32)
     if (x86_cpu_has_sse42)
         functable.adler32_fold = &adler32_fold_sse42;
+#endif
+#ifdef X86_AVX2_ADLER32
+    if (x86_cpu_has_avx2)
+        functable.adler32_fold = &adler32_fold_avx2;
 #endif
     functable.adler32_fold(adler, src, len);
 }
 
 Z_INTERNAL uint32_t adler32_fold_final_stub(adler32_fold *adler) {
     functable.adler32_fold_final = &adler32_fold_final_c;
-#if (defined X86_SSE42_ADLER32) && !defined(X86_AVX2_ADLER32) && !defined(X86_AVX512_ADLER32) && !defined(X86_AVX512VNNI_ADLER32)
+#if (defined X86_SSE42_ADLER32) && !defined(X86_AVX512_ADLER32) && !defined(X86_AVX512VNNI_ADLER32)
     if (x86_cpu_has_sse42)
         functable.adler32_fold_final = &adler32_fold_final_sse42;
+#endif
+#ifdef X86_AVX2_ADLER32
+    if (x86_cpu_has_avx2)
+        functable.adler32_fold_final = &adler32_fold_final_avx2;
 #endif
     return functable.adler32_fold_final(adler);
 }

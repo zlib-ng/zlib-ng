@@ -43,6 +43,10 @@ extern uint32_t adler32_fold_final_sse42(adler32_fold *adler);
 #endif
 #ifdef X86_AVX2_ADLER32
 extern uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t len);
+extern void     adler32_fold_reset_avx2(adler32_fold *adler, uint32_t init_adler);
+extern void     adler32_fold_copy_avx2(adler32_fold *adler, uint8_t *dst, const uint8_t *src, size_t len);
+extern void     adler32_fold_avx2(adler32_fold *adler, const uint8_t *src, size_t len);
+extern uint32_t adler32_fold_final_avx2(adler32_fold *adler);
 #endif
 #ifdef X86_AVX512_ADLER32
 extern uint32_t adler32_avx512(uint32_t adler, const unsigned char *buf, size_t len);
