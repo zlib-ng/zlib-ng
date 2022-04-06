@@ -91,7 +91,7 @@ CVE-2003-0107$(EXE): CVE-2003-0107.o
 	$(CC) $(CFLAGS) -o $@ CVE-2003-0107.o $(TEST_LDFLAGS)
 
 .PHONY: ghtests
-ghtests: testGH-361 testGH-364 testGH-751
+ghtests: testGH-361 testGH-364 testGH-751 testGH-1235
 
 .PHONY: testGH-361
 testGH-361:
@@ -108,9 +108,16 @@ testGH-364: switchlevels$(EXE)
 testGH-751:
 	$(QEMU_RUN) ../minigzip$(EXE) <$(SRCDIR)/GH-751/test.txt | $(QEMU_RUN) ../minigzip$(EXE) -d >/dev/null
 
+gh1235$(EXE): $(SRCDIR)/gh1235.c
+	$(CC) $(CFLAGS) -I.. -I$(SRCTOP) -o $@ $< $(TEST_LDFLAGS)
+
+.PHONY: testGH-1235
+testGH-1235: gh1235$(EXE)
+	$(QEMU_RUN) ./gh1235$(EXE)
+
 clean:
 	rm -f *.o *.gcda *.gcno *.gcov
-	rm -f CVE-2003-0107$(EXE) switchlevels$(EXE)
+	rm -f CVE-2003-0107$(EXE) switchlevels$(EXE) gh1235$(EXE)
 
 distclean:
 	rm -f Makefile
