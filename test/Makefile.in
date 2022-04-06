@@ -55,7 +55,7 @@ testCVEinputs: check_cross_dep
 	@EXE=$(EXE) QEMU_RUN="${QEMU_RUN}" $(SRCDIR)/testCVEinputs.sh
 
 .PHONY: ghtests
-ghtests: testGH-361 testGH-364 testGH-751
+ghtests: testGH-361 testGH-364 testGH-751 testGH-1235
 
 .PHONY: testGH-361
 testGH-361:
@@ -72,9 +72,16 @@ testGH-364: switchlevels$(EXE)
 testGH-751:
 	$(QEMU_RUN) ../minigzip$(EXE) <$(SRCDIR)/GH-751/test.txt | $(QEMU_RUN) ../minigzip$(EXE) -d >/dev/null
 
+gh1235$(EXE): $(SRCDIR)/gh1235.c
+	$(CC) $(CFLAGS) -I.. -I$(SRCTOP) -o $@ $< $(TEST_LDFLAGS)
+
+.PHONY: testGH-1235
+testGH-1235: gh1235$(EXE)
+	$(QEMU_RUN) ./gh1235$(EXE)
+
 clean:
 	rm -f *.o *.gcda *.gcno *.gcov
-	rm -f switchlevels$(EXE)
+	rm -f switchlevels$(EXE) gh1235$(EXE)
 
 distclean:
 	rm -f Makefile
