@@ -124,7 +124,7 @@ static inline int decode_png(png_parse_dat *dat, png_bytepp out_bytes, size_t in
     int bit_depth = 0, color_type = -1;
     png_get_IHDR(png, info, &width, &height, &bit_depth, &color_type, NULL, NULL, NULL);
 
-    size_t im_size = width * height * bit_depth/8;
+    size_t im_size = width * height * bit_depth/8 * 3;
     if (color_type != PNG_COLOR_TYPE_RGB) {
         fprintf(stderr, "expected an 8 bpp RGB image\n");
         abort();
@@ -136,9 +136,9 @@ static inline int decode_png(png_parse_dat *dat, png_bytepp out_bytes, size_t in
 
     png_bytep *out_rows = new png_bytep[height];
     for (size_t i = 0; i < height; ++i)
-        out_rows[i] = *out_bytes + (width*i);
+        out_rows[i] = *out_bytes + (width*i*3);
 
-    png_read_rows(png, out_rows, NULL, IMHEIGHT);
+    png_read_rows(png, out_rows, NULL, height);
     png_destroy_read_struct(&png, &info, NULL);
     delete[] out_rows;
 
