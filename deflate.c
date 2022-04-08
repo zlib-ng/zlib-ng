@@ -52,6 +52,7 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "functable.h"
+#include <stdio.h>
 
 const char PREFIX(deflate_copyright)[] = " deflate 1.2.11.f Copyright 1995-2016 Jean-loup Gailly and Mark Adler ";
 /*
@@ -444,15 +445,12 @@ int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
         INIT_STATE;
 
 #ifdef GZIP
-    if (s->wrap == 2)
+    if (s->wrap == 2) {
+        /* Ensure that there's always a reset, regardless of "wrap" */
         strm->adler = functable.crc32_fold_reset(&s->crc_fold);
-    else
+    } else
 #endif
-        //strm->adler = ADLER32_INITIAL_VALUE;
-    {
         strm->adler = ADLER32_INITIAL_VALUE;
-        functable.adler32_fold_reset(&s->adler_fold, ADLER32_INITIAL_VALUE);
-    }
     s->last_flush = -2;
 
     zng_tr_init(s);
@@ -771,7 +769,6 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
         if (s->strstart != 0)
             put_uint32_msb(s, strm->adler);
         strm->adler = ADLER32_INITIAL_VALUE;
-        functable.adler32_fold_reset(&s->adler_fold, ADLER32_INITIAL_VALUE);
         s->status = BUSY_STATE;
 
         /* Compression must start with an empty pending buffer */
@@ -979,7 +976,6 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
     } else
 #endif
     {
-        strm->adler = functable.adler32_fold_final(&s->adler_fold);
         if (s->wrap == 1)
             put_uint32_msb(s, strm->adler);
     }
@@ -1092,10 +1088,9 @@ Z_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned
 #endif
     } else {
         if (strm->state->wrap == 1)
-            functable.adler32_fold_copy(&strm->state->adler_fold, buf, strm->next_in, len);
+            strm->adler = functable.adler32_fold_copy(strm->adler, buf, strm->next_in, len);
         else
             memcpy(buf, strm->next_in, len);
-            //strm->adler = functable.adler32(strm->adler, buf, len);
     }
     strm->next_in  += len;
     strm->total_in += len;
