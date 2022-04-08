@@ -6,8 +6,6 @@
 #ifndef ADLER32_FOLD_H_
 #define ADLER32_FOLD_H_
 
-#include <stdint.h>
-
 Z_INTERNAL uint32_t adler32_fold_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 
 #endif

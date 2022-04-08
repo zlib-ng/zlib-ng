@@ -1,4 +1,4 @@
-/* crc32_fold.c -- adler32 folding interface
+/* adler32_fold.c -- adler32 folding interface
  * Copyright (C) 2022 Adam Stylinski 
  * For conditions of distribution and use, see copyright notice in zlib.h
  */

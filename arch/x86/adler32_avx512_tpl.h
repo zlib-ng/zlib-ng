@@ -3,16 +3,13 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifndef ADLER32_AVX512_TPL_H_
-#define ADLER32_AVX512_TPL_H_
-
 #include "../../zbuild.h"
 #include "../../adler32_p.h"
+#include "../../adler32_fold.h"
 #include "../../cpu_features.h"
 #include "../../fallback_builtins.h"
 #include <immintrin.h>
 #include "adler32_avx512_p.h"
-#include "../../adler32_fold.h"
 
 #ifdef X86_AVX512_ADLER32
 
@@ -22,12 +19,12 @@ Z_INTERNAL uint32_t adler32_fold_copy_avx512(uint32_t adler, uint8_t *dst, const
 Z_INTERNAL uint32_t adler32_avx512(uint32_t adler, const uint8_t *src, size_t len) {
 #endif
 
+    if (src == NULL) return 1L;
+    if (len == 0) return adler;
+
     uint32_t adler0, adler1;
     adler1 = (adler >> 16) & 0xffff;
     adler0 = adler & 0xffff; 
-
-    if (src == NULL) return 1L;
-    if (len == 0) return adler;
 
 rem_peel:
     if (len < 64) {
@@ -106,5 +103,4 @@ rem_peel:
     return adler; 
 }
 
-#endif
 #endif

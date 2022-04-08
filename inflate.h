@@ -11,8 +11,8 @@
 #ifndef INFLATE_H_
 #define INFLATE_H_
 
-#include "crc32_fold.h"
 #include "adler32_fold.h"
+#include "crc32_fold.h"
 
 /* define NO_GZIP when compiling if you want to disable gzip header and trailer decoding by inflate().
    NO_GZIP would be used to avoid linking in the crc code when it is not needed.

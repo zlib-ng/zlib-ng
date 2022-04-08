@@ -10,9 +10,9 @@
    subject to change. Applications should only use zlib.h.
  */
 
-#include "adler32_fold.h"
 #include "zutil.h"
 #include "zendian.h"
+#include "adler32_fold.h"
 #include "crc32_fold.h"
 
 /* define NO_GZIP when compiling if you want to disable gzip header and

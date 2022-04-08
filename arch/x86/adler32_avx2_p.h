@@ -6,10 +6,10 @@
 #ifndef ADLER32_AVX2_P_H_
 #define ADLER32_AVX2_P_H_
 
-#ifdef X86_AVX2_ADLER32
+#if defined(X86_AVX2_ADLER32) || defined(X86_AVX512VNNI_ADLER32)
 
 /* 32 bit horizontal sum, adapted from Agner Fog's vector library. */
-static inline uint32_t hsum(__m256i x) {
+static inline uint32_t hsum256(__m256i x) {
     __m128i sum1  = _mm_add_epi32(_mm256_extracti128_si256(x, 1),
                                   _mm256_castsi256_si128(x));
     __m128i sum2  = _mm_add_epi32(sum1, _mm_unpackhi_epi64(sum1, sum1));
@@ -17,7 +17,7 @@ static inline uint32_t hsum(__m256i x) {
     return (uint32_t)_mm_cvtsi128_si32(sum3);
 }
 
-static inline uint32_t partial_hsum(__m256i x) {
+static inline uint32_t partial_hsum256(__m256i x) {
     /* We need a permutation vector to extract every other integer. The
      * rest are going to be zeros */
     const __m256i perm_vec = _mm256_setr_epi32(0, 2, 4, 6, 1, 1, 1, 1);
