@@ -346,7 +346,7 @@ int main(int argc, char **argv) {
 
     if (fin != stdin) {
         fclose(fin);
-        if (!keep) {
+        if (!copyout && !keep) {
             unlink(argv[i]);
         }
     }
