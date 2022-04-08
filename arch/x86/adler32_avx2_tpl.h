@@ -14,40 +14,40 @@
 #include "adler32_avx2_p.h"
 
 #ifdef X86_SSE42_ADLER32
-extern void adler32_fold_copy_sse42(adler32_fold *adler, uint8_t *dst, const uint8_t *src, size_t len);
-extern void adler32_fold_sse42(adler32_fold *adler, const uint8_t *src, size_t len);
+extern uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *src, size_t len);
 #define copy_sub32(a, b, c, d) adler32_fold_copy_sse42(a, b, c, d)
-#define sub32(a, b, c) adler32_fold_sse42(a, b, c)
+#define sub32(a, b, c) adler32_ssse3(a, b, c)
 #else
-#define copy_sub32(a, b, c, d) do { a->nsums = adler32_copy_len_16(adler0, c, b, d, adler1); } while (0)
-#define sub32(a, b, c) do { a->nsums = adler32_len_16(adler0, b, c, adler1); } while (0)
+#define copy_sub32(a, b, c, d) adler32_copy_len_16(adler0, c, b, d, adler1)
+#define sub32(a, b, c) adler32_len_16(adler0, b, c, adler1)
 #endif
 
 #ifdef COPY
-Z_INTERNAL void adler32_fold_copy_avx2(adler32_fold *adler, uint8_t *dst, const uint8_t *src, size_t len) {
+Z_INTERNAL uint32_t adler32_fold_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
 #else
-Z_INTERNAL void adler32_fold_avx2(adler32_fold *adler, const uint8_t *src, size_t len) {
+Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const uint8_t *src, size_t len) {
 #endif
+    if (src == NULL) return 1L;
+    if (len == 0) return adler;
 
     uint32_t adler0, adler1;
-    adler1 = (adler->nsums >> 16) & 0xffff;
-    adler0 = adler->nsums & 0xffff; 
+    adler1 = (adler >> 16) & 0xffff;
+    adler0 = adler & 0xffff; 
 
 rem_peel:
     if (len < 16) {
 #ifdef COPY
-       adler->nsums = adler32_copy_len_16(adler0, src, dst, len, adler1);
+       return adler32_copy_len_16(adler0, src, dst, len, adler1);
 #else
-       adler->nsums = adler32_len_16(adler0, src, len, adler1);
+       return adler32_len_16(adler0, src, len, adler1);
 #endif
-       return;
     } else if (len < 32) {
 #ifdef COPY
-        copy_sub32(adler, dst, src, len);
+        return copy_sub32(adler, dst, src, len);
 #else
-        sub32(adler, src, len);
+        return sub32(adler, src, len);
 #endif
-       return;
     }
 
     __m256i vs1, vs2;
@@ -63,7 +63,7 @@ rem_peel:
        __m256i vs1_0 = vs1;
        __m256i vs3 = _mm256_setzero_si256();
 
-       size_t k = (len < NMAX ? len : NMAX);
+       size_t k = MIN(len, NMAX);
        k -= k % 32;
        len -= k;
 
@@ -133,11 +133,13 @@ rem_peel:
         adler1 = hsum(vs2) % BASE;
     }
 
-    adler->nsums = adler0 | (adler1 << 16);
+    adler = adler0 | (adler1 << 16);
 
     if (len) {
         goto rem_peel;
     }
+
+    return adler;
 }
 
 #endif
