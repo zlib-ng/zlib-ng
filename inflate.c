@@ -609,7 +609,6 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
 #endif
         case DICTID:
             NEEDBITS(32);
-            //strm->adler = state->check = ZSWAP32(hold);
             strm->adler = state->check = ZSWAP32(hold);
             INITBITS();
             state->mode = DICT;

@@ -1,4 +1,4 @@
-/* adler32_sse4.c -- compute the Adler-32 checksum of a data stream
+/* adler32_sse42.c -- compute the Adler-32 checksum of a data stream
  * Copyright (C) 1995-2011 Mark Adler
  * Authors:
  *   Adam Stylinski <kungfujesus06@gmail.com>
@@ -15,7 +15,6 @@
 #ifdef X86_SSE42_ADLER32
 
 Z_INTERNAL uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
-
     uint32_t adler0, adler1;
     adler1 = (adler >> 16) & 0xffff;
     adler0 = adler & 0xffff; 

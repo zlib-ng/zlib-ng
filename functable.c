@@ -188,7 +188,7 @@ Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_
 
 Z_INTERNAL uint32_t adler32_fold_copy_stub(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
     functable.adler32_fold_copy = &adler32_fold_copy_c;
-#if (defined X86_SSE42_ADLER32) && !defined(X86_AVX512VNNI_ADLER32)
+#if (defined X86_SSE42_ADLER32)
     if (x86_cpu_has_sse42)
         functable.adler32_fold_copy = &adler32_fold_copy_sse42;
 #endif
@@ -199,6 +199,10 @@ Z_INTERNAL uint32_t adler32_fold_copy_stub(uint32_t adler, uint8_t *dst, const u
 #ifdef X86_AVX512_ADLER32
     if (x86_cpu_has_avx512)
         functable.adler32_fold_copy = &adler32_fold_copy_avx512;
+#endif
+#ifdef X86_AVX512VNNI_ADLER32
+    if (x86_cpu_has_avx512vnni)
+        functable.adler32_fold_copy = &adler32_fold_copy_avx512_vnni;
 #endif
     return functable.adler32_fold_copy(adler, dst, src, len);
 }

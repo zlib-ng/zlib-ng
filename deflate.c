@@ -52,7 +52,6 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "functable.h"
-#include <stdio.h>
 
 const char PREFIX(deflate_copyright)[] = " deflate 1.2.11.f Copyright 1995-2016 Jean-loup Gailly and Mark Adler ";
 /*
@@ -446,7 +445,6 @@ int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
 
 #ifdef GZIP
     if (s->wrap == 2) {
-        /* Ensure that there's always a reset, regardless of "wrap" */
         strm->adler = functable.crc32_fold_reset(&s->crc_fold);
     } else
 #endif

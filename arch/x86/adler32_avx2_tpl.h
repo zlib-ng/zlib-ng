@@ -3,9 +3,6 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifndef ADLER32_AVX2_TPL_H_
-#define ADLER32_AVX2_TPL_H_
-
 #include "../../zbuild.h"
 #include <immintrin.h>
 #include "../../adler32_fold.h"
@@ -38,9 +35,9 @@ Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const uint8_t *src, size_t len)
 rem_peel:
     if (len < 16) {
 #ifdef COPY
-       return adler32_copy_len_16(adler0, src, dst, len, adler1);
+        return adler32_copy_len_16(adler0, src, dst, len, adler1);
 #else
-       return adler32_len_16(adler0, src, len, adler1);
+        return adler32_len_16(adler0, src, len, adler1);
 #endif
     } else if (len < 32) {
 #ifdef COPY
@@ -129,8 +126,8 @@ rem_peel:
          * conversion from 64 bit integer to 32 bit (needed for the inexpensive modulus with a constant).
          * This casting to 32 bit is cheap through GPRs (just register aliasing). See above for exactly
          * what the compiler is doing to avoid integer divisions. */
-        adler0 = partial_hsum(vs1) % BASE;
-        adler1 = hsum(vs2) % BASE;
+        adler0 = partial_hsum256(vs1) % BASE;
+        adler1 = hsum256(vs2) % BASE;
     }
 
     adler = adler0 | (adler1 << 16);
@@ -141,5 +138,3 @@ rem_peel:
 
     return adler;
 }
-
-#endif

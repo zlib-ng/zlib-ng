@@ -6,8 +6,8 @@
 #ifndef CPU_FEATURES_H_
 #define CPU_FEATURES_H_
 
-#include "crc32_fold.h"
 #include "adler32_fold.h"
+#include "crc32_fold.h"
 
 #if defined(X86_FEATURES)
 #  include "arch/x86/x86_features.h"
@@ -35,22 +35,31 @@ extern uint32_t adler32_vmx(uint32_t adler, const unsigned char *buf, size_t len
 #ifdef X86_SSSE3_ADLER32
 extern uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
-#ifdef X86_SSE42_ADLER32
-extern uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
-#endif
 #ifdef X86_AVX2_ADLER32
 extern uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, size_t len);
-extern uint32_t adler32_fold_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 #ifdef X86_AVX512_ADLER32
 extern uint32_t adler32_avx512(uint32_t adler, const unsigned char *buf, size_t len);
-extern uint32_t adler32_fold_copy_avx512(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 #ifdef X86_AVX512VNNI_ADLER32
 extern uint32_t adler32_avx512_vnni(uint32_t adler, const unsigned char *buf, size_t len);
 #endif
 #ifdef POWER8_VSX_ADLER32
 extern uint32_t adler32_power8(uint32_t adler, const unsigned char* buf, size_t len);
+#endif
+
+/* adler32 folding */
+#ifdef X86_SSE42_ADLER32
+extern uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+#endif
+#ifdef X86_AVX2_ADLER32
+extern uint32_t adler32_fold_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+#endif
+#ifdef X86_AVX512_ADLER32
+extern uint32_t adler32_fold_copy_avx512(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+#endif
+#ifdef X86_AVX512VNNI_ADLER32
+extern uint32_t adler32_fold_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 
 /* CRC32 folding */
