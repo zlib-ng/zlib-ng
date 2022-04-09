@@ -3,4 +3,3 @@
 *.h text
 Makefile text
 configure text eol=lf
-testCVEinputs.sh text eol=lf
