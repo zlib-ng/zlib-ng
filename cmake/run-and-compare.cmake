@@ -41,10 +41,16 @@ endif()
 
 # Use configure_file to normalize line-endings
 if(IGNORE_LINE_ENDINGS)
-    configure_file(${COMPARE} ${COMPARE}.cmp NEWLINE_STYLE LF)
-    set(COMPARE ${COMPARE}.cmp)
-    configure_file(${OUTPUT} ${OUTPUT}.cmp NEWLINE_STYLE LF)
-    set(OUTPUT ${OUTPUT}.cmp)
+    # Rewrite files with normalized line endings to temporary directory
+    get_filename_component(COMPARE_NAME ${COMPARE} NAME)
+    set(COMPARE_TEMP ${CMAKE_CURRENT_BINARY_DIR}/Testing/Temporary/${COMPARE_NAME}.cmp)
+    configure_file(${COMPARE} ${COMPARE_TEMP} NEWLINE_STYLE LF)
+    set(COMPARE ${COMPARE_TEMP})
+
+    get_filename_component(OUTPUT_NAME ${OUTPUT} NAME)
+    set(OUTPUT_TEMP ${CMAKE_CURRENT_BINARY_DIR}/Testing/Temporary/${OUTPUT_NAME}.cmp)
+    configure_file(${OUTPUT} ${OUTPUT_TEMP} NEWLINE_STYLE LF)
+    set(OUTPUT ${OUTPUT_TEMP})
 endif()
 
 # Compare that output is equal to specified file
