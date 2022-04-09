@@ -13,7 +13,7 @@ TEST_LDFLAGS=-L.. ../$(LIBNAME).a
 QEMU_RUN=
 QEMU_VER:=$(shell command -v $(QEMU_RUN) --version 2> /dev/null)
 
-all: oldtests cvetests ghtests
+all: oldtests ghtests
 
 oldtests: #set by ../configure
 check_cross_dep:
@@ -48,11 +48,6 @@ testshared: check_cross_dep
 	  echo '		*** zlib shared test FAILED ***'; exit 1; \
 	fi; \
 	rm -f $$TMPSH $$HELLOSH
-
-cvetests: testCVEinputs
-
-testCVEinputs: check_cross_dep
-	@EXE=$(EXE) QEMU_RUN="${QEMU_RUN}" $(SRCDIR)/testCVEinputs.sh
 
 .PHONY: ghtests
 ghtests: testGH-361 testGH-364 testGH-751 testGH-1235
