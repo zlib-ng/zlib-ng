@@ -32,7 +32,7 @@ public:
     }
 
     void Bench(benchmark::State& state, compare256_func compare256) {
-        int32_t match_len = (int32_t)state.range(0);
+        int32_t match_len = (int32_t)state.range(0) - 1;
         uint32_t len;
 
         str2[match_len] = 0;
