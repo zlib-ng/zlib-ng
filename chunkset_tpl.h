@@ -5,6 +5,10 @@
 #include "zbuild.h"
 #include <stdlib.h>
 
+#if CHUNK_SIZE == 32 && defined(X86_SSE41) && defined(X86_SSE2)
+extern uint8_t* chunkmemset_sse41(uint8_t *out, unsigned dist, unsigned len);
+#endif
+
 /* Returns the chunk size */
 Z_INTERNAL uint32_t CHUNKSIZE(void) {
     return sizeof(chunk_t);
@@ -20,6 +24,7 @@ Z_INTERNAL uint32_t CHUNKSIZE(void) {
    (chunk_t bytes or fewer) will fall straight through the loop
    without iteration, which will hopefully make the branch prediction more
    reliable. */
+#ifndef HAVE_CHUNKCOPY
 Z_INTERNAL uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
     Assert(len > 0, "chunkcopy should never have a length 0");
     chunk_t chunk;
@@ -38,6 +43,7 @@ Z_INTERNAL uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
     }
     return out;
 }
+#endif
 
 /* Perform short copies until distance can be rewritten as being at least
    sizeof chunk_t.
@@ -47,6 +53,7 @@ Z_INTERNAL uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
    This assumption holds because inflate_fast() starts every iteration with at
    least 258 bytes of output space available (258 being the maximum length
    output from a single token; see inflate_fast()'s assumptions below). */
+#ifndef HAVE_CHUNKUNROLL
 Z_INTERNAL uint8_t* CHUNKUNROLL(uint8_t *out, unsigned *dist, unsigned *len) {
     unsigned char const *from = out - *dist;
     chunk_t chunk;
@@ -59,6 +66,30 @@ Z_INTERNAL uint8_t* CHUNKUNROLL(uint8_t *out, unsigned *dist, unsigned *len) {
     }
     return out;
 }
+#endif
+
+#ifndef HAVE_CHUNK_MAG
+/* Loads a magazine to feed into memory of the pattern */
+static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t dist) {
+        /* This code takes string of length dist from "from" and repeats
+         * it for as many times as can fit in a chunk_t (vector register) */
+        uint32_t cpy_dist;
+        uint32_t bytes_remaining = sizeof(chunk_t);
+        chunk_t chunk_load;
+        uint8_t *cur_chunk = (uint8_t *)&chunk_load;
+        while (bytes_remaining) {
+            cpy_dist = MIN(dist, bytes_remaining);
+            memcpy(cur_chunk, buf, cpy_dist);
+            bytes_remaining -= cpy_dist;
+            cur_chunk += cpy_dist;
+            /* This allows us to bypass an expensive integer division since we're effectively
+             * counting in this loop, anyway */
+            *chunk_rem = cpy_dist;
+        }
+
+        return chunk_load;
+}
+#endif
 
 /* Copy DIST bytes from OUT - DIST into OUT + DIST * k, for 0 <= k < LEN/DIST.
    Return OUT + LEN. */
@@ -66,6 +97,12 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
     /* Debug performance related issues when len < sizeof(uint64_t):
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
     Assert(dist > 0, "chunkmemset cannot have a distance 0");
+    /* Only AVX2 */
+#if CHUNK_SIZE == 32 && defined(X86_SSE41) && defined(X86_SSE2)
+    if (len <= 16) {
+        return chunkmemset_sse41(out, dist, len);
+    }
+#endif
 
     uint8_t *from = out - dist;
 
@@ -98,22 +135,7 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
     } else
 #endif
     {
-        /* This code takes string of length dist from "from" and repeats
-         * it for as many times as can fit in a chunk_t (vector register) */
-        uint32_t cpy_dist;
-        uint32_t bytes_remaining = sizeof(chunk_t);
-        uint8_t *cur_chunk = (uint8_t *)&chunk_load;
-        while (bytes_remaining) {
-            cpy_dist = MIN(dist, bytes_remaining);
-            memcpy(cur_chunk, from, cpy_dist);
-            bytes_remaining -= cpy_dist;
-            cur_chunk += cpy_dist;
-            /* This allows us to bypass an expensive integer division since we're effectively
-             * counting in this loop, anyway. However, we may have to derive a similarly
-             * sensible solution for if we use a permutation table that allows us to construct
-             * this vector in one load and one permute instruction */
-            chunk_mod = cpy_dist;
-        }
+        chunk_load = GET_CHUNK_MAG(from, &chunk_mod, dist);
     }
 
     /* If we're lucky enough and dist happens to be an even modulus of our vector length,

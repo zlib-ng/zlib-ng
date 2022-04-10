@@ -331,6 +331,10 @@ Z_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len) 
 # endif
         functable.chunkmemset = &chunkmemset_sse2;
 #endif
+#if defined(X86_SSE41) && defined(X86_SSE2)
+    if (x86_cpu_has_sse41)
+        functable.chunkmemset = &chunkmemset_sse41;
+#endif
 #ifdef X86_AVX_CHUNKSET
     if (x86_cpu_has_avx2)
         functable.chunkmemset = &chunkmemset_avx;
@@ -357,6 +361,10 @@ Z_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned 
     if (x86_cpu_has_sse2)
 # endif
         functable.chunkmemset_safe = &chunkmemset_safe_sse2;
+#endif
+#if defined(X86_SSE41) && defined(X86_SSE2)
+    if (x86_cpu_has_sse41)
+        functable.chunkmemset_safe = &chunkmemset_safe_sse41;
 #endif
 #ifdef X86_AVX_CHUNKSET
     if (x86_cpu_has_avx2)
