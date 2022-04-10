@@ -16,38 +16,75 @@
 
 #include <gtest/gtest.h>
 
-TEST(deflate, bound) {
-    PREFIX3(stream) c_stream;
-    int estimate_len = 0;
-    uint8_t *out_buf = NULL;
-    int err;
+#define MAX_LENGTH (32)
 
-    memset(&c_stream, 0, sizeof(c_stream));
+typedef struct {
+    int32_t level;
+    int32_t window_size;
+    int32_t mem_level;
+} deflate_bound_test;
 
-    c_stream.avail_in = hello_len;
-    c_stream.next_in = (z_const unsigned char *)hello;
-    c_stream.avail_out = 0;
-    c_stream.next_out = out_buf;
+static const deflate_bound_test tests[] = {
+    {0, MAX_WBITS + 16, 1},
+    {Z_BEST_SPEED, MAX_WBITS, MAX_MEM_LEVEL},
+    {Z_BEST_COMPRESSION, MAX_WBITS, MAX_MEM_LEVEL}
+};
 
-    err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
-    EXPECT_EQ(err, Z_OK);
+class deflate_bound_variant : public testing::TestWithParam<deflate_bound_test> {
+public:
+    void estimate(deflate_bound_test param) {
+        PREFIX3(stream) c_stream;
+        int estimate_len = 0;
+        uint8_t *uncompressed = NULL;
+        uint8_t *out_buf = NULL;
+        int err;
 
-    /* calculate actual output length and update structure */
-    estimate_len = PREFIX(deflateBound)(&c_stream, hello_len);
-    out_buf = (uint8_t *)malloc(estimate_len);
+        uncompressed = (uint8_t *)malloc(MAX_LENGTH);
+        ASSERT_TRUE(uncompressed != NULL);
+        memset(uncompressed, 'a', MAX_LENGTH);
 
-    if (out_buf != NULL) {
-        /* update zlib configuration */
-        c_stream.avail_out = estimate_len;
-        c_stream.next_out = out_buf;
+        for (int32_t i = 0; i < MAX_LENGTH; i++) {
+            memset(&c_stream, 0, sizeof(c_stream));
 
-        /* do the compression */
-        err = PREFIX(deflate)(&c_stream, Z_FINISH);
-        EXPECT_EQ(err, Z_STREAM_END);
+            c_stream.avail_in = i;
+            c_stream.next_in = (z_const unsigned char *)uncompressed;
+            c_stream.avail_out = 0;
+            c_stream.next_out = out_buf;
+
+            err = PREFIX(deflateInit2)(&c_stream, param.level, Z_DEFLATED,
+                param.window_size, param.mem_level, Z_DEFAULT_STRATEGY);
+            EXPECT_EQ(err, Z_OK);
+
+            /* calculate actual output length and update structure */
+            estimate_len = PREFIX(deflateBound)(&c_stream, i);
+            out_buf = (uint8_t *)malloc(estimate_len);
+
+            if (out_buf != NULL) {
+                /* update zlib configuration */
+                c_stream.avail_out = estimate_len;
+                c_stream.next_out = out_buf;
+
+                /* do the compression */
+                err = PREFIX(deflate)(&c_stream, Z_FINISH);
+                EXPECT_EQ(err, Z_STREAM_END) <<
+                    "level: " << param.level << "\n" <<
+                    "window_size: " << param.window_size << "\n" <<
+                    "mem_level: " << param.mem_level << "\n" <<
+                    "length: " << i;
+
+                free(out_buf);
+            }
+
+            err = PREFIX(deflateEnd)(&c_stream);
+            EXPECT_EQ(err, Z_OK);
+        }
+
+        free(uncompressed);
     }
+};
 
-    err = PREFIX(deflateEnd)(&c_stream);
-    EXPECT_EQ(err, Z_OK);
-
-    free(out_buf);
+TEST_P(deflate_bound_variant, estimate) {
+    estimate(GetParam());
 }
+
+INSTANTIATE_TEST_SUITE_P(deflate_bound, deflate_bound_variant, testing::ValuesIn(tests));
