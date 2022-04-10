@@ -1471,6 +1471,9 @@ case "${ARCH}" in
             if test ${HAVE_SSE41_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE41"
                 SFLAGS="${SFLAGS} -DX86_SSE41"
+
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chunkset_sse41.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chunkset_sse41.lo"
             fi
 
             check_sse42_intrinsics

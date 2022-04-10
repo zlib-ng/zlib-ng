@@ -31,6 +31,7 @@ all: \
 	adler32_ssse3.o adler32_ssse3.lo \
 	chunkset_avx.o chunkset_avx.lo \
 	chunkset_sse2.o chunkset_sse2.lo \
+	chunkset_sse41.o chunkset_sse41.lo \
 	compare256_avx2.o compare256_avx2.lo \
 	compare256_sse2.o compare256_sse2.lo \
 	insert_string_sse42.o insert_string_sse42.lo \
@@ -56,6 +57,12 @@ chunkset_sse2.o:
 
 chunkset_sse2.lo:
 	$(CC) $(SFLAGS) $(SSE2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_sse2.c
+
+chunkset_sse41.o:
+	$(CC) $(CFLAGS) $(SSE41FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_sse41.c
+
+chunkset_sse41.lo:
+	$(CC) $(SFLAGS) $(SSE41FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_sse41.c
 
 compare256_avx2.o:
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_avx2.c
