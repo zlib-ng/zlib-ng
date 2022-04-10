@@ -54,6 +54,7 @@ set(TEST_SRCS
     test_aligned_alloc.cc
     test_compare256.cc
     test_compress.cc
+    test_compress_bound.cc
     test_crc32.cc
     test_cve-2003-0107.cc
     test_deflate_bound.cc
