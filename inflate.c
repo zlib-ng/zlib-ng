@@ -205,7 +205,12 @@ int Z_INTERNAL inflate_ensure_window(struct inflate_state *state) {
         state->window = (unsigned char *)ZALLOC_WINDOW(state->strm, wsize + state->chunksize, sizeof(unsigned char));
         if (state->window == NULL)
             return Z_MEM_ERROR;
-        memset(state->window + wsize, 0, state->chunksize);
+#ifdef Z_MEMORY_SANITIZER
+        /* This is _not_ to subvert the memory sanitizer but to instead unposion some
+           data we willingly and purposefully load uninitialized into vector registers
+           in order to safely read the last < chunksize bytes of the window. */
+        __msan_unpoison(state->window + wsize, state->chunksize);
+#endif
     }
 
     /* if window not in use yet, initialize */
