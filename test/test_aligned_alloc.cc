@@ -1,4 +1,4 @@
-/* test_aligned_alloc.cc - Test zng_calloc_aligned and zng_cfree_aligned */
+/* test_aligned_alloc.cc - Test zng_alloc_aligned and zng_free_aligned */
 
 #include <stdlib.h>
 #include <errno.h>
@@ -39,8 +39,8 @@ void zng_cfree_unaligned(void *opaque, void *ptr) {
 }
 
 TEST(zalloc, aligned_64) {
-    void *return_ptr = zng_calloc_aligned(zng_calloc_unaligned, 0, 1, 100, 64);
+    void *return_ptr = zng_alloc_aligned(zng_calloc_unaligned, 0, 1, 100, 64);
     ASSERT_TRUE(return_ptr != NULL);
     EXPECT_EQ((intptr_t)return_ptr % 64, 0);
-    zng_cfree_aligned(zng_cfree_unaligned, 0, return_ptr);
+    zng_free_aligned(zng_cfree_unaligned, 0, return_ptr);
 }

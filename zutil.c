@@ -112,7 +112,7 @@ void Z_INTERNAL zng_cfree(void *opaque, void *ptr) {
 
 /* Since we support custom memory allocators, some which might not align memory as we expect,
  * we have to ask for extra memory and return an aligned pointer. */
-void Z_INTERNAL *zng_calloc_aligned(zng_calloc_func zalloc, void *opaque, unsigned items, unsigned size, unsigned align) {
+void Z_INTERNAL *zng_alloc_aligned(zng_calloc_func zalloc, void *opaque, unsigned items, unsigned size, unsigned align) {
     uintptr_t return_ptr, original_ptr;
     uint32_t alloc_size, align_diff;
     void *ptr;
@@ -141,7 +141,7 @@ void Z_INTERNAL *zng_calloc_aligned(zng_calloc_func zalloc, void *opaque, unsign
     return (void *)return_ptr;
 }
 
-void Z_INTERNAL zng_cfree_aligned(zng_cfree_func zfree, void *opaque, void *ptr) {
+void Z_INTERNAL zng_free_aligned(zng_cfree_func zfree, void *opaque, void *ptr) {
     /* If no custom cfree function used then call zlib-ng's aligned cfree */
     if (zfree == zng_cfree) {
         zng_cfree(opaque, ptr);
