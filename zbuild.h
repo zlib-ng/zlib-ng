@@ -37,4 +37,11 @@
 /* Ignore unused variable warning */
 #define Z_UNUSED(var) (void)(var)
 
+#if defined(__has_feature)
+#  if __has_feature(memory_sanitizer)
+#    define Z_MEMORY_SANITIZER 1
+#    include <sanitizer/msan_interface.h>
+#  endif
+#endif
+
 #endif
