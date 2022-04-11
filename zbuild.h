@@ -246,4 +246,11 @@
 #  define zmemcmp_8(str1, str2) memcmp(str1, str2, 8)
 #endif
 
+#if defined(__has_feature)
+#  if __has_feature(memory_sanitizer)
+#    define Z_MEMORY_SANITIZER 1
+#    include <sanitizer/msan_interface.h>
+#  endif
+#endif
+
 #endif
