@@ -18,7 +18,7 @@ Z_INTERNAL void cpu_check_features(void) {
 #elif defined(PPC_FEATURES) || defined(POWER_FEATURES)
     power_check_features();
 #elif defined(S390_FEATURES)
-    s390_check_features();
+    PREFIX(s390_check_features)();
 #endif
     features_checked = 1;
 }

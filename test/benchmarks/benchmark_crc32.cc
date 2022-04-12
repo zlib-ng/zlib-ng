@@ -62,7 +62,7 @@ BENCHMARK_CRC32(acle, crc32_acle, arm_cpu_has_crc32);
 #elif defined(POWER8_VSX_CRC32)
 BENCHMARK_CRC32(power8, crc32_power8, power_cpu_has_arch_2_07);
 #elif defined(S390_CRC32_VX)
-BENCHMARK_CRC32(vx, s390_crc32_vx, s390_cpu_has_vx);
+BENCHMARK_CRC32(vx, PREFIX(s390_crc32_vx), PREFIX(s390_cpu_has_vx));
 #elif defined(X86_PCLMULQDQ_CRC)
 /* CRC32 fold does a memory copy while hashing */
 BENCHMARK_CRC32(pclmulqdq, crc32_pclmulqdq, x86_cpu_has_pclmulqdq);

@@ -3,23 +3,23 @@
 
 #include "zutil.h"
 
-void Z_INTERNAL *dfltcc_alloc_state(PREFIX3(streamp) strm, uInt items, uInt size);
-void Z_INTERNAL dfltcc_copy_state(void *dst, const void *src, uInt size);
-void Z_INTERNAL dfltcc_reset(PREFIX3(streamp) strm, uInt size);
-void Z_INTERNAL *dfltcc_alloc_window(PREFIX3(streamp) strm, uInt items, uInt size);
-void Z_INTERNAL dfltcc_free_window(PREFIX3(streamp) strm, void *w);
+void Z_INTERNAL *PREFIX(dfltcc_alloc_state)(PREFIX3(streamp) strm, uInt items, uInt size);
+void Z_INTERNAL PREFIX(dfltcc_copy_state)(void *dst, const void *src, uInt size);
+void Z_INTERNAL PREFIX(dfltcc_reset)(PREFIX3(streamp) strm, uInt size);
+void Z_INTERNAL *PREFIX(dfltcc_alloc_window)(PREFIX3(streamp) strm, uInt items, uInt size);
+void Z_INTERNAL PREFIX(dfltcc_free_window)(PREFIX3(streamp) strm, void *w);
 
-#define ZALLOC_STATE dfltcc_alloc_state
+#define ZALLOC_STATE PREFIX(dfltcc_alloc_state)
 
 #define ZFREE_STATE ZFREE
 
-#define ZCOPY_STATE dfltcc_copy_state
+#define ZCOPY_STATE PREFIX(dfltcc_copy_state)
 
-#define ZALLOC_WINDOW dfltcc_alloc_window
+#define ZALLOC_WINDOW PREFIX(dfltcc_alloc_window)
 
-#define ZFREE_WINDOW dfltcc_free_window
+#define ZFREE_WINDOW PREFIX(dfltcc_free_window)
 
-#define TRY_FREE_WINDOW dfltcc_free_window
+#define TRY_FREE_WINDOW PREFIX(dfltcc_free_window)
 
 #define DFLTCC_BLOCK_HEADER_BITS 3
 #define DFLTCC_HLITS_COUNT_BITS 5

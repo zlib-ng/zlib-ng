@@ -73,7 +73,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
         put_short(s, (uint16_t)~len);
 
         /* Write the stored block header bytes. */
-        flush_pending(s->strm);
+        PREFIX(flush_pending)(s->strm);
 
         /* Update debugging counts for the data about to be copied. */
         cmpr_bits_add(s, len << 3);
@@ -178,7 +178,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
         last = flush == Z_FINISH && s->strm->avail_in == 0 && len == left ? 1 : 0;
         zng_tr_stored_block(s, (char *)s->window + s->block_start, len, last);
         s->block_start += (int)len;
-        flush_pending(s->strm);
+        PREFIX(flush_pending)(s->strm);
     }
 
     /* We've done all we can with the available input and output. */

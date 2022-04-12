@@ -37,7 +37,7 @@ extern const ct_data static_dtree[D_CODES];
         zng_tr_emit_end_block(s, static_ltree, last); \
         s->block_open = 0; \
         s->block_start = (int)s->strstart; \
-        flush_pending(s->strm); \
+        PREFIX(flush_pending)(s->strm); \
         if (s->strm->avail_out == 0) \
             return (last) ? finish_started : need_more; \
     } \
@@ -63,7 +63,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
 
     for (;;) {
         if (UNLIKELY(s->pending + ((BIT_BUF_SIZE + 7) >> 3) >= s->pending_buf_size)) {
-            flush_pending(s->strm);
+            PREFIX(flush_pending)(s->strm);
             if (s->strm->avail_out == 0) {
                 return (last && s->strm->avail_in == 0 && s->bi_valid == 0 && s->block_open == 0) ? finish_started : need_more;
             }

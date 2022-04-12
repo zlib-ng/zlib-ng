@@ -133,7 +133,7 @@ struct inflate_state {
     uint32_t chunksize;         /* size of memory copying chunk */
 };
 
-int Z_INTERNAL inflate_ensure_window(struct inflate_state *state);
+int Z_INTERNAL PREFIX(inflate_ensure_window)(struct inflate_state *state);
 void Z_INTERNAL fixedtables(struct inflate_state *state);
 
 #endif /* INFLATE_H_ */

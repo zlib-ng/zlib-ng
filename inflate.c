@@ -198,7 +198,7 @@ void Z_INTERNAL fixedtables(struct inflate_state *state) {
     state->distbits = 5;
 }
 
-int Z_INTERNAL inflate_ensure_window(struct inflate_state *state) {
+int Z_INTERNAL PREFIX(inflate_ensure_window)(struct inflate_state *state) {
     /* if it hasn't been done already, allocate space for the window */
     if (state->window == NULL) {
         unsigned wsize = 1U << state->wbits;
@@ -243,7 +243,7 @@ static int32_t updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t 
 
     state = (struct inflate_state *)strm->state;
 
-    if (inflate_ensure_window(state)) return 1;
+    if (PREFIX(inflate_ensure_window)(state)) return 1;
 
     /* copy state->wsize or less output bytes into the circular window */
     if (copy >= state->wsize) {

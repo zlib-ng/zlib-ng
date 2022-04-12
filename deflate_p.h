@@ -47,7 +47,7 @@ static inline void check_match(deflate_state *s, Pos start, Pos match, int lengt
 #define check_match(s, start, match, length)
 #endif
 
-Z_INTERNAL void flush_pending(PREFIX3(stream) *strm);
+Z_INTERNAL void PREFIX(flush_pending)(PREFIX3(stream) *strm);
 Z_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
 /* ===========================================================================
@@ -96,7 +96,7 @@ static inline int zng_tr_tally_dist(deflate_state *s, uint32_t dist, uint32_t le
                    (uint32_t)((int)s->strstart - s->block_start), \
                    (last)); \
     s->block_start = (int)s->strstart; \
-    flush_pending(s->strm); \
+    PREFIX(flush_pending)(s->strm); \
 }
 
 /* Same but force premature exit if necessary. */
