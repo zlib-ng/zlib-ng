@@ -306,6 +306,16 @@ macro(check_power8_intrinsics)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
+macro(check_s390_intrinsics)
+    check_c_source_compiles(
+        "#include <sys/auxv.h>
+        int main() {
+            return (getauxval(AT_HWCAP) & HWCAP_S390_VX);
+        }"
+        HAVE_S390_INTRIN
+    )
+endmacro()
+
 macro(check_sse2_intrinsics)
     if(CMAKE_C_COMPILER_ID MATCHES "Intel")
         if(CMAKE_HOST_UNIX OR APPLE)
