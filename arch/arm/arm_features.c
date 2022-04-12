@@ -1,6 +1,6 @@
 #include "../../zbuild.h"
 
-#if defined(__linux__)
+#if defined(__linux__) && (defined(ARM_AUXV_HAS_CRC32) || defined(ARM_AUXV_HAS_NEON))
 #  include <sys/auxv.h>
 #  ifdef ARM_ASM_HWCAP
 #    include <asm/hwcap.h>
