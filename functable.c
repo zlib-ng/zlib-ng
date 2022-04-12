@@ -371,8 +371,8 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t 
     if (power_cpu_has_arch_2_07)
         functable.crc32 = &crc32_power8;
 #elif defined(S390_CRC32_VX)
-    if (s390_cpu_has_vx)
-        functable.crc32 = &s390_crc32_vx;
+    if (PREFIX(s390_cpu_has_vx))
+        functable.crc32 = &PREFIX(s390_crc32_vx);
 #elif defined(X86_PCLMULQDQ_CRC)
     if (x86_cpu_has_pclmulqdq)
         functable.crc32 = &crc32_pclmulqdq;

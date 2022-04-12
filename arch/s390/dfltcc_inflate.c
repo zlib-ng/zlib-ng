@@ -20,7 +20,7 @@
 #include "dfltcc_inflate.h"
 #include "dfltcc_detail.h"
 
-int Z_INTERNAL dfltcc_can_inflate(PREFIX3(streamp) strm) {
+int Z_INTERNAL PREFIX(dfltcc_can_inflate)(PREFIX3(streamp) strm) {
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
 
@@ -47,7 +47,7 @@ static inline dfltcc_cc dfltcc_xpnd(PREFIX3(streamp) strm) {
     return cc;
 }
 
-dfltcc_inflate_action Z_INTERNAL dfltcc_inflate(PREFIX3(streamp) strm, int flush, int *ret) {
+dfltcc_inflate_action Z_INTERNAL PREFIX(dfltcc_inflate)(PREFIX3(streamp) strm, int flush, int *ret) {
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
     struct dfltcc_param_v0 *param = &dfltcc_state->param;
@@ -55,7 +55,7 @@ dfltcc_inflate_action Z_INTERNAL dfltcc_inflate(PREFIX3(streamp) strm, int flush
 
     if (flush == Z_BLOCK || flush == Z_TREES) {
         /* DFLTCC does not support stopping on block boundaries */
-        if (dfltcc_inflate_disable(strm)) {
+        if (PREFIX(dfltcc_inflate_disable)(strm)) {
             *ret = Z_STREAM_ERROR;
             return DFLTCC_INFLATE_BREAK;
         } else
@@ -75,7 +75,7 @@ dfltcc_inflate_action Z_INTERNAL dfltcc_inflate(PREFIX3(streamp) strm, int flush
     if (strm->avail_in == 0 && !param->cf)
         return DFLTCC_INFLATE_BREAK;
 
-    if (inflate_ensure_window(state)) {
+    if (PREFIX(inflate_ensure_window)(state)) {
         state->mode = MEM;
         return DFLTCC_INFLATE_CONTINUE;
     }
@@ -112,20 +112,20 @@ dfltcc_inflate_action Z_INTERNAL dfltcc_inflate(PREFIX3(streamp) strm, int flush
         DFLTCC_INFLATE_BREAK : DFLTCC_INFLATE_CONTINUE;
 }
 
-int Z_INTERNAL dfltcc_was_inflate_used(PREFIX3(streamp) strm) {
+int Z_INTERNAL PREFIX(dfltcc_was_inflate_used)(PREFIX3(streamp) strm) {
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_param_v0 *param = &GET_DFLTCC_STATE(state)->param;
 
     return !param->nt;
 }
 
-int Z_INTERNAL dfltcc_inflate_disable(PREFIX3(streamp) strm) {
+int Z_INTERNAL PREFIX(dfltcc_inflate_disable)(PREFIX3(streamp) strm) {
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
 
-    if (!dfltcc_can_inflate(strm))
+    if (!PREFIX(dfltcc_can_inflate)(strm))
         return 0;
-    if (dfltcc_was_inflate_used(strm))
+    if (PREFIX(dfltcc_was_inflate_used)(strm))
         /* DFLTCC has already decompressed some data. Since there is not
          * enough information to resume decompression in software, the call
          * must fail.
