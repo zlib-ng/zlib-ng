@@ -733,6 +733,19 @@ else
   echo "Checking for strerror... No." | tee -a configure.log
 fi
 
+# check for getauxval() for architecture feature detection at run-time
+cat > $test.c <<EOF
+#include <sys/auxv.h>
+int main() { return getauxval(0); }
+EOF
+if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
+  echo "Checking for getauxval() in sys/auxv.h... Yes." | tee -a configure.log
+  CFLAGS="${CFLAGS} -DHAVE_SYS_AUXV_H"
+  SFLAGS="${SFLAGS} -DHAVE_SYS_AUXV_H"
+else
+  echo "Checking for getauxval() in sys/auxv.h... No." | tee -a configure.log
+fi
+
 # We need to remove consigured files (zconf.h etc) from source directory if building outside of it
 if [ "$SRCDIR" != "$BUILDDIR" ]; then
     rm -f $SRCDIR/zconf${SUFFIX}.h

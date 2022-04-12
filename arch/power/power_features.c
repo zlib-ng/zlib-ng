@@ -1,10 +1,12 @@
 /* power_features.c - POWER feature check
  * Copyright (C) 2020 Matheus Castanho <msc@linux.ibm.com>, IBM
- * Copyright (C) 2021 Mika T. Lindqvist <postmaster@raasu.org>
+ * Copyright (C) 2021-2022 Mika T. Lindqvist <postmaster@raasu.org>
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include <sys/auxv.h>
+#ifdef HAVE_SYS_AUXV_H
+#  include <sys/auxv.h>
+#endif
 #include "../../zbuild.h"
 #include "power_features.h"
 
