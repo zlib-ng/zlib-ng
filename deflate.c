@@ -68,9 +68,9 @@ const char PREFIX(deflate_copyright)[] = " deflate 1.2.11.f Copyright 1995-2016 
 #  include "arch/s390/dfltcc_deflate.h"
 #else
 /* Memory management for the deflate state. Useful for allocating arch-specific extension blocks. */
-#  define ZALLOC_STATE(strm, items, size) ZALLOC(strm, items, size)
+#  define ZALLOC_DEFLATE_STATE(strm) ((deflate_state *)ZALLOC(strm, 1, sizeof(deflate_state)))
 #  define ZFREE_STATE(strm, addr) ZFREE(strm, addr)
-#  define ZCOPY_STATE(dst, src, size) memcpy(dst, src, size)
+#  define ZCOPY_DEFLATE_STATE(dst, src) memcpy(dst, src, sizeof(deflate_state))
 /* Memory management for the window. Useful for allocation the aligned window. */
 #  define ZALLOC_WINDOW(strm, items, size) ZALLOC(strm, items, size)
 #  define TRY_FREE_WINDOW(strm, addr) TRY_FREE(strm, addr)
@@ -230,7 +230,7 @@ int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int
     if (windowBits == 8)
         windowBits = 9;  /* until 256-byte window bug fixed */
 
-    s = (deflate_state *) ZALLOC_STATE(strm, 1, sizeof(deflate_state));
+    s = ZALLOC_DEFLATE_STATE(strm);
     if (s == NULL)
         return Z_MEM_ERROR;
     strm->state = (struct internal_state *)s;
@@ -1024,11 +1024,11 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
 
     memcpy((void *)dest, (void *)source, sizeof(PREFIX3(stream)));
 
-    ds = (deflate_state *) ZALLOC_STATE(dest, 1, sizeof(deflate_state));
+    ds = ZALLOC_DEFLATE_STATE(dest);
     if (ds == NULL)
         return Z_MEM_ERROR;
     dest->state = (struct internal_state *) ds;
-    ZCOPY_STATE((void *)ds, (void *)ss, sizeof(deflate_state));
+    ZCOPY_DEFLATE_STATE(ds, ss);
     ds->strm = dest;
 
 #ifdef X86_PCLMULQDQ_CRC

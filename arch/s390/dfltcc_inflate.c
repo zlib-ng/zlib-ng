@@ -20,6 +20,21 @@
 #include "dfltcc_inflate.h"
 #include "dfltcc_detail.h"
 
+struct inflate_state Z_INTERNAL *PREFIX(dfltcc_alloc_inflate_state)(PREFIX3(streamp) strm) {
+    return (struct inflate_state *)dfltcc_alloc_state(strm, sizeof(struct inflate_state), sizeof(struct dfltcc_state));
+}
+
+void Z_INTERNAL PREFIX(dfltcc_reset_inflate_state)(PREFIX3(streamp) strm) {
+    struct inflate_state *state = (struct inflate_state *)strm->state;
+    struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
+
+    dfltcc_reset_state(dfltcc_state);
+}
+
+void Z_INTERNAL PREFIX(dfltcc_copy_inflate_state)(struct inflate_state *dst, const struct inflate_state *src) {
+    dfltcc_copy_state(dst, src, sizeof(struct inflate_state), sizeof(struct dfltcc_state));
+}
+
 int Z_INTERNAL PREFIX(dfltcc_can_inflate)(PREFIX3(streamp) strm) {
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);

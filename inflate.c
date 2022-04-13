@@ -145,7 +145,7 @@ int32_t Z_EXPORT PREFIX(inflateInit2_)(PREFIX3(stream) *strm, int32_t windowBits
     }
     if (strm->zfree == NULL)
         strm->zfree = zng_cfree;
-    state = (struct inflate_state *) ZALLOC_STATE(strm, 1, sizeof(struct inflate_state));
+    state = ZALLOC_INFLATE_STATE(strm);
     if (state == NULL)
         return Z_MEM_ERROR;
     Tracev((stderr, "inflate: allocated\n"));
@@ -1278,7 +1278,7 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     state = (struct inflate_state *)source->state;
 
     /* allocate space */
-    copy = (struct inflate_state *)ZALLOC_STATE(source, 1, sizeof(struct inflate_state));
+    copy = ZALLOC_INFLATE_STATE(source);
     if (copy == NULL)
         return Z_MEM_ERROR;
     window = NULL;
@@ -1293,7 +1293,7 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
 
     /* copy state */
     memcpy((void *)dest, (void *)source, sizeof(PREFIX3(stream)));
-    ZCOPY_STATE((void *)copy, (void *)state, sizeof(struct inflate_state));
+    ZCOPY_INFLATE_STATE(copy, state);
     copy->strm = dest;
     if (state->lencode >= state->codes && state->lencode <= state->codes + ENOUGH - 1) {
         copy->lencode = copy->codes + (state->lencode - state->codes);
