@@ -40,7 +40,7 @@ int32_t Z_EXPORT PREFIX(inflateBackInit_)(PREFIX3(stream) *strm, int32_t windowB
     }
     if (strm->zfree == NULL)
         strm->zfree = zng_cfree;
-    state = (struct inflate_state *)ZALLOC_STATE(strm, 1, sizeof(struct inflate_state));
+    state = ZALLOC_INFLATE_STATE(strm);
     if (state == NULL)
         return Z_MEM_ERROR;
     Tracev((stderr, "inflate: allocated\n"));

@@ -19,10 +19,41 @@
 #include "dfltcc_deflate.h"
 #include "dfltcc_detail.h"
 
+struct dfltcc_deflate_state {
+    struct dfltcc_state common;
+    uint16_t level_mask;               /* Levels on which to use DFLTCC */
+    uint32_t block_size;               /* New block each X bytes */
+    size_t block_threshold;            /* New block after total_in > X */
+    uint32_t dht_threshold;            /* New block only if avail_in >= X */
+};
+
+#define GET_DFLTCC_DEFLATE_STATE(state) ((struct dfltcc_deflate_state *)GET_DFLTCC_STATE(state))
+
+void Z_INTERNAL *PREFIX(dfltcc_alloc_deflate_state)(PREFIX3(streamp) strm) {
+    return dfltcc_alloc_state(strm, sizeof(deflate_state), sizeof(struct dfltcc_deflate_state));
+}
+
+void Z_INTERNAL PREFIX(dfltcc_reset_deflate_state)(PREFIX3(streamp) strm) {
+    deflate_state *state = (deflate_state *)strm->state;
+    struct dfltcc_deflate_state *dfltcc_state = GET_DFLTCC_DEFLATE_STATE(state);
+
+    dfltcc_reset_state(&dfltcc_state->common);
+
+    /* Initialize tuning parameters */
+    dfltcc_state->level_mask = DFLTCC_LEVEL_MASK;
+    dfltcc_state->block_size = DFLTCC_BLOCK_SIZE;
+    dfltcc_state->block_threshold = DFLTCC_FIRST_FHT_BLOCK_SIZE;
+    dfltcc_state->dht_threshold = DFLTCC_DHT_MIN_SAMPLE_SIZE;
+}
+
+void Z_INTERNAL PREFIX(dfltcc_copy_deflate_state)(void *dst, const void *src) {
+    dfltcc_copy_state(dst, src, sizeof(deflate_state), sizeof(struct dfltcc_deflate_state));
+}
+
 static inline int dfltcc_can_deflate_with_params(PREFIX3(streamp) strm, int level, uInt window_bits, int strategy,
                                        int reproducible) {
     deflate_state *state = (deflate_state *)strm->state;
-    struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
+    struct dfltcc_deflate_state *dfltcc_state = GET_DFLTCC_DEFLATE_STATE(state);
 
     /* Unsupported compression settings */
     if ((dfltcc_state->level_mask & (1 << level)) == 0)
@@ -35,9 +66,9 @@ static inline int dfltcc_can_deflate_with_params(PREFIX3(streamp) strm, int leve
         return 0;
 
     /* Unsupported hardware */
-    if (!is_bit_set(dfltcc_state->af.fns, DFLTCC_GDHT) ||
-            !is_bit_set(dfltcc_state->af.fns, DFLTCC_CMPR) ||
-            !is_bit_set(dfltcc_state->af.fmts, DFLTCC_FMT0))
+    if (!is_bit_set(dfltcc_state->common.af.fns, DFLTCC_GDHT) ||
+            !is_bit_set(dfltcc_state->common.af.fns, DFLTCC_CMPR) ||
+            !is_bit_set(dfltcc_state->common.af.fmts, DFLTCC_FMT0))
         return 0;
 
     return 1;
@@ -96,8 +127,8 @@ static inline void send_eobs(PREFIX3(streamp) strm, const struct dfltcc_param_v0
 
 int Z_INTERNAL PREFIX(dfltcc_deflate)(PREFIX3(streamp) strm, int flush, block_state *result) {
     deflate_state *state = (deflate_state *)strm->state;
-    struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
-    struct dfltcc_param_v0 *param = &dfltcc_state->param;
+    struct dfltcc_deflate_state *dfltcc_state = GET_DFLTCC_DEFLATE_STATE(state);
+    struct dfltcc_param_v0 *param = &dfltcc_state->common.param;
     uInt masked_avail_in;
     dfltcc_cc cc;
     int need_empty_block;
@@ -234,7 +265,7 @@ again:
     } while (cc == DFLTCC_CC_AGAIN);
 
     /* Translate parameter block to stream */
-    strm->msg = oesc_msg(dfltcc_state->msg, param->oesc);
+    strm->msg = oesc_msg(dfltcc_state->common.msg, param->oesc);
     state->bi_valid = param->sbb;
     if (state->bi_valid == 0)
         state->bi_buf = 0; /* Avoid accessing next_out */

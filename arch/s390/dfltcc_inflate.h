@@ -3,6 +3,9 @@
 
 #include "dfltcc_common.h"
 
+struct inflate_state Z_INTERNAL *PREFIX(dfltcc_alloc_inflate_state)(PREFIX3(streamp) strm);
+void Z_INTERNAL PREFIX(dfltcc_reset_inflate_state)(PREFIX3(streamp) strm);
+void Z_INTERNAL PREFIX(dfltcc_copy_inflate_state)(struct inflate_state *dst, const struct inflate_state *src);
 int Z_INTERNAL PREFIX(dfltcc_can_inflate)(PREFIX3(streamp) strm);
 typedef enum {
     DFLTCC_INFLATE_CONTINUE,
@@ -13,8 +16,10 @@ dfltcc_inflate_action Z_INTERNAL PREFIX(dfltcc_inflate)(PREFIX3(streamp) strm, i
 int Z_INTERNAL PREFIX(dfltcc_was_inflate_used)(PREFIX3(streamp) strm);
 int Z_INTERNAL PREFIX(dfltcc_inflate_disable)(PREFIX3(streamp) strm);
 
-#define INFLATE_RESET_KEEP_HOOK(strm) \
-    PREFIX(dfltcc_reset)((strm), sizeof(struct inflate_state))
+#define ZALLOC_INFLATE_STATE PREFIX(dfltcc_alloc_inflate_state)
+#define ZCOPY_INFLATE_STATE PREFIX(dfltcc_copy_inflate_state)
+
+#define INFLATE_RESET_KEEP_HOOK PREFIX(dfltcc_reset_inflate_state)
 
 #define INFLATE_PRIME_HOOK(strm, bits, value) \
     do { if (PREFIX(dfltcc_inflate_disable)((strm))) return Z_STREAM_ERROR; } while (0)
