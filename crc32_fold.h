@@ -5,8 +5,8 @@
 #ifndef CRC32_FOLD_H_
 #define CRC32_FOLD_H_
 
-#define CRC32_FOLD_BUFFER_SIZE (16 * 5)
-/* sizeof(__m128i) * (4 folds & 1 partial fold) */
+#define CRC32_FOLD_BUFFER_SIZE (16 * 4)
+/* sizeof(__m128i) * (4 folds) */
 
 typedef struct crc32_fold_s {
     uint8_t fold[CRC32_FOLD_BUFFER_SIZE];
