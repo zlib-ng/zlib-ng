@@ -316,6 +316,23 @@ macro(check_s390_intrinsics)
     )
 endmacro()
 
+macro(check_power9_intrinsics)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+        if(NOT NATIVEFLAG)
+            set(POWER9FLAG "-mcpu=power9")
+        endif()
+    endif()
+    # Check if we have what we need for POWER9 optimizations
+    set(CMAKE_REQUIRED_FLAGS "${POWER9FLAG} ${NATIVEFLAG}")
+    check_c_source_compiles(
+        "int main() {
+            return 0;
+        }"
+        HAVE_POWER9_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
 macro(check_sse2_intrinsics)
     if(CMAKE_C_COMPILER_ID MATCHES "Intel")
         if(CMAKE_HOST_UNIX OR APPLE)

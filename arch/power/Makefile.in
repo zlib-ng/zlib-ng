@@ -10,6 +10,7 @@ INCLUDES=
 SUFFIX=
 
 P8FLAGS=-mcpu=power8
+P9FLAGS=-mcpu=power9
 PPCFLAGS=-maltivec
 NOLTOFLAG=
 
@@ -25,6 +26,8 @@ all: power_features.o \
      adler32_vmx.lo \
      chunkset_power8.o \
      chunkset_power8.lo \
+     compare256_power9.o \
+     compare256_power9.lo \
      crc32_power8.o \
      crc32_power8.lo \
      slide_hash_power8.o \
@@ -55,6 +58,12 @@ chunkset_power8.o:
 
 chunkset_power8.lo:
 	$(CC) $(SFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_power8.c
+
+compare256_power9.o:
+	$(CC) $(CFLAGS) $(P9FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_power9.c
+
+compare256_power9.lo:
+	$(CC) $(SFLAGS) $(P9FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_power9.c
 
 crc32_power8.o:
 	$(CC) $(CFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_power8.c
