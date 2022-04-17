@@ -12,6 +12,7 @@
 
 Z_INTERNAL int power_cpu_has_altivec = 0;
 Z_INTERNAL int power_cpu_has_arch_2_07 = 0;
+Z_INTERNAL int power_cpu_has_arch_3_00 = 0;
 
 void Z_INTERNAL power_check_features(void) {
 #ifdef PPC_FEATURES
@@ -28,5 +29,7 @@ void Z_INTERNAL power_check_features(void) {
 
     if (hwcap2 & PPC_FEATURE2_ARCH_2_07)
         power_cpu_has_arch_2_07 = 1;
+    if (hwcap2 & PPC_FEATURE2_ARCH_3_00)
+        power_cpu_has_arch_3_00 = 1;
 #endif
 }

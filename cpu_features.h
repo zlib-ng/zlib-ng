@@ -130,6 +130,9 @@ extern uint32_t compare256_avx2(const uint8_t *src0, const uint8_t *src1);
 #if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
 extern uint32_t compare256_neon(const uint8_t *src0, const uint8_t *src1);
 #endif
+#ifdef POWER9
+extern uint32_t compare256_power9(const uint8_t *src0, const uint8_t *src1);
+#endif
 
 #ifdef DEFLATE_H_
 /* insert_string */
@@ -160,6 +163,9 @@ extern uint32_t longest_match_avx2(deflate_state *const s, Pos cur_match);
 #if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
 extern uint32_t longest_match_neon(deflate_state *const s, Pos cur_match);
 #endif
+#ifdef POWER9
+extern uint32_t longest_match_power9(deflate_state *const s, Pos cur_match);
+#endif
 
 /* longest_match_slow */
 extern uint32_t longest_match_slow_c(deflate_state *const s, Pos cur_match);
@@ -178,6 +184,9 @@ extern uint32_t longest_match_slow_avx2(deflate_state *const s, Pos cur_match);
 #endif
 #if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
 extern uint32_t longest_match_slow_neon(deflate_state *const s, Pos cur_match);
+#endif
+#ifdef POWER9
+extern uint32_t longest_match_slow_power9(deflate_state *const s, Pos cur_match);
 #endif
 
 /* quick_insert_string */

@@ -95,6 +95,7 @@ buildvpclmulqdq=1
 buildacle=1
 buildaltivec=1
 buildpower8=1
+buildpower9=1
 buildneon=1
 builddfltccdeflate=0
 builddfltccinflate=0
@@ -202,6 +203,7 @@ case "$1" in
     --without-neon) buildneon=0; shift ;;
     --without-altivec) buildaltivec=0 ; shift ;;
     --without-power8) buildpower8=0 ; shift ;;
+    --without-power9) buildpower9=0 ; shift ;;
     --with-dfltcc-deflate) builddfltccdeflate=1; shift ;;
     --with-dfltcc-inflate) builddfltccinflate=1; shift ;;
     --without-crc32-vx) buildcrc32vx=0; shift ;;
@@ -1227,7 +1229,7 @@ EOF
 }
 
 check_power8_intrinsics() {
-    # Check whether features needed by POWER optimisations are available
+    # Check whether features needed by POWER8 optimisations are available
     cat > $test.c << EOF
 #include <sys/auxv.h>
 int main() { return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07); }
@@ -1238,6 +1240,20 @@ EOF
     else
         HAVE_POWER8_INTRIN=0
         echo "Check whether POWER8 instructions are available ... No." | tee -a configure.log
+    fi
+}
+
+check_power9_intrinsics() {
+    # Check whether features needed by POWER9 optimisations are available
+    cat > $test.c << EOF
+int main() { return 0; }
+EOF
+    if test $buildpower9 -eq 1 && try $CC -c $CFLAGS -mcpu=power9 $test.c; then
+        HAVE_POWER9_INTRIN=1
+        echo "Check whether POWER9 instructions are available ... Yes." | tee -a configure.log
+    else
+        HAVE_POWER9_INTRIN=0
+        echo "Check whether POWER9 instructions are available ... No." | tee -a configure.log
     fi
 }
 
@@ -1824,6 +1840,7 @@ EOF
 
             check_ppc_intrinsics
             check_power8_intrinsics
+            check_power9_intrinsics
 
             if test $HAVE_VMX -eq 1; then
                 CFLAGS="${CFLAGS} -DPPC_FEATURES"
@@ -1854,6 +1871,13 @@ EOF
                         SFLAGS="${SFLAGS} -DPOWER8_VSX_CRC32"
                         ;;
                 esac
+            fi
+            if test $HAVE_POWER9_INTRIN -eq 1; then
+                CFLAGS="${CFLAGS} -DPOWER9 -DPOWER_FEATURES"
+                SFLAGS="${SFLAGS} -DPOWER9 -DPOWER_FEATURES"
+
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare256_power9.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare256_power9.lo"
             fi
         fi
     ;;

@@ -121,6 +121,10 @@ Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
     if (arm_cpu_has_neon)
         functable.longest_match = &longest_match_neon;
 #endif
+#ifdef POWER9
+    if (power_cpu_has_arch_3_00)
+        functable.longest_match = &longest_match_power9;
+#endif
 
     return functable.longest_match(s, cur_match);
 }
@@ -149,6 +153,10 @@ Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_matc
 #if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
     if (arm_cpu_has_neon)
         functable.longest_match_slow = &longest_match_slow_neon;
+#endif
+#ifdef POWER9
+    if (power_cpu_has_arch_3_00)
+        functable.longest_match_slow = &longest_match_slow_power9;
 #endif
 
     return functable.longest_match_slow(s, cur_match);
@@ -409,6 +417,10 @@ Z_INTERNAL uint32_t compare256_stub(const uint8_t *src0, const uint8_t *src1) {
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_avx2)
         functable.compare256 = &compare256_avx2;
+#endif
+#ifdef POWER9
+    if (power_cpu_has_arch_3_00)
+        functable.compare256 = &compare256_power9;
 #endif
 
     return functable.compare256(src0, src1);
