@@ -117,6 +117,10 @@ Z_INTERNAL uint32_t longest_match_stub(deflate_state *const s, Pos cur_match) {
     if (x86_cpu_has_avx2)
         functable.longest_match = &longest_match_avx2;
 #endif
+#if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
+    if (arm_cpu_has_neon)
+        functable.longest_match = &longest_match_neon;
+#endif
 
     return functable.longest_match(s, cur_match);
 }
@@ -141,6 +145,10 @@ Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_matc
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_avx2)
         functable.longest_match_slow = &longest_match_slow_avx2;
+#endif
+#if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
+    if (arm_cpu_has_neon)
+        functable.longest_match_slow = &longest_match_slow_neon;
 #endif
 
     return functable.longest_match_slow(s, cur_match);

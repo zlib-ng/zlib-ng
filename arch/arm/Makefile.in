@@ -20,6 +20,7 @@ all: \
 	adler32_neon.o adler32_neon.lo \
 	arm_features.o arm_features.lo \
 	chunkset_neon.o chunkset_neon.lo \
+	compare256_neon.o compare256_neon.lo \
 	crc32_acle.o crc32_acle.lo \
 	slide_hash_neon.o slide_hash_neon.lo \
 	insert_string_acle.o insert_string_acle.lo
@@ -41,6 +42,12 @@ chunkset_neon.o:
 
 chunkset_neon.lo:
 	$(CC) $(SFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_neon.c
+
+compare256_neon.o:
+	$(CC) $(CFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_neon.c
+
+compare256_neon.lo:
+	$(CC) $(SFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_neon.c
 
 crc32_acle.o:
 	$(CC) $(CFLAGS) $(ACLEFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c

@@ -1659,7 +1659,10 @@ EOF
                     fi
 
                     if test $buildneon -eq 1; then
-                        if test $MFPU_NEON_AVAILABLE -eq 1;then
+                        CFLAGS="${CFLAGS} -DARM_NEON"
+                        SFLAGS="${SFLAGS} -DARM_NEON"
+
+                        if test $MFPU_NEON_AVAILABLE -eq 1; then
                             neonflag="-mfpu=neon"
                         fi
 
@@ -1671,8 +1674,8 @@ EOF
                         CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
                         SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
 
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o slide_hash_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo slide_hash_neon.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
                     fi
                 fi
             ;;
@@ -1683,6 +1686,9 @@ EOF
                     fi
 
                     if test $buildneon -eq 1; then
+                        CFLAGS="${CFLAGS} -DARM_NEON"
+                        SFLAGS="${SFLAGS} -DARM_NEON"
+
                         if test $MFPU_NEON_AVAILABLE -eq 1;then
                             neonflag="-mfpu=neon"
                         fi
@@ -1695,8 +1701,8 @@ EOF
                         CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
                         SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
 
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o slide_hash_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo slide_hash_neon.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
                     fi
                 fi
             ;;
@@ -1713,6 +1719,9 @@ EOF
                     fi
 
                     if test $buildneon -eq 1; then
+                        CFLAGS="${CFLAGS} -DARM_NEON"
+                        SFLAGS="${SFLAGS} -DARM_NEON"
+
                         if test $MFPU_NEON_AVAILABLE -eq 1;then
                             neonflag="-mfpu=neon"
                         fi
@@ -1725,8 +1734,8 @@ EOF
                         CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
                         SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
 
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o slide_hash_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo slide_hash_neon.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
                     fi
                 fi
             ;;
@@ -1786,10 +1795,10 @@ EOF
                 if test $native -eq 0; then
                     ARCH="${ARCH}+simd"
                 fi
-                CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
-                SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o slide_hash_neon.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo slide_hash_neon.lo"
+                CFLAGS="${CFLAGS} -DARM_NEON -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
+                SFLAGS="${SFLAGS} -DARM_NEON -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
             fi
         fi
 
