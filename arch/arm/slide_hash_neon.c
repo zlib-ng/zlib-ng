@@ -32,8 +32,8 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize
 
     n = size / (sizeof(uint16x8_t) * 8);
     do {
-        p0 = vld1q_u16_x4(table); 
-        p1 = vld1q_u16_x4(table+32); 
+        p0 = vld1q_u16_x4(table);
+        p1 = vld1q_u16_x4(table+32);
         vqsubq_u16_x4_x1(p0, p0, v);
         vqsubq_u16_x4_x1(p1, p1, v);
         vst1q_u16_x4(table, p0);

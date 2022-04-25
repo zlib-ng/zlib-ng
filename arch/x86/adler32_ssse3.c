@@ -87,7 +87,7 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size
         /* lop off the max number of sums based on the scalar sums done
          * above */
         len -= align_offset;
-        max_iters -= align_offset; 
+        max_iters -= align_offset;
     }
 
 

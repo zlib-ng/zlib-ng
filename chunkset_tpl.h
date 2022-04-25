@@ -109,7 +109,7 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
             bytes_remaining -= cpy_dist;
             cur_chunk += cpy_dist;
             /* This allows us to bypass an expensive integer division since we're effectively
-             * counting in this loop, anyway. However, we may have to derive a similarly 
+             * counting in this loop, anyway. However, we may have to derive a similarly
              * sensible solution for if we use a permutation table that allows us to construct
              * this vector in one load and one permute instruction */
             chunk_mod = cpy_dist;
