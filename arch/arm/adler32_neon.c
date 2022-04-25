@@ -1,6 +1,6 @@
 /* Copyright (C) 1995-2011, 2016 Mark Adler
  * Copyright (C) 2017 ARM Holdings Inc.
- * Authors: 
+ * Authors:
  *   Adenilson Cavalcanti <adenilson.cavalcanti@arm.com>
  *   Adam Stylinski <kungfujesus06@gmail.com>
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -23,7 +23,7 @@ static void NEON_accum32(uint32_t *s, const unsigned char *buf, size_t len) {
         40, 39, 38, 37, 36, 35, 34, 33,
         32, 31, 30, 29, 28, 27, 26, 25,
         24, 23, 22, 21, 20, 19, 18, 17,
-        16, 15, 14, 13, 12, 11, 10, 9, 
+        16, 15, 14, 13, 12, 11, 10, 9,
         8, 7, 6, 5, 4, 3, 2, 1 };
 
     uint32x4_t adacc = vdupq_n_u32(0);
@@ -59,21 +59,21 @@ static void NEON_accum32(uint32_t *s, const unsigned char *buf, size_t len) {
         hsum_fold.val[0] = vpadalq_u8(hsum.val[0], d0_d3.val[2]);
         hsum_fold.val[1] = vpadalq_u8(hsum.val[1], d0_d3.val[3]);
 
-        adacc = vpadalq_u16(adacc, hsum_fold.val[0]); 
+        adacc = vpadalq_u16(adacc, hsum_fold.val[0]);
         s3acc = vaddq_u32(s3acc, adacc_prev);
-        adacc = vpadalq_u16(adacc, hsum_fold.val[1]); 
-        
+        adacc = vpadalq_u16(adacc, hsum_fold.val[1]);
+
         /* If we do straight widening additions to the 16 bit values, we don't incur
          * the usual penalties of a pairwise add. We can defer the multiplications
          * until the very end. These will not overflow because we are incurring at
          * most 408 loop iterations (NMAX / 64), and a given lane is only going to be
          * summed into once. This means for the maximum input size, the largest value
          * we will see is 255 * 102 = 26010, safely under uint16 max */
-        s2_0 = vaddw_u8(s2_0, vget_low_u8(d0_d3.val[0])); 
+        s2_0 = vaddw_u8(s2_0, vget_low_u8(d0_d3.val[0]));
         s2_1 = vaddw_high_u8(s2_1, d0_d3.val[0]);
         s2_2 = vaddw_u8(s2_2, vget_low_u8(d0_d3.val[1]));
         s2_3 = vaddw_high_u8(s2_3, d0_d3.val[1]);
-        s2_4 = vaddw_u8(s2_4, vget_low_u8(d0_d3.val[2])); 
+        s2_4 = vaddw_u8(s2_4, vget_low_u8(d0_d3.val[2]));
         s2_5 = vaddw_high_u8(s2_5, d0_d3.val[2]);
         s2_6 = vaddw_u8(s2_6, vget_low_u8(d0_d3.val[3]));
         s2_7 = vaddw_high_u8(s2_7, d0_d3.val[3]);

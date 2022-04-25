@@ -402,7 +402,7 @@ Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t
     int32_t first = init_crc != 0;
 
     /* Technically the CRC functions don't even call this for input < 64, but a bare minimum of 31
-     * bytes of input is needed for the aligning load that occurs.  If there's an initial CRC, to 
+     * bytes of input is needed for the aligning load that occurs.  If there's an initial CRC, to
      * carry it forward through the folded CRC there must be 16 - src % 16 + 16 bytes available, which
      * by definition can be up to 15 bytes + one full vector load. */
     assert(len >= 31 || first == 0);
@@ -477,7 +477,7 @@ Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t
         xmm_crc2 = _mm_xor_si128(xmm_crc2, xmm_t1);
         xmm_crc3 = _mm_xor_si128(xmm_crc3, xmm_t2);
         len -= 48;
-        src += 48; 
+        src += 48;
     } else if (len >= 32) {
         xmm_t0 = _mm_load_si128((__m128i *)src);
         xmm_t1 = _mm_load_si128((__m128i *)src + 1);
@@ -596,7 +596,7 @@ Z_INTERNAL uint32_t crc32_fold_final_pclmulqdq(crc32_fold *crc) {
 uint32_t crc32_pclmulqdq(uint32_t crc32, const unsigned char* buf, uint64_t len) {
     /* For lens < 64, crc32_byfour method is faster. The CRC32 instruction for
      * these short lengths might also prove to be effective */
-    if (len < 64) 
+    if (len < 64)
         return crc32_byfour(crc32, buf, len);
 
     crc32_fold ALIGNED_(16) crc_state;

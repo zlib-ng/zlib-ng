@@ -20,8 +20,8 @@ Z_INTERNAL uint32_t adler32_avx512_vnni(uint32_t adler, const unsigned char *buf
 
     /* For impossibly tiny sizes, use the smaller width versions. We still need
      * to check for compile time support for these but they are likely there */
-#ifdef X86_SSE41_ADLER32 
-    if (len < 32) 
+#ifdef X86_SSE41_ADLER32
+    if (len < 32)
         return adler32_sse41(adler, buf, len);
 #endif
 

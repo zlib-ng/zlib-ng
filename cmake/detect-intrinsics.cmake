@@ -167,7 +167,7 @@ macro(check_neon_ld4_intrinsics)
             endif()
         endif()
     endif()
-    # Check whether compiler supports loading 4 neon vecs into a register range 
+    # Check whether compiler supports loading 4 neon vecs into a register range
     set(CMAKE_REQUIRED_FLAGS "${NEONFLAG}")
     check_c_source_compiles(
         "#ifdef _M_ARM64
