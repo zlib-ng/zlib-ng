@@ -15,7 +15,7 @@
 
 /* function prototypes */
 static int inflateStateCheck(PREFIX3(stream) *strm);
-static int updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t copy);
+static int updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t len, int32_t cksum);
 static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len);
 
 static inline void inf_chksum_cpy(PREFIX3(stream) *strm, uint8_t *dst,
@@ -237,7 +237,7 @@ int Z_INTERNAL inflate_ensure_window(struct inflate_state *state) {
    output will fall in the output data, making match copies simpler and faster.
    The advantage may be dependent on the size of the processor's data caches.
  */
-static int32_t updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t copy) {
+static int32_t updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t len, int32_t cksum) {
     struct inflate_state *state;
     uint32_t dist;
 
@@ -245,16 +245,16 @@ static int32_t updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t 
 
     if (inflate_ensure_window(state)) return 1;
 
-    /* copy state->wsize or less output bytes into the circular window */
-    if (copy >= state->wsize) {
+    /* len state->wsize or less output bytes into the circular window */
+    if (len >= state->wsize) {
         /* Only do this if the caller specifies to checksum bytes AND the platform requires
          * it (s/390 being the primary exception to this. Also, for now, do the adler checksums
          * if not a gzip based header. The inline adler checksums will come in the near future,
          * possibly the next commit */
-        if (INFLATE_NEED_CHECKSUM(strm) && (state->wrap & 4)) {
+        if (INFLATE_NEED_CHECKSUM(strm) && cksum) {
             /* We have to split the checksum over non-copied and copied bytes */
-            if (copy > state->wsize)
-                inf_chksum(strm, end - copy, copy - state->wsize);
+            if (len > state->wsize)
+                inf_chksum(strm, end - len, len - state->wsize);
             inf_chksum_cpy(strm, state->window, end - state->wsize, state->wsize);
         } else {
             memcpy(state->window, end - state->wsize, state->wsize);
@@ -266,21 +266,21 @@ static int32_t updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t 
         dist = state->wsize - state->wnext;
         /* Only do this if the caller specifies to checksum bytes AND the platform requires
          * We need to maintain the correct order here for the checksum */
-        dist = MIN(dist, copy);
-        if (INFLATE_NEED_CHECKSUM(strm) && (state->wrap & 4)) {
-            inf_chksum_cpy(strm, state->window + state->wnext, end - copy, dist);
+        dist = MIN(dist, len);
+        if (INFLATE_NEED_CHECKSUM(strm) && cksum) {
+            inf_chksum_cpy(strm, state->window + state->wnext, end - len, dist);
         } else {
-            memcpy(state->window + state->wnext, end - copy, dist);
+            memcpy(state->window + state->wnext, end - len, dist);
         }
-        copy -= dist;
-        if (copy) {
-            if (INFLATE_NEED_CHECKSUM(strm) && (state->wrap & 4)) {
-                inf_chksum_cpy(strm, state->window, end - copy, copy);
+        len -= dist;
+        if (len) {
+            if (INFLATE_NEED_CHECKSUM(strm) && cksum) {
+                inf_chksum_cpy(strm, state->window, end - len, len);
             } else {
-                memcpy(state->window, end - copy, copy);
+                memcpy(state->window, end - len, len);
             }
 
-            state->wnext = copy;
+            state->wnext = len;
             state->whave = state->wsize;
         } else {
             state->wnext += dist;
@@ -1070,7 +1070,8 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
     if (INFLATE_NEED_UPDATEWINDOW(strm) &&
             (state->wsize || (out != strm->avail_out && state->mode < BAD &&
                  (state->mode < CHECK || flush != Z_FINISH)))) {
-        if (updatewindow(strm, strm->next_out, out - strm->avail_out)) {
+        /* update sliding window with respective checksum if not in "raw" mode */
+        if (updatewindow(strm, strm->next_out, out - strm->avail_out, state->wrap & 4)) {
             state->mode = MEM;
             return Z_MEM_ERROR;
         }
@@ -1140,7 +1141,7 @@ int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8
 
     /* copy dictionary to window using updatewindow(), which will amend the
        existing dictionary if appropriate */
-    ret = updatewindow(strm, dictionary + dictLength, dictLength);
+    ret = updatewindow(strm, dictionary + dictLength, dictLength, 0);
     if (ret) {
         state->mode = MEM;
         return Z_MEM_ERROR;
