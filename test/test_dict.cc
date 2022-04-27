@@ -72,6 +72,7 @@ TEST(dictionary, basic) {
             EXPECT_EQ(d_stream.adler, dict_adler);
             err = PREFIX(inflateSetDictionary)(&d_stream, (const unsigned char*)dictionary,
                 (uint32_t)sizeof(dictionary));
+            EXPECT_EQ(d_stream.adler, dict_adler);
         }
         EXPECT_EQ(err, Z_OK);
     }
