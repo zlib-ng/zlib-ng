@@ -11,14 +11,9 @@ typedef __m256i chunk_t;
 
 #define CHUNK_SIZE 32
 
-#define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
-
-static inline void chunkmemset_1(uint8_t *from, chunk_t *chunk) {
-    *chunk = _mm256_set1_epi8(*(int8_t *)from);
-}
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
     int16_t tmp;

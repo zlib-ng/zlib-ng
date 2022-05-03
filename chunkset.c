@@ -16,20 +16,8 @@ typedef struct chunk_t { uint8_t u8[8]; } chunk_t;
 
 #define CHUNK_SIZE 8
 
-#define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
-
-static inline void chunkmemset_1(uint8_t *from, chunk_t *chunk) {
-#if defined(UNALIGNED64_OK)
-    *chunk = 0x0101010101010101 * (uint8_t)*from;
-#elif defined(UNALIGNED_OK)
-    chunk->u32[0] = 0x01010101 * (uint8_t)*from;
-    chunk->u32[1] = chunk->u32[0];
-#else
-    memset(chunk, *from, sizeof(chunk_t));
-#endif
-}
 
 static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
 #if defined(UNALIGNED64_OK)
