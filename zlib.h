@@ -1799,7 +1799,7 @@ Z_EXTERN int Z_EXPORT gzgetc_(gzFile file);  /* backward compatibility */
 #endif
 #endif
 
-#if !defined(Z_INTERNAL) && defined(Z_WANT64)
+#if !defined(Z_SOLO) && !defined(Z_INTERNAL) && defined(Z_WANT64)
 #    define gzopen gzopen64
 #    define gzseek gzseek64
 #    define gztell gztell64
@@ -1817,10 +1817,12 @@ Z_EXTERN int Z_EXPORT gzgetc_(gzFile file);  /* backward compatibility */
      Z_EXTERN void Z_EXPORT crc32_combine_gen64(uint32_t *op, z_off64_t);
 #  endif
 #else
+#  ifndef Z_SOLO
    Z_EXTERN gzFile Z_EXPORT gzopen(const char *, const char *);
    Z_EXTERN z_off_t Z_EXPORT gzseek(gzFile, z_off_t, int);
    Z_EXTERN z_off_t Z_EXPORT gztell(gzFile);
    Z_EXTERN z_off_t Z_EXPORT gzoffset(gzFile);
+#  endif   
    Z_EXTERN unsigned long Z_EXPORT adler32_combine(unsigned long, unsigned long, z_off_t);
    Z_EXTERN unsigned long Z_EXPORT crc32_combine(unsigned long, unsigned long, z_off_t);
    Z_EXTERN void Z_EXPORT crc32_combine_gen(uint32_t *op, z_off_t);
