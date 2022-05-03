@@ -14,14 +14,9 @@ typedef uint8x16_t chunk_t;
 
 #define CHUNK_SIZE 16
 
-#define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
-
-static inline void chunkmemset_1(uint8_t *from, chunk_t *chunk) {
-    *chunk = vld1q_dup_u8(from);
-}
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
     uint16_t tmp;
