@@ -10,14 +10,9 @@ typedef vector unsigned char chunk_t;
 
 #define CHUNK_SIZE 16
 
-#define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
-
-static inline void chunkmemset_1(uint8_t *from, chunk_t *chunk) {
-    *chunk = vec_splats(*from);
-}
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
     uint16_t tmp;
