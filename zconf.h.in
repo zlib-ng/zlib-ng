@@ -188,4 +188,14 @@ typedef PTRDIFF_TYPE ptrdiff_t;
 #  endif
 #endif
 
+#if defined(__clang__) || defined(__GNUC__)
+#  define Z_NONULL __attribute__ ((nonnull))
+#  define Z_NONULL_A(...) __attribute__ ((nonnull(__VA_ARGS__)))
+#  define Z_RET_NONULL __attribute__ ((returns_nonnull))
+#else
+#  define Z_NONULL
+#  define Z_NONULL_A(...)
+#  define Z_RET_NONULL
+#endif
+
 #endif /* ZCONF_H */

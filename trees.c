@@ -65,17 +65,17 @@ static const static_tree_desc  static_bl_desc =
  * Local (static) routines in this file.
  */
 
-static void init_block       (deflate_state *s);
-static void pqdownheap       (deflate_state *s, ct_data *tree, int k);
-static void gen_bitlen       (deflate_state *s, tree_desc *desc);
-static void build_tree       (deflate_state *s, tree_desc *desc);
-static void scan_tree        (deflate_state *s, ct_data *tree, int max_code);
-static void send_tree        (deflate_state *s, ct_data *tree, int max_code);
-static int  build_bl_tree    (deflate_state *s);
-static void send_all_trees   (deflate_state *s, int lcodes, int dcodes, int blcodes);
-static void compress_block   (deflate_state *s, const ct_data *ltree, const ct_data *dtree);
-static int  detect_data_type (deflate_state *s);
-static void bi_flush         (deflate_state *s);
+static void init_block       (deflate_state *s) Z_NONULL;
+static void pqdownheap       (deflate_state *s, ct_data *tree, int k) Z_NONULL;
+static void gen_bitlen       (deflate_state *s, tree_desc *desc) Z_NONULL;
+static void build_tree       (deflate_state *s, tree_desc *desc) Z_NONULL;
+static void scan_tree        (deflate_state *s, ct_data *tree, int max_code) Z_NONULL;
+static void send_tree        (deflate_state *s, ct_data *tree, int max_code) Z_NONULL;
+static int  build_bl_tree    (deflate_state *s) Z_NONULL;
+static void send_all_trees   (deflate_state *s, int lcodes, int dcodes, int blcodes) Z_NONULL;
+static void compress_block   (deflate_state *s, const ct_data *ltree, const ct_data *dtree) Z_NONULL;
+static int  detect_data_type (deflate_state *s) Z_NONULL;
+static void bi_flush         (deflate_state *s) Z_NONULL;
 
 /* ===========================================================================
  * Initialize the tree data structures for a new zlib stream.
