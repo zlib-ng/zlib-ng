@@ -46,11 +46,14 @@ static __forceinline unsigned long long __builtin_ctzll(uint64_t value) {
 #endif // Microsoft AMD64/IA64/x86/ARM/ARM64 test
 #endif // _MSC_VER & !clang
 
-/* Unfortunately GCC didn't support these things until version 10 */
+/* Unfortunately GCC didn't support these things until version 10.
+ * Similarly, AppleClang didn't support them in Xcode 9.2 but did in 9.3.
+ */
 #ifdef __AVX2__
 #include <immintrin.h>
 
-#if (!defined(__clang__) && defined(__GNUC__) && __GNUC__ < 10)
+#if (!defined(__clang__) && defined(__GNUC__) && __GNUC__ < 10) \
+    || (defined(__apple_build_version__) && __apple_build_version__ < 9020039)
 static inline __m256i _mm256_zextsi128_si256(__m128i a) {
     __m128i r;
     __asm__ volatile ("vmovdqa %1,%0" : "=x" (r) : "x" (a));
@@ -64,7 +67,7 @@ static inline __m512i _mm512_zextsi128_si512(__m128i a) {
     return _mm512_castsi128_si512(r);
 }
 #endif // __AVX512F__
-#endif // gcc version 10 test
+#endif // gcc/AppleClang version test
 
 #endif // __AVX2__
 
