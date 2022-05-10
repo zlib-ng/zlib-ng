@@ -25,7 +25,7 @@
 #  endif
 #else
 #  ifndef W
-#    if defined(__x86_64__) || defined(__aarch64__)
+#    if defined(__x86_64__) || defined(__aarch64__) || defined(__powerpc64__)
 #      define W 8
 #    else
 #      define W 4
