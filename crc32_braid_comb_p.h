@@ -23,7 +23,8 @@ static uint32_t multmodp(uint32_t a, uint32_t b) {
 }
 
 /*
-  Return x^(n+k) modulo p(x). Requires that x2n_table[] has been initialized.
+  Return x^(n * 2^k) modulo p(x). Requires that x2n_table[] has been
+  initialized.
  */
 static uint32_t x2nmodp(z_off64_t n, unsigned k) {
     uint32_t p;
