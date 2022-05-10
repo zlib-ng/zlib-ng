@@ -112,10 +112,10 @@ static z_word_t crc_word(z_word_t data) {
 
 /* ========================================================================= */
 Z_INTERNAL uint32_t crc32_braid(uint32_t crc, const unsigned char *buf, uint64_t len) {
-    Z_REGISTER uint32_t c = crc;
+    Z_REGISTER uint32_t c;
 
     /* Pre-condition the CRC */
-    c ^= 0xffffffff;
+    c = (~crc) & 0xffffffff;
 
 #ifdef W
     /* If provided enough bytes, do a braided CRC calculation. */
