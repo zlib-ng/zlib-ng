@@ -16,6 +16,10 @@ if(NOT DEFINED OUTPUT OR NOT DEFINED COMPARE OR NOT DEFINED COMMAND)
     message(FATAL_ERROR "Run and compare arguments missing")
 endif()
 
+# Ensure directory exists for output files
+get_filename_component(OUTPUT_DIR "${OUTPUT}" DIRECTORY)
+file(MAKE_DIRECTORY "${OUTPUT_DIR}")
+
 if(INPUT)
     # Run command with stdin input and redirect stdout to output
     execute_process(COMMAND ${CMAKE_COMMAND}
