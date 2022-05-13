@@ -22,7 +22,7 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
         len--;
     }
 
-    if ((len > sizeof(uint16_t)) && ((ptrdiff_t)buf & sizeof(uint16_t))) {
+    if ((len >= sizeof(uint16_t)) && ((ptrdiff_t)buf & sizeof(uint16_t))) {
         buf2 = (const uint16_t *) buf;
         c = __crc32h(c, *buf2++);
         len -= sizeof(uint16_t);
@@ -32,7 +32,7 @@ uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
     }
 
 #if defined(__aarch64__)
-    if ((len > sizeof(uint32_t)) && ((ptrdiff_t)buf & sizeof(uint32_t))) {
+    if ((len >= sizeof(uint32_t)) && ((ptrdiff_t)buf & sizeof(uint32_t))) {
         c = __crc32w(c, *buf4++);
         len -= sizeof(uint32_t);
     }
