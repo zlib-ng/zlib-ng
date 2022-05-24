@@ -55,7 +55,7 @@ public:
     } \
     BENCHMARK_REGISTER_F(crc32, name)->Range(1, MAX_RANDOM_INTS_SIZE);
 
-BENCHMARK_CRC32(byfour, crc32_byfour, 1);
+BENCHMARK_CRC32(braid, crc32_braid, 1);
 
 #ifdef ARM_ACLE_CRC_HASH
 BENCHMARK_CRC32(acle, crc32_acle, arm_cpu_has_crc32);

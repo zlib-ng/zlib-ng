@@ -79,8 +79,8 @@ OBJZ = \
 	compare256.o \
 	compress.o \
 	cpu_features.o \
-	crc32.o \
-	crc32_comb.o \
+	crc32_braid.o \
+	crc32_braid_comb.o \
 	crc32_fold.o \
 	deflate.o \
 	deflate_fast.o \
@@ -116,8 +116,8 @@ PIC_OBJZ = \
 	compare256.lo \
 	compress.lo \
 	cpu_features.lo \
-	crc32.lo \
-	crc32_comb.lo \
+	crc32_braid.lo \
+	crc32_braid_comb.lo \
 	crc32_fold.lo \
 	deflate.lo \
 	deflate_fast.lo \

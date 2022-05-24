@@ -19,7 +19,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     /* Checksum with a buffer of size equal to the first byte in the input. */
     uint32_t buffSize = data[0];
     uint32_t offset = 0;
-    uint32_t op[32];
+    uint32_t op;
 
     /* Discard inputs larger than 1Mb. */
     static size_t kMaxSize = 1024 * 1024;
@@ -31,7 +31,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
         ++buffSize;
 
     /* CRC32 */
-    PREFIX(crc32_combine_gen)(op, buffSize);
+    op = PREFIX(crc32_combine_gen)(buffSize);
     for (offset = 0; offset + buffSize <= dataLen; offset += buffSize) {
         uint32_t crc3 = PREFIX(crc32_z)(crc0, data + offset, buffSize);
         uint32_t crc4 = PREFIX(crc32_combine_op)(crc1, crc3, op);
@@ -52,7 +52,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
     assert(combine1 == combine2);
 
     /* Fast CRC32 combine. */
-    PREFIX(crc32_combine_gen)(op, (z_off_t)dataLen);
+    op = PREFIX(crc32_combine_gen)((z_off_t)dataLen);
     combine1 = PREFIX(crc32_combine_op)(crc1, crc2, op);
     combine2 = PREFIX(crc32_combine_op)(crc2, crc1, op);
     assert(combine1 == combine2);

@@ -28,7 +28,7 @@
 #include "cpu_features.h"
 
 #include "../../crc32_fold.h"
-#include "../../crc32_p.h"
+#include "../../crc32_braid_p.h"
 #include <assert.h>
 
 #ifdef X86_VPCLMULQDQ_CRC
@@ -594,10 +594,10 @@ Z_INTERNAL uint32_t crc32_fold_final_pclmulqdq(crc32_fold *crc) {
 }
 
 uint32_t crc32_pclmulqdq(uint32_t crc32, const unsigned char* buf, uint64_t len) {
-    /* For lens < 64, crc32_byfour method is faster. The CRC32 instruction for
+    /* For lens < 64, crc32_braid method is faster. The CRC32 instruction for
      * these short lengths might also prove to be effective */
     if (len < 64)
-        return crc32_byfour(crc32, buf, len);
+        return crc32_braid(crc32, buf, len);
 
     crc32_fold ALIGNED_(16) crc_state;
     crc32_fold_reset_pclmulqdq(&crc_state);

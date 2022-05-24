@@ -30,7 +30,7 @@
 #include "zbuild.h"
 
 #include "crc32_constants.h"
-#include "crc32_tbl.h"
+#include "crc32_braid_tbl.h"
 
 #if defined (__clang__)
 #include "fallback_builtins.h"
@@ -42,7 +42,7 @@
 
 static unsigned int crc32_align(unsigned int crc, const unsigned char *p, unsigned long len) {
     while (len--)
-        crc = crc_table[0][(crc ^ *p++) & 0xff] ^ (crc >> 8);
+        crc = crc_table[(crc ^ *p++) & 0xff] ^ (crc >> 8);
     return crc;
 }
 
