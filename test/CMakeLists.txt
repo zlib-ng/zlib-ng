@@ -18,35 +18,38 @@ if(WITH_SANITIZER STREQUAL "Memory")
     add_compile_options(-stdlib=libc++ -g)
 endif()
 
-# Prevent overriding the parent project's compiler/linker settings for Windows
-set(gtest_force_shared_crt ON CACHE BOOL
-    "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
-# Disable pthreads for simplicity
-set(gtest_disable_pthreads ON CACHE BOOL
-    "Disable uses of pthreads in gtest." FORCE)
+if(NOT TARGET GTest::GTest)
+    # Prevent overriding the parent project's compiler/linker settings for Windows
+    set(gtest_force_shared_crt ON CACHE BOOL
+        "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
+    # Disable pthreads for simplicity
+    set(gtest_disable_pthreads ON CACHE BOOL
+        "Disable uses of pthreads in gtest." FORCE)
 
-# Allow specifying alternative Google test repository
-if(NOT DEFINED GTEST_REPOSITORY)
-    set(GTEST_REPOSITORY https://github.com/google/googletest.git)
-endif()
-if(NOT DEFINED GTEST_TAG)
-    # Use older version of Google test to support older versions of GCC
-    if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQUAL 5.3)
-        set(GTEST_TAG release-1.10.0)
-    else()
-        set(GTEST_TAG release-1.11.0)
+    # Allow specifying alternative Google test repository
+    if(NOT DEFINED GTEST_REPOSITORY)
+        set(GTEST_REPOSITORY https://github.com/google/googletest.git)
     endif()
-endif()
+    if(NOT DEFINED GTEST_TAG)
+        # Use older version of Google test to support older versions of GCC
+        if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQUAL 5.3)
+            set(GTEST_TAG release-1.10.0)
+        else()
+            set(GTEST_TAG release-1.11.0)
+        endif()
+    endif()
 
-# Fetch Google test source code from official repository
-FetchContent_Declare(googletest
-    GIT_REPOSITORY ${GTEST_REPOSITORY}
-    GIT_TAG ${GTEST_TAG})
+    # Fetch Google test source code from official repository
+    FetchContent_Declare(googletest
+        GIT_REPOSITORY ${GTEST_REPOSITORY}
+        GIT_TAG ${GTEST_TAG})
 
-FetchContent_GetProperties(googletest)
-if(NOT googletest_POPULATED)
-    FetchContent_Populate(googletest)
-    add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+    FetchContent_GetProperties(googletest)
+    if(NOT googletest_POPULATED)
+        FetchContent_Populate(googletest)
+        add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+    endif()
+    add_library(GTest::GTest ALIAS gtest)
 endif()
 
 set(TEST_SRCS
@@ -95,7 +98,7 @@ if(WITH_SANITIZER STREQUAL "Memory")
         -fsanitize-memory-track-origins)
 endif()
 
-target_link_libraries(gtest_zlib zlibstatic gtest)
+target_link_libraries(gtest_zlib zlibstatic GTest::GTest)
 
 if(ZLIB_ENABLE_TESTS)
     add_test(NAME gtest_zlib
