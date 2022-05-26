@@ -962,7 +962,7 @@ int main(int argc, char *argv[]) {
         exit(1);
 
     } else if (strcmp(zVersion(), PREFIX2(VERSION)) != 0) {
-        fprintf(stderr, "warning: different zlib version\n");
+        fprintf(stderr, "warning: different zlib version linked: %s\n", zVersion());
     }
 
     printf("zlib-ng version %s = 0x%08lx, compile flags = 0x%lx\n",
