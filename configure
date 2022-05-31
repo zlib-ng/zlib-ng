@@ -1106,6 +1106,11 @@ EOF
 check_neon_compiler_flag() {
     # Check whether -mfpu=neon is available on ARM processors.
     cat > $test.c << EOF
+#ifdef _M_ARM64
+ #  include <arm64_neon.h>
+ #else
+ #  include <arm_neon.h>
+#endif
 int main() { return 0; }
 EOF
     if try $CC -c $CFLAGS -mfpu=neon $test.c; then
