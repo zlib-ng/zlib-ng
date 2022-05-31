@@ -152,7 +152,12 @@ macro(check_neon_compiler_flag)
     # Check whether compiler supports NEON flag
     set(CMAKE_REQUIRED_FLAGS "${NEONFLAG} ${NATIVEFLAG}")
     check_c_source_compiles(
-        "int main() { return 0; }"
+        "#ifdef _M_ARM64
+        #  include <arm64_neon.h>
+        #else
+        #  include <arm_neon.h>
+        #endif
+        int main() { return 0; }"
         MFPU_NEON_AVAILABLE FAIL_REGEX "not supported")
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
