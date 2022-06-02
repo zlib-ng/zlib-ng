@@ -5,7 +5,7 @@
 
 #ifdef X86_AVX_CHUNKSET
 #include <immintrin.h>
-#include "chunk_permute_table.h"
+#include "../generic/chunk_permute_table.h"
 
 typedef __m256i chunk_t;
 

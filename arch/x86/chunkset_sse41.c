@@ -9,7 +9,7 @@
  * to identical machine code */
 #if defined(X86_SSE41) && defined(X86_SSE2)
 #include <immintrin.h>
-#include "chunk_permute_table.h"
+#include "../generic/chunk_permute_table.h"
 
 typedef __m128i chunk_t;
 
