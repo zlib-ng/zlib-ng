@@ -22,9 +22,6 @@ if(NOT TARGET GTest::GTest)
     # Prevent overriding the parent project's compiler/linker settings for Windows
     set(gtest_force_shared_crt ON CACHE BOOL
         "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
-    # Disable pthreads for simplicity
-    set(gtest_disable_pthreads ON CACHE BOOL
-        "Disable uses of pthreads in gtest." FORCE)
 
     # Allow specifying alternative Google test repository
     if(NOT DEFINED GTEST_REPOSITORY)
@@ -99,6 +96,16 @@ if(WITH_SANITIZER STREQUAL "Memory")
 endif()
 
 target_link_libraries(gtest_zlib zlibstatic GTest::GTest)
+
+find_package(Threads)
+if(Threads_FOUND)
+    target_sources(gtest_zlib PRIVATE test_deflate_concurrency.cc)
+    if(UNIX AND NOT APPLE)
+        # On Linux, use a workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52590
+        target_link_libraries(gtest_zlib -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+    endif()
+    target_link_libraries(gtest_zlib Threads::Threads)
+endif()
 
 if(ZLIB_ENABLE_TESTS)
     add_test(NAME gtest_zlib
