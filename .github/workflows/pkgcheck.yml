@@ -160,6 +160,7 @@ jobs:
       with:
         name: ${{ matrix.name }}
         path: |
+          **/*.abi
           btmp1/configure.log
           btmp1/CMakeFiles/CMakeOutput.log
           btmp1/CMakeFiles/CMakeError.log
