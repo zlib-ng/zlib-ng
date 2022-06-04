@@ -1,0 +1,1533 @@
+<abi-corpus path='btmp1/libz-ng.so.2.1.0.devel' architecture='elf-amd-x86_64' soname='libz-ng.so.2'>
+  <elf-needed>
+    <dependency name='libc.so.6'/>
+    <dependency name='ld-linux-x86-64.so.2'/>
+  </elf-needed>
+  <elf-function-symbols>
+    <elf-symbol name='crc32_pclmulqdq' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zlibng_version' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_adler32' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_adler32_combine' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_adler32_z' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_compress2' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_compress' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_compressBound' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_crc32' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_crc32_combine' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_crc32_combine_gen' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_crc32_combine_op' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_crc32_z' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflate' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateBound' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateCopy' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateEnd' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateGetDictionary' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateGetParams' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateInit2' version='ZLIB_NG_2.1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateInit2_' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateInit' version='ZLIB_NG_2.1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateInit_' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateParams' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflatePending' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflatePrime' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateReset' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateResetKeep' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateSetDictionary' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateSetHeader' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateSetParams' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_deflateTune' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_get_crc_table' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzbuffer' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzclearerr' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzclose' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzclose_r' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzclose_w' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzdirect' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzdopen' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzeof' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzerror' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzflush' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzfread' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzfwrite' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzgetc' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzgets' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzoffset' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzopen' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzprintf' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzputc' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzputs' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzread' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzrewind' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzseek' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzsetparams' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gztell' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzungetc' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzvprintf' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_gzwrite' version='ZLIB_NG_GZ_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflate' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateBack' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateBackEnd' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateBackInit' version='ZLIB_NG_2.1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateBackInit_' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateCodesUsed' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateCopy' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateEnd' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateGetDictionary' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateGetHeader' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateInit2' version='ZLIB_NG_2.1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateInit2_' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateInit' version='ZLIB_NG_2.1.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateInit_' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateMark' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflatePrime' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateReset2' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateReset' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateResetKeep' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateSetDictionary' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateSync' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateSyncPoint' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateUndermine' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_inflateValidate' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_uncompress2' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_uncompress' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_zError' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='zng_zlibCompileFlags' version='ZLIB_NG_2.0.0' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+  </elf-function-symbols>
+  <elf-variable-symbols>
+    <elf-symbol name='zlibng_string' size='38' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+  </elf-variable-symbols>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <type-decl name='unsigned int' size-in-bits='32' id='type-id-1'/>
+    <typedef-decl name='__uint32_t' type-id='type-id-1' filepath='/usr/include/x86_64-linux-gnu/bits/types.h' line='42' column='1' id='type-id-2'/>
+    <typedef-decl name='uint32_t' type-id='type-id-2' filepath='/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h' line='26' column='1' id='type-id-3'/>
+    <type-decl name='long int' size-in-bits='64' id='type-id-4'/>
+    <typedef-decl name='__off64_t' type-id='type-id-4' filepath='/usr/include/x86_64-linux-gnu/bits/types.h' line='153' column='1' id='type-id-5'/>
+    <typedef-decl name='off64_t' type-id='type-id-5' filepath='/usr/include/x86_64-linux-gnu/sys/types.h' line='92' column='1' id='type-id-6'/>
+    <function-decl name='zng_adler32_combine' mangled-name='zng_adler32_combine' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='112' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_adler32_combine@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-3' name='adler1' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='112' column='1'/>
+      <parameter type-id='type-id-3' name='adler2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='112' column='1'/>
+      <parameter type-id='type-id-6' name='len2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='112' column='1'/>
+      <return type-id='type-id-3'/>
+    </function-decl>
+    <type-decl name='unsigned char' size-in-bits='8' id='type-id-7'/>
+    <qualified-type-def type-id='type-id-7' const='yes' id='type-id-8'/>
+    <pointer-type-def type-id='type-id-8' size-in-bits='64' id='type-id-9'/>
+    <function-decl name='zng_adler32' mangled-name='zng_adler32' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='72' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_adler32@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-3' name='adler' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='72' column='1'/>
+      <parameter type-id='type-id-9' name='buf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='72' column='1'/>
+      <parameter type-id='type-id-3' name='len' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='72' column='1'/>
+      <return type-id='type-id-3'/>
+    </function-decl>
+    <type-decl name='unsigned long int' size-in-bits='64' id='type-id-10'/>
+    <typedef-decl name='size_t' type-id='type-id-10' filepath='/usr/lib/gcc/x86_64-linux-gnu/9/include/stddef.h' line='209' column='1' id='type-id-11'/>
+    <function-decl name='zng_adler32_z' mangled-name='zng_adler32_z' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='61' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_adler32_z@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-3' name='adler' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='61' column='1'/>
+      <parameter type-id='type-id-9' name='buf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='61' column='1'/>
+      <parameter type-id='type-id-11' name='len' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='61' column='1'/>
+      <return type-id='type-id-3'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32_fold.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <type-decl name='void' id='type-id-12'/>
+    <function-decl name='__builtin_memcpy' mangled-name='memcpy' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/chunkset.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='__builtin_memset' mangled-name='memset' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='__stack_chk_fail' mangled-name='__stack_chk_fail' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='zng_compressBound' mangled-name='zng_compressBound' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='81' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_compressBound@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-11' name='sourceLen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='81' column='1'/>
+      <return type-id='type-id-11'/>
+    </function-decl>
+    <type-decl name='int' size-in-bits='32' id='type-id-13'/>
+    <pointer-type-def type-id='type-id-7' size-in-bits='64' id='type-id-14'/>
+    <pointer-type-def type-id='type-id-11' size-in-bits='64' id='type-id-15'/>
+    <function-decl name='zng_compress' mangled-name='zng_compress' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='73' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_compress@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-14' name='dest' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='73' column='1'/>
+      <parameter type-id='type-id-15' name='destLen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='73' column='1'/>
+      <parameter type-id='type-id-9' name='source' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='73' column='1'/>
+      <parameter type-id='type-id-11' name='sourceLen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='73' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_compress2' mangled-name='zng_compress2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='31' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_compress2@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-14' name='dest' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='31' column='1'/>
+      <parameter type-id='type-id-15' name='destLen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='31' column='1'/>
+      <parameter type-id='type-id-9' name='source' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='31' column='1'/>
+      <parameter type-id='type-id-11' name='sourceLen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='32' column='1'/>
+      <parameter type-id='type-id-13' name='level' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='32' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_deflateInit' mangled-name='zng_deflateInit' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='226' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_deflate' mangled-name='zng_deflate' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='247' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_deflateEnd' mangled-name='zng_deflateEnd' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='361' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/cpu_features.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='x86_check_features' mangled-name='x86_check_features' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/x86_features.h' line='20' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='zng_crc32' mangled-name='zng_crc32' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid.c' line='41' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_crc32@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-3' name='crc' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid.c' line='41' column='1'/>
+      <parameter type-id='type-id-9' name='buf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid.c' line='41' column='1'/>
+      <parameter type-id='type-id-3' name='len' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid.c' line='41' column='1'/>
+      <return type-id='type-id-3'/>
+    </function-decl>
+    <qualified-type-def type-id='type-id-3' const='yes' id='type-id-16'/>
+    <pointer-type-def type-id='type-id-16' size-in-bits='64' id='type-id-17'/>
+    <function-decl name='zng_get_crc_table' mangled-name='zng_get_crc_table' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid.c' line='18' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_get_crc_table@@ZLIB_NG_2.0.0'>
+      <return type-id='type-id-17'/>
+    </function-decl>
+    <function-decl name='zng_crc32_z' mangled-name='zng_crc32_z' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid.c' line='29' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_crc32_z@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-3' name='adler' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='61' column='1'/>
+      <parameter type-id='type-id-9' name='buf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='61' column='1'/>
+      <parameter type-id='type-id-11' name='len' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='61' column='1'/>
+      <return type-id='type-id-3'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid_comb.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='zng_crc32_combine_op' mangled-name='zng_crc32_combine_op' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid_comb.c' line='52' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_crc32_combine_op@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-3' name='crc1' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid_comb.c' line='52' column='1'/>
+      <parameter type-id='type-id-3' name='crc2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid_comb.c' line='52' column='1'/>
+      <parameter type-id='type-id-16' name='op' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid_comb.c' line='52' column='1'/>
+      <return type-id='type-id-3'/>
+    </function-decl>
+    <function-decl name='zng_crc32_combine_gen' mangled-name='zng_crc32_combine_gen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid_comb.c' line='49' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_crc32_combine_gen@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-6' name='len2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid_comb.c' line='49' column='1'/>
+      <return type-id='type-id-3'/>
+    </function-decl>
+    <function-decl name='zng_crc32_combine' mangled-name='zng_crc32_combine' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_braid_comb.c' line='46' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_crc32_combine@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-3' name='adler1' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='112' column='1'/>
+      <parameter type-id='type-id-3' name='adler2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='112' column='1'/>
+      <parameter type-id='type-id-6' name='len2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/adler32.c' line='112' column='1'/>
+      <return type-id='type-id-3'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <typedef-decl name='__int32_t' type-id='type-id-13' filepath='/usr/include/x86_64-linux-gnu/bits/types.h' line='41' column='1' id='type-id-18'/>
+    <typedef-decl name='int32_t' type-id='type-id-18' filepath='/usr/include/x86_64-linux-gnu/bits/stdint-intn.h' line='26' column='1' id='type-id-19'/>
+    <class-decl name='zng_stream_s' size-in-bits='832' is-struct='yes' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='97' column='1' id='type-id-20'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='next_in' type-id='type-id-21' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='98' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='avail_in' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='99' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='total_in' type-id='type-id-11' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='100' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='next_out' type-id='type-id-22' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='102' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='avail_out' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='103' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='total_out' type-id='type-id-11' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='104' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='msg' type-id='type-id-23' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='106' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='state' type-id='type-id-24' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='107' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='zalloc' type-id='type-id-25' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='109' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='zfree' type-id='type-id-26' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='110' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='opaque' type-id='type-id-27' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='111' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='data_type' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='113' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='736'>
+        <var-decl name='adler' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='115' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='reserved' type-id='type-id-10' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='116' column='1'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='__uint8_t' type-id='type-id-7' filepath='/usr/include/x86_64-linux-gnu/bits/types.h' line='38' column='1' id='type-id-28'/>
+    <typedef-decl name='uint8_t' type-id='type-id-28' filepath='/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h' line='24' column='1' id='type-id-29'/>
+    <qualified-type-def type-id='type-id-29' const='yes' id='type-id-30'/>
+    <pointer-type-def type-id='type-id-30' size-in-bits='64' id='type-id-21'/>
+    <pointer-type-def type-id='type-id-29' size-in-bits='64' id='type-id-22'/>
+    <type-decl name='char' size-in-bits='8' id='type-id-31'/>
+    <qualified-type-def type-id='type-id-31' const='yes' id='type-id-32'/>
+    <pointer-type-def type-id='type-id-32' size-in-bits='64' id='type-id-23'/>
+    <class-decl name='internal_state' size-in-bits='48512' is-struct='yes' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='113' column='1' id='type-id-33'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='strm' type-id='type-id-34' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='114' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='pending_buf' type-id='type-id-14' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='115' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='pending_out' type-id='type-id-14' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='116' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='pending_buf_size' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='117' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='pending' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='118' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='wrap' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='119' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='288'>
+        <var-decl name='gzindex' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='120' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='gzhead' type-id='type-id-35' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='121' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='status' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='122' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='416'>
+        <var-decl name='last_flush' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='123' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='reproducible' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='124' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='480'>
+        <var-decl name='block_open' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='126' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='w_size' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='133' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='544'>
+        <var-decl name='w_bits' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='134' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='w_mask' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='135' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='608'>
+        <var-decl name='lookahead' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='136' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='high_water' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='138' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='672'>
+        <var-decl name='window_size' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='145' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='window' type-id='type-id-14' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='150' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='prev' type-id='type-id-36' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='160' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='832'>
+        <var-decl name='head' type-id='type-id-36' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='166' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='896'>
+        <var-decl name='ins_h' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='168' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='928'>
+        <var-decl name='block_start' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='170' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='960'>
+        <var-decl name='match_length' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='175' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='992'>
+        <var-decl name='prev_match' type-id='type-id-37' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='176' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1024'>
+        <var-decl name='match_available' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='177' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1056'>
+        <var-decl name='strstart' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='178' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1088'>
+        <var-decl name='match_start' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='179' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1120'>
+        <var-decl name='prev_length' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='181' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1152'>
+        <var-decl name='max_chain_length' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='186' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1184'>
+        <var-decl name='max_lazy_match' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='191' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1216'>
+        <var-decl name='update_hash' type-id='type-id-38' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='201' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1280'>
+        <var-decl name='insert_string' type-id='type-id-39' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='202' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1344'>
+        <var-decl name='quick_insert_string' type-id='type-id-40' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='203' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1408'>
+        <var-decl name='level' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='207' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1440'>
+        <var-decl name='strategy' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='208' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1472'>
+        <var-decl name='good_match' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='210' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1504'>
+        <var-decl name='nice_match' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='213' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1536'>
+        <var-decl name='crc_fold' type-id='type-id-41' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='215' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2080'>
+        <var-decl name='dyn_ltree' type-id='type-id-42' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='219' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='20416'>
+        <var-decl name='dyn_dtree' type-id='type-id-43' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='220' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='22368'>
+        <var-decl name='bl_tree' type-id='type-id-44' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='221' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='23616'>
+        <var-decl name='l_desc' type-id='type-id-45' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='223' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='23808'>
+        <var-decl name='d_desc' type-id='type-id-45' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='224' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24000'>
+        <var-decl name='bl_desc' type-id='type-id-45' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='225' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24192'>
+        <var-decl name='bl_count' type-id='type-id-46' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='227' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='24448'>
+        <var-decl name='heap' type-id='type-id-47' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='230' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='42784'>
+        <var-decl name='heap_len' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='231' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='42816'>
+        <var-decl name='heap_max' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='232' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='42848'>
+        <var-decl name='depth' type-id='type-id-48' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='237' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='47456'>
+        <var-decl name='lit_bufsize' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='241' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='47488'>
+        <var-decl name='sym_buf' type-id='type-id-14' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='261' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='47552'>
+        <var-decl name='sym_next' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='262' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='47584'>
+        <var-decl name='sym_end' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='263' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='47616'>
+        <var-decl name='opt_len' type-id='type-id-10' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='265' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='47680'>
+        <var-decl name='static_len' type-id='type-id-10' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='266' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='47744'>
+        <var-decl name='matches' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='267' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='47776'>
+        <var-decl name='insert' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='268' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='47808'>
+        <var-decl name='compressed_len' type-id='type-id-10' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='271' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='47872'>
+        <var-decl name='bits_sent' type-id='type-id-10' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='272' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='47936'>
+        <var-decl name='reserved_p' type-id='type-id-49' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='275' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48000'>
+        <var-decl name='bi_buf' type-id='type-id-50' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='277' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48064'>
+        <var-decl name='bi_valid' type-id='type-id-19' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='280' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48096'>
+        <var-decl name='reserved' type-id='type-id-51' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='284' column='1'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='zng_stream' type-id='type-id-20' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='117' column='1' id='type-id-52'/>
+    <pointer-type-def type-id='type-id-52' size-in-bits='64' id='type-id-34'/>
+    <class-decl name='zng_gz_header_s' size-in-bits='640' is-struct='yes' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='125' column='1' id='type-id-53'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='text' type-id='type-id-19' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='126' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='time' type-id='type-id-10' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='127' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='xflags' type-id='type-id-19' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='128' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='os' type-id='type-id-19' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='129' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='extra' type-id='type-id-22' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='130' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='extra_len' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='131' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='288'>
+        <var-decl name='extra_max' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='132' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='name' type-id='type-id-22' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='133' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='name_max' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='134' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='comment' type-id='type-id-22' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='135' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='comm_max' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='136' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='544'>
+        <var-decl name='hcrc' type-id='type-id-19' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='137' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='done' type-id='type-id-19' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='138' column='1'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='zng_gz_header' type-id='type-id-53' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='139' column='1' id='type-id-54'/>
+    <pointer-type-def type-id='type-id-54' size-in-bits='64' id='type-id-55'/>
+    <typedef-decl name='zng_gz_headerp' type-id='type-id-55' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='141' column='1' id='type-id-35'/>
+    <type-decl name='unsigned short int' size-in-bits='16' id='type-id-56'/>
+    <typedef-decl name='__uint16_t' type-id='type-id-56' filepath='/usr/include/x86_64-linux-gnu/bits/types.h' line='40' column='1' id='type-id-57'/>
+    <typedef-decl name='uint16_t' type-id='type-id-57' filepath='/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h' line='25' column='1' id='type-id-58'/>
+    <typedef-decl name='Pos' type-id='type-id-58' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='101' column='1' id='type-id-37'/>
+    <pointer-type-def type-id='type-id-37' size-in-bits='64' id='type-id-36'/>
+    <typedef-decl name='deflate_state' type-id='type-id-33' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='107' column='1' id='type-id-59'/>
+    <pointer-type-def type-id='type-id-59' size-in-bits='64' id='type-id-60'/>
+    <qualified-type-def type-id='type-id-60' const='yes' id='type-id-61'/>
+    <pointer-type-def type-id='type-id-62' size-in-bits='64' id='type-id-63'/>
+    <typedef-decl name='update_hash_cb' type-id='type-id-63' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='109' column='1' id='type-id-38'/>
+    <pointer-type-def type-id='type-id-64' size-in-bits='64' id='type-id-65'/>
+    <typedef-decl name='insert_string_cb' type-id='type-id-65' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='110' column='1' id='type-id-39'/>
+    <pointer-type-def type-id='type-id-66' size-in-bits='64' id='type-id-67'/>
+    <typedef-decl name='quick_insert_string_cb' type-id='type-id-67' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='111' column='1' id='type-id-40'/>
+    <class-decl name='crc32_fold_s' size-in-bits='544' is-struct='yes' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_fold.h' line='11' column='1' id='type-id-41'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='fold' type-id='type-id-68' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_fold.h' line='12' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='value' type-id='type-id-3' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_fold.h' line='13' column='1'/>
+      </data-member>
+    </class-decl>
+
+    <array-type-def dimensions='1' type-id='type-id-29' size-in-bits='512' id='type-id-68'>
+      <subrange length='64' type-id='type-id-10' id='type-id-69'/>
+
+    </array-type-def>
+    <class-decl name='ct_data_s' size-in-bits='32' is-struct='yes' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='77' column='1' id='type-id-70'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='fc' type-id='type-id-71' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='81' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='dl' type-id='type-id-72' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='85' column='1'/>
+      </data-member>
+    </class-decl>
+    <union-decl name='__anonymous_union__' size-in-bits='16' is-anonymous='yes' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='78' column='1' id='type-id-71'>
+      <data-member access='private'>
+        <var-decl name='freq' type-id='type-id-58' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='79' column='1'/>
+      </data-member>
+      <data-member access='private'>
+        <var-decl name='code' type-id='type-id-58' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='80' column='1'/>
+      </data-member>
+    </union-decl>
+    <union-decl name='__anonymous_union__' size-in-bits='16' is-anonymous='yes' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='82' column='1' id='type-id-72'>
+      <data-member access='private'>
+        <var-decl name='dad' type-id='type-id-58' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='83' column='1'/>
+      </data-member>
+      <data-member access='private'>
+        <var-decl name='len' type-id='type-id-58' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='84' column='1'/>
+      </data-member>
+    </union-decl>
+
+    <array-type-def dimensions='1' type-id='type-id-70' size-in-bits='18336' id='type-id-42'>
+      <subrange length='573' type-id='type-id-10' id='type-id-73'/>
+
+    </array-type-def>
+
+    <array-type-def dimensions='1' type-id='type-id-70' size-in-bits='1952' id='type-id-43'>
+      <subrange length='61' type-id='type-id-10' id='type-id-74'/>
+
+    </array-type-def>
+
+    <array-type-def dimensions='1' type-id='type-id-70' size-in-bits='1248' id='type-id-44'>
+      <subrange length='39' type-id='type-id-10' id='type-id-75'/>
+
+    </array-type-def>
+    <class-decl name='tree_desc_s' size-in-bits='192' is-struct='yes' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='95' column='1' id='type-id-45'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='dyn_tree' type-id='type-id-76' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='96' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='max_code' type-id='type-id-13' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='97' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='stat_desc' type-id='type-id-77' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='98' column='1'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='ct_data' type-id='type-id-70' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='86' column='1' id='type-id-78'/>
+    <pointer-type-def type-id='type-id-78' size-in-bits='64' id='type-id-76'/>
+    <class-decl name='static_tree_desc_s' is-struct='yes' visibility='default' is-declaration-only='yes' id='type-id-79'/>
+    <typedef-decl name='static_tree_desc' type-id='type-id-79' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='93' column='1' id='type-id-80'/>
+    <qualified-type-def type-id='type-id-80' const='yes' id='type-id-81'/>
+    <pointer-type-def type-id='type-id-81' size-in-bits='64' id='type-id-77'/>
+
+    <array-type-def dimensions='1' type-id='type-id-58' size-in-bits='256' id='type-id-46'>
+      <subrange length='16' type-id='type-id-10' id='type-id-82'/>
+
+    </array-type-def>
+
+    <array-type-def dimensions='1' type-id='type-id-13' size-in-bits='18336' id='type-id-47'>
+      <subrange length='573' type-id='type-id-10' id='type-id-73'/>
+
+    </array-type-def>
+
+    <array-type-def dimensions='1' type-id='type-id-7' size-in-bits='4584' id='type-id-48'>
+      <subrange length='573' type-id='type-id-10' id='type-id-73'/>
+
+    </array-type-def>
+    <pointer-type-def type-id='type-id-31' size-in-bits='64' id='type-id-49'/>
+    <typedef-decl name='__uint64_t' type-id='type-id-10' filepath='/usr/include/x86_64-linux-gnu/bits/types.h' line='45' column='1' id='type-id-83'/>
+    <typedef-decl name='uint64_t' type-id='type-id-83' filepath='/usr/include/x86_64-linux-gnu/bits/stdint-uintn.h' line='27' column='1' id='type-id-50'/>
+
+    <array-type-def dimensions='1' type-id='type-id-19' size-in-bits='352' id='type-id-51'>
+      <subrange length='11' type-id='type-id-10' id='type-id-84'/>
+
+    </array-type-def>
+    <pointer-type-def type-id='type-id-33' size-in-bits='64' id='type-id-24'/>
+    <pointer-type-def type-id='type-id-12' size-in-bits='64' id='type-id-27'/>
+    <pointer-type-def type-id='type-id-85' size-in-bits='64' id='type-id-86'/>
+    <typedef-decl name='alloc_func' type-id='type-id-86' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='92' column='1' id='type-id-25'/>
+    <pointer-type-def type-id='type-id-87' size-in-bits='64' id='type-id-88'/>
+    <typedef-decl name='free_func' type-id='type-id-88' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='93' column='1' id='type-id-26'/>
+    <class-decl name='__anonymous_struct__' size-in-bits='256' is-struct='yes' is-anonymous='yes' naming-typedef-id='type-id-89' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1811' column='1' id='type-id-90'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='param' type-id='type-id-91' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1812' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='buf' type-id='type-id-27' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1813' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='size' type-id='type-id-11' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1814' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='status' type-id='type-id-19' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1815' column='1'/>
+      </data-member>
+    </class-decl>
+    <type-decl name='unnamed-enum-underlying-type' is-anonymous='yes' size-in-bits='32' alignment-in-bits='32' id='type-id-92'/>
+    <enum-decl name='__anonymous_enum__' is-anonymous='yes' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1799' column='1' id='type-id-93'>
+      <underlying-type type-id='type-id-92'/>
+      <enumerator name='Z_DEFLATE_LEVEL' value='0'/>
+      <enumerator name='Z_DEFLATE_STRATEGY' value='1'/>
+      <enumerator name='Z_DEFLATE_REPRODUCIBLE' value='2'/>
+    </enum-decl>
+    <typedef-decl name='zng_deflate_param' type-id='type-id-93' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1809' column='1' id='type-id-91'/>
+    <typedef-decl name='zng_deflate_param_value' type-id='type-id-90' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1816' column='1' id='type-id-89'/>
+    <pointer-type-def type-id='type-id-89' size-in-bits='64' id='type-id-94'/>
+    <function-decl name='zng_deflateGetParams' mangled-name='zng_deflateGetParams' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1376' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateGetParams@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1376' column='1'/>
+      <parameter type-id='type-id-94' name='params' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1376' column='1'/>
+      <parameter type-id='type-id-11' name='count' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1376' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateSetParams' mangled-name='zng_deflateSetParams' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1300' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateSetParams@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1300' column='1'/>
+      <parameter type-id='type-id-94' name='params' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1300' column='1'/>
+      <parameter type-id='type-id-11' name='count' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1300' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateCopy' mangled-name='zng_deflateCopy' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1036' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateCopy@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='dest' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1036' column='1'/>
+      <parameter type-id='type-id-34' name='source' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1036' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateEnd' mangled-name='zng_deflateEnd' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1013' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateEnd@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='1013' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateBound' mangled-name='zng_deflateBound' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='611' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateBound@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='611' column='1'/>
+      <parameter type-id='type-id-10' name='sourceLen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='611' column='1'/>
+      <return type-id='type-id-10'/>
+    </function-decl>
+    <function-decl name='zng_deflateTune' mangled-name='zng_deflateTune' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='581' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateTune@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='581' column='1'/>
+      <parameter type-id='type-id-19' name='good_length' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='581' column='1'/>
+      <parameter type-id='type-id-19' name='max_lazy' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='581' column='1'/>
+      <parameter type-id='type-id-19' name='nice_length' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='581' column='1'/>
+      <parameter type-id='type-id-19' name='max_chain' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='581' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflatePrime' mangled-name='zng_deflatePrime' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='510' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflatePrime@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='510' column='1'/>
+      <parameter type-id='type-id-19' name='bits' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='510' column='1'/>
+      <parameter type-id='type-id-19' name='value' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='510' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <pointer-type-def type-id='type-id-3' size-in-bits='64' id='type-id-95'/>
+    <pointer-type-def type-id='type-id-19' size-in-bits='64' id='type-id-96'/>
+    <function-decl name='zng_deflatePending' mangled-name='zng_deflatePending' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='499' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflatePending@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='499' column='1'/>
+      <parameter type-id='type-id-95' name='pending' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='499' column='1'/>
+      <parameter type-id='type-id-96' name='bits' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='499' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateSetHeader' mangled-name='zng_deflateSetHeader' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='491' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateSetHeader@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='491' column='1'/>
+      <parameter type-id='type-id-35' name='head' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='491' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateReset' mangled-name='zng_deflateReset' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='481' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateReset@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='481' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateGetDictionary' mangled-name='zng_deflateGetDictionary' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='423' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateGetDictionary@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='423' column='1'/>
+      <parameter type-id='type-id-22' name='dictionary' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='423' column='1'/>
+      <parameter type-id='type-id-95' name='dictLength' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='423' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateSetDictionary' mangled-name='zng_deflateSetDictionary' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='364' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateSetDictionary@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='364' column='1'/>
+      <parameter type-id='type-id-21' name='dictionary' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='364' column='1'/>
+      <parameter type-id='type-id-3' name='dictLength' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='364' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateInit2_' mangled-name='zng_deflateInit2_' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='334' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateInit2_@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='334' column='1'/>
+      <parameter type-id='type-id-19' name='level' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='334' column='1'/>
+      <parameter type-id='type-id-19' name='method' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='334' column='1'/>
+      <parameter type-id='type-id-19' name='windowBits' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='334' column='1'/>
+      <parameter type-id='type-id-19' name='memLevel' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='335' column='1'/>
+      <parameter type-id='type-id-19' name='strategy' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='335' column='1'/>
+      <parameter type-id='type-id-23' name='version' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='335' column='1'/>
+      <parameter type-id='type-id-19' name='stream_size' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='335' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateInit_' mangled-name='zng_deflateInit_' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='327' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateInit_@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='327' column='1'/>
+      <parameter type-id='type-id-19' name='level' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='327' column='1'/>
+      <parameter type-id='type-id-23' name='version' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='327' column='1'/>
+      <parameter type-id='type-id-19' name='stream_size' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='327' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateInit' mangled-name='zng_deflateInit' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='321' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateInit@@ZLIB_NG_2.1.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='321' column='1'/>
+      <parameter type-id='type-id-19' name='level' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='321' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateInit2' mangled-name='zng_deflateInit2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='191' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateInit2@@ZLIB_NG_2.1.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='191' column='1'/>
+      <parameter type-id='type-id-19' name='level' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='191' column='1'/>
+      <parameter type-id='type-id-19' name='method' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='191' column='1'/>
+      <parameter type-id='type-id-19' name='windowBits' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='191' column='1'/>
+      <parameter type-id='type-id-19' name='memLevel' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='192' column='1'/>
+      <parameter type-id='type-id-19' name='strategy' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='192' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateResetKeep' mangled-name='zng_deflateResetKeep' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='442' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateResetKeep@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='442' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflate' mangled-name='zng_deflate' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='716' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflate@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='716' column='1'/>
+      <parameter type-id='type-id-19' name='flush' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='716' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_deflateParams' mangled-name='zng_deflateParams' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='538' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_deflateParams@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='538' column='1'/>
+      <parameter type-id='type-id-19' name='level' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='538' column='1'/>
+      <parameter type-id='type-id-19' name='strategy' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='538' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_alloc_aligned' mangled-name='zng_alloc_aligned' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/zutil.h' line='135' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_free_aligned' mangled-name='zng_free_aligned' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/zutil.h' line='136' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_tr_flush_bits' mangled-name='zng_tr_flush_bits' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='382' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='cpu_check_features' mangled-name='cpu_check_features' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/cpu_features.h' line='23' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_tr_init' mangled-name='zng_tr_init' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='380' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_tr_stored_block' mangled-name='zng_tr_stored_block' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='384' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='deflate_stored' mangled-name='deflate_stored' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='111' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='deflate_huff' mangled-name='deflate_huff' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='119' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='deflate_rle' mangled-name='deflate_rle' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='118' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_tr_align' mangled-name='zng_tr_align' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='383' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_crc32' mangled-name='zng_crc32' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1727' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-type size-in-bits='64' id='type-id-66'>
+      <parameter type-id='type-id-61'/>
+      <parameter type-id='type-id-3'/>
+      <return type-id='type-id-37'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-62'>
+      <parameter type-id='type-id-61'/>
+      <parameter type-id='type-id-3'/>
+      <parameter type-id='type-id-3'/>
+      <return type-id='type-id-3'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-64'>
+      <parameter type-id='type-id-61'/>
+      <parameter type-id='type-id-3'/>
+      <parameter type-id='type-id-3'/>
+      <return type-id='type-id-12'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-87'>
+      <parameter type-id='type-id-27'/>
+      <parameter type-id='type-id-27'/>
+      <return type-id='type-id-12'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-85'>
+      <parameter type-id='type-id-27'/>
+      <parameter type-id='type-id-1'/>
+      <parameter type-id='type-id-1'/>
+      <return type-id='type-id-27'/>
+    </function-type>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate_fast.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='fill_window' mangled-name='fill_window' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='376' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_tr_flush_block' mangled-name='zng_tr_flush_block' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.h' line='381' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_flush_pending' mangled-name='zng_flush_pending' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate_p.h' line='50' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate_stored.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='read_buf' mangled-name='read_buf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate_p.h' line='51' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <class-decl name='functable_s' size-in-bits='1216' is-struct='yes' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='13' column='1' id='type-id-97'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='adler32' type-id='type-id-98' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='14' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='adler32_fold_copy' type-id='type-id-99' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='15' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='crc32' type-id='type-id-100' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='16' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='crc32_fold_reset' type-id='type-id-101' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='17' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='crc32_fold_copy' type-id='type-id-102' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='18' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='crc32_fold' type-id='type-id-103' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='19' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='crc32_fold_final' type-id='type-id-101' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='20' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='compare256' type-id='type-id-104' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='21' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='chunksize' type-id='type-id-105' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='22' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='chunkcopy' type-id='type-id-106' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='23' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='chunkunroll' type-id='type-id-107' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='24' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='chunkmemset' type-id='type-id-108' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='25' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='chunkmemset_safe' type-id='type-id-109' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='26' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='832'>
+        <var-decl name='insert_string' type-id='type-id-65' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='27' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='896'>
+        <var-decl name='longest_match' type-id='type-id-110' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='28' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='960'>
+        <var-decl name='longest_match_slow' type-id='type-id-110' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='29' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1024'>
+        <var-decl name='quick_insert_string' type-id='type-id-67' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='30' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1088'>
+        <var-decl name='slide_hash' type-id='type-id-111' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='31' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1152'>
+        <var-decl name='update_hash' type-id='type-id-63' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='32' column='1'/>
+      </data-member>
+    </class-decl>
+    <pointer-type-def type-id='type-id-112' size-in-bits='64' id='type-id-98'/>
+    <pointer-type-def type-id='type-id-113' size-in-bits='64' id='type-id-99'/>
+    <pointer-type-def type-id='type-id-114' size-in-bits='64' id='type-id-100'/>
+    <typedef-decl name='crc32_fold' type-id='type-id-41' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/crc32_fold.h' line='14' column='1' id='type-id-115'/>
+    <pointer-type-def type-id='type-id-115' size-in-bits='64' id='type-id-116'/>
+    <pointer-type-def type-id='type-id-117' size-in-bits='64' id='type-id-101'/>
+    <pointer-type-def type-id='type-id-118' size-in-bits='64' id='type-id-102'/>
+    <pointer-type-def type-id='type-id-119' size-in-bits='64' id='type-id-103'/>
+    <pointer-type-def type-id='type-id-120' size-in-bits='64' id='type-id-104'/>
+    <pointer-type-def type-id='type-id-121' size-in-bits='64' id='type-id-105'/>
+    <pointer-type-def type-id='type-id-122' size-in-bits='64' id='type-id-106'/>
+    <pointer-type-def type-id='type-id-1' size-in-bits='64' id='type-id-123'/>
+    <pointer-type-def type-id='type-id-124' size-in-bits='64' id='type-id-107'/>
+    <pointer-type-def type-id='type-id-125' size-in-bits='64' id='type-id-108'/>
+    <pointer-type-def type-id='type-id-126' size-in-bits='64' id='type-id-109'/>
+    <pointer-type-def type-id='type-id-127' size-in-bits='64' id='type-id-110'/>
+    <pointer-type-def type-id='type-id-128' size-in-bits='64' id='type-id-111'/>
+    <var-decl name='functable' type-id='type-id-97' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/functable.h' line='35' column='1'/>
+    <function-type size-in-bits='64' id='type-id-121'>
+      <return type-id='type-id-3'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-120'>
+      <parameter type-id='type-id-21'/>
+      <parameter type-id='type-id-21'/>
+      <return type-id='type-id-3'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-117'>
+      <parameter type-id='type-id-116'/>
+      <return type-id='type-id-3'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-127'>
+      <parameter type-id='type-id-61'/>
+      <parameter type-id='type-id-37'/>
+      <return type-id='type-id-3'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-112'>
+      <parameter type-id='type-id-3'/>
+      <parameter type-id='type-id-9'/>
+      <parameter type-id='type-id-11'/>
+      <return type-id='type-id-3'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-114'>
+      <parameter type-id='type-id-3'/>
+      <parameter type-id='type-id-9'/>
+      <parameter type-id='type-id-50'/>
+      <return type-id='type-id-3'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-113'>
+      <parameter type-id='type-id-3'/>
+      <parameter type-id='type-id-22'/>
+      <parameter type-id='type-id-21'/>
+      <parameter type-id='type-id-11'/>
+      <return type-id='type-id-3'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-122'>
+      <parameter type-id='type-id-22'/>
+      <parameter type-id='type-id-21'/>
+      <parameter type-id='type-id-1'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-124'>
+      <parameter type-id='type-id-22'/>
+      <parameter type-id='type-id-123'/>
+      <parameter type-id='type-id-123'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-125'>
+      <parameter type-id='type-id-22'/>
+      <parameter type-id='type-id-1'/>
+      <parameter type-id='type-id-1'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-126'>
+      <parameter type-id='type-id-22'/>
+      <parameter type-id='type-id-1'/>
+      <parameter type-id='type-id-1'/>
+      <parameter type-id='type-id-1'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-119'>
+      <parameter type-id='type-id-116'/>
+      <parameter type-id='type-id-21'/>
+      <parameter type-id='type-id-11'/>
+      <parameter type-id='type-id-3'/>
+      <return type-id='type-id-12'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-118'>
+      <parameter type-id='type-id-116'/>
+      <parameter type-id='type-id-22'/>
+      <parameter type-id='type-id-21'/>
+      <parameter type-id='type-id-11'/>
+      <return type-id='type-id-12'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-128'>
+      <parameter type-id='type-id-60'/>
+      <return type-id='type-id-12'/>
+    </function-type>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='zng_inflateBackEnd' mangled-name='zng_inflateBackEnd' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='502' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateBackEnd@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='502' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <pointer-type-def type-id='type-id-21' size-in-bits='64' id='type-id-129'/>
+    <pointer-type-def type-id='type-id-130' size-in-bits='64' id='type-id-131'/>
+    <typedef-decl name='in_func' type-id='type-id-131' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1074' column='1' id='type-id-132'/>
+    <pointer-type-def type-id='type-id-133' size-in-bits='64' id='type-id-134'/>
+    <typedef-decl name='out_func' type-id='type-id-134' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1075' column='1' id='type-id-135'/>
+    <function-decl name='zng_inflateBack' mangled-name='zng_inflateBack' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='142' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateBack@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='142' column='1'/>
+      <parameter type-id='type-id-132' name='in' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='142' column='1'/>
+      <parameter type-id='type-id-27' name='in_desc' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='142' column='1'/>
+      <parameter type-id='type-id-135' name='out' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='142' column='1'/>
+      <parameter type-id='type-id-27' name='out_desc' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='142' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateBackInit_' mangled-name='zng_inflateBackInit_' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='63' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateBackInit_@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='63' column='1'/>
+      <parameter type-id='type-id-19' name='windowBits' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='63' column='1'/>
+      <parameter type-id='type-id-22' name='window' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='63' column='1'/>
+      <parameter type-id='type-id-23' name='version' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='64' column='1'/>
+      <parameter type-id='type-id-19' name='stream_size' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='64' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateBackInit' mangled-name='zng_inflateBackInit' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='35' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateBackInit@@ZLIB_NG_2.1.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='35' column='1'/>
+      <parameter type-id='type-id-19' name='windowBits' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='35' column='1'/>
+      <parameter type-id='type-id-22' name='window' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='35' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflate_fast' mangled-name='zng_inflate_fast' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inffast.h' line='13' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_inflate_table' mangled-name='zng_inflate_table' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inftrees.h' line='63' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='fixedtables' mangled-name='fixedtables' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.h' line='138' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-type size-in-bits='64' id='type-id-133'>
+      <parameter type-id='type-id-27'/>
+      <parameter type-id='type-id-22'/>
+      <parameter type-id='type-id-3'/>
+      <return type-id='type-id-19'/>
+    </function-type>
+    <function-type size-in-bits='64' id='type-id-130'>
+      <parameter type-id='type-id-27'/>
+      <parameter type-id='type-id-129'/>
+      <return type-id='type-id-3'/>
+    </function-type>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='zng_inflateCodesUsed' mangled-name='zng_inflateCodesUsed' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1375' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateCodesUsed@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1375' column='1'/>
+      <return type-id='type-id-10'/>
+    </function-decl>
+    <function-decl name='zng_inflateMark' mangled-name='zng_inflateMark' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1363' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateMark@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1363' column='1'/>
+      <return type-id='type-id-4'/>
+    </function-decl>
+    <function-decl name='zng_inflateValidate' mangled-name='zng_inflateValidate' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1350' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateValidate@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1350' column='1'/>
+      <parameter type-id='type-id-19' name='check' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1350' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateUndermine' mangled-name='zng_inflateUndermine' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1334' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateUndermine@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1350' column='1'/>
+      <parameter type-id='type-id-19' name='check' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1350' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateCopy' mangled-name='zng_inflateCopy' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1291' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateCopy@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='dest' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1291' column='1'/>
+      <parameter type-id='type-id-34' name='source' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1291' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateSyncPoint' mangled-name='zng_inflateSyncPoint' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1281' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateSyncPoint@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1281' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateSync' mangled-name='zng_inflateSync' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1220' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateSync@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1220' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateGetHeader' mangled-name='zng_inflateGetHeader' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1175' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateGetHeader@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1175' column='1'/>
+      <parameter type-id='type-id-35' name='head' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1175' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateSetDictionary' mangled-name='zng_inflateSetDictionary' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1144' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateSetDictionary@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1144' column='1'/>
+      <parameter type-id='type-id-21' name='dictionary' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1144' column='1'/>
+      <parameter type-id='type-id-3' name='dictLength' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1144' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateGetDictionary' mangled-name='zng_inflateGetDictionary' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1126' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateGetDictionary@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1126' column='1'/>
+      <parameter type-id='type-id-22' name='dictionary' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1126' column='1'/>
+      <parameter type-id='type-id-95' name='dictLength' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1126' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateEnd' mangled-name='zng_inflateEnd' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1113' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateEnd@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='1113' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflate' mangled-name='zng_inflate' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='413' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflate@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='413' column='1'/>
+      <parameter type-id='type-id-19' name='flush' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='413' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflatePrime' mangled-name='zng_inflatePrime' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='190' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflatePrime@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='190' column='1'/>
+      <parameter type-id='type-id-19' name='bits' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='190' column='1'/>
+      <parameter type-id='type-id-19' name='value' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='190' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateInit2_' mangled-name='zng_inflateInit2_' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='184' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateInit2_@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='327' column='1'/>
+      <parameter type-id='type-id-19' name='level' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='327' column='1'/>
+      <parameter type-id='type-id-23' name='version' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='327' column='1'/>
+      <parameter type-id='type-id-19' name='stream_size' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='327' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateInit_' mangled-name='zng_inflateInit_' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='177' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateInit_@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='177' column='1'/>
+      <parameter type-id='type-id-23' name='version' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='177' column='1'/>
+      <parameter type-id='type-id-19' name='stream_size' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='177' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateInit' mangled-name='zng_inflateInit' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='171' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateInit@@ZLIB_NG_2.1.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/infback.c' line='502' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateInit2' mangled-name='zng_inflateInit2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='138' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateInit2@@ZLIB_NG_2.1.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='138' column='1'/>
+      <parameter type-id='type-id-19' name='windowBits' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='138' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateReset2' mangled-name='zng_inflateReset2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='102' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateReset2@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='102' column='1'/>
+      <parameter type-id='type-id-19' name='windowBits' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='102' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateResetKeep' mangled-name='zng_inflateResetKeep' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='63' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateResetKeep@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='442' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+    <function-decl name='zng_inflateReset' mangled-name='zng_inflateReset' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/inflate.c' line='90' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_inflateReset@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-34' name='strm' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/deflate.c' line='442' column='1'/>
+      <return type-id='type-id-19'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/trees.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <qualified-type-def type-id='type-id-78' const='yes' id='type-id-136'/>
+
+    <array-type-def dimensions='1' type-id='type-id-136' size-in-bits='9216' id='type-id-137'>
+      <subrange length='288' type-id='type-id-10' id='type-id-138'/>
+
+    </array-type-def>
+    <qualified-type-def type-id='type-id-137' const='yes' id='type-id-139'/>
+    <var-decl name='static_ltree' type-id='type-id-139' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/trees_emit.h' line='14' column='1'/>
+
+    <array-type-def dimensions='1' type-id='type-id-136' size-in-bits='960' id='type-id-140'>
+      <subrange length='30' type-id='type-id-10' id='type-id-141'/>
+
+    </array-type-def>
+    <qualified-type-def type-id='type-id-140' const='yes' id='type-id-142'/>
+    <var-decl name='static_dtree' type-id='type-id-142' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/trees_emit.h' line='15' column='1'/>
+
+    <array-type-def dimensions='1' type-id='type-id-8' size-in-bits='4096' id='type-id-143'>
+      <subrange length='512' type-id='type-id-10' id='type-id-144'/>
+
+    </array-type-def>
+    <qualified-type-def type-id='type-id-143' const='yes' id='type-id-145'/>
+    <var-decl name='zng_dist_code' type-id='type-id-145' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/trees_emit.h' line='17' column='1'/>
+
+    <array-type-def dimensions='1' type-id='type-id-8' size-in-bits='2048' id='type-id-146'>
+      <subrange length='256' type-id='type-id-10' id='type-id-147'/>
+
+    </array-type-def>
+    <qualified-type-def type-id='type-id-146' const='yes' id='type-id-148'/>
+    <var-decl name='zng_length_code' type-id='type-id-148' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/trees_emit.h' line='18' column='1'/>
+    <qualified-type-def type-id='type-id-13' const='yes' id='type-id-149'/>
+
+    <array-type-def dimensions='1' type-id='type-id-149' size-in-bits='928' id='type-id-150'>
+      <subrange length='29' type-id='type-id-10' id='type-id-151'/>
+
+    </array-type-def>
+    <qualified-type-def type-id='type-id-150' const='yes' id='type-id-152'/>
+    <var-decl name='base_length' type-id='type-id-152' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/trees_emit.h' line='20' column='1'/>
+
+    <array-type-def dimensions='1' type-id='type-id-149' size-in-bits='960' id='type-id-153'>
+      <subrange length='30' type-id='type-id-10' id='type-id-141'/>
+
+    </array-type-def>
+    <qualified-type-def type-id='type-id-153' const='yes' id='type-id-154'/>
+    <var-decl name='base_dist' type-id='type-id-154' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/trees_emit.h' line='21' column='1'/>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/uncompr.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='zng_uncompress' mangled-name='zng_uncompress' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/uncompr.c' line='78' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_uncompress@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-14' name='dest' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='73' column='1'/>
+      <parameter type-id='type-id-15' name='destLen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='73' column='1'/>
+      <parameter type-id='type-id-9' name='source' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='73' column='1'/>
+      <parameter type-id='type-id-11' name='sourceLen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/compress.c' line='73' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_uncompress2' mangled-name='zng_uncompress2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/uncompr.c' line='25' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_uncompress2@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-14' name='dest' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/uncompr.c' line='25' column='1'/>
+      <parameter type-id='type-id-15' name='destLen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/uncompr.c' line='25' column='1'/>
+      <parameter type-id='type-id-9' name='source' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/uncompr.c' line='25' column='1'/>
+      <parameter type-id='type-id-15' name='sourceLen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/uncompr.c' line='25' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_inflateInit' mangled-name='zng_inflateInit' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='376' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_inflate' mangled-name='zng_inflate' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='398' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_inflateEnd' mangled-name='zng_inflateEnd' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='519' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/zutil.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <qualified-type-def type-id='type-id-23' const='yes' id='type-id-155'/>
+
+    <array-type-def dimensions='1' type-id='type-id-155' size-in-bits='640' id='type-id-156'>
+      <subrange length='10' type-id='type-id-10' id='type-id-157'/>
+
+    </array-type-def>
+    <qualified-type-def type-id='type-id-156' const='yes' id='type-id-158'/>
+    <var-decl name='zng_z_errmsg' type-id='type-id-158' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/zutil.h' line='24' column='1'/>
+
+    <array-type-def dimensions='1' type-id='type-id-32' size-in-bits='304' id='type-id-159'>
+      <subrange length='38' type-id='type-id-10' id='type-id-160'/>
+
+    </array-type-def>
+    <qualified-type-def type-id='type-id-159' const='yes' id='type-id-161'/>
+    <var-decl name='zlibng_string' type-id='type-id-161' mangled-name='zlibng_string' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/zutil.c' line='23' column='1' elf-symbol-id='zlibng_string'/>
+    <function-decl name='zng_zError' mangled-name='zng_zError' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/zutil.c' line='99' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_zError@@ZLIB_NG_2.0.0'>
+      <parameter type-id='type-id-13' name='err' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/zutil.c' line='99' column='1'/>
+      <return type-id='type-id-23'/>
+    </function-decl>
+    <function-decl name='zng_zlibCompileFlags' mangled-name='zng_zlibCompileFlags' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/zutil.c' line='36' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_zlibCompileFlags@@ZLIB_NG_2.0.0'>
+      <return type-id='type-id-10'/>
+    </function-decl>
+    <function-decl name='zlibng_version' mangled-name='zlibng_version' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/zutil.c' line='32' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zlibng_version'>
+      <return type-id='type-id-23'/>
+    </function-decl>
+    <function-decl name='free' mangled-name='free' filepath='/usr/include/stdlib.h' line='565' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='posix_memalign' mangled-name='posix_memalign' filepath='/usr/include/stdlib.h' line='580' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/chunkset_avx.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1/arch/x86' language='LANG_C99'>
+    <function-decl name='chunkmemset_sse41' mangled-name='chunkmemset_sse41' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/chunkset_tpl.h' line='9' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/adler32_avx2.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1/arch/x86' language='LANG_C99'>
+    <function-decl name='adler32_fold_copy_sse42' mangled-name='adler32_fold_copy_sse42' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/adler32_avx2_tpl.h' line='14' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='adler32_ssse3' mangled-name='adler32_ssse3' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/adler32_avx2_tpl.h' line='15' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/adler32_avx512.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1/arch/x86' language='LANG_C99'>
+    <function-decl name='adler32_avx2' mangled-name='adler32_avx2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/../../cpu_features.h' line='39' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/chunkset_sse41.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1/arch/x86' language='LANG_C99'>
+    <function-decl name='chunkcopy_sse2' mangled-name='chunkcopy_sse2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/chunkset_sse41.c' line='88' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/crc32_fold_pclmulqdq.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1/arch/x86' language='LANG_C99'>
+    <function-decl name='crc32_pclmulqdq' mangled-name='crc32_pclmulqdq' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/crc32_fold_pclmulqdq.c' line='344' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='crc32_pclmulqdq'>
+      <parameter type-id='type-id-3' name='crc32' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/crc32_fold_pclmulqdq.c' line='344' column='1'/>
+      <parameter type-id='type-id-9' name='buf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/crc32_fold_pclmulqdq.c' line='344' column='1'/>
+      <parameter type-id='type-id-50' name='len' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/crc32_fold_pclmulqdq.c' line='344' column='1'/>
+      <return type-id='type-id-3'/>
+    </function-decl>
+    <function-decl name='crc32_braid' mangled-name='crc32_braid' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/arch/x86/../../crc32_braid_p.h' line='48' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='__builtin___memcpy_chk' mangled-name='__memcpy_chk' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <class-decl name='gzFile_s' size-in-bits='192' is-struct='yes' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1789' column='1' id='type-id-162'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='have' type-id='type-id-1' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1790' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='next' type-id='type-id-14' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1791' column='1'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='pos' type-id='type-id-6' visibility='default' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1792' column='1'/>
+      </data-member>
+    </class-decl>
+    <pointer-type-def type-id='type-id-162' size-in-bits='64' id='type-id-163'/>
+    <typedef-decl name='gzFile' type-id='type-id-163' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1284' column='1' id='type-id-164'/>
+    <function-decl name='zng_gzclearerr' mangled-name='zng_gzclearerr' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='474' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzclearerr@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='474' column='1'/>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <pointer-type-def type-id='type-id-13' size-in-bits='64' id='type-id-165'/>
+    <function-decl name='zng_gzerror' mangled-name='zng_gzerror' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='457' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzerror@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='457' column='1'/>
+      <parameter type-id='type-id-165' name='errnum' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='457' column='1'/>
+      <return type-id='type-id-23'/>
+    </function-decl>
+    <function-decl name='zng_gzeof' mangled-name='zng_gzeof' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='442' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzeof@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='442' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzoffset' mangled-name='zng_gzoffset' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='411' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzoffset@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='411' column='1'/>
+      <return type-id='type-id-6'/>
+    </function-decl>
+    <function-decl name='zng_gztell' mangled-name='zng_gztell' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='385' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gztell@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='385' column='1'/>
+      <return type-id='type-id-6'/>
+    </function-decl>
+    <function-decl name='zng_gzseek' mangled-name='zng_gzseek' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='304' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzseek@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='304' column='1'/>
+      <parameter type-id='type-id-6' name='offset' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='304' column='1'/>
+      <parameter type-id='type-id-13' name='whence' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='304' column='1'/>
+      <return type-id='type-id-6'/>
+    </function-decl>
+    <function-decl name='zng_gzrewind' mangled-name='zng_gzrewind' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='284' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzrewind@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='284' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzbuffer' mangled-name='zng_gzbuffer' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='260' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzbuffer@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='260' column='1'/>
+      <parameter type-id='type-id-1' name='size' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='260' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzclose' mangled-name='zng_gzclose' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='245' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzclose@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='245' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzdopen' mangled-name='zng_gzdopen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='226' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzdopen@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-13' name='fd' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='226' column='1'/>
+      <parameter type-id='type-id-23' name='mode' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='226' column='1'/>
+      <return type-id='type-id-164'/>
+    </function-decl>
+    <function-decl name='zng_gzopen' mangled-name='zng_gzopen' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='215' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzopen@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-23' name='path' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='215' column='1'/>
+      <parameter type-id='type-id-23' name='mode' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzlib.c' line='215' column='1'/>
+      <return type-id='type-id-164'/>
+    </function-decl>
+    <function-decl name='lseek64' mangled-name='lseek64' filepath='/usr/include/unistd.h' line='345' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_gzclose_w' mangled-name='zng_gzclose_w' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1642' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_gzclose_r' mangled-name='zng_gzclose_r' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='1640' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='__builtin___snprintf_chk' mangled-name='__snprintf_chk' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='malloc' mangled-name='malloc' filepath='/usr/include/stdlib.h' line='539' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='__builtin_snprintf' mangled-name='snprintf' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='__open_alias' mangled-name='open' filepath='/usr/include/x86_64-linux-gnu/bits/fcntl2.h' line='27' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='strlen' mangled-name='strlen' filepath='/usr/include/string.h' line='385' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='gzread.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='zng_gzclose_r' mangled-name='zng_gzclose_r' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='578' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzclose_r@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='578' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzdirect' mangled-name='zng_gzdirect' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='559' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzdirect@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='559' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzgets' mangled-name='zng_gzgets' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='498' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzgets@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='498' column='1'/>
+      <parameter type-id='type-id-49' name='buf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='498' column='1'/>
+      <parameter type-id='type-id-13' name='len' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='498' column='1'/>
+      <return type-id='type-id-49'/>
+    </function-decl>
+    <function-decl name='zng_gzungetc' mangled-name='zng_gzungetc' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='442' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzungetc@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-13' name='c' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='442' column='1'/>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='442' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzgetc' mangled-name='zng_gzgetc' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='411' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzgetc@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='411' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzfread' mangled-name='zng_gzfread' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='379' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzfread@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-27' name='buf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='379' column='1'/>
+      <parameter type-id='type-id-11' name='size' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='379' column='1'/>
+      <parameter type-id='type-id-11' name='nitems' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='379' column='1'/>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='379' column='1'/>
+      <return type-id='type-id-11'/>
+    </function-decl>
+    <function-decl name='zng_gzread' mangled-name='zng_gzread' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='347' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzread@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='347' column='1'/>
+      <parameter type-id='type-id-27' name='buf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='347' column='1'/>
+      <parameter type-id='type-id-1' name='len' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/gzread.c' line='347' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='gz_error' mangled-name='gz_error' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzguts.h' line='138' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='close' mangled-name='close' filepath='/usr/include/unistd.h' line='353' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='memchr' mangled-name='memchr' filepath='/usr/include/string.h' line='91' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_inflateInit2' mangled-name='zng_inflateInit2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='817' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_inflateReset' mangled-name='zng_inflateReset' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='941' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='__read_alias' mangled-name='read' filepath='/usr/include/x86_64-linux-gnu/bits/unistd.h' line='25' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='__errno_location' mangled-name='__errno_location' filepath='/usr/include/errno.h' line='37' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='strerror' mangled-name='strerror' filepath='/usr/include/string.h' line='397' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr version='1.0' address-size='64' path='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' comp-dir-path='/home/runner/work/zlib-ng/zlib-ng/btmp1' language='LANG_C99'>
+    <function-decl name='zng_gzclose_w' mangled-name='zng_gzclose_w' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='490' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzclose_w@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='490' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzsetparams' mangled-name='zng_gzsetparams' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='452' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzsetparams@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='452' column='1'/>
+      <parameter type-id='type-id-13' name='level' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='452' column='1'/>
+      <parameter type-id='type-id-13' name='strategy' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='452' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzflush' mangled-name='zng_gzflush' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='423' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzflush@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='423' column='1'/>
+      <parameter type-id='type-id-13' name='flush' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='423' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzprintf' mangled-name='zng_gzprintf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='412' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzprintf@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='412' column='1'/>
+      <parameter type-id='type-id-23' name='format' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='412' column='1'/>
+      <parameter is-variadic='yes'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <class-decl name='__va_list_tag' size-in-bits='192' is-struct='yes' visibility='default' id='type-id-166'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='gp_offset' type-id='type-id-1' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='fp_offset' type-id='type-id-1' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='overflow_arg_area' type-id='type-id-27' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='reg_save_area' type-id='type-id-27' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <pointer-type-def type-id='type-id-166' size-in-bits='64' id='type-id-167'/>
+    <function-decl name='zng_gzvprintf' mangled-name='zng_gzvprintf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='356' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzvprintf@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='356' column='1'/>
+      <parameter type-id='type-id-23' name='format' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='356' column='1'/>
+      <parameter type-id='type-id-167' name='va' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='356' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzputs' mangled-name='zng_gzputs' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='332' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzputs@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='332' column='1'/>
+      <parameter type-id='type-id-23' name='s' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='332' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzputc' mangled-name='zng_gzputc' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='287' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzputc@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='287' column='1'/>
+      <parameter type-id='type-id-13' name='c' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='287' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_gzfwrite' mangled-name='zng_gzfwrite' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='258' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzfwrite@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-27' name='buf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='258' column='1'/>
+      <parameter type-id='type-id-11' name='size' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='258' column='1'/>
+      <parameter type-id='type-id-11' name='nitems' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='258' column='1'/>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='258' column='1'/>
+      <return type-id='type-id-11'/>
+    </function-decl>
+    <function-decl name='zng_gzwrite' mangled-name='zng_gzwrite' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='234' column='1' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='zng_gzwrite@@ZLIB_NG_GZ_2.0.0'>
+      <parameter type-id='type-id-164' name='file' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='234' column='1'/>
+      <parameter type-id='type-id-27' name='buf' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='234' column='1'/>
+      <parameter type-id='type-id-1' name='len' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/src.d/gzwrite.c' line='234' column='1'/>
+      <return type-id='type-id-13'/>
+    </function-decl>
+    <function-decl name='zng_deflateParams' mangled-name='zng_deflateParams' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='697' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='__builtin___vsnprintf_chk' mangled-name='__vsnprintf_chk' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='__builtin_memmove' mangled-name='memmove' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_deflateReset' mangled-name='zng_deflateReset' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='685' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='write' mangled-name='write' filepath='/usr/include/unistd.h' line='366' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+    <function-decl name='zng_deflateInit2' mangled-name='zng_deflateInit2' filepath='/home/runner/work/zlib-ng/zlib-ng/btmp1/zlib-ng.h' line='537' column='1' visibility='default' binding='global' size-in-bits='64'>
+      <return type-id='type-id-12'/>
+    </function-decl>
+  </abi-instr>
+</abi-corpus>
