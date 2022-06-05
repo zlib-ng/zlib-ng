@@ -15,7 +15,7 @@
 #include "../../adler32_p.h"
 #include "../../fallback_builtins.h"
 
-static void NEON_accum32(uint32_t *s, const unsigned char *buf, uint64_t len) {
+static void NEON_accum32(uint32_t *s, const uint8_t *buf, uint64_t len) {
     static const uint16_t ALIGNED_(16) taps[64] = {
         64, 63, 62, 61, 60, 59, 58, 57,
         56, 55, 54, 53, 52, 51, 50, 49,
@@ -138,7 +138,7 @@ static void NEON_accum32(uint32_t *s, const unsigned char *buf, uint64_t len) {
     s[1] = vget_lane_u32(as, 1);
 }
 
-static void NEON_handle_tail(uint32_t *pair, const unsigned char *buf, uint64_t len) {
+static void NEON_handle_tail(uint32_t *pair, const uint8_t *buf, uint64_t len) {
     unsigned int i;
     for (i = 0; i < len; ++i) {
         pair[0] += buf[i];
@@ -146,7 +146,7 @@ static void NEON_handle_tail(uint32_t *pair, const unsigned char *buf, uint64_t 
     }
 }
 
-uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, uint64_t len) {
+uint32_t adler32_neon(uint32_t adler, const uint8_t *buf, uint64_t len) {
     /* split Adler-32 into component sums */
     uint32_t sum2 = (adler >> 16) & 0xffff;
     adler &= 0xffff;

@@ -341,7 +341,7 @@ Z_INTERNAL uint32_t crc32_fold_pclmulqdq_final(crc32_fold *crc) {
     return crc->value;
 }
 
-uint32_t crc32_pclmulqdq(uint32_t crc32, const unsigned char* buf, uint64_t len) {
+uint32_t crc32_pclmulqdq(uint32_t crc32, const uint8_t *buf, uint64_t len) {
     /* For lens < 64, crc32_braid method is faster. The CRC32 instruction for
      * these short lengths might also prove to be effective */
     if (len < 64)
