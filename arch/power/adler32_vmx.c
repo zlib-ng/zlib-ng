@@ -12,7 +12,7 @@
 
 #define vmx_zero()  (vec_splat_u32(0))
 
-static inline void vmx_handle_head_or_tail(uint32_t *pair, const unsigned char *buf, uint64_t len) {
+static inline void vmx_handle_head_or_tail(uint32_t *pair, const uint8_t *buf, uint64_t len) {
     unsigned int i;
     for (i = 0; i < len; ++i) {
         pair[0] += buf[i];
@@ -20,7 +20,7 @@ static inline void vmx_handle_head_or_tail(uint32_t *pair, const unsigned char *
     }
 }
 
-static void vmx_accum32(uint32_t *s, const unsigned char *buf, uint64_t len) {
+static void vmx_accum32(uint32_t *s, const uint8_t *buf, uint64_t len) {
     /* Different taps for the separable components of sums */
     const vector unsigned char t0 = {64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49};
     const vector unsigned char t1 = {48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33};
@@ -113,7 +113,7 @@ static void vmx_accum32(uint32_t *s, const unsigned char *buf, uint64_t len) {
     vec_ste(s2acc, 0, s+1);
 }
 
-uint32_t adler32_vmx(uint32_t adler, const unsigned char *buf, uint64_t len) {
+uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, uint64_t len) {
     uint32_t sum2;
     uint32_t pair[16] ALIGNED_(16);
     memset(&pair[2], 0, 14);

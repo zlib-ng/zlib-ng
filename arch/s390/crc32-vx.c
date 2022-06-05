@@ -21,7 +21,7 @@ typedef unsigned char uv16qi __attribute__((vector_size(16)));
 typedef unsigned int uv4si __attribute__((vector_size(16)));
 typedef unsigned long long uv2di __attribute__((vector_size(16)));
 
-static uint32_t crc32_le_vgfm_16(uint32_t crc, const unsigned char *buf, uint64_t len) {
+static uint32_t crc32_le_vgfm_16(uint32_t crc, const uint8_t *buf, uint64_t len) {
     /*
      * The CRC-32 constant block contains reduction constants to fold and
      * process particular chunks of the input data stream in parallel.

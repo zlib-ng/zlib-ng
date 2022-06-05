@@ -23,29 +23,29 @@
 extern void cpu_check_features(void);
 
 /* adler32 */
-typedef uint32_t (*adler32_func)(uint32_t adler, const unsigned char *buf, uint64_t len);
+typedef uint32_t (*adler32_func)(uint32_t adler, const uint8_t *buf, uint64_t len);
 
-extern uint32_t adler32_c(uint32_t adler, const unsigned char *buf, uint64_t len);
+extern uint32_t adler32_c(uint32_t adler, const uint8_t *buf, uint64_t len);
 #ifdef ARM_NEON_ADLER32
-extern uint32_t adler32_neon(uint32_t adler, const unsigned char *buf, uint64_t len);
+extern uint32_t adler32_neon(uint32_t adler, const uint8_t *buf, uint64_t len);
 #endif
 #ifdef PPC_VMX_ADLER32
-extern uint32_t adler32_vmx(uint32_t adler, const unsigned char *buf, uint64_t len);
+extern uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, uint64_t len);
 #endif
 #ifdef X86_SSSE3_ADLER32
-extern uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, uint64_t len);
+extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, uint64_t len);
 #endif
 #ifdef X86_AVX2_ADLER32
-extern uint32_t adler32_avx2(uint32_t adler, const unsigned char *buf, uint64_t len);
+extern uint32_t adler32_avx2(uint32_t adler, const uint8_t *buf, uint64_t len);
 #endif
 #ifdef X86_AVX512_ADLER32
-extern uint32_t adler32_avx512(uint32_t adler, const unsigned char *buf, uint64_t len);
+extern uint32_t adler32_avx512(uint32_t adler, const uint8_t *buf, uint64_t len);
 #endif
 #ifdef X86_AVX512VNNI_ADLER32
-extern uint32_t adler32_avx512_vnni(uint32_t adler, const unsigned char *buf, uint64_t len);
+extern uint32_t adler32_avx512_vnni(uint32_t adler, const uint8_t *buf, uint64_t len);
 #endif
 #ifdef POWER8_VSX_ADLER32
-extern uint32_t adler32_power8(uint32_t adler, const unsigned char* buf, uint64_t len);
+extern uint32_t adler32_power8(uint32_t adler, const uint8_t *buf, uint64_t len);
 #endif
 
 /* adler32 folding */
@@ -68,7 +68,7 @@ extern uint32_t crc32_fold_pclmulqdq_reset(crc32_fold *crc);
 extern void     crc32_fold_pclmulqdq_copy(crc32_fold *crc, uint8_t *dst, const uint8_t *src, uint64_t len);
 extern void     crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, uint64_t len, uint32_t init_crc);
 extern uint32_t crc32_fold_pclmulqdq_final(crc32_fold *crc);
-extern uint32_t crc32_pclmulqdq(uint32_t crc32, const unsigned char* buf, uint64_t len);
+extern uint32_t crc32_pclmulqdq(uint32_t crc32, const uint8_t *buf, uint64_t len);
 #endif
 
 /* memory chunking */
@@ -116,15 +116,15 @@ extern uint8_t* chunkmemset_safe_power8(uint8_t *out, unsigned dist, unsigned le
 #endif
 
 /* CRC32 */
-typedef uint32_t (*crc32_func)(uint32_t crc32, const unsigned char * buf, uint64_t len);
+typedef uint32_t (*crc32_func)(uint32_t crc32, const uint8_t *buf, uint64_t len);
 
-extern uint32_t crc32_braid(uint32_t crc, const unsigned char *buf, uint64_t len);
+extern uint32_t crc32_braid(uint32_t crc, const uint8_t *buf, uint64_t len);
 #ifdef ARM_ACLE_CRC_HASH
-extern uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len);
+extern uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, uint64_t len);
 #elif defined(POWER8_VSX_CRC32)
-extern uint32_t crc32_power8(uint32_t crc, const unsigned char *buf, uint64_t len);
+extern uint32_t crc32_power8(uint32_t crc, const uint8_t *buf, uint64_t len);
 #elif defined(S390_CRC32_VX)
-extern uint32_t PREFIX(s390_crc32_vx)(uint32_t crc, const unsigned char *buf, uint64_t len);
+extern uint32_t PREFIX(s390_crc32_vx)(uint32_t crc, const uint8_t *buf, uint64_t len);
 #endif
 
 /* compare256 */

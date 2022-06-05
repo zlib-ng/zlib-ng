@@ -11,7 +11,7 @@
 #endif
 #include "../../zbuild.h"
 
-uint32_t crc32_acle(uint32_t crc, const unsigned char *buf, uint64_t len) {
+uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, uint64_t len) {
     Z_REGISTER uint32_t c;
     Z_REGISTER const uint16_t *buf2;
     Z_REGISTER const uint32_t *buf4;

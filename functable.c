@@ -162,7 +162,7 @@ Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_matc
     return functable.longest_match_slow(s, cur_match);
 }
 
-Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, uint64_t len) {
+Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const uint8_t *buf, uint64_t len) {
     // Initialize default
     functable.adler32 = &adler32_c;
     cpu_check_features();
@@ -403,7 +403,7 @@ Z_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned 
     return functable.chunkmemset_safe(out, dist, len, left);
 }
 
-Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const unsigned char *buf, uint64_t len) {
+Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const uint8_t *buf, uint64_t len) {
     Assert(sizeof(uint64_t) >= sizeof(size_t),
            "crc32_z takes size_t but internally we have a uint64_t len");
 
