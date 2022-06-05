@@ -12,12 +12,20 @@ Z_INTERNAL uint32_t crc32_fold_reset_c(crc32_fold *crc) {
     return crc->value;
 }
 
-Z_INTERNAL void crc32_fold_copy_c(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
+Z_INTERNAL void crc32_fold_copy_c(crc32_fold *crc, uint8_t *dst, const uint8_t *src, uint64_t len) {
     crc->value = functable.crc32(crc->value, src, len);
-    memcpy(dst, src, len);
+    while (len > SIZE_MAX) {
+        memcpy(dst, src, SIZE_MAX);
+        dst += SIZE_MAX;
+        src += SIZE_MAX;
+        len -= SIZE_MAX;
+    }
+    if (len) {
+        memcpy(dst, src, (size_t)len);
+    }
 }
 
-Z_INTERNAL void crc32_fold_c(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc) {
+Z_INTERNAL void crc32_fold_c(crc32_fold *crc, const uint8_t *src, uint64_t len, uint32_t init_crc) {
     /* Note: while this is basically the same thing as the vanilla CRC function, we still need
      * a functable entry for it so that we can generically dispatch to this function with the
      * same arguments for the versions that _do_ do a folding CRC but we don't want a copy. The

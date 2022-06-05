@@ -233,7 +233,7 @@ Z_INTERNAL uint32_t crc32_fold_reset_stub(crc32_fold *crc) {
     return functable.crc32_fold_reset(crc);
 }
 
-Z_INTERNAL void crc32_fold_copy_stub(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
+Z_INTERNAL void crc32_fold_copy_stub(crc32_fold *crc, uint8_t *dst, const uint8_t *src, uint64_t len) {
     functable.crc32_fold_copy = &crc32_fold_copy_c;
     cpu_check_features();
 #ifdef X86_PCLMULQDQ_CRC
@@ -243,7 +243,7 @@ Z_INTERNAL void crc32_fold_copy_stub(crc32_fold *crc, uint8_t *dst, const uint8_
     functable.crc32_fold_copy(crc, dst, src, len);
 }
 
-Z_INTERNAL void crc32_fold_stub(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc) {
+Z_INTERNAL void crc32_fold_stub(crc32_fold *crc, const uint8_t *src, uint64_t len, uint32_t init_crc) {
     functable.crc32_fold = &crc32_fold_c;
     cpu_check_features();
 #ifdef X86_PCLMULQDQ_CRC
