@@ -20,9 +20,9 @@
 #ifdef X86_PCLMULQDQ_CRC
 
 #ifdef COPY
-Z_INTERNAL void crc32_fold_pclmulqdq_copy(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
+Z_INTERNAL void crc32_fold_pclmulqdq_copy(crc32_fold *crc, uint8_t *dst, const uint8_t *src, uint64_t len) {
 #else
-Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc) {
+Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, uint64_t len, uint32_t init_crc) {
 #endif
     unsigned long algn_diff;
     __m128i xmm_t0, xmm_t1, xmm_t2, xmm_t3;
@@ -47,9 +47,9 @@ Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t
         if (len == 0)
             return;
 
-        memcpy(partial_buf, src, len);
+        memcpy(partial_buf, src, (size_t)len);
         xmm_crc_part = _mm_load_si128((const __m128i *)partial_buf);
-        memcpy(dst, partial_buf, len);
+        memcpy(dst, partial_buf, (size_t)len);
 #endif
         goto partial;
     }
@@ -82,10 +82,10 @@ Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t
 #ifdef X86_VPCLMULQDQ_CRC
     if (x86_cpu_has_vpclmulqdq && x86_cpu_has_avx512 && (len >= 256)) {
 #ifdef COPY
-        size_t n = fold_16_vpclmulqdq_copy(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, dst, src, len);
+        uint64_t n = fold_16_vpclmulqdq_copy(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, dst, src, len);
         dst += n;
 #else
-        size_t n = fold_16_vpclmulqdq(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, src, len,
+        uint64_t n = fold_16_vpclmulqdq(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, src, len,
             xmm_initial, first);
         first = 0;
 #endif
@@ -176,10 +176,10 @@ Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t
 
 partial:
     if (len) {
-        memcpy(&xmm_crc_part, src, len);
+        memcpy(&xmm_crc_part, src, (size_t)len);
 #ifdef COPY
         _mm_storeu_si128((__m128i *)partial_buf, xmm_crc_part);
-        memcpy(dst, partial_buf, len);
+        memcpy(dst, partial_buf, (size_t)len);
 #endif
         partial_fold((size_t)len, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, &xmm_crc_part);
     }
