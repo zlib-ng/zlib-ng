@@ -41,7 +41,7 @@ TEST(gzip, readwrite) {
     EXPECT_GE(PREFIX(gzseek)(file, 1L, SEEK_CUR), 0);
     /* Write hello, hello! using gzfwrite using best compression level */
     EXPECT_EQ(PREFIX(gzsetparams)(file, Z_BEST_COMPRESSION, Z_DEFAULT_STRATEGY), Z_OK);
-    EXPECT_NE(PREFIX(gzfwrite)(hello, hello_len, 1, file), 0);
+    EXPECT_NE(PREFIX(gzfwrite)(hello, hello_len, 1, file), 0UL);
     /* Flush compressed bytes to file */
     EXPECT_EQ(PREFIX(gzflush)(file, Z_SYNC_FLUSH), Z_OK);
     compr_len = (uint32_t)PREFIX(gzoffset)(file);
@@ -69,7 +69,7 @@ TEST(gzip, readwrite) {
     /* Read first hello, hello! string with gzgets */
     strcpy((char*)uncompr, "garbages");
     PREFIX(gzgets)(file, (char*)uncompr, (int)uncompr_len);
-    EXPECT_EQ(strlen((char*)uncompr), 7); /* " hello!" */
+    EXPECT_EQ(strlen((char*)uncompr), 7UL); /* " hello!" */
     EXPECT_STREQ((char*)uncompr, hello + 6);
 
     /* Seek to second hello, hello! string */
