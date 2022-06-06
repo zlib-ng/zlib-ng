@@ -162,7 +162,7 @@ Z_INTERNAL uint32_t longest_match_slow_stub(deflate_state *const s, Pos cur_matc
     return functable.longest_match_slow(s, cur_match);
 }
 
-Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_t len) {
+Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, uint64_t len) {
     // Initialize default
     functable.adler32 = &adler32_c;
     cpu_check_features();
@@ -202,7 +202,7 @@ Z_INTERNAL uint32_t adler32_stub(uint32_t adler, const unsigned char *buf, size_
     return functable.adler32(adler, buf, len);
 }
 
-Z_INTERNAL uint32_t adler32_fold_copy_stub(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
+Z_INTERNAL uint32_t adler32_fold_copy_stub(uint32_t adler, uint8_t *dst, const uint8_t *src, uint64_t len) {
     functable.adler32_fold_copy = &adler32_fold_copy_c;
 #if (defined X86_SSE42_ADLER32)
     if (x86_cpu_has_sse42)

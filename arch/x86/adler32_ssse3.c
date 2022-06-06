@@ -14,7 +14,7 @@
 
 #include <immintrin.h>
 
-Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size_t len) {
+Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, uint64_t len) {
     uint32_t sum2;
 
      /* split Adler-32 into component sums */
@@ -46,10 +46,10 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const unsigned char *buf, size
      * additions worthwhile or if it's worth it to just eat the cost of an unaligned
      * load. This is a pretty simple test, just test if 16 - the remainder + len is
      * < 16 */
-    size_t max_iters = NMAX;
-    size_t rem = (uintptr_t)buf & 15;
-    size_t align_offset = 16 - rem;
-    size_t k = 0;
+    uint64_t max_iters = NMAX;
+    uint64_t rem = (uintptr_t)buf & 15;
+    uint64_t align_offset = 16 - rem;
+    uint64_t k = 0;
     if (rem) {
         if (len < 16 + align_offset) {
             /* Let's eat the cost of this one unaligned load so that
