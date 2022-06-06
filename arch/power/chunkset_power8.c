@@ -34,7 +34,6 @@ static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
 
 #define CHUNKSIZE        chunksize_power8
 #define CHUNKCOPY        chunkcopy_power8
-#define CHUNKCOPY_SAFE   chunkcopy_safe_power8
 #define CHUNKUNROLL      chunkunroll_power8
 #define CHUNKMEMSET      chunkmemset_power8
 #define CHUNKMEMSET_SAFE chunkmemset_safe_power8
