@@ -11,8 +11,9 @@
 #include "adler32_avx2_p.h"
 
 #ifdef X86_SSE42_ADLER32
-extern uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
-extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *src, size_t len);
+extern uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, uint64_t len);
+extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *src, uint64_t len);
+
 #define copy_sub32(a, b, c, d) adler32_fold_copy_sse42(a, b, c, d)
 #define sub32(a, b, c) adler32_ssse3(a, b, c)
 #else
@@ -21,16 +22,16 @@ extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *src, size_t len);
 #endif
 
 #ifdef COPY
-Z_INTERNAL uint32_t adler32_fold_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
+Z_INTERNAL uint32_t adler32_fold_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, uint64_t len) {
 #else
-Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const uint8_t *src, size_t len) {
+Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const uint8_t *src, uint64_t len) {
 #endif
     if (src == NULL) return 1L;
     if (len == 0) return adler;
 
     uint32_t adler0, adler1;
     adler1 = (adler >> 16) & 0xffff;
-    adler0 = adler & 0xffff; 
+    adler0 = adler & 0xffff;
 
 rem_peel:
     if (len < 16) {
@@ -60,7 +61,7 @@ rem_peel:
        __m256i vs1_0 = vs1;
        __m256i vs3 = _mm256_setzero_si256();
 
-       size_t k = MIN(len, NMAX);
+       uint64_t k = MIN(len, NMAX);
        k -= k % 32;
        len -= k;
 
@@ -93,7 +94,7 @@ rem_peel:
 
        /* The compiler is generating the following sequence for this integer modulus
         * when done the scalar way, in GPRs:
-        
+
         adler = (s1_unpack[0] % BASE) + (s1_unpack[1] % BASE) + (s1_unpack[2] % BASE) + (s1_unpack[3] % BASE) +
                 (s1_unpack[4] % BASE) + (s1_unpack[5] % BASE) + (s1_unpack[6] % BASE) + (s1_unpack[7] % BASE);
 
@@ -101,9 +102,9 @@ rem_peel:
         ...
         vmovd  %xmm1,%esi // move vector lane 0 to 32 bit register %esi
         mov    %rsi,%rax  // zero-extend this value to 64 bit precision in %rax
-        imul   %rdi,%rsi // do a signed multiplication with magic constant and vector element 
+        imul   %rdi,%rsi // do a signed multiplication with magic constant and vector element
         shr    $0x2f,%rsi // shift right by 47
-        imul   $0xfff1,%esi,%esi // do a signed multiplication with value truncated to 32 bits with 0xfff1 
+        imul   $0xfff1,%esi,%esi // do a signed multiplication with value truncated to 32 bits with 0xfff1
         sub    %esi,%eax // subtract lower 32 bits of original vector value from modified one above
         ...
         // repeats for each element with vpextract instructions
@@ -111,17 +112,17 @@ rem_peel:
         This is tricky with AVX2 for a number of reasons:
             1.) There's no 64 bit multiplication instruction, but there is a sequence to get there
             2.) There's ways to extend vectors to 64 bit precision, but no simple way to truncate
-                back down to 32 bit precision later (there is in AVX512) 
+                back down to 32 bit precision later (there is in AVX512)
             3.) Full width integer multiplications aren't cheap
 
-        We can, however, and do a relatively cheap sequence for horizontal sums. 
+        We can, however, and do a relatively cheap sequence for horizontal sums.
         Then, we simply do the integer modulus on the resulting 64 bit GPR, on a scalar value. It was
         previously thought that casting to 64 bit precision was needed prior to the horizontal sum, but
         that is simply not the case, as NMAX is defined as the maximum number of scalar sums that can be
         performed on the maximum possible inputs before overflow
         */
 
- 
+
         /* In AVX2-land, this trip through GPRs will probably be unvoidable, as there's no cheap and easy
          * conversion from 64 bit integer to 32 bit (needed for the inexpensive modulus with a constant).
          * This casting to 32 bit is cheap through GPRs (just register aliasing). See above for exactly
