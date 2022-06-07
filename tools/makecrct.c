@@ -1,5 +1,5 @@
 /* makecrct.c -- output crc32 tables
- * Copyright (C) 1995-2006, 2010, 2011, 2012, 2016, 2018 Mark Adler
+ * Copyright (C) 1995-2022 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
 */
 

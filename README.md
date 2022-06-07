@@ -142,7 +142,7 @@ with zlib, then zlib-ng will temporarily be used instead by the program,
 without risking system-wide instability.
 
 ```
-LD_PRELOAD=/opt/zlib-ng/libz.so.1.2.11.zlib-ng /usr/bin/program
+LD_PRELOAD=/opt/zlib-ng/libz.so.1.2.12.zlib-ng /usr/bin/program
 ```
 
 ### Cmake
