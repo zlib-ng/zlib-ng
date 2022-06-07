@@ -45,7 +45,7 @@ static inline void slide_hash_c_chain(Pos *table, uint32_t entries, uint16_t wsi
 }
 
 Z_INTERNAL void slide_hash_c(deflate_state *s) {
-    unsigned int wsize = s->w_size;
+    uint16_t wsize = (uint16_t)s->w_size;
 
     slide_hash_c_chain(s->head, HASH_SIZE, wsize);
     slide_hash_c_chain(s->prev, wsize, wsize);
