@@ -1,5 +1,5 @@
 /* inftrees.c -- generate Huffman trees for efficient decoding
- * Copyright (C) 1995-2016 Mark Adler
+ * Copyright (C) 1995-2022 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -9,7 +9,7 @@
 
 #define MAXBITS 15
 
-const char PREFIX(inflate_copyright)[] = " inflate 1.2.11.f Copyright 1995-2016 Mark Adler ";
+const char PREFIX(inflate_copyright)[] = " inflate 1.2.12.f Copyright 1995-2022 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
