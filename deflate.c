@@ -406,11 +406,11 @@ static int deflateStateCheck (PREFIX3(stream) *strm) {
     if (s == NULL || s->strm != strm || (s->status != INIT_STATE &&
 #ifdef GZIP
                                            s->status != GZIP_STATE &&
-#endif
                                            s->status != EXTRA_STATE &&
                                            s->status != NAME_STATE &&
                                            s->status != COMMENT_STATE &&
                                            s->status != HCRC_STATE &&
+#endif
                                            s->status != BUSY_STATE &&
                                            s->status != FINISH_STATE))
         return 1;
