@@ -11,11 +11,13 @@ FROM s390x/ubuntu:20.04
 # Packages for zlib-ng testing.
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get -y install \
+        clang-11 \
         cmake \
         curl \
         gcc \
         git \
         jq \
+        llvm-11-tools \
         ninja-build \
         python-is-python3 \
         python3 \
