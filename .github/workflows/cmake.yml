@@ -252,6 +252,12 @@ jobs:
             ldflags: -static
             codecov: ubuntu_gcc_s390x_dfltcc_compat
 
+          - name: Ubuntu Clang S390X DFLTCC MSAN
+            os: z15
+            compiler: clang-11
+            cxx-compiler: clang++-11
+            cmake-args: -GNinja -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Memory
+
           - name: Ubuntu MinGW i686
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-i686.cmake
