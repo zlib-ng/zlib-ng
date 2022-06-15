@@ -1,7 +1,5 @@
-#include <stddef.h>
-#include <stdint.h>
+#include "../../zbuild.h"
 #include <stdio.h>
-#include <string.h>
 
 #ifdef HAVE_SYS_SDT_H
 #include <sys/sdt.h>
