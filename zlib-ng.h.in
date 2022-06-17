@@ -34,9 +34,10 @@
 #endif
 
 #ifndef RC_INVOKED
-#include "zconf-ng.h"
-
 #include <stdint.h>
+#include <stdarg.h>
+
+#include "zconf-ng.h"
 
 #ifndef ZCONFNG_H
 #  error Missing zconf-ng.h add binary output directory to include directories
