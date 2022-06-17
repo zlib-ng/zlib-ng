@@ -878,6 +878,7 @@ echo >> configure.log
 
 # Check for ANSI C compliant compiler
 cat > $test.c <<EOF
+#include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include "zconf${SUFFIX}.h"

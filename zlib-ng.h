@@ -34,6 +34,8 @@
 #endif
 
 #include <stdint.h>
+#include <stdarg.h>
+
 #include "zconf-ng.h"
 
 #ifndef ZCONFNG_H
