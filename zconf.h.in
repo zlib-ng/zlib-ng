@@ -130,6 +130,8 @@ typedef void const *voidpc;
 typedef void       *voidpf;
 typedef void       *voidp;
 
+typedef uint32_t z_crc_t;
+
 #ifdef HAVE_UNISTD_H    /* may be set to #if 1 by configure/cmake/etc */
 #  define Z_HAVE_UNISTD_H
 #endif
@@ -139,7 +141,6 @@ typedef PTRDIFF_TYPE ptrdiff_t;
 #endif
 
 #include <sys/types.h>      /* for off_t */
-#include <stdarg.h>         /* for va_list */
 
 #include <stddef.h>         /* for wchar_t and NULL */
 
