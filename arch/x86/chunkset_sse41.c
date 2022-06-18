@@ -71,7 +71,7 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
 #ifdef Z_MEMORY_SANITIZER
     /* Important to note: 
      * This is _not_ to subvert the memory sanitizer but to instead unpoison some
-     * bytes we willingly and purposefully load unitialized that we swizzle over
+     * bytes we willingly and purposefully load uninitialized that we swizzle over
      * in a vector register, anyway.  If what we assume is wrong about what is used,
      * the memory sanitizer will still usefully flag it */
     __msan_unpoison(buf + dist, 16 - dist);
