@@ -1,0 +1,66 @@
+name: CI Link
+on: [push, pull_request]
+jobs:
+  zlib:
+    name: Link zlib
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Checkout zlib repository
+      uses: actions/checkout@v3
+      with:
+        repository: madler/zlib
+        path: zlib
+
+    - name: Generate project files (zlib)
+      run: cmake -S zlib -B zlib/build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
+
+    - name: Compile source code (zlib)
+      run: cmake --build zlib/build --config Release
+
+    - name: Generate project files (native)
+      run: cmake -S . -B native -DZLIB_COMPAT=OFF -DZLIB_DUAL_LINK=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DZLIB_ROOT=../zlib/build -DZLIB_LIBRARIES=../zlib/build/libz.a -DZLIB_INCLUDE_DIR=../zlib/build
+
+    - name: Compile source code (native)
+      run: cmake --build native --config Release
+
+    - name: Upload build errors
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: Link zlib (CMake Logs)
+        path: |
+          **/CMakeFiles/CMakeOutput.log
+          **/CMakeFiles/CMakeError.log
+        retention-days: 30
+
+  zlib-ng-compat:
+    name: Link zlib-ng compat
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Generate project files (compat)
+      run: cmake -S . -B compat -DZLIB_COMPAT=ON -DZLIB_ENABLE_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_MAINTAINER_WARNINGS=ON
+
+    - name: Compile source code (compat)
+      run: cmake --build compat --config Release
+
+    - name: Generate project files (native)
+      run: cmake -S . -B native -DZLIB_COMPAT=OFF -DZLIB_DUAL_LINK=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DZLIB_ROOT=../compat -DZLIB_LIBRARIES=../compat/libz.a -DZLIB_INCLUDE_DIR=../compat
+
+    - name: Compile source code (native)
+      run: cmake --build native --config Release
+
+    - name: Upload build errors
+      uses: actions/upload-artifact@v2
+      if: failure()
+      with:
+        name: Link zlib-ng compat (CMake Logs)
+        path: |
+          **/CMakeFiles/CMakeOutput.log
+          **/CMakeFiles/CMakeError.log
+        retention-days: 30
