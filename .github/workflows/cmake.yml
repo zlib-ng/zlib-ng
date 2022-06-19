@@ -400,10 +400,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Checkout test corpora
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       # Don't test against all corpora with MinGW due to Wine being unable to run parallel jobs
       # without connection timeout. Without parallel jobs test runs using Wine take close to an hour.
       if: contains(matrix.name, 'MinGW') == false
