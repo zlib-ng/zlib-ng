@@ -80,12 +80,6 @@ jobs:
             cmake-args: -DWITH_OPTIM=OFF -DHAVE_BUILTIN_CTZLL=OFF -DHAVE_BUILTIN_CTZ=OFF
             codecov: ubuntu_gcc_no_ctz
 
-          - name: Ubuntu GCC Link Zlib
-            os: ubuntu-latest
-            compiler: gcc
-            cxx-compiler: g++
-            cmake-args: -DZLIB_DUAL_LINK=ON
-
           - name: Ubuntu GCC No AVX2 UBSAN
             os: ubuntu-latest
             compiler: gcc
