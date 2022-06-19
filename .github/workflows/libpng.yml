@@ -17,8 +17,7 @@ jobs:
         CI: true
 
     - name: Compile source code (zlib-ng)
-      run: |
-        cmake --build . --config Release
+      run: cmake --build . --config Release
 
     - name: Checkout repository (libpng)
       uses: actions/checkout@v3

@@ -9,8 +9,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Install packages (Ubuntu)
-      run: |
-        sudo apt-get install -y gcc-10
+      run: sudo apt-get install -y gcc-10
 
     - name: Generate project files
       run: |
@@ -21,8 +20,7 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: |
-        cmake --build . --config Release > /dev/null
+      run: cmake --build . --config Release > /dev/null
 
   Clang:
     runs-on: ubuntu-latest
@@ -31,8 +29,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Install packages (Ubuntu)
-      run: |
-        sudo apt-get install clang-tools -y
+      run: sudo apt-get install clang-tools -y
 
     - name: Generate project files
       run: |

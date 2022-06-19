@@ -413,8 +413,7 @@ jobs:
 
     - name: Add repositories (Wine)
       if: contains(matrix.packages, 'wine')
-      run: |
-        sudo dpkg --add-architecture i386
+      run: sudo dpkg --add-architecture i386
 
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages
@@ -427,21 +426,19 @@ jobs:
       run: |
         # strawberryperl installs /c/Strawberry/c/bin/libstdc++-6.dll, which is incompatible with the mingw64 one.
         # zlib-ng does not need perl, so simply remove it.
-        choco uninstall strawberryperl --no-progress
-        choco install ninja ${{ matrix.packages }} --no-progress
+        choco uninstall --no-progress strawberryperl
+        choco install --no-progress ninja ${{ matrix.packages }}
 
     - name: Install packages (macOS)
       if: runner.os == 'macOS'
-      run: |
-        brew install ninja ${{ matrix.packages }}
+      run: brew install ninja ${{ matrix.packages }}
       env:
         HOMEBREW_NO_INSTALL_CLEANUP: 1
 
     - name: Initialize Wine
       # Prevent parallel test jobs from initializing Wine at the same time
       if: contains(matrix.packages, 'wine')
-      run: |
-        wineboot --init
+      run: wineboot --init
 
     - name: Compile LLVM C++ libraries (MSAN)
       if: contains(matrix.name, 'MSAN')
