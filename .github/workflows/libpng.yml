@@ -26,19 +26,16 @@ jobs:
         path: libpng
 
     - name: Generate project files (libpng)
-      run: |
-        cd libpng
-        cmake . -DCMAKE_BUILD_TYPE=Release -DPNG_TESTS=ON -DPNG_STATIC=OFF -DZLIB_INCLUDE_DIR=.. -DZLIB_LIBRARY=$PWD/../libz.a
+      run: cmake . -DCMAKE_BUILD_TYPE=Release -DPNG_TESTS=ON -DPNG_STATIC=OFF -DZLIB_INCLUDE_DIR=.. -DZLIB_LIBRARY=$PWD/../libz.a
+      working-directory: libpng
       env:
         CC: clang
         CI: true
 
     - name: Compile source code (libpng)
-      run: |
-        cd libpng
-        cmake --build . --config Release
+      run: cmake --build . --config Release
+      working-directory: libpng
 
     - name: Run test cases (libpng)
-      run: |
-        cd libpng
-        ctest -C Release --output-on-failure --max-width 120
+      run: ctest -C Release --output-on-failure --max-width 120
+      working-directory: libpng

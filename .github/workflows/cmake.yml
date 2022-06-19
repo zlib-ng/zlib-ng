@@ -468,16 +468,13 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: |
-        cd ${{ matrix.build-dir || '.' }}
-        cmake --build . --config ${{ matrix.build-config || 'Release' }}
+      run: cmake --build ${{ matrix.build-dir || '.' }} --config ${{ matrix.build-config || 'Release' }}
 
     - name: Run test cases
       # Don't run tests on Windows ARM
       if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false
-      run: |
-        cd ${{ matrix.build-dir || '.' }}
-        ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '6' }}
+      run: ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '6' }}
+      working-directory: ${{ matrix.build-dir || '.' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1

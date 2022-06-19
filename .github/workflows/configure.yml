@@ -214,14 +214,12 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: |
-        cd ${{ matrix.build-dir || '.' }}
-        make -j2
+      run: make -j2
+      working-directory: ${{ matrix.build-dir }}
 
     - name: Run test cases
-      run: |
-        cd ${{ matrix.build-dir || '.' }}
-        make test
+      run: make test
+      working-directory: ${{ matrix.build-dir }}
       env:
         QEMU_RUN: ${{ matrix.qemu-run }}
         ASAN_OPTIONS: abort_on_error=1:halt_on_error=1
