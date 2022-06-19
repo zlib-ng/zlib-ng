@@ -95,6 +95,21 @@ if(WITH_SANITIZER STREQUAL "Memory")
         -fsanitize-memory-track-origins)
 endif()
 
+if(ZLIB_DUAL_LINK AND NOT ZLIB_COMPAT)
+    find_package(ZLIB)
+    if(ZLIB_FOUND)
+        message(STATUS "Added dual linking tests against zlib")
+        message(STATUS "  Zlib include dir: ${ZLIB_INCLUDE_DIR}")
+        message(STATUS "  Zlib libraries: ${ZLIB_LIBRARIES}")
+
+        target_sources(gtest_zlib PRIVATE test_compress_dual.cc)
+        target_include_directories(gtest_zlib PRIVATE ${ZLIB_INCLUDE_DIR})
+        target_link_libraries(gtest_zlib ${ZLIB_LIBRARIES})
+    else()
+        message(WARNING "Zlib not found, skipping dual linking tests")
+    endif()
+endif()
+
 target_link_libraries(gtest_zlib zlibstatic GTest::GTest)
 
 find_package(Threads)
