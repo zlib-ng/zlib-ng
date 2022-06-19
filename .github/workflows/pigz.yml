@@ -66,9 +66,8 @@ jobs:
         sudo apt-get install -y ${{ matrix.packages }}
 
     - name: Generate project files
-      run: |
-        cd test/pigz
-        cmake ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} -DBUILD_SHARED_LIBS=OFF -DZLIB_ROOT=../.. -DWITH_CODE_COVERAGE=ON -DWITH_MAINTAINER_WARNINGS=ON
+      run: cmake ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} -DBUILD_SHARED_LIBS=OFF -DZLIB_ROOT=../.. -DWITH_CODE_COVERAGE=ON -DWITH_MAINTAINER_WARNINGS=ON
+      working-directory: test/pigz
       env:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
@@ -76,14 +75,12 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: |
-        cd test/pigz
-        cmake --build . --config ${{ matrix.build-config || 'Release' }}
+      run: cmake --build . --config ${{ matrix.build-config || 'Release' }}
+      working-directory: test/pigz
 
     - name: Run test cases
-      run: |
-        cd test/pigz
-        ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '2' }}
+      run: ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '2' }}
+      working-directory: test/pigz
 
     - name: Generate coverage report
       if: matrix.codecov
