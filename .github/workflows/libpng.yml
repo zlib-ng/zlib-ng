@@ -7,7 +7,7 @@ jobs:
 
     steps:
     - name: Checkout repository (zlib-ng)
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Generate project files (zlib-ng)
       run: |
@@ -22,7 +22,7 @@ jobs:
         cmake --build . --config Release
 
     - name: Checkout repository (libpng)
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: glennrp/libpng
         path: libpng
