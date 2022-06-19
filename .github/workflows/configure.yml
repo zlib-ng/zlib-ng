@@ -222,9 +222,6 @@ jobs:
       working-directory: ${{ matrix.build-dir }}
       env:
         QEMU_RUN: ${{ matrix.qemu-run }}
-        ASAN_OPTIONS: abort_on_error=1:halt_on_error=1
-        MSAN_OPTIONS: abort_on_error=1:halt_on_error=1
-        UBSAN_OPTIONS: print_stacktrace=1:abort_on_error=1:halt_on_error=1
 
     - name: Upload build errors
       uses: actions/upload-artifact@v2
