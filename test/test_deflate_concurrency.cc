@@ -71,10 +71,6 @@ private:
 };
 
 TEST(deflate, concurrency) {
-#ifdef S390_DFLTCC_DEFLATE
-    GTEST_SKIP() << "XFAIL S390_DFLTCC_DEFLATE";
-#endif
-
     /* Create reusable mutator and streams. */
     Mutator mutator;
 

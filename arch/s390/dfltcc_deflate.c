@@ -25,6 +25,9 @@ struct dfltcc_deflate_state {
     uint32_t block_size;               /* New block each X bytes */
     size_t block_threshold;            /* New block after total_in > X */
     uint32_t dht_threshold;            /* New block only if avail_in >= X */
+    uint8_t buf[DFLTCC_BUF_SIZE];      /* Internal buffer for input data */
+    uint32_t buf_offset;               /* Offset of input data in buf */
+    uint32_t buf_size;                 /* Size of input data in buf */
 };
 
 #define GET_DFLTCC_DEFLATE_STATE(state) ((struct dfltcc_deflate_state *)GET_DFLTCC_STATE(state))
@@ -44,6 +47,10 @@ void Z_INTERNAL PREFIX(dfltcc_reset_deflate_state)(PREFIX3(streamp) strm) {
     dfltcc_state->block_size = DFLTCC_BLOCK_SIZE;
     dfltcc_state->block_threshold = DFLTCC_FIRST_FHT_BLOCK_SIZE;
     dfltcc_state->dht_threshold = DFLTCC_DHT_MIN_SAMPLE_SIZE;
+
+    /* Initialize the internal buffer */
+    dfltcc_state->buf_offset = 0;
+    dfltcc_state->buf_size = 0;
 }
 
 void Z_INTERNAL PREFIX(dfltcc_copy_deflate_state)(void *dst, const void *src) {
@@ -125,6 +132,58 @@ static inline void send_eobs(PREFIX3(streamp) strm, const struct dfltcc_param_v0
 #endif
 }
 
+/*
+   Modifying dfltcc_cmpr() input concurrently with dfltcc_cmpr() may desync the sliding window and the deflate stream,
+   causing data corruption. Therefore, in order to allow modifying deflate() input concurrently with deflate(), we
+   need input data buffering. zlib manual does not guarantee that such concurrent modifications are safe, but there
+   are applications out there that perform them anyway. In the worst known case, the extra copying causes ~40%
+   compression performance degradation, which is still better than risking data corruption.
+ */
+
+struct dfltcc_buf_sync {
+    z_const unsigned char *next_in;
+    uint32_t avail_in;
+};
+
+static void dfltcc_buf_sync_start(PREFIX3(streamp) strm, struct dfltcc_buf_sync *sync) {
+    deflate_state *state = (deflate_state *)strm->state;
+    struct dfltcc_deflate_state *dfltcc_state = GET_DFLTCC_DEFLATE_STATE(state);
+    uint32_t count = sizeof(dfltcc_state->buf) - (dfltcc_state->buf_offset + dfltcc_state->buf_size);
+
+    if (strm->avail_in > count && dfltcc_state->buf_offset > 0) {
+        /* Input does not fit into the internal buffer. Make some room by sliding it to the left: it is less expensive
+         * than calling dfltcc_cmpr() one more time.
+         */
+        memmove(dfltcc_state->buf, dfltcc_state->buf + dfltcc_state->buf_offset, dfltcc_state->buf_size);
+        count += dfltcc_state->buf_offset;
+        dfltcc_state->buf_offset = 0;
+    }
+    if (strm->avail_in < count)
+        count = strm->avail_in;
+
+    /* Copy input data into the internal buffer */
+    memcpy(dfltcc_state->buf + dfltcc_state->buf_offset + dfltcc_state->buf_size, strm->next_in, count);
+    dfltcc_state->buf_size += count;
+
+    /* Point the stream to the internal buffer; save the original input data pointer and size */
+    sync->next_in = strm->next_in + count;
+    sync->avail_in = strm->avail_in - count;
+    strm->next_in = dfltcc_state->buf + dfltcc_state->buf_offset;
+    strm->avail_in = dfltcc_state->buf_size;
+}
+
+static void dfltcc_buf_sync_end(PREFIX3(streamp) strm, struct dfltcc_buf_sync *sync) {
+    deflate_state *state = (deflate_state *)strm->state;
+    struct dfltcc_deflate_state *dfltcc_state = GET_DFLTCC_DEFLATE_STATE(state);
+    uint32_t consumed = strm->next_in - (dfltcc_state->buf + dfltcc_state->buf_offset);
+
+    /* Update the internal buffer positions; restore the original input data pointer and size */
+    dfltcc_state->buf_offset += consumed;
+    dfltcc_state->buf_size -= consumed;
+    strm->next_in = sync->next_in;
+    strm->avail_in = sync->avail_in;
+}
+
 int Z_INTERNAL PREFIX(dfltcc_deflate)(PREFIX3(streamp) strm, int flush, block_state *result) {
     deflate_state *state = (deflate_state *)strm->state;
     struct dfltcc_deflate_state *dfltcc_state = GET_DFLTCC_DEFLATE_STATE(state);
@@ -134,6 +193,7 @@ int Z_INTERNAL PREFIX(dfltcc_deflate)(PREFIX3(streamp) strm, int flush, block_st
     int need_empty_block;
     int soft_bcc;
     int no_flush;
+    struct dfltcc_buf_sync sync;
 
     if (!PREFIX(dfltcc_can_deflate)(strm)) {
         /* Clear history. */
@@ -242,6 +302,9 @@ again:
     param->nt = 0;
     param->cv = state->wrap == 2 ? ZSWAP32(state->crc_fold.value) : strm->adler;
 
+    /* We may access input, but must not return before calling dfltcc_buf_sync_end() */
+    dfltcc_buf_sync_start(strm, &sync);
+
     /* When opening a block, choose a Huffman-Table Type */
     if (!param->bcf) {
         if (state->strategy == Z_FIXED || (strm->total_in == 0 && dfltcc_state->block_threshold > 0))
@@ -253,8 +316,9 @@ again:
     }
 
     /* Deflate */
-    do {
+    for (;;) {
         cc = dfltcc_cmpr(strm);
+        dfltcc_buf_sync_end(strm, &sync);
         if (strm->avail_in < 4096 && masked_avail_in > 0)
             /* We are about to call DFLTCC with a small input buffer, which is
              * inefficient. Since there is masked data, there will be at least
@@ -262,7 +326,17 @@ again:
              * one handle more data.
              */
             break;
-    } while (cc == DFLTCC_CC_AGAIN);
+        if (cc == DFLTCC_CC_AGAIN)
+            /* DFLTCC told us to try again */
+            ;
+        else if (cc == DFLTCC_CC_OK && strm->avail_in != 0 && strm->avail_out != 0)
+            /* There is more input data that we can copy into the internal buffer */
+            param->bcf = 1;
+        else
+            break;
+        dfltcc_buf_sync_start(strm, &sync);
+    }
+    /* We must no longer access input, but we may return */
 
     /* Translate parameter block to stream */
     strm->msg = oesc_msg(dfltcc_state->common.msg, param->oesc);
@@ -288,6 +362,7 @@ again:
      */
     if (cc == DFLTCC_CC_OK) {
         if (soft_bcc) {
+            Assert(!param->bhf || strm->avail_in == 0, "There must be no input data after the final EOBS");
             send_eobs(strm, param);
             param->bcf = 0;
             dfltcc_state->block_threshold = strm->total_in + dfltcc_state->block_size;
