@@ -1,5 +1,8 @@
 name: CI CMake
 on: [push, pull_request]
+env:
+  TERM: xterm-256color
+  GTEST_COLOR: 1
 jobs:
   ci-cmake:
     name: ${{ matrix.name }}
