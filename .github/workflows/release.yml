@@ -68,8 +68,13 @@ jobs:
       run:  echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
 
     - name: Generate project files
+      shell: bash
       run: |
-        cmake . ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=Release -DZLIB_ENABLE_TESTS=ON -DCMAKE_INSTALL_PREFIX=out -DINSTALL_UTILS=ON
+        cmake . ${{ matrix.cmake-args }} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DZLIB_ENABLE_TESTS=ON \
+          -DCMAKE_INSTALL_PREFIX=out \
+          -DINSTALL_UTILS=ON
       env:
         CC: ${{ matrix.compiler }}
         CI: true

@@ -66,7 +66,13 @@ jobs:
         sudo apt-get install -y ${{ matrix.packages }}
 
     - name: Generate project files
-      run: cmake ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} -DBUILD_SHARED_LIBS=OFF -DZLIB_ROOT=../.. -DWITH_CODE_COVERAGE=ON -DWITH_MAINTAINER_WARNINGS=ON
+      run: |
+        cmake ${{ matrix.cmake-args }} \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DZLIB_ROOT=../.. \
+          -DWITH_CODE_COVERAGE=ON \
+          -DWITH_MAINTAINER_WARNINGS=ON
       working-directory: test/pigz
       env:
         CC: ${{ matrix.compiler }}
@@ -86,7 +92,11 @@ jobs:
       if: matrix.codecov
       run: |
         python3 -u -m pip install --user gcovr==5.0
-        python3 -m gcovr --exclude-unreachable-branches --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" --root . --xml --output coverage.xml -j 3 --verbose
+        python3 -m gcovr -j 3 --verbose \
+          --exclude-unreachable-branches \
+          --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
+          --root . \
+          --xml --output coverage.xml
 
     - name: Upload coverage report
       uses: codecov/codecov-action@v2
