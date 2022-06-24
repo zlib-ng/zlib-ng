@@ -1,10 +1,10 @@
-name: CI Release
+name: Release
 on:
   push:
     tags:
     - '*'
 jobs:
-  ci-cmake:
+  release:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:

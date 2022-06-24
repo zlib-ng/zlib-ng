@@ -1,7 +1,7 @@
-name: CI Pkgcheck
+name: Package Check
 on: [push, pull_request]
 jobs:
-  ci-pkgcheck:
+  pkgcheck:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:

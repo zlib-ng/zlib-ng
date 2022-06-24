@@ -1,4 +1,4 @@
-name: CI Fuzz
+name: OSS-Fuzz
 on:
   pull_request:
   push:
@@ -11,7 +11,8 @@ on:
       - '*'
 
 jobs:
-  Fuzzing:
+  fuzzing:
+    name: Fuzzing
     runs-on: ubuntu-latest
     steps:
     - name: Build Fuzzers

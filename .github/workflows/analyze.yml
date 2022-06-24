@@ -1,7 +1,8 @@
-name: CI Static Analysis
+name: Static Analysis
 on: [push, pull_request]
 jobs:
-  GCC:
+  static-analysis:
+    name: GCC
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
