@@ -1,7 +1,7 @@
-name: CI Pigz
+name: Pigz
 on: [push, pull_request]
 jobs:
-  ci-cmake:
+  pigz:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:

@@ -1,7 +1,7 @@
-name: CI Configure
+name: Configure
 on: [push, pull_request]
 jobs:
-  ci-configure:
+  configure:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:

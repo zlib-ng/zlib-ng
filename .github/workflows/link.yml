@@ -1,4 +1,4 @@
-name: CI Link
+name: Link
 on: [push, pull_request]
 jobs:
   zlib:

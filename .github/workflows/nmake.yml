@@ -1,7 +1,7 @@
-name: CI NMake
+name: NMake
 on: [push, pull_request]
 jobs:
-  ci-cmake:
+  nmake:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
