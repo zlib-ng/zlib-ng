@@ -82,7 +82,10 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends abigail-tools ninja-build diffoscope ${{ matrix.packages }}
+        sudo apt-get install -y --no-install-recommends ${{ matrix.packages }} \
+          abigail-tools \
+          diffoscope \
+          ninja-build
 
     - name: Install packages (macOS)
       if: runner.os == 'macOS'

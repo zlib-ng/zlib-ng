@@ -10,7 +10,11 @@ jobs:
 
     - name: Generate project files (zlib-ng)
       run: |
-        cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DZLIB_COMPAT=ON -DZLIB_ENABLE_TESTS=OFF
+        cmake . \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DZLIB_COMPAT=ON \
+          -DZLIB_ENABLE_TESTS=OFF
       env:
         CC: clang
         CFLAGS: -fPIC
@@ -26,7 +30,13 @@ jobs:
         path: libpng
 
     - name: Generate project files (libpng)
-      run: cmake . -DCMAKE_BUILD_TYPE=Release -DPNG_TESTS=ON -DPNG_STATIC=OFF -DZLIB_INCLUDE_DIR=.. -DZLIB_LIBRARY=$PWD/../libz.a
+      run: |
+        cmake . \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DPNG_TESTS=ON \
+          -DPNG_STATIC=OFF \
+          -DZLIB_INCLUDE_DIR=.. \
+          -DZLIB_LIBRARY=$PWD/../libz.a
       working-directory: libpng
       env:
         CC: clang

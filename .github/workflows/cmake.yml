@@ -444,22 +444,27 @@ jobs:
       if: contains(matrix.name, 'MSAN')
       run: |
         git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-11.0.0
-        cd llvm-project
-        mkdir build
-        cd build
-        cmake -G Ninja ../llvm -DCMAKE_BUILD_TYPE=Release -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" -DLLVM_USE_SANITIZER=MemoryWithOrigins -DLLVM_LIBC_ENABLE_LINTING=OFF
-        cmake --build . -- cxx cxxabi
-        echo "LLVM_BUILD_DIR=`pwd`" >> $GITHUB_ENV
+        cmake -S llvm-project/llvm -B llvm-project/build -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+          -DLLVM_USE_SANITIZER=MemoryWithOrigins \
+          -DLLVM_LIBC_ENABLE_LINTING=OFF
+        cmake --build llvm-project/build -- cxx cxxabi
+        echo "LLVM_BUILD_DIR=`pwd`/llvm-project/build" >> $GITHUB_ENV
       env:
         CC: ${{ matrix.compiler }}
         CXX: ${{ matrix.cxx-compiler }}
 
     - name: Generate project files
+      shell: bash
       # Shared libraries turned off for qemu ppc* and sparc & reduce code coverage sources
       run: |
-        mkdir ${{ matrix.build-dir || '.not-used' }}
-        cd ${{ matrix.build-dir || '.' }}
-        cmake ${{ matrix.build-src-dir || '.' }} ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} -DBUILD_SHARED_LIBS=OFF -DWITH_FUZZERS=ON ${{ matrix.codecov && '-DWITH_CODE_COVERAGE=ON' }} -DWITH_MAINTAINER_WARNINGS=ON
+        cmake -S ${{ matrix.build-src-dir || '.' }} -B ${{ matrix.build-dir || '.' }} ${{ matrix.cmake-args }} \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DWITH_FUZZERS=ON \
+          -DWITH_MAINTAINER_WARNINGS=ON \
+          ${{ matrix.codecov && '-DWITH_CODE_COVERAGE=ON' }}
       env:
         CC: ${{ matrix.compiler }}
         CXX: ${{ matrix.cxx-compiler }}
@@ -487,7 +492,11 @@ jobs:
       shell: bash
       run: |
         python3 -u -m pip install --user gcovr==5.0
-        python3 -m gcovr --exclude-unreachable-branches --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" --root ${{ matrix.build-src-dir || '.' }} --xml --output coverage.xml -j 3 --verbose
+        python3 -m gcovr -j 3 --verbose \
+          --exclude-unreachable-branches \
+          --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
+          --root ${{ matrix.build-src-dir || '.' }} \
+          --xml --output coverage.xml
 
     - name: Upload coverage report
       uses: codecov/codecov-action@v2
