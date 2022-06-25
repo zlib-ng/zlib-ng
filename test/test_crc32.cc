@@ -206,7 +206,7 @@ INSTANTIATE_TEST_SUITE_P(crc32, crc32_variant, testing::ValuesIn(tests));
         hash(GetParam(), func); \
     }
 
-TEST_CRC32(braid, crc32_braid, 1)
+TEST_CRC32(braid, PREFIX(crc32_braid), 1)
 
 #ifdef ARM_ACLE_CRC_HASH
 TEST_CRC32(acle, crc32_acle, arm_cpu_has_crc32)

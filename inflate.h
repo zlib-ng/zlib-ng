@@ -135,6 +135,6 @@ struct inflate_state {
 };
 
 int Z_INTERNAL PREFIX(inflate_ensure_window)(struct inflate_state *state);
-void Z_INTERNAL fixedtables(struct inflate_state *state);
+void Z_INTERNAL PREFIX(fixedtables)(struct inflate_state *state);
 
 #endif /* INFLATE_H_ */

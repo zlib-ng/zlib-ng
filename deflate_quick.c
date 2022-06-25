@@ -70,7 +70,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         }
 
         if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD)) {
-            fill_window(s);
+            PREFIX(fill_window)(s);
             if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH)) {
                 return need_more;
             }

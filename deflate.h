@@ -373,7 +373,7 @@ static inline void put_uint64(deflate_state *s, uint64_t lld) {
    memory checker errors from longest match routines */
 
 
-void Z_INTERNAL fill_window(deflate_state *s);
+void Z_INTERNAL PREFIX(fill_window)(deflate_state *s);
 void Z_INTERNAL slide_hash_c(deflate_state *s);
 
         /* in trees.c */

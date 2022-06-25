@@ -26,7 +26,7 @@ Z_INTERNAL block_state deflate_rle(deflate_state *s, int flush) {
          * for the longest run, plus one for the unrolled loop.
          */
         if (s->lookahead <= STD_MAX_MATCH) {
-            fill_window(s);
+            PREFIX(fill_window)(s);
             if (s->lookahead <= STD_MAX_MATCH && flush == Z_NO_FLUSH)
                 return need_more;
             if (s->lookahead == 0)

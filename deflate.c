@@ -202,11 +202,11 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
 
     strm->msg = NULL;
     if (strm->zalloc == NULL) {
-        strm->zalloc = zng_calloc;
+        strm->zalloc = PREFIX3(calloc);
         strm->opaque = NULL;
     }
     if (strm->zfree == NULL)
-        strm->zfree = zng_cfree;
+        strm->zfree = PREFIX3(cfree);
 
     if (level == Z_DEFAULT_COMPRESSION)
         level = 6;
@@ -400,14 +400,14 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     next = strm->next_in;
     strm->avail_in = dictLength;
     strm->next_in = (z_const unsigned char *)dictionary;
-    fill_window(s);
+    PREFIX(fill_window)(s);
     while (s->lookahead >= STD_MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (STD_MIN_MATCH - 1);
         s->insert_string(s, str, n);
         s->strstart = str + n;
         s->lookahead = STD_MIN_MATCH - 1;
-        fill_window(s);
+        PREFIX(fill_window)(s);
     }
     s->strstart += s->lookahead;
     s->block_start = (int)s->strstart;
@@ -1090,7 +1090,7 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
  * allocating a large strm->next_in buffer and copying from it.
  * (See also flush_pending()).
  */
-Z_INTERNAL unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size) {
+Z_INTERNAL unsigned PREFIX(read_buf)(PREFIX3(stream) *strm, unsigned char *buf, unsigned size) {
     uint32_t len = strm->avail_in;
 
     len = MIN(len, size);
@@ -1175,7 +1175,7 @@ static void lm_init(deflate_state *s) {
  *    option -- not supported here).
  */
 
-void Z_INTERNAL fill_window(deflate_state *s) {
+void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
     unsigned n;
     unsigned int more;    /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;
@@ -1219,7 +1219,7 @@ void Z_INTERNAL fill_window(deflate_state *s) {
          */
         Assert(more >= 2, "more < 2");
 
-        n = read_buf(s->strm, s->window + s->strstart + s->lookahead, more);
+        n = PREFIX(read_buf)(s->strm, s->window + s->strstart + s->lookahead, more);
         s->lookahead += n;
 
         /* Initialize the hash value now that we have some input: */
