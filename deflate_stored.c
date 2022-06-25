@@ -94,7 +94,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
          * the check value.
          */
         if (len) {
-            read_buf(s->strm, s->strm->next_out, len);
+            PREFIX(read_buf)(s->strm, s->strm->next_out, len);
             s->strm->next_out += len;
             s->strm->avail_out -= len;
             s->strm->total_out += len;
@@ -157,7 +157,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
 
     have = MIN(have, s->strm->avail_in);
     if (have) {
-        read_buf(s->strm, s->window + s->strstart, have);
+        PREFIX(read_buf)(s->strm, s->window + s->strstart, have);
         s->strstart += have;
         s->insert += MIN(have, s->w_size - s->insert);
     }

@@ -113,7 +113,7 @@ extern uint8_t* chunkmemset_safe_power8(uint8_t *out, unsigned dist, unsigned le
 /* CRC32 */
 typedef uint32_t (*crc32_func)(uint32_t crc32, const uint8_t *buf, uint64_t len);
 
-extern uint32_t crc32_braid(uint32_t crc, const uint8_t *buf, uint64_t len);
+extern uint32_t PREFIX(crc32_braid)(uint32_t crc, const uint8_t *buf, uint64_t len);
 #ifdef ARM_ACLE_CRC_HASH
 extern uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, uint64_t len);
 #elif defined(POWER8_VSX_CRC32)

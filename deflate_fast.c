@@ -29,7 +29,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
          * string following the next match.
          */
         if (s->lookahead < MIN_LOOKAHEAD) {
-            fill_window(s);
+            PREFIX(fill_window)(s);
             if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH)) {
                 return need_more;
             }

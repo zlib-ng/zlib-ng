@@ -407,7 +407,7 @@ Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const uint8_t *buf, uint64_t len) {
     Assert(sizeof(uint64_t) >= sizeof(size_t),
            "crc32_z takes size_t but internally we have a uint64_t len");
 
-    functable.crc32 = &crc32_braid;
+    functable.crc32 = &PREFIX(crc32_braid);
     cpu_check_features();
 #ifdef ARM_ACLE_CRC_HASH
     if (arm_cpu_has_crc32)
