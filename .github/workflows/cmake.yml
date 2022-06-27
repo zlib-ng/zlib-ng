@@ -425,6 +425,9 @@ jobs:
     - name: Install packages (Windows)
       if: runner.os == 'Windows'
       run: |
+        # strawberryperl installs /c/Strawberry/c/bin/libstdc++-6.dll, which is incompatible with the mingw64 one.
+        # zlib-ng does not need perl, so simply remove it.
+        choco uninstall strawberryperl --no-progress
         choco install ninja ${{ matrix.packages }} --no-progress
 
     - name: Install packages (macOS)
