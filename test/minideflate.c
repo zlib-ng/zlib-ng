@@ -3,10 +3,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#include "zbuild.h"
+
 #include <stdio.h>
 #include <assert.h>
 
-#include "zbuild.h"
 #include "zutil.h"
 
 #if defined(_WIN32) || defined(__CYGWIN__)

@@ -3,7 +3,7 @@
 
 #define _POSIX_SOURCE 1  /* fileno */
 #ifndef _POSIX_C_SOURCE
-#  define _POSIX_C_SOURCE 200112L /* snprintf, posix_memalign */
+#  define _POSIX_C_SOURCE 200809L /* snprintf, posix_memalign, strdup */
 #endif
 
 #include <stddef.h>
