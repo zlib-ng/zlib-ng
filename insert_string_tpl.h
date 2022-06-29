@@ -31,7 +31,7 @@
 #ifndef HASH_CALC_READ
 #  if BYTE_ORDER == LITTLE_ENDIAN
 #    define HASH_CALC_READ \
-        zmemcpy_4(&val, strstart);
+        memcpy(&val, strstart, sizeof(val));
 #  else
 #    define HASH_CALC_READ \
         val  = ((uint32_t)(strstart[0])); \
