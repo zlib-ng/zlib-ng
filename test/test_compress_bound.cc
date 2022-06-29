@@ -18,9 +18,9 @@
 
 #define MAX_LENGTH (32)
 
-class compress_bound_variant : public testing::TestWithParam<z_size_t> {
+class compress_bound_variant : public testing::TestWithParam<int32_t> {
 public:
-    void estimate(z_size_t level) {
+    void estimate(int32_t level) {
         z_size_t estimate_len = 0;
         uint8_t *uncompressed = NULL;
         uint8_t dest[128];
