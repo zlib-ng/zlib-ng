@@ -41,19 +41,19 @@ static const lut_rem_pair perm_idx_lut[13] = {
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
     int16_t tmp;
-    zmemcpy_2(&tmp, from);
+    memcpy(&tmp, from, sizeof(tmp));
     *chunk = _mm_set1_epi16(tmp);
 }
 
 static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
     int32_t tmp;
-    zmemcpy_4(&tmp, from);
+    memcpy(&tmp, from, sizeof(tmp));
     *chunk = _mm_set1_epi32(tmp);
 }
 
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
     int64_t tmp;
-    zmemcpy_8(&tmp, from);
+    memcpy(&tmp, from, sizeof(tmp));
     *chunk = _mm_set1_epi64x(tmp);
 }
 
@@ -69,7 +69,7 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
     lut_rem_pair lut_rem = perm_idx_lut[dist - 3];
     __m128i perm_vec, ret_vec;
 #ifdef Z_MEMORY_SANITIZER
-    /* Important to note: 
+    /* Important to note:
      * This is _not_ to subvert the memory sanitizer but to instead unpoison some
      * bytes we willingly and purposefully load uninitialized that we swizzle over
      * in a vector register, anyway.  If what we assume is wrong about what is used,
