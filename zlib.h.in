@@ -62,7 +62,7 @@ extern "C" {
 #define ZLIB_VER_MAJOR 1
 #define ZLIB_VER_MINOR 2
 #define ZLIB_VER_REVISION 12
-#define ZLIB_VER_SUBREVISION 0
+#define ZLIB_VER_SUBREVISION 15    /* 15=fork (0xf) */
 
 /*
     The 'zlib' compression library provides in-memory compression and
