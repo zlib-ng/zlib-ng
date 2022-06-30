@@ -55,6 +55,7 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateBackInit)(PREFIX3(stream) *strm, int32_t wi
     state->window = window;
     state->wnext = 0;
     state->whave = 0;
+    state->sane = 1;
     state->chunksize = functable.chunksize();
     return Z_OK;
 }
