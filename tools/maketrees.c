@@ -98,7 +98,7 @@ static void tr_static_init(void) {
       ((i) == (last)? "\n};\n\n" :    \
        ((i) % (width) == (width)-1 ? ",\n" : ", "))
 
-static void gen_trees_header() {
+static void gen_trees_header(void) {
     int i;
 
     printf("#ifndef TREES_TBL_H_\n");
