@@ -62,7 +62,7 @@ static void write_table64(const z_word_t *table, int k);
   information needed to generate CRCs on data a byte at a time for all
   combinations of CRC register values and incoming bytes.
 */
-static void make_crc_table() {
+static void make_crc_table(void) {
     unsigned i, j, n;
     uint32_t p;
 
