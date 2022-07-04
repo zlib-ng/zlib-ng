@@ -1,128 +1,212 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.5.1)
 
-include(FetchContent)
-
-enable_language(CXX)
-
-# Google test requires at least C++11
-set(CMAKE_CXX_STANDARD 11)
-
-# Google test requires MSAN instrumented LLVM C++ libraries
-if(WITH_SANITIZER STREQUAL "Memory")
-    if(NOT DEFINED ENV{LLVM_BUILD_DIR})
-        message(FATAL_ERROR "MSAN instrumented C++ libraries required!")
+macro(configure_test_executable target)
+    target_include_directories(${target} PRIVATE ${CMAKE_BINARY_DIR} ${CMAKE_SOURCE_DIR})
+    set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+    if(NOT WITH_GZFILEOP)
+        target_compile_definitions(${target} PRIVATE -DWITH_GZFILEOP)
+        target_sources(${target} PRIVATE ${ZLIB_GZFILE_PRIVATE_HDRS} ${ZLIB_GZFILE_SRCS})
     endif()
+endmacro()
 
-    # Must set include and compile options before fetching googletest
-    include_directories($ENV{LLVM_BUILD_DIR}/include $ENV{LLVM_BUILD_DIR}/include/c++/v1)
-    add_compile_options(-stdlib=libc++ -g)
+add_executable(example example.c)
+configure_test_executable(example)
+target_link_libraries(example zlib)
+add_test(NAME example COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:example>)
+
+add_executable(minigzip minigzip.c)
+configure_test_executable(minigzip)
+if(NOT DEFINED BUILD_SHARED_LIBS)
+    target_link_libraries(minigzip zlibstatic)
+else()
+    target_link_libraries(minigzip zlib)
+endif()
+if(BASEARCH_S360_FOUND)
+    if(WITH_DFLTCC_DEFLATE OR WITH_DFLTCC_INFLATE)
+        set_source_files_properties(minigzip.c PROPERTIES COMPILE_DEFINITIONS BUFLEN=262144)
+    endif()
+endif()
+set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip>)
+
+add_executable(minideflate minideflate.c)
+configure_test_executable(minideflate)
+target_link_libraries(minideflate zlib)
+set(MINIDEFLATE_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minideflate>)
+
+if(INSTALL_UTILS)
+    install(TARGETS minigzip minideflate
+        RUNTIME DESTINATION "${BIN_INSTALL_DIR}"
+        ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
+        LIBRARY DESTINATION "${LIB_INSTALL_DIR}")
 endif()
 
-if(NOT TARGET GTest::GTest)
-    # Prevent overriding the parent project's compiler/linker settings for Windows
-    set(gtest_force_shared_crt ON CACHE BOOL
-        "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
+add_executable(switchlevels switchlevels.c)
+configure_test_executable(switchlevels)
+target_link_libraries(switchlevels zlib)
+set(SWITCHLEVELS_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels>)
 
-    # Allow specifying alternative Google test repository
-    if(NOT DEFINED GTEST_REPOSITORY)
-        set(GTEST_REPOSITORY https://github.com/google/googletest.git)
+add_executable(infcover infcover.c)
+configure_test_executable(infcover)
+target_link_libraries(infcover zlib)
+if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
+    target_sources(infcover PRIVATE ${CMAKE_SOURCE_DIR}/inftrees.c)
+endif()
+add_test(NAME infcover COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
+
+add_executable(makefixed ${CMAKE_SOURCE_DIR}/tools/makefixed.c ${CMAKE_SOURCE_DIR}/inftrees.c)
+configure_test_executable(makefixed)
+set(MAKEFIXED_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makefixed>)
+
+add_executable(maketrees ${CMAKE_SOURCE_DIR}/tools/maketrees.c ${CMAKE_SOURCE_DIR}/trees.c ${CMAKE_SOURCE_DIR}/zutil.c)
+configure_test_executable(maketrees)
+set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees>)
+
+add_executable(makecrct ${CMAKE_SOURCE_DIR}/tools/makecrct.c)
+configure_test_executable(makecrct)
+set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct>)
+
+# Runs tests targeting CVEs
+include(cmake/test-cves.cmake)
+
+# Run tests with data files
+include(cmake/test-data.cmake)
+
+# Run tests targeting GitHub issues
+include(cmake/test-issues.cmake)
+
+# Run tests targeting tools
+include(cmake/test-tools.cmake)
+
+if(WITH_FUZZERS)
+    add_subdirectory(fuzz)
+endif()
+
+if(CMAKE_VERSION VERSION_LESS 3.12)
+    message(WARNING "Minimum cmake version of 3.12 not met for GoogleTest or benchmarks!")
+else()
+    enable_language(CXX)
+
+    include(FetchContent)
+
+    if(WITH_BENCHMARKS)
+        add_subdirectory(benchmarks)
     endif()
-    if(NOT DEFINED GTEST_TAG)
-        # Use older version of Google test to support older versions of GCC
-        if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQUAL 5.3)
-            set(GTEST_TAG release-1.10.0)
+
+    # Google test requires at least C++11
+    set(CMAKE_CXX_STANDARD 11)
+
+    # Google test requires MSAN instrumented LLVM C++ libraries
+    if(WITH_SANITIZER STREQUAL "Memory")
+        if(NOT DEFINED ENV{LLVM_BUILD_DIR})
+            message(FATAL_ERROR "MSAN instrumented C++ libraries required!")
+        endif()
+
+        # Must set include and compile options before fetching googletest
+        include_directories($ENV{LLVM_BUILD_DIR}/include $ENV{LLVM_BUILD_DIR}/include/c++/v1)
+        add_compile_options(-stdlib=libc++ -g)
+    endif()
+
+    if(NOT TARGET GTest::GTest)
+        # Prevent overriding the parent project's compiler/linker settings for Windows
+        set(gtest_force_shared_crt ON CACHE BOOL
+            "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
+
+        # Allow specifying alternative Google test repository
+        if(NOT DEFINED GTEST_REPOSITORY)
+            set(GTEST_REPOSITORY https://github.com/google/googletest.git)
+        endif()
+        if(NOT DEFINED GTEST_TAG)
+            # Use older version of Google test to support older versions of GCC
+            if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQUAL 5.3)
+                set(GTEST_TAG release-1.10.0)
+            else()
+                set(GTEST_TAG release-1.11.0)
+            endif()
+        endif()
+
+        # Fetch Google test source code from official repository
+        FetchContent_Declare(googletest
+            GIT_REPOSITORY ${GTEST_REPOSITORY}
+            GIT_TAG ${GTEST_TAG})
+
+        FetchContent_GetProperties(googletest)
+        if(NOT googletest_POPULATED)
+            FetchContent_Populate(googletest)
+            add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+        endif()
+        add_library(GTest::GTest ALIAS gtest)
+    endif()
+
+    set(TEST_SRCS
+        test_adler32.cc
+        test_aligned_alloc.cc
+        test_compare256.cc
+        test_compress.cc
+        test_compress_bound.cc
+        test_crc32.cc
+        test_cve-2003-0107.cc
+        test_deflate_bound.cc
+        test_deflate_copy.cc
+        test_deflate_dict.cc
+        test_deflate_hash_head_0.cc
+        test_deflate_header.cc
+        test_deflate_params.cc
+        test_deflate_pending.cc
+        test_deflate_prime.cc
+        test_deflate_quick_bi_valid.cc
+        test_deflate_quick_block_open.cc
+        test_deflate_tune.cc
+        test_dict.cc
+        test_inflate_adler32.cc
+        test_inflate_sync.cc
+        test_large_buffers.cc
+        test_small_buffers.cc
+        test_version.cc
+        )
+
+    if(WITH_GZFILEOP)
+        list(APPEND TEST_SRCS test_gzio.cc)
+    endif()
+
+    add_executable(gtest_zlib test_main.cc ${TEST_SRCS})
+    configure_test_executable(gtest_zlib)
+
+    if(WITH_SANITIZER STREQUAL "Memory")
+        target_link_directories(gtest_zlib PRIVATE $ENV{LLVM_BUILD_DIR}/lib)
+        target_link_options(gtest_zlib PRIVATE
+            -stdlib=libc++
+            -lc++abi
+            -fsanitize=memory
+            -fsanitize-memory-track-origins)
+    endif()
+
+    if(ZLIB_DUAL_LINK AND NOT ZLIB_COMPAT)
+        find_package(ZLIB)
+        if(ZLIB_FOUND)
+            message(STATUS "Added dual linking tests against zlib")
+            message(STATUS "  Zlib include dir: ${ZLIB_INCLUDE_DIR}")
+            message(STATUS "  Zlib libraries: ${ZLIB_LIBRARIES}")
+
+            target_sources(gtest_zlib PRIVATE test_compress_dual.cc)
+            target_include_directories(gtest_zlib PRIVATE ${ZLIB_INCLUDE_DIR})
+            target_link_libraries(gtest_zlib ${ZLIB_LIBRARIES})
         else()
-            set(GTEST_TAG release-1.11.0)
+            message(WARNING "Zlib not found, skipping dual linking tests")
         endif()
     endif()
 
-    # Fetch Google test source code from official repository
-    FetchContent_Declare(googletest
-        GIT_REPOSITORY ${GTEST_REPOSITORY}
-        GIT_TAG ${GTEST_TAG})
+    target_link_libraries(gtest_zlib zlibstatic GTest::GTest)
 
-    FetchContent_GetProperties(googletest)
-    if(NOT googletest_POPULATED)
-        FetchContent_Populate(googletest)
-        add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
+    find_package(Threads)
+    if(Threads_FOUND)
+        target_sources(gtest_zlib PRIVATE test_deflate_concurrency.cc)
+        if(UNIX AND NOT APPLE)
+            # On Linux, use a workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52590
+            target_link_libraries(gtest_zlib -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
+        endif()
+        target_link_libraries(gtest_zlib Threads::Threads)
     endif()
-    add_library(GTest::GTest ALIAS gtest)
-endif()
 
-set(TEST_SRCS
-    test_adler32.cc
-    test_aligned_alloc.cc
-    test_compare256.cc
-    test_compress.cc
-    test_compress_bound.cc
-    test_crc32.cc
-    test_cve-2003-0107.cc
-    test_deflate_bound.cc
-    test_deflate_copy.cc
-    test_deflate_dict.cc
-    test_deflate_hash_head_0.cc
-    test_deflate_header.cc
-    test_deflate_params.cc
-    test_deflate_pending.cc
-    test_deflate_prime.cc
-    test_deflate_quick_bi_valid.cc
-    test_deflate_quick_block_open.cc
-    test_deflate_tune.cc
-    test_dict.cc
-    test_inflate_adler32.cc
-    test_inflate_sync.cc
-    test_large_buffers.cc
-    test_small_buffers.cc
-    test_version.cc
-    )
-
-if(WITH_GZFILEOP)
-    list(APPEND TEST_SRCS test_gzio.cc)
-endif()
-
-add_executable(gtest_zlib test_main.cc ${TEST_SRCS})
-
-target_include_directories(gtest_zlib PRIVATE
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_BINARY_DIR})
-
-if(WITH_SANITIZER STREQUAL "Memory")
-    target_link_directories(gtest_zlib PRIVATE $ENV{LLVM_BUILD_DIR}/lib)
-    target_link_options(gtest_zlib PRIVATE
-        -stdlib=libc++
-        -lc++abi
-        -fsanitize=memory
-        -fsanitize-memory-track-origins)
-endif()
-
-if(ZLIB_DUAL_LINK AND NOT ZLIB_COMPAT)
-    find_package(ZLIB)
-    if(ZLIB_FOUND)
-        message(STATUS "Added dual linking tests against zlib")
-        message(STATUS "  Zlib include dir: ${ZLIB_INCLUDE_DIR}")
-        message(STATUS "  Zlib libraries: ${ZLIB_LIBRARIES}")
-
-        target_sources(gtest_zlib PRIVATE test_compress_dual.cc)
-        target_include_directories(gtest_zlib PRIVATE ${ZLIB_INCLUDE_DIR})
-        target_link_libraries(gtest_zlib ${ZLIB_LIBRARIES})
-    else()
-        message(WARNING "Zlib not found, skipping dual linking tests")
-    endif()
-endif()
-
-target_link_libraries(gtest_zlib zlibstatic GTest::GTest)
-
-find_package(Threads)
-if(Threads_FOUND)
-    target_sources(gtest_zlib PRIVATE test_deflate_concurrency.cc)
-    if(UNIX AND NOT APPLE)
-        # On Linux, use a workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52590
-        target_link_libraries(gtest_zlib -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
-    endif()
-    target_link_libraries(gtest_zlib Threads::Threads)
-endif()
-
-if(ZLIB_ENABLE_TESTS)
     add_test(NAME gtest_zlib
         COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:gtest_zlib>)
 endif()
