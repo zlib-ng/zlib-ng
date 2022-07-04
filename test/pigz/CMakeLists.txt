@@ -167,7 +167,7 @@ if(PIGZ_ENABLE_TESTS)
                 "-DDECOMPRESS_ARGS=-d;-c"
                 -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/${path}
                 -DTEST_NAME=${test_id}
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake/test-compress.cmake)
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/../cmake/compress-and-verify.cmake)
         endif()
     endmacro()
 

@@ -32,3 +32,30 @@ add_test(NAME switchlevels-help
     COMMAND ${CMAKE_COMMAND}
      "-DCOMMAND=${TEST_COMMAND}"
      -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
+
+# Test generated crc32 tables match tables in source directory
+add_test(NAME makecrct
+    COMMAND ${CMAKE_COMMAND}
+    "-DCOMMAND=${MAKECRCT_COMMAND}"
+    -DOUTPUT=${CMAKE_BINARY_DIR}/Testing/Temporary/crc32_braid_tbl._h
+    -DCOMPARE=${CMAKE_SOURCE_DIR}/crc32_braid_tbl.h
+    -DIGNORE_LINE_ENDINGS=ON
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
+
+# Test generated inflate tables match tables in source directory
+add_test(NAME makefixed
+    COMMAND ${CMAKE_COMMAND}
+    "-DCOMMAND=${MAKEFIXED_COMMAND}"
+    -DOUTPUT=${CMAKE_BINARY_DIR}/Testing/Temporary/inffixed_tbl._h
+    -DCOMPARE=${CMAKE_SOURCE_DIR}/inffixed_tbl.h
+    -DIGNORE_LINE_ENDINGS=ON
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
+
+# Test generated tree tables match tables in source directory
+add_test(NAME maketrees
+    COMMAND ${CMAKE_COMMAND}
+    "-DCOMMAND=${MAKETREES_COMMAND}"
+    -DOUTPUT=${CMAKE_BINARY_DIR}/Testing/Temporary/trees_tbl._h
+    -DCOMPARE=${CMAKE_SOURCE_DIR}/trees_tbl.h
+    -DIGNORE_LINE_ENDINGS=ON
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-compare.cmake)
