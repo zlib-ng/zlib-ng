@@ -359,7 +359,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       else
         ARCH=native
       fi ;;
-    aarch64 | aarch64_be)
+    aarch64 | aarch64_be | arm64)
       if test "${uname}" = "elf"; then
         uname=aarch64
       fi
@@ -1125,7 +1125,7 @@ EOF
 
 check_neon_ld4_intrinsics() {
     if test $buildneon -eq 1 && test $native -eq 0; then
-        if test "$CC_ARCH" = "aarch64" || test "$CC_ARCH" = "aarch64_be"; then
+        if test "$CC_ARCH" = "aarch64" || test "$CC_ARCH" = "aarch64_be" || test "$CC_ARCH" = "arm64"; then
             neonflag="-march=armv8-a+simd"
         elif test $MFPU_NEON_AVAILABLE -eq 1; then
             neonflag="-mfpu=neon"
