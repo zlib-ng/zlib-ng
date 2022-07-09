@@ -332,7 +332,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       else
         ARCH=native
       fi ;;
-    aarch64 | aarch64_be)
+    aarch64 | aarch64_be | arm64)
       if test "${uname}" = "elf"; then
         uname=aarch64
       fi
@@ -1479,7 +1479,7 @@ EOF
 
     ;;
     # 64-bit ARM specific optimizations
-    aarch64)
+    aarch64 | arm64)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=aarch64
         ARCHDIR=arch/arm
 
