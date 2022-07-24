@@ -2,8 +2,12 @@
 # Licensed under the Zlib license, see LICENSE.md for details
 
 macro(check_acle_compiler_flag)
-    if(NOT NATIVEFLAG AND NOT HAVE_ACLE_FLAG)
-        set(ACLEFLAG "-march=armv8-a+crc" CACHE INTERNAL "Compiler option to enable ACLE support")
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+        if(NOT NATIVEFLAG AND NOT HAVE_ACLE_FLAG)
+            set(ACLEFLAG "-march=armv8-a+crc" CACHE INTERNAL "Compiler option to enable ACLE support")
+        endif()
+    elseif(MSVC)
+        set(HAVE_ACLE_FLAG TRUE)
     endif()
     # Check whether compiler supports ACLE flag
     set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG} ${NATIVEFLAG}")

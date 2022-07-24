@@ -71,7 +71,7 @@ static inline __m512i _mm512_zextsi128_si512(__m128i a) {
 
 #endif // __AVX2__
 
-#if defined(ARM_NEON_ADLER32) && !defined(__aarch64__)
+#if defined(ARM_NEON_ADLER32) && !defined(__aarch64__) && !defined(_M_ARM64)
 /* Compatibility shim for the _high family of functions */
 #define vmull_high_u8(a, b) vmull_u8(vget_high_u8(a), vget_high_u8(b))
 #define vmlal_high_u8(a, b, c) vmlal_u8(a, vget_high_u8(b), vget_high_u8(c))

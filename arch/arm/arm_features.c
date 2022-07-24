@@ -16,7 +16,7 @@
 #  endif
 #  include <sys/sysctl.h>
 #elif defined(_WIN32)
-#  include <winapifamily.h>
+#  include <windows.h>
 #endif
 
 static int arm_has_crc32() {
@@ -34,6 +34,8 @@ static int arm_has_crc32() {
     size_t size = sizeof(hascrc32);
     return sysctlbyname("hw.optional.armv8_crc32", &hascrc32, &size, NULL, 0) == 0
       && hascrc32 == 1;
+#elif defined(_WIN32)
+    return IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE);
 #elif defined(ARM_NOCHECK_ACLE)
     return 1;
 #else
