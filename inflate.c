@@ -550,8 +550,8 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 if (copy > have)
                     copy = have;
                 if (copy) {
-                    if (state->head != NULL && state->head->extra != NULL) {
-                        len = state->head->extra_len - state->length;
+                    len = state->head->extra_len - state->length;
+                    if (state->head != NULL && state->head->extra != NULL && len < state->head->extra_max) {
                         memcpy(state->head->extra + len, next,
                                 len + copy > state->head->extra_max ?
                                 state->head->extra_max - len : copy);
