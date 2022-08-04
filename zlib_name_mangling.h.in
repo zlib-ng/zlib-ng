@@ -48,6 +48,9 @@
 #define deflateSetHeader      @ZLIB_SYMBOL_PREFIX@deflateSetHeader
 #define deflateTune           @ZLIB_SYMBOL_PREFIX@deflateTune
 #define deflate_copyright     @ZLIB_SYMBOL_PREFIX@deflate_copyright
+#define fill_window           @ZLIB_SYMBOL_PREFIX@fill_window
+#define fixedtables           @ZLIB_SYMBOL_PREFIX@fixedtables
+#define flush_pending         @ZLIB_SYMBOL_PREFIX@flush_pending
 #define get_crc_table         @ZLIB_SYMBOL_PREFIX@get_crc_table
 #ifndef Z_SOLO
 #  define gz_error              @ZLIB_SYMBOL_PREFIX@gz_error
@@ -113,8 +116,10 @@
 #define inflateUndermine      @ZLIB_SYMBOL_PREFIX@inflateUndermine
 #define inflateValidate       @ZLIB_SYMBOL_PREFIX@inflateValidate
 #define inflate_copyright     @ZLIB_SYMBOL_PREFIX@inflate_copyright
+#define inflate_ensure_window @ZLIB_SYMBOL_PREFIX@inflate_ensure_window
 #define inflate_fast          @ZLIB_SYMBOL_PREFIX@inflate_fast
 #define inflate_table         @ZLIB_SYMBOL_PREFIX@inflate_table
+#define read_buf              @ZLIB_SYMBOL_PREFIX@read_buf
 #ifndef Z_SOLO
 #  define uncompress            @ZLIB_SYMBOL_PREFIX@uncompress
 #  define uncompress2           @ZLIB_SYMBOL_PREFIX@uncompress2
@@ -155,5 +160,13 @@
 
 /* all zlib structs in zutil.h */
 #define z_errmsg              @ZLIB_SYMBOL_PREFIX@z_errmsg
+#define zlibng_string         @ZLIB_SYMBOL_PREFIX@zlibng_string
+#define zlibng_version        @ZLIB_SYMBOL_PREFIX@zlibng_version
+
+/* zlib-ng specific symbols */
+#define zng_alloc_aligned      @ZLIB_SYMBOL_PREFIX@zng_alloc_aligned
+#define zng_calloc             @ZLIB_SYMBOL_PREFIX@zng_calloc
+#define zng_cfree              @ZLIB_SYMBOL_PREFIX@zng_cfree
+#define zng_free_aligned       @ZLIB_SYMBOL_PREFIX@zng_free_aligned
 
 #endif /* ZLIB_NAME_MANGLING_H */
