@@ -15,15 +15,13 @@ set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
 # Prefer posix gcc variant for gtest pthread support
 find_program(C_COMPILER_FULL_PATH NAMES
     ${CMAKE_C_COMPILER_TARGET}-gcc-posix
-    ${CMAKE_C_COMPILER_TARGET}-gcc
-    gcc-mingw32-w64-${CMAKE_C_COMPILER_TARGET})
+    ${CMAKE_C_COMPILER_TARGET}-gcc)
 if(NOT C_COMPILER_FULL_PATH)
     message(FATAL_ERROR "Cross-compiler for ${CMAKE_C_COMPILER_TARGET} not found")
 endif()
 set(CMAKE_C_COMPILER ${C_COMPILER_FULL_PATH})
 
 find_program(CXX_COMPILER_FULL_PATH NAMES
-    g++-mingw-w64-${CMAKE_CXX_COMPILER_TARGET}
     ${CMAKE_CXX_COMPILER_TARGET}-g++-posix
     ${CMAKE_CXX_COMPILER_TARGET}-g++)
 if(CXX_COMPILER_FULL_PATH)
