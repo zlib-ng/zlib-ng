@@ -54,6 +54,13 @@ jobs:
             codecov: ubuntu_gcc_osb
             cflags: -O3
 
+          - name: Ubuntu GCC -O3 OSB add_subdirectory
+            os: ubuntu-latest
+            compiler: gcc
+            cxx-compiler: g++
+            build-dir: ../build
+            build-src-dir: ../zlib-ng/test/add-subdirectory-project
+
           - name: Ubuntu GCC -O1 No Unaligned UBSAN
             os: ubuntu-latest
             compiler: gcc
