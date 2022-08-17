@@ -32,8 +32,8 @@ add_executable(benchmark_zlib
     )
 
 target_include_directories(benchmark_zlib PRIVATE
-    ${CMAKE_SOURCE_DIR}
-    ${CMAKE_BINARY_DIR}
+    ${PROJECT_SOURCE_DIR}
+    ${PROJECT_BINARY_DIR}
     ${benchmark_SOURCE_DIR}/benchmark/include)
 
 target_link_libraries(benchmark_zlib zlibstatic benchmark::benchmark)
@@ -77,15 +77,15 @@ if(WITH_BENCHMARK_APPS)
         target_link_libraries(benchmark_zlib_apps_alt libpng.a ${ZLIB_ALT_LIB} benchmark::benchmark)
         target_compile_definitions(benchmark_zlib_apps_alt PRIVATE BUILD_ALT=1)
         target_include_directories(benchmark_zlib_apps_alt PRIVATE
-            ${CMAKE_SOURCE_DIR}
-            ${CMAKE_BINARY_DIR}
+            ${PROJECT_SOURCE_DIR}
+            ${PROJECT_BINARY_DIR}
             ${PNG_INCLUDE_DIR}
             ${benchmark_SOURCE_DIR}/benchmark/include)
     endif()
 
     target_include_directories(benchmark_zlib_apps PRIVATE
-        ${CMAKE_SOURCE_DIR}
-        ${CMAKE_BINARY_DIR}
+        ${PROJECT_SOURCE_DIR}
+        ${PROJECT_BINARY_DIR}
         ${PNG_INCLUDE_DIR}
         ${benchmark_SOURCE_DIR}/benchmark/include)
 
