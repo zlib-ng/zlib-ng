@@ -670,6 +670,10 @@ static void cover_fast(void) {
         Z_STREAM_END);
 }
 
+static void cover_cve_2022_37434(void) {
+    inf("1f 8b 08 04 61 62 63 64 61 62 52 51 1f 8b 08 04 61 62 63 64 61 62 52 51 1f 8b 08 04 61 62 63 64 61 62 52 51 1f 8b 08 04 61 62 63 64 61 62 52 51", "wtf", 13, 47, 12, Z_OK);
+}
+
 int main(void) {
     fprintf(stderr, "%s\n", zVersion());
     cover_support();
@@ -678,5 +682,6 @@ int main(void) {
     cover_inflate();
     cover_trees();
     cover_fast();
+    cover_cve_2022_37434();
     return 0;
 }
