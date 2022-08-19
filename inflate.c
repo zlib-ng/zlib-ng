@@ -509,9 +509,11 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 if (copy) {
                     if (state->head != NULL && state->head->extra != NULL) {
                         len = state->head->extra_len - state->length;
-                        memcpy(state->head->extra + len, next,
-                                len + copy > state->head->extra_max ?
-                                state->head->extra_max - len : copy);
+                        if (len < state->head->extra_max) {
+                            memcpy(state->head->extra + len, next,
+                                    len + copy > state->head->extra_max ?
+                                    state->head->extra_max - len : copy);
+                        }
                     }
                     if ((state->flags & 0x0200) && (state->wrap & 4))
                         state->check = PREFIX(crc32)(state->check, next, copy);
