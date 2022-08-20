@@ -76,7 +76,6 @@ endif()
 option(WITH_GZFILEOP "Compile with support for gzFile related functions" ON)
 option(ZLIB_COMPAT "Compile with zlib compatible API" OFF)
 option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
-option(ZLIB_DUAL_LINK "Dual link tests against system zlib" OFF)
 option(WITH_FUZZERS "Build test/fuzz" OFF)
 option(WITH_BENCHMARKS "Build test/benchmarks" OFF)
 option(WITH_BENCHMARK_APPS "Build application benchmarks" OFF)
@@ -127,7 +126,6 @@ option(INSTALL_UTILS "Copy minigzip and minideflate during install" OFF)
 
 mark_as_advanced(FORCE
     ZLIB_SYMBOL_PREFIX
-    ZLIB_DUAL_LINK
     WITH_REDUCED_MEM
     WITH_ACLE WITH_NEON
     WITH_DFLTCC_DEFLATE
@@ -1161,7 +1159,6 @@ endif()
 add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile related functions")
 add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Compile with zlib compatible API")
 add_feature_info(ZLIB_ENABLE_TESTS ZLIB_ENABLE_TESTS "Build test binaries")
-add_feature_info(ZLIB_DUAL_LINK ZLIB_DUAL_LINK "Dual link tests against system zlib")
 add_feature_info(WITH_SANITIZER WITH_SANITIZER "Enable sanitizer support")
 add_feature_info(WITH_FUZZERS WITH_FUZZERS "Build test/fuzz")
 add_feature_info(WITH_BENCHMARKS WITH_BENCHMARKS "Build test/benchmarks")
