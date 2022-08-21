@@ -64,9 +64,8 @@ endif()
 FetchContent_Declare(pigz
     GIT_REPOSITORY https://github.com/madler/pigz.git
     GIT_TAG ${PIGZ_TAG})
-FetchContent_MakeAvailable(pigz)
-FetchContent_GetProperties(pigz)
 
+FetchContent_GetProperties(pigz)
 if(NOT pigz_POPULATED)
     FetchContent_Populate(pigz)
 endif()

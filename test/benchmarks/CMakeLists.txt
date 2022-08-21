@@ -14,11 +14,11 @@ if(NOT benchmark_FOUND)
     set(BENCHMARK_ENABLE_TESTING OFF)
     FetchContent_Declare(benchmark
         GIT_REPOSITORY https://github.com/google/benchmark.git)
-    FetchContent_MakeAvailable(benchmark)
-    FetchContent_GetProperties(benchmark)
 
+    FetchContent_GetProperties(benchmark)
     if(NOT benchmark_POPULATED)
         FetchContent_Populate(benchmark)
+        add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR})
     endif()
 endif()
 
@@ -55,15 +55,15 @@ if(WITH_BENCHMARK_APPS)
     if(NOT PNG_FOUND)
         FetchContent_Declare(PNG
             GIT_REPOSITORY https://github.com/glennrp/libpng.git)
-        FetchContent_MakeAvailable(PNG)
-        FetchContent_GetProperties(PNG)
 
+        FetchContent_GetProperties(PNG)
         if(NOT PNG_POPULATED)
             FetchContent_Populate(PNG)
+            add_subdirectory(${PNG_SOURCE_DIR} ${PNG_BINARY_DIR})
         endif()
     endif()
 
-    set(BENCH_APP_SRCS 
+    set(BENCH_APP_SRCS
         benchmark_png_encode.cc
         benchmark_png_decode.cc
         benchmark_main.cc
