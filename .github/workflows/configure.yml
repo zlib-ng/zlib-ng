@@ -160,6 +160,14 @@ jobs:
             compiler: gcc
             configure-args: --warn --zlib-compat --static --with-dfltcc-deflate --with-dfltcc-inflate
 
+          - name: Ubuntu Emscripten WASM32
+            os: ubuntu-latest
+            chost: wasm32
+            configure-args: --warn --zlib-compat --static
+            configure-prefix: emconfigure
+            cflags: -static
+            ldflags: -static
+
           - name: macOS GCC Symbol Prefix
             os: macOS-latest
             compiler: gcc-9
@@ -185,11 +193,15 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.packages }}
 
+    - name: Install Emscripten
+      if: contains(matrix.name, 'WASM32')
+      uses: mymindstorm/setup-emsdk@v11
+
     - name: Generate project files
       run: |
         mkdir ${{ matrix.build-dir || '.not-used' }}
         cd ${{ matrix.build-dir || '.' }}
-        ${{ matrix.build-src-dir || '.' }}/configure ${{ matrix.configure-args }}
+        ${{ matrix.configure-prefix }} ${{ matrix.build-src-dir || '.' }}/configure ${{ matrix.configure-args }}
       env:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
