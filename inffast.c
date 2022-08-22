@@ -156,14 +156,22 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
        window is overwritten then future matches with far distances will fail to copy correctly. */
     extra_safe = (wsize != 0 && out >= window && out + INFLATE_FAST_MIN_LEFT <= window + wsize);
 
+    /* This is extremely latency sensitive, so empty inline assembly blocks are
+       used to prevent the compiler from reassociating. */
+#define REFILL() do { \
+        hold |= load_64_bits(in, bits); \
+        in += 7; \
+        __asm__ volatile ("" : "+r"(in)); \
+        uint64_t tmp = ((bits >> 3) & 7); \
+        __asm__ volatile ("" : "+r"(tmp)); \
+        in -= tmp; \
+        bits |= 56; \
+    } while (0)
+
     /* decode literals and length/distances until end-of-block or not enough
        input data or output space */
     do {
-        if (bits < 15) {
-            hold |= load_64_bits(in, bits);
-            in += 6;
-            bits += 48;
-        }
+        REFILL();
         here = lcode + (hold & lmask);
       dolen:
         DROPBITS(here->bits);
@@ -176,19 +184,9 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
         } else if (op & 16) {                     /* length base */
             len = here->val;
             op &= 15;                           /* number of extra bits */
-            if (bits < op) {
-                hold |= load_64_bits(in, bits);
-                in += 6;
-                bits += 48;
-            }
             len += BITS(op);
             DROPBITS(op);
             Tracevv((stderr, "inflate:         length %u\n", len));
-            if (bits < 15) {
-                hold |= load_64_bits(in, bits);
-                in += 6;
-                bits += 48;
-            }
             here = dcode + (hold & dmask);
           dodist:
             DROPBITS(here->bits);
@@ -196,11 +194,6 @@ void Z_INTERNAL zng_inflate_fast(PREFIX3(stream) *strm, unsigned long start) {
             if (op & 16) {                      /* distance base */
                 dist = here->val;
                 op &= 15;                       /* number of extra bits */
-                if (bits < op) {
-                    hold |= load_64_bits(in, bits);
-                    in += 6;
-                    bits += 48;
-                }
                 dist += BITS(op);
 #ifdef INFLATE_STRICT
                 if (dist > dmax) {
