@@ -101,6 +101,10 @@
         #error archfound riscv32
     #endif
 
+// Emscripten (WebAssembly)
+#elif defined(__EMSCRIPTEN__)
+    #error archfound wasm32
+
 // return 'unrecognized' if we do not know what architecture this is
 #else
     #error archfound unrecognized
