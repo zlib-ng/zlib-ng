@@ -145,15 +145,10 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
        window is overwritten then future matches with far distances will fail to copy correctly. */
     extra_safe = (wsize != 0 && out >= window && out + INFLATE_FAST_MIN_LEFT <= window + wsize);
 
-    /* This is extremely latency sensitive, so empty inline assembly blocks are
-       used to prevent the compiler from reassociating. */
 #define REFILL() do { \
         hold |= load_64_bits(in, bits); \
         in += 7; \
-        __asm__ volatile ("" : "+r"(in)); \
-        uint64_t tmp = ((bits >> 3) & 7); \
-        __asm__ volatile ("" : "+r"(tmp)); \
-        in -= tmp; \
+        in -= ((bits >> 3) & 7); \
         bits |= 56; \
     } while (0)
 
@@ -162,6 +157,16 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     do {
         REFILL();
         here = lcode + (hold & lmask);
+        if (here->op == 0) {
+            *out++ = (unsigned char)(here->val);
+            DROPBITS(here->bits);
+            here = lcode + (hold & lmask);
+            if (here->op == 0) {
+                *out++ = (unsigned char)(here->val);
+                DROPBITS(here->bits);
+                here = lcode + (hold & lmask);
+            }
+        }
       dolen:
         DROPBITS(here->bits);
         op = here->op;
@@ -177,6 +182,9 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
             DROPBITS(op);
             Tracevv((stderr, "inflate:         length %u\n", len));
             here = dcode + (hold & dmask);
+            if (bits < MAX_BITS + MAX_DIST_EXTRA_BITS) {
+                REFILL();
+            }
           dodist:
             DROPBITS(here->bits);
             op = here->op;

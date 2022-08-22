@@ -132,8 +132,8 @@
         strm->msg = (char *)errmsg; \
     } while (0)
 
-#define INFLATE_FAST_MIN_HAVE 8
-#define INFLATE_FAST_MIN_LEFT 258
+#define INFLATE_FAST_MIN_HAVE 15
+#define INFLATE_FAST_MIN_LEFT 260
 
 /* Load 64 bits from IN and place the bytes at offset BITS in the result. */
 static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
