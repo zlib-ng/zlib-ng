@@ -223,5 +223,6 @@ jobs:
       with:
         name: ${{ matrix.name }} (configure)
         path: |
+          **/Makefile
           ${{ matrix.build-dir || '.' }}/configure.log
         retention-days: 30
