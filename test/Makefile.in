@@ -13,9 +13,9 @@ TEST_LDFLAGS=-L.. ../$(LIBNAME).a
 QEMU_RUN=
 QEMU_VER:=$(shell command -v $(QEMU_RUN) --version 2> /dev/null)
 
-all: oldtests ghtests
+all: alltests
 
-oldtests: #set by ../configure
+alltests: #set by ../configure
 check_cross_dep:
 ifneq (,$(QEMU_RUN))
 ifeq (,$(QEMU_VER))
