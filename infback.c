@@ -329,18 +329,18 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             }
 
             /* build code tables -- note: do not change the lenbits or distbits
-               values here (9 and 6) without reading the comments in inftrees.h
+               values here (10 and 9) without reading the comments in inftrees.h
                concerning the ENOUGH constants, which depend on those values */
             state->next = state->codes;
             state->lencode = (const code *)(state->next);
-            state->lenbits = 9;
+            state->lenbits = 10;
             ret = zng_inflate_table(LENS, state->lens, state->nlen, &(state->next), &(state->lenbits), state->work);
             if (ret) {
                 SET_BAD("invalid literal/lengths set");
                 break;
             }
             state->distcode = (const code *)(state->next);
-            state->distbits = 6;
+            state->distbits = 9;
             ret = zng_inflate_table(DISTS, state->lens + state->nlen, state->ndist,
                                 &(state->next), &(state->distbits), state->work);
             if (ret) {
