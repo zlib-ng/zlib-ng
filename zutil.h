@@ -38,6 +38,8 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 
 #define MAX_BITS 15
 /* all codes must not exceed MAX_BITS bits */
+#define MAX_DIST_EXTRA_BITS 13
+/* maximum number of extra distance bits */
 
 #if MAX_MEM_LEVEL >= 8
 #  define DEF_MEM_LEVEL 8
