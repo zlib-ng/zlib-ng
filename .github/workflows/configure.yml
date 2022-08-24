@@ -160,7 +160,7 @@ jobs:
 
           - name: macOS GCC
             os: macOS-latest
-            compiler: gcc
+            compiler: gcc-9
             configure-args: --warn
 
     steps:
