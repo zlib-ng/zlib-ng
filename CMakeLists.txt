@@ -45,6 +45,7 @@ include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
 include(CMakeDependentOption)
 include(FeatureSummary)
+include(GNUInstallDirs)
 
 include(cmake/detect-arch.cmake)
 include(cmake/detect-install-dirs.cmake)
@@ -1131,17 +1132,17 @@ endif()
 
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     install(TARGETS ${ZLIB_INSTALL_LIBRARIES}
-        RUNTIME DESTINATION "${BIN_INSTALL_DIR}"
-        ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
-        LIBRARY DESTINATION "${LIB_INSTALL_DIR}")
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif()
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.h
-        DESTINATION "${INC_INSTALL_DIR}" RENAME zlib${SUFFIX}.h)
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} RENAME zlib${SUFFIX}.h)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zlib_name_mangling${SUFFIX}.h
-        DESTINATION "${INC_INSTALL_DIR}" RENAME zlib_name_mangling${SUFFIX}.h)
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} RENAME zlib_name_mangling${SUFFIX}.h)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h
-        DESTINATION "${INC_INSTALL_DIR}" RENAME zconf${SUFFIX}.h)
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} RENAME zconf${SUFFIX}.h)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(FILES ${ZLIB_PC} DESTINATION "${PKGCONFIG_INSTALL_DIR}")
@@ -1201,3 +1202,11 @@ endif()
 add_feature_info(INSTALL_UTILS INSTALL_UTILS "Copy minigzip and minideflate during install")
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
+
+# --- CPack
+set(CPACK_GENERATOR "TGZ")
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_PACKAGE_DIRECTORY ${PROJECT_BINARY_DIR}/package)
+set(CPACK_SOURCE_IGNORE_FILES .git/ ${PROJECT_BINARY_DIR}/ _CPack_Packages/)
+
+include(CPack)
