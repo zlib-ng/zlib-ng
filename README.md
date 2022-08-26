@@ -161,7 +161,7 @@ To install zlib-ng system-wide using the configure script:
 make install
 ```
 
-### vcpkg
+### Vcpkg
 
 Alternatively, you can build and install zlib-ng using the [vcpkg](https://github.com/Microsoft/vcpkg/) dependency manager:
 
