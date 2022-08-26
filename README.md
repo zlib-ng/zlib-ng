@@ -161,14 +161,16 @@ To install zlib-ng system-wide using the configure script:
 make install
 ```
 
-Alternatively, you can build and install zlib-ng using [vcpkg](https://github.com/Microsoft/vcpkg/) dependency manager:
+### vcpkg
+
+Alternatively, you can build and install zlib-ng using the [vcpkg](https://github.com/Microsoft/vcpkg/) dependency manager:
 
 ```sh or powershell
-    git clone https://github.com/Microsoft/vcpkg.git
-    cd vcpkg
-    ./bootstrap-vcpkg.sh # "./bootstrap-vcpkg.bat" for powershell
-    ./vcpkg integrate install
-    ./vcpkg install zlib-ng
+git clone https://github.com/Microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh # "./bootstrap-vcpkg.bat" for powershell
+./vcpkg integrate install
+./vcpkg install zlib-ng
 ```
 
 The zlib-ng port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
