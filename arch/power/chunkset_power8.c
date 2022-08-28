@@ -32,12 +32,6 @@ static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
     *chunk = (vector unsigned char)vec_splats(tmp);
 }
 
-#define CHUNKSIZE        chunksize_power8
-#define CHUNKCOPY        chunkcopy_power8
-#define CHUNKUNROLL      chunkunroll_power8
-#define CHUNKMEMSET      chunkmemset_power8
-#define CHUNKMEMSET_SAFE chunkmemset_safe_power8
-
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
     *chunk = vec_xl(0, s);
 }
@@ -45,6 +39,12 @@ static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
 static inline void storechunk(uint8_t *out, chunk_t *chunk) {
     vec_xst(*chunk, 0, out);
 }
+
+#define CHUNKSIZE        chunksize_power8
+#define CHUNKCOPY        chunkcopy_power8
+#define CHUNKUNROLL      chunkunroll_power8
+#define CHUNKMEMSET      chunkmemset_power8
+#define CHUNKMEMSET_SAFE chunkmemset_safe_power8
 
 #include "chunkset_tpl.h"
 
