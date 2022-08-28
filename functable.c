@@ -231,73 +231,6 @@ static void init_functable(void) {
         ft.chunksize = &chunksize_power8;
 #endif
 
-    // chunkcopy_stub:
-    ft.chunkcopy = &chunkcopy_c;
-#ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-        ft.chunkcopy = &chunkcopy_sse2;
-#endif
-#ifdef X86_AVX_CHUNKSET
-    if (x86_cpu_has_avx2)
-        ft.chunkcopy = &chunkcopy_avx;
-#endif
-#ifdef ARM_NEON_CHUNKSET
-    if (arm_cpu_has_neon)
-        ft.chunkcopy = &chunkcopy_neon;
-#endif
-#ifdef POWER8_VSX_CHUNKSET
-    if (power_cpu_has_arch_2_07)
-        ft.chunkcopy = &chunkcopy_power8;
-#endif
-
-    // chunkunroll_stub:
-    ft.chunkunroll = &chunkunroll_c;
-#ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-        ft.chunkunroll = &chunkunroll_sse2;
-#endif
-#ifdef X86_AVX_CHUNKSET
-    if (x86_cpu_has_avx2)
-        ft.chunkunroll = &chunkunroll_avx;
-#endif
-#ifdef ARM_NEON_CHUNKSET
-    if (arm_cpu_has_neon)
-        ft.chunkunroll = &chunkunroll_neon;
-#endif
-#ifdef POWER8_VSX_CHUNKSET
-    if (power_cpu_has_arch_2_07)
-        ft.chunkunroll = &chunkunroll_power8;
-#endif
-
-    // chunkmemset_stub:
-    ft.chunkmemset = &chunkmemset_c;
-#ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-        ft.chunkmemset = &chunkmemset_sse2;
-#endif
-#if defined(X86_SSE41) && defined(X86_SSE2)
-    if (x86_cpu_has_sse41)
-        ft.chunkmemset = &chunkmemset_sse41;
-#endif
-#ifdef X86_AVX_CHUNKSET
-    if (x86_cpu_has_avx2)
-        ft.chunkmemset = &chunkmemset_avx;
-#endif
-#ifdef ARM_NEON_CHUNKSET
-    if (arm_cpu_has_neon)
-        ft.chunkmemset = &chunkmemset_neon;
-#endif
-#ifdef POWER8_VSX_CHUNKSET
-    if (power_cpu_has_arch_2_07)
-        ft.chunkmemset = &chunkmemset_power8;
-#endif
-
     // chunkmemset_safe_stub:
     ft.chunkmemset_safe = &chunkmemset_safe_c;
 #ifdef X86_SSE2_CHUNKSET
@@ -321,6 +254,31 @@ static void init_functable(void) {
 #ifdef POWER8_VSX_CHUNKSET
     if (power_cpu_has_arch_2_07)
         ft.chunkmemset_safe = &chunkmemset_safe_power8;
+#endif
+
+    // inflate_fast_stub:
+    ft.inflate_fast = &inflate_fast_c;
+#ifdef X86_SSE2_CHUNKSET
+# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+    if (x86_cpu_has_sse2)
+# endif
+        ft.inflate_fast = &inflate_fast_sse2;
+#endif
+#if defined(X86_SSE41) && defined(X86_SSE2)
+    if (x86_cpu_has_sse41)
+        ft.inflate_fast = &inflate_fast_sse41;
+#endif
+#ifdef X86_AVX_CHUNKSET
+    if (x86_cpu_has_avx2)
+        ft.inflate_fast = &inflate_fast_avx;
+#endif
+#ifdef ARM_NEON_CHUNKSET
+    if (arm_cpu_has_neon)
+        ft.inflate_fast = &inflate_fast_neon;
+#endif
+#ifdef POWER8_VSX_CHUNKSET
+    if (power_cpu_has_arch_2_07)
+        ft.inflate_fast = &inflate_fast_power8;
 #endif
 
     // crc32_stub:
@@ -374,10 +332,8 @@ static void init_functable(void) {
     functable.crc32_fold_final = ft.crc32_fold_final;
     functable.compare256 = ft.compare256;
     functable.chunksize = ft.chunksize;
-    functable.chunkcopy = ft.chunkcopy;
-    functable.chunkunroll = ft.chunkunroll;
-    functable.chunkmemset = ft.chunkmemset;
     functable.chunkmemset_safe = ft.chunkmemset_safe;
+    functable.inflate_fast = ft.inflate_fast;
     functable.insert_string = ft.insert_string;
     functable.longest_match = ft.longest_match;
     functable.longest_match_slow = ft.longest_match_slow;
@@ -452,24 +408,14 @@ static uint32_t chunksize_stub(void) {
     return functable.chunksize();
 }
 
-static uint8_t* chunkcopy_stub(uint8_t* out, uint8_t const* from, unsigned len) {
-    init_functable();
-    return functable.chunkcopy(out, from, len);
-}
-
-static uint8_t* chunkunroll_stub(uint8_t* out, unsigned* dist, unsigned* len) {
-    init_functable();
-    return functable.chunkunroll(out, dist, len);
-}
-
-static uint8_t* chunkmemset_stub(uint8_t* out, unsigned dist, unsigned len) {
-    init_functable();
-    return functable.chunkmemset(out, dist, len);
-}
-
 static uint8_t* chunkmemset_safe_stub(uint8_t* out, unsigned dist, unsigned len, unsigned left) {
     init_functable();
     return functable.chunkmemset_safe(out, dist, len, left);
+}
+
+static void inflate_fast_stub(void *strm, uint32_t start) {
+    init_functable();
+    functable.inflate_fast(strm, start);
 }
 
 static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
@@ -480,35 +426,6 @@ static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
 static uint32_t compare256_stub(const uint8_t* src0, const uint8_t* src1) {
     init_functable();
     return functable.compare256(src0, src1);
-}
-
-Z_INTERNAL void inflate_fast_stub(void *strm, uint32_t start) {
-    functable.inflate_fast = &inflate_fast_c;
-
-#ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-        functable.inflate_fast = &inflate_fast_sse2;
-#endif
-#if defined(X86_SSE41) && defined(X86_SSE2)
-    if (x86_cpu_has_sse41)
-        functable.inflate_fast = &inflate_fast_sse41;
-#endif
-#ifdef X86_AVX_CHUNKSET
-    if (x86_cpu_has_avx2)
-        functable.inflate_fast = &inflate_fast_avx;
-#endif
-#ifdef ARM_NEON_CHUNKSET
-    if (arm_cpu_has_neon)
-        functable.inflate_fast = &inflate_fast_neon;
-#endif
-#ifdef POWER8_VSX_CHUNKSET
-    if (power_cpu_has_arch_2_07)
-        functable.inflate_fast = &inflate_fast_power8;
-#endif
-
-    functable.inflate_fast(strm, start);
 }
 
 /* functable init */
@@ -522,9 +439,6 @@ Z_INTERNAL Z_TLS struct functable_s functable = {
     crc32_fold_final_stub,
     compare256_stub,
     chunksize_stub,
-    chunkcopy_stub,
-    chunkunroll_stub,
-    chunkmemset_stub,
     chunkmemset_safe_stub,
     inflate_fast_stub,
     insert_string_stub,

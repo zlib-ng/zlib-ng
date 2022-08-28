@@ -86,12 +86,13 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
 }
 
 extern uint8_t* chunkcopy_sse2(uint8_t *out, uint8_t const *from, unsigned len);
+extern uint8_t* chunkunroll_sse2(uint8_t *out, unsigned *dist, unsigned *len);
 
-#define CHUNKSIZE            chunksize_sse41
-#define CHUNKMEMSET          chunkmemset_sse41
-#define CHUNKMEMSET_SAFE     chunkmemset_safe_sse41
-#define CHUNKCOPY(a, b, c)   chunkcopy_sse2(a, b, c)
-#define CHUNKUNROLL(a, b, c) chunkunroll_sse2(a, b, c)
+#define CHUNKSIZE        chunksize_sse41
+#define CHUNKMEMSET      chunkmemset_sse41
+#define CHUNKMEMSET_SAFE chunkmemset_safe_sse41
+#define CHUNKCOPY        chunkcopy_sse2
+#define CHUNKUNROLL      chunkunroll_sse2
 
 #include "chunkset_tpl.h"
 
