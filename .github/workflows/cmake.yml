@@ -266,7 +266,7 @@ jobs:
           - name: Ubuntu MinGW i686
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-i686.cmake
-            packages: wine32 gcc-mingw-w64-i686 g++-mingw-w64-i686 libpcre2-8-0=10.34-7 libpcre2-8-0:i386=10.34-7 libodbc1=2.3.6-0.1build1 libodbc1:i386=2.3.6-0.1build1
+            packages: wine32 gcc-mingw-w64-i686 g++-mingw-w64-i686 libpcre2-8-0=10.34-7 libpcre2-8-0:i386=10.34-7 libodbc1=2.3.6-0.1build1 libodbc1:i386=2.3.6-0.1build1 libwine:i386=5.0-3ubuntu1 libgphoto2-6:i386=2.5.25-0ubuntu0.1 libsane:i386=1.0.29-0ubuntu5.2 libgd3=2.2.5-5.2ubuntu2.1 libgd3:i386=2.2.5-5.2ubuntu2.1
             ldflags: -static
             codecov: ubuntu_gcc_mingw_i686
             # Limit parallel test jobs to prevent wine errors
