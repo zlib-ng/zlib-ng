@@ -8,7 +8,6 @@
 #include "cpu_features.h"
 #include "inftrees.h"
 #include "inflate.h"
-#include "inffast.h"
 #include "inflate_p.h"
 #include "inffixed_tbl.h"
 #include "functable.h"
@@ -866,7 +865,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             /* use inflate_fast() if we have enough input and output */
             if (have >= INFLATE_FAST_MIN_HAVE && left >= INFLATE_FAST_MIN_LEFT) {
                 RESTORE();
-                zng_inflate_fast(strm, out);
+                functable.inflate_fast(strm, out);
                 LOAD();
                 if (state->mode == TYPE)
                     state->back = -1;

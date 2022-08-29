@@ -93,7 +93,6 @@ OBJZ = \
 	deflate_stored.o \
 	functable.o \
 	infback.o \
-	inffast.o \
 	inflate.o \
 	inftrees.o \
 	insert_string.o \
@@ -132,7 +131,6 @@ PIC_OBJZ = \
 	deflate_stored.lo \
 	functable.lo \
 	infback.lo \
-	inffast.lo \
 	inflate.lo \
 	inftrees.lo \
 	insert_string.lo \

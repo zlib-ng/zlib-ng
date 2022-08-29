@@ -967,7 +967,7 @@ set(ZLIB_PRIVATE_HDRS
     deflate.h
     deflate_p.h
     functable.h
-    inffast.h
+    inffast_tpl.h
     inffixed_tbl.h
     inflate.h
     inflate_p.h
@@ -1001,7 +1001,6 @@ set(ZLIB_SRCS
     deflate_stored.c
     functable.c
     infback.c
-    inffast.c
     inflate.c
     inftrees.c
     insert_string.c

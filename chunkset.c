@@ -36,3 +36,7 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
 #define CHUNKMEMSET_SAFE chunkmemset_safe_c
 
 #include "chunkset_tpl.h"
+
+#define INFLATE_FAST     inflate_fast_c
+
+#include "inffast_tpl.h"

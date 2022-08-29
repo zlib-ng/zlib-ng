@@ -24,6 +24,7 @@ struct functable_s {
     uint8_t* (* chunkunroll)        (uint8_t *out, unsigned *dist, unsigned *len);
     uint8_t* (* chunkmemset)        (uint8_t *out, unsigned dist, unsigned len);
     uint8_t* (* chunkmemset_safe)   (uint8_t *out, unsigned dist, unsigned len, unsigned left);
+    void     (* inflate_fast)       (void *strm, uint32_t start);
     void     (* insert_string)      (deflate_state *const s, uint32_t str, uint32_t count);
     uint32_t (* longest_match)      (deflate_state *const s, Pos cur_match);
     uint32_t (* longest_match_slow) (deflate_state *const s, Pos cur_match);

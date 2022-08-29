@@ -110,6 +110,24 @@ extern uint8_t* chunkmemset_power8(uint8_t *out, unsigned dist, unsigned len);
 extern uint8_t* chunkmemset_safe_power8(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 #endif
 
+/* inflate fast loop */
+extern void inflate_fast_c(void *strm, uint32_t start);
+#ifdef X86_SSE2_CHUNKSET
+extern void inflate_fast_sse2(void *strm, uint32_t start);
+#endif
+#ifdef X86_SSE41
+extern void inflate_fast_sse41(void *strm, uint32_t start);
+#endif
+#ifdef X86_AVX_CHUNKSET
+extern void inflate_fast_avx(void *strm, uint32_t start);
+#endif
+#ifdef ARM_NEON_CHUNKSET
+extern void inflate_fast_neon(void *strm, uint32_t start);
+#endif
+#ifdef POWER8_VSX_CHUNKSET
+extern void inflate_fast_power8(void *strm, uint32_t start);
+#endif
+
 /* CRC32 */
 typedef uint32_t (*crc32_func)(uint32_t crc32, const uint8_t *buf, size_t len);
 

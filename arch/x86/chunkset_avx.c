@@ -128,4 +128,8 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
 
 #include "chunkset_tpl.h"
 
+#define INFLATE_FAST     inflate_fast_avx
+
+#include "inffast_tpl.h"
+
 #endif

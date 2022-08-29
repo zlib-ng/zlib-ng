@@ -68,7 +68,6 @@ OBJS = \
 	infback.obj \
 	inflate.obj \
 	inftrees.obj \
-	inffast.obj \
 	insert_string.obj \
 	insert_string_roll.obj \
 	slide_hash.obj \
@@ -213,9 +212,8 @@ deflate_quick.obj: $(SRCDIR)/deflate_quick.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflat
 deflate_rle.obj: $(SRCDIR)/deflate_rle.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_slow.obj: $(SRCDIR)/deflate_slow.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_stored.obj: $(SRCDIR)/deflate_stored.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
-infback.obj: $(SRCDIR)/infback.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h
-inffast.obj: $(SRCDIR)/inffast.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h
-inflate.obj: $(SRCDIR)/inflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inffast.h $(SRCDIR)/functable.h $(SRCDIR)/functable.h
+infback.obj: $(SRCDIR)/infback.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inflate_p.h $(SRCDIR)/functable.h
+inflate.obj: $(SRCDIR)/inflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h $(SRCDIR)/inflate.h $(SRCDIR)/inflate_p.h $(SRCDIR)/functable.h $(SRCDIR)/functable.h
 inftrees.obj: $(SRCDIR)/inftrees.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/inftrees.h
 slide_hash.obj: $(SRCDIR)/slide_hash.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h
 trees.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/trees_tbl.h
