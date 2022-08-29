@@ -482,6 +482,35 @@ static uint32_t compare256_stub(const uint8_t* src0, const uint8_t* src1) {
     return functable.compare256(src0, src1);
 }
 
+Z_INTERNAL void inflate_fast_stub(void *strm, uint32_t start) {
+    functable.inflate_fast = &inflate_fast_c;
+
+#ifdef X86_SSE2_CHUNKSET
+# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+    if (x86_cpu_has_sse2)
+# endif
+        functable.inflate_fast = &inflate_fast_sse2;
+#endif
+#if defined(X86_SSE41) && defined(X86_SSE2)
+    if (x86_cpu_has_sse41)
+        functable.inflate_fast = &inflate_fast_sse41;
+#endif
+#ifdef X86_AVX_CHUNKSET
+    if (x86_cpu_has_avx2)
+        functable.inflate_fast = &inflate_fast_avx;
+#endif
+#ifdef ARM_NEON_CHUNKSET
+    if (arm_cpu_has_neon)
+        functable.inflate_fast = &inflate_fast_neon;
+#endif
+#ifdef POWER8_VSX_CHUNKSET
+    if (power_cpu_has_arch_2_07)
+        functable.inflate_fast = &inflate_fast_power8;
+#endif
+
+    functable.inflate_fast(strm, start);
+}
+
 /* functable init */
 Z_INTERNAL Z_TLS struct functable_s functable = {
     adler32_stub,
@@ -497,6 +526,7 @@ Z_INTERNAL Z_TLS struct functable_s functable = {
     chunkunroll_stub,
     chunkmemset_stub,
     chunkmemset_safe_stub,
+    inflate_fast_stub,
     insert_string_stub,
     longest_match_stub,
     longest_match_slow_stub,

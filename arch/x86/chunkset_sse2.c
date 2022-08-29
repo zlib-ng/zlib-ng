@@ -49,4 +49,8 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
 
 #include "chunkset_tpl.h"
 
+#define INFLATE_FAST     inflate_fast_sse2
+
+#include "inffast_tpl.h"
+
 #endif

@@ -95,4 +95,8 @@ extern uint8_t* chunkcopy_sse2(uint8_t *out, uint8_t const *from, unsigned len);
 
 #include "chunkset_tpl.h"
 
+#define INFLATE_FAST     inflate_fast_sse41
+
+#include "inffast_tpl.h"
+
 #endif

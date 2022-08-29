@@ -132,6 +132,21 @@
         strm->msg = (char *)errmsg; \
     } while (0)
 
+#define INFLATE_FAST_MIN_HAVE 8
+#define INFLATE_FAST_MIN_LEFT 258
+
+/* Load 64 bits from IN and place the bytes at offset BITS in the result. */
+static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
+    uint64_t chunk;
+    memcpy(&chunk, in, sizeof(chunk));
+
+#if BYTE_ORDER == LITTLE_ENDIAN
+    return chunk << bits;
+#else
+    return ZSWAP64(chunk) << bits;
+#endif
+}
+
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
 static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, uint64_t len, uint8_t *safe) {
     uint64_t safelen = (safe - out) + 1;
