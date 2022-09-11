@@ -36,7 +36,8 @@ public:
          * control the _consistency_ of the results */
         random_ints_src = (uint32_t *)zng_alloc(MAX_RANDOM_INTS_SIZE);
         random_ints_dst = (uint32_t *)zng_alloc(MAX_RANDOM_INTS_SIZE);
-        assert(random_ints != NULL);
+        assert(random_ints_src != NULL);
+        assert(random_ints_dst != NULL);
 
         for (int32_t i = 0; i < MAX_RANDOM_INTS; i++) {
             random_ints_src[i] = rand();
