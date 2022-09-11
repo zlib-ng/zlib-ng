@@ -12,13 +12,23 @@ find_package(benchmark QUIET)
 if(NOT benchmark_FOUND)
     # Fetch google benchmark source code from official repository
     set(BENCHMARK_ENABLE_TESTING OFF)
+
+    # Allow specifying alternative Google benchmark repository
+    if(NOT DEFINED GBENCHMARK_REPOSITORY)
+        set(GBENCHMARK_REPOSITORY https://github.com/google/benchmark.git)
+    endif()
+    if(NOT DEFINED GBENCHMARK_TAG)
+        set(GBENCHMARK_TAG v1.7.0)
+    endif()
+
     FetchContent_Declare(benchmark
-        GIT_REPOSITORY https://github.com/google/benchmark.git)
+        GIT_REPOSITORY ${GBENCHMARK_REPOSITORY}
+        GIT_TAG ${GBENCHMARK_TAG})
 
     FetchContent_GetProperties(benchmark)
     if(NOT benchmark_POPULATED)
         FetchContent_Populate(benchmark)
-        add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR})
+        add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR} EXCLUDE_FROM_ALL)
     endif()
 endif()
 
@@ -31,6 +41,7 @@ add_executable(benchmark_zlib
     benchmark_slidehash.cc
     )
 
+target_compile_definitions(benchmark_zlib PRIVATE -DBENCHMARK_STATIC_DEFINE)
 target_include_directories(benchmark_zlib PRIVATE
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_BINARY_DIR}
