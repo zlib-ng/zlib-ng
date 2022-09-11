@@ -180,14 +180,24 @@ else()
             -fsanitize-memory-track-origins)
     endif()
 
-    if(NOT ZLIB_COMPAT AND DEFINED ZLIB_INCLUDE_DIR AND DEFINED ZLIB_LIBRARIES)
+    if(NOT ZLIB_COMPAT AND DEFINED ZLIB_LIBRARIES AND DEFINED ZLIB_INCLUDE_DIR)
+        if(NOT IS_ABSOLUTE ${ZLIB_LIBRARIES})
+            get_filename_component(ZLIB_ABSOLUTE_PATH
+                "${CMAKE_CURRENT_SOURCE_DIR}/${ZLIB_LIBRARIES}"
+                ABSOLUTE)
+        else()
+            set(ZLIB_ABSOLUTE_PATH ${ZLIB_LIBRARIES})
+        endif()
+
+        add_library(external_zlib STATIC IMPORTED)
+        set_property(TARGET external_zlib PROPERTY IMPORTED_LOCATION ${ZLIB_ABSOLUTE_PATH})
         message(STATUS "Added dual linking tests against zlib")
         message(STATUS "  Zlib include dir: ${ZLIB_INCLUDE_DIR}")
-        message(STATUS "  Zlib libraries: ${ZLIB_LIBRARIES}")
+        message(STATUS "  Zlib libraries: ${ZLIB_ABSOLUTE_PATH}")
 
         target_sources(gtest_zlib PRIVATE test_compress_dual.cc)
         target_include_directories(gtest_zlib PRIVATE ${ZLIB_INCLUDE_DIR})
-        target_link_libraries(gtest_zlib ${ZLIB_LIBRARIES})
+        target_link_libraries(gtest_zlib external_zlib)
     endif()
 
     target_link_libraries(gtest_zlib zlibstatic GTest::GTest)

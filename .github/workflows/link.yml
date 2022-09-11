@@ -21,7 +21,7 @@ jobs:
       run: cmake --build zlib/build --config Release
 
     - name: Generate project files (native)
-      run: cmake -S . -B native -DZLIB_COMPAT=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DZLIB_LIBRARIES=../zlib/build/libz.a -DZLIB_INCLUDE_DIR=../zlib/build
+      run: cmake -S . -B native -DZLIB_COMPAT=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DZLIB_LIBRARIES=../zlib/build/libz.a -DZLIB_INCLUDE_DIR="../zlib/build;../zlib"
 
     - name: Compile source code (native)
       run: cmake --build native --config Release
