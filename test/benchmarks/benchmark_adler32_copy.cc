@@ -77,7 +77,7 @@ public:
         } \
         Bench(state, [](uint32_t init_sum, unsigned char *dst, \
                         const uint8_t *buf, uint64_t len) -> uint32_t { \
-            memcpy(dst, buf, len); \
+            memcpy(dst, buf, (size_t)len); \
             return fptr(init_sum, buf, len); \
         }); \
     } \
