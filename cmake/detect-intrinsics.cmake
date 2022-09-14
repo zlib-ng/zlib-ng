@@ -230,7 +230,7 @@ endmacro()
 macro(check_vpclmulqdq_intrinsics)
     if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         if(NOT NATIVEFLAG)
-            set(VPCLMULFLAG "-mvpclmulqdq")
+            set(VPCLMULFLAG "-mvpclmulqdq -mavx512f")
         endif()
     endif()
     # Check whether compiler supports VPCLMULQDQ intrinsics
