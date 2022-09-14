@@ -279,8 +279,8 @@ ifneq ($(SHAREDLIB),$(SHAREDTARGET))
 endif
 endif
 
-adler32_test$(EXE): adler32_test.o $(OBJG) $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ adler32_test.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+adler32_test$(EXE): adler32_test.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ adler32_test.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
@@ -291,56 +291,56 @@ ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-example$(EXE): example.o $(OBJG) $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+example$(EXE): example.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-minigzip$(EXE): minigzip.o $(OBJG) $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+minigzip$(EXE): minigzip.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-adler32_testsh$(EXE): adler32_test.o $(OBJG) $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ adler32_test.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
+adler32_testsh$(EXE): adler32_test.o $(SHAREDTARGET)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ adler32_test.o $(SHAREDLIB) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
 crc32_testsh$(EXE): crc32_test.o $(SHAREDTARGET)
-	$(CC) $(LDFLAGS) -o $@ crc32_test.o $(SHAREDTARGET) $(LDSHAREDLIBC)
+	$(CC) $(LDFLAGS) -o $@ crc32_test.o $(SHAREDLIB) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-examplesh$(EXE): example.o $(OBJG) $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
+examplesh$(EXE): example.o $(SHAREDTARGET)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(SHAREDLIB) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-minigzipsh$(EXE): minigzip.o $(OBJG) $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(OBJG) $(SHAREDTARGET) $(LDSHAREDLIBC)
+minigzipsh$(EXE): minigzip.o $(SHAREDTARGET)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(SHAREDLIB) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-makefixed$(EXE): makefixed.o $(OBJG) $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ makefixed.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+makefixed$(EXE): makefixed.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ makefixed.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-maketrees$(EXE): maketrees.o $(OBJG) $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ maketrees.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+maketrees$(EXE): maketrees.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ maketrees.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-makecrct$(EXE): makecrct.o $(OBJG) $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ makecrct.o $(OBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+makecrct$(EXE): makecrct.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ makecrct.o $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
