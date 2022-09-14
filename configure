@@ -581,16 +581,16 @@ if ($CC -c $CFLAGS $test.c) 2>/dev/null; then
   }
   echo - using any output from compiler to indicate an error >> configure.log
 else
-try()
-{
-  show $*
-  ( $* ) >> configure.log 2>&1
-  ret=$?
-  if test $ret -ne 0; then
-    echo "(exit code $ret)" >> configure.log
-  fi
-  return $ret
-}
+  try()
+  {
+    show $*
+    ( $* ) >> configure.log 2>&1
+    ret=$?
+    if test $ret -ne 0; then
+      echo "(exit code $ret)" >> configure.log
+    fi
+    return $ret
+  }
 fi
 
 tryboth()
@@ -924,7 +924,7 @@ if test "$gcc" -eq 1; then
 int Z_INTERNAL foo;
 int main() { return 0; }
 EOF
-  if tryboth $CC -c $CFLAGS $test.c; then
+  if try $CC $CFLAGS $test.c; then
     CFLAGS="$CFLAGS -DHAVE_VISIBILITY_HIDDEN"
     SFLAGS="$SFLAGS -DHAVE_VISIBILITY_HIDDEN"
     echo >> configure.log
@@ -943,7 +943,7 @@ if test "$gcc" -eq 1; then
 int Z_INTERNAL foo;
 int main() { return 0; }
 EOF
-  if tryboth $CC -c $CFLAGS $test.c; then
+  if try $CC $CFLAGS $test.c; then
     CFLAGS="$CFLAGS -DHAVE_VISIBILITY_INTERNAL"
     SFLAGS="$SFLAGS -DHAVE_VISIBILITY_INTERNAL"
     echo >> configure.log
