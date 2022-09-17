@@ -41,6 +41,8 @@ TEST(inflate, adler32) {
     err = PREFIX(inflate)(&strm, Z_NO_FLUSH);
     EXPECT_EQ(err, Z_STREAM_END);
 
+    EXPECT_EQ(strm.adler, 0x6b931030);
+
     err = PREFIX(inflateEnd)(&strm);
     EXPECT_EQ(err, Z_OK);
 
