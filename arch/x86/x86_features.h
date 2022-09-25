@@ -16,6 +16,8 @@ extern int x86_cpu_has_sse42;
 extern int x86_cpu_has_pclmulqdq;
 extern int x86_cpu_has_vpclmulqdq;
 extern int x86_cpu_has_tzcnt;
+extern int x86_cpu_has_os_save_ymm;
+extern int x86_cpu_has_os_save_zmm;
 
 void Z_INTERNAL x86_check_features(void);
 
