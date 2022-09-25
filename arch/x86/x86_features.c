@@ -31,7 +31,7 @@ Z_INTERNAL int x86_cpu_has_tzcnt;
 Z_INTERNAL int x86_cpu_has_os_save_ymm;
 Z_INTERNAL int x86_cpu_has_os_save_zmm;
 
-static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
+static inline void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
 #ifdef _MSC_VER
     unsigned int registers[4];
     __cpuid((int *)registers, info);
@@ -45,7 +45,7 @@ static void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigne
 #endif
 }
 
-static void cpuidex(int info, int subinfo, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
+static inline void cpuidex(int info, int subinfo, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
 #ifdef _MSC_VER
     unsigned int registers[4];
     __cpuidex((int *)registers, info, subinfo);
@@ -59,7 +59,7 @@ static void cpuidex(int info, int subinfo, unsigned* eax, unsigned* ebx, unsigne
 #endif
 }
 
-static uint64_t xgetbv(unsigned int xcr) {
+static inline uint64_t xgetbv(unsigned int xcr) {
 #ifdef _MSC_VER
     return _xgetbv(xcr);
 #else
