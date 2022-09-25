@@ -593,18 +593,6 @@ else
   }
 fi
 
-tryboth()
-{
-  show $*
-  got=$(( $* ) 2>&1)
-  ret=$?
-  printf %s "$got" >> configure.log
-  if test $ret -ne 0; then
-    return $ret
-  fi
-  test "$got" = ""
-}
-
 cat > $test.c << EOF
 int foo() { return 0; }
 EOF
