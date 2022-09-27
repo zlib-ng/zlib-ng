@@ -15,12 +15,9 @@
 #include <stdarg.h>
 #include <inttypes.h>
 
-#define TESTFILE "foo.gz"
+#include "test_shared_ng.h"
 
-static const char hello[] = "hello, hello!";
-/* "hello world" would be more standard, but the repeated "hello"
- * stresses the compression code better, sorry...
- */
+#define TESTFILE "foo.gz"
 
 static const char dictionary[] = "hello";
 static unsigned long dictId = 0; /* Adler32 value of the dictionary */
@@ -437,8 +434,10 @@ void test_flush(unsigned char *compr, z_size_t *comprLen) {
     *comprLen = (z_size_t)c_stream.total_out;
 }
 
+#ifdef ZLIBNG_ENABLE_TESTS
 /* ===========================================================================
  * Test inflateSync()
+ * We expect a certain compressed block layout, so skip this with the original zlib.
  */
 void test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen) {
     int err;
@@ -474,6 +473,7 @@ void test_sync(unsigned char *compr, size_t comprLen, unsigned char *uncompr, si
 
     printf("after inflateSync(): hel%s\n", (char *)uncompr);
 }
+#endif
 
 /* ===========================================================================
  * Test deflate() with preset dictionary
@@ -785,7 +785,7 @@ void test_deflate_prime(unsigned char *compr, size_t comprLen, unsigned char *un
     err = PREFIX(deflatePrime)(&c_stream, 5, 0x0);
     CHECK_ERR(err, "deflatePrime");
     /* Gzip modified time */
-    err = PREFIX(deflatePrime)(&c_stream, 32, 0x0);
+    err = deflate_prime_32(&c_stream, 0);
     CHECK_ERR(err, "deflatePrime");
     /* Gzip extra flags */
     err = PREFIX(deflatePrime)(&c_stream, 8, 0x0);
@@ -805,10 +805,10 @@ void test_deflate_prime(unsigned char *compr, size_t comprLen, unsigned char *un
 
     /* Gzip uncompressed data crc32 */
     crc = PREFIX(crc32)(0, (const uint8_t *)hello, (uint32_t)len);
-    err = PREFIX(deflatePrime)(&c_stream, 32, crc);
+    err = deflate_prime_32(&c_stream, crc);
     CHECK_ERR(err, "deflatePrime");
     /* Gzip uncompressed data length */
-    err = PREFIX(deflatePrime)(&c_stream, 32, (uint32_t)len);
+    err = deflate_prime_32(&c_stream, (uint32_t)len);
     CHECK_ERR(err, "deflatePrime");
 
     err = PREFIX(deflateEnd)(&c_stream);
@@ -993,7 +993,9 @@ int main(int argc, char *argv[]) {
 #endif
 
     test_flush(compr, &comprLen);
+#ifdef ZLIBNG_ENABLE_TESTS
     test_sync(compr, comprLen, uncompr, uncomprLen);
+#endif
     comprLen = uncomprLen;
 
     test_dict_deflate(compr, comprLen);

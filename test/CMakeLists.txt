@@ -9,6 +9,10 @@ macro(configure_test_executable target)
     endif()
 endmacro()
 
+if(ZLIBNG_ENABLE_TESTS)
+    add_definitions(-DZLIBNG_ENABLE_TESTS)
+endif()
+
 add_executable(example example.c)
 configure_test_executable(example)
 target_link_libraries(example zlib)
@@ -51,7 +55,10 @@ target_link_libraries(infcover zlib)
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     target_sources(infcover PRIVATE ${PROJECT_SOURCE_DIR}/inftrees.c)
 endif()
-add_test(NAME infcover COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
+# infcover references zng_inflate_table() and struct inflate_state, which are internal to zlib-ng.
+if(ZLIBNG_ENABLE_TESTS)
+    add_test(NAME infcover COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
+endif()
 
 add_executable(makefixed ${PROJECT_SOURCE_DIR}/tools/makefixed.c ${PROJECT_SOURCE_DIR}/inftrees.c)
 configure_test_executable(makefixed)
@@ -135,15 +142,12 @@ else()
             add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
         endif()
         add_library(GTest::GTest ALIAS gtest)
+        add_library(GTest::Main ALIAS gtest_main)
     endif()
 
     set(TEST_SRCS
-        test_adler32.cc
-        test_aligned_alloc.cc
-        test_compare256.cc
         test_compress.cc
         test_compress_bound.cc
-        test_crc32.cc
         test_cve-2003-0107.cc
         test_deflate_bound.cc
         test_deflate_copy.cc
@@ -158,17 +162,27 @@ else()
         test_deflate_tune.cc
         test_dict.cc
         test_inflate_adler32.cc
-        test_inflate_sync.cc
         test_large_buffers.cc
         test_small_buffers.cc
-        test_version.cc
         )
 
     if(WITH_GZFILEOP)
         list(APPEND TEST_SRCS test_gzio.cc)
     endif()
 
-    add_executable(gtest_zlib test_main.cc ${TEST_SRCS})
+    if(ZLIBNG_ENABLE_TESTS)
+        list(APPEND TEST_SRCS
+             test_adler32.cc             # adler32_neon(), etc
+             test_aligned_alloc.cc       # zng_alloc_aligned()
+             test_compare256.cc          # compare256_neon(), etc
+             test_crc32.cc               # crc32_acle(), etc
+             test_inflate_sync.cc        # expects a certain compressed block layout
+             test_main.cc                # cpu_check_features()
+             test_version.cc             # expects a fixed version string
+             )
+    endif()
+
+    add_executable(gtest_zlib ${TEST_SRCS})
     configure_test_executable(gtest_zlib)
 
     if(WITH_SANITIZER STREQUAL "Memory")
@@ -200,7 +214,14 @@ else()
         target_link_libraries(gtest_zlib external_zlib)
     endif()
 
-    target_link_libraries(gtest_zlib zlibstatic GTest::GTest)
+    if((NOT ZLIBNG_ENABLE_TESTS) AND ZLIB_COMPAT AND (NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS))
+        # Link dynamically in order to be able to substitute zlib-ng with zlib.
+        target_link_libraries(gtest_zlib zlib GTest::Main)
+    else()
+        # Link statically in order to test internal zlib-ng functions.
+        target_link_libraries(gtest_zlib zlibstatic)
+    endif()
+    target_link_libraries(gtest_zlib GTest::GTest)
 
     find_package(Threads)
     if(Threads_FOUND)

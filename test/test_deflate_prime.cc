@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "test_shared.h"
+#include "test_shared_ng.h"
 
 #include <gtest/gtest.h>
 
@@ -42,7 +42,7 @@ TEST(deflate, prime) {
     err = PREFIX(deflatePrime)(&c_stream, 5, 0x0);
     EXPECT_EQ(err, Z_OK);
     /* Gzip modified time */
-    err = PREFIX(deflatePrime)(&c_stream, 32, 0x0);
+    err = deflate_prime_32(&c_stream, 0x0);
     EXPECT_EQ(err, Z_OK);
     /* Gzip extra flags */
     err = PREFIX(deflatePrime)(&c_stream, 8, 0x0);
@@ -61,10 +61,10 @@ TEST(deflate, prime) {
 
     /* Gzip uncompressed data crc32 */
     crc = PREFIX(crc32)(0, (const uint8_t *)hello, (uint32_t)hello_len);
-    err = PREFIX(deflatePrime)(&c_stream, 32, crc);
+    err = deflate_prime_32(&c_stream, crc);
     EXPECT_EQ(err, Z_OK);
     /* Gzip uncompressed data length */
-    err = PREFIX(deflatePrime)(&c_stream, 32, (uint32_t)hello_len);
+    err = deflate_prime_32(&c_stream, (uint32_t)hello_len);
     EXPECT_EQ(err, Z_OK);
 
     err = PREFIX(deflateEnd)(&c_stream);

@@ -228,6 +228,7 @@ Advanced Build Options
 | WITH_INFLATE_STRICT             |                       | Build with strict inflate distance checking                         | OFF                    |
 | WITH_INFLATE_ALLOW_INVALID_DIST |                       | Build with zero fill for inflate invalid distances                  | OFF                    |
 | INSTALL_UTILS                   |                       | Copy minigzip and minideflate during install                        | OFF                    |
+| ZLIBNG_ENABLE_TESTS             |                       | Test zlib-ng specific API                                           | ON                     |
 
 
 Related Projects
