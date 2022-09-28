@@ -173,7 +173,7 @@ if(GZIP_VERIFY AND NOT "${COMPRESS_ARGS}" MATCHES "-T")
         endif()
 
         # Check gzip can decompress our compressed output
-        set(GZ_DECOMPRESS_COMMAND ${GZIP} --decompress)
+        set(GZ_DECOMPRESS_COMMAND ${GZIP} -d)
 
         message(STATUS "Gzip decompress ${GZ_DECOMPRESS_COMMAND}")
         message(STATUS "  Input: ${OUTPUT_BASE}.gz")
