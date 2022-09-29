@@ -24,10 +24,9 @@
     out.val[3] = vqsubq_u16(a.val[3], b); \
 } while (0)
 
-/* Have to check for hard float ABI on GCC/clang, but not
- * on MSVC (we don't compile for the soft float ABI on windows)
- */
-#if !defined(ARM_NEON_HASLD4) && (defined(__ARM_FP) || defined(_MSC_VER))
+#endif
+
+#if !defined(ARM_NEON_HASLD4) && (defined(ARM_NEON_ADLER32) || defined(ARM_NEON_SLIDEHASH))
 
 static inline uint16x8x4_t vld1q_u16_x4(uint16_t *a) {
     uint16x8x4_t ret = (uint16x8x4_t) {{
@@ -53,7 +52,6 @@ static inline void vst1q_u16_x4(uint16_t *p, uint16x8x4_t a) {
     vst1q_u16(p + 16, a.val[2]);
     vst1q_u16(p + 24, a.val[3]);
 }
-#endif // HASLD4 check and hard float
-#endif // ARM_NEON_SLIDEHASH
+#endif // HASLD4 check
 
 #endif // include guard ARM_NEON_INTRINS_H
