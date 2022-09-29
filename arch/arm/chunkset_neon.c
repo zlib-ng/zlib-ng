@@ -3,11 +3,7 @@
  */
 
 #ifdef ARM_NEON_CHUNKSET
-#ifdef _M_ARM64
-#  include <arm64_neon.h>
-#else
-#  include <arm_neon.h>
-#endif
+#include "neon_intrins.h"
 #include "../../zbuild.h"
 #include "../generic/chunk_permute_table.h"
 
