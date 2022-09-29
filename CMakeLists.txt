@@ -387,6 +387,21 @@ if(HAVE_ATTRIBUTE_VISIBILITY_INTERNAL)
 endif()
 
 #
+# check for _Thread_local() support in the compiler
+#
+check_c_source_compiles(
+    "_Thread_local int test;
+    int main(void) {
+        (void)test;
+        return 0;
+    }"
+    HAVE_THREAD_LOCAL
+)
+if(HAVE_THREAD_LOCAL)
+    add_definitions(-DHAVE_THREAD_LOCAL)
+endif()
+
+#
 # check for __builtin_ctz() support in the compiler
 #
 check_c_source_compiles(
@@ -401,6 +416,7 @@ check_c_source_compiles(
 if(HAVE_BUILTIN_CTZ)
     add_definitions(-DHAVE_BUILTIN_CTZ)
 endif()
+
 #
 # check for __builtin_ctzll() support in the compiler
 #
