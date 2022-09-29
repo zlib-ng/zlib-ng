@@ -3,13 +3,12 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
-#ifdef _M_ARM64
-#  include <arm64_neon.h>
-#else
-#  include <arm_neon.h>
-#endif
 #include "../../zbuild.h"
+
+#include "fallback_builtins.h"
+
+#if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
+#include "neon_intrins.h"
 
 static inline uint32_t compare256_neon_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
