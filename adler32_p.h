@@ -26,7 +26,7 @@ static inline uint32_t adler32_len_1(uint32_t adler, const uint8_t *buf, uint32_
     return adler | (sum2 << 16);
 }
 
-static inline uint32_t adler32_len_16(uint32_t adler, const uint8_t *buf, uint64_t len, uint32_t sum2) {
+static inline uint32_t adler32_len_16(uint32_t adler, const uint8_t *buf, size_t len, uint32_t sum2) {
     while (len) {
         --len;
         adler += *buf++;
@@ -38,7 +38,7 @@ static inline uint32_t adler32_len_16(uint32_t adler, const uint8_t *buf, uint64
     return adler | (sum2 << 16);
 }
 
-static inline uint32_t adler32_copy_len_16(uint32_t adler, const uint8_t *buf, uint8_t *dst, uint64_t len, uint32_t sum2) {
+static inline uint32_t adler32_copy_len_16(uint32_t adler, const uint8_t *buf, uint8_t *dst, size_t len, uint32_t sum2) {
     while (len--) {
         *dst = *buf++;
         adler += *dst++;
@@ -50,7 +50,7 @@ static inline uint32_t adler32_copy_len_16(uint32_t adler, const uint8_t *buf, u
     return adler | (sum2 << 16);
 }
 
-static inline uint32_t adler32_len_64(uint32_t adler, const uint8_t *buf, uint64_t len, uint32_t sum2) {
+static inline uint32_t adler32_len_64(uint32_t adler, const uint8_t *buf, size_t len, uint32_t sum2) {
 #ifdef UNROLL_MORE
     while (len >= 16) {
         len -= 16;

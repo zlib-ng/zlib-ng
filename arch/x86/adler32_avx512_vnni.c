@@ -18,7 +18,7 @@
 #include "adler32_avx512_p.h"
 #include "adler32_avx2_p.h"
 
-Z_INTERNAL uint32_t adler32_avx512_vnni(uint32_t adler, const uint8_t *src, uint64_t len) {
+Z_INTERNAL uint32_t adler32_avx512_vnni(uint32_t adler, const uint8_t *src, size_t len) {
     if (src == NULL) return 1L;
     if (len == 0) return adler;
 
@@ -54,7 +54,7 @@ rem_peel:
     while (len >= 64) {
         vs1 = _mm512_zextsi128_si512(_mm_cvtsi32_si128(adler0));
         vs2 = _mm512_zextsi128_si512(_mm_cvtsi32_si128(adler1));
-        uint64_t k = MIN(len, NMAX);
+        size_t k = MIN(len, NMAX);
         k -= k % 64;
         len -= k;
         __m512i vs1_0 = vs1;
@@ -120,7 +120,7 @@ rem_peel:
     return adler;
 }
 
-Z_INTERNAL uint32_t adler32_fold_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8_t *src, uint64_t len) {
+Z_INTERNAL uint32_t adler32_fold_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
     if (src == NULL) return 1L;
     if (len == 0) return adler;
 
@@ -151,7 +151,7 @@ rem_peel_copy:
     while (len >= 32) {
         vs1 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(adler0));
         vs2 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(adler1));
-        uint64_t k = MIN(len, NMAX);
+        size_t k = MIN(len, NMAX);
         k -= k % 32;
         len -= k;
         __m256i vs1_0 = vs1;

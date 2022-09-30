@@ -10,7 +10,7 @@
 #include "../../zbuild.h"
 #include "../../adler32_p.h"
 
-static void NEON_accum32(uint32_t *s, const uint8_t *buf, uint64_t len) {
+static void NEON_accum32(uint32_t *s, const uint8_t *buf, size_t len) {
     static const uint16_t ALIGNED_(16) taps[64] = {
         64, 63, 62, 61, 60, 59, 58, 57,
         56, 55, 54, 53, 52, 51, 50, 49,
@@ -39,10 +39,10 @@ static void NEON_accum32(uint32_t *s, const uint8_t *buf, uint64_t len) {
     uint16x8_t s2_4, s2_5, s2_6, s2_7;
     s2_4 = s2_5 = s2_6 = s2_7 = vdupq_n_u16(0);
 
-    uint64_t num_iter = len >> 2;
+    size_t num_iter = len >> 2;
     int rem = len & 3;
 
-    for (uint64_t i = 0; i < num_iter; ++i) {
+    for (size_t i = 0; i < num_iter; ++i) {
         uint8x16x4_t d0_d3 = vld1q_u8_x4(buf);
 
         /* Unfortunately it doesn't look like there's a direct sum 8 bit to 32
@@ -133,7 +133,7 @@ static void NEON_accum32(uint32_t *s, const uint8_t *buf, uint64_t len) {
     s[1] = vget_lane_u32(as, 1);
 }
 
-static void NEON_handle_tail(uint32_t *pair, const uint8_t *buf, uint64_t len) {
+static void NEON_handle_tail(uint32_t *pair, const uint8_t *buf, size_t len) {
     unsigned int i;
     for (i = 0; i < len; ++i) {
         pair[0] += buf[i];
@@ -141,7 +141,7 @@ static void NEON_handle_tail(uint32_t *pair, const uint8_t *buf, uint64_t len) {
     }
 }
 
-uint32_t adler32_neon(uint32_t adler, const uint8_t *buf, uint64_t len) {
+uint32_t adler32_neon(uint32_t adler, const uint8_t *buf, size_t len) {
     /* split Adler-32 into component sums */
     uint32_t sum2 = (adler >> 16) & 0xffff;
     adler &= 0xffff;

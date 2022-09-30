@@ -14,7 +14,7 @@
 
 #ifdef X86_SSE42_ADLER32
 
-Z_INTERNAL uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, uint64_t len) {
+Z_INTERNAL uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
     uint32_t adler0, adler1;
     adler1 = (adler >> 16) & 0xffff;
     adler0 = adler & 0xffff;
@@ -31,7 +31,7 @@ rem_peel:
     const __m128i dot2v = _mm_setr_epi8(32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17);
     const __m128i dot2v_0 = _mm_setr_epi8(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
     const __m128i dot3v = _mm_set1_epi16(1);
-    uint64_t k;
+    size_t k;
 
     while (len >= 16) {
 

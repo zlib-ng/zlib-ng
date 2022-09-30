@@ -11,8 +11,8 @@
 #include "adler32_avx2_p.h"
 
 #ifdef X86_SSE42_ADLER32
-extern uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, uint64_t len);
-extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *src, uint64_t len);
+extern uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *src, size_t len);
 
 #define copy_sub32(a, b, c, d) adler32_fold_copy_sse42(a, b, c, d)
 #define sub32(a, b, c) adler32_ssse3(a, b, c)
@@ -22,9 +22,9 @@ extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *src, uint64_t len);
 #endif
 
 #ifdef COPY
-Z_INTERNAL uint32_t adler32_fold_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, uint64_t len) {
+Z_INTERNAL uint32_t adler32_fold_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
 #else
-Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const uint8_t *src, uint64_t len) {
+Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const uint8_t *src, size_t len) {
 #endif
     if (src == NULL) return 1L;
     if (len == 0) return adler;
@@ -61,7 +61,7 @@ rem_peel:
        __m256i vs1_0 = vs1;
        __m256i vs3 = _mm256_setzero_si256();
 
-       uint64_t k = MIN(len, NMAX);
+       size_t k = MIN(len, NMAX);
        k -= k % 32;
        len -= k;
 
