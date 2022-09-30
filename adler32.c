@@ -8,7 +8,7 @@
 #include "adler32_p.h"
 
 /* ========================================================================= */
-Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, uint64_t len) {
+Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
     uint32_t sum2;
     unsigned n;
 

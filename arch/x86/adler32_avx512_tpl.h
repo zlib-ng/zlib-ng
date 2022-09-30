@@ -14,9 +14,9 @@
 #ifdef X86_AVX512_ADLER32
 
 #ifdef COPY
-Z_INTERNAL uint32_t adler32_fold_copy_avx512(uint32_t adler, uint8_t *dst, const uint8_t *src, uint64_t len) {
+Z_INTERNAL uint32_t adler32_fold_copy_avx512(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
 #else
-Z_INTERNAL uint32_t adler32_avx512(uint32_t adler, const uint8_t *src, uint64_t len) {
+Z_INTERNAL uint32_t adler32_avx512(uint32_t adler, const uint8_t *src, size_t len) {
 #endif
 
     if (src == NULL) return 1L;
@@ -52,7 +52,7 @@ rem_peel:
                                           56, 57, 58, 59, 60, 61, 62, 63, 64);
     const __m512i dot3v = _mm512_set1_epi16(1);
     const __m512i zero = _mm512_setzero_si512();
-    uint64_t k;
+    size_t k;
 
     while (len >= 64) {
         __m512i vs1 = _mm512_zextsi128_si512(_mm_cvtsi32_si128(adler0));
