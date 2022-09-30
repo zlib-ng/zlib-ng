@@ -21,7 +21,7 @@ typedef unsigned char uv16qi __attribute__((vector_size(16)));
 typedef unsigned int uv4si __attribute__((vector_size(16)));
 typedef unsigned long long uv2di __attribute__((vector_size(16)));
 
-static uint32_t crc32_le_vgfm_16(uint32_t crc, const uint8_t *buf, uint64_t len) {
+static uint32_t crc32_le_vgfm_16(uint32_t crc, const uint8_t *buf, size_t len) {
     /*
      * The CRC-32 constant block contains reduction constants to fold and
      * process particular chunks of the input data stream in parallel.
@@ -198,8 +198,8 @@ static uint32_t crc32_le_vgfm_16(uint32_t crc, const uint8_t *buf, uint64_t len)
 #define VX_ALIGNMENT 16L
 #define VX_ALIGN_MASK (VX_ALIGNMENT - 1)
 
-uint32_t Z_INTERNAL PREFIX(s390_crc32_vx)(uint32_t crc, const unsigned char *buf, uint64_t len) {
-    uint64_t prealign, aligned, remaining;
+uint32_t Z_INTERNAL PREFIX(s390_crc32_vx)(uint32_t crc, const unsigned char *buf, size_t len) {
+    size_t prealign, aligned, remaining;
 
     if (len < VX_MIN_LEN + VX_ALIGN_MASK)
         return PREFIX(crc32_braid)(crc, buf, len);
@@ -213,7 +213,7 @@ uint32_t Z_INTERNAL PREFIX(s390_crc32_vx)(uint32_t crc, const unsigned char *buf
     aligned = len & ~VX_ALIGN_MASK;
     remaining = len & VX_ALIGN_MASK;
 
-    crc = crc32_le_vgfm_16(crc ^ 0xffffffff, buf, (size_t)aligned) ^ 0xffffffff;
+    crc = crc32_le_vgfm_16(crc ^ 0xffffffff, buf, aligned) ^ 0xffffffff;
 
     if (remaining)
         crc = PREFIX(crc32_braid)(crc, buf + aligned, remaining);

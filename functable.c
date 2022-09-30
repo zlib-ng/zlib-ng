@@ -233,7 +233,7 @@ Z_INTERNAL uint32_t crc32_fold_reset_stub(crc32_fold *crc) {
     return functable.crc32_fold_reset(crc);
 }
 
-Z_INTERNAL void crc32_fold_copy_stub(crc32_fold *crc, uint8_t *dst, const uint8_t *src, uint64_t len) {
+Z_INTERNAL void crc32_fold_copy_stub(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
     functable.crc32_fold_copy = &crc32_fold_copy_c;
     cpu_check_features();
 #ifdef X86_PCLMULQDQ_CRC
@@ -243,7 +243,7 @@ Z_INTERNAL void crc32_fold_copy_stub(crc32_fold *crc, uint8_t *dst, const uint8_
     functable.crc32_fold_copy(crc, dst, src, len);
 }
 
-Z_INTERNAL void crc32_fold_stub(crc32_fold *crc, const uint8_t *src, uint64_t len, uint32_t init_crc) {
+Z_INTERNAL void crc32_fold_stub(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc) {
     functable.crc32_fold = &crc32_fold_c;
     cpu_check_features();
 #ifdef X86_PCLMULQDQ_CRC
@@ -403,10 +403,7 @@ Z_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned 
     return functable.chunkmemset_safe(out, dist, len, left);
 }
 
-Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const uint8_t *buf, uint64_t len) {
-    Assert(sizeof(uint64_t) >= sizeof(size_t),
-           "crc32_z takes size_t but internally we have a uint64_t len");
-
+Z_INTERNAL uint32_t crc32_stub(uint32_t crc, const uint8_t *buf, size_t len) {
     functable.crc32 = &PREFIX(crc32_braid);
     cpu_check_features();
 #ifdef ARM_ACLE_CRC_HASH

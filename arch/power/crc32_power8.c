@@ -48,7 +48,7 @@ static unsigned int crc32_align(unsigned int crc, const unsigned char *p, unsign
 
 static unsigned int ALIGNED_(32) __crc32_vpmsum(unsigned int crc, const void* p, unsigned long len);
 
-Z_INTERNAL uint32_t crc32_power8(uint32_t crc, const unsigned char *p, uint64_t _len) {
+Z_INTERNAL uint32_t crc32_power8(uint32_t crc, const unsigned char *p, size_t _len) {
     unsigned int prealign;
     unsigned int tail;
 
