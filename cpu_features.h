@@ -65,10 +65,10 @@ extern uint32_t adler32_fold_copy_avx512_vnni(uint32_t adler, uint8_t *dst, cons
 /* CRC32 folding */
 #ifdef X86_PCLMULQDQ_CRC
 extern uint32_t crc32_fold_pclmulqdq_reset(crc32_fold *crc);
-extern void     crc32_fold_pclmulqdq_copy(crc32_fold *crc, uint8_t *dst, const uint8_t *src, uint64_t len);
-extern void     crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, uint64_t len, uint32_t init_crc);
+extern void     crc32_fold_pclmulqdq_copy(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len);
+extern void     crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc);
 extern uint32_t crc32_fold_pclmulqdq_final(crc32_fold *crc);
-extern uint32_t crc32_pclmulqdq(uint32_t crc32, const uint8_t *buf, uint64_t len);
+extern uint32_t crc32_pclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #endif
 
 /* memory chunking */
@@ -111,15 +111,15 @@ extern uint8_t* chunkmemset_safe_power8(uint8_t *out, unsigned dist, unsigned le
 #endif
 
 /* CRC32 */
-typedef uint32_t (*crc32_func)(uint32_t crc32, const uint8_t *buf, uint64_t len);
+typedef uint32_t (*crc32_func)(uint32_t crc32, const uint8_t *buf, size_t len);
 
-extern uint32_t PREFIX(crc32_braid)(uint32_t crc, const uint8_t *buf, uint64_t len);
+extern uint32_t PREFIX(crc32_braid)(uint32_t crc, const uint8_t *buf, size_t len);
 #ifdef ARM_ACLE_CRC_HASH
-extern uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, uint64_t len);
+extern uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, size_t len);
 #elif defined(POWER8_VSX_CRC32)
-extern uint32_t crc32_power8(uint32_t crc, const uint8_t *buf, uint64_t len);
+extern uint32_t crc32_power8(uint32_t crc, const uint8_t *buf, size_t len);
 #elif defined(S390_CRC32_VX)
-extern uint32_t PREFIX(s390_crc32_vx)(uint32_t crc, const uint8_t *buf, uint64_t len);
+extern uint32_t PREFIX(s390_crc32_vx)(uint32_t crc, const uint8_t *buf, size_t len);
 #endif
 
 /* compare256 */
