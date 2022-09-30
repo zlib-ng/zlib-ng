@@ -49,7 +49,7 @@ public:
 
         for (auto _ : state) {
             hash = adler32_func(hash, (unsigned char *)random_ints_dst,
-                                (const unsigned char*)random_ints_src, state.range(0));
+                                (const unsigned char*)random_ints_src, (size_t)state.range(0));
         }
 
         benchmark::DoNotOptimize(hash);
