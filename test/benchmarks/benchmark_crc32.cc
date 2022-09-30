@@ -35,7 +35,7 @@ public:
         uint32_t hash = 0;
 
         for (auto _ : state) {
-            hash = crc32(hash, (const unsigned char *)random_ints, state.range(0));
+            hash = crc32(hash, (const unsigned char *)random_ints, (size_t)state.range(0));
         }
 
         benchmark::DoNotOptimize(hash);
