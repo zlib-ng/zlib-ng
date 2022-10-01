@@ -28,7 +28,7 @@
 
 #if !defined(ARM_NEON_HASLD4) && (defined(ARM_NEON_ADLER32) || defined(ARM_NEON_SLIDEHASH))
 
-static inline uint16x8x4_t vld1q_u16_x4(uint16_t *a) {
+static inline uint16x8x4_t vld1q_u16_x4(uint16_t const *a) {
     uint16x8x4_t ret = (uint16x8x4_t) {{
                           vld1q_u16(a),
                           vld1q_u16(a+8),
@@ -37,7 +37,7 @@ static inline uint16x8x4_t vld1q_u16_x4(uint16_t *a) {
     return ret;
 }
 
-static inline uint8x16x4_t vld1q_u8_x4(uint8_t *a) {
+static inline uint8x16x4_t vld1q_u8_x4(uint8_t const *a) {
     uint8x16x4_t ret = (uint8x16x4_t) {{
                           vld1q_u8(a),
                           vld1q_u8(a+16),
