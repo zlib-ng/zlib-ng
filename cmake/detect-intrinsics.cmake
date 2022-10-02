@@ -132,6 +132,8 @@ macro(check_avx2_intrinsics)
         if(NOT NATIVEFLAG)
             set(AVX2FLAG "-mavx2")
         endif()
+    elseif(MSVC)
+        set(AVX2FLAG "/arch:AVX2")
     endif()
     # Check whether compiler supports AVX2 intrinics
     set(CMAKE_REQUIRED_FLAGS "${AVX2FLAG} ${NATIVEFLAG}")
