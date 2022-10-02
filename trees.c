@@ -670,7 +670,7 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
                 opt_lenb, s->opt_len, static_lenb, s->static_len, stored_len,
                 s->sym_next / 3));
 
-        if (static_lenb <= opt_lenb)
+        if (static_lenb <= opt_lenb || s->strategy == Z_FIXED)
             opt_lenb = static_lenb;
 
     } else {
@@ -688,7 +688,7 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
          */
         zng_tr_stored_block(s, buf, stored_len, last);
 
-    } else if (s->strategy == Z_FIXED || static_lenb == opt_lenb) {
+    } else if (static_lenb == opt_lenb) {
         zng_tr_emit_tree(s, STATIC_TREES, last);
         compress_block(s, (const ct_data *)static_ltree, (const ct_data *)static_dtree);
         cmpr_bits_add(s, s->static_len);
