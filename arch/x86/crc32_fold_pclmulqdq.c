@@ -238,17 +238,18 @@ static inline void crc32_fold_load(__m128i *fold, __m128i *fold0, __m128i *fold1
     *fold3 = _mm_load_si128(fold + 3);
 }
 
-static inline void crc32_fold_save(__m128i *fold, __m128i fold0, __m128i fold1, __m128i fold2, __m128i fold3) {
-    _mm_storeu_si128(fold + 0, fold0);
-    _mm_storeu_si128(fold + 1, fold1);
-    _mm_storeu_si128(fold + 2, fold2);
-    _mm_storeu_si128(fold + 3, fold3);
+static inline void crc32_fold_save(__m128i *fold, const __m128i *fold0, const __m128i *fold1,
+                                   const __m128i *fold2, const __m128i *fold3) {
+    _mm_storeu_si128(fold + 0, *fold0);
+    _mm_storeu_si128(fold + 1, *fold1);
+    _mm_storeu_si128(fold + 2, *fold2);
+    _mm_storeu_si128(fold + 3, *fold3);
 }
 
 Z_INTERNAL uint32_t crc32_fold_pclmulqdq_reset(crc32_fold *crc) {
     __m128i xmm_crc0 = _mm_cvtsi32_si128(0x9db42487);
     __m128i xmm_zero = _mm_setzero_si128();
-    crc32_fold_save((__m128i *)crc->fold, xmm_crc0, xmm_zero, xmm_zero, xmm_zero);
+    crc32_fold_save((__m128i *)crc->fold, &xmm_crc0, &xmm_zero, &xmm_zero, &xmm_zero);
     return 0;
 }
 

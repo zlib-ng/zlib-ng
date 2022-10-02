@@ -184,6 +184,6 @@ partial:
         partial_fold((size_t)len, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, &xmm_crc_part);
     }
 
-    crc32_fold_save((__m128i *)crc->fold, xmm_crc0, xmm_crc1, xmm_crc2, xmm_crc3);
+    crc32_fold_save((__m128i *)crc->fold, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 }
 #endif
