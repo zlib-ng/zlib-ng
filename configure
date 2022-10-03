@@ -739,13 +739,20 @@ else
   echo "Checking for strerror... No." | tee -a configure.log
 fi
 
-# check for getauxval() for architecture feature detection at run-time
+# check for getauxval() or elf_aux_info() for architecture feature detection at run-time
 cat > $test.c <<EOF
 #include <sys/auxv.h>
-int main() { return getauxval(0); }
+int main() {
+#ifdef __FreeBSD__
+int test;
+return elf_aux_info(AT_PAGESZ, &test, sizeof(test));
+#else
+return getauxval(0);
+#endif
+}
 EOF
 if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
-  echo "Checking for getauxval() in sys/auxv.h... Yes." | tee -a configure.log
+  echo "Checking for getauxval() or elf_aux_info() in sys/auxv.h... Yes." | tee -a configure.log
   CFLAGS="${CFLAGS} -DHAVE_SYS_AUXV_H"
   SFLAGS="${SFLAGS} -DHAVE_SYS_AUXV_H"
 else
@@ -1242,8 +1249,19 @@ EOF
             echo "Checking if -mno-vsx is supported ... No." | tee -a configure.log
         fi
         cat > $test.c << EOF
+#ifdef __FreeBSD__
+#include <machine/cpu.h>
+#endif
 #include <sys/auxv.h>
-int main() { return (getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC); }
+int main() {
+#ifdef __FreeBSD__
+unsigned long hwcap;
+elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+return (hwcap & PPC_FEATURE_HAS_ALTIVEC);
+#else
+return (getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC);
+#endif
+}
 EOF
         if try $CC -c $CFLAGS -maltivec $test.c; then
             HAVE_VMX=1
@@ -1257,8 +1275,19 @@ EOF
 check_power8_intrinsics() {
     # Check whether features needed by POWER8 optimisations are available
     cat > $test.c << EOF
+#ifdef __FreeBSD__
+#include <machine/cpu.h>
+#endif
 #include <sys/auxv.h>
-int main() { return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07); }
+int main() {
+#ifdef __FreeBSD__
+unsigned long hwcap;
+elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
+return (hwcap & PPC_FEATURE2_ARCH_2_07);
+#else
+return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
+#endif
+}
 EOF
     if test $buildpower8 -eq 1 && try $CC -c $CFLAGS -mcpu=power8 $test.c; then
         HAVE_POWER8_INTRIN=1
