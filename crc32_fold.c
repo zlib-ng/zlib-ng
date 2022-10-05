@@ -7,6 +7,8 @@
 
 #include "crc32_fold.h"
 
+#include <limits.h>
+
 Z_INTERNAL uint32_t crc32_fold_reset_c(crc32_fold *crc) {
     crc->value = CRC32_INITIAL_VALUE;
     return crc->value;
@@ -14,12 +16,15 @@ Z_INTERNAL uint32_t crc32_fold_reset_c(crc32_fold *crc) {
 
 Z_INTERNAL void crc32_fold_copy_c(crc32_fold *crc, uint8_t *dst, const uint8_t *src, uint64_t len) {
     crc->value = functable.crc32(crc->value, src, len);
-    while (len > SIZE_MAX) {
-        memcpy(dst, src, SIZE_MAX);
-        dst += SIZE_MAX;
-        src += SIZE_MAX;
-        len -= SIZE_MAX;
+/* Test that we don't try to copy more than actually fits in available address space */
+#if INTPTR_MAX > SSIZE_MAX
+    while (len > SSIZE_MAX) {
+        memcpy(dst, src, SSIZE_MAX);
+        dst += SSIZE_MAX;
+        src += SSIZE_MAX;
+        len -= SSIZE_MAX;
     }
+#endif
     if (len) {
         memcpy(dst, src, (size_t)len);
     }

@@ -46,6 +46,12 @@
 #  else
     typedef long ssize_t;
 #  endif
+
+#  if defined(_WIN64)
+    #define SSIZE_MAX _I64_MAX
+#  else
+    #define SSIZE_MAX LONG_MAX
+#  endif
 #endif
 
 /* MS Visual Studio does not allow inline in C, only C++.
