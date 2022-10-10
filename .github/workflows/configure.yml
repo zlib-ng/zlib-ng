@@ -167,6 +167,7 @@ jobs:
             configure-prefix: emconfigure
             cflags: -static
             ldflags: -static
+            emu-run: node
 
           - name: macOS GCC Symbol Prefix
             os: macOS-latest
@@ -207,6 +208,7 @@ jobs:
         CFLAGS: ${{ matrix.cflags }}
         LDFLAGS: ${{ matrix.ldflags }}
         CHOST: ${{ matrix.chost }}
+        EMU_RUN: ${{ matrix.emu-run }}
         CI: true
 
     - name: Compile source code

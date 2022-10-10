@@ -2199,9 +2199,16 @@ if test "$CHOST" != "wasm32"; then
     TEST="${TEST} ghtests"
 fi
 
+# Determine emulator to use when running tests
+if test -z "$EMU_RUN" && test $QEMU_ARCH; then
+    EMU_RUN="qemu-$QEMU_ARCH -L /usr/${CHOST}/"
+fi
+if test -n "$EMU_RUN"; then
+    echo "Using cross-compile emulator: $EMU_RUN"
+fi
+
 # Generate Makefile in test dir
 mkdir -p test
-if test $QEMU_ARCH; then QEMU_RUN="qemu-$QEMU_ARCH -L /usr/${CHOST}/"; fi
 sed < $SRCDIR/test/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
@@ -2210,7 +2217,7 @@ sed < $SRCDIR/test/Makefile.in "
 /^alltests: */s#:.*#: $TEST#
 /^SRCDIR *=/s#=.*#=$SRCDIR/test#
 /^SRCTOP *=/s#=.*#=$SRCDIR#
-/^QEMU_RUN *=/s#=.*#=$QEMU_RUN#
+/^EMU_RUN *=/s#=.*#=$EMU_RUN#
 /^LIBNAME *=/s#=.*#=$LIBNAME#
 " > test/Makefile
 
