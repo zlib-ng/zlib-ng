@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 static inline uint32_t partial_hsum(__m128i x) {
-    __m128i second_int = _mm_bsrli_si128(x, 8);
+    __m128i second_int = _mm_srli_si128(x, 8);
     __m128i sum = _mm_add_epi32(x, second_int);
     return _mm_cvtsi128_si32(sum);
 }
