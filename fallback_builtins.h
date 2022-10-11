@@ -71,4 +71,22 @@ static inline __m512i _mm512_zextsi128_si512(__m128i a) {
 
 #endif // __AVX2__
 
+/* Missing zero-extension AVX and AVX512 intrinsics.
+ * Fixed in Microsoft Visual Studio 2017 version 15.7
+ * https://developercommunity.visualstudio.com/t/missing-zero-extension-avx-and-avx512-intrinsics/175737
+ */
+#if defined(_MSC_VER) && _MSC_VER < 1914
+#ifdef __AVX2__
+static inline __m256i _mm256_zextsi128_si256(__m128i a) {
+    return _mm256_inserti128_si256(_mm256_setzero_si256(), a, 0);
+}
+#endif // __AVX2__
+
+#ifdef __AVX512F__
+static inline __m512i _mm512_zextsi128_si512(__m128i a) {
+    return _mm512_inserti32x4(_mm512_setzero_si512(), a, 0);
+}
+#endif // __AVX512F__
+#endif // defined(_MSC_VER) && _MSC_VER < 1914
+
 #endif // include guard FALLBACK_BUILTINS_H
