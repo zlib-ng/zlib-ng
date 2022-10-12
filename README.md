@@ -214,7 +214,7 @@ Advanced Build Options
 Related Projects
 ----------------
 
-* Fork of the popular minigzip                  https://github.com/zlib-ng/minizip-ng
+* Fork of the popular minizip                   https://github.com/zlib-ng/minizip-ng
 * Python tool to benchmark minigzip/minideflate https://github.com/zlib-ng/deflatebench
 * Python tool to benchmark pigz                 https://github.com/zlib-ng/pigzbench
 * 3rd party patches for zlib-ng compatibility   https://github.com/zlib-ng/patches
