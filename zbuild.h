@@ -5,6 +5,9 @@
 #ifndef _POSIX_C_SOURCE
 #  define _POSIX_C_SOURCE 200809L /* snprintf, posix_memalign, strdup */
 #endif
+#ifndef _ISOC11_SOURCE
+#  define _ISOC11_SOURCE 1 /* aligned_alloc */
+#endif
 
 #include <stddef.h>
 #include <string.h>

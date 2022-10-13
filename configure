@@ -706,6 +706,25 @@ else
 fi
 echo >> configure.log
 
+cat > $test.c <<EOF
+#define _ISOC11_SOURCE 1
+#include <stdlib.h>
+int main(void) {
+  void *ptr = aligned_alloc(64, 10);
+  if (ptr)
+    free(ptr);
+  return 0;
+}
+EOF
+if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
+  echo "Checking for aligned_alloc... Yes." | tee -a configure.log
+  CFLAGS="${CFLAGS} -DHAVE_ALIGNED_ALLOC"
+  SFLAGS="${SFLAGS} -DHAVE_ALIGNED_ALLOC"
+else
+  echo "Checking for aligned_alloc... No." | tee -a configure.log
+fi
+echo >> configure.log
+
 # check for strerror() for use by gz* functions
 cat > $test.c <<EOF
 #include <string.h>
