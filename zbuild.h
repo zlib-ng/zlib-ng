@@ -1,6 +1,10 @@
 #ifndef _ZBUILD_H
 #define _ZBUILD_H
 
+#ifndef _ISOC11_SOURCE
+#  define _ISOC11_SOURCE 1 /* aligned_alloc */
+#endif
+
 /* This has to be first include that defines any types */
 #if defined(_MSC_VER)
 #  if defined(_WIN64)

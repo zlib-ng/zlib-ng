@@ -9,7 +9,7 @@
 #  define _POSIX_C_SOURCE 200112L  /* For posix_memalign(). */
 #endif
 
-#if defined(__APPLE__) || defined(HAVE_POSIX_MEMALIGN)
+#if defined(__APPLE__) || defined(HAVE_POSIX_MEMALIGN) || defined(HAVE_ALIGNED_ALLOC)
 #  include <stdlib.h>
 #elif defined(__FreeBSD__)
 #  include <stdlib.h>
@@ -27,6 +27,8 @@ static inline void *zng_alloc(size_t size) {
     return (void *)_aligned_malloc(size, 64);
 #elif defined(__APPLE__)
     return (void *)malloc(size);     /* MacOS always aligns to 16 bytes */
+#elif defined(HAVE_ALIGNED_ALLOC)
+    return (void *)aligned_alloc(64, size);
 #else
     return (void *)memalign(64, size);
 #endif
