@@ -39,6 +39,22 @@
 #  endif
 #endif
 
+#ifndef Z_HAS_ATTRIBUTE
+#  if defined(__has_attribute)
+#    define Z_HAS_ATTRIBUTE(a) __has_attribute(a)
+#  else
+#    define Z_HAS_ATTRIBUTE(a) 0
+#  endif
+#endif
+
+#ifndef Z_FALLTHROUGH
+#  if Z_HAS_ATTRIBUTE(__fallthrough__) || (defined(__GNUC__) && (__GNUC__ >= 7))
+#    define Z_FALLTHROUGH __attribute__((__fallthrough__))
+#  else
+#    define Z_FALLTHROUGH do {} while(0) /* fallthrough */
+#  endif
+#endif
+
 /* This has to be first include that defines any types */
 #if defined(_MSC_VER)
 #  if defined(_WIN64)
