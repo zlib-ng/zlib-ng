@@ -1198,6 +1198,8 @@ int32_t Z_EXPORT PREFIX(inflateSync)(PREFIX3(stream) *strm) {
     /* return no joy or set up to restart inflate() on a new block */
     if (state->have != 4)
         return Z_DATA_ERROR;
+    if (state->mode == HEAD)
+        state->wrap = 0;
     if (state->flags == -1)
         state->wrap = 0;    /* if no header yet, treat as raw */
     else
