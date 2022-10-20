@@ -404,7 +404,7 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     while (s->lookahead >= STD_MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (STD_MIN_MATCH - 1);
-        functable.insert_string(s, str, n);
+        s->insert_string(s, str, n);
         s->strstart = str + n;
         s->lookahead = STD_MIN_MATCH - 1;
         fill_window(s);
