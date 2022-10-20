@@ -267,3 +267,46 @@ static inline void dfltcc_reset_state(struct dfltcc_state *dfltcc_state) {
 static inline void dfltcc_copy_state(void *dst, const void *src, uInt size, uInt extension_size) {
     memcpy(dst, src, ALIGN_UP(size, 8) + extension_size);
 }
+
+static inline void append_history(struct dfltcc_param_v0 *param, unsigned char *history,
+                                  const unsigned char *buf, uInt count) {
+    size_t offset;
+    size_t n;
+
+    /* Do not use more than 32K */
+    if (count > HB_SIZE) {
+        buf += count - HB_SIZE;
+        count = HB_SIZE;
+    }
+    offset = (param->ho + param->hl) % HB_SIZE;
+    if (offset + count <= HB_SIZE)
+        /* Circular history buffer does not wrap - copy one chunk */
+        memcpy(history + offset, buf, count);
+    else {
+        /* Circular history buffer wraps - copy two chunks */
+        n = HB_SIZE - offset;
+        memcpy(history + offset, buf, n);
+        memcpy(history, buf + n, count - n);
+    }
+    n = param->hl + count;
+    if (n <= HB_SIZE)
+        /* All history fits into buffer - no need to discard anything */
+        param->hl = n;
+    else {
+        /* History does not fit into buffer - discard extra bytes */
+        param->ho = (param->ho + (n - HB_SIZE)) % HB_SIZE;
+        param->hl = HB_SIZE;
+    }
+}
+
+static inline void get_history(struct dfltcc_param_v0 *param, const unsigned char *history,
+                               unsigned char *buf) {
+    if (param->ho + param->hl <= HB_SIZE)
+        /* Circular history buffer does not wrap - copy one chunk */
+        memcpy(buf, history + param->ho, param->hl);
+    else {
+        /* Circular history buffer wraps - copy two chunks */
+        memcpy(buf, history + param->ho, HB_SIZE - param->ho);
+        memcpy(buf + HB_SIZE - param->ho, history, param->ho + param->hl - HB_SIZE);
+    }
+}

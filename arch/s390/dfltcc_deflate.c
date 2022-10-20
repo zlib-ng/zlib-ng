@@ -376,36 +376,6 @@ int Z_INTERNAL PREFIX(dfltcc_can_set_reproducible)(PREFIX3(streamp) strm, int re
 /*
    Preloading history.
 */
-static void append_history(struct dfltcc_param_v0 *param, unsigned char *history, const unsigned char *buf, uInt count) {
-    size_t offset;
-    size_t n;
-
-    /* Do not use more than 32K */
-    if (count > HB_SIZE) {
-        buf += count - HB_SIZE;
-        count = HB_SIZE;
-    }
-    offset = (param->ho + param->hl) % HB_SIZE;
-    if (offset + count <= HB_SIZE)
-        /* Circular history buffer does not wrap - copy one chunk */
-        memcpy(history + offset, buf, count);
-    else {
-        /* Circular history buffer wraps - copy two chunks */
-        n = HB_SIZE - offset;
-        memcpy(history + offset, buf, n);
-        memcpy(history, buf + n, count - n);
-    }
-    n = param->hl + count;
-    if (n <= HB_SIZE)
-        /* All history fits into buffer - no need to discard anything */
-        param->hl = n;
-    else {
-        /* History does not fit into buffer - discard extra bytes */
-        param->ho = (param->ho + (n - HB_SIZE)) % HB_SIZE;
-        param->hl = HB_SIZE;
-    }
-}
-
 int Z_INTERNAL PREFIX(dfltcc_deflate_set_dictionary)(PREFIX3(streamp) strm,
                                                 const unsigned char *dictionary, uInt dict_length) {
     deflate_state *state = (deflate_state *)strm->state;
@@ -423,16 +393,8 @@ int Z_INTERNAL PREFIX(dfltcc_deflate_get_dictionary)(PREFIX3(streamp) strm, unsi
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
     struct dfltcc_param_v0 *param = &dfltcc_state->param;
 
-    if (dictionary) {
-        if (param->ho + param->hl <= HB_SIZE)
-            /* Circular history buffer does not wrap - copy one chunk */
-            memcpy(dictionary, state->window + param->ho, param->hl);
-        else {
-            /* Circular history buffer wraps - copy two chunks */
-            memcpy(dictionary, state->window + param->ho, HB_SIZE - param->ho);
-            memcpy(dictionary + HB_SIZE - param->ho, state->window, param->ho + param->hl - HB_SIZE);
-        }
-    }
+    if (dictionary)
+        get_history(param, state->window, dictionary);
     if (dict_length)
         *dict_length = param->hl;
     return Z_OK;
