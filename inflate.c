@@ -1157,6 +1157,8 @@ int32_t Z_EXPORT PREFIX(inflateGetDictionary)(PREFIX3(stream) *strm, uint8_t *di
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
 
+    INFLATE_GET_DICTIONARY_HOOK(strm, dictionary, dictLength);  /* hook for IBM Z DFLTCC */
+
     /* copy dictionary */
     if (state->whave && dictionary != NULL) {
         memcpy(dictionary, state->window + state->wnext, state->whave - state->wnext);
@@ -1185,6 +1187,8 @@ int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8
         if (dictid != state->check)
             return Z_DATA_ERROR;
     }
+
+    INFLATE_SET_DICTIONARY_HOOK(strm, dictionary, dictLength);  /* hook for IBM Z DFLTCC */
 
     /* copy dictionary to window using updatewindow(), which will amend the
        existing dictionary if appropriate */
@@ -1349,8 +1353,7 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     }
     copy->next = copy->codes + (state->next - state->codes);
     if (window != NULL) {
-        wsize = 1U << state->wbits;
-        memcpy(window, state->window, wsize);
+        ZCOPY_WINDOW(window, state->window, 1U << state->wbits);
     }
     copy->window = window;
     dest->state = (struct internal_state *)copy;

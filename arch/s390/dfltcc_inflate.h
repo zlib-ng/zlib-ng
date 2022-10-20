@@ -15,6 +15,10 @@ typedef enum {
 dfltcc_inflate_action Z_INTERNAL PREFIX(dfltcc_inflate)(PREFIX3(streamp) strm, int flush, int *ret);
 int Z_INTERNAL PREFIX(dfltcc_was_inflate_used)(PREFIX3(streamp) strm);
 int Z_INTERNAL PREFIX(dfltcc_inflate_disable)(PREFIX3(streamp) strm);
+int Z_INTERNAL PREFIX(dfltcc_inflate_set_dictionary)(PREFIX3(streamp) strm,
+                                                     const unsigned char *dictionary, uInt dict_length);
+int Z_INTERNAL PREFIX(dfltcc_inflate_get_dictionary)(PREFIX3(streamp) strm,
+                                                     unsigned char *dictionary, uInt* dict_length);
 
 #define ZALLOC_INFLATE_STATE PREFIX(dfltcc_alloc_inflate_state)
 #define ZCOPY_INFLATE_STATE PREFIX(dfltcc_copy_inflate_state)
@@ -49,6 +53,18 @@ int Z_INTERNAL PREFIX(dfltcc_inflate_disable)(PREFIX3(streamp) strm);
 #define INFLATE_SYNC_POINT_HOOK(strm) \
     do { \
         if (PREFIX(dfltcc_was_inflate_used)((strm))) return Z_STREAM_ERROR; \
+    } while (0)
+
+#define INFLATE_SET_DICTIONARY_HOOK(strm, dict, dict_len) \
+    do { \
+        if (PREFIX(dfltcc_can_inflate)((strm))) \
+            return PREFIX(dfltcc_inflate_set_dictionary)((strm), (dict), (dict_len)); \
+    } while (0)
+
+#define INFLATE_GET_DICTIONARY_HOOK(strm, dict, dict_len) \
+    do { \
+        if (PREFIX(dfltcc_can_inflate)((strm))) \
+            return PREFIX(dfltcc_inflate_get_dictionary)((strm), (dict), (dict_len)); \
     } while (0)
 
 #endif

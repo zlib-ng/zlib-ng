@@ -4,11 +4,14 @@
 #include "zutil.h"
 
 void Z_INTERNAL *PREFIX(dfltcc_alloc_window)(PREFIX3(streamp) strm, uInt items, uInt size);
+void Z_INTERNAL PREFIX(dfltcc_copy_window)(void *dest, const void *src, size_t n);
 void Z_INTERNAL PREFIX(dfltcc_free_window)(PREFIX3(streamp) strm, void *w);
 
 #define ZFREE_STATE ZFREE
 
 #define ZALLOC_WINDOW PREFIX(dfltcc_alloc_window)
+
+#define ZCOPY_WINDOW PREFIX(dfltcc_copy_window)
 
 #define ZFREE_WINDOW PREFIX(dfltcc_free_window)
 
