@@ -367,7 +367,6 @@ clean:
 	rm -rf objs
 	rm -f *.gcda *.gcno *.gcov
 	rm -f a.out a.exe
-	rm -f *.pc
 	rm -f *._h
 	rm -rf btmp1 btmp2 pkgtmp1 pkgtmp2
 
@@ -375,7 +374,7 @@ maintainer-clean: distclean
 distclean: clean
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) distclean; fi
 	@if [ -f test/Makefile ]; then $(MAKE) -C test distclean; fi
-	rm -f $(PKGFILE) configure.log zconf.h zconf.h.cmakein zlib$(SUFFIX).h zlib_name_mangling$(SUFFIX)}.h
+	rm -f $(PKGFILE) configure.log zconf.h zconf.h.cmakein zlib$(SUFFIX).h zlib_name_mangling$(SUFFIX)}.h *.pc
 	-@rm -f .DS_Store
 # Reset Makefile if building inside source tree
 	@if [ -f Makefile.in ]; then \
