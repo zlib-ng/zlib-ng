@@ -744,10 +744,10 @@ cat > $test.c <<EOF
 #include <sys/auxv.h>
 int main() {
 #ifdef __FreeBSD__
-int test;
-return elf_aux_info(AT_PAGESZ, &test, sizeof(test));
+  int test;
+  return elf_aux_info(AT_PAGESZ, &test, sizeof(test));
 #else
-return getauxval(0);
+  return getauxval(0);
 #endif
 }
 EOF
@@ -1255,11 +1255,11 @@ EOF
 #include <sys/auxv.h>
 int main() {
 #ifdef __FreeBSD__
-unsigned long hwcap;
-elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-return (hwcap & PPC_FEATURE_HAS_ALTIVEC);
+  unsigned long hwcap;
+  elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+  return (hwcap & PPC_FEATURE_HAS_ALTIVEC);
 #else
-return (getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC);
+  return (getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC);
 #endif
 }
 EOF
@@ -1281,11 +1281,11 @@ check_power8_intrinsics() {
 #include <sys/auxv.h>
 int main() {
 #ifdef __FreeBSD__
-unsigned long hwcap;
-elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
-return (hwcap & PPC_FEATURE2_ARCH_2_07);
+  unsigned long hwcap;
+  elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
+  return (hwcap & PPC_FEATURE2_ARCH_2_07);
 #else
-return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
+  return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
 #endif
 }
 EOF

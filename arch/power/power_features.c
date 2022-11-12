@@ -8,7 +8,7 @@
 #  include <sys/auxv.h>
 #endif
 #ifdef __FreeBSD__
-#include <machine/cpu.h>
+#  include <machine/cpu.h>
 #endif
 #include "../../zbuild.h"
 #include "power_features.h"
