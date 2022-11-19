@@ -125,7 +125,7 @@ Z_INTERNAL uint32_t crc32_braid(uint32_t crc, const uint8_t *buf, uint64_t len) 
         int k;
 
         /* Compute the CRC up to a z_word_t boundary. */
-        while (len && ((z_size_t)buf & (W - 1)) != 0) {
+        while (len && ((uintptr_t)buf & (W - 1)) != 0) {
             len--;
             DO1;
         }
