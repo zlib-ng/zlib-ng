@@ -35,7 +35,7 @@ public:
         }
 
         for (z_size_t i = 0; i < MAX_LENGTH; i++) {
-            z_size_t dest_len = sizeof(dest);
+            z_uintmax_t dest_len = sizeof(dest);
 
             /* calculate actual output length */
             estimate_len = PREFIX(compressBound)(i);

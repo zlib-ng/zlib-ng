@@ -18,7 +18,7 @@
 
 TEST(compress, basic) {
     uint8_t compr[128], uncompr[128];
-    z_size_t compr_len = sizeof(compr), uncompr_len = sizeof(uncompr);
+    z_uintmax_t compr_len = sizeof(compr), uncompr_len = sizeof(uncompr);
     int err;
 
     err = PREFIX(compress)(compr, &compr_len, (const unsigned char *)hello, hello_len);
