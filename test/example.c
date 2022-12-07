@@ -26,13 +26,13 @@ static unsigned long dictId = 0; /* Adler32 value of the dictionary */
 #define MAX_DICTIONARY_SIZE 32768
 
 
-void test_compress      (unsigned char *compr, z_size_t comprLen,unsigned char *uncompr, z_size_t uncomprLen);
+void test_compress      (unsigned char *compr, z_uintmax_t comprLen, unsigned char *uncompr, z_uintmax_t uncomprLen);
 void test_gzio          (const char *fname, unsigned char *uncompr, z_size_t uncomprLen);
 void test_deflate       (unsigned char *compr, size_t comprLen);
 void test_inflate       (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
 void test_large_deflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen, int zng_params);
 void test_large_inflate (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
-void test_flush         (unsigned char *compr, z_size_t *comprLen);
+void test_flush         (unsigned char *compr, z_uintmax_t *comprLen);
 void test_sync          (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
 void test_dict_deflate  (unsigned char *compr, size_t comprLen);
 void test_dict_inflate  (unsigned char *compr, size_t comprLen, unsigned char *uncompr, size_t uncomprLen);
@@ -63,11 +63,11 @@ void error(const char *format, ...) {
 /* ===========================================================================
  * Test compress() and uncompress()
  */
-void test_compress(unsigned char *compr, z_size_t comprLen, unsigned char *uncompr, z_size_t uncomprLen) {
+void test_compress(unsigned char *compr, z_uintmax_t comprLen, unsigned char *uncompr, z_uintmax_t uncomprLen) {
     int err;
-    size_t len = strlen(hello)+1;
+    unsigned int len = (unsigned int)strlen(hello)+1;
 
-    err = PREFIX(compress)(compr, &comprLen, (const unsigned char*)hello, (z_size_t)len);
+    err = PREFIX(compress)(compr, &comprLen, (const unsigned char*)hello, len);
     CHECK_ERR(err, "compress");
 
     strcpy((char*)uncompr, "garbage");
@@ -402,7 +402,7 @@ void test_large_inflate(unsigned char *compr, size_t comprLen, unsigned char *un
 /* ===========================================================================
  * Test deflate() with full flush
  */
-void test_flush(unsigned char *compr, z_size_t *comprLen) {
+void test_flush(unsigned char *compr, z_uintmax_t *comprLen) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
     unsigned int len = (unsigned int)strlen(hello)+1;
@@ -953,8 +953,8 @@ void test_deflate_tune(unsigned char *compr, size_t comprLen) {
  */
 int main(int argc, char *argv[]) {
     unsigned char *compr, *uncompr;
-    z_size_t comprLen = 10000*sizeof(int); /* don't overflow on MSDOS */
-    z_size_t uncomprLen = comprLen;
+    z_uintmax_t comprLen = 10000*sizeof(int); /* don't overflow on MSDOS */
+    z_uintmax_t uncomprLen = comprLen;
     static const char* myVersion = PREFIX2(VERSION);
 
     if (zVersion()[0] != myVersion[0]) {

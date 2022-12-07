@@ -28,8 +28,8 @@
    memory, Z_BUF_ERROR if there was not enough room in the output buffer,
    Z_STREAM_ERROR if the level parameter is invalid.
 */
-int Z_EXPORT PREFIX(compress2)(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
-                        z_size_t sourceLen, int level) {
+int Z_EXPORT PREFIX(compress2)(unsigned char *dest, z_uintmax_t *destLen, const unsigned char *source,
+                        z_uintmax_t sourceLen, int level) {
     PREFIX3(stream) stream;
     int err;
     const unsigned int max = (unsigned int)-1;
@@ -63,14 +63,14 @@ int Z_EXPORT PREFIX(compress2)(unsigned char *dest, z_size_t *destLen, const uns
         err = PREFIX(deflate)(&stream, sourceLen ? Z_NO_FLUSH : Z_FINISH);
     } while (err == Z_OK);
 
-    *destLen = (z_size_t)stream.total_out;
+    *destLen = stream.total_out;
     PREFIX(deflateEnd)(&stream);
     return err == Z_STREAM_END ? Z_OK : err;
 }
 
 /* ===========================================================================
  */
-int Z_EXPORT PREFIX(compress)(unsigned char *dest, z_size_t *destLen, const unsigned char *source, z_size_t sourceLen) {
+int Z_EXPORT PREFIX(compress)(unsigned char *dest, z_uintmax_t *destLen, const unsigned char *source, z_uintmax_t sourceLen) {
     return PREFIX(compress2)(dest, destLen, source, sourceLen, Z_DEFAULT_COMPRESSION);
 }
 
@@ -78,8 +78,8 @@ int Z_EXPORT PREFIX(compress)(unsigned char *dest, z_size_t *destLen, const unsi
    If the default memLevel or windowBits for deflateInit() is changed, then
    this function needs to be updated.
  */
-z_size_t Z_EXPORT PREFIX(compressBound)(z_size_t sourceLen) {
-    z_size_t complen = DEFLATE_BOUND_COMPLEN(sourceLen);
+z_uintmax_t Z_EXPORT PREFIX(compressBound)(z_uintmax_t sourceLen) {
+    z_uintmax_t complen = DEFLATE_BOUND_COMPLEN(sourceLen);
 
     if (complen > 0)
         /* Architecture-specific code provided an upper bound. */
