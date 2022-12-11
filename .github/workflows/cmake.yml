@@ -291,7 +291,7 @@ jobs:
             os: ubuntu-latest
             compiler: clang-11
             cxx-compiler: clang++-11
-            packages: clang-11 llvm-11-tools
+            packages: clang-11 llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang
 
@@ -300,7 +300,7 @@ jobs:
             compiler: clang-11
             cxx-compiler: clang++-11
             cmake-args: -DWITH_INFLATE_STRICT=ON
-            packages: clang-11 llvm-11-tools
+            packages: clang-11 llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_inflate_strict
 
@@ -309,7 +309,7 @@ jobs:
             compiler: clang-11
             cxx-compiler: clang++-11
             cmake-args: -DWITH_INFLATE_ALLOW_INVALID_DIST=ON
-            packages: clang-11 llvm-11-tools
+            packages: clang-11 llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_inflate_allow_invalid_dist
 
@@ -318,7 +318,7 @@ jobs:
             compiler: clang-11
             cxx-compiler: clang++-11
             cmake-args: -DWITH_REDUCED_MEM=ON
-            packages: clang-11 llvm-11-tools
+            packages: clang-11 llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_reduced_mem
 
@@ -327,7 +327,7 @@ jobs:
             compiler: clang-11
             cxx-compiler: clang++-11
             cflags: -DUSE_MMAP
-            packages: clang-11 llvm-11-tools
+            packages: clang-11 llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_mmap
 
@@ -335,7 +335,7 @@ jobs:
             os: ubuntu-latest
             compiler: clang-11
             cxx-compiler: clang++-11
-            packages: clang-11 llvm-11-tools
+            packages: clang-11 llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_debug
             build-config: Debug
