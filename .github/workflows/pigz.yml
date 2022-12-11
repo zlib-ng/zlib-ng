@@ -22,14 +22,14 @@ jobs:
           - name: Ubuntu Clang
             os: ubuntu-latest
             compiler: clang
-            packages: llvm-11-tools
+            packages: llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_pigz
 
           - name: Ubuntu Clang No Optim
             os: ubuntu-latest
             compiler: clang
-            packages: llvm-11-tools
+            packages: llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_pigz_no_optim
             cmake-args: -DWITH_OPTIM=OFF
@@ -38,7 +38,7 @@ jobs:
           - name: Ubuntu Clang No Threads
             os: ubuntu-latest
             compiler: clang
-            packages: llvm-11-tools
+            packages: llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_pigz_no_threads
             cmake-args: -DWITH_THREADS=OFF -DPIGZ_VERSION=v2.6
