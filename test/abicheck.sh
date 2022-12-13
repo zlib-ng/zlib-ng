@@ -73,7 +73,7 @@ then
 else
   # Reference is most recent zlib-ng develop with zlib 1.2.12 compatible api.
   ABI_GIT_REPO=https://github.com/zlib-ng/zlib-ng.git
-  ABI_GIT_COMMIT=843c16c87afd53a20bf915661012b02acdd30281
+  ABI_GIT_COMMIT=1ab443812aceab6c80ccd573ecdd06f73a84eef4
 fi
 
 # Test compat build for ABI compatibility with zlib
