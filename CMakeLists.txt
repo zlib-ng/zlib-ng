@@ -200,7 +200,7 @@ elseif(MSVC)
 elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     # Enable warnings in GCC and Clang
     set(WARNFLAGS -Wall)
-    set(WARNFLAGS_MAINTAINER -Wextra -Wpedantic)
+    set(WARNFLAGS_MAINTAINER -Wextra)
     set(WARNFLAGS_DISABLE)
     if(WITH_NATIVE_INSTRUCTIONS)
         if(BASEARCH_PPC_FOUND)
