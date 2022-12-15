@@ -11,6 +11,8 @@ extern "C" {
 
 #include <gtest/gtest.h>
 
+#include "test_shared.h"
+
 void *zng_calloc_unaligned(void *opaque, unsigned items, unsigned size) {
     uint8_t *pointer = (uint8_t *)calloc(1, (items * size) + 2);
     Z_UNUSED(opaque);

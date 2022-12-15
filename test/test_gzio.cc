@@ -12,9 +12,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "test_shared.h"
-
 #include <gtest/gtest.h>
+
+#include "test_shared.h"
 
 #define TESTFILE "foo.gz"
 
