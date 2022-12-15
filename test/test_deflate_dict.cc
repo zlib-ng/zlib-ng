@@ -12,9 +12,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "test_shared.h"
-
 #include <gtest/gtest.h>
+
+#include "test_shared.h"
 
 TEST(deflate, dictionary) {
     PREFIX3(stream) c_stream;

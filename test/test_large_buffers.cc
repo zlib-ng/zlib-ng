@@ -13,9 +13,9 @@
 #include <string.h>
 #include <time.h>
 
-#include "test_shared.h"
-
 #include <gtest/gtest.h>
+
+#include "test_shared.h"
 
 #define COMPR_BUFFER_SIZE (48 * 1024)
 #define UNCOMPR_BUFFER_SIZE (32 * 1024)

@@ -15,7 +15,10 @@ extern "C" {
 
 #include <gtest/gtest.h>
 
+#include "test_shared.h"
+
 #define MAX_COMPARE_SIZE (256)
+
 
 /* Ensure that compare256 returns the correct match length */
 static inline void compare256_match_check(compare256_func compare256) {
