@@ -261,6 +261,7 @@ jobs:
             os: z15
             compiler: clang-11
             cxx-compiler: clang++-11
+            clang-version: 11
             cmake-args: -GNinja -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Memory
 
           - name: Ubuntu MinGW i686
@@ -342,11 +343,12 @@ jobs:
 
           - name: Ubuntu Clang MSAN
             os: ubuntu-latest
-            compiler: clang-11
-            cxx-compiler: clang++-11
+            compiler: clang-12
+            cxx-compiler: clang++-12
+            clang-version: 12
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
-            packages:  ninja-build clang-11 llvm-11-tools
-            gcov-exec: llvm-cov-11 gcov
+            packages:  ninja-build clang-12 llvm-12-tools
+            gcov-exec: llvm-cov-12 gcov
 
           - name: Ubuntu Emscripten WASM32
             os: ubuntu-latest
@@ -490,7 +492,7 @@ jobs:
     - name: Compile LLVM C++ libraries (MSAN)
       if: contains(matrix.name, 'MSAN')
       run: |
-        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-11.0.0
+        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-${{ matrix.clang-version }}.0.0
         cmake -S llvm-project/llvm -B llvm-project/build -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
           -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
