@@ -240,7 +240,10 @@ again:
         *strm->next_out = (unsigned char)state->bi_buf;
     /* Honor history and check value */
     param->nt = 0;
-    param->cv = state->wrap == 2 ? ZSWAP32(state->crc_fold.value) : strm->adler;
+    if (state->wrap == 1)
+        param->cv = strm->adler;
+    else if (state->wrap == 2)
+        param->cv = ZSWAP32(state->crc_fold.value);
 
     /* When opening a block, choose a Huffman-Table Type */
     if (!param->bcf) {
@@ -271,10 +274,10 @@ again:
         state->bi_buf = 0; /* Avoid accessing next_out */
     else
         state->bi_buf = *strm->next_out & ((1 << state->bi_valid) - 1);
-    if (state->wrap == 2)
-        state->crc_fold.value = ZSWAP32(param->cv);
-    else
+    if (state->wrap == 1)
         strm->adler = param->cv;
+    else if (state->wrap == 2)
+        state->crc_fold.value = ZSWAP32(param->cv);
 
     /* Unmask the input data */
     strm->avail_in += masked_avail_in;
