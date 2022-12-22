@@ -92,11 +92,12 @@ dfltcc_inflate_action Z_INTERNAL PREFIX(dfltcc_inflate)(PREFIX3(streamp) strm, i
     }
 
     /* Translate stream to parameter block */
-    param->cvt = state->flags ? CVT_CRC32 : CVT_ADLER32;
+    param->cvt = ((state->wrap & 4) && state->flags) ? CVT_CRC32 : CVT_ADLER32;
     param->sbb = state->bits;
     if (param->hl)
         param->nt = 0; /* Honor history for the first block */
-    param->cv = state->flags ? ZSWAP32(state->check) : state->check;
+    if (state->wrap & 4)
+        param->cv = state->flags ? ZSWAP32(state->check) : state->check;
 
     /* Inflate */
     do {
@@ -107,7 +108,8 @@ dfltcc_inflate_action Z_INTERNAL PREFIX(dfltcc_inflate)(PREFIX3(streamp) strm, i
     strm->msg = oesc_msg(dfltcc_state->msg, param->oesc);
     state->last = cc == DFLTCC_CC_OK;
     state->bits = param->sbb;
-    strm->adler = state->check = state->flags ? ZSWAP32(param->cv) : param->cv;
+    if (state->wrap & 4)
+        strm->adler = state->check = state->flags ? ZSWAP32(param->cv) : param->cv;
     if (cc == DFLTCC_CC_OP2_CORRUPT && param->oesc != 0) {
         /* Report an error if stream is corrupted */
         state->mode = BAD;

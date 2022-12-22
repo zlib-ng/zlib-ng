@@ -61,6 +61,9 @@ TEST(deflate, header) {
         EXPECT_EQ(err, Z_OK);
     }
 
+    /* Check CRC32. */
+    EXPECT_EQ(c_stream.adler, 0xb56c3f9dU);
+
     err = PREFIX(deflateEnd)(&c_stream);
     EXPECT_EQ(err, Z_OK);
 
