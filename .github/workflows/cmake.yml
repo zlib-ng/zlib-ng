@@ -490,7 +490,7 @@ jobs:
     - name: Compile LLVM C++ libraries (MSAN)
       if: contains(matrix.name, 'MSAN')
       run: |
-        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-11.0.0
+        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-11.1.0
         cmake -S llvm-project/llvm -B llvm-project/build -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
           -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
