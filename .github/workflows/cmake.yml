@@ -212,7 +212,7 @@ jobs:
             codecov: ubuntu_gcc_ppc64
 
           - name: Ubuntu GCC PPC64LE
-            os: ubuntu-latest
+            os: ubuntu-20.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
             packages: qemu qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc-dev-ppc64el-cross
             codecov: ubuntu_gcc_ppc64le
