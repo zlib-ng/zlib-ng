@@ -347,6 +347,8 @@ jobs:
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
             packages:  ninja-build clang-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
+            # https://github.com/llvm/llvm-project/issues/55785
+            msan-options: use_sigaltstack=0
 
           - name: Ubuntu Emscripten WASM32
             os: ubuntu-latest
