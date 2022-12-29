@@ -4,10 +4,10 @@
  */
 
 #ifdef COPY
-uint64_t fold_16_vpclmulqdq_copy(__m128i *xmm_crc0, __m128i *xmm_crc1,
+Z_INTERNAL uint64_t fold_16_vpclmulqdq_copy(__m128i *xmm_crc0, __m128i *xmm_crc1,
     __m128i *xmm_crc2, __m128i *xmm_crc3, uint8_t *dst, const uint8_t *src, uint64_t len) {
 #else
-uint64_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
+Z_INTERNAL uint64_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
     __m128i *xmm_crc2, __m128i *xmm_crc3, const uint8_t *src, uint64_t len,
     __m128i init_crc, int32_t first) {
     __m512i zmm_initial = _mm512_zextsi128_si512(init_crc);
