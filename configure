@@ -562,6 +562,22 @@ else
   esac
 fi
 
+# Symbol versioning
+case "$uname" in
+  CYGWIN* | Cygwin* | cygwin* | MINGW* | mingw* | MSYS* | msys* | Darwin* | darwin*)
+    echo "Checking for Symbol versioning... No."
+  ;;
+  *)
+    if test $shared -eq 1; then
+      echo "Checking for Symbol versioning... Yes."
+      CFLAGS="${CFLAGS} -DHAVE_SYMVER"
+      SFLAGS="${SFLAGS} -DHAVE_SYMVER"
+    else
+      echo "Checking for Symbol versioning... No."
+    fi
+  ;;
+esac
+
 # Simplify some later conditionals
 case "$uname" in
 Linux* | linux*)
@@ -2021,6 +2037,7 @@ EOF
     ;;
 esac
 
+echo "Uname: $uname"
 echo "ARCH: ${ARCH}"
 echo "Using arch directory: ${ARCHDIR}"
 echo "Architecture-specific static object files:${ARCH_STATIC_OBJS}"
