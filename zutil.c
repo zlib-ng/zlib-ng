@@ -87,7 +87,7 @@ unsigned long Z_EXPORT PREFIX(zlibCompileFlags)(void) {
 #  endif
 int Z_INTERNAL z_verbose = verbose;
 
-void Z_INTERNAL z_error(char *m) {
+void Z_INTERNAL z_error(const char *m) {
     fprintf(stderr, "%s\n", m);
     exit(1);
 }
