@@ -14,10 +14,10 @@ struct functable_s {
     uint32_t (* adler32)            (uint32_t adler, const uint8_t *buf, uint64_t len);
     uint32_t (* adler32_fold_copy)  (uint32_t adler, uint8_t *dst, const uint8_t *src, uint64_t len);
     uint32_t (* crc32)              (uint32_t crc, const uint8_t *buf, uint64_t len);
-    uint32_t (* crc32_fold_reset)   (crc32_fold *crc);
-    void     (* crc32_fold_copy)    (crc32_fold *crc, uint8_t *dst, const uint8_t *src, uint64_t len);
-    void     (* crc32_fold)         (crc32_fold *crc, const uint8_t *src, uint64_t len, uint32_t init_crc);
-    uint32_t (* crc32_fold_final)   (crc32_fold *crc);
+    uint32_t (* crc32_fold_reset)   (struct crc32_fold_s *crc);
+    void     (* crc32_fold_copy)    (struct crc32_fold_s *crc, uint8_t *dst, const uint8_t *src, uint64_t len);
+    void     (* crc32_fold)         (struct crc32_fold_s *crc, const uint8_t *src, uint64_t len, uint32_t init_crc);
+    uint32_t (* crc32_fold_final)   (struct crc32_fold_s *crc);
     uint32_t (* compare256)         (const uint8_t *src0, const uint8_t *src1);
     uint32_t (* chunksize)          (void);
     uint8_t* (* chunkcopy)          (uint8_t *out, uint8_t const *from, unsigned len);
