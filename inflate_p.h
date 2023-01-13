@@ -125,8 +125,6 @@
         bits -= bits & 7; \
     } while (0)
 
-#endif
-
 /* Set mode=BAD and prepare error message */
 #define SET_BAD(errmsg) \
     do { \
@@ -208,3 +206,5 @@ static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, uint64_t len,
 
     return out;
 }
+
+#endif
