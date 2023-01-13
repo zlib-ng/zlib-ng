@@ -203,7 +203,7 @@
 #ifdef ZLIB_DEBUG
 #  include <stdio.h>
    extern int Z_INTERNAL z_verbose;
-   extern void Z_INTERNAL z_error(char *m);
+   extern void Z_INTERNAL z_error(const char *m);
 #  define Assert(cond, msg) {if (!(cond)) z_error(msg);}
 #  define Trace(x) {if (z_verbose >= 0) fprintf x;}
 #  define Tracev(x) {if (z_verbose > 0) fprintf x;}
