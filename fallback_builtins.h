@@ -12,16 +12,16 @@
 /* This is not a general purpose replacement for __builtin_ctz. The function expects that value is != 0
  * Because of that assumption trailing_zero is not initialized and the return value of _BitScanForward is not checked
  */
-static __forceinline unsigned long __builtin_ctz(uint32_t value) {
+static __forceinline int __builtin_ctz(unsigned int value) {
 #ifdef X86_FEATURES
 #  ifndef X86_NOCHECK_TZCNT
     if (x86_cpu_has_tzcnt)
 #  endif
-        return _tzcnt_u32(value);
+        return (int)_tzcnt_u32(value);
 #endif
     unsigned long trailing_zero;
     _BitScanForward(&trailing_zero, value);
-    return trailing_zero;
+    return (int)trailing_zero;
 }
 #define HAVE_BUILTIN_CTZ
 
@@ -29,16 +29,16 @@ static __forceinline unsigned long __builtin_ctz(uint32_t value) {
 /* This is not a general purpose replacement for __builtin_ctzll. The function expects that value is != 0
  * Because of that assumption trailing_zero is not initialized and the return value of _BitScanForward64 is not checked
  */
-static __forceinline unsigned long long __builtin_ctzll(uint64_t value) {
+static __forceinline int __builtin_ctzll(unsigned long long value) {
 #ifdef X86_FEATURES
 #  ifndef X86_NOCHECK_TZCNT
     if (x86_cpu_has_tzcnt)
 #  endif
-        return _tzcnt_u64(value);
+        return (int)_tzcnt_u64(value);
 #endif
     unsigned long trailing_zero;
     _BitScanForward64(&trailing_zero, value);
-    return trailing_zero;
+    return (int)trailing_zero;
 }
 #define HAVE_BUILTIN_CTZLL
 #endif // Microsoft AMD64
