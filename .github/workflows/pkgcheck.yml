@@ -56,19 +56,19 @@ jobs:
             packages: qemu gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
 
           - name: macOS Clang
-            os: macOS-latest
+            os: macOS-11
             compiler: clang
             cxx-compiler: clang++
 
           - name: macOS Clang Native
-            os: macOS-latest
+            os: macOS-11
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
             configure-args: --native
 
           - name: macOS Clang Symbol Prefix
-            os: macOS-latest
+            os: macOS-11
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_
