@@ -171,17 +171,17 @@ jobs:
 
           - name: macOS GCC Symbol Prefix
             os: macOS-latest
-            compiler: gcc-9
+            compiler: gcc-11
             configure-args: --sprefix=zTest_
 
           - name: macOS GCC Symbol Prefix & Compat
             os: macOS-latest
-            compiler: gcc-9
+            compiler: gcc-11
             configure-args: --zlib-compat --sprefix=zTest_
 
           - name: macOS GCC
             os: macOS-latest
-            compiler: gcc-9
+            compiler: gcc-11
             configure-args: --warn
 
     steps:
