@@ -115,6 +115,7 @@ sse41flag="-msse4.1"
 sse42flag="-msse4.2"
 pclmulflag="-mpclmul"
 vpclmulflag="-mvpclmulqdq -mavx512f"
+xsaveflag="-mxsave"
 acleflag=
 neonflag=
 noltoflag="-fno-lto"
@@ -268,6 +269,7 @@ if test $native -eq 1; then
   sse42flag=""
   pclmulflag=""
   vpclmulflag=""
+  xsaveflag=""
   noltoflag=""
 fi
 
@@ -1224,6 +1226,27 @@ EOF
     fi
 }
 
+check_xsave_intrinsics() {
+   # Check whether compiler supports XSAVE intrinsics
+   cat > $test.c << EOF
+#ifdef _WIN32
+#  include <intrin.h>
+#else
+#  include <x86gprintrin.h>
+#endif
+int main(void) {
+    return _xgetbv(0);
+}
+EOF
+    if try ${CC} ${CFLAGS} ${xsaveflag} $test.c; then
+        echo "Checking for XSAVE intrinsics ... Yes." | tee -a configure.log
+        HAVE_XSAVE_INTRIN=1
+    else
+        echo "Checking for XSAVE intrinsics ... No." | tee -a configure.log
+        HAVE_XSAVE_INTRIN=0
+    fi
+}
+
 check_ppc_intrinsics() {
         cat > $test.c << EOF
 #include <altivec.h>
@@ -1603,6 +1626,12 @@ case "${ARCH}" in
                         ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_fold_vpclmulqdq.lo"
                     fi
                 fi
+            fi
+
+            check_xsave_intrinsics
+
+            if test ${HAVE_XSAVE_INTRIN} -eq 0; then
+                xsaveflag=""
             fi
 
             if test $forcetzcnt -eq 1; then
@@ -2044,6 +2073,7 @@ echo sse41flag = $sse41flag >> configure.log
 echo sse42flag = $sse42flag >> configure.log
 echo pclmulflag = $pclmulflag >> configure.log
 echo vpclmulflag = $vpclmulflag >> configure.log
+echo xsaveflag = $xsaveflag >> configure.log
 echo acleflag = $acleflag >> configure.log
 echo neonflag = $neonflag >> configure.log
 echo ARCHDIR = ${ARCHDIR} >> configure.log
@@ -2181,6 +2211,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SSE42FLAG *=/s#=.*#=$sse42flag#
 /^PCLMULFLAG *=/s#=.*#=$pclmulflag#
 /^VPCLMULFLAG *=/s#=.*#=$vpclmulflag#
+/^XSAVEFLAG *=/s#=.*#=$xsaveflag#
 /^ACLEFLAG *=/s#=.*#=$acleflag#
 /^NEONFLAG *=/s#=.*#=$neonflag#
 /^NOLTOFLAG *=/s#=.*#=$noltoflag#

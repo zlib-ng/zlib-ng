@@ -536,3 +536,21 @@ macro(check_vgfma_intrinsics)
         HAVE_VGFMA_INTRIN FAIL_REGEX "not supported")
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
+
+macro(check_xsave_intrinsics)
+    if(NOT NATIVEFLAG AND NOT MSVC)
+        set(XSAVEFLAG "-mxsave")
+    endif()
+    set(CMAKE_REQUIRED_FLAGS "${XSAVEFLAG} ${NATIVEFLAG}")
+    check_c_source_compiles(
+        "#ifdef _WIN32
+         #  include <intrin.h>
+         #else
+         #  include <x86gprintrin.h>
+         #endif
+         int main(void) {
+             return _xgetbv(0);
+         }"
+        HAVE_XSAVE_INTRIN FAIL_REGEX "not supported")
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
