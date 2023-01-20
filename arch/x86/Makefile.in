@@ -17,6 +17,7 @@ SSE41FLAG=-msse4.1
 SSE42FLAG=-msse4.2
 PCLMULFLAG=-mpclmul
 VPCLMULFLAG=-mvpclmulqdq
+XSAVEFLAG=-mxsave
 NOLTOFLAG=
 
 SRCDIR=.
@@ -42,10 +43,10 @@ all: \
 	slide_hash_sse2.o slide_hash_sse2.lo
 
 x86_features.o:
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86_features.c
+	$(CC) $(CFLAGS) $(XSAVEFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/x86_features.c
 
 x86_features.lo:
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/x86_features.c
+	$(CC) $(SFLAGS) $(XSAVEFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/x86_features.c
 
 chunkset_avx.o:
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_avx.c
