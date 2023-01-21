@@ -212,8 +212,8 @@ maketrees.o:
 makecrct.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/tools/makecrct.c
 
-zlibrc.o: win32/zlib$(SUFFIX)1.rc
-	$(RC) $(RCFLAGS) -o $@ win32/zlib$(SUFFIX)1.rc
+zlibrc.o: $(SRCDIR)/win32/zlib$(SUFFIX)1.rc
+	$(RC) $(RCFLAGS) -o $@ $(SRCDIR)/win32/zlib$(SUFFIX)1.rc
 
 .SUFFIXES: .lo
 

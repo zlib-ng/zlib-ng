@@ -436,6 +436,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
           DEFFILE='win32/${LIBNAME2}.def'
         fi
         RC="${CROSS_PREFIX}windres"
+        RCFLAGS="-I ${BUILDDIR}"
         RCOBJS='zlibrc.o'
         STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
@@ -460,6 +461,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
           DEFFILE='win32/${LIBNAME2}.def'
         fi
         RC="${CROSS_PREFIX}windres"
+        RCFLAGS="-I ${BUILDDIR}"
         RCOBJS='zlibrc.o'
         STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
@@ -481,6 +483,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
           DEFFILE='win32/${LIBNAME2}.def'
         fi
         RC="${CROSS_PREFIX}windres"
+        RCFLAGS="-I ${BUILDDIR}"
         if [ "$CC" == "mingw32-gcc" ]; then
           case $ARCH in
           i386 | i486 | i586 | i686) RCFLAGS="${RCFLAGS} -F pe-i386";;
