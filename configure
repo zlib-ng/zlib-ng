@@ -128,6 +128,7 @@ reducedmem=0
 gcc=0
 warn=0
 debug=0
+visibility=1
 old_cc="$CC"
 old_cflags="$CFLAGS"
 OBJC='$(OBJZ)'
@@ -416,6 +417,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.${VER1},--version-script,${SRCDIR}/${MAPNAME}"
         LDCONFIG="ldconfig -m" ;;
   CYGWIN* | Cygwin* | cygwin*)
+        visibility=0
         ARFLAGS="rcs"
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
@@ -441,6 +443,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
   MSYS* | msys*)
+        visibility=0
         ARFLAGS="rcs"
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
@@ -466,6 +469,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         STRIP="${CROSS_PREFIX}strip"
         EXE='.exe' ;;
   MINGW* | mingw*)
+        visibility=0
         ARFLAGS="rcs"
         CFLAGS="${CFLAGS} -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE=1 -Wno-pedantic-ms-format"
         SFLAGS="${CFLAGS}"
@@ -948,7 +952,7 @@ EOF
 fi
 
 # see if we can hide zlib internal symbols that are linked between separate source files using hidden
-if test "$gcc" -eq 1; then
+if test "$gcc" -eq 1 && test "$visibility" -eq 1; then
   echo >> configure.log
   cat > $test.c <<EOF
 #define Z_INTERNAL __attribute__((visibility ("hidden")))
@@ -967,7 +971,7 @@ EOF
 fi
 
 # see if we can hide zlib internal symbols that are linked between separate source files using internal
-if test "$gcc" -eq 1; then
+if test "$gcc" -eq 1 && test "$visibility" -eq 1; then
   echo >> configure.log
   cat > $test.c <<EOF
 #define Z_INTERNAL __attribute__((visibility ("internal")))
