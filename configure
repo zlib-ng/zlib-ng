@@ -872,6 +872,7 @@ if test $gzfileops -eq 1; then
   OBJC="${OBJC} \$(OBJG)"
   PIC_OBJC="${PIC_OBJC} \$(PIC_OBJG)"
 else
+  TESTOBJG="\$(OBJG)"
   PIC_TESTOBJG="\$(OBJG)"
 fi
 
@@ -2056,6 +2057,7 @@ echo RCFLAGS = $RCFLAGS >> configure.log
 echo RCOBJS = $RCOBJS >> configure.log
 echo STRIP = $STRIP >> configure.log
 echo OBJC = $OBJC >> configure.log
+echo TESTOBJG = $TESTOBJG >> configure.log
 echo PIC_TESTOBJG = $PIC_TESTOBJG >> configure.log
 echo PIC_OBJC = $PIC_OBJC >> configure.log
 echo RANLIB = $RANLIB >> configure.log
@@ -2148,6 +2150,7 @@ sed < $SRCDIR/Makefile.in "
 /^SRCDIR *=/s#=.*#=$SRCDIR#
 /^INCLUDES *=/s#=.*#=$INCLUDES#
 /^OBJC *=/s#=.*#= $OBJC#
+/^TESTOBJG *=/s#=.*#= $TESTOBJG#
 /^PIC_TESTOBJG *=/s#=.*#= $PIC_TESTOBJG#
 /^PIC_OBJC *=/s#=.*#= $PIC_OBJC#
 /^all: */s#:.*#: $ALL#
