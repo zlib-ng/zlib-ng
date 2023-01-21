@@ -857,6 +857,11 @@ if test $compat -eq 1; then
   esac
 fi
 
+if [[ ! -z $DEFFILE ]]; then
+  mkdir -p win32
+  sed < $SRCDIR/$DEFFILE.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > $DEFFILE
+fi
+
 # if --gzfileops was requested
 if test $gzfileops -eq 1; then
   CFLAGS="${CFLAGS} -DWITH_GZFILEOP"
