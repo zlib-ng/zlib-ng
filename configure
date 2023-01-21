@@ -432,7 +432,9 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHARED=${LDSHARED-"$cc"}
         LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/${MAPNAME}"
         LDSHAREDLIBC=""
-        DEFFILE='win32/${LIBNAME2}.def'
+        if test $gzfileops -eq 0; then
+          DEFFILE='win32/${LIBNAME2}.def'
+        fi
         RC="${CROSS_PREFIX}windres"
         RCOBJS='zlibrc.o'
         STRIP="${CROSS_PREFIX}strip"
@@ -454,7 +456,9 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHARED=${LDSHARED-"$cc"}
         LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB}"
         LDSHAREDLIBC=""
-        DEFFILE='win32/${LIBNAME2}.def'
+        if test $gzfileops -eq 0; then
+          DEFFILE='win32/${LIBNAME2}.def'
+        fi
         RC="${CROSS_PREFIX}windres"
         RCOBJS='zlibrc.o'
         STRIP="${CROSS_PREFIX}strip"
@@ -473,7 +477,9 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         LDSHARED=${LDSHARED-"$cc"}
         LDSHAREDFLAGS="-shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/${MAPNAME}"
         LDSHAREDLIBC=""
-        DEFFILE='win32/${LIBNAME2}.def'
+        if test $gzfileops -eq 0; then
+          DEFFILE='win32/${LIBNAME2}.def'
+        fi
         RC="${CROSS_PREFIX}windres"
         if [ "$CC" == "mingw32-gcc" ]; then
           case $ARCH in
