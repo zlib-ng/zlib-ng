@@ -109,6 +109,7 @@ OBJG = \
 	gzread.o \
 	gzwrite.o
 
+TESTOBJG =
 OBJC = $(OBJZ) $(OBJG)
 
 PIC_OBJZ = \
@@ -254,20 +255,20 @@ ifneq ($(SHAREDLIB),$(SHAREDTARGET))
 endif
 endif
 
-example$(EXE): example.o $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(TEST_LIBS) $(LDSHAREDLIBC)
+example$(EXE): example.o $(TESTOBJG) $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(TESTOBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-minigzip$(EXE): minigzip.o $(STATICLIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(TEST_LIBS) $(LDSHAREDLIBC)
+minigzip$(EXE): minigzip.o $(TESTOBJG) $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(TESTOBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
-minigzipsh$(EXE): minigzip.o $(SHAREDTARGET)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(SHAREDLIB) $(LDSHAREDLIBC)
+minigzipsh$(EXE): minigzip.o $(PIC_TESTOBJG) $(SHAREDTARGET)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minigzip.o $(PIC_TESTOBJG) $(SHAREDLIB) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
