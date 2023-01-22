@@ -70,7 +70,7 @@ Z_INTERNAL void slide_hash_stub(deflate_state *s) {
     cpu_check_features();
 
 #ifdef X86_SSE2
-#  if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+#  if !defined(__x86_64__) && !defined(_M_X64)
     if (x86_cpu_has_sse2)
 #  endif
         functable.slide_hash = &slide_hash_sse2;
@@ -269,7 +269,7 @@ Z_INTERNAL uint32_t chunksize_stub(void) {
     cpu_check_features();
 
 #ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+# if !defined(__x86_64__) && !defined(_M_X64)
     if (x86_cpu_has_sse2)
 # endif
         functable.chunksize = &chunksize_sse2;
@@ -295,7 +295,7 @@ Z_INTERNAL uint8_t* chunkcopy_stub(uint8_t *out, uint8_t const *from, unsigned l
     functable.chunkcopy = &chunkcopy_c;
 
 #ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+# if !defined(__x86_64__) && !defined(_M_X64)
     if (x86_cpu_has_sse2)
 # endif
         functable.chunkcopy = &chunkcopy_sse2;
@@ -321,7 +321,7 @@ Z_INTERNAL uint8_t* chunkunroll_stub(uint8_t *out, unsigned *dist, unsigned *len
     functable.chunkunroll = &chunkunroll_c;
 
 #ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+# if !defined(__x86_64__) && !defined(_M_X64)
     if (x86_cpu_has_sse2)
 # endif
         functable.chunkunroll = &chunkunroll_sse2;
@@ -347,7 +347,7 @@ Z_INTERNAL uint8_t* chunkmemset_stub(uint8_t *out, unsigned dist, unsigned len) 
     functable.chunkmemset = &chunkmemset_c;
 
 #ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+# if !defined(__x86_64__) && !defined(_M_X64)
     if (x86_cpu_has_sse2)
 # endif
         functable.chunkmemset = &chunkmemset_sse2;
@@ -378,7 +378,7 @@ Z_INTERNAL uint8_t* chunkmemset_safe_stub(uint8_t *out, unsigned dist, unsigned 
     functable.chunkmemset_safe = &chunkmemset_safe_c;
 
 #ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+# if !defined(__x86_64__) && !defined(_M_X64)
     if (x86_cpu_has_sse2)
 # endif
         functable.chunkmemset_safe = &chunkmemset_safe_sse2;

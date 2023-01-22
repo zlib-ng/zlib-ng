@@ -102,7 +102,6 @@ builddfltccinflate=0
 buildcrc32vx=1
 floatabi=
 native=0
-forcesse2=0
 forcetzcnt=0
 # For CPUs that can benefit from AVX512, it seems GCC generates suboptimal
 # instruction scheduling unless you specify a reasonable -mtune= target
@@ -174,7 +173,6 @@ case "$1" in
       echo '    [--with-dfltcc-inflate]     Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z' | tee -a configure.log
       echo '    [--without-crc32-vx]        Build without vectorized CRC32 on IBM Z' | tee -a configure.log
       echo '    [--with-reduced-mem]        Reduced memory usage for special cases (reduces performance)' | tee -a configure.log
-      echo '    [--force-sse2]              Assume SSE2 instructions are always available (disabled by default on x86, enabled on x86_64)' | tee -a configure.log
       echo '    [--force-tzcnt]             Assume TZCNT instructions are always available (disabled by default)' | tee -a configure.log
       echo '    [--native]                  Compiles with full instruction set supported on this host' | tee -a configure.log
         exit 0 ;;
@@ -208,7 +206,6 @@ case "$1" in
     --with-dfltcc-inflate) builddfltccinflate=1; shift ;;
     --without-crc32-vx) buildcrc32vx=0; shift ;;
     --with-reduced-mem) reducedmem=1; shift ;;
-    --force-sse2) forcesse2=1; shift ;;
     --force-tzcnt) forcetzcnt=1; shift ;;
     -n | --native) native=1; shift ;;
     -a*=* | --archs=*) ARCHS=$(echo $1 | sed 's/.*=//'); shift ;;
@@ -1569,11 +1566,6 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_SSE2 -DX86_SSE2_CHUNKSET"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chunkset_sse2.o compare256_sse2.o slide_hash_sse2.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chunkset_sse2.lo compare256_sse2.lo slide_hash_sse2.lo"
-
-                if test $forcesse2 -eq 1; then
-                    CFLAGS="${CFLAGS} -DX86_NOCHECK_SSE2"
-                    SFLAGS="${SFLAGS} -DX86_NOCHECK_SSE2"
-                fi
             fi
 
             check_ssse3_intrinsics
