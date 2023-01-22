@@ -44,6 +44,7 @@ foo.gz
 *.sdf
 *.vcxproj
 *.vcxproj.filters
+*.vcxproj.user
 .vs
 
 CMakeCache.txt
@@ -58,6 +59,8 @@ zconf.h.included
 zconf-ng.h
 zconf-ng.h.cmakein
 ztest*
+/test/CTestTestfile.cmake
+/test/cmake_install.cmake
 
 configure.log
 a.out
@@ -75,7 +78,7 @@ a.out
 /minigzip.dir
 /zlib.dir
 /zlibstatic.dir
-/win32/Debug
+/test/*.dir/
 /build/
 /build[.-]*/
 /btmp[12]/
@@ -83,3 +86,12 @@ a.out
 
 /.idea
 /cmake-build-debug
+/x64/Debug/
+/x64/Release/
+/win32/Debug/
+/win32/Release/
+/ARM*/Debug/
+/ARM*/Release/
+MinSizeRel
+RelWithDebInfo
+/_deps/googletest*
