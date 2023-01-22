@@ -12,380 +12,378 @@
 #include "cpu_features.h"
 
 static void init_functable(void) {
-    struct functable_s* functable_ptr = &functable;
-    struct functable_s functable;
-    Assert(functable_ptr != &functable,
-        "functable_ptr has to point to global functable");
+    struct functable_s ft;
 
     cpu_check_features();
 
     // update_hash_stub:
-    functable.update_hash = &update_hash_c;
+    ft.update_hash = &update_hash_c;
 #ifdef X86_SSE42_CRC_HASH
     if (x86_cpu_has_sse42)
-        functable.update_hash = &update_hash_sse4;
+        ft.update_hash = &update_hash_sse4;
 #elif defined(ARM_ACLE_CRC_HASH)
     if (arm_cpu_has_crc32)
-        functable.update_hash = &update_hash_acle;
+        ft.update_hash = &update_hash_acle;
 #endif
 
     // insert_string_stub:
-    functable.insert_string = &insert_string_c;
+    ft.insert_string = &insert_string_c;
 #ifdef X86_SSE42_CRC_HASH
     if (x86_cpu_has_sse42)
-        functable.insert_string = &insert_string_sse4;
+        ft.insert_string = &insert_string_sse4;
 #elif defined(ARM_ACLE_CRC_HASH)
     if (arm_cpu_has_crc32)
-        functable.insert_string = &insert_string_acle;
+        ft.insert_string = &insert_string_acle;
 #endif
 
     // quick_insert_string_stub:
-    functable.quick_insert_string = &quick_insert_string_c;
+    ft.quick_insert_string = &quick_insert_string_c;
 #ifdef X86_SSE42_CRC_HASH
     if (x86_cpu_has_sse42)
-        functable.quick_insert_string = &quick_insert_string_sse4;
+        ft.quick_insert_string = &quick_insert_string_sse4;
 #elif defined(ARM_ACLE_CRC_HASH)
     if (arm_cpu_has_crc32)
-        functable.quick_insert_string = &quick_insert_string_acle;
+        ft.quick_insert_string = &quick_insert_string_acle;
 #endif
 
     // slide_hash_stub:
-    functable.slide_hash = &slide_hash_c;
+    ft.slide_hash = &slide_hash_c;
 #ifdef X86_SSE2
 #  if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 #  endif
-        functable.slide_hash = &slide_hash_sse2;
+        ft.slide_hash = &slide_hash_sse2;
 #elif defined(ARM_NEON_SLIDEHASH)
 #  ifndef ARM_NOCHECK_NEON
     if (arm_cpu_has_neon)
 #  endif
-        functable.slide_hash = &slide_hash_neon;
+        ft.slide_hash = &slide_hash_neon;
 #endif
 #ifdef X86_AVX2
     if (x86_cpu_has_avx2)
-        functable.slide_hash = &slide_hash_avx2;
+        ft.slide_hash = &slide_hash_avx2;
 #endif
 #ifdef PPC_VMX_SLIDEHASH
     if (power_cpu_has_altivec)
-        functable.slide_hash = &slide_hash_vmx;
+        ft.slide_hash = &slide_hash_vmx;
 #endif
 #ifdef POWER8_VSX_SLIDEHASH
     if (power_cpu_has_arch_2_07)
-        functable.slide_hash = &slide_hash_power8;
+        ft.slide_hash = &slide_hash_power8;
 #endif
 
     // longest_match_stub:
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-    functable.longest_match = &longest_match_unaligned_64;
+    ft.longest_match = &longest_match_unaligned_64;
 #  elif defined(HAVE_BUILTIN_CTZ)
-    functable.longest_match = &longest_match_unaligned_32;
+    ft.longest_match = &longest_match_unaligned_32;
 #  else
-    functable.longest_match = &longest_match_unaligned_16;
+    ft.longest_match = &longest_match_unaligned_16;
 #  endif
 #else
-    functable.longest_match = &longest_match_c;
+    ft.longest_match = &longest_match_c;
 #endif
 #if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_sse2)
-        functable.longest_match = &longest_match_sse2;
+        ft.longest_match = &longest_match_sse2;
 #endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_avx2)
-        functable.longest_match = &longest_match_avx2;
+        ft.longest_match = &longest_match_avx2;
 #endif
 #if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
     if (arm_cpu_has_neon)
-        functable.longest_match = &longest_match_neon;
+        ft.longest_match = &longest_match_neon;
 #endif
 #ifdef POWER9
     if (power_cpu_has_arch_3_00)
-        functable.longest_match = &longest_match_power9;
+        ft.longest_match = &longest_match_power9;
 #endif
 
     // longest_match_slow_stub:
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-    functable.longest_match_slow = &longest_match_slow_unaligned_64;
+    ft.longest_match_slow = &longest_match_slow_unaligned_64;
 #  elif defined(HAVE_BUILTIN_CTZ)
-    functable.longest_match_slow = &longest_match_slow_unaligned_32;
+    ft.longest_match_slow = &longest_match_slow_unaligned_32;
 #  else
-    functable.longest_match_slow = &longest_match_slow_unaligned_16;
+    ft.longest_match_slow = &longest_match_slow_unaligned_16;
 #  endif
 #else
-    functable.longest_match_slow = &longest_match_slow_c;
+    ft.longest_match_slow = &longest_match_slow_c;
 #endif
 #if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_sse2)
-        functable.longest_match_slow = &longest_match_slow_sse2;
+        ft.longest_match_slow = &longest_match_slow_sse2;
 #endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_avx2)
-        functable.longest_match_slow = &longest_match_slow_avx2;
+        ft.longest_match_slow = &longest_match_slow_avx2;
 #endif
 #if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
     if (arm_cpu_has_neon)
-        functable.longest_match_slow = &longest_match_slow_neon;
+        ft.longest_match_slow = &longest_match_slow_neon;
 #endif
 #ifdef POWER9
     if (power_cpu_has_arch_3_00)
-        functable.longest_match_slow = &longest_match_slow_power9;
+        ft.longest_match_slow = &longest_match_slow_power9;
 #endif
 
     // adler32_stub:
-    functable.adler32 = &adler32_c;
+    ft.adler32 = &adler32_c;
 #ifdef ARM_NEON_ADLER32
 #  ifndef ARM_NOCHECK_NEON
     if (arm_cpu_has_neon)
 #  endif
-        functable.adler32 = &adler32_neon;
+        ft.adler32 = &adler32_neon;
 #endif
 #ifdef X86_SSSE3_ADLER32
     if (x86_cpu_has_ssse3)
-        functable.adler32 = &adler32_ssse3;
+        ft.adler32 = &adler32_ssse3;
 #endif
 #ifdef X86_AVX2_ADLER32
     if (x86_cpu_has_avx2)
-        functable.adler32 = &adler32_avx2;
+        ft.adler32 = &adler32_avx2;
 #endif
 #ifdef X86_AVX512_ADLER32
     if (x86_cpu_has_avx512)
-        functable.adler32 = &adler32_avx512;
+        ft.adler32 = &adler32_avx512;
 #endif
 #ifdef X86_AVX512VNNI_ADLER32
     if (x86_cpu_has_avx512vnni)
-        functable.adler32 = &adler32_avx512_vnni;
+        ft.adler32 = &adler32_avx512_vnni;
 #endif
 #ifdef PPC_VMX_ADLER32
     if (power_cpu_has_altivec)
-        functable.adler32 = &adler32_vmx;
+        ft.adler32 = &adler32_vmx;
 #endif
 #ifdef POWER8_VSX_ADLER32
     if (power_cpu_has_arch_2_07)
-        functable.adler32 = &adler32_power8;
+        ft.adler32 = &adler32_power8;
 #endif
 
     // adler32_fold_copy_stub:
-    functable.adler32_fold_copy = &adler32_fold_copy_c;
+    ft.adler32_fold_copy = &adler32_fold_copy_c;
 #ifdef X86_SSE42_ADLER32
     if (x86_cpu_has_sse42)
-        functable.adler32_fold_copy = &adler32_fold_copy_sse42;
+        ft.adler32_fold_copy = &adler32_fold_copy_sse42;
 #endif
 #ifdef X86_AVX2_ADLER32
     if (x86_cpu_has_avx2)
-        functable.adler32_fold_copy = &adler32_fold_copy_avx2;
+        ft.adler32_fold_copy = &adler32_fold_copy_avx2;
 #endif
 #ifdef X86_AVX512_ADLER32
     if (x86_cpu_has_avx512)
-        functable.adler32_fold_copy = &adler32_fold_copy_avx512;
+        ft.adler32_fold_copy = &adler32_fold_copy_avx512;
 #endif
 #ifdef X86_AVX512VNNI_ADLER32
     if (x86_cpu_has_avx512vnni)
-        functable.adler32_fold_copy = &adler32_fold_copy_avx512_vnni;
+        ft.adler32_fold_copy = &adler32_fold_copy_avx512_vnni;
 #endif
 
     // crc32_fold_reset_stub:
-    functable.crc32_fold_reset = &crc32_fold_reset_c;
+    ft.crc32_fold_reset = &crc32_fold_reset_c;
 #ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq)
-        functable.crc32_fold_reset = &crc32_fold_pclmulqdq_reset;
+        ft.crc32_fold_reset = &crc32_fold_pclmulqdq_reset;
 #endif
 
     // crc32_fold_copy_stub:
-    functable.crc32_fold_copy = &crc32_fold_copy_c;
+    ft.crc32_fold_copy = &crc32_fold_copy_c;
 #ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq)
-        functable.crc32_fold_copy = &crc32_fold_pclmulqdq_copy;
+        ft.crc32_fold_copy = &crc32_fold_pclmulqdq_copy;
 #endif
 
     // crc32_fold_stub:
-    functable.crc32_fold = &crc32_fold_c;
+    ft.crc32_fold = &crc32_fold_c;
 #ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq)
-        functable.crc32_fold = &crc32_fold_pclmulqdq;
+        ft.crc32_fold = &crc32_fold_pclmulqdq;
 #endif
 
     // crc32_fold_final_stub:
-    functable.crc32_fold_final = &crc32_fold_final_c;
+    ft.crc32_fold_final = &crc32_fold_final_c;
 #ifdef X86_PCLMULQDQ_CRC
     if (x86_cpu_has_pclmulqdq)
-        functable.crc32_fold_final = &crc32_fold_pclmulqdq_final;
+        ft.crc32_fold_final = &crc32_fold_pclmulqdq_final;
 #endif
 
     //chunksize_stub:
-    functable.chunksize = &chunksize_c;
+    ft.chunksize = &chunksize_c;
 #ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 # endif
-        functable.chunksize = &chunksize_sse2;
+        ft.chunksize = &chunksize_sse2;
 #endif
 #ifdef X86_AVX_CHUNKSET
     if (x86_cpu_has_avx2)
-        functable.chunksize = &chunksize_avx;
+        ft.chunksize = &chunksize_avx;
 #endif
 #ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
-        functable.chunksize = &chunksize_neon;
+        ft.chunksize = &chunksize_neon;
 #endif
 #ifdef POWER8_VSX_CHUNKSET
     if (power_cpu_has_arch_2_07)
-        functable.chunksize = &chunksize_power8;
+        ft.chunksize = &chunksize_power8;
 #endif
 
     // chunkcopy_stub:
-    functable.chunkcopy = &chunkcopy_c;
+    ft.chunkcopy = &chunkcopy_c;
 #ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 # endif
-        functable.chunkcopy = &chunkcopy_sse2;
+        ft.chunkcopy = &chunkcopy_sse2;
 #endif
 #ifdef X86_AVX_CHUNKSET
     if (x86_cpu_has_avx2)
-        functable.chunkcopy = &chunkcopy_avx;
+        ft.chunkcopy = &chunkcopy_avx;
 #endif
 #ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
-        functable.chunkcopy = &chunkcopy_neon;
+        ft.chunkcopy = &chunkcopy_neon;
 #endif
 #ifdef POWER8_VSX_CHUNKSET
     if (power_cpu_has_arch_2_07)
-        functable.chunkcopy = &chunkcopy_power8;
+        ft.chunkcopy = &chunkcopy_power8;
 #endif
 
     // chunkunroll_stub:
-    functable.chunkunroll = &chunkunroll_c;
+    ft.chunkunroll = &chunkunroll_c;
 #ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 # endif
-        functable.chunkunroll = &chunkunroll_sse2;
+        ft.chunkunroll = &chunkunroll_sse2;
 #endif
 #ifdef X86_AVX_CHUNKSET
     if (x86_cpu_has_avx2)
-        functable.chunkunroll = &chunkunroll_avx;
+        ft.chunkunroll = &chunkunroll_avx;
 #endif
 #ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
-        functable.chunkunroll = &chunkunroll_neon;
+        ft.chunkunroll = &chunkunroll_neon;
 #endif
 #ifdef POWER8_VSX_CHUNKSET
     if (power_cpu_has_arch_2_07)
-        functable.chunkunroll = &chunkunroll_power8;
+        ft.chunkunroll = &chunkunroll_power8;
 #endif
 
     // chunkmemset_stub:
-    functable.chunkmemset = &chunkmemset_c;
+    ft.chunkmemset = &chunkmemset_c;
 #ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 # endif
-        functable.chunkmemset = &chunkmemset_sse2;
+        ft.chunkmemset = &chunkmemset_sse2;
 #endif
 #if defined(X86_SSE41) && defined(X86_SSE2)
     if (x86_cpu_has_sse41)
-        functable.chunkmemset = &chunkmemset_sse41;
+        ft.chunkmemset = &chunkmemset_sse41;
 #endif
 #ifdef X86_AVX_CHUNKSET
     if (x86_cpu_has_avx2)
-        functable.chunkmemset = &chunkmemset_avx;
+        ft.chunkmemset = &chunkmemset_avx;
 #endif
 #ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
-        functable.chunkmemset = &chunkmemset_neon;
+        ft.chunkmemset = &chunkmemset_neon;
 #endif
 #ifdef POWER8_VSX_CHUNKSET
     if (power_cpu_has_arch_2_07)
-        functable.chunkmemset = &chunkmemset_power8;
+        ft.chunkmemset = &chunkmemset_power8;
 #endif
 
     // chunkmemset_safe_stub:
-    functable.chunkmemset_safe = &chunkmemset_safe_c;
+    ft.chunkmemset_safe = &chunkmemset_safe_c;
 #ifdef X86_SSE2_CHUNKSET
 # if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 # endif
-        functable.chunkmemset_safe = &chunkmemset_safe_sse2;
+        ft.chunkmemset_safe = &chunkmemset_safe_sse2;
 #endif
 #if defined(X86_SSE41) && defined(X86_SSE2)
     if (x86_cpu_has_sse41)
-        functable.chunkmemset_safe = &chunkmemset_safe_sse41;
+        ft.chunkmemset_safe = &chunkmemset_safe_sse41;
 #endif
 #ifdef X86_AVX_CHUNKSET
     if (x86_cpu_has_avx2)
-        functable.chunkmemset_safe = &chunkmemset_safe_avx;
+        ft.chunkmemset_safe = &chunkmemset_safe_avx;
 #endif
 #ifdef ARM_NEON_CHUNKSET
     if (arm_cpu_has_neon)
-        functable.chunkmemset_safe = &chunkmemset_safe_neon;
+        ft.chunkmemset_safe = &chunkmemset_safe_neon;
 #endif
 #ifdef POWER8_VSX_CHUNKSET
     if (power_cpu_has_arch_2_07)
-        functable.chunkmemset_safe = &chunkmemset_safe_power8;
+        ft.chunkmemset_safe = &chunkmemset_safe_power8;
 #endif
 
     // crc32_stub:
-    functable.crc32 = &PREFIX(crc32_braid);
+    ft.crc32 = &PREFIX(crc32_braid);
 #ifdef ARM_ACLE_CRC_HASH
     if (arm_cpu_has_crc32)
-        functable.crc32 = &crc32_acle;
+        ft.crc32 = &crc32_acle;
 #elif defined(POWER8_VSX_CRC32)
     if (power_cpu_has_arch_2_07)
-        functable.crc32 = &crc32_power8;
+        ft.crc32 = &crc32_power8;
 #elif defined(S390_CRC32_VX)
     if (PREFIX(s390_cpu_has_vx))
-        functable.crc32 = &PREFIX(s390_crc32_vx);
+        ft.crc32 = &PREFIX(s390_crc32_vx);
 #elif defined(X86_PCLMULQDQ_CRC)
     if (x86_cpu_has_pclmulqdq)
-        functable.crc32 = &crc32_pclmulqdq;
+        ft.crc32 = &crc32_pclmulqdq;
 #endif
 
     // compare256_stub:
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-    functable.compare256 = &compare256_unaligned_64;
+    ft.compare256 = &compare256_unaligned_64;
 #  elif defined(HAVE_BUILTIN_CTZ)
-    functable.compare256 = &compare256_unaligned_32;
+    ft.compare256 = &compare256_unaligned_32;
 #  else
-    functable.compare256 = &compare256_unaligned_16;
+    ft.compare256 = &compare256_unaligned_16;
 #  endif
 #else
-    functable.compare256 = &compare256_c;
+    ft.compare256 = &compare256_c;
 #endif
 #if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_sse2)
-        functable.compare256 = &compare256_sse2;
+        ft.compare256 = &compare256_sse2;
 #endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_avx2)
-        functable.compare256 = &compare256_avx2;
+        ft.compare256 = &compare256_avx2;
 #endif
 #ifdef POWER9
     if (power_cpu_has_arch_3_00)
-        functable.compare256 = &compare256_power9;
+        ft.compare256 = &compare256_power9;
 #endif
 
-    functable_ptr->adler32 = functable.adler32;
-    functable_ptr->adler32_fold_copy = functable.adler32_fold_copy;
-    functable_ptr->crc32 = functable.crc32;
-    functable_ptr->crc32_fold_reset = functable.crc32_fold_reset;
-    functable_ptr->crc32_fold_copy = functable.crc32_fold_copy;
-    functable_ptr->crc32_fold = functable.crc32_fold;
-    functable_ptr->crc32_fold_final = functable.crc32_fold_final;
-    functable_ptr->compare256 = functable.compare256;
-    functable_ptr->chunksize = functable.chunksize;
-    functable_ptr->chunkcopy = functable.chunkcopy;
-    functable_ptr->chunkunroll = functable.chunkunroll;
-    functable_ptr->chunkmemset = functable.chunkmemset;
-    functable_ptr->chunkmemset_safe = functable.chunkmemset_safe;
-    functable_ptr->insert_string = functable.insert_string;
-    functable_ptr->longest_match = functable.longest_match;
-    functable_ptr->longest_match_slow = functable.longest_match_slow;
-    functable_ptr->quick_insert_string = functable.quick_insert_string;
-    functable_ptr->slide_hash = functable.slide_hash;
-    functable_ptr->update_hash = functable.update_hash;
+    // Assign function pointers individually for atomic operation
+    functable.adler32 = ft.adler32;
+    functable.adler32_fold_copy = ft.adler32_fold_copy;
+    functable.crc32 = ft.crc32;
+    functable.crc32_fold_reset = ft.crc32_fold_reset;
+    functable.crc32_fold_copy = ft.crc32_fold_copy;
+    functable.crc32_fold = ft.crc32_fold;
+    functable.crc32_fold_final = ft.crc32_fold_final;
+    functable.compare256 = ft.compare256;
+    functable.chunksize = ft.chunksize;
+    functable.chunkcopy = ft.chunkcopy;
+    functable.chunkunroll = ft.chunkunroll;
+    functable.chunkmemset = ft.chunkmemset;
+    functable.chunkmemset_safe = ft.chunkmemset_safe;
+    functable.insert_string = ft.insert_string;
+    functable.longest_match = ft.longest_match;
+    functable.longest_match_slow = ft.longest_match_slow;
+    functable.quick_insert_string = ft.quick_insert_string;
+    functable.slide_hash = ft.slide_hash;
+    functable.update_hash = ft.update_hash;
 }
 
 /* stub functions */
