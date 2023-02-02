@@ -384,7 +384,7 @@ macro(check_sse2_intrinsics)
             set(SSE2FLAG "-msse2")
         endif()
     endif()
-    # Check whether compiler supports SSE2 instrinics
+    # Check whether compiler supports SSE2 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG} ${NATIVEFLAG}")
     check_c_source_compile_or_run(
         "#include <immintrin.h>
@@ -496,7 +496,7 @@ macro(check_sse42_intrinsics)
         }"
         HAVE_SSE42CRC_INTRIN
     )
-    # Check whether compiler supports SSE4.2 compare string instrinics
+    # Check whether compiler supports SSE4.2 compare string intrinsics
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void) {
