@@ -18,7 +18,7 @@ if(NOT benchmark_FOUND)
         set(GBENCHMARK_REPOSITORY https://github.com/google/benchmark.git)
     endif()
     if(NOT DEFINED GBENCHMARK_TAG)
-        set(GBENCHMARK_TAG v1.7.0)
+        set(GBENCHMARK_TAG v1.7.1)
     endif()
 
     FetchContent_Declare(benchmark
