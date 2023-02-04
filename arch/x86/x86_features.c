@@ -122,7 +122,4 @@ void Z_INTERNAL x86_check_features(void) {
         x86_cpu_has_avx512vnni = 0;
         x86_cpu_has_vpclmulqdq = 0;
     }
-#ifdef X86_NOCHECK_TZCNT
-    Assert(!!x86_cpu_has_tzcnt, "TZCNT is not available");
-#endif
 }
