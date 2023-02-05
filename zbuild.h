@@ -243,25 +243,6 @@
 #  endif
 #endif
 
-/* Force compiler to emit unaligned memory comparisons if unaligned access is supported
-   on the architecture, otherwise don't assume unaligned access is supported. Older
-   compilers don't optimize memcmp calls for all integer types to unaligned access instructions
-   when it is supported on the architecture resulting in significant performance impact. */
-#ifdef UNALIGNED_OK
-#  define zmemcmp_2(str1, str2)   (*((uint16_t *)(str1)) != *((uint16_t *)(str2)))
-#  define zmemcmp_4(str1, str2)   (*((uint32_t *)(str1)) != *((uint32_t *)(str2)))
-#  if defined(UNALIGNED64_OK) && (UINTPTR_MAX == UINT64_MAX)
-#    define zmemcmp_8(str1, str2) (*((uint64_t *)(str1)) != *((uint64_t *)(str2)))
-#  else
-#    define zmemcmp_8(str1, str2) (((uint32_t *)(str1))[0] != ((uint32_t *)(str2))[0] || \
-                                   ((uint32_t *)(str1))[1] != ((uint32_t *)(str2))[1])
-#  endif
-#else
-#  define zmemcmp_2(str1, str2) memcmp(str1, str2, 2)
-#  define zmemcmp_4(str1, str2) memcmp(str1, str2, 4)
-#  define zmemcmp_8(str1, str2) memcmp(str1, str2, 8)
-#endif
-
 #if defined(__has_feature)
 #  if __has_feature(memory_sanitizer)
 #    define Z_MEMORY_SANITIZER 1
