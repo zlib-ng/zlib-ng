@@ -5,6 +5,7 @@ include(FetchContent)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
+
 enable_language(CXX)
 
 # Search for Google benchmark package
@@ -36,6 +37,7 @@ add_executable(benchmark_zlib
     benchmark_adler32.cc
     benchmark_adler32_copy.cc
     benchmark_compare256.cc
+    benchmark_compare256_rle.cc
     benchmark_crc32.cc
     benchmark_main.cc
     benchmark_slidehash.cc
