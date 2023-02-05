@@ -113,7 +113,7 @@ static void vmx_accum32(uint32_t *s, const uint8_t *buf, size_t len) {
     vec_ste(s2acc, 0, s+1);
 }
 
-uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) {
+Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) {
     uint32_t sum2;
     uint32_t pair[16] ALIGNED_(16);
     memset(&pair[2], 0, 14);
