@@ -10,6 +10,12 @@
 #include "crc32_fold.h"
 #include "adler32_fold.h"
 
+#ifdef ZLIB_COMPAT
+typedef struct z_stream_s z_stream;
+#else
+typedef struct zng_stream_s zng_stream;
+#endif
+
 struct functable_s {
     uint32_t (* adler32)            (uint32_t adler, const uint8_t *buf, size_t len);
     uint32_t (* adler32_fold_copy)  (uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
@@ -21,7 +27,7 @@ struct functable_s {
     uint32_t (* compare256)         (const uint8_t *src0, const uint8_t *src1);
     uint32_t (* chunksize)          (void);
     uint8_t* (* chunkmemset_safe)   (uint8_t *out, unsigned dist, unsigned len, unsigned left);
-    void     (* inflate_fast)       (void *strm, uint32_t start);
+    void     (* inflate_fast)       (PREFIX3(stream) *strm, uint32_t start);
     void     (* insert_string)      (deflate_state *const s, uint32_t str, uint32_t count);
     uint32_t (* longest_match)      (deflate_state *const s, Pos cur_match);
     uint32_t (* longest_match_slow) (deflate_state *const s, Pos cur_match);

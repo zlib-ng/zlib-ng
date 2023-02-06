@@ -413,7 +413,7 @@ static uint8_t* chunkmemset_safe_stub(uint8_t* out, unsigned dist, unsigned len,
     return functable.chunkmemset_safe(out, dist, len, left);
 }
 
-static void inflate_fast_stub(void *strm, uint32_t start) {
+static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start) {
     init_functable();
     functable.inflate_fast(strm, start);
 }

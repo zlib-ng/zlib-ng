@@ -94,22 +94,28 @@ extern uint32_t chunksize_power8(void);
 extern uint8_t* chunkmemset_safe_power8(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 #endif
 
+#ifdef ZLIB_COMPAT
+typedef struct z_stream_s z_stream;
+#else
+typedef struct zng_stream_s zng_stream;
+#endif
+
 /* inflate fast loop */
-extern void inflate_fast_c(void *strm, uint32_t start);
+extern void inflate_fast_c(PREFIX3(stream) *strm, uint32_t start);
 #ifdef X86_SSE2_CHUNKSET
-extern void inflate_fast_sse2(void *strm, uint32_t start);
+extern void inflate_fast_sse2(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifdef X86_SSE41
-extern void inflate_fast_sse41(void *strm, uint32_t start);
+extern void inflate_fast_sse41(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifdef X86_AVX_CHUNKSET
-extern void inflate_fast_avx(void *strm, uint32_t start);
+extern void inflate_fast_avx(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifdef ARM_NEON_CHUNKSET
-extern void inflate_fast_neon(void *strm, uint32_t start);
+extern void inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifdef POWER8_VSX_CHUNKSET
-extern void inflate_fast_power8(void *strm, uint32_t start);
+extern void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
 /* CRC32 */
