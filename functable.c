@@ -16,310 +16,219 @@ static void init_functable(void) {
 
     cpu_check_features();
 
-    // update_hash_stub:
+    // Generic code
     ft.update_hash = &update_hash_c;
-#ifdef X86_SSE42_CRC_HASH
-    if (x86_cpu_has_sse42)
-        ft.update_hash = &update_hash_sse4;
-#elif defined(ARM_ACLE_CRC_HASH)
-    if (arm_cpu_has_crc32)
-        ft.update_hash = &update_hash_acle;
-#endif
-
-    // insert_string_stub:
     ft.insert_string = &insert_string_c;
-#ifdef X86_SSE42_CRC_HASH
-    if (x86_cpu_has_sse42)
-        ft.insert_string = &insert_string_sse4;
-#elif defined(ARM_ACLE_CRC_HASH)
-    if (arm_cpu_has_crc32)
-        ft.insert_string = &insert_string_acle;
-#endif
-
-    // quick_insert_string_stub:
     ft.quick_insert_string = &quick_insert_string_c;
-#ifdef X86_SSE42_CRC_HASH
-    if (x86_cpu_has_sse42)
-        ft.quick_insert_string = &quick_insert_string_sse4;
-#elif defined(ARM_ACLE_CRC_HASH)
-    if (arm_cpu_has_crc32)
-        ft.quick_insert_string = &quick_insert_string_acle;
+    ft.slide_hash = &slide_hash_c;
+    ft.adler32 = &adler32_c;
+    ft.chunksize = &chunksize_c;
+    ft.chunkmemset_safe = &chunkmemset_safe_c;
+    ft.inflate_fast = &inflate_fast_c;
+    ft.adler32_fold_copy = &adler32_fold_copy_c;
+    ft.crc32_fold = &crc32_fold_c;
+    ft.crc32_fold_reset = &crc32_fold_reset_c;
+    ft.crc32_fold_copy = &crc32_fold_copy_c;
+    ft.crc32_fold_final = &crc32_fold_final_c;
+    ft.crc32 = &PREFIX(crc32_braid);
+
+#ifdef UNALIGNED_OK
+#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
+    ft.longest_match = &longest_match_unaligned_64;
+    ft.longest_match_slow = &longest_match_slow_unaligned_64;
+    ft.compare256 = &compare256_unaligned_64;
+#  elif defined(HAVE_BUILTIN_CTZ)
+    ft.longest_match = &longest_match_unaligned_32;
+    ft.longest_match_slow = &longest_match_slow_unaligned_32;
+    ft.compare256 = &compare256_unaligned_32;
+#  else
+    ft.longest_match = &longest_match_unaligned_16;
+    ft.longest_match_slow = &longest_match_slow_unaligned_16;
+    ft.compare256 = &compare256_unaligned_16;
+#  endif
+#else
+    ft.longest_match = &longest_match_c;
+    ft.longest_match_slow = &longest_match_slow_c;
+    ft.compare256 = &compare256_c;
 #endif
 
-    // slide_hash_stub:
-    ft.slide_hash = &slide_hash_c;
+
+    // Select arch-optimized functions
+
+    // X86 - SSE2
 #ifdef X86_SSE2
 #  if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 #  endif
         ft.slide_hash = &slide_hash_sse2;
-#elif defined(ARM_NEON_SLIDEHASH)
-#  ifndef ARM_NOCHECK_NEON
-    if (arm_cpu_has_neon)
-#  endif
-        ft.slide_hash = &slide_hash_neon;
+#endif
+#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
+    if (x86_cpu_has_sse2) {
+        ft.longest_match = &longest_match_sse2;
+        ft.longest_match_slow = &longest_match_slow_sse2;
+        ft.compare256 = &compare256_sse2;
+    }
+#endif
+#ifdef X86_SSE2_CHUNKSET
+# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+    if (x86_cpu_has_sse2)
+# endif
+    {
+        ft.chunksize = &chunksize_sse2;
+        ft.chunkmemset_safe = &chunkmemset_safe_sse2;
+        ft.inflate_fast = &inflate_fast_sse2;
+    }
+#endif
+    // X86 - SSSE3
+#ifdef X86_SSSE3_ADLER32
+    if (x86_cpu_has_ssse3)
+        ft.adler32 = &adler32_ssse3;
+#endif
+    // X86 - SSE4
+#if defined(X86_SSE41) && defined(X86_SSE2)
+    if (x86_cpu_has_sse41) {
+        ft.chunkmemset_safe = &chunkmemset_safe_sse41;
+        ft.inflate_fast = &inflate_fast_sse41;
+    }
+#endif
+#ifdef X86_SSE42_ADLER32
+    if (x86_cpu_has_sse42)
+        ft.adler32_fold_copy = &adler32_fold_copy_sse42;
+#endif
+#ifdef X86_SSE42_CRC_HASH
+    if (x86_cpu_has_sse42) {
+        ft.update_hash = &update_hash_sse4;
+        ft.insert_string = &insert_string_sse4;
+        ft.quick_insert_string = &quick_insert_string_sse4;
+    }
+#endif
+    // X86 - PCLMUL
+#ifdef X86_PCLMULQDQ_CRC
+    if (x86_cpu_has_pclmulqdq) {
+        ft.crc32 = &crc32_pclmulqdq;
+        ft.crc32_fold = &crc32_fold_pclmulqdq;
+        ft.crc32_fold_reset = &crc32_fold_pclmulqdq_reset;
+        ft.crc32_fold_copy = &crc32_fold_pclmulqdq_copy;
+        ft.crc32_fold_final = &crc32_fold_pclmulqdq_final;
+    }
+#endif
+    // X86 - AVX
+#ifdef X86_AVX_CHUNKSET
+    if (x86_cpu_has_avx2) {
+        ft.chunksize = &chunksize_avx;
+        ft.chunkmemset_safe = &chunkmemset_safe_avx;
+        ft.inflate_fast = &inflate_fast_avx;
+    }
 #endif
 #ifdef X86_AVX2
     if (x86_cpu_has_avx2)
         ft.slide_hash = &slide_hash_avx2;
 #endif
-#ifdef PPC_VMX_SLIDEHASH
-    if (power_cpu_has_altivec)
-        ft.slide_hash = &slide_hash_vmx;
-#endif
-#ifdef POWER8_VSX_SLIDEHASH
-    if (power_cpu_has_arch_2_07)
-        ft.slide_hash = &slide_hash_power8;
-#endif
-
-    // longest_match_stub:
-#ifdef UNALIGNED_OK
-#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-    ft.longest_match = &longest_match_unaligned_64;
-#  elif defined(HAVE_BUILTIN_CTZ)
-    ft.longest_match = &longest_match_unaligned_32;
-#  else
-    ft.longest_match = &longest_match_unaligned_16;
-#  endif
-#else
-    ft.longest_match = &longest_match_c;
-#endif
-#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_sse2)
-        ft.longest_match = &longest_match_sse2;
-#endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_avx2)
+    if (x86_cpu_has_avx2) {
         ft.longest_match = &longest_match_avx2;
-#endif
-#if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
-    if (arm_cpu_has_neon)
-        ft.longest_match = &longest_match_neon;
-#endif
-#ifdef POWER9
-    if (power_cpu_has_arch_3_00)
-        ft.longest_match = &longest_match_power9;
-#endif
-
-    // longest_match_slow_stub:
-#ifdef UNALIGNED_OK
-#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-    ft.longest_match_slow = &longest_match_slow_unaligned_64;
-#  elif defined(HAVE_BUILTIN_CTZ)
-    ft.longest_match_slow = &longest_match_slow_unaligned_32;
-#  else
-    ft.longest_match_slow = &longest_match_slow_unaligned_16;
-#  endif
-#else
-    ft.longest_match_slow = &longest_match_slow_c;
-#endif
-#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_sse2)
-        ft.longest_match_slow = &longest_match_slow_sse2;
-#endif
-#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_avx2)
         ft.longest_match_slow = &longest_match_slow_avx2;
+        ft.compare256 = &compare256_avx2;
+    }
 #endif
-#if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
-    if (arm_cpu_has_neon)
-        ft.longest_match_slow = &longest_match_slow_neon;
+#ifdef X86_AVX2_ADLER32
+    if (x86_cpu_has_avx2) {
+        ft.adler32 = &adler32_avx2;
+        ft.adler32_fold_copy = &adler32_fold_copy_avx2;
+    }
 #endif
-#ifdef POWER9
-    if (power_cpu_has_arch_3_00)
-        ft.longest_match_slow = &longest_match_slow_power9;
+#ifdef X86_AVX512_ADLER32
+    if (x86_cpu_has_avx512) {
+        ft.adler32 = &adler32_avx512;
+        ft.adler32_fold_copy = &adler32_fold_copy_avx512;
+    }
+#endif
+#ifdef X86_AVX512VNNI_ADLER32
+    if (x86_cpu_has_avx512vnni) {
+        ft.adler32 = &adler32_avx512_vnni;
+        ft.adler32_fold_copy = &adler32_fold_copy_avx512_vnni;
+    }
 #endif
 
-    // adler32_stub:
-    ft.adler32 = &adler32_c;
+
+    // ARM - NEON
+#if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
+    if (arm_cpu_has_neon) {
+        ft.longest_match = &longest_match_neon;
+        ft.longest_match_slow = &longest_match_slow_neon;
+    }
+#endif
 #ifdef ARM_NEON_ADLER32
 #  ifndef ARM_NOCHECK_NEON
     if (arm_cpu_has_neon)
 #  endif
         ft.adler32 = &adler32_neon;
 #endif
-#ifdef X86_SSSE3_ADLER32
-    if (x86_cpu_has_ssse3)
-        ft.adler32 = &adler32_ssse3;
+#ifdef ARM_NEON_SLIDEHASH
+#  ifndef ARM_NOCHECK_NEON
+    if (arm_cpu_has_neon)
+#  endif
+        ft.slide_hash = &slide_hash_neon;
 #endif
-#ifdef X86_AVX2_ADLER32
-    if (x86_cpu_has_avx2)
-        ft.adler32 = &adler32_avx2;
+#ifdef ARM_NEON_CHUNKSET
+    if (arm_cpu_has_neon) {
+        ft.chunksize = &chunksize_neon;
+        ft.chunkmemset_safe = &chunkmemset_safe_neon;
+        ft.inflate_fast = &inflate_fast_neon;
+    }
 #endif
-#ifdef X86_AVX512_ADLER32
-    if (x86_cpu_has_avx512)
-        ft.adler32 = &adler32_avx512;
+    // ARM - ACLE
+#ifdef ARM_ACLE_CRC_HASH
+    if (arm_cpu_has_crc32) {
+        ft.crc32 = &crc32_acle;
+        ft.update_hash = &update_hash_acle;
+        ft.insert_string = &insert_string_acle;
+        ft.quick_insert_string = &quick_insert_string_acle;
+    }
 #endif
-#ifdef X86_AVX512VNNI_ADLER32
-    if (x86_cpu_has_avx512vnni)
-        ft.adler32 = &adler32_avx512_vnni;
+
+    // Power - VMX
+#ifdef PPC_VMX_SLIDEHASH
+    if (power_cpu_has_altivec)
+        ft.slide_hash = &slide_hash_vmx;
 #endif
 #ifdef PPC_VMX_ADLER32
     if (power_cpu_has_altivec)
         ft.adler32 = &adler32_vmx;
 #endif
+    // Power8 - VSX
+#ifdef POWER8_VSX_SLIDEHASH
+    if (power_cpu_has_arch_2_07)
+        ft.slide_hash = &slide_hash_power8;
+#endif
 #ifdef POWER8_VSX_ADLER32
     if (power_cpu_has_arch_2_07)
         ft.adler32 = &adler32_power8;
 #endif
-
-    // adler32_fold_copy_stub:
-    ft.adler32_fold_copy = &adler32_fold_copy_c;
-#ifdef X86_SSE42_ADLER32
-    if (x86_cpu_has_sse42)
-        ft.adler32_fold_copy = &adler32_fold_copy_sse42;
-#endif
-#ifdef X86_AVX2_ADLER32
-    if (x86_cpu_has_avx2)
-        ft.adler32_fold_copy = &adler32_fold_copy_avx2;
-#endif
-#ifdef X86_AVX512_ADLER32
-    if (x86_cpu_has_avx512)
-        ft.adler32_fold_copy = &adler32_fold_copy_avx512;
-#endif
-#ifdef X86_AVX512VNNI_ADLER32
-    if (x86_cpu_has_avx512vnni)
-        ft.adler32_fold_copy = &adler32_fold_copy_avx512_vnni;
-#endif
-
-    // crc32_fold_reset_stub:
-    ft.crc32_fold_reset = &crc32_fold_reset_c;
-#ifdef X86_PCLMULQDQ_CRC
-    if (x86_cpu_has_pclmulqdq)
-        ft.crc32_fold_reset = &crc32_fold_pclmulqdq_reset;
-#endif
-
-    // crc32_fold_copy_stub:
-    ft.crc32_fold_copy = &crc32_fold_copy_c;
-#ifdef X86_PCLMULQDQ_CRC
-    if (x86_cpu_has_pclmulqdq)
-        ft.crc32_fold_copy = &crc32_fold_pclmulqdq_copy;
-#endif
-
-    // crc32_fold_stub:
-    ft.crc32_fold = &crc32_fold_c;
-#ifdef X86_PCLMULQDQ_CRC
-    if (x86_cpu_has_pclmulqdq)
-        ft.crc32_fold = &crc32_fold_pclmulqdq;
-#endif
-
-    // crc32_fold_final_stub:
-    ft.crc32_fold_final = &crc32_fold_final_c;
-#ifdef X86_PCLMULQDQ_CRC
-    if (x86_cpu_has_pclmulqdq)
-        ft.crc32_fold_final = &crc32_fold_pclmulqdq_final;
-#endif
-
-    //chunksize_stub:
-    ft.chunksize = &chunksize_c;
-#ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-        ft.chunksize = &chunksize_sse2;
-#endif
-#ifdef X86_AVX_CHUNKSET
-    if (x86_cpu_has_avx2)
-        ft.chunksize = &chunksize_avx;
-#endif
-#ifdef ARM_NEON_CHUNKSET
-    if (arm_cpu_has_neon)
-        ft.chunksize = &chunksize_neon;
-#endif
-#ifdef POWER8_VSX_CHUNKSET
-    if (power_cpu_has_arch_2_07)
-        ft.chunksize = &chunksize_power8;
-#endif
-
-    // chunkmemset_safe_stub:
-    ft.chunkmemset_safe = &chunkmemset_safe_c;
-#ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-        ft.chunkmemset_safe = &chunkmemset_safe_sse2;
-#endif
-#if defined(X86_SSE41) && defined(X86_SSE2)
-    if (x86_cpu_has_sse41)
-        ft.chunkmemset_safe = &chunkmemset_safe_sse41;
-#endif
-#ifdef X86_AVX_CHUNKSET
-    if (x86_cpu_has_avx2)
-        ft.chunkmemset_safe = &chunkmemset_safe_avx;
-#endif
-#ifdef ARM_NEON_CHUNKSET
-    if (arm_cpu_has_neon)
-        ft.chunkmemset_safe = &chunkmemset_safe_neon;
-#endif
-#ifdef POWER8_VSX_CHUNKSET
-    if (power_cpu_has_arch_2_07)
-        ft.chunkmemset_safe = &chunkmemset_safe_power8;
-#endif
-
-    // inflate_fast_stub:
-    ft.inflate_fast = &inflate_fast_c;
-#ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-        ft.inflate_fast = &inflate_fast_sse2;
-#endif
-#if defined(X86_SSE41) && defined(X86_SSE2)
-    if (x86_cpu_has_sse41)
-        ft.inflate_fast = &inflate_fast_sse41;
-#endif
-#ifdef X86_AVX_CHUNKSET
-    if (x86_cpu_has_avx2)
-        ft.inflate_fast = &inflate_fast_avx;
-#endif
-#ifdef ARM_NEON_CHUNKSET
-    if (arm_cpu_has_neon)
-        ft.inflate_fast = &inflate_fast_neon;
-#endif
-#ifdef POWER8_VSX_CHUNKSET
-    if (power_cpu_has_arch_2_07)
-        ft.inflate_fast = &inflate_fast_power8;
-#endif
-
-    // crc32_stub:
-    ft.crc32 = &PREFIX(crc32_braid);
-#ifdef ARM_ACLE_CRC_HASH
-    if (arm_cpu_has_crc32)
-        ft.crc32 = &crc32_acle;
-#elif defined(POWER8_VSX_CRC32)
+#ifdef POWER8_VSX_CRC32
     if (power_cpu_has_arch_2_07)
         ft.crc32 = &crc32_power8;
-#elif defined(S390_CRC32_VX)
-    if (PREFIX(s390_cpu_has_vx))
-        ft.crc32 = &PREFIX(s390_crc32_vx);
-#elif defined(X86_PCLMULQDQ_CRC)
-    if (x86_cpu_has_pclmulqdq)
-        ft.crc32 = &crc32_pclmulqdq;
+#endif
+#ifdef POWER8_VSX_CHUNKSET
+    if (power_cpu_has_arch_2_07) {
+        ft.chunksize = &chunksize_power8;
+        ft.chunkmemset_safe = &chunkmemset_safe_power8;
+        ft.inflate_fast = &inflate_fast_power8;
+    }
+#endif
+    // Power9
+#ifdef POWER9
+    if (power_cpu_has_arch_3_00) {
+        ft.longest_match = &longest_match_power9;
+        ft.longest_match_slow = &longest_match_slow_power9;
+        ft.compare256 = &compare256_power9;
+    }
 #endif
 
-    // compare256_stub:
-#ifdef UNALIGNED_OK
-#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-    ft.compare256 = &compare256_unaligned_64;
-#  elif defined(HAVE_BUILTIN_CTZ)
-    ft.compare256 = &compare256_unaligned_32;
-#  else
-    ft.compare256 = &compare256_unaligned_16;
-#  endif
-#else
-    ft.compare256 = &compare256_c;
-#endif
-#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_sse2)
-        ft.compare256 = &compare256_sse2;
-#endif
-#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_avx2)
-        ft.compare256 = &compare256_avx2;
-#endif
-#ifdef POWER9
-    if (power_cpu_has_arch_3_00)
-        ft.compare256 = &compare256_power9;
+    // S390
+#ifdef S390_CRC32_VX
+    if (PREFIX(s390_cpu_has_vx))
+        ft.crc32 = &PREFIX(s390_crc32_vx);
 #endif
 
     // Assign function pointers individually for atomic operation
