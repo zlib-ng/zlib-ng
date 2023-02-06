@@ -8,6 +8,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
 
+    - name: Add ubuntu mirrors
+      run: |
+        # Github Actions caching proxy is at times unreliable
+        echo -e 'http://azure.archive.ubuntu.com/ubuntu\tpriority:1\n' | sudo tee /etc/apt/mirrors.txt
+        curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
+        sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
+
     - name: Install packages (Ubuntu)
       run: sudo apt-get install -y gcc-10
 
