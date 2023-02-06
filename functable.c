@@ -56,27 +56,24 @@ static void init_functable(void) {
     // Select arch-optimized functions
 
     // X86 - SSE2
-#ifdef X86_SSE2
+#if defined(X86_SSE2) || defined(X86_SSE2_CHUNKSET)
 #  if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 #  endif
+    {
+#  ifdef X86_SSE2
         ft.slide_hash = &slide_hash_sse2;
-#endif
-#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
-    if (x86_cpu_has_sse2) {
+#    ifdef HAVE_BUILTIN_CTZ
         ft.longest_match = &longest_match_sse2;
         ft.longest_match_slow = &longest_match_slow_sse2;
         ft.compare256 = &compare256_sse2;
-    }
-#endif
-#ifdef X86_SSE2_CHUNKSET
-# if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
-# endif
-    {
+#    endif
+#  endif
+#  ifdef X86_SSE2_CHUNKSET
         ft.chunksize = &chunksize_sse2;
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
         ft.inflate_fast = &inflate_fast_sse2;
+#  endif
     }
 #endif
     // X86 - SSSE3
@@ -121,14 +118,13 @@ static void init_functable(void) {
     }
 #endif
 #ifdef X86_AVX2
-    if (x86_cpu_has_avx2)
-        ft.slide_hash = &slide_hash_avx2;
-#endif
-#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
     if (x86_cpu_has_avx2) {
+        ft.slide_hash = &slide_hash_avx2;
+#  ifdef HAVE_BUILTIN_CTZ
         ft.longest_match = &longest_match_avx2;
         ft.longest_match_slow = &longest_match_slow_avx2;
         ft.compare256 = &compare256_avx2;
+#  endif
     }
 #endif
 #ifdef X86_AVX2_ADLER32
