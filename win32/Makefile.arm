@@ -95,7 +95,7 @@ OBJS = $(OBJS) gzlib.obj gzread.obj gzwrite.obj
 !endif
 
 !if "$(WITH_ACLE)" != ""
-WFLAGS = $(WFLAGS) -DARM_ACLE_CRC_HASH
+WFLAGS = $(WFLAGS) -DARM_ACLE
 OBJS = $(OBJS) crc32_acle.obj insert_string_acle.obj
 !endif
 !if "$(WITH_VFPV3)" != ""
@@ -106,9 +106,6 @@ CFLAGS = $(CFLAGS) $(NEON_ARCH)
 WFLAGS = $(WFLAGS) \
 	-D__ARM_NEON__=1 \
 	-DARM_NEON \
-	-DARM_NEON_ADLER32 \
-	-DARM_NEON_CHUNKSET \
-	-DARM_NEON_SLIDEHASH \
 	-DARM_NOCHECK_NEON \
 	#
 OBJS = $(OBJS) adler32_neon.obj chunkset_neon.obj compare256_neon.obj slide_hash_neon.obj

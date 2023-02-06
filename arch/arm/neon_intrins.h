@@ -7,7 +7,7 @@
 #  include <arm_neon.h>
 #endif
 
-#if defined(ARM_NEON_ADLER32) && !defined(__aarch64__) && !defined(_M_ARM64)
+#if defined(ARM_NEON) && !defined(__aarch64__) && !defined(_M_ARM64)
 /* Compatibility shim for the _high family of functions */
 #define vmull_high_u8(a, b) vmull_u8(vget_high_u8(a), vget_high_u8(b))
 #define vmlal_high_u8(a, b, c) vmlal_u8(a, vget_high_u8(b), vget_high_u8(c))
@@ -15,7 +15,7 @@
 #define vaddw_high_u8(a, b) vaddw_u8(a, vget_high_u8(b))
 #endif
 
-#ifdef ARM_NEON_SLIDEHASH
+#ifdef ARM_NEON
 
 #define vqsubq_u16_x4_x1(out, a, b) do { \
     out.val[0] = vqsubq_u16(a.val[0], b); \
@@ -24,9 +24,8 @@
     out.val[3] = vqsubq_u16(a.val[3], b); \
 } while (0)
 
-#endif
 
-#if !defined(ARM_NEON_HASLD4) && (defined(ARM_NEON_ADLER32) || defined(ARM_NEON_SLIDEHASH))
+#  ifndef ARM_NEON_HASLD4
 
 static inline uint16x8x4_t vld1q_u16_x4(uint16_t const *a) {
     uint16x8x4_t ret = (uint16x8x4_t) {{
@@ -52,6 +51,7 @@ static inline void vst1q_u16_x4(uint16_t *p, uint16x8x4_t a) {
     vst1q_u16(p + 16, a.val[2]);
     vst1q_u16(p + 24, a.val[3]);
 }
-#endif // HASLD4 check
+#  endif // HASLD4 check
+#endif
 
 #endif // include guard ARM_NEON_INTRINS_H

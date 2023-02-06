@@ -12,7 +12,7 @@
 #include "adler32_ssse3_p.h"
 #include <immintrin.h>
 
-#ifdef X86_SSE42_ADLER32
+#ifdef X86_SSE42
 
 Z_INTERNAL uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
     uint32_t adler0, adler1;

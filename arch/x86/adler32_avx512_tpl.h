@@ -11,7 +11,7 @@
 #include <immintrin.h>
 #include "adler32_avx512_p.h"
 
-#ifdef X86_AVX512_ADLER32
+#ifdef X86_AVX512
 
 #ifdef COPY
 Z_INTERNAL uint32_t adler32_fold_copy_avx512(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
@@ -35,9 +35,9 @@ rem_peel:
         _mm512_mask_storeu_epi8(dst, storemask, copy_vec);
 #endif
 
-#ifdef X86_AVX2_ADLER32
+#ifdef X86_AVX2
         return adler32_avx2(adler, src, len);
-#elif defined(X86_SSSE3_ADLER32)
+#elif defined(X86_SSSE3)
         return adler32_ssse3(adler, src, len);
 #else
         return adler32_len_16(adler0, src, len, adler1);

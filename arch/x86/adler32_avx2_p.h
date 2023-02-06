@@ -6,7 +6,7 @@
 #ifndef ADLER32_AVX2_P_H_
 #define ADLER32_AVX2_P_H_
 
-#if defined(X86_AVX2_ADLER32) || defined(X86_AVX512VNNI_ADLER32)
+#if defined(X86_AVX2) || defined(X86_AVX512VNNI)
 
 /* 32 bit horizontal sum, adapted from Agner Fog's vector library. */
 static inline uint32_t hsum256(__m256i x) {

@@ -2,7 +2,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef POWER8_VSX_CHUNKSET
+#ifdef POWER8_VSX
 #include <altivec.h>
 #include "../../zbuild.h"
 

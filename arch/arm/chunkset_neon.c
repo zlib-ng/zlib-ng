@@ -2,7 +2,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef ARM_NEON_CHUNKSET
+#ifdef ARM_NEON
 #include "neon_intrins.h"
 #include "../../zbuild.h"
 #include "../generic/chunk_permute_table.h"
