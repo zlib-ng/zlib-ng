@@ -150,6 +150,7 @@ static void init_functable(void) {
     // ARM - NEON
 #if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
     if (arm_cpu_has_neon) {
+        ft.compare256 = &compare256_neon;
         ft.longest_match = &longest_match_neon;
         ft.longest_match_slow = &longest_match_slow_neon;
     }
