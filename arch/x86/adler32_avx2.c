@@ -7,7 +7,7 @@
 
 #include <immintrin.h>
 
-#ifdef X86_AVX2_ADLER32
+#ifdef X86_AVX2
 
 #include "adler32_avx2_tpl.h"
 

@@ -1545,8 +1545,8 @@ case "${ARCH}" in
             check_avx2_intrinsics
 
             if test ${HAVE_AVX2_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32 -DX86_AVX_CHUNKSET"
-                SFLAGS="${SFLAGS} -DX86_AVX2 -DX86_AVX2_ADLER32 -DX86_AVX_CHUNKSET"
+                CFLAGS="${CFLAGS} -DX86_AVX2"
+                SFLAGS="${SFLAGS} -DX86_AVX2"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_hash_avx2.o chunkset_avx.o compare256_avx2.o adler32_avx2.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_hash_avx2.lo chunkset_avx.lo compare256_avx2.lo adler32_avx2.lo"
             fi
@@ -1554,8 +1554,8 @@ case "${ARCH}" in
             check_avx512_intrinsics
 
             if test ${HAVE_AVX512_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_AVX512 -DX86_AVX512_ADLER32"
-                SFLAGS="${SFLAGS} -DX86_AVX512 -DX86_AVX512_ADLER32"
+                CFLAGS="${CFLAGS} -DX86_AVX512"
+                SFLAGS="${SFLAGS} -DX86_AVX512"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_avx512.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_avx512.lo"
 
@@ -1570,8 +1570,8 @@ case "${ARCH}" in
             check_avx512vnni_intrinsics
 
             if test ${HAVE_AVX512VNNI_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_AVX512VNNI -DX86_AVX512VNNI_ADLER32"
-                SFLAGS="${SFLAGS} -DX86_AVX512VNNI -DX86_AVX512VNNI_ADLER32"
+                CFLAGS="${CFLAGS} -DX86_AVX512VNNI"
+                SFLAGS="${SFLAGS} -DX86_AVX512VNNI"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_avx512_vnni.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_avx512_vnni.lo"
             fi
@@ -1589,8 +1589,8 @@ case "${ARCH}" in
             check_sse42_intrinsics
 
             if test ${HAVE_SSE42CRC_INTRIN} -eq 1 || test ${HAVE_SSE42CRC_INLINE_ASM} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE42_CRC_HASH -DX86_SSE42_ADLER32"
-                SFLAGS="${SFLAGS} -DX86_SSE42_CRC_HASH -DX86_SSE42_ADLER32"
+                CFLAGS="${CFLAGS} -DX86_SSE42"
+                SFLAGS="${SFLAGS} -DX86_SSE42"
 
                 if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
                   CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
@@ -1604,8 +1604,8 @@ case "${ARCH}" in
             check_sse2_intrinsics
 
             if test ${HAVE_SSE2_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE2 -DX86_SSE2_CHUNKSET"
-                SFLAGS="${SFLAGS} -DX86_SSE2 -DX86_SSE2_CHUNKSET"
+                CFLAGS="${CFLAGS} -DX86_SSE2"
+                SFLAGS="${SFLAGS} -DX86_SSE2"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chunkset_sse2.o compare256_sse2.o slide_hash_sse2.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chunkset_sse2.lo compare256_sse2.lo slide_hash_sse2.lo"
 
@@ -1618,8 +1618,8 @@ case "${ARCH}" in
             check_ssse3_intrinsics
 
             if test ${HAVE_SSSE3_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSSE3 -DX86_SSSE3_ADLER32"
-                SFLAGS="${SFLAGS} -DX86_SSSE3 -DX86_SSSE3_ADLER32"
+                CFLAGS="${CFLAGS} -DX86_SSSE3"
+                SFLAGS="${SFLAGS} -DX86_SSSE3"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_ssse3.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_ssse3.lo"
             fi
@@ -1785,9 +1785,6 @@ EOF
                             SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
                         fi
 
-                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
-                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
-
                         ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
                         ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
                     fi
@@ -1812,9 +1809,6 @@ EOF
                             SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
                         fi
 
-                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
-                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
-
                         ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
                         ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
                     fi
@@ -1825,8 +1819,8 @@ EOF
 
                 if test $without_optimizations -eq 0; then
                     if test $ACLE_AVAILABLE -eq 1; then
-                        CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
-                        SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
+                        CFLAGS="${CFLAGS} -DARM_ACLE"
+                        SFLAGS="${SFLAGS} -DARM_ACLE"
 
                         ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
                         ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
@@ -1844,9 +1838,6 @@ EOF
                             CFLAGS="${CFLAGS} -DARM_NEON_HASLD4"
                             SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
                         fi
-
-                        CFLAGS="${CFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
-                        SFLAGS="${SFLAGS} -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
 
                         ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
                         ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
@@ -1899,8 +1890,8 @@ EOF
                 if test $native -eq 0; then
                     ARCH="${ARCH}+crc"
                 fi
-                CFLAGS="${CFLAGS} -DARM_ACLE_CRC_HASH"
-                SFLAGS="${SFLAGS} -DARM_ACLE_CRC_HASH"
+                CFLAGS="${CFLAGS} -DARM_ACLE"
+                SFLAGS="${SFLAGS} -DARM_ACLE"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
             fi
@@ -1909,8 +1900,8 @@ EOF
                 if test $native -eq 0; then
                     ARCH="${ARCH}+simd"
                 fi
-                CFLAGS="${CFLAGS} -DARM_NEON -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
-                SFLAGS="${SFLAGS} -DARM_NEON -DARM_NEON_ADLER32 -DARM_NEON_CHUNKSET -DARM_NEON_SLIDEHASH"
+                CFLAGS="${CFLAGS} -DARM_NEON"
+                SFLAGS="${SFLAGS} -DARM_NEON"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
             fi
@@ -1949,15 +1940,15 @@ EOF
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power_features.lo"
             fi
             if test $HAVE_VMX -eq 1 -a $HAVE_ALTIVEC_INTRIN -eq 1; then
-                CFLAGS="${CFLAGS} -DPPC_VMX_ADLER32 -DPPC_VMX_SLIDEHASH"
-                SFLAGS="${SFLAGS} -DPPC_VMX_ADLER32 -DPPC_VMX_SLIDEHASH"
+                CFLAGS="${CFLAGS} -DPPC_VMX"
+                SFLAGS="${SFLAGS} -DPPC_VMX"
 
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_vmx.o slide_hash_vmx.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_vmx.lo slide_hash_vmx.lo"
             fi
             if test $HAVE_POWER8_INTRIN -eq 1; then
-                CFLAGS="${CFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_CHUNKSET -DPOWER8_VSX_SLIDEHASH"
-                SFLAGS="${SFLAGS} -DPOWER8 -DPOWER_FEATURES -DPOWER8_VSX_ADLER32 -DPOWER8_VSX_CHUNKSET -DPOWER8_VSX_SLIDEHASH"
+                CFLAGS="${CFLAGS} -DPOWER8_VSX -DPOWER_FEATURES"
+                SFLAGS="${SFLAGS} -DPOWER8_VSX -DPOWER_FEATURES"
 
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_power8.o chunkset_power8.o slide_hash_power8.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_power8.lo chunkset_power8.lo slide_hash_power8.lo"

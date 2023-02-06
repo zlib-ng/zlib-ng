@@ -57,9 +57,9 @@ public:
 
 BENCHMARK_CRC32(braid, PREFIX(crc32_braid), 1);
 
-#ifdef ARM_ACLE_CRC_HASH
+#ifdef ARM_ACLE
 BENCHMARK_CRC32(acle, crc32_acle, arm_cpu_has_crc32);
-#elif defined(POWER8_VSX_CRC32)
+#elif defined(POWER8_VSX)
 BENCHMARK_CRC32(power8, crc32_power8, power_cpu_has_arch_2_07);
 #elif defined(S390_CRC32_VX)
 BENCHMARK_CRC32(vx, PREFIX(s390_crc32_vx), PREFIX(s390_cpu_has_vx));

@@ -5,7 +5,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef PPC_VMX_ADLER32
+#ifdef PPC_VMX
 #include <altivec.h>
 #include "zbuild.h"
 #include "adler32_p.h"

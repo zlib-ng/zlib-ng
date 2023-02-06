@@ -6,7 +6,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef X86_AVX512_ADLER32
+#ifdef X86_AVX512
 
 #include "adler32_avx512_tpl.h"
 

@@ -36,7 +36,7 @@
  * https://www.ietf.org/rfc/rfc1950.txt
  */
 
-#ifdef POWER8_VSX_ADLER32
+#ifdef POWER8_VSX
 
 #include <altivec.h>
 #include "zbuild.h"
@@ -150,4 +150,4 @@ Z_INTERNAL uint32_t adler32_power8(uint32_t adler, const uint8_t *buf, size_t le
     return adler32_len_16(s1, buf, len, s2);
 }
 
-#endif /* POWER8_VSX_ADLER32 */
+#endif /* POWER8_VSX */

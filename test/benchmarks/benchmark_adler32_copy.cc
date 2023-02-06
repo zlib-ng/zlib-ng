@@ -85,34 +85,34 @@ public:
 
 BENCHMARK_ADLER32_BASELINE_COPY(c, adler32_c, 1);
 
-#ifdef ARM_NEON_ADLER32
+#ifdef ARM_NEON
 /* If we inline this copy for neon, the function would go here */
 //BENCHMARK_ADLER32_COPY(neon, adler32_neon, arm_cpu_has_neon);
 BENCHMARK_ADLER32_BASELINE_COPY(neon_copy_baseline, adler32_neon, arm_cpu_has_neon);
 #endif
 
-#ifdef PPC_VMX_ADLER32
+#ifdef PPC_VMX
 //BENCHMARK_ADLER32_COPY(vmx_inline_copy, adler32_fold_copy_vmx, power_cpu_has_altivec);
 BENCHMARK_ADLER32_BASELINE_COPY(vmx_copy_baseline, adler32_vmx, power_cpu_has_altivec);
 #endif
-#ifdef POWER8_VSX_ADLER32
+#ifdef POWER8_VSX
 //BENCHMARK_ADLER32_COPY(power8_inline_copy, adler32_fold_copy_power8, power_cpu_has_arch_2_07);
 BENCHMARK_ADLER32_BASELINE_COPY(power8, adler32_power8, power_cpu_has_arch_2_07);
 #endif
 
-#ifdef X86_SSE42_ADLER32
+#ifdef X86_SSE42
 BENCHMARK_ADLER32_BASELINE_COPY(sse42_baseline, adler32_ssse3, x86_cpu_has_ssse3);
 BENCHMARK_ADLER32_COPY(sse42, adler32_fold_copy_sse42, x86_cpu_has_sse42);
 #endif
-#ifdef X86_AVX2_ADLER32
+#ifdef X86_AVX2
 BENCHMARK_ADLER32_BASELINE_COPY(avx2_baseline, adler32_avx2, x86_cpu_has_avx2);
 BENCHMARK_ADLER32_COPY(avx2, adler32_fold_copy_avx2, x86_cpu_has_avx2);
 #endif
-#ifdef X86_AVX512_ADLER32
+#ifdef X86_AVX512
 BENCHMARK_ADLER32_BASELINE_COPY(avx512_baseline, adler32_avx512, x86_cpu_has_avx512);
 BENCHMARK_ADLER32_COPY(avx512, adler32_fold_copy_avx512, x86_cpu_has_avx512);
 #endif
-#ifdef X86_AVX512VNNI_ADLER32
+#ifdef X86_AVX512VNNI
 BENCHMARK_ADLER32_BASELINE_COPY(avx512_vnni_baseline, adler32_avx512_vnni, x86_cpu_has_avx512vnni);
 BENCHMARK_ADLER32_COPY(avx512_vnni, adler32_fold_copy_avx512_vnni, x86_cpu_has_avx512vnni);
 #endif

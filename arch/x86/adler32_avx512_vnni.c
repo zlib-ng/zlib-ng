@@ -7,7 +7,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef X86_AVX512VNNI_ADLER32
+#ifdef X86_AVX512VNNI
 
 #include "../../zbuild.h"
 #include "../../adler32_p.h"
@@ -28,16 +28,16 @@ Z_INTERNAL uint32_t adler32_avx512_vnni(uint32_t adler, const uint8_t *src, size
 
 rem_peel:
     if (len < 32)
-#if defined(X86_SSSE3_ADLER32)
+#if defined(X86_SSSE3)
         return adler32_ssse3(adler, src, len);
 #else
         return adler32_len_16(adler0, src, len, adler1);
 #endif
 
     if (len < 64)
-#ifdef X86_AVX2_ADLER32
+#ifdef X86_AVX2
         return adler32_avx2(adler, src, len);
-#elif defined(X86_SSE3_ADLER32)
+#elif defined(X86_SSE3)
         return adler32_ssse3(adler, src, len);
 #else
         return adler32_len_16(adler0, src, len, adler1);
@@ -135,7 +135,7 @@ rem_peel_copy:
         __m256i copy_vec = _mm256_maskz_loadu_epi8(storemask, src);
         _mm256_mask_storeu_epi8(dst, storemask, copy_vec);
 
-#if defined(X86_SSSE3_ADLER32)
+#if defined(X86_SSSE3)
         return adler32_ssse3(adler, src, len);
 #else
         return adler32_len_16(adler0, src, len, adler1);

@@ -45,6 +45,6 @@
 #define INSERT_STRING       insert_string_sse4
 #define QUICK_INSERT_STRING quick_insert_string_sse4
 
-#ifdef X86_SSE42_CRC_HASH
+#ifdef X86_SSE42
 #  include "../../insert_string_tpl.h"
 #endif

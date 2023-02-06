@@ -10,7 +10,7 @@
 #include "../../adler32_p.h"
 #include "adler32_ssse3_p.h"
 
-#ifdef X86_SSSE3_ADLER32
+#ifdef X86_SSSE3
 
 #include <immintrin.h>
 

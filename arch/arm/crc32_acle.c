@@ -5,7 +5,7 @@
  *
 */
 
-#ifdef ARM_ACLE_CRC_HASH
+#ifdef ARM_ACLE
 #ifdef _MSC_VER
 #  include <intrin.h>
 #else

@@ -3,7 +3,7 @@
  */
 #include "zbuild.h"
 
-#ifdef X86_AVX_CHUNKSET
+#ifdef X86_AVX2
 #include <immintrin.h>
 #include "../generic/chunk_permute_table.h"
 

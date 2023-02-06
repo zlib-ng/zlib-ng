@@ -56,28 +56,24 @@ static void init_functable(void) {
     // Select arch-optimized functions
 
     // X86 - SSE2
-#if defined(X86_SSE2) || defined(X86_SSE2_CHUNKSET)
+#ifdef X86_SSE2
 #  if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
     if (x86_cpu_has_sse2)
 #  endif
     {
-#  ifdef X86_SSE2
         ft.slide_hash = &slide_hash_sse2;
-#    ifdef HAVE_BUILTIN_CTZ
-        ft.longest_match = &longest_match_sse2;
-        ft.longest_match_slow = &longest_match_slow_sse2;
-        ft.compare256 = &compare256_sse2;
-#    endif
-#  endif
-#  ifdef X86_SSE2_CHUNKSET
         ft.chunksize = &chunksize_sse2;
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
         ft.inflate_fast = &inflate_fast_sse2;
+#  ifdef HAVE_BUILTIN_CTZ
+        ft.longest_match = &longest_match_sse2;
+        ft.longest_match_slow = &longest_match_slow_sse2;
+        ft.compare256 = &compare256_sse2;
 #  endif
     }
 #endif
     // X86 - SSSE3
-#ifdef X86_SSSE3_ADLER32
+#ifdef X86_SSSE3
     if (x86_cpu_has_ssse3)
         ft.adler32 = &adler32_ssse3;
 #endif
@@ -88,12 +84,9 @@ static void init_functable(void) {
         ft.inflate_fast = &inflate_fast_sse41;
     }
 #endif
-#ifdef X86_SSE42_ADLER32
-    if (x86_cpu_has_sse42)
-        ft.adler32_fold_copy = &adler32_fold_copy_sse42;
-#endif
-#ifdef X86_SSE42_CRC_HASH
+#ifdef X86_SSE42
     if (x86_cpu_has_sse42) {
+        ft.adler32_fold_copy = &adler32_fold_copy_sse42;
         ft.update_hash = &update_hash_sse4;
         ft.insert_string = &insert_string_sse4;
         ft.quick_insert_string = &quick_insert_string_sse4;
@@ -110,16 +103,14 @@ static void init_functable(void) {
     }
 #endif
     // X86 - AVX
-#ifdef X86_AVX_CHUNKSET
+#ifdef X86_AVX2
     if (x86_cpu_has_avx2) {
         ft.chunksize = &chunksize_avx;
         ft.chunkmemset_safe = &chunkmemset_safe_avx;
         ft.inflate_fast = &inflate_fast_avx;
-    }
-#endif
-#ifdef X86_AVX2
-    if (x86_cpu_has_avx2) {
         ft.slide_hash = &slide_hash_avx2;
+        ft.adler32 = &adler32_avx2;
+        ft.adler32_fold_copy = &adler32_fold_copy_avx2;
 #  ifdef HAVE_BUILTIN_CTZ
         ft.longest_match = &longest_match_avx2;
         ft.longest_match_slow = &longest_match_slow_avx2;
@@ -127,19 +118,13 @@ static void init_functable(void) {
 #  endif
     }
 #endif
-#ifdef X86_AVX2_ADLER32
-    if (x86_cpu_has_avx2) {
-        ft.adler32 = &adler32_avx2;
-        ft.adler32_fold_copy = &adler32_fold_copy_avx2;
-    }
-#endif
-#ifdef X86_AVX512_ADLER32
+#ifdef X86_AVX512
     if (x86_cpu_has_avx512) {
         ft.adler32 = &adler32_avx512;
         ft.adler32_fold_copy = &adler32_fold_copy_avx512;
     }
 #endif
-#ifdef X86_AVX512VNNI_ADLER32
+#ifdef X86_AVX512VNNI
     if (x86_cpu_has_avx512vnni) {
         ft.adler32 = &adler32_avx512_vnni;
         ft.adler32_fold_copy = &adler32_fold_copy_avx512_vnni;
@@ -148,34 +133,25 @@ static void init_functable(void) {
 
 
     // ARM - NEON
-#if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
-    if (arm_cpu_has_neon) {
-        ft.compare256 = &compare256_neon;
-        ft.longest_match = &longest_match_neon;
-        ft.longest_match_slow = &longest_match_slow_neon;
-    }
-#endif
-#ifdef ARM_NEON_ADLER32
+#ifdef ARM_NEON
 #  ifndef ARM_NOCHECK_NEON
     if (arm_cpu_has_neon)
 #  endif
+    {
         ft.adler32 = &adler32_neon;
-#endif
-#ifdef ARM_NEON_SLIDEHASH
-#  ifndef ARM_NOCHECK_NEON
-    if (arm_cpu_has_neon)
-#  endif
         ft.slide_hash = &slide_hash_neon;
-#endif
-#ifdef ARM_NEON_CHUNKSET
-    if (arm_cpu_has_neon) {
         ft.chunksize = &chunksize_neon;
         ft.chunkmemset_safe = &chunkmemset_safe_neon;
         ft.inflate_fast = &inflate_fast_neon;
+#  ifdef HAVE_BUILTIN_CTZLL
+        ft.compare256 = &compare256_neon;
+        ft.longest_match = &longest_match_neon;
+        ft.longest_match_slow = &longest_match_slow_neon;
+#  endif
     }
 #endif
     // ARM - ACLE
-#ifdef ARM_ACLE_CRC_HASH
+#ifdef ARM_ACLE
     if (arm_cpu_has_crc32) {
         ft.crc32 = &crc32_acle;
         ft.update_hash = &update_hash_acle;
@@ -184,34 +160,27 @@ static void init_functable(void) {
     }
 #endif
 
+
     // Power - VMX
-#ifdef PPC_VMX_SLIDEHASH
-    if (power_cpu_has_altivec)
-        ft.slide_hash = &slide_hash_vmx;
-#endif
-#ifdef PPC_VMX_ADLER32
-    if (power_cpu_has_altivec)
+#ifdef PPC_VMX
+    if (power_cpu_has_altivec) {
         ft.adler32 = &adler32_vmx;
+        ft.slide_hash = &slide_hash_vmx;
+    }
 #endif
     // Power8 - VSX
-#ifdef POWER8_VSX_SLIDEHASH
-    if (power_cpu_has_arch_2_07)
-        ft.slide_hash = &slide_hash_power8;
-#endif
-#ifdef POWER8_VSX_ADLER32
-    if (power_cpu_has_arch_2_07)
+#ifdef POWER8_VSX
+    if (power_cpu_has_arch_2_07) {
         ft.adler32 = &adler32_power8;
+        ft.chunkmemset_safe = &chunkmemset_safe_power8;
+        ft.chunksize = &chunksize_power8;
+        ft.inflate_fast = &inflate_fast_power8;
+        ft.slide_hash = &slide_hash_power8;
+    }
 #endif
 #ifdef POWER8_VSX_CRC32
     if (power_cpu_has_arch_2_07)
         ft.crc32 = &crc32_power8;
-#endif
-#ifdef POWER8_VSX_CHUNKSET
-    if (power_cpu_has_arch_2_07) {
-        ft.chunksize = &chunksize_power8;
-        ft.chunkmemset_safe = &chunkmemset_safe_power8;
-        ft.inflate_fast = &inflate_fast_power8;
-    }
 #endif
     // Power9
 #ifdef POWER9
@@ -221,6 +190,7 @@ static void init_functable(void) {
         ft.compare256 = &compare256_power9;
     }
 #endif
+
 
     // S390
 #ifdef S390_CRC32_VX

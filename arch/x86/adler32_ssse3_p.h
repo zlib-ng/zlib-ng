@@ -6,7 +6,7 @@
 #ifndef ADLER32_SSSE3_P_H_
 #define ADLER32_SSSE3_P_H_
 
-#ifdef X86_SSSE3_ADLER32
+#ifdef X86_SSSE3
 
 #include <immintrin.h>
 #include <stdint.h>
