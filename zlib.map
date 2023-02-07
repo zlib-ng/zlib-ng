@@ -9,8 +9,6 @@ ZLIB_1.2.0 {
   local:
     deflate_copyright;
     inflate_copyright;
-    inflate_fast;
-    inflate_table;
     zcalloc;
     zcfree;
     z_errmsg;

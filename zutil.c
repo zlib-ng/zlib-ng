@@ -20,14 +20,14 @@ z_const char * const PREFIX(z_errmsg)[10] = {
     (z_const char *)""
 };
 
+const char PREFIX3(vstring)[] =
+    " zlib-ng 2.1.0.devel forked from zlib";
+
 #ifdef ZLIB_COMPAT
 const char * Z_EXPORT zlibVersion(void) {
     return ZLIB_VERSION;
 }
 #else
-const char zlibng_string[] =
-    " zlib-ng 2.1.0.devel forked from zlib";
-
 const char * Z_EXPORT zlibng_version(void) {
     return ZLIBNG_VERSION;
 }
