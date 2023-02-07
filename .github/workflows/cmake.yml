@@ -482,7 +482,7 @@ jobs:
 
     - name: Install Emscripten
       if: contains(matrix.name, 'WASM32')
-      uses: mymindstorm/setup-emsdk@v11
+      uses: mymindstorm/setup-emsdk@v12
 
     - name: Initialize Wine
       # Prevent parallel test jobs from initializing Wine at the same time
