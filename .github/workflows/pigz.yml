@@ -111,7 +111,7 @@ jobs:
         CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: ${{ matrix.name }} (cmake)
