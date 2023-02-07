@@ -548,7 +548,7 @@ jobs:
           --xml --output coverage.xml
 
     - name: Upload coverage report
-      uses: codecov/codecov-action@v2
+      uses: codecov/codecov-action@v3
       if: matrix.codecov && (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
       with:
         token: ${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}
@@ -561,7 +561,7 @@ jobs:
         CODECOV_TOKEN: "${{secrets.CODECOV_TOKEN}}"
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: ${{ matrix.name }} (cmake)
