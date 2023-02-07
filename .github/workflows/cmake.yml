@@ -12,8 +12,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Ubuntu 18.04 GCC
-            os: ubuntu-18.04
+          - name: Ubuntu 20.04 GCC
+            os: ubuntu-20.04
             compiler: gcc
             cxx-compiler: g++
 
@@ -281,8 +281,8 @@ jobs:
              # Limit parallel test jobs to prevent wine errors
             parallels-jobs: 1
 
-          - name: Ubuntu 18.04 Clang
-            os: ubuntu-18.04
+          - name: Ubuntu 20.04 Clang
+            os: ubuntu-20.04
             compiler: clang-6.0
             cxx-compiler: clang++-6.0
             packages: clang-6.0
