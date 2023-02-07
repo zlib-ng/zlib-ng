@@ -126,8 +126,8 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 
          /* memory allocation functions */
 
-void Z_INTERNAL *PREFIX3(calloc)(void *opaque, unsigned items, unsigned size);
-void Z_INTERNAL  PREFIX3(cfree)(void *opaque, void *ptr);
+void Z_INTERNAL *PREFIX(zcalloc)(void *opaque, unsigned items, unsigned size);
+void Z_INTERNAL  PREFIX(zcfree)(void *opaque, void *ptr);
 
 typedef void *zng_calloc_func(void *opaque, unsigned items, unsigned size);
 typedef void  zng_cfree_func(void *opaque, void *ptr);

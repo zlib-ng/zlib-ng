@@ -202,11 +202,11 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
 
     strm->msg = NULL;
     if (strm->zalloc == NULL) {
-        strm->zalloc = PREFIX3(calloc);
+        strm->zalloc = PREFIX(zcalloc);
         strm->opaque = NULL;
     }
     if (strm->zfree == NULL)
-        strm->zfree = PREFIX3(cfree);
+        strm->zfree = PREFIX(zcfree);
 
     if (level == Z_DEFAULT_COMPRESSION)
         level = 6;

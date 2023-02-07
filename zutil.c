@@ -100,12 +100,12 @@ const char * Z_EXPORT PREFIX(zError)(int err) {
     return ERR_MSG(err);
 }
 
-void Z_INTERNAL *PREFIX3(calloc)(void *opaque, unsigned items, unsigned size) {
+void Z_INTERNAL *PREFIX(zcalloc)(void *opaque, unsigned items, unsigned size) {
     Z_UNUSED(opaque);
     return zng_alloc((size_t)items * (size_t)size);
 }
 
-void Z_INTERNAL PREFIX3(cfree)(void *opaque, void *ptr) {
+void Z_INTERNAL PREFIX(zcfree)(void *opaque, void *ptr) {
     Z_UNUSED(opaque);
     zng_free(ptr);
 }
@@ -118,8 +118,8 @@ void Z_INTERNAL *PREFIX3(alloc_aligned)(zng_calloc_func zalloc, void *opaque, un
     void *ptr;
 
     /* If no custom calloc function used then call zlib-ng's aligned calloc */
-    if (zalloc == PREFIX3(calloc))
-        return PREFIX3(calloc)(opaque, items, size);
+    if (zalloc == PREFIX(zcalloc))
+        return PREFIX(zcalloc)(opaque, items, size);
 
     /* Allocate enough memory for proper alignment and to store the original memory pointer */
     alloc_size = sizeof(void *) + (items * size) + align;
@@ -143,8 +143,8 @@ void Z_INTERNAL *PREFIX3(alloc_aligned)(zng_calloc_func zalloc, void *opaque, un
 
 void Z_INTERNAL PREFIX3(free_aligned)(zng_cfree_func zfree, void *opaque, void *ptr) {
     /* If no custom cfree function used then call zlib-ng's aligned cfree */
-    if (zfree == PREFIX3(cfree)) {
-        PREFIX3(cfree)(opaque, ptr);
+    if (zfree == PREFIX(zcfree)) {
+        PREFIX(zcfree)(opaque, ptr);
         return;
     }
     if (!ptr)
