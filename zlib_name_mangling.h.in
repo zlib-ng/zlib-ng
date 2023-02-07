@@ -165,8 +165,6 @@
 
 /* zlib-ng specific symbols */
 #define zng_alloc_aligned      @ZLIB_SYMBOL_PREFIX@zng_alloc_aligned
-#define zng_calloc             @ZLIB_SYMBOL_PREFIX@zng_calloc
-#define zng_cfree              @ZLIB_SYMBOL_PREFIX@zng_cfree
 #define zng_free_aligned       @ZLIB_SYMBOL_PREFIX@zng_free_aligned
 
 #endif /* ZLIB_NAME_MANGLING_H */

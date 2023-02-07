@@ -125,10 +125,8 @@
 #  define zng_uncompress2           @ZLIB_SYMBOL_PREFIX@zng_uncompress2
 #endif
 #define zng_zError                @ZLIB_SYMBOL_PREFIX@zng_zError
-#ifndef Z_SOLO
-#  define zng_zcalloc               @ZLIB_SYMBOL_PREFIX@zng_zcalloc
-#  define zng_zcfree                @ZLIB_SYMBOL_PREFIX@zng_zcfree
-#endif
+#define zng_zcalloc               @ZLIB_SYMBOL_PREFIX@zng_zcalloc
+#define zng_zcfree                @ZLIB_SYMBOL_PREFIX@zng_zcfree
 #define zng_zlibCompileFlags      @ZLIB_SYMBOL_PREFIX@zng_zlibCompileFlags
 #define zng_zlibVersion           @ZLIB_SYMBOL_PREFIX@zng_zlibVersion
 
@@ -171,8 +169,6 @@
 #define zng_zError             @ZLIB_SYMBOL_PREFIX@zng_zError
 
 #define zng_alloc_aligned      @ZLIB_SYMBOL_PREFIX@zng_alloc_aligned
-#define zng_calloc             @ZLIB_SYMBOL_PREFIX@zng_calloc
-#define zng_cfree              @ZLIB_SYMBOL_PREFIX@zng_cfree
 #define zng_free_aligned       @ZLIB_SYMBOL_PREFIX@zng_free_aligned
 #define zng_get_crc_table      @ZLIB_SYMBOL_PREFIX@zng_get_crc_table
 #define zng_inflateSyncPoint   @ZLIB_SYMBOL_PREFIX@zng_inflateSyncPoint
