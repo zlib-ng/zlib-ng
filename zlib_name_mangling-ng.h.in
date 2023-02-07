@@ -18,11 +18,9 @@
 #define zng_adler32_combine       @ZLIB_SYMBOL_PREFIX@zng_adler32_combine
 #define zng_adler32_combine64     @ZLIB_SYMBOL_PREFIX@zng_adler32_combine64
 #define zng_adler32_z             @ZLIB_SYMBOL_PREFIX@zng_adler32_z
-#ifndef Z_SOLO
-#  define zng_compress              @ZLIB_SYMBOL_PREFIX@zng_compress
-#  define zng_compress2             @ZLIB_SYMBOL_PREFIX@zng_compress2
-#  define zng_compressBound         @ZLIB_SYMBOL_PREFIX@zng_compressBound
-#endif
+#define zng_compress              @ZLIB_SYMBOL_PREFIX@zng_compress
+#define zng_compress2             @ZLIB_SYMBOL_PREFIX@zng_compress2
+#define zng_compressBound         @ZLIB_SYMBOL_PREFIX@zng_compressBound
 #define zng_crc32                 @ZLIB_SYMBOL_PREFIX@zng_crc32
 #define zng_crc32_combine         @ZLIB_SYMBOL_PREFIX@zng_crc32_combine
 #define zng_crc32_combine64       @ZLIB_SYMBOL_PREFIX@zng_crc32_combine64
@@ -52,7 +50,7 @@
 #define zng_fixedtables           @ZLIB_SYMBOL_PREFIX@zng_fixedtables
 #define zng_flush_pending         @ZLIB_SYMBOL_PREFIX@zng_flush_pending
 #define zng_get_crc_table         @ZLIB_SYMBOL_PREFIX@zng_get_crc_table
-#ifndef Z_SOLO
+#ifdef WITH_GZFILEOP
 #  define zng_gz_error              @ZLIB_SYMBOL_PREFIX@zng_gz_error
 #  define zng_gz_strwinerror        @ZLIB_SYMBOL_PREFIX@zng_gz_strwinerror
 #  define zng_gzbuffer              @ZLIB_SYMBOL_PREFIX@zng_gzbuffer
@@ -120,10 +118,8 @@
 #define zng_inflate_fast          @ZLIB_SYMBOL_PREFIX@zng_inflate_fast
 #define zng_inflate_table         @ZLIB_SYMBOL_PREFIX@zng_inflate_table
 #define zng_read_buf              @ZLIB_SYMBOL_PREFIX@zng_read_buf
-#ifndef Z_SOLO
-#  define zng_uncompress            @ZLIB_SYMBOL_PREFIX@zng_uncompress
-#  define zng_uncompress2           @ZLIB_SYMBOL_PREFIX@zng_uncompress2
-#endif
+#define zng_uncompress            @ZLIB_SYMBOL_PREFIX@zng_uncompress
+#define zng_uncompress2           @ZLIB_SYMBOL_PREFIX@zng_uncompress2
 #define zng_zError                @ZLIB_SYMBOL_PREFIX@zng_zError
 #define zng_zcalloc               @ZLIB_SYMBOL_PREFIX@zng_zcalloc
 #define zng_zcfree                @ZLIB_SYMBOL_PREFIX@zng_zcfree
@@ -136,7 +132,7 @@
 #define alloc_func            @ZLIB_SYMBOL_PREFIX@alloc_func
 #define charf                 @ZLIB_SYMBOL_PREFIX@charf
 #define free_func             @ZLIB_SYMBOL_PREFIX@free_func
-#ifndef Z_SOLO
+#ifdef WITH_GZFILEOP
 #  define gzFile                @ZLIB_SYMBOL_PREFIX@gzFile
 #endif
 #define gz_header             @ZLIB_SYMBOL_PREFIX@gz_header
@@ -156,9 +152,6 @@
 #define zng_gz_header_s           @ZLIB_SYMBOL_PREFIX@zng_gz_header_s
 #define internal_state            @ZLIB_SYMBOL_PREFIX@internal_state
 
-/* all zlib structs in zutil.h */
-#define zlibng_string             @ZLIB_SYMBOL_PREFIX@zlibng_string
-
 /* zlib-ng specific symbols */
 #define zng_deflate_param         @ZLIB_SYMBOL_PREFIX@zng_deflate_param
 #define zng_deflate_param_value   @ZLIB_SYMBOL_PREFIX@zng_deflate_param_value
@@ -166,6 +159,7 @@
 #define zng_deflateGetParams      @ZLIB_SYMBOL_PREFIX@zng_deflateGetParams
 
 #define zlibng_version         @ZLIB_SYMBOL_PREFIX@zlibng_version
+#define zng_vstring            @ZLIB_SYMBOL_PREFIX@zng_vstring
 #define zng_zError             @ZLIB_SYMBOL_PREFIX@zng_zError
 
 #define zng_alloc_aligned      @ZLIB_SYMBOL_PREFIX@zng_alloc_aligned
