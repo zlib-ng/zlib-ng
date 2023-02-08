@@ -1179,6 +1179,19 @@ option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 if(ZLIB_ENABLE_TESTS)
     enable_testing()
 
+    if(BUILD_SHARED_LIBS)
+        if(ZLIBNG_ENABLE_TESTS)
+            message(STATUS "Disabling zlib-ng tests because shared libraries are enabled")
+            set(ZLIBNG_ENABLE_TESTS OFF)
+        endif()
+
+        if(WITH_BENCHMARKS OR WITH_BENCHMARK_APPS)
+            message(STATUS "Disabling benchmarks because shared libraries are enabled")
+            set(WITH_BENCHMARKS OFF)
+            set(WITH_BENCHMARK_APPS OFF)
+        endif()
+    endif()
+
     add_subdirectory(test)
 endif()
 
