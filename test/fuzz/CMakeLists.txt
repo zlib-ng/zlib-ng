@@ -31,7 +31,12 @@ foreach(FUZZER ${FUZZERS})
         target_sources(${FUZZER} PRIVATE standalone_fuzz_target_runner.c)
     endif()
 
-    target_link_libraries(${FUZZER} zlibstatic)
+    if(NOT DEFINED BUILD_SHARED_LIBS)
+        target_link_libraries(${FUZZER} zlibstatic)
+    else()
+        target_link_libraries(${FUZZER} zlib)
+    endif()
+
     if(FUZZING_ENGINE_FOUND)
         target_link_libraries(${FUZZER} ${FUZZING_ENGINE})
     endif()
