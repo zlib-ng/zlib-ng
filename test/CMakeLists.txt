@@ -230,12 +230,15 @@ if(WITH_GTEST)
         target_link_libraries(gtest_zlib external_zlib)
     endif()
 
-    if((NOT ZLIBNG_ENABLE_TESTS) AND ZLIB_COMPAT AND (NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS))
-        # Link dynamically in order to be able to substitute zlib-ng with zlib.
-        target_link_libraries(gtest_zlib zlib GTest::Main)
-    else()
+    if(NOT DEFINED BUILD_SHARED_LIBS)
         # Link statically in order to test internal zlib-ng functions.
         target_link_libraries(gtest_zlib zlibstatic)
+    else()
+        target_link_libraries(gtest_zlib zlib)
+    endif()
+
+    if(BUILD_SHARED_LIBS)
+        target_link_libraries(gtest_zlib GTest::Main)
     endif()
     target_link_libraries(gtest_zlib GTest::GTest)
 
