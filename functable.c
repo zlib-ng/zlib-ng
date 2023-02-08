@@ -17,20 +17,20 @@ static void init_functable(void) {
     cpu_check_features();
 
     // Generic code
-    ft.update_hash = &update_hash_c;
+    ft.adler32 = &adler32_c;
+    ft.adler32_fold_copy = &adler32_fold_copy_c;
+    ft.chunkmemset_safe = &chunkmemset_safe_c;
+    ft.chunksize = &chunksize_c;
+    ft.crc32 = &PREFIX(crc32_braid);
+    ft.crc32_fold = &crc32_fold_c;
+    ft.crc32_fold_copy = &crc32_fold_copy_c;
+    ft.crc32_fold_final = &crc32_fold_final_c;
+    ft.crc32_fold_reset = &crc32_fold_reset_c;
+    ft.inflate_fast = &inflate_fast_c;
     ft.insert_string = &insert_string_c;
     ft.quick_insert_string = &quick_insert_string_c;
     ft.slide_hash = &slide_hash_c;
-    ft.adler32 = &adler32_c;
-    ft.chunksize = &chunksize_c;
-    ft.chunkmemset_safe = &chunkmemset_safe_c;
-    ft.inflate_fast = &inflate_fast_c;
-    ft.adler32_fold_copy = &adler32_fold_copy_c;
-    ft.crc32_fold = &crc32_fold_c;
-    ft.crc32_fold_reset = &crc32_fold_reset_c;
-    ft.crc32_fold_copy = &crc32_fold_copy_c;
-    ft.crc32_fold_final = &crc32_fold_final_c;
-    ft.crc32 = &PREFIX(crc32_braid);
+    ft.update_hash = &update_hash_c;
 
 #ifdef UNALIGNED_OK
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
@@ -61,14 +61,14 @@ static void init_functable(void) {
     if (x86_cpu_has_sse2)
 #  endif
     {
-        ft.slide_hash = &slide_hash_sse2;
-        ft.chunksize = &chunksize_sse2;
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
+        ft.chunksize = &chunksize_sse2;
         ft.inflate_fast = &inflate_fast_sse2;
+        ft.slide_hash = &slide_hash_sse2;
 #  ifdef HAVE_BUILTIN_CTZ
+        ft.compare256 = &compare256_sse2;
         ft.longest_match = &longest_match_sse2;
         ft.longest_match_slow = &longest_match_slow_sse2;
-        ft.compare256 = &compare256_sse2;
 #  endif
     }
 #endif
@@ -87,9 +87,9 @@ static void init_functable(void) {
 #ifdef X86_SSE42
     if (x86_cpu_has_sse42) {
         ft.adler32_fold_copy = &adler32_fold_copy_sse42;
-        ft.update_hash = &update_hash_sse4;
         ft.insert_string = &insert_string_sse4;
         ft.quick_insert_string = &quick_insert_string_sse4;
+        ft.update_hash = &update_hash_sse4;
     }
 #endif
     // X86 - PCLMUL
@@ -97,24 +97,24 @@ static void init_functable(void) {
     if (x86_cpu_has_pclmulqdq) {
         ft.crc32 = &crc32_pclmulqdq;
         ft.crc32_fold = &crc32_fold_pclmulqdq;
-        ft.crc32_fold_reset = &crc32_fold_pclmulqdq_reset;
         ft.crc32_fold_copy = &crc32_fold_pclmulqdq_copy;
         ft.crc32_fold_final = &crc32_fold_pclmulqdq_final;
+        ft.crc32_fold_reset = &crc32_fold_pclmulqdq_reset;
     }
 #endif
     // X86 - AVX
 #ifdef X86_AVX2
     if (x86_cpu_has_avx2) {
-        ft.chunksize = &chunksize_avx;
-        ft.chunkmemset_safe = &chunkmemset_safe_avx;
-        ft.inflate_fast = &inflate_fast_avx;
-        ft.slide_hash = &slide_hash_avx2;
         ft.adler32 = &adler32_avx2;
         ft.adler32_fold_copy = &adler32_fold_copy_avx2;
+        ft.chunkmemset_safe = &chunkmemset_safe_avx;
+        ft.chunksize = &chunksize_avx;
+        ft.inflate_fast = &inflate_fast_avx;
+        ft.slide_hash = &slide_hash_avx2;
 #  ifdef HAVE_BUILTIN_CTZ
+        ft.compare256 = &compare256_avx2;
         ft.longest_match = &longest_match_avx2;
         ft.longest_match_slow = &longest_match_slow_avx2;
-        ft.compare256 = &compare256_avx2;
 #  endif
     }
 #endif
@@ -139,10 +139,10 @@ static void init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_neon;
-        ft.slide_hash = &slide_hash_neon;
-        ft.chunksize = &chunksize_neon;
         ft.chunkmemset_safe = &chunkmemset_safe_neon;
+        ft.chunksize = &chunksize_neon;
         ft.inflate_fast = &inflate_fast_neon;
+        ft.slide_hash = &slide_hash_neon;
 #  ifdef HAVE_BUILTIN_CTZLL
         ft.compare256 = &compare256_neon;
         ft.longest_match = &longest_match_neon;
@@ -154,9 +154,9 @@ static void init_functable(void) {
 #ifdef ARM_ACLE
     if (arm_cpu_has_crc32) {
         ft.crc32 = &crc32_acle;
-        ft.update_hash = &update_hash_acle;
         ft.insert_string = &insert_string_acle;
         ft.quick_insert_string = &quick_insert_string_acle;
+        ft.update_hash = &update_hash_acle;
     }
 #endif
 
@@ -185,9 +185,9 @@ static void init_functable(void) {
     // Power9
 #ifdef POWER9
     if (power_cpu_has_arch_3_00) {
+        ft.compare256 = &compare256_power9;
         ft.longest_match = &longest_match_power9;
         ft.longest_match_slow = &longest_match_slow_power9;
-        ft.compare256 = &compare256_power9;
     }
 #endif
 
@@ -201,14 +201,14 @@ static void init_functable(void) {
     // Assign function pointers individually for atomic operation
     functable.adler32 = ft.adler32;
     functable.adler32_fold_copy = ft.adler32_fold_copy;
-    functable.crc32 = ft.crc32;
-    functable.crc32_fold_reset = ft.crc32_fold_reset;
-    functable.crc32_fold_copy = ft.crc32_fold_copy;
-    functable.crc32_fold = ft.crc32_fold;
-    functable.crc32_fold_final = ft.crc32_fold_final;
-    functable.compare256 = ft.compare256;
-    functable.chunksize = ft.chunksize;
     functable.chunkmemset_safe = ft.chunkmemset_safe;
+    functable.chunksize = ft.chunksize;
+    functable.compare256 = ft.compare256;
+    functable.crc32 = ft.crc32;
+    functable.crc32_fold = ft.crc32_fold;
+    functable.crc32_fold_copy = ft.crc32_fold_copy;
+    functable.crc32_fold_final = ft.crc32_fold_final;
+    functable.crc32_fold_reset = ft.crc32_fold_reset;
     functable.inflate_fast = ft.inflate_fast;
     functable.insert_string = ft.insert_string;
     functable.longest_match = ft.longest_match;
@@ -219,24 +219,64 @@ static void init_functable(void) {
 }
 
 /* stub functions */
-static uint32_t update_hash_stub(deflate_state* const s, uint32_t h, uint32_t val) {
+static uint32_t adler32_stub(uint32_t adler, const uint8_t* buf, size_t len) {
     init_functable();
-    return functable.update_hash(s, h, val);
+    return functable.adler32(adler, buf, len);
+}
+
+static uint32_t adler32_fold_copy_stub(uint32_t adler, uint8_t* dst, const uint8_t* src, size_t len) {
+    init_functable();
+    return functable.adler32_fold_copy(adler, dst, src, len);
+}
+
+static uint8_t* chunkmemset_safe_stub(uint8_t* out, unsigned dist, unsigned len, unsigned left) {
+    init_functable();
+    return functable.chunkmemset_safe(out, dist, len, left);
+}
+
+static uint32_t chunksize_stub(void) {
+    init_functable();
+    return functable.chunksize();
+}
+
+static uint32_t compare256_stub(const uint8_t* src0, const uint8_t* src1) {
+    init_functable();
+    return functable.compare256(src0, src1);
+}
+
+static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
+    init_functable();
+    return functable.crc32(crc, buf, len);
+}
+
+static void crc32_fold_stub(crc32_fold* crc, const uint8_t* src, size_t len, uint32_t init_crc) {
+    init_functable();
+    functable.crc32_fold(crc, src, len, init_crc);
+}
+
+static void crc32_fold_copy_stub(crc32_fold* crc, uint8_t* dst, const uint8_t* src, size_t len) {
+    init_functable();
+    functable.crc32_fold_copy(crc, dst, src, len);
+}
+
+static uint32_t crc32_fold_final_stub(crc32_fold* crc) {
+    init_functable();
+    return functable.crc32_fold_final(crc);
+}
+
+static uint32_t crc32_fold_reset_stub(crc32_fold* crc) {
+    init_functable();
+    return functable.crc32_fold_reset(crc);
+}
+
+static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start) {
+    init_functable();
+    functable.inflate_fast(strm, start);
 }
 
 static void insert_string_stub(deflate_state* const s, uint32_t str, uint32_t count) {
     init_functable();
     functable.insert_string(s, str, count);
-}
-
-static Pos quick_insert_string_stub(deflate_state* const s, const uint32_t str) {
-    init_functable();
-    return functable.quick_insert_string(s, str);
-}
-
-static void slide_hash_stub(deflate_state* s) {
-    init_functable();
-    functable.slide_hash(s);
 }
 
 static uint32_t longest_match_stub(deflate_state* const s, Pos cur_match) {
@@ -249,73 +289,33 @@ static uint32_t longest_match_slow_stub(deflate_state* const s, Pos cur_match) {
     return functable.longest_match_slow(s, cur_match);
 }
 
-static uint32_t adler32_stub(uint32_t adler, const uint8_t* buf, size_t len) {
+static Pos quick_insert_string_stub(deflate_state* const s, const uint32_t str) {
     init_functable();
-    return functable.adler32(adler, buf, len);
+    return functable.quick_insert_string(s, str);
 }
 
-static uint32_t adler32_fold_copy_stub(uint32_t adler, uint8_t* dst, const uint8_t* src, size_t len) {
+static void slide_hash_stub(deflate_state* s) {
     init_functable();
-    return functable.adler32_fold_copy(adler, dst, src, len);
+    functable.slide_hash(s);
 }
 
-static uint32_t crc32_fold_reset_stub(crc32_fold* crc) {
+static uint32_t update_hash_stub(deflate_state* const s, uint32_t h, uint32_t val) {
     init_functable();
-    return functable.crc32_fold_reset(crc);
-}
-
-static void crc32_fold_copy_stub(crc32_fold* crc, uint8_t* dst, const uint8_t* src, size_t len) {
-    init_functable();
-    functable.crc32_fold_copy(crc, dst, src, len);
-}
-
-static void crc32_fold_stub(crc32_fold* crc, const uint8_t* src, size_t len, uint32_t init_crc) {
-    init_functable();
-    functable.crc32_fold(crc, src, len, init_crc);
-}
-
-static uint32_t crc32_fold_final_stub(crc32_fold* crc) {
-    init_functable();
-    return functable.crc32_fold_final(crc);
-}
-
-static uint32_t chunksize_stub(void) {
-    init_functable();
-    return functable.chunksize();
-}
-
-static uint8_t* chunkmemset_safe_stub(uint8_t* out, unsigned dist, unsigned len, unsigned left) {
-    init_functable();
-    return functable.chunkmemset_safe(out, dist, len, left);
-}
-
-static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start) {
-    init_functable();
-    functable.inflate_fast(strm, start);
-}
-
-static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
-    init_functable();
-    return functable.crc32(crc, buf, len);
-}
-
-static uint32_t compare256_stub(const uint8_t* src0, const uint8_t* src1) {
-    init_functable();
-    return functable.compare256(src0, src1);
+    return functable.update_hash(s, h, val);
 }
 
 /* functable init */
 Z_INTERNAL Z_TLS struct functable_s functable = {
     adler32_stub,
     adler32_fold_copy_stub,
-    crc32_stub,
-    crc32_fold_reset_stub,
-    crc32_fold_copy_stub,
-    crc32_fold_stub,
-    crc32_fold_final_stub,
-    compare256_stub,
-    chunksize_stub,
     chunkmemset_safe_stub,
+    chunksize_stub,
+    compare256_stub,
+    crc32_stub,
+    crc32_fold_stub,
+    crc32_fold_copy_stub,
+    crc32_fold_final_stub,
+    crc32_fold_reset_stub,
     inflate_fast_stub,
     insert_string_stub,
     longest_match_stub,
