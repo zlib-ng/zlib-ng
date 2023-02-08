@@ -1,7 +1,7 @@
-name: CI Pkgcheck
+name: Package Check
 on: [push, pull_request]
 jobs:
-  ci-pkgcheck:
+  pkgcheck:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -15,63 +15,73 @@ jobs:
           - name: Ubuntu GCC -m32
             os: ubuntu-latest
             compiler: gcc
-            packages: gcc-multilib
+            packages: gcc-multilib g++-multilib
             cmake-args: -DCMAKE_C_FLAGS=-m32
             cflags: -m32
             ldflags: -m32
 
-          - name: Ubuntu GCC ARM HF
+          - name: Ubuntu GCC ARM SF
             os: ubuntu-latest
-            chost: arm-linux-gnueabihf
-            compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf
-            packages: qemu gcc-arm-linux-gnueabihf libc6-dev-armhf-cross
+            chost: arm-linux-gnueabi
+            compiler: arm-linux-gnueabi-gcc
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake
+            packages: qemu gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libc-dev-armel-cross
 
           - name: Ubuntu GCC AARCH64
             os: ubuntu-latest
             chost: aarch64-linux-gnu
             compiler: aarch64-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake
-            packages: qemu gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+            packages: qemu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross
 
           - name: Ubuntu GCC PPC
             os: ubuntu-latest
             chost: powerpc-linux-gnu
             compiler: powerpc-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake
-            packages: qemu gcc-powerpc-linux-gnu libc6-dev-powerpc-cross
+            packages: qemu gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc6-dev-powerpc-cross
 
           - name: Ubuntu GCC PPC64LE
             os: ubuntu-latest
             chost: powerpc64le-linux-gnu
             compiler: powerpc64le-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
-            packages: qemu gcc-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
+            packages: qemu gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
 
           - name: macOS Clang
-            os: macOS-latest
+            os: macOS-11
             compiler: clang
 
           - name: macOS Clang Native
-            os: macOS-latest
+            os: macOS-11
             compiler: clang
             cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
             configure-args: --native
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+
+    - name: Add ubuntu mirrors
+      if: runner.os == 'Linux' && matrix.packages
+      run: |
+        # Github Actions caching proxy is at times unreliable
+        echo -e 'http://azure.archive.ubuntu.com/ubuntu\tpriority:1\n' | sudo tee /etc/apt/mirrors.txt
+        curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
+        sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends abigail-tools ninja-build diffoscope ${{ matrix.packages }}
+        sudo apt-get install -y --no-install-recommends ${{ matrix.packages }} \
+          abigail-tools \
+          diffoscope \
+          ninja-build
 
     - name: Install packages (macOS)
       if: runner.os == 'macOS'
-      run: |
-        brew install ninja diffoscope ${{ matrix.packages }}
+      run: brew install ninja diffoscope ${{ matrix.packages }}
       env:
         HOMEBREW_NO_INSTALL_CLEANUP: 1
 
@@ -85,8 +95,7 @@ jobs:
         xcode-version: '11.7.0'
 
     - name: Compare builds
-      run: |
-        sh test/pkgcheck.sh
+      run: sh test/pkgcheck.sh
       env:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
@@ -96,8 +105,7 @@ jobs:
         LDFLAGS: ${{ matrix.ldflags }}
 
     - name: Compare builds (compat)
-      run: |
-        sh test/pkgcheck.sh --zlib-compat
+      run: sh test/pkgcheck.sh --zlib-compat
       env:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
@@ -109,8 +117,7 @@ jobs:
     - name: Check ABI
       # macOS runner does not contain abigail
       if: runner.os != 'macOS'
-      run: |
-        sh test/abicheck.sh --refresh_if
+      run: sh test/abicheck.sh --refresh-if
       env:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
@@ -122,8 +129,7 @@ jobs:
     - name: Check ABI (compat)
       # macOS runner does not contain abigail
       if: runner.os != 'macOS'
-      run: |
-        sh test/abicheck.sh --zlib-compat --refresh_if
+      run: sh test/abicheck.sh --zlib-compat --refresh-if
       env:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
@@ -133,11 +139,12 @@ jobs:
         LDFLAGS: ${{ matrix.ldflags }}
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: ${{ matrix.name }}
         path: |
+          **/*.abi
           btmp1/configure.log
           btmp1/CMakeFiles/CMakeOutput.log
           btmp1/CMakeFiles/CMakeError.log

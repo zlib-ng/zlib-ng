@@ -1,7 +1,7 @@
-name: CI Configure
+name: Configure
 on: [push, pull_request]
 jobs:
-  ci-configure:
+  configure:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -13,8 +13,8 @@ jobs:
             compiler: gcc
             configure-args: --warn
 
-          - name: Ubuntu 18.04 GCC
-            os: ubuntu-18.04
+          - name: Ubuntu 20.04 GCC
+            os: ubuntu-20.04
             compiler: gcc
             configure-args: --warn
 
@@ -36,7 +36,6 @@ jobs:
             configure-args: --warn
             chost: arm-linux-gnueabi
             packages: qemu qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
-            qemu-run: qemu-arm
 
           - name: Ubuntu GCC ARM SF Compat No Opt
             os: ubuntu-latest
@@ -44,15 +43,6 @@ jobs:
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: arm-linux-gnueabi
             packages: qemu qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
-            qemu-run: qemu-arm
-
-          - name: Ubuntu GCC ARM HF
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabihf-gcc
-            configure-args: --warn
-            chost: arm-linux-gnueabihf
-            packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
 
           - name: Ubuntu GCC ARM HF No ACLE
             os: ubuntu-latest
@@ -60,15 +50,13 @@ jobs:
             configure-args: --warn --without-acle
             chost: arm-linux-gnueabihf
             packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
 
           - name: Ubuntu GCC ARM HF No NEON
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
-            configure-args: --warn --without-neon
+            configure-args: --warn --without-neon --without-acle
             chost: arm-linux-gnueabihf
             packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
 
           - name: Ubuntu GCC ARM HF Compat No Opt
             os: ubuntu-latest
@@ -76,7 +64,6 @@ jobs:
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: arm-linux-gnueabihf
             packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
 
           - name: Ubuntu GCC AARCH64
             os: ubuntu-latest
@@ -84,7 +71,6 @@ jobs:
             configure-args: --warn
             chost: aarch64-linux-gnu
             packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
 
           - name: Ubuntu GCC AARCH64 No ACLE
             os: ubuntu-latest
@@ -92,7 +78,6 @@ jobs:
             configure-args: --warn --without-acle
             chost: aarch64-linux-gnu
             packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
 
           - name: Ubuntu GCC AARCH64 No NEON
             os: ubuntu-latest
@@ -100,7 +85,6 @@ jobs:
             configure-args: --warn --without-neon
             chost: aarch64-linux-gnu
             packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
 
           - name: Ubuntu GCC AARCH64 Compat No Opt
             os: ubuntu-latest
@@ -108,7 +92,6 @@ jobs:
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: aarch64-linux-gnu
             packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
 
           - name: Ubuntu GCC PPC
             os: ubuntu-latest
@@ -116,7 +99,6 @@ jobs:
             configure-args: --warn --static
             chost: powerpc-linux-gnu
             packages: qemu qemu-user gcc-powerpc-linux-gnu libc-dev-powerpc-cross
-            qemu-run: qemu-ppc
             cflags: -static
             ldflags: -static
 
@@ -126,7 +108,6 @@ jobs:
             configure-args: --warn --static
             chost: powerpc-linux-gnu
             packages: qemu qemu-user gcc-powerpc64-linux-gnu libc-dev-ppc64-cross
-            qemu-run: qemu-ppc64
             cflags: -static
             ldflags: -static
 
@@ -136,7 +117,6 @@ jobs:
             configure-args: --warn
             chost: powerpc64le-linux-gnu
             packages: qemu qemu-user gcc-powerpc64le-linux-gnu libc-dev-ppc64el-cross
-            qemu-run: qemu-ppc64le
 
           - name: Ubuntu GCC S390X
             os: ubuntu-latest
@@ -144,7 +124,6 @@ jobs:
             configure-args: --warn --static
             chost: s390x-linux-gnu
             packages: qemu qemu-user gcc-s390x-linux-gnu libc-dev-s390x-cross
-            qemu-run: qemu-s390x
             cflags: -static
             ldflags: -static
 
@@ -160,12 +139,20 @@ jobs:
 
           - name: macOS GCC
             os: macOS-latest
-            compiler: gcc-9
+            compiler: gcc-11
             configure-args: --warn
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+
+    - name: Add ubuntu mirrors
+      if: runner.os == 'Linux' && matrix.packages
+      run: |
+        # Github Actions caching proxy is at times unreliable
+        echo -e 'http://azure.archive.ubuntu.com/ubuntu\tpriority:1\n' | sudo tee /etc/apt/mirrors.txt
+        curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
+        sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages
@@ -177,31 +164,29 @@ jobs:
       run: |
         mkdir ${{ matrix.build-dir || '.not-used' }}
         cd ${{ matrix.build-dir || '.' }}
-        ${{ matrix.build-src-dir || '.' }}/configure ${{ matrix.configure-args }}
+        ${{ matrix.configure-prefix }} ${{ matrix.build-src-dir || '.' }}/configure ${{ matrix.configure-args }}
       env:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
         LDFLAGS: ${{ matrix.ldflags }}
         CHOST: ${{ matrix.chost }}
+        EMU_RUN: ${{ matrix.emu-run }}
         CI: true
 
     - name: Compile source code
-      run: |
-        cd ${{ matrix.build-dir || '.' }}
-        make -j2
+      run: make -j2
+      working-directory: ${{ matrix.build-dir }}
 
     - name: Run test cases
-      run: |
-        cd ${{ matrix.build-dir || '.' }}
-        make test
-      env:
-        QEMU_RUN: ${{ matrix.qemu-run }}
+      run: make test
+      working-directory: ${{ matrix.build-dir }}
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: ${{ matrix.name }} (configure)
         path: |
+          **/Makefile
           ${{ matrix.build-dir || '.' }}/configure.log
         retention-days: 30

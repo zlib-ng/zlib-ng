@@ -1,10 +1,10 @@
-name: CI Release
+name: Release
 on:
   push:
     tags:
     - '*'
 jobs:
-  ci-cmake:
+  release:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -61,31 +61,34 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Set environment variables
       shell: bash
       run:  echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
 
     - name: Generate project files
+      shell: bash
       run: |
-        cmake . ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=Release -DZLIB_ENABLE_TESTS=ON -DCMAKE_INSTALL_PREFIX=out -DINSTALL_UTILS=ON
+        cmake . ${{ matrix.cmake-args }} \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DZLIB_ENABLE_TESTS=ON \
+          -DCMAKE_INSTALL_PREFIX=out \
+          -DINSTALL_UTILS=ON
       env:
         CC: ${{ matrix.compiler }}
         CI: true
 
     - name: Compile source code
-      run: |
-        cmake --build . --config Release --target install
+      run: cmake --build . --config Release --target install
 
     - name: Package release (Windows)
       if: runner.os == 'Windows'
-      run: |
-        cd out
-        7z a -tzip ../zlib-ng-${{ matrix.deploy-name }}.zip bin include lib ../LICENSE.md ../PORTING.md ../README.md
+      run: 7z a -tzip ../zlib-ng-${{ matrix.deploy-name }}.zip bin include lib ../LICENSE.md ../PORTING.md ../README.md
+      working-directory: out
 
     - name: Upload release (Windows)
-      uses: svenstaro/upload-release-action@v1-release
+      uses: svenstaro/upload-release-action@v2
       if: runner.os == 'Windows'
       with:
         asset_name: zlib-ng-${{ matrix.deploy-name }}.zip
