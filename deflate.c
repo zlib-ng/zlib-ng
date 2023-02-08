@@ -299,11 +299,6 @@ int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int
     if (windowBits == 8)
         windowBits = 9;  /* until 256-byte window bug fixed */
 
-#if !defined(NO_QUICK_STRATEGY) && !defined(S390_DFLTCC_DEFLATE)
-    if (level == 1)
-        windowBits = 13;
-#endif
-
     s = (deflate_state *) ZALLOC_STATE(strm, 1, sizeof(deflate_state));
     if (s == NULL)
         return Z_MEM_ERROR;
