@@ -1,38 +1,60 @@
-name: CI CMake
+name: CMake
 on: [push, pull_request]
+env:
+  TERM: xterm-256color
+  GTEST_COLOR: 1
 jobs:
-  ci-cmake:
+  cmake:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: Ubuntu 18.04 GCC
-            os: ubuntu-18.04
+          - name: Ubuntu 20.04 GCC
+            os: ubuntu-20.04
             compiler: gcc
 
-          - name: Ubuntu GCC
+          - name: Ubuntu GCC ASAN
             os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_SANITIZER=Address
             codecov: ubuntu_gcc
 
-          - name: Ubuntu GCC OSB -O1 No Unaligned64
+          - name: Ubuntu GCC Symbol Prefix
             os: ubuntu-latest
             compiler: gcc
-            cmake-args: -DWITH_UNALIGNED=ON -DUNALIGNED64_OK=OFF -DWITH_SANITIZER=Undefined
+            cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_
+            codecov: ubuntu_gcc_sprefix
+
+          - name: Ubuntu GCC Compat Symbol Prefix
+            os: ubuntu-latest
+            compiler: gcc
+            cmake-args: -DZLIB_COMPAT=ON -DZLIB_SYMBOL_PREFIX=zTest_
+            codecov: ubuntu_gcc_compat_sprefix
+
+          - name: Ubuntu GCC -O3 OSB
+            os: ubuntu-latest
+            compiler: gcc
             build-dir: ../build
             build-src-dir: ../zlib-ng
             codecov: ubuntu_gcc_osb
-            cflags: -O1 -g3
+            cflags: -O3
 
-          - name: Ubuntu GCC -O3 No Unaligned
+          - name: Ubuntu GCC -O1 No Unaligned UBSAN
             os: ubuntu-latest
             compiler: gcc
-            cmake-args: -DWITH_UNALIGNED=OFF
-            codecov: ubuntu_gcc_o3
-            cflags: -O3
+            cmake-args: -DWITH_UNALIGNED=OFF -DWITH_SANITIZER=Undefined
+            codecov: ubuntu_gcc_o1
+            cflags: -O1
+
+          - name: Ubuntu GCC 32-bit
+            os: ubuntu-latest
+            compiler: gcc
+            cmake-args: -DCMAKE_C_FLAGS=-m32 -DCMAKE_SHARED_LINKER_FLAGS=-m32 -DCMAKE_EXE_LINKER_FLAGS=-m32
+            packages: gcc-multilib g++-multilib
+            codecov: ubuntu_gcc_m32
 
           - name: Ubuntu GCC No CTZLL
             os: ubuntu-latest
@@ -46,222 +68,190 @@ jobs:
             cmake-args: -DWITH_OPTIM=OFF -DHAVE_BUILTIN_CTZLL=OFF -DHAVE_BUILTIN_CTZ=OFF
             codecov: ubuntu_gcc_no_ctz
 
-          - name: Ubuntu GCC Link Zlib
-            os: ubuntu-latest
-            compiler: gcc
-            cmake-args: -DZLIB_DUAL_LINK=ON
-
-          - name: Ubuntu GCC No AVX2
+          - name: Ubuntu GCC No AVX2 UBSAN
             os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_AVX2=OFF -DWITH_SANITIZER=Undefined
             codecov: ubuntu_gcc_no_avx2
 
-          - name: Ubuntu GCC No SSE2
+          - name: Ubuntu GCC No SSE2 UBSAN
             os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_SSE2=OFF -DWITH_SANITIZER=Undefined
             codecov: ubuntu_gcc_no_sse2
 
-          - name: Ubuntu GCC No SSE4
+          - name: Ubuntu GCC No SSE4 UBSAN
             os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_SSE4=OFF -DWITH_SANITIZER=Undefined
             codecov: ubuntu_gcc_no_sse4
 
-          - name: Ubuntu GCC No PCLMULQDQ
+          - name: Ubuntu GCC No PCLMULQDQ UBSAN
             os: ubuntu-latest
             compiler: gcc
             cmake-args: -DWITH_PCLMULQDQ=OFF -DWITH_SANITIZER=Undefined
             codecov: ubuntu_gcc_no_pclmulqdq
 
-          - name: Ubuntu GCC Compat No Opt
+          - name: Ubuntu GCC Compat No Opt ASAN
             os: ubuntu-latest
             compiler: gcc
             cmake-args: -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Address
             codecov: ubuntu_gcc_compat_no_opt
             cflags: -DNOT_TWEAK_COMPILER
 
-          - name: Ubuntu GCC ARM SF
+          - name: Ubuntu GCC ARM SF ASAN
             os: ubuntu-latest
-            compiler: arm-linux-gnueabi-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DWITH_SANITIZER=Address
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
-            qemu-run: qemu-arm
+            packages: qemu qemu-user gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf
 
-          - name: Ubuntu GCC ARM SF Compat No Opt
+          - name: Ubuntu GCC ARM SF Compat No Opt UBSAN
             os: ubuntu-latest
-            compiler: arm-linux-gnueabi-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabi -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
-            asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
-            qemu-run: qemu-arm
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
+            packages: qemu qemu-user gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libc-dev-armel-cross
             codecov: ubuntu_gcc_armsf_compat_no_opt
 
-          - name: Ubuntu GCC ARM HF
+          - name: Ubuntu GCC ARM HF No ACLE ASAN
             os: ubuntu-latest
-            compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_SANITIZER=Address
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_ACLE=OFF -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
-            codecov: ubuntu_gcc_armhf
-
-          - name: Ubuntu GCC ARM HF No ACLE
-            os: ubuntu-latest
-            compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_ACLE=OFF -DWITH_SANITIZER=Address
-            asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
+            packages: qemu qemu-user gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_no_acle
 
-          - name: Ubuntu GCC ARM HF No NEON
+          - name: Ubuntu GCC ARM HF No NEON No ACLE ASAN
             os: ubuntu-latest
-            compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DWITH_NEON=OFF -DWITH_SANITIZER=Address
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_NEON=OFF -DWITH_ACLE=OFF -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
+            packages: qemu qemu-user gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_no_neon
 
-          - name: Ubuntu GCC ARM HF Compat No Opt
+          - name: Ubuntu GCC ARM HF Compat No Opt UBSAN
             os: ubuntu-latest
-            compiler: arm-linux-gnueabihf-gcc
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DCMAKE_C_COMPILER_TARGET=arm-linux-gnueabihf -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
-            asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
-            qemu-run: qemu-arm
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
+            packages: qemu qemu-user gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc-dev-armel-cross
             codecov: ubuntu_gcc_armhf_compat_no_opt
 
-          - name: Ubuntu GCC AARCH64
+          - name: Ubuntu GCC AARCH64 ASAN
             os: ubuntu-latest
-            compiler: aarch64-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
+            packages: qemu qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64
 
-          - name: Ubuntu GCC AARCH64 No ACLE
+          - name: Ubuntu GCC AARCH64 No ACLE UBSAN
             os: ubuntu-latest
-            compiler: aarch64-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_ACLE=OFF -DWITH_SANITIZER=Undefined
-            asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
+            packages: qemu qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64_no_acle
 
-          - name: Ubuntu GCC AARCH64 No NEON
+          - name: Ubuntu GCC AARCH64 No NEON UBSAN
             os: ubuntu-latest
-            compiler: aarch64-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_NEON=OFF -DWITH_SANITIZER=Undefined
-            asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
+            packages: qemu qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64_no_neon
 
-          - name: Ubuntu GCC AARCH64 Compat No Opt
+          - name: Ubuntu GCC AARCH64 Compat No Opt UBSAN
             os: ubuntu-latest
-            compiler: aarch64-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
-            asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            qemu-run: qemu-aarch64
+            packages: qemu qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64_compat_no_opt
 
           - name: Ubuntu GCC PPC
             os: ubuntu-latest
-            compiler: powerpc-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake
-            asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-powerpc-linux-gnu libc-dev-powerpc-cross
-            qemu-run: qemu-ppc
-            ldflags: -static
+            packages: qemu qemu-user gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc-dev-powerpc-cross
             codecov: ubuntu_gcc_ppc
+
+          - name: Ubuntu GCC PPC No Power8
+            os: ubuntu-latest
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake -DWITH_POWER8=OFF
+            packages: qemu qemu-user gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc-dev-powerpc-cross
+            codecov: ubuntu_gcc_ppc_no_power8
 
           - name: Ubuntu GCC PPC64
             os: ubuntu-latest
-            compiler: powerpc64-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64.cmake
-            asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-powerpc64-linux-gnu libc-dev-ppc64-cross
-            qemu-run: qemu-ppc64
+            packages: qemu qemu-user gcc-powerpc64-linux-gnu g++-powerpc64-linux-gnu libc-dev-ppc64-cross
             ldflags: -static
             codecov: ubuntu_gcc_ppc64
 
           - name: Ubuntu GCC PPC64LE
-            os: ubuntu-latest
-            compiler: powerpc64le-linux-gnu-gcc
+            os: ubuntu-20.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
-            asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-powerpc64le-linux-gnu libc-dev-ppc64el-cross
-            qemu-run: qemu-ppc64le
+            packages: qemu qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc-dev-ppc64el-cross
             codecov: ubuntu_gcc_ppc64le
 
           - name: Ubuntu GCC SPARC64
-            os: ubuntu-latest
-            compiler: sparc64-linux-gnu-gcc
+            os: ubuntu-20.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake
-            asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-sparc64-linux-gnu libc-dev-sparc64-cross
-            qemu-run: qemu-sparc64
+            packages: qemu qemu-user gcc-sparc64-linux-gnu g++-sparc64-linux-gnu libc-dev-sparc64-cross
             ldflags: -static
             codecov: ubuntu_gcc_sparc64
 
-          - name: Ubuntu GCC S390X
+          - name: Ubuntu GCC S390X ASAN
             os: ubuntu-latest
-            compiler: s390x-linux-gnu-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu qemu-user gcc-s390x-linux-gnu libc-dev-s390x-cross
-            qemu-run: qemu-s390x
+            packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
             codecov: ubuntu_gcc_s390x
 
-          - name: Ubuntu GCC S390X DFLTCC
+          - name: Ubuntu GCC S390X No vectorized CRC32 ASAN
+            os: ubuntu-latest
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_CRC32_VX=OFF -DWITH_SANITIZER=Address
+            asan-options: detect_leaks=0
+            packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
+            ldflags: -static
+            codecov: ubuntu_gcc_s390x_no_crc32
+
+          - name: Ubuntu GCC S390X DFLTCC ASAN
             os: z15
             compiler: gcc
             cmake-args: -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            codecov: ubuntu_gcc_s390x
+            ldflags: -static
+            codecov: ubuntu_gcc_s390x_dfltcc
 
-          - name: Ubuntu GCC S390X DFLTCC Compat
+          - name: Ubuntu GCC S390X DFLTCC Compat UBSAN
             os: z15
             compiler: gcc
             cmake-args: -DZLIB_COMPAT=ON -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Undefined
-            asan-options: detect_leaks=0
-            codecov: ubuntu_gcc_s390x
+            ldflags: -static
+            codecov: ubuntu_gcc_s390x_dfltcc_compat
+
+          - name: Ubuntu Clang S390X DFLTCC MSAN
+            os: z15
+            compiler: clang-11
+            cmake-args: -GNinja -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Memory
 
           - name: Ubuntu MinGW i686
-            os: ubuntu-latest
-            compiler: i686-w64-mingw32-gcc
+            os: ubuntu-22.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-i686.cmake
-            packages: wine32 gcc-mingw-w64
+            packages: wine32 gcc-mingw-w64-i686 g++-mingw-w64-i686 libpcre2-8-0=10.39-3ubuntu0.1 libpcre2-8-0:i386=10.39-3ubuntu0.1 libodbc1=2.3.9-5 libodbc1:i386=2.3.9-5 libwine:i386=6.0.3~repack-1 libgphoto2-6:i386=2.5.27-1build2 libsane:i386=1.1.1-5 libgd3=2.3.0-2ubuntu2 libgd3:i386=2.3.0-2ubuntu2
+            ldflags: -static
             codecov: ubuntu_gcc_mingw_i686
             # Limit parallel test jobs to prevent wine errors
             parallels-jobs: 1
 
           - name: Ubuntu MinGW x86_64
             os: ubuntu-latest
-            compiler: x86_64-w64-mingw32-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-x86_64.cmake
-            packages: wine-stable gcc-mingw-w64
+            packages: wine-stable gcc-mingw-w64 g++-mingw-w64
+            ldflags: -static
             codecov: ubuntu_gcc_mingw_x86_64
              # Limit parallel test jobs to prevent wine errors
             parallels-jobs: 1
 
-          - name: Ubuntu 18.04 Clang
-            os: ubuntu-18.04
+          - name: Ubuntu 20.04 Clang
+            os: ubuntu-20.04
             compiler: clang-6.0
             packages: clang-6.0
 
           - name: Ubuntu Clang
             os: ubuntu-latest
             compiler: clang-11
-            packages: llvm-11-tools
+            packages: clang-11 llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang
 
@@ -269,7 +259,7 @@ jobs:
             os: ubuntu-latest
             compiler: clang-11
             cmake-args: -DWITH_INFLATE_STRICT=ON
-            packages: llvm-11-tools
+            packages: clang-11 llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_inflate_strict
 
@@ -277,22 +267,30 @@ jobs:
             os: ubuntu-latest
             compiler: clang-11
             cmake-args: -DWITH_INFLATE_ALLOW_INVALID_DIST=ON
-            packages: llvm-11-tools
+            packages: clang-11 llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_inflate_allow_invalid_dist
+
+          - name: Ubuntu Clang Reduced Memory
+            os: ubuntu-latest
+            compiler: clang-11
+            cmake-args: -DWITH_REDUCED_MEM=ON
+            packages: clang-11 llvm-11 llvm-11-tools
+            gcov-exec: llvm-cov-11 gcov
+            codecov: ubuntu_clang_reduced_mem
 
           - name: Ubuntu Clang Memory Map
             os: ubuntu-latest
             compiler: clang-11
             cflags: -DUSE_MMAP
-            packages: llvm-11-tools
+            packages: clang-11 llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_mmap
 
           - name: Ubuntu Clang Debug
             os: ubuntu-latest
             compiler: clang-11
-            packages: llvm-11-tools
+            packages: clang-11 llvm-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang_debug
             build-config: Debug
@@ -301,20 +299,50 @@ jobs:
             os: ubuntu-latest
             compiler: clang-11
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
-            packages:  ninja-build llvm-11-tools
+            packages:  ninja-build clang-11 llvm-11-tools
             gcov-exec: llvm-cov-11 gcov
-            cflags: -g3 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize-memory-track-origins
-            codecov: ubuntu_clang_msan
+            # https://github.com/llvm/llvm-project/issues/55785
+            msan-options: use_sigaltstack=0
 
-          - name: Windows MSVC Win32
+          - name: Windows MSVC 2022 v143 Win32
             os: windows-latest
             compiler: cl
-            cmake-args: -A Win32
+            cmake-args: -G "Visual Studio 17 2022" -A Win32 -T v143
 
-          - name: Windows MSVC Win64
+          - name: Windows MSVC 2022 v143 Win64
             os: windows-latest
             compiler: cl
-            cmake-args: -A x64
+            cmake-args: -G "Visual Studio 17 2022" -A x64 -T v143
+
+          - name: Windows MSVC 2022 v142 Win32
+            os: windows-latest
+            compiler: cl
+            cmake-args: -G "Visual Studio 17 2022" -A Win32 -T v142
+
+          - name: Windows MSVC 2022 v142 Win64
+            os: windows-latest
+            compiler: cl
+            cmake-args: -G "Visual Studio 17 2022" -A x64 -T v142
+
+          - name: Windows MSVC 2022 v141 Win32
+            os: windows-latest
+            compiler: cl
+            cmake-args: -G "Visual Studio 17 2022" -A Win32 -T v141
+
+          - name: Windows MSVC 2022 v141 Win64
+            os: windows-latest
+            compiler: cl
+            cmake-args: -G "Visual Studio 17 2022" -A x64 -T v141
+
+          - name: Windows MSVC 2019 v140 Win32
+            os: windows-2019
+            compiler: cl
+            cmake-args: -G "Visual Studio 16 2019" -A Win32 -T v140
+
+          - name: Windows MSVC 2019 v140 Win64
+            os: windows-2019
+            compiler: cl
+            cmake-args: -G "Visual Studio 16 2019" -A x64 -T v140
 
           - name: Windows MSVC ARM No Test
             os: windows-latest
@@ -325,14 +353,6 @@ jobs:
             os: windows-latest
             compiler: cl
             cmake-args: -A ARM64
-
-          - name: Windows ClangCl Win32
-            os: windows-latest
-            cmake-args: -T ClangCl -A Win32
-
-          - name: Windows ClangCl Win64
-            os: windows-latest
-            cmake-args: -T ClangCl -A x64
 
           - name: Windows GCC
             os: windows-latest
@@ -346,13 +366,13 @@ jobs:
             cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF
             codecov: win64_gcc_compat_no_opt
 
-          - name: macOS Clang
+          - name: macOS Clang ASAN
             os: macos-latest
             compiler: clang
             cmake-args: -DWITH_SANITIZER=Address
             codecov: macos_clang
 
-          - name: macOS GCC
+          - name: macOS GCC UBSAN
             os: macos-latest
             compiler: gcc-10
             cmake-args: -DWITH_SANITIZER=Undefined
@@ -362,10 +382,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Checkout test corpora
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       # Don't test against all corpora with MinGW due to Wine being unable to run parallel jobs
       # without connection timeout. Without parallel jobs test runs using Wine take close to an hour.
       if: contains(matrix.name, 'MinGW') == false
@@ -373,43 +393,53 @@ jobs:
         repository: zlib-ng/corpora
         path: test/data/corpora
 
+    - name: Add repositories (Wine)
+      if: contains(matrix.packages, 'wine')
+      run: sudo dpkg --add-architecture i386
+
+    - name: Add ubuntu mirrors
+      if: runner.os == 'Linux' && matrix.packages
+      run: |
+        # Github Actions caching proxy is at times unreliable
+        echo -e 'http://azure.archive.ubuntu.com/ubuntu\tpriority:1\n' | sudo tee /etc/apt/mirrors.txt
+        curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
+        sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
+
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages
       run: |
-        sudo dpkg --add-architecture i386 # Required for wine32
-        sudo apt-add-repository ppa:ondrej/php -y
         sudo apt-get update
-        sudo apt-get install -y ${{ matrix.packages }}
+        sudo apt-get install -y --allow-downgrades ${{ matrix.packages }}
 
     - name: Install packages (Windows)
       if: runner.os == 'Windows'
       run: |
-        choco install ninja ${{ matrix.packages }} --no-progress
+        # strawberryperl installs /c/Strawberry/c/bin/libstdc++-6.dll, which is incompatible with the mingw64 one.
+        # zlib-ng does not need perl, so simply remove it.
+        choco uninstall --no-progress strawberryperl
+        choco install --no-progress ninja ${{ matrix.packages }}
 
     - name: Install packages (macOS)
       if: runner.os == 'macOS'
-      run: |
-        brew install ninja ${{ matrix.packages }}
+      run: brew install ninja ${{ matrix.packages }}
       env:
         HOMEBREW_NO_INSTALL_CLEANUP: 1
-
-    - name: Install codecov.io tools
-      if: matrix.codecov
-      run: |
-        python -u -m pip install --user codecov
 
     - name: Initialize Wine
       # Prevent parallel test jobs from initializing Wine at the same time
       if: contains(matrix.packages, 'wine')
-      run: |
-        wineboot --init
+      run: wineboot --init
 
     - name: Generate project files
+      shell: bash
       # Shared libraries turned off for qemu ppc* and sparc & reduce code coverage sources
       run: |
-        mkdir ${{ matrix.build-dir || '.not-used' }}
-        cd ${{ matrix.build-dir || '.' }}
-        cmake ${{ matrix.build-src-dir || '.' }} ${{ matrix.cmake-args }} -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} -DBUILD_SHARED_LIBS=OFF -DWITH_FUZZERS=ON -DWITH_CODE_COVERAGE=ON -DWITH_MAINTAINER_WARNINGS=ON
+        cmake -S ${{ matrix.build-src-dir || '.' }} -B ${{ matrix.build-dir || '.' }} ${{ matrix.cmake-args }} \
+          -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DWITH_FUZZERS=ON \
+          -DWITH_MAINTAINER_WARNINGS=ON \
+          ${{ matrix.codecov && '-DWITH_CODE_COVERAGE=ON' }}
       env:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
@@ -417,44 +447,52 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: |
-        cd ${{ matrix.build-dir || '.' }}
-        cmake --build . --config ${{ matrix.build-config || 'Release' }}
+      run: cmake --build ${{ matrix.build-dir || '.' }} --config ${{ matrix.build-config || 'Release' }}
 
     - name: Run test cases
       # Don't run tests on Windows ARM
       if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false
-      run: |
-        cd ${{ matrix.build-dir || '.' }}
-        ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '6' }}
+      run: ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '6' }}
+      working-directory: ${{ matrix.build-dir || '.' }}
       env:
-        ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1
-        MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1
-        TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=0' }}:abort_on_error=1
-        LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=0' }}:abort_on_error=1
-        QEMU_RUN: ${{ matrix.qemu-run }}
+        ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
+        MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
+        TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
+        LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
+        UBSAN_OPTIONS: ${{ matrix.ubsan-options || 'verbosity=0' }}:print_stacktrace=1:abort_on_error=1:halt_on_error=1
 
-    - name: Upload coverage report
-      if: matrix.codecov && ( env.CODECOV_TOKEN_SECRET != '' || github.repository == 'zlib-ng/zlib-ng' )
+    - name: Generate coverage report
+      if: matrix.codecov
       shell: bash
       run: |
-        bash tools/codecov-upload.sh
+        python3 -u -m pip install --user gcovr==5.0
+        python3 -m gcovr -j 3 --verbose \
+          --exclude-unreachable-branches \
+          --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
+          --root ${{ matrix.build-src-dir || '.' }} \
+          --xml --output coverage.xml
+
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v3
+      if: matrix.codecov && (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
+      with:
+        token: ${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}
+        flags: ${{ matrix.codecov }}
+        name: ${{ matrix.name }}
+        directory: ${{ matrix.build-src-dir || '.' }}
+        verbose: true
+        fail_ci_if_error: true
       env:
-        # Codecov does not yet support GitHub Actions
-        CODECOV_TOKEN_SECRET: "${{secrets.CODECOV_TOKEN}}"
-        CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}"
-        CODECOV_FLAGS: "${{ matrix.codecov }}"
-        CODECOV_NAME:  "${{ matrix.name }}"
-        CODECOV_EXEC:  "${{ matrix.gcov-exec || 'gcov' }}"
-        CODECOV_DIR:   "${{ matrix.build-dir || '.' }}"
+        CODECOV_TOKEN: "${{secrets.CODECOV_TOKEN}}"
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: ${{ matrix.name }} (cmake)
         path: |
-          ${{ matrix.build-dir || '.' }}/CMakeFiles/CMakeOutput.log
-          ${{ matrix.build-dir || '.' }}/CMakeFiles/CMakeError.log
-          ${{ matrix.build-dir || '.' }}/Testing/Temporary/*
+          **/CMakeFiles/CMakeOutput.log
+          **/CMakeFiles/CMakeError.log
+          **/Testing/Temporary/*
+          coverage.xml
         retention-days: 30

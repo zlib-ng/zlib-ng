@@ -1,46 +1,51 @@
-name: CI Libpng
-on: [pull_request]
+name: Libpng
+on: [push, pull_request]
 jobs:
-  pngtest:
+  libpng:
     name: Ubuntu Clang
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout repository (zlib-ng)
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Generate project files (zlib-ng)
       run: |
-        cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DZLIB_COMPAT=ON -DZLIB_ENABLE_TESTS=OFF
+        cmake . \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DZLIB_COMPAT=ON \
+          -DZLIB_ENABLE_TESTS=OFF
       env:
         CC: clang
         CFLAGS: -fPIC
         CI: true
 
     - name: Compile source code (zlib-ng)
-      run: |
-        cmake --build . --config Release
+      run: cmake --build . --config Release
 
     - name: Checkout repository (libpng)
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: glennrp/libpng
         path: libpng
 
     - name: Generate project files (libpng)
       run: |
-        cd libpng
-        cmake . -DCMAKE_BUILD_TYPE=Release -DPNG_TESTS=ON -DPNG_STATIC=OFF -DZLIB_INCLUDE_DIR=.. -DZLIB_LIBRARY=$PWD/../libz.a
+        cmake . \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DPNG_TESTS=ON \
+          -DPNG_STATIC=OFF \
+          -DZLIB_INCLUDE_DIR=.. \
+          -DZLIB_LIBRARY=$PWD/../libz.a
+      working-directory: libpng
       env:
         CC: clang
         CI: true
 
     - name: Compile source code (libpng)
-      run: |
-        cd libpng
-        cmake --build . --config Release
+      run: cmake --build . --config Release
+      working-directory: libpng
 
     - name: Run test cases (libpng)
-      run: |
-        cd libpng
-        ctest -C Release --output-on-failure --max-width 120
+      run: ctest -C Release --output-on-failure --max-width 120
+      working-directory: libpng

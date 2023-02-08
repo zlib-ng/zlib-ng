@@ -1,7 +1,7 @@
-name: CI NMake
+name: NMake
 on: [push, pull_request]
 jobs:
-  ci-cmake:
+  nmake:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -9,40 +9,60 @@ jobs:
       matrix:
         include:
           - name: Windows NMake x86
-            os: windows-latest
+            os: windows-2022
             makefile: win32/Makefile.msc
-            vc-vars: x86
+            arch: x86
+
+          - name: Windows NMake x64 compat
+            os: windows-2022
+            makefile: win32/Makefile.msc
+            arch: x86_amd64
+            additional-args: ZLIB_COMPAT=yes
+
+          - name: Windows NMake x64 Symbol Prefix
+            os: windows-2022
+            makefile: win32/Makefile.msc
+            arch: x86_amd64
+            additional-args: SYMBOL_PREFIX=zTest_
+
+          - name: Windows NMake x64 Symbol Prefix Compat
+            os: windows-2022
+            makefile: win32/Makefile.msc
+            arch: x86_amd64
+            additional-args: ZLIB_COMPAT=yes SYMBOL_PREFIX=zTest_
 
           - name: Windows NMake x64
-            os: windows-latest
+            os: windows-2022
             makefile: win32/Makefile.msc
-            vc-vars: x86_amd64
+            arch: x86_amd64
 
           - name: Windows NMake ARM No Test
-            os: windows-latest
+            os: windows-2022
             makefile: win32/Makefile.arm
-            vc-vars: x86_arm
+            arch: x86_arm
 
           - name: Windows NMake ARM64 No Test
-            os: windows-latest
+            os: windows-2022
             makefile: win32/Makefile.a64
-            vc-vars: x86_arm64
+            arch: x86_arm64
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
+
+    - name: Setup development environment
+      uses: ilammy/msvc-dev-cmd@v1.12.1
+      with:
+        arch: ${{ matrix.arch }}
 
     - name: Compile source code
       shell: cmd
-      run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vc-vars }}
-        nmake -f ${{ matrix.makefile }}
+      run: nmake -f ${{ matrix.makefile }} ${{ matrix.additional-args }}
 
     - name: Run test cases
       shell: cmd
       # Don't run tests on Windows ARM
-      if: contains(matrix.vc-vars, 'arm') == false
+      if: contains(matrix.arch, 'arm') == false
       run: |
-        call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vc-vars }}
-        nmake -f ${{ matrix.makefile }} test
-        nmake -f ${{ matrix.makefile }} testdll
+        nmake -f ${{ matrix.makefile }} ${{ matrix.additional-args }} test
+        nmake -f ${{ matrix.makefile }} ${{ matrix.additional-args }} testdll
