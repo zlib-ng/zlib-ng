@@ -295,6 +295,24 @@ jobs:
             gcov-exec: llvm-cov-11 gcov
             codecov: ubuntu_clang
 
+          # Check for undefined symbols in the version script for the modern api
+          - name: Ubuntu Clang Undefined Symbols
+            os: ubuntu-latest
+            compiler: clang-11
+            cxx-compiler: clang++-11
+            cmake-args: -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld -Wl,--no-undefined-version" -DZLIBNG_ENABLE_TESTS=OFF
+            build-shared: ON
+            packages: clang-11 llvm-11 lld
+
+          # Check for undefined symbols in the version script for the compat api
+          - name: Ubuntu Clang Undefined Symbols Compat
+            os: ubuntu-latest
+            compiler: clang-11
+            cxx-compiler: clang++-11
+            cmake-args: -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld -Wl,--no-undefined-version" -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_COMPAT=ON
+            build-shared: ON
+            packages: clang-11 llvm-11 lld
+
           - name: Ubuntu Clang Inflate Strict
             os: ubuntu-latest
             compiler: clang-11
@@ -518,7 +536,7 @@ jobs:
       run: |
         cmake -S ${{ matrix.build-src-dir || '.' }} -B ${{ matrix.build-dir || '.' }} ${{ matrix.cmake-args }} \
           -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} \
-          -DBUILD_SHARED_LIBS=OFF \
+          -DBUILD_SHARED_LIBS=${{ matrix.build-shared || 'OFF' }} \
           -DWITH_FUZZERS=ON \
           -DWITH_MAINTAINER_WARNINGS=ON \
           ${{ matrix.codecov && '-DWITH_CODE_COVERAGE=ON' }}
