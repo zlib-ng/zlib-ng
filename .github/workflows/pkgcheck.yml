@@ -22,6 +22,8 @@ jobs:
 
           - name: Ubuntu GCC ARM SF
             os: ubuntu-latest
+            chost: arm-linux-gnueabi
+            compiler: arm-linux-gnueabi-gcc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake
             packages: qemu gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libc-dev-armel-cross
 
