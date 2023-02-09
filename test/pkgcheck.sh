@@ -125,7 +125,7 @@ cd btmp1
     ;;
   esac
   ../configure $CONFIGURE_ARGS
-  make
+  make -j2
   make install
 cd ..
 
