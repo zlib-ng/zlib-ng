@@ -196,6 +196,8 @@ jobs:
             packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
             codecov: ubuntu_gcc_s390x
+            # The dedicated test VM has 4 cores
+            parallels-jobs: 4
 
           - name: Ubuntu GCC S390X No vectorized CRC32 ASAN
             os: ubuntu-latest
@@ -204,6 +206,8 @@ jobs:
             packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
             codecov: ubuntu_gcc_s390x_no_crc32
+            # The dedicated test VM has 4 cores
+            parallels-jobs: 4
 
           - name: Ubuntu GCC S390X DFLTCC ASAN
             os: z15
@@ -212,6 +216,8 @@ jobs:
             asan-options: detect_leaks=0
             ldflags: -static
             codecov: ubuntu_gcc_s390x_dfltcc
+            # The dedicated test VM has 4 cores
+            parallels-jobs: 4
 
           - name: Ubuntu GCC S390X DFLTCC Compat UBSAN
             os: z15
@@ -219,11 +225,15 @@ jobs:
             cmake-args: -DZLIB_COMPAT=ON -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Undefined
             ldflags: -static
             codecov: ubuntu_gcc_s390x_dfltcc_compat
+            # The dedicated test VM has 4 cores
+            parallels-jobs: 4
 
           - name: Ubuntu Clang S390X DFLTCC MSAN
             os: z15
             compiler: clang-11
             cmake-args: -GNinja -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Memory
+            # The dedicated test VM has 4 cores
+            parallels-jobs: 4
 
           - name: Ubuntu MinGW i686
             os: ubuntu-22.04
@@ -447,12 +457,12 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: cmake --build ${{ matrix.build-dir || '.' }} --config ${{ matrix.build-config || 'Release' }}
+      run: cmake --build ${{ matrix.build-dir || '.' }} -j2 --config ${{ matrix.build-config || 'Release' }}
 
     - name: Run test cases
       # Don't run tests on Windows ARM
       if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false
-      run: ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '6' }}
+      run: ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '3' }}
       working-directory: ${{ matrix.build-dir || '.' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
