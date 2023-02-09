@@ -89,11 +89,11 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: cmake --build . --config ${{ matrix.build-config || 'Release' }}
+      run: cmake --build . -j2 --config ${{ matrix.build-config || 'Release' }}
       working-directory: test/pigz
 
     - name: Run test cases
-      run: ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '2' }}
+      run: ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '3' }}
       working-directory: test/pigz
 
     - name: Generate coverage report
