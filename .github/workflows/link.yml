@@ -18,13 +18,13 @@ jobs:
       run: cmake -S zlib -B zlib/build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
 
     - name: Compile source code (zlib)
-      run: cmake --build zlib/build --config Release
+      run: cmake --build zlib/build -j2 --config Release
 
     - name: Generate project files (native)
       run: cmake -S . -B native -DZLIB_COMPAT=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DZLIB_LIBRARIES=../zlib/build/libz.a -DZLIB_INCLUDE_DIR="../zlib/build;../zlib"
 
     - name: Compile source code (native)
-      run: cmake --build native --config Release
+      run: cmake --build native -j2 --config Release
 
     - name: Upload build errors
       uses: actions/upload-artifact@v3
@@ -47,13 +47,13 @@ jobs:
       run: cmake -S . -B compat -DZLIB_COMPAT=ON -DZLIB_ENABLE_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_MAINTAINER_WARNINGS=ON
 
     - name: Compile source code (compat)
-      run: cmake --build compat --config Release
+      run: cmake --build compat -j2 --config Release
 
     - name: Generate project files (native)
       run: cmake -S . -B native -DZLIB_COMPAT=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DZLIB_LIBRARIES=../compat/libz.a -DZLIB_INCLUDE_DIR=../compat
 
     - name: Compile source code (native)
-      run: cmake --build native --config Release
+      run: cmake --build native -j2 --config Release
 
     - name: Upload build errors
       uses: actions/upload-artifact@v3

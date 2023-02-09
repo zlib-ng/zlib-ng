@@ -80,7 +80,7 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: cmake --build . --config Release --target install
+      run: cmake --build . -j2 --config Release --target install
 
     - name: Package release (Windows)
       if: runner.os == 'Windows'
