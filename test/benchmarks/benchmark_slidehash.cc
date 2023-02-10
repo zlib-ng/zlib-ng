@@ -26,7 +26,7 @@ public:
     void SetUp(const ::benchmark::State& state) {
         l0 = (uint16_t *)zng_alloc(HASH_SIZE * sizeof(uint16_t));
 
-        for (int32_t i = 0; i < HASH_SIZE; i++) {
+        for (uint32_t i = 0; i < HASH_SIZE; i++) {
             l0[i] = rand();
         }
 
