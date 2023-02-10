@@ -61,6 +61,7 @@ extern int unlink (const char *);
 static char *prog;
 
 void error            (const char *msg);
+void gz_fatal         (gzFile file);
 void gz_compress      (FILE *in, gzFile out);
 #ifdef USE_MMAP
 int  gz_compress_mmap (FILE *in, gzFile out);
@@ -79,13 +80,23 @@ void error(const char *msg) {
 }
 
 /* ===========================================================================
+ * Display last error message of gzFile, close it and exit
+ */
+
+void gz_fatal(gzFile file) {
+    int err;
+    fprintf(stderr, "%s: %s\n", prog, PREFIX(gzerror)(file, &err));
+    PREFIX(gzclose)(file);
+    exit(1);
+}
+
+/* ===========================================================================
  * Compress input to output then close both files.
  */
 
 void gz_compress(FILE *in, gzFile out) {
     char *buf;
     int len;
-    int err;
 
 #ifdef USE_MMAP
     /* Try first compressing with mmap. If mmap fails (minigzip used in a
@@ -108,7 +119,7 @@ void gz_compress(FILE *in, gzFile out) {
         }
         if (len == 0) break;
 
-        if (PREFIX(gzwrite)(out, buf, (unsigned)len) != len) error(PREFIX(gzerror)(out, &err));
+        if (PREFIX(gzwrite)(out, buf, (unsigned)len) != len) gz_fatal(out);
     }
     free(buf);
     fclose(in);
@@ -122,7 +133,6 @@ void gz_compress(FILE *in, gzFile out) {
  */
 int gz_compress_mmap(FILE *in, gzFile out) {
     int len;
-    int err;
     int ifd = fileno(in);
     char *buf;      /* mmap'ed buffer for the entire input file */
     off_t buf_len;  /* length of the input file */
@@ -140,7 +150,7 @@ int gz_compress_mmap(FILE *in, gzFile out) {
     /* Compress the whole file at once: */
     len = PREFIX(gzwrite)(out, buf, (unsigned)buf_len);
 
-    if (len != (int)buf_len) error(PREFIX(gzerror)(out, &err));
+    if (len != (int)buf_len) gz_fatal(out);
 
     munmap(buf, buf_len);
     fclose(in);
@@ -155,7 +165,6 @@ int gz_compress_mmap(FILE *in, gzFile out) {
 void gz_uncompress(gzFile in, FILE *out) {
     char *buf = (char *)malloc(BUFLENW);
     int len;
-    int err;
 
     if (buf == NULL) error("out of memory");
 
@@ -163,7 +172,7 @@ void gz_uncompress(gzFile in, FILE *out) {
         len = PREFIX(gzread)(in, buf, BUFLENW);
         if (len < 0) {
             free(buf);
-            error(PREFIX(gzerror)(in, &err));
+            gz_fatal(in);
         }
         if (len == 0) break;
 
