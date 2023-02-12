@@ -100,7 +100,7 @@ static int gz_look(gz_state *state) {
         state->strm.opaque = NULL;
         state->strm.avail_in = 0;
         state->strm.next_in = NULL;
-        if (PREFIX(inflateInit2)(&(state->strm), 15 + 16) != Z_OK) {    /* gunzip */
+        if (PREFIX(inflateInit2)(&(state->strm), MAX_WBITS + 16) != Z_OK) {    /* gunzip */
             zng_free(state->out);
             zng_free(state->in);
             state->size = 0;

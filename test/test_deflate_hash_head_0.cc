@@ -64,7 +64,7 @@ TEST(deflate, hash_head_0) {
     EXPECT_EQ(err, Z_OK);
 
     memset(&strm, 0, sizeof(strm));
-    err = PREFIX(inflateInit2)(&strm, -15);
+    err = PREFIX(inflateInit2)(&strm, -MAX_WBITS);
     EXPECT_EQ(err, Z_OK);
 
     strm.next_in = next_out;

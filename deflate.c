@@ -213,17 +213,17 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
 
     if (windowBits < 0) { /* suppress zlib wrapper */
         wrap = 0;
-        if (windowBits < -15)
+        if (windowBits < -MAX_WBITS)
             return Z_STREAM_ERROR;
         windowBits = -windowBits;
 #ifdef GZIP
-    } else if (windowBits > 15) {
+    } else if (windowBits > MAX_WBITS) {
         wrap = 2;       /* write gzip wrapper instead */
         windowBits -= 16;
 #endif
     }
-    if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method != Z_DEFLATED || windowBits < 8 ||
-        windowBits > 15 || level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED ||
+    if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method != Z_DEFLATED || windowBits < MIN_WBITS ||
+        windowBits > MAX_WBITS || level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED ||
         (windowBits == 8 && wrap != 1)) {
         return Z_STREAM_ERROR;
     }
@@ -662,7 +662,7 @@ unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long
 
     /* if not default parameters, return conservative bound */
     if (DEFLATE_NEED_CONSERVATIVE_BOUND(strm) ||  /* hook for IBM Z DFLTCC */
-            s->w_bits != 15 || HASH_BITS < 15) {
+            s->w_bits != MAX_WBITS || HASH_BITS < 15) {
         if (s->level == 0) {
             /* upper bound for stored blocks with length 127 (memLevel == 1) --
                ~4% overhead plus a small constant */
