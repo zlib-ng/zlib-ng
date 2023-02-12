@@ -20,7 +20,7 @@ TEST(deflate_quick, block_open) {
     int err;
 
     memset(&strm, 0, sizeof(strm));
-    err = PREFIX(deflateInit2)(&strm, 1, Z_DEFLATED, -15, 1, Z_FILTERED);
+    err = PREFIX(deflateInit2)(&strm, 1, Z_DEFLATED, -MAX_WBITS, 1, Z_FILTERED);
     EXPECT_EQ(err, Z_OK);
 
     z_const unsigned char next_in[495] =
@@ -75,7 +75,7 @@ TEST(deflate_quick, block_open) {
     EXPECT_EQ(err, Z_OK);
 
     memset(&strm, 0, sizeof(strm));
-    err = PREFIX(inflateInit2)(&strm, -15);
+    err = PREFIX(inflateInit2)(&strm, -MAX_WBITS);
     EXPECT_EQ(err, Z_OK);
 
     strm.next_in = next_out;

@@ -148,7 +148,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     /* decode literals and length/distances until end-of-block or not enough
        input data or output space */
     do {
-        if (bits < 15) {
+        if (bits < MAX_BITS) {
             hold |= load_64_bits(in, bits);
             in += 6;
             bits += 48;
@@ -173,7 +173,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
             len += BITS(op);
             DROPBITS(op);
             Tracevv((stderr, "inflate:         length %u\n", len));
-            if (bits < 15) {
+            if (bits < MAX_BITS) {
                 hold |= load_64_bits(in, bits);
                 in += 6;
                 bits += 48;
@@ -184,7 +184,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
             op = here->op;
             if (op & 16) {                      /* distance base */
                 dist = here->val;
-                op &= 15;                       /* number of extra bits */
+                op &= MAX_BITS;                 /* number of extra bits */
                 if (bits < op) {
                     hold |= load_64_bits(in, bits);
                     in += 6;

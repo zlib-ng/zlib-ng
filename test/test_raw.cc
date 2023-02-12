@@ -38,7 +38,7 @@ TEST(raw, basic) {
     EXPECT_EQ(err, Z_OK);
 
     memset(&stream, 0, sizeof(stream));
-    err = PREFIX(inflateInit2)(&stream, -15);
+    err = PREFIX(inflateInit2)(&stream, -MAX_WBITS);
     EXPECT_EQ(err, Z_OK);
 
     stream.adler = 0x87654321;
