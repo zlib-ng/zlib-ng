@@ -37,8 +37,8 @@ all: \
 	compare256_avx2.o compare256_avx2.lo \
 	compare256_sse2.o compare256_sse2.lo \
 	insert_string_sse42.o insert_string_sse42.lo \
-	crc32_fold_pclmulqdq.o crc32_fold_pclmulqdq.lo \
-	crc32_fold_vpclmulqdq.o crc32_fold_vpclmulqdq.lo \
+	crc32_pclmulqdq.o crc32_pclmulqdq.lo \
+	crc32_vpclmulqdq.o crc32_vpclmulqdq.lo \
 	slide_hash_avx2.o slide_hash_avx2.lo \
 	slide_hash_sse2.o slide_hash_sse2.lo
 
@@ -84,17 +84,17 @@ insert_string_sse42.o:
 insert_string_sse42.lo:
 	$(CC) $(SFLAGS) $(SSE42FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/insert_string_sse42.c
 
-crc32_fold_pclmulqdq.o:
-	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_pclmulqdq.c
+crc32_pclmulqdq.o:
+	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_pclmulqdq.c
 
-crc32_fold_pclmulqdq.lo:
-	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_pclmulqdq.c
+crc32_pclmulqdq.lo:
+	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_pclmulqdq.c
 
-crc32_fold_vpclmulqdq.o:
-	$(CC) $(CFLAGS) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_vpclmulqdq.c
+crc32_vpclmulqdq.o:
+	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq.c
 
-crc32_fold_vpclmulqdq.lo:
-	$(CC) $(SFLAGS) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_vpclmulqdq.c
+crc32_vpclmulqdq.lo:
+	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq.c
 
 slide_hash_avx2.o:
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_avx2.c

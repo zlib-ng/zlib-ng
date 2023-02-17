@@ -17,12 +17,10 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef X86_PCLMULQDQ_CRC
-
 #ifdef COPY
-Z_INTERNAL void crc32_fold_pclmulqdq_copy(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
+Z_INTERNAL void CRC32_FOLD_COPY_NAME (crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
 #else
-Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc) {
+Z_INTERNAL void CRC32_FOLD_NAME (crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc) {
 #endif
     unsigned long algn_diff;
     __m128i xmm_t0, xmm_t1, xmm_t2, xmm_t3;
@@ -61,7 +59,7 @@ Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t
         _mm_storeu_si128((__m128i *)dst, xmm_crc_part);
         dst += algn_diff;
 #else
-        XOR_INITIAL(xmm_crc_part);
+        XOR_INITIAL128(xmm_crc_part);
 
         if (algn_diff < 4 && init_crc != 0) {
             xmm_t0 = xmm_crc_part;
@@ -79,8 +77,8 @@ Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t
         len -= algn_diff;
     }
 
-#ifdef X86_VPCLMULQDQ_CRC
-    if (x86_cpu_has_vpclmulqdq && x86_cpu_has_avx512 && (len >= 256)) {
+#ifdef X86_VPCLMULQDQ
+    if (len >= 256) {
 #ifdef COPY
         size_t n = fold_16_vpclmulqdq_copy(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, dst, src, len);
         dst += n;
@@ -110,7 +108,7 @@ Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t
         _mm_storeu_si128((__m128i *)dst + 3, xmm_t3);
         dst += 64;
 #else
-        XOR_INITIAL(xmm_t0);
+        XOR_INITIAL128(xmm_t0);
 #endif
 
         xmm_crc0 = _mm_xor_si128(xmm_crc0, xmm_t0);
@@ -135,7 +133,7 @@ Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t
         _mm_storeu_si128((__m128i *)dst + 2, xmm_t2);
         dst += 48;
 #else
-        XOR_INITIAL(xmm_t0);
+        XOR_INITIAL128(xmm_t0);
 #endif
         fold_3(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 
@@ -153,7 +151,7 @@ Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t
         _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
         dst += 32;
 #else
-        XOR_INITIAL(xmm_t0);
+        XOR_INITIAL128(xmm_t0);
 #endif
         fold_2(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 
@@ -167,7 +165,7 @@ Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t
         _mm_storeu_si128((__m128i *)dst, xmm_t0);
         dst += 16;
 #else
-        XOR_INITIAL(xmm_t0);
+        XOR_INITIAL128(xmm_t0);
 #endif
         fold_1(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 
@@ -186,4 +184,3 @@ partial:
 
     crc32_fold_save((__m128i *)crc->fold, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 }
-#endif
