@@ -190,6 +190,8 @@ int32_t Z_EXPORT PREFIX(inflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32
 
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
+    if (bits == 0)
+        return Z_OK;
     INFLATE_PRIME_HOOK(strm, bits, value);  /* hook for IBM Z DFLTCC */
     state = (struct inflate_state *)strm->state;
     if (bits < 0) {
