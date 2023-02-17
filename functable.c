@@ -130,6 +130,16 @@ static void init_functable(void) {
         ft.adler32_fold_copy = &adler32_fold_copy_avx512_vnni;
     }
 #endif
+    // X86 - VPCLMULQDQ
+#if defined(X86_PCLMULQDQ_CRC) && defined(X86_VPCLMULQDQ_CRC)
+    if (x86_cpu_has_pclmulqdq && x86_cpu_has_avx512 && x86_cpu_has_vpclmulqdq) {
+        ft.crc32 = &crc32_vpclmulqdq;
+        ft.crc32_fold = &crc32_fold_vpclmulqdq;
+        ft.crc32_fold_copy = &crc32_fold_vpclmulqdq_copy;
+        ft.crc32_fold_final = &crc32_fold_vpclmulqdq_final;
+        ft.crc32_fold_reset = &crc32_fold_vpclmulqdq_reset;
+    }
+#endif
 
 
     // ARM - NEON

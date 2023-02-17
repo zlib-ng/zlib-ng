@@ -1629,8 +1629,8 @@ case "${ARCH}" in
             if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
                 SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_fold_pclmulqdq.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_fold_pclmulqdq.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_pclmulqdq.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_pclmulqdq.lo"
 
                 if test $buildvpclmulqdq -eq 1; then
                     check_vpclmulqdq_intrinsics
@@ -1638,8 +1638,8 @@ case "${ARCH}" in
                     if test ${HAVE_VPCLMULQDQ_INTRIN} -eq 1 && test ${HAVE_AVX512_INTRIN} -eq 1; then
                         CFLAGS="${CFLAGS} -DX86_VPCLMULQDQ_CRC"
                         SFLAGS="${SFLAGS} -DX86_VPCLMULQDQ_CRC"
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_fold_vpclmulqdq.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_fold_vpclmulqdq.lo"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_vpclmulqdq.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_vpclmulqdq.lo"
                     fi
                 fi
             fi

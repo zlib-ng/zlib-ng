@@ -4,10 +4,10 @@
  */
 
 #ifdef COPY
-Z_INTERNAL size_t fold_16_vpclmulqdq_copy(__m128i *xmm_crc0, __m128i *xmm_crc1,
+static size_t fold_16_vpclmulqdq_copy(__m128i *xmm_crc0, __m128i *xmm_crc1,
     __m128i *xmm_crc2, __m128i *xmm_crc3, uint8_t *dst, const uint8_t *src, size_t len) {
 #else
-Z_INTERNAL size_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
+static size_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
     __m128i *xmm_crc2, __m128i *xmm_crc3, const uint8_t *src, size_t len,
     __m128i init_crc, int32_t first) {
     __m512i zmm_initial = _mm512_zextsi128_si512(init_crc);
@@ -25,7 +25,7 @@ Z_INTERNAL size_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
     zmm_crc0 = _mm512_setzero_si512();
     zmm_t0 = _mm512_loadu_si512((__m512i *)src);
 #ifndef COPY
-    XOR_INITIAL(zmm_t0);
+    XOR_INITIAL512(zmm_t0);
 #endif
     zmm_crc1 = _mm512_loadu_si512((__m512i *)src + 1);
     zmm_crc2 = _mm512_loadu_si512((__m512i *)src + 2);

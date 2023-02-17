@@ -17,25 +17,25 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef X86_PCLMULQDQ_CRC
 #include "../../zbuild.h"
 
 #include <immintrin.h>
 #include <wmmintrin.h>
 #include <smmintrin.h> // _mm_extract_epi32
-
-#include "x86_features.h"
-#include "cpu_features.h"
+#ifdef X86_VPCLMULQDQ
+#include <immintrin.h>
+#endif
 
 #include "../../crc32_fold.h"
 #include "../../crc32_braid_p.h"
+#include "../../fallback_builtins.h"
 #include <assert.h>
 
-#ifdef X86_VPCLMULQDQ_CRC
-extern size_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
+#ifdef X86_VPCLMULQDQ
+static size_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
     __m128i *xmm_crc2, __m128i *xmm_crc3, const uint8_t *src, size_t len, __m128i init_crc,
     int32_t first);
-extern size_t fold_16_vpclmulqdq_copy(__m128i *xmm_crc0, __m128i *xmm_crc1,
+static size_t fold_16_vpclmulqdq_copy(__m128i *xmm_crc0, __m128i *xmm_crc1,
     __m128i *xmm_crc2, __m128i *xmm_crc3, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 
@@ -246,18 +246,27 @@ static inline void crc32_fold_save(__m128i *fold, const __m128i *fold0, const __
     _mm_storeu_si128(fold + 3, *fold3);
 }
 
-Z_INTERNAL uint32_t crc32_fold_pclmulqdq_reset(crc32_fold *crc) {
+Z_INTERNAL uint32_t CRC32_FOLD_RESET_NAME (crc32_fold *crc) {
     __m128i xmm_crc0 = _mm_cvtsi32_si128(0x9db42487);
     __m128i xmm_zero = _mm_setzero_si128();
     crc32_fold_save((__m128i *)crc->fold, &xmm_crc0, &xmm_zero, &xmm_zero, &xmm_zero);
     return 0;
 }
 
-#define ONCE(op)            if (first) { first = 0; op; }
-#define XOR_INITIAL(where)  ONCE(where = _mm_xor_si128(where, xmm_initial))
+#define ONCE(op)               if (first) { first = 0; op; }
+#define XOR_INITIAL128(where)  ONCE(where = _mm_xor_si128(where, xmm_initial))
+#ifdef X86_VPCLMULQDQ
+#define XOR_INITIAL512(where)  ONCE(where = _mm512_xor_si512(where, zmm_initial))
+#endif
 
+#ifdef X86_VPCLMULQDQ
+#include "crc32_fold_vpclmulqdq_tpl.h"
+#endif
 #include "crc32_fold_pclmulqdq_tpl.h"
 #define COPY
+#ifdef X86_VPCLMULQDQ
+#include "crc32_fold_vpclmulqdq_tpl.h"
+#endif
 #include "crc32_fold_pclmulqdq_tpl.h"
 
 static const unsigned ALIGNED_(16) crc_k[] = {
@@ -277,7 +286,7 @@ static const unsigned ALIGNED_(16) crc_mask2[4] = {
     0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
 };
 
-Z_INTERNAL uint32_t crc32_fold_pclmulqdq_final(crc32_fold *crc) {
+Z_INTERNAL uint32_t CRC32_FOLD_FINAL_NAME (crc32_fold *crc) {
     const __m128i xmm_mask  = _mm_load_si128((__m128i *)crc_mask);
     const __m128i xmm_mask2 = _mm_load_si128((__m128i *)crc_mask2);
     __m128i xmm_crc0, xmm_crc1, xmm_crc2, xmm_crc3;
@@ -342,15 +351,14 @@ Z_INTERNAL uint32_t crc32_fold_pclmulqdq_final(crc32_fold *crc) {
     return crc->value;
 }
 
-Z_INTERNAL uint32_t crc32_pclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len) {
+Z_INTERNAL uint32_t CRC32_NAME (uint32_t crc32, const uint8_t *buf, size_t len) {
     /* For lens < 64, crc32_braid method is faster. The CRC32 instruction for
      * these short lengths might also prove to be effective */
     if (len < 64)
         return PREFIX(crc32_braid)(crc32, buf, len);
 
     crc32_fold ALIGNED_(16) crc_state;
-    crc32_fold_pclmulqdq_reset(&crc_state);
-    crc32_fold_pclmulqdq(&crc_state, buf, len, crc32);
-    return crc32_fold_pclmulqdq_final(&crc_state);
+    CRC32_FOLD_RESET_NAME (&crc_state);
+    CRC32_FOLD_NAME (&crc_state, buf, len, crc32);
+    return CRC32_FOLD_FINAL_NAME (&crc_state);
 }
-#endif
