@@ -216,4 +216,7 @@ TEST_CRC32(power8, crc32_power8, power_cpu_has_arch_2_07)
 TEST_CRC32(vx, PREFIX(s390_crc32_vx), PREFIX(s390_cpu_has_vx))
 #elif defined(X86_PCLMULQDQ_CRC)
 TEST_CRC32(pclmulqdq, crc32_pclmulqdq, x86_cpu_has_pclmulqdq)
+#  ifdef X86_VPCLMULQDQ_CRC
+TEST_CRC32(vpclmulqdq, crc32_vpclmulqdq, (x86_cpu_has_pclmulqdq && x86_cpu_has_avx512 && x86_cpu_has_vpclmulqdq))
+#  endif
 #endif
