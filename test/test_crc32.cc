@@ -199,7 +199,7 @@ INSTANTIATE_TEST_SUITE_P(crc32, crc32_variant, testing::ValuesIn(tests));
 
 #define TEST_CRC32(name, func, support_flag) \
     TEST_P(crc32_variant, name) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             GTEST_SKIP(); \
             return; \
         } \
