@@ -19,11 +19,11 @@
 
 #ifdef X86_PCLMULQDQ_CRC
 
-#define CRC32_FOLD_COPY_NAME  crc32_fold_pclmulqdq_copy
-#define CRC32_FOLD_NAME       crc32_fold_pclmulqdq
-#define CRC32_FOLD_RESET_NAME crc32_fold_pclmulqdq_reset
-#define CRC32_FOLD_FINAL_NAME crc32_fold_pclmulqdq_final
-#define CRC32_NAME            crc32_pclmulqdq
+#define CRC32_FOLD_COPY  crc32_fold_pclmulqdq_copy
+#define CRC32_FOLD       crc32_fold_pclmulqdq
+#define CRC32_FOLD_RESET crc32_fold_pclmulqdq_reset
+#define CRC32_FOLD_FINAL crc32_fold_pclmulqdq_final
+#define CRC32            crc32_pclmulqdq
 
 #include "crc32_pclmulqdq_tpl.h"
 
