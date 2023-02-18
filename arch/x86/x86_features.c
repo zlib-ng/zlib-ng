@@ -75,9 +75,6 @@ void Z_INTERNAL x86_check_features(struct x86_cpu_features *features) {
 
         features->has_os_save_ymm = ((xfeature & 0x06) == 0x06);
         features->has_os_save_zmm = ((xfeature & 0xe6) == 0xe6);
-    } else {
-        features->has_os_save_ymm = 0;
-        features->has_os_save_zmm = 0;
     }
 
     if (maxbasic >= 7) {
@@ -90,22 +87,12 @@ void Z_INTERNAL x86_check_features(struct x86_cpu_features *features) {
         // check AVX2 bit if the OS supports saving YMM registers
         if (features->has_os_save_ymm) {
             features->has_avx2 = ebx & 0x20;
-        } else {
-            features->has_avx2 = 0;
         }
 
         // check AVX512 bits if the OS supports saving ZMM registers
         if (features->has_os_save_zmm) {
             features->has_avx512 = ebx & 0x00010000;
             features->has_avx512vnni = ecx & 0x800;
-        } else {
-            features->has_avx512 = 0;
-            features->has_avx512vnni = 0;
         }
-    } else {
-        features->has_avx2 = 0;
-        features->has_avx512 = 0;
-        features->has_avx512vnni = 0;
-        features->has_vpclmulqdq = 0;
     }
 }
