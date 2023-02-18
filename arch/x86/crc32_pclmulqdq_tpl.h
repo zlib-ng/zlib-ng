@@ -195,7 +195,7 @@ static void partial_fold(const size_t len, __m128i *xmm_crc0, __m128i *xmm_crc1,
     __m128i xmm_a0_0, xmm_a0_1;
     __m128 ps_crc3, psa0_0, psa0_1, ps_res;
 
-    xmm_shl = _mm_load_si128((__m128i *)pshufb_shf_table + (len - 1));
+    xmm_shl = _mm_load_si128((__m128i *)(pshufb_shf_table + (4 * (len - 1))));
     xmm_shr = xmm_shl;
     xmm_shr = _mm_xor_si128(xmm_shr, xmm_mask3);
 
@@ -316,7 +316,7 @@ Z_INTERNAL uint32_t CRC32_FOLD_FINAL(crc32_fold *crc) {
     /*
      * k5
      */
-    crc_fold = _mm_load_si128((__m128i *)crc_k + 1);
+    crc_fold = _mm_load_si128((__m128i *)(crc_k + 4));
 
     xmm_crc0 = xmm_crc3;
     xmm_crc3 = _mm_clmulepi64_si128(xmm_crc3, crc_fold, 0);
@@ -334,7 +334,7 @@ Z_INTERNAL uint32_t CRC32_FOLD_FINAL(crc32_fold *crc) {
      */
     xmm_crc1 = xmm_crc3;
     xmm_crc2 = xmm_crc3;
-    crc_fold = _mm_load_si128((__m128i *)crc_k + 2);
+    crc_fold = _mm_load_si128((__m128i *)(crc_k + 8));
 
     xmm_crc3 = _mm_clmulepi64_si128(xmm_crc3, crc_fold, 0);
     xmm_crc3 = _mm_xor_si128(xmm_crc3, xmm_crc2);
