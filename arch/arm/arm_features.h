@@ -5,9 +5,11 @@
 #ifndef ARM_H_
 #define ARM_H_
 
-extern int arm_cpu_has_neon;
-extern int arm_cpu_has_crc32;
+struct arm_cpu_features {
+    int has_neon;
+    int has_crc32;
+};
 
-void Z_INTERNAL arm_check_features(void);
+void Z_INTERNAL arm_check_features(struct arm_cpu_features *features);
 
 #endif /* ARM_H_ */

@@ -198,7 +198,7 @@ static uint32_t crc32_le_vgfm_16(uint32_t crc, const uint8_t *buf, size_t len) {
 #define VX_ALIGNMENT 16L
 #define VX_ALIGN_MASK (VX_ALIGNMENT - 1)
 
-uint32_t Z_INTERNAL PREFIX(s390_crc32_vx)(uint32_t crc, const unsigned char *buf, size_t len) {
+uint32_t Z_INTERNAL crc32_s390_vx(uint32_t crc, const unsigned char *buf, size_t len) {
     size_t prealign, aligned, remaining;
 
     if (len < VX_MIN_LEN + VX_ALIGN_MASK)

@@ -4,21 +4,18 @@
  */
 
 #include "zbuild.h"
-
 #include "cpu_features.h"
+#include <string.h>
 
-Z_INTERNAL void cpu_check_features(void) {
-    static int features_checked = 0;
-    if (features_checked)
-        return;
+Z_INTERNAL void cpu_check_features(struct cpu_features *features) {
+    memset(features, 0, sizeof(struct cpu_features));
 #if defined(X86_FEATURES)
-    x86_check_features();
+    x86_check_features(&features->x86);
 #elif defined(ARM_FEATURES)
-    arm_check_features();
+    arm_check_features(&features->arm);
 #elif defined(PPC_FEATURES) || defined(POWER_FEATURES)
-    power_check_features();
+    power_check_features(&features->power);
 #elif defined(S390_FEATURES)
-    PREFIX(s390_check_features)();
+    s390_check_features(&features->s390);
 #endif
-    features_checked = 1;
 }

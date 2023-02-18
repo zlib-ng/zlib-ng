@@ -6,18 +6,20 @@
 #ifndef X86_FEATURES_H_
 #define X86_FEATURES_H_
 
-extern int x86_cpu_has_avx2;
-extern int x86_cpu_has_avx512;
-extern int x86_cpu_has_avx512vnni;
-extern int x86_cpu_has_sse2;
-extern int x86_cpu_has_ssse3;
-extern int x86_cpu_has_sse41;
-extern int x86_cpu_has_sse42;
-extern int x86_cpu_has_pclmulqdq;
-extern int x86_cpu_has_vpclmulqdq;
-extern int x86_cpu_has_os_save_ymm;
-extern int x86_cpu_has_os_save_zmm;
+struct x86_cpu_features {
+    int has_avx2;
+    int has_avx512;
+    int has_avx512vnni;
+    int has_sse2;
+    int has_ssse3;
+    int has_sse41;
+    int has_sse42;
+    int has_pclmulqdq;
+    int has_vpclmulqdq;
+    int has_os_save_ymm;
+    int has_os_save_zmm;
+};
 
-void Z_INTERNAL x86_check_features(void);
+void Z_INTERNAL x86_check_features(struct x86_cpu_features *features);
 
 #endif /* CPU_H_ */

@@ -7,10 +7,12 @@
 #ifndef POWER_H_
 #define POWER_H_
 
-extern int power_cpu_has_altivec;
-extern int power_cpu_has_arch_2_07;
-extern int power_cpu_has_arch_3_00;
+struct power_cpu_features {
+    int has_altivec;
+    int has_arch_2_07;
+    int has_arch_3_00;
+};
 
-void Z_INTERNAL power_check_features(void);
+void Z_INTERNAL power_check_features(struct power_cpu_features *features);
 
 #endif /* POWER_H_ */

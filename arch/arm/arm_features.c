@@ -1,4 +1,5 @@
 #include "../../zbuild.h"
+#include "arm_features.h"
 
 #if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
 #  include <sys/auxv.h>
@@ -71,14 +72,11 @@ static inline int arm_has_neon() {
 }
 #endif
 
-Z_INTERNAL int arm_cpu_has_neon;
-Z_INTERNAL int arm_cpu_has_crc32;
-
-void Z_INTERNAL arm_check_features(void) {
+void Z_INTERNAL arm_check_features(struct arm_cpu_features *features) {
 #if defined(__aarch64__) || defined(_M_ARM64)
-    arm_cpu_has_neon = 1; /* always available */
+    features->has_neon = 1; /* always available */
 #else
-    arm_cpu_has_neon = arm_has_neon();
+    features->has_neon = arm_has_neon();
 #endif
-    arm_cpu_has_crc32 = arm_has_crc32();
+    features->has_crc32 = arm_has_crc32();
 }

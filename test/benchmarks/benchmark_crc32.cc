@@ -11,7 +11,7 @@
 extern "C" {
 #  include "zbuild.h"
 #  include "zutil_p.h"
-#  include "cpu_features.h"
+#  include "../test_cpu_features.h"
 }
 
 #define MAX_RANDOM_INTS (1024 * 1024)
@@ -58,12 +58,12 @@ public:
 BENCHMARK_CRC32(braid, PREFIX(crc32_braid), 1);
 
 #ifdef ARM_ACLE
-BENCHMARK_CRC32(acle, crc32_acle, arm_cpu_has_crc32);
+BENCHMARK_CRC32(acle, crc32_acle, test_cpu_features.arm.has_crc32);
 #elif defined(POWER8_VSX)
-BENCHMARK_CRC32(power8, crc32_power8, power_cpu_has_arch_2_07);
+BENCHMARK_CRC32(power8, crc32_power8, test_cpu_features.power.has_arch_2_07);
 #elif defined(S390_CRC32_VX)
-BENCHMARK_CRC32(vx, PREFIX(s390_crc32_vx), PREFIX(s390_cpu_has_vx));
+BENCHMARK_CRC32(vx, crc32_s390_vx, test_cpu_features.s390.has_vx);
 #elif defined(X86_PCLMULQDQ_CRC)
 /* CRC32 fold does a memory copy while hashing */
-BENCHMARK_CRC32(pclmulqdq, crc32_pclmulqdq, x86_cpu_has_pclmulqdq);
+BENCHMARK_CRC32(pclmulqdq, crc32_pclmulqdq, test_cpu_features.x86.has_pclmulqdq);
 #endif
