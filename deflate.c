@@ -48,7 +48,6 @@
  */
 
 #include "zbuild.h"
-#include "cpu_features.h"
 #include "deflate.h"
 #include "deflate_p.h"
 #include "functable.h"
@@ -194,8 +193,6 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
     uint32_t window_padding = 0;
     deflate_state *s;
     int wrap = 1;
-
-    cpu_check_features();
 
     if (strm == NULL)
         return Z_STREAM_ERROR;

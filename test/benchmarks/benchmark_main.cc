@@ -10,13 +10,15 @@
 #ifndef BUILD_ALT
 extern "C" {
 #  include "zbuild.h"
-#  include "cpu_features.h"
+#  include "../test_cpu_features.h"
+
+    struct cpu_features test_cpu_features;
 }
 #endif
 
 int main(int argc, char** argv) {
 #ifndef BUILD_ALT
-    cpu_check_features();
+    cpu_check_features(&test_cpu_features);
 #endif
 
     ::benchmark::Initialize(&argc, argv);

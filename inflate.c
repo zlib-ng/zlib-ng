@@ -5,7 +5,6 @@
 
 #include "zbuild.h"
 #include "zutil.h"
-#include "cpu_features.h"
 #include "inftrees.h"
 #include "inflate.h"
 #include "inflate_p.h"
@@ -139,8 +138,6 @@ int32_t Z_EXPORT PREFIX(inflateReset2)(PREFIX3(stream) *strm, int32_t windowBits
 int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windowBits) {
     int32_t ret;
     struct inflate_state *state;
-
-    cpu_check_features();
 
     if (strm == NULL)
         return Z_STREAM_ERROR;

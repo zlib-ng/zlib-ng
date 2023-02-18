@@ -13,8 +13,9 @@
 
 static void init_functable(void) {
     struct functable_s ft;
+    struct cpu_features cf;
 
-    cpu_check_features();
+    cpu_check_features(&cf);
 
     // Generic code
     ft.adler32 = &adler32_c;
@@ -58,7 +59,7 @@ static void init_functable(void) {
     // X86 - SSE2
 #ifdef X86_SSE2
 #  if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
-    if (x86_cpu_has_sse2)
+    if (cf.x86.has_sse2)
 #  endif
     {
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
@@ -74,18 +75,18 @@ static void init_functable(void) {
 #endif
     // X86 - SSSE3
 #ifdef X86_SSSE3
-    if (x86_cpu_has_ssse3)
+    if (cf.x86.has_ssse3)
         ft.adler32 = &adler32_ssse3;
 #endif
     // X86 - SSE4
 #if defined(X86_SSE41) && defined(X86_SSE2)
-    if (x86_cpu_has_sse41) {
+    if (cf.x86.has_sse41) {
         ft.chunkmemset_safe = &chunkmemset_safe_sse41;
         ft.inflate_fast = &inflate_fast_sse41;
     }
 #endif
 #ifdef X86_SSE42
-    if (x86_cpu_has_sse42) {
+    if (cf.x86.has_sse42) {
         ft.adler32_fold_copy = &adler32_fold_copy_sse42;
         ft.insert_string = &insert_string_sse4;
         ft.quick_insert_string = &quick_insert_string_sse4;
@@ -94,7 +95,7 @@ static void init_functable(void) {
 #endif
     // X86 - PCLMUL
 #ifdef X86_PCLMULQDQ_CRC
-    if (x86_cpu_has_pclmulqdq) {
+    if (cf.x86.has_pclmulqdq) {
         ft.crc32 = &crc32_pclmulqdq;
         ft.crc32_fold = &crc32_fold_pclmulqdq;
         ft.crc32_fold_copy = &crc32_fold_pclmulqdq_copy;
@@ -104,7 +105,7 @@ static void init_functable(void) {
 #endif
     // X86 - AVX
 #ifdef X86_AVX2
-    if (x86_cpu_has_avx2) {
+    if (cf.x86.has_avx2) {
         ft.adler32 = &adler32_avx2;
         ft.adler32_fold_copy = &adler32_fold_copy_avx2;
         ft.chunkmemset_safe = &chunkmemset_safe_avx;
@@ -119,20 +120,20 @@ static void init_functable(void) {
     }
 #endif
 #ifdef X86_AVX512
-    if (x86_cpu_has_avx512) {
+    if (cf.x86.has_avx512) {
         ft.adler32 = &adler32_avx512;
         ft.adler32_fold_copy = &adler32_fold_copy_avx512;
     }
 #endif
 #ifdef X86_AVX512VNNI
-    if (x86_cpu_has_avx512vnni) {
+    if (cf.x86.has_avx512vnni) {
         ft.adler32 = &adler32_avx512_vnni;
         ft.adler32_fold_copy = &adler32_fold_copy_avx512_vnni;
     }
 #endif
     // X86 - VPCLMULQDQ
 #if defined(X86_PCLMULQDQ_CRC) && defined(X86_VPCLMULQDQ_CRC)
-    if (x86_cpu_has_pclmulqdq && x86_cpu_has_avx512 && x86_cpu_has_vpclmulqdq) {
+    if (cf.x86.has_pclmulqdq && cf.x86.has_avx512 && cf.x86.has_vpclmulqdq) {
         ft.crc32 = &crc32_vpclmulqdq;
         ft.crc32_fold = &crc32_fold_vpclmulqdq;
         ft.crc32_fold_copy = &crc32_fold_vpclmulqdq_copy;
@@ -145,7 +146,7 @@ static void init_functable(void) {
     // ARM - NEON
 #ifdef ARM_NEON
 #  ifndef ARM_NOCHECK_NEON
-    if (arm_cpu_has_neon)
+    if (cf.arm.has_neon)
 #  endif
     {
         ft.adler32 = &adler32_neon;
@@ -162,7 +163,7 @@ static void init_functable(void) {
 #endif
     // ARM - ACLE
 #ifdef ARM_ACLE
-    if (arm_cpu_has_crc32) {
+    if (cf.arm.has_crc32) {
         ft.crc32 = &crc32_acle;
         ft.insert_string = &insert_string_acle;
         ft.quick_insert_string = &quick_insert_string_acle;
@@ -173,14 +174,14 @@ static void init_functable(void) {
 
     // Power - VMX
 #ifdef PPC_VMX
-    if (power_cpu_has_altivec) {
+    if (cf.power.has_altivec) {
         ft.adler32 = &adler32_vmx;
         ft.slide_hash = &slide_hash_vmx;
     }
 #endif
     // Power8 - VSX
 #ifdef POWER8_VSX
-    if (power_cpu_has_arch_2_07) {
+    if (cf.power.has_arch_2_07) {
         ft.adler32 = &adler32_power8;
         ft.chunkmemset_safe = &chunkmemset_safe_power8;
         ft.chunksize = &chunksize_power8;
@@ -189,12 +190,12 @@ static void init_functable(void) {
     }
 #endif
 #ifdef POWER8_VSX_CRC32
-    if (power_cpu_has_arch_2_07)
+    if (cf.power.has_arch_2_07)
         ft.crc32 = &crc32_power8;
 #endif
     // Power9
 #ifdef POWER9
-    if (power_cpu_has_arch_3_00) {
+    if (cf.power.has_arch_3_00) {
         ft.compare256 = &compare256_power9;
         ft.longest_match = &longest_match_power9;
         ft.longest_match_slow = &longest_match_slow_power9;
@@ -204,8 +205,8 @@ static void init_functable(void) {
 
     // S390
 #ifdef S390_CRC32_VX
-    if (PREFIX(s390_cpu_has_vx))
-        ft.crc32 = &PREFIX(s390_crc32_vx);
+    if (cf.s390.has_vx)
+        ft.crc32 = crc32_s390_vx;
 #endif
 
     // Assign function pointers individually for atomic operation
