@@ -1102,7 +1102,7 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
             set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "${LIB_INSTALL_DIR}")
         endif()
     endif()
-    if(MSYS OR CYGWIN)
+    if(MSYS)
         # Suppress version number from shared library name
         set(CMAKE_SHARED_LIBRARY_NAME_WITH_VERSION 0)
     elseif(WIN32)
