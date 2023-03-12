@@ -46,7 +46,13 @@ macro(check_avx512_intrinsics)
             # instruction scheduling unless you specify a reasonable -mtune= target
             set(AVX512FLAG "-mavx512f -mavx512dq -mavx512bw -mavx512vl")
             if(NOT CMAKE_GENERATOR_TOOLSET MATCHES "ClangCl")
-                set(AVX512FLAG "${AVX512FLAG} -mtune=cascadelake")
+                check_c_compiler_flag("-mtune=cascadelake" HAVE_CASCADE_LAKE)
+                if(HAVE_CASCADE_LAKE)
+                    set(AVX512FLAG "${AVX512FLAG} -mtune=cascadelake")
+                else()
+                    set(AVX512FLAG "${AVX512FLAG} -mtune=skylake-avx512")
+                endif()
+                unset(HAVE_CASCADE_LAKE)
             endif()
         endif()
     elseif(MSVC)
@@ -58,10 +64,10 @@ macro(check_avx512_intrinsics)
         "#include <immintrin.h>
         int main(void) {
             __m512i x = _mm512_set1_epi8(2);
-            const __m512i y = _mm512_set_epi8(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-                                              20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
-                                              38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55,
-                                              56, 57, 58, 59, 60, 61, 62, 63, 64);
+            const __m512i y = _mm512_set_epi32(0x1020304, 0x5060708, 0x90a0b0c, 0xd0e0f10,
+                                               0x11121314, 0x15161718, 0x191a1b1c, 0x1d1e1f20,
+                                               0x21222324, 0x25262728, 0x292a2b2c, 0x2d2e2f30,
+                                               0x31323334, 0x35363738, 0x393a3b3c, 0x3d3e3f40);
             x = _mm512_sub_epi8(x, y);
             (void)x;
             return 0;
