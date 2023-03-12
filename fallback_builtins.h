@@ -72,6 +72,46 @@ static inline __m512i _mm512_zextsi128_si512(__m128i a) {
 
 #endif // __AVX2__
 
+/* GCC <9 is missing some AVX512 intrinsics.
+ */
+#ifdef __AVX512F__
+#if (!defined(__clang__) && defined(__GNUC__) && __GNUC__ < 9)
+#include <immintrin.h>
+
+#define PACK(c0, c1, c2, c3) (((int)(unsigned char)(c0) << 24) | ((int)(unsigned char)(c1) << 16) | \
+                              ((int)(unsigned char)(c2) << 8) | ((int)(unsigned char)(c3)))
+
+static inline __m512i _mm512_set_epi8(char __q63, char __q62, char __q61, char __q60,
+                                      char __q59, char __q58, char __q57, char __q56,
+                                      char __q55, char __q54, char __q53, char __q52,
+                                      char __q51, char __q50, char __q49, char __q48,
+                                      char __q47, char __q46, char __q45, char __q44,
+                                      char __q43, char __q42, char __q41, char __q40,
+                                      char __q39, char __q38, char __q37, char __q36,
+                                      char __q35, char __q34, char __q33, char __q32,
+                                      char __q31, char __q30, char __q29, char __q28,
+                                      char __q27, char __q26, char __q25, char __q24,
+                                      char __q23, char __q22, char __q21, char __q20,
+                                      char __q19, char __q18, char __q17, char __q16,
+                                      char __q15, char __q14, char __q13, char __q12,
+                                      char __q11, char __q10, char __q09, char __q08,
+                                      char __q07, char __q06, char __q05, char __q04,
+                                      char __q03, char __q02, char __q01, char __q00) {
+    return _mm512_set_epi32(PACK(__q63, __q62, __q61, __q60), PACK(__q59, __q58, __q57, __q56),
+                            PACK(__q55, __q54, __q53, __q52), PACK(__q51, __q50, __q49, __q48),
+                            PACK(__q47, __q46, __q45, __q44), PACK(__q43, __q42, __q41, __q40),
+                            PACK(__q39, __q38, __q37, __q36), PACK(__q35, __q34, __q33, __q32),
+                            PACK(__q31, __q30, __q29, __q28), PACK(__q27, __q26, __q25, __q24),
+                            PACK(__q23, __q22, __q21, __q20), PACK(__q19, __q18, __q17, __q16),
+                            PACK(__q15, __q14, __q13, __q12), PACK(__q11, __q10, __q09, __q08),
+                            PACK(__q07, __q06, __q05, __q04), PACK(__q03, __q02, __q01, __q00));
+}
+
+#undef PACK
+
+#endif // gcc version test
+#endif // __AVX512F__
+
 /* Missing zero-extension AVX and AVX512 intrinsics.
  * Fixed in Microsoft Visual Studio 2017 version 15.7
  * https://developercommunity.visualstudio.com/t/missing-zero-extension-avx-and-avx512-intrinsics/175737
