@@ -105,7 +105,7 @@ native=0
 forcesse2=0
 # For CPUs that can benefit from AVX512, it seems GCC generates suboptimal
 # instruction scheduling unless you specify a reasonable -mtune= target
-avx512flag="-mavx512f -mavx512dq -mavx512bw -mavx512vl -mtune=cascadelake"
+avx512flag="-mavx512f -mavx512dq -mavx512bw -mavx512vl"
 avx512vnniflag="-mavx512vnni ${avx512flag}"
 avx2flag="-mavx2"
 sse2flag="-msse2"
@@ -1063,10 +1063,10 @@ check_avx512_intrinsics() {
 #include <immintrin.h>
 int main(void) {
     __m512i x = _mm512_set1_epi8(2);
-    const __m512i y = _mm512_set_epi8(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-                                      20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
-                                      38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55,
-                                      56, 57, 58, 59, 60, 61, 62, 63, 64);
+    const __m512i y = _mm512_set_epi32(0x1020304, 0x5060708, 0x90a0b0c, 0xd0e0f10,
+                                       0x11121314, 0x15161718, 0x191a1b1c, 0x1d1e1f20,
+                                       0x21222324, 0x25262728, 0x292a2b2c, 0x2d2e2f30,
+                                       0x31323334, 0x35363738, 0x393a3b3c, 0x3d3e3f40);
     x = _mm512_sub_epi8(x, y);
     (void)x;
     return 0;
@@ -1078,6 +1078,35 @@ EOF
     else
         echo "Checking for AVX512 intrinsics ... No." | tee -a configure.log
         HAVE_AVX512_INTRIN=0
+    fi
+}
+
+check_mtune_skylake_avx512_compiler_flag() {
+    # Check whether -mtune=skylake-avx512 works correctly
+    cat > $test.c << EOF
+int main() { return 0; }
+EOF
+    if try $CC -c $CFLAGS -mtune=skylake-avx512 $test.c; then
+        MTUNE_SKYLAKE_AVX512_AVAILABLE=1
+        echo "Check whether -mtune=skylake-avx512 works ... Yes." | tee -a configure.log
+    else
+        echo "Check whether -mtune=skylake-avx512 works ... No." | tee -a configure.log
+        MTUNE_SKYLAKE_AVX512_AVAILABLE=0
+    fi
+}
+
+check_mtune_cascadelake_compiler_flag() {
+    # Check whether -mtune=cascadelake works correctly
+    cat > $test.c << EOF
+int main() { return 0; }
+EOF
+    if try $CC -c $CFLAGS -mtune=cascadelake $test.c; then
+        MTUNE_CASCADELAKE_AVAILABLE=1
+        echo "Check whether -mtune=cascadelake works ... Yes." | tee -a configure.log
+    else
+        echo "Check whether -mtune=cascadelake works ... No." | tee -a configure.log
+        MTUNE_CASCADELAKE_AVAILABLE=0
+        check_mtune_skylake_avx512_compiler_flag
     fi
 }
 
@@ -1564,6 +1593,16 @@ case "${ARCH}" in
                 if test ${HAVE_MASK_INTRIN} -eq 1; then
                     CFLAGS="${CFLAGS} -DX86_MASK_INTRIN"
                     SFLAGS="${SFLAGS} -DX86_MASK_INTRIN"
+                fi
+            fi
+
+            check_mtune_cascadelake_compiler_flag
+
+            if test ${MTUNE_CASCADELAKE_AVAILABLE} -eq 1; then
+                avx512flag="${avx512flag} -mtune=cascadelake"
+            else
+                if test ${MTUNE_SKYLAKE_AVX512_AVAILABLE} -eq 1; then
+                    avx512flag="${avx512flag} -mtune=skylake-avx512"
                 fi
             fi
 
