@@ -48,7 +48,7 @@ _EOF_
 set -ex
 
 # Caller can also set CMAKE_ARGS or CONFIGURE_ARGS if desired
-CMAKE_ARGS=${CMAKE_ARGS}
+CMAKE_ARGS="-DCMAKE_INSTALL_LIBDIR=lib ${CMAKE_ARGS}"
 CONFIGURE_ARGS=${CONFIGURE_ARGS}
 
 case "$1" in
