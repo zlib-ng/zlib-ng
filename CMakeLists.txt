@@ -927,15 +927,19 @@ endif()
 
 # Refer to prefix symbolically to ease relocation by end user,
 # as Makefile-generated .pc file does.
-if(INC_INSTALL_DIR STREQUAL "${CMAKE_INSTALL_PREFIX}/include")
+if(NOT IS_ABSOLUTE "${CMAKE_INSTALL_INCLUDEDIR}")
+  set(PC_INC_INSTALL_DIR "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
+elseif(CMAKE_INSTALL_INCLUDEDIR STREQUAL "${CMAKE_INSTALL_PREFIX}/include")
   set(PC_INC_INSTALL_DIR "\${prefix}/include")
 else()
-  set(PC_INC_INSTALL_DIR "${INC_INSTALL_DIR}")
+  set(PC_INC_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
 endif()
-if(LIB_INSTALL_DIR STREQUAL "${CMAKE_INSTALL_PREFIX}/lib")
+if(NOT IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}")
+  set(PC_LIB_INSTALL_DIR "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
+elseif(CMAKE_INSTALL_LIBDIR STREQUAL "${CMAKE_INSTALL_PREFIX}/lib")
   set(PC_LIB_INSTALL_DIR "\${exec_prefix}/lib")
 else()
-  set(PC_LIB_INSTALL_DIR "${LIB_INSTALL_DIR}")
+  set(PC_LIB_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}")
 endif()
 
 #============================================================================
@@ -1099,7 +1103,7 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
                 "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map\"")
         else()
             # Match configure/make's behavior (i.e. don't use @rpath on mac).
-            set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "${LIB_INSTALL_DIR}")
+            set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "${CMAKE_INSTALL_FULL_LIBDIR}")
         endif()
     endif()
     if(MSYS)
@@ -1151,17 +1155,17 @@ endif()
 
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     install(TARGETS ${ZLIB_INSTALL_LIBRARIES}
-        RUNTIME DESTINATION "${BIN_INSTALL_DIR}"
-        ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
-        LIBRARY DESTINATION "${LIB_INSTALL_DIR}")
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 endif()
 if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.h
-        DESTINATION "${INC_INSTALL_DIR}" RENAME zlib${SUFFIX}.h)
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" RENAME zlib${SUFFIX}.h)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zlib_name_mangling${SUFFIX}.h
-        DESTINATION "${INC_INSTALL_DIR}" RENAME zlib_name_mangling${SUFFIX}.h)
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" RENAME zlib_name_mangling${SUFFIX}.h)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h
-        DESTINATION "${INC_INSTALL_DIR}" RENAME zconf${SUFFIX}.h)
+        DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" RENAME zconf${SUFFIX}.h)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(FILES ${ZLIB_PC} DESTINATION "${PKGCONFIG_INSTALL_DIR}")
