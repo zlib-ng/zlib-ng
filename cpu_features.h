@@ -29,6 +29,8 @@ struct cpu_features {
     struct power_cpu_features power;
 #elif defined(S390_FEATURES)
     struct s390_cpu_features s390;
+#else
+    char empty;
 #endif
 };
 
