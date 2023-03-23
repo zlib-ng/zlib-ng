@@ -1,0 +1,3 @@
+[submodule "third_party/metal-run"]
+	path = third_party/metal-run
+	url = git@github.com:sifive/metal-run.git
