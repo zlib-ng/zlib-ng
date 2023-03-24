@@ -184,24 +184,10 @@
 #  define LIKELY_NULL(x)        __builtin_expect((x) != 0, 0)
 #  define LIKELY(x)             __builtin_expect(!!(x), 1)
 #  define UNLIKELY(x)           __builtin_expect(!!(x), 0)
-#  define PREFETCH_L1(addr)     __builtin_prefetch(addr, 0, 3)
-#  define PREFETCH_L2(addr)     __builtin_prefetch(addr, 0, 2)
-#  define PREFETCH_RW(addr)     __builtin_prefetch(addr, 1, 2)
-#elif defined(X86_FEATURES)
-#  include <xmmintrin.h>
-#  define LIKELY_NULL(x)        x
-#  define LIKELY(x)             x
-#  define UNLIKELY(x)           x
-#  define PREFETCH_L1(addr)     _mm_prefetch((char *) addr, _MM_HINT_T0)
-#  define PREFETCH_L2(addr)     _mm_prefetch((char *) addr, _MM_HINT_T1)
-#  define PREFETCH_RW(addr)     _mm_prefetch((char *) addr, _MM_HINT_T1)
 #else
 #  define LIKELY_NULL(x)        x
 #  define LIKELY(x)             x
 #  define UNLIKELY(x)           x
-#  define PREFETCH_L1(addr)     addr
-#  define PREFETCH_L2(addr)     addr
-#  define PREFETCH_RW(addr)     addr
 #endif /* (un)likely */
 
 #if defined(__clang__) || defined(__GNUC__)
