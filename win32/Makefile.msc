@@ -56,6 +56,7 @@ OBJS = \
 	chunkset.obj \
 	chunkset_avx.obj \
 	chunkset_sse2.obj \
+	chunkset_ssse3.obj \
 	compare256.obj \
 	compare256_avx2.obj \
 	compare256_sse2.obj \
@@ -202,6 +203,7 @@ uncompr.obj: $(SRCDIR)/uncompr.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 chunkset_avx.obj: $(SRCDIR)/arch/x86/chunkset_avx.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 chunkset_sse2.obj: $(SRCDIR)/arch/x86/chunkset_sse2.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
+chunkset_ssse3.obj: $(SRCDIR)/arch/x86/chunkset_ssse3.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 cpu_features.obj: $(SRCDIR)/cpu_features.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 crc32_braid.obj: $(SRCDIR)/crc32_braid.c $(SRCDIR)/zbuild.h $(SRCDIR)/zendian.h $(SRCDIR)/deflate.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h
 crc32_braid_comb.obj: $(SRCDIR)/crc32_braid_comb.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h $(SRCDIR)/crc32_braid_comb_p.h

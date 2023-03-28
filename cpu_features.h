@@ -99,8 +99,8 @@ extern uint8_t* chunkmemset_safe_c(uint8_t *out, unsigned dist, unsigned len, un
 extern uint32_t chunksize_sse2(void);
 extern uint8_t* chunkmemset_safe_sse2(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 #endif
-#ifdef X86_SSE41
-extern uint8_t* chunkmemset_safe_sse41(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+#ifdef X86_SSSE3
+extern uint8_t* chunkmemset_safe_ssse3(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 #endif
 #ifdef X86_AVX2
 extern uint32_t chunksize_avx(void);
@@ -126,8 +126,8 @@ extern void inflate_fast_c(PREFIX3(stream) *strm, uint32_t start);
 #ifdef X86_SSE2
 extern void inflate_fast_sse2(PREFIX3(stream) *strm, uint32_t start);
 #endif
-#ifdef X86_SSE41
-extern void inflate_fast_sse41(PREFIX3(stream) *strm, uint32_t start);
+#ifdef X86_SSSE3
+extern void inflate_fast_ssse3(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifdef X86_AVX2
 extern void inflate_fast_avx(PREFIX3(stream) *strm, uint32_t start);

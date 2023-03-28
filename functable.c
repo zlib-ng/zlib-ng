@@ -75,16 +75,15 @@ static void init_functable(void) {
 #endif
     // X86 - SSSE3
 #ifdef X86_SSSE3
-    if (cf.x86.has_ssse3)
+    if (cf.x86.has_ssse3) {
         ft.adler32 = &adler32_ssse3;
-#endif
-    // X86 - SSE4
-#if defined(X86_SSE41) && defined(X86_SSE2)
-    if (cf.x86.has_sse41) {
-        ft.chunkmemset_safe = &chunkmemset_safe_sse41;
-        ft.inflate_fast = &inflate_fast_sse41;
+#  ifdef X86_SSE2
+        ft.chunkmemset_safe = &chunkmemset_safe_ssse3;
+        ft.inflate_fast = &inflate_fast_ssse3;
+#  endif
     }
 #endif
+    // X86 - SSE4.2
 #ifdef X86_SSE42
     if (cf.x86.has_sse42) {
         ft.adler32_fold_copy = &adler32_fold_copy_sse42;

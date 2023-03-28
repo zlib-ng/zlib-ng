@@ -66,7 +66,6 @@ void Z_INTERNAL x86_check_features(struct x86_cpu_features *features) {
 
     features->has_sse2 = edx & 0x4000000;
     features->has_ssse3 = ecx & 0x200;
-    features->has_sse41 = ecx & 0x80000;
     features->has_sse42 = ecx & 0x100000;
     features->has_pclmulqdq = ecx & 0x2;
 

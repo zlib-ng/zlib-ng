@@ -5,8 +5,8 @@
 #include "zbuild.h"
 #include <stdlib.h>
 
-#if CHUNK_SIZE == 32 && defined(X86_SSE41) && defined(X86_SSE2)
-extern uint8_t* chunkmemset_sse41(uint8_t *out, unsigned dist, unsigned len);
+#if CHUNK_SIZE == 32 && defined(X86_SSSE3) && defined(X86_SSE2)
+extern uint8_t* chunkmemset_ssse3(uint8_t *out, unsigned dist, unsigned len);
 #endif
 
 /* Returns the chunk size */
@@ -98,9 +98,9 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
     Assert(dist > 0, "chunkmemset cannot have a distance 0");
     /* Only AVX2 */
-#if CHUNK_SIZE == 32 && defined(X86_SSE41) && defined(X86_SSE2)
+#if CHUNK_SIZE == 32 && defined(X86_SSSE3) && defined(X86_SSE2)
     if (len <= 16) {
-        return chunkmemset_sse41(out, dist, len);
+        return chunkmemset_ssse3(out, dist, len);
     }
 #endif
 
