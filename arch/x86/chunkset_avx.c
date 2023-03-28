@@ -85,7 +85,7 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
     *chunk_rem = lut_rem.remval;
 
 #ifdef Z_MEMORY_SANITIZER
-    /* See note in chunkset_sse4.c for why this is ok */
+    /* See note in chunkset_ssse3.c for why this is ok */
     __msan_unpoison(buf + dist, 32 - dist);
 #endif
 

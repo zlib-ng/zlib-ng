@@ -26,7 +26,7 @@ Features
   * Hash table implementation using CRC32-C intrinsics on x86 and ARM
   * Slide hash implementations using SSE2, AVX2, Neon, VMX & VSX
   * Compare256 implementations using SSE2, AVX2, Neon, & POWER9
-  * Inflate chunk copying using SSE2, AVX, Neon & VSX
+  * Inflate chunk copying using SSE2, SSSE3, AVX, Neon & VSX
   * Support for hardware-accelerated deflate using IBM Z DFLTCC
 * Unaligned memory read/writes and large bit buffer improvements
 * Includes improvements from Cloudflare and Intel forks
@@ -213,7 +213,7 @@ Advanced Build Options
 | WITH_AVX512                     |                       | Build with AVX512 intrinsics                                        | ON                     |
 | WITH_AVX512VNNI                 |                       | Build with AVX512VNNI intrinsics                                    | ON                     |
 | WITH_SSE2                       |                       | Build with SSE2 intrinsics                                          | ON                     |
-| WITH_SSE41                      |                       | Build with SSE41 intrinsics                                         | ON                     |
+| WITH_SSSE3                      |                       | Build with SSSE3 intrinsics                                         | ON                     |
 | WITH_SSE42                      |                       | Build with SSE42 intrinsics                                         | ON                     |
 | WITH_PCLMULQDQ                  |                       | Build with PCLMULQDQ intrinsics                                     | ON                     |
 | WITH_VPCLMULQDQ                 | --without-vpclmulqdq  | Build with VPCLMULQDQ intrinsics                                    | ON                     |

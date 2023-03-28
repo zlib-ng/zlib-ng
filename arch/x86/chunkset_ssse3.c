@@ -1,13 +1,13 @@
-/* chunkset_sse41.c -- SSE4 inline functions to copy small data chunks.
+/* chunkset_ssse3.c -- SSSE3 inline functions to copy small data chunks.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
 #include "zbuild.h"
 
-/* This requires SSE2 support. While it's implicit with SSE4, we can minimize
+/* This requires SSE2 support. While it's implicit with SSSE3, we can minimize
  * code size by sharing the chunkcopy functions, which will certainly compile
  * to identical machine code */
-#if defined(X86_SSE41) && defined(X86_SSE2)
+#if defined(X86_SSSE3) && defined(X86_SSE2)
 #include <immintrin.h>
 #include "../generic/chunk_permute_table.h"
 
@@ -88,15 +88,15 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
 extern uint8_t* chunkcopy_sse2(uint8_t *out, uint8_t const *from, unsigned len);
 extern uint8_t* chunkunroll_sse2(uint8_t *out, unsigned *dist, unsigned *len);
 
-#define CHUNKSIZE        chunksize_sse41
-#define CHUNKMEMSET      chunkmemset_sse41
-#define CHUNKMEMSET_SAFE chunkmemset_safe_sse41
+#define CHUNKSIZE        chunksize_ssse3
+#define CHUNKMEMSET      chunkmemset_ssse3
+#define CHUNKMEMSET_SAFE chunkmemset_safe_ssse3
 #define CHUNKCOPY        chunkcopy_sse2
 #define CHUNKUNROLL      chunkunroll_sse2
 
 #include "chunkset_tpl.h"
 
-#define INFLATE_FAST     inflate_fast_sse41
+#define INFLATE_FAST     inflate_fast_ssse3
 
 #include "inffast_tpl.h"
 

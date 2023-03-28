@@ -1,4 +1,4 @@
-/* chunk_permute_table.h - shared AVX/SSE4 permutation table for use with chunkmemset family of functions.
+/* chunk_permute_table.h - shared AVX/SSSE3 permutation table for use with chunkmemset family of functions.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 

@@ -117,7 +117,6 @@ elseif(BASEARCH_X86_FOUND)
     option(WITH_AVX512VNNI "Build with AVX512 VNNI extensions" ON)
     option(WITH_SSE2 "Build with SSE2" ON)
     option(WITH_SSSE3 "Build with SSSE3" ON)
-    option(WITH_SSE41 "Build with SSE41" ON)
     option(WITH_SSE42 "Build with SSE42" ON)
     option(WITH_PCLMULQDQ "Build with PCLMULQDQ" ON)
     option(WITH_VPCLMULQDQ "Build with VPCLMULQDQ" ON)
@@ -133,8 +132,7 @@ mark_as_advanced(FORCE
     WITH_DFLTCC_INFLATE
     WITH_CRC32_VX
     WITH_AVX2 WITH_SSE2
-    WITH_SSSE3 WITH_SSE41
-    WITH_SSE42
+    WITH_SSSE3 WITH_SSE42
     WITH_PCLMULQDQ
     WITH_ALTIVEC
     WITH_POWER8
@@ -787,17 +785,6 @@ if(WITH_OPTIM)
                 set(WITH_AVX512VNNI OFF)
             endif()
         endif()
-        if(WITH_SSE41)
-            check_sse41_intrinsics()
-            if(HAVE_SSE41_INTRIN)
-                add_definitions(-DX86_SSE41)
-                list(APPEND SSE41_SRCS ${ARCHDIR}/chunkset_sse41.c)
-                list(APPEND ZLIB_ARCH_SRCS ${SSE41_SRCS})
-                set_property(SOURCE ${SSE41_SRCS} PROPERTY COMPILE_FLAGS "${SSE41FLAG} ${NOLTOFLAG}")
-            else()
-                set(WITH_SSE41 OFF)
-            endif()
-        endif()
         if(WITH_SSE42)
             check_sse42_intrinsics()
             if(HAVE_SSE42CRC_INLINE_ASM OR HAVE_SSE42CRC_INTRIN)
@@ -835,7 +822,7 @@ if(WITH_OPTIM)
             check_ssse3_intrinsics()
             if(HAVE_SSSE3_INTRIN)
                 add_definitions(-DX86_SSSE3)
-                set(SSSE3_SRCS ${ARCHDIR}/adler32_ssse3.c)
+                set(SSSE3_SRCS ${ARCHDIR}/adler32_ssse3.c ${ARCHDIR}/chunkset_ssse3.c)
                 add_feature_info(SSSE3_ADLER32 1 "Support SSSE3-accelerated adler32, using \"${SSSE3FLAG}\"")
                 list(APPEND ZLIB_ARCH_SRCS ${SSSE3_SRCS})
                 set_property(SOURCE ${SSSE3_SRCS} PROPERTY COMPILE_FLAGS "${SSSE3FLAG} ${NOLTOFLAG}")
@@ -1226,7 +1213,6 @@ elseif(BASEARCH_X86_FOUND)
     add_feature_info(WITH_AVX512VNNI WITH_AVX512VNNI "Build with AVX512 VNNI")
     add_feature_info(WITH_SSE2 WITH_SSE2 "Build with SSE2")
     add_feature_info(WITH_SSSE3 WITH_SSSE3 "Build with SSSE3")
-    add_feature_info(WITH_SSE41 WITH_SSE41 "Build with SSE41")
     add_feature_info(WITH_SSE42 WITH_SSE42 "Build with SSE42")
     add_feature_info(WITH_PCLMULQDQ WITH_PCLMULQDQ "Build with PCLMULQDQ")
     add_feature_info(WITH_VPCLMULQDQ WITH_VPCLMULQDQ "Build with VPCLMULQDQ")
