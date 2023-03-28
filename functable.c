@@ -87,9 +87,9 @@ static void init_functable(void) {
 #ifdef X86_SSE42
     if (cf.x86.has_sse42) {
         ft.adler32_fold_copy = &adler32_fold_copy_sse42;
-        ft.insert_string = &insert_string_sse4;
-        ft.quick_insert_string = &quick_insert_string_sse4;
-        ft.update_hash = &update_hash_sse4;
+        ft.insert_string = &insert_string_sse42;
+        ft.quick_insert_string = &quick_insert_string_sse42;
+        ft.update_hash = &update_hash_sse42;
     }
 #endif
     // X86 - PCLMUL

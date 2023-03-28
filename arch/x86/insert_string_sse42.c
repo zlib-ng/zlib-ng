@@ -41,9 +41,9 @@
 #define HASH_CALC_VAR       h
 #define HASH_CALC_VAR_INIT  uint32_t h = 0
 
-#define UPDATE_HASH         update_hash_sse4
-#define INSERT_STRING       insert_string_sse4
-#define QUICK_INSERT_STRING quick_insert_string_sse4
+#define UPDATE_HASH         update_hash_sse42
+#define INSERT_STRING       insert_string_sse42
+#define QUICK_INSERT_STRING quick_insert_string_sse42
 
 #ifdef X86_SSE42
 #  include "../../insert_string_tpl.h"
