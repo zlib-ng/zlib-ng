@@ -475,7 +475,7 @@ macro(check_sse42_intrinsics)
             set(SSE42FLAG "-msse4.2")
         endif()
     endif()
-    # Check whether compiler supports SSE4 CRC inline asm
+    # Check whether compiler supports SSE4.2 CRC inline asm
     set(CMAKE_REQUIRED_FLAGS "${SSE42FLAG} ${NATIVEFLAG}")
     check_c_source_compile_or_run(
         "int main(void) {
@@ -489,7 +489,7 @@ macro(check_sse42_intrinsics)
         }"
         HAVE_SSE42CRC_INLINE_ASM
     )
-    # Check whether compiler supports SSE4 CRC intrinsics
+    # Check whether compiler supports SSE4.2 CRC intrinsics
     check_c_source_compile_or_run(
         "#include <immintrin.h>
         int main(void) {
@@ -504,19 +504,6 @@ macro(check_sse42_intrinsics)
             return 0;
         }"
         HAVE_SSE42CRC_INTRIN
-    )
-    # Check whether compiler supports SSE4.2 compare string intrinsics
-    check_c_source_compile_or_run(
-        "#include <immintrin.h>
-        int main(void) {
-            unsigned char a[64] = { 0 };
-            unsigned char b[64] = { 0 };
-            __m128i xmm_src0, xmm_src1;
-            xmm_src0 = _mm_loadu_si128((__m128i *)(char *)a);
-            xmm_src1 = _mm_loadu_si128((__m128i *)(char *)b);
-            return _mm_cmpestri(xmm_src0, 16, xmm_src1, 16, 0);
-        }"
-        HAVE_SSE42CMPSTR_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
