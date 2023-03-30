@@ -392,6 +392,20 @@ if(HAVE_ATTRIBUTE_VISIBILITY_INTERNAL)
 endif()
 
 #
+# Check for __attribute__((aligned(x))) support in the compiler
+#
+check_c_source_compiles(
+    "int main(void) {
+        __attribute__((aligned(8))) int test = 0;
+        (void)test;
+        return 0;
+    }"
+    HAVE_ATTRIBUTE_ALIGNED FAIL_REGEX "aligned")
+if(HAVE_ATTRIBUTE_ALIGNED)
+    add_definitions(-DHAVE_ATTRIBUTE_ALIGNED)
+endif()
+
+#
 # check for _Thread_local() support in the compiler
 #
 check_c_source_compiles(
