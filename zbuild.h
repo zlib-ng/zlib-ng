@@ -190,7 +190,7 @@
 #  define UNLIKELY(x)           x
 #endif /* (un)likely */
 
-#if defined(__clang__) || defined(__GNUC__)
+#if defined(HAVE_ATTRIBUTE_ALIGNED)
 #  define ALIGNED_(x) __attribute__ ((aligned(x)))
 #elif defined(_MSC_VER)
 #  define ALIGNED_(x) __declspec(align(x))
