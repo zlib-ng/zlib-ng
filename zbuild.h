@@ -8,6 +8,9 @@
 #ifndef _ISOC11_SOURCE
 #  define _ISOC11_SOURCE 1 /* aligned_alloc */
 #endif
+#ifdef __OpenBSD__
+#  define _BSD_SOURCE 1
+#endif
 
 #include <stddef.h>
 #include <string.h>
