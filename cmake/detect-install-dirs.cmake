@@ -4,6 +4,7 @@
 
 # Determine installation directory for executables
 if (DEFINED BIN_INSTALL_DIR)
+    set(BIN_INSTALL_DIR "${BIN_INSTALL_DIR}" CACHE PATH "Installation directory for executables (Deprecated)" FORCE)
     set(CMAKE_INSTALL_BINDIR "${BIN_INSTALL_DIR}")
 elseif (DEFINED INSTALL_BIN_DIR)
     set(CMAKE_INSTALL_BINDIR "${INSTALL_BIN_DIR}")
@@ -11,6 +12,7 @@ endif()
 
 # Determine installation directory for libraries
 if (DEFINED LIB_INSTALL_DIR)
+    set(LIB_INSTALL_DIR "${LIB_INSTALL_DIR}" CACHE PATH "Installation directory for libraries (Deprecated)" FORCE)
     set(CMAKE_INSTALL_LIBDIR "${LIB_INSTALL_DIR}")
 elseif (DEFINED INSTALL_LIB_DIR)
     set(CMAKE_INSTALL_LIBDIR "${INSTALL_LIB_DIR}")
@@ -18,6 +20,7 @@ endif()
 
 # Determine installation directory for include files
 if (DEFINED INC_INSTALL_DIR)
+    set(INC_INSTALL_DIR "${INC_INSTALL_DIR}" CACHE PATH "Installation directory for headers (Deprecated)" FORCE)
     set(CMAKE_INSTALL_INCLUDEDIR "${INC_INSTALL_DIR}")
 elseif (DEFINED INSTALL_INC_DIR)
     set(CMAKE_INSTALL_INCLUDEDIR "${INSTALL_INC_DIR}")
