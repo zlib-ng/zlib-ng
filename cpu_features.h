@@ -155,7 +155,7 @@ extern uint32_t crc32_s390_vx(uint32_t crc, const uint8_t *buf, size_t len);
 typedef uint32_t (*compare256_func)(const uint8_t *src0, const uint8_t *src1);
 
 extern uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1);
-#ifdef UNALIGNED_OK
+#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 extern uint32_t compare256_unaligned_16(const uint8_t *src0, const uint8_t *src1);
 #ifdef HAVE_BUILTIN_CTZ
 extern uint32_t compare256_unaligned_32(const uint8_t *src0, const uint8_t *src1);
@@ -188,7 +188,7 @@ extern void insert_string_acle(deflate_state *const s, const uint32_t str, uint3
 
 /* longest_match */
 extern uint32_t longest_match_c(deflate_state *const s, Pos cur_match);
-#ifdef UNALIGNED_OK
+#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 extern uint32_t longest_match_unaligned_16(deflate_state *const s, Pos cur_match);
 #ifdef HAVE_BUILTIN_CTZ
 extern uint32_t longest_match_unaligned_32(deflate_state *const s, Pos cur_match);
@@ -212,7 +212,7 @@ extern uint32_t longest_match_power9(deflate_state *const s, Pos cur_match);
 
 /* longest_match_slow */
 extern uint32_t longest_match_slow_c(deflate_state *const s, Pos cur_match);
-#ifdef UNALIGNED_OK
+#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 extern uint32_t longest_match_slow_unaligned_16(deflate_state *const s, Pos cur_match);
 extern uint32_t longest_match_slow_unaligned_32(deflate_state *const s, Pos cur_match);
 #ifdef UNALIGNED64_OK
