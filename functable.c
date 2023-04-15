@@ -107,9 +107,9 @@ static void init_functable(void) {
     if (cf.x86.has_avx2) {
         ft.adler32 = &adler32_avx2;
         ft.adler32_fold_copy = &adler32_fold_copy_avx2;
-        ft.chunkmemset_safe = &chunkmemset_safe_avx;
-        ft.chunksize = &chunksize_avx;
-        ft.inflate_fast = &inflate_fast_avx;
+        ft.chunkmemset_safe = &chunkmemset_safe_avx2;
+        ft.chunksize = &chunksize_avx2;
+        ft.inflate_fast = &inflate_fast_avx2;
         ft.slide_hash = &slide_hash_avx2;
 #  ifdef HAVE_BUILTIN_CTZ
         ft.compare256 = &compare256_avx2;

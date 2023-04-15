@@ -54,7 +54,7 @@ OBJS = \
 	adler32_ssse3.obj \
 	adler32_fold.obj \
 	chunkset.obj \
-	chunkset_avx.obj \
+	chunkset_avx2.obj \
 	chunkset_sse2.obj \
 	chunkset_ssse3.obj \
 	compare256.obj \
@@ -201,7 +201,7 @@ gzwrite.obj: $(SRCDIR)/gzwrite.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)
 compress.obj: $(SRCDIR)/compress.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 uncompr.obj: $(SRCDIR)/uncompr.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
-chunkset_avx.obj: $(SRCDIR)/arch/x86/chunkset_avx.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
+chunkset_avx2.obj: $(SRCDIR)/arch/x86/chunkset_avx2.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 chunkset_sse2.obj: $(SRCDIR)/arch/x86/chunkset_sse2.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 chunkset_ssse3.obj: $(SRCDIR)/arch/x86/chunkset_ssse3.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 cpu_features.obj: $(SRCDIR)/cpu_features.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h

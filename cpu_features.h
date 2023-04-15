@@ -103,8 +103,8 @@ extern uint8_t* chunkmemset_safe_sse2(uint8_t *out, unsigned dist, unsigned len,
 extern uint8_t* chunkmemset_safe_ssse3(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 #endif
 #ifdef X86_AVX2
-extern uint32_t chunksize_avx(void);
-extern uint8_t* chunkmemset_safe_avx(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+extern uint32_t chunksize_avx2(void);
+extern uint8_t* chunkmemset_safe_avx2(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 #endif
 #ifdef ARM_NEON
 extern uint32_t chunksize_neon(void);
@@ -130,7 +130,7 @@ extern void inflate_fast_sse2(PREFIX3(stream) *strm, uint32_t start);
 extern void inflate_fast_ssse3(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifdef X86_AVX2
-extern void inflate_fast_avx(PREFIX3(stream) *strm, uint32_t start);
+extern void inflate_fast_avx2(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifdef ARM_NEON
 extern void inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
