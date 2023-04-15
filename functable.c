@@ -33,7 +33,7 @@ static void init_functable(void) {
     ft.slide_hash = &slide_hash_c;
     ft.update_hash = &update_hash_c;
 
-#ifdef UNALIGNED_OK
+#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
     ft.longest_match = &longest_match_unaligned_64;
     ft.longest_match_slow = &longest_match_slow_unaligned_64;

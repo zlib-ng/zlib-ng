@@ -60,7 +60,7 @@ static inline void compare256_match_check(compare256_func compare256) {
 
 TEST_COMPARE256(c, compare256_c, 1)
 
-#ifdef UNALIGNED_OK
+#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 TEST_COMPARE256(unaligned_16, compare256_unaligned_16, 1)
 #ifdef HAVE_BUILTIN_CTZ
 TEST_COMPARE256(unaligned_32, compare256_unaligned_32, 1)
