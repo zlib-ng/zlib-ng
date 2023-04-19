@@ -22,12 +22,15 @@ typedef struct {
     int32_t level;
     int32_t window_size;
     int32_t mem_level;
+    bool after_init;
 } deflate_bound_test;
 
 static const deflate_bound_test tests[] = {
-    {0, MAX_WBITS + 16, 1},
-    {Z_BEST_SPEED, MAX_WBITS, MAX_MEM_LEVEL},
-    {Z_BEST_COMPRESSION, MAX_WBITS, MAX_MEM_LEVEL}
+    {0, MAX_WBITS + 16, 1, true},
+    {Z_BEST_SPEED, MAX_WBITS, MAX_MEM_LEVEL, true},
+    {Z_BEST_COMPRESSION, MAX_WBITS, MAX_MEM_LEVEL, true},
+    {Z_BEST_SPEED, MAX_WBITS, MAX_MEM_LEVEL, false},
+    {Z_BEST_COMPRESSION, MAX_WBITS, MAX_MEM_LEVEL, false},
 };
 
 class deflate_bound_variant : public testing::TestWithParam<deflate_bound_test> {
@@ -51,12 +54,16 @@ public:
             c_stream.avail_out = 0;
             c_stream.next_out = out_buf;
 
+            if (!param.after_init)
+                estimate_len = PREFIX(deflateBound)(&c_stream, i);
+
             err = PREFIX(deflateInit2)(&c_stream, param.level, Z_DEFLATED,
                 param.window_size, param.mem_level, Z_DEFAULT_STRATEGY);
             EXPECT_EQ(err, Z_OK);
 
             /* calculate actual output length and update structure */
-            estimate_len = PREFIX(deflateBound)(&c_stream, i);
+            if (param.after_init)
+                estimate_len = PREFIX(deflateBound)(&c_stream, i);
             out_buf = (uint8_t *)malloc(estimate_len);
 
             if (out_buf != NULL) {
@@ -70,6 +77,7 @@ public:
                     "level: " << param.level << "\n" <<
                     "window_size: " << param.window_size << "\n" <<
                     "mem_level: " << param.mem_level << "\n" <<
+                    "after_init: " << param.after_init << "\n" <<
                     "length: " << i;
 
                 free(out_buf);
