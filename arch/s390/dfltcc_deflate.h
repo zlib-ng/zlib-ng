@@ -40,7 +40,7 @@ int Z_INTERNAL dfltcc_deflate_get_dictionary(PREFIX3(streamp) strm, unsigned cha
 
 #define DEFLATE_BOUND_ADJUST_COMPLEN(strm, complen, source_len) \
     do { \
-        if (dfltcc_can_deflate((strm))) \
+        if (deflateStateCheck((strm)) || dfltcc_can_deflate((strm))) \
             (complen) = DEFLATE_BOUND_COMPLEN(source_len); \
     } while (0)
 
