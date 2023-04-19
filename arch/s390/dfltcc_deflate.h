@@ -45,7 +45,7 @@ int Z_INTERNAL PREFIX(dfltcc_deflate_get_dictionary)(PREFIX3(streamp) strm, unsi
 
 #define DEFLATE_BOUND_ADJUST_COMPLEN(strm, complen, source_len) \
     do { \
-        if (PREFIX(dfltcc_can_deflate)((strm))) \
+        if (deflateStateCheck((strm)) || PREFIX(dfltcc_can_deflate)((strm))) \
             (complen) = DEFLATE_BOUND_COMPLEN(source_len); \
     } while (0)
 
