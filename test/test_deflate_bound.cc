@@ -81,6 +81,7 @@ public:
                     "length: " << i;
 
                 free(out_buf);
+                out_buf = NULL;
             }
 
             err = PREFIX(deflateEnd)(&c_stream);
