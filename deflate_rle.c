@@ -47,6 +47,7 @@ Z_INTERNAL block_state deflate_rle(deflate_state *s, int flush) {
                          scan < strend);
                 match_len = STD_MAX_MATCH - (unsigned int)(strend - scan);
                 match_len = MIN(match_len, s->lookahead);
+                match_len = MIN(match_len, STD_MAX_MATCH);
             }
             Assert(scan <= s->window + s->window_size - 1, "wild scan");
         }
