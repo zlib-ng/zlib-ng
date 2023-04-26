@@ -93,7 +93,7 @@ static void braid(uint32_t ltl[][256], z_word_t big[][256], int n, int w) {
     int k;
     uint32_t i, p, q;
     for (k = 0; k < w; k++) {
-        p = x2nmodp((n * w + 3 - k) << 3, 0);
+        p = x2nmodp(((z_off64_t)n * w + 3 - k) << 3, 0);
         ltl[k][0] = 0;
         big[w - 1 - k][0] = 0;
         for (i = 1; i < 256; i++) {
