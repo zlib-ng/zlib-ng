@@ -347,6 +347,24 @@ macro(check_power8_intrinsics)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
+macro(check_rvv_intrinsics)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+        if(NOT NATIVEFLAG)
+            set(RISCVFLAG "-march=rv64gcv")
+        endif()
+    endif()
+    # Check whether compiler supports RVV
+    set(CMAKE_REQUIRED_FLAGS "${RISCVFLAG} ${NATIVEFLAG}")
+    check_c_source_compiles(
+        "#include <riscv_vector.h>
+        int main() { 
+            return 0; 
+        }" 
+        HAVE_RVV_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
 macro(check_s390_intrinsics)
     check_c_source_compiles(
         "#include <sys/auxv.h>
