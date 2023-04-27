@@ -34,7 +34,7 @@ Features
 * Comprehensive set of CMake unit tests
 * Code sanitizers, fuzzing, and coverage
 * GitHub Actions continuous integration on Windows, macOS, and Linux
-  * Emulated CI for ARM, AARCH64, PPC, PPC64, SPARC64, S390x using qemu
+  * Emulated CI for ARM, AARCH64, PPC, PPC64, RISCV, SPARC64, S390x using qemu
 
 
 History
@@ -221,6 +221,7 @@ Advanced Build Options
 | WITH_NEON                       | --without-neon        | Build with NEON intrinsics                                          | ON                     |
 | WITH_ALTIVEC                    | --without-altivec     | Build with AltiVec (VMX) intrinsics                                 | ON                     |
 | WITH_POWER8                     | --without-power8      | Build with POWER8 optimisations                                     | ON                     |
+| WITH_RVV                        |                       | Build with RVV intrinsics                                           | ON                     |
 | WITH_CRC32_VX                   | --without-crc32-vx    | Build with vectorized CRC32 on IBM Z                                | ON                     |
 | WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | Build with DFLTCC intrinsics for compression on IBM Z               | OFF                    |
 | WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | Build with DFLTCC intrinsics for decompression on IBM Z             | OFF                    |
