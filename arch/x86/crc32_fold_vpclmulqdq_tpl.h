@@ -40,8 +40,7 @@ static size_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
     zmm_crc0 = _mm512_inserti32x4(zmm_crc0, *xmm_crc3, 3);
     z0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
     zmm_crc0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-    zmm_crc0 = _mm512_xor_si512(z0, zmm_crc0);
-    zmm_crc0 = _mm512_xor_si512(zmm_crc0, zmm_t0);
+    zmm_crc0 = _mm512_ternarylogic_epi32(zmm_crc0, z0, zmm_t0, 0x96);
 
 #ifdef COPY
     _mm512_storeu_si512((__m512i *)dst, zmm_t0);
@@ -70,15 +69,10 @@ static size_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
         zmm_crc2 = _mm512_clmulepi64_epi128(zmm_crc2, zmm_fold16, 0x10);
         zmm_crc3 = _mm512_clmulepi64_epi128(zmm_crc3, zmm_fold16, 0x10);
 
-        zmm_crc0 = _mm512_xor_si512(z0, zmm_crc0);
-        zmm_crc1 = _mm512_xor_si512(z1, zmm_crc1);
-        zmm_crc2 = _mm512_xor_si512(z2, zmm_crc2);
-        zmm_crc3 = _mm512_xor_si512(z3, zmm_crc3);
-
-        zmm_crc0 = _mm512_xor_si512(zmm_crc0, zmm_t0);
-        zmm_crc1 = _mm512_xor_si512(zmm_crc1, zmm_t1);
-        zmm_crc2 = _mm512_xor_si512(zmm_crc2, zmm_t2);
-        zmm_crc3 = _mm512_xor_si512(zmm_crc3, zmm_t3);
+        zmm_crc0 = _mm512_ternarylogic_epi32(zmm_crc0, z0, zmm_t0, 0x96);
+        zmm_crc1 = _mm512_ternarylogic_epi32(zmm_crc1, z1, zmm_t1, 0x96);
+        zmm_crc2 = _mm512_ternarylogic_epi32(zmm_crc2, z2, zmm_t2, 0x96);
+        zmm_crc3 = _mm512_ternarylogic_epi32(zmm_crc3, z3, zmm_t3, 0x96);
 
 #ifdef COPY
         _mm512_storeu_si512((__m512i *)dst, zmm_t0);
@@ -93,18 +87,15 @@ static size_t fold_16_vpclmulqdq(__m128i *xmm_crc0, __m128i *xmm_crc1,
     // zmm_crc[0,1,2,3] -> zmm_crc0
     z0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
     zmm_crc0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-    zmm_crc0 = _mm512_xor_si512(z0, zmm_crc0);
-    zmm_crc0 = _mm512_xor_si512(zmm_crc0, zmm_crc1);
+    zmm_crc0 = _mm512_ternarylogic_epi32(zmm_crc0, z0, zmm_crc1, 0x96);
 
     z0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
     zmm_crc0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-    zmm_crc0 = _mm512_xor_si512(z0, zmm_crc0);
-    zmm_crc0 = _mm512_xor_si512(zmm_crc0, zmm_crc2);
+    zmm_crc0 = _mm512_ternarylogic_epi32(zmm_crc0, z0, zmm_crc2, 0x96);
 
     z0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
     zmm_crc0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-    zmm_crc0 = _mm512_xor_si512(z0, zmm_crc0);
-    zmm_crc0 = _mm512_xor_si512(zmm_crc0, zmm_crc3);
+    zmm_crc0 = _mm512_ternarylogic_epi32(zmm_crc0, z0, zmm_crc3, 0x96);
 
     // zmm_crc0 -> xmm_crc[0, 1, 2, 3]
     *xmm_crc0 = _mm512_extracti32x4_epi32(zmm_crc0, 0);
