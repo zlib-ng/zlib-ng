@@ -6,8 +6,6 @@ else()
 endif()
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
-set(CMAKE_MACOSX_RPATH 1)
-
 # If not specified on the command line, enable C11 as the default
 # Configuration items that affect the global compiler environment standards
 # should be issued before the "project" command.
