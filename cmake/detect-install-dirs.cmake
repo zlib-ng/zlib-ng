@@ -26,6 +26,9 @@ elseif (DEFINED INSTALL_INC_DIR)
     set(CMAKE_INSTALL_INCLUDEDIR "${INSTALL_INC_DIR}")
 endif()
 
+# Define GNU standard installation directories
+include(GNUInstallDirs)
+
 # Determine installation directory for pkgconfig files
 if (DEFINED PKGCONFIG_INSTALL_DIR)
     set(PKGCONFIG_INSTALL_DIR "${PKGCONFIG_INSTALL_DIR}" CACHE PATH "Installation directory for pkgconfig (.pc) files" FORCE)
@@ -38,6 +41,3 @@ elseif (DEFINED CMAKE_INSTALL_FULL_PKGCONFIGDIR)
 else()
     set(PKGCONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig" CACHE PATH "Installation directory for pkgconfig (.pc) files")
 endif()
-
-# Define GNU standard installation directories
-include(GNUInstallDirs)
