@@ -8,5 +8,5 @@
 
 # Size varies with version number
 [suppress_variable]
-  name = zlibng_string
+  name_regexp = z(|ng|libng)_(|v)string
 
