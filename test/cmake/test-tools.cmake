@@ -1,5 +1,24 @@
 # test-tools.cmake -- Tests targeting tool coverage
 
+# Compress and decompress using file_compress/file_decompress, optionally also testing MMAP
+add_test(NAME minigzip-file_compress
+    COMMAND ${CMAKE_COMMAND}
+    "-DTARGET=${MINIGZIP_COMMAND}"
+    -DFILEMODE=ON
+    -DGZIP_VERIFY=ON
+    -DTEST_NAME=minigzip-file_compress
+    -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/data/paper-100k.pdf
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compress-and-verify.cmake)
+
+add_test(NAME minideflate-file_compress
+    COMMAND ${CMAKE_COMMAND}
+    "-DTARGET=${MINIDEFLATE_COMMAND}"
+    -DFILEMODE=ON
+    -DGZIP_VERIFY=OFF
+    -DTEST_NAME=minideflate-file_compress
+    -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/data/paper-100k.pdf
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compress-and-verify.cmake)
+
 # Test --help and invalid parameters for our tools
 set(TEST_COMMAND ${MINIGZIP_COMMAND} "--help")
 add_test(NAME minigzip-help

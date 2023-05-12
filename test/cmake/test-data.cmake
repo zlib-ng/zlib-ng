@@ -34,6 +34,7 @@ set(TEST_CONFIGS
     -T      # Direct store
     -0      # No compression
     -1      # Deflate quick
+    -2      # Deflate fast
     -4      # Deflate medium (lazy matches)
     "-5;-F" # Deflate medium (Z_FIXED)
     -6      # Deflate medium
