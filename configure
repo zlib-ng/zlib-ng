@@ -1570,11 +1570,11 @@ case "${ARCH}" in
 
             if test ${MTUNE_CASCADELAKE_AVAILABLE} -eq 1; then
                 avx512flag="${avx512flag} -mtune=cascadelake"
-                avx512flag="${avx512vnniflag} -mtune=cascadelake"
+                avx512vnniflag="${avx512vnniflag} -mtune=cascadelake"
             else
                 if test ${MTUNE_SKYLAKE_AVX512_AVAILABLE} -eq 1; then
                     avx512flag="${avx512flag} -mtune=skylake-avx512"
-                    avx512flag="${avx512vnniflag} -mtune=skylake-avx512"
+                    avx512vnniflag="${avx512vnniflag} -mtune=skylake-avx512"
                 fi
             fi
 
