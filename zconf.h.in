@@ -25,6 +25,8 @@
 #  define z_const
 #endif
 
+typedef size_t z_size_t;
+
 /* Maximum value for memLevel in deflateInit2 */
 #ifndef MAX_MEM_LEVEL
 #  define MAX_MEM_LEVEL 9

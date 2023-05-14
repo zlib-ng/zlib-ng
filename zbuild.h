@@ -88,11 +88,6 @@
 #  define PREFIX3(x) z_ ## x
 #  define PREFIX4(x) x ## 64
 #  define zVersion zlibVersion
-#  if defined(_WIN64)
-#    define z_size_t unsigned __int64
-#  else
-#    define z_size_t unsigned long
-#  endif
 #else
 #  define PREFIX(x) zng_ ## x
 #  define PREFIX2(x) ZLIBNG_ ## x
