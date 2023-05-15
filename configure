@@ -1161,10 +1161,10 @@ int main(void) {
 }
 EOF
     if try ${CC} ${CFLAGS} ${avx512flag} $test.c; then
-        echo "Checking for k-mask intrinsics ... Yes." | tee -a configure.log
+        echo "Checking for AVX512 k-mask intrinsics ... Yes." | tee -a configure.log
         HAVE_MASK_INTRIN=1
     else
-        echo "Checking for k-mask intrinsics ... No." | tee -a configure.log
+        echo "Checking for AVX512 k-mask intrinsics ... No." | tee -a configure.log
         HAVE_MASK_INTRIN=0
     fi
 }
