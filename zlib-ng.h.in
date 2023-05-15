@@ -1411,9 +1411,7 @@ size_t zng_gzfread(void *buf, size_t size, size_t nitems, gzFile file);
 /*
      Read and decompress up to nitems items of size size from file into buf,
    otherwise operating as gzread() does.  This duplicates the interface of
-   stdio's fread(), with size_t request and return types.  If the library
-   defines size_t, then z_size_t is identical to size_t.  If not, then z_size_t
-   is an unsigned integer type that can contain a pointer.
+   stdio's fread(), with size_t request and return types.
 
      gzfread() returns the number of full items read of size size, or zero if
    the end of the file was reached and a full item could not be read, or if
