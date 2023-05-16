@@ -82,3 +82,6 @@ BENCHMARK_COMPARE256(neon, compare256_neon, test_cpu_features.arm.has_neon);
 #ifdef POWER9
 BENCHMARK_COMPARE256(power9, compare256_power9, test_cpu_features.power.has_arch_3_00);
 #endif
+#ifdef RISCV_RVV
+BENCHMARK_COMPARE256(rvv, compare256_rvv, test_cpu_features.riscv.has_rvv);
+#endif

@@ -202,6 +202,16 @@ static void init_functable(void) {
 #endif
 
 
+    // RISCV - RVV
+#ifdef RISCV_RVV
+    if (cf.riscv.has_rvv) {
+        ft.compare256 = &compare256_rvv;
+        ft.longest_match = &longest_match_rvv;
+        ft.longest_match_slow = &longest_match_slow_rvv;
+    }
+#endif
+
+
     // S390
 #ifdef S390_CRC32_VX
     if (cf.s390.has_vx)
