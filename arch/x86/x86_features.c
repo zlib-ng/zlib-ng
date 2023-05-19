@@ -10,7 +10,7 @@
 #include "../../zbuild.h"
 #include "x86_features.h"
 
-#ifdef _WIN32
+#ifdef _MSC_VER
 #  include <intrin.h>
 #else
 // Newer versions of GCC and clang come with cpuid.h
@@ -20,7 +20,7 @@
 #include <string.h>
 
 static inline void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
-#ifdef _WIN32
+#ifdef _MSC_VER
     unsigned int registers[4];
     __cpuid((int *)registers, info);
 
@@ -34,7 +34,7 @@ static inline void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, 
 }
 
 static inline void cpuidex(int info, int subinfo, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
-#ifdef _WIN32
+#ifdef _MSC_VER
     unsigned int registers[4];
     __cpuidex((int *)registers, info, subinfo);
 
@@ -48,7 +48,7 @@ static inline void cpuidex(int info, int subinfo, unsigned* eax, unsigned* ebx, 
 }
 
 static inline uint64_t xgetbv(unsigned int xcr) {
-#ifdef _WIN32
+#ifdef _MSC_VER
     return _xgetbv(xcr);
 #else
     uint32_t eax, edx;
