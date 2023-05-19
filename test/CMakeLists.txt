@@ -245,13 +245,39 @@ if(WITH_GTEST)
     target_link_libraries(gtest_zlib GTest::GTest)
 
     find_package(Threads)
-    if(Threads_FOUND AND NOT BASEARCH_WASM32_FOUND)
+    # TODO: Should regular C++11 threads be used when MinGW-w64 is built with pthreads?
+    if(Threads_FOUND AND NOT BASEARCH_WASM32_FOUND AND NOT MINGW)
         target_sources(gtest_zlib PRIVATE test_deflate_concurrency.cc)
         if(UNIX AND NOT APPLE)
             # On Linux, use a workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52590
             target_link_libraries(gtest_zlib -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)
         endif()
         target_link_libraries(gtest_zlib Threads::Threads)
+    elseif(WIN32)
+        if(NOT TARGET mingw_stdthreads)
+            # Allow specifying alternative mingw-std-threads repository
+            if(NOT DEFINED MINGW_STDTHREADS_REPOSITORY)
+                set(MINGW_STDTHREADS_REPOSITORY https://github.com/meganz/mingw-std-threads.git)
+            endif()
+            if(NOT DEFINED MINGW_STDTHREADS_TAG)
+                set(MINGW_STDTHREADS_TAG 6c2061b)
+            endif()
+
+            # Fetch Google test source code from official repository
+            FetchContent_Declare(mingw_stdthreads
+                GIT_REPOSITORY ${MINGW_STDTHREADS_REPOSITORY}
+                GIT_TAG ${MINGW_STDTHREADS_TAG})
+
+            FetchContent_GetProperties(mingw_stdthreads)
+            if(NOT mingw_stdthreads_POPULATED)
+                FetchContent_Populate(mingw_stdthreads)
+                add_subdirectory(${mingw_stdthreads_SOURCE_DIR} ${mingw_stdthreads_BINARY_DIR} EXCLUDE_FROM_ALL)
+            endif()
+        endif()
+
+        target_sources(gtest_zlib PRIVATE test_deflate_concurrency.cc)
+        target_compile_definitions(gtest_zlib PRIVATE USE_MINGW_STDTHREAD _WIN32_WINNT=0x501)
+        target_link_libraries(gtest_zlib mingw_stdthreads)
     endif()
 
     add_test(NAME gtest_zlib
