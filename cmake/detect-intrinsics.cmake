@@ -502,7 +502,7 @@ macro(check_xsave_intrinsics)
     endif()
     set(CMAKE_REQUIRED_FLAGS "${XSAVEFLAG} ${NATIVEFLAG}")
     check_c_source_compiles(
-        "#ifdef _WIN32
+        "#ifdef _MSC_VER
         #  include <intrin.h>
         #else
         #  include <x86gprintrin.h>
