@@ -13,14 +13,16 @@
 #if defined(_WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
 #  include <io.h>
-#  include <string.h>
 #  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
-#  ifdef _MSC_VER
-#    define strcasecmp _stricmp
-#  endif
+#else
+#  define SET_BINARY_MODE(file)
+#endif
+
+#ifdef _MSC_VER
+#  include <string.h>
+#  define strcasecmp _stricmp
 #else
 #  include <strings.h>
-#  define SET_BINARY_MODE(file)
 #endif
 
 #define CHECK_ERR(err, msg) { \
