@@ -478,9 +478,7 @@ int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
 
 /* ========================================================================= */
 int32_t Z_EXPORT PREFIX(deflateReset)(PREFIX3(stream) *strm) {
-    int ret;
-
-    ret = PREFIX(deflateResetKeep)(strm);
+    int ret = PREFIX(deflateResetKeep)(strm);
     if (ret == Z_OK)
         lm_init(strm->state);
     return ret;
@@ -692,9 +690,7 @@ Z_INTERNAL void PREFIX(flush_pending)(PREFIX3(stream) *strm) {
     deflate_state *s = strm->state;
 
     zng_tr_flush_bits(s);
-    len = s->pending;
-    if (len > strm->avail_out)
-        len = strm->avail_out;
+    len = MIN(s->pending, strm->avail_out);
     if (len == 0)
         return;
 
@@ -1095,9 +1091,7 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
  * (See also flush_pending()).
  */
 Z_INTERNAL unsigned PREFIX(read_buf)(PREFIX3(stream) *strm, unsigned char *buf, unsigned size) {
-    uint32_t len = strm->avail_in;
-
-    len = MIN(len, size);
+    uint32_t len = MIN(strm->avail_in, size);
     if (len == 0)
         return 0;
 
@@ -1109,11 +1103,10 @@ Z_INTERNAL unsigned PREFIX(read_buf)(PREFIX3(stream) *strm, unsigned char *buf, 
     } else if (strm->state->wrap == 2) {
         functable.crc32_fold_copy(&strm->state->crc_fold, buf, strm->next_in, len);
 #endif
+    } else if (strm->state->wrap == 1) {
+        strm->adler = functable.adler32_fold_copy(strm->adler, buf, strm->next_in, len);
     } else {
-        if (strm->state->wrap == 1)
-            strm->adler = functable.adler32_fold_copy(strm->adler, buf, strm->next_in, len);
-        else
-            memcpy(buf, strm->next_in, len);
+        memcpy(buf, strm->next_in, len);
     }
     strm->next_in  += len;
     strm->total_in += len;
@@ -1234,11 +1227,9 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             } else if (str >= 1) {
                 s->quick_insert_string(s, str + 2 - STD_MIN_MATCH);
             }
-            unsigned int count;
+            unsigned int count = s->insert;
             if (UNLIKELY(s->lookahead == 1)) {
-                count = s->insert - 1;
-            } else {
-                count = s->insert;
+                count -= 1;
             }
             if (count > 0) {
                 s->insert_string(s, str, count);
@@ -1313,8 +1304,6 @@ int32_t Z_EXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value 
     int version_error = 0;
     int buf_error = 0;
     int stream_error = 0;
-    int ret;
-    int val;
 
     /* Initialize the statuses. */
     for (i = 0; i < count; i++)
@@ -1354,8 +1343,8 @@ int32_t Z_EXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value 
 
     /* Apply changes, remember if there were errors. */
     if (new_level != NULL || new_strategy != NULL) {
-        ret = PREFIX(deflateParams)(strm, new_level == NULL ? s->level : *(int *)new_level->buf,
-                                    new_strategy == NULL ? s->strategy : *(int *)new_strategy->buf);
+        int ret = PREFIX(deflateParams)(strm, new_level == NULL ? s->level : *(int *)new_level->buf,
+                                        new_strategy == NULL ? s->strategy : *(int *)new_strategy->buf);
         if (ret != Z_OK) {
             if (new_level != NULL)
                 new_level->status = Z_STREAM_ERROR;
@@ -1365,7 +1354,7 @@ int32_t Z_EXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value 
         }
     }
     if (new_reproducible != NULL) {
-        val = *(int *)new_reproducible->buf;
+        int val = *(int *)new_reproducible->buf;
         if (DEFLATE_CAN_SET_REPRODUCIBLE(strm, val)) {
             s->reproducible = val;
         } else {
