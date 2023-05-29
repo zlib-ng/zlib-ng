@@ -340,21 +340,12 @@ int32_t Z_EXPORT PREFIX(deflateInit2_)(PREFIX3(stream) *strm, int32_t level, int
 /* =========================================================================
  * Check for a valid deflate stream state. Return 0 if ok, 1 if not.
  */
-static int deflateStateCheck (PREFIX3(stream) *strm) {
+static int deflateStateCheck(PREFIX3(stream) *strm) {
     deflate_state *s;
     if (strm == NULL || strm->zalloc == (alloc_func)0 || strm->zfree == (free_func)0)
         return 1;
     s = strm->state;
-    if (s == NULL || s->strm != strm || (s->status != INIT_STATE &&
-#ifdef GZIP
-                                           s->status != GZIP_STATE &&
-                                           s->status != EXTRA_STATE &&
-                                           s->status != NAME_STATE &&
-                                           s->status != COMMENT_STATE &&
-                                           s->status != HCRC_STATE &&
-#endif
-                                           s->status != BUSY_STATE &&
-                                           s->status != FINISH_STATE))
+    if (s == NULL || s->strm != strm || (s->status < INIT_STATE || s->status > MAX_STATE))
         return 1;
     return 0;
 }
