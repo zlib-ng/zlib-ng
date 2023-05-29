@@ -51,16 +51,21 @@
 #define END_BLOCK 256
 /* end of block literal code */
 
-#define INIT_STATE      42    /* zlib header -> BUSY_STATE */
+#define INIT_STATE      1    /* zlib header -> BUSY_STATE */
 #ifdef GZIP
-#  define GZIP_STATE    57    /* gzip header -> BUSY_STATE | EXTRA_STATE */
-#  define EXTRA_STATE   69    /* gzip extra block -> NAME_STATE */
-#  define NAME_STATE    73    /* gzip file name -> COMMENT_STATE */
-#  define COMMENT_STATE 91    /* gzip comment -> HCRC_STATE */
-#  define HCRC_STATE   103    /* gzip header CRC -> BUSY_STATE */
+#  define GZIP_STATE    4    /* gzip header -> BUSY_STATE | EXTRA_STATE */
+#  define EXTRA_STATE   5    /* gzip extra block -> NAME_STATE */
+#  define NAME_STATE    6    /* gzip file name -> COMMENT_STATE */
+#  define COMMENT_STATE 7    /* gzip comment -> HCRC_STATE */
+#  define HCRC_STATE    8    /* gzip header CRC -> BUSY_STATE */
 #endif
-#define BUSY_STATE     113    /* deflate -> FINISH_STATE */
-#define FINISH_STATE   666    /* stream complete */
+#define BUSY_STATE      2    /* deflate -> FINISH_STATE */
+#define FINISH_STATE    3    /* stream complete */
+#ifdef GZIP
+#  define MAX_STATE     HCRC_STATE
+#else
+#  define MAX_STATE     FINISH_STATE
+#endif
 /* Stream status */
 
 #define HASH_BITS    16u           /* log2(HASH_SIZE) */
