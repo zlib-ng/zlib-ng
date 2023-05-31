@@ -192,6 +192,12 @@ jobs:
             packages: qemu qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             codecov: ubuntu_gcc_aarch64_compat_no_opt
 
+          - name: Ubuntu GCC MIPS
+            os: ubuntu-latest
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mips.cmake
+            packages: qemu qemu-user gcc-mips-linux-gnu g++-mips-linux-gnu libc-dev-mips-cross
+            codecov: ubuntu_gcc_mips
+
           - name: Ubuntu GCC PPC
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake
