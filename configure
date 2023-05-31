@@ -2148,8 +2148,12 @@ sed < $SRCDIR/Makefile.in "
 /^ARCH_SHARED_OBJS *=/s#=.*#=$ARCH_SHARED_OBJS#
 " > Makefile
 
-# Append header files dependences.
+# Append header files dependencies.
 for file in $SRCDIR/*.c $SRCDIR/test/*.c $SRCDIR/test/fuzz/*.c $SRCDIR/$ARCHDIR/*.c $SRCDIR/tools/*.c; do
+    if test ! -f $file; then
+        continue
+    fi
+
     short_name=$(echo $file | sed -e "s#$SRCDIR/##g")
     incs=$(grep -h include $file | sed -n 's/# *\include *"\(.*\.h\)".*/\1/p' | sort | uniq)
     includes=$(for i in $incs; do
@@ -2222,8 +2226,12 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^PPCFLAGS *=/s#=.*#=$vmxflag#
 " > $ARCHDIR/Makefile
 
-# Append header files dependences.
+# Append header files dependencies.
 for file in $SRCDIR/$ARCHDIR/*.c; do
+    if test ! -f $file; then
+        continue
+    fi
+
     incs=$(grep -h include $file | sed -n 's/# *\include *"\(.*\.h\)".*/\1/p' | sort | uniq)
     includes=$(for i in $incs; do
                    # Check that the include file exists in the current dir,
