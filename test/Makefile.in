@@ -78,5 +78,5 @@ clean:
 	rm -f *.o *.gcda *.gcno *.gcov
 	rm -f switchlevels$(EXE) gh1235$(EXE)
 
-distclean:
+distclean: clean
 	rm -f Makefile
