@@ -50,5 +50,5 @@ clean:
 	rm -rf objs
 	rm -f *.gcda *.gcno *.gcov
 
-distclean:
+distclean: clean
 	rm -f Makefile
