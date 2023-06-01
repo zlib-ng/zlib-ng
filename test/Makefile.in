@@ -19,7 +19,7 @@ check_cross_dep:
 ifneq (,$(findstring qemu,$(EMU_RUN)))
 QEMU_VER:=$(shell command -v $(EMU_RUN) --version 2> /dev/null)
 ifeq (,$(QEMU_VER))
-	$(error You need QEMU to run tests on non-native platform)
+$(error You need QEMU to run tests on non-native platform)
 endif
 endif
 
