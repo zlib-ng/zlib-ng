@@ -119,15 +119,13 @@ macro(exec_streams tcmd tsrc tdst)
         -DOUTPUT=${tdst}
         "-DSUCCESS_EXIT=${SUCCESS_EXIT}"
         -P ${CMAKE_CURRENT_LIST_DIR}/run-and-redirect.cmake
-        RESULT_VARIABLE CMD_RESULT
-        COMMAND_ECHO STDOUT)
+        RESULT_VARIABLE CMD_RESULT)
 endmacro()
 
 macro(exec_files tcmd tsrc)
     execute_process(COMMAND
         ${tcmd} ${tsrc}
-        RESULT_VARIABLE CMD_RESULT
-        COMMAND_ECHO STDOUT)
+        RESULT_VARIABLE CMD_RESULT)
 endmacro()
 
 # Compress input file
@@ -189,8 +187,7 @@ if(COMPARE)
     # Compare decompressed output with original input file
     execute_process(COMMAND ${CMAKE_COMMAND}
         -E compare_files ${INPUT} ${OUTPUT_BASE}
-        RESULT_VARIABLE CMD_RESULT
-        COMMAND_ECHO STDOUT)
+        RESULT_VARIABLE CMD_RESULT)
 
     if(CMD_RESULT)
         diff(${INPUT} ${OUTPUT_BASE})
