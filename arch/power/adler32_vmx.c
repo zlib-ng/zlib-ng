@@ -1,6 +1,6 @@
 /* adler32_vmx.c -- compute the Adler-32 checksum of a data stream
  * Copyright (C) 1995-2011 Mark Adler
- * Copyright (C) 2017-2021 Mika T. Lindqvist <postmaster@raasu.org>
+ * Copyright (C) 2017-2023 Mika T. Lindqvist <postmaster@raasu.org>
  * Copyright (C) 2021 Adam Stylinski <kungfujesus06@gmail.com>
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -8,6 +8,7 @@
 #ifdef PPC_VMX
 #include <altivec.h>
 #include "zbuild.h"
+#include "zendian.h"
 #include "adler32_p.h"
 
 #define vmx_zero()  (vec_splat_u32(0))
@@ -34,7 +35,11 @@ static void vmx_accum32(uint32_t *s, const uint8_t *buf, size_t len) {
     vector unsigned int  adacc, s2acc;
     vector unsigned int pair_vec = vec_ld(0, s);
     adacc = vec_perm(pair_vec, pair_vec, s0_perm);
+#if BYTE_ORDER == LITTLE_ENDIAN
+    s2acc = vec_sro(pair_vec, shift_vec);
+#else
     s2acc = vec_slo(pair_vec, shift_vec);
+#endif
 
     vector unsigned int zero = vmx_zero();
     vector unsigned int s3acc = zero;
