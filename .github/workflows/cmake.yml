@@ -223,11 +223,30 @@ jobs:
             ldflags: -static
             codecov: ubuntu_gcc_ppc64
 
+          - name: Ubuntu GCC PPC64 Power9
+            os: ubuntu-latest
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64-power9.cmake
+            packages: qemu qemu-user gcc-powerpc64-linux-gnu g++-powerpc64-linux-gnu libc-dev-ppc64-cross
+            ldflags: -static
+            codecov: ubuntu_gcc_ppc64_power9
+
           - name: Ubuntu GCC PPC64LE
             os: ubuntu-20.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
             packages: qemu qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc-dev-ppc64el-cross
             codecov: ubuntu_gcc_ppc64le
+
+          - name: Ubuntu GCC PPC64LE No VSX
+            os: ubuntu-latest
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le-power9.cmake -DWITH_POWER8=OFF -DWITH_POWER9=OFF
+            packages: qemu qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc-dev-ppc64el-cross
+            codecov: ubuntu_gcc_ppc64le_novsx
+
+          - name: Ubuntu GCC PPC64LE Power9
+            os: ubuntu-latest
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le-power9.cmake
+            packages: qemu qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc-dev-ppc64el-cross
+            codecov: ubuntu_gcc_ppc64le_power9
 
           - name: Ubuntu GCC SPARC64
             os: ubuntu-20.04
