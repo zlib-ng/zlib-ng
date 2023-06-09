@@ -10,7 +10,7 @@
 
 /* Older versions of GCC misimplemented semantics for these bit counting builtins.
  * https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git;h=3f30f2d1dbb3228b8468b26239fe60c2974ce2ac */
-#if defined(__GNUC__) && (__GNUC__ < 12)
+#if defined(__GNUC__) && (__GNUC__ < 13)
 #  define zng_vec_vctzlsbb(vc, len) __asm__ volatile("vctzlsbb %0, %1\n\t" : "=r" (len) : "v" (vc))
 #  define zng_vec_vclzlsbb(vc, len) __asm__ volatile("vclzlsbb %0, %1\n\t" : "=r" (len) : "v" (vc))
 #else
