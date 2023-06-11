@@ -29,7 +29,7 @@ static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
     uint64_t tmp;
     memcpy(&tmp, from, sizeof(tmp));
-    *chunk = (vector unsigned char)vec_splats(tmp);
+    *chunk = (vector unsigned char)vec_splats((unsigned long long)tmp);
 }
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {

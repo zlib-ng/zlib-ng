@@ -1383,7 +1383,19 @@ EOF
 check_power9_intrinsics() {
     # Check whether features needed by POWER9 optimisations are available
     cat > $test.c << EOF
-int main() { return 0; }
+#ifdef __FreeBSD__
+#include <machine/cpu.h>
+#endif
+#include <sys/auxv.h>
+int main() {
+#ifdef __FreeBSD__
+  unsigned long hwcap;
+  elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
+  return (hwcap & PPC_FEATURE2_ARCH_3_00);
+#else
+  return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_3_00);
+#endif
+}
 EOF
     if test $buildpower9 -eq 1 && try $CC -c $CFLAGS -mcpu=power9 $test.c; then
         HAVE_POWER9_INTRIN=1
