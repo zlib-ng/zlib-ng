@@ -111,8 +111,6 @@ if(WITH_BENCHMARKS)
 endif()
 
 if(WITH_GTEST)
-    include(FetchContent)
-
     # Google test requires at least C++11
     set(CMAKE_CXX_STANDARD 11)
 
@@ -125,9 +123,13 @@ if(WITH_GTEST)
         # Must set include and compile options before fetching googletest
         include_directories($ENV{LLVM_BUILD_DIR}/include $ENV{LLVM_BUILD_DIR}/include/c++/v1)
         add_compile_options(-stdlib=libc++ -g)
+    elseif(NOT TARGET GTest::GTest)
+        find_package(GTest)
     endif()
 
     if(NOT TARGET GTest::GTest)
+        include(FetchContent)
+
         # Prevent overriding the parent project's compiler/linker settings for Windows
         set(gtest_force_shared_crt ON CACHE BOOL
             "Use shared (DLL) run-time lib even when Google Test is built as static lib." FORCE)
