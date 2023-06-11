@@ -10,12 +10,14 @@
 
 /* Older versions of GCC misimplemented semantics for these bit counting builtins.
  * https://gcc.gnu.org/git/gitweb.cgi?p=gcc.git;h=3f30f2d1dbb3228b8468b26239fe60c2974ce2ac */
-#if defined(__GNUC__) && (__GNUC__ < 13)
-#  define zng_vec_vctzlsbb(vc, len) __asm__ volatile("vctzlsbb %0, %1\n\t" : "=r" (len) : "v" (vc))
-#  define zng_vec_vclzlsbb(vc, len) __asm__ volatile("vclzlsbb %0, %1\n\t" : "=r" (len) : "v" (vc))
-#else
+#if defined(__GNUC__) && !defined(__clang__) && (__GNUC__ < 12)
+#if BYTE_ORDER == LITTLE_ENDIAN
 #  define zng_vec_vctzlsbb(vc, len) len = __builtin_vec_vctzlsbb(vc)
-#  define zng_vec_vclzlsbb(vc, len) len = __builtin_vec_vclzlsbb(vc)
+#else
+#  define zng_vec_vctzlsbb(vc, len) len = __builtin_vec_vclzlsbb(vc)
+#endif
+#else
+#  define zng_vec_vctzlsbb(vc, len) len = vec_cntlz_lsbb(vc)
 #endif
 
 static inline uint32_t compare256_power9_static(const uint8_t *src0, const uint8_t *src1) {
@@ -34,11 +36,7 @@ static inline uint32_t compare256_power9_static(const uint8_t *src0, const uint8
         /* Since the index of matching bytes will contain only zeroes
          * on vc (since we used cmpne), counting the number of consecutive
          * bytes where LSB == 0 is the same as counting the length of the match. */
-#if BYTE_ORDER == LITTLE_ENDIAN
         zng_vec_vctzlsbb(vc, cmplen);
-#else
-        zng_vec_vclzlsbb(vc, cmplen);
-#endif
         if (cmplen != 16)
             return len + cmplen;
 

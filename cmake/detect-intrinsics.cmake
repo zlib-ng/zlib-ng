@@ -393,8 +393,18 @@ macro(check_power9_intrinsics)
     # Check if we have what we need for POWER9 optimizations
     set(CMAKE_REQUIRED_FLAGS "${POWER9FLAG} ${NATIVEFLAG}")
     check_c_source_compiles(
-        "int main() {
-            return 0;
+        "#include <sys/auxv.h>
+        #ifdef __FreeBSD__
+        #include <machine/cpu.h>
+        #endif
+        int main() {
+        #ifdef __FreeBSD__
+            unsigned long hwcap;
+            elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
+            return (hwcap & PPC_FEATURE2_ARCH_3_00);
+        #else
+            return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_3_00);
+        #endif
         }"
         HAVE_POWER9_INTRIN
     )
