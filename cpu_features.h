@@ -267,6 +267,9 @@ extern void slide_hash_vmx(deflate_state *s);
 #if defined(POWER8_VSX)
 extern void slide_hash_power8(deflate_state *s);
 #endif
+#if defined(RISCV_RVV)
+extern void slide_hash_rvv(deflate_state *s);
+#endif
 #ifdef X86_AVX2
 extern void slide_hash_avx2(deflate_state *s);
 #endif

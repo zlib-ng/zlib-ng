@@ -208,6 +208,7 @@ static void init_functable(void) {
         ft.compare256 = &compare256_rvv;
         ft.longest_match = &longest_match_rvv;
         ft.longest_match_slow = &longest_match_slow_rvv;
+        ft.slide_hash = &slide_hash_rvv;
     }
 #endif
 
