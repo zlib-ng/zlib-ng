@@ -210,24 +210,27 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         if(BASEARCH_ARM_FOUND)
             if("${ARCH}" MATCHES "arm" AND NOT CMAKE_C_FLAGS MATCHES "-mfloat-abi")
                 # Auto-detect support for ARM floating point ABI
-                set(CMAKE_REQUIRED_FLAGS -mfloat-abi=softfp)
-                check_c_source_compiles(
-                    "#include <features.h>
-                    int main() { return 0; }"
-                    HAVE_FLOATABI_SOFTFP)
-                if(HAVE_FLOATABI_SOFTFP)
-                    set(FLOATABI -mfloat-abi=softfp)
-                else()
-                    set(CMAKE_REQUIRED_FLAGS -mfloat-abi=hard)
+                check_include_file(features.h HAVE_FEATURES_H)
+                if(HAVE_FEATURES_H)
+                    set(CMAKE_REQUIRED_FLAGS -mfloat-abi=softfp)
                     check_c_source_compiles(
                         "#include <features.h>
                         int main() { return 0; }"
-                        HAVE_FLOATABI_HARD)
-                    if(HAVE_FLOATABI_HARD)
-                        set(FLOATABI -mfloat-abi=hard)
+                        HAVE_FLOATABI_SOFTFP)
+                    if(HAVE_FLOATABI_SOFTFP)
+                        set(FLOATABI -mfloat-abi=softfp)
+                    else()
+                        set(CMAKE_REQUIRED_FLAGS -mfloat-abi=hard)
+                        check_c_source_compiles(
+                            "#include <features.h>
+                            int main() { return 0; }"
+                            HAVE_FLOATABI_HARD)
+                        if(HAVE_FLOATABI_HARD)
+                            set(FLOATABI -mfloat-abi=hard)
+                        endif()
                     endif()
+                    set(CMAKE_REQUIRED_FLAGS)
                 endif()
-                set(CMAKE_REQUIRED_FLAGS)
                 if(FLOATABI)
                     message(STATUS "ARM floating point arch: ${FLOATABI}")
                     add_compile_options(${FLOATABI})
