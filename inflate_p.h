@@ -161,6 +161,11 @@ static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, uint64_t len,
         return out + len;
     }
 
+    /* Complete overlap: Source == destination */
+    if (out == from) {
+        return out + len;
+    }
+
     /* We are emulating a self-modifying copy loop here. To do this in a way that doesn't produce undefined behavior,
      * we have to get a bit clever. First if the overlap is such that src falls between dst and dst+len, we can do the
      * initial bulk memcpy of the nonoverlapping region. Then, we can leverage the size of this to determine the safest
