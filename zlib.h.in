@@ -49,11 +49,11 @@
 extern "C" {
 #endif
 
-#define ZLIBNG_VERSION "2.1.2"
-#define ZLIBNG_VERNUM 0x020102F0L   /* MMNNRRSM: major minor revision status modified */
+#define ZLIBNG_VERSION "2.1.3"
+#define ZLIBNG_VERNUM 0x020103F0L   /* MMNNRRSM: major minor revision status modified */
 #define ZLIBNG_VER_MAJOR 2
 #define ZLIBNG_VER_MINOR 1
-#define ZLIBNG_VER_REVISION 2
+#define ZLIBNG_VER_REVISION 3
 #define ZLIBNG_VER_STATUS F         /* 0=devel, 1-E=beta, F=Release */
 #define ZLIBNG_VER_MODIFIED 0       /* non-zero if modified externally from zlib-ng */
 
