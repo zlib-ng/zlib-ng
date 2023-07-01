@@ -205,6 +205,7 @@ static void init_functable(void) {
     // RISCV - RVV
 #ifdef RISCV_RVV
     if (cf.riscv.has_rvv) {
+        ft.adler32 = &adler32_rvv;
         ft.compare256 = &compare256_rvv;
         ft.longest_match = &longest_match_rvv;
         ft.longest_match_slow = &longest_match_slow_rvv;

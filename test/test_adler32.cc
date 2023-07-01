@@ -370,6 +370,8 @@ TEST_ADLER32(neon, adler32_neon, test_cpu_features.arm.has_neon)
 TEST_ADLER32(power8, adler32_power8, test_cpu_features.power.has_arch_2_07)
 #elif defined(PPC_VMX)
 TEST_ADLER32(vmx, adler32_vmx, test_cpu_features.power.has_altivec)
+#elif defined(RISCV_RVV)
+TEST_ADLER32(rvv, adler32_rvv, test_cpu_features.riscv.has_rvv)
 #endif
 
 #ifdef X86_SSSE3

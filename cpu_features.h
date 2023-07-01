@@ -50,6 +50,9 @@ extern uint32_t adler32_neon(uint32_t adler, const uint8_t *buf, size_t len);
 #ifdef PPC_VMX
 extern uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len);
 #endif
+#ifdef RISCV_RVV
+extern uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len);
+#endif
 #ifdef X86_SSSE3
 extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len);
 #endif
