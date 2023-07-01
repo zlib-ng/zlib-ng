@@ -84,7 +84,7 @@ static void init_functable(void) {
     }
 #endif
     // X86 - SSE4.2
-#ifdef X86_SSE42
+#if defined(X86_SSE42) && defined(X86_SSSE3)
     if (cf.x86.has_sse42) {
         ft.adler32_fold_copy = &adler32_fold_copy_sse42;
         ft.insert_string = &insert_string_sse42;
