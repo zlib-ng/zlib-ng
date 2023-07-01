@@ -75,6 +75,10 @@ BENCHMARK_ADLER32(vmx, adler32_vmx, test_cpu_features.power.has_altivec);
 BENCHMARK_ADLER32(power8, adler32_power8, test_cpu_features.power.has_arch_2_07);
 #endif
 
+#ifdef RISCV_RVV
+BENCHMARK_ADLER32(rvv, adler32_rvv, test_cpu_features.riscv.has_rvv);
+#endif
+
 #ifdef X86_SSSE3
 BENCHMARK_ADLER32(ssse3, adler32_ssse3, test_cpu_features.x86.has_ssse3);
 #endif
