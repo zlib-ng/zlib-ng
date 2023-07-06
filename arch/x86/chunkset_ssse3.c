@@ -68,14 +68,12 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
 static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t dist) {
     lut_rem_pair lut_rem = perm_idx_lut[dist - 3];
     __m128i perm_vec, ret_vec;
-#ifdef Z_MEMORY_SANITIZER
     /* Important to note:
      * This is _not_ to subvert the memory sanitizer but to instead unpoison some
      * bytes we willingly and purposefully load uninitialized that we swizzle over
      * in a vector register, anyway.  If what we assume is wrong about what is used,
      * the memory sanitizer will still usefully flag it */
     __msan_unpoison(buf + dist, 16 - dist);
-#endif
     ret_vec = _mm_loadu_si128((__m128i*)buf);
     *chunk_rem = lut_rem.remval;
 

@@ -166,9 +166,7 @@ static inline dfltcc_cc dfltcc(int fn, void *param,
                                unsigned char **op1, size_t *len1,
                                z_const unsigned char **op2, size_t *len2, void *hist) {
     unsigned char *t2 = op1 ? *op1 : NULL;
-#ifdef Z_MEMORY_SANITIZER
     unsigned char *orig_t2 = t2;
-#endif
     size_t t3 = len1 ? *len1 : 0;
     z_const unsigned char *t4 = op2 ? *op2 : NULL;
     size_t t5 = len2 ? *len2 : 0;
@@ -203,7 +201,6 @@ static inline dfltcc_cc dfltcc(int fn, void *param,
                      : "cc", "memory");
     t2 = r2; t3 = r3; t4 = r4; t5 = r5;
 
-#ifdef Z_MEMORY_SANITIZER
     switch (fn & DFLTCC_FN_MASK) {
     case DFLTCC_QAF:
         __msan_unpoison(param, DFLTCC_SIZEOF_QAF);
@@ -220,7 +217,6 @@ static inline dfltcc_cc dfltcc(int fn, void *param,
         __msan_unpoison(orig_t2, t2 - orig_t2);
         break;
     }
-#endif
 
     if (op1)
         *op1 = t2;

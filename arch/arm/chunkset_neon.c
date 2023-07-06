@@ -68,10 +68,8 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
     lut_rem_pair lut_rem = perm_idx_lut[dist - 3];
     *chunk_rem = lut_rem.remval;
 
-#ifdef Z_MEMORY_SANITIZER
     /* See note in chunkset_ssse3.c for why this is ok */
     __msan_unpoison(buf + dist, 16 - dist);
-#endif
 
     /* This version of table is only available on aarch64 */
 #if defined(_M_ARM64) || defined(__aarch64__)
