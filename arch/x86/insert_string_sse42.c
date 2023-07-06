@@ -5,12 +5,12 @@
  *
  */
 
-#include "../../zbuild.h"
+#include "zbuild.h"
 #include <immintrin.h>
 #ifdef _MSC_VER
 #  include <nmmintrin.h>
 #endif
-#include "../../deflate.h"
+#include "deflate.h"
 
 #ifdef X86_SSE42_CRC_INTRIN
 #  ifdef _MSC_VER

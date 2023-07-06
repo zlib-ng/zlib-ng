@@ -1,4 +1,4 @@
-#include "../../zbuild.h"
+#include "zbuild.h"
 #include <stdio.h>
 
 #ifdef HAVE_SYS_SDT_H

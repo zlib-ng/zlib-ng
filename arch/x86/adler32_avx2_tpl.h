@@ -3,11 +3,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "../../zbuild.h"
+#include "zbuild.h"
 #include <immintrin.h>
-#include "../../adler32_fold.h"
-#include "../../adler32_p.h"
-#include "../../fallback_builtins.h"
+#include "adler32_fold.h"
+#include "adler32_p.h"
+#include "fallback_builtins.h"
 #include "adler32_avx2_p.h"
 
 #ifdef X86_SSE42

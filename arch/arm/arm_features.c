@@ -1,4 +1,4 @@
-#include "../../zbuild.h"
+#include "zbuild.h"
 #include "arm_features.h"
 
 #if defined(__linux__) && defined(HAVE_SYS_AUXV_H)

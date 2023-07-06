@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../zbuild.h"
+#include "zbuild.h"
 #include "riscv_features.h"
 
 /* TODO: detect risc-v cpu info at runtime when the kernel updates hwcap or hwprobe for risc-v */

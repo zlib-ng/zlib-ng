@@ -9,8 +9,8 @@
 #ifndef _MSC_VER
 #  include <arm_acle.h>
 #endif
-#include "../../zbuild.h"
-#include "../../deflate.h"
+#include "zbuild.h"
+#include "deflate.h"
 
 #define HASH_CALC(s, h, val) \
     h = __crc32w(0, val)
@@ -22,5 +22,5 @@
 #define INSERT_STRING       insert_string_acle
 #define QUICK_INSERT_STRING quick_insert_string_acle
 
-#include "../../insert_string_tpl.h"
+#include "insert_string_tpl.h"
 #endif
