@@ -245,4 +245,8 @@
 #  endif
 #endif
 
+#ifndef Z_MEMORY_SANITIZER
+#  define __msan_unpoison(a, size) do { Z_UNUSED(a); Z_UNUSED(size); } while (0)
+#endif
+
 #endif
