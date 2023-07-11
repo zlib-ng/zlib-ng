@@ -50,6 +50,8 @@ Z_INTERNAL uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len) 
      * move the data into the 32-bit accumulator at the last iteration.
      */
     size_t block_size = (256 / vl) * vl;
+    size_t nmax_limit = (NMAX / block_size);
+    size_t cnt = 0;
     while (left >= block_size) {
         v_buf16_accu = __riscv_vmv_v_x_u16m2(0, vl);
         size_t subprob = block_size;
@@ -63,9 +65,13 @@ Z_INTERNAL uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len) 
         v_adler32_prev_accu = __riscv_vmacc_vx_u32m4(v_adler32_prev_accu, block_size / vl, v_buf32_accu, vl);
         v_buf32_accu = __riscv_vwaddu_wv_u32m4(v_buf32_accu, v_buf16_accu, vl);
         left -= block_size;
+        /* do modulo once each block of NMAX size */
+        if (++cnt >= nmax_limit) {
+            v_adler32_prev_accu = __riscv_vremu_vx_u32m4(v_adler32_prev_accu, BASE, vl);
+            cnt = 0;
+        }
     }
-    v_adler32_prev_accu = __riscv_vremu_vx_u32m4(v_adler32_prev_accu, BASE, vl);
-
+    /* the left len <= 256 now, we can use 16-bit accum safetly */
     v_buf16_accu = __riscv_vmv_v_x_u16m2(0, vl);
     size_t res = left;
     while (left >= vl) {
@@ -76,6 +82,7 @@ Z_INTERNAL uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len) 
         left -= vl;
     }
     v_adler32_prev_accu = __riscv_vmacc_vx_u32m4(v_adler32_prev_accu, res / vl, v_buf32_accu, vl);
+    v_adler32_prev_accu = __riscv_vremu_vx_u32m4(v_adler32_prev_accu, BASE, vl);
     v_buf32_accu = __riscv_vwaddu_wv_u32m4(v_buf32_accu, v_buf16_accu, vl);
 
     vuint32m4_t v_seq = __riscv_vid_v_u32m4(vl);
