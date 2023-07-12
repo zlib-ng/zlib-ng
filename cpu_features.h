@@ -261,7 +261,11 @@ typedef void (*slide_hash_func)(deflate_state *s);
 
 #ifdef X86_SSE2
 extern void slide_hash_sse2(deflate_state *s);
-#elif defined(ARM_NEON)
+#endif
+#if defined(ARM_SIMD)
+extern void slide_hash_armv6(deflate_state *s);
+#endif
+#if defined(ARM_NEON)
 extern void slide_hash_neon(deflate_state *s);
 #endif
 #if defined(PPC_VMX)

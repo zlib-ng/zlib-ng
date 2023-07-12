@@ -44,6 +44,46 @@ macro(check_acle_compiler_flag)
     endif()
 endmacro()
 
+macro(check_armv6_compiler_flag)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+        if(NOT NATIVEFLAG)
+            check_c_compiler_flag("-march=armv6" HAVE_MARCH_ARMV6)
+            if(HAVE_MARCH_ARMV6)
+                set(ARMV6FLAG "-march=armv6" CACHE INTERNAL "Compiler option to enable ARMv6 support")
+            endif()
+        endif()
+    endif()
+    # Check whether compiler supports ARMv6 inline asm
+    set(CMAKE_REQUIRED_FLAGS "${ARMV6FLAG} ${NATIVEFLAG}")
+    check_c_source_compile_or_run(
+        "unsigned int f(unsigned int a, unsigned int b) {
+            unsigned int c;
+            __asm__ __volatile__ ( \"uqsub16 %0, %1, %2\" : \"=r\" (c) : \"r\" (a), \"r\" (b) );
+            return (int)c;
+        }
+        int main(void) { return 0; }"
+        HAVE_ARMV6_INLINE_ASM
+    )
+    # Check whether compiler supports ARMv6 intrinsics
+    check_c_source_compile_or_run(
+        "#if defined(_MSC_VER)
+        #include <intrin.h>
+        #else
+        #include <arm_acle.h>
+        #endif
+        unsigned int f(unsigned int a, unsigned int b) {
+        #if defined(_MSC_VER)
+            return _arm_uqsub16(a, b);
+        #else
+            return __uqsub16(a, b);
+        #endif
+        }
+        int main(void) { return 0; }"
+        HAVE_ARMV6_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
 macro(check_avx512_intrinsics)
     if(CMAKE_C_COMPILER_ID MATCHES "Intel")
         if(CMAKE_HOST_UNIX OR APPLE)

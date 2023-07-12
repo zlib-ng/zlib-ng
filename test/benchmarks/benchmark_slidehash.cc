@@ -68,6 +68,9 @@ public:
 
 BENCHMARK_SLIDEHASH(c, slide_hash_c, 1);
 
+#ifdef ARM_SIMD
+BENCHMARK_SLIDEHASH(armv6, slide_hash_armv6, test_cpu_features.arm.has_simd);
+#endif
 #ifdef ARM_NEON
 BENCHMARK_SLIDEHASH(neon, slide_hash_neon, test_cpu_features.arm.has_neon);
 #endif

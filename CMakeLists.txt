@@ -101,6 +101,7 @@ set_property(CACHE WITH_SANITIZER PROPERTY STRINGS "Memory" "Address" "Undefined
 if(BASEARCH_ARM_FOUND)
     option(WITH_ACLE "Build with ACLE" ON)
     option(WITH_NEON "Build with NEON intrinsics" ON)
+    option(WITH_ARMV6 "Build with ARMv6 SIMD" ON)
 elseif(BASEARCH_PPC_FOUND)
     option(WITH_ALTIVEC "Build with AltiVec (VMX) optimisations for PowerPC" ON)
     option(WITH_POWER8 "Build with optimisations for POWER8" ON)
@@ -128,6 +129,7 @@ mark_as_advanced(FORCE
     ZLIB_SYMBOL_PREFIX
     WITH_REDUCED_MEM
     WITH_ACLE WITH_NEON
+    WITH_ARMV6
     WITH_DFLTCC_DEFLATE
     WITH_DFLTCC_INFLATE
     WITH_CRC32_VX
@@ -292,6 +294,10 @@ endif()
 #
 # Check for standard/system includes
 #
+check_include_file(arm_acle.h  HAVE_ARM_ACLE_H)
+if(HAVE_ARM_ACLE_H)
+    add_definitions(-DHAVE_ARM_ACLE_H)
+endif()
 check_include_file(sys/auxv.h  HAVE_SYS_AUXV_H)
 if(HAVE_SYS_AUXV_H)
     add_definitions(-DHAVE_SYS_AUXV_H)
@@ -647,6 +653,23 @@ if(WITH_OPTIM)
             else()
                 set(WITH_NEON OFF)
             endif()
+        endif()
+        if(WITH_ARMV6)
+            check_armv6_compiler_flag()
+            if(HAVE_ARMV6_INLINE_ASM OR HAVE_ARMV6_INTRIN)
+                add_definitions(-DARM_SIMD)
+                set(ARMV6_SRCS ${ARCHDIR}/slide_hash_armv6.c)
+                set_property(SOURCE ${ARMV6_SRCS} PROPERTY COMPILE_FLAGS "${ARMV6FLAG} ${NOLTOFLAG}")
+                list(APPEND ZLIB_ARCH_SRCS ${ARMV6_SRCS})
+                add_feature_info(ARMV6 1 "Support ARMv6 SIMD instructions in slide_hash, using \"${ARMV6FLAG}\"")
+                if(HAVE_ARMV6_INTRIN)
+                    add_definitions(-DARM_SIMD_INTRIN)
+                endif()
+            else()
+                set(WITH_ARMV6 OFF)
+            endif()
+        else()
+            set(WITH_ARMV6 OFF)
         endif()
     elseif(BASEARCH_PPC_FOUND)
         # Common arch detection code
@@ -1215,6 +1238,7 @@ add_feature_info(WITH_INFLATE_ALLOW_INVALID_DIST WITH_INFLATE_ALLOW_INVALID_DIST
 if(BASEARCH_ARM_FOUND)
     add_feature_info(WITH_ACLE WITH_ACLE "Build with ACLE")
     add_feature_info(WITH_NEON WITH_NEON "Build with NEON intrinsics")
+    add_feature_info(WITH_ARMV6 WITH_ARMV6 "Build with ARMv6 SIMD")
 elseif(BASEARCH_PPC_FOUND)
     add_feature_info(WITH_ALTIVEC WITH_ALTIVEC "Build with AltiVec optimisations")
     add_feature_info(WITH_POWER8 WITH_POWER8 "Build with optimisations for POWER8")

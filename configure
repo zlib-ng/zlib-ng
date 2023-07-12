@@ -93,6 +93,7 @@ build32=0
 build64=0
 buildvpclmulqdq=1
 buildacle=1
+buildarmv6=1
 buildaltivec=1
 buildpower8=1
 buildpower9=1
@@ -115,6 +116,7 @@ vpclmulflag="-mvpclmulqdq -mavx512f"
 xsaveflag="-mxsave"
 acleflag=
 neonflag=
+armv6flag=
 noltoflag="-fno-lto"
 vgfmaflag="-march=z13"
 vmxflag="-maltivec"
@@ -167,6 +169,7 @@ case "$1" in
       echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
       echo '    [--without-acle]            Compiles without ARM C Language Extensions' | tee -a configure.log
       echo '    [--without-neon]            Compiles without ARM Neon SIMD instruction set' | tee -a configure.log
+      echo '    [--without-armv6]           Compiles without ARMv6 SIMD instruction set' | tee -a configure.log
       echo '    [--without-altivec]         Compiles without PPC AltiVec support' | tee -a configure.log
       echo '    [--without-power8]          Compiles without Power8 instruction set' | tee -a configure.log
       echo '    [--with-dfltcc-deflate]     Use DEFLATE CONVERSION CALL instruction for compression on IBM Z' | tee -a configure.log
@@ -198,6 +201,7 @@ case "$1" in
     --without-vpclmulqdq) buildvpclmulqdq=0; shift ;;
     --without-acle) buildacle=0; shift ;;
     --without-neon) buildneon=0; shift ;;
+    --without-armv6) buildarmv6=0; shift ;;
     --without-altivec) buildaltivec=0 ; shift ;;
     --without-power8) buildpower8=0 ; shift ;;
     --without-power9) buildpower9=0 ; shift ;;
@@ -1177,6 +1181,52 @@ EOF
     fi
 }
 
+check_armv6_intrinsics() {
+    # Check whether -march=armv6 works correctly
+    cat > $test.c << EOF
+int main() { return 0; }
+EOF
+    if try $CC -c $CFLAGS -march=armv6 $test.c; then
+        armv6flag=-march=armv6
+        echo "Check whether -march=armv6 works ... Yes." | tee -a configure.log
+    else
+        echo "Check whether -march=armv6 works ... No." | tee -a configure.log
+    fi
+
+    # Check whether compiler supports ARMv6 inline asm
+    cat > $test.c << EOF
+unsigned int f(unsigned int a, unsigned int b) {
+    unsigned int c;
+    __asm__ __volatile__ ( "uqsub16 %0, %1, %2" : "=r" (c) : "r" (a), "r" (b) );
+    return c;
+}
+int main(void) { return 0; }
+EOF
+    if try ${CC} ${CFLAGS} ${armv6flag} $test.c; then
+        echo "Checking for ARMv6 inline assembly ... Yes." | tee -a configure.log
+        HAVE_ARMV6_INLINE_ASM=1
+    else
+        echo "Checking for ARMv6 inline assembly ... No." | tee -a configure.log
+        HAVE_ARMV6_INLINE_ASM=0
+    fi
+
+    # Check whether compiler supports ARMv6 intrinsics
+    cat > $test.c << EOF
+#include <arm_acle.h>
+unsigned int f(unsigned int a, unsigned int b) {
+    return __uqsub16(a, b);
+}
+int main(void) { return 0; }
+EOF
+    if try ${CC} ${CFLAGS} ${armv6flag} $test.c; then
+        echo "Checking for ARMv6 intrinsics ... Yes." | tee -a configure.log
+        HAVE_ARMV6_INTRIN=1
+    else
+        echo "Checking for ARMv6 intrinsics ... No." | tee -a configure.log
+        HAVE_ARMV6_INTRIN=0
+    fi
+}
+
 check_pclmulqdq_intrinsics() {
     # Check whether compiler supports PCLMULQDQ intrinsics
     cat > $test.c << EOF
@@ -1592,6 +1642,18 @@ EOF
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} arm_features.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} arm_features.lo"
 
+            cat > $test.c <<EOF
+#include <arm_acle.h>
+EOF
+            if try $CC -c $CFLAGS $test.c; then
+                echo "Checking for arm_acle.h... Yes." | tee -a configure.log
+                CFLAGS="${CFLAGS} -DHAVE_ARM_ACLE_H"
+                SFLAGS="${SFLAGS} -DHAVE_ARM_ACLE_H"
+            else
+                echo "Checking for arm_acle.h... No." | tee -a configure.log
+            fi
+
+
             if test $LINUX -eq 1; then
                 if test "$ARCH" = "aarch64"; then
                     cat > $test.c <<EOF
@@ -1688,6 +1750,24 @@ EOF
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
                 fi
             fi
+
+            if test $buildarmv6 -eq 1; then
+                check_armv6_intrinsics
+
+                if test $HAVE_ARMV6_INTRIN -eq 1 || test $HAVE_ARMV6_INLINE_ASM -eq 1; then
+                    CFLAGS="${CFLAGS} -DARM_SIMD"
+                    SFLAGS="${SFLAGS} -DARM_SIMD"
+
+                    if test $HAVE_ARMV6_INTRIN -eq 1; then
+                        CFLAGS="${CFLAGS} -DARM_SIMD_INTRIN"
+                        SFLAGS="${SFLAGS} -DARM_SIMD_INTRIN"
+                    fi
+
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_hash_armv6.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_hash_armv6.lo"
+                fi
+            fi
+
         fi
     ;;
     powerpc*)
@@ -1859,6 +1939,7 @@ echo vpclmulflag = $vpclmulflag >> configure.log
 echo xsaveflag = $xsaveflag >> configure.log
 echo acleflag = $acleflag >> configure.log
 echo neonflag = $neonflag >> configure.log
+echo armv6flag = $armv6flag >> configure.log
 echo ARCHDIR = ${ARCHDIR} >> configure.log
 echo ARCH_STATIC_OBJS = ${ARCH_STATIC_OBJS} >> configure.log
 echo ARCH_SHARED_OBJS = ${ARCH_SHARED_OBJS} >> configure.log
@@ -2001,6 +2082,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^XSAVEFLAG *=/s#=.*#=$xsaveflag#
 /^ACLEFLAG *=/s#=.*#=$acleflag#
 /^NEONFLAG *=/s#=.*#=$neonflag#
+/^ARMV6FLAG *=/s#=.*#=$armv6flag#
 /^NOLTOFLAG *=/s#=.*#=$noltoflag#
 /^VGFMAFLAG *=/s#=.*#=$vgfmaflag#
 /^PPCFLAGS *=/s#=.*#=$vmxflag#

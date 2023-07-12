@@ -41,6 +41,7 @@ WITH_GZFILEOP = yes
 ZLIB_COMPAT =
 WITH_ACLE =
 WITH_NEON =
+WITH_ARMV6 =
 WITH_VFPV3 =
 NEON_ARCH = /arch:VFPv4
 SUFFIX =
@@ -109,6 +110,13 @@ WFLAGS = $(WFLAGS) \
 	-DARM_NOCHECK_NEON \
 	#
 OBJS = $(OBJS) adler32_neon.obj chunkset_neon.obj compare256_neon.obj slide_hash_neon.obj
+!endif
+!if "$(WITH_ARMV6)" != ""
+WFLAGS = $(WFLAGS) \
+	-DARM_SIMD \
+	-DARM_NOCHECK_SIMD \
+	#
+OBJS = $(OBJS) slide_hash_armv6.obj
 !endif
 
 # targets
