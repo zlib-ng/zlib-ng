@@ -142,6 +142,15 @@ static void init_functable(void) {
 #endif
 
 
+    // ARM - SIMD
+#ifdef ARM_SIMD
+#  ifndef ARM_NOCHECK_SIMD
+    if (cf.arm.has_simd)
+#  endif
+    {
+        ft.slide_hash = &slide_hash_armv6;
+    }
+#endif
     // ARM - NEON
 #ifdef ARM_NEON
 #  ifndef ARM_NOCHECK_NEON

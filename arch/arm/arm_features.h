@@ -6,6 +6,7 @@
 #define ARM_H_
 
 struct arm_cpu_features {
+    int has_simd;
     int has_neon;
     int has_crc32;
 };
