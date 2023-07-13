@@ -101,6 +101,10 @@
         #error archfound riscv32
     #endif
 
+// LOONGARCH
+#elif defined(__loongarch_lp64)
+    #error archfound loongarch64
+
 // Emscripten (WebAssembly)
 #elif defined(__EMSCRIPTEN__)
     #error archfound wasm32
