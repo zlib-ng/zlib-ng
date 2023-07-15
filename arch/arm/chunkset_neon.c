@@ -72,7 +72,7 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
     __msan_unpoison(buf + dist, 16 - dist);
 
     /* This version of table is only available on aarch64 */
-#if defined(_M_ARM64) || defined(__aarch64__)
+#if defined(_M_ARM64) || defined(_M_ARM64EC) || defined(__aarch64__)
     uint8x16_t ret_vec = vld1q_u8(buf);
 
     uint8x16_t perm_vec = vld1q_u8(permute_table + lut_rem.idx);

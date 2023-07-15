@@ -2,7 +2,7 @@
 #define FALLBACK_BUILTINS_H
 
 #if defined(_MSC_VER) && !defined(__clang__)
-#if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64) ||  defined(_M_ARM) || defined(_M_ARM64)
+#if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64) ||  defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
 
 #include <intrin.h>
 #ifdef X86_FEATURES
