@@ -33,7 +33,7 @@ Z_INTERNAL uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, size_t len) {
         buf4 = (const uint32_t *) buf;
     }
 
-#if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
     if ((len >= sizeof(uint32_t)) && ((ptrdiff_t)buf & sizeof(uint32_t))) {
         c = __crc32w(c, *buf4++);
         len -= sizeof(uint32_t);

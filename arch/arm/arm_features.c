@@ -45,7 +45,7 @@ static int arm_has_crc32() {
 }
 
 /* AArch64 has neon. */
-#if !defined(__aarch64__) && !defined(_M_ARM64)
+#if !defined(__aarch64__) && !defined(_M_ARM64) && !defined(_M_ARM64EC)
 static inline int arm_has_neon() {
 #if defined(__linux__) && defined(ARM_AUXV_HAS_NEON)
 #  ifdef HWCAP_ARM_NEON
@@ -73,7 +73,7 @@ static inline int arm_has_neon() {
 #endif
 
 void Z_INTERNAL arm_check_features(struct arm_cpu_features *features) {
-#if defined(__aarch64__) || defined(_M_ARM64)
+#if defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
     features->has_neon = 1; /* always available */
 #else
     features->has_neon = arm_has_neon();
