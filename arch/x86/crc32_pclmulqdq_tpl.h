@@ -28,7 +28,7 @@
 
 #include "../../crc32_fold.h"
 #include "../../crc32_braid_p.h"
-#include "../../fallback_builtins.h"
+#include "x86_intrins.h"
 #include <assert.h>
 
 #ifdef X86_VPCLMULQDQ

@@ -7,7 +7,7 @@
 #include <immintrin.h>
 #include "../../adler32_fold.h"
 #include "../../adler32_p.h"
-#include "../../fallback_builtins.h"
+#include "x86_intrins.h"
 #include "adler32_avx2_p.h"
 
 #ifdef X86_SSE42
