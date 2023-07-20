@@ -168,10 +168,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "^Intel")
         set(WARNFLAGS_MAINTAINER /W5)
         set(WARNFLAGS_DISABLE)
     endif()
-    if(WITH_NATIVE_INSTRUCTIONS)
-        message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
-        set(WITH_NATIVE_INSTRUCTIONS OFF)
-    endif()
 elseif(MSVC)
     # Minimum supported MSVC version is 1800 = Visual Studio 12.0/2013
     # See also https://cmake.org/cmake/help/latest/variable/MSVC_VERSION.html
@@ -190,23 +186,13 @@ elseif(MSVC)
         if(NOT "${ARCH}" MATCHES "aarch64")
             set(NEONFLAG "/arch:VFPv4")
         endif()
-        endif()
-    if(WITH_NATIVE_INSTRUCTIONS)
-        message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not supported on this configuration")
-        set(WITH_NATIVE_INSTRUCTIONS OFF)
     endif()
 elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     # Enable warnings in GCC and Clang
     set(WARNFLAGS -Wall)
     set(WARNFLAGS_MAINTAINER -Wextra)
     set(WARNFLAGS_DISABLE)
-    if(WITH_NATIVE_INSTRUCTIONS)
-        if(BASEARCH_PPC_FOUND)
-            set(NATIVEFLAG "-mcpu=native")
-        else()
-            set(NATIVEFLAG "-march=native")
-        endif()
-    else()
+    if(NOT WITH_NATIVE_INSTRUCTIONS)
         if(BASEARCH_ARM_FOUND)
             if("${ARCH}" MATCHES "arm" AND NOT CMAKE_C_FLAGS MATCHES "-mfloat-abi")
                 # Auto-detect support for ARM floating point ABI
@@ -252,15 +238,23 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     if(MINGW)
         list(APPEND WARNFLAGS_DISABLE -Wno-pedantic-ms-format)
     endif()
-else()
-    if(WITH_NATIVE_INSTRUCTIONS)
+endif()
+
+if(WITH_NATIVE_INSTRUCTIONS)
+    # Set native march/mcpu
+    if (CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+        if(BASEARCH_PPC_FOUND)
+            set(NATIVEFLAG "-mcpu=native")
+        else()
+            set(NATIVEFLAG "-march=native")
+        endif()
+        add_compile_options(${NATIVEFLAG})
+    else()
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not implemented yet on this configuration")
         set(WITH_NATIVE_INSTRUCTIONS OFF)
     endif()
-endif()
-
-# Disable LTO
-if(NOT WITH_NATIVE_INSTRUCTIONS)
+else()
+    # Disable LTO
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
     foreach(_cfg_name IN LISTS CMAKE_CONFIGURATION_TYPES)
         string(TOUPPER "${_cfg_name}" _cfg_name_uc)
@@ -290,12 +284,6 @@ endif()
 if(NOT WITH_CODE_COVERAGE AND NOT MSVC AND NOT CMAKE_C_FLAGS MATCHES "([\\/\\-]O)3")
     string(REGEX REPLACE "([\\/\\-]O)3" "\\12"
         CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE}")
-endif()
-
-# Set native instruction set compiler flag
-if(WITH_NATIVE_INSTRUCTIONS AND DEFINED NATIVEFLAG)
-    # Apply flag to all source files and compilation checks
-    add_compile_options(${NATIVEFLAG})
 endif()
 
 #
