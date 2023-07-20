@@ -474,16 +474,6 @@ if(NOT HAVE_PTRDIFF_T)
     endif()
 endif()
 
-# Macro to check if source compiles
-# (and, when compiling very natively, also runs).
-macro(check_c_source_compile_or_run source flag)
-    if(CMAKE_CROSSCOMPILING OR NOT WITH_NATIVE_INSTRUCTIONS)
-        check_c_source_compiles("${source}" ${flag})
-    else()
-        check_c_source_runs("${source}" ${flag})
-    endif()
-endmacro()
-
 add_compile_options($<$<CONFIG:Debug>:-DZLIB_DEBUG>)
 
 if(MSVC)

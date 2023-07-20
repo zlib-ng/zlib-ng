@@ -1,6 +1,17 @@
 # detect-intrinsics.cmake -- Detect compiler intrinsics support
 # Licensed under the Zlib license, see LICENSE.md for details
 
+# Macro to check if source compiles
+# (and, when compiling very natively, also runs).
+macro(check_c_source_compile_or_run source flag)
+    if(CMAKE_CROSSCOMPILING OR NOT WITH_NATIVE_INSTRUCTIONS)
+        check_c_source_compiles("${source}" ${flag})
+    else()
+        check_c_source_runs("${source}" ${flag})
+    endif()
+endmacro()
+
+
 macro(check_acle_compiler_flag)
     if(MSVC)
         # Both ARM and ARM64-targeting msvc support intrinsics, but
