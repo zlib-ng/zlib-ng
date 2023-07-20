@@ -12,7 +12,7 @@
 #endif
 #include "../../deflate.h"
 
-#ifdef X86_SSE42_CRC_INTRIN
+#ifdef X86_SSE42
 #  ifdef _MSC_VER
 #    define HASH_CALC(s, h, val)\
         h = _mm_crc32_u32(h, val)
@@ -45,6 +45,6 @@
 #define INSERT_STRING       insert_string_sse42
 #define QUICK_INSERT_STRING quick_insert_string_sse42
 
-#ifdef X86_SSE42
+#if defined(X86_SSE42) || defined(X86_SSE42_CRC_ASM)
 #  include "../../insert_string_tpl.h"
 #endif

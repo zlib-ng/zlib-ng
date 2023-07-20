@@ -1606,17 +1606,19 @@ case "${ARCH}" in
 
             check_sse42_intrinsics
 
-            if test ${HAVE_SSE42CRC_INTRIN} -eq 1 || test ${HAVE_SSE42CRC_INLINE_ASM} -eq 1; then
+            if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE42"
                 SFLAGS="${SFLAGS} -DX86_SSE42"
 
-                if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
-                  CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
-                  SFLAGS="${SFLAGS} -DX86_SSE42_CRC_INTRIN"
-                fi
-
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_sse42.o insert_string_sse42.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_sse42.lo insert_string_sse42.lo"
+
+            elif test ${HAVE_SSE42CRC_INLINE_ASM} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSE42_CRC_ASM"
+                SFLAGS="${SFLAGS} -DX86_SSE42_CRC_ASM"
+
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} insert_string_sse42.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} insert_string_sse42.lo"
             fi
 
             check_sse2_intrinsics

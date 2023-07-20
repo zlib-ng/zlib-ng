@@ -190,7 +190,7 @@ extern uint32_t compare256_rvv(const uint8_t *src0, const uint8_t *src1);
 #ifdef DEFLATE_H_
 /* insert_string */
 extern void insert_string_c(deflate_state *const s, const uint32_t str, uint32_t count);
-#ifdef X86_SSE42
+#if defined(X86_SSE42) || defined(X86_SSE42_CRC_ASM)
 extern void insert_string_sse42(deflate_state *const s, const uint32_t str, uint32_t count);
 #elif defined(ARM_ACLE)
 extern void insert_string_acle(deflate_state *const s, const uint32_t str, uint32_t count);
@@ -250,7 +250,7 @@ extern uint32_t longest_match_slow_rvv(deflate_state *const s, Pos cur_match);
 
 /* quick_insert_string */
 extern Pos quick_insert_string_c(deflate_state *const s, const uint32_t str);
-#ifdef X86_SSE42
+#if defined(X86_SSE42) || defined(X86_SSE42_CRC_ASM)
 extern Pos quick_insert_string_sse42(deflate_state *const s, const uint32_t str);
 #elif defined(ARM_ACLE)
 extern Pos quick_insert_string_acle(deflate_state *const s, const uint32_t str);
@@ -279,7 +279,7 @@ extern void slide_hash_avx2(deflate_state *s);
 
 /* update_hash */
 extern uint32_t update_hash_c(deflate_state *const s, uint32_t h, uint32_t val);
-#ifdef X86_SSE42
+#if defined(X86_SSE42) || defined(X86_SSE42_CRC_ASM)
 extern uint32_t update_hash_sse42(deflate_state *const s, uint32_t h, uint32_t val);
 #elif defined(ARM_ACLE)
 extern uint32_t update_hash_acle(deflate_state *const s, uint32_t h, uint32_t val);
