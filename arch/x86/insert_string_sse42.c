@@ -6,20 +6,14 @@
  */
 
 #include "../../zbuild.h"
-#include <immintrin.h>
-#ifdef _MSC_VER
+#ifdef X86_SSE42
 #  include <nmmintrin.h>
 #endif
 #include "../../deflate.h"
 
 #ifdef X86_SSE42
-#  ifdef _MSC_VER
 #    define HASH_CALC(s, h, val)\
         h = _mm_crc32_u32(h, val)
-#  else
-#    define HASH_CALC(s, h, val)\
-        h = __builtin_ia32_crc32si(h, val)
-#  endif
 #else
 #  ifdef _MSC_VER
 #    define HASH_CALC(s, h, val) {\
