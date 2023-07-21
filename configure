@@ -1525,20 +1525,11 @@ EOF
     fi
 }
 
-case "${ARCH}" in
-    i386 | i486 | i586 | i686 | x86_64)
-        # Enable deflate_medium at level 1
-        if test $without_new_strategies -eq 1; then
-            CFLAGS="${CFLAGS} -DNO_QUICK_STRATEGY"
-            SFLAGS="${SFLAGS} -DNO_QUICK_STRATEGY"
-        fi
-        # Enable deflate_medium at level 4-6
-        if test $without_new_strategies -eq 1; then
-            CFLAGS="${CFLAGS} -DNO_MEDIUM_STRATEGY"
-            SFLAGS="${SFLAGS} -DNO_MEDIUM_STRATEGY"
-        fi
-        ;;
-esac
+# Check whether to disable deflate_medium and deflate_quick
+if test $without_new_strategies -eq 1; then
+    CFLAGS="${CFLAGS} -DNO_QUICK_STRATEGY -DNO_MEDIUM_STRATEGY"
+    SFLAGS="${SFLAGS} -DNO_QUICK_STRATEGY -DNO_MEDIUM_STRATEGY"
+fi
 
 ARCHDIR='arch/generic'
 ARCH_STATIC_OBJS=''
