@@ -1431,38 +1431,23 @@ EOF
 }
 
 check_sse42_intrinsics() {
-    # Check whether compiler supports SSE4.2 CRC inline asm
+    # Check whether compiler supports SSE4.2 intrinsics
     cat > $test.c << EOF
-int main(void) {
-    unsigned val = 0, h = 0;
-    __asm__ __volatile__ ( "crc32 %1,%0" : "+r" (h) : "r" (val) );
-    return (int) h;
-}
-EOF
-    if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
-        echo "Checking for SSE4.2 CRC inline assembly ... Yes." | tee -a configure.log
-        HAVE_SSE42CRC_INLINE_ASM=1
-    else
-        echo "Checking for SSE4.2 CRC inline assembly ... No." | tee -a configure.log
-        HAVE_SSE42CRC_INLINE_ASM=0
-    fi
-
-    # Check whether compiler supports SSE4.2 CRC intrinsics
-    cat > $test.c << EOF
+#include <nmmintrin.h>
 int main(void) {
     unsigned crc = 0;
     char c = 'c';
-    crc = __builtin_ia32_crc32qi(crc, c);
+    crc = _mm_crc32_u32(crc, c);
     (void)crc;
     return 0;
 }
 EOF
     if try ${CC} ${CFLAGS} ${sse42flag} $test.c; then
-        echo "Checking for SSE4.2 CRC intrinsics ... Yes." | tee -a configure.log
-        HAVE_SSE42CRC_INTRIN=1
+        echo "Checking for SSE4.2 intrinsics ... Yes." | tee -a configure.log
+        HAVE_SSE42_INTRIN=1
     else
-        echo "Checking for SSE4.2 CRC intrinsics ... No." | tee -a configure.log
-        HAVE_SSE42CRC_INTRIN=0
+        echo "Checking for SSE4.2 intrinsics ... No." | tee -a configure.log
+        HAVE_SSE42_INTRIN=0
     fi
 }
 
@@ -1606,15 +1591,9 @@ case "${ARCH}" in
 
             check_sse42_intrinsics
 
-            if test ${HAVE_SSE42CRC_INTRIN} -eq 1 || test ${HAVE_SSE42CRC_INLINE_ASM} -eq 1; then
+            if test ${HAVE_SSE42_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE42"
                 SFLAGS="${SFLAGS} -DX86_SSE42"
-
-                if test ${HAVE_SSE42CRC_INTRIN} -eq 1; then
-                  CFLAGS="${CFLAGS} -DX86_SSE42_CRC_INTRIN"
-                  SFLAGS="${SFLAGS} -DX86_SSE42_CRC_INTRIN"
-                fi
-
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_sse42.o insert_string_sse42.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_sse42.lo insert_string_sse42.lo"
             fi

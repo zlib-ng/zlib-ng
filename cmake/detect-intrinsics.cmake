@@ -481,35 +481,18 @@ macro(check_sse42_intrinsics)
             set(SSE42FLAG "-msse4.2")
         endif()
     endif()
-    # Check whether compiler supports SSE4.2 CRC inline asm
+    # Check whether compiler supports SSE4.2 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${SSE42FLAG} ${NATIVEFLAG}")
     check_c_source_compile_or_run(
-        "int main(void) {
-            unsigned val = 0, h = 0;
-        #if defined(_MSC_VER)
-            { __asm mov edx, h __asm mov eax, val __asm crc32 eax, edx __asm mov h, eax }
-        #else
-            __asm__ __volatile__ ( \"crc32 %1,%0\" : \"+r\" (h) : \"r\" (val) );
-        #endif
-            return (int)h;
-        }"
-        HAVE_SSE42CRC_INLINE_ASM
-    )
-    # Check whether compiler supports SSE4.2 CRC intrinsics
-    check_c_source_compile_or_run(
-        "#include <immintrin.h>
+        "#include <nmmintrin.h>
         int main(void) {
             unsigned crc = 0;
             char c = 'c';
-        #if defined(_MSC_VER)
             crc = _mm_crc32_u32(crc, c);
-        #else
-            crc = __builtin_ia32_crc32qi(crc, c);
-        #endif
             (void)crc;
             return 0;
         }"
-        HAVE_SSE42CRC_INTRIN
+        HAVE_SSE42_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
