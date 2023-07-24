@@ -951,8 +951,19 @@ if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     endif()
 endif()
 
-set(PC_INC_INSTALL_DIR "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
-set(PC_LIB_INSTALL_DIR "${CMAKE_INSTALL_FULL_LIBDIR}")
+# The user is allowed (but discouraged) to set absolute CMAKE_INSTALL_*DIR paths.
+# If they do, we copy these non-relocatable paths into the pkg-config file.
+if(IS_ABSOLUTE "${CMAKE_INSTALL_INCLUDEDIR}")
+    set(PC_INC_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
+else()
+    set(PC_INC_INSTALL_DIR "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
+endif()
+
+if(IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}")
+    set(PC_LIB_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}")
+else()
+    set(PC_LIB_INSTALL_DIR "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
+endif()
 
 #============================================================================
 # zlib
