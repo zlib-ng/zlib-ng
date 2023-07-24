@@ -81,11 +81,6 @@ Darwin)
   sysctl -n machdep.cpu.features
   sysctl -n machdep.cpu.leaf7_features
   sysctl -n machdep.cpu.extfeatures
-  CMAKE_ARGS="-DCMAKE_INSTALL_LIBDIR=lib ${CMAKE_ARGS}"
-  CONFIGURE_ARGS="--libdir=lib ${CONFIGURE_ARGS}"
-  ;;
-*)
-  CMAKE_ARGS="-DCMAKE_INSTALL_LIBDIR=lib ${CMAKE_ARGS}"
   ;;
 esac
 
