@@ -938,36 +938,8 @@ if(NOT CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_CURRENT_BINARY_DIR)
     endif()
 endif()
 
-# Refer to prefix symbolically to ease relocation by end user,
-# as Makefile-generated .pc file does.
-string(FIND "${CMAKE_INSTALL_INCLUDEDIR}" "${CMAKE_INSTALL_PREFIX}/" INCLUDEDIR_POS)
-string(FIND "${CMAKE_INSTALL_LIBDIR}" "${CMAKE_INSTALL_PREFIX}/" LIBDIR_POS)
-string(LENGTH "${CMAKE_INSTALL_PREFIX}/" INSTALL_PREFIX_LEN)
-
-if(NOT IS_ABSOLUTE "${CMAKE_INSTALL_INCLUDEDIR}")
-  set(PC_INC_INSTALL_DIR "\${prefix}/${CMAKE_INSTALL_INCLUDEDIR}")
-elseif(INCLUDEDIR_POS EQUAL 0)
-  string(SUBSTRING "${CMAKE_INSTALL_INCLUDEDIR}" "${INSTALL_PREFIX_LEN}" "-1" INCLUDEDIR_RELATIVE)
-  set(PC_INC_INSTALL_DIR "\${prefix}/${INCLUDEDIR_RELATIVE}")
-else()
-  set(PC_INC_INSTALL_DIR "${CMAKE_INSTALL_INCLUDEDIR}")
-endif()
-
-if(APPLE)
-  option(WITH_RPATH "Enable RPATH for shared library" OFF)
-endif()
-if(NOT IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}")
-  if(APPLE AND WITH_RPATH)
-    set(PC_LIB_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}")
-  else()
-    set(PC_LIB_INSTALL_DIR "\${exec_prefix}/${CMAKE_INSTALL_LIBDIR}")
-  endif()
-elseif(LIBDIR_POS EQUAL 0)
-  string(SUBSTRING "${CMAKE_INSTALL_LIBDIR}" "${INSTALL_PREFIX_LEN}" "-1" LIBDIR_RELATIVE)
-  set(PC_LIB_INSTALL_DIR "\${exec_prefix}/${LIBDIR_RELATIVE}")
-else()
-  set(PC_LIB_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}")
-endif()
+set(PC_INC_INSTALL_DIR "${CMAKE_INSTALL_FULL_INCLUDEDIR}")
+set(PC_LIB_INSTALL_DIR "${CMAKE_INSTALL_FULL_LIBDIR}")
 
 #============================================================================
 # zlib
@@ -1132,11 +1104,6 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
             endif()
             set_target_properties(zlib PROPERTIES LINK_FLAGS
                 "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map\"")
-        elseif(IS_ABSOLUTE "${CMAKE_INSTALL_LIBDIR}" OR NOT WITH_RPATH)
-            # Match configure/make's behavior (i.e. don't use @rpath on mac when using absolute path).
-            set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "@rpath/${CMAKE_INSTALL_FULL_LIBDIR}")
-        else()
-            set_target_properties(zlib PROPERTIES INSTALL_NAME_DIR "@rpath/${CMAKE_INSTALL_LIBDIR}")
         endif()
     endif()
     if(MSYS)
@@ -1172,11 +1139,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h.in
     ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.h @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/gzread.c.in
     ${CMAKE_CURRENT_BINARY_DIR}/gzread.c @ONLY)
-
-# Fix install directory after generating zlib.pc/zlib-ng.pc
-if (NOT IS_ABSOLUTE CMAKE_INSTALL_LIBDIR AND WITH_RPATH)
-    set(CMAKE_INSTALL_LIBDIR "/${CMAKE_INSTALL_LIBDIR}")
-endif()
 
 if (NOT ZLIB_SYMBOL_PREFIX STREQUAL "")
     add_feature_info(ZLIB_SYMBOL_PREFIX ON "Publicly exported symbols have a custom prefix")
@@ -1275,9 +1237,5 @@ elseif(BASEARCH_X86_FOUND)
 endif()
 
 add_feature_info(INSTALL_UTILS INSTALL_UTILS "Copy minigzip and minideflate during install")
-
-if(APPLE)
-    add_feature_info(WITH_RPATH WITH_RPATH "Enable RPATH for shared library")
-endif()
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)

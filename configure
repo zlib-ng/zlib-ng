@@ -513,12 +513,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
              SHAREDLIBM=${LIBNAME}.$VER1$shared_ext
              SHAREDTARGET=$SHAREDLIBV
              LDSHARED=${LDSHARED-"$cc"}
-             case ${libdir} in
-             /*)
-                 LDSHAREDFLAGS="-dynamiclib -install_name ${libdir}/${SHAREDLIBM} -compatibility_version ${VER1} -current_version ${VER3}" ;;
-             *)
-                 LDSHAREDFLAGS="-dynamiclib -install_name @rpath/${libdir}/${SHAREDLIBM} -compatibility_version ${VER1} -current_version ${VER3}" ;;
-             esac
+             LDSHAREDFLAGS="-dynamiclib -install_name @rpath/${SHAREDLIBM} -compatibility_version ${VER1} -current_version ${VER3}"
              if libtool -V 2>&1 | grep Apple > /dev/null; then
                  AR="libtool"
              else
