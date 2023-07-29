@@ -71,7 +71,7 @@ Z_INTERNAL uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len) 
             cnt = 0;
         }
     }
-    /* the left len <= 256 now, we can use 16-bit accum safetly */
+    /* the left len <= 256 now, we can use 16-bit accum safely */
     v_buf16_accu = __riscv_vmv_v_x_u16m2(0, vl);
     size_t res = left;
     while (left >= vl) {
