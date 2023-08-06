@@ -22,14 +22,14 @@ There are two different benchmarks, micro and macro.
 ### Benchmark benchmark_zlib
 These are microbenchmarks intended to test lower level subfunctions of the library.
 
-Benchmarks include impelementations of:
+Benchmarks include implementations of:
     - Adler32
     - CRC
     - 256 byte comparisons
     - SIMD accelerated "slide hash" routine
 
 By default these benchmarks report things on the nanosecond scale and are small enough
-to measure very minute diferences.
+to measure very minute differences.
 
 ### Benchmark benchmark_zlib_apps
 These benchmarks measure applications of zlib as a whole.  Currently the only examples
