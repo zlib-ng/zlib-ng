@@ -543,14 +543,14 @@ void test_dict_inflate(unsigned char *compr, size_t comprLen, unsigned char *unc
         }
         CHECK_ERR(err, "inflate with dict");
     }
-    
+
     err = PREFIX(inflateGetDictionary)(&d_stream, NULL, &check_dictionary_len);
     CHECK_ERR(err, "inflateGetDictionary");
 #ifndef S390_DFLTCC_INFLATE
     if (check_dictionary_len < sizeof(dictionary))
         error("bad dictionary length\n");
 #endif
-    
+
     err = PREFIX(inflateGetDictionary)(&d_stream, check_dictionary, &check_dictionary_len);
     CHECK_ERR(err, "inflateGetDictionary");
 #ifndef S390_DFLTCC_INFLATE

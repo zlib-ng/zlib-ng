@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2023 SiFive, Inc. All rights reserved.
  * Contributed by Alex Chiang <alex.chiang@sifive.com>
- * 
+ *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 

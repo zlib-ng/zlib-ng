@@ -21,7 +21,7 @@ static inline uint32_t compare256_rvv_static(const uint8_t *src0, const uint8_t 
         vuint8m4_t v_src1 = __riscv_vle8_v_u8m4(src1, vl);
         vbool2_t v_mask = __riscv_vmsne_vv_u8m4_b2(v_src0, v_src1, vl);
         found_diff = __riscv_vfirst_m_b2(v_mask, vl);
-        if (found_diff >= 0) 
+        if (found_diff >= 0)
             return len + (uint32_t)found_diff;
         src0 += vl, src1 += vl, len += vl;
     } while (len < 256);
