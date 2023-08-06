@@ -55,21 +55,21 @@ static void init_compressible(png_bytep buf, size_t num_pix) {
     int32_t green_stop = num_pix;
 
     for (int32_t x = 0; i < red_stop; x += 3, ++i) {
-       buf[x] = 255; 
+       buf[x] = 255;
        buf[x + 1] = 0;
-       buf[x + 2] = 0; 
+       buf[x + 2] = 0;
     }
 
     for (int32_t x = 3 * i; i < blue_stop; x+= 3, ++i) {
-       buf[x] = 0; 
-       buf[x + 1] = 255; 
-       buf[x + 2] = 0; 
+       buf[x] = 0;
+       buf[x + 1] = 255;
+       buf[x + 2] = 0;
     }
 
     for (int32_t x = 3 * i; i < green_stop; x += 3, ++i) {
-       buf[x] = 0; 
-       buf[x + 1] = 0; 
-       buf[x + 2] = 255; 
+       buf[x] = 0;
+       buf[x + 1] = 0;
+       buf[x + 2] = 255;
     }
 }
 
@@ -112,7 +112,7 @@ static void read_from_pngdat(png_structp png, png_bytep out, png_size_t bytes_to
 static inline int decode_png(png_parse_dat *dat, png_bytepp out_bytes, size_t in_size, uint32_t &width, uint32_t &height) {
     png_structp png = NULL;
     png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-    
+
     if (!png) abort();
     png_infop info = NULL;
     info = png_create_info_struct(png);
@@ -128,7 +128,7 @@ static inline int decode_png(png_parse_dat *dat, png_bytepp out_bytes, size_t in
     if (color_type != PNG_COLOR_TYPE_RGB) {
         fprintf(stderr, "expected an 8 bpp RGB image\n");
         abort();
-    } 
+    }
 
     if (im_size > in_size) {
        *out_bytes = (png_bytep)realloc(*out_bytes, im_size);

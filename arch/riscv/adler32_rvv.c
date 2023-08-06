@@ -45,7 +45,7 @@ Z_INTERNAL uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len) 
      *
      * The block_size is the largest multiple of vl that <= 256, because overflow would occur when
      * vl > 256 (255 * 256 <= UINT16_MAX).
-     * 
+     *
      * We accumulate 8-bit data into a 16-bit accumulator and then
      * move the data into the 32-bit accumulator at the last iteration.
      */
