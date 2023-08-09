@@ -374,9 +374,9 @@ macro(check_rvv_intrinsics)
     set(CMAKE_REQUIRED_FLAGS "${RISCVFLAG} ${NATIVEFLAG}")
     check_c_source_compiles(
         "#include <riscv_vector.h>
-        int main() { 
-            return 0; 
-        }" 
+        int main() {
+            return 0;
+        }"
         HAVE_RVV_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
