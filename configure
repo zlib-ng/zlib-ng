@@ -101,7 +101,6 @@ builddfltccdeflate=0
 builddfltccinflate=0
 buildcrc32vx=1
 floatabi=
-native=0
 forcesse2=0
 # For CPUs that can benefit from AVX512, it seems GCC generates suboptimal
 # instruction scheduling unless you specify a reasonable -mtune= target
@@ -175,7 +174,6 @@ case "$1" in
       echo '    [--without-crc32-vx]        Build without vectorized CRC32 on IBM Z' | tee -a configure.log
       echo '    [--with-reduced-mem]        Reduced memory usage for special cases (reduces performance)' | tee -a configure.log
       echo '    [--force-sse2]              Assume SSE2 instructions are always available (disabled by default on x86, enabled on x86_64)' | tee -a configure.log
-      echo '    [--native]                  Compiles with full instruction set supported on this host' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=$(echo $1 | sed 's/.*=//'); shift ;;
     -e*=* | --eprefix=*) exec_prefix=$(echo $1 | sed 's/.*=//'); shift ;;
@@ -208,7 +206,6 @@ case "$1" in
     --without-crc32-vx) buildcrc32vx=0; shift ;;
     --with-reduced-mem) reducedmem=1; shift ;;
     --force-sse2) forcesse2=1; shift ;;
-    -n | --native) native=1; shift ;;
     -a*=* | --archs=*) ARCHS=$(echo $1 | sed 's/.*=//'); shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
     --localstatedir=*) echo "ignored option: --localstatedir" | tee -a configure.log; shift ;;
@@ -255,19 +252,6 @@ case $($cc -v 2>&1) in
   *gcc*) gcc=1 ;;
   *clang*) gcc=1 ;;
 esac
-
-if test $native -eq 1; then
-  avx512flag=""
-  avx512vnniflag=""
-  avx2flag=""
-  sse2flag=""
-  ssse3flag=""
-  sse42flag=""
-  pclmulflag=""
-  vpclmulflag=""
-  xsaveflag=""
-  noltoflag=""
-fi
 
 if test $build32 -eq 1; then
   CFLAGS="${CFLAGS} -m32"
@@ -333,11 +317,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         ARCH=$CC_ARCH
       fi ;;
     arm | armeb)
-      if test $native -eq 0; then
         ARCH=arm
-      else
-        ARCH=native
-      fi
       if test "${uname}" = "eabi"; then
         # No ACLE support
         uname=arm
@@ -347,25 +327,15 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         fi
       fi
       if test $buildacle -eq 1; then
-        if test $native -eq 0; then
-          ARCH=armv8-a+crc
-        fi
+        ARCH=armv8-a+crc
       fi ;;
     armv8l)
-      if test $native -eq 0; then
-        ARCH=armv8-a
-      else
-        ARCH=native
-      fi ;;
+      ARCH=armv8-a ;;
     aarch64 | aarch64_be | arm64)
       if test "${uname}" = "elf"; then
         uname=aarch64
       fi
-      if test $native -eq 0; then
-        ARCH=aarch64
-      else
-        ARCH=native
-      fi ;;
+      ARCH=aarch64 ;;
     powerpc | ppc)
       ARCH=powerpc ;;
     powerpc64 | ppc64)
@@ -380,16 +350,6 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   fi
   CFLAGS="${CFLAGS} -Wall"
   SFLAGS="${CFLAGS} -fPIC"
-  if test $native -eq 1; then
-    case $ARCH in
-      powerpc*)
-        NATIVE_FLAG="-mcpu=native" ;;
-      *)
-        NATIVE_FLAG="-march=native" ;;
-    esac
-    CFLAGS="${CFLAGS} ${NATIVE_FLAG}"
-    SFLAGS="${SFLAGS} ${NATIVE_FLAG}"
-  fi
   if test "$warn" -eq 1; then
     CFLAGS="${CFLAGS} -Wextra"
   fi
@@ -950,7 +910,7 @@ else
 fi
 
 # Check for -fno-lto compiler support
-if test $gcc -eq 1 -a $without_optimizations -eq 0 -a $native -eq 0; then
+if test $gcc -eq 1 -a $without_optimizations -eq 0; then
   cat > $test.c <<EOF
 int main() { return 0; }
 EOF
@@ -1228,7 +1188,7 @@ EOF
 }
 
 check_neon_ld4_intrinsics() {
-    if test $buildneon -eq 1 && test $native -eq 0; then
+    if test $buildneon -eq 1; then
         if test "$CC_ARCH" = "aarch64" || test "$CC_ARCH" = "aarch64_be" || test "$CC_ARCH" = "arm64"; then
             neonflag="-march=armv8-a+simd"
         elif test $MFPU_NEON_AVAILABLE -eq 1; then
@@ -1851,11 +1811,7 @@ EOF
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=aarch64
         ARCHDIR=arch/arm
 
-        if test $native -eq 0; then
-            ARCH="armv8-a"
-        else
-            ARCH="native"
-        fi
+        ARCH="armv8-a"
 
         if test $without_optimizations -eq 0; then
             check_neon_ld4_intrinsics
@@ -1886,9 +1842,7 @@ EOF
             fi
 
             if test $buildacle -eq 1; then
-                if test $native -eq 0; then
-                    ARCH="${ARCH}+crc"
-                fi
+                ARCH="${ARCH}+crc"
                 CFLAGS="${CFLAGS} -DARM_ACLE"
                 SFLAGS="${SFLAGS} -DARM_ACLE"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
@@ -1896,9 +1850,7 @@ EOF
             fi
 
             if test $buildneon -eq 1; then
-                if test $native -eq 0; then
-                    ARCH="${ARCH}+simd"
-                fi
+                ARCH="${ARCH}+simd"
                 CFLAGS="${CFLAGS} -DARM_NEON"
                 SFLAGS="${SFLAGS} -DARM_NEON"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
