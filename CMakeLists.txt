@@ -1241,3 +1241,20 @@ endif()
 add_feature_info(INSTALL_UTILS INSTALL_UTILS "Copy minigzip and minideflate during install")
 
 FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
+
+#============================================================================
+# CPack
+#============================================================================
+set(CPACK_GENERATOR "TGZ")
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_SOURCE_IGNORE_FILES .git/ _CPack_Packages/ "${PROJECT_BINARY_DIR}/")
+
+set(CPACK_PACKAGE_NAME "zlib${SUFFIX}")
+set(CPACK_PACKAGE_VERSION ${ZLIB_FULL_VERSION})
+set(CPACK_PACKAGE_DIRECTORY "${PROJECT_BINARY_DIR}/package")
+
+if("${PROJECT_BINARY_DIR}" STREQUAL "${PROJECT_SOURCE_DIR}")
+    message(WARNING "Building to source folder is not recommended. Cpack will be unable to generate source package.")
+endif()
+
+include(CPack)
