@@ -445,6 +445,10 @@ int Z_EXPORT PREFIX(gzungetc)(int c, gzFile file) {
         return -1;
     state = (gz_state *)file;
 
+    /* in case this was just opened, set up the input buffer */
+    if (state->mode == GZ_READ && state->how == LOOK && state->x.have == 0)
+        (void)gz_look(state);
+
     /* check that we're reading and that there's no (serious) error */
     if (state->mode != GZ_READ || (state->err != Z_OK && state->err != Z_BUF_ERROR))
         return -1;
