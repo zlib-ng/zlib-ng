@@ -227,13 +227,13 @@ test=ztest$$
 # put arguments in log, also put test file in log if used in arguments
 show()
 {
-  case "$*" in
+  case "$@" in
     *$test.c*)
       echo "=== $test.c ===" >> configure.log
       cat $test.c >> configure.log
       echo "===" >> configure.log;;
   esac
-  echo $* >> configure.log
+  echo "$@" >> configure.log
 }
 
 # check for gcc vs. cc and set compile and link flags based on the system identified by uname
@@ -562,15 +562,15 @@ EOF
 if ($CC -c $CFLAGS $test.c) 2>/dev/null; then
   try()
   {
-    show $*
-    test "$( ($*) 2>&1 | tee -a configure.log)" = ""
+    show "$@"
+    test "$( ("$@") 2>&1 | tee -a configure.log)" = ""
   }
   echo - using any output from compiler to indicate an error >> configure.log
 else
   try()
   {
-    show $*
-    ( $* ) >> configure.log 2>&1
+    show "$@"
+    ( "$@" ) >> configure.log 2>&1
     ret=$?
     if test $ret -ne 0; then
       echo "(exit code $ret)" >> configure.log
