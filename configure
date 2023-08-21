@@ -1210,13 +1210,11 @@ check_vpclmulqdq_intrinsics() {
     cat > $test.c << EOF
 #include <immintrin.h>
 #include <wmmintrin.h>
-int main(void) {
-    __m512i a = _mm512_setzero_si512();
+__m512i f(__m512i a) {
     __m512i b = _mm512_setzero_si512();
-    __m512i c = _mm512_clmulepi64_epi128(a, b, 0x10);
-    (void)c;
-    return 0;
+    return _mm512_clmulepi64_epi128(a, b, 0x10);
 }
+int main(void) { return 0; }
 EOF
     if try ${CC} ${CFLAGS} ${vpclmulflag} $test.c; then
         echo "Checking for VPCLMULQDQ intrinsics ... Yes." | tee -a configure.log
