@@ -563,7 +563,7 @@ if ($CC -c $CFLAGS $test.c) 2>/dev/null; then
   try()
   {
     show $*
-    test "$(\( $* \) 2>&1 | tee -a configure.log)" = ""
+    test "$( ($*) 2>&1 | tee -a configure.log)" = ""
   }
   echo - using any output from compiler to indicate an error >> configure.log
 else
