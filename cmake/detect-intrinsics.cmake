@@ -507,7 +507,7 @@ macro(check_xsave_intrinsics)
         #else
         #  include <x86gprintrin.h>
         #endif
-        unsigned int f(unsigned int a) { return _xgetbv(a); }
+        unsigned int f(unsigned int a) { return (int) _xgetbv(a); }
         int main(void) { return 0; }"
         HAVE_XSAVE_INTRIN FAIL_REGEX "not supported")
     set(CMAKE_REQUIRED_FLAGS)

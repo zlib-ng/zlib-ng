@@ -1233,7 +1233,7 @@ check_xsave_intrinsics() {
 #else
 #  include <x86gprintrin.h>
 #endif
-unsigned int f(unsigned int a) { return _xgetbv(a); }
+unsigned int f(unsigned int a) { return (int) _xgetbv(a); }
 int main(void) { return 0; }
 EOF
     if try ${CC} ${CFLAGS} ${xsaveflag} $test.c; then
