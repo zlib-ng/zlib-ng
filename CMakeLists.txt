@@ -615,7 +615,7 @@ if(WITH_OPTIM)
         endif()
         list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm_features.h)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/arm_features.c)
-        if(WITH_ACLE AND NOT "${ARCH}" MATCHES "armv[2-7]")
+        if(WITH_ACLE)
             check_acle_compiler_flag()
             if(HAVE_ACLE_FLAG)
                 add_definitions(-DARM_ACLE)
@@ -715,7 +715,7 @@ if(WITH_OPTIM)
                 add_definitions(-DRISCV_RVV)
                 list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/riscv_features.h)
                 list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/riscv_features.c)
-                # FIXME: we will not set compile flags for riscv_features.c when 
+                # FIXME: we will not set compile flags for riscv_features.c when
                 # the kernels update hwcap or hwprobe for riscv
                 set(RVV_SRCS ${ARCHDIR}/riscv_features.c ${ARCHDIR}/adler32_rvv.c ${ARCHDIR}/compare256_rvv.c ${ARCHDIR}/slide_hash_rvv.c)
                 list(APPEND ZLIB_ARCH_SRCS ${RVV_SRCS})
