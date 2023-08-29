@@ -176,7 +176,7 @@ macro(check_neon_compiler_flag)
         #  include <arm_neon.h>
         #endif
         int main() { return 0; }"
-        MFPU_NEON_AVAILABLE FAIL_REGEX "not supported")
+        NEON_AVAILABLE FAIL_REGEX "not supported")
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 

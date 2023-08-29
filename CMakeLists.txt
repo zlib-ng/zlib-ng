@@ -631,7 +631,7 @@ if(WITH_OPTIM)
         endif()
         if(WITH_NEON)
             check_neon_compiler_flag()
-            if(MFPU_NEON_AVAILABLE)
+            if(NEON_AVAILABLE)
                 add_definitions(-DARM_NEON)
                 set(NEON_SRCS ${ARCHDIR}/adler32_neon.c ${ARCHDIR}/chunkset_neon.c
                     ${ARCHDIR}/compare256_neon.c ${ARCHDIR}/slide_hash_neon.c)
