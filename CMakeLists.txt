@@ -717,7 +717,7 @@ if(WITH_OPTIM)
                 list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/riscv_features.c)
                 # FIXME: we will not set compile flags for riscv_features.c when 
                 # the kernels update hwcap or hwprobe for riscv
-                set(RVV_SRCS ${ARCHDIR}/riscv_features.c ${ARCHDIR}/adler32_rvv.c ${ARCHDIR}/compare256_rvv.c ${ARCHDIR}/slide_hash_rvv.c)
+                set(RVV_SRCS ${ARCHDIR}/riscv_features.c ${ARCHDIR}/adler32_rvv.c ${ARCHDIR}/chunkset_rvv.c ${ARCHDIR}/compare256_rvv.c ${ARCHDIR}/slide_hash_rvv.c)
                 list(APPEND ZLIB_ARCH_SRCS ${RVV_SRCS})
                 set_property(SOURCE ${RVV_SRCS} PROPERTY COMPILE_FLAGS "${RISCVFLAG} ${NOLTOFLAG}")
             else()
