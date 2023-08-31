@@ -121,6 +121,10 @@ extern uint8_t* chunkmemset_safe_neon(uint8_t *out, unsigned dist, unsigned len,
 extern uint32_t chunksize_power8(void);
 extern uint8_t* chunkmemset_safe_power8(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 #endif
+#ifdef RISCV_RVV
+extern uint32_t chunksize_rvv(void);
+extern uint8_t* chunkmemset_safe_rvv(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+#endif
 
 #ifdef ZLIB_COMPAT
 typedef struct z_stream_s z_stream;
@@ -144,6 +148,9 @@ extern void inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifdef POWER8_VSX
 extern void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start);
+#endif
+#ifdef RISCV_RVV
+extern void inflate_fast_rvv(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
 /* CRC32 */
