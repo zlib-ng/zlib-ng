@@ -317,17 +317,9 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         ARCH=$CC_ARCH
       fi ;;
     arm | armeb)
-        ARCH=arm
+      ARCH=arm
       if test "${uname}" = "eabi"; then
-        # No ACLE support
         uname=arm
-        if test $buildacle -eq 1; then
-          echo ACLE support not available
-          buildacle=0
-        fi
-      fi
-      if test $buildacle -eq 1; then
-        ARCH=armv8-a+crc
       fi ;;
     armv8l)
       ARCH=armv8-a ;;
@@ -1153,14 +1145,13 @@ EOF
     if try $CC -c $CFLAGS -march=armv8-a+crc $test.c; then
         ACLE_AVAILABLE=1
         echo "Check whether -march=armv8-a+crc works ... Yes." | tee -a configure.log
+        acleflag="-march=armv8-a+crc"
     else
         echo "Check whether -march=armv8-a+crc works ... No." | tee -a configure.log
         if try $CC -c $CFLAGS -march=armv8-a+crc+simd $test.c; then
             ACLE_AVAILABLE=1
             echo "Check whether -march=armv8-a+crc+simd works ... Yes." | tee -a configure.log
-            if test "$ARCH" = "armv8-a+crc"; then
-                ARCH=armv8-a+crc+simd
-            fi
+            acleflag="-march=armv8-a+crc+simd"
         else
             ACLE_AVAILABLE=0
             echo "Check whether -march=armv8-a+crc+simd works ... No." | tee -a configure.log
@@ -1169,7 +1160,12 @@ EOF
 }
 
 check_neon_compiler_flag() {
-    # Check whether -mfpu=neon is available on ARM processors.
+    if test "$ARCH" = "aarch64"; then
+        neonflag="-march=armv8-a+simd"
+    else
+        neonflag="-mfpu=neon"
+    fi
+    # Check whether neon flag is available on ARM processors.
     cat > $test.c << EOF
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
  #  include <arm64_neon.h>
@@ -1178,23 +1174,16 @@ check_neon_compiler_flag() {
 #endif
 int main() { return 0; }
 EOF
-    if try $CC -c $CFLAGS -mfpu=neon $test.c; then
-        MFPU_NEON_AVAILABLE=1
-        echo "Check whether -mfpu=neon is available ... Yes." | tee -a configure.log
+    if try $CC -c $CFLAGS $neonflag $test.c; then
+        NEON_AVAILABLE=1
+        echo "Check whether $neonflag is available ... Yes." | tee -a configure.log
     else
-        MFPU_NEON_AVAILABLE=0
-        echo "Check whether -mfpu=neon is available ... No." | tee -a configure.log
+        NEON_AVAILABLE=0
+        echo "Check whether $neonflag is available ... No." | tee -a configure.log
     fi
 }
 
 check_neon_ld4_intrinsics() {
-    if test $buildneon -eq 1; then
-        if test "$CC_ARCH" = "aarch64" || test "$CC_ARCH" = "aarch64_be" || test "$CC_ARCH" = "arm64"; then
-            neonflag="-march=armv8-a+simd"
-        elif test $MFPU_NEON_AVAILABLE -eq 1; then
-            neonflag="-mfpu=neon"
-        fi
-    fi
     cat > $test.c << EOF
 #if defined(_M_ARM64) || defined(_M_ARM64EC)
 #  include <arm64_neon.h>
@@ -1612,8 +1601,16 @@ case "${ARCH}" in
     ;;
 
     # ARM specific optimizations
-    arm*)
-        [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=arm
+    arm* | aarch64)
+      case "${ARCH}" in
+            arm*)
+                [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=arm
+            ;;
+            aarch64)
+                [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=aarch64
+            ;;
+        esac
+
         ARCHDIR=arch/arm
 
         if test $without_optimizations -eq 0; then
@@ -1623,52 +1620,69 @@ case "${ARCH}" in
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} arm_features.lo"
 
             if test $LINUX -eq 1; then
-                cat > $test.c <<EOF
+                if test "$ARCH" != "aarch64"; then
+                    cat > $test.c <<EOF
 #include <sys/auxv.h>
 int main() {
     return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
 }
 EOF
-                if try $CC -c $CFLAGS $test.c; then
-                    CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
-                    SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
-                else
-                    cat > $test.c <<EOF
+                    if try $CC -c $CFLAGS $test.c; then
+                        CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
+                        SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
+                    else
+                        cat > $test.c <<EOF
 #include <sys/auxv.h>
 #include <asm/hwcap.h>
 int main() {
     return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
 }
 EOF
-                    if try $CC -c $CFLAGS $test.c; then
-                        CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32 -DARM_ASM_HWCAP"
-                        SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32 -DARM_ASM_HWCAP"
-                    else
-                        echo "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                        if try $CC -c $CFLAGS $test.c; then
+                            CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32 -DARM_ASM_HWCAP"
+                            SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32 -DARM_ASM_HWCAP"
+                        else
+                            echo "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                        fi
                     fi
-                fi
-
-                cat > $test.c <<EOF
-#include <sys/auxv.h>
-int main() {
-    return (getauxval(AT_HWCAP) & HWCAP_ARM_NEON);
-}
-EOF
-                if try $CC -c $CFLAGS $test.c; then
-                    CFLAGS="${CFLAGS} -DARM_AUXV_HAS_NEON"
-                    SFLAGS="${SFLAGS} -DARM_AUXV_HAS_NEON"
                 else
                     cat > $test.c <<EOF
 #include <sys/auxv.h>
 int main() {
-    return (getauxval(AT_HWCAP) & HWCAP_NEON);
+    return (getauxval(AT_HWCAP) & HWCAP_CRC32);
+}
+EOF
+                    if try $CC -c $CFLAGS $test.c; then
+                        CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
+                        SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
+                    else
+                        echo "HWCAP_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                    fi
+                fi
+
+                if test "$ARCH" != "aarch64"; then
+                    cat > $test.c <<EOF
+#include <sys/auxv.h>
+int main() {
+    return (getauxval(AT_HWCAP) & HWCAP_ARM_NEON);
 }
 EOF
                     if try $CC -c $CFLAGS $test.c; then
                         CFLAGS="${CFLAGS} -DARM_AUXV_HAS_NEON"
                         SFLAGS="${SFLAGS} -DARM_AUXV_HAS_NEON"
                     else
-                        echo "Neither HWCAP_ARM_NEON or HWCAP_NEON present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                        cat > $test.c <<EOF
+#include <sys/auxv.h>
+int main() {
+    return (getauxval(AT_HWCAP) & HWCAP_NEON);
+}
+EOF
+                        if try $CC -c $CFLAGS $test.c; then
+                            CFLAGS="${CFLAGS} -DARM_AUXV_HAS_NEON"
+                            SFLAGS="${SFLAGS} -DARM_AUXV_HAS_NEON"
+                        else
+                            echo "Neither HWCAP_ARM_NEON or HWCAP_NEON present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
+                        fi
                     fi
                 fi
             fi
@@ -1697,169 +1711,37 @@ EOF
         fi
 
         if test $without_optimizations -eq 0; then
-            check_acle_compiler_flag
-            check_neon_compiler_flag
-            check_neon_ld4_intrinsics
-        fi
-
-        case "${ARCH}" in
-            armv[345]*)
-                if test $without_optimizations -eq 0; then
-                    if test $buildacle -eq 1; then
-                        echo ACLE support not available
-                    fi
-
-                    if test $buildneon -eq 1; then
-                        echo NEON support not available
-                    fi
-                fi
-            ;;
-            armv6l | armv6hl)
-                if test $without_optimizations -eq 0; then
-                    if test $buildacle -eq 1; then
-                        echo ACLE support not available
-                    fi
-
-                    if test $buildneon -eq 1; then
-                        echo NEON support not available
-                    fi
-                fi
-            ;;
-            arm | armv7*)
-                if test $without_optimizations -eq 0; then
-                    if test $buildacle -eq 1; then
-                        echo ACLE support not available
-                    fi
-
-                    if test $buildneon -eq 1; then
-                        CFLAGS="${CFLAGS} -DARM_NEON"
-                        SFLAGS="${SFLAGS} -DARM_NEON"
-
-                        if test $MFPU_NEON_AVAILABLE -eq 1; then
-                            neonflag="-mfpu=neon"
-                        fi
-
-                        if test $NEON_HAS_LD4 -eq 1; then
-                            CFLAGS="${CFLAGS} -DARM_NEON_HASLD4"
-                            SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
-                        fi
-
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
-                    fi
-                fi
-            ;;
-            armv8-a | armv8-a+simd)
-                if test $without_optimizations -eq 0; then
-                    if test $buildacle -eq 1; then
-                        echo ACLE support not available
-                    fi
-
-                    if test $buildneon -eq 1; then
-                        CFLAGS="${CFLAGS} -DARM_NEON"
-                        SFLAGS="${SFLAGS} -DARM_NEON"
-
-                        if test $MFPU_NEON_AVAILABLE -eq 1;then
-                            neonflag="-mfpu=neon"
-                        fi
-
-                        if test $NEON_HAS_LD4 -eq 1; then
-                            CFLAGS="${CFLAGS} -DARM_NEON_HASLD4"
-                            SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
-                        fi
-
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
-                    fi
-                fi
-            ;;
-            armv8-a+crc | armv8-a+crc+simd | armv8.[1234]-a | armv8.[1234]-a+simd)
-                acleflag="-march=${ARCH}"
-
-                if test $without_optimizations -eq 0; then
-                    if test $ACLE_AVAILABLE -eq 1; then
-                        CFLAGS="${CFLAGS} -DARM_ACLE"
-                        SFLAGS="${SFLAGS} -DARM_ACLE"
-
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
-                    fi
-
-                    if test $buildneon -eq 1; then
-                        CFLAGS="${CFLAGS} -DARM_NEON"
-                        SFLAGS="${SFLAGS} -DARM_NEON"
-
-                        if test $MFPU_NEON_AVAILABLE -eq 1;then
-                            neonflag="-mfpu=neon"
-                        fi
-
-                        if test $NEON_HAS_LD4 -eq 1; then
-                            CFLAGS="${CFLAGS} -DARM_NEON_HASLD4"
-                            SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
-                        fi
-
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
-                    fi
-                fi
-            ;;
-        esac
-
-    ;;
-    # 64-bit ARM specific optimizations
-    aarch64)
-        [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=aarch64
-        ARCHDIR=arch/arm
-
-        ARCH="armv8-a"
-
-        if test $without_optimizations -eq 0; then
-            check_neon_ld4_intrinsics
-
-            CFLAGS="${CFLAGS} -DARM_FEATURES"
-            SFLAGS="${SFLAGS} -DARM_FEATURES"
-            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} arm_features.o"
-            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} arm_features.lo"
-
-            if test $LINUX -eq 1; then
-                cat > $test.c <<EOF
-#include <sys/auxv.h>
-int main() {
-    return (getauxval(AT_HWCAP) & HWCAP_CRC32);
-}
-EOF
-                if try $CC -c $CFLAGS $test.c; then
-                    CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
-                    SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
-                else
-                    echo "HWCAP_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
-                fi
-            fi
-
-            if test $NEON_HAS_LD4 -eq 1; then
-                CFLAGS="${CFLAGS} -DARM_NEON_HASLD4"
-                SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
-            fi
-
             if test $buildacle -eq 1; then
-                ARCH="${ARCH}+crc"
-                CFLAGS="${CFLAGS} -DARM_ACLE"
-                SFLAGS="${SFLAGS} -DARM_ACLE"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+                check_acle_compiler_flag
+
+                if test $ACLE_AVAILABLE -eq 1; then
+                    CFLAGS="${CFLAGS} -DARM_ACLE"
+                    SFLAGS="${SFLAGS} -DARM_ACLE"
+
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+                fi
             fi
 
             if test $buildneon -eq 1; then
-                ARCH="${ARCH}+simd"
-                CFLAGS="${CFLAGS} -DARM_NEON"
-                SFLAGS="${SFLAGS} -DARM_NEON"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
+                check_neon_compiler_flag
+
+                if test $NEON_AVAILABLE -eq 1; then
+                    CFLAGS="${CFLAGS} -DARM_NEON"
+                    SFLAGS="${SFLAGS} -DARM_NEON"
+
+                    check_neon_ld4_intrinsics
+
+                    if test $NEON_HAS_LD4 -eq 1; then
+                        CFLAGS="${CFLAGS} -DARM_NEON_HASLD4"
+                        SFLAGS="${SFLAGS} -DARM_NEON_HASLD4"
+                    fi
+
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
+                fi
             fi
         fi
-
-        neonflag="-march=${ARCH}"
-        acleflag="-march=${ARCH}"
     ;;
     powerpc*)
         case "${ARCH}" in
