@@ -1,7 +1,8 @@
 #ifndef ARM_NEON_INTRINS_H
 #define ARM_NEON_INTRINS_H
 
-#if defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+/* arm64_neon.h is MSVC specific */
 #  include <arm64_neon.h>
 #else
 #  include <arm_neon.h>
