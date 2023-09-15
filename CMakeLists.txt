@@ -57,6 +57,7 @@ endif()
 
 # Make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
 # this should select the maximum generic optimisation on the current platform (i.e. -O3 for gcc/clang)
+get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 if(NOT GENERATOR_IS_MULTI_CONFIG)
     if(NOT CMAKE_BUILD_TYPE)
         set(CMAKE_BUILD_TYPE "Release" CACHE STRING
