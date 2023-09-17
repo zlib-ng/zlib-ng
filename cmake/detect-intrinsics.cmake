@@ -1,17 +1,6 @@
 # detect-intrinsics.cmake -- Detect compiler intrinsics support
 # Licensed under the Zlib license, see LICENSE.md for details
 
-# Macro to check if source compiles
-# (and, when compiling very natively, also runs).
-macro(check_c_source_compile_or_run source flag)
-    if(CMAKE_CROSSCOMPILING OR NOT WITH_NATIVE_INSTRUCTIONS)
-        check_c_source_compiles("${source}" ${flag})
-    else()
-        check_c_source_runs("${source}" ${flag})
-    endif()
-endmacro()
-
-
 macro(check_acle_compiler_flag)
     if(MSVC)
         # Both ARM and ARM64-targeting msvc support intrinsics, but
@@ -55,7 +44,7 @@ macro(check_armv6_compiler_flag)
     endif()
     # Check whether compiler supports ARMv6 inline asm
     set(CMAKE_REQUIRED_FLAGS "${ARMV6FLAG} ${NATIVEFLAG}")
-    check_c_source_compile_or_run(
+    check_c_source_compiles(
         "unsigned int f(unsigned int a, unsigned int b) {
             unsigned int c;
             __asm__ __volatile__ ( \"uqsub16 %0, %1, %2\" : \"=r\" (c) : \"r\" (a), \"r\" (b) );
@@ -65,7 +54,7 @@ macro(check_armv6_compiler_flag)
         HAVE_ARMV6_INLINE_ASM
     )
     # Check whether compiler supports ARMv6 intrinsics
-    check_c_source_compile_or_run(
+    check_c_source_compiles(
         "#if defined(_MSC_VER)
         #include <intrin.h>
         #else
@@ -111,7 +100,7 @@ macro(check_avx512_intrinsics)
     endif()
     # Check whether compiler supports AVX512 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${AVX512FLAG} ${NATIVEFLAG}")
-    check_c_source_compile_or_run(
+    check_c_source_compiles(
         "#include <immintrin.h>
         __m512i f(__m512i y) {
           __m512i x = _mm512_set1_epi8(2);
@@ -122,7 +111,7 @@ macro(check_avx512_intrinsics)
     )
 
     # Evidently both GCC and clang were late to implementing these
-    check_c_source_compile_or_run(
+    check_c_source_compiles(
         "#include <immintrin.h>
         __mmask16 f(__mmask16 x) { return _knot_mask16(x); }
         int main(void) { return 0; }"
@@ -157,7 +146,7 @@ macro(check_avx512vnni_intrinsics)
 
     # Check whether compiler supports AVX512vnni intrinsics
     set(CMAKE_REQUIRED_FLAGS "${AVX512VNNIFLAG} ${NATIVEFLAG}")
-    check_c_source_compile_or_run(
+    check_c_source_compiles(
         "#include <immintrin.h>
         __m512i f(__m512i x, __m512i y) {
             __m512i z = _mm512_setzero_epi32();
@@ -185,7 +174,7 @@ macro(check_avx2_intrinsics)
     endif()
     # Check whether compiler supports AVX2 intrinics
     set(CMAKE_REQUIRED_FLAGS "${AVX2FLAG} ${NATIVEFLAG}")
-    check_c_source_compile_or_run(
+    check_c_source_compiles(
         "#include <immintrin.h>
         __m256i f(__m256i x) {
             const __m256i y = _mm256_set1_epi16(1);
@@ -254,7 +243,7 @@ macro(check_pclmulqdq_intrinsics)
     if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
         # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
         set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG} ${NATIVEFLAG}")
-        check_c_source_compile_or_run(
+        check_c_source_compiles(
             "#include <immintrin.h>
             #include <wmmintrin.h>
             __m128i f(__m128i a, __m128i b) { return _mm_clmulepi64_si128(a, b, 0x10); }
@@ -276,7 +265,7 @@ macro(check_vpclmulqdq_intrinsics)
     # Check whether compiler supports VPCLMULQDQ intrinsics
     if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
         set(CMAKE_REQUIRED_FLAGS "${VPCLMULFLAG} ${NATIVEFLAG}")
-        check_c_source_compile_or_run(
+        check_c_source_compiles(
             "#include <immintrin.h>
             #include <wmmintrin.h>
             __m512i f(__m512i a) {
@@ -454,7 +443,7 @@ macro(check_sse2_intrinsics)
     endif()
     # Check whether compiler supports SSE2 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG} ${NATIVEFLAG}")
-    check_c_source_compile_or_run(
+    check_c_source_compiles(
         "#include <immintrin.h>
         __m128i f(__m128i x, __m128i y) { return _mm_sad_epu8(x, y); }
         int main(void) { return 0; }"
@@ -477,7 +466,7 @@ macro(check_ssse3_intrinsics)
     endif()
     # Check whether compiler supports SSSE3 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${SSSE3FLAG} ${NATIVEFLAG}")
-    check_c_source_compile_or_run(
+    check_c_source_compiles(
         "#include <immintrin.h>
         __m128i f(__m128i u) {
           __m128i v = _mm_set1_epi32(1);
@@ -502,7 +491,7 @@ macro(check_sse42_intrinsics)
     endif()
     # Check whether compiler supports SSE4.2 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${SSE42FLAG} ${NATIVEFLAG}")
-    check_c_source_compile_or_run(
+    check_c_source_compiles(
         "#include <nmmintrin.h>
         unsigned int f(unsigned int a, unsigned int b) { return _mm_crc32_u32(a, b); }
         int main(void) { return 0; }"
