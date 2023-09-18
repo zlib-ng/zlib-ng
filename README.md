@@ -131,7 +131,7 @@ LD_PRELOAD=/opt/zlib-ng/libz.so.1.2.13.zlib-ng /usr/bin/program
 
 To install zlib-ng system-wide using cmake:
 
-```
+```sh or powershell
 cmake --build . --target install
 ```
 
@@ -139,8 +139,20 @@ cmake --build . --target install
 
 To install zlib-ng system-wide using the configure script:
 
-```
+```sh
 make install
+```
+
+### CPack
+
+After building with cmake, an installation package can be created using cpack. By default a tgz package is created,
+but you can append `-G <format>` to each command to generate alternative packages types (TGZ, ZIP, RPM, DEB). To easily
+create a rpm or deb package, you would use `-G RPM` or `-G DEB` respectively.
+
+```sh or powershell
+cd build
+cpack --config CPackConfig.cmake
+cpack --config CPackSourceConfig.cmake
 ```
 
 ### Vcpkg
