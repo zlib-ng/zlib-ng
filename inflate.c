@@ -1319,8 +1319,6 @@ int32_t Z_EXPORT PREFIX(inflateSyncPoint)(PREFIX3(stream) *strm) {
 int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *source) {
     struct inflate_state *state;
     struct inflate_state *copy;
-    unsigned char *window;
-    unsigned wsize;
 
     /* check input */
     if (inflateStateCheck(source) || dest == NULL)
@@ -1331,15 +1329,6 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     copy = ZALLOC_INFLATE_STATE(source);
     if (copy == NULL)
         return Z_MEM_ERROR;
-    window = NULL;
-    if (state->window != NULL) {
-        wsize = 1U << state->wbits;
-        window = (unsigned char *)ZALLOC_WINDOW(source, wsize, sizeof(unsigned char));
-        if (window == NULL) {
-            ZFREE_STATE(source, copy);
-            return Z_MEM_ERROR;
-        }
-    }
 
     /* copy state */
     memcpy((void *)dest, (void *)source, sizeof(PREFIX3(stream)));
@@ -1350,10 +1339,17 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
         copy->distcode = copy->codes + (state->distcode - state->codes);
     }
     copy->next = copy->codes + (state->next - state->codes);
-    if (window != NULL) {
-        ZCOPY_WINDOW(window, state->window, (size_t)1U << state->wbits);
+
+    /* window */
+    if (state->window != NULL) {
+        copy->window = NULL;
+        if (PREFIX(inflate_ensure_window)(copy)) {
+            ZFREE_STATE(source, copy);
+            return Z_MEM_ERROR;
+        }
+        ZCOPY_WINDOW(copy->window, state->window, (size_t)state->wsize);
     }
-    copy->window = window;
+
     dest->state = (struct internal_state *)copy;
     return Z_OK;
 }
