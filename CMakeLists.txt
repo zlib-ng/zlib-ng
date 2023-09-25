@@ -239,9 +239,9 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
         endif()
     endif()
     if(MINGW)
-        # Add `-Wno-pedantic-ms-format` only if the toolchain is GCC MinGW-w64
-        # llvm-mingw does not support '-Wno-pedantic-ms-format'
-        if(CMAKE_C_COMPILER_ID MATCHES "GNU")
+        # Add `-Wno-pedantic-ms-format` only if the toolchain supports it
+        check_c_compiler_flag(-Wno-pedantic-ms-format HAVE_NO_PEDANTIC_MS_FORMAT)
+        if(HAVE_NO_PEDANTIC_MS_FORMAT)
             list(APPEND WARNFLAGS_DISABLE -Wno-pedantic-ms-format)
         endif()
     endif()
