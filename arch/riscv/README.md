@@ -1,10 +1,10 @@
 # Building RISC-V Target with Cmake #
 
 > **Warning**
-> We cannot detect rvv support at runtime, running the rvv code on a no-rvv target is a risk. Users should disable the rvv when the target does not support it. 
+> Runtime rvv detection (using `hwcap`) requires linux kernel 6.5 or newer.
 >
-> We will have a better solution when the kernels update `hwcap` or `hwprobe` for risc-v.
-
+> When running on older kernels, we fall back to compile-time detection, potentially this can cause crashes if rvv is enabled at compile but not supported by the target cpu.
+> Therefore if older kernel support is needed, rvv should be disabled if the target cpu does not support it.
 ## Prerequisite: Build RISC-V Clang Toolchain and QEMU ##
 
 If you don't have prebuilt clang and riscv64 qemu, you can refer to the [script](https://github.com/sifive/prepare-riscv-toolchain-qemu/blob/main/prepare_riscv_toolchain_qemu.sh) to get the source. Copy the script to the zlib-ng root directory, and run it to download the source and build them. Modify the content according to your conditions (e.g., toolchain version).
