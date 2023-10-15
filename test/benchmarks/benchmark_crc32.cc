@@ -59,7 +59,7 @@ BENCHMARK_CRC32(braid, PREFIX(crc32_braid), 1);
 
 #ifdef ARM_ACLE
 BENCHMARK_CRC32(acle, crc32_acle, test_cpu_features.arm.has_crc32);
-#elif defined(POWER8_VSX)
+#elif defined(POWER8_VSX_CRC32)
 BENCHMARK_CRC32(power8, crc32_power8, test_cpu_features.power.has_arch_2_07);
 #elif defined(S390_CRC32_VX)
 BENCHMARK_CRC32(vx, crc32_s390_vx, test_cpu_features.s390.has_vx);
