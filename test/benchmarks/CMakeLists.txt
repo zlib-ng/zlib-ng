@@ -54,10 +54,8 @@ if(WIN32)
     target_link_libraries(benchmark_zlib shlwapi)
 endif()
 
-if(ZLIB_ENABLE_TESTS)
-    add_test(NAME benchmark_zlib
-        COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:benchmark_zlib>)
-endif()
+add_test(NAME benchmark_zlib
+    COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:benchmark_zlib>)
 
 if(WITH_BENCHMARK_APPS)
     option(BUILD_ALT_BENCH "Link against alternative zlib implementation" OFF)
@@ -72,7 +70,8 @@ if(WITH_BENCHMARK_APPS)
         FetchContent_GetProperties(PNG)
         if(NOT PNG_POPULATED)
             FetchContent_Populate(PNG)
-            add_subdirectory(${PNG_SOURCE_DIR} ${PNG_BINARY_DIR})
+            set(PNG_INCLUDE_DIR ${png_SOURCE_DIR})
+            add_subdirectory(${png_SOURCE_DIR} ${png_BINARY_DIR})
         endif()
     endif()
 
