@@ -6,11 +6,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        show-progress: 'false'
 
     - name: Checkout zlib repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
+        show-progress: 'false'
         repository: madler/zlib
         path: zlib
 
@@ -41,7 +44,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        show-progress: 'false'
 
     - name: Generate project files (compat)
       run: cmake -S . -B compat -DZLIB_COMPAT=ON -DZLIB_ENABLE_TESTS=OFF -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DWITH_MAINTAINER_WARNINGS=ON
