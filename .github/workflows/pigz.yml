@@ -51,13 +51,16 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
+      with:
+        show-progress: 'false'
 
     - name: Checkout test corpora
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: zlib-ng/corpora
         path: test/data/corpora
+        show-progress: 'false'
 
     - name: Add ubuntu mirrors
       if: runner.os == 'Linux' && matrix.packages
