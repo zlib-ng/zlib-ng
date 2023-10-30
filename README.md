@@ -102,7 +102,7 @@ Build Options
 | WITH_GZFILEOP            | --without-gzfileops      | Compile with support for gzFile related functions                                     | ON      |
 | WITH_OPTIM               | --without-optimizations  | Build with optimisations                                                              | ON      |
 | WITH_NEW_STRATEGIES      | --without-new-strategies | Use new strategies                                                                    | ON      |
-| WITH_NATIVE_INSTRUCTIONS | --native                 | Compiles with full instruction set supported on this host (gcc/clang -march=native)   | OFF     |
+| WITH_NATIVE_INSTRUCTIONS |                          | Compiles with full instruction set supported on this host (gcc/clang -march=native)   | OFF     |
 | WITH_SANITIZER           |                          | Build with sanitizer (memory, address, undefined)                                     | OFF     |
 | WITH_GTEST               |                          | Build gtest_zlib                                                                      | ON      |
 | WITH_FUZZERS             |                          | Build test/fuzz                                                                       | OFF     |
