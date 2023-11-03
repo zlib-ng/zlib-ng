@@ -11,4 +11,4 @@ Version: @ZLIB_FULL_VERSION@
 
 Requires:
 Libs: -L${libdir} -L${sharedlibdir} -lz@SUFFIX@
-Cflags: -I${includedir}
+Cflags: -I${includedir} @PKG_CONFIG_CFLAGS@
