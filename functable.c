@@ -215,6 +215,7 @@ static void init_functable(void) {
 #ifdef RISCV_RVV
     if (cf.riscv.has_rvv) {
         ft.adler32 = &adler32_rvv;
+        ft.adler32_fold_copy = &adler32_fold_copy_rvv;
         ft.chunkmemset_safe = &chunkmemset_safe_rvv;
         ft.chunksize = &chunksize_rvv;
         ft.compare256 = &compare256_rvv;
