@@ -76,6 +76,7 @@ RCFLAGS=
 RCOBJS=
 STRIP=
 ARCHS=
+PC_CFLAGS=
 prefix=${prefix-/usr/local}
 exec_prefix=${exec_prefix-'${prefix}'}
 bindir=${bindir-'${exec_prefix}/bin'}
@@ -2140,6 +2141,10 @@ if test -n "$EMU_RUN"; then
     echo "Using cross-compile emulator: $EMU_RUN"
 fi
 
+if test $gzfileops -eq 1; then
+    PC_CFLAGS="-DWITH_GZFILEOP"
+fi
+
 # Generate Makefile in test dir
 mkdir -p test
 sed < $SRCDIR/test/Makefile.in "
@@ -2182,6 +2187,7 @@ sed < $SRCDIR/zlib.pc.in "
 " | sed -e "
 s/\@VERSION\@/$VER/g;
 s/\@SUFFIX\@/$SUFFIX/g;
+s/\@PKG_CONFIG_CFLAGS\@/$PC_CFLAGS/g;
 " > ${LIBNAME2}.pc
 
 # done
