@@ -1201,6 +1201,13 @@ if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(FILES ${ZLIB_PC} DESTINATION "${PKGCONFIG_INSTALL_DIR}")
+    if (ZLIB_COMPAT)
+        if (TARGET zlib)
+            set_target_properties(zlib PROPERTIES EXPORT_NAME ZLIB)
+        else()
+            set_target_properties(zlibstatic PROPERTIES EXPORT_NAME ZLIB)
+        endif()
+    endif()
     install(TARGETS ${ZLIB_INSTALL_LIBRARIES}
         EXPORT ${EXPORT_NAME})
     install(EXPORT ${EXPORT_NAME}
