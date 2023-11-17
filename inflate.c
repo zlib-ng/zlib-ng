@@ -1112,11 +1112,12 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
      */
   inf_leave:
     RESTORE();
+    uint32_t check_bytes = out - strm->avail_out;
     if (INFLATE_NEED_UPDATEWINDOW(strm) &&
             (state->wsize || (out != strm->avail_out && state->mode < BAD &&
                  (state->mode < CHECK || flush != Z_FINISH)))) {
         /* update sliding window with respective checksum if not in "raw" mode */
-        if (updatewindow(strm, strm->next_out, out - strm->avail_out, state->wrap & 4)) {
+        if (updatewindow(strm, strm->next_out, check_bytes, state->wrap & 4)) {
             state->mode = MEM;
             return Z_MEM_ERROR;
         }
@@ -1129,8 +1130,13 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
 
     strm->data_type = (int)state->bits + (state->last ? 64 : 0) +
                       (state->mode == TYPE ? 128 : 0) + (state->mode == LEN_ || state->mode == COPY_ ? 256 : 0);
-    if (((in == 0 && out == 0) || flush == Z_FINISH) && ret == Z_OK)
+    if (((in == 0 && out == 0) || flush == Z_FINISH) && ret == Z_OK) {
+        /* when no sliding window is used, hash the output bytes if no CHECK state */
+        if (INFLATE_NEED_CHECKSUM(strm) && !state->wsize && flush == Z_FINISH) {
+            inf_chksum(strm, put - check_bytes, check_bytes);
+        }
         ret = Z_BUF_ERROR;
+    }
     return ret;
 }
 
