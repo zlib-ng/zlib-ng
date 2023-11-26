@@ -67,10 +67,18 @@ add_test(NAME GH-751
     -DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/GH-751/test.txt
     -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compress-and-verify.cmake)
 
-set(TEST_COMMAND ${MINIDEFLATE_COMMAND} 
-    "-d;-k;-s;4;${CMAKE_CURRENT_SOURCE_DIR}/GH-1600/packobj.gz")
-add_test(NAME GH-1600-no-window-check COMMAND ${TEST_COMMAND})
+set(TEST_COMMAND "${MINIDEFLATE_COMMAND};-c;-d;-k;-s;4")
+add_test(NAME GH-1600-no-window-check
+    COMMAND ${CMAKE_COMMAND}
+    "-DCOMMAND=${TEST_COMMAND}"
+    "-DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/GH-1600/packobj.gz"
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+)
 
-set(TEST_COMMAND ${MINIDEFLATE_COMMAND} 
-    "-d;-k;-s;4;-r;25;${CMAKE_CURRENT_SOURCE_DIR}/GH-1600/packobj.gz")
-add_test(NAME GH-1600-no-window-no-check COMMAND ${TEST_COMMAND})
+set(TEST_COMMAND "${MINIDEFLATE_COMMAND};-c;-d;-k;-s;4;-r;25")
+add_test(NAME GH-1600-no-window-no-check
+    COMMAND ${CMAKE_COMMAND}
+    "-DCOMMAND=${TEST_COMMAND}"
+    "-DINPUT=${CMAKE_CURRENT_SOURCE_DIR}/GH-1600/packobj.gz"
+    -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake
+)
