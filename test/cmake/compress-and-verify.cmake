@@ -138,7 +138,11 @@ set(COMPRESS_COMMAND ${COMPRESS_TARGET} ${COMPRESS_ARGS})
 set(INPUT_FILE ${OUTPUT_BASE})
 
 # Make CMake copy and rename file in one operation
-configure_file(${INPUT} ${INPUT_FILE} COPYONLY)
+# The copied file permissions is standard 644 (-rw-r--r--)
+if(NOT CMAKE_VERSION VERSION_LESS "3.19")
+    set(CONFIGURE_NO_SOURCE_PERMISSIONS NO_SOURCE_PERMISSIONS)
+endif()
+configure_file(${INPUT} ${INPUT_FILE} COPYONLY ${CONFIGURE_NO_SOURCE_PERMISSIONS})
 
 message(STATUS "Compress ${COMPRESS_COMMAND}")
 message(STATUS "  Source file: ${INPUT}")

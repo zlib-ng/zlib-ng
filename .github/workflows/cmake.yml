@@ -51,6 +51,8 @@ jobs:
             cxx-compiler: g++
             build-dir: ../build
             build-src-dir: ../zlib-ng
+            # Build with readonly project directory require CMake 3.19+
+            readonly-project-dir: true
             codecov: ubuntu_gcc_osb
             cflags: -O3
 
@@ -60,6 +62,7 @@ jobs:
             cxx-compiler: g++
             build-dir: ../build
             build-src-dir: ../zlib-ng/test/add-subdirectory-project
+            readonly-project-dir: true
 
           - name: Ubuntu GCC -O1 No Unaligned UBSAN
             os: ubuntu-latest
@@ -598,6 +601,11 @@ jobs:
         CC: ${{ matrix.compiler }}
         CXX: ${{ matrix.cxx-compiler }}
 
+    - name: Make source tree read-only
+      shell: bash
+      run: chmod -R a-w .
+      if: matrix.readonly-project-dir
+
     - name: Generate project files
       shell: bash
       # Shared libraries turned off for qemu ppc* and sparc & reduce code coverage sources
@@ -629,6 +637,11 @@ jobs:
         TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
         LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
         UBSAN_OPTIONS: ${{ matrix.ubsan-options || 'verbosity=0' }}:print_stacktrace=1:abort_on_error=1:halt_on_error=1
+
+    - name: Make source tree writable
+      shell: bash
+      run: chmod -R +w .
+      if: matrix.readonly-project-dir
 
     - name: Generate coverage report
       if: matrix.codecov
