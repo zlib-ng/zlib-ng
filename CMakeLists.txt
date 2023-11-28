@@ -1201,6 +1201,9 @@ if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(FILES ${ZLIB_PC} DESTINATION "${PKGCONFIG_INSTALL_DIR}")
+    # INFO: Mimics official zlib CMake target
+    # Generates ZLIB.cmake in case ZLIB_COMPAT=ON and always exports the CMake target ZLIB::ZLIB
+    # In case ZLIB_COMPAT=OFF, the CMake target and file follows zlib-ng naming convention
     if (ZLIB_COMPAT)
         if (TARGET zlib)
             set_target_properties(zlib PROPERTIES EXPORT_NAME ZLIB)
