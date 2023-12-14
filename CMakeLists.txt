@@ -1205,7 +1205,6 @@ endif()
 # Example binaries
 #============================================================================
 
-option(ZLIB_ENABLE_TESTS "Build test binaries" ON)
 if(ZLIB_ENABLE_TESTS)
     enable_testing()
 
