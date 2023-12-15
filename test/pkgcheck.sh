@@ -150,6 +150,9 @@ Darwin)
   ;;
 esac
 
+# Remove cmake target files to avoid mismatch with configure
+find pkgtmp2 -type f -name '*.cmake' -exec rm '{}' \;
+
 # The ar on newer systems defaults to -D (i.e. deterministic),
 # but FreeBSD 12.1, Debian 8, and Ubuntu 14.04 seem to not do that.
 # I had trouble passing -D safely to the ar inside CMakeLists.txt,
