@@ -152,9 +152,11 @@ if(ZLIB_COMPAT)
     set(WITH_GZFILEOP ON)
     set(SUFFIX "")
     set(ZLIB_FULL_VERSION ${ZLIB_HEADER_VERSION}.zlib-ng)
+    set(EXPORT_NAME ZLIB)
 else()
     set(SUFFIX "-ng")
     set(ZLIB_FULL_VERSION ${ZLIBNG_HEADER_VERSION})
+    set(EXPORT_NAME zlib-ng)
 endif()
 
 if(WITH_GZFILEOP)
@@ -1199,6 +1201,22 @@ if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(FILES ${ZLIB_PC} DESTINATION "${PKGCONFIG_INSTALL_DIR}")
+    # INFO: Mimics official zlib CMake target
+    # Generates ZLIB.cmake in case ZLIB_COMPAT=ON and always exports the CMake target ZLIB::ZLIB
+    # In case ZLIB_COMPAT=OFF, the CMake target and file follows zlib-ng naming convention
+    if (ZLIB_COMPAT)
+        if (TARGET zlib)
+            set_target_properties(zlib PROPERTIES EXPORT_NAME ZLIB)
+        else()
+            set_target_properties(zlibstatic PROPERTIES EXPORT_NAME ZLIB)
+        endif()
+    endif()
+    install(TARGETS ${ZLIB_INSTALL_LIBRARIES}
+        EXPORT ${EXPORT_NAME}
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    install(EXPORT ${EXPORT_NAME}
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}"
+        NAMESPACE ${EXPORT_NAME}::)
 endif()
 
 #============================================================================
