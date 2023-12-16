@@ -194,6 +194,9 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
     deflate_state *s;
     int wrap = 1;
 
+    /* Force initialization functable, because deflate captures function pointers from functable. */
+    functable.force_init();
+
     if (strm == NULL)
         return Z_STREAM_ERROR;
 
