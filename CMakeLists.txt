@@ -23,8 +23,8 @@ if(NOT CMAKE_C_STANDARD IN_LIST VALID_C_STANDARDS)
     MESSAGE(FATAL_ERROR "CMAKE_C_STANDARD:STRING=${CMAKE_C_STANDARD} not in known standards list\n ${VALID_C_STANDARDS}")
 endif()
 
-# Parse the full version number from zlib.h and include in ZLIB_FULL_VERSION
-file(READ ${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.h.in _zlib_h_contents)
+# Parse the full version number from zlib.h.in and include in ZLIB_FULL_VERSION
+file(READ ${CMAKE_CURRENT_SOURCE_DIR}/zlib.h.in _zlib_h_contents)
 string(REGEX REPLACE ".*#define[ \t]+ZLIB_VERSION[ \t]+\"([0-9]+.[0-9]+.[0-9]+).*\".*"
         "\\1" ZLIB_HEADER_VERSION ${_zlib_h_contents})
 string(REGEX REPLACE ".*#define[ \t]+ZLIBNG_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
