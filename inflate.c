@@ -139,6 +139,9 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
     int32_t ret;
     struct inflate_state *state;
 
+    /* Initialize functable earlier. */
+    functable.force_init();
+
     if (strm == NULL)
         return Z_STREAM_ERROR;
     strm->msg = NULL;                   /* in case we return an error */
