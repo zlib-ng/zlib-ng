@@ -102,7 +102,7 @@ set_property(CACHE WITH_SANITIZER PROPERTY STRINGS "Memory" "Address" "Undefined
 if(BASEARCH_ARM_FOUND)
     option(WITH_ACLE "Build with ACLE" ON)
     option(WITH_NEON "Build with NEON intrinsics" ON)
-    option(WITH_ARMV6 "Build with ARMv6 SIMD" ON)
+    cmake_dependent_option(WITH_ARMV6 "Build with ARMv6 SIMD" ON "NOT ARCH STREQUAL \"aarch64\"" OFF)
 elseif(BASEARCH_PPC_FOUND)
     option(WITH_ALTIVEC "Build with AltiVec (VMX) optimisations for PowerPC" ON)
     option(WITH_POWER8 "Build with optimisations for POWER8" ON)
