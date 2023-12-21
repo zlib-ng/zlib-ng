@@ -973,22 +973,6 @@ else
     echo "Checking for attribute(aligned) ... No." | tee -a configure.log
 fi
 
-# Check for _Thread_local support in compiler
-cat > $test.c << EOF
-_Thread_local int test;
-int main(void) {
-    (void)test;
-    return 0;
-}
-EOF
-if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
-    echo "Checking for _Thread_local ... Yes." | tee -a configure.log
-    CFLAGS="$CFLAGS -DHAVE_THREAD_LOCAL"
-    SFLAGS="$SFLAGS -DHAVE_THREAD_LOCAL"
-else
-    echo "Checking for _Thread_local ... No." | tee -a configure.log
-fi
-
 # Check for __builtin_ctz() support in compiler
 cat > $test.c << EOF
 long f(unsigned int x) { return __builtin_ctz(x); }
