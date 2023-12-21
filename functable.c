@@ -11,6 +11,34 @@
 #include "functable.h"
 #include "cpu_features.h"
 
+#if defined(_MSC_VER)
+#  include <intrin.h>
+#endif
+
+/* Platform has pointer size atomic store */
+#if defined(__GNUC__) || defined(__clang__)
+#  define FUNCTABLE_ASSIGN(VAR, FUNC_NAME) \
+    __atomic_store(&(functable.FUNC_NAME), &(VAR.FUNC_NAME), __ATOMIC_SEQ_CST)
+#  define FUNCTABLE_BARRIER() __atomic_thread_fence(__ATOMIC_SEQ_CST)
+#elif defined(_MSC_VER)
+#  define FUNCTABLE_ASSIGN(VAR, FUNC_NAME) \
+    _InterlockedExchangePointer((void * volatile *)&(functable.FUNC_NAME), (void *)(VAR.FUNC_NAME))
+#  if defined(_M_ARM) || defined(_M_ARM64)
+#    define FUNCTABLE_BARRIER() do { \
+    _ReadWriteBarrier();  \
+    __dmb(0xB); /* _ARM_BARRIER_ISH */ \
+    _ReadWriteBarrier(); \
+} while (0)
+#  else
+#    define FUNCTABLE_BARRIER() _ReadWriteBarrier()
+#  endif
+#else
+#  warning Unable to detect atomic intrinsic support.
+#  define FUNCTABLE_ASSIGN(VAR, FUNC_NAME) \
+    *((void * volatile *)&(functable.FUNC_NAME)) = (void *)(VAR.FUNC_NAME)
+#  define FUNCTABLE_BARRIER() do { /* Empty */ } while (0)
+#endif
+
 static void force_init_empty(void) {
     // empty
 }
@@ -239,24 +267,27 @@ static void init_functable(void) {
 #endif
 
     // Assign function pointers individually for atomic operation
-    functable.force_init = ft.force_init;
-    functable.adler32 = ft.adler32;
-    functable.adler32_fold_copy = ft.adler32_fold_copy;
-    functable.chunkmemset_safe = ft.chunkmemset_safe;
-    functable.chunksize = ft.chunksize;
-    functable.compare256 = ft.compare256;
-    functable.crc32 = ft.crc32;
-    functable.crc32_fold = ft.crc32_fold;
-    functable.crc32_fold_copy = ft.crc32_fold_copy;
-    functable.crc32_fold_final = ft.crc32_fold_final;
-    functable.crc32_fold_reset = ft.crc32_fold_reset;
-    functable.inflate_fast = ft.inflate_fast;
-    functable.insert_string = ft.insert_string;
-    functable.longest_match = ft.longest_match;
-    functable.longest_match_slow = ft.longest_match_slow;
-    functable.quick_insert_string = ft.quick_insert_string;
-    functable.slide_hash = ft.slide_hash;
-    functable.update_hash = ft.update_hash;
+    FUNCTABLE_ASSIGN(ft, force_init);
+    FUNCTABLE_ASSIGN(ft, adler32);
+    FUNCTABLE_ASSIGN(ft, adler32_fold_copy);
+    FUNCTABLE_ASSIGN(ft, chunkmemset_safe);
+    FUNCTABLE_ASSIGN(ft, chunksize);
+    FUNCTABLE_ASSIGN(ft, compare256);
+    FUNCTABLE_ASSIGN(ft, crc32);
+    FUNCTABLE_ASSIGN(ft, crc32_fold);
+    FUNCTABLE_ASSIGN(ft, crc32_fold_copy);
+    FUNCTABLE_ASSIGN(ft, crc32_fold_final);
+    FUNCTABLE_ASSIGN(ft, crc32_fold_reset);
+    FUNCTABLE_ASSIGN(ft, inflate_fast);
+    FUNCTABLE_ASSIGN(ft, insert_string);
+    FUNCTABLE_ASSIGN(ft, longest_match);
+    FUNCTABLE_ASSIGN(ft, longest_match_slow);
+    FUNCTABLE_ASSIGN(ft, quick_insert_string);
+    FUNCTABLE_ASSIGN(ft, slide_hash);
+    FUNCTABLE_ASSIGN(ft, update_hash);
+
+    // Memory barrier for weak memory order CPUs
+    FUNCTABLE_BARRIER();
 }
 
 /* stub functions */
@@ -350,7 +381,7 @@ static uint32_t update_hash_stub(deflate_state* const s, uint32_t h, uint32_t va
 }
 
 /* functable init */
-Z_INTERNAL Z_TLS struct functable_s functable = {
+Z_INTERNAL struct functable_s functable = {
     force_init_stub,
     adler32_stub,
     adler32_fold_copy_stub,

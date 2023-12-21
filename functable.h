@@ -37,6 +37,6 @@ struct functable_s {
     uint32_t (* update_hash)        (deflate_state *const s, uint32_t h, uint32_t val);
 };
 
-Z_INTERNAL extern Z_TLS struct functable_s functable;
+Z_INTERNAL extern struct functable_s functable;
 
 #endif
