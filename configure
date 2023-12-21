@@ -1604,12 +1604,13 @@ case "${ARCH}" in
 
     # ARM specific optimizations
     arm* | aarch64)
-      case "${ARCH}" in
+        case "${ARCH}" in
             arm*)
                 [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=arm
             ;;
             aarch64)
                 [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=aarch64
+                buildarmv6=0
             ;;
         esac
 
