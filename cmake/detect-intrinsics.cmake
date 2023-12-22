@@ -50,7 +50,7 @@ macro(check_armv6_compiler_flag)
             __asm__ __volatile__ ( \"uqsub16 %0, %1, %2\" : \"=r\" (c) : \"r\" (a), \"r\" (b) );
             return (int)c;
         }
-        int main(void) { return 0; }"
+        int main(void) { return f(1,2); }"
         HAVE_ARMV6_INLINE_ASM
     )
     # Check whether compiler supports ARMv6 intrinsics
