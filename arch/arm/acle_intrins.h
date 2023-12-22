@@ -8,6 +8,14 @@
 #  include <arm_acle.h>
 #endif
 
+#ifdef ARM_ACLE
+#if defined(__aarch64__)
+#  define Z_TARGET_CRC Z_TARGET("+crc")
+#else
+#  define Z_TARGET_CRC
+#endif
+#endif
+
 #ifdef ARM_SIMD
 #ifdef _MSC_VER
 typedef uint32_t uint16x2_t;
