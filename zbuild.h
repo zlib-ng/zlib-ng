@@ -61,6 +61,14 @@
 #  endif
 #endif
 
+#ifndef Z_TARGET
+#  if Z_HAS_ATTRIBUTE(__target__)
+#    define Z_TARGET(x) __attribute__((__target__(x)))
+#  else
+#    define Z_TARGET(x)
+#  endif
+#endif
+
 /* This has to be first include that defines any types */
 #if defined(_MSC_VER)
 #  if defined(_WIN64)

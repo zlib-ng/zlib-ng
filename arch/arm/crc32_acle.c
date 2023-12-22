@@ -6,14 +6,10 @@
 */
 
 #ifdef ARM_ACLE
-#ifdef _MSC_VER
-#  include <intrin.h>
-#else
-#  include <arm_acle.h>
-#endif
+#include "acle_intrins.h"
 #include "../../zbuild.h"
 
-Z_INTERNAL uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, size_t len) {
+Z_INTERNAL Z_TARGET_CRC uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, size_t len) {
     Z_REGISTER uint32_t c;
     Z_REGISTER const uint16_t *buf2;
     Z_REGISTER const uint32_t *buf4;
