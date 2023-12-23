@@ -197,6 +197,15 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
     set(WARNFLAGS -Wall)
     set(WARNFLAGS_MAINTAINER -Wextra)
     set(WARNFLAGS_DISABLE)
+    # Check whether -fno-lto is available
+    set(CMAKE_REQUIRED_FLAGS "-fno-lto")
+    check_c_source_compiles(
+        "int main() { return 0; }"
+        FNO_LTO_AVAILABLE FAIL_REGEX "not supported")
+    set(CMAKE_REQUIRED_FLAGS)
+    if(FNO_LTO_AVAILABLE)
+        set(ZNOLTOFLAG "-fno-lto")
+    endif()
     if(NOT WITH_NATIVE_INSTRUCTIONS)
         if(BASEARCH_ARM_FOUND)
             if("${ARCH}" MATCHES "arm" AND NOT CMAKE_C_FLAGS MATCHES "-mfloat-abi")
@@ -230,14 +239,9 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
                 endif()
             endif()
         endif()
-        # Check whether -fno-lto is available
-        set(CMAKE_REQUIRED_FLAGS "-fno-lto")
-        check_c_source_compiles(
-            "int main() { return 0; }"
-            FNO_LTO_AVAILABLE FAIL_REGEX "not supported")
-        set(CMAKE_REQUIRED_FLAGS)
+        # Disable LTO unless Native Instructions are enabled
         if(FNO_LTO_AVAILABLE)
-            set(NOLTOFLAG "-fno-lto")
+            set(NOLTOFLAG ${ZNOLTOFLAG})
         endif()
     endif()
     if(MINGW)
