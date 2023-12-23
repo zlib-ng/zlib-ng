@@ -148,6 +148,7 @@ if(WITH_GTEST)
         endif()
 
         # Fetch Google test source code from official repository
+        message(STATUS "Git checking out GoogleTest ${GTEST_TAG}")
         FetchContent_Declare(googletest
             GIT_REPOSITORY ${GTEST_REPOSITORY}
             GIT_TAG ${GTEST_TAG})
