@@ -94,16 +94,11 @@ endif()
 
 if(WITH_GTEST OR WITH_BENCHMARKS)
     if(CMAKE_VERSION VERSION_LESS 3.12)
-        message(WARNING "Minimum cmake version of 3.12 not met for GoogleTest or benchmarks!")
-
-        set(WITH_GTEST OFF)
-        set(WITH_GTEST OFF PARENT_SCOPE)
-
+        message(WARNING "Minimum cmake version of 3.12 not met for Google benchmark!")
         set(WITH_BENCHMARKS OFF)
         set(WITH_BENCHMARKS OFF PARENT_SCOPE)
-    else()
-        enable_language(CXX)
     endif()
+    enable_language(CXX)
 endif()
 
 if(WITH_BENCHMARKS)
@@ -127,7 +122,7 @@ if(WITH_GTEST)
         find_package(GTest)
     endif()
 
-    if(NOT TARGET GTest::GTest)
+    if(NOT TARGET GTest::GTest AND NOT CMAKE_VERSION VERSION_LESS 3.11)
         include(FetchContent)
 
         # Prevent overriding the parent project's compiler/linker settings for Windows
