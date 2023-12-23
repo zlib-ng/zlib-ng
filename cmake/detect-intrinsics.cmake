@@ -15,7 +15,7 @@ macro(check_acle_compiler_flag)
             endif()
         endif()
         # Check whether compiler supports ACLE flag
-        set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG} ${NATIVEFLAG}")
+        set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
         check_c_source_compiles(
             "int main() { return 0; }"
             HAVE_ACLE_FLAG FAIL_REGEX "not supported")
@@ -43,7 +43,7 @@ macro(check_armv6_compiler_flag)
         endif()
     endif()
     # Check whether compiler supports ARMv6 inline asm
-    set(CMAKE_REQUIRED_FLAGS "${ARMV6FLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${ARMV6FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "unsigned int f(unsigned int a, unsigned int b) {
             unsigned int c;
@@ -99,7 +99,7 @@ macro(check_avx512_intrinsics)
         set(AVX512FLAG "/arch:AVX512")
     endif()
     # Check whether compiler supports AVX512 intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${AVX512FLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${AVX512FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <immintrin.h>
         __m512i f(__m512i y) {
@@ -145,7 +145,7 @@ macro(check_avx512vnni_intrinsics)
     endif()
 
     # Check whether compiler supports AVX512vnni intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${AVX512VNNIFLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${AVX512VNNIFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <immintrin.h>
         __m512i f(__m512i x, __m512i y) {
@@ -173,7 +173,7 @@ macro(check_avx2_intrinsics)
         set(AVX2FLAG "/arch:AVX2")
     endif()
     # Check whether compiler supports AVX2 intrinics
-    set(CMAKE_REQUIRED_FLAGS "${AVX2FLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${AVX2FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <immintrin.h>
         __m256i f(__m256i x) {
@@ -197,7 +197,7 @@ macro(check_neon_compiler_flag)
         endif()
     endif()
     # Check whether compiler supports NEON flag
-    set(CMAKE_REQUIRED_FLAGS "${NEONFLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${NEONFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#if defined(_M_ARM64) || defined(_M_ARM64EC)
         #  include <arm64_neon.h>
@@ -220,7 +220,7 @@ macro(check_neon_ld4_intrinsics)
         endif()
     endif()
     # Check whether compiler supports loading 4 neon vecs into a register range
-    set(CMAKE_REQUIRED_FLAGS "${NEONFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${NEONFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#if defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
         #  include <arm64_neon.h>
@@ -242,7 +242,7 @@ macro(check_pclmulqdq_intrinsics)
     # Check whether compiler supports PCLMULQDQ intrinsics
     if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
         # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
-        set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG} ${NATIVEFLAG}")
+        set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
         check_c_source_compiles(
             "#include <immintrin.h>
             #include <wmmintrin.h>
@@ -264,7 +264,7 @@ macro(check_vpclmulqdq_intrinsics)
     endif()
     # Check whether compiler supports VPCLMULQDQ intrinsics
     if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
-        set(CMAKE_REQUIRED_FLAGS "${VPCLMULFLAG} ${NATIVEFLAG}")
+        set(CMAKE_REQUIRED_FLAGS "${VPCLMULFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
         check_c_source_compiles(
             "#include <immintrin.h>
             #include <wmmintrin.h>
@@ -283,7 +283,7 @@ endmacro()
 
 macro(check_ppc_intrinsics)
     # Check if compiler supports AltiVec
-    set(CMAKE_REQUIRED_FLAGS "-maltivec")
+    set(CMAKE_REQUIRED_FLAGS "-maltivec ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <altivec.h>
         int main(void)
@@ -301,7 +301,7 @@ macro(check_ppc_intrinsics)
         set(PPCFLAGS "-maltivec")
     endif()
 
-    set(CMAKE_REQUIRED_FLAGS "-maltivec -mno-vsx")
+    set(CMAKE_REQUIRED_FLAGS "-maltivec -mno-vsx ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <altivec.h>
         int main(void)
@@ -320,7 +320,7 @@ macro(check_ppc_intrinsics)
     endif()
 
     # Check if we have what we need for AltiVec optimizations
-    set(CMAKE_REQUIRED_FLAGS "${PPCFLAGS} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${PPCFLAGS} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <sys/auxv.h>
         #ifdef __FreeBSD__
@@ -347,7 +347,7 @@ macro(check_power8_intrinsics)
         endif()
     endif()
     # Check if we have what we need for POWER8 optimizations
-    set(CMAKE_REQUIRED_FLAGS "${POWER8FLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${POWER8FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <sys/auxv.h>
         #ifdef __FreeBSD__
@@ -374,7 +374,7 @@ macro(check_rvv_intrinsics)
         endif()
     endif()
     # Check whether compiler supports RVV
-    set(CMAKE_REQUIRED_FLAGS "${RISCVFLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${RISCVFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <riscv_vector.h>
         int main() {
@@ -405,7 +405,7 @@ macro(check_power9_intrinsics)
         endif()
     endif()
     # Check if we have what we need for POWER9 optimizations
-    set(CMAKE_REQUIRED_FLAGS "${POWER9FLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${POWER9FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <sys/auxv.h>
         #ifdef __FreeBSD__
@@ -442,7 +442,7 @@ macro(check_sse2_intrinsics)
         endif()
     endif()
     # Check whether compiler supports SSE2 intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <immintrin.h>
         __m128i f(__m128i x, __m128i y) { return _mm_sad_epu8(x, y); }
@@ -465,7 +465,7 @@ macro(check_ssse3_intrinsics)
         endif()
     endif()
     # Check whether compiler supports SSSE3 intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${SSSE3FLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${SSSE3FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <immintrin.h>
         __m128i f(__m128i u) {
@@ -490,7 +490,7 @@ macro(check_sse42_intrinsics)
         endif()
     endif()
     # Check whether compiler supports SSE4.2 intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${SSE42FLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${SSE42FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <nmmintrin.h>
         unsigned int f(unsigned int a, unsigned int b) { return _mm_crc32_u32(a, b); }
@@ -511,7 +511,7 @@ macro(check_vgfma_intrinsics)
         endif()
     endif()
     # Check whether compiler supports "VECTOR GALOIS FIELD MULTIPLY SUM AND ACCUMULATE" intrinsic
-    set(CMAKE_REQUIRED_FLAGS "${VGFMAFLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${VGFMAFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <vecintrin.h>
         int main(void) {
@@ -529,7 +529,7 @@ macro(check_xsave_intrinsics)
     if(NOT NATIVEFLAG AND NOT MSVC)
         set(XSAVEFLAG "-mxsave")
     endif()
-    set(CMAKE_REQUIRED_FLAGS "${XSAVEFLAG} ${NATIVEFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${XSAVEFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#ifdef _MSC_VER
         #  include <intrin.h>
