@@ -168,7 +168,7 @@ void inflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
         do {
             err = PREFIX(inflate)(&d_stream, flush);
 
-            /* Ignore Z_BUF_ERROR if we are finishing and read buffer size is 
+            /* Ignore Z_BUF_ERROR if we are finishing and read buffer size is
              * purposefully limited */
             if (flush == Z_FINISH && err == Z_BUF_ERROR && read_buf_size != BUFSIZE)
                 err = Z_OK;
