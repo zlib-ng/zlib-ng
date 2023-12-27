@@ -26,7 +26,7 @@ typedef uint32_t uint16x2_t;
 
 static inline uint16x2_t __uqsub16(uint16x2_t __a, uint16x2_t __b) {
     uint16x2_t __c;
-    __asm__ __volatile__("uqsub16\t%0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
+    __asm__ __volatile__("uqsub16 %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
     return __c;
 }
 #endif
