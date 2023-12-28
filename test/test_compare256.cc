@@ -10,6 +10,7 @@
 extern "C" {
 #  include "zbuild.h"
 #  include "zutil_p.h"
+#  include "compare256.h"
 #  include "test_cpu_features.h"
 }
 
@@ -18,7 +19,6 @@ extern "C" {
 #include "test_shared.h"
 
 #define MAX_COMPARE_SIZE (256)
-
 
 /* Ensure that compare256 returns the correct match length */
 static inline void compare256_match_check(compare256_func compare256) {

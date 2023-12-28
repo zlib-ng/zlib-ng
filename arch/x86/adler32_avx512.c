@@ -9,6 +9,7 @@
 #ifdef X86_AVX512
 
 #include "../../zbuild.h"
+#include "../../adler32.h"
 #include "../../adler32_p.h"
 #include "../../adler32_fold.h"
 #include "../../cpu_features.h"

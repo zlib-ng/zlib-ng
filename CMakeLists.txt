@@ -977,10 +977,14 @@ set(ZLIB_PUBLIC_HDRS
     ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.h
 )
 set(ZLIB_PRIVATE_HDRS
+    adler32.h
     adler32_p.h
+    chunkset.h
     chunkset_tpl.h
+    compare256.h
     compare256_rle.h
     cpu_features.h
+    crc32.h
     crc32_braid_p.h
     crc32_braid_comb_p.h
     crc32_braid_tbl.h
@@ -988,13 +992,17 @@ set(ZLIB_PRIVATE_HDRS
     deflate.h
     deflate_p.h
     functable.h
+    inffast.h
     inffast_tpl.h
     inffixed_tbl.h
     inflate.h
     inflate_p.h
     inftrees.h
+    insert_string.h
     insert_string_tpl.h
+    match.h
     match_tpl.h
+    slide_hash.h
     trees.h
     trees_emit.h
     trees_tbl.h

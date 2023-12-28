@@ -5,11 +5,18 @@
 
 #include "zbuild.h"
 #include "zendian.h"
-#include "crc32_braid_p.h"
+#include "adler32.h"
+#include "chunkset.h"
+#include "compare256.h"
+#include "cpu_features.h"
+#include "crc32.h"
 #include "deflate.h"
 #include "deflate_p.h"
 #include "functable.h"
-#include "cpu_features.h"
+#include "inffast.h"
+#include "insert_string.h"
+#include "match.h"
+#include "slide_hash.h"
 
 #if defined(_MSC_VER)
 #  include <intrin.h>

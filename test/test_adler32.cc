@@ -10,6 +10,7 @@
 
 extern "C" {
 #  include "zbuild.h"
+#  include "adler32.h"
 #  include "test_cpu_features.h"
 }
 
