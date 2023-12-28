@@ -1350,8 +1350,8 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     copy->next = copy->codes + (state->next - state->codes);
 
     /* window */
+    copy->window = NULL;
     if (state->window != NULL) {
-        copy->window = NULL;
         if (PREFIX(inflate_ensure_window)(copy)) {
             ZFREE_STATE(source, copy);
             return Z_MEM_ERROR;
