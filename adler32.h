@@ -1,7 +1,5 @@
 #include <stdint.h>
 
-#include "adler32_fold.h"
-
 /* adler32 */
 typedef uint32_t (*adler32_func)(uint32_t adler, const uint8_t *buf, size_t len);
 

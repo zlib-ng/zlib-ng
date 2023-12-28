@@ -5,9 +5,6 @@
 #include "zbuild.h"
 
 #include "crc32.h"
-#include "crc32_fold.h"
-
-#include <limits.h>
 
 Z_INTERNAL uint32_t crc32_fold_reset_c(crc32_fold *crc) {
     crc->value = CRC32_INITIAL_VALUE;

@@ -5,9 +5,6 @@
 
 #include "zbuild.h"
 #include "adler32.h"
-#include "adler32_fold.h"
-
-#include <limits.h>
 
 Z_INTERNAL uint32_t adler32_fold_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
     adler = ADLER32(adler, src, len);

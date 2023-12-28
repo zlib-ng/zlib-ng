@@ -188,11 +188,11 @@ adler32.obj: $(SRCDIR)/adler32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/
 adler32_avx2.obj: $(SRCDIR)/arch/x86/adler32_avx2.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/fallback_builtins.h
 adler32_avx512.obj: $(SRCDIR)/arch/x86/adler32_avx512.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/arch/x86/adler32_avx512_p.h
 adler32_avx512_vnni.obj: $(SRCDIR)/arch/x86/adler32_avx512_vnni.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/arch/x86/adler32_avx512_p.h
-adler32_sse42.obj: $(SRCDIR)/arch/x86/adler32_sse42.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/adler32_fold.h \
+adler32_sse42.obj: $(SRCDIR)/arch/x86/adler32_sse42.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/adler32.h \
                    $(SRCDIR)/arch/x86/adler32_ssse3_p.h
-adler32_ssse3.obj: $(SRCDIR)/arch/x86/adler32_ssse3.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/adler32_fold.h \
+adler32_ssse3.obj: $(SRCDIR)/arch/x86/adler32_ssse3.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h $(SRCDIR)/adler32.h \
                    $(SRCDIR)/arch/x86/adler32_ssse3_p.h
-adler32_fold.obj: $(SRCDIR)/adler32_fold.c $(SRCDIR)/zbuild.h $(SRCDIR)/adler32_fold.h $(SRCDIR)/functable.h
+adler32_fold.obj: $(SRCDIR)/adler32_fold.c $(SRCDIR)/zbuild.h $(SRCDIR)/adler32.h $(SRCDIR)/functable.h
 functable.obj: $(SRCDIR)/functable.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zendian.h $(SRCDIR)/arch/x86/x86_features.h
 gzlib.obj: $(SRCDIR)/gzlib.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h
 gzread.obj: $(SRCDIR)/gzread.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h

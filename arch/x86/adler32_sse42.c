@@ -8,7 +8,6 @@
 
 #include "../../zbuild.h"
 #include "../../adler32_p.h"
-#include "../../adler32_fold.h"
 #include "adler32_ssse3_p.h"
 #include <immintrin.h>
 
