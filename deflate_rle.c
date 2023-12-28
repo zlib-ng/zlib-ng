@@ -8,19 +8,6 @@
 #include "compare256_rle.h"
 #include "deflate.h"
 #include "deflate_p.h"
-#include "functable.h"
-
-#ifdef UNALIGNED_OK
-#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-#    define compare256_rle compare256_rle_unaligned_64
-#  elif defined(HAVE_BUILTIN_CTZ)
-#    define compare256_rle compare256_rle_unaligned_32
-#  else
-#    define compare256_rle compare256_rle_unaligned_16
-#  endif
-#else
-#  define compare256_rle compare256_rle_c
-#endif
 
 /* ===========================================================================
  * For Z_RLE, simply look for runs of bytes, generate matches only of distance
@@ -49,7 +36,7 @@ Z_INTERNAL block_state deflate_rle(deflate_state *s, int flush) {
         if (s->lookahead >= STD_MIN_MATCH && s->strstart > 0) {
             scan = s->window + s->strstart - 1;
             if (scan[0] == scan[1] && scan[1] == scan[2]) {
-                match_len = compare256_rle(scan, scan+3)+2;
+                match_len = COMPARE256_RLE(scan, scan+3)+2;
                 match_len = MIN(match_len, s->lookahead);
                 match_len = MIN(match_len, STD_MAX_MATCH);
             }

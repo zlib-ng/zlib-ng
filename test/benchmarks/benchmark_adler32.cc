@@ -11,6 +11,7 @@
 extern "C" {
 #  include "zbuild.h"
 #  include "zutil_p.h"
+#  include "adler32.h"
 #  include "../test_cpu_features.h"
 }
 

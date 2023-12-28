@@ -270,6 +270,7 @@ if(WITH_NATIVE_INSTRUCTIONS)
     if(NATIVEFLAG)
         # Apply flag to all source files and compilation checks
         add_compile_options(${NATIVEFLAG})
+        add_definitions(-DHAVE_NATIVE_INSTRUCTIONS)
     else()
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not implemented yet on this configuration")
         set(WITH_NATIVE_INSTRUCTIONS OFF)

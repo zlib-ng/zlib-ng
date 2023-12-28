@@ -10,8 +10,6 @@
 #include "compare256.h"
 #include "cpu_features.h"
 #include "crc32.h"
-#include "deflate.h"
-#include "deflate_p.h"
 #include "functable.h"
 #include "inffast.h"
 #include "insert_string.h"

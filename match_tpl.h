@@ -11,7 +11,6 @@
 #include "zbuild.h"
 #include "zutil_p.h"
 #include "deflate.h"
-#include "functable.h"
 
 #ifndef MATCH_TPL_H
 #define MATCH_TPL_H

@@ -7,7 +7,7 @@
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
-#include "functable.h"
+#include "match.h"
 
 /* ===========================================================================
  * Same as deflate_medium, but achieves better compression. We use a lazy
@@ -22,9 +22,9 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     match_func *longest_match;
 
     if (s->max_chain_length <= 1024)
-        longest_match = &functable.longest_match;
+        longest_match = &LONGEST_MATCH;
     else
-        longest_match = &functable.longest_match_slow;
+        longest_match = &LONGEST_MATCH_SLOW;
 
     /* Process the input block. */
     for (;;) {

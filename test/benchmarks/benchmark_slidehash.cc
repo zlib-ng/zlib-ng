@@ -10,7 +10,7 @@
 extern "C" {
 #  include "zbuild.h"
 #  include "zutil_p.h"
-#  include "deflate.h"
+#  include "slide_hash.h"
 #  include "../test_cpu_features.h"
 }
 

@@ -9,7 +9,6 @@
 #include "inftrees.h"
 #include "inflate.h"
 #include "inflate_p.h"
-#include "functable.h"
 
 /*
    Decode literal, length, and distance codes and write out the resulting

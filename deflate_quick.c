@@ -16,12 +16,12 @@
  *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-
 #include "zbuild.h"
 #include "zutil_p.h"
+#include "compare256.h"
 #include "deflate.h"
 #include "deflate_p.h"
-#include "functable.h"
+#include "insert_string.h"
 #include "trees_emit.h"
 
 extern const ct_data static_ltree[L_CODES+2];
@@ -86,7 +86,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         }
 
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
-            hash_head = functable.quick_insert_string(s, s->strstart);
+            hash_head = QUICK_INSERT_STRING(s, s->strstart);
             dist = (int64_t)s->strstart - hash_head;
 
             if (dist <= MAX_DIST(s) && dist > 0) {
@@ -94,7 +94,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
                 const uint8_t *match_start = s->window + hash_head;
 
                 if (zng_memcmp_2(str_start, match_start) == 0) {
-                    match_len = functable.compare256(str_start+2, match_start+2) + 2;
+                    match_len = COMPARE256(str_start+2, match_start+2) + 2;
 
                     if (match_len >= WANT_MIN_MATCH) {
                         if (UNLIKELY(match_len > s->lookahead))

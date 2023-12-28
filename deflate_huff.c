@@ -7,7 +7,6 @@
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
-#include "functable.h"
 
 /* ===========================================================================
  * For Z_HUFFMAN_ONLY, do not look for matches.  Do not maintain a hash table.

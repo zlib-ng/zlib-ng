@@ -7,7 +7,6 @@
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
-#include "functable.h"
 
 /* ===========================================================================
  * Copy without compression as much as possible from the input stream, return
