@@ -3,6 +3,9 @@ on: [push, pull_request]
 env:
   TERM: xterm-256color
   GTEST_COLOR: 1
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   cmake:
     name: ${{ matrix.name }}
