@@ -13,7 +13,6 @@
 #include "inflate_p.h"
 #include "inffast.h"
 #include "inffixed_tbl.h"
-#include "functable.h"
 
 /* Avoid conflicts with zlib.h macros */
 #ifdef ZLIB_COMPAT
@@ -143,8 +142,10 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
     int32_t ret;
     struct inflate_state *state;
 
+#ifndef HAVE_NATIVE_INSTRUCTIONS
     /* Initialize functable earlier. */
     functable.force_init();
+#endif
 
     if (strm == NULL)
         return Z_STREAM_ERROR;

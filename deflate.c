@@ -52,7 +52,6 @@
 #include "crc32.h"
 #include "deflate.h"
 #include "deflate_p.h"
-#include "functable.h"
 #include "insert_string.h"
 #include "slide_hash.h"
 
@@ -198,8 +197,10 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
     deflate_state *s;
     int wrap = 1;
 
+#ifndef HAVE_NATIVE_INSTRUCTIONS
     /* Force initialization functable, because deflate captures function pointers from functable. */
     functable.force_init();
+#endif
 
     if (strm == NULL)
         return Z_STREAM_ERROR;
