@@ -1,5 +1,5 @@
-#ifndef INSERT_STRING_H_
-#define INSERT_STRING_H_
+#ifndef INSERT_STRING_TPL_H_
+#define INSERT_STRING_TPL_H_
 
 /* insert_string.h -- Private insert_string functions shared with more than
  *                    one insert string implementation

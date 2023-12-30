@@ -134,15 +134,3 @@ static inline uint32_t compare256_rle_unaligned_64(const uint8_t *src0, const ui
 #endif
 
 #endif
-
-#ifdef UNALIGNED_OK
-#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-#    define COMPARE256_RLE compare256_rle_unaligned_64
-#  elif defined(HAVE_BUILTIN_CTZ)
-#    define COMPARE256_RLE compare256_rle_unaligned_32
-#  else
-#    define COMPARE256_RLE compare256_rle_unaligned_16
-#  endif
-#else
-#  define COMPARE256_RLE compare256_rle_c
-#endif

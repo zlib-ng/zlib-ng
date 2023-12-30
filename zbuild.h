@@ -113,6 +113,12 @@
 #  define Z_INTERNAL
 #endif
 
+#ifndef __cplusplus
+#  define Z_REGISTER register
+#else
+#  define Z_REGISTER
+#endif
+
 /* Symbol versioning helpers, allowing multiple versions of a function to exist.
  * Functions using this must also be added to zlib-ng.map for each version.
  * Double @@ means this is the default for newly compiled applications to link against.
@@ -127,10 +133,16 @@
 #  define ZSYMVER_DEF(func,alias,ver)
 #endif
 
-#ifndef __cplusplus
-#  define Z_REGISTER register
+/* When compiling with native instructions it is not necessary to use functable.
+ * Instead we use native_ macro indicating the best available variant of arch-specific
+ * functions for the current platform.
+ */
+#ifdef HAVE_NATIVE_INSTRUCTIONS
+#  define DYNAMIC(name) native_ ## name
+#  define DYNAMIC2(name) &native_ ## name
 #else
-#  define Z_REGISTER
+#  define DYNAMIC(name) functable.name
+#  define DYNAMIC2(name) functable.name
 #endif
 
 /* Reverse the bytes in a value. Use compiler intrinsics when

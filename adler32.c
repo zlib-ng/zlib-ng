@@ -4,6 +4,7 @@
  */
 
 #include "zbuild.h"
+#include "zutil.h"
 #include "adler32.h"
 #include "adler32_p.h"
 
@@ -55,22 +56,22 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
 
 #ifdef ZLIB_COMPAT
 unsigned long Z_EXPORT PREFIX(adler32_z)(unsigned long adler, const unsigned char *buf, size_t len) {
-    return (unsigned long)ADLER32((uint32_t)adler, buf, len);
+    return (unsigned long)DYNAMIC(adler32)((uint32_t)adler, buf, len);
 }
 #else
 uint32_t Z_EXPORT PREFIX(adler32_z)(uint32_t adler, const unsigned char *buf, size_t len) {
-    return ADLER32(adler, buf, len);
+    return DYNAMIC(adler32)(adler, buf, len);
 }
 #endif
 
 /* ========================================================================= */
 #ifdef ZLIB_COMPAT
 unsigned long Z_EXPORT PREFIX(adler32)(unsigned long adler, const unsigned char *buf, unsigned int len) {
-    return (unsigned long)ADLER32((uint32_t)adler, buf, len);
+    return (unsigned long)DYNAMIC(adler32)((uint32_t)adler, buf, len);
 }
 #else
 uint32_t Z_EXPORT PREFIX(adler32)(uint32_t adler, const unsigned char *buf, uint32_t len) {
-    return ADLER32(adler, buf, len);
+    return DYNAMIC(adler32)(adler, buf, len);
 }
 #endif
 

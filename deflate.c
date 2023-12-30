@@ -53,6 +53,7 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "functable.h"
+#include "insert_string.h"
 #include "slide_hash.h"
 
 /* Avoid conflicts with zlib.h macros */
@@ -373,7 +374,7 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
 
     /* when using zlib wrappers, compute Adler-32 for provided dictionary */
     if (wrap == 1)
-        strm->adler = ADLER32(strm->adler, dictionary, dictLength);
+        strm->adler = DYNAMIC(adler32)(strm->adler, dictionary, dictLength);
     DEFLATE_SET_DICTIONARY_HOOK(strm, dictionary, dictLength);  /* hook for IBM Z DFLTCC */
     s->wrap = 0;                    /* avoid computing Adler-32 in read_buf */
 
@@ -460,7 +461,7 @@ int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
 
 #ifdef GZIP
     if (s->wrap == 2) {
-        strm->adler = CRC32_FOLD_RESET(&s->crc_fold);
+        strm->adler = DYNAMIC(crc32_fold_reset)(&s->crc_fold);
     } else
 #endif
         strm->adler = ADLER32_INITIAL_VALUE;
@@ -558,7 +559,7 @@ int32_t Z_EXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int
     if (s->level != level) {
         if (s->level == 0 && s->matches != 0) {
             if (s->matches == 1) {
-                SLIDE_HASH(s);
+                DYNAMIC(slide_hash)(s);
             } else {
                 CLEAR_HASH(s);
             }
@@ -797,7 +798,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
 #ifdef GZIP
     if (s->status == GZIP_STATE) {
         /* gzip header */
-        CRC32_FOLD_RESET(&s->crc_fold);
+        DYNAMIC(crc32_fold_reset)(&s->crc_fold);
         put_byte(s, 31);
         put_byte(s, 139);
         put_byte(s, 8);
@@ -914,7 +915,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
                 }
             }
             put_short(s, (uint16_t)strm->adler);
-            CRC32_FOLD_RESET(&s->crc_fold);
+            DYNAMIC(crc32_fold_reset)(&s->crc_fold);
         }
         s->status = BUSY_STATE;
 
@@ -985,7 +986,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
     /* Write the trailer */
 #ifdef GZIP
     if (s->wrap == 2) {
-        strm->adler = CRC32_FOLD_FINAL(&s->crc_fold);
+        strm->adler = DYNAMIC(crc32_fold_final)(&s->crc_fold);
 
         put_uint32(s, strm->adler);
         put_uint32(s, (uint32_t)strm->total_in);
@@ -1098,10 +1099,10 @@ Z_INTERNAL unsigned PREFIX(read_buf)(PREFIX3(stream) *strm, unsigned char *buf, 
         memcpy(buf, strm->next_in, len);
 #ifdef GZIP
     } else if (strm->state->wrap == 2) {
-        CRC32_FOLD_COPY(&strm->state->crc_fold, buf, strm->next_in, len);
+        DYNAMIC(crc32_fold_copy)(&strm->state->crc_fold, buf, strm->next_in, len);
 #endif
     } else if (strm->state->wrap == 1) {
-        strm->adler = ADLER32_FOLD_COPY(strm->adler, buf, strm->next_in, len);
+        strm->adler = DYNAMIC(adler32_fold_copy)(strm->adler, buf, strm->next_in, len);
     } else {
         memcpy(buf, strm->next_in, len);
     }
@@ -1128,9 +1129,9 @@ static void lm_set_level(deflate_state *s, int level) {
         s->insert_string = &insert_string_roll;
         s->quick_insert_string = &quick_insert_string_roll;
     } else {
-        s->update_hash = functable.update_hash;
-        s->insert_string = functable.insert_string;
-        s->quick_insert_string = functable.quick_insert_string;
+        s->update_hash = DYNAMIC2(update_hash);
+        s->insert_string = DYNAMIC2(insert_string);
+        s->quick_insert_string = DYNAMIC2(quick_insert_string);
     }
 
     s->level = level;
@@ -1194,7 +1195,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             s->block_start -= (int)wsize;
             if (s->insert > s->strstart)
                 s->insert = s->strstart;
-            SLIDE_HASH(s);
+            DYNAMIC(slide_hash)(s);
             more += wsize;
         }
         if (s->strm->avail_in == 0)

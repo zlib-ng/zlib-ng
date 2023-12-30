@@ -46,9 +46,9 @@
 /* check function to use adler32() for zlib or crc32() for gzip */
 #ifdef GUNZIP
 #  define UPDATE(check, buf, len) \
-    (state->flags ? PREFIX(crc32)(check, buf, len) : ADLER32(check, buf, len))
+    (state->flags ? PREFIX(crc32)(check, buf, len) : DYNAMIC(adler32)(check, buf, len))
 #else
-#  define UPDATE(check, buf, len) ADLER32(check, buf, len)
+#  define UPDATE(check, buf, len) DYNAMIC(adler32)(check, buf, len)
 #endif
 
 /* check macros for header crc */

@@ -42,7 +42,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
          * dictionary, and set hash_head to the head of the hash chain:
          */
         if (s->lookahead >= WANT_MIN_MATCH) {
-            hash_head = QUICK_INSERT_STRING(s, s->strstart);
+            hash_head = DYNAMIC(quick_insert_string)(s, s->strstart);
             dist = (int64_t)s->strstart - hash_head;
 
             /* Find the longest match, discarding those <= prev_length.
@@ -53,7 +53,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
                  * of window index 0 (in particular we have to avoid a match
                  * of the string with itself at the start of the input file).
                  */
-                match_len = LONGEST_MATCH(s, hash_head);
+                match_len = DYNAMIC(longest_match)(s, hash_head);
                 /* longest_match() sets match_start */
             }
         }
@@ -72,11 +72,11 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
                 match_len--; /* string at strstart already in table */
                 s->strstart++;
 
-                INSERT_STRING(s, s->strstart, match_len);
+                DYNAMIC(insert_string)(s, s->strstart, match_len);
                 s->strstart += match_len;
             } else {
                 s->strstart += match_len;
-                QUICK_INSERT_STRING(s, s->strstart + 2 - STD_MIN_MATCH);
+                DYNAMIC(quick_insert_string)(s, s->strstart + 2 - STD_MIN_MATCH);
 
                 /* If lookahead < STD_MIN_MATCH, ins_h is garbage, but it does not
                  * matter since it will be recomputed at next deflate call.
