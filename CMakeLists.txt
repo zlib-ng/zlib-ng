@@ -85,6 +85,7 @@ option(WITH_REDUCED_MEM "Reduced memory usage for special cases (reduces perform
 option(WITH_NEW_STRATEGIES "Use new strategies" ON)
 option(WITH_NATIVE_INSTRUCTIONS
     "Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native)" OFF)
+option(WITH_RUNTIME_CPU_DETECTION "Build with runtime detection of CPU architecture" ON)
 option(WITH_MAINTAINER_WARNINGS "Build with project maintainer warnings" OFF)
 option(WITH_CODE_COVERAGE "Enable code coverage reporting" OFF)
 option(WITH_INFLATE_STRICT "Build with strict inflate distance checking" OFF)
@@ -270,11 +271,16 @@ if(WITH_NATIVE_INSTRUCTIONS)
     if(NATIVEFLAG)
         # Apply flag to all source files and compilation checks
         add_compile_options(${NATIVEFLAG})
-        add_definitions(-DHAVE_NATIVE_INSTRUCTIONS)
+        set(WITH_RUNTIME_CPU_DETECTION OFF)
     else()
         message(STATUS "Ignoring WITH_NATIVE_INSTRUCTIONS; not implemented yet on this configuration")
         set(WITH_NATIVE_INSTRUCTIONS OFF)
     endif()
+endif()
+
+# Compile without functable or CPU detection
+if(NOT WITH_RUNTIME_CPU_DETECTION)
+    add_definitions(-DDISABLE_RUNTIME_CPU_DETECTION)
 endif()
 
 # Force disable LTO if WITH_NATIVE_INSTRUCTIONS is not active
@@ -1011,6 +1017,7 @@ set(ZLIB_PRIVATE_HDRS
     zendian.h
     zutil.h
 )
+
 set(ZLIB_SRCS
     adler32.c
     adler32_fold.c
@@ -1260,6 +1267,7 @@ add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
 add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
 add_feature_info(WITH_NATIVE_INSTRUCTIONS WITH_NATIVE_INSTRUCTIONS
     "Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native)")
+add_feature_info(WITH_RUNTIME_CPU_DETECTION WITH_RUNTIME_CPU_DETECTION "Build with runtime CPU detection")
 add_feature_info(WITH_MAINTAINER_WARNINGS WITH_MAINTAINER_WARNINGS "Build with project maintainer warnings")
 add_feature_info(WITH_CODE_COVERAGE WITH_CODE_COVERAGE "Enable code coverage reporting")
 add_feature_info(WITH_INFLATE_STRICT WITH_INFLATE_STRICT "Build with strict inflate distance checking")

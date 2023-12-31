@@ -142,7 +142,7 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
     int32_t ret;
     struct inflate_state *state;
 
-#ifndef HAVE_NATIVE_INSTRUCTIONS
+#ifndef DISABLE_RUNTIME_CPU_DETECTION
     /* Initialize functable earlier. */
     functable.force_init();
 #endif

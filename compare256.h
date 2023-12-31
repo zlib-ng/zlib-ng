@@ -6,7 +6,7 @@
 #ifdef X86_FEATURES
 #  include "fallback_builtins.h"
 #endif
-#ifndef HAVE_NATIVE_INSTRUCTIONS
+#ifndef DISABLE_RUNTIME_CPU_DETECTION
 #  include "functable.h"
 #endif
 

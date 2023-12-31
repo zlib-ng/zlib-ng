@@ -133,11 +133,11 @@
 #  define ZSYMVER_DEF(func,alias,ver)
 #endif
 
-/* When compiling with native instructions it is not necessary to use functable.
- * Instead we use native_ macro indicating the best available variant of arch-specific
- * functions for the current platform.
+/* If runtime CPU detection is enabled then we use a function table to dispatch to the
+ * best available variant of a function for the current platform. Otherwise, we use
+ * native_ macros at compile-time.
  */
-#ifdef HAVE_NATIVE_INSTRUCTIONS
+#ifdef DISABLE_RUNTIME_CPU_DETECTION
 #  define DYNAMIC(name) native_ ## name
 #  define DYNAMIC2(name) &native_ ## name
 #else

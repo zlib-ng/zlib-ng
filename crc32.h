@@ -4,7 +4,7 @@
 #include "zbuild.h"
 #include "crc32_fold.h"
 
-#ifndef HAVE_NATIVE_INSTRUCTIONS
+#ifndef DISABLE_RUNTIME_CPU_DETECTION
 #  include "functable.h"
 #endif
 
