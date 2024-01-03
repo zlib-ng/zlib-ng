@@ -74,8 +74,9 @@ man3dir = ${mandir}/man3
 pkgconfigdir = ${libdir}/pkgconfig
 
 OBJZ = \
+	arch/generic/adler32_c.o \
+	arch/generic/adler32_fold_c.o \
 	adler32.o \
-	adler32_fold.o \
 	chunkset.o \
 	compare256.o \
 	compress.o \
@@ -112,8 +113,9 @@ TESTOBJG =
 OBJC = $(OBJZ) $(OBJG)
 
 PIC_OBJZ = \
+	arch/generic/adler32_c.lo \
+	arch/generic/adler32_fold_c.lo \
 	adler32.lo \
-	adler32_fold.lo \
 	chunkset.lo \
 	compare256.lo \
 	compress.lo \
@@ -168,6 +170,12 @@ $(ARCHDIR)/%.o: $(SRCDIR)/$(ARCHDIR)/%.c
 
 $(ARCHDIR)/%.lo: $(SRCDIR)/$(ARCHDIR)/%.c
 	$(MAKE) -C $(ARCHDIR) $(notdir $@)
+
+arch/generic/%.o: $(SRCDIR)/arch/generic/%.c
+	$(MAKE) -C arch/generic $(notdir $@)
+
+arch/generic/%.lo: $(SRCDIR)/arch/generic/%.c
+	$(MAKE) -C arch/generic $(notdir $@)
 
 %.o: $(ARCHDIR)/%.o
 	-cp $< $@

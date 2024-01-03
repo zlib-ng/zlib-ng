@@ -5,7 +5,7 @@
 
 #include "zbuild.h"
 #include "functable.h"
-#include "adler32_fold.h"
+#include "adler32_fold_c.h"
 
 #include <limits.h>
 
