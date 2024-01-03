@@ -57,8 +57,9 @@ OBJS = \
 	compress.obj \
 	cpu_features.obj \
 	crc32_braid.obj \
+	crc32_braid_c.obj \
 	crc32_braid_comb.obj \
-	crc32_fold.obj \
+	crc32_fold_c.obj \
 	deflate.obj \
 	deflate_fast.obj \
 	deflate_huff.obj \
@@ -212,9 +213,10 @@ compress.obj: $(SRCDIR)/compress.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 uncompr.obj: $(SRCDIR)/uncompr.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 cpu_features.obj: $(SRCDIR)/cpu_features.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
-crc32_braid.obj: $(SRCDIR)/crc32_braid.c $(SRCDIR)/zbuild.h $(SRCDIR)/zendian.h $(SRCDIR)/deflate.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h
-crc32_braid_comb.obj: $(SRCDIR)/crc32_braid_comb.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h $(SRCDIR)/crc32_braid_comb_p.h
-crc32_fold.obj: $(SRCDIR)/crc32_fold.c $(SRCDIR)/zbuild.h
+crc32_braid.obj: $(SRCDIR)/crc32_braid.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_braid_tbl.h
+crc32_braid_c.obj: $(SRCDIR)/arch/generic/crc32_braid_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h
+crc32_braid_comb.obj: $(SRCDIR)/crc32_braid_comb.c $(SRCDIR)/zutil.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h $(SRCDIR)/crc32_braid_comb_p.h
+crc32_fold_c.obj: $(SRCDIR)/arch/generic/crc32_fold_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/arch/generic/crc32_fold_c.h
 deflate.obj: $(SRCDIR)/deflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_fast.obj: $(SRCDIR)/deflate_fast.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_huff.obj: $(SRCDIR)/deflate_huff.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h

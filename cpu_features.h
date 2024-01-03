@@ -6,7 +6,7 @@
 #ifndef CPU_FEATURES_H_
 #define CPU_FEATURES_H_
 
-#include "crc32_fold.h"
+#include "crc32.h"
 
 #if defined(X86_FEATURES)
 #  include "arch/x86/x86_features.h"

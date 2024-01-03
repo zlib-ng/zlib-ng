@@ -1,7 +1,6 @@
 #ifndef CRC32_BRAID_P_H_
 #define CRC32_BRAID_P_H_
 
-#include "zbuild.h"
 #include "zendian.h"
 
 /* Define N */

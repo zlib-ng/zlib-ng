@@ -76,6 +76,8 @@ pkgconfigdir = ${libdir}/pkgconfig
 OBJZ = \
 	arch/generic/adler32_c.o \
 	arch/generic/adler32_fold_c.o \
+	arch/generic/crc32_braid_c.o \
+	arch/generic/crc32_fold_c.o \
 	adler32.o \
 	chunkset.o \
 	compare256.o \
@@ -83,7 +85,6 @@ OBJZ = \
 	cpu_features.o \
 	crc32_braid.o \
 	crc32_braid_comb.o \
-	crc32_fold.o \
 	deflate.o \
 	deflate_fast.o \
 	deflate_huff.o \
@@ -115,6 +116,8 @@ OBJC = $(OBJZ) $(OBJG)
 PIC_OBJZ = \
 	arch/generic/adler32_c.lo \
 	arch/generic/adler32_fold_c.lo \
+	arch/generic/crc32_braid_c.lo \
+	arch/generic/crc32_fold_c.lo \
 	adler32.lo \
 	chunkset.lo \
 	compare256.lo \
@@ -122,7 +125,6 @@ PIC_OBJZ = \
 	cpu_features.lo \
 	crc32_braid.lo \
 	crc32_braid_comb.lo \
-	crc32_fold.lo \
 	deflate.lo \
 	deflate_fast.lo \
 	deflate_huff.lo \

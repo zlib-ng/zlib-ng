@@ -978,6 +978,7 @@ set(ZLIB_PUBLIC_HDRS
 )
 set(ZLIB_PRIVATE_HDRS
     arch/generic/adler32_fold_c.h
+    arch/generic/crc32_fold_c.h
     adler32_p.h
     chunkset_tpl.h
     compare256_rle.h
@@ -985,7 +986,6 @@ set(ZLIB_PRIVATE_HDRS
     crc32_braid_p.h
     crc32_braid_comb_p.h
     crc32_braid_tbl.h
-    crc32_fold.h
     deflate.h
     deflate_p.h
     functable.h
@@ -1006,6 +1006,8 @@ set(ZLIB_PRIVATE_HDRS
 set(ZLIB_SRCS
     arch/generic/adler32_c.c
     arch/generic/adler32_fold_c.c
+    arch/generic/crc32_braid_c.c
+    arch/generic/crc32_fold_c.c
     adler32.c
     chunkset.c
     compare256.c
@@ -1013,7 +1015,6 @@ set(ZLIB_SRCS
     cpu_features.c
     crc32_braid.c
     crc32_braid_comb.c
-    crc32_fold.c
     deflate.c
     deflate_fast.c
     deflate_huff.c
