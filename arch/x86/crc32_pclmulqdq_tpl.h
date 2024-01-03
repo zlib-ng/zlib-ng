@@ -26,7 +26,7 @@
 #  include <immintrin.h>
 #endif
 
-#include "crc32_fold.h"
+#include "crc32.h"
 #include "crc32_braid_p.h"
 #include "x86_intrins.h"
 #include <assert.h>
