@@ -10,7 +10,7 @@
 #ifdef __FreeBSD__
 #  include <machine/cpu.h>
 #endif
-#include "../../zbuild.h"
+#include "zbuild.h"
 #include "power_features.h"
 
 void Z_INTERNAL power_check_features(struct power_cpu_features *features) {

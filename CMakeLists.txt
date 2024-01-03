@@ -1067,6 +1067,10 @@ else()
     set(ZLIB_INSTALL_LIBRARIES zlib)
 endif()
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${ARCHDIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/arch/generic)
+
 foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
     if(NOT ZLIB_COMPAT)
         target_compile_definitions(${ZLIB_INSTALL_LIBRARY} PUBLIC ZLIBNG_NATIVE_API)

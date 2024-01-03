@@ -12,7 +12,7 @@
  * relicensed under the zlib license.
  */
 
-#include "../../zbuild.h"
+#include "zbuild.h"
 #include "crc32_braid_p.h"
 
 #include <vecintrin.h>

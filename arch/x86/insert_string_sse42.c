@@ -6,9 +6,9 @@
  */
 
 #ifdef X86_SSE42
-#include "../../zbuild.h"
+#include "zbuild.h"
 #include <nmmintrin.h>
-#include "../../deflate.h"
+#include "deflate.h"
 
 #define HASH_CALC(s, h, val)\
     h = _mm_crc32_u32(h, val)
@@ -20,5 +20,5 @@
 #define INSERT_STRING       insert_string_sse42
 #define QUICK_INSERT_STRING quick_insert_string_sse42
 
-#include "../../insert_string_tpl.h"
+#include "insert_string_tpl.h"
 #endif
