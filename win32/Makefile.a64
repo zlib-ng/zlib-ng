@@ -23,7 +23,8 @@ LD = link
 AR = lib
 RC = rc
 CP = copy /y
-CFLAGS  = -nologo -MD -W3 -O2 -Oy- -Zi -Fd"zlib" $(LOC)
+INCLUDES = -I$(TOP) -I$(TOP)/arch/arm -I$(TOP)/arch/generic
+CFLAGS  = -nologo -MD -W3 -O2 -Oy- -Zi -Fd"zlib" $(LOC) $(INCLUDES)
 WFLAGS  = \
 	-D_ARM64_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE=1 \
 	-D_CRT_SECURE_NO_DEPRECATE \

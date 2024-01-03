@@ -7,7 +7,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "../../zbuild.h"
+#include "zbuild.h"
 #include "x86_features.h"
 
 #ifdef _MSC_VER

@@ -9,11 +9,11 @@
 
 #ifdef X86_AVX512VNNI
 
-#include "../../zbuild.h"
-#include "../../adler32_p.h"
-#include "../../cpu_features.h"
+#include "zbuild.h"
+#include "adler32_p.h"
+#include "cpu_features.h"
 #include <immintrin.h>
-#include "../../adler32_fold.h"
+#include "adler32_fold.h"
 #include "x86_intrins.h"
 #include "adler32_avx512_p.h"
 #include "adler32_avx2_p.h"

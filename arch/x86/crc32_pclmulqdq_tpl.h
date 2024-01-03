@@ -17,7 +17,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include "../../zbuild.h"
+#include "zbuild.h"
 
 #include <immintrin.h>
 #include <wmmintrin.h>
@@ -26,8 +26,8 @@
 #  include <immintrin.h>
 #endif
 
-#include "../../crc32_fold.h"
-#include "../../crc32_braid_p.h"
+#include "crc32_fold.h"
+#include "crc32_braid_p.h"
 #include "x86_intrins.h"
 #include <assert.h>
 

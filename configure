@@ -1941,7 +1941,7 @@ replace_in_file() {
 
 # update Makefile with the configure results
 
-INCLUDES="-I$SRCDIR"
+INCLUDES="-I$SRCDIR -I$SRCDIR/$ARCHDIR -I$SRCDIR/arch/generic"
 if [ "$SRCDIR" != "$BUILDDIR" ]; then INCLUDES="-I$BUILDDIR ${INCLUDES}"; fi
 
 sed < $SRCDIR/Makefile.in "
@@ -2044,15 +2044,12 @@ done
 # Generate Makefile in arch dir
 mkdir -p $ARCHDIR
 
-ARCHINCLUDES="-I$SRCDIR/$ARCHDIR -I$SRCDIR"
-if [ "$SRCDIR" != "$BUILDDIR" ]; then ARCHINCLUDES="-I$BUILDDIR ${ARCHINCLUDES}"; fi
-
 sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^CC *=/s#=.*#=$CC#
 /^CFLAGS *=/s#=.*#=$CFLAGS#
 /^SFLAGS *=/s#=.*#=$SFLAGS#
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
-/^INCLUDES *=/s#=.*#=$ARCHINCLUDES#
+/^INCLUDES *=/s#=.*#=$INCLUDES#
 /^SUFFIX *=/s#=.*#=$SUFFIX#
 /^SRCDIR *=/s#=.*#=$SRCDIR/$ARCHDIR#
 /^SRCTOP *=/s#=.*#=$SRCDIR#

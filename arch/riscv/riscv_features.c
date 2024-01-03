@@ -4,7 +4,7 @@
 #include <sys/auxv.h>
 #include <sys/utsname.h>
 
-#include "../../zbuild.h"
+#include "zbuild.h"
 #include "riscv_features.h"
 
 #define ISA_V_HWCAP (1 << ('v' - 'a'))
