@@ -977,6 +977,7 @@ set(ZLIB_PUBLIC_HDRS
     ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.h
 )
 set(ZLIB_PRIVATE_HDRS
+    arch/generic/adler32_fold_c.h
     adler32_p.h
     chunkset_tpl.h
     compare256_rle.h
@@ -1003,8 +1004,9 @@ set(ZLIB_PRIVATE_HDRS
     zutil.h
 )
 set(ZLIB_SRCS
+    arch/generic/adler32_c.c
+    arch/generic/adler32_fold_c.c
     adler32.c
-    adler32_fold.c
     chunkset.c
     compare256.c
     compress.c

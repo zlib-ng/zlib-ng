@@ -44,7 +44,8 @@ SUFFIX =
 
 OBJS = \
 	adler32.obj \
-	adler32_fold.obj \
+	adler32_c.obj \
+	adler32_fold_c.obj \
 	arm_features.obj \
 	chunkset.obj \
 	compare256.obj \
@@ -169,6 +170,9 @@ gzwrite2.obj: gzwrite.c
 {$(TOP)/arch/arm}.c.obj:
 	$(CC) -c -I$(TOP) $(WFLAGS) $(CFLAGS) $<
 
+{$(TOP)/arch/generic}.c.obj:
+	$(CC) -c -I$(TOP) $(WFLAGS) $(CFLAGS) $<
+
 {$(TOP)/test}.c.obj:
 	$(CC) -c -I$(TOP) $(WFLAGS) $(CFLAGS) -DWITH_GZFILEOP $<
 
@@ -176,8 +180,9 @@ $(TOP)/zconf$(SUFFIX).h: zconf
 
 SRCDIR = $(TOP)
 # Keep the dependences in sync with top-level Makefile.in
-adler32.obj: $(SRCDIR)/adler32.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h $(SRCDIR)/functable.h $(SRCDIR)/adler32_p.h
-adler32_fold.obj: $(SRCDIR)/adler32_fold.c $(SRCDIR)/zbuild.h $(SRCDIR)/adler32_fold.h $(SRCDIR)/functable.h
+adler32.obj: $(SRCDIR)/adler32.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/adler32_p.h
+adler32_c.obj: $(SRCDIR)/arch/generic/adler32_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/adler32_p.h
+adler32_fold_c.obj: $(SRCDIR)/arch/generic/adler32_fold_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/arch/generic/adler32_fold_c.h
 chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 functable.obj: $(SRCDIR)/functable.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zendian.h $(SRCDIR)/arch/x86/x86_features.h
 gzlib.obj: $(SRCDIR)/gzlib.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h

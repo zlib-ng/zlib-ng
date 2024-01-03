@@ -2109,6 +2109,21 @@ for file in $SRCDIR/$ARCHDIR/*.c; do
     fi
 done
 
+# Generate Makefile in generic arch dir
+mkdir -p arch/generic
+
+sed < $SRCDIR/arch/generic/Makefile.in "
+/^CC *=/s#=.*#=$CC#
+/^CFLAGS *=/s#=.*#=$CFLAGS#
+/^SFLAGS *=/s#=.*#=$SFLAGS#
+/^INCLUDES *=/s#=.*#=$INCLUDES#
+/^SRCDIR *=/s#=.*#=$SRCDIR/arch/generic#
+/^SRCTOP *=/s#=.*#=$SRCDIR#
+/^BUILDDIR *=/s#=.*#=$BUILDDIR#
+" > arch/generic/Makefile
+
+## TODO: Process header dependencies
+
 # Emscripten does not support large amounts of data via stdin/out
 # https://github.com/emscripten-core/emscripten/issues/16755#issuecomment-1102732849
 if test "$CHOST" != "wasm32"; then

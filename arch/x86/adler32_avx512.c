@@ -10,7 +10,6 @@
 
 #include "zbuild.h"
 #include "adler32_p.h"
-#include "adler32_fold.h"
 #include "cpu_features.h"
 #include <immintrin.h>
 #include "x86_intrins.h"
