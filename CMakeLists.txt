@@ -1009,6 +1009,7 @@ set(ZLIB_SRCS
     arch/generic/chunkset_c.c
     arch/generic/crc32_braid_c.c
     arch/generic/crc32_fold_c.c
+    arch/generic/insert_string_c.c
     adler32.c
     compare256.c
     compress.c
@@ -1027,7 +1028,6 @@ set(ZLIB_SRCS
     infback.c
     inflate.c
     inftrees.c
-    insert_string.c
     insert_string_roll.c
     slide_hash.c
     trees.c
