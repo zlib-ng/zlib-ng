@@ -58,7 +58,7 @@ OBJS = \
 	chunkset_avx2.obj \
 	chunkset_sse2.obj \
 	chunkset_ssse3.obj \
-	compare256.obj \
+	compare256_c.obj \
 	compare256_avx2.obj \
 	compare256_sse2.obj \
 	compress.obj \
@@ -210,6 +210,9 @@ chunkset_c.obj: $(SRCDIR)/arch/generic/chunkset_c.c $(SRCDIR)/zbuild.h $(SRCDIR)
 chunkset_avx2.obj: $(SRCDIR)/arch/x86/chunkset_avx2.c $(SRCDIR)/zbuild.h $(SRCDIR)/chunkset_tpl.h $(SRCDIR)/inffast_tpl.h $(SRCDIR)/arch/generic/chunk_permute_table.h
 chunkset_sse2.obj: $(SRCDIR)/arch/x86/chunkset_sse2.c $(SRCDIR)/zbuild.h $(SRCDIR)/chunkset_tpl.h $(SRCDIR)/inffast_tpl.h
 chunkset_ssse3.obj: $(SRCDIR)/arch/x86/chunkset_ssse3.c $(SRCDIR)/zbuild.h $(SRCDIR)/chunkset_tpl.h $(SRCDIR)/inffast_tpl.h $(SRCDIR)/arch/generic/chunk_permute_table.h
+compare256_c.obj: $(SRCDIR)/arch/generic/compare256_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil_p.h $(SRCDIR)/deflate.h $(SRCDIR)/fallback_builtins.h
+compare256_avx2.obj: $(SRCDIR)/arch/x86/compare256_avx2.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil_p.h $(SRCDIR)/deflate.h $(SRCDIR)/fallback_builtins.h
+compare256_sse2.obj: $(SRCDIR)/arch/x86/compare256_sse2.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil_p.h $(SRCDIR)/deflate.h $(SRCDIR)/fallback_builtins.h
 cpu_features.obj: $(SRCDIR)/cpu_features.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 crc32_braid.obj: $(SRCDIR)/crc32_braid.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_braid_tbl.h
 crc32_braid_c.obj: $(SRCDIR)/arch/generic/crc32_braid_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h
