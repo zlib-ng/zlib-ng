@@ -1006,10 +1006,10 @@ set(ZLIB_PRIVATE_HDRS
 set(ZLIB_SRCS
     arch/generic/adler32_c.c
     arch/generic/adler32_fold_c.c
+    arch/generic/chunkset_c.c
     arch/generic/crc32_braid_c.c
     arch/generic/crc32_fold_c.c
     adler32.c
-    chunkset.c
     compare256.c
     compress.c
     cpu_features.c

@@ -76,10 +76,10 @@ pkgconfigdir = ${libdir}/pkgconfig
 OBJZ = \
 	arch/generic/adler32_c.o \
 	arch/generic/adler32_fold_c.o \
+	arch/generic/chunkset_c.o \
 	arch/generic/crc32_braid_c.o \
 	arch/generic/crc32_fold_c.o \
 	adler32.o \
-	chunkset.o \
 	compare256.o \
 	compress.o \
 	cpu_features.o \
@@ -116,10 +116,10 @@ OBJC = $(OBJZ) $(OBJG)
 PIC_OBJZ = \
 	arch/generic/adler32_c.lo \
 	arch/generic/adler32_fold_c.lo \
+	arch/generic/chunkset_c.lo \
 	arch/generic/crc32_braid_c.lo \
 	arch/generic/crc32_fold_c.lo \
 	adler32.lo \
-	chunkset.lo \
 	compare256.lo \
 	compress.lo \
 	cpu_features.lo \

@@ -52,7 +52,7 @@ OBJS = \
 	adler32_c.obj \
 	adler32_fold_c.obj \
 	arm_features.obj \
-	chunkset.obj \
+	chunkset_c.obj \
 	compare256.obj \
 	compress.obj \
 	cpu_features.obj \
@@ -211,7 +211,7 @@ gzread.obj: $(SRCDIR)/gzread.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/z
 gzwrite.obj: $(SRCDIR)/gzwrite.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h
 compress.obj: $(SRCDIR)/compress.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 uncompr.obj: $(SRCDIR)/uncompr.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
-chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
+chunkset_c.obj: $(SRCDIR)/arch/generic/chunkset_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/chunkset_tpl.h $(SRCDIR)/inffast_tpl.h
 cpu_features.obj: $(SRCDIR)/cpu_features.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 crc32_braid.obj: $(SRCDIR)/crc32_braid.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_braid_tbl.h
 crc32_braid_c.obj: $(SRCDIR)/arch/generic/crc32_braid_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h
