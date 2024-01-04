@@ -54,7 +54,7 @@ OBJS = \
 	adler32_sse42.obj \
 	adler32_ssse3.obj \
 	adler32_fold_c.obj \
-	chunkset.obj \
+	chunkset_c.obj \
 	chunkset_avx2.obj \
 	chunkset_sse2.obj \
 	chunkset_ssse3.obj \
@@ -206,10 +206,10 @@ gzread.obj: $(SRCDIR)/gzread.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/z
 gzwrite.obj: $(SRCDIR)/gzwrite.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h
 compress.obj: $(SRCDIR)/compress.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 uncompr.obj: $(SRCDIR)/uncompr.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
-chunkset.obj: $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
-chunkset_avx2.obj: $(SRCDIR)/arch/x86/chunkset_avx2.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
-chunkset_sse2.obj: $(SRCDIR)/arch/x86/chunkset_sse2.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
-chunkset_ssse3.obj: $(SRCDIR)/arch/x86/chunkset_ssse3.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
+chunkset_c.obj: $(SRCDIR)/arch/generic/chunkset_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/chunkset_tpl.h $(SRCDIR)/inffast_tpl.h
+chunkset_avx2.obj: $(SRCDIR)/arch/x86/chunkset_avx2.c $(SRCDIR)/zbuild.h $(SRCDIR)/chunkset_tpl.h $(SRCDIR)/inffast_tpl.h $(SRCDIR)/arch/generic/chunk_permute_table.h
+chunkset_sse2.obj: $(SRCDIR)/arch/x86/chunkset_sse2.c $(SRCDIR)/zbuild.h $(SRCDIR)/chunkset_tpl.h $(SRCDIR)/inffast_tpl.h
+chunkset_ssse3.obj: $(SRCDIR)/arch/x86/chunkset_ssse3.c $(SRCDIR)/zbuild.h $(SRCDIR)/chunkset_tpl.h $(SRCDIR)/inffast_tpl.h $(SRCDIR)/arch/generic/chunk_permute_table.h
 cpu_features.obj: $(SRCDIR)/cpu_features.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 crc32_braid.obj: $(SRCDIR)/crc32_braid.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_braid_tbl.h
 crc32_braid_c.obj: $(SRCDIR)/arch/generic/crc32_braid_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h
