@@ -4,7 +4,8 @@
  */
 
 #include "zbuild.h"
-
+#include "zutil_p.h"
+#include "deflate.h"
 #include "fallback_builtins.h"
 
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)

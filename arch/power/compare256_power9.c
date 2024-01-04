@@ -6,6 +6,8 @@
 #ifdef POWER9
 #include <altivec.h>
 #include "zbuild.h"
+#include "zutil_p.h"
+#include "deflate.h"
 #include "zendian.h"
 
 /* Older versions of GCC misimplemented semantics for these bit counting builtins.

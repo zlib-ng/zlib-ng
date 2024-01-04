@@ -7,6 +7,8 @@
 #ifdef RISCV_RVV
 
 #include "zbuild.h"
+#include "zutil_p.h"
+#include "deflate.h"
 #include "fallback_builtins.h"
 
 #include <riscv_vector.h>
