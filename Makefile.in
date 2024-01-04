@@ -80,6 +80,7 @@ OBJZ = \
 	arch/generic/crc32_braid_c.o \
 	arch/generic/crc32_fold_c.o \
 	arch/generic/insert_string_c.o \
+	arch/generic/slide_hash_c.o \
 	adler32.o \
 	compare256.o \
 	compress.o \
@@ -99,7 +100,6 @@ OBJZ = \
 	inflate.o \
 	inftrees.o \
 	insert_string_roll.o \
-	slide_hash.o \
 	trees.o \
 	uncompr.o \
 	zutil.o \
@@ -120,6 +120,7 @@ PIC_OBJZ = \
 	arch/generic/crc32_braid_c.lo \
 	arch/generic/crc32_fold_c.lo \
 	arch/generic/insert_string_c.lo \
+	arch/generic/slide_hash_c.lo \
 	adler32.lo \
 	compare256.lo \
 	compress.lo \
@@ -139,7 +140,6 @@ PIC_OBJZ = \
 	inflate.lo \
 	inftrees.lo \
 	insert_string_roll.lo \
-	slide_hash.lo \
 	trees.lo \
 	uncompr.lo \
 	zutil.lo \
