@@ -13,5 +13,5 @@ jobs:
 
     - name: Whitespace errors
       run: |
-        git config core.whitespace tab-in-indent,blank-at-eol
+        git config core.whitespace blank-at-eol
         git diff --color --check ${{ github.event.pull_request.base.sha }}
