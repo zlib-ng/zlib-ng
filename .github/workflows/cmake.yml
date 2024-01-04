@@ -34,6 +34,13 @@ jobs:
             cmake-args: -DWITH_BENCHMARKS=ON
             codecov: ubuntu_gcc_benchmark
 
+          - name: Ubuntu GCC Native Instructions
+            os: ubuntu-latest
+            compiler: gcc
+            cxx-compiler: g++
+            cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
+            codecov: ubuntu_gcc_native_inst
+
           - name: Ubuntu GCC Symbol Prefix
             os: ubuntu-latest
             compiler: gcc
