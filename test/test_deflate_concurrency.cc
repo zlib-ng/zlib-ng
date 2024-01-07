@@ -16,7 +16,12 @@
 #include <algorithm>
 #include <atomic>
 #include <cstring>
+
+#ifdef USE_MINGW_STDTHREAD
+#include "mingw.thread.h"
+#else
 #include <thread>
+#endif
 
 static uint8_t buf[8 * 1024];
 static uint8_t zbuf[4 * 1024];
