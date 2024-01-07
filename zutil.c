@@ -118,7 +118,7 @@ void Z_INTERNAL *PREFIX3(alloc_aligned)(zng_calloc_func zalloc, void *opaque, un
     void *ptr;
 
     /* If no custom calloc function used then call zlib-ng's aligned calloc */
-    if (zalloc == PREFIX(zcalloc))
+    if (zalloc == NULL || zalloc == PREFIX(zcalloc))
         return PREFIX(zcalloc)(opaque, items, size);
 
     /* Allocate enough memory for proper alignment and to store the original memory pointer */
@@ -143,7 +143,7 @@ void Z_INTERNAL *PREFIX3(alloc_aligned)(zng_calloc_func zalloc, void *opaque, un
 
 void Z_INTERNAL PREFIX3(free_aligned)(zng_cfree_func zfree, void *opaque, void *ptr) {
     /* If no custom cfree function used then call zlib-ng's aligned cfree */
-    if (zfree == PREFIX(zcfree)) {
+    if (zfree == NULL || zfree == PREFIX(zcfree)) {
         PREFIX(zcfree)(opaque, ptr);
         return;
     }
