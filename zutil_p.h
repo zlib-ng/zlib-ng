@@ -17,6 +17,8 @@
 /* Function to allocate 16 or 64-byte aligned memory */
 static inline void *zng_alloc(size_t size) {
 #ifdef HAVE_ALIGNED_ALLOC
+    /* Size must be a multiple of alignment */
+    size = (size + (64 - 1)) & ~(64 - 1);
     return (void *)aligned_alloc(64, size);  /* Defined in C11 */
 #elif defined(HAVE_POSIX_MEMALIGN)
     void *ptr;
