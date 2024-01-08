@@ -116,6 +116,9 @@
 #ifndef ZEXPORTVA
 #  define ZEXPORTVA Z_EXPORTVA
 #endif
+#ifndef FAR
+#  define FAR
+#endif
 
 /* Legacy zlib typedefs for backwards compatibility. Don't assume stdint.h is defined. */
 typedef unsigned char Byte;
