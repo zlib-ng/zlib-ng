@@ -110,19 +110,15 @@ jobs:
           --exclude-unreachable-branches \
           --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
           --root . \
-          --xml --output coverage.xml
+          --xml --output ${{ matrix.codecov }}.xml
 
-    - name: Upload coverage report
-      uses: codecov/codecov-action@v3
-      if: matrix.codecov && (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
+    - name: Upload coverage report artifact
+      uses: actions/upload-artifact@v4
+      if: matrix.codecov
       with:
-        token: ${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}
-        flags: ${{ matrix.codecov }}
-        name: ${{ matrix.name }}
-        verbose: true
-        fail_ci_if_error: true
-      env:
-        CODECOV_TOKEN: ${{secrets.CODECOV_TOKEN}}
+        name: ${{ matrix.name }} (coverage)
+        path: ${{ matrix.codecov }}.xml
+        retention-days: 1
 
     - name: Upload build errors
       uses: actions/upload-artifact@v3
@@ -135,3 +131,35 @@ jobs:
           **/Testing/Temporary/*
           coverage.xml
         retention-days: 30
+
+  coverage:
+    name: Upload Coverage Reports
+    runs-on: ubuntu-latest
+    needs: pigz
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        show-progress: false
+
+    - name: Download all reports
+      uses: actions/download-artifact@v4
+      with:
+        merge-multiple: true
+
+    - name: Display all coverage artifacts
+      run: |
+        ls -R *.xml
+        echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ','`" >> $GITHUB_ENV
+
+    - name: Upload reports
+      uses: codecov/codecov-action@v3
+      if: (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
+      with:
+        token: ${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}
+        files: ${{ env.CODECOV_REPORTS }}
+        name: pigz-umbrella
+        verbose: true
+        fail_ci_if_error: true
+      env:
+        CODECOV_TOKEN: "${{secrets.CODECOV_TOKEN}}"
