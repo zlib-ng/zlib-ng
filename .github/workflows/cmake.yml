@@ -299,32 +299,41 @@ jobs:
             parallels-jobs: 4
 
           - name: Ubuntu GCC S390X DFLTCC ASAN
-            os: z15
+            os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Address
+            cmake-args: >-
+              ${{ github.repository != 'zlib-ng/zlib-ng' && '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake' || '' }}
+              -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Address
+            packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             asan-options: detect_leaks=0
             ldflags: -static
             codecov: ubuntu_gcc_s390x_dfltcc
-            # The dedicated test VM has 4 cores
+            # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
 
-          - name: Ubuntu GCC S390X DFLTCC Compat UBSAN
-            os: z15
+          - name: Ubuntu GCC S390X DFLTCC UBSAN
+            os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DZLIB_COMPAT=ON -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Undefined
+            cmake-args: >-
+              ${{ github.repository != 'zlib-ng/zlib-ng' && '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake' || '' }}
+              -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Undefined
+            packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
-            codecov: ubuntu_gcc_s390x_dfltcc_compat
-            # The dedicated test VM has 4 cores
+            codecov: ubuntu_gcc_s390x_dfltcc_ubsan
+            # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
 
-          - name: Ubuntu Clang S390X DFLTCC MSAN
-            os: z15
+          - name: Ubuntu Clang S390X DFLTCC ${{ (github.repository == 'zlib-ng/zlib-ng' && 'MSAN') || 'Compat' }}
+            os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: clang-11
             cxx-compiler: clang++-11
-            cmake-args: -GNinja -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Memory
-            # The dedicated test VM has 4 cores
+            cmake-args: >-
+              ${{ github.repository != 'zlib-ng/zlib-ng' && '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON' || '-GNinja -DWITH_SANITIZER=Memory' }}
+              -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON
+            packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
+            # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
 
           - name: Ubuntu MinGW i686
@@ -552,15 +561,15 @@ jobs:
       run: sudo dpkg --add-architecture i386
 
     - name: Add ubuntu mirrors
-      if: runner.os == 'Linux' && matrix.packages
+      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
+      # Github Actions caching proxy is at times unreliable
       run: |
-        # Github Actions caching proxy is at times unreliable
         echo -e 'http://azure.archive.ubuntu.com/ubuntu\tpriority:1\n' | sudo tee /etc/apt/mirrors.txt
         curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
         sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
     - name: Install packages (Ubuntu)
-      if: runner.os == 'Linux' && matrix.packages
+      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
       run: |
         sudo apt-get update
         sudo apt-get install -y --allow-downgrades --no-install-recommends ${{ matrix.packages }}
