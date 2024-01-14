@@ -104,26 +104,26 @@ jobs:
             cmake-args: -DWITH_OPTIM=OFF -DHAVE_BUILTIN_CTZLL=OFF -DHAVE_BUILTIN_CTZ=OFF
             codecov: ubuntu_gcc_no_ctz
 
-          - name: Ubuntu GCC No AVX2 UBSAN
+          - name: Ubuntu GCC SSE2 UBSAN
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DWITH_AVX2=OFF -DWITH_SANITIZER=Undefined
-            codecov: ubuntu_gcc_no_avx2
+            cmake-args: -DWITH_SSSE3=OFF -DWITH_SSE42=OFF -DWITH_AVX2=OFF -DWITH_AVX512=OFF -DWITH_SANITIZER=Undefined
+            codecov: ubuntu_gcc_sse2
 
-          - name: Ubuntu GCC No SSE2 UBSAN
+          - name: Ubuntu GCC SSSE3 UBSAN
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DWITH_SSE2=OFF -DWITH_SANITIZER=Undefined
-            codecov: ubuntu_gcc_no_sse2
+            cmake-args: -DWITH_SSE42=OFF -DWITH_AVX2=OFF -DWITH_AVX512=OFF -DWITH_SANITIZER=Undefined
+            codecov: ubuntu_gcc_ssse3
 
-          - name: Ubuntu GCC No SSE4.2 UBSAN
+          - name: Ubuntu GCC SSE4.2 UBSAN
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DWITH_SSE42=OFF -DWITH_SANITIZER=Undefined
-            codecov: ubuntu_gcc_no_sse42
+            cmake-args: -DWITH_AVX2=OFF -DWITH_AVX512=OFF -DWITH_SANITIZER=Undefined
+            codecov: ubuntu_gcc_sse42
 
           - name: Ubuntu GCC No PCLMULQDQ UBSAN
             os: ubuntu-latest
