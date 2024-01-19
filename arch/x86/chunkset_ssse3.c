@@ -7,7 +7,7 @@
 /* This requires SSE2 support. While it's implicit with SSSE3, we can minimize
  * code size by sharing the chunkcopy functions, which will certainly compile
  * to identical machine code */
-#if defined(X86_SSSE3) && defined(X86_SSE2)
+#if defined(X86_SSSE3)
 #include <immintrin.h>
 #include "../generic/chunk_permute_table.h"
 
