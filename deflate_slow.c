@@ -22,9 +22,9 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     match_func longest_match;
 
     if (s->max_chain_length <= 1024)
-        longest_match = functable.longest_match;
+        longest_match = FUNCTABLE_FPTR(longest_match);
     else
-        longest_match = functable.longest_match_slow;
+        longest_match = FUNCTABLE_FPTR(longest_match_slow);
 
     /* Process the input block. */
     for (;;) {
