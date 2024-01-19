@@ -110,10 +110,8 @@ static void init_functable(void) {
 #ifdef X86_SSSE3
     if (cf.x86.has_ssse3) {
         ft.adler32 = &adler32_ssse3;
-#  ifdef X86_SSE2
         ft.chunkmemset_safe = &chunkmemset_safe_ssse3;
         ft.inflate_fast = &inflate_fast_ssse3;
-#  endif
     }
 #endif
     // X86 - SSE4.2
