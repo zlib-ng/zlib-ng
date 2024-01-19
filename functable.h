@@ -12,6 +12,23 @@
 #include "inftrees.h"
 #include "inflate.h"
 
+
+#ifdef DISABLE_RUNTIME_CPU_DETECTION
+
+#  include "zbuild.h"
+#  include "zendian.h"
+#  include "crc32_braid_p.h"
+#  include "cpu_features.h"
+
+/* When compiling with native instructions it is not necessary to use functable.
+ * Instead we use native_ macro indicating the best available variant of arch-specific
+ * functions for the current platform.
+ */
+#  define FUNCTABLE_CALL(name) native_ ## name
+#  define FUNCTABLE_FPTR(name) &native_ ## name
+
+#else
+
 struct functable_s {
     void     (* force_init)         (void);
     uint32_t (* adler32)            (uint32_t adler, const uint8_t *buf, size_t len);
@@ -35,11 +52,11 @@ struct functable_s {
 
 Z_INTERNAL extern struct functable_s functable;
 
-
 /* Explicitly indicate functions are conditionally dispatched.
  */
-#define FUNCTABLE_CALL(name) functable.name
-#define FUNCTABLE_FPTR(name) functable.name
+#  define FUNCTABLE_CALL(name) functable.name
+#  define FUNCTABLE_FPTR(name) functable.name
 
+#endif
 
 #endif

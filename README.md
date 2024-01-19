@@ -95,20 +95,21 @@ make test
 Build Options
 -------------
 
-| CMake                    | configure                | Description                                                                           | Default |
-|:-------------------------|:-------------------------|:--------------------------------------------------------------------------------------|---------|
-| ZLIB_COMPAT              | --zlib-compat            | Compile with zlib compatible API                                                      | OFF     |
-| ZLIB_ENABLE_TESTS        |                          | Build test binaries                                                                   | ON      |
-| WITH_GZFILEOP            | --without-gzfileops      | Compile with support for gzFile related functions                                     | ON      |
-| WITH_OPTIM               | --without-optimizations  | Build with optimisations                                                              | ON      |
-| WITH_NEW_STRATEGIES      | --without-new-strategies | Use new strategies                                                                    | ON      |
-| WITH_NATIVE_INSTRUCTIONS |                          | Compiles with full instruction set supported on this host (gcc/clang -march=native)   | OFF     |
-| WITH_SANITIZER           |                          | Build with sanitizer (memory, address, undefined)                                     | OFF     |
-| WITH_GTEST               |                          | Build gtest_zlib                                                                      | ON      |
-| WITH_FUZZERS             |                          | Build test/fuzz                                                                       | OFF     |
-| WITH_BENCHMARKS          |                          | Build test/benchmarks                                                                 | OFF     |
-| WITH_MAINTAINER_WARNINGS |                          | Build with project maintainer warnings                                                | OFF     |
-| WITH_CODE_COVERAGE       |                          | Enable code coverage reporting                                                        | OFF     |
+| CMake                      | configure                | Description                                                                         | Default |
+|:---------------------------|:-------------------------|:------------------------------------------------------------------------------------|---------|
+| ZLIB_COMPAT                | --zlib-compat            | Compile with zlib compatible API                                                    | OFF     |
+| ZLIB_ENABLE_TESTS          |                          | Build test binaries                                                                 | ON      |
+| WITH_GZFILEOP              | --without-gzfileops      | Compile with support for gzFile related functions                                   | ON      |
+| WITH_OPTIM                 | --without-optimizations  | Build with optimisations                                                            | ON      |
+| WITH_NEW_STRATEGIES        | --without-new-strategies | Use new strategies                                                                  | ON      |
+| WITH_NATIVE_INSTRUCTIONS   |                          | Compiles with full instruction set supported on this host (gcc/clang -march=native) | OFF     |
+| WITH_RUNTIME_CPU_DETECTION |                          | Compiles with runtime CPU detection                                                 | ON      |
+| WITH_SANITIZER             |                          | Build with sanitizer (memory, address, undefined)                                   | OFF     |
+| WITH_GTEST                 |                          | Build gtest_zlib                                                                    | ON      |
+| WITH_FUZZERS               |                          | Build test/fuzz                                                                     | OFF     |
+| WITH_BENCHMARKS            |                          | Build test/benchmarks                                                               | OFF     |
+| WITH_MAINTAINER_WARNINGS   |                          | Build with project maintainer warnings                                              | OFF     |
+| WITH_CODE_COVERAGE         |                          | Enable code coverage reporting                                                      | OFF     |
 
 
 Install
