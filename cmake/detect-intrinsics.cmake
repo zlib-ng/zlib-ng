@@ -109,15 +109,6 @@ macro(check_avx512_intrinsics)
         int main(void) { return 0; }"
         HAVE_AVX512_INTRIN
     )
-
-    # Evidently both GCC and clang were late to implementing these
-    check_c_source_compiles(
-        "#include <immintrin.h>
-        __mmask16 f(__mmask16 x) { return _knot_mask16(x); }
-        int main(void) { return 0; }"
-        HAVE_MASK_INTRIN
-    )
-    set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
 macro(check_avx512vnni_intrinsics)
