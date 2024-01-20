@@ -214,8 +214,10 @@ TEST_CRC32(acle, crc32_acle, test_cpu_features.arm.has_crc32)
 TEST_CRC32(power8, crc32_power8, test_cpu_features.power.has_arch_2_07)
 #elif defined(S390_CRC32_VX)
 TEST_CRC32(vx, crc32_s390_vx, test_cpu_features.s390.has_vx)
-#elif defined(X86_PCLMULQDQ_CRC)
+#elif defined(X86_FEATURES)
+#  ifdef X86_PCLMULQDQ_CRC
 TEST_CRC32(pclmulqdq, crc32_pclmulqdq, test_cpu_features.x86.has_pclmulqdq)
+#  endif
 #  ifdef X86_VPCLMULQDQ_CRC
 TEST_CRC32(vpclmulqdq, crc32_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512 && test_cpu_features.x86.has_vpclmulqdq))
 #  endif
