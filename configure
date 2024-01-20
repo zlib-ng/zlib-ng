@@ -1480,6 +1480,53 @@ case "${ARCH}" in
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86_features.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86_features.lo"
 
+            check_xsave_intrinsics
+
+            if test ${HAVE_XSAVE_INTRIN} -eq 0; then
+                xsaveflag=""
+            fi
+
+            check_sse2_intrinsics
+
+            if test ${HAVE_SSE2_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSE2"
+                SFLAGS="${SFLAGS} -DX86_SSE2"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chunkset_sse2.o compare256_sse2.o slide_hash_sse2.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chunkset_sse2.lo compare256_sse2.lo slide_hash_sse2.lo"
+
+                if test $forcesse2 -eq 1; then
+                    CFLAGS="${CFLAGS} -DX86_NOCHECK_SSE2"
+                    SFLAGS="${SFLAGS} -DX86_NOCHECK_SSE2"
+                fi
+            fi
+
+            check_ssse3_intrinsics
+
+            if test ${HAVE_SSSE3_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSSE3"
+                SFLAGS="${SFLAGS} -DX86_SSSE3"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_ssse3.o chunkset_ssse3.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_ssse3.lo chunkset_ssse3.lo"
+            fi
+
+            check_sse42_intrinsics
+
+            if test ${HAVE_SSE42_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSE42"
+                SFLAGS="${SFLAGS} -DX86_SSE42"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_sse42.o insert_string_sse42.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_sse42.lo insert_string_sse42.lo"
+            fi
+
+            check_pclmulqdq_intrinsics
+
+            if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
+                SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_pclmulqdq.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_pclmulqdq.lo"
+            fi
+
             check_avx2_intrinsics
 
             if test ${HAVE_AVX2_INTRIN} -eq 1; then
@@ -1526,62 +1573,15 @@ case "${ARCH}" in
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_avx512_vnni.lo"
             fi
 
-            check_sse42_intrinsics
+            if test $buildvpclmulqdq -eq 1 && test ${HAVE_PCLMULQDQ_INTRIN} -eq 1 && test ${HAVE_AVX512_INTRIN} -eq 1; then
+                check_vpclmulqdq_intrinsics
 
-            if test ${HAVE_SSE42_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE42"
-                SFLAGS="${SFLAGS} -DX86_SSE42"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_sse42.o insert_string_sse42.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_sse42.lo insert_string_sse42.lo"
-            fi
-
-            check_sse2_intrinsics
-
-            if test ${HAVE_SSE2_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSE2"
-                SFLAGS="${SFLAGS} -DX86_SSE2"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chunkset_sse2.o compare256_sse2.o slide_hash_sse2.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chunkset_sse2.lo compare256_sse2.lo slide_hash_sse2.lo"
-
-                if test $forcesse2 -eq 1; then
-                    CFLAGS="${CFLAGS} -DX86_NOCHECK_SSE2"
-                    SFLAGS="${SFLAGS} -DX86_NOCHECK_SSE2"
+                if test ${HAVE_VPCLMULQDQ_INTRIN} -eq 1; then
+                    CFLAGS="${CFLAGS} -DX86_VPCLMULQDQ_CRC"
+                    SFLAGS="${SFLAGS} -DX86_VPCLMULQDQ_CRC"
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_vpclmulqdq.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_vpclmulqdq.lo"
                 fi
-            fi
-
-            check_ssse3_intrinsics
-
-            if test ${HAVE_SSSE3_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_SSSE3"
-                SFLAGS="${SFLAGS} -DX86_SSSE3"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_ssse3.o chunkset_ssse3.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_ssse3.lo chunkset_ssse3.lo"
-            fi
-
-            check_pclmulqdq_intrinsics
-
-            if test ${HAVE_PCLMULQDQ_INTRIN} -eq 1; then
-                CFLAGS="${CFLAGS} -DX86_PCLMULQDQ_CRC"
-                SFLAGS="${SFLAGS} -DX86_PCLMULQDQ_CRC"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_pclmulqdq.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_pclmulqdq.lo"
-
-                if test $buildvpclmulqdq -eq 1; then
-                    check_vpclmulqdq_intrinsics
-
-                    if test ${HAVE_VPCLMULQDQ_INTRIN} -eq 1 && test ${HAVE_AVX512_INTRIN} -eq 1; then
-                        CFLAGS="${CFLAGS} -DX86_VPCLMULQDQ_CRC"
-                        SFLAGS="${SFLAGS} -DX86_VPCLMULQDQ_CRC"
-                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_vpclmulqdq.o"
-                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_vpclmulqdq.lo"
-                    fi
-                fi
-            fi
-
-            check_xsave_intrinsics
-
-            if test ${HAVE_XSAVE_INTRIN} -eq 0; then
-                xsaveflag=""
             fi
         fi
     ;;
