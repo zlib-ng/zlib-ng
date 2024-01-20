@@ -90,10 +90,10 @@ crc32_pclmulqdq.lo:
 	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_pclmulqdq.c
 
 crc32_vpclmulqdq.o:
-	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq.c
+	$(CC) $(CFLAGS) $(PCLMULFLAG) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq.c
 
 crc32_vpclmulqdq.lo:
-	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq.c
+	$(CC) $(SFLAGS) $(PCLMULFLAG) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq.c
 
 slide_hash_avx2.o:
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_avx2.c
