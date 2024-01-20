@@ -1085,22 +1085,6 @@ EOF
     fi
 }
 
-check_mask_intrinsics() {
-    # Check whether compiler supports AVX512 k-mask intrinsics
-    cat > $test.c << EOF
-#include <immintrin.h>
-__mmask16 f(__mmask16 x) { return _knot_mask16(x); }
-int main(void) { return 0; }
-EOF
-    if try ${CC} ${CFLAGS} ${avx512flag} $test.c; then
-        echo "Checking for AVX512 k-mask intrinsics ... Yes." | tee -a configure.log
-        HAVE_MASK_INTRIN=1
-    else
-        echo "Checking for AVX512 k-mask intrinsics ... No." | tee -a configure.log
-        HAVE_MASK_INTRIN=0
-    fi
-}
-
 check_acle_compiler_flag() {
     # Check whether -march=armv8-a+crc works correctly
     cat > $test.c << EOF
@@ -1543,13 +1527,6 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_AVX512"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_avx512.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_avx512.lo"
-
-                check_mask_intrinsics
-
-                if test ${HAVE_MASK_INTRIN} -eq 1; then
-                    CFLAGS="${CFLAGS} -DX86_MASK_INTRIN"
-                    SFLAGS="${SFLAGS} -DX86_MASK_INTRIN"
-                fi
             fi
 
             check_mtune_cascadelake_compiler_flag
