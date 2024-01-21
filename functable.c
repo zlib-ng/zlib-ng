@@ -5,9 +5,6 @@
 
 #include "zbuild.h"
 #include "zendian.h"
-#include "crc32_braid_p.h"
-#include "deflate.h"
-#include "deflate_p.h"
 #include "functable.h"
 #include "cpu_features.h"
 

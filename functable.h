@@ -9,12 +9,8 @@
 #include "deflate.h"
 #include "crc32_fold_c.h"
 #include "adler32_fold_c.h"
-
-#ifdef ZLIB_COMPAT
-typedef struct z_stream_s z_stream;
-#else
-typedef struct zng_stream_s zng_stream;
-#endif
+#include "inftrees.h"
+#include "inflate.h"
 
 struct functable_s {
     void     (* force_init)         (void);

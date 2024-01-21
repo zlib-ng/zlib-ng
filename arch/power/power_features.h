@@ -29,10 +29,11 @@ extern uint32_t adler32_power8(uint32_t adler, const uint8_t *buf, size_t len);
 extern uint32_t chunksize_power8(void);
 extern uint8_t* chunkmemset_safe_power8(uint8_t *out, unsigned dist, unsigned len, unsigned left);
 extern uint32_t crc32_power8(uint32_t crc, const uint8_t *buf, size_t len);
-extern void     inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start);
-
 #  ifdef DEFLATE_H_
     extern void slide_hash_power8(deflate_state *s);
+#  endif
+#  ifdef INFLATE_H_
+    extern void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start);
 #  endif
 #endif
 
