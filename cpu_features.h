@@ -6,12 +6,6 @@
 #ifndef CPU_FEATURES_H_
 #define CPU_FEATURES_H_
 
-#ifdef ZLIB_COMPAT
-typedef struct z_stream_s z_stream;
-#else
-typedef struct zng_stream_s zng_stream;
-#endif
-
 #if defined(X86_FEATURES)
 #  include "arch/x86/x86_features.h"
 #elif defined(ARM_FEATURES)

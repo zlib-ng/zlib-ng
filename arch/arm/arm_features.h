@@ -19,7 +19,6 @@ void Z_INTERNAL arm_check_features(struct arm_cpu_features *features);
 extern uint32_t adler32_neon(uint32_t adler, const uint8_t *buf, size_t len);
 extern uint32_t chunksize_neon(void);
 extern uint8_t* chunkmemset_safe_neon(uint8_t *out, unsigned dist, unsigned len, unsigned left);
-extern void     inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
 
 #  ifdef HAVE_BUILTIN_CTZLL
     extern uint32_t compare256_neon(const uint8_t *src0, const uint8_t *src1);
@@ -30,6 +29,9 @@ extern void     inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
 #  endif
 #  ifdef DEFLATE_H_
     extern void slide_hash_neon(deflate_state *s);
+#  endif
+#  ifdef INFLATE_H_
+    extern void inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
 #  endif
 #endif
 
