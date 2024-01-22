@@ -36,6 +36,6 @@ struct cpu_features {
 #endif
 };
 
-extern void cpu_check_features(struct cpu_features *features);
+void cpu_check_features(struct cpu_features *features);
 
 #endif
