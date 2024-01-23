@@ -42,6 +42,7 @@ include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
 include(CMakeDependentOption)
+include(CMakePackageConfigHelpers)
 include(FeatureSummary)
 
 include(cmake/detect-arch.cmake)
@@ -1220,6 +1221,27 @@ if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(EXPORT ${EXPORT_NAME}
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}"
         NAMESPACE ${EXPORT_NAME}::)
+    # Use GNU-style variable names
+    set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
+    set(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
+    if (ZLIB_COMPAT)
+       set(PACKAGE_CONFIGNAME zlib)
+       set(PACKAGE_VERSION ${ZLIB_HEADER_VERSION})
+    else()
+       set(PACKAGE_CONFIGNAME zlib-ng)
+       set(PACKAGE_VERSION ${ZLIBNG_HEADER_VERSION})
+    endif()
+    configure_package_config_file(${PACKAGE_CONFIGNAME}-config.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-config.cmake
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}
+        PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR)
+    write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-config-version.cmake
+        VERSION ${PACKAGE_VERSION}
+        COMPATIBILITY AnyNewerVersion)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-config.cmake
+                  ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-config-version.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME})
 endif()
 
 #============================================================================
