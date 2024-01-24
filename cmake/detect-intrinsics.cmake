@@ -355,6 +355,21 @@ macro(check_power8_intrinsics)
         }"
         HAVE_POWER8_INTRIN
     )
+    if(NOT HAVE_POWER8_INTRIN AND HAVE_LINUX_AUXVEC_H)
+        check_c_source_compiles(
+            "#include <sys/auxv.h>
+            #include <linux/auxvec.h>
+            int main() {
+                return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
+            }"
+            HAVE_POWER8_INTRIN2
+        )
+        if(HAVE_POWER8_INTRIN2)
+            set(POWER8_NEED_AUXVEC_H 1)
+            set(HAVE_POWER8_INTRIN ${HAVE_POWER8_INTRIN2} CACHE INTERNAL "Have POWER8 intrinsics" FORCE)
+            unset(HAVE_POWER8_INTRIN2 CACHE)
+        endif()
+    endif()
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
@@ -413,6 +428,21 @@ macro(check_power9_intrinsics)
         }"
         HAVE_POWER9_INTRIN
     )
+    if(NOT HAVE_POWER9_INTRIN AND HAVE_LINUX_AUXVEC_H)
+        check_c_source_compiles(
+            "#include <sys/auxv.h>
+            #include <linux/auxvec.h>
+            int main() {
+                return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_3_00);
+            }"
+            HAVE_POWER9_INTRIN2
+        )
+        if(HAVE_POWER9_INTRIN2)
+            set(POWER9_NEED_AUXVEC_H 1)
+            set(HAVE_POWER9_INTRIN ${HAVE_POWER9_INTRIN2} CACHE INTERNAL "Have POWER9 intrinsics" FORCE)
+            unset(HAVE_POWER9_INTRIN2 CACHE)
+        endif()
+    endif()
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
