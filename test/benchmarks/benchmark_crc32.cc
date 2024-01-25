@@ -53,7 +53,7 @@ public:
         } \
         Bench(state, fptr); \
     } \
-    BENCHMARK_REGISTER_F(crc32, name)->Range(1, MAX_RANDOM_INTS_SIZE);
+    BENCHMARK_REGISTER_F(crc32, name)->Arg(1)->Arg(8)->Arg(12)->Arg(16)->Arg(32)->Arg(64)->Arg(512)->Arg(4<<10)->Arg(32<<10)->Arg(256<<10)->Arg(4096<<10);
 
 BENCHMARK_CRC32(braid, PREFIX(crc32_braid), 1);
 
