@@ -41,6 +41,23 @@
 #  endif
 #endif
 
+#if BYTE_ORDER == LITTLE_ENDIAN
+#  define ZSWAPWORD(word) (word)
+#  define BRAID_TABLE crc_braid_table
+#elif BYTE_ORDER == BIG_ENDIAN
+#  if W == 8
+#    define ZSWAPWORD(word) ZSWAP64(word)
+#  elif W == 4
+#    define ZSWAPWORD(word) ZSWAP32(word)
+#  endif
+#  define BRAID_TABLE crc_braid_big_table
+#else
+#  error "No endian defined"
+#endif
+
+#define DO1 c = crc_table[(c ^ *buf++) & 0xff] ^ (c >> 8)
+#define DO8 DO1; DO1; DO1; DO1; DO1; DO1; DO1; DO1
+
 /* CRC polynomial. */
 #define POLY 0xedb88320         /* p(x) reflected, with x^32 implied */
 
