@@ -366,6 +366,7 @@ uninstall: uninstall-static uninstall-shared
 mostlyclean: clean
 clean:
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) clean; fi
+	@if [ -f arch/generic/Makefile ]; then $(MAKE) -C arch/generic clean; fi
 	@if [ -f test/Makefile ]; then $(MAKE) -C test clean; fi
 	rm -f *.o *.lo *~ \
 	   example$(EXE) minigzip$(EXE) minigzipsh$(EXE) \
