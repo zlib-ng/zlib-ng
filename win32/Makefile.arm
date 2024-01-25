@@ -56,7 +56,7 @@ OBJS = \
 	compare256_c.obj \
 	compress.obj \
 	cpu_features.obj \
-	crc32_braid.obj \
+	crc32.obj \
 	crc32_braid_c.obj \
 	crc32_braid_comb.obj \
 	crc32_fold_c.obj \
@@ -214,7 +214,7 @@ uncompr.obj: $(SRCDIR)/uncompr.c $(SRCDIR)/zbuild.h $(SRCDIR)/zlib$(SUFFIX).h
 chunkset_c.obj: $(SRCDIR)/arch/generic/chunkset_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/chunkset_tpl.h $(SRCDIR)/inffast_tpl.h
 compare256_c.obj: $(SRCDIR)/arch/generic/compare256_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil_p.h $(SRCDIR)/deflate.h $(SRCDIR)/fallback_builtins.h
 cpu_features.obj: $(SRCDIR)/cpu_features.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
-crc32_braid.obj: $(SRCDIR)/crc32_braid.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_braid_tbl.h
+crc32.obj: $(SRCDIR)/crc32.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_braid_tbl.h
 crc32_braid_c.obj: $(SRCDIR)/arch/generic/crc32_braid_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h
 crc32_braid_comb.obj: $(SRCDIR)/crc32_braid_comb.c $(SRCDIR)/zutil.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h $(SRCDIR)/crc32_braid_comb_p.h
 crc32_fold_c.obj: $(SRCDIR)/arch/generic/crc32_fold_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/arch/generic/crc32_fold_c.h
