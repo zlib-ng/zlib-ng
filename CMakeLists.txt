@@ -532,10 +532,11 @@ if(WITH_REDUCED_MEM)
     message(STATUS "Configured for reduced memory environment")
 endif()
 
+set(GENERIC_ARCHDIR "arch/generic")
 
 set(ZLIB_ARCH_SRCS)
-set(ZLIB_ARCH_HDRS)
-set(ARCHDIR "arch/generic")
+set(ZLIB_ARCH_HDRS ${GENERIC_ARCHDIR}/generic_features.h)
+
 if(BASEARCH_ARM_FOUND)
     set(ARCHDIR "arch/arm")
 elseif(BASEARCH_PPC_FOUND)
@@ -550,6 +551,7 @@ elseif(BASEARCH_X86_FOUND)
         add_feature_info(SSE2 1 "Support the SSE2 instruction set, using \"${SSE2FLAG}\"")
     endif()
 else()
+    set(ARCHDIR ${GENERIC_ARCHDIR})
     message(STATUS "No optimized architecture: using ${ARCHDIR}")
 endif()
 
