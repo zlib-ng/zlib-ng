@@ -38,6 +38,7 @@ add_executable(benchmark_zlib
     benchmark_adler32_copy.cc
     benchmark_compare256.cc
     benchmark_compare256_rle.cc
+    benchmark_compress.cc
     benchmark_crc32.cc
     benchmark_main.cc
     benchmark_slidehash.cc
