@@ -85,7 +85,7 @@ OBJZ = \
 	adler32.o \
 	compress.o \
 	cpu_features.o \
-	crc32_braid.o \
+	crc32.o \
 	crc32_braid_comb.o \
 	deflate.o \
 	deflate_fast.o \
@@ -125,7 +125,7 @@ PIC_OBJZ = \
 	adler32.lo \
 	compress.lo \
 	cpu_features.lo \
-	crc32_braid.lo \
+	crc32.lo \
 	crc32_braid_comb.lo \
 	deflate.lo \
 	deflate_fast.lo \

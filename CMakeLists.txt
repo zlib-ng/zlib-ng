@@ -1021,7 +1021,7 @@ set(ZLIB_SRCS
     adler32.c
     compress.c
     cpu_features.c
-    crc32_braid.c
+    crc32.c
     crc32_braid_comb.c
     deflate.c
     deflate_fast.c
