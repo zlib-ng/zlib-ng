@@ -29,6 +29,7 @@ static inline void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, 
     *ecx = registers[2];
     *edx = registers[3];
 #else
+    *eax = *ebx = *ecx = *edx = 0;
     __cpuid(info, *eax, *ebx, *ecx, *edx);
 #endif
 }
@@ -43,6 +44,7 @@ static inline void cpuidex(int info, int subinfo, unsigned* eax, unsigned* ebx, 
     *ecx = registers[2];
     *edx = registers[3];
 #else
+    *eax = *ebx = *ecx = *edx = 0;
     __cpuid_count(info, subinfo, *eax, *ebx, *ecx, *edx);
 #endif
 }
