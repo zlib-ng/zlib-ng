@@ -41,6 +41,7 @@ add_executable(benchmark_zlib
     benchmark_crc32.cc
     benchmark_main.cc
     benchmark_slidehash.cc
+    benchmark_update_hash.cc
     )
 
 target_compile_definitions(benchmark_zlib PRIVATE -DBENCHMARK_STATIC_DEFINE)
