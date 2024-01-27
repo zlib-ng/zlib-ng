@@ -365,7 +365,7 @@ static inline uint32_t crc32_small(uint32_t crc, const uint8_t *buf, size_t len)
 Z_INTERNAL uint32_t CRC32(uint32_t crc32, const uint8_t *buf, size_t len) {
     /* For lens smaller than ~12, crc32_small method is faster.
      * But there are also minimum requirements for the pclmul functions due to alignment */
-    if (len < 32)
+    if (len < 16)
         return crc32_small(crc32, buf, len);
 
     crc32_fold ALIGNED_(16) crc_state;
