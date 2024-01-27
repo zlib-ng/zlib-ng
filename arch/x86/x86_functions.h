@@ -29,7 +29,7 @@ void inflate_fast_ssse3(PREFIX3(stream) *strm, uint32_t start);
 uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 void insert_string_sse42(deflate_state *const s, const uint32_t str, uint32_t count);
 Pos quick_insert_string_sse42(deflate_state *const s, const uint32_t str);
-uint32_t update_hash_sse42(deflate_state *const s, uint32_t h, uint32_t val);
+uint32_t update_hash_sse42(uint32_t h, uint32_t val);
 #endif
 
 #ifdef X86_AVX2

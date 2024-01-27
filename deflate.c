@@ -120,7 +120,7 @@ static void lm_set_level         (deflate_state *s, int level);
 static void lm_init              (deflate_state *s);
 Z_INTERNAL unsigned read_buf  (PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
-extern uint32_t update_hash_roll        (deflate_state *const s, uint32_t h, uint32_t val);
+extern uint32_t update_hash_roll        (uint32_t h, uint32_t val);
 extern void     insert_string_roll      (deflate_state *const s, uint32_t str, uint32_t count);
 extern Pos      quick_insert_string_roll(deflate_state *const s, uint32_t str);
 
@@ -1236,7 +1236,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
         if (s->lookahead + s->insert >= STD_MIN_MATCH) {
             unsigned int str = s->strstart - s->insert;
             if (UNLIKELY(s->max_chain_length > 1024)) {
-                s->ins_h = s->update_hash(s, s->window[str], s->window[str+1]);
+                s->ins_h = s->update_hash(s->window[str], s->window[str+1]);
             } else if (str >= 1) {
                 s->quick_insert_string(s, str + 2 - STD_MIN_MATCH);
             }

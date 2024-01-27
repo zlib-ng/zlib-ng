@@ -27,7 +27,7 @@ struct functable_s {
     uint32_t (* longest_match_slow) (deflate_state *const s, Pos cur_match);
     Pos      (* quick_insert_string)(deflate_state *const s, uint32_t str);
     void     (* slide_hash)         (deflate_state *s);
-    uint32_t (* update_hash)        (deflate_state *const s, uint32_t h, uint32_t val);
+    uint32_t (* update_hash)        (uint32_t h, uint32_t val);
 };
 
 Z_INTERNAL extern struct functable_s functable;

@@ -47,8 +47,7 @@
  *    input characters, so that a running hash key can be computed from the
  *    previous key instead of complete recalculation each time.
  */
-Z_INTERNAL uint32_t UPDATE_HASH(deflate_state *const s, uint32_t h, uint32_t val) {
-    (void)s;
+Z_INTERNAL uint32_t UPDATE_HASH(uint32_t h, uint32_t val) {
     HASH_CALC(s, h, val);
     return h & HASH_CALC_MASK;
 }

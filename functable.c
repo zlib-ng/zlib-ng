@@ -352,9 +352,9 @@ static void slide_hash_stub(deflate_state* s) {
     functable.slide_hash(s);
 }
 
-static uint32_t update_hash_stub(deflate_state* const s, uint32_t h, uint32_t val) {
+static uint32_t update_hash_stub(uint32_t h, uint32_t val) {
     init_functable();
-    return functable.update_hash(s, h, val);
+    return functable.update_hash(h, val);
 }
 
 /* functable init */
