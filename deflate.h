@@ -113,7 +113,7 @@ typedef uint16_t Pos;
 /* Type definitions for hash callbacks */
 typedef struct internal_state deflate_state;
 
-typedef uint32_t (* update_hash_cb)        (deflate_state *const s, uint32_t h, uint32_t val);
+typedef uint32_t (* update_hash_cb)        (uint32_t h, uint32_t val);
 typedef void     (* insert_string_cb)      (deflate_state *const s, uint32_t str, uint32_t count);
 typedef Pos      (* quick_insert_string_cb)(deflate_state *const s, uint32_t str);
 
