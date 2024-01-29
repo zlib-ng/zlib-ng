@@ -56,62 +56,20 @@ extern int unlink (const char *);
 
 static const char *prog = "minigzip_fuzzer";
 
-void error            (const char *msg);
-void gz_compress      (FILE *in, gzFile out);
-#ifdef USE_MMAP
-int  gz_compress_mmap (FILE *in, gzFile out);
-#endif
-void gz_uncompress    (gzFile in, FILE *out);
-void file_compress    (char *file, char *mode);
-void file_uncompress  (char *file);
-int  main             (int argc, char *argv[]);
-
 /* ===========================================================================
  * Display error message and exit
  */
-void error(const char *msg) {
+static void error(const char *msg) {
     fprintf(stderr, "%s: %s\n", prog, msg);
     exit(1);
 }
 
-/* ===========================================================================
- * Compress input to output then close both files.
- */
-
-void gz_compress(FILE *in, gzFile out) {
-    char buf[BUFLEN];
-    int len;
-    int err;
-
-#ifdef USE_MMAP
-    /* Try first compressing with mmap. If mmap fails (minigzip used in a
-     * pipe), use the normal fread loop.
-     */
-    if (gz_compress_mmap(in, out) == Z_OK) return;
-#endif
-    /* Clear out the contents of buf before reading from the file to avoid
-       MemorySanitizer: use-of-uninitialized-value warnings. */
-    memset(buf, 0, sizeof(buf));
-    for (;;) {
-        len = (int)fread(buf, 1, sizeof(buf), in);
-        if (ferror(in)) {
-            perror("fread");
-            exit(1);
-        }
-        if (len == 0) break;
-
-        if (PREFIX(gzwrite)(out, buf, (unsigned)len) != len) error(PREFIX(gzerror)(out, &err));
-    }
-    fclose(in);
-    if (PREFIX(gzclose)(out) != Z_OK) error("failed gzclose");
-}
-
 #ifdef USE_MMAP /* MMAP version, Miguel Albrecht <malbrech@eso.org> */
-
-/* Try compressing the input file at once using mmap. Return Z_OK if
+/* ===========================================================================
+ * Try compressing the input file at once using mmap. Return Z_OK if
  * success, Z_ERRNO otherwise.
  */
-int gz_compress_mmap(FILE *in, gzFile out) {
+static int gz_compress_mmap(FILE *in, gzFile out) {
     int len;
     int err;
     int ifd = fileno(in);
@@ -141,9 +99,41 @@ int gz_compress_mmap(FILE *in, gzFile out) {
 #endif /* USE_MMAP */
 
 /* ===========================================================================
+ * Compress input to output then close both files.
+ */
+
+static void gz_compress(FILE *in, gzFile out) {
+    char buf[BUFLEN];
+    int len;
+    int err;
+
+#ifdef USE_MMAP
+    /* Try first compressing with mmap. If mmap fails (minigzip used in a
+     * pipe), use the normal fread loop.
+     */
+    if (gz_compress_mmap(in, out) == Z_OK) return;
+#endif
+    /* Clear out the contents of buf before reading from the file to avoid
+       MemorySanitizer: use-of-uninitialized-value warnings. */
+    memset(buf, 0, sizeof(buf));
+    for (;;) {
+        len = (int)fread(buf, 1, sizeof(buf), in);
+        if (ferror(in)) {
+            perror("fread");
+            exit(1);
+        }
+        if (len == 0) break;
+
+        if (PREFIX(gzwrite)(out, buf, (unsigned)len) != len) error(PREFIX(gzerror)(out, &err));
+    }
+    fclose(in);
+    if (PREFIX(gzclose)(out) != Z_OK) error("failed gzclose");
+}
+
+/* ===========================================================================
  * Uncompress input to output then close both files.
  */
-void gz_uncompress(gzFile in, FILE *out) {
+static void gz_uncompress(gzFile in, FILE *out) {
     char buf[BUFLENW];
     int len;
     int err;
@@ -167,7 +157,7 @@ void gz_uncompress(gzFile in, FILE *out) {
  * Compress the given file: create a corresponding .gz file and remove the
  * original.
  */
-void file_compress(char *file, char *mode) {
+static void file_compress(char *file, char *mode) {
     char outfile[MAX_NAME_LEN];
     FILE *in;
     gzFile out;
@@ -194,11 +184,10 @@ void file_compress(char *file, char *mode) {
     unlink(file);
 }
 
-
 /* ===========================================================================
  * Uncompress the given file and remove the original.
  */
-void file_uncompress(char *file) {
+static void file_uncompress(char *file) {
     char buf[MAX_NAME_LEN];
     char *infile, *outfile;
     FILE *out;
