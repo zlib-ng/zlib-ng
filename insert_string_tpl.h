@@ -4,7 +4,7 @@
 /* insert_string.h -- Private insert_string functions shared with more than
  *                    one insert string implementation
  *
- * Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
+ * Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler
  *
  * Copyright (C) 2013 Intel Corporation. All rights reserved.
  * Authors:
