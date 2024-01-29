@@ -1,6 +1,6 @@
 /* match_tpl.h -- find longest match template for compare256 variants
  *
- * Copyright (C) 1995-2013 Jean-loup Gailly and Mark Adler
+ * Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  *
  * Portions copyright (C) 2014-2021 Konstantin Nosov
