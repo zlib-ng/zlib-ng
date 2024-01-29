@@ -523,3 +523,21 @@ void Z_INTERNAL gz_error(gz_state *state, int err, const char *msg) {
     }
     (void)snprintf(state->msg, strlen(state->path) + strlen(msg) + 3, "%s%s%s", state->path, ": ", msg);
 }
+
+/* portably return maximum value for an int (when limits.h presumed not
+   available) -- we need to do this to cover cases where 2's complement not
+   used, since C standard permits 1's complement and sign-bit representations,
+   otherwise we could just use ((unsigned)-1) >> 1 */
+unsigned Z_INTERNAL gz_intmax(void) {
+#ifdef INT_MAX
+    return INT_MAX;
+#else
+    unsigned p = 1, q;
+    do {
+        q = p;
+        p <<= 1;
+        p++;
+    } while (p > q);
+    return q >> 1;
+#endif
+}
