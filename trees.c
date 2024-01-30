@@ -738,7 +738,7 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
 
             /* Check for no overlay of pending_buf on needed symbols */
 #ifdef LIT_MEM
-            Assert(s->pending < (s->lit_bufsize << 1) + sx, "pending_buf overflow");
+            Assert(s->pending < 2 * (s->lit_bufsize + sx), "pending_buf overflow");
 #else
             Assert(s->pending < s->lit_bufsize + sx, "pending_buf overflow");
 #endif
