@@ -264,9 +264,11 @@ struct internal_state {
      */
 
 #ifdef LIT_MEM
+#   define LIT_BUFS 5
     uint16_t *d_buf;              /* buffer for distances */
     unsigned char *l_buf;         /* buffer for literals/lengths */
 #else
+#   define LIT_BUFS 4
     unsigned char *sym_buf;       /* buffer for distances and literals/lengths */
 #endif
 
