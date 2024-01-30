@@ -22,6 +22,10 @@
 #  define GZIP
 #endif
 
+/* define LIT_MEM to slightly increase the speed of deflate (order 1% to 2%) at
+   the cost of a larger memory footprint */
+/* #define LIT_MEM */
+
 /* ===========================================================================
  * Internal compression state.
  */
@@ -259,8 +263,14 @@ struct internal_state {
      *   - I can't count above 4
      */
 
+#ifdef LIT_MEM
+    uint16_t *d_buf;              /* buffer for distances */
+    unsigned char *l_buf;         /* buffer for literals/lengths */
+#else
     unsigned char *sym_buf;       /* buffer for distances and literals/lengths */
-    unsigned int sym_next;        /* running index in sym_buf */
+#endif
+
+    unsigned int sym_next;        /* running index in symbol buffer */
     unsigned int sym_end;         /* symbol table full when sym_next reaches this */
 
     unsigned long opt_len;        /* bit length of current block with optimal trees */

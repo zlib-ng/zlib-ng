@@ -718,21 +718,30 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
     /* dtree: distance tree */
     unsigned dist;      /* distance of matched string */
     int lc;             /* match length or unmatched char (if dist == 0) */
-    unsigned sx = 0;    /* running index in sym_buf */
+    unsigned sx = 0;    /* running index in symbol buffers */
 
     if (s->sym_next != 0) {
         do {
+#ifdef LIT_MEM
+            dist = s->d_buf[sx];
+            lc = s->l_buf[sx++];
+#else
             dist = s->sym_buf[sx++] & 0xff;
             dist += (unsigned)(s->sym_buf[sx++] & 0xff) << 8;
             lc = s->sym_buf[sx++];
+#endif
             if (dist == 0) {
                 zng_emit_lit(s, ltree, lc);
             } else {
                 zng_emit_dist(s, ltree, dtree, lc, dist);
             } /* literal or match pair ? */
 
-            /* Check that the overlay between pending_buf and sym_buf is ok: */
+            /* Check for no overlay of pending_buf on needed symbols */
+#ifdef LIT_MEM
+            Assert(s->pending < (s->lit_bufsize << 1) + sx, "pending_buf overflow");
+#else
             Assert(s->pending < s->lit_bufsize + sx, "pending_buf overflow");
+#endif
         } while (sx < s->sym_next);
     }
 
