@@ -537,7 +537,7 @@ endif()
 # Enable reduced memory configuration
 #
 if(WITH_REDUCED_MEM)
-    add_definitions(-DHASH_SIZE=32768u -DGZBUFSIZE=8192)
+    add_definitions(-DHASH_SIZE=32768u -DGZBUFSIZE=8192 -DNO_LIT_MEM)
     message(STATUS "Configured for reduced memory environment")
 endif()
 
