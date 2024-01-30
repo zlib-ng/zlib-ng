@@ -858,7 +858,7 @@ fi
 # enable reduced memory configuration
 if test $reducedmem -eq 1; then
   echo "Configuring for reduced memory environment." | tee -a configure.log
-  CFLAGS="${CFLAGS} -DHASH_SIZE=32768u -DGZBUFSIZE=8192"
+  CFLAGS="${CFLAGS} -DHASH_SIZE=32768u -DGZBUFSIZE=8192 -DNO_LIT_MEM"
 fi
 
 # if code coverage testing was requested, use older gcc if defined, e.g. "gcc-4.2" on Mac OS X
