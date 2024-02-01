@@ -1081,6 +1081,21 @@ else()
     set(ZLIB_INSTALL_LIBRARIES zlib)
 endif()
 
+# INFO: Mimics official zlib CMake target
+# Generates ZLIB.cmake in case ZLIB_COMPAT=ON and always exports the CMake target ZLIB::ZLIB
+# In case ZLIB_COMPAT=OFF, the CMake target and file follows zlib-ng naming convention
+if (ZLIB_COMPAT)
+    if (TARGET zlib)
+        set_target_properties(zlib PROPERTIES EXPORT_NAME ZLIB)
+    else()
+        set_target_properties(zlibstatic PROPERTIES EXPORT_NAME ZLIB)
+    endif()
+endif()
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${ARCHDIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/arch/generic)
+
 foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
     if(NOT ZLIB_COMPAT)
         target_compile_definitions(${ZLIB_INSTALL_LIBRARY} PUBLIC ZLIBNG_NATIVE_API)
@@ -1197,6 +1212,7 @@ endif()
 
 if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL)
     install(TARGETS ${ZLIB_INSTALL_LIBRARIES}
+        EXPORT ${EXPORT_NAME}
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
         ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
         LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
@@ -1211,19 +1227,6 @@ if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
 endif()
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(FILES ${ZLIB_PC} DESTINATION "${PKGCONFIG_INSTALL_DIR}")
-    # INFO: Mimics official zlib CMake target
-    # Generates ZLIB.cmake in case ZLIB_COMPAT=ON and always exports the CMake target ZLIB::ZLIB
-    # In case ZLIB_COMPAT=OFF, the CMake target and file follows zlib-ng naming convention
-    if (ZLIB_COMPAT)
-        if (TARGET zlib)
-            set_target_properties(zlib PROPERTIES EXPORT_NAME ZLIB)
-        else()
-            set_target_properties(zlibstatic PROPERTIES EXPORT_NAME ZLIB)
-        endif()
-    endif()
-    install(TARGETS ${ZLIB_INSTALL_LIBRARIES}
-        EXPORT ${EXPORT_NAME}
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}")
     install(EXPORT ${EXPORT_NAME}
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}"
         NAMESPACE ${EXPORT_NAME}::)
