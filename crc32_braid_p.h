@@ -61,6 +61,4 @@
 /* CRC polynomial. */
 #define POLY 0xedb88320         /* p(x) reflected, with x^32 implied */
 
-extern uint32_t PREFIX(crc32_braid)(uint32_t crc, const uint8_t *buf, size_t len);
-
 #endif /* CRC32_BRAID_P_H_ */

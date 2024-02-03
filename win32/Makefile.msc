@@ -199,7 +199,7 @@ adler32_sse42.obj: $(SRCDIR)/arch/x86/adler32_sse42.c $(SRCDIR)/zbuild.h $(SRCDI
                    $(SRCDIR)/arch/x86/adler32_ssse3_p.h
 adler32_ssse3.obj: $(SRCDIR)/arch/x86/adler32_ssse3.c $(SRCDIR)/zbuild.h $(SRCDIR)/cpu_features.h $(SRCDIR)/adler32_p.h \
                    $(SRCDIR)/arch/x86/adler32_ssse3_p.h
-adler32_fold_c.obj: $(SRCDIR)/arch/generic/adler32_fold_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/arch/generic/adler32_fold_c.h
+adler32_fold_c.obj: $(SRCDIR)/arch/generic/adler32_fold_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h
 functable.obj: $(SRCDIR)/functable.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/zendian.h $(SRCDIR)/arch/x86/x86_features.h
 gzlib.obj: $(SRCDIR)/gzlib.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h
 gzread.obj: $(SRCDIR)/gzread.c $(SRCDIR)/zbuild.h $(SRCDIR)/gzguts.h $(SRCDIR)/zutil_p.h
@@ -217,9 +217,9 @@ cpu_features.obj: $(SRCDIR)/cpu_features.c $(SRCDIR)/zbuild.h $(SRCDIR)/zutil.h
 crc32.obj: $(SRCDIR)/crc32.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/crc32_braid_tbl.h
 crc32_braid_c.obj: $(SRCDIR)/arch/generic/crc32_braid_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h
 crc32_braid_comb.obj: $(SRCDIR)/crc32_braid_comb.c $(SRCDIR)/zutil.h $(SRCDIR)/crc32_braid_p.h $(SRCDIR)/crc32_braid_tbl.h $(SRCDIR)/crc32_braid_comb_p.h
-crc32_fold_c.obj: $(SRCDIR)/arch/generic/crc32_fold_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h $(SRCDIR)/arch/generic/crc32_fold_c.h
+crc32_fold_c.obj: $(SRCDIR)/arch/generic/crc32_fold_c.c $(SRCDIR)/zbuild.h $(SRCDIR)/functable.h
 crc32_pclmulqdq.obj: $(SRCDIR)/arch/x86/crc32_pclmulqdq.c $(SRCDIR)/arch/x86/crc32_pclmulqdq_tpl.h $(SRCDIR)/arch/x86/crc32_fold_pclmulqdq_tpl.h \
-				 $(SRCDIR)/arch/generic/crc32_fold_c.h $(SRCDIR)/zbuild.h
+				 $(SRCDIR)/zbuild.h
 deflate.obj: $(SRCDIR)/deflate.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_fast.obj: $(SRCDIR)/deflate_fast.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h
 deflate_huff.obj: $(SRCDIR)/deflate_huff.c $(SRCDIR)/zbuild.h $(SRCDIR)/deflate.h $(SRCDIR)/deflate_p.h $(SRCDIR)/functable.h

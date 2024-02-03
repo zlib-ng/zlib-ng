@@ -560,7 +560,7 @@ endif()
 set(GENERIC_ARCHDIR "arch/generic")
 
 set(ZLIB_ARCH_SRCS)
-set(ZLIB_ARCH_HDRS ${GENERIC_ARCHDIR}/generic_features.h)
+set(ZLIB_ARCH_HDRS ${GENERIC_ARCHDIR}/generic_functions.h)
 
 if(BASEARCH_ARM_FOUND)
     set(ARCHDIR "arch/arm")
@@ -647,7 +647,7 @@ if(WITH_OPTIM)
                 endif()
             endif()
         endif()
-        list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm_features.h)
+        list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm_features.h ${ARCHDIR}/arm_functions.h)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/arm_features.c)
         if(WITH_ACLE)
             check_acle_compiler_flag()
@@ -719,7 +719,7 @@ if(WITH_OPTIM)
             add_definitions(-DPOWER_FEATURES)
         endif()
         if(HAVE_VMX OR HAVE_POWER8_INTRIN OR HAVE_POWER9_INTRIN)
-            list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/power_features.h)
+            list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/power_features.h ${ARCHDIR}/power_functions.h)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/power_features.c)
         endif()
         # VMX specific options and files
@@ -769,7 +769,7 @@ if(WITH_OPTIM)
             if(HAVE_RVV_INTRIN)
                 add_definitions(-DRISCV_FEATURES)
                 add_definitions(-DRISCV_RVV)
-                list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/riscv_features.h)
+                list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/riscv_features.h ${ARCHDIR}/riscv_functions.h)
                 list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/riscv_features.c)
                 # FIXME: we will not set compile flags for riscv_features.c when
                 # the kernels update hwcap or hwprobe for riscv
@@ -784,7 +784,7 @@ if(WITH_OPTIM)
         check_s390_intrinsics()
         if(HAVE_S390_INTRIN)
             add_definitions(-DS390_FEATURES)
-            list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/s390_features.h)
+            list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/s390_features.h ${ARCHDIR}/s390_functions.h)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/s390_features.c)
         endif()
         if(WITH_DFLTCC_DEFLATE OR WITH_DFLTCC_INFLATE)
@@ -811,7 +811,7 @@ if(WITH_OPTIM)
         endif()
     elseif(BASEARCH_X86_FOUND)
         add_definitions(-DX86_FEATURES)
-        list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/x86_features.h)
+        list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/x86_features.h ${ARCHDIR}/x86_functions.h)
         list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/x86_features.c)
         if(MSVC)
             list(APPEND ZLIB_ARCH_HDRS fallback_builtins.h)
@@ -1002,11 +1002,10 @@ set(ZLIB_PUBLIC_HDRS
     ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.h
 )
 set(ZLIB_PRIVATE_HDRS
-    arch/generic/adler32_fold_c.h
-    arch/generic/crc32_fold_c.h
     adler32_p.h
     chunkset_tpl.h
     compare256_rle.h
+    cpu_functions.h
     cpu_features.h
     crc32_braid_p.h
     crc32_braid_comb_p.h

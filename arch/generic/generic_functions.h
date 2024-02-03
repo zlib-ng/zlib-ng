@@ -1,20 +1,29 @@
-/* generic_features.h -- generic C implementations for arch-specific features
+/* generic_functions.h -- generic C implementations for arch-specific functions.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifndef GENERIC_FEATURES_H_
-#define GENERIC_FEATURES_H_
+#ifndef GENERIC_FUNCTIONS_H_
+#define GENERIC_FUNCTIONS_H_
+
+#include "zendian.h"
+
+Z_INTERNAL uint32_t crc32_fold_reset_c(crc32_fold *crc);
+Z_INTERNAL void     crc32_fold_copy_c(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len);
+Z_INTERNAL void     crc32_fold_c(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc);
+Z_INTERNAL uint32_t crc32_fold_final_c(crc32_fold *crc);
+
+Z_INTERNAL uint32_t adler32_fold_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+
 
 typedef uint32_t (*adler32_func)(uint32_t adler, const uint8_t *buf, size_t len);
 typedef uint32_t (*compare256_func)(const uint8_t *src0, const uint8_t *src1);
 typedef uint32_t (*crc32_func)(uint32_t crc32, const uint8_t *buf, size_t len);
 
 uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len);
+
 uint32_t chunksize_c(void);
 uint8_t* chunkmemset_safe_c(uint8_t *out, unsigned dist, unsigned len, unsigned left);
-#ifdef INFLATE_H_
 void     inflate_fast_c(PREFIX3(stream) *strm, uint32_t start);
-#endif
 
 uint32_t PREFIX(crc32_braid)(uint32_t crc, const uint8_t *buf, size_t len);
 
@@ -29,8 +38,7 @@ uint32_t compare256_unaligned_16(const uint8_t *src0, const uint8_t *src1);
 #  endif
 #endif
 
-#ifdef DEFLATE_H_
-typedef void    (*slide_hash_func)(deflate_state *s);
+typedef void (*slide_hash_func)(deflate_state *s);
 
 void     insert_string_c(deflate_state *const s, const uint32_t str, uint32_t count);
 Pos      quick_insert_string_c(deflate_state *const s, const uint32_t str);
@@ -56,7 +64,5 @@ uint32_t longest_match_slow_c(deflate_state *const s, Pos cur_match);
         uint32_t longest_match_slow_unaligned_64(deflate_state *const s, Pos cur_match);
 #    endif
 #  endif
-
-#endif
 
 #endif

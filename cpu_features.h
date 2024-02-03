@@ -18,8 +18,6 @@
 #  include "arch/riscv/riscv_features.h"
 #endif
 
-#include "arch/generic/generic_features.h"
-
 struct cpu_features {
 #if defined(X86_FEATURES)
     struct x86_cpu_features x86;
