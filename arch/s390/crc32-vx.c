@@ -13,7 +13,7 @@
  */
 
 #include "zbuild.h"
-#include "crc32_braid_p.h"
+#include "cpu_functions.h"
 
 #include <vecintrin.h>
 

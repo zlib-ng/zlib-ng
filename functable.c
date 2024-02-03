@@ -7,6 +7,7 @@
 #include "zendian.h"
 #include "functable.h"
 #include "cpu_features.h"
+#include "cpu_functions.h"
 
 #if defined(_MSC_VER)
 #  include <intrin.h>

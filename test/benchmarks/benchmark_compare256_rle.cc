@@ -11,7 +11,6 @@ extern "C" {
 #  include "zbuild.h"
 #  include "zutil_p.h"
 #  include "compare256_rle.h"
-#  include "cpu_features.h"
 }
 
 #define MAX_COMPARE_SIZE (256)
