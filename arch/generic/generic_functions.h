@@ -65,4 +65,26 @@ uint32_t longest_match_slow_c(deflate_state *const s, Pos cur_match);
 #    endif
 #  endif
 
+
+// Select generic implementation for longest_match, longest_match_slow, longest_match_slow functions.
+#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
+#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
+#    define longest_match_generic longest_match_unaligned_64
+#    define longest_match_slow_generic longest_match_slow_unaligned_64
+#    define compare256_generic compare256_unaligned_64
+#  elif defined(HAVE_BUILTIN_CTZ)
+#    define longest_match_generic longest_match_unaligned_32
+#    define longest_match_slow_generic longest_match_slow_unaligned_32
+#    define compare256_generic compare256_unaligned_32
+#  else
+#    define longest_match_generic longest_match_unaligned_16
+#    define longest_match_slow_generic longest_match_slow_unaligned_16
+#    define compare256_generic compare256_unaligned_16
+#  endif
+#else
+#  define longest_match_generic longest_match_c
+#  define longest_match_slow_generic longest_match_slow_c
+#  define compare256_generic compare256_c
+#endif
+
 #endif

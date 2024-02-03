@@ -4,7 +4,6 @@
  */
 
 #include "zbuild.h"
-#include "zendian.h"
 #include "functable.h"
 #include "cpu_features.h"
 #include "cpu_functions.h"
@@ -63,27 +62,9 @@ static void init_functable(void) {
     ft.quick_insert_string = &quick_insert_string_c;
     ft.slide_hash = &slide_hash_c;
     ft.update_hash = &update_hash_c;
-
-#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
-#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-    ft.longest_match = &longest_match_unaligned_64;
-    ft.longest_match_slow = &longest_match_slow_unaligned_64;
-    ft.compare256 = &compare256_unaligned_64;
-#  elif defined(HAVE_BUILTIN_CTZ)
-    ft.longest_match = &longest_match_unaligned_32;
-    ft.longest_match_slow = &longest_match_slow_unaligned_32;
-    ft.compare256 = &compare256_unaligned_32;
-#  else
-    ft.longest_match = &longest_match_unaligned_16;
-    ft.longest_match_slow = &longest_match_slow_unaligned_16;
-    ft.compare256 = &compare256_unaligned_16;
-#  endif
-#else
-    ft.longest_match = &longest_match_c;
-    ft.longest_match_slow = &longest_match_slow_c;
-    ft.compare256 = &compare256_c;
-#endif
-
+    ft.longest_match = &longest_match_generic;
+    ft.longest_match_slow = &longest_match_slow_generic;
+    ft.compare256 = &compare256_generic;
 
     // Select arch-optimized functions
 
