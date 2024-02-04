@@ -135,11 +135,12 @@ typedef gz_state *gz_statep;
 
 /* shared functions */
 void Z_INTERNAL gz_error(gz_state *, int, const char *);
-
+#ifdef ZLIB_COMPAT
+unsigned Z_INTERNAL gz_intmax(void);
+#endif
 /* GT_OFF(x), where x is an unsigned value, is true if x > maximum z_off64_t
    value -- needed when comparing unsigned to z_off64_t, which is signed
    (possible z_off64_t types off_t, off64_t, and long are all signed) */
-unsigned Z_INTERNAL gz_intmax(void);
 #define GT_OFF(x) (sizeof(int) == sizeof(z_off64_t) && (x) > INT_MAX)
 
 #endif /* GZGUTS_H_ */
