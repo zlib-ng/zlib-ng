@@ -41,6 +41,13 @@ jobs:
             cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
             codecov: ubuntu_gcc_native_inst
 
+          - name: Ubuntu GCC Native Instructions (AVX)
+            os: ubuntu-latest
+            compiler: gcc
+            cxx-compiler: g++
+            cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON -DNATIVE_ARCH_OVERRIDE="-mavx -mpclmul"
+            codecov: ubuntu_gcc_native_inst
+
           - name: Ubuntu GCC Symbol Prefix
             os: ubuntu-latest
             compiler: gcc
