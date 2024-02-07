@@ -75,7 +75,6 @@ static int  build_bl_tree    (deflate_state *s);
 static void send_all_trees   (deflate_state *s, int lcodes, int dcodes, int blcodes);
 static void compress_block   (deflate_state *s, const ct_data *ltree, const ct_data *dtree);
 static int  detect_data_type (deflate_state *s);
-static void bi_flush         (deflate_state *s);
 
 /* ===========================================================================
  * Initialize the tree data structures for a new zlib stream.
@@ -610,20 +609,13 @@ void Z_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored
 }
 
 /* ===========================================================================
- * Flush the bits in the bit buffer to pending output (leaves at most 7 bits)
- */
-void Z_INTERNAL zng_tr_flush_bits(deflate_state *s) {
-    bi_flush(s);
-}
-
-/* ===========================================================================
  * Send one empty static block to give enough lookahead for inflate.
  * This takes 10 bits, of which 7 may remain in the bit buffer.
  */
 void Z_INTERNAL zng_tr_align(deflate_state *s) {
     zng_tr_emit_tree(s, STATIC_TREES, 0);
     zng_tr_emit_end_block(s, static_ltree, 0);
-    bi_flush(s);
+    zng_tr_flush_bits(s);
 }
 
 /* ===========================================================================
@@ -790,7 +782,7 @@ static int detect_data_type(deflate_state *s) {
 /* ===========================================================================
  * Flush the bit buffer, keeping at most 7 bits in it.
  */
-static void bi_flush(deflate_state *s) {
+void Z_INTERNAL zng_tr_flush_bits(deflate_state *s) {
     if (s->bi_valid >= 48) {
         put_uint32(s, (uint32_t)s->bi_buf);
         put_short(s, (uint16_t)(s->bi_buf >> 32));
