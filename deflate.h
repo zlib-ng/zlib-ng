@@ -117,7 +117,7 @@ typedef uint32_t (* update_hash_cb)        (deflate_state *const s, uint32_t h, 
 typedef void     (* insert_string_cb)      (deflate_state *const s, uint32_t str, uint32_t count);
 typedef Pos      (* quick_insert_string_cb)(deflate_state *const s, uint32_t str);
 
-struct internal_state {
+struct ALIGNED_(8) internal_state {
     PREFIX3(stream)      *strm;            /* pointer back to this zlib stream */
     unsigned char        *pending_buf;     /* output still pending */
     unsigned char        *pending_out;     /* next pending byte to output to the stream */
@@ -297,7 +297,7 @@ struct internal_state {
 
     /* Reserved for future use and alignment purposes */
     int32_t reserved[11];
-} ALIGNED_(8);
+};
 
 typedef enum {
     need_more,      /* block not completed, need more input or more output */
