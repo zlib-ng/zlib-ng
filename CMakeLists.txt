@@ -174,6 +174,12 @@ if(CMAKE_C_COMPILER_ID MATCHES "^Intel")
         set(WARNFLAGS_MAINTAINER /W5)
         set(WARNFLAGS_DISABLE)
     endif()
+    check_c_compiler_flag(-diag-disable=10441 HAVE_DIAG_10441)
+    if(HAVE_DIAG_10441)
+        list(APPEND WARNFLAGS_DISABLE "-diag-disable=10441")
+        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -diag-disable=10441")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -diag-disable=10441")
+    endif()
 elseif(MSVC)
     # Minimum supported MSVC version is 1800 = Visual Studio 12.0/2013
     # See also https://cmake.org/cmake/help/latest/variable/MSVC_VERSION.html
