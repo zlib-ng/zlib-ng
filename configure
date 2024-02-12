@@ -1254,8 +1254,10 @@ check_xsave_intrinsics() {
    cat > $test.c << EOF
 #ifdef _MSC_VER
 #  include <intrin.h>
+#elif __GNUC__ == 8 && __GNUC_MINOR__ > 1
+#  include <xsaveintrin.h>
 #else
-#  include <x86gprintrin.h>
+#  include <immintrin.h>
 #endif
 unsigned int f(unsigned int a) { return (int) _xgetbv(a); }
 int main(void) { return 0; }
@@ -1580,7 +1582,10 @@ case "${ARCH}" in
 
             check_xsave_intrinsics
 
-            if test ${HAVE_XSAVE_INTRIN} -eq 0; then
+            if test ${HAVE_XSAVE_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_HAVE_XSAVE_INTRIN"
+                SFLAGS="${SFLAGS} -DX86_HAVE_XSAVE_INTRIN"
+            else
                 xsaveflag=""
             fi
         fi
