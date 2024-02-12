@@ -15,6 +15,13 @@
 #else
 // Newer versions of GCC and clang come with cpuid.h
 #  include <cpuid.h>
+#  ifdef X86_HAVE_XSAVE_INTRIN
+#    if __GNUC__ == 8
+#      include <xsaveintrin.h>
+#    else
+#      include <immintrin.h>
+#    endif
+#  endif
 #endif
 
 #include <string.h>
@@ -50,7 +57,7 @@ static inline void cpuidex(int info, int subinfo, unsigned* eax, unsigned* ebx, 
 }
 
 static inline uint64_t xgetbv(unsigned int xcr) {
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(X86_HAVE_XSAVE_INTRIN)
     return _xgetbv(xcr);
 #else
     uint32_t eax, edx;

@@ -556,15 +556,17 @@ macro(check_vgfma_intrinsics)
 endmacro()
 
 macro(check_xsave_intrinsics)
-    if(NOT NATIVEFLAG AND NOT MSVC)
+    if(NOT NATIVEFLAG AND NOT MSVC AND NOT CMAKE_C_COMPILER_ID MATCHES "Intel")
         set(XSAVEFLAG "-mxsave")
     endif()
     set(CMAKE_REQUIRED_FLAGS "${XSAVEFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#ifdef _MSC_VER
         #  include <intrin.h>
+        #elif __GNUC__ == 8 && __GNUC_MINOR__ > 1
+        #  include <xsaveintrin.h>
         #else
-        #  include <x86gprintrin.h>
+        #  include <immintrin.h>
         #endif
         unsigned int f(unsigned int a) { return (int) _xgetbv(a); }
         int main(void) { return 0; }"
