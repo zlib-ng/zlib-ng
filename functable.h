@@ -7,8 +7,8 @@
 #define FUNCTABLE_H_
 
 #include "deflate.h"
-#include "crc32_fold_c.h"
-#include "adler32_fold_c.h"
+#include "arch/generic/crc32_fold_c.h"
+#include "arch/generic/adler32_fold_c.h"
 #include "inftrees.h"
 #include "inflate.h"
 
