@@ -5,7 +5,7 @@
 #ifdef ARM_NEON
 #include "neon_intrins.h"
 #include "zbuild.h"
-#include "chunk_permute_table.h"
+#include "arch/generic/chunk_permute_table.h"
 
 typedef uint8x16_t chunk_t;
 
