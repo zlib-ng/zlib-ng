@@ -150,7 +150,7 @@ jobs:
     - name: Display all coverage artifacts
       run: |
         ls -R *.xml
-        echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ','`" >> $GITHUB_ENV
+        echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g`" >> $GITHUB_ENV
 
     - name: Upload reports
       uses: codecov/codecov-action@v3
