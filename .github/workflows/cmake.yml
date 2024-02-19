@@ -666,7 +666,7 @@ jobs:
       shell: bash
       run: |
         python3 -u -m pip install --user gcovr==5.0
-        python3 -m gcovr -j 3 --verbose \
+        python3 -m gcovr ${{ matrix.build-dir || '' }} -j 3 --verbose \
           --exclude-unreachable-branches \
           --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
           --root ${{ matrix.build-src-dir || '.' }} \
@@ -710,7 +710,7 @@ jobs:
     - name: Display all coverage artifacts
       run: |
         ls -R *.xml
-        echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ','`" >> $GITHUB_ENV
+        echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g`" >> $GITHUB_ENV
 
     - name: Upload reports
       uses: codecov/codecov-action@v4
