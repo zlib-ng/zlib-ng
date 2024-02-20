@@ -445,7 +445,6 @@ jobs:
             os: ubuntu-latest
             cmake-args: -GNinja -DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain-riscv.cmake -DTOOLCHAIN_PATH=${PWD}/prebuilt-riscv-toolchain-qemu/riscv-clang -DQEMU_PATH=${PWD}/prebuilt-riscv-toolchain-qemu/riscv-qemu/bin/qemu-riscv64
             packages: build-essential cmake ninja-build
-            codecov: ubuntu_clang_toolchain_riscv
 
           - name: Ubuntu Emscripten WASM32
             os: ubuntu-latest
