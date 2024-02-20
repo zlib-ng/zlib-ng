@@ -171,8 +171,8 @@ jobs:
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcc' || 's390x-linux-gnu-gcc' }}
             configure-args: --warn --static --with-dfltcc-deflate --with-dfltcc-inflate
-            chost: ${{ github.repository != 'zlib-ng/zlib-ng' &&  's390x-linux-gnu' || '' }}
-            packages: ${{ github.repository != 'zlib-ng/zlib-ng' && 'qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross' || '' }}
+            chost: ${{ github.repository != 'zlib-ng/zlib-ng' && 's390x-linux-gnu' || '' }}
+            packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             cflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
             ldflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
 
@@ -180,8 +180,8 @@ jobs:
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcc' || 's390x-linux-gnu-gcc' }}
             configure-args: --warn --zlib-compat --static --with-dfltcc-deflate --with-dfltcc-inflate
-            chost: ${{ github.repository != 'zlib-ng/zlib-ng' &&  's390x-linux-gnu' || '' }}
-            packages: ${{ github.repository != 'zlib-ng/zlib-ng' && 'qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross' || '' }}
+            chost: ${{ github.repository != 'zlib-ng/zlib-ng' && 's390x-linux-gnu' || '' }}
+            packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             cflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
             ldflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
 
@@ -216,7 +216,7 @@ jobs:
         show-progress: 'false'
 
     - name: Add ubuntu mirrors
-      if: runner.os == 'Linux' && matrix.packages
+      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
       # Github Actions caching proxy is at times unreliable
       run: |
         echo -e 'http://azure.archive.ubuntu.com/ubuntu\tpriority:1\n' | sudo tee /etc/apt/mirrors.txt
@@ -224,7 +224,7 @@ jobs:
         sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
     - name: Install packages (Ubuntu)
-      if: runner.os == 'Linux' && matrix.packages
+      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
       run: |
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.packages }}
