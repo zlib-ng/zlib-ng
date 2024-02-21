@@ -22,10 +22,6 @@ void inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
 
 #ifdef ARM_ACLE
 uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, size_t len);
-
-void insert_string_acle(deflate_state *const s, const uint32_t str, uint32_t count);
-Pos quick_insert_string_acle(deflate_state *const s, const uint32_t str);
-uint32_t update_hash_acle(uint32_t h, uint32_t val);
 #endif
 
 #ifdef ARM_SIMD

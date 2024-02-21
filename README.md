@@ -21,7 +21,6 @@ Features
 * Support for CPU intrinsics when available
   * Adler32 implementation using SSSE3, AVX2, AVX512, AVX512-VNNI, Neon, VMX & VSX
   * CRC32-B implementation using PCLMULQDQ, VPCLMULQDQ, ACLE, & IBM Z
-  * Hash table implementation using CRC32-C intrinsics on x86 and ARM
   * Slide hash implementations using SSE2, AVX2, ARMv6, Neon, VMX & VSX
   * Compare256 implementations using SSE2, AVX2, Neon, POWER9 & RVV
   * Inflate chunk copying using SSE2, SSSE3, AVX, Neon & VSX

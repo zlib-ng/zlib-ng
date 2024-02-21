@@ -41,7 +41,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
          * dictionary, and set hash_head to the head of the hash chain:
          */
         if (s->lookahead >= WANT_MIN_MATCH) {
-            hash_head = functable.quick_insert_string(s, s->strstart);
+            hash_head = quick_insert_string(s, s->strstart);
             dist = (int64_t)s->strstart - hash_head;
 
             /* Find the longest match, discarding those <= prev_length.
@@ -71,11 +71,11 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
                 match_len--; /* string at strstart already in table */
                 s->strstart++;
 
-                functable.insert_string(s, s->strstart, match_len);
+                insert_string(s, s->strstart, match_len);
                 s->strstart += match_len;
             } else {
                 s->strstart += match_len;
-                functable.quick_insert_string(s, s->strstart + 2 - STD_MIN_MATCH);
+                quick_insert_string(s, s->strstart + 2 - STD_MIN_MATCH);
 
                 /* If lookahead < STD_MIN_MATCH, ins_h is garbage, but it does not
                  * matter since it will be recomputed at next deflate call.

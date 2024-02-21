@@ -40,10 +40,7 @@ uint32_t compare256_unaligned_16(const uint8_t *src0, const uint8_t *src1);
 
 typedef void (*slide_hash_func)(deflate_state *s);
 
-void     insert_string_c(deflate_state *const s, const uint32_t str, uint32_t count);
-Pos      quick_insert_string_c(deflate_state *const s, const uint32_t str);
 void     slide_hash_c(deflate_state *s);
-uint32_t update_hash_c(deflate_state *const s, uint32_t h, uint32_t val);
 
 uint32_t longest_match_c(deflate_state *const s, Pos cur_match);
 #  if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN

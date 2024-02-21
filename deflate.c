@@ -120,10 +120,6 @@ static void lm_set_level         (deflate_state *s, int level);
 static void lm_init              (deflate_state *s);
 Z_INTERNAL unsigned read_buf  (PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
-extern uint32_t update_hash_roll        (uint32_t h, uint32_t val);
-extern void     insert_string_roll      (deflate_state *const s, uint32_t str, uint32_t count);
-extern Pos      quick_insert_string_roll(deflate_state *const s, uint32_t str);
-
 /* ===========================================================================
  * Local data
  */
@@ -1144,9 +1140,9 @@ static void lm_set_level(deflate_state *s, int level) {
         s->insert_string = &insert_string_roll;
         s->quick_insert_string = &quick_insert_string_roll;
     } else {
-        s->update_hash = functable.update_hash;
-        s->insert_string = functable.insert_string;
-        s->quick_insert_string = functable.quick_insert_string;
+        s->update_hash = update_hash;
+        s->insert_string = insert_string;
+        s->quick_insert_string = quick_insert_string;
     }
 
     s->level = level;

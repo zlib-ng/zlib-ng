@@ -653,7 +653,7 @@ if(WITH_OPTIM)
             check_acle_compiler_flag()
             if(HAVE_ACLE_FLAG)
                 add_definitions(-DARM_ACLE)
-                set(ACLE_SRCS ${ARCHDIR}/crc32_acle.c ${ARCHDIR}/insert_string_acle.c)
+                set(ACLE_SRCS ${ARCHDIR}/crc32_acle.c)
                 set_property(SOURCE ${ACLE_SRCS} PROPERTY COMPILE_FLAGS "${ACLEFLAG} ${NOLTOFLAG}")
                 list(APPEND ZLIB_ARCH_SRCS ${ACLE_SRCS})
                 add_feature_info(ACLE_CRC 1 "Support ACLE optimized CRC hash generation, using \"${ACLEFLAG}\"")
@@ -857,8 +857,8 @@ if(WITH_OPTIM)
             check_sse42_intrinsics()
             if(HAVE_SSE42_INTRIN AND WITH_SSSE3)
                 add_definitions(-DX86_SSE42)
-                set(SSE42_SRCS ${ARCHDIR}/adler32_sse42.c ${ARCHDIR}/insert_string_sse42.c)
-                add_feature_info(SSE42_CRC 1 "Support SSE4.2 optimized CRC hash generation, using \"${SSE42FLAG}\"")
+                set(SSE42_SRCS ${ARCHDIR}/adler32_sse42.c)
+                add_feature_info(SSE42_CRC 1 "Support SSE4.2 optimized adler32 hash generation, using \"${SSE42FLAG}\"")
                 list(APPEND ZLIB_ARCH_SRCS ${SSE42_SRCS})
                 set_property(SOURCE ${SSE42_SRCS} PROPERTY COMPILE_FLAGS "${SSE42FLAG} ${NOLTOFLAG}")
             else()
@@ -1034,7 +1034,6 @@ set(ZLIB_SRCS
     arch/generic/compare256_c.c
     arch/generic/crc32_braid_c.c
     arch/generic/crc32_fold_c.c
-    arch/generic/insert_string_c.c
     arch/generic/slide_hash_c.c
     adler32.c
     compress.c
@@ -1053,6 +1052,7 @@ set(ZLIB_SRCS
     infback.c
     inflate.c
     inftrees.c
+    insert_string.c
     insert_string_roll.c
     trees.c
     uncompr.c
