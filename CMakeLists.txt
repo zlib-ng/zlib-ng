@@ -1005,7 +1005,7 @@ set(ZLIB_PRIVATE_HDRS
     adler32_p.h
     chunkset_tpl.h
     compare256_rle.h
-    cpu_functions.h
+    arch_functions.h
     cpu_features.h
     crc32_braid_p.h
     crc32_braid_comb_p.h

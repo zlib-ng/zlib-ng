@@ -6,7 +6,7 @@
 #include "zbuild.h"
 #include "functable.h"
 #include "cpu_features.h"
-#include "cpu_functions.h"
+#include "arch_functions.h"
 
 #if defined(_MSC_VER)
 #  include <intrin.h>

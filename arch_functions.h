@@ -1,4 +1,4 @@
-/* cpu_functions.h -- CPU-specific function prototypes.
+/* arch_functions.h -- Arch-specific function prototypes.
  * Copyright (C) 2017 Hans Kristian Rosbach
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
