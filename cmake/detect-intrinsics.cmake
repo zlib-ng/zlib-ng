@@ -196,6 +196,46 @@ macro(check_neon_compiler_flag)
         #endif
         int main() { return 0; }"
         NEON_AVAILABLE FAIL_REGEX "not supported")
+    # Check whether compiler native flag is enough for NEON support
+    # Some GCC versions don't enable FPU (vector unit) when using -march=native
+    if(NEON_AVAILABLE AND NATIVEFLAG AND (NOT "${ARCH}" MATCHES "aarch64"))
+        check_c_source_compiles(
+            "#include <arm_neon.h>
+            uint8x16_t f(uint8x16_t x, uint8x16_t y) {
+                return vaddq_u8(x, y);
+            }
+            int main(int argc, char* argv[]) {
+                uint8x16_t a = vdupq_n_u8(argc);
+                uint8x16_t b = vdupq_n_u8(argc);
+                uint8x16_t result = f(a, b);
+                return result[0];
+            }"
+            ARM_NEON_SUPPORT_NATIVE
+        )
+        if(NOT ARM_NEON_SUPPORT_NATIVE)
+            set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG} -mfpu=neon ${ZNOLTOFLAG}")
+            check_c_source_compiles(
+                "#include <arm_neon.h>
+                uint8x16_t f(uint8x16_t x, uint8x16_t y) {
+                    return vaddq_u8(x, y);
+                }
+                int main(int argc, char* argv[]) {
+                    uint8x16_t a = vdupq_n_u8(argc);
+                    uint8x16_t b = vdupq_n_u8(argc);
+                    uint8x16_t result = f(a, b);
+                    return result[0];
+                }"
+                ARM_NEON_SUPPORT_NATIVE_MFPU
+            )
+            if(ARM_NEON_SUPPORT_NATIVE_MFPU)
+                set(NEONFLAG "-mfpu=neon")
+            else()
+                # Remove local NEON_AVAILABLE variable and overwrite the cache
+                unset(NEON_AVAILABLE)
+                set(NEON_AVAILABLE "" CACHE INTERNAL "NEON support available" FORCE)
+            endif()
+        endif()
+    endif()
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
