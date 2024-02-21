@@ -10,7 +10,7 @@
 
 #define HASH_SLIDE           16
 
-#define HASH_CALC(s, h, val) h = ((val * 2654435761U) >> HASH_SLIDE);
+#define HASH_CALC(h, val)    h = ((val * 2654435761U) >> HASH_SLIDE);
 #define HASH_CALC_VAR        h
 #define HASH_CALC_VAR_INIT   uint32_t h = 0
 

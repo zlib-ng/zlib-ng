@@ -10,7 +10,7 @@
 
 #define HASH_SLIDE           5
 
-#define HASH_CALC(s, h, val) h = ((h << HASH_SLIDE) ^ ((uint8_t)val))
+#define HASH_CALC(h, val)    h = ((h << HASH_SLIDE) ^ ((uint8_t)val))
 #define HASH_CALC_VAR        s->ins_h
 #define HASH_CALC_VAR_INIT
 #define HASH_CALC_READ       val = strstart[0]
