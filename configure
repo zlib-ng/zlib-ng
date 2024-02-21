@@ -1503,8 +1503,8 @@ case "${ARCH}" in
             if test ${HAVE_SSE42_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE42"
                 SFLAGS="${SFLAGS} -DX86_SSE42"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_sse42.o insert_string_sse42.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_sse42.lo insert_string_sse42.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_sse42.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_sse42.lo"
             fi
 
             check_pclmulqdq_intrinsics
@@ -1695,8 +1695,8 @@ EOF
                     CFLAGS="${CFLAGS} -DARM_ACLE"
                     SFLAGS="${SFLAGS} -DARM_ACLE"
 
-                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o insert_string_acle.o"
-                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo insert_string_acle.lo"
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo"
                 fi
             fi
 

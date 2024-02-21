@@ -22,12 +22,9 @@ struct functable_s {
     uint32_t (* crc32_fold_final)   (struct crc32_fold_s *crc);
     uint32_t (* crc32_fold_reset)   (struct crc32_fold_s *crc);
     void     (* inflate_fast)       (PREFIX3(stream) *strm, uint32_t start);
-    void     (* insert_string)      (deflate_state *const s, uint32_t str, uint32_t count);
     uint32_t (* longest_match)      (deflate_state *const s, Pos cur_match);
     uint32_t (* longest_match_slow) (deflate_state *const s, Pos cur_match);
-    Pos      (* quick_insert_string)(deflate_state *const s, uint32_t str);
     void     (* slide_hash)         (deflate_state *s);
-    uint32_t (* update_hash)        (uint32_t h, uint32_t val);
 };
 
 Z_INTERNAL extern struct functable_s functable;

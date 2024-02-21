@@ -86,7 +86,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         }
 
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
-            hash_head = functable.quick_insert_string(s, s->strstart);
+            hash_head = quick_insert_string(s, s->strstart);
             dist = (int64_t)s->strstart - hash_head;
 
             if (dist <= MAX_DIST(s) && dist > 0) {

@@ -117,6 +117,14 @@ typedef uint32_t (* update_hash_cb)        (uint32_t h, uint32_t val);
 typedef void     (* insert_string_cb)      (deflate_state *const s, uint32_t str, uint32_t count);
 typedef Pos      (* quick_insert_string_cb)(deflate_state *const s, uint32_t str);
 
+uint32_t update_hash             (uint32_t h, uint32_t val);
+void     insert_string           (deflate_state *const s, uint32_t str, uint32_t count);
+Pos      quick_insert_string     (deflate_state *const s, uint32_t str);
+
+uint32_t update_hash_roll        (uint32_t h, uint32_t val);
+void     insert_string_roll      (deflate_state *const s, uint32_t str, uint32_t count);
+Pos      quick_insert_string_roll(deflate_state *const s, uint32_t str);
+
 struct ALIGNED_(16) internal_state {
     PREFIX3(stream)      *strm;            /* pointer back to this zlib stream */
     unsigned char        *pending_buf;     /* output still pending */

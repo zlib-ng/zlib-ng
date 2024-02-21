@@ -14,8 +14,8 @@
 #define HASH_CALC_VAR        h
 #define HASH_CALC_VAR_INIT   uint32_t h = 0
 
-#define UPDATE_HASH          update_hash_c
-#define INSERT_STRING        insert_string_c
-#define QUICK_INSERT_STRING  quick_insert_string_c
+#define UPDATE_HASH          update_hash
+#define INSERT_STRING        insert_string
+#define QUICK_INSERT_STRING  quick_insert_string
 
 #include "insert_string_tpl.h"
