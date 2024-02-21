@@ -10,7 +10,7 @@
 
 #include "zbuild.h"
 #include "adler32_p.h"
-#include "cpu_functions.h"
+#include "arch_functions.h"
 #include <immintrin.h>
 #include "x86_intrins.h"
 #include "adler32_avx512_p.h"

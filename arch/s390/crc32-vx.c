@@ -13,7 +13,7 @@
  */
 
 #include "zbuild.h"
-#include "cpu_functions.h"
+#include "arch_functions.h"
 
 #include <vecintrin.h>
 
