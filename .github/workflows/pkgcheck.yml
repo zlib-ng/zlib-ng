@@ -175,7 +175,7 @@ jobs:
         LDFLAGS: ${{ matrix.ldflags }}
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: failure()
       with:
         name: ${{ matrix.name }}
