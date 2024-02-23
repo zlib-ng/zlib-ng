@@ -79,8 +79,11 @@ Darwin)
   # What CPU are we running on, exactly?
   sysctl -n machdep.cpu.brand_string
   sysctl -n machdep.cpu.features
-  sysctl -n machdep.cpu.leaf7_features
-  sysctl -n machdep.cpu.extfeatures
+  if test "$(uname -m)" = "x86_64"
+  then
+    sysctl -n machdep.cpu.leaf7_features
+    sysctl -n machdep.cpu.extfeatures
+  fi
   ;;
 esac
 
