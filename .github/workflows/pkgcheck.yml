@@ -75,12 +75,12 @@ jobs:
             packages: qemu gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
 
           - name: macOS Clang
-            os: macOS-11
+            os: macOS-latest
             compiler: clang
             cxx-compiler: clang++
 
           - name: macOS Clang Symbol Prefix
-            os: macOS-11
+            os: macOS-latest
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_
@@ -116,13 +116,10 @@ jobs:
         HOMEBREW_NO_INSTALL_CLEANUP: 1
 
     - name: Select Xcode version (macOS)
-      # Use a version of Xcode that supports ZERO_AR_DATE until CMake supports
-      # AppleClang linking with libtool using -D argument
-      # https://gitlab.kitware.com/cmake/cmake/-/issues/19852
       if: runner.os == 'macOS'
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '11.7.0'
+        xcode-version: '15.2'
 
     - name: Compare builds
       run: sh test/pkgcheck.sh
