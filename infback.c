@@ -55,7 +55,7 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateBackInit)(PREFIX3(stream) *strm, int32_t wi
     state->wnext = 0;
     state->whave = 0;
     state->sane = 1;
-    state->chunksize = functable.chunksize();
+    state->chunksize = FUNCTABLE_CALL(chunksize)();
     return Z_OK;
 }
 
@@ -357,7 +357,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                 RESTORE();
                 if (state->whave < state->wsize)
                     state->whave = state->wsize - left;
-                functable.inflate_fast(strm, state->wsize);
+                FUNCTABLE_CALL(inflate_fast)(strm, state->wsize);
                 LOAD();
                 break;
             }

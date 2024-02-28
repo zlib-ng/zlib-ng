@@ -94,7 +94,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
                 const uint8_t *match_start = s->window + hash_head;
 
                 if (zng_memcmp_2(str_start, match_start) == 0) {
-                    match_len = functable.compare256(str_start+2, match_start+2) + 2;
+                    match_len = FUNCTABLE_CALL(compare256)(str_start+2, match_start+2) + 2;
 
                     if (match_len >= WANT_MIN_MATCH) {
                         if (UNLIKELY(match_len > s->lookahead))
