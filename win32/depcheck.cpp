@@ -297,13 +297,13 @@ int main(int argc, char* argv[]) {
                    && makefile.find(".msc") != std::string::npos) found = 1;
                //
                if (tmp.find("generic_functions.h") != std::string::npos
-                   && std::find(includes.begin(), includes.end(), "cpu_functions.h") != includes.end()) found = 1;
+                   && std::find(includes.begin(), includes.end(), "arch_functions.h") != includes.end()) found = 1;
                if (tmp.find("arm_functions.h") != std::string::npos
-                   && std::find(includes.begin(), includes.end(), "cpu_functions.h") != includes.end()
+                   && std::find(includes.begin(), includes.end(), "arch_functions.h") != includes.end()
                    && (makefile.find(".arm") != std::string::npos
                       || makefile.find(".a64") != std::string::npos)) found = 1;
                if (tmp.find("x86_functions.h") != std::string::npos
-                   && std::find(includes.begin(), includes.end(), "cpu_functions.h") != includes.end()
+                   && std::find(includes.begin(), includes.end(), "arch_functions.h") != includes.end()
                    && makefile.find(".msc") != std::string::npos) found = 1;
                if (found == 0) {
                  printf("%s: Dependency %s not needed for %s\n", makefile.c_str(), files[i].c_str(), objfile.c_str());
