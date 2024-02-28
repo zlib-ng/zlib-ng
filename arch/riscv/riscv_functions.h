@@ -22,4 +22,28 @@ void slide_hash_rvv(deflate_state *s);
 void inflate_fast_rvv(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
+#ifdef DISABLE_RUNTIME_CPU_DETECTION
+// RISCV - RVV
+#  if defined(RISCV_RVV) && defined(__riscv_v) && defined(__linux__)
+#    undef native_adler32
+#    define native_adler32 adler32_rvv
+#    undef native_adler32_fold_copy
+#    define native_adler32_fold_copy adler32_fold_copy_rvv
+#    undef native_chunkmemset_safe
+#    define native_chunkmemset_safe chunkmemset_safe_rvv
+#    undef native_chunksize
+#    define native_chunksize chunksize_rvv
+#    undef native_compare256
+#    define native_compare256 compare256_rvv
+#    undef native_inflate_fast
+#    define native_inflate_fast inflate_fast_rvv
+#    undef native_longest_match
+#    define native_longest_match longest_match_rvv
+#    undef native_longest_match_slow
+#    define native_longest_match_slow longest_match_slow_rvv
+#    undef native_slide_hash
+#    define native_slide_hash slide_hash_rvv
+#  endif
+#endif
+
 #endif /* RISCV_FUNCTIONS_H_ */

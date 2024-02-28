@@ -84,4 +84,23 @@ uint32_t longest_match_slow_c(deflate_state *const s, Pos cur_match);
 #  define compare256_generic compare256_c
 #endif
 
+
+#ifdef DISABLE_RUNTIME_CPU_DETECTION
+// Generic code
+#  define native_adler32 adler32_c
+#  define native_adler32_fold_copy adler32_fold_copy_c
+#  define native_chunkmemset_safe chunkmemset_safe_c
+#  define native_chunksize chunksize_c
+#  define native_crc32 PREFIX(crc32_braid)
+#  define native_crc32_fold crc32_fold_c
+#  define native_crc32_fold_copy crc32_fold_copy_c
+#  define native_crc32_fold_final crc32_fold_final_c
+#  define native_crc32_fold_reset crc32_fold_reset_c
+#  define native_inflate_fast inflate_fast_c
+#  define native_slide_hash slide_hash_c
+#  define native_longest_match longest_match_generic
+#  define native_longest_match_slow longest_match_slow_generic
+#  define native_compare256 compare256_generic
+#endif
+
 #endif
