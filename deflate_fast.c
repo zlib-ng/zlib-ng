@@ -52,7 +52,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
                  * of window index 0 (in particular we have to avoid a match
                  * of the string with itself at the start of the input file).
                  */
-                match_len = functable.longest_match(s, hash_head);
+                match_len = FUNCTABLE_CALL(longest_match)(s, hash_head);
                 /* longest_match() sets match_start */
             }
         }

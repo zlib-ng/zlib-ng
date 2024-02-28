@@ -21,13 +21,13 @@ const uint32_t * Z_EXPORT PREFIX(get_crc_table)(void) {
 unsigned long Z_EXPORT PREFIX(crc32_z)(unsigned long crc, const unsigned char *buf, size_t len) {
     if (buf == NULL) return 0;
 
-    return (unsigned long)functable.crc32((uint32_t)crc, buf, len);
+    return (unsigned long)FUNCTABLE_CALL(crc32)((uint32_t)crc, buf, len);
 }
 #else
 uint32_t Z_EXPORT PREFIX(crc32_z)(uint32_t crc, const unsigned char *buf, size_t len) {
     if (buf == NULL) return 0;
 
-    return functable.crc32(crc, buf, len);
+    return FUNCTABLE_CALL(crc32)(crc, buf, len);
 }
 #endif
 

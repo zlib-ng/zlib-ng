@@ -9,22 +9,22 @@
 
 #ifdef ZLIB_COMPAT
 unsigned long Z_EXPORT PREFIX(adler32_z)(unsigned long adler, const unsigned char *buf, size_t len) {
-    return (unsigned long)functable.adler32((uint32_t)adler, buf, len);
+    return (unsigned long)FUNCTABLE_CALL(adler32)((uint32_t)adler, buf, len);
 }
 #else
 uint32_t Z_EXPORT PREFIX(adler32_z)(uint32_t adler, const unsigned char *buf, size_t len) {
-    return functable.adler32(adler, buf, len);
+    return FUNCTABLE_CALL(adler32)(adler, buf, len);
 }
 #endif
 
 /* ========================================================================= */
 #ifdef ZLIB_COMPAT
 unsigned long Z_EXPORT PREFIX(adler32)(unsigned long adler, const unsigned char *buf, unsigned int len) {
-    return (unsigned long)functable.adler32((uint32_t)adler, buf, len);
+    return (unsigned long)FUNCTABLE_CALL(adler32)((uint32_t)adler, buf, len);
 }
 #else
 uint32_t Z_EXPORT PREFIX(adler32)(uint32_t adler, const unsigned char *buf, uint32_t len) {
-    return functable.adler32(adler, buf, len);
+    return FUNCTABLE_CALL(adler32)(adler, buf, len);
 }
 #endif
 

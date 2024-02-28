@@ -29,4 +29,11 @@ struct functable_s {
 
 Z_INTERNAL extern struct functable_s functable;
 
+
+/* Explicitly indicate functions are conditionally dispatched.
+ */
+#define FUNCTABLE_CALL(name) functable.name
+#define FUNCTABLE_FPTR(name) functable.name
+
+
 #endif
