@@ -2,6 +2,7 @@
  * Copyright (C) 2017 Hans Kristian Rosbach
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
+#ifndef DISABLE_RUNTIME_CPU_DETECTION
 
 #include "zbuild.h"
 #include "functable.h"
@@ -122,6 +123,7 @@ static void init_functable(void) {
 #  endif
     }
 #endif
+    // X86 - AVX512 (F,DQ,BW,Vl)
 #ifdef X86_AVX512
     if (cf.x86.has_avx512) {
         ft.adler32 = &adler32_avx512;
@@ -348,3 +350,5 @@ Z_INTERNAL struct functable_s functable = {
     longest_match_slow_stub,
     slide_hash_stub,
 };
+
+#endif
