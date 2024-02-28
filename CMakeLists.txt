@@ -299,6 +299,28 @@ endif()
 if(NOT WITH_RUNTIME_CPU_DETECTION)
     if(MSVC AND BASEARCH_X86_FOUND)
         message(STATUS "WARNING: Microsoft Visual Studio does not support compile time detection of CPU features for \"/arch\" before \"AVX\"")
+        # Workaround for MSVC. By default MSVC does not define the __SSE*__ macros.
+        # Fix it if AVX is enabled.
+        set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG}")
+        check_c_source_compiles(
+            "#ifndef __AVX__
+            #  error \"AVX is not enabled.\"
+            #endif
+            int main(void) { return 0; }"
+            MSVC_IS_ENABLED_AVX
+        )
+        set(CMAKE_REQUIRED_FLAGS)
+        if(MSVC_IS_ENABLED_AVX)
+            add_definitions(
+                -D__SSE__=1
+                -D__SSE2__=1
+                -D__SSE3__=1
+                -D__SSSE3__=1
+                -D__SSE4_1__=1
+                -D__SSE4_2__=1
+                -D__PCLMUL__=1
+            )
+        endif()
     endif()
     add_definitions(-DDISABLE_RUNTIME_CPU_DETECTION)
 endif()
