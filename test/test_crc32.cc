@@ -197,7 +197,7 @@ public:
     }
 };
 
-/* Specifically to test where we had dodgy alignment in the acle CRC32
+/* Specifically to test where we had dodgy alignment in the ARMv8 CRC32
  * function. All others are either byte level access or use intrinsics
  * that work with unaligned access */
 class crc32_align : public ::testing::TestWithParam<int> {
@@ -231,7 +231,7 @@ TEST_CRC32(native, native_crc32, 1)
 
 #else
 
-#ifdef ARM_ACLE
+#ifdef ARM_CRC32
 static const int align_offsets[] = {
     1, 2, 3, 4, 5, 6, 7
 };
@@ -246,8 +246,8 @@ static const int align_offsets[] = {
     }
 
 INSTANTIATE_TEST_SUITE_P(crc32_alignment, crc32_align, testing::ValuesIn(align_offsets));
-TEST_CRC32(acle, crc32_acle, test_cpu_features.arm.has_crc32)
-TEST_CRC32_ALIGN(acle_align, crc32_acle, test_cpu_features.arm.has_crc32)
+TEST_CRC32(armv8, crc32_armv8, test_cpu_features.arm.has_crc32)
+TEST_CRC32_ALIGN(armv8_align, crc32_armv8, test_cpu_features.arm.has_crc32)
 #endif
 #ifdef POWER8_VSX_CRC32
 TEST_CRC32(power8, crc32_power8, test_cpu_features.power.has_arch_2_07)

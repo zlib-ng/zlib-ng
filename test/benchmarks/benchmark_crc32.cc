@@ -62,8 +62,8 @@ BENCHMARK_CRC32(braid, PREFIX(crc32_braid), 1);
 BENCHMARK_CRC32(native, native_crc32, 1);
 #else
 
-#ifdef ARM_ACLE
-BENCHMARK_CRC32(acle, crc32_acle, test_cpu_features.arm.has_crc32);
+#ifdef ARM_CRC32
+BENCHMARK_CRC32(armv8, crc32_armv8, test_cpu_features.arm.has_crc32);
 #endif
 #ifdef POWER8_VSX_CRC32
 BENCHMARK_CRC32(power8, crc32_power8, test_cpu_features.power.has_arch_2_07);

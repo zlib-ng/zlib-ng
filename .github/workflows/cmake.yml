@@ -170,13 +170,13 @@ jobs:
             gcov-exec: arm-linux-gnueabihf-gcov
             codecov: ubuntu_gcc_armhf
 
-          - name: Ubuntu GCC ARM HF No ACLE ASAN
+          - name: Ubuntu GCC ARM HF No ARMv8 ASAN
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_ACLE=OFF -DWITH_SANITIZER=Address
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_ARMV8=OFF -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
             packages: qemu-user crossbuild-essential-armhf
             gcov-exec: arm-linux-gnueabihf-gcov
-            codecov: ubuntu_gcc_armhf_no_acle
+            codecov: ubuntu_gcc_armhf_no_armv8
 
           - name: Ubuntu GCC ARM HF No NEON ASAN
             os: ubuntu-latest
@@ -201,12 +201,12 @@ jobs:
             gcov-exec: aarch64-linux-gnu-gcov
             codecov: ubuntu_gcc_aarch64
 
-          - name: Ubuntu GCC AARCH64 No ACLE UBSAN
+          - name: Ubuntu GCC AARCH64 No ARMv8 UBSAN
             os: ubuntu-22.04
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_ACLE=OFF -DWITH_SANITIZER=Undefined
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_ARMV8=OFF -DWITH_SANITIZER=Undefined
             packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             gcov-exec: aarch64-linux-gnu-gcov
-            codecov: ubuntu_gcc_aarch64_no_acle
+            codecov: ubuntu_gcc_aarch64_no_armv8
 
           - name: Ubuntu GCC AARCH64 No NEON UBSAN
             os: ubuntu-22.04

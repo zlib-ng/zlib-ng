@@ -8,7 +8,7 @@ SFLAGS=
 INCLUDES=
 SUFFIX=
 
-ACLEFLAG=
+ARMV8FLAG=
 NEONFLAG=
 ARMV6FLAG=
 NOLTOFLAG=
@@ -22,7 +22,7 @@ all: \
 	arm_features.o arm_features.lo \
 	chunkset_neon.o chunkset_neon.lo \
 	compare256_neon.o compare256_neon.lo \
-	crc32_acle.o crc32_acle.lo \
+	crc32_armv8.o crc32_armv8.lo \
 	slide_hash_neon.o slide_hash_neon.lo \
 	slide_hash_armv6.o slide_hash_armv6.lo \
 
@@ -50,11 +50,11 @@ compare256_neon.o:
 compare256_neon.lo:
 	$(CC) $(SFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_neon.c
 
-crc32_acle.o:
-	$(CC) $(CFLAGS) $(ACLEFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
+crc32_armv8.o:
+	$(CC) $(CFLAGS) $(ARMV8FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_armv8.c
 
-crc32_acle.lo:
-	$(CC) $(SFLAGS) $(ACLEFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_acle.c
+crc32_armv8.lo:
+	$(CC) $(SFLAGS) $(ARMV8FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_armv8.c
 
 slide_hash_neon.o:
 	$(CC) $(CFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_neon.c

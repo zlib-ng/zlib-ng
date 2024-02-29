@@ -52,7 +52,7 @@ static int arm_has_crc32() {
       && hascrc32 == 1;
 #elif defined(_WIN32)
     return IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE);
-#elif defined(ARM_NOCHECK_ACLE)
+#elif defined(ARM_NOCHECK_CRC32)
     return 1;
 #else
     return 0;

@@ -8,7 +8,7 @@
 #  include <arm_acle.h>
 #endif
 
-#ifdef ARM_ACLE
+#ifdef ARM_CRC32
 #if defined(__aarch64__)
 #  define Z_TARGET_CRC Z_TARGET("+crc")
 #else

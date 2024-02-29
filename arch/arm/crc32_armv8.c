@@ -1,15 +1,15 @@
-/* crc32_acle.c -- compute the CRC-32 of a data stream
+/* crc32_armv8.c -- compute the CRC-32 of a data stream
  * Copyright (C) 1995-2006, 2010, 2011, 2012 Mark Adler
  * Copyright (C) 2016 Yang Zhang
  * For conditions of distribution and use, see copyright notice in zlib.h
  *
 */
 
-#ifdef ARM_ACLE
+#if defined(ARM_CRC32)
 #include "acle_intrins.h"
 #include "zbuild.h"
 
-Z_INTERNAL Z_TARGET_CRC uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, size_t len) {
+Z_INTERNAL Z_TARGET_CRC uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, size_t len) {
     Z_REGISTER uint32_t c;
     Z_REGISTER uint16_t buf2;
     Z_REGISTER uint32_t buf4;

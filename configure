@@ -92,7 +92,7 @@ cover=0
 build32=0
 build64=0
 buildvpclmulqdq=1
-buildacle=1
+buildarmv8=1
 buildarmv6=1
 buildaltivec=1
 buildpower8=1
@@ -114,7 +114,7 @@ sse42flag="-msse4.2"
 pclmulflag="-mpclmul"
 vpclmulflag="-mvpclmulqdq -mavx512f"
 xsaveflag="-mxsave"
-acleflag=
+armv8flag=
 neonflag=
 armv6flag=
 noltoflag="-fno-lto"
@@ -166,7 +166,7 @@ case "$1" in
       echo '    [--without-gzfileops]       Compiles without the gzfile parts of the API enabled' | tee -a configure.log
       echo '    [--without-optimizations]   Compiles without support for optional instruction sets' | tee -a configure.log
       echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
-      echo '    [--without-acle]            Compiles without ARM C Language Extensions' | tee -a configure.log
+      echo '    [--without-armv8]           Compiles without ARMv8 CRC32 instruction set' | tee -a configure.log
       echo '    [--without-neon]            Compiles without ARM Neon SIMD instruction set' | tee -a configure.log
       echo '    [--without-armv6]           Compiles without ARMv6 SIMD instruction set' | tee -a configure.log
       echo '    [--without-altivec]         Compiles without PPC AltiVec support' | tee -a configure.log
@@ -198,7 +198,7 @@ case "$1" in
     -3* | --32) build32=1; shift ;;
     -6* | --64) build64=1; shift ;;
     --without-vpclmulqdq) buildvpclmulqdq=0; shift ;;
-    --without-acle) buildacle=0; shift ;;
+    --without-armv8) buildarmv8=0; shift ;;
     --without-neon) buildneon=0; shift ;;
     --without-armv6) buildarmv6=0; shift ;;
     --without-altivec) buildaltivec=0 ; shift ;;
@@ -1121,19 +1121,19 @@ EOF
     fi
 }
 
-check_acle_compiler_flag() {
+check_armv8_compiler_flag() {
     # Check whether -march=armv8-a+crc works correctly
     cat > $test.c << EOF
 int main() { return 0; }
 EOF
     if try $CC -c $CFLAGS -march=armv8-a+crc $test.c; then
         echo "Check whether -march=armv8-a+crc works ... Yes." | tee -a configure.log
-        acleflag="-march=armv8-a+crc"
+        armv8flag="-march=armv8-a+crc"
     else
         echo "Check whether -march=armv8-a+crc works ... No." | tee -a configure.log
         if try $CC -c $CFLAGS -march=armv8-a+crc+simd $test.c; then
             echo "Check whether -march=armv8-a+crc+simd works ... Yes." | tee -a configure.log
-            acleflag="-march=armv8-a+crc+simd"
+            armv8flag="-march=armv8-a+crc+simd"
         else
             echo "Check whether -march=armv8-a+crc+simd works ... No." | tee -a configure.log
         fi
@@ -1149,10 +1149,10 @@ int main(void) { return 0; }
 EOF
     if try ${CC} ${CFLAGS} ${acleflag} $test.c; then
         echo "Checking for ARMv8 CRC intrinsics ... Yes." | tee -a configure.log
-        ACLE_AVAILABLE=1
+        ARMV8_AVAILABLE=1
     else
         echo "Checking for ARMv8 CRC intrinsics ... No." | tee -a configure.log
-        ACLE_AVAILABLE=0
+        ARMV8_AVAILABLE=0
     fi
 }
 
@@ -1737,15 +1737,15 @@ EOF
                 fi
             fi
 
-            if test $buildacle -eq 1; then
-                check_acle_compiler_flag
+            if test $buildarmv8 -eq 1; then
+                check_armv8_compiler_flag
 
-                if test $ACLE_AVAILABLE -eq 1; then
-                    CFLAGS="${CFLAGS} -DARM_ACLE"
-                    SFLAGS="${SFLAGS} -DARM_ACLE"
+                if test $ARMV8_AVAILABLE -eq 1; then
+                    CFLAGS="${CFLAGS} -DARM_CRC32"
+                    SFLAGS="${SFLAGS} -DARM_CRC32"
 
-                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_acle.o"
-                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_acle.lo"
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_armv8.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_armv8.lo"
                 fi
             fi
 
@@ -1949,7 +1949,7 @@ echo sse42flag = $sse42flag >> configure.log
 echo pclmulflag = $pclmulflag >> configure.log
 echo vpclmulflag = $vpclmulflag >> configure.log
 echo xsaveflag = $xsaveflag >> configure.log
-echo acleflag = $acleflag >> configure.log
+echo armv8flag = $armv8flag >> configure.log
 echo neonflag = $neonflag >> configure.log
 echo armv6flag = $armv6flag >> configure.log
 echo ARCHDIR = ${ARCHDIR} >> configure.log
@@ -2090,7 +2090,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^PCLMULFLAG *=/s#=.*#=$pclmulflag#
 /^VPCLMULFLAG *=/s#=.*#=$vpclmulflag#
 /^XSAVEFLAG *=/s#=.*#=$xsaveflag#
-/^ACLEFLAG *=/s#=.*#=$acleflag#
+/^ARMV8FLAG *=/s#=.*#=$armv8flag#
 /^NEONFLAG *=/s#=.*#=$neonflag#
 /^ARMV6FLAG *=/s#=.*#=$armv6flag#
 /^NOLTOFLAG *=/s#=.*#=$noltoflag#

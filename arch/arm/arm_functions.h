@@ -19,8 +19,8 @@ void slide_hash_neon(deflate_state *s);
 void inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
-#ifdef ARM_ACLE
-uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, size_t len);
+#ifdef ARM_CRC32
+uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, size_t len);
 #endif
 
 #ifdef ARM_SIMD
@@ -55,10 +55,10 @@ void slide_hash_armv6(deflate_state *s);
 #      define native_longest_match_slow longest_match_slow_neon
 #    endif
 #  endif
-// ARM - ACLE
-#  if defined(ARM_ACLE) && (defined(__ARM_ACLE) || defined(__ARM_FEATURE_CRC32))
+// ARM - CRC32
+#  if (defined(ARM_CRC32) && defined(__ARM_FEATURE_CRC32))
 #    undef native_crc32
-#    define native_crc32 crc32_acle
+#    define native_crc32 crc32_armv8
 #  endif
 #endif
 

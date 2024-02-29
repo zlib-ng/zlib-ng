@@ -54,10 +54,10 @@ jobs:
             chost: arm-linux-gnueabihf
             packages: qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
-          - name: Ubuntu GCC ARM HF No ACLE
+          - name: Ubuntu GCC ARM HF No ARMv8
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
-            configure-args: --warn --without-acle
+            configure-args: --warn --without-armv8
             chost: arm-linux-gnueabihf
             packages: qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
@@ -82,10 +82,10 @@ jobs:
             chost: aarch64-linux-gnu
             packages: qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
-          - name: Ubuntu GCC AARCH64 No ACLE
+          - name: Ubuntu GCC AARCH64 No ARMv8
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
-            configure-args: --warn --without-acle
+            configure-args: --warn --without-armv8
             chost: aarch64-linux-gnu
             packages: qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
 

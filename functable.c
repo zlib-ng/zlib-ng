@@ -183,10 +183,10 @@ static void init_functable(void) {
 #  endif
     }
 #endif
-    // ARM - ACLE
-#ifdef ARM_ACLE
+    // ARM - CRC32
+#ifdef ARM_CRC32
     if (cf.arm.has_crc32) {
-        ft.crc32 = &crc32_acle;
+        ft.crc32 = &crc32_armv8;
     }
 #endif
 

@@ -1,22 +1,22 @@
 # detect-intrinsics.cmake -- Detect compiler intrinsics support
 # Licensed under the Zlib license, see LICENSE.md for details
 
-macro(check_acle_compiler_flag)
+macro(check_armv8_compiler_flag)
     if(NOT NATIVEFLAG)
         if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
             check_c_compiler_flag("-march=armv8-a+crc" HAVE_MARCH_ARMV8_CRC)
             if(HAVE_MARCH_ARMV8_CRC)
-                set(ACLEFLAG "-march=armv8-a+crc" CACHE INTERNAL "Compiler option to enable ACLE support")
+                set(ARMV8FLAG "-march=armv8-a+crc" CACHE INTERNAL "Compiler option to enable ARMv8 support")
             else()
                 check_c_compiler_flag("-march=armv8-a+crc+simd" HAVE_MARCH_ARMV8_CRC_SIMD)
                 if(HAVE_MARCH_ARMV8_CRC_SIMD)
-                    set(ACLEFLAG "-march=armv8-a+crc+simd" CACHE INTERNAL "Compiler option to enable ACLE support")
+                    set(ARMV8FLAG "-march=armv8-a+crc+simd" CACHE INTERNAL "Compiler option to enable ARMv8 support")
                 endif()
             endif()
         endif()
     endif()
     # Check whether compiler supports ARMv8 CRC intrinsics
-    set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+    set(CMAKE_REQUIRED_FLAGS "${ARMV8FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#if defined(_MSC_VER)
         #include <intrin.h>
@@ -27,7 +27,7 @@ macro(check_acle_compiler_flag)
             return __crc32w(a, b);
         }
         int main(void) { return 0; }"
-        HAVE_ACLE_FLAG
+        HAVE_ARMV8_FLAG
     )
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
