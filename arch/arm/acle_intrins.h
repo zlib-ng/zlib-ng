@@ -14,6 +14,56 @@
 #else
 #  define Z_TARGET_CRC
 #endif
+
+#if !defined(ARM_CRC32_INTRIN) && !defined(_MSC_VER)
+#ifdef __aarch64__
+static inline uint32_t __crc32b(uint32_t __a, uint8_t __b) {
+    uint32_t __c;
+    __asm__ __volatile__("crc32b %w0, %w1, %w2" : "=r" (__c) : "r"(__a), "r"(__b));
+    return __c;
+}
+
+static inline uint32_t __crc32h(uint32_t __a, uint16_t __b) {
+    uint32_t __c;
+    __asm__ __volatile__("crc32h %w0, %w1, %w2" : "=r" (__c) : "r"(__a), "r"(__b));
+    return __c;
+}
+
+static inline uint32_t __crc32w(uint32_t __a, uint32_t __b) {
+    uint32_t __c;
+    __asm__ __volatile__("crc32w %w0, %w1, %w2" : "=r" (__c) : "r"(__a), "r"(__b));
+    return __c;
+}
+
+static inline uint32_t __crc32d(uint32_t __a, uint64_t __b) {
+    uint32_t __c;
+    __asm__ __volatile__("crc32x %w0, %w1, %x2" : "=r" (__c) : "r"(__a), "r"(__b));
+    return __c;
+}
+#else
+static inline uint32_t __crc32b(uint32_t __a, uint8_t __b) {
+    uint32_t __c;
+    __asm__ __volatile__("crc32b %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
+    return __c;
+}
+
+static inline uint32_t __crc32h(uint32_t __a, uint16_t __b) {
+    uint32_t __c;
+    __asm__ __volatile__("crc32h %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
+    return __c;
+}
+
+static inline uint32_t __crc32w(uint32_t __a, uint32_t __b) {
+    uint32_t __c;
+    __asm__ __volatile__("crc32w %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
+    return __c;
+}
+
+static inline uint32_t __crc32d(uint32_t __a, uint64_t __b) {
+    return __crc32w (__crc32w (__a, __b & 0xffffffffULL), __b >> 32);
+}
+#endif
+#endif
 #endif
 
 #ifdef ARM_SIMD
