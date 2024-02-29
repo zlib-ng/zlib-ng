@@ -15,8 +15,22 @@ macro(check_armv8_compiler_flag)
             endif()
         endif()
     endif()
-    # Check whether compiler supports ARMv8 CRC intrinsics
+    # Check whether compiler supports ARMv8 inline asm
     set(CMAKE_REQUIRED_FLAGS "${ARMV8FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+    check_c_source_compiles(
+        "unsigned int f(unsigned int a, unsigned int b) {
+            unsigned int c;
+        #ifdef __aarch64__
+            __asm__ __volatile__ ( \"crc32w %w0, %w1, %w2\" : \"=r\" (c) : \"r\" (a), \"r\" (b));
+        #else
+            __asm__ __volatile__ ( \"crc32w %0, %1, %2\" : \"=r\" (c) : \"r\" (a), \"r\" (b));
+        #endif
+            return (int)c;
+        }
+        int main(void) { return f(1,2); }"
+        HAVE_ARMV8_INLINE_ASM
+    )
+    # Check whether compiler supports ARMv8 intrinsics
     check_c_source_compiles(
         "#if defined(_MSC_VER)
         #include <intrin.h>
@@ -27,7 +41,7 @@ macro(check_armv8_compiler_flag)
             return __crc32w(a, b);
         }
         int main(void) { return 0; }"
-        HAVE_ARMV8_FLAG
+        HAVE_ARMV8_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()

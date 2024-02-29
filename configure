@@ -1121,7 +1121,7 @@ EOF
     fi
 }
 
-check_armv8_compiler_flag() {
+check_armv8_intrinsics() {
     # Check whether -march=armv8-a+crc works correctly
     cat > $test.c << EOF
 int main() { return 0; }
@@ -1139,7 +1139,28 @@ EOF
         fi
     fi
 
-    # Check whether compiler supports ARMv8 CRC intrinsics
+    # Check whether compiler supports ARMv8 inline asm
+    cat > $test.c << EOF
+unsigned int f(unsigned int a, unsigned int b) {
+    unsigned int c;
+#ifdef __aarch64__
+    __asm__ __volatile__("crc32w %w0, %w1, %w2" : "=r" (c) : "r"(a), "r"(b));
+#else
+    __asm__ __volatile__("crc32w %0, %1, %2" : "=r" (c) : "r"(a), "r"(b));
+#endif
+    return c;
+}
+int main(void) { return 0; }
+EOF
+    if try ${CC} ${CFLAGS} ${armv8flag} $test.c; then
+        echo "Checking for ARMv8 inline assembly ... Yes." | tee -a configure.log
+        HAVE_ARMV8_INLINE_ASM=1
+    else
+        echo "Checking for ARMv8 inline assembly ... No." | tee -a configure.log
+        HAVE_ARMV8_INLINE_ASM=0
+    fi
+
+    # Check whether compiler supports ARMv8 intrinsics
     cat > $test.c << EOF
 #include <arm_acle.h>
 unsigned int f(unsigned int a, unsigned int b) {
@@ -1147,12 +1168,12 @@ unsigned int f(unsigned int a, unsigned int b) {
 }
 int main(void) { return 0; }
 EOF
-    if try ${CC} ${CFLAGS} ${acleflag} $test.c; then
-        echo "Checking for ARMv8 CRC intrinsics ... Yes." | tee -a configure.log
-        ARMV8_AVAILABLE=1
+    if try ${CC} ${CFLAGS} ${armv8flag} $test.c; then
+        echo "Checking for ARMv8 intrinsics ... Yes." | tee -a configure.log
+        HAVE_ARMV8_INTRIN=1
     else
-        echo "Checking for ARMv8 CRC intrinsics ... No." | tee -a configure.log
-        ARMV8_AVAILABLE=0
+        echo "Checking for ARMv8 intrinsics ... No." | tee -a configure.log
+        HAVE_ARMV8_INTRIN=0
     fi
 }
 
@@ -1738,11 +1759,16 @@ EOF
             fi
 
             if test $buildarmv8 -eq 1; then
-                check_armv8_compiler_flag
+                check_armv8_intrinsics
 
-                if test $ARMV8_AVAILABLE -eq 1; then
+                if test $HAVE_ARMV8_INTRIN -eq 1 || test $HAVE_ARMV8_INLINE_ASM -eq 1; then
                     CFLAGS="${CFLAGS} -DARM_CRC32"
                     SFLAGS="${SFLAGS} -DARM_CRC32"
+
+                    if test $HAVE_ARMV8_INTRIN -eq 1; then
+                        CFLAGS="${CFLAGS} -DARM_CRC32_INTRIN"
+                        SFLAGS="${SFLAGS} -DARM_CRC32_INTRIN"
+                    fi
 
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_armv8.o"
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_armv8.lo"
