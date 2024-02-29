@@ -1136,6 +1136,18 @@ EOF
             armv8flag="-march=armv8-a+crc+simd"
         else
             echo "Check whether -march=armv8-a+crc+simd works ... No." | tee -a configure.log
+            if try $CC -c $CFLAGS -Wa,-march=armv8-a+crc $test.c; then
+                echo "Check whether -Wa,-march=armv8-a+crc works ... Yes." | tee -a configure.log
+                armv8flag="-Wa,-march=armv8-a+crc"
+            else
+                echo "Check whether -Wa,-march=armv8-a+crc works ... No." | tee -a configure.log
+                if try $CC -c $CFLAGS -Wa,-march=armv8-a+crc+simd $test.c; then
+                    echo "Check whether -Wa,-march=armv8-a+crc+simd works ... Yes." | tee -a configure.log
+                    armv8flag="-Wa,-march=armv8-a+crc+simd"
+                else
+                    echo "Check whether -Wa,-march=armv8-a+crc+simd works ... No." | tee -a configure.log
+                fi
+            fi
         fi
     fi
 
@@ -1230,6 +1242,12 @@ EOF
         echo "Check whether -march=armv6 works ... Yes." | tee -a configure.log
     else
         echo "Check whether -march=armv6 works ... No." | tee -a configure.log
+        if try $CC -c $CFLAGS -Wa,-march=armv6 $test.c; then
+            armv6flag=-Wa,-march=armv6
+            echo "Check whether -Wa,-march=armv6 works ... Yes." | tee -a configure.log
+        else
+            echo "Check whether -Wa,-march=armv6 works ... No." | tee -a configure.log
+        fi
     fi
 
     # Check whether compiler supports ARMv6 inline asm
