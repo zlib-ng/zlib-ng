@@ -20,8 +20,8 @@ void slide_hash_neon(deflate_state *s);
 void inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
-#ifdef ARM_ACLE
-uint32_t crc32_acle(uint32_t crc, const uint8_t *buf, size_t len);
+#ifdef ARM_CRC32
+uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, size_t len);
 #endif
 
 #ifdef ARM_SIMD

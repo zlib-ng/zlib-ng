@@ -1,33 +1,33 @@
 # detect-intrinsics.cmake -- Detect compiler intrinsics support
 # Licensed under the Zlib license, see LICENSE.md for details
 
-macro(check_acle_compiler_flag)
+macro(check_armv8_compiler_flag)
     if(MSVC)
         # Both ARM and ARM64-targeting msvc support intrinsics, but
         # ARM msvc is missing some intrinsics introduced with ARMv8, e.g. crc32
         if(MSVC_C_ARCHITECTURE_ID STREQUAL "ARM64")
-            set(HAVE_ACLE_FLAG TRUE)
+            set(HAVE_ARMV8_FLAG TRUE)
         endif()
     else()
         if(NOT NATIVEFLAG)
             if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-                set(ACLEFLAG "-march=armv8-a+crc" CACHE INTERNAL "Compiler option to enable ACLE support")
+                set(ARMV8FLAG "-march=armv8-a+crc" CACHE INTERNAL "Compiler option to enable ARMv8 support")
             endif()
         endif()
-        # Check whether compiler supports ACLE flag
-        set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+        # Check whether compiler supports ARMv8 flag
+        set(CMAKE_REQUIRED_FLAGS "${ARMV8FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
         check_c_source_compiles(
             "int main() { return 0; }"
-            HAVE_ACLE_FLAG FAIL_REGEX "not supported")
-        if(NOT NATIVEFLAG AND NOT HAVE_ACLE_FLAG)
-            set(ACLEFLAG "-march=armv8-a+crc+simd" CACHE INTERNAL "Compiler option to enable ACLE support" FORCE)
-            # Check whether compiler supports ACLE flag
-            set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG}")
+            HAVE_ARMV8_FLAG FAIL_REGEX "not supported")
+        if(NOT NATIVEFLAG AND NOT HAVE_ARMV8_FLAG)
+            set(ARMV8FLAG "-march=armv8-a+crc+simd" CACHE INTERNAL "Compiler option to enable ARMv8 support" FORCE)
+            # Check whether compiler supports ARMv8 flag
+            set(CMAKE_REQUIRED_FLAGS "${ARMV8FLAG}")
             check_c_source_compiles(
                 "int main() { return 0; }"
-                HAVE_ACLE_FLAG2 FAIL_REGEX "not supported")
-            set(HAVE_ACLE_FLAG ${HAVE_ACLE_FLAG2} CACHE INTERNAL "Have compiler option to enable ACLE intrinsics" FORCE)
-            unset(HAVE_ACLE_FLAG2 CACHE) # Don't cache this internal variable
+                HAVE_ARMV8_FLAG2 FAIL_REGEX "not supported")
+            set(HAVE_ARMV8_FLAG ${HAVE_ARMV8_FLAG2} CACHE INTERNAL "Have compiler option to enable ARMv8 intrinsics" FORCE)
+            unset(HAVE_ARMV8_FLAG2 CACHE) # Don't cache this internal variable
         endif()
         set(CMAKE_REQUIRED_FLAGS)
     endif()
