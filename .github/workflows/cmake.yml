@@ -561,6 +561,12 @@ jobs:
             gcov-exec: gcov-10
             codecov: macos_gcc
 
+          - name: macOS Clang Native Instructions (ARM64)
+            os: macos-14
+            compiler: clang
+            cxx-compiler: clang++
+            cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
