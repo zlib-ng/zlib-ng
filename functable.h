@@ -17,6 +17,7 @@
  * Instead we use native_ macro indicating the best available variant of arch-specific
  * functions for the current platform.
  */
+#  define FUNCTABLE_INIT ((void)0)
 #  define FUNCTABLE_CALL(name) native_ ## name
 #  define FUNCTABLE_FPTR(name) &native_ ## name
 
@@ -45,6 +46,7 @@ Z_INTERNAL extern struct functable_s functable;
 
 /* Explicitly indicate functions are conditionally dispatched.
  */
+#  define FUNCTABLE_INIT functable.force_init()
 #  define FUNCTABLE_CALL(name) functable.name
 #  define FUNCTABLE_FPTR(name) functable.name
 
