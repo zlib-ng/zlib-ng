@@ -4,6 +4,7 @@
  */
 
 #include "zbuild.h"
+#include "zmemory.h"
 #include "fallback_builtins.h"
 
 typedef uint32_t (*compare256_rle_func)(const uint8_t* src0, const uint8_t* src1);
@@ -46,25 +47,21 @@ static inline uint32_t compare256_rle_c(const uint8_t *src0, const uint8_t *src1
 /* 16-bit unaligned integer comparison */
 static inline uint32_t compare256_rle_unaligned_16(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
-    uint16_t src0_cmp, src1_cmp;
+    uint16_t src0_cmp;
 
-    memcpy(&src0_cmp, src0, sizeof(src0_cmp));
+    src0_cmp = zng_memread_2(src0);
 
     do {
-        memcpy(&src1_cmp, src1, sizeof(src1_cmp));
-        if (src0_cmp != src1_cmp)
+        if (src0_cmp != zng_memread_2(src1))
             return len + (*src0 == *src1);
         src1 += 2, len += 2;
-        memcpy(&src1_cmp, src1, sizeof(src1_cmp));
-        if (src0_cmp != src1_cmp)
+        if (src0_cmp != zng_memread_2(src1))
             return len + (*src0 == *src1);
         src1 += 2, len += 2;
-        memcpy(&src1_cmp, src1, sizeof(src1_cmp));
-        if (src0_cmp != src1_cmp)
+        if (src0_cmp != zng_memread_2(src1))
             return len + (*src0 == *src1);
         src1 += 2, len += 2;
-        memcpy(&src1_cmp, src1, sizeof(src1_cmp));
-        if (src0_cmp != src1_cmp)
+        if (src0_cmp != zng_memread_2(src1))
             return len + (*src0 == *src1);
         src1 += 2, len += 2;
     } while (len < 256);
@@ -78,13 +75,13 @@ static inline uint32_t compare256_rle_unaligned_32(const uint8_t *src0, const ui
     uint32_t sv, len = 0;
     uint16_t src0_cmp;
 
-    memcpy(&src0_cmp, src0, sizeof(src0_cmp));
+    src0_cmp = zng_memread_2(src0);
     sv = ((uint32_t)src0_cmp << 16) | src0_cmp;
 
     do {
         uint32_t mv, diff;
 
-        memcpy(&mv, src1, sizeof(mv));
+        mv = zng_memread_4(src1);
 
         diff = sv ^ mv;
         if (diff) {
@@ -107,14 +104,14 @@ static inline uint32_t compare256_rle_unaligned_64(const uint8_t *src0, const ui
     uint16_t src0_cmp;
     uint64_t sv;
 
-    memcpy(&src0_cmp, src0, sizeof(src0_cmp));
+    src0_cmp = zng_memread_2(src0);
     src0_cmp32 = ((uint32_t)src0_cmp << 16) | src0_cmp;
     sv = ((uint64_t)src0_cmp32 << 32) | src0_cmp32;
 
     do {
         uint64_t mv, diff;
 
-        memcpy(&mv, src1, sizeof(mv));
+        mv = zng_memread_8(src1);
 
         diff = sv ^ mv;
         if (diff) {

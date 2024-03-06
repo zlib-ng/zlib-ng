@@ -5,6 +5,7 @@
 #ifdef ARM_NEON
 #include "neon_intrins.h"
 #include "zbuild.h"
+#include "zmemory.h"
 #include "arch/generic/chunk_permute_table.h"
 
 typedef uint8x16_t chunk_t;
@@ -33,21 +34,15 @@ static const lut_rem_pair perm_idx_lut[13] = {
 };
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
-    uint16_t tmp;
-    memcpy(&tmp, from, sizeof(tmp));
-    *chunk = vreinterpretq_u8_u16(vdupq_n_u16(tmp));
+    *chunk = vreinterpretq_u8_u16(vdupq_n_u16(zng_memread_2(from)));
 }
 
 static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
-    uint32_t tmp;
-    memcpy(&tmp, from, sizeof(tmp));
-    *chunk = vreinterpretq_u8_u32(vdupq_n_u32(tmp));
+    *chunk = vreinterpretq_u8_u32(vdupq_n_u32(zng_memread_4(from)));
 }
 
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
-    uint64_t tmp;
-    memcpy(&tmp, from, sizeof(tmp));
-    *chunk = vreinterpretq_u8_u64(vdupq_n_u64(tmp));
+    *chunk = vreinterpretq_u8_u64(vdupq_n_u64(zng_memread_8(from)));
 }
 
 #define CHUNKSIZE        chunksize_neon

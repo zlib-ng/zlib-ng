@@ -4,7 +4,7 @@
  */
 
 #include "zbuild.h"
-#include "zutil_p.h"
+#include "zmemory.h"
 #include "deflate.h"
 #include "fallback_builtins.h"
 
@@ -106,8 +106,8 @@ static inline uint32_t compare256_unaligned_32_static(const uint8_t *src0, const
     do {
         uint32_t sv, mv, diff;
 
-        memcpy(&sv, src0, sizeof(sv));
-        memcpy(&mv, src1, sizeof(mv));
+        sv = zng_memread_4(src0);
+        mv = zng_memread_4(src1);
 
         diff = sv ^ mv;
         if (diff) {
@@ -146,8 +146,8 @@ static inline uint32_t compare256_unaligned_64_static(const uint8_t *src0, const
     do {
         uint64_t sv, mv, diff;
 
-        memcpy(&sv, src0, sizeof(sv));
-        memcpy(&mv, src1, sizeof(mv));
+        sv = zng_memread_8(src0);
+        mv = zng_memread_8(src1);
 
         diff = sv ^ mv;
         if (diff) {

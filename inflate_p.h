@@ -6,6 +6,7 @@
 #define INFLATE_P_H
 
 #include <stdlib.h>
+#include "zmemory.h"
 
 /* Architecture-specific hooks. */
 #ifdef S390_DFLTCC_INFLATE
@@ -137,8 +138,7 @@
 
 /* Load 64 bits from IN and place the bytes at offset BITS in the result. */
 static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
-    uint64_t chunk;
-    memcpy(&chunk, in, sizeof(chunk));
+    uint64_t chunk = zng_memread_8(in);
 
 #if BYTE_ORDER == LITTLE_ENDIAN
     return chunk << bits;
@@ -179,7 +179,10 @@ static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, uint64_t len,
     len -= non_olap_size;
 
     /* So this doesn't give use a worst case scenario of function calls in a loop,
-     * we want to instead break this down into copy blocks of fixed lengths */
+     * we want to instead break this down into copy blocks of fixed lengths
+     *
+     * TODO: The memcpy calls aren't inlined on architectures with strict memory alignment
+     */
     while (len) {
         tocopy = MIN(non_olap_size, len);
         len -= tocopy;
