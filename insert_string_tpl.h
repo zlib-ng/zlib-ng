@@ -29,9 +29,15 @@
 #  define HASH_CALC_MASK HASH_MASK
 #endif
 #ifndef HASH_CALC_READ
-#  if BYTE_ORDER == LITTLE_ENDIAN
-#    define HASH_CALC_READ \
-        memcpy(&val, strstart, sizeof(val));
+#  ifdef UNALIGNED_OK
+#    if BYTE_ORDER == LITTLE_ENDIAN
+#      define HASH_CALC_READ \
+          memcpy(&val, strstart, sizeof(val));
+#    else
+#      define HASH_CALC_READ \
+          memcpy(&val, strstart, sizeof(val)); \
+          val = ZSWAP32(val);
+#    endif
 #  else
 #    define HASH_CALC_READ \
         val  = ((uint32_t)(strstart[0])); \
