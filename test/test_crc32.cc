@@ -208,8 +208,8 @@ INSTANTIATE_TEST_SUITE_P(crc32, crc32_variant, testing::ValuesIn(tests));
 
 TEST_CRC32(braid, PREFIX(crc32_braid), 1)
 
-#ifdef ARM_ACLE
-TEST_CRC32(acle, crc32_acle, test_cpu_features.arm.has_crc32)
+#ifdef ARM_CRC32
+TEST_CRC32(armv8, crc32_armv8, test_cpu_features.arm.has_crc32)
 #endif
 #ifdef POWER8_VSX_CRC32
 TEST_CRC32(power8, crc32_power8, test_cpu_features.power.has_arch_2_07)

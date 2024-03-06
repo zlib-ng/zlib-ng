@@ -94,12 +94,12 @@ OBJS = $(OBJS) gzlib.obj gzread.obj gzwrite.obj
 !endif
 
 WFLAGS = $(WFLAGS) \
-	-DARM_ACLE \
+	-DARM_CRC32 \
 	-D__ARM_NEON__=1 \
 	-DARM_NEON \
 	-DARM_NOCHECK_NEON \
 	#
-OBJS = $(OBJS) crc32_acle.obj adler32_neon.obj chunkset_neon.obj compare256_neon.obj slide_hash_neon.obj
+OBJS = $(OBJS) crc32_armv8.obj adler32_neon.obj chunkset_neon.obj compare256_neon.obj slide_hash_neon.obj
 
 # targets
 all: $(STATICLIB) $(SHAREDLIB) $(IMPLIB) \

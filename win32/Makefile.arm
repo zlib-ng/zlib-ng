@@ -40,7 +40,7 @@ RCFILE = zlib1.rc
 RESFILE = zlib1.res
 WITH_GZFILEOP = yes
 ZLIB_COMPAT =
-WITH_ACLE =
+WITH_ARMV8 =
 WITH_NEON =
 WITH_ARMV6 =
 WITH_VFPV3 =
@@ -98,9 +98,9 @@ WFLAGS = $(WFLAGS) -DWITH_GZFILEOP
 OBJS = $(OBJS) gzlib.obj gzread.obj gzwrite.obj
 !endif
 
-!if "$(WITH_ACLE)" != ""
-WFLAGS = $(WFLAGS) -DARM_ACLE
-OBJS = $(OBJS) crc32_acle.obj
+!if "$(WITH_ARMV8)" != ""
+WFLAGS = $(WFLAGS) -DARM_CRC32
+OBJS = $(OBJS) crc32_armv8.obj
 !endif
 !if "$(WITH_VFPV3)" != ""
 NEON_ARCH = /arch:VFPv3

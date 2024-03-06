@@ -190,7 +190,7 @@ if(WITH_GTEST)
                 test_adler32.cc             # adler32_neon(), etc
                 test_aligned_alloc.cc       # zng_alloc_aligned()
                 test_compare256.cc          # compare256_neon(), etc
-                test_crc32.cc               # crc32_acle(), etc
+                test_crc32.cc               # crc32_armv8(), etc
                 test_inflate_sync.cc        # expects a certain compressed block layout
                 test_main.cc                # cpu_check_features()
                 test_version.cc             # expects a fixed version string
