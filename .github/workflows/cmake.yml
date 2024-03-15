@@ -568,6 +568,12 @@ jobs:
             cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
 
     steps:
+    - name: Kernel ASLR
+      if: runner.os == 'Linux' && !contains(matrix.os, 'z15')
+      # Works around Kernel address randomization breaking LLVM ASAN/MSAN builds
+      # Ref: https://github.com/actions/runner-images/issues/9491
+      run: sudo sysctl vm.mmap_rnd_bits=28
+
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
