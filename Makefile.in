@@ -83,7 +83,6 @@ OBJZ = \
 	arch/generic/slide_hash_c.o \
 	adler32.o \
 	compress.o \
-	cpu_features.o \
 	crc32.o \
 	crc32_braid_comb.o \
 	deflate.o \
@@ -103,6 +102,7 @@ OBJZ = \
 	trees.o \
 	uncompr.o \
 	zutil.o \
+	cpu_features.o \
 	$(ARCH_STATIC_OBJS)
 
 OBJG = \
@@ -123,7 +123,6 @@ PIC_OBJZ = \
 	arch/generic/slide_hash_c.lo \
 	adler32.lo \
 	compress.lo \
-	cpu_features.lo \
 	crc32.lo \
 	crc32_braid_comb.lo \
 	deflate.lo \
@@ -143,6 +142,7 @@ PIC_OBJZ = \
 	trees.lo \
 	uncompr.lo \
 	zutil.lo \
+	cpu_features.lo \
 	$(ARCH_SHARED_OBJS)
 
 PIC_OBJG = \

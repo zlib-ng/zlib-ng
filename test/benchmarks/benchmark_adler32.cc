@@ -65,6 +65,10 @@ public:
 
 BENCHMARK_ADLER32(c, adler32_c, 1);
 
+#ifdef DISABLE_RUNTIME_CPU_DETECTION
+BENCHMARK_ADLER32(native, native_adler32, 1);
+#else
+
 #ifdef ARM_NEON
 BENCHMARK_ADLER32(neon, adler32_neon, test_cpu_features.arm.has_neon);
 #endif
@@ -91,4 +95,6 @@ BENCHMARK_ADLER32(avx512, adler32_avx512, test_cpu_features.x86.has_avx512);
 #endif
 #ifdef X86_AVX512VNNI
 BENCHMARK_ADLER32(avx512_vnni, adler32_avx512_vnni, test_cpu_features.x86.has_avx512vnni);
+#endif
+
 #endif

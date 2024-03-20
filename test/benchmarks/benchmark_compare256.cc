@@ -62,6 +62,10 @@ public:
 
 BENCHMARK_COMPARE256(c, compare256_c, 1);
 
+#ifdef DISABLE_RUNTIME_CPU_DETECTION
+BENCHMARK_COMPARE256(native, native_compare256, 1);
+#else
+
 #if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 BENCHMARK_COMPARE256(unaligned_16, compare256_unaligned_16, 1);
 #ifdef HAVE_BUILTIN_CTZ
@@ -85,4 +89,6 @@ BENCHMARK_COMPARE256(power9, compare256_power9, test_cpu_features.power.has_arch
 #endif
 #ifdef RISCV_RVV
 BENCHMARK_COMPARE256(rvv, compare256_rvv, test_cpu_features.riscv.has_rvv);
+#endif
+
 #endif
