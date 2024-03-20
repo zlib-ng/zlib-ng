@@ -69,6 +69,10 @@ public:
 
 BENCHMARK_SLIDEHASH(c, slide_hash_c, 1);
 
+#ifdef DISABLE_RUNTIME_CPU_DETECTION
+BENCHMARK_SLIDEHASH(native, native_slide_hash, 1);
+#else
+
 #ifdef ARM_SIMD
 BENCHMARK_SLIDEHASH(armv6, slide_hash_armv6, test_cpu_features.arm.has_simd);
 #endif
@@ -89,4 +93,6 @@ BENCHMARK_SLIDEHASH(sse2, slide_hash_sse2, test_cpu_features.x86.has_sse2);
 #endif
 #ifdef X86_AVX2
 BENCHMARK_SLIDEHASH(avx2, slide_hash_avx2, test_cpu_features.x86.has_avx2);
+#endif
+
 #endif
