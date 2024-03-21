@@ -208,6 +208,10 @@ INSTANTIATE_TEST_SUITE_P(crc32, crc32_variant, testing::ValuesIn(tests));
 
 TEST_CRC32(braid, PREFIX(crc32_braid), 1)
 
+#ifdef DISABLE_RUNTIME_CPU_DETECTION
+TEST_CRC32(native, native_crc32, 1)
+#else
+
 #ifdef ARM_ACLE
 TEST_CRC32(acle, crc32_acle, test_cpu_features.arm.has_crc32)
 #endif
@@ -222,4 +226,6 @@ TEST_CRC32(pclmulqdq, crc32_pclmulqdq, test_cpu_features.x86.has_pclmulqdq)
 #endif
 #ifdef X86_VPCLMULQDQ_CRC
 TEST_CRC32(vpclmulqdq, crc32_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512 && test_cpu_features.x86.has_vpclmulqdq))
+#endif
+
 #endif

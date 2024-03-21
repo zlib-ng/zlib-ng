@@ -58,6 +58,10 @@ public:
 
 BENCHMARK_CRC32(braid, PREFIX(crc32_braid), 1);
 
+#ifdef DISABLE_RUNTIME_CPU_DETECTION
+BENCHMARK_CRC32(native, native_crc32, 1);
+#else
+
 #ifdef ARM_ACLE
 BENCHMARK_CRC32(acle, crc32_acle, test_cpu_features.arm.has_crc32);
 #endif
@@ -74,4 +78,6 @@ BENCHMARK_CRC32(pclmulqdq, crc32_pclmulqdq, test_cpu_features.x86.has_pclmulqdq)
 #ifdef X86_VPCLMULQDQ_CRC
 /* CRC32 fold does a memory copy while hashing */
 BENCHMARK_CRC32(vpclmulqdq, crc32_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512 && test_cpu_features.x86.has_vpclmulqdq));
+#endif
+
 #endif

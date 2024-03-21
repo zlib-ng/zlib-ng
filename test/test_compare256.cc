@@ -61,6 +61,10 @@ static inline void compare256_match_check(compare256_func compare256) {
 
 TEST_COMPARE256(c, compare256_c, 1)
 
+#ifdef DISABLE_RUNTIME_CPU_DETECTION
+TEST_COMPARE256(native, native_compare256, 1)
+#else
+
 #if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 TEST_COMPARE256(unaligned_16, compare256_unaligned_16, 1)
 #ifdef HAVE_BUILTIN_CTZ
@@ -84,4 +88,6 @@ TEST_COMPARE256(power9, compare256_power9, test_cpu_features.power.has_arch_3_00
 #endif
 #ifdef RISCV_RVV
 TEST_COMPARE256(rvv, compare256_rvv, test_cpu_features.riscv.has_rvv)
+#endif
+
 #endif

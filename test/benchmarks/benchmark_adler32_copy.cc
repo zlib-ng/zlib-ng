@@ -86,6 +86,10 @@ public:
 
 BENCHMARK_ADLER32_BASELINE_COPY(c, adler32_c, 1);
 
+#ifdef DISABLE_RUNTIME_CPU_DETECTION
+BENCHMARK_ADLER32_BASELINE_COPY(native, native_adler32, 1);
+#else
+
 #ifdef ARM_NEON
 /* If we inline this copy for neon, the function would go here */
 //BENCHMARK_ADLER32_COPY(neon, adler32_neon, test_cpu_features.arm.has_neon);
@@ -121,4 +125,6 @@ BENCHMARK_ADLER32_COPY(avx512, adler32_fold_copy_avx512, test_cpu_features.x86.h
 #ifdef X86_AVX512VNNI
 BENCHMARK_ADLER32_BASELINE_COPY(avx512_vnni_baseline, adler32_avx512_vnni, test_cpu_features.x86.has_avx512vnni);
 BENCHMARK_ADLER32_COPY(avx512_vnni, adler32_fold_copy_avx512_vnni, test_cpu_features.x86.has_avx512vnni);
+#endif
+
 #endif

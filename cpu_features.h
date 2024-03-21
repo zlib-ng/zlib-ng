@@ -6,6 +6,8 @@
 #ifndef CPU_FEATURES_H_
 #define CPU_FEATURES_H_
 
+#ifndef DISABLE_RUNTIME_CPU_DETECTION
+
 #if defined(X86_FEATURES)
 #  include "arch/x86/x86_features.h"
 #elif defined(ARM_FEATURES)
@@ -35,5 +37,7 @@ struct cpu_features {
 };
 
 void cpu_check_features(struct cpu_features *features);
+
+#endif
 
 #endif

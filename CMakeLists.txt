@@ -679,8 +679,12 @@ if(WITH_OPTIM)
                 endif()
             endif()
         endif()
-        list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm_features.h ${ARCHDIR}/arm_functions.h)
-        list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/arm_features.c)
+        list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm_functions.h)
+        if(WITH_RUNTIME_CPU_DETECTION)
+            list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm_features.h)
+            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/arm_features.c)
+        endif()
+
         if(WITH_ACLE)
             check_acle_compiler_flag()
             if(HAVE_ACLE_FLAG)
@@ -751,8 +755,11 @@ if(WITH_OPTIM)
             add_definitions(-DPOWER_FEATURES)
         endif()
         if(HAVE_VMX OR HAVE_POWER8_INTRIN OR HAVE_POWER9_INTRIN)
-            list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/power_features.h ${ARCHDIR}/power_functions.h)
-            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/power_features.c)
+            list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/power_functions.h)
+            if(WITH_RUNTIME_CPU_DETECTION)
+                list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/power_features.h)
+                list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/power_features.c)
+            endif()
         endif()
         # VMX specific options and files
         if(WITH_ALTIVEC)
@@ -801,11 +808,17 @@ if(WITH_OPTIM)
             if(HAVE_RVV_INTRIN)
                 add_definitions(-DRISCV_FEATURES)
                 add_definitions(-DRISCV_RVV)
-                list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/riscv_features.h ${ARCHDIR}/riscv_functions.h)
-                list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/riscv_features.c)
+                list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/riscv_functions.h)
+                if(WITH_RUNTIME_CPU_DETECTION)
+                    list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/riscv_features.h)
+                    list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/riscv_features.c)
+                endif()
                 # FIXME: we will not set compile flags for riscv_features.c when
                 # the kernels update hwcap or hwprobe for riscv
-                set(RVV_SRCS ${ARCHDIR}/riscv_features.c ${ARCHDIR}/adler32_rvv.c ${ARCHDIR}/chunkset_rvv.c ${ARCHDIR}/compare256_rvv.c ${ARCHDIR}/slide_hash_rvv.c)
+                set(RVV_SRCS ${ARCHDIR}/adler32_rvv.c ${ARCHDIR}/chunkset_rvv.c ${ARCHDIR}/compare256_rvv.c ${ARCHDIR}/slide_hash_rvv.c)
+                if(WITH_RUNTIME_CPU_DETECTION)
+                    list(APPEND RVV_SRCS ${ARCHDIR}/riscv_features.c)
+                endif()
                 list(APPEND ZLIB_ARCH_SRCS ${RVV_SRCS})
                 set_property(SOURCE ${RVV_SRCS} PROPERTY COMPILE_FLAGS "${RISCVFLAG} ${NOLTOFLAG}")
             else()
@@ -816,8 +829,11 @@ if(WITH_OPTIM)
         check_s390_intrinsics()
         if(HAVE_S390_INTRIN)
             add_definitions(-DS390_FEATURES)
-            list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/s390_features.h ${ARCHDIR}/s390_functions.h)
-            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/s390_features.c)
+            list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/s390_functions.h)
+            if(WITH_RUNTIME_CPU_DETECTION)
+                list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/s390_features.h)
+                list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/s390_features.c)
+            endif()
         endif()
         if(WITH_DFLTCC_DEFLATE OR WITH_DFLTCC_INFLATE)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/dfltcc_common.c)
@@ -843,15 +859,20 @@ if(WITH_OPTIM)
         endif()
     elseif(BASEARCH_X86_FOUND)
         add_definitions(-DX86_FEATURES)
-        list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/x86_features.h ${ARCHDIR}/x86_functions.h)
-        list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/x86_features.c)
+        list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/x86_functions.h)
+        if(WITH_RUNTIME_CPU_DETECTION)
+            list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/x86_features.h)
+            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/x86_features.c)
+        endif()
         if(MSVC)
             list(APPEND ZLIB_ARCH_HDRS fallback_builtins.h)
         endif()
         check_xsave_intrinsics()
         if(HAVE_XSAVE_INTRIN)
             add_feature_info(XSAVE 1 "Support XSAVE intrinsics using \"${XSAVEFLAG}\"")
-            set_property(SOURCE ${ARCHDIR}/x86_features.c PROPERTY COMPILE_FLAGS "${XSAVEFLAG}")
+            if(WITH_RUNTIME_CPU_DETECTION)
+                set_property(SOURCE ${ARCHDIR}/x86_features.c PROPERTY COMPILE_FLAGS "${XSAVEFLAG}")
+            endif()
             if(NOT (CMAKE_C_COMPILER_ID MATCHES "GNU" AND CMAKE_C_COMPILER_VERSION VERSION_LESS 8.2))
                 add_definitions(-DX86_HAVE_XSAVE_INTRIN)
             endif()
@@ -1038,7 +1059,6 @@ set(ZLIB_PRIVATE_HDRS
     chunkset_tpl.h
     compare256_rle.h
     arch_functions.h
-    cpu_features.h
     crc32_braid_p.h
     crc32_braid_comb_p.h
     crc32_braid_tbl.h
@@ -1069,7 +1089,6 @@ set(ZLIB_SRCS
     arch/generic/slide_hash_c.c
     adler32.c
     compress.c
-    cpu_features.c
     crc32.c
     crc32_braid_comb.c
     deflate.c
@@ -1090,6 +1109,11 @@ set(ZLIB_SRCS
     uncompr.c
     zutil.c
 )
+
+if(WITH_RUNTIME_CPU_DETECTION)
+    list(APPEND ZLIB_PRIVATE_HDRS cpu_features.h)
+    list(APPEND ZLIB_SRCS cpu_features.c)
+endif()
 
 set(ZLIB_GZFILE_PRIVATE_HDRS
     gzguts.h
