@@ -20,7 +20,7 @@ Features
 * Deflate medium and quick algorithms based on Intel’s zlib fork
 * Support for CPU intrinsics when available
   * Adler32 implementation using SSSE3, AVX2, AVX512, AVX512-VNNI, Neon, VMX & VSX
-  * CRC32-B implementation using PCLMULQDQ, VPCLMULQDQ, ACLE, & IBM Z
+  * CRC32-B implementation using PCLMULQDQ, VPCLMULQDQ, ARMv8, & IBM Z
   * Slide hash implementations using SSE2, AVX2, ARMv6, Neon, VMX & VSX
   * Compare256 implementations using SSE2, AVX2, Neon, POWER9 & RVV
   * Inflate chunk copying using SSE2, SSSE3, AVX, Neon & VSX
@@ -204,7 +204,7 @@ Advanced Build Options
 | WITH_SSE42                      |                       | Build with SSE42 intrinsics                                         | ON                     |
 | WITH_PCLMULQDQ                  |                       | Build with PCLMULQDQ intrinsics                                     | ON                     |
 | WITH_VPCLMULQDQ                 | --without-vpclmulqdq  | Build with VPCLMULQDQ intrinsics                                    | ON                     |
-| WITH_ACLE                       | --without-acle        | Build with ACLE intrinsics                                          | ON                     |
+| WITH_ARMV8                      | --without-armv8       | Build with ARMv8 intrinsics                                          | ON                     |
 | WITH_NEON                       | --without-neon        | Build with NEON intrinsics                                          | ON                     |
 | WITH_ARMV6                      | --without-armv6       | Build with ARMv6 intrinsics                                         | ON                     |
 | WITH_ALTIVEC                    | --without-altivec     | Build with AltiVec (VMX) intrinsics                                 | ON                     |
