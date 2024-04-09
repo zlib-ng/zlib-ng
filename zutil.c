@@ -7,6 +7,8 @@
 #include "zutil_p.h"
 #include "zutil.h"
 
+#include <stdio.h>
+
 z_const char * const PREFIX(z_errmsg)[10] = {
     (z_const char *)"need dictionary",     /* Z_NEED_DICT       2  */
     (z_const char *)"stream end",          /* Z_STREAM_END      1  */
@@ -153,6 +155,14 @@ void Z_INTERNAL PREFIX3(free_aligned)(zng_cfree_func zfree, void *opaque, void *
     /* Calculate offset to original memory allocation pointer */
     void *original_ptr = (void *)((uintptr_t)ptr - sizeof(void *));
     void *free_ptr = *(void **)original_ptr;
+
+    /* Validate original_ptr, the distance to ptr should be less than double the maximum alignment of 64 bytes */
+    ptrdiff_t dist = (ptrdiff_t)original_ptr - (ptrdiff_t)free_ptr;
+    if (dist < 0 || dist > 127) {
+       Tracev((stderr, "free_aligned: Allocation/deallocation mismatch\n"));
+       zfree(opaque, ptr);
+       return;
+    }
 
     /* Free original memory allocation */
     zfree(opaque, free_ptr);
