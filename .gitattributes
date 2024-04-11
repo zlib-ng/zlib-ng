@@ -1,11 +1,12 @@
-* text=auto
-*.abi text eol=lf
-*.c text
-*.h text
-*.sh text eol=lf
+# Do NO line-ending conversion on any file (by default)!
+* -text
+# Note: If one wants a specific line-ending on a file, one has to make sure to commit it
+#       with the correct line-endings! If at some point all files are committed with
+#       correct line-endings one should use some other mechanism (e.g. clang-format or
+#       .editorconfig) to ensure that no different line-endings are introduced.
+
+
 crc32_braid_tbl.h hooks-max-size=1000000
-Makefile text
-configure text eol=lf
 
 # Don't export git/github-related files in tar/zip archives
 /.github export-ignore  
