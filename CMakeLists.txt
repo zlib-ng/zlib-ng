@@ -485,6 +485,22 @@ if(HAVE_ATTRIBUTE_ALIGNED)
 endif()
 
 #
+# Check for __builtin_assume_aligned(x,n) support in the compiler
+#
+check_c_source_compiles(
+    "char *test(char *buffer) {
+        char *abuffer = __builtin_assume_aligned(buffer,64);
+        return abuffer;
+    }
+    int main() {
+        return 0;
+    }"
+    HAVE_BUILTIN_ASSUME_ALIGNED)
+if(HAVE_BUILTIN_ASSUME_ALIGNED)
+    add_definitions(-DHAVE_BUILTIN_ASSUME_ALIGNED)
+endif()
+
+#
 # check for __builtin_ctz() support in the compiler
 #
 check_c_source_compiles(
