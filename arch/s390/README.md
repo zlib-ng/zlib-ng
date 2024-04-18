@@ -62,9 +62,10 @@ integrated with the rest of zlib-ng using hook macros.
 
 DFLTCC takes as arguments a parameter block, an input buffer, an output
 buffer, and a window. Parameter blocks are stored alongside zlib states;
-buffers are forwarded from the caller; and window (which must be page-aligned)
-is managed using `ZALLOC_WINDOW()`, `ZCOPY_WINDOW()` and `TRY_FREE_WINDOW()`
-macros.
+buffers are forwarded from the caller; and window - which must be
+4k-aligned and is always 64k large, is managed using the `PAD_WINDOW()`,
+`WINDOW_PAD_SIZE`, `HINT_ALIGNED_WINDOW` and `DEFLATE_ADJUST_WINDOW_SIZE()`
+and `INFLATE_ADJUST_WINDOW_SIZE()` hooks.
 
 Software and hardware window formats do not match, therefore,
 `deflateSetDictionary()`, `deflateGetDictionary()`, `inflateSetDictionary()`
