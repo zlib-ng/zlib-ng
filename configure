@@ -1832,11 +1832,6 @@ EOF
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} s390_features.lo"
             fi
 
-            if test $builddfltccdeflate -eq 1 -o $builddfltccinflate -eq 1; then
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_common.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_common.lo"
-            fi
-
             if test $builddfltccdeflate -eq 1; then
                 CFLAGS="${CFLAGS} -DS390_DFLTCC_DEFLATE"
                 SFLAGS="${SFLAGS} -DS390_DFLTCC_DEFLATE"

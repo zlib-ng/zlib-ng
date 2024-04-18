@@ -83,18 +83,6 @@ typedef struct {
     struct dfltcc_state common;
 } arch_inflate_state;
 
-void Z_INTERNAL *PREFIX(dfltcc_alloc_window)(PREFIX3(streamp) strm, uInt items, uInt size);
-void Z_INTERNAL PREFIX(dfltcc_copy_window)(void *dest, const void *src, size_t n);
-void Z_INTERNAL PREFIX(dfltcc_free_window)(PREFIX3(streamp) strm, void *w);
-
-#define ZALLOC_WINDOW PREFIX(dfltcc_alloc_window)
-
-#define ZCOPY_WINDOW PREFIX(dfltcc_copy_window)
-
-#define ZFREE_WINDOW PREFIX(dfltcc_free_window)
-
-#define TRY_FREE_WINDOW PREFIX(dfltcc_free_window)
-
 /*
    History buffer size.
  */

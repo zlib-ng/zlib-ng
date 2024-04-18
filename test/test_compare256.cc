@@ -27,11 +27,11 @@ static inline void compare256_match_check(compare256_func compare256) {
     uint8_t *str1;
     uint8_t *str2;
 
-    str1 = (uint8_t *)PREFIX3(alloc_aligned)(NULL, NULL, 1, MAX_COMPARE_SIZE, 64);
+    str1 = (uint8_t *)PREFIX(zcalloc)(NULL, 1, MAX_COMPARE_SIZE);
     ASSERT_TRUE(str1 != NULL);
     memset(str1, 'a', MAX_COMPARE_SIZE);
 
-    str2 = (uint8_t *)PREFIX3(alloc_aligned)(NULL, NULL, 1, MAX_COMPARE_SIZE, 64);
+    str2 = (uint8_t *)PREFIX(zcalloc)(NULL, 1, MAX_COMPARE_SIZE);
     ASSERT_TRUE(str2 != NULL);
     memset(str2, 'a', MAX_COMPARE_SIZE);
 
@@ -46,8 +46,8 @@ static inline void compare256_match_check(compare256_func compare256) {
             str2[i] = 'a';
     }
 
-    PREFIX3(free_aligned)(NULL, NULL, str1);
-    PREFIX3(free_aligned)(NULL, NULL, str2);
+    PREFIX(zcfree)(NULL, str1);
+    PREFIX(zcfree)(NULL, str2);
 }
 
 #define TEST_COMPARE256(name, func, support_flag) \

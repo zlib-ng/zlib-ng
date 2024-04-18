@@ -189,7 +189,6 @@ if(WITH_GTEST)
         if(ZLIBNG_ENABLE_TESTS)
             list(APPEND TEST_SRCS
                 test_adler32.cc             # adler32_neon(), etc
-                test_aligned_alloc.cc       # zng_alloc_aligned()
                 test_compare256.cc          # compare256_neon(), etc
                 test_crc32.cc               # crc32_acle(), etc
                 test_inflate_sync.cc        # expects a certain compressed block layout
