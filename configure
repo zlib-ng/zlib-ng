@@ -471,7 +471,9 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
              SHAREDTARGET=$SHAREDLIBV
              LDSHARED=${LDSHARED-"$cc"}
              LDSHAREDFLAGS="-dynamiclib -install_name @rpath/${SHAREDLIBM} -compatibility_version ${VER1} -current_version ${VER3}"
-             if libtool -V 2>&1 | grep Apple > /dev/null; then
+             if "${CROSS_PREFIX}libtool" -V 2>&1 | grep Apple > /dev/null; then
+                 AR="${CROSS_PREFIX}libtool"
+             elif libtool -V 2>&1 | grep Apple > /dev/null; then
                  AR="libtool"
              else
                  AR="/usr/bin/libtool"
