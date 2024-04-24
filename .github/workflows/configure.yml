@@ -167,7 +167,7 @@ jobs:
             cflags: -static
             ldflags: -static
 
-          - name: Ubuntu GCC S390X DFLTCC
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL9' || 'Ubuntu' }} GCC S390X DFLTCC
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcc' || 's390x-linux-gnu-gcc' }}
             configure-args: --warn --static --with-dfltcc-deflate --with-dfltcc-inflate
@@ -176,7 +176,7 @@ jobs:
             cflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
             ldflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
 
-          - name: Ubuntu GCC S390X DFLTCC Compat
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL9' || 'Ubuntu' }} GCC S390X DFLTCC Compat
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcc' || 's390x-linux-gnu-gcc' }}
             configure-args: --warn --zlib-compat --static --with-dfltcc-deflate --with-dfltcc-inflate
