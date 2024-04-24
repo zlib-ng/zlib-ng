@@ -1,24 +1,18 @@
 [Unit]
-Description=Self-Hosted IBM Z Github Actions Runner
-Wants=qemu-user-static
-After=qemu-user-static
-StartLimitIntervalSec=0
+Description=Podman container: Gaplib Github Actions Runner
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=1
+RequiresMountsFor=/run/user/1001/containers
 
 [Service]
-Type=simple
+Environment=PODMAN_SYSTEMD_UNIT=%n
 Restart=always
-ExecStartPre=-/usr/bin/docker rm --force actions-runner
-ExecStart=/usr/bin/docker run \
-              --env-file=/etc/actions-runner \
-              --init \
-              --interactive \
-              --name=actions-runner \
-              --rm \
-              --volume=actions-runner:/home/actions-runner \
-              iiilinuxibmcom/actions-runner
-ExecStop=/bin/sh -c "docker exec actions-runner kill -INT -- -1"
-ExecStop=/bin/sh -c "docker wait actions-runner"
-ExecStop=/bin/sh -c "docker rm actions-runner"
+TimeoutStopSec=61
+ExecStart=/usr/bin/podman start gaplib-actions-runner
+ExecStop=/usr/bin/podman stop -t 1 gaplib-actions-runner
+ExecStopPost=/usr/bin/podman stop -t 1 gaplib-actions-runner
+Type=forking
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=default.target
