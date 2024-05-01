@@ -436,11 +436,11 @@ jobs:
 
           - name: Ubuntu Clang MSAN
             os: ubuntu-latest
-            compiler: clang-11
-            cxx-compiler: clang++-11
+            compiler: clang-15
+            cxx-compiler: clang++-15
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
-            packages:  ninja-build clang-11 llvm-11-tools
-            gcov-exec: llvm-cov-11 gcov
+            packages:  ninja-build clang-15 llvm-15-tools
+            gcov-exec: llvm-cov-15 gcov
             # https://github.com/llvm/llvm-project/issues/55785
             msan-options: use_sigaltstack=0
 
@@ -650,13 +650,16 @@ jobs:
     - name: Compile LLVM C++ libraries (MSAN)
       if: contains(matrix.name, 'MSAN')
       run: |
-        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-11.1.0
-        cmake -S llvm-project/llvm -B llvm-project/build -G Ninja \
+        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-16.0.6
+        cmake -S llvm-project/runtimes -B llvm-project/build -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
-          -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+          -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
           -DLLVM_USE_SANITIZER=MemoryWithOrigins \
-          -DLLVM_LIBC_ENABLE_LINTING=OFF
-        cmake --build llvm-project/build -j2 -- cxx cxxabi
+          -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
+          -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
+          -DLLVM_INCLUDE_TESTS=OFF \
+          -DLLVM_INCLUDE_DOCS=OFF
+        cmake --build llvm-project/build -j3 -- cxx cxxabi
         echo "LLVM_BUILD_DIR=`pwd`/llvm-project/build" >> $GITHUB_ENV
       env:
         CC: ${{ matrix.compiler }}
