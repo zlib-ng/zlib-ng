@@ -162,6 +162,30 @@ typedef enum {
 #define HB_BITS 15
 #define HB_SIZE (1 << HB_BITS)
 
+/* Return lengths of high (starting at param->ho) and low (starting at 0) fragments of the circular history buffer. */
+static inline void get_history_lengths(struct dfltcc_param_v0 *param, size_t *hl_high, size_t *hl_low) {
+    *hl_high = MIN(param->hl, HB_SIZE - param->ho);
+    *hl_low = param->hl - *hl_high;
+}
+
+/* Notify instrumentation about an upcoming read/write access to the circular history buffer. */
+static inline void instrument_read_write_hist(struct dfltcc_param_v0 *param, void *hist) {
+    size_t hl_high, hl_low;
+
+    get_history_lengths(param, &hl_high, &hl_low);
+    instrument_read_write(hist + param->ho, hl_high);
+    instrument_read_write(hist, hl_low);
+}
+
+/* Notify MSan about a completed write to the circular history buffer. */
+static inline void msan_unpoison_hist(struct dfltcc_param_v0 *param, void *hist) {
+    size_t hl_high, hl_low;
+
+    get_history_lengths(param, &hl_high, &hl_low);
+    __msan_unpoison(hist + param->ho, hl_high);
+    __msan_unpoison(hist, hl_low);
+}
+
 static inline dfltcc_cc dfltcc(int fn, void *param,
                                unsigned char **op1, size_t *len1,
                                z_const unsigned char **op2, size_t *len2, void *hist) {
@@ -170,14 +194,33 @@ static inline dfltcc_cc dfltcc(int fn, void *param,
     size_t t3 = len1 ? *len1 : 0;
     z_const unsigned char *t4 = op2 ? *op2 : NULL;
     size_t t5 = len2 ? *len2 : 0;
-    Z_REGISTER int r0 __asm__("r0") = fn;
-    Z_REGISTER void *r1 __asm__("r1") = param;
-    Z_REGISTER unsigned char *r2 __asm__("r2") = t2;
-    Z_REGISTER size_t r3 __asm__("r3") = t3;
-    Z_REGISTER z_const unsigned char *r4 __asm__("r4") = t4;
-    Z_REGISTER size_t r5 __asm__("r5") = t5;
+    Z_REGISTER int r0 __asm__("r0");
+    Z_REGISTER void *r1 __asm__("r1");
+    Z_REGISTER unsigned char *r2 __asm__("r2");
+    Z_REGISTER size_t r3 __asm__("r3");
+    Z_REGISTER z_const unsigned char *r4 __asm__("r4");
+    Z_REGISTER size_t r5 __asm__("r5");
     int cc;
 
+    /* Insert pre-instrumentation for DFLTCC. */
+    switch (fn & DFLTCC_FN_MASK) {
+    case DFLTCC_QAF:
+        instrument_write(param, DFLTCC_SIZEOF_QAF);
+        break;
+    case DFLTCC_GDHT:
+        instrument_read_write(param, DFLTCC_SIZEOF_GDHT_V0);
+        instrument_read(t4, t5);
+        break;
+    case DFLTCC_CMPR:
+    case DFLTCC_XPND:
+        instrument_read_write(param, DFLTCC_SIZEOF_CMPR_XPND_V0);
+        instrument_read(t4, t5);
+        instrument_write(t2, t3);
+        instrument_read_write_hist(param, hist);
+        break;
+    }
+
+    r0 = fn; r1 = param; r2 = t2; r3 = t3; r4 = t4; r5 = t5;
     __asm__ volatile(
 #ifdef HAVE_SYS_SDT_H
                      STAP_PROBE_ASM(zlib, dfltcc_entry, STAP_PROBE_ASM_TEMPLATE(5))
@@ -201,6 +244,7 @@ static inline dfltcc_cc dfltcc(int fn, void *param,
                      : "cc", "memory");
     t2 = r2; t3 = r3; t4 = r4; t5 = r5;
 
+    /* Insert post-instrumentation for DFLTCC. */
     switch (fn & DFLTCC_FN_MASK) {
     case DFLTCC_QAF:
         __msan_unpoison(param, DFLTCC_SIZEOF_QAF);
@@ -211,10 +255,12 @@ static inline dfltcc_cc dfltcc(int fn, void *param,
     case DFLTCC_CMPR:
         __msan_unpoison(param, DFLTCC_SIZEOF_CMPR_XPND_V0);
         __msan_unpoison(orig_t2, t2 - orig_t2 + (((struct dfltcc_param_v0 *)param)->sbb == 0 ? 0 : 1));
+        msan_unpoison_hist(param, hist);
         break;
     case DFLTCC_XPND:
         __msan_unpoison(param, DFLTCC_SIZEOF_CMPR_XPND_V0);
         __msan_unpoison(orig_t2, t2 - orig_t2);
+        msan_unpoison_hist(param, hist);
         break;
     }
 
@@ -297,12 +343,9 @@ static inline void append_history(struct dfltcc_param_v0 *param, unsigned char *
 
 static inline void get_history(struct dfltcc_param_v0 *param, const unsigned char *history,
                                unsigned char *buf) {
-    if (param->ho + param->hl <= HB_SIZE)
-        /* Circular history buffer does not wrap - copy one chunk */
-        memcpy(buf, history + param->ho, param->hl);
-    else {
-        /* Circular history buffer wraps - copy two chunks */
-        memcpy(buf, history + param->ho, HB_SIZE - param->ho);
-        memcpy(buf + HB_SIZE - param->ho, history, param->ho + param->hl - HB_SIZE);
-    }
+    size_t hl_high, hl_low;
+
+    get_history_lengths(param, &hl_high, &hl_low);
+    memcpy(buf, history + param->ho, hl_high);
+    memcpy(buf + hl_high, history, hl_low);
 }
