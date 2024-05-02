@@ -524,20 +524,39 @@ jobs:
             codecov: win64_gcc_compat_no_opt
 
           - name: macOS Clang ASAN
-            os: macos-latest
+            os: macos-13
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_SANITIZER=Address
             codecov: macos_clang
 
-          - name: macOS GCC UBSAN
+          - name: macOS Clang ASAN (ARM64)
             os: macos-latest
+            compiler: clang
+            cxx-compiler: clang++
+            cmake-args: -DWITH_SANITIZER=Address
+            codecov: macos_clang_arm64
+
+          - name: macOS GCC UBSAN
+            os: macos-13
             compiler: gcc-10
             cxx-compiler: g++-10
+            # Xcode 15 uses a new linker that is not compatible with GCC. Switch to the old linker.
+            # Homebrew gcc@11 and later have a built-in workaround for it.
+            ldflags: -ld_classic
             cmake-args: -DWITH_SANITIZER=Undefined
             packages: gcc@10
             gcov-exec: gcov-10
             codecov: macos_gcc
+
+          - name: macOS GCC UBSAN (ARM64)
+            os: macos-latest
+            compiler: gcc-11
+            cxx-compiler: g++-11
+            cmake-args: -DWITH_SANITIZER=Undefined
+            packages: gcc@11
+            gcov-exec: gcov-11
+            codecov: macos_gcc_arm64
 
     steps:
     - name: Checkout repository
