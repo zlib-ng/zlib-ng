@@ -72,10 +72,6 @@ const char PREFIX(deflate_copyright)[] = " deflate 1.3.1 Copyright 1995-2024 Jea
 #ifdef S390_DFLTCC_DEFLATE
 #  include "arch/s390/dfltcc_deflate.h"
 #else
-/* Memory management for the deflate state. Useful for allocating arch-specific extension blocks. */
-#  define ZALLOC_DEFLATE_STATE(strm) ((deflate_state *)ZALLOC(strm, 1, sizeof(deflate_state)))
-#  define ZFREE_STATE(strm, addr) ZFREE(strm, addr)
-#  define ZCOPY_DEFLATE_STATE(dst, src) memcpy(dst, src, sizeof(deflate_state))
 /* Memory management for the window. Useful for allocation the aligned window. */
 #  define ZALLOC_WINDOW(strm, items, size) ZALLOC(strm, items, size)
 #  define TRY_FREE_WINDOW(strm, addr) TRY_FREE(strm, addr)
@@ -226,7 +222,7 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
     if (windowBits == 8)
         windowBits = 9;  /* until 256-byte window bug fixed */
 
-    s = ZALLOC_DEFLATE_STATE(strm);
+    s = ZALLOC(strm, 1, sizeof(deflate_state));
     if (s == NULL)
         return Z_MEM_ERROR;
     strm->state = (struct internal_state *)s;
@@ -1030,7 +1026,7 @@ int32_t Z_EXPORT PREFIX(deflateEnd)(PREFIX3(stream) *strm) {
     TRY_FREE(strm, strm->state->prev);
     TRY_FREE_WINDOW(strm, strm->state->window);
 
-    ZFREE_STATE(strm, strm->state);
+    ZFREE(strm, strm->state);
     strm->state = NULL;
 
     return status == BUSY_STATE ? Z_DATA_ERROR : Z_OK;
@@ -1051,11 +1047,11 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
 
     memcpy((void *)dest, (void *)source, sizeof(PREFIX3(stream)));
 
-    ds = ZALLOC_DEFLATE_STATE(dest);
+    ds = ZALLOC(dest, 1, sizeof(deflate_state));
     if (ds == NULL)
         return Z_MEM_ERROR;
     dest->state = (struct internal_state *) ds;
-    ZCOPY_DEFLATE_STATE(ds, ss);
+    memcpy(ds, ss, sizeof(deflate_state));
     ds->strm = dest;
 
 #ifdef X86_PCLMULQDQ_CRC

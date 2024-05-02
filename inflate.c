@@ -151,7 +151,7 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
     }
     if (strm->zfree == NULL)
         strm->zfree = PREFIX(zcfree);
-    state = ZALLOC_INFLATE_STATE(strm);
+    state = ZALLOC(strm, 1, sizeof(struct inflate_state));
     if (state == NULL)
         return Z_MEM_ERROR;
     Tracev((stderr, "inflate: allocated\n"));
@@ -162,7 +162,7 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
     state->chunksize = FUNCTABLE_CALL(chunksize)();
     ret = PREFIX(inflateReset2)(strm, windowBits);
     if (ret != Z_OK) {
-        ZFREE_STATE(strm, state);
+        ZFREE(strm, state);
         strm->state = NULL;
     }
     return ret;
@@ -1148,7 +1148,7 @@ int32_t Z_EXPORT PREFIX(inflateEnd)(PREFIX3(stream) *strm) {
     state = (struct inflate_state *)strm->state;
     if (state->window != NULL)
         ZFREE_WINDOW(strm, state->window);
-    ZFREE_STATE(strm, strm->state);
+    ZFREE(strm, strm->state);
     strm->state = NULL;
     Tracev((stderr, "inflate: end\n"));
     return Z_OK;
@@ -1333,13 +1333,13 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     state = (struct inflate_state *)source->state;
 
     /* allocate space */
-    copy = ZALLOC_INFLATE_STATE(source);
+    copy = ZALLOC(source, 1, sizeof(struct inflate_state));
     if (copy == NULL)
         return Z_MEM_ERROR;
 
     /* copy state */
     memcpy((void *)dest, (void *)source, sizeof(PREFIX3(stream)));
-    ZCOPY_INFLATE_STATE(copy, state);
+    memcpy(copy, state, sizeof(struct inflate_state));
     copy->strm = dest;
     if (state->lencode >= state->codes && state->lencode <= state->codes + ENOUGH - 1) {
         copy->lencode = copy->codes + (state->lencode - state->codes);
@@ -1351,7 +1351,7 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     copy->window = NULL;
     if (state->window != NULL) {
         if (PREFIX(inflate_ensure_window)(copy)) {
-            ZFREE_STATE(source, copy);
+            ZFREE(source, copy);
             return Z_MEM_ERROR;
         }
         ZCOPY_WINDOW(copy->window, state->window, (size_t)state->wsize);

@@ -14,6 +14,11 @@
 #include "zendian.h"
 #include "crc32.h"
 
+#ifdef S390_DFLTCC_DEFLATE
+#  include "arch/s390/dfltcc_common.h"
+#  define HAVE_ARCH_DEFLATE_STATE
+#endif
+
 /* define NO_GZIP when compiling if you want to disable gzip header and
    trailer creation by deflate().  NO_GZIP would be used to avoid linking in
    the crc code when it is not needed.  For shared libraries, gzip encoding
@@ -296,6 +301,10 @@ struct ALIGNED_(16) internal_state {
 
     /* Reserved for future use and alignment purposes */
     char *reserved_p;
+
+#ifdef HAVE_ARCH_DEFLATE_STATE
+    arch_deflate_state arch;      /* architecture-specific extensions */
+#endif
 
     uint64_t bi_buf;
     /* Output buffer. bits are inserted starting at the bottom (least significant bits). */

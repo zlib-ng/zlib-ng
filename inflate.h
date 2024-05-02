@@ -13,6 +13,11 @@
 
 #include "crc32.h"
 
+#ifdef S390_DFLTCC_INFLATE
+#  include "arch/s390/dfltcc_common.h"
+#  define HAVE_ARCH_INFLATE_STATE
+#endif
+
 /* define NO_GZIP when compiling if you want to disable gzip header and trailer decoding by inflate().
    NO_GZIP would be used to avoid linking in the crc code when it is not needed.
    For shared libraries, gzip decoding should be left enabled. */
@@ -131,6 +136,9 @@ struct inflate_state {
     int back;                   /* bits back of last unprocessed length/lit */
     unsigned was;               /* initial length of match */
     uint32_t chunksize;         /* size of memory copying chunk */
+#ifdef HAVE_ARCH_INFLATE_STATE
+    arch_inflate_state arch;    /* architecture-specific extensions */
+#endif
 };
 
 int Z_INTERNAL PREFIX(inflate_ensure_window)(struct inflate_state *state);
