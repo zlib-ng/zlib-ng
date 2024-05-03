@@ -684,7 +684,9 @@ jobs:
       if: matrix.codecov
       shell: bash
       run: |
-        python3 -u -m pip install --user gcovr==5.0
+        python3 -u -m venv ${{ matrix.build-dir || '.' }}/venv
+        source ${{ matrix.build-dir || '.' }}/venv/${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}/activate
+        python3 -u -m pip install gcovr==5.0
         python3 -m gcovr ${{ matrix.build-dir || '' }} -j 3 --verbose \
           --exclude-unreachable-branches \
           --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
