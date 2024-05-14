@@ -125,7 +125,7 @@ static void init_functable(void) {
 #endif
     // X86 - AVX512 (F,DQ,BW,Vl)
 #ifdef X86_AVX512
-    if (cf.x86.has_avx512) {
+    if (cf.x86.has_avx512_common) {
         ft.adler32 = &adler32_avx512;
         ft.adler32_fold_copy = &adler32_fold_copy_avx512;
     }
@@ -138,7 +138,7 @@ static void init_functable(void) {
 #endif
     // X86 - VPCLMULQDQ
 #ifdef X86_VPCLMULQDQ_CRC
-    if (cf.x86.has_pclmulqdq && cf.x86.has_avx512 && cf.x86.has_vpclmulqdq) {
+    if (cf.x86.has_pclmulqdq && cf.x86.has_avx512_common && cf.x86.has_vpclmulqdq) {
         ft.crc32 = &crc32_vpclmulqdq;
         ft.crc32_fold = &crc32_fold_vpclmulqdq;
         ft.crc32_fold_copy = &crc32_fold_vpclmulqdq_copy;
