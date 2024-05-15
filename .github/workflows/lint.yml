@@ -14,4 +14,4 @@ jobs:
     - name: Whitespace errors
       run: |
         git config core.whitespace blank-at-eol
-        git diff --color --check ${{ github.event.pull_request.base.sha }}
+        git diff --color --check ${{ github.event.pull_request.base.sha }} -- './*' ':!*.patch'
