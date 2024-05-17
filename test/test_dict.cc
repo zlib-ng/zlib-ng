@@ -53,6 +53,8 @@ TEST(dictionary, basic) {
     err = PREFIX(deflateEnd)(&c_stream);
     EXPECT_EQ(err, Z_OK);
 
+    compr_len = (z_size_t)c_stream.total_out;
+
     strcpy((char*)uncompr, "garbage garbage garbage");
 
     d_stream.next_in  = compr;
