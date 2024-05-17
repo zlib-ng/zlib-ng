@@ -136,6 +136,7 @@ jobs:
     name: Upload Coverage Reports
     runs-on: ubuntu-latest
     needs: pigz
+    if: cancelled() == false
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -150,16 +151,15 @@ jobs:
     - name: Display all coverage artifacts
       run: |
         ls -R *.xml
-        echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g`" >> $GITHUB_ENV
+        echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g'`" >> $GITHUB_ENV
 
     - name: Upload reports
       uses: codecov/codecov-action@v4
       if: (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
       with:
-        token: ${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}
         files: ${{ env.CODECOV_REPORTS }}
         name: pigz-umbrella
         verbose: true
         fail_ci_if_error: true
       env:
-        CODECOV_TOKEN: "${{secrets.CODECOV_TOKEN}}"
+        CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
