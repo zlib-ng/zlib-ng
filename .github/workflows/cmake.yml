@@ -467,15 +467,15 @@ jobs:
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v142
 
-          - name: Windows MSVC 2022 v141 Win32
-            os: windows-latest
+          - name: Windows MSVC 2019 v141 Win32
+            os: windows-2019
             compiler: cl
-            cmake-args: -G "Visual Studio 17 2022" -A Win32 -T v141
+            cmake-args: -G "Visual Studio 16 2019" -A Win32 -T v141
 
-          - name: Windows MSVC 2022 v141 Win64
-            os: windows-latest
+          - name: Windows MSVC 2019 v141 Win64
+            os: windows-2019
             compiler: cl
-            cmake-args: -G "Visual Studio 17 2022" -A x64 -T v141
+            cmake-args: -G "Visual Studio 16 2019" -A x64 -T v141
 
           - name: Windows MSVC 2019 v140 Win32
             os: windows-2019
