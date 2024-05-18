@@ -19,7 +19,7 @@ extern "C" {
 
 #define MAX_SIZE (32 * 1024)
 
-class compress: public benchmark::Fixture {
+class compress_bench: public benchmark::Fixture {
 private:
     size_t maxlen;
     uint8_t *inbuff;
@@ -59,9 +59,9 @@ public:
 };
 
 #define BENCHMARK_COMPRESS(name) \
-    BENCHMARK_DEFINE_F(compress, name)(benchmark::State& state) { \
+    BENCHMARK_DEFINE_F(compress_bench, name)(benchmark::State& state) { \
         Bench(state); \
     } \
-    BENCHMARK_REGISTER_F(compress, name)->Arg(1)->Arg(8)->Arg(16)->Arg(32)->Arg(64)->Arg(512)->Arg(4<<10)->Arg(32<<10);
+    BENCHMARK_REGISTER_F(compress_bench, name)->Arg(1)->Arg(8)->Arg(16)->Arg(32)->Arg(64)->Arg(512)->Arg(4<<10)->Arg(32<<10);
 
-BENCHMARK_COMPRESS(compress);
+BENCHMARK_COMPRESS(compress_bench);
