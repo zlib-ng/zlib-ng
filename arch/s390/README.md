@@ -116,8 +116,7 @@ converted to calls to functions, which are implemented in
 `arch/s390/dfltcc_*` files. The functions can be grouped in three broad
 categories:
 
-* Base DFLTCC support, e.g. wrapping the machine instruction -
-  `dfltcc()` and allocating aligned memory - `dfltcc_alloc_state()`.
+* Base DFLTCC support, e.g. wrapping the machine instruction - `dfltcc()`.
 * Translating between software and hardware data formats, e.g.
   `dfltcc_deflate_set_dictionary()`.
 * Translating between software and hardware state machines, e.g.
