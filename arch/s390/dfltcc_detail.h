@@ -218,10 +218,6 @@ static inline dfltcc_cc dfltcc(int fn, void *param,
 
 #define ALIGN_UP(p, size) (__typeof__(p))(((uintptr_t)(p) + ((size) - 1)) & ~((size) - 1))
 
-static inline void *dfltcc_alloc_state(PREFIX3(streamp) strm, uInt size, uInt extension_size) {
-    return ZALLOC(strm, 1, ALIGN_UP(size, 8) + extension_size);
-}
-
 static inline void dfltcc_reset_state(struct dfltcc_state *dfltcc_state) {
     /* Initialize available functions */
     if (is_dfltcc_enabled()) {
