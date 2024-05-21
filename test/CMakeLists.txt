@@ -175,6 +175,7 @@ if(WITH_GTEST)
             test_deflate_tune.cc
             test_dict.cc
             test_inflate_adler32.cc
+            test_inflate_copy.cc
             test_large_buffers.cc
             test_raw.cc
             test_small_buffers.cc
