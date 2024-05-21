@@ -15,6 +15,8 @@
 #  define ZALLOC_WINDOW(strm, items, size) ZALLOC(strm, items, size)
 #  define ZCOPY_WINDOW(dest, src, n) memcpy(dest, src, n)
 #  define ZFREE_WINDOW(strm, addr) ZFREE(strm, addr)
+/* Adjust the window size for the arch-specific inflate code. */
+#  define INFLATE_ADJUST_WINDOW_SIZE(n) (n)
 /* Invoked at the end of inflateResetKeep(). Useful for initializing arch-specific extension blocks. */
 #  define INFLATE_RESET_KEEP_HOOK(strm) do {} while (0)
 /* Invoked at the beginning of inflatePrime(). Useful for updating arch-specific buffers. */

@@ -75,6 +75,8 @@ const char PREFIX(deflate_copyright)[] = " deflate 1.3.1 Copyright 1995-2024 Jea
 /* Memory management for the window. Useful for allocation the aligned window. */
 #  define ZALLOC_WINDOW(strm, items, size) ZALLOC(strm, items, size)
 #  define TRY_FREE_WINDOW(strm, addr) TRY_FREE(strm, addr)
+/* Adjust the window size for the arch-specific deflate code. */
+#  define DEFLATE_ADJUST_WINDOW_SIZE(n) (n)
 /* Invoked at the beginning of deflateSetDictionary(). Useful for checking arch-specific window data. */
 #  define DEFLATE_SET_DICTIONARY_HOOK(strm, dict, dict_len) do {} while (0)
 /* Invoked at the beginning of deflateGetDictionary(). Useful for adjusting arch-specific window data. */
