@@ -62,4 +62,6 @@ int Z_INTERNAL PREFIX(dfltcc_inflate_get_dictionary)(PREFIX3(streamp) strm,
             return PREFIX(dfltcc_inflate_get_dictionary)((strm), (dict), (dict_len)); \
     } while (0)
 
+#define INFLATE_ADJUST_WINDOW_SIZE(n) MAX(n, HB_SIZE)
+
 #endif

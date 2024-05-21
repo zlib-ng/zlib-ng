@@ -95,6 +95,15 @@ void Z_INTERNAL PREFIX(dfltcc_free_window)(PREFIX3(streamp) strm, void *w);
 
 #define TRY_FREE_WINDOW PREFIX(dfltcc_free_window)
 
+/*
+   History buffer size.
+ */
+#define HB_BITS 15
+#define HB_SIZE (1 << HB_BITS)
+
+/*
+   Sizes of deflate block parts.
+ */
 #define DFLTCC_BLOCK_HEADER_BITS 3
 #define DFLTCC_HLITS_COUNT_BITS 5
 #define DFLTCC_HDISTS_COUNT_BITS 5

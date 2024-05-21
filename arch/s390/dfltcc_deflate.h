@@ -53,4 +53,6 @@ int Z_INTERNAL PREFIX(dfltcc_deflate_get_dictionary)(PREFIX3(streamp) strm, unsi
 
 #define DEFLATE_CAN_SET_REPRODUCIBLE PREFIX(dfltcc_can_set_reproducible)
 
+#define DEFLATE_ADJUST_WINDOW_SIZE(n) MAX(n, HB_SIZE)
+
 #endif

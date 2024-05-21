@@ -100,8 +100,6 @@ typedef enum {
 #define DFLTCC_XPND 4
 #define HBT_CIRCULAR (1 << 7)
 #define DFLTCC_FN_MASK ((1 << 7) - 1)
-#define HB_BITS 15
-#define HB_SIZE (1 << HB_BITS)
 
 /* Return lengths of high (starting at param->ho) and low (starting at 0) fragments of the circular history buffer. */
 static inline void get_history_lengths(struct dfltcc_param_v0 *param, size_t *hl_high, size_t *hl_low) {
