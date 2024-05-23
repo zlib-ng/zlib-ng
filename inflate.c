@@ -19,7 +19,7 @@
 
 /* function prototypes */
 static int inflateStateCheck(PREFIX3(stream) *strm);
-static int updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t len, int32_t cksum);
+static void updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t len, int32_t cksum);
 static uint32_t syncsearch(uint32_t *have, const unsigned char *buf, uint32_t len);
 
 static inline void inf_chksum_cpy(PREFIX3(stream) *strm, uint8_t *dst,
@@ -303,17 +303,6 @@ void Z_INTERNAL PREFIX(fixedtables)(struct inflate_state *state) {
     state->distbits = 5;
 }
 
-int Z_INTERNAL PREFIX(inflate_ensure_window)(struct inflate_state *state) {
-    /* if window not in use yet, initialize */
-    if (state->wsize == 0) {
-        state->wsize = 1U << state->wbits;
-        state->wnext = 0;
-        state->whave = 0;
-    }
-
-    return Z_OK;
-}
-
 /*
    Update the window with the last wsize (normally 32K) bytes written before
    returning.  If window does not exist yet, create it.  This is only called
@@ -328,13 +317,15 @@ int Z_INTERNAL PREFIX(inflate_ensure_window)(struct inflate_state *state) {
    output will fall in the output data, making match copies simpler and faster.
    The advantage may be dependent on the size of the processor's data caches.
  */
-static int32_t updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t len, int32_t cksum) {
+static void updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t len, int32_t cksum) {
     struct inflate_state *state;
     uint32_t dist;
 
     state = (struct inflate_state *)strm->state;
 
-    if (PREFIX(inflate_ensure_window)(state)) return 1;
+    /* if window not in use yet, initialize */
+    if (state->wsize == 0)
+        state->wsize = 1U << state->wbits;
 
     /* len state->wsize or less output bytes into the circular window */
     if (len >= state->wsize) {
@@ -379,7 +370,6 @@ static int32_t updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t 
                 state->whave += dist;
         }
     }
-    return 0;
 }
 
 /*
@@ -1163,9 +1153,6 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             ret = Z_DATA_ERROR;
             goto inf_leave;
 
-        case MEM:
-            return Z_MEM_ERROR;
-
         case SYNC:
 
         default:                 /* can't happen, but makes compilers happy */
@@ -1176,7 +1163,6 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
        Return from inflate(), updating the total counts and the check value.
        If there was no progress during the inflate() call, return a buffer
        error.  Call updatewindow() to create and/or update the window state.
-       Note: a memory error from inflate() is non-recoverable.
      */
   inf_leave:
     RESTORE();
@@ -1185,10 +1171,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             (state->wsize || (out != strm->avail_out && state->mode < BAD &&
                  (state->mode < CHECK || flush != Z_FINISH)))) {
         /* update sliding window with respective checksum if not in "raw" mode */
-        if (updatewindow(strm, strm->next_out, check_bytes, state->wrap & 4)) {
-            state->mode = MEM;
-            return Z_MEM_ERROR;
-        }
+        updatewindow(strm, strm->next_out, check_bytes, state->wrap & 4);
     }
     in -= strm->avail_in;
     out -= strm->avail_out;
@@ -1242,7 +1225,6 @@ int32_t Z_EXPORT PREFIX(inflateGetDictionary)(PREFIX3(stream) *strm, uint8_t *di
 int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8_t *dictionary, uint32_t dictLength) {
     struct inflate_state *state;
     unsigned long dictid;
-    int32_t ret;
 
     /* check state */
     if (inflateStateCheck(strm))
@@ -1262,11 +1244,8 @@ int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8
 
     /* copy dictionary to window using updatewindow(), which will amend the
        existing dictionary if appropriate */
-    ret = updatewindow(strm, dictionary + dictLength, dictLength, 0);
-    if (ret) {
-        state->mode = MEM;
-        return Z_MEM_ERROR;
-    }
+    updatewindow(strm, dictionary + dictLength, dictLength, 0);
+
     state->havedict = 1;
     Tracev((stderr, "inflate:   dictionary set\n"));
     return Z_OK;

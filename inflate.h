@@ -57,14 +57,13 @@ typedef enum {
     LENGTH,     /* i: waiting for 32-bit length (gzip) */
     DONE,       /* finished check, done -- remain here until reset */
     BAD,        /* got a data error -- remain here until reset */
-    MEM,        /* got an inflate() memory error -- remain here until reset */
     SYNC        /* looking for synchronization bytes to restart inflate() */
 } inflate_mode;
 
 /*
     State transitions between above modes -
 
-    (most modes can go to BAD or MEM on error -- not shown for clarity)
+    (most modes can go to BAD on error -- not shown for clarity)
 
     Process header:
         HEAD -> (gzip) or (zlib) or (raw)
@@ -151,7 +150,6 @@ struct ALIGNED_(64) inflate_state {
 #endif
 };
 
-int Z_INTERNAL PREFIX(inflate_ensure_window)(struct inflate_state *state);
 void Z_INTERNAL PREFIX(fixedtables)(struct inflate_state *state);
 Z_INTERNAL inflate_allocs* alloc_inflate(PREFIX3(stream) *strm);
 Z_INTERNAL void free_inflate(PREFIX3(stream) *strm);
