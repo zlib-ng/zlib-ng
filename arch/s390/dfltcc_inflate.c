@@ -77,10 +77,9 @@ dfltcc_inflate_action Z_INTERNAL PREFIX(dfltcc_inflate)(PREFIX3(streamp) strm, i
     if (strm->avail_in == 0 && !param->cf)
         return DFLTCC_INFLATE_BREAK;
 
-    if (PREFIX(inflate_ensure_window)(state)) {
-        state->mode = MEM;
-        return DFLTCC_INFLATE_CONTINUE;
-    }
+    /* if window not in use yet, initialize */
+    if (state->wsize == 0)
+        state->wsize = 1U << state->wbits;
 
     /* Translate stream to parameter block */
     param->cvt = ((state->wrap & 4) && state->flags) ? CVT_CRC32 : CVT_ADLER32;
@@ -170,10 +169,9 @@ int Z_INTERNAL PREFIX(dfltcc_inflate_set_dictionary)(PREFIX3(streamp) strm,
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_param_v0 *param = &state->arch.common.param;
 
-    if (PREFIX(inflate_ensure_window)(state)) {
-        state->mode = MEM;
-        return Z_MEM_ERROR;
-    }
+    /* if window not in use yet, initialize */
+    if (state->wsize == 0)
+        state->wsize = 1U << state->wbits;
 
     append_history(param, state->window, dictionary, dict_length);
     state->havedict = 1;
