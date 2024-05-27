@@ -10,8 +10,6 @@
 #endif
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
@@ -66,7 +64,7 @@ static int compress_chunk(PREFIX3(stream) *strm, int level, int size, int last) 
         goto done;
     }
 
-    compsize = 100 + 2 * PREFIX(deflateBound)(strm, size);
+    compsize = PREFIX(deflateBound)(strm, size);
     buf = malloc(size + compsize);
     if (buf == NULL) {
         fprintf(stderr, "Out of memory\n");
@@ -113,7 +111,7 @@ done:
 
 void show_help(void)
 {
-    printf("Usage: switchlevels [-w bits] level1 size1 [level2 size2 ...]\n\n" \
+    printf("Usage: switchlevels [-w bits] level1 size1 [level2 size2 ...]\n\n"
            "  -w : window bits (8 to 15 for gzip, -8 to -15 for zlib)\n\n");
 }
 

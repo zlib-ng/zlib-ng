@@ -1,7 +1,7 @@
 #ifndef GZGUTS_H_
 #define GZGUTS_H_
 /* gzguts.h -- zlib internal header definitions for gz* operations
- * Copyright (C) 2004, 2005, 2010, 2011, 2012, 2013, 2016 Mark Adler
+ * Copyright (C) 2004-2019 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -9,9 +9,8 @@
 #  ifndef _LARGEFILE_SOURCE
 #    define _LARGEFILE_SOURCE 1
 #  endif
-#  ifdef _FILE_OFFSET_BITS
-#    undef _FILE_OFFSET_BITS
-#  endif
+#  undef _FILE_OFFSET_BITS
+#  undef _TIME_BITS
 #endif
 
 #if defined(HAVE_VISIBILITY_INTERNAL)
@@ -36,10 +35,6 @@
 
 #ifdef _WIN32
 #  include <stddef.h>
-#endif
-
-#if !defined(_MSC_VER) || defined(__MINGW__)
-#  include <unistd.h>       /* for lseek(), read(), close(), write(), unlink() */
 #endif
 
 #if defined(_WIN32)
@@ -88,7 +83,7 @@
 /* default i/o buffer size -- double this for output when reading (this and
    twice this must be able to fit in an unsigned type) */
 #ifndef GZBUFSIZE
-#  define GZBUFSIZE 8192
+#  define GZBUFSIZE 131072
 #endif
 
 /* gzip modes, also provide a little integrity check on the passed structure */
@@ -144,11 +139,6 @@ void Z_INTERNAL gz_error(gz_state *, int, const char *);
 /* GT_OFF(x), where x is an unsigned value, is true if x > maximum z_off64_t
    value -- needed when comparing unsigned to z_off64_t, which is signed
    (possible z_off64_t types off_t, off64_t, and long are all signed) */
-#ifdef INT_MAX
-#  define GT_OFF(x) (sizeof(int) == sizeof(z_off64_t) && (x) > INT_MAX)
-#else
-unsigned Z_INTERNAL gz_intmax(void);
-#  define GT_OFF(x) (sizeof(int) == sizeof(z_off64_t) && (x) > gz_intmax())
-#endif
+#define GT_OFF(x) (sizeof(int) == sizeof(z_off64_t) && (x) > INT_MAX)
 
 #endif /* GZGUTS_H_ */

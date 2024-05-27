@@ -27,14 +27,14 @@
 #elif defined(_WIN32)
 #  define LITTLE_ENDIAN 1234
 #  define BIG_ENDIAN 4321
-#  if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64) || defined (_M_ARM) || defined (_M_ARM64)
+#  if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64) || defined (_M_ARM) || defined (_M_ARM64) || defined (_M_ARM64EC)
 #    define BYTE_ORDER LITTLE_ENDIAN
 #  else
 #    error Unknown endianness!
 #  endif
 #elif defined(__linux__)
 #  include <endian.h>
-#elif defined(__APPLE__) || defined(__arm__) || defined(__aarch64__)
+#elif defined(__APPLE__)
 #  include <machine/endian.h>
 #elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__) || defined(__DragonFly__)
 #  include <sys/endian.h>

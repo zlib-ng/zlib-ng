@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
-#include <stdlib.h>
+
+#include "zbuild.h"
 
 extern int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size);
 
@@ -28,7 +29,7 @@ int main(int argc, char **argv) {
         free(buf);
         err = fclose(f);
         assert(err == 0);
-        (void)err;
+        Z_UNUSED(err);
         fprintf(stderr, "Done:    %s: (%d bytes)\n", argv[i], (int)n_read);
     }
 

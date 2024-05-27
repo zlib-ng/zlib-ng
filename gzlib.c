@@ -1,5 +1,5 @@
 /* gzlib.c -- zlib functions common to reading and writing gzip files
- * Copyright (C) 2004-2017 Mark Adler
+ * Copyright (C) 2004-2019 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -274,8 +274,8 @@ int Z_EXPORT PREFIX(gzbuffer)(gzFile file, unsigned size) {
     /* check and set requested size */
     if ((size << 1) < size)
         return -1;              /* need to be able to double it */
-    if (size < 2)
-        size = 2;               /* need two bytes to check magic header */
+    if (size < 8)
+        size = 8;               /* needed to behave well with flushing */
     state->want = size;
     return 0;
 }
@@ -523,21 +523,3 @@ void Z_INTERNAL gz_error(gz_state *state, int err, const char *msg) {
     }
     (void)snprintf(state->msg, strlen(state->path) + strlen(msg) + 3, "%s%s%s", state->path, ": ", msg);
 }
-
-#ifndef INT_MAX
-/* portably return maximum value for an int (when limits.h presumed not
-   available) -- we need to do this to cover cases where 2's complement not
-   used, since C standard permits 1's complement and sign-bit representations,
-   otherwise we could just use ((unsigned)-1) >> 1 */
-unsigned Z_INTERNAL gz_intmax() {
-    unsigned p, q;
-
-    p = 1;
-    do {
-        q = p;
-        p <<= 1;
-        p++;
-    } while (p > q);
-    return q >> 1;
-}
-#endif

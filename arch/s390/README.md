@@ -23,7 +23,7 @@ https://www.ibm.com/products/z15) and newer machines under the name [
 https://www.ibm.com/support/z-content-solutions/compression/). The
 programming interface to it is a machine instruction called DEFLATE
 CONVERSION CALL (DFLTCC). It is documented in Chapter 26 of [Principles
-of Operation](http://publibfp.dhe.ibm.com/epubs/pdf/a227832c.pdf). Both
+of Operation](https://publibfp.dhe.ibm.com/epubs/pdf/a227832c.pdf). Both
 the code and the rest of this document refer to this feature simply as
 "DFLTCC".
 
@@ -61,16 +61,17 @@ integrated with the rest of zlib-ng using hook macros.
 ## Hook macros
 
 DFLTCC takes as arguments a parameter block, an input buffer, an output
-buffer and a window. `ZALLOC_STATE()`, `ZFREE_STATE()`, `ZCOPY_STATE()`,
-`ZALLOC_WINDOW()` and `TRY_FREE_WINDOW()` macros encapsulate allocation
-details for the parameter block (which is allocated alongside zlib-ng
-state) and the window (which must be page-aligned).
+buffer and a window. `ZALLOC_DEFLATE_STATE()`, `ZALLOC_INFLATE_STATE()`,
+`ZFREE_STATE()`, `ZCOPY_DEFLATE_STATE()`, `ZCOPY_INFLATE_STATE()`,
+`ZALLOC_WINDOW()`, `ZCOPY_WINDOW()` and `TRY_FREE_WINDOW()` macros encapsulate
+allocation  details for the parameter block (which is allocated alongside
+zlib-ng state) and the window (which must be page-aligned and large enough).
 
-While inflate software and hardware window formats match, this is not
-the case for deflate. Therefore, `deflateSetDictionary()` and
-`deflateGetDictionary()` need special handling, which is triggered using
-`DEFLATE_SET_DICTIONARY_HOOK()` and `DEFLATE_GET_DICTIONARY_HOOK()`
-macros.
+Software and hardware window formats do not match, therefore,
+`deflateSetDictionary()`, `deflateGetDictionary()`, `inflateSetDictionary()`
+and `inflateGetDictionary()` need special handling, which is triggered using
+`DEFLATE_SET_DICTIONARY_HOOK()`, `DEFLATE_GET_DICTIONARY_HOOK()`,
+`INFLATE_SET_DICTIONARY_HOOK()` and `INFLATE_GET_DICTIONARY_HOOK()` macros.
 
 `deflateResetKeep()` and `inflateResetKeep()` update the DFLTCC
 parameter block using `DEFLATE_RESET_KEEP_HOOK()` and
@@ -212,5 +213,72 @@ access to an IBM z15+ VM or LPAR in order to test DFLTCC support. Since
 DFLTCC is a non-privileged instruction, neither special VM/LPAR
 configuration nor root are required.
 
-Still, zlib-ng CI has a few QEMU TCG-based configurations that check
-whether fallback to software is working.
+zlib-ng CI uses an IBM-provided z15 self-hosted builder for the DFLTCC
+testing. There are no IBM Z builds of GitHub Actions runner, and
+stable qemu-user has problems with .NET apps, so the builder runs the
+x86_64 runner version with qemu-user built from the master branch.
+
+## Configuring the builder.
+
+### Install prerequisites.
+
+```
+$ sudo dnf install docker
+```
+
+### Add services.
+
+```
+$ sudo cp self-hosted-builder/*.service /etc/systemd/system/
+$ sudo systemctl daemon-reload
+```
+
+### Create a config file.
+
+```
+$ sudo tee /etc/actions-runner
+repo=<owner>/<name>
+access_token=<ghp_***>
+```
+
+Access token should have the repo scope, consult
+https://docs.github.com/en/rest/reference/actions#create-a-registration-token-for-a-repository
+for details.
+
+### Autostart the x86_64 emulation support.
+
+```
+$ sudo systemctl enable --now qemu-user-static
+```
+
+### Autostart the runner.
+
+```
+$ sudo systemctl enable --now actions-runner
+```
+
+## Rebuilding the image
+
+In order to update the `iiilinuxibmcom/actions-runner` image, e.g. to get the
+latest OS security fixes, use the following commands:
+
+```
+$ sudo docker build \
+      --pull \
+      -f self-hosted-builder/actions-runner.Dockerfile \
+      -t iiilinuxibmcom/actions-runner
+$ sudo systemctl restart actions-runner
+```
+
+## Removing persistent data
+
+The `actions-runner` service stores various temporary data, such as runner
+registration information, work directories and logs, in the `actions-runner`
+volume. In order to remove it and start from scratch, e.g. when switching the
+runner to a different repository, use the following commands:
+
+```
+$ sudo systemctl stop actions-runner
+$ sudo docker rm -f actions-runner
+$ sudo docker volume rm actions-runner
+```

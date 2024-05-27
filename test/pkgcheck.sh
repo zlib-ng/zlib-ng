@@ -47,10 +47,6 @@ _EOF_
 
 set -ex
 
-# Caller can also set CMAKE_ARGS or CONFIGURE_ARGS if desired
-CMAKE_ARGS=${CMAKE_ARGS}
-CONFIGURE_ARGS=${CONFIGURE_ARGS}
-
 case "$1" in
 --zlib-compat)
   suffix=""
@@ -117,7 +113,7 @@ cd ..
 # Original build system
 rm -rf btmp1 pkgtmp1
 mkdir btmp1 pkgtmp1
-export DESTDIR=$(pwd)/pkgtmp1
+export DESTDIR=$(pwd)/pkgtmp1/
 cd btmp1
   case $(uname) in
   Darwin)
@@ -125,18 +121,20 @@ cd btmp1
     ;;
   esac
   ../configure $CONFIGURE_ARGS
-  make
+  make -j2
   make install
 cd ..
 
 repack_ar() {
-  if ! cmp --silent pkgtmp1/usr/local/lib/libz$suffix.a pkgtmp2/usr/local/lib/libz$suffix.a
+  archive1=$(cd pkgtmp1; find . -type f -name '*.a'; cd ..)
+  archive2=$(cd pkgtmp2; find . -type f -name '*.a'; cd ..)
+  if ! cmp --silent pkgtmp1/$archive1 pkgtmp2/$archive2
   then
     echo "libz$suffix.a does not match.  Probably filenames differ (.o vs .c.o).  Unpacking and renaming..."
     # Note: %% is posix shell syntax meaning "Remove Largest Suffix Pattern", see
     # https://pubs.opengroup.org/onlinepubs/009695399/utilities/xcu_chap02.html#tag_02_06_02
-    cd pkgtmp1; ar x usr/local/lib/libz$suffix.a; rm usr/local/lib/libz$suffix.a; cd ..
-    cd pkgtmp2; ar x usr/local/lib/libz$suffix.a; rm usr/local/lib/libz$suffix.a; for a in *.c.o; do mv $a ${a%%.c.o}.o; done; cd ..
+    cd pkgtmp1; ar x $archive1; rm $archive1; cd ..
+    cd pkgtmp2; ar x $archive2; rm $archive2; for a in *.c.o; do mv $a ${a%%.c.o}.o; done; cd ..
     # Also, remove __.SYMDEF SORTED if present, as it has those funky .c.o names embedded in it.
     rm -f pkgtmp[12]/__.SYMDEF\ SORTED
   fi
@@ -151,6 +149,9 @@ Darwin)
   strip -x -no_uuid "$dylib2"
   ;;
 esac
+
+# Remove cmake target files to avoid mismatch with configure
+find pkgtmp2 -type f -name '*.cmake' -exec rm '{}' \;
 
 # The ar on newer systems defaults to -D (i.e. deterministic),
 # but FreeBSD 12.1, Debian 8, and Ubuntu 14.04 seem to not do that.

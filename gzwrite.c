@@ -1,5 +1,5 @@
 /* gzwrite.c -- zlib functions for writing gzip files
- * Copyright (C) 2004-2017 Mark Adler
+ * Copyright (C) 2004-2019 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -274,7 +274,7 @@ size_t Z_EXPORT PREFIX(gzfwrite)(void const *buf, size_t size, size_t nitems, gz
 
     /* compute bytes to read -- error on overflow */
     len = nitems * size;
-    if (size && len / size != nitems) {
+    if (len / size != nitems) {
         gz_error(state, Z_STREAM_ERROR, "request does not fit in a size_t");
         return 0;
     }
@@ -460,7 +460,7 @@ int Z_EXPORT PREFIX(gzsetparams)(gzFile file, int level, int strategy) {
     strm = &(state->strm);
 
     /* check that we're writing and that there's no error */
-    if (state->mode != GZ_WRITE || state->err != Z_OK)
+    if (state->mode != GZ_WRITE || state->err != Z_OK || state->direct)
         return Z_STREAM_ERROR;
 
     /* if no change is requested, then do nothing */

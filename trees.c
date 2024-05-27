@@ -1,5 +1,5 @@
 /* trees.c -- output deflated data using Huffman coding
- * Copyright (C) 1995-2017 Jean-loup Gailly
+ * Copyright (C) 1995-2021 Jean-loup Gailly
  * detect_data_type() function provided freely by Cosmin Truta, 2006
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -305,10 +305,10 @@ Z_INTERNAL void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
         if (len == 0)
             continue;
         /* Now reverse the bits */
-        tree[n].Code = (uint16_t)bi_reverse(next_code[len]++, len);
+        tree[n].Code = PREFIX(bi_reverse)(next_code[len]++, len);
 
         Tracecv(tree != static_ltree, (stderr, "\nn %3d %c l %2d c %4x (%x) ",
-             n, (isgraph(n) ? n : ' '), len, tree[n].Code, next_code[len]-1));
+             n, (isgraph(n & 0xff) ? n : ' '), len, tree[n].Code, next_code[len]-1));
     }
 }
 
@@ -670,7 +670,7 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
                 opt_lenb, s->opt_len, static_lenb, s->static_len, stored_len,
                 s->sym_next / 3));
 
-        if (static_lenb <= opt_lenb)
+        if (static_lenb <= opt_lenb || s->strategy == Z_FIXED)
             opt_lenb = static_lenb;
 
     } else {
@@ -688,7 +688,7 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
          */
         zng_tr_stored_block(s, buf, stored_len, last);
 
-    } else if (s->strategy == Z_FIXED || static_lenb == opt_lenb) {
+    } else if (static_lenb == opt_lenb) {
         zng_tr_emit_tree(s, STATIC_TREES, last);
         compress_block(s, (const ct_data *)static_ltree, (const ct_data *)static_dtree);
         cmpr_bits_add(s, s->static_len);
@@ -806,17 +806,13 @@ static void bi_flush(deflate_state *s) {
 }
 
 /* ===========================================================================
- * Reverse the first len bits of a code, using straightforward code (a faster
- * method would use a table)
- * IN assertion: 1 <= len <= 15
+ * Reverse the first len bits of a code using bit manipulation
  */
-Z_INTERNAL unsigned bi_reverse(unsigned code, int len) {
+Z_INTERNAL uint16_t PREFIX(bi_reverse)(unsigned code, int len) {
     /* code: the value to invert */
     /* len: its bit length */
-    Z_REGISTER unsigned res = 0;
-    do {
-        res |= code & 1;
-        code >>= 1, res <<= 1;
-    } while (--len > 0);
-    return res >> 1;
+    Assert(len >= 1 && len <= 15, "code length must be 1-15");
+#define bitrev8(b) \
+    (uint8_t)((((uint8_t)(b) * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32)
+    return (bitrev8(code >> 8) | (uint16_t)bitrev8(code) << 8) >> (16 - len);
 }

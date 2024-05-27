@@ -9,10 +9,18 @@ zlib-compat mode
 Zlib-ng can be compiled in zlib-compat mode, suitable for zlib-replacement
 in a single application or system-wide.
 
-Please note that zlib-ng in zlib-compat mode is API-compatible but not
-ABI-compatible, meaning that you cannot simply replace the zlib library/dll
-files and expect the application to work. The application will need to be
-recompiled against the zlib-ng headers and libs to ensure full compatability.
+Please note that zlib-ng in zlib-compat mode tries to maintain both API and
+ABI compatibility with the original zlib. Any issues regarding compatibility
+can be reported as bugs.
+
+In certain instances you may not be able to simply replace the zlib library/dll
+files and expect the application to work. The application may need to be
+recompiled against the zlib-ng headers and libs to ensure full compatibility.
+
+It is also possible for the deflate output stream to differ from the original
+zlib due to algorithmic differences between the two libraries. Any tests or
+applications that depend on the exact length of the deflate stream being a
+certain value will need to be updated.
 
 **Advantages:**
 - Easy to port to, since it only requires a recompile of the application and
@@ -25,8 +33,8 @@ recompiled against the zlib-ng headers and libs to ensure full compatability.
 - If your application is pre-allocating a memory buffer and you are providing
   deflate/inflate init with your own allocator that allocates from that buffer
   (looking at you nginx), you should be aware that zlib-ng needs to allocate
-  more memory than stock zlib needs. The same problem exists with Intels and
-  Cloudflares zlib forks. Doing this is not recommended since it makes it
+  more memory than stock zlib needs. The same problem exists with Intel’s and
+  Cloudflare’s zlib forks. Doing this is not recommended since it makes it
   very hard to maintain compatibility over time.
 
 **Build Considerations:**
@@ -35,7 +43,8 @@ recompiled against the zlib-ng headers and libs to ensure full compatability.
 - Static library is *libz.a* on Unix and macOS, or *zlib.lib* on Windows
 - Shared library is *libz.so* on Unix, *libz.dylib* on macOS, or *zlib1.dll*
   on Windows
-- Type `z_size_t` is *unsigned long*
+- Type `z_size_t` is *unsigned __int64* on 64-bit Windows, and *unsigned long* on 32-bit Windows, Unix and macOS
+- Type `z_uintmax_t` is *unsigned long* in zlib-compat mode, and *size_t* with zlib-ng API
 
 zlib-ng native mode
 -------------------

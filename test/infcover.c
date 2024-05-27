@@ -11,17 +11,11 @@
 #undef NDEBUG
 #include <assert.h>
 #include <inttypes.h>
-#include <stdint.h>
 
 /* get definition of internal structure so we can mess with it (see pull()),
    and so we can call inflate_trees() (see cover5()) */
-#define ZLIB_INTERNAL
 #include "zbuild.h"
-#ifdef ZLIB_COMPAT
-#  include "zlib.h"
-#else
-#  include "zlib-ng.h"
-#endif
+#include "zutil.h"
 #include "inftrees.h"
 #include "inflate.h"
 
@@ -348,7 +342,7 @@ static void inf(char *hex, char *what, unsigned step, int win, unsigned len, int
     ret = PREFIX(inflateReset2)(&strm, -8);     assert(ret == Z_OK);
     ret = PREFIX(inflateEnd)(&strm);            assert(ret == Z_OK);
     mem_done(&strm, what);
-    (void)err;
+    Z_UNUSED(err);
 }
 
 /* cover all of the lines in inflate.c up to inflate() */
@@ -374,19 +368,21 @@ static void cover_support(void) {
     inf("3 0", "use fixed blocks", 0, -15, 1, Z_STREAM_END);
     inf("", "bad window size", 0, 1, 0, Z_STREAM_ERROR);
 
+#ifdef ZLIB_COMPAT
     mem_setup(&strm);
     strm.avail_in = 0;
     strm.next_in = NULL;
     ret = PREFIX(inflateInit_)(&strm, &PREFIX2(VERSION)[1], (int)sizeof(PREFIX3(stream)));
                                                 assert(ret == Z_VERSION_ERROR);
     mem_done(&strm, "wrong version");
+#endif
 
     strm.avail_in = 0;
     strm.next_in = NULL;
     ret = PREFIX(inflateInit)(&strm);           assert(ret == Z_OK);
     ret = PREFIX(inflateEnd)(&strm);            assert(ret == Z_OK);
     fputs("inflate built-in memory routines\n", stderr);
-    (void)ret;
+    Z_UNUSED(ret);
 }
 
 /* cover all inflate() header and trailer cases and code after inflate() */
@@ -470,7 +466,7 @@ static unsigned pull(void *desc, z_const unsigned char **buf) {
 
 static int push(void *desc, unsigned char *buf, unsigned len) {
     buf += len;
-    (void)buf;
+    Z_UNUSED(buf);
     return desc != NULL;        /* force error if desc not null */
 }
 
@@ -480,8 +476,11 @@ static void cover_back(void) {
     PREFIX3(stream) strm;
     unsigned char win[32768];
 
+#ifdef ZLIB_COMPAT
     ret = PREFIX(inflateBackInit_)(NULL, 0, win, 0, 0);
                                                 assert(ret == Z_VERSION_ERROR);
+#endif
+
     ret = PREFIX(inflateBackInit)(NULL, 0, win);
                                                 assert(ret == Z_STREAM_ERROR);
     ret = PREFIX(inflateBack)(NULL, NULL, NULL, NULL, NULL);
@@ -511,7 +510,7 @@ static void cover_back(void) {
                                                 assert(ret == Z_OK);
     ret = PREFIX(inflateBackEnd)(&strm);        assert(ret == Z_OK);
     fputs("inflateBack built-in memory routines\n", stderr);
-    (void)ret;
+    Z_UNUSED(ret);
 }
 
 /* do a raw inflate of data in hexadecimal with both inflate and inflateBack */
@@ -647,7 +646,7 @@ static void cover_trees(void) {
     ret = zng_inflate_table(DISTS, lens, 16, &next, &bits, work);
                                                 assert(ret == 1);
     fputs("inflate_table not enough errors\n", stderr);
-    (void)ret;
+    Z_UNUSED(ret);
 }
 
 /* cover remaining inffast.c decoding and window copying */
@@ -670,6 +669,10 @@ static void cover_fast(void) {
         Z_STREAM_END);
 }
 
+static void cover_cve_2022_37434(void) {
+    inf("1f 8b 08 04 61 62 63 64 61 62 52 51 1f 8b 08 04 61 62 63 64 61 62 52 51 1f 8b 08 04 61 62 63 64 61 62 52 51 1f 8b 08 04 61 62 63 64 61 62 52 51", "wtf", 13, 47, 12, Z_OK);
+}
+
 int main(void) {
     fprintf(stderr, "%s\n", zVersion());
     cover_support();
@@ -678,5 +681,6 @@ int main(void) {
     cover_inflate();
     cover_trees();
     cover_fast();
+    cover_cve_2022_37434();
     return 0;
 }

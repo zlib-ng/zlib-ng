@@ -3,20 +3,12 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#include <stdio.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <inttypes.h>
-
 #include "zbuild.h"
-#ifdef ZLIB_COMPAT
-#  include "zlib.h"
-#else
-#  include "zlib-ng.h"
-#endif
+
+#include <stdio.h>
+#include <assert.h>
+
+#include "zutil.h"
 
 #if defined(_WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
@@ -26,10 +18,11 @@
 #  define SET_BINARY_MODE(file)
 #endif
 
-#if MAX_MEM_LEVEL >= 8
-#  define DEF_MEM_LEVEL 8
+#ifdef _MSC_VER
+#  include <string.h>
+#  define strcasecmp _stricmp
 #else
-#  define DEF_MEM_LEVEL  MAX_MEM_LEVEL
+#  include <strings.h>
 #endif
 
 #define CHECK_ERR(err, msg) { \
@@ -38,6 +31,9 @@
         exit(1); \
     } \
 }
+
+/* Default read/write i/o buffer size based on GZBUFSIZE */
+#define BUFSIZE 131072
 
 /* ===========================================================================
  * deflate() using specialized parameters
@@ -67,6 +63,8 @@ void deflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
     c_stream.opaque = (void *)0;
     c_stream.total_in = 0;
     c_stream.total_out = 0;
+    c_stream.next_out = write_buf;
+    c_stream.avail_out = write_buf_size;
 
     err = PREFIX(deflateInit2)(&c_stream, level, Z_DEFLATED, window_bits, mem_level, strategy);
     CHECK_ERR(err, "deflateInit2");
@@ -79,11 +77,9 @@ void deflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
             break;
 
         c_stream.next_in  = (z_const uint8_t *)read_buf;
-        c_stream.next_out = write_buf;
         c_stream.avail_in = read;
 
         do {
-            c_stream.avail_out = write_buf_size;
             err = PREFIX(deflate)(&c_stream, flush);
             if (err == Z_STREAM_END) break;
             CHECK_ERR(err, "deflate");
@@ -91,6 +87,7 @@ void deflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
             if (c_stream.next_out == write_buf + write_buf_size) {
                 fwrite(write_buf, 1, write_buf_size, fout);
                 c_stream.next_out = write_buf;
+                c_stream.avail_out = write_buf_size;
             }
         } while (c_stream.next_in < read_buf + read);
     } while (err == Z_OK);
@@ -102,13 +99,13 @@ void deflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
             if (c_stream.next_out == write_buf + write_buf_size) {
                 fwrite(write_buf, 1, write_buf_size, fout);
                 c_stream.next_out = write_buf;
+                c_stream.avail_out = write_buf_size;
             }
 
-            c_stream.avail_out = write_buf_size;
             err = PREFIX(deflate)(&c_stream, Z_FINISH);
             if (err == Z_STREAM_END) break;
             CHECK_ERR(err, "deflate");
-        } while (err == Z_OK);
+        } while (1);
     }
 
     /* Output remaining data in write buffer */
@@ -152,6 +149,8 @@ void inflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
     d_stream.opaque = (void *)0;
     d_stream.total_in = 0;
     d_stream.total_out = 0;
+    d_stream.next_out = write_buf;
+    d_stream.avail_out = write_buf_size;
 
     err = PREFIX(inflateInit2)(&d_stream, window_bits);
     CHECK_ERR(err, "inflateInit2");
@@ -164,18 +163,23 @@ void inflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
             break;
 
         d_stream.next_in  = (z_const uint8_t *)read_buf;
-        d_stream.next_out = write_buf;
         d_stream.avail_in = read;
 
         do {
-            d_stream.avail_out = write_buf_size;
             err = PREFIX(inflate)(&d_stream, flush);
+
+            /* Ignore Z_BUF_ERROR if we are finishing and read buffer size is
+             * purposefully limited */
+            if (flush == Z_FINISH && err == Z_BUF_ERROR && read_buf_size != BUFSIZE)
+                err = Z_OK;
+
             if (err == Z_STREAM_END) break;
-            CHECK_ERR(err, "deflate");
+            CHECK_ERR(err, "inflate");
 
             if (d_stream.next_out == write_buf + write_buf_size) {
                 fwrite(write_buf, 1, write_buf_size, fout);
                 d_stream.next_out = write_buf;
+                d_stream.avail_out = write_buf_size;
             }
         } while (d_stream.next_in < read_buf + read);
     } while (err == Z_OK);
@@ -187,13 +191,13 @@ void inflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
             if (d_stream.next_out == write_buf + write_buf_size) {
                 fwrite(write_buf, 1, write_buf_size, fout);
                 d_stream.next_out = write_buf;
+                d_stream.avail_out = write_buf_size;
             }
 
-            d_stream.avail_out = write_buf_size;
             err = PREFIX(inflate)(&d_stream, Z_FINISH);
             if (err == Z_STREAM_END) break;
             CHECK_ERR(err, "inflate");
-        } while (err == Z_OK);
+        } while (1);
     }
 
     /* Output remaining data in write buffer */
@@ -209,35 +213,45 @@ void inflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t write_
 }
 
 void show_help(void) {
-    printf("Usage: minideflate [-c] [-f|-h|-R|-F] [-m level] [-r/-t size] [-s flush] [-w bits] [-0 to -9] [input file]\n\n" \
-           "  -c : write to standard output\n" \
-           "  -d : decompress\n" \
-           "  -f : compress with Z_FILTERED\n" \
-           "  -h : compress with Z_HUFFMAN_ONLY\n" \
-           "  -R : compress with Z_RLE\n" \
-           "  -F : compress with Z_FIXED\n" \
-           "  -m : memory level (1 to 8)\n" \
-           "  -w : window bits (8 to 15 for gzip, -8 to -15 for zlib)\n" \
-           "  -s : flush type (0 to 5)\n" \
-           "  -r : read buffer size\n" \
-           "  -t : write buffer size\n" \
+    printf("Usage: minideflate [-c][-d][-k] [-f|-h|-R|-F] [-m level] [-r/-t size] [-s flush] [-w bits] [-0 to -9] [input file]\n\n"
+           "  -c : write to standard output\n"
+           "  -d : decompress\n"
+           "  -k : keep input file\n"
+           "  -f : compress with Z_FILTERED\n"
+           "  -h : compress with Z_HUFFMAN_ONLY\n"
+           "  -R : compress with Z_RLE\n"
+           "  -F : compress with Z_FIXED\n"
+           "  -m : memory level (1 to 8)\n"
+           "  -w : window bits..\n"
+           "     :   -1 to -15 for raw deflate\n"
+           "     :    0 to  15 for deflate (adler32)\n"
+           "     :   16 to  31 for gzip (crc32)\n"
+           "  -s : flush type (0 to 5)\n"
+           "  -r : read buffer size\n"
+           "  -t : write buffer size\n"
            "  -0 to -9 : compression level\n\n");
 }
 
 int main(int argc, char **argv) {
     int32_t i;
     int32_t mem_level = DEF_MEM_LEVEL;
-    int32_t window_bits = MAX_WBITS;
+    int32_t window_bits = INT32_MAX;
     int32_t strategy = Z_DEFAULT_STRATEGY;
     int32_t level = Z_DEFAULT_COMPRESSION;
-    int32_t read_buf_size = 4096;
-    int32_t write_buf_size = 4096;
+    int32_t read_buf_size = BUFSIZE;
+    int32_t write_buf_size = BUFSIZE;
     int32_t flush = Z_NO_FLUSH;
     uint8_t copyout = 0;
     uint8_t uncompr = 0;
-    char out_file[320];
+    uint8_t keep = 0;
     FILE *fin = stdin;
     FILE *fout = stdout;
+
+
+    if (argc == 1) {
+        show_help();
+        return 64;   /* EX_USAGE */
+    }
 
     for (i = 1; i < argc; i++) {
         if ((strcmp(argv[i], "-m") == 0) && (i + 1 < argc))
@@ -254,8 +268,12 @@ int main(int argc, char **argv) {
             copyout = 1;
         else if (strcmp(argv[i], "-d") == 0)
             uncompr = 1;
+        else if (strcmp(argv[i], "-k") == 0)
+            keep = 1;
         else if (strcmp(argv[i], "-f") == 0)
             strategy = Z_FILTERED;
+        else if (strcmp(argv[i], "-F") == 0)
+            strategy = Z_FIXED;
         else if (strcmp(argv[i], "-h") == 0)
             strategy = Z_HUFFMAN_ONLY;
         else if (strcmp(argv[i], "-R") == 0)
@@ -268,12 +286,13 @@ int main(int argc, char **argv) {
         } else if (argv[i][0] == '-') {
             show_help();
             return 64;   /* EX_USAGE */
-        } else 
+        } else
             break;
     }
 
     SET_BINARY_MODE(stdin);
     SET_BINARY_MODE(stdout);
+
     if (i != argc) {
         fin = fopen(argv[i], "rb+");
         if (fin == NULL) {
@@ -281,13 +300,51 @@ int main(int argc, char **argv) {
             exit(1);
         }
         if (!copyout) {
-            snprintf(out_file, sizeof(out_file), "%s%s", argv[i], (window_bits < 0) ? ".zz" : ".gz");
+            char *out_file = (char *)calloc(1, strlen(argv[i]) + 6);
+            if (out_file == NULL) {
+                fprintf(stderr, "Not enough memory\n");
+                exit(1);
+            }
+            strcat(out_file, argv[i]);
+            if (!uncompr) {
+                if (window_bits < 0) {
+                    strcat(out_file, ".zraw");
+                } else if (window_bits > MAX_WBITS) {
+                    strcat(out_file, ".gz");
+                } else {
+                    strcat(out_file, ".z");
+                }
+            } else {
+                char *out_ext = strrchr(out_file, '.');
+                if (out_ext != NULL) {
+                    if (strcasecmp(out_ext, ".zraw") == 0 && window_bits == INT32_MAX) {
+                        fprintf(stderr, "Must specify window bits for raw deflate stream\n");
+                        exit(1);
+                    }
+                    *out_ext = 0;
+                }
+            }
             fout = fopen(out_file, "wb");
             if (fout == NULL) {
                 fprintf(stderr, "Failed to open file: %s\n", out_file);
                 exit(1);
             }
+            free(out_file);
         }
+    }
+
+    if (window_bits == INT32_MAX) {
+        window_bits = MAX_WBITS;
+        /* Auto-detect wrapper for inflateInit */
+        if (uncompr)
+            window_bits += 32;
+    }
+
+    if (window_bits == INT32_MAX) {
+        window_bits = MAX_WBITS;
+        /* Auto-detect wrapper for inflateInit */
+        if (uncompr)
+            window_bits += 32;
     }
 
     if (uncompr) {
@@ -298,6 +355,9 @@ int main(int argc, char **argv) {
 
     if (fin != stdin) {
         fclose(fin);
+        if (!copyout && !keep) {
+            unlink(argv[i]);
+        }
     }
     if (fout != stdout) {
         fclose(fout);

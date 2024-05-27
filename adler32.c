@@ -4,12 +4,11 @@
  */
 
 #include "zbuild.h"
-#include "zutil.h"
 #include "functable.h"
 #include "adler32_p.h"
 
 /* ========================================================================= */
-Z_INTERNAL uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t len) {
+Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
     uint32_t sum2;
     unsigned n;
 
@@ -51,30 +50,7 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const unsigned char *buf, size_t l
     }
 
     /* do remaining bytes (less than NMAX, still just one modulo) */
-    if (len) {                  /* avoid modulos if none remaining */
-#ifdef UNROLL_MORE
-        while (len >= 16) {
-            len -= 16;
-            DO16(adler, sum2, buf);
-            buf += 16;
-#else
-        while (len >= 8) {
-            len -= 8;
-            DO8(adler, sum2, buf, 0);
-            buf += 8;
-#endif
-        }
-        while (len) {
-            --len;
-            adler += *buf++;
-            sum2 += adler;
-        }
-        adler %= BASE;
-        sum2 %= BASE;
-    }
-
-    /* return recombined sums */
-    return adler | (sum2 << 16);
+    return adler32_len_64(adler, buf, len, sum2);
 }
 
 #ifdef ZLIB_COMPAT

@@ -13,9 +13,11 @@ elseif(MSVC)
         set(ARCH "x86_64")
     elseif("${MSVC_C_ARCHITECTURE_ID}" STREQUAL "ARM" OR "${MSVC_C_ARCHITECTURE_ID}" STREQUAL "ARMV7")
         set(ARCH "arm")
-    elseif ("${MSVC_C_ARCHITECTURE_ID}" STREQUAL "ARM64")
+    elseif ("${MSVC_C_ARCHITECTURE_ID}" STREQUAL "ARM64" OR "${MSVC_C_ARCHITECTURE_ID}" STREQUAL "ARM64EC")
         set(ARCH "aarch64")
     endif()
+elseif(EMSCRIPTEN)
+    set(ARCH "wasm32")
 elseif(CMAKE_CROSSCOMPILING)
     set(ARCH ${CMAKE_C_COMPILER_TARGET})
 else()
@@ -24,8 +26,8 @@ else()
     try_run(
         run_result_unused
         compile_result_unused
-        ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/detect-arch.c
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${CMAKE_CURRENT_LIST_DIR}/detect-arch.c
         COMPILE_OUTPUT_VARIABLE RAWOUTPUT
         CMAKE_FLAGS CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
     )
@@ -49,7 +51,7 @@ endif()
 if("${ARCH}" MATCHES "(x86_64|AMD64|i[3-6]86)")
     set(BASEARCH "x86")
     set(BASEARCH_X86_FOUND TRUE)
-elseif("${ARCH}" MATCHES "(arm(v[0-9])?|aarch64)")
+elseif("${ARCH}" MATCHES "(arm(v[0-9])?|aarch64|cortex)")
     set(BASEARCH "arm")
     set(BASEARCH_ARM_FOUND TRUE)
 elseif("${ARCH}" MATCHES "ppc(64(le)?)?|powerpc(64(le)?)?")
@@ -85,6 +87,15 @@ elseif("${ARCH}" MATCHES "parisc")
 elseif("${ARCH}" MATCHES "rs6000")
     set(BASEARCH "rs6000")
     set(BASEARCH_RS6000_FOUND TRUE)
+elseif("${ARCH}" MATCHES "riscv(32|64)")
+    set(BASEARCH "riscv")
+    set(BASEARCH_RISCV_FOUND TRUE)
+elseif("${ARCH}" MATCHES "loongarch64")
+    set(BASEARCH "loongarch")
+    set(BASEARCH_LOONGARCH_FOUND TRUE)
+elseif("${ARCH}" MATCHES "wasm32")
+    set(BASEARCH "wasm32")
+    set(BASEARCH_WASM32_FOUND TRUE)
 else()
     set(BASEARCH "x86")
     set(BASEARCH_X86_FOUND TRUE)

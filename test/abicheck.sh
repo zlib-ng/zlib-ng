@@ -49,7 +49,7 @@ do
   --refresh)
     refresh=true
     ;;
-  --refresh_if)
+  --refresh-if)
     refresh_if=true
     ;;
   --help)
@@ -67,17 +67,14 @@ done
 # Choose reference repo and commit
 if test "$suffix" = ""
 then
-  # Reference is zlib 1.2.11
+  # Reference is zlib 1.2.13.
   ABI_GIT_REPO=https://github.com/madler/zlib.git
-  ABI_GIT_COMMIT=v1.2.11
+  ABI_GIT_COMMIT=04f42ceca40f73e2978b50e93806c2a18c1281fc
 else
-  # Reference should be the tag for zlib-ng 2.0
-  # but until that bright, shining day, use some
-  # random recent SHA.  Annoyingly, can't shorten it.
+  # Reference is most recent zlib-ng develop with zlib 1.2.12 compatible api.
   ABI_GIT_REPO=https://github.com/zlib-ng/zlib-ng.git
-  ABI_GIT_COMMIT=56ce27343bf295ae9457f8e3d38ec96d2f949a1c
+  ABI_GIT_COMMIT=e4614ebcb9b3e5b108dc983c155e4baf80882311
 fi
-# FIXME: even when using a tag, check the hash.
 
 # Test compat build for ABI compatibility with zlib
 if test "$CHOST" = ""
@@ -94,7 +91,11 @@ then
 fi
 
 # Canonicalize CHOST to work around bug in original zlib's configure
-export CHOST=$(sh $TESTDIR/../tools/config.sub $CHOST)
+# (Don't export it if it wasn't already exported, else may cause
+# default compiler detection failure and shared library link error
+# when building both zlib and zlib-ng.
+# See https://github.com/zlib-ng/zlib-ng/issues/1219)
+CHOST=$(sh $TESTDIR/../tools/config.sub $CHOST)
 
 if test "$CHOST" = ""
 then
@@ -121,7 +122,7 @@ then
   git reset --hard FETCH_HEAD
   cd ..
   # Build unstripped, uninstalled, very debug shared library
-  CFLAGS="$CFLAGS -ggdb" sh src.d/configure $CONFIGURE_ARGS
+  CFLAGS="$CFLAGS -ggdb" src.d/configure $CONFIGURE_ARGS
   make -j2
   cd ..
   # Find shared library, extract its abi
@@ -134,12 +135,10 @@ then
   # caching abi files in git (but that would slow builds down).
 fi
 
-if test -f "$ABIFILE"
+if ! test -f "$ABIFILE"
 then
-  ABIFILE="$ABIFILE"
-else
-  echo "abicheck: SKIP: $ABIFILE not found; rerun with --refresh or --refresh_if"
-  exit 0
+  echo "abicheck: SKIP: $ABIFILE not found; rerun with --refresh or --refresh-if"
+  exit 1
 fi
 
 # Build unstripped, uninstalled, very debug shared library

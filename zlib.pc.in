@@ -1,5 +1,6 @@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
+symbol_prefix=@symbol_prefix@
 libdir=@libdir@
 sharedlibdir=@sharedlibdir@
 includedir=@includedir@
@@ -10,4 +11,4 @@ Version: @VERSION@
 
 Requires:
 Libs: -L${libdir} -L${sharedlibdir} -lz@SUFFIX@
-Cflags: -I${includedir}
+Cflags: -I${includedir} @PKG_CONFIG_CFLAGS@

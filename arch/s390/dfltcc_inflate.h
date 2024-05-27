@@ -3,28 +3,37 @@
 
 #include "dfltcc_common.h"
 
-int Z_INTERNAL dfltcc_can_inflate(PREFIX3(streamp) strm);
+struct inflate_state Z_INTERNAL *PREFIX(dfltcc_alloc_inflate_state)(PREFIX3(streamp) strm);
+void Z_INTERNAL PREFIX(dfltcc_reset_inflate_state)(PREFIX3(streamp) strm);
+void Z_INTERNAL PREFIX(dfltcc_copy_inflate_state)(struct inflate_state *dst, const struct inflate_state *src);
+int Z_INTERNAL PREFIX(dfltcc_can_inflate)(PREFIX3(streamp) strm);
 typedef enum {
     DFLTCC_INFLATE_CONTINUE,
     DFLTCC_INFLATE_BREAK,
     DFLTCC_INFLATE_SOFTWARE,
 } dfltcc_inflate_action;
-dfltcc_inflate_action Z_INTERNAL dfltcc_inflate(PREFIX3(streamp) strm, int flush, int *ret);
-int Z_INTERNAL dfltcc_was_inflate_used(PREFIX3(streamp) strm);
-int Z_INTERNAL dfltcc_inflate_disable(PREFIX3(streamp) strm);
+dfltcc_inflate_action Z_INTERNAL PREFIX(dfltcc_inflate)(PREFIX3(streamp) strm, int flush, int *ret);
+int Z_INTERNAL PREFIX(dfltcc_was_inflate_used)(PREFIX3(streamp) strm);
+int Z_INTERNAL PREFIX(dfltcc_inflate_disable)(PREFIX3(streamp) strm);
+int Z_INTERNAL PREFIX(dfltcc_inflate_set_dictionary)(PREFIX3(streamp) strm,
+                                                     const unsigned char *dictionary, uInt dict_length);
+int Z_INTERNAL PREFIX(dfltcc_inflate_get_dictionary)(PREFIX3(streamp) strm,
+                                                     unsigned char *dictionary, uInt* dict_length);
 
-#define INFLATE_RESET_KEEP_HOOK(strm) \
-    dfltcc_reset((strm), sizeof(struct inflate_state))
+#define ZALLOC_INFLATE_STATE PREFIX(dfltcc_alloc_inflate_state)
+#define ZCOPY_INFLATE_STATE PREFIX(dfltcc_copy_inflate_state)
+
+#define INFLATE_RESET_KEEP_HOOK PREFIX(dfltcc_reset_inflate_state)
 
 #define INFLATE_PRIME_HOOK(strm, bits, value) \
-    do { if (dfltcc_inflate_disable((strm))) return Z_STREAM_ERROR; } while (0)
+    do { if (PREFIX(dfltcc_inflate_disable)((strm))) return Z_STREAM_ERROR; } while (0)
 
 #define INFLATE_TYPEDO_HOOK(strm, flush) \
-    if (dfltcc_can_inflate((strm))) { \
+    if (PREFIX(dfltcc_can_inflate)((strm))) { \
         dfltcc_inflate_action action; \
 \
         RESTORE(); \
-        action = dfltcc_inflate((strm), (flush), &ret); \
+        action = PREFIX(dfltcc_inflate)((strm), (flush), &ret); \
         LOAD(); \
         if (action == DFLTCC_INFLATE_CONTINUE) \
             break; \
@@ -32,18 +41,30 @@ int Z_INTERNAL dfltcc_inflate_disable(PREFIX3(streamp) strm);
             goto inf_leave; \
     }
 
-#define INFLATE_NEED_CHECKSUM(strm) (!dfltcc_can_inflate((strm)))
+#define INFLATE_NEED_CHECKSUM(strm) (!PREFIX(dfltcc_can_inflate)((strm)))
 
-#define INFLATE_NEED_UPDATEWINDOW(strm) (!dfltcc_can_inflate((strm)))
+#define INFLATE_NEED_UPDATEWINDOW(strm) (!PREFIX(dfltcc_can_inflate)((strm)))
 
 #define INFLATE_MARK_HOOK(strm) \
     do { \
-        if (dfltcc_was_inflate_used((strm))) return -(1L << 16); \
+        if (PREFIX(dfltcc_was_inflate_used)((strm))) return -(1L << 16); \
     } while (0)
 
 #define INFLATE_SYNC_POINT_HOOK(strm) \
     do { \
-        if (dfltcc_was_inflate_used((strm))) return Z_STREAM_ERROR; \
+        if (PREFIX(dfltcc_was_inflate_used)((strm))) return Z_STREAM_ERROR; \
+    } while (0)
+
+#define INFLATE_SET_DICTIONARY_HOOK(strm, dict, dict_len) \
+    do { \
+        if (PREFIX(dfltcc_can_inflate)((strm))) \
+            return PREFIX(dfltcc_inflate_set_dictionary)((strm), (dict), (dict_len)); \
+    } while (0)
+
+#define INFLATE_GET_DICTIONARY_HOOK(strm, dict, dict_len) \
+    do { \
+        if (PREFIX(dfltcc_can_inflate)((strm))) \
+            return PREFIX(dfltcc_inflate_get_dictionary)((strm), (dict), (dict_len)); \
     } while (0)
 
 #endif

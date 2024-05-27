@@ -3,13 +3,8 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#define Z_INTERNAL
 #include "zbuild.h"
-#ifdef ZLIB_COMPAT
-#  include "zlib.h"
-#else
-#  include "zlib-ng.h"
-#endif
+#include "zutil.h"
 
 /* ===========================================================================
      Decompresses the source buffer into the destination buffer.  *sourceLen is
@@ -27,11 +22,11 @@
    Z_DATA_ERROR if the input data was corrupted, including if the input data is
    an incomplete zlib stream.
 */
-int Z_EXPORT PREFIX(uncompress2)(unsigned char *dest, z_size_t *destLen, const unsigned char *source, z_size_t *sourceLen) {
+int Z_EXPORT PREFIX(uncompress2)(unsigned char *dest, z_uintmax_t *destLen, const unsigned char *source, z_uintmax_t *sourceLen) {
     PREFIX3(stream) stream;
     int err;
     const unsigned int max = (unsigned int)-1;
-    z_size_t len, left;
+    z_uintmax_t len, left;
     unsigned char buf[1];    /* for detection of incomplete stream when *destLen == 0 */
 
     len = *sourceLen;
@@ -80,6 +75,6 @@ int Z_EXPORT PREFIX(uncompress2)(unsigned char *dest, z_size_t *destLen, const u
            err;
 }
 
-int Z_EXPORT PREFIX(uncompress)(unsigned char *dest, z_size_t *destLen, const unsigned char *source, z_size_t sourceLen) {
+int Z_EXPORT PREFIX(uncompress)(unsigned char *dest, z_uintmax_t *destLen, const unsigned char *source, z_uintmax_t sourceLen) {
     return PREFIX(uncompress2)(dest, destLen, source, &sourceLen);
 }

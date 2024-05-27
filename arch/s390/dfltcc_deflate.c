@@ -13,17 +13,47 @@
         $ make
 */
 
-#include "../../zbuild.h"
-#include "../../zutil.h"
-#include "../../deflate.h"
-#include "../../trees_emit.h"
+#include "zbuild.h"
+#include "deflate.h"
+#include "trees_emit.h"
 #include "dfltcc_deflate.h"
 #include "dfltcc_detail.h"
+
+struct dfltcc_deflate_state {
+    struct dfltcc_state common;
+    uint16_t level_mask;               /* Levels on which to use DFLTCC */
+    uint32_t block_size;               /* New block each X bytes */
+    size_t block_threshold;            /* New block after total_in > X */
+    uint32_t dht_threshold;            /* New block only if avail_in >= X */
+};
+
+#define GET_DFLTCC_DEFLATE_STATE(state) ((struct dfltcc_deflate_state *)GET_DFLTCC_STATE(state))
+
+void Z_INTERNAL *PREFIX(dfltcc_alloc_deflate_state)(PREFIX3(streamp) strm) {
+    return dfltcc_alloc_state(strm, sizeof(deflate_state), sizeof(struct dfltcc_deflate_state));
+}
+
+void Z_INTERNAL PREFIX(dfltcc_reset_deflate_state)(PREFIX3(streamp) strm) {
+    deflate_state *state = (deflate_state *)strm->state;
+    struct dfltcc_deflate_state *dfltcc_state = GET_DFLTCC_DEFLATE_STATE(state);
+
+    dfltcc_reset_state(&dfltcc_state->common);
+
+    /* Initialize tuning parameters */
+    dfltcc_state->level_mask = DFLTCC_LEVEL_MASK;
+    dfltcc_state->block_size = DFLTCC_BLOCK_SIZE;
+    dfltcc_state->block_threshold = DFLTCC_FIRST_FHT_BLOCK_SIZE;
+    dfltcc_state->dht_threshold = DFLTCC_DHT_MIN_SAMPLE_SIZE;
+}
+
+void Z_INTERNAL PREFIX(dfltcc_copy_deflate_state)(void *dst, const void *src) {
+    dfltcc_copy_state(dst, src, sizeof(deflate_state), sizeof(struct dfltcc_deflate_state));
+}
 
 static inline int dfltcc_can_deflate_with_params(PREFIX3(streamp) strm, int level, uInt window_bits, int strategy,
                                        int reproducible) {
     deflate_state *state = (deflate_state *)strm->state;
-    struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
+    struct dfltcc_deflate_state *dfltcc_state = GET_DFLTCC_DEFLATE_STATE(state);
 
     /* Unsupported compression settings */
     if ((dfltcc_state->level_mask & (1 << level)) == 0)
@@ -36,15 +66,15 @@ static inline int dfltcc_can_deflate_with_params(PREFIX3(streamp) strm, int leve
         return 0;
 
     /* Unsupported hardware */
-    if (!is_bit_set(dfltcc_state->af.fns, DFLTCC_GDHT) ||
-            !is_bit_set(dfltcc_state->af.fns, DFLTCC_CMPR) ||
-            !is_bit_set(dfltcc_state->af.fmts, DFLTCC_FMT0))
+    if (!is_bit_set(dfltcc_state->common.af.fns, DFLTCC_GDHT) ||
+            !is_bit_set(dfltcc_state->common.af.fns, DFLTCC_CMPR) ||
+            !is_bit_set(dfltcc_state->common.af.fmts, DFLTCC_FMT0))
         return 0;
 
     return 1;
 }
 
-int Z_INTERNAL dfltcc_can_deflate(PREFIX3(streamp) strm) {
+int Z_INTERNAL PREFIX(dfltcc_can_deflate)(PREFIX3(streamp) strm) {
     deflate_state *state = (deflate_state *)strm->state;
 
     return dfltcc_can_deflate_with_params(strm, state->level, state->w_bits, state->strategy, state->reproducible);
@@ -78,8 +108,8 @@ static inline dfltcc_cc dfltcc_cmpr(PREFIX3(streamp) strm) {
 static inline void send_eobs(PREFIX3(streamp) strm, const struct dfltcc_param_v0 *param) {
     deflate_state *state = (deflate_state *)strm->state;
 
-    send_bits(state, bi_reverse(param->eobs >> (15 - param->eobl), param->eobl), param->eobl, state->bi_buf, state->bi_valid);
-    flush_pending(strm);
+    send_bits(state, PREFIX(bi_reverse)(param->eobs >> (15 - param->eobl), param->eobl), param->eobl, state->bi_buf, state->bi_valid);
+    PREFIX(flush_pending)(strm);
     if (state->pending != 0) {
         /* The remaining data is located in pending_out[0:pending]. If someone
          * calls put_byte() - this might happen in deflate() - the byte will be
@@ -95,17 +125,17 @@ static inline void send_eobs(PREFIX3(streamp) strm, const struct dfltcc_param_v0
 #endif
 }
 
-int Z_INTERNAL dfltcc_deflate(PREFIX3(streamp) strm, int flush, block_state *result) {
+int Z_INTERNAL PREFIX(dfltcc_deflate)(PREFIX3(streamp) strm, int flush, block_state *result) {
     deflate_state *state = (deflate_state *)strm->state;
-    struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
-    struct dfltcc_param_v0 *param = &dfltcc_state->param;
+    struct dfltcc_deflate_state *dfltcc_state = GET_DFLTCC_DEFLATE_STATE(state);
+    struct dfltcc_param_v0 *param = &dfltcc_state->common.param;
     uInt masked_avail_in;
     dfltcc_cc cc;
     int need_empty_block;
     int soft_bcc;
     int no_flush;
 
-    if (!dfltcc_can_deflate(strm)) {
+    if (!PREFIX(dfltcc_can_deflate)(strm)) {
         /* Clear history. */
         if (flush == Z_FULL_FLUSH)
             param->hl = 0;
@@ -210,7 +240,10 @@ again:
         *strm->next_out = (unsigned char)state->bi_buf;
     /* Honor history and check value */
     param->nt = 0;
-    param->cv = state->wrap == 2 ? ZSWAP32(strm->adler) : strm->adler;
+    if (state->wrap == 1)
+        param->cv = strm->adler;
+    else if (state->wrap == 2)
+        param->cv = ZSWAP32(state->crc_fold.value);
 
     /* When opening a block, choose a Huffman-Table Type */
     if (!param->bcf) {
@@ -235,13 +268,16 @@ again:
     } while (cc == DFLTCC_CC_AGAIN);
 
     /* Translate parameter block to stream */
-    strm->msg = oesc_msg(dfltcc_state->msg, param->oesc);
+    strm->msg = oesc_msg(dfltcc_state->common.msg, param->oesc);
     state->bi_valid = param->sbb;
     if (state->bi_valid == 0)
         state->bi_buf = 0; /* Avoid accessing next_out */
     else
         state->bi_buf = *strm->next_out & ((1 << state->bi_valid) - 1);
-    strm->adler = state->wrap == 2 ? ZSWAP32(param->cv) : param->cv;
+    if (state->wrap == 1)
+        strm->adler = param->cv;
+    else if (state->wrap == 2)
+        state->crc_fold.value = ZSWAP32(param->cv);
 
     /* Unmask the input data */
     strm->avail_in += masked_avail_in;
@@ -297,9 +333,9 @@ static int dfltcc_was_deflate_used(PREFIX3(streamp) strm) {
     return strm->total_in > 0 || param->nt == 0 || param->hl > 0;
 }
 
-int Z_INTERNAL dfltcc_deflate_params(PREFIX3(streamp) strm, int level, int strategy, int *flush) {
+int Z_INTERNAL PREFIX(dfltcc_deflate_params)(PREFIX3(streamp) strm, int level, int strategy, int *flush) {
     deflate_state *state = (deflate_state *)strm->state;
-    int could_deflate = dfltcc_can_deflate(strm);
+    int could_deflate = PREFIX(dfltcc_can_deflate)(strm);
     int can_deflate = dfltcc_can_deflate_with_params(strm, level, state->w_bits, strategy, state->reproducible);
 
     if (can_deflate == could_deflate)
@@ -315,7 +351,7 @@ int Z_INTERNAL dfltcc_deflate_params(PREFIX3(streamp) strm, int level, int strat
     return Z_OK;
 }
 
-int Z_INTERNAL dfltcc_deflate_done(PREFIX3(streamp) strm, int flush) {
+int Z_INTERNAL PREFIX(dfltcc_deflate_done)(PREFIX3(streamp) strm, int flush) {
     deflate_state *state = (deflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
     struct dfltcc_param_v0 *param = &dfltcc_state->param;
@@ -331,10 +367,10 @@ int Z_INTERNAL dfltcc_deflate_done(PREFIX3(streamp) strm, int flush) {
      * buffered some data (Continuation Flag is set), or has not written EOBS
      * yet (Block-Continuation Flag is set).
      */
-    return !dfltcc_can_deflate(strm) || (!param->cf && !param->bcf);
+    return !PREFIX(dfltcc_can_deflate)(strm) || (!param->cf && !param->bcf);
 }
 
-int Z_INTERNAL dfltcc_can_set_reproducible(PREFIX3(streamp) strm, int reproducible) {
+int Z_INTERNAL PREFIX(dfltcc_can_set_reproducible)(PREFIX3(streamp) strm, int reproducible) {
     deflate_state *state = (deflate_state *)strm->state;
 
     return reproducible != state->reproducible && !dfltcc_was_deflate_used(strm);
@@ -343,37 +379,7 @@ int Z_INTERNAL dfltcc_can_set_reproducible(PREFIX3(streamp) strm, int reproducib
 /*
    Preloading history.
 */
-static void append_history(struct dfltcc_param_v0 *param, unsigned char *history, const unsigned char *buf, uInt count) {
-    size_t offset;
-    size_t n;
-
-    /* Do not use more than 32K */
-    if (count > HB_SIZE) {
-        buf += count - HB_SIZE;
-        count = HB_SIZE;
-    }
-    offset = (param->ho + param->hl) % HB_SIZE;
-    if (offset + count <= HB_SIZE)
-        /* Circular history buffer does not wrap - copy one chunk */
-        memcpy(history + offset, buf, count);
-    else {
-        /* Circular history buffer wraps - copy two chunks */
-        n = HB_SIZE - offset;
-        memcpy(history + offset, buf, n);
-        memcpy(history, buf + n, count - n);
-    }
-    n = param->hl + count;
-    if (n <= HB_SIZE)
-        /* All history fits into buffer - no need to discard anything */
-        param->hl = n;
-    else {
-        /* History does not fit into buffer - discard extra bytes */
-        param->ho = (param->ho + (n - HB_SIZE)) % HB_SIZE;
-        param->hl = HB_SIZE;
-    }
-}
-
-int Z_INTERNAL dfltcc_deflate_set_dictionary(PREFIX3(streamp) strm,
+int Z_INTERNAL PREFIX(dfltcc_deflate_set_dictionary)(PREFIX3(streamp) strm,
                                                 const unsigned char *dictionary, uInt dict_length) {
     deflate_state *state = (deflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
@@ -385,21 +391,13 @@ int Z_INTERNAL dfltcc_deflate_set_dictionary(PREFIX3(streamp) strm,
     return Z_OK;
 }
 
-int Z_INTERNAL dfltcc_deflate_get_dictionary(PREFIX3(streamp) strm, unsigned char *dictionary, uInt *dict_length) {
+int Z_INTERNAL PREFIX(dfltcc_deflate_get_dictionary)(PREFIX3(streamp) strm, unsigned char *dictionary, uInt *dict_length) {
     deflate_state *state = (deflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = GET_DFLTCC_STATE(state);
     struct dfltcc_param_v0 *param = &dfltcc_state->param;
 
-    if (dictionary) {
-        if (param->ho + param->hl <= HB_SIZE)
-            /* Circular history buffer does not wrap - copy one chunk */
-            memcpy(dictionary, state->window + param->ho, param->hl);
-        else {
-            /* Circular history buffer wraps - copy two chunks */
-            memcpy(dictionary, state->window + param->ho, HB_SIZE - param->ho);
-            memcpy(dictionary + HB_SIZE - param->ho, state->window, param->ho + param->hl - HB_SIZE);
-        }
-    }
+    if (dictionary)
+        get_history(param, state->window, dictionary);
     if (dict_length)
         *dict_length = param->hl;
     return Z_OK;
