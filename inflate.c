@@ -162,6 +162,11 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
         ZFREE_STATE(strm, state);
         strm->state = NULL;
     }
+
+#if defined(__APPLE__)
+    dummy_linker_glue();
+#endif
+
     return ret;
 }
 

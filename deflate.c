@@ -313,6 +313,10 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
     s->block_open = 0;
     s->reproducible = 0;
 
+#if defined(__APPLE__)
+    dummy_linker_glue();
+#endif
+
     return PREFIX(deflateReset)(strm);
 }
 
