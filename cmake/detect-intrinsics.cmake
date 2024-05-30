@@ -15,7 +15,7 @@ macro(check_acle_compiler_flag)
             endif()
         endif()
     endif()
-    # Check whether compiler supports ARMv8 intrinsics
+    # Check whether compiler supports ARMv8 CRC intrinsics
     set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#if defined(_MSC_VER)

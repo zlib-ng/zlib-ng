@@ -1103,7 +1103,7 @@ EOF
         fi
     fi
 
-    # Check whether compiler supports ARMv8 intrinsics
+    # Check whether compiler supports ARMv8 CRC intrinsics
     cat > $test.c << EOF
 #include <arm_acle.h>
 unsigned int f(unsigned int a, unsigned int b) {
@@ -1112,10 +1112,10 @@ unsigned int f(unsigned int a, unsigned int b) {
 int main(void) { return 0; }
 EOF
     if try ${CC} ${CFLAGS} ${acleflag} $test.c; then
-        echo "Checking for ARMv8 intrinsics ... Yes." | tee -a configure.log
+        echo "Checking for ARMv8 CRC intrinsics ... Yes." | tee -a configure.log
         ACLE_AVAILABLE=1
     else
-        echo "Checking for ARMv8 intrinsics ... No." | tee -a configure.log
+        echo "Checking for ARMv8 CRC intrinsics ... No." | tee -a configure.log
         ACLE_AVAILABLE=0
     fi
 }
