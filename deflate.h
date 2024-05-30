@@ -14,6 +14,11 @@
 #include "zendian.h"
 #include "crc32.h"
 
+#ifdef S390_DFLTCC_DEFLATE
+#  include "arch/s390/dfltcc_common.h"
+#  define HAVE_ARCH_DEFLATE_STATE
+#endif
+
 /* define NO_GZIP when compiling if you want to disable gzip header and
    trailer creation by deflate().  NO_GZIP would be used to avoid linking in
    the crc code when it is not needed.  For shared libraries, gzip encoding
@@ -125,7 +130,18 @@ uint32_t update_hash_roll        (uint32_t h, uint32_t val);
 void     insert_string_roll      (deflate_state *const s, uint32_t str, uint32_t count);
 Pos      quick_insert_string_roll(deflate_state *const s, uint32_t str);
 
-struct ALIGNED_(16) internal_state {
+/* Struct for memory allocation handling */
+typedef struct deflate_allocs_s {
+    char            *buf_start;
+    free_func        zfree;
+    deflate_state   *state;
+    unsigned char   *window;
+    unsigned char   *pending_buf;
+    Pos             *prev;
+    Pos             *head;
+} deflate_allocs;
+
+struct ALIGNED_(64) internal_state {
     PREFIX3(stream)      *strm;            /* pointer back to this zlib stream */
     unsigned char        *pending_buf;     /* output still pending */
     unsigned char        *pending_out;     /* next pending byte to output to the stream */
@@ -294,8 +310,11 @@ struct ALIGNED_(16) internal_state {
     unsigned long compressed_len; /* total bit length of compressed file mod 2^32 */
     unsigned long bits_sent;      /* bit length of compressed data sent mod 2^32 */
 
-    /* Reserved for future use and alignment purposes */
-    char *reserved_p;
+    deflate_allocs *alloc_bufs;
+
+#ifdef HAVE_ARCH_DEFLATE_STATE
+    arch_deflate_state arch;      /* architecture-specific extensions */
+#endif
 
     uint64_t bi_buf;
     /* Output buffer. bits are inserted starting at the bottom (least significant bits). */

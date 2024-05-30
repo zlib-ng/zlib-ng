@@ -292,8 +292,6 @@ jobs:
             packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
             codecov: ubuntu_gcc_s390x
-            # The dedicated test VM has 4 cores
-            parallels-jobs: 4
 
           - name: Ubuntu GCC S390X No vectorized CRC32 ASAN
             os: ubuntu-latest
@@ -302,10 +300,8 @@ jobs:
             packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
             codecov: ubuntu_gcc_s390x_no_crc32
-            # The dedicated test VM has 4 cores
-            parallels-jobs: 4
 
-          - name: Ubuntu GCC S390X DFLTCC ASAN
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL9' || 'Ubuntu' }} GCC S390X DFLTCC ASAN
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: gcc
             cxx-compiler: g++
@@ -315,11 +311,11 @@ jobs:
             packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             asan-options: detect_leaks=0
             ldflags: -static
-            codecov: ubuntu_gcc_s390x_dfltcc
+            codecov: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el9_gcc_s390x_dfltcc' || 'ubuntu_gcc_s390x_dfltcc' }}
             # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
 
-          - name: Ubuntu GCC S390X DFLTCC UBSAN
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL9' || 'Ubuntu' }} GCC S390X DFLTCC UBSAN
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: gcc
             cxx-compiler: g++
@@ -328,14 +324,14 @@ jobs:
               -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Undefined
             packages: qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
-            codecov: ubuntu_gcc_s390x_dfltcc_ubsan
+            codecov: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el9_gcc_s390x_dfltcc' || 'ubuntu_gcc_s390x_dfltcc' }}
             # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
 
-          - name: Ubuntu Clang S390X DFLTCC ${{ (github.repository == 'zlib-ng/zlib-ng' && 'MSAN') || 'Compat' }}
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL9' || 'Ubuntu' }} Clang S390X DFLTCC ${{ (github.repository == 'zlib-ng/zlib-ng' && 'MSAN') || 'Compat' }}
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
-            compiler: clang-11
-            cxx-compiler: clang++-11
+            compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'clang-11' }}
+            cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'clang++-11' }}
             cmake-args: >-
               ${{ github.repository != 'zlib-ng/zlib-ng' && '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON' || '-GNinja -DWITH_SANITIZER=Memory' }}
               -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON
@@ -440,11 +436,11 @@ jobs:
 
           - name: Ubuntu Clang MSAN
             os: ubuntu-latest
-            compiler: clang-11
-            cxx-compiler: clang++-11
+            compiler: clang-15
+            cxx-compiler: clang++-15
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
-            packages:  ninja-build clang-11 llvm-11-tools
-            gcov-exec: llvm-cov-11 gcov
+            packages:  ninja-build clang-15 llvm-15-tools
+            gcov-exec: llvm-cov-15 gcov
             # https://github.com/llvm/llvm-project/issues/55785
             msan-options: use_sigaltstack=0
 
@@ -483,15 +479,15 @@ jobs:
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v142
 
-          - name: Windows MSVC 2022 v141 Win32
-            os: windows-latest
+          - name: Windows MSVC 2019 v141 Win32
+            os: windows-2019
             compiler: cl
-            cmake-args: -G "Visual Studio 17 2022" -A Win32 -T v141
+            cmake-args: -G "Visual Studio 16 2019" -A Win32 -T v141
 
-          - name: Windows MSVC 2022 v141 Win64
-            os: windows-latest
+          - name: Windows MSVC 2019 v141 Win64
+            os: windows-2019
             compiler: cl
-            cmake-args: -G "Visual Studio 17 2022" -A x64 -T v141
+            cmake-args: -G "Visual Studio 16 2019" -A x64 -T v141
 
           - name: Windows MSVC 2019 v140 Win32
             os: windows-2019
@@ -546,20 +542,39 @@ jobs:
             codecov: win64_gcc_compat_no_opt
 
           - name: macOS Clang ASAN
-            os: macos-latest
+            os: macos-13
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_SANITIZER=Address
             codecov: macos_clang
 
-          - name: macOS GCC UBSAN
+          - name: macOS Clang ASAN (ARM64)
             os: macos-latest
+            compiler: clang
+            cxx-compiler: clang++
+            cmake-args: -DWITH_SANITIZER=Address
+            codecov: macos_clang_arm64
+
+          - name: macOS GCC UBSAN
+            os: macos-13
             compiler: gcc-10
             cxx-compiler: g++-10
+            # Xcode 15 uses a new linker that is not compatible with GCC. Switch to the old linker.
+            # Homebrew gcc@11 and later have a built-in workaround for it.
+            ldflags: -ld_classic
             cmake-args: -DWITH_SANITIZER=Undefined
             packages: gcc@10
             gcov-exec: gcov-10
             codecov: macos_gcc
+
+          - name: macOS GCC UBSAN (ARM64)
+            os: macos-latest
+            compiler: gcc-11
+            cxx-compiler: g++-11
+            cmake-args: -DWITH_SANITIZER=Undefined
+            packages: gcc@11
+            gcov-exec: gcov-11
+            codecov: macos_gcc_arm64
 
           - name: macOS Clang Native Instructions (ARM64)
             os: macos-14
@@ -635,13 +650,16 @@ jobs:
     - name: Compile LLVM C++ libraries (MSAN)
       if: contains(matrix.name, 'MSAN')
       run: |
-        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-11.1.0
-        cmake -S llvm-project/llvm -B llvm-project/build -G Ninja \
+        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-16.0.6
+        cmake -S llvm-project/runtimes -B llvm-project/build -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
-          -DLLVM_ENABLE_PROJECTS="libcxx;libcxxabi" \
+          -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
           -DLLVM_USE_SANITIZER=MemoryWithOrigins \
-          -DLLVM_LIBC_ENABLE_LINTING=OFF
-        cmake --build llvm-project/build -j2 -- cxx cxxabi
+          -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
+          -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
+          -DLLVM_INCLUDE_TESTS=OFF \
+          -DLLVM_INCLUDE_DOCS=OFF
+        cmake --build llvm-project/build -j3 -- cxx cxxabi
         echo "LLVM_BUILD_DIR=`pwd`/llvm-project/build" >> $GITHUB_ENV
       env:
         CC: ${{ matrix.compiler }}
@@ -693,7 +711,9 @@ jobs:
       if: matrix.codecov
       shell: bash
       run: |
-        python3 -u -m pip install --user gcovr==5.0
+        python3 -u -m venv ${{ matrix.build-dir || '.' }}/venv
+        source ${{ matrix.build-dir || '.' }}/venv/${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}/activate
+        python3 -u -m pip install gcovr==5.0
         python3 -m gcovr ${{ matrix.build-dir || '' }} -j 3 --verbose \
           --exclude-unreachable-branches \
           --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
@@ -724,6 +744,7 @@ jobs:
     name: Upload Coverage Reports
     runs-on: ubuntu-latest
     needs: cmake
+    if: cancelled() == false
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -738,16 +759,15 @@ jobs:
     - name: Display all coverage artifacts
       run: |
         ls -R *.xml
-        echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g`" >> $GITHUB_ENV
+        echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g'`" >> $GITHUB_ENV
 
     - name: Upload reports
       uses: codecov/codecov-action@v4
       if: (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
       with:
-        token: ${{ secrets.CODECOV_TOKEN || 'e4fdf847-f541-4ab1-9d50-3d27e5913906' }}
         files: ${{ env.CODECOV_REPORTS }}
         name: cmake-umbrella
         verbose: true
         fail_ci_if_error: true
       env:
-        CODECOV_TOKEN: "${{secrets.CODECOV_TOKEN}}"
+        CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5.1)
 if(CMAKE_VERSION VERSION_LESS 3.12)
     cmake_policy(VERSION ${CMAKE_VERSION})
 else()
-    cmake_policy(VERSION 3.5.1...3.13.2)
+    cmake_policy(VERSION 3.5.1...3.29.0)
 endif()
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
@@ -485,6 +485,22 @@ if(HAVE_ATTRIBUTE_ALIGNED)
 endif()
 
 #
+# Check for __builtin_assume_aligned(x,n) support in the compiler
+#
+check_c_source_compiles(
+    "char *test(char *buffer) {
+        char *abuffer = __builtin_assume_aligned(buffer,64);
+        return abuffer;
+    }
+    int main() {
+        return 0;
+    }"
+    HAVE_BUILTIN_ASSUME_ALIGNED)
+if(HAVE_BUILTIN_ASSUME_ALIGNED)
+    add_definitions(-DHAVE_BUILTIN_ASSUME_ALIGNED)
+endif()
+
+#
 # check for __builtin_ctz() support in the compiler
 #
 check_c_source_compiles(
@@ -834,9 +850,6 @@ if(WITH_OPTIM)
                 list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/s390_features.h)
                 list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/s390_features.c)
             endif()
-        endif()
-        if(WITH_DFLTCC_DEFLATE OR WITH_DFLTCC_INFLATE)
-            list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/dfltcc_common.c)
         endif()
         if(WITH_DFLTCC_DEFLATE)
             add_definitions(-DS390_DFLTCC_DEFLATE)

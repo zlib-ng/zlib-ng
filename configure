@@ -300,7 +300,9 @@ show $cc -c $test.c
 if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   echo "$cc" | tee -a configure.log
   CC="$cc"
-  CFLAGS="${CFLAGS} -std=c11"
+  if test "${CFLAGS#*"-std="}" = "$CFLAGS" ; then
+    CFLAGS="${CFLAGS} -std=c11"
+  fi
 
   # Re-check ARCH if the compiler is a cross-compiler.
   if $CC -print-multiarch 1> /dev/null 2>&1 && test -n "$($CC -print-multiarch)" 1> /dev/null 2>&1; then
@@ -471,7 +473,9 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
              SHAREDTARGET=$SHAREDLIBV
              LDSHARED=${LDSHARED-"$cc"}
              LDSHAREDFLAGS="-dynamiclib -install_name @rpath/${SHAREDLIBM} -compatibility_version ${VER1} -current_version ${VER3}"
-             if libtool -V 2>&1 | grep Apple > /dev/null; then
+             if "${CROSS_PREFIX}libtool" -V 2>&1 | grep Apple > /dev/null; then
+                 AR="${CROSS_PREFIX}libtool"
+             elif libtool -V 2>&1 | grep Apple > /dev/null; then
                  AR="libtool"
              else
                  AR="/usr/bin/libtool"
@@ -971,6 +975,24 @@ if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
     SFLAGS="$SFLAGS -DHAVE_ATTRIBUTE_ALIGNED"
 else
     echo "Checking for attribute(aligned) ... No." | tee -a configure.log
+fi
+
+# Check for __builtin_assume_aligned(x,n) support in compiler
+cat > $test.c << EOF
+char *test(char *buffer) {
+    char *abuffer = __builtin_assume_aligned(buffer,64);
+    return abuffer;
+}
+int main() {
+    return 0;
+}
+EOF
+if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
+    echo "Checking for __builtin_assume_aligned() ... Yes." | tee -a configure.log
+    CFLAGS="$CFLAGS -DHAVE_BUILTIN_ASSUME_ALIGNED"
+    SFLAGS="$SFLAGS -DHAVE_BUILTIN_ASSUME_ALIGNED"
+else
+    echo "Checking for __builtin_assume_aligned() ... No." | tee -a configure.log
 fi
 
 # Check for __builtin_ctz() support in compiler
@@ -1821,11 +1843,6 @@ EOF
                 SFLAGS="${SFLAGS} -DS390_FEATURES"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} s390_features.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} s390_features.lo"
-            fi
-
-            if test $builddfltccdeflate -eq 1 -o $builddfltccinflate -eq 1; then
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_common.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_common.lo"
             fi
 
             if test $builddfltccdeflate -eq 1; then

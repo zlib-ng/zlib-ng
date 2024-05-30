@@ -167,7 +167,7 @@ jobs:
             cflags: -static
             ldflags: -static
 
-          - name: Ubuntu GCC S390X DFLTCC
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL9' || 'Ubuntu' }} GCC S390X DFLTCC
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcc' || 's390x-linux-gnu-gcc' }}
             configure-args: --warn --static --with-dfltcc-deflate --with-dfltcc-inflate
@@ -176,7 +176,7 @@ jobs:
             cflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
             ldflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
 
-          - name: Ubuntu GCC S390X DFLTCC Compat
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL9' || 'Ubuntu' }} GCC S390X DFLTCC Compat
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcc' || 's390x-linux-gnu-gcc' }}
             configure-args: --warn --zlib-compat --static --with-dfltcc-deflate --with-dfltcc-inflate
@@ -195,19 +195,43 @@ jobs:
             emu-run: node
 
           - name: macOS GCC Symbol Prefix
-            os: macOS-latest
+            os: macos-13
             compiler: gcc-11
             configure-args: --sprefix=zTest_
+            packages: gcc@11
+
+          - name: macOS GCC Symbol Prefix (ARM64)
+            os: macos-latest
+            compiler: gcc-11
+            cflags: -std=gnu11
+            configure-args: --sprefix=zTest_
+            packages: gcc@11
 
           - name: macOS GCC Symbol Prefix & Compat
-            os: macOS-latest
+            os: macos-13
             compiler: gcc-11
             configure-args: --zlib-compat --sprefix=zTest_
+            packages: gcc@11
+
+          - name: macOS GCC Symbol Prefix & Compat (ARM64)
+            os: macos-latest
+            compiler: gcc-11
+            cflags: -std=gnu11
+            configure-args: --zlib-compat --sprefix=zTest_
+            packages: gcc@11
 
           - name: macOS GCC
-            os: macOS-latest
+            os: macos-13
             compiler: gcc-11
             configure-args: --warn
+            packages: gcc@11
+
+          - name: macOS GCC (ARM64)
+            os: macos-latest
+            compiler: gcc-11
+            cflags: -std=gnu11
+            configure-args: --warn
+            packages: gcc@11
 
     steps:
     - name: Checkout repository
@@ -228,6 +252,12 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.packages }}
+
+    - name: Install packages (macOS)
+      if: runner.os == 'macOS'
+      run: brew install ninja ${{ matrix.packages }}
+      env:
+        HOMEBREW_NO_INSTALL_CLEANUP: 1
 
     - name: Install Emscripten
       if: contains(matrix.name, 'WASM32')

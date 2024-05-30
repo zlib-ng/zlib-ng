@@ -77,7 +77,7 @@ BENCHMARK_CRC32(pclmulqdq, crc32_pclmulqdq, test_cpu_features.x86.has_pclmulqdq)
 #endif
 #ifdef X86_VPCLMULQDQ_CRC
 /* CRC32 fold does a memory copy while hashing */
-BENCHMARK_CRC32(vpclmulqdq, crc32_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512 && test_cpu_features.x86.has_vpclmulqdq));
+BENCHMARK_CRC32(vpclmulqdq, crc32_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq));
 #endif
 
 #endif

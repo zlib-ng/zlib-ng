@@ -71,14 +71,16 @@ const char PREFIX(deflate_copyright)[] = " deflate 1.3.1 Copyright 1995-2024 Jea
  */
 #ifdef S390_DFLTCC_DEFLATE
 #  include "arch/s390/dfltcc_deflate.h"
+/* DFLTCC instructions require window to be page-aligned */
+#  define PAD_WINDOW            PAD_4096
+#  define WINDOW_PAD_SIZE       4096
+#  define HINT_ALIGNED_WINDOW   HINT_ALIGNED_4096
 #else
-/* Memory management for the deflate state. Useful for allocating arch-specific extension blocks. */
-#  define ZALLOC_DEFLATE_STATE(strm) ((deflate_state *)ZALLOC(strm, 1, sizeof(deflate_state)))
-#  define ZFREE_STATE(strm, addr) ZFREE(strm, addr)
-#  define ZCOPY_DEFLATE_STATE(dst, src) memcpy(dst, src, sizeof(deflate_state))
-/* Memory management for the window. Useful for allocation the aligned window. */
-#  define ZALLOC_WINDOW(strm, items, size) ZALLOC(strm, items, size)
-#  define TRY_FREE_WINDOW(strm, addr) TRY_FREE(strm, addr)
+#  define PAD_WINDOW            PAD_64
+#  define WINDOW_PAD_SIZE       64
+#  define HINT_ALIGNED_WINDOW   HINT_ALIGNED_64
+/* Adjust the window size for the arch-specific deflate code. */
+#  define DEFLATE_ADJUST_WINDOW_SIZE(n) (n)
 /* Invoked at the beginning of deflateSetDictionary(). Useful for checking arch-specific window data. */
 #  define DEFLATE_SET_DICTIONARY_HOOK(strm, dict, dict_len) do {} while (0)
 /* Invoked at the beginning of deflateGetDictionary(). Useful for adjusting arch-specific window data. */
@@ -181,12 +183,106 @@ static const config configuration_table[10] = {
     memset((unsigned char *)s->head, 0, HASH_SIZE * sizeof(*s->head)); \
   } while (0)
 
-/* ========================================================================= */
-/* This function is hidden in ZLIB_COMPAT builds. */
+
+#ifdef DEF_ALLOC_DEBUG
+#  include <stdio.h>
+#  define LOGSZ(name,size)           fprintf(stderr, "%s is %d bytes\n", name, size)
+#  define LOGSZP(name,size,loc,pad)  fprintf(stderr, "%s is %d bytes, offset %d, padded %d\n", name, size, loc, pad)
+#  define LOGSZPL(name,size,loc,pad) fprintf(stderr, "%s is %d bytes, offset %ld, padded %d\n", name, size, loc, pad)
+#else
+#  define LOGSZ(name,size)
+#  define LOGSZP(name,size,loc,pad)
+#  define LOGSZPL(name,size,loc,pad)
+#endif
+
+/* ===========================================================================
+ * Allocate a big buffer and divide it up into the various buffers deflate needs.
+ * Handles alignment of allocated buffer and alignment of individual buffers.
+ */
+Z_INTERNAL deflate_allocs* alloc_deflate(PREFIX3(stream) *strm, int windowBits, int lit_bufsize) {
+    int curr_size = 0;
+
+    /* Define sizes */
+    int window_size = DEFLATE_ADJUST_WINDOW_SIZE((1 << windowBits) * 2);
+    int prev_size = (1 << windowBits) * sizeof(Pos);
+    int head_size = HASH_SIZE * sizeof(Pos);
+    int pending_size = lit_bufsize * LIT_BUFS;
+    int state_size = sizeof(deflate_state);
+    int alloc_size = sizeof(deflate_allocs);
+
+    /* Calculate relative buffer positions and paddings */
+    LOGSZP("window", window_size, PAD_WINDOW(curr_size), PADSZ(curr_size,WINDOW_PAD_SIZE));
+    int window_pos = PAD_WINDOW(curr_size);
+    curr_size = window_pos + window_size;
+
+    LOGSZP("prev", prev_size, PAD_64(curr_size), PADSZ(curr_size,64));
+    int prev_pos = PAD_64(curr_size);
+    curr_size = prev_pos + prev_size;
+
+    LOGSZP("head", head_size, PAD_64(curr_size), PADSZ(curr_size,64));
+    int head_pos = PAD_64(curr_size);
+    curr_size = head_pos + head_size;
+
+    LOGSZP("pending", pending_size, PAD_64(curr_size), PADSZ(curr_size,64));
+    int pending_pos = PAD_64(curr_size);
+    curr_size = pending_pos + pending_size;
+
+    LOGSZP("state", state_size, PAD_64(curr_size), PADSZ(curr_size,64));
+    int state_pos = PAD_64(curr_size);
+    curr_size = state_pos + state_size;
+
+    LOGSZP("alloc", alloc_size, PAD_16(curr_size), PADSZ(curr_size,16));
+    int alloc_pos = PAD_16(curr_size);
+    curr_size = alloc_pos + alloc_size;
+
+    /* Add 64-1 or 4096-1 to allow window alignment, and round size of buffer up to multiple of 64 */
+    int total_size = PAD_64(curr_size + (WINDOW_PAD_SIZE - 1));
+
+    /* Allocate buffer, align to 64-byte cacheline, and zerofill the resulting buffer */
+    char *original_buf = strm->zalloc(strm->opaque, 1, total_size);
+    if (original_buf == NULL)
+        return NULL;
+
+    char *buff = (char *)HINT_ALIGNED_WINDOW((char *)PAD_WINDOW(original_buf));
+    LOGSZPL("Buffer alloc", total_size, PADSZ((uintptr_t)original_buf,WINDOW_PAD_SIZE), PADSZ(curr_size,WINDOW_PAD_SIZE));
+
+    /* Initialize alloc_bufs */
+    deflate_allocs *alloc_bufs  = (struct deflate_allocs_s *)(buff + alloc_pos);
+    alloc_bufs->buf_start = (char *)original_buf;
+    alloc_bufs->zfree = strm->zfree;
+
+    /* Assign buffers */
+    alloc_bufs->window = (unsigned char *)HINT_ALIGNED_WINDOW(buff + window_pos);
+    alloc_bufs->prev = (Pos *)HINT_ALIGNED_64(buff + prev_pos);
+    alloc_bufs->head = (Pos *)HINT_ALIGNED_64(buff + head_pos);
+    alloc_bufs->pending_buf = (unsigned char *)HINT_ALIGNED_64(buff + pending_pos);
+    alloc_bufs->state = (deflate_state *)HINT_ALIGNED_16(buff + state_pos);
+
+    memset((char *)alloc_bufs->prev, 0, prev_size);
+
+    return alloc_bufs;
+}
+
+/* ===========================================================================
+ * Free all allocated deflate buffers
+ */
+static inline void free_deflate(PREFIX3(stream) *strm) {
+    deflate_state *state = (deflate_state *)strm->state;
+
+    if (state->alloc_bufs != NULL) {
+        deflate_allocs *alloc_bufs = state->alloc_bufs;
+        alloc_bufs->zfree(strm->opaque, alloc_bufs->buf_start);
+        strm->state = NULL;
+    }
+}
+
+/* ===========================================================================
+ * Initialize deflate state and buffers.
+ * This function is hidden in ZLIB_COMPAT builds.
+ */
 int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level, int32_t method, int32_t windowBits,
                                             int32_t memLevel, int32_t strategy) {
     /* Todo: ignore strm->next_in if we use it as window */
-    uint32_t window_padding = 0;
     deflate_state *s;
     int wrap = 1;
 
@@ -226,9 +322,19 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
     if (windowBits == 8)
         windowBits = 9;  /* until 256-byte window bug fixed */
 
-    s = ZALLOC_DEFLATE_STATE(strm);
-    if (s == NULL)
+    /* Allocate buffers */
+    int lit_bufsize = 1 << (memLevel + 6);
+    deflate_allocs *alloc_bufs = alloc_deflate(strm, windowBits, lit_bufsize);
+    if (alloc_bufs == NULL)
         return Z_MEM_ERROR;
+
+    s = alloc_bufs->state;
+    s->alloc_bufs = alloc_bufs;
+    s->window = alloc_bufs->window;
+    s->prev = alloc_bufs->prev;
+    s->head = alloc_bufs->head;
+    s->pending_buf = alloc_bufs->pending_buf;
+
     strm->state = (struct internal_state *)s;
     s->strm = strm;
     s->status = INIT_STATE;     /* to pass state test in deflateReset() */
@@ -239,18 +345,9 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
     s->w_size = 1 << s->w_bits;
     s->w_mask = s->w_size - 1;
 
-#ifdef X86_PCLMULQDQ_CRC
-    window_padding = 8;
-#endif
-
-    s->window = (unsigned char *) ZALLOC_WINDOW(strm, s->w_size + window_padding, 2*sizeof(unsigned char));
-    s->prev   = (Pos *)  ZALLOC(strm, s->w_size, sizeof(Pos));
-    memset(s->prev, 0, s->w_size * sizeof(Pos));
-    s->head   = (Pos *)  ZALLOC(strm, HASH_SIZE, sizeof(Pos));
-
     s->high_water = 0;      /* nothing written to s->window yet */
 
-    s->lit_bufsize = 1 << (memLevel + 6); /* 16K elements by default */
+    s->lit_bufsize = lit_bufsize; /* 16K elements by default */
 
     /* We overlay pending_buf and sym_buf. This works since the average size
      * for length/distance pairs over any compressed block is assured to be 31
@@ -291,7 +388,6 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
      * symbols from which it is being constructed.
      */
 
-    s->pending_buf = (unsigned char *) ZALLOC(strm, s->lit_bufsize, LIT_BUFS);
     s->pending_buf_size = s->lit_bufsize * 4;
 
     if (s->window == NULL || s->prev == NULL || s->head == NULL || s->pending_buf == NULL) {
@@ -300,6 +396,7 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
         PREFIX(deflateEnd)(strm);
         return Z_MEM_ERROR;
     }
+
 #ifdef LIT_MEM
     s->d_buf = (uint16_t *)(s->pending_buf + (s->lit_bufsize << 1));
     s->l_buf = s->pending_buf + (s->lit_bufsize << 2);
@@ -350,7 +447,7 @@ static int deflateStateCheck(PREFIX3(stream) *strm) {
     if (strm == NULL || strm->zalloc == (alloc_func)0 || strm->zfree == (free_func)0)
         return 1;
     s = strm->state;
-    if (s == NULL || s->strm != strm || (s->status < INIT_STATE || s->status > MAX_STATE))
+    if (s == NULL || s->alloc_bufs == NULL || s->strm != strm || (s->status < INIT_STATE || s->status > MAX_STATE))
         return 1;
     return 0;
 }
@@ -1017,21 +1114,13 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
 
 /* ========================================================================= */
 int32_t Z_EXPORT PREFIX(deflateEnd)(PREFIX3(stream) *strm) {
-    int32_t status;
-
     if (deflateStateCheck(strm))
         return Z_STREAM_ERROR;
 
-    status = strm->state->status;
+    int32_t status = strm->state->status;
 
-    /* Deallocate in reverse order of allocations: */
-    TRY_FREE(strm, strm->state->pending_buf);
-    TRY_FREE(strm, strm->state->head);
-    TRY_FREE(strm, strm->state->prev);
-    TRY_FREE_WINDOW(strm, strm->state->window);
-
-    ZFREE_STATE(strm, strm->state);
-    strm->state = NULL;
+    /* Free allocated buffers */
+    free_deflate(strm);
 
     return status == BUSY_STATE ? Z_DATA_ERROR : Z_OK;
 }
@@ -1042,7 +1131,6 @@ int32_t Z_EXPORT PREFIX(deflateEnd)(PREFIX3(stream) *strm) {
 int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *source) {
     deflate_state *ds;
     deflate_state *ss;
-    uint32_t window_padding = 0;
 
     if (deflateStateCheck(source) || dest == NULL)
         return Z_STREAM_ERROR;
@@ -1051,28 +1139,28 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
 
     memcpy((void *)dest, (void *)source, sizeof(PREFIX3(stream)));
 
-    ds = ZALLOC_DEFLATE_STATE(dest);
-    if (ds == NULL)
+    deflate_allocs *alloc_bufs = alloc_deflate(dest, ss->w_bits, ss->lit_bufsize);
+    if (alloc_bufs == NULL)
         return Z_MEM_ERROR;
+
+    ds = alloc_bufs->state;
+
     dest->state = (struct internal_state *) ds;
-    ZCOPY_DEFLATE_STATE(ds, ss);
+    memcpy(ds, ss, sizeof(deflate_state));
     ds->strm = dest;
 
-#ifdef X86_PCLMULQDQ_CRC
-    window_padding = 8;
-#endif
-
-    ds->window = (unsigned char *) ZALLOC_WINDOW(dest, ds->w_size + window_padding, 2*sizeof(unsigned char));
-    ds->prev   = (Pos *)  ZALLOC(dest, ds->w_size, sizeof(Pos));
-    ds->head   = (Pos *)  ZALLOC(dest, HASH_SIZE, sizeof(Pos));
-    ds->pending_buf = (unsigned char *) ZALLOC(dest, ds->lit_bufsize, LIT_BUFS);
+    ds->alloc_bufs = alloc_bufs;
+    ds->window = alloc_bufs->window;
+    ds->prev = alloc_bufs->prev;
+    ds->head = alloc_bufs->head;
+    ds->pending_buf = alloc_bufs->pending_buf;
 
     if (ds->window == NULL || ds->prev == NULL || ds->head == NULL || ds->pending_buf == NULL) {
         PREFIX(deflateEnd)(dest);
         return Z_MEM_ERROR;
     }
 
-    memcpy(ds->window, ss->window, ds->w_size * 2 * sizeof(unsigned char));
+    memcpy(ds->window, ss->window, DEFLATE_ADJUST_WINDOW_SIZE(ds->w_size * 2 * sizeof(unsigned char)));
     memcpy((void *)ds->prev, (void *)ss->prev, ds->w_size * sizeof(Pos));
     memcpy((void *)ds->head, (void *)ss->head, HASH_SIZE * sizeof(Pos));
     memcpy(ds->pending_buf, ss->pending_buf, ds->lit_bufsize * LIT_BUFS);
