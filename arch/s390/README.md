@@ -214,8 +214,8 @@ DFLTCC is a non-privileged instruction, neither special VM/LPAR
 configuration nor root are required.
 
 zlib-ng CI uses an IBM-provided z15 self-hosted builder for the DFLTCC
-testing. There is no offical IBM Z builds of GitHub Actions runner, so
-we build one inspired by `anup-kodlekere/gaplib`.
+testing. There is no official IBM Z GitHub Actions runner, so we build
+one inspired by `anup-kodlekere/gaplib`.
 Future updates to actions-runner might need an updated patch. The .net
 version number patch has been separated into a separate file to avoid a
 need for constantly changing the patch.

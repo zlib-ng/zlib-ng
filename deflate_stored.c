@@ -22,7 +22,7 @@
  *
  * deflate_stored() is written to minimize the number of times an input byte is
  * copied. It is most efficient with large input and output buffers, which
- * maximizes the opportunites to have a single copy from next_in to next_out.
+ * maximizes the opportunities to have a single copy from next_in to next_out.
  */
 Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
     /* Smallest worthy block size when not flushing or finishing. By default
