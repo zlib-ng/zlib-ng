@@ -2,35 +2,34 @@
 # Licensed under the Zlib license, see LICENSE.md for details
 
 macro(check_acle_compiler_flag)
-    if(MSVC)
-        # Both ARM and ARM64-targeting msvc support intrinsics, but
-        # ARM msvc is missing some intrinsics introduced with ARMv8, e.g. crc32
-        if(MSVC_C_ARCHITECTURE_ID STREQUAL "ARM64")
-            set(HAVE_ACLE_FLAG TRUE)
-        endif()
-    else()
-        if(NOT NATIVEFLAG)
-            if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+    if(NOT NATIVEFLAG)
+        if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+            check_c_compiler_flag("-march=armv8-a+crc" HAVE_MARCH_ARMV8_CRC)
+            if(HAVE_MARCH_ARMV8_CRC)
                 set(ACLEFLAG "-march=armv8-a+crc" CACHE INTERNAL "Compiler option to enable ACLE support")
+            else()
+                check_c_compiler_flag("-march=armv8-a+crc+simd" HAVE_MARCH_ARMV8_CRC_SIMD)
+                if(HAVE_MARCH_ARMV8_CRC_SIMD)
+                    set(ACLEFLAG "-march=armv8-a+crc+simd" CACHE INTERNAL "Compiler option to enable ACLE support")
+                endif()
             endif()
         endif()
-        # Check whether compiler supports ACLE flag
-        set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-        check_c_source_compiles(
-            "int main() { return 0; }"
-            HAVE_ACLE_FLAG FAIL_REGEX "not supported")
-        if(NOT NATIVEFLAG AND NOT HAVE_ACLE_FLAG)
-            set(ACLEFLAG "-march=armv8-a+crc+simd" CACHE INTERNAL "Compiler option to enable ACLE support" FORCE)
-            # Check whether compiler supports ACLE flag
-            set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG}")
-            check_c_source_compiles(
-                "int main() { return 0; }"
-                HAVE_ACLE_FLAG2 FAIL_REGEX "not supported")
-            set(HAVE_ACLE_FLAG ${HAVE_ACLE_FLAG2} CACHE INTERNAL "Have compiler option to enable ACLE intrinsics" FORCE)
-            unset(HAVE_ACLE_FLAG2 CACHE) # Don't cache this internal variable
-        endif()
-        set(CMAKE_REQUIRED_FLAGS)
     endif()
+    # Check whether compiler supports ARMv8 CRC intrinsics
+    set(CMAKE_REQUIRED_FLAGS "${ACLEFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+    check_c_source_compiles(
+        "#if defined(_MSC_VER)
+        #include <intrin.h>
+        #else
+        #include <arm_acle.h>
+        #endif
+        unsigned int f(unsigned int a, unsigned int b) {
+            return __crc32w(a, b);
+        }
+        int main(void) { return 0; }"
+        HAVE_ACLE_FLAG
+    )
+    set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
 macro(check_armv6_compiler_flag)

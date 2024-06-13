@@ -1113,19 +1113,32 @@ check_acle_compiler_flag() {
 int main() { return 0; }
 EOF
     if try $CC -c $CFLAGS -march=armv8-a+crc $test.c; then
-        ACLE_AVAILABLE=1
         echo "Check whether -march=armv8-a+crc works ... Yes." | tee -a configure.log
         acleflag="-march=armv8-a+crc"
     else
         echo "Check whether -march=armv8-a+crc works ... No." | tee -a configure.log
         if try $CC -c $CFLAGS -march=armv8-a+crc+simd $test.c; then
-            ACLE_AVAILABLE=1
             echo "Check whether -march=armv8-a+crc+simd works ... Yes." | tee -a configure.log
             acleflag="-march=armv8-a+crc+simd"
         else
-            ACLE_AVAILABLE=0
             echo "Check whether -march=armv8-a+crc+simd works ... No." | tee -a configure.log
         fi
+    fi
+
+    # Check whether compiler supports ARMv8 CRC intrinsics
+    cat > $test.c << EOF
+#include <arm_acle.h>
+unsigned int f(unsigned int a, unsigned int b) {
+    return __crc32w(a, b);
+}
+int main(void) { return 0; }
+EOF
+    if try ${CC} ${CFLAGS} ${acleflag} $test.c; then
+        echo "Checking for ARMv8 CRC intrinsics ... Yes." | tee -a configure.log
+        ACLE_AVAILABLE=1
+    else
+        echo "Checking for ARMv8 CRC intrinsics ... No." | tee -a configure.log
+        ACLE_AVAILABLE=0
     fi
 }
 
