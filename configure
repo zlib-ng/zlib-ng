@@ -632,7 +632,7 @@ echo >> configure.log
 
 # check for version script support
 cat > $test.c <<EOF
-int foo() { return 0; }
+int foo(void) { return 0; }
 EOF
 cat > $test.map <<EOF
 {
