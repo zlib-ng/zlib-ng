@@ -365,10 +365,10 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   case "$uname" in
   Linux* | linux* | GNU | GNU/* | solaris*)
         LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.${VER1},--version-script,${SRCDIR}/${MAPNAME}" ;;
+        LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.${VER1}" ;;
   *BSD | *bsd* | DragonFly)
         LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.${VER1},--version-script,${SRCDIR}/${MAPNAME}"
+        LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.${VER1}"
         LDCONFIG="ldconfig -m" ;;
   CYGWIN* | Cygwin* | cygwin*)
         visibility=0
@@ -386,7 +386,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         SHAREDTARGET=$SHAREDLIB
         IMPORTLIB="${LIBNAME}.dll.a"
         LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB},--version-script,${SRCDIR}/${MAPNAME}"
+        LDSHAREDFLAGS="-shared -Wl,--out-implib,${IMPORTLIB}"
         LDSHAREDLIBC=""
         if test $gzfileops -eq 0; then
           DEFFILE='win32/${LIBNAME2}.def'
@@ -435,7 +435,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         SHAREDTARGET=$SHAREDLIB
         IMPORTLIB="${LIBNAME}.dll.a"
         LDSHARED=${LDSHARED-"$cc"}
-        LDSHAREDFLAGS="-shared -Wl,--out-implib=${IMPORTLIB} -Wl,--version-script=${SRCDIR}/${MAPNAME}"
+        LDSHAREDFLAGS="-shared -Wl,--out-implib=${IMPORTLIB}"
         LDSHAREDLIBC=""
         if test $gzfileops -eq 0; then
           DEFFILE='win32/${LIBNAME2}.def'
@@ -483,7 +483,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
              ARFLAGS="-o" ;;
   aarch64)
              LDSHARED=${LDSHARED-"$cc"}
-             LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.${VER1} -Wl,--version-script,${SRCDIR}/${MAPNAME}"
+             LDSHAREDFLAGS="-shared -Wl,-soname,${LIBNAME}.so.${VER1}"
              LDSHAREDLIBC="-Wl,--start-group -lc -lrdimon -Wl,--end-group" ;;
   *)
              LDSHARED=${LDSHARED-"$cc"}
@@ -628,6 +628,29 @@ else
   TEST="${TEST} testshared"
 fi
 
+echo >> configure.log
+
+# check for version script support
+cat > $test.c <<EOF
+int foo(void) { return 0; }
+EOF
+cat > $test.map <<EOF
+{
+  global:
+    foo;
+  local:
+    *;
+};
+EOF
+if test $shared -eq 1; then
+  LDVERSIONSCRIPT="-Wl,--version-script,$SRCDIR/$MAPNAME"
+  if try $CC -c $SFLAGS $test.c && try $LDSHARED $LDVERSIONSCRIPT $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
+    echo "Checking for version script support... $LDVERSIONSCRIPT." | tee -a configure.log
+  else
+    echo "Checking for version script support... No." | tee -a configure.log
+    LDVERSIONSCRIPT=""
+  fi
+fi
 echo >> configure.log
 
 # check for large file support, and if none, check for fseeko()
@@ -1963,6 +1986,7 @@ sed < $SRCDIR/Makefile.in "
 /^LDFLAGS *=/s#=.*#=$LDFLAGS#
 /^LDSHARED *=/s#=.*#=$LDSHARED#
 /^LDSHAREDFLAGS *=/s#=.*#=$LDSHAREDFLAGS#
+/^LDVERSIONSCRIPT *=/s#=.*#=$LDVERSIONSCRIPT#
 /^LIBNAME1 *=/s#=.*#=$LIBNAME#
 /^LIBNAME2 *=/s#=.*#=$LIBNAME2#
 /^SUFFIX *=/s#=.*#=$SUFFIX#
