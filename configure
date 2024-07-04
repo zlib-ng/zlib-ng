@@ -347,7 +347,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
     CFLAGS="${CFLAGS} ${ARCHS}"
     LDFLAGS="${LDFLAGS} ${ARCHS}"
   fi
-  CFLAGS="${CFLAGS} -Wall"
+  CFLAGS="${CFLAGS} -Wall -Werror=implicit-function-declaration"
   SFLAGS="${CFLAGS} -fPIC"
   if test "$warn" -eq 1; then
     CFLAGS="${CFLAGS} -Wextra"
