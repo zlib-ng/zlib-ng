@@ -1644,11 +1644,11 @@ case "${ARCH}" in
 int main() { return 0; }
 EOF
         if try $CC -c $SFLAGS $test.c -mfloat-abi=softfp &&
-           try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
+           try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -mfloat-abi=softfp -o $test$shared_ext $test.o $LDSHAREDLIBC; then
             floatabi="-mfloat-abi=softfp"
         else
             if try $CC -c $SFLAGS $test.c -mfloat-abi=hard &&
-               try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
+               try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -mfloat-abi=hard -o $test$shared_ext $test.o $LDSHAREDLIBC; then
                 floatabi="-mfloat-abi=hard"
             fi
         fi
