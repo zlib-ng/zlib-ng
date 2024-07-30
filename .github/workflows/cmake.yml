@@ -569,11 +569,11 @@ jobs:
 
           - name: macOS GCC UBSAN (ARM64)
             os: macos-latest
-            compiler: gcc-11
-            cxx-compiler: g++-11
+            compiler: gcc-13
+            cxx-compiler: g++-13
             cmake-args: -DWITH_SANITIZER=Undefined
-            packages: gcc@11
-            gcov-exec: gcov-11
+            packages: gcc@13
+            gcov-exec: gcov-13
             codecov: macos_gcc_arm64
 
           - name: macOS Clang Native Instructions (ARM64)
@@ -713,7 +713,7 @@ jobs:
       run: |
         python3 -u -m venv ${{ matrix.build-dir || '.' }}/venv
         source ${{ matrix.build-dir || '.' }}/venv/${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}/activate
-        python3 -u -m pip install gcovr==5.0
+        python3 -u -m pip install gcovr==${{ matrix.compiler == 'gcc-13' && '7.2' || '5.0' }}
         python3 -m gcovr ${{ matrix.build-dir || '' }} -j 3 --verbose \
           --exclude-unreachable-branches \
           --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
