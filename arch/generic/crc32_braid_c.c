@@ -192,7 +192,7 @@ Z_INTERNAL uint32_t PREFIX(crc32_braid)(uint32_t crc, const uint8_t *buf, size_t
 #endif
 #endif
         words += N;
-        c = ZSWAPWORD(comb);
+        c = (uint32_t)ZSWAPWORD(comb);
 
         /* Update the pointer to the remaining bytes to process. */
         buf = (const unsigned char *)words;
