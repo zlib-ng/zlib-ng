@@ -444,7 +444,7 @@ macro(check_s390_intrinsics)
     check_c_source_compiles(
         "#include <sys/auxv.h>
         #ifndef HWCAP_S390_VXRS
-        #define HWCAP_S390_VXRS HWCAP_S390_VX
+        #define HWCAP_S390_VXRS (1 << 11)
         #endif
         int main() {
             return (getauxval(AT_HWCAP) & HWCAP_S390_VXRS);
