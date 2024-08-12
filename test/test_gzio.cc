@@ -30,6 +30,7 @@ TEST(gzip, readwrite) {
     gzFile file;
     int err;
 
+    Z_UNUSED(compr);
     /* Write gz file with test data */
     file = PREFIX(gzopen)(TESTFILE, "wb");
     ASSERT_TRUE(file != NULL);

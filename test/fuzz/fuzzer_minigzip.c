@@ -302,7 +302,9 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
         }
         if (len == 0)
             break;
-        assert(0 == memcmp(data + offset, buf, len));
+        int c = memcmp(data + offset, buf, len);
+        assert(0 == c);
+        Z_UNUSED(c); // in Release build, assert() is a no-op.
         offset += len;
     }
 

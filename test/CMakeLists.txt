@@ -201,6 +201,13 @@ if(WITH_GTEST)
         add_executable(gtest_zlib ${TEST_SRCS})
         configure_test_executable(gtest_zlib)
 
+        if(MSVC)
+            target_compile_options(gtest_zlib PRIVATE /wd4389)
+            if(BASEARCH_ARM_FOUND)
+                target_compile_options(gtest_zlib PRIVATE /EHsc)
+            endif()
+        endif()
+
         if(WITH_SANITIZER STREQUAL "Memory")
             target_link_directories(gtest_zlib PRIVATE $ENV{LLVM_BUILD_DIR}/lib)
             target_link_options(gtest_zlib PRIVATE

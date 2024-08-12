@@ -225,7 +225,7 @@
 #  include <stdio.h>
    extern int Z_INTERNAL z_verbose;
    extern void Z_INTERNAL z_error(const char *m);
-#  define Assert(cond, msg) {if (!(cond)) z_error(msg);}
+#  define Assert(cond, msg) {int _cond = (cond); if (!_cond) z_error(msg);}
 #  define Trace(x) {if (z_verbose >= 0) fprintf x;}
 #  define Tracev(x) {if (z_verbose > 0) fprintf x;}
 #  define Tracevv(x) {if (z_verbose > 1) fprintf x;}
