@@ -115,6 +115,11 @@ struct ALIGNED_(64) inflate_state {
     uint32_t whave;             /* valid bytes in the window */
     uint32_t wnext;             /* window write index */
     unsigned char *window;      /* allocated sliding window, if needed */
+#if defined(_M_IX86) || defined(_M_ARM)
+    uint32_t padding;
+#else
+    uint32_t padding[2];
+#endif
 
     struct crc32_fold_s ALIGNED_(16) crc_fold;
 
@@ -147,6 +152,9 @@ struct ALIGNED_(64) inflate_state {
     inflate_allocs *alloc_bufs; /* struct for handling memory allocations */
 #ifdef HAVE_ARCH_INFLATE_STATE
     arch_inflate_state arch;    /* architecture-specific extensions */
+#endif
+#if defined(_M_IX86) || defined(_M_ARM)
+    int padding2[8];
 #endif
 };
 
