@@ -214,6 +214,10 @@ struct internal_state {
 
     int nice_match; /* Stop searching when current match exceeds this */
 
+#if defined(_M_IX86) || defined(_M_ARM)
+    int padding[2];
+#endif
+
     struct crc32_fold_s ALIGNED_(16) crc_fold;
 
                 /* used by trees.c: */
@@ -283,7 +287,10 @@ struct internal_state {
     /* Number of valid bits in bi_buf.  All bits above the last valid bit are always zero. */
 
     /* Reserved for future use and alignment purposes */
-    int32_t reserved[11];
+    int32_t reserved[19];
+#if defined(_M_IX86) || defined(_M_ARM)
+    int32_t padding2[4];
+#endif
 } ALIGNED_(8);
 
 typedef enum {
