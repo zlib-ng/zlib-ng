@@ -103,6 +103,11 @@ struct inflate_state {
     uint32_t whave;             /* valid bytes in the window */
     uint32_t wnext;             /* window write index */
     unsigned char *window;      /* allocated sliding window, if needed */
+#if defined(_M_IX86) || defined(_M_ARM)
+    uint32_t padding;
+#else
+    uint32_t padding[2];
+#endif
 
     struct crc32_fold_s ALIGNED_(16) crc_fold;
 
@@ -132,6 +137,9 @@ struct inflate_state {
     int back;                   /* bits back of last unprocessed length/lit */
     unsigned was;               /* initial length of match */
     uint32_t chunksize;         /* size of memory copying chunk */
+#if defined(_M_IX86) || defined(_M_ARM)
+    int padding2[8];
+#endif
 };
 
 int Z_INTERNAL PREFIX(inflate_ensure_window)(struct inflate_state *state);
