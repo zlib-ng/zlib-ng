@@ -4,11 +4,12 @@
  */
 #ifndef DISABLE_RUNTIME_CPU_DETECTION
 
+#include "zbuild.h"
+
 #if defined(_MSC_VER)
 #  include <intrin.h>
 #endif
 
-#include "zbuild.h"
 #include "functable.h"
 #include "cpu_features.h"
 #include "arch_functions.h"
