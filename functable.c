@@ -3,11 +3,12 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#include "zbuild.h"
+
 #if defined(_MSC_VER)
 #  include <intrin.h>
 #endif
 
-#include "zbuild.h"
 #include "zendian.h"
 #include "crc32_braid_p.h"
 #include "deflate.h"
