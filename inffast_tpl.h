@@ -249,7 +249,8 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                     if (op < len) {             /* still need some from output */
                         len -= op;
                         out = chunkcopy_safe(out, from, op, safe);
-                        out = CHUNKUNROLL(out, &dist, &len);
+                        if (!extra_safe)
+                            out = CHUNKUNROLL(out, &dist, &len);
                         out = chunkcopy_safe(out, out - dist, len, safe);
                     } else {
                         out = chunkcopy_safe(out, from, len, safe);
