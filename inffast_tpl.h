@@ -238,7 +238,10 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                         from += wsize - op;
                         if (op < len) {         /* some from end of window */
                             len -= op;
-                            out = chunkcopy_safe(out, from, op, safe);
+                            if (extra_safe)
+                                out = chunkcopy_safe(out, from, op, safe);
+                            else
+                                out = CHUNKCOPY(out, from, op);
                             from = window;      /* more from start of window */
                             op = wnext;
                             /* This (rare) case can create a situation where
@@ -248,12 +251,19 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                     }
                     if (op < len) {             /* still need some from output */
                         len -= op;
-                        out = chunkcopy_safe(out, from, op, safe);
-                        if (!extra_safe)
+                        if (extra_safe) {
+                            out = chunkcopy_safe(out, from, op, safe);
+                            out = chunkcopy_safe(out, out - dist, len, safe);
+                        } else {
+                            out = CHUNKCOPY(out, from, op);
                             out = CHUNKUNROLL(out, &dist, &len);
-                        out = chunkcopy_safe(out, out - dist, len, safe);
+                            out = CHUNKCOPY(out, out - dist, len);
+                        }
                     } else {
-                        out = chunkcopy_safe(out, from, len, safe);
+                        if (extra_safe)
+                            out = chunkcopy_safe(out, from, len, safe);
+                        else
+                            out = CHUNKCOPY(out, from, len);
                     }
                 } else if (extra_safe) {
                     /* Whole reference is in range of current output. */
