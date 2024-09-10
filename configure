@@ -1243,7 +1243,7 @@ EOF
 unsigned int f(unsigned int a, unsigned int b) {
     return __uqsub16(a, b);
 }
-int main(void) { return 0; }
+int main(void) { return f(1, 2); }
 EOF
     if try ${CC} ${CFLAGS} ${armv6flag} $test.c; then
         echo "Checking for ARMv6 intrinsics ... Yes." | tee -a configure.log
