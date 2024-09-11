@@ -154,7 +154,6 @@ static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, uint64_t len,
     len = MIN(len, safelen);
     int32_t olap_src = from >= out && from < out + len;
     int32_t olap_dst = out >= from && out < from + len;
-    uint64_t tocopy;
 
     /* For all cases without overlap, memcpy is ideal */
     if (!(olap_src || olap_dst)) {
@@ -167,65 +166,7 @@ static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, uint64_t len,
         return out + len;
     }
 
-    /* We are emulating a self-modifying copy loop here. To do this in a way that doesn't produce undefined behavior,
-     * we have to get a bit clever. First if the overlap is such that src falls between dst and dst+len, we can do the
-     * initial bulk memcpy of the nonoverlapping region. Then, we can leverage the size of this to determine the safest
-     * atomic memcpy size we can pick such that we have non-overlapping regions. This effectively becomes a safe look
-     * behind or lookahead distance. */
-    uint64_t non_olap_size = llabs(from - out); // llabs vs labs for compatibility with windows
-
-    memcpy(out, from, (size_t)non_olap_size);
-    out += non_olap_size;
-    from += non_olap_size;
-    len -= non_olap_size;
-
-    /* So this doesn't give use a worst case scenario of function calls in a loop,
-     * we want to instead break this down into copy blocks of fixed lengths */
-    while (len) {
-        tocopy = MIN(non_olap_size, len);
-        len -= tocopy;
-
-        while (tocopy >= 32) {
-            memcpy(out, from, 32);
-            out += 32;
-            from += 32;
-            tocopy -= 32;
-        }
-
-        if (tocopy >= 16) {
-            memcpy(out, from, 16);
-            out += 16;
-            from += 16;
-            tocopy -= 16;
-        }
-
-        if (tocopy >= 8) {
-            memcpy(out, from, 8);
-            out += 8;
-            from += 8;
-            tocopy -= 8;
-        }
-
-        if (tocopy >= 4) {
-            memcpy(out, from, 4);
-            out += 4;
-            from += 4;
-            tocopy -= 4;
-        }
-
-        if (tocopy >= 2) {
-            memcpy(out, from, 2);
-            out += 2;
-            from += 2;
-            tocopy -= 2;
-        }
-
-        if (tocopy) {
-            *out++ = *from++;
-        }
-    }
-
-    return out;
+    return chunkcopy_safe_unrolled(out, from, len);
 }
 
 #endif
