@@ -14,6 +14,7 @@ typedef __m256i chunk_t;
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
+#define HAVE_CHUNKMEMSET_16
 #define HAVE_CHUNK_MAG
 
 /* Populate don't cares so that this is a direct lookup (with some indirection into the permute table), because dist can
@@ -68,6 +69,10 @@ static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
     *chunk = _mm256_set1_epi64x(tmp);
 }
 
+static inline void chunkmemset_16(uint8_t *from, chunk_t *chunk) {
+    *chunk = _mm256_broadcastsi128_si256(_mm_loadu_si128((__m128i*)from));
+}
+
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
     *chunk = _mm256_loadu_si256((__m256i *)s);
 }
@@ -99,10 +104,7 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
         perm_vec = _mm256_add_epi8(perm_vec, permute_xform);
         ret_vec = _mm256_inserti128_si256(_mm256_castsi128_si256(ret_vec0), ret_vec0, 1);
         ret_vec = _mm256_shuffle_epi8(ret_vec, perm_vec);
-    } else if (dist == 16) {
-        __m128i ret_vec0 = _mm_loadu_si128((__m128i*)buf);
-        return _mm256_inserti128_si256(_mm256_castsi128_si256(ret_vec0), ret_vec0, 1);
-    } else {
+    }  else {
         __m128i ret_vec0 = _mm_loadu_si128((__m128i*)buf);
         __m128i ret_vec1 = _mm_loadu_si128((__m128i*)(buf + 16));
         /* Take advantage of the fact that only the latter half of the 256 bit vector will actually differ */
