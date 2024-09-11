@@ -130,11 +130,16 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
 #ifdef HAVE_CHUNKMEMSET_8
     if (dist == 8) {
         chunkmemset_8(from, &chunk_load);
-    } else if (dist == sizeof(chunk_t)) {
-        loadchunk(from, &chunk_load);
     } else
 #endif
-    {
+#ifdef HAVE_CHUNKMEMSET_16
+    if (dist == 16) {
+        chunkmemset_16(from, &chunk_load);
+    } else
+#endif
+    if (dist == sizeof(chunk_t)) {
+        loadchunk(from, &chunk_load);
+    } else {
         chunk_load = GET_CHUNK_MAG(from, &chunk_mod, dist);
     }
 
