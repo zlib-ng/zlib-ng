@@ -161,5 +161,6 @@ struct ALIGNED_(64) inflate_state {
 void Z_INTERNAL PREFIX(fixedtables)(struct inflate_state *state);
 Z_INTERNAL inflate_allocs* alloc_inflate(PREFIX3(stream) *strm);
 Z_INTERNAL void free_inflate(PREFIX3(stream) *strm);
+Z_INTERNAL uint8_t* chunkcopy_safe_unrolled(uint8_t *out, uint8_t *from, uint64_t len);
 
 #endif /* INFLATE_H_ */
