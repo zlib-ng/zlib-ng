@@ -5,10 +5,6 @@
 #include "zbuild.h"
 #include <stdlib.h>
 
-#if CHUNK_SIZE == 32 && defined(X86_SSSE3)
-extern uint8_t* chunkmemset_ssse3(uint8_t *out, unsigned dist, unsigned len);
-#endif
-
 /* Returns the chunk size */
 Z_INTERNAL uint32_t CHUNKSIZE(void) {
     return sizeof(chunk_t);
@@ -91,20 +87,37 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
 }
 #endif
 
+#ifdef HAVE_HALF_CHUNK
+static inline uint8_t* HALFCHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
+    halfchunk_t chunk;
+    int32_t align = ((len - 1) % sizeof(halfchunk_t)) + 1;
+    loadhalfchunk(from, &chunk);
+    storehalfchunk(out, &chunk);
+    out += align;
+    from += align;
+    len -= align;
+    while (len > 0) {
+        loadhalfchunk(from, &chunk);
+        storehalfchunk(out, &chunk);
+        out += sizeof(halfchunk_t);
+        from += sizeof(halfchunk_t);
+        len -= sizeof(halfchunk_t);
+    }
+    return out;
+}
+#endif
+
 /* Copy DIST bytes from OUT - DIST into OUT + DIST * k, for 0 <= k < LEN/DIST.
    Return OUT + LEN. */
-Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
+static inline uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
     /* Debug performance related issues when len < sizeof(uint64_t):
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
     Assert(dist > 0, "chunkmemset cannot have a distance 0");
-    /* Only AVX2 */
-#if CHUNK_SIZE == 32 && defined(X86_SSSE3)
-    if (len <= 16) {
-        return chunkmemset_ssse3(out, dist, len);
-    }
-#endif
 
     uint8_t *from = out - dist;
+    chunk_t chunk_load;
+    uint32_t chunk_mod = 0;
+    uint32_t adv_amount;
 
     if (dist == 1) {
         memset(out, *from, len);
@@ -113,10 +126,45 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
         return CHUNKCOPY(out, out - dist, len);
     }
 
-    chunk_t chunk_load;
-    uint32_t chunk_mod = 0;
+    /* Only AVX2 as there's 128 bit vectors and 256 bit. We allow for shorter vector
+     * lengths because they serve to allow more cases to fall into chunkcopy, as the
+     * distance of the shorter length is still deemed a safe distance. We rewrite this
+     * here rather than calling the ssse3 variant directly now because doing so required
+     * dispatching to another function and broke inlining for this function entirely. We
+     * also can merge an assert and some remainder peeling behavior into the same code blocks,
+     * making the code a little smaller.  */
+#ifdef HAVE_HALF_CHUNK
+    if (len <= sizeof(halfchunk_t)) {
+        if (dist > sizeof(halfchunk_t)) {
+            return HALFCHUNKCOPY(out, out - dist, len);
+        }
 
-    /* TODO: possibly build up a permutation table for this if not an even modulus */
+        halfchunk_t halfchunk_load;
+
+        if (dist == 2) {
+            halfchunkmemset_2(from, &halfchunk_load);
+        } else if (dist == 4) {
+            halfchunkmemset_4(from, &halfchunk_load);
+        } else if (dist == 8) {
+            halfchunkmemset_8(from, &halfchunk_load);
+        } else if (dist == 16) {
+            loadhalfchunk(from, &halfchunk_load);
+        } else {
+            halfchunk_load = GET_HALFCHUNK_MAG(from, &chunk_mod, dist);
+        }
+
+        adv_amount = sizeof(halfchunk_t) - chunk_mod;
+        while (len >= sizeof(halfchunk_t)) {
+            storehalfchunk(out, &halfchunk_load);
+            len -= adv_amount;
+            out += adv_amount;
+        }
+
+        chunk_load = halfchunk2whole(halfchunk_load);
+        goto rem_bytes;
+    }
+#endif
+
 #ifdef HAVE_CHUNKMEMSET_2
     if (dist == 2) {
         chunkmemset_2(from, &chunk_load);
@@ -143,28 +191,28 @@ Z_INTERNAL uint8_t* CHUNKMEMSET(uint8_t *out, unsigned dist, unsigned len) {
         chunk_load = GET_CHUNK_MAG(from, &chunk_mod, dist);
     }
 
-    /* If we're lucky enough and dist happens to be an even modulus of our vector length,
-     * we can do two stores per loop iteration, which for most ISAs, especially x86, is beneficial */
-    if (chunk_mod == 0) {
-        while (len >= (2 * sizeof(chunk_t))) {
-            storechunk(out, &chunk_load);
-            storechunk(out + sizeof(chunk_t), &chunk_load);
-            out += 2 * sizeof(chunk_t);
-            len -= 2 * sizeof(chunk_t);
-        }
+    adv_amount = sizeof(chunk_t) - chunk_mod;
+
+    while (len >= (2 * sizeof(chunk_t))) {
+        storechunk(out, &chunk_load);
+        storechunk(out + adv_amount, &chunk_load);
+        out += 2 * adv_amount;
+        len -= 2 * adv_amount;
     }
 
     /* If we don't have a "dist" length that divides evenly into a vector
      * register, we can write the whole vector register but we need only
      * advance by the amount of the whole string that fits in our chunk_t.
      * If we do divide evenly into the vector length, adv_amount = chunk_t size*/
-    uint32_t adv_amount = sizeof(chunk_t) - chunk_mod;
     while (len >= sizeof(chunk_t)) {
         storechunk(out, &chunk_load);
         len -= adv_amount;
         out += adv_amount;
     }
 
+#ifdef HAVE_HALF_CHUNK
+rem_bytes:
+#endif
     if (len) {
         memcpy(out, &chunk_load, len);
         out += len;
