@@ -10,8 +10,6 @@
 
 typedef __m128i chunk_t;
 
-#define CHUNK_SIZE 16
-
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
