@@ -174,25 +174,13 @@ static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, uint64_t len,
      * behind or lookahead distance. */
     uint64_t non_olap_size = llabs(from - out); // llabs vs labs for compatibility with windows
 
-    memcpy(out, from, (size_t)non_olap_size);
-    out += non_olap_size;
-    from += non_olap_size;
-    len -= non_olap_size;
-
     /* So this doesn't give use a worst case scenario of function calls in a loop,
      * we want to instead break this down into copy blocks of fixed lengths */
     while (len) {
         tocopy = MIN(non_olap_size, len);
         len -= tocopy;
 
-        while (tocopy >= 32) {
-            memcpy(out, from, 32);
-            out += 32;
-            from += 32;
-            tocopy -= 32;
-        }
-
-        if (tocopy >= 16) {
+        while (tocopy >= 16) {
             memcpy(out, from, 16);
             out += 16;
             from += 16;
@@ -213,14 +201,7 @@ static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, uint64_t len,
             tocopy -= 4;
         }
 
-        if (tocopy >= 2) {
-            memcpy(out, from, 2);
-            out += 2;
-            from += 2;
-            tocopy -= 2;
-        }
-
-        if (tocopy) {
+        while (tocopy--) {
             *out++ = *from++;
         }
     }
