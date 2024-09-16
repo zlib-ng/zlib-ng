@@ -1,0 +1,58 @@
+#!/bin/bash
+
+#
+# Ephemeral runner startup script.
+#
+# Expects the following environment variables:
+#
+# - REPO=<owner>
+# - PAT_TOKEN=<github_pat_***>
+#
+
+set -e -u
+
+# Validate required environment variables
+if [ -z "${REPO:-}" ] || [ -z "${PAT_TOKEN:-}" ]; then
+    echo "Error: REPO and/or PAT_TOKEN environment variables not found"
+    exit 1
+fi
+
+# Check the cached registration token.
+TOKEN_FILE=registration-token.json
+if [ -f $TOKEN_FILE ]; then
+    set +e
+    EXPIRES=$(jq --raw-output .EXPIRES "$TOKEN_FILE" 2>/dev/null)
+    STATUS=$?
+    set -e
+else
+    STATUS=1
+fi
+if [[ $STATUS -ne 0 || $(date +%s) -ge $(date -d "$EXPIRES" +%s) ]]; then
+    # Refresh the cached registration token.
+    curl \
+        -X POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer $PAT_TOKEN" \
+        "https://api.github.com/repos/$REPO/actions/runners/registration-token" \
+        -o "$TOKEN_FILE"
+fi
+
+REG_TOKEN=$(jq --raw-output .token "$TOKEN_FILE")
+if [ $REG_TOKEN = "null" ]; then
+    echo "Failed to get registration token"
+    exit 1
+fi
+
+# (Re-)register the runner.
+set -x
+./config.sh \
+    --url "https://github.com/$REPO" \
+    --token "$REG_TOKEN" \
+    --unattended \
+    --disableupdate \
+    --replace \
+    --labels z15 \
+    --ephemeral
+
+# Run one job.
+./run.sh
