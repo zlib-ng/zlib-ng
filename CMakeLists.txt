@@ -1174,10 +1174,6 @@ if (ZLIB_COMPAT)
     endif()
 endif()
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${ARCHDIR})
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/arch/generic)
-
 foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
     if(NOT ZLIB_COMPAT)
         target_compile_definitions(${ZLIB_INSTALL_LIBRARY} PUBLIC ZLIBNG_NATIVE_API)
@@ -1185,6 +1181,8 @@ foreach(ZLIB_INSTALL_LIBRARY ${ZLIB_INSTALL_LIBRARIES})
     target_include_directories(${ZLIB_INSTALL_LIBRARY} PUBLIC
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}$<SEMICOLON>${CMAKE_CURRENT_SOURCE_DIR}>"
         "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
+    target_include_directories(${ZLIB_INSTALL_LIBRARY} PRIVATE "${ARCHDIR}")
+    target_include_directories(${ZLIB_INSTALL_LIBRARY} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/arch/generic")
 endforeach()
 
 if(WIN32)
