@@ -9,13 +9,13 @@ message(STATUS "Using CMake version ${CMAKE_VERSION}")
 # If not specified on the command line, enable C11 as the default
 # Configuration items that affect the global compiler environment standards
 # should be issued before the "project" command.
-if(NOT CMAKE_C_STANDARD)
+if(NOT DEFINED CMAKE_C_STANDARD)
     set(CMAKE_C_STANDARD 11)          # The C standard whose features are requested to build this target
 endif()
-if(NOT CMAKE_C_STANDARD_REQUIRED)
+if(NOT DEFINED CMAKE_C_STANDARD_REQUIRED)
     set(CMAKE_C_STANDARD_REQUIRED ON) # Boolean describing whether the value of C_STANDARD is a requirement
 endif()
-if(NOT CMAKE_C_EXTENSIONS)
+if(NOT DEFINED CMAKE_C_EXTENSIONS)
     set(CMAKE_C_EXTENSIONS OFF)       # Boolean specifying whether compiler specific extensions are requested
 endif()
 set(VALID_C_STANDARDS "99" "11")
