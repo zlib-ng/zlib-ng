@@ -202,10 +202,7 @@ if(WITH_GTEST)
         configure_test_executable(gtest_zlib)
 
         if(MSVC)
-            target_compile_options(gtest_zlib PRIVATE /wd4389)
-            if(BASEARCH_ARM_FOUND)
-                target_compile_options(gtest_zlib PRIVATE /EHsc)
-            endif()
+            target_compile_options(gtest_zlib PRIVATE /wd4389 /EHsc)
         endif()
 
         if(WITH_SANITIZER STREQUAL "Memory")
