@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.5.1)
-
 macro(configure_test_executable target)
     target_include_directories(${target} PRIVATE ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR})
     set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})

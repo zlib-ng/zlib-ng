@@ -6,6 +6,10 @@ else()
 endif()
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
+if(POLICY CMP0169)
+    cmake_policy(SET CMP0169 OLD) # CMake 3.30: call FetchContent_Populate() with just the name of a dependency
+endif()
+
 # If not specified on the command line, enable C11 as the default
 # Configuration items that affect the global compiler environment standards
 # should be issued before the "project" command.
