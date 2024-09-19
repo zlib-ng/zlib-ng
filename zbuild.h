@@ -275,8 +275,8 @@
 /*
  * __asan_loadN() and __asan_storeN() calls are inserted by compilers in order to check memory accesses.
  * They can be called manually too, with the following caveats:
- * gcc says: "warning: implicit declaration of function ‘...’"
- * g++ says: "error: new declaration ‘...’ ambiguates built-in declaration ‘...’"
+ * gcc says: "warning: implicit declaration of function '...'"
+ * g++ says: "error: new declaration '...' ambiguates built-in declaration '...'"
  * Accommodate both.
  */
 #ifdef Z_ADDRESS_SANITIZER
