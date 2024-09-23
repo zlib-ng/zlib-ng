@@ -235,7 +235,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                         from += wsize - op;
                         if (op < len) {         /* some from end of window */
                             len -= op;
-                            out = chunkcopy_safe(out, from, op, safe);
+                            out = CHUNKCOPY_SAFE(out, from, op, safe);
                             from = window;      /* more from start of window */
                             op = wnext;
                             /* This (rare) case can create a situation where
@@ -245,19 +245,23 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                     }
                     if (op < len) {             /* still need some from output */
                         len -= op;
-                        out = chunkcopy_safe(out, from, op, safe);
-                        if (!extra_safe)
+                        if (!extra_safe) {
+                            out = CHUNKCOPY_SAFE(out, from, op, safe);
                             out = CHUNKUNROLL(out, &dist, &len);
-                        out = chunkcopy_safe(out, out - dist, len, safe);
+                            out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
+                        } else {
+                            out = chunkcopy_safe(out, from, op, safe);
+                            out = chunkcopy_safe(out, out - dist, len, safe);
+                        }
                     } else {
-                        out = chunkcopy_safe(out, from, len, safe);
+                        if (!extra_safe)
+                            out = CHUNKCOPY_SAFE(out, from, len, safe);
+                        else
+                            out = chunkcopy_safe(out, from, len, safe);
                     }
                 } else if (extra_safe) {
                     /* Whole reference is in range of current output. */
-                    if (dist >= len || dist >= state->chunksize)
                         out = chunkcopy_safe(out, out - dist, len, safe);
-                    else
-                        out = CHUNKMEMSET_SAFE(out, dist, len, (unsigned)((safe - out)));
                 } else {
                     /* Whole reference is in range of current output.  No range checks are
                        necessary because we start with room for at least 258 bytes of output,
@@ -267,7 +271,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                     if (dist >= len || dist >= state->chunksize)
                         out = CHUNKCOPY(out, out - dist, len);
                     else
-                        out = CHUNKMEMSET(out, dist, len);
+                        out = CHUNKMEMSET(out, out - dist, len);
                 }
             } else if ((op & 64) == 0) {          /* 2nd level distance code */
                 here = dcode + here->val + BITS(op);
