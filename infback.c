@@ -53,14 +53,18 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateBackInit)(PREFIX3(stream) *strm, int32_t wi
     Tracev((stderr, "inflate: allocated\n"));
 
     strm->state = (struct internal_state *)state;
-    state->dmax = 32768U;
     state->wbits = (unsigned int)windowBits;
     state->wsize = 1U << windowBits;
     state->window = window;
     state->wnext = 0;
     state->whave = 0;
-    state->sane = 1;
     state->chunksize = FUNCTABLE_CALL(chunksize)();
+#ifdef INFLATE_STRICT
+    state->dmax = 32768U;
+#endif
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+    state->sane = 1;
+#endif
     return Z_OK;
 }
 
