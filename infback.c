@@ -55,6 +55,7 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateBackInit)(PREFIX3(stream) *strm, int32_t wi
     strm->state = (struct internal_state *)state;
     state->wbits = (unsigned int)windowBits;
     state->wsize = 1U << windowBits;
+    state->wbufsize = 1U << windowBits;
     state->window = window;
     state->wnext = 0;
     state->whave = 0;

@@ -240,6 +240,7 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
     state = alloc_bufs->state;
     state->window = alloc_bufs->window;
     state->alloc_bufs = alloc_bufs;
+    state->wbufsize = INFLATE_ADJUST_WINDOW_SIZE((1 << MAX_WBITS) + 64);
     Tracev((stderr, "inflate: allocated\n"));
 
     strm->state = (struct internal_state *)state;

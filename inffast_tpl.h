@@ -137,7 +137,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     /* Detect if out and window point to the same memory allocation. In this instance it is
        necessary to use safe chunk copy functions to prevent overwriting the window. If the
        window is overwritten then future matches with far distances will fail to copy correctly. */
-    extra_safe = (wsize != 0 && out >= window && out + INFLATE_FAST_MIN_LEFT <= window + wsize);
+    extra_safe = (wsize != 0 && out >= window && out + INFLATE_FAST_MIN_LEFT <= window + state->wbufsize);
 
 #define REFILL() do { \
         hold |= load_64_bits(in, bits); \
