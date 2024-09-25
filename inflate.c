@@ -73,13 +73,17 @@ int32_t Z_EXPORT PREFIX(inflateResetKeep)(PREFIX3(stream) *strm) {
     state->last = 0;
     state->havedict = 0;
     state->flags = -1;
-    state->dmax = 32768U;
     state->head = NULL;
     state->hold = 0;
     state->bits = 0;
     state->lencode = state->distcode = state->next = state->codes;
-    state->sane = 1;
     state->back = -1;
+#ifdef INFLATE_STRICT
+    state->dmax = 32768U;
+#endif
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+    state->sane = 1;
+#endif
     INFLATE_RESET_KEEP_HOOK(strm);  /* hook for IBM Z DFLTCC */
     Tracev((stderr, "inflate: reset\n"));
     return Z_OK;
@@ -539,7 +543,9 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 SET_BAD("invalid window size");
                 break;
             }
+#ifdef INFLATE_STRICT
             state->dmax = 1U << len;
+#endif
             state->flags = 0;               /* indicate zlib header */
             Tracev((stderr, "inflate:   zlib header ok\n"));
             strm->adler = state->check = ADLER32_INITIAL_VALUE;
@@ -1049,11 +1055,11 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             if (state->offset > copy) {         /* copy from window */
                 copy = state->offset - copy;
                 if (copy > state->whave) {
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
                     if (state->sane) {
                         SET_BAD("invalid distance too far back");
                         break;
                     }
-#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
                     Trace((stderr, "inflate.c too far\n"));
                     copy -= state->whave;
                     copy = MIN(copy, state->length);
@@ -1065,8 +1071,10 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                     } while (--copy);
                     if (state->length == 0)
                         state->mode = LEN;
-                    break;
+#else
+                    SET_BAD("invalid distance too far back");
 #endif
+                    break;
                 }
                 if (copy > state->wnext) {
                     copy -= state->wnext;
@@ -1404,17 +1412,17 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
 }
 
 int32_t Z_EXPORT PREFIX(inflateUndermine)(PREFIX3(stream) *strm, int32_t subvert) {
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
     struct inflate_state *state;
 
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
-#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
     state->sane = !subvert;
     return Z_OK;
 #else
+    Z_UNUSED(strm);
     Z_UNUSED(subvert);
-    state->sane = 1;
     return Z_DATA_ERROR;
 #endif
 }

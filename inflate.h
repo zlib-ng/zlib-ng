@@ -105,7 +105,6 @@ struct ALIGNED_(64) inflate_state {
     int havedict;               /* true if dictionary provided */
     int flags;                  /* gzip header method and flags, 0 if zlib, or
                                    -1 if raw or no header yet */
-    unsigned dmax;              /* zlib header max distance (INFLATE_STRICT) */
     unsigned long check;        /* protected copy of check value */
     unsigned long total;        /* protected copy of output count */
     PREFIX(gz_headerp) head;    /* where to save gzip header information */
@@ -145,11 +144,17 @@ struct ALIGNED_(64) inflate_state {
     uint16_t lens[320];         /* temporary storage for code lengths */
     uint16_t work[288];         /* work area for code table building */
     code codes[ENOUGH];         /* space for code tables */
-    int sane;                   /* if false, allow invalid distance too far */
     int back;                   /* bits back of last unprocessed length/lit */
     unsigned was;               /* initial length of match */
     uint32_t chunksize;         /* size of memory copying chunk */
     inflate_allocs *alloc_bufs; /* struct for handling memory allocations */
+
+#ifdef INFLATE_STRICT
+    unsigned dmax;              /* zlib header max distance (INFLATE_STRICT) */
+#endif
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+    int sane;                   /* if false, allow invalid distance too far */
+#endif
 #ifdef HAVE_ARCH_INFLATE_STATE
     arch_inflate_state arch;    /* architecture-specific extensions */
 #endif

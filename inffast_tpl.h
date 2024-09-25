@@ -59,9 +59,6 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     unsigned char *beg;         /* inflate()'s initial strm->next_out */
     unsigned char *end;         /* while out < end, enough space available */
     unsigned char *safe;        /* can use chunkcopy provided out < safe */
-#ifdef INFLATE_STRICT
-    unsigned dmax;              /* maximum distance from zlib header */
-#endif
     unsigned wsize;             /* window size or zero if not using window */
     unsigned whave;             /* valid bytes in the window */
     unsigned wnext;             /* window write index */
@@ -126,9 +123,6 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     beg = out - (start - strm->avail_out);
     end = out + (strm->avail_out - (INFLATE_FAST_MIN_LEFT - 1));
     safe = out + strm->avail_out;
-#ifdef INFLATE_STRICT
-    dmax = state->dmax;
-#endif
     wsize = state->wsize;
     whave = state->whave;
     wnext = state->wnext;
@@ -193,7 +187,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                 op &= MAX_BITS;                 /* number of extra bits */
                 dist += BITS(op);
 #ifdef INFLATE_STRICT
-                if (dist > dmax) {
+                if (dist > state->dmax) {
                     SET_BAD("invalid distance too far back");
                     break;
                 }
@@ -204,11 +198,11 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                 if (dist > op) {                /* see if copy from window */
                     op = dist - op;             /* distance back in window */
                     if (op > whave) {
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
                         if (state->sane) {
                             SET_BAD("invalid distance too far back");
                             break;
                         }
-#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
                         if (len <= op - whave) {
                             do {
                                 *out++ = 0;
@@ -226,6 +220,9 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                             } while (--len);
                             continue;
                         }
+#else
+                        SET_BAD("invalid distance too far back");
+                        break;
 #endif
                     }
                     from = window;
