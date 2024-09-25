@@ -4,7 +4,6 @@
 
 #include "zbuild.h"
 #include <stdlib.h>
-#include <stdio.h>
 
 /* Returns the chunk size */
 Z_INTERNAL uint32_t CHUNKSIZE(void) {
@@ -88,7 +87,7 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
 }
 #endif
 
-#ifdef HAVE_HALF_CHUNK
+#if defined(HAVE_HALF_CHUNK) && !defined(HAVE_HALFCHUNKCOPY)
 static inline uint8_t* HALFCHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
     halfchunk_t chunk;
     int32_t align = ((len - 1) % sizeof(halfchunk_t)) + 1;
@@ -126,6 +125,15 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, unsigned len) {
      * always needed to be handled here or if we're just now seeing it because we are
      * dispatching to this function, more */
     if (sdist < 0 && dist < len) {
+#ifdef HAVE_MASKED_READWRITE
+        /* We can still handle this case if we can mitigate over writing _and_ we
+         * fit the entirety of the copy length with one load */
+        if (len <= sizeof(chunk_t)) {
+            /* Tempting to add a goto to the block below but hopefully most compilers
+             * collapse these identical code segments as one label to jump to */
+            return CHUNKCOPY(out, from, len);
+        }
+#endif
         /* Here the memmove semantics match perfectly, as when this happens we are
          * effectively sliding down the contents of memory by dist bytes */
         memmove(out, from, len);
@@ -139,7 +147,7 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, unsigned len) {
         return CHUNKCOPY(out, from, len);
     }
 
-    /* Only AVX2 as there's 128 bit vectors and 256 bit. We allow for shorter vector
+    /* Only AVX2+ as there's 128 bit vectors and 256 bit. We allow for shorter vector
      * lengths because they serve to allow more cases to fall into chunkcopy, as the
      * distance of the shorter length is still deemed a safe distance. We rewrite this
      * here rather than calling the ssse3 variant directly now because doing so required
@@ -154,11 +162,10 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, unsigned len) {
         if ((dist % 2) != 0 || dist == 6) {
             halfchunk_t halfchunk_load = GET_HALFCHUNK_MAG(from, &chunk_mod, (unsigned)dist);
 
-            adv_amount = sizeof(halfchunk_t) - chunk_mod;
             if (len == sizeof(halfchunk_t)) {
                 storehalfchunk(out, &halfchunk_load);
-                len -= adv_amount;
-                out += adv_amount;
+                len -= sizeof(halfchunk_t);
+                out += sizeof(halfchunk_t);
             }
 
             chunk_load = halfchunk2whole(&halfchunk_load);
@@ -212,7 +219,11 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, unsigned len) {
 rem_bytes:
 #endif
     if (len) {
+#ifndef HAVE_MASKED_READWRITE
         memcpy(out, &chunk_load, len);
+#else
+        storechunk_mask(out, gen_mask(len), &chunk_load);
+#endif
         out += len;
     }
 
@@ -237,6 +248,8 @@ Z_INTERNAL uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, uint8_t *from, unsigned len, 
         --left;
     }
 #endif
+
+#ifndef HAVE_MASKED_READWRITE
     if (UNLIKELY(left < sizeof(chunk_t))) {
         while (len > 0) {
             *out++ = *from++;
@@ -245,6 +258,7 @@ Z_INTERNAL uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, uint8_t *from, unsigned len, 
 
         return out;
     }
+#endif
 
     if (len)
         out = CHUNKMEMSET(out, from, len);
@@ -252,14 +266,15 @@ Z_INTERNAL uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, uint8_t *from, unsigned len, 
     return out;
 }
 
-static inline uint8_t *CHUNKCOPY_SAFE(uint8_t *out, uint8_t *from, unsigned len, uint8_t *safe)
+static inline uint8_t *CHUNKCOPY_SAFE(uint8_t *out, uint8_t *from, uint64_t len, uint8_t *safe)
 {
     if (out == from)
         return out + len;
 
     uint64_t safelen = (safe - out);
-    len = MIN(len, (unsigned)safelen);
+    len = MIN(len, safelen);
 
+#ifndef HAVE_MASKED_READWRITE
     uint64_t from_dist = (uint64_t)llabs(safe - from);
     if (UNLIKELY(from_dist < sizeof(chunk_t) || safelen < sizeof(chunk_t))) {
         while (len--) {
@@ -268,6 +283,7 @@ static inline uint8_t *CHUNKCOPY_SAFE(uint8_t *out, uint8_t *from, unsigned len,
 
         return out;
     }
+#endif
 
-    return CHUNKMEMSET(out, from, len);
+    return CHUNKMEMSET(out, from, (unsigned)len);
 }

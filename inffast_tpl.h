@@ -254,14 +254,18 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                             out = chunkcopy_safe(out, out - dist, len, safe);
                         }
                     } else {
-                        if (!extra_safe)
-                            out = CHUNKCOPY_SAFE(out, from, len, safe);
-                        else
+#ifndef HAVE_MASKED_READWRITE
+                        if (extra_safe)
                             out = chunkcopy_safe(out, from, len, safe);
+                        else
+#endif
+                            out = CHUNKCOPY_SAFE(out, from, len, safe);
                     }
+#ifndef HAVE_MASKED_READWRITE
                 } else if (extra_safe) {
                     /* Whole reference is in range of current output. */
                         out = chunkcopy_safe(out, out - dist, len, safe);
+#endif
                 } else {
                     /* Whole reference is in range of current output.  No range checks are
                        necessary because we start with room for at least 258 bytes of output,
