@@ -16,6 +16,9 @@ if (DEFINED LIB_INSTALL_DIR)
     set(CMAKE_INSTALL_LIBDIR "${LIB_INSTALL_DIR}")
 elseif (DEFINED INSTALL_LIB_DIR)
     set(CMAKE_INSTALL_LIBDIR "${INSTALL_LIB_DIR}")
+elseif (CMAKE_INSTALL_PREFIX STREQUAL "/boot/system")
+    # Haiku development libraries
+    set(CMAKE_INSTALL_LIBDIR "develop/lib")
 endif()
 
 # Determine installation directory for include files
@@ -24,6 +27,20 @@ if (DEFINED INC_INSTALL_DIR)
     set(CMAKE_INSTALL_INCLUDEDIR "${INC_INSTALL_DIR}")
 elseif (DEFINED INSTALL_INC_DIR)
     set(CMAKE_INSTALL_INCLUDEDIR "${INSTALL_INC_DIR}")
+elseif (CMAKE_INSTALL_PREFIX STREQUAL "/boot/system")
+    # Haiku system headers
+    set(CMAKE_INSTALL_INCLUDEDIR "develop/headers")
+endif()
+
+# Determine installation directory for man files
+if (DEFINED MAN_INSTALL_DIR)
+    set(MAN_INSTALL_DIR "${MAN_INSTALL_DIR}" CACHE PATH "Installation directory for manuals (Deprecated)" FORCE)
+    set(CMAKE_INSTALL_MANDIR "${MAN_INSTALL_DIR}")
+elseif (DEFINED INSTALL_MAN_DIR)
+    set(CMAKE_INSTALL_MANDIR "${INSTALL_MAN_DIR}")
+elseif (CMAKE_INSTALL_PREFIX STREQUAL "/boot/system")
+    # Haiku system manuals
+    set(CMAKE_INSTALL_MANDIR "documentation/man")
 endif()
 
 # Define GNU standard installation directories
