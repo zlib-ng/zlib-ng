@@ -260,7 +260,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                     if (dist >= len || dist >= state->chunksize)
                         out = chunkcopy_safe(out, out - dist, len, safe);
                     else
-                        out = CHUNKMEMSET_SAFE(out, dist, len, (unsigned)((safe - out) + 1));
+                        out = CHUNKMEMSET_SAFE(out, dist, len, (unsigned)((safe - out)));
                 } else {
                     /* Whole reference is in range of current output.  No range checks are
                        necessary because we start with room for at least 258 bytes of output,
