@@ -59,10 +59,10 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     unsigned char *beg;         /* inflate()'s initial strm->next_out */
     unsigned char *end;         /* while out < end, enough space available */
     unsigned char *safe;        /* can use chunkcopy provided out < safe */
+    unsigned char *window;      /* allocated sliding window, if wsize != 0 */
     unsigned wsize;             /* window size or zero if not using window */
     unsigned whave;             /* valid bytes in the window */
     unsigned wnext;             /* window write index */
-    unsigned char *window;      /* allocated sliding window, if wsize != 0 */
 
     /* hold is a local copy of strm->hold. By default, hold satisfies the same
        invariants that strm->hold does, namely that (hold >> bits) == 0. This
@@ -101,18 +101,18 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
        with (1<<bits)-1 to drop those excess bits so that, on function exit, we
        keep the invariant that (state->hold >> state->bits) == 0.
     */
-    uint64_t hold;              /* local strm->hold */
     unsigned bits;              /* local strm->bits */
-    code const *lcode;          /* local strm->lencode */
-    code const *dcode;          /* local strm->distcode */
+    uint64_t hold;              /* local strm->hold */
     unsigned lmask;             /* mask for first level of length codes */
     unsigned dmask;             /* mask for first level of distance codes */
+    code const *lcode;          /* local strm->lencode */
+    code const *dcode;          /* local strm->distcode */
     const code *here;           /* retrieved table entry */
     unsigned op;                /* code bits, operation, extra bits, or */
                                 /*  window position, window bytes to copy */
     unsigned len;               /* match length, unused bytes */
-    unsigned dist;              /* match distance */
     unsigned char *from;        /* where to copy match from */
+    unsigned dist;              /* match distance */
     unsigned extra_safe;        /* copy chunks safely in all cases */
 
     /* copy state to local variables */

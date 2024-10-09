@@ -217,8 +217,8 @@ Z_INTERNAL void free_inflate(PREFIX3(stream) *strm) {
  * This function is hidden in ZLIB_COMPAT builds.
  */
 int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windowBits) {
-    int32_t ret;
     struct inflate_state *state;
+    int32_t ret;
 
     /* Initialize functable */
     FUNCTABLE_INIT;
@@ -477,12 +477,12 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
     struct inflate_state *state;
     const unsigned char *next;  /* next input */
     unsigned char *put;         /* next output */
+    unsigned char *from;        /* where to copy match bytes from */
     unsigned have, left;        /* available input and output */
     uint32_t hold;              /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
     uint32_t in, out;           /* save starting available input and output */
     unsigned copy;              /* number of stored or match bytes to copy */
-    unsigned char *from;        /* where to copy match bytes from */
     code here;                  /* current decoding table entry */
     code last;                  /* parent table entry */
     unsigned len;               /* length to copy for repeats, bits to drop */
@@ -1306,11 +1306,11 @@ static uint32_t syncsearch(uint32_t *have, const uint8_t *buf, uint32_t len) {
 }
 
 int32_t Z_EXPORT PREFIX(inflateSync)(PREFIX3(stream) *strm) {
+    struct inflate_state *state;
+    size_t in, out;             /* temporary to save total_in and total_out */
     unsigned len;               /* number of bytes to look at or looked at */
     int flags;                  /* temporary to save header status */
-    size_t in, out;             /* temporary to save total_in and total_out */
     unsigned char buf[4];       /* to restore bit buffer to byte string */
-    struct inflate_state *state;
 
     /* check parameters */
     if (inflateStateCheck(strm))
