@@ -30,6 +30,9 @@ if [ -n "${CHOST}" ]; then
     ARCH="$(echo "${NORM_CHOST}" | sed -e 's/-.*//')"
 else
     ARCH="$(uname -m)"
+    if test -z "$uname"; then
+      uname=$( (uname -s || echo unknown) 2>/dev/null)
+    fi
 fi
 
 case "${ARCH}" in
@@ -77,13 +80,29 @@ RCOBJS=
 STRIP=
 ARCHS=
 PC_CFLAGS=
-prefix=${prefix-/usr/local}
+if test "${uname}" = "Haiku" || test "${uname}" = "haiku"; then
+  prefix=${prefix-/boot/system}
+else
+  prefix=${prefix-/usr/local}
+fi
 exec_prefix=${exec_prefix-'${prefix}'}
 bindir=${bindir-'${exec_prefix}/bin'}
-libdir=${libdir-'${exec_prefix}/lib'}
+if test "${exec_prefix}" = "/boot/system" || (test "${prefix}" = "/boot/system" && test "${exec_prefix}" = '${prefix}'); then
+  libdir=${libdir-'${exec_prefix}/develop/lib'}
+else
+  libdir=${libdir-'${exec_prefix}/lib'}
+fi
 sharedlibdir=${sharedlibdir-'${libdir}'}
-includedir=${includedir-'${prefix}/include'}
-mandir=${mandir-'${prefix}/share/man'}
+if test "${prefix}" = "/boot/system"; then
+  includedir=${includedir-'${prefix}/develop/headers'}
+else
+  includedir=${includedir-'${prefix}/include'}
+fi
+if test "${prefix}" = "/boot/system"; then
+  mandir=${mandir-'${prefix}/documentation/man'}
+else
+  mandir=${mandir-'${prefix}/share/man'}
+fi
 shared_ext='.so'
 shared=1
 gzfileops=1
@@ -159,7 +178,7 @@ case "$1" in
       echo 'usage:' | tee -a configure.log
       echo '  configure [--prefix=PREFIX]  [--eprefix=EXPREFIX]' | tee -a configure.log
       echo '    [--static] [--32] [--64] [--libdir=LIBDIR] [--sharedlibdir=LIBDIR]' | tee -a configure.log
-      echo '    [--includedir=INCLUDEDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
+      echo '    [--includedir=INCLUDEDIR] [--mandir=MANDIR] [--archs="-arch i386 -arch x86_64"]' | tee -a configure.log
       echo '    [--sprefix=SYMBOL_PREFIX]   Adds a prefix to all exported symbols' | tee -a configure.log
       echo '    [--warn]                    Enables extra compiler warnings' | tee -a configure.log
       echo '    [--debug]                   Enables extra debug prints during operation' | tee -a configure.log
@@ -185,6 +204,7 @@ case "$1" in
     -l*=* | --libdir=*) libdir=$(echo $1 | sed 's/.*=//'); shift ;;
     --sharedlibdir=*) sharedlibdir=$(echo $1 | sed 's/.*=//'); shift ;;
     -i*=* | --includedir=*) includedir=$(echo $1 | sed 's/.*=//');shift ;;
+    --mandir=*) mandir=${echo $1 | sed 's/.*=//'}; shift ;;
     -u*=* | --uname=*) uname=$(echo $1 | sed 's/.*=//');shift ;;
     -p* | --prefix) prefix="$2"; shift; shift ;;
     -e* | --eprefix) exec_prefix="$2"; shift; shift ;;
@@ -358,9 +378,6 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   else
     CFLAGS="${CFLAGS} -DNDEBUG"
     SFLAGS="${SFLAGS} -DNDEBUG"
-  fi
-  if test -z "$uname"; then
-    uname=$( (uname -s || echo unknown) 2>/dev/null)
   fi
   case "$uname" in
   Linux* | linux* | GNU | GNU/* | solaris* | Haiku)
