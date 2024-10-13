@@ -267,7 +267,7 @@ sudo podman container rm gaplib-actions-runner
 sudo podman image rm localhost/zlib-ng/actions-runner
 
 # Build image
-sudo podman build --squash -f Dockerfile.zlib-ng --tag zlib-ng/actions-runner --build-arg .
+sudo podman build --squash -f actions-runner.Dockerfile --tag zlib-ng/actions-runner --build-arg .
 
 # Build container
 sudo podman create --name=gaplib-actions-runner --env-file=/etc/actions-runner --init --interactive --volume=actions-runner-temp:/home/actions-runner zlib-ng/actions-runner
