@@ -42,7 +42,7 @@ static inline uint32_t compare256_rle_c(const uint8_t *src0, const uint8_t *src1
     return 256;
 }
 
-#ifdef UNALIGNED_OK
+#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 /* 16-bit unaligned integer comparison */
 static inline uint32_t compare256_rle_unaligned_16(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;

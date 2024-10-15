@@ -52,7 +52,7 @@ static inline void compare256_rle_match_check(compare256_rle_func compare256_rle
 
 TEST_COMPARE256_RLE(c, compare256_rle_c, 1)
 
-#ifdef UNALIGNED_OK
+#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 TEST_COMPARE256_RLE(unaligned_16, compare256_rle_unaligned_16, 1)
 #ifdef HAVE_BUILTIN_CTZ
 TEST_COMPARE256_RLE(unaligned_32, compare256_rle_unaligned_32, 1)
