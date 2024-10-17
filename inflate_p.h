@@ -150,7 +150,7 @@ static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
 static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, uint64_t len, uint8_t *safe) {
-    uint64_t safelen = (safe - out) + 1;
+    uint64_t safelen = safe - out;
     len = MIN(len, safelen);
     int32_t olap_src = from >= out && from < out + len;
     int32_t olap_dst = out >= from && out < from + len;

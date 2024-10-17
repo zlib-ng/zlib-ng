@@ -273,9 +273,9 @@ static uint32_t adler32_fold_copy_stub(uint32_t adler, uint8_t* dst, const uint8
     return functable.adler32_fold_copy(adler, dst, src, len);
 }
 
-static uint8_t* chunkmemset_safe_stub(uint8_t* out, unsigned dist, unsigned len, unsigned left) {
+static uint8_t* chunkmemset_safe_stub(uint8_t* out, uint8_t *from, unsigned len, unsigned left) {
     init_functable();
-    return functable.chunkmemset_safe(out, dist, len, left);
+    return functable.chunkmemset_safe(out, from, len, left);
 }
 
 static uint32_t chunksize_stub(void) {

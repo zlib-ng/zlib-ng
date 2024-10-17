@@ -1090,7 +1090,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             } else {
                 copy = MIN(state->length, left);
 
-                put = FUNCTABLE_CALL(chunkmemset_safe)(put, state->offset, copy, left);
+                put = FUNCTABLE_CALL(chunkmemset_safe)(put, put - state->offset, copy, left);
             }
             left -= copy;
             state->length -= copy;

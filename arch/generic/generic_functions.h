@@ -22,7 +22,7 @@ typedef uint32_t (*crc32_func)(uint32_t crc32, const uint8_t *buf, size_t len);
 uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len);
 
 uint32_t chunksize_c(void);
-uint8_t* chunkmemset_safe_c(uint8_t *out, unsigned dist, unsigned len, unsigned left);
+uint8_t* chunkmemset_safe_c(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 void     inflate_fast_c(PREFIX3(stream) *strm, uint32_t start);
 
 uint32_t PREFIX(crc32_braid)(uint32_t crc, const uint8_t *buf, size_t len);
