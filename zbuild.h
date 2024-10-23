@@ -257,10 +257,10 @@
 #      define UNALIGNED_OK
 #    endif
 #  elif defined(__powerpc64__) || defined(__ppc64__)
-#    if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#      define UNALIGNED_OK
-#      define UNALIGNED64_OK
-#    endif
+#    define UNALIGNED_OK
+#    define UNALIGNED64_OK
+#  elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__)
+#    define UNALIGNED_OK
 #  endif
 #endif
 

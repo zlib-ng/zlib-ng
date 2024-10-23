@@ -61,7 +61,7 @@ public:
 
 BENCHMARK_COMPARE256_RLE(c, compare256_rle_c, 1);
 
-#ifdef UNALIGNED_OK
+#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 BENCHMARK_COMPARE256_RLE(unaligned_16, compare256_rle_unaligned_16, 1);
 #ifdef HAVE_BUILTIN_CTZ
 BENCHMARK_COMPARE256_RLE(unaligned_32, compare256_rle_unaligned_32, 1);

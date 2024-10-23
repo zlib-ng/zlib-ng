@@ -10,7 +10,7 @@
 #include "deflate_p.h"
 #include "functable.h"
 
-#ifdef UNALIGNED_OK
+#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
 #  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
 #    define compare256_rle compare256_rle_unaligned_64
 #  elif defined(HAVE_BUILTIN_CTZ)
