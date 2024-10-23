@@ -348,7 +348,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
     CFLAGS="${CFLAGS} ${ARCHS}"
     LDFLAGS="${LDFLAGS} ${ARCHS}"
   fi
-  CFLAGS="${CFLAGS} -Wall"
+  CFLAGS="${CFLAGS} -Wall -Werror=implicit-function-declaration"
   SFLAGS="${CFLAGS} -fPIC"
   if test "$warn" -eq 1; then
     CFLAGS="${CFLAGS} -Wextra"
@@ -1645,11 +1645,11 @@ case "${ARCH}" in
 int main() { return 0; }
 EOF
         if try $CC -c $SFLAGS $test.c -mfloat-abi=softfp &&
-           try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
+           try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -mfloat-abi=softfp -o $test$shared_ext $test.o $LDSHAREDLIBC; then
             floatabi="-mfloat-abi=softfp"
         else
             if try $CC -c $SFLAGS $test.c -mfloat-abi=hard &&
-               try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
+               try $LDSHARED $LDSHAREDFLAGS $LDFLAGS -mfloat-abi=hard -o $test$shared_ext $test.o $LDSHAREDLIBC; then
                 floatabi="-mfloat-abi=hard"
             fi
         fi
