@@ -3,7 +3,7 @@
 FROM    almalinux:9
 
 RUN     dnf update -y -q && \
-        dnf install -y -q --enablerepo=crb wget git which sudo jq \
+        dnf install -y -q --enablerepo=crb wget git which sudo jq sed \
             cmake make automake autoconf m4 libtool ninja-build python3-pip \
             gcc gcc-c++ clang llvm-toolset glibc-all-langpacks langpacks-en \
             glibc-static libstdc++-static libstdc++-devel libxslt-devel libxml2-devel
@@ -12,15 +12,13 @@ RUN     dnf install -y -q dotnet-sdk-6.0 && \
         echo "Using SDK - `dotnet --version`"
 
 COPY    runner-s390x.patch /tmp/runner.patch
-COPY    runner-global.json /tmp/global.json
 
 RUN     cd /tmp && \
         git clone -q https://github.com/actions/runner && \
         cd runner && \
-        git checkout $(git describe --tags $(git rev-list --tags --max-count=1)) -b build && \
+        git checkout v2.317.0 -b build && \
         git apply /tmp/runner.patch && \
-        cp -f /tmp/global.json src/global.json
-
+        sed -i'' -e /version/s/6......\"$/${SDK}.0.100\"/ src/global.json
 
 RUN     cd /tmp/runner/src && \
         ./dev.sh layout && \
