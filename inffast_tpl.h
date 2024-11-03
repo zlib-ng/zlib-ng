@@ -115,8 +115,15 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     unsigned extra_safe;        /* copy chunks safely in all cases */
     uint64_t old;               /* look-behind buffer for extra bits */
 
-    /* copy state to local variables */
     state = (struct inflate_state *)strm->state;
+
+    Assume(state->mode == LEN);
+    Assume(state->bits < 8);
+    Assume(strm->avail_in >= INFLATE_FAST_MIN_HAVE);
+    Assume(strm->avail_out >= INFLATE_FAST_MIN_LEFT);
+    Assume(start >= strm->avail_out);
+
+    /* copy state to local variables */
     in = strm->next_in;
     last = in + (strm->avail_in - (INFLATE_FAST_MIN_HAVE - 1));
     out = strm->next_out;
