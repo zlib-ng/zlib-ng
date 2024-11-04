@@ -493,7 +493,7 @@ static void send_tree(deflate_state *s, ct_data *tree, int max_code) {
                 send_code(s, curlen, s->bl_tree, bi_buf, bi_valid);
                 count--;
             }
-            Assert(count >= 3 && count <= 6, " 3_6?");
+            AssertHint(count >= 3 && count <= 6, " 3_6?");
             send_code(s, REP_3_6, s->bl_tree, bi_buf, bi_valid);
             send_bits(s, count-3, 2, bi_buf, bi_valid);
 
@@ -561,8 +561,8 @@ static int build_bl_tree(deflate_state *s) {
 static void send_all_trees(deflate_state *s, int lcodes, int dcodes, int blcodes) {
     int rank;                    /* index in bl_order */
 
-    Assert(lcodes >= 257 && dcodes >= 1 && blcodes >= 4, "not enough codes");
-    Assert(lcodes <= L_CODES && dcodes <= D_CODES && blcodes <= BL_CODES, "too many codes");
+    AssertHint(lcodes >= 257 && dcodes >= 1 && blcodes >= 4, "not enough codes");
+    AssertHint(lcodes <= L_CODES && dcodes <= D_CODES && blcodes <= BL_CODES, "too many codes");
 
     // Temp local variables
     uint32_t bi_valid = s->bi_valid;

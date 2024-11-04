@@ -305,7 +305,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     strm->avail_out = (unsigned)(out < end ? (INFLATE_FAST_MIN_LEFT - 1) + (end - out)
                                            : (INFLATE_FAST_MIN_LEFT - 1) - (out - end));
 
-    Assert(bits <= 32, "Remaining bits greater than 32");
+    AssertHint(bits <= 32, "Remaining bits greater than 32");
     state->hold = (uint32_t)hold;
     state->bits = bits;
     return;

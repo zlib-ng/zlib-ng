@@ -193,7 +193,7 @@ Z_INTERNAL uint32_t crc32_braid(uint32_t crc, const uint8_t *buf, size_t len) {
 #endif
 #endif
         words += BRAID_N;
-        Assert(comb <= UINT32_MAX, "comb should fit in uint32_t");
+        AssertHint(comb <= UINT32_MAX, "comb should fit in uint32_t");
         crc = (uint32_t)Z_WORD_FROM_LE(comb);
 
         /* Update the pointer to the remaining bytes to process. */

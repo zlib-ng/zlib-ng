@@ -87,7 +87,7 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
  *         loadchunk and storechunk to ensure the result is correct.
  */
 static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
-    Assert(len > 0, "chunkcopy should never have a length 0");
+    AssertHint(len > 0, "chunkcopy should never have a length 0");
     ptrdiff_t dist = out - from;
     if (dist < 0 || dist >= len) {
         memcpy(out, from, len);

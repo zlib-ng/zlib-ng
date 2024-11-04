@@ -22,7 +22,7 @@ static inline size_t CHUNKSIZE(void) {
    reliable. */
 #ifndef HAVE_CHUNKCOPY
 static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
-    Assert(len > 0, "chunkcopy should never have a length 0");
+    AssertHint(len > 0, "chunkcopy should never have a length 0");
     chunk_t chunk;
     int32_t align = ((len - 1) % sizeof(chunk_t)) + 1;
     loadchunk(from, &chunk);
@@ -110,7 +110,7 @@ static inline uint8_t* HALFCHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned
 static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, unsigned len) {
     /* Debug performance related issues when len < sizeof(uint64_t):
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
-    Assert(from != out, "chunkmemset cannot have a distance 0");
+    AssertHint(from != out, "chunkmemset cannot have a distance 0");
 
     chunk_t chunk_load;
     uint32_t chunk_mod = 0;

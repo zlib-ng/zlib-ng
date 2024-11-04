@@ -132,7 +132,7 @@ static uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_d
     /* Send the length code, len is the match length - STD_MIN_MATCH */
     code = zng_length_code[lc];
     c = code+LITERALS+1;
-    Assert(c < L_CODES, "bad l_code");
+    AssertHint(c < L_CODES, "bad l_code");
     send_code_trace(s, c);
 
     match_bits = ltree[c].Code;
@@ -146,7 +146,7 @@ static uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_d
 
     dist--; /* dist is now the match distance - 1 */
     code = d_code(dist);
-    Assert(code < D_CODES, "bad d_code");
+    AssertHint(code < D_CODES, "bad d_code");
     send_code_trace(s, code);
 
     /* Send the distance code */

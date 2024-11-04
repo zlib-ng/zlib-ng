@@ -220,8 +220,8 @@ again:
     /* DFLTCC-CMPR will write to next_out, so make sure that buffers with
      * higher precedence are empty.
      */
-    Assert(state->pending == 0, "There must be no pending bytes");
-    Assert(state->bi_valid < 8, "There must be less than 8 pending bits");
+    AssertHint(state->pending == 0, "There must be no pending bytes");
+    AssertHint(state->bi_valid < 8, "There must be less than 8 pending bits");
     param->sbb = (unsigned int)state->bi_valid;
     if (param->sbb > 0)
         *strm->next_out = (unsigned char)state->bi_buf;

@@ -18,7 +18,7 @@
  * is explicitly undefined per GCC/Clang docs. */
 
 Z_FORCEINLINE static uint32_t zng_ctz32(uint32_t value) {
-    Assert(value != 0, "Invalid input value: 0");
+    AssertHint(value != 0, "Invalid input value: 0");
 #if __has_builtin(__builtin_ctz)
     return (uint32_t)__builtin_ctz(value);
 #elif defined(_MSC_VER) && !defined(__clang__)
@@ -42,7 +42,7 @@ Z_FORCEINLINE static uint32_t zng_ctz32(uint32_t value) {
 }
 
 Z_FORCEINLINE static uint32_t zng_ctz64(uint64_t value) {
-    Assert(value != 0, "Invalid input value: 0");
+    AssertHint(value != 0, "Invalid input value: 0");
 #if __has_builtin(__builtin_ctzll)
     return (uint32_t)__builtin_ctzll(value);
 #elif defined(_MSC_VER) && !defined(__clang__) && defined(ARCH_64BIT)
