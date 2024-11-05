@@ -117,7 +117,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
 #else
     early_exit = s->level < EARLY_EXIT_TRIGGER_LEVEL;
 #endif
-    Assert((unsigned long)strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
+    AssertHint((unsigned long)strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     for (;;) {
         if (cur_match >= strstart)
             break;

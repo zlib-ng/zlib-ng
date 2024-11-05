@@ -331,7 +331,7 @@
 #  define Assume(cond)          Assert(cond, "Value assumption failed")
 #else
 #  define Assert(cond, msg)
-#  define AssertHint(cind, msg) z_assume(cond)
+#  define AssertHint(cond, msg) z_assume(cond)
 #  define Assume(cond)          z_assume(cond)
 #endif
 

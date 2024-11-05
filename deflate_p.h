@@ -90,7 +90,7 @@ static inline int zng_tr_tally_dist(deflate_state* s, uint32_t dist, uint32_t le
 #endif
     s->matches++;
     dist--;
-    Assert(dist < MAX_DIST(s) && (uint16_t)d_code(dist) < (uint16_t)D_CODES,
+    AssertHint(dist < MAX_DIST(s) && (uint16_t)d_code(dist) < (uint16_t)D_CODES,
         "zng_tr_tally: bad match");
 
     s->dyn_ltree[zng_length_code[len] + LITERALS + 1].Freq++;
