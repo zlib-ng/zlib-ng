@@ -34,7 +34,7 @@ public:
             uncompressed[j] = (uint8_t)j;
         }
 
-        for (z_size_t i = 0; i < MAX_LENGTH; i++) {
+        for (z_uintmax_t i = 0; i < MAX_LENGTH; i++) {
             z_uintmax_t dest_len = sizeof(dest);
 
             /* calculate actual output length */
