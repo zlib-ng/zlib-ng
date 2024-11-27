@@ -15,7 +15,6 @@ typedef __m128i halfchunk_t;
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
 #define HAVE_CHUNKMEMSET_16
-#define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNK_MAG
 #define HAVE_HALF_CHUNK
 
