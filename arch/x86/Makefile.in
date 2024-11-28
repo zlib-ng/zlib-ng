@@ -10,7 +10,7 @@ SUFFIX=
 
 AVX512FLAG=-mavx512f -mavx512dq -mavx512vl -mavx512bw -mbmi2
 AVX512VNNIFLAG=-mavx512vnni -mbmi2
-AVX2FLAG=-mavx2
+AVX2FLAG=-mavx2 -mbmi2
 SSE2FLAG=-msse2
 SSSE3FLAG=-mssse3
 SSE42FLAG=-msse4.2

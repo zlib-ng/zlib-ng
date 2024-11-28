@@ -110,7 +110,11 @@ static void init_functable(void) {
 #endif
     // X86 - AVX
 #ifdef X86_AVX2
-    if (cf.x86.has_avx2) {
+    /* BMI2 support is all but implicit with AVX2 but let's sanity check this just in case. Enabling BMI2 allows for
+     * flagless shifts, resulting in fewer flag stalls for the pipeline, and allows us to set destination registers
+     * for the shift results as an operand, eliminating several register-register moves when the original value needs
+     * to remain intact. They also allow for a count operand that isn't the CL register, avoiding contention there */
+    if (cf.x86.has_avx2 && cf.x86.has_bmi2) {
         ft.adler32 = &adler32_avx2;
         ft.adler32_fold_copy = &adler32_fold_copy_avx2;
         ft.chunkmemset_safe = &chunkmemset_safe_avx2;
