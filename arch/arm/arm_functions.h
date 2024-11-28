@@ -56,7 +56,7 @@ void slide_hash_armv6(deflate_state *s);
 #    endif
 #  endif
 // ARM - ACLE
-#  if defined(ARM_ACLE) && defined(__ARM_ACLE) && defined(__ARM_FEATURE_CRC32)
+#  if defined(ARM_ACLE) && (defined(__ARM_ACLE) || defined(__ARM_FEATURE_CRC32))
 #    undef native_crc32
 #    define native_crc32 crc32_acle
 #  endif
