@@ -15,6 +15,7 @@
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
+#define MIN_CHUNKSIZE CHUNK_SIZE
 
 #define CHUNK_MEMSET_RVV_IMPL(elen)                                     \
 do {                                                                    \

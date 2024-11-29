@@ -12,6 +12,7 @@ typedef __m128i chunk_t;
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
+#define MIN_CHUNKSIZE sizeof(chunk_t)
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
     int16_t tmp;

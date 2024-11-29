@@ -13,6 +13,7 @@ typedef uint8x16_t chunk_t;
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
 #define HAVE_CHUNK_MAG
+#define MIN_CHUNKSIZE sizeof(chunk_t)
 
 static const lut_rem_pair perm_idx_lut[13] = {
     {0, 1},      /* 3 */

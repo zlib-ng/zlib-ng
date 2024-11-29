@@ -250,7 +250,7 @@ Z_INTERNAL uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, uint8_t *from, unsigned len, 
 #endif
 
 #ifndef HAVE_MASKED_READWRITE
-    if (UNLIKELY(left < sizeof(chunk_t))) {
+    if (UNLIKELY(left < MIN_CHUNKSIZE)) {
         while (len > 0) {
             *out++ = *from++;
             --len;
@@ -276,7 +276,7 @@ static inline uint8_t *CHUNKCOPY_SAFE(uint8_t *out, uint8_t *from, uint64_t len,
 
 #ifndef HAVE_MASKED_READWRITE
     uint64_t from_dist = (uint64_t)llabs(safe - from);
-    if (UNLIKELY(from_dist < sizeof(chunk_t) || safelen < sizeof(chunk_t))) {
+    if (UNLIKELY(from_dist < MIN_CHUNKSIZE || safelen < MIN_CHUNKSIZE)) {
         while (len--) {
             *out++ = *from++;
         }
