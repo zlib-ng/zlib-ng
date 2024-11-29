@@ -200,6 +200,9 @@
 #  define ALIGNED_(x) __attribute__ ((aligned(x)))
 #elif defined(_MSC_VER)
 #  define ALIGNED_(x) __declspec(align(x))
+#else
+/* TODO: Define ALIGNED_ for your compiler */
+#  define ALIGNED_(x)
 #endif
 
 #ifdef HAVE_BUILTIN_ASSUME_ALIGNED
