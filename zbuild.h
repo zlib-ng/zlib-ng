@@ -70,6 +70,16 @@
 #  endif
 #endif
 
+/* A forced inline decorator */
+#if defined(_MSC_VER)
+#  define Z_FORCEINLINE __forceinline
+#elif defined(__GNUC__)
+#  define Z_FORCEINLINE inline __attribute__((always_inline))
+#else
+    /* It won't actually force inlining but it will suggest it */
+#  define Z_FORCEINLINE inline
+#endif
+
 /* MS Visual Studio does not allow inline in C, only C++.
    But it provides __inline instead, so use that. */
 #if defined(_MSC_VER) && !defined(inline) && !defined(__cplusplus)

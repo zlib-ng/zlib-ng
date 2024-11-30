@@ -172,6 +172,7 @@ static void init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_neon;
+        ft.adler32_fold_copy = &adler32_fold_copy_neon;
         ft.chunkmemset_safe = &chunkmemset_safe_neon;
         ft.chunksize = &chunksize_neon;
         ft.inflate_fast = &inflate_fast_neon;

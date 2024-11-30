@@ -92,7 +92,7 @@ BENCHMARK_ADLER32_BASELINE_COPY(native, native_adler32, 1);
 
 #ifdef ARM_NEON
 /* If we inline this copy for neon, the function would go here */
-//BENCHMARK_ADLER32_COPY(neon, adler32_neon, test_cpu_features.arm.has_neon);
+BENCHMARK_ADLER32_COPY(neon, adler32_fold_copy_neon, test_cpu_features.arm.has_neon);
 BENCHMARK_ADLER32_BASELINE_COPY(neon_copy_baseline, adler32_neon, test_cpu_features.arm.has_neon);
 #endif
 
