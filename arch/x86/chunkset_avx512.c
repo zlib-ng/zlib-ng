@@ -63,20 +63,22 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
     _mm256_storeu_si256((__m256i *)out, *chunk);
 }
 
-static inline void storechunk_mask(uint8_t *out, mask_t mask, chunk_t *chunk) {
-    _mm256_mask_storeu_epi8(out, mask, *chunk);
-}
-
 static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
     Assert(len > 0, "chunkcopy should never have a length 0");
 
-    unsigned rem = len % sizeof(chunk_t);
-    mask_t rem_mask = gen_mask(rem);
-
-    /* Since this is only ever called if dist >= a chunk, we don't need a masked load */
     chunk_t chunk;
+    uint32_t rem = len % sizeof(chunk_t);
+
+    if (len < sizeof(chunk_t)) {
+        mask_t rem_mask = gen_mask(rem);
+        chunk = _mm256_maskz_loadu_epi8(rem_mask, from);
+        _mm256_mask_storeu_epi8(out, rem_mask, chunk);
+        return out + rem;
+    }
+
     loadchunk(from, &chunk);
-    _mm256_mask_storeu_epi8(out, rem_mask, chunk);
+    rem = (rem == 0) ? sizeof(chunk_t) : rem;
+    storechunk(out, &chunk);
     out += rem;
     from += rem;
     len -= rem;
@@ -123,10 +125,6 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
     return ret_vec;
 }
 
-static inline void loadhalfchunk(uint8_t const *s, halfchunk_t *chunk) {
-    *chunk = _mm_loadu_si128((__m128i *)s);
-}
-
 static inline void storehalfchunk(uint8_t *out, halfchunk_t *chunk) {
     _mm_storeu_si128((__m128i *)out, *chunk);
 }
@@ -152,27 +150,18 @@ static inline halfchunk_t GET_HALFCHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, u
 
 static inline uint8_t* HALFCHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
     Assert(len > 0, "chunkcopy should never have a length 0");
-
-    unsigned rem = len % sizeof(halfchunk_t);
-    halfmask_t rem_mask = gen_half_mask(rem);
-
-    /* Since this is only ever called if dist >= a chunk, we don't need a masked load */
     halfchunk_t chunk;
-    loadhalfchunk(from, &chunk);
-    _mm_mask_storeu_epi8(out, rem_mask, chunk);
-    out += rem;
-    from += rem;
-    len -= rem;
 
-    while (len > 0) {
-        loadhalfchunk(from, &chunk);
-        storehalfchunk(out, &chunk);
-        out += sizeof(halfchunk_t);
-        from += sizeof(halfchunk_t);
-        len -= sizeof(halfchunk_t);
+    uint32_t rem = len % sizeof(halfchunk_t);
+    if (rem == 0) {
+        rem = sizeof(halfchunk_t);
     }
 
-    return out;
+    halfmask_t rem_mask = gen_half_mask(rem);
+    chunk = _mm_maskz_loadu_epi8(rem_mask, from);
+    _mm_mask_storeu_epi8(out, rem_mask, chunk);
+
+    return out + rem;
 }
 
 #define CHUNKSIZE        chunksize_avx512

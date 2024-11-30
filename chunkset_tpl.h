@@ -219,11 +219,7 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, unsigned len) {
 rem_bytes:
 #endif
     if (len) {
-#ifndef HAVE_MASKED_READWRITE
         memcpy(out, &chunk_load, len);
-#else
-        storechunk_mask(out, gen_mask(len), &chunk_load);
-#endif
         out += len;
     }
 
