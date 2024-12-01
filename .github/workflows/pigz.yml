@@ -154,7 +154,7 @@ jobs:
         echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g'`" >> $GITHUB_ENV
 
     - name: Upload reports
-      uses: codecov/codecov-action@v4
+      uses: codecov/codecov-action@v5
       if: (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
       with:
         files: ${{ env.CODECOV_REPORTS }}
