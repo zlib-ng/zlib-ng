@@ -626,7 +626,7 @@ static void cover_trees(void) {
     code *next, table[ENOUGH_DISTS];
 
     /* we need to call inflate_table() directly in order to manifest not-
-       enough errors, since zlib insures that enough is always enough */
+       enough errors, since zlib ensures that enough is always enough */
     for (bits = 0; bits < 15; bits++)
         lens[bits] = (uint16_t)(bits + 1);
     lens[15] = 15;
