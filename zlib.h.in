@@ -890,7 +890,7 @@ Z_EXTERN int Z_EXPORT inflateSetDictionary(z_stream *strm, const unsigned char *
    deflateSetDictionary).  For raw inflate, this function can be called at any
    time to set the dictionary.  If the provided dictionary is smaller than the
    window and there is already data in the window, then the provided dictionary
-   will amend what's there.  The application must insure that the dictionary
+   will amend what's there.  The application must ensure that the dictionary
    that was used for compression is provided.
 
      inflateSetDictionary returns Z_OK if success, Z_STREAM_ERROR if a
