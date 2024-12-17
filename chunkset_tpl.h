@@ -227,17 +227,15 @@ rem_bytes:
 }
 
 Z_INTERNAL uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, uint8_t *from, unsigned len, unsigned left) {
-#if !defined(UNALIGNED64_OK)
-#  if !defined(UNALIGNED_OK)
+#if OPTIMAL_CMP < 32
     static const uint32_t align_mask = 7;
-#  else
+#elif OPTIMAL_CMP == 32
     static const uint32_t align_mask = 3;
-#  endif
 #endif
 
     len = MIN(len, left);
 
-#if !defined(UNALIGNED64_OK)
+#if OPTIMAL_CMP < 64
     while (((uintptr_t)out & align_mask) && (len > 0)) {
         *out++ = *from++;
         --len;

@@ -81,11 +81,11 @@ jobs:
             build-src-dir: ../zlib-ng/test/add-subdirectory-project
             readonly-project-dir: true
 
-          - name: Ubuntu GCC -O1 No Unaligned UBSAN
+          - name: Ubuntu GCC -O1 UBSAN
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DWITH_UNALIGNED=OFF -DWITH_SANITIZER=Undefined
+            cmake-args: -DWITH_SANITIZER=Undefined
             codecov: ubuntu_gcc_o1
             cflags: -O1
 

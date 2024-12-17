@@ -10,8 +10,8 @@
 #include "deflate_p.h"
 #include "functable.h"
 
-#ifdef UNALIGNED_OK
-#  if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
+#if OPTIMAL_CMP >= 32
+#  if defined(HAVE_BUILTIN_CTZLL) && OPTIMAL_CMP >= 64
 #    define compare256_rle compare256_rle_unaligned_64
 #  elif defined(HAVE_BUILTIN_CTZ)
 #    define compare256_rle compare256_rle_unaligned_32

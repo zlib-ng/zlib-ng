@@ -93,7 +93,6 @@ option(WITH_MAINTAINER_WARNINGS "Build with project maintainer warnings" OFF)
 option(WITH_CODE_COVERAGE "Enable code coverage reporting" OFF)
 option(WITH_INFLATE_STRICT "Build with strict inflate distance checking" OFF)
 option(WITH_INFLATE_ALLOW_INVALID_DIST "Build with zero fill for inflate invalid distances" OFF)
-option(WITH_UNALIGNED "Support unaligned reads on platforms that support it" ON)
 
 set(ZLIB_SYMBOL_PREFIX "" CACHE STRING "Give this prefix to all publicly exported symbols.
 Useful when embedding into a larger library.
@@ -147,7 +146,6 @@ mark_as_advanced(FORCE
     WITH_RVV
     WITH_INFLATE_STRICT
     WITH_INFLATE_ALLOW_INVALID_DIST
-    WITH_UNALIGNED
     INSTALL_UTILS
     )
 
@@ -334,12 +332,6 @@ if(NOT WITH_NATIVE_INSTRUCTIONS)
         string(TOUPPER "${_cfg_name}" _cfg_name_uc)
         set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${_cfg_name_uc} OFF)
     endforeach()
-endif()
-
-# Set architecture alignment requirements
-if(NOT WITH_UNALIGNED)
-    add_definitions(-DNO_UNALIGNED)
-    message(STATUS "Unaligned reads manually disabled")
 endif()
 
 # Apply warning compiler flags

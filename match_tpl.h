@@ -40,7 +40,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     uint32_t chain_length, nice_match, best_len, offset;
     uint32_t lookahead = s->lookahead;
     Pos match_offset = 0;
-#ifdef UNALIGNED_OK
+#if OPTIMAL_CMP >= 32
     uint8_t scan_start[8];
 #endif
     uint8_t scan_end[8];
@@ -59,20 +59,20 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
      * to find the next best match length.
      */
     offset = best_len-1;
-#ifdef UNALIGNED_OK
+#if OPTIMAL_CMP >= 32
     if (best_len >= sizeof(uint32_t)) {
         offset -= 2;
-#ifdef UNALIGNED64_OK
+#if OPTIMAL_CMP >= 64
         if (best_len >= sizeof(uint64_t))
             offset -= 4;
 #endif
     }
 #endif
 
-#ifdef UNALIGNED64_OK
+#if OPTIMAL_CMP >= 64
     memcpy(scan_start, scan, sizeof(uint64_t));
     memcpy(scan_end, scan+offset, sizeof(uint64_t));
-#elif defined(UNALIGNED_OK)
+#elif OPTIMAL_CMP >= 32
     memcpy(scan_start, scan, sizeof(uint32_t));
     memcpy(scan_end, scan+offset, sizeof(uint32_t));
 #else
@@ -138,7 +138,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
          * that depend on those values. However the length of the match is limited to the
          * lookahead, so the output of deflate is not affected by the uninitialized values.
          */
-#ifdef UNALIGNED_OK
+#if OPTIMAL_CMP >= 32
         if (best_len < sizeof(uint32_t)) {
             for (;;) {
                 if (zng_memcmp_2(mbase_end+cur_match, scan_end) == 0 &&
@@ -146,7 +146,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
                     break;
                 GOTO_NEXT_CHAIN;
             }
-#  ifdef UNALIGNED64_OK
+#  if OPTIMAL_CMP >= 64
         } else if (best_len >= sizeof(uint64_t)) {
             for (;;) {
                 if (zng_memcmp_8(mbase_end+cur_match, scan_end) == 0 &&
@@ -186,19 +186,19 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
                 return best_len;
 
             offset = best_len-1;
-#ifdef UNALIGNED_OK
+#if OPTIMAL_CMP >= 32
             if (best_len >= sizeof(uint32_t)) {
                 offset -= 2;
-#ifdef UNALIGNED64_OK
+#if OPTIMAL_CMP >= 64
                 if (best_len >= sizeof(uint64_t))
                     offset -= 4;
 #endif
             }
 #endif
 
-#ifdef UNALIGNED64_OK
+#if OPTIMAL_CMP >= 64
             memcpy(scan_end, scan+offset, sizeof(uint64_t));
-#elif defined(UNALIGNED_OK)
+#elif OPTIMAL_CMP >= 32
             memcpy(scan_end, scan+offset, sizeof(uint32_t));
 #else
             scan_end[0] = *(scan+offset);

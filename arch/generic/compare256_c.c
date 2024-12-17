@@ -57,7 +57,7 @@ Z_INTERNAL uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1) {
 
 #include "match_tpl.h"
 
-#if defined(UNALIGNED_OK) && BYTE_ORDER == LITTLE_ENDIAN
+#if BYTE_ORDER == LITTLE_ENDIAN && OPTIMAL_CMP >= 32
 /* 16-bit unaligned integer comparison */
 static inline uint32_t compare256_unaligned_16_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
@@ -138,8 +138,8 @@ Z_INTERNAL uint32_t compare256_unaligned_32(const uint8_t *src0, const uint8_t *
 
 #endif
 
-#if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
-/* UNALIGNED64_OK, 64-bit integer comparison */
+#if defined(HAVE_BUILTIN_CTZLL) && OPTIMAL_CMP >= 64
+/* 64-bit integer comparison */
 static inline uint32_t compare256_unaligned_64_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 

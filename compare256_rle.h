@@ -42,7 +42,7 @@ static inline uint32_t compare256_rle_c(const uint8_t *src0, const uint8_t *src1
     return 256;
 }
 
-#ifdef UNALIGNED_OK
+#if OPTIMAL_CMP >= 32
 /* 16-bit unaligned integer comparison */
 static inline uint32_t compare256_rle_unaligned_16(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
@@ -100,7 +100,7 @@ static inline uint32_t compare256_rle_unaligned_32(const uint8_t *src0, const ui
 
 #endif
 
-#if defined(UNALIGNED64_OK) && defined(HAVE_BUILTIN_CTZLL)
+#if defined(HAVE_BUILTIN_CTZLL) && OPTIMAL_CMP >= 64
 /* 64-bit unaligned integer comparison */
 static inline uint32_t compare256_rle_unaligned_64(const uint8_t *src0, const uint8_t *src1) {
     uint32_t src0_cmp32, len = 0;
