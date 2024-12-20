@@ -6,12 +6,11 @@
 #include "zbuild.h"
 #include "zmemory.h"
 #include "fallback_builtins.h"
-#include "zendian.h"
 
 typedef uint32_t (*compare256_rle_func)(const uint8_t* src0, const uint8_t* src1);
 
-/* ALIGNED, byte comparison */
-static inline uint32_t compare256_rle_c(const uint8_t *src0, const uint8_t *src1) {
+/* 8-bit integer comparison */
+static inline uint32_t compare256_rle_8(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {
@@ -44,8 +43,7 @@ static inline uint32_t compare256_rle_c(const uint8_t *src0, const uint8_t *src1
     return 256;
 }
 
-#if OPTIMAL_CMP >= 32
-/* 16-bit unaligned integer comparison */
+/* 16-bit integer comparison */
 static inline uint32_t compare256_rle_16(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
     uint16_t src0_cmp;
@@ -71,7 +69,7 @@ static inline uint32_t compare256_rle_16(const uint8_t *src0, const uint8_t *src
 }
 
 #ifdef HAVE_BUILTIN_CTZ
-/* 32-bit unaligned integer comparison */
+/* 32-bit integer comparison */
 static inline uint32_t compare256_rle_32(const uint8_t *src0, const uint8_t *src1) {
     uint32_t sv, len = 0;
     uint16_t src0_cmp;
@@ -99,11 +97,10 @@ static inline uint32_t compare256_rle_32(const uint8_t *src0, const uint8_t *src
 
     return 256;
 }
-
 #endif
 
-#if defined(HAVE_BUILTIN_CTZLL) && OPTIMAL_CMP >= 64
-/* 64-bit unaligned integer comparison */
+#ifdef HAVE_BUILTIN_CTZLL
+/* 64-bit integer comparison */
 static inline uint32_t compare256_rle_64(const uint8_t *src0, const uint8_t *src1) {
     uint32_t src0_cmp32, len = 0;
     uint16_t src0_cmp;
@@ -133,8 +130,4 @@ static inline uint32_t compare256_rle_64(const uint8_t *src0, const uint8_t *src
 
     return 256;
 }
-
 #endif
-
-#endif
-

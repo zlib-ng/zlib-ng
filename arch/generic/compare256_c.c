@@ -4,187 +4,28 @@
  */
 
 #include "zbuild.h"
-#include "zmemory.h"
-#include "deflate.h"
-#include "fallback_builtins.h"
+#include "compare256_p.h"
 
-/* ALIGNED, byte comparison */
-static inline uint32_t compare256_c_static(const uint8_t *src0, const uint8_t *src1) {
-    uint32_t len = 0;
-
-    do {
-        if (*src0 != *src1)
-            return len;
-        src0 += 1, src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src0 += 1, src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src0 += 1, src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src0 += 1, src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src0 += 1, src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src0 += 1, src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src0 += 1, src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src0 += 1, src1 += 1, len += 1;
-    } while (len < 256);
-
-    return 256;
-}
+// Set optimal COMPARE256 function variant
+#if OPTIMAL_CMP == 8
+#  define COMPARE256          compare256_8
+#elif defined(HAVE_BUILTIN_CTZLL)
+#  define COMPARE256          compare256_64
+#elif defined(HAVE_BUILTIN_CTZ)
+#  define COMPARE256          compare256_32
+#else
+#  define COMPARE256          compare256_16
+#endif
 
 Z_INTERNAL uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1) {
-    return compare256_c_static(src0, src1);
+    return COMPARE256(src0, src1);
 }
 
+// Generate longest_match_c
 #define LONGEST_MATCH       longest_match_c
-#define COMPARE256          compare256_c_static
-
 #include "match_tpl.h"
 
+// Generate longest_match_slow_c
 #define LONGEST_MATCH_SLOW
 #define LONGEST_MATCH       longest_match_slow_c
-#define COMPARE256          compare256_c_static
-
 #include "match_tpl.h"
-
-#if OPTIMAL_CMP >= 32
-
-/* 16-bit unaligned integer comparison */
-static inline uint32_t compare256_16_static(const uint8_t *src0, const uint8_t *src1) {
-    uint32_t len = 0;
-
-    do {
-        if (zng_memcmp_2(src0, src1) != 0)
-            return len + (*src0 == *src1);
-        src0 += 2, src1 += 2, len += 2;
-
-        if (zng_memcmp_2(src0, src1) != 0)
-            return len + (*src0 == *src1);
-        src0 += 2, src1 += 2, len += 2;
-
-        if (zng_memcmp_2(src0, src1) != 0)
-            return len + (*src0 == *src1);
-        src0 += 2, src1 += 2, len += 2;
-
-        if (zng_memcmp_2(src0, src1) != 0)
-            return len + (*src0 == *src1);
-        src0 += 2, src1 += 2, len += 2;
-    } while (len < 256);
-
-    return 256;
-}
-
-Z_INTERNAL uint32_t compare256_16(const uint8_t *src0, const uint8_t *src1) {
-    return compare256_16_static(src0, src1);
-}
-
-#define LONGEST_MATCH       longest_match_16
-#define COMPARE256          compare256_16_static
-
-#include "match_tpl.h"
-
-#define LONGEST_MATCH_SLOW
-#define LONGEST_MATCH       longest_match_slow_16
-#define COMPARE256          compare256_16_static
-
-#include "match_tpl.h"
-
-#ifdef HAVE_BUILTIN_CTZ
-/* 32-bit unaligned integer comparison */
-static inline uint32_t compare256_32_static(const uint8_t *src0, const uint8_t *src1) {
-    uint32_t len = 0;
-
-    do {
-        uint32_t sv, mv, diff;
-
-        sv = zng_memread_4(src0);
-        mv = zng_memread_4(src1);
-
-        diff = sv ^ mv;
-        if (diff) {
-#if BYTE_ORDER == LITTLE_ENDIAN
-            uint32_t match_byte = __builtin_ctz(diff) / 8;
-#else
-            uint32_t match_byte = __builtin_clz(diff) / 8;
-#endif
-            return len + match_byte;
-        }
-
-        src0 += 4, src1 += 4, len += 4;
-    } while (len < 256);
-
-    return 256;
-}
-
-Z_INTERNAL uint32_t compare256_32(const uint8_t *src0, const uint8_t *src1) {
-    return compare256_32_static(src0, src1);
-}
-
-#define LONGEST_MATCH       longest_match_32
-#define COMPARE256          compare256_32_static
-
-#include "match_tpl.h"
-
-#define LONGEST_MATCH_SLOW
-#define LONGEST_MATCH       longest_match_slow_32
-#define COMPARE256          compare256_32_static
-
-#include "match_tpl.h"
-
-#endif
-
-#if defined(HAVE_BUILTIN_CTZLL) && OPTIMAL_CMP >= 64
-/* 64-bit integer comparison */
-static inline uint32_t compare256_64_static(const uint8_t *src0, const uint8_t *src1) {
-    uint32_t len = 0;
-
-    do {
-        uint64_t sv, mv, diff;
-
-        sv = zng_memread_8(src0);
-        mv = zng_memread_8(src1);
-
-        diff = sv ^ mv;
-        if (diff) {
-#if BYTE_ORDER == LITTLE_ENDIAN
-            uint64_t match_byte = __builtin_ctzll(diff) / 8;
-#else
-            uint64_t match_byte = __builtin_clzll(diff) / 8;
-#endif
-            return len + (uint32_t)match_byte;
-        }
-
-        src0 += 8, src1 += 8, len += 8;
-    } while (len < 256);
-
-    return 256;
-}
-
-Z_INTERNAL uint32_t compare256_64(const uint8_t *src0, const uint8_t *src1) {
-    return compare256_64_static(src0, src1);
-}
-
-#define LONGEST_MATCH       longest_match_64
-#define COMPARE256          compare256_64_static
-
-#include "match_tpl.h"
-
-#define LONGEST_MATCH_SLOW
-#define LONGEST_MATCH       longest_match_slow_64
-#define COMPARE256          compare256_64_static
-
-#include "match_tpl.h"
-
-#endif
-
-#endif

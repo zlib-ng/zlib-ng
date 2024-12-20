@@ -243,35 +243,42 @@
 #  define Tracecv(c, x)
 #endif
 
-#if defined(__x86_64__) || defined(_M_X64) || defined(__amd64__) || defined(_M_AMD64)
-#  define OPTIMAL_CMP 64
-#elif defined(__i386__) || defined(__i486__) || defined(__i586__) || \
-      defined(__i686__) || defined(_X86_) || defined(_M_IX86)
-#  define OPTIMAL_CMP 32
-#elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
-#  if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
+/* OPTIMAL_CMP values determine the comparison width:
+ * 64: Best for 64-bit architectures with unaligned access
+ * 32: Best for 32-bit architectures with unaligned access
+ * 16: Safe default for unknown architectures
+ * 8:  Safe fallback for architectures without unaligned access
+ * Note: The unaligned access mentioned is cpu-support, this allows compiler or
+ *       separate unaligned intrinsics to utilize safe unaligned access, without
+ *       utilizing unaligned C pointers that are known to have undefined behavior.
+ */
+#if !defined(OPTIMAL_CMP)
+#  if defined(__x86_64__) || defined(_M_X64) || defined(__amd64__) || defined(_M_AMD64)
 #    define OPTIMAL_CMP 64
-#  else
-#    define OPTIMAL_CMP 8
-#  endif
-#elif defined(__arm__) || defined(_M_ARM)
-#  if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
+#  elif defined(__i386__) || defined(__i486__) || defined(__i586__) || \
+        defined(__i686__) || defined(_X86_) || defined(_M_IX86)
 #    define OPTIMAL_CMP 32
-#  else
-#    define OPTIMAL_CMP 8
+#  elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#    if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
+#      define OPTIMAL_CMP 64
+#    else
+#      define OPTIMAL_CMP 8
+#    endif
+#  elif defined(__arm__) || defined(_M_ARM)
+#    if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
+#      define OPTIMAL_CMP 32
+#    else
+#      define OPTIMAL_CMP 8
+#    endif
+#  elif defined(__powerpc64__) || defined(__ppc64__)
+#    define OPTIMAL_CMP 64
+#  elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__)
+#    define OPTIMAL_CMP 32
 #  endif
-#elif defined(__powerpc64__) || defined(__ppc64__)
-#  define OPTIMAL_CMP 64
-#elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__)
-#  define OPTIMAL_CMP 32
-#endif
-#if defined(NO_UNALIGNED)
-#  undef OPTIMAL_CMP
 #endif
 #if !defined(OPTIMAL_CMP)
-#  define OPTIMAL_CMP 8
+#  define OPTIMAL_CMP 16
 #endif
-
 
 #if defined(__has_feature)
 #  if __has_feature(address_sanitizer)

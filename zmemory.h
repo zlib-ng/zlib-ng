@@ -73,7 +73,7 @@ static inline void zng_memwrite_8(void *ptr, uint64_t val) {
    calls to unaligned comparisons when unaligned access is supported. Use memcmp only when
    unaligned support is not available to avoid an extra call to memcpy. */
 static inline int32_t zng_memcmp_2(const void *src0, const void *src1) {
-#if defined(HAVE_MAY_ALIAS) || OPTIMAL_CMP >= 16
+#if defined(HAVE_MAY_ALIAS)
     return zng_memread_2(src0) != zng_memread_2(src1);
 #else
     return memcmp(src0, src1, 2);
@@ -81,7 +81,7 @@ static inline int32_t zng_memcmp_2(const void *src0, const void *src1) {
 }
 
 static inline int32_t zng_memcmp_4(const void *src0, const void *src1) {
-#if defined(HAVE_MAY_ALIAS) || OPTIMAL_CMP >= 32
+#if defined(HAVE_MAY_ALIAS)
     return zng_memread_4(src0) != zng_memread_4(src1);
 #else
     return memcmp(src0, src1, 4);
@@ -89,7 +89,7 @@ static inline int32_t zng_memcmp_4(const void *src0, const void *src1) {
 }
 
 static inline int32_t zng_memcmp_8(const void *src0, const void *src1) {
-#if defined(HAVE_MAY_ALIAS) || OPTIMAL_CMP >= 64
+#if defined(HAVE_MAY_ALIAS)
     return zng_memread_8(src0) != zng_memread_8(src1);
 #else
     return memcmp(src0, src1, 8);

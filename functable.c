@@ -61,9 +61,9 @@ static void init_functable(void) {
     ft.crc32_fold_reset = &crc32_fold_reset_c;
     ft.inflate_fast = &inflate_fast_c;
     ft.slide_hash = &slide_hash_c;
-    ft.longest_match = &longest_match_generic;
-    ft.longest_match_slow = &longest_match_slow_generic;
-    ft.compare256 = &compare256_generic;
+    ft.longest_match = &longest_match_c;
+    ft.longest_match_slow = &longest_match_slow_c;
+    ft.compare256 = &compare256_c;
 
     // Select arch-optimized functions
 
