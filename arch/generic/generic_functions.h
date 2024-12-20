@@ -28,7 +28,7 @@ void     inflate_fast_c(PREFIX3(stream) *strm, uint32_t start);
 uint32_t PREFIX(crc32_braid)(uint32_t crc, const uint8_t *buf, size_t len);
 
 uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1);
-#if BYTE_ORDER == LITTLE_ENDIAN && OPTIMAL_CMP >= 32
+#if OPTIMAL_CMP >= 32
     uint32_t compare256_unaligned_16(const uint8_t *src0, const uint8_t *src1);
 #  ifdef HAVE_BUILTIN_CTZ
         uint32_t compare256_unaligned_32(const uint8_t *src0, const uint8_t *src1);
@@ -44,7 +44,7 @@ void     slide_hash_c(deflate_state *s);
 
 uint32_t longest_match_c(deflate_state *const s, Pos cur_match);
 uint32_t longest_match_slow_c(deflate_state *const s, Pos cur_match);
-#if BYTE_ORDER == LITTLE_ENDIAN && OPTIMAL_CMP >= 32
+#if OPTIMAL_CMP >= 32
     uint32_t longest_match_unaligned_16(deflate_state *const s, Pos cur_match);
     uint32_t longest_match_slow_unaligned_16(deflate_state *const s, Pos cur_match);
 #  ifdef HAVE_BUILTIN_CTZ
@@ -59,7 +59,7 @@ uint32_t longest_match_slow_c(deflate_state *const s, Pos cur_match);
 
 
 // Select generic implementation for longest_match, longest_match_slow, longest_match_slow functions.
-#if BYTE_ORDER == LITTLE_ENDIAN && OPTIMAL_CMP >= 32
+#if OPTIMAL_CMP >= 32
 #  if defined(HAVE_BUILTIN_CTZLL) && OPTIMAL_CMP >= 64
 #    define longest_match_generic longest_match_unaligned_64
 #    define longest_match_slow_generic longest_match_slow_unaligned_64

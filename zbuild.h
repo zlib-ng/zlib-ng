@@ -257,9 +257,7 @@
 #    define OPTIMAL_CMP 32
 #  endif
 #elif defined(__powerpc64__) || defined(__ppc64__)
-#  if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-#    define OPTIMAL_CMP 64
-#  endif
+#    define OPTIMAL_CMP 64 
 #endif
 #if defined(NO_UNALIGNED)
 #  undef OPTIMAL_CMP
