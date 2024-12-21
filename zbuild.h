@@ -258,6 +258,8 @@
 #  endif
 #elif defined(__powerpc64__) || defined(__ppc64__)
 #    define OPTIMAL_CMP 64 
+#elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__)
+#    define OPTIMAL_CMP 32
 #endif
 #if defined(NO_UNALIGNED)
 #  undef OPTIMAL_CMP
