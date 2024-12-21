@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include "zutil.h"
+#include "zutil_p.h"
 
 extern "C" {
 #  include "zbuild.h"
@@ -195,6 +197,22 @@ public:
     }
 };
 
+/* Specifically to test where we had dodgy alignment in the acle CRC32
+ * function. All others are either byte level access or use intrinsics
+ * that work with unaligned access */
+class crc32_align : public ::testing::TestWithParam<int> {
+public:
+    void hash(int param, crc32_func crc32) {
+        uint8_t *buf = (uint8_t*)zng_alloc(sizeof(uint8_t) * (128 + param));
+        if (buf != NULL) {
+            (void)crc32(0, buf + param, 128);
+        } else {
+            FAIL();
+        }
+        zng_free(buf);
+    }
+};
+
 INSTANTIATE_TEST_SUITE_P(crc32, crc32_variant, testing::ValuesIn(tests));
 
 #define TEST_CRC32(name, func, support_flag) \
@@ -210,10 +228,26 @@ TEST_CRC32(braid, PREFIX(crc32_braid), 1)
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 TEST_CRC32(native, native_crc32, 1)
+
 #else
 
 #ifdef ARM_ACLE
+static const int align_offsets[] = {
+    1, 2, 3, 4, 5, 6, 7
+};
+
+#define TEST_CRC32_ALIGN(name, func, support_flag) \
+    TEST_P(crc32_align, name) { \
+        if (!(support_flag)) { \
+            GTEST_SKIP(); \
+            return; \
+        } \
+        hash(GetParam(), func); \
+    }
+
+INSTANTIATE_TEST_SUITE_P(crc32_alignment, crc32_align, testing::ValuesIn(align_offsets));
 TEST_CRC32(acle, crc32_acle, test_cpu_features.arm.has_crc32)
+TEST_CRC32_ALIGN(acle_align, crc32_acle, test_cpu_features.arm.has_crc32)
 #endif
 #ifdef POWER8_VSX_CRC32
 TEST_CRC32(power8, crc32_power8, test_cpu_features.power.has_arch_2_07)
