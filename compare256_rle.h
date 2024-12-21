@@ -5,6 +5,7 @@
 
 #include "zbuild.h"
 #include "fallback_builtins.h"
+#include "zendian.h"
 
 typedef uint32_t (*compare256_rle_func)(const uint8_t* src0, const uint8_t* src1);
 
@@ -88,7 +89,11 @@ static inline uint32_t compare256_rle_unaligned_32(const uint8_t *src0, const ui
 
         diff = sv ^ mv;
         if (diff) {
+#if BYTE_ORDER == LITTLE_ENDIAN
             uint32_t match_byte = __builtin_ctz(diff) / 8;
+#else
+            uint32_t match_byte = __builtin_clz(diff) / 8;
+#endif
             return len + match_byte;
         }
 
@@ -118,7 +123,11 @@ static inline uint32_t compare256_rle_unaligned_64(const uint8_t *src0, const ui
 
         diff = sv ^ mv;
         if (diff) {
+#if BYTE_ORDER == LITTLE_ENDIAN
             uint64_t match_byte = __builtin_ctzll(diff) / 8;
+#else
+            uint64_t match_byte = __builtin_clzll(diff) / 8;
+#endif
             return len + (uint32_t)match_byte;
         }
 
