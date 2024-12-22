@@ -12,11 +12,11 @@
 
 #if OPTIMAL_CMP >= 32
 #  if defined(HAVE_BUILTIN_CTZLL) && OPTIMAL_CMP >= 64
-#    define compare256_rle compare256_rle_unaligned_64
+#    define compare256_rle compare256_rle_64
 #  elif defined(HAVE_BUILTIN_CTZ)
-#    define compare256_rle compare256_rle_unaligned_32
+#    define compare256_rle compare256_rle_32
 #  else
-#    define compare256_rle compare256_rle_unaligned_16
+#    define compare256_rle compare256_rle_16
 #  endif
 #else
 #  define compare256_rle compare256_rle_c

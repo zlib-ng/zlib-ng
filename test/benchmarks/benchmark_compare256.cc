@@ -67,12 +67,12 @@ BENCHMARK_COMPARE256(native, native_compare256, 1);
 #else
 
 #if BYTE_ORDER == LITTLE_ENDIAN && OPTIMAL_CMP >= 32
-BENCHMARK_COMPARE256(unaligned_16, compare256_unaligned_16, 1);
+BENCHMARK_COMPARE256(16, compare256_16, 1);
 #  if defined(HAVE_BUILTIN_CTZ)
-BENCHMARK_COMPARE256(unaligned_32, compare256_unaligned_32, 1);
+BENCHMARK_COMPARE256(32, compare256_32, 1);
 #  endif
 #  if defined(HAVE_BUILTIN_CTZLL) && OPTIMAL_CMP >= 64
-BENCHMARK_COMPARE256(unaligned_64, compare256_unaligned_64, 1);
+BENCHMARK_COMPARE256(64, compare256_64, 1);
 #  endif
 #endif
 #if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
