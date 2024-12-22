@@ -249,17 +249,21 @@
       defined(__i686__) || defined(_X86_) || defined(_M_IX86)
 #  define OPTIMAL_CMP 32
 #elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
-#  if (defined(__GNUC__) && defined(__ARM_FEATURE_UNALIGNED)) || !defined(__GNUC__)
+#  if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
 #    define OPTIMAL_CMP 64
+#  else
+#    define OPTIMAL_CMP 8
 #  endif
-#elif defined(__arm__) || (_M_ARM >= 7)
-#  if (defined(__GNUC__) && defined(__ARM_FEATURE_UNALIGNED)) || !defined(__GNUC__)
+#elif defined(__arm__) || defined(_M_ARM)
+#  if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
 #    define OPTIMAL_CMP 32
+#  else
+#    define OPTIMAL_CMP 8
 #  endif
 #elif defined(__powerpc64__) || defined(__ppc64__)
-#    define OPTIMAL_CMP 64 
+#  define OPTIMAL_CMP 64
 #elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__)
-#    define OPTIMAL_CMP 32
+#  define OPTIMAL_CMP 32
 #endif
 #if defined(NO_UNALIGNED)
 #  undef OPTIMAL_CMP
