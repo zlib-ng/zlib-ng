@@ -740,7 +740,7 @@ jobs:
       run: |
         python3 -u -m venv ${{ matrix.build-dir || '.' }}/venv
         source ${{ matrix.build-dir || '.' }}/venv/${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}/activate
-        python3 -u -m pip install gcovr==${{ matrix.compiler == 'gcc-13' && '7.2' || '5.0' }}
+        python3 -u -m pip install gcovr
         python3 -m gcovr ${{ matrix.build-dir || '' }} -j 3 --verbose \
           --exclude-unreachable-branches \
           --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
