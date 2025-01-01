@@ -38,91 +38,91 @@ jobs:
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn
             chost: arm-linux-gnueabi
-            packages: qemu qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
+            packages: qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
 
           - name: Ubuntu GCC ARM SF Compat No Opt
             os: ubuntu-latest
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: arm-linux-gnueabi
-            packages: qemu qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
+            packages: qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
 
           - name: Ubuntu GCC ARM HF
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn
             chost: arm-linux-gnueabihf
-            packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
+            packages: qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu GCC ARM HF No ACLE
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --without-acle
             chost: arm-linux-gnueabihf
-            packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
+            packages: qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu GCC ARM HF No NEON
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --without-neon
             chost: arm-linux-gnueabihf
-            packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
+            packages: qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu GCC ARM HF Compat No Opt
             os: ubuntu-latest
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: arm-linux-gnueabihf
-            packages: qemu qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
+            packages: qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu GCC AARCH64
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
             configure-args: --warn
             chost: aarch64-linux-gnu
-            packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
+            packages: qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
           - name: Ubuntu GCC AARCH64 No ACLE
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
             configure-args: --warn --without-acle
             chost: aarch64-linux-gnu
-            packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
+            packages: qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
           - name: Ubuntu GCC AARCH64 No NEON
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
             configure-args: --warn --without-neon
             chost: aarch64-linux-gnu
-            packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
+            packages: qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
           - name: Ubuntu GCC AARCH64 Compat No Opt
             os: ubuntu-latest
             compiler: aarch64-linux-gnu-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: aarch64-linux-gnu
-            packages: qemu qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
+            packages: qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
           - name: Ubuntu GCC MIPS
             os: ubuntu-latest
             compiler: mips-linux-gnu-gcc
             configure-args: --warn
             chost: mips-linux-gnu
-            packages: qemu qemu-user gcc-mips-linux-gnu libc-dev-mips-cross
+            packages: qemu-user gcc-mips-linux-gnu libc-dev-mips-cross
 
           - name: Ubuntu GCC MIPS64
             os: ubuntu-latest
             compiler: mips64-linux-gnuabi64-gcc
             configure-args: --warn
             chost: mips64-linux-gnuabi64
-            packages: qemu qemu-user gcc-mips64-linux-gnuabi64 libc-dev-mips64-cross
+            packages: qemu-user gcc-mips64-linux-gnuabi64 libc-dev-mips64-cross
 
           - name: Ubuntu GCC PPC
             os: ubuntu-latest
             compiler: powerpc-linux-gnu-gcc
             configure-args: --warn --static
             chost: powerpc-linux-gnu
-            packages: qemu qemu-user gcc-powerpc-linux-gnu libc-dev-powerpc-cross
+            packages: qemu-user gcc-powerpc-linux-gnu libc-dev-powerpc-cross
             cflags: -static
             ldflags: -static
 
@@ -131,14 +131,14 @@ jobs:
             compiler: powerpc-linux-gnu-gcc
             configure-args: --warn --without-power8
             chost: powerpc-linux-gnu
-            packages: qemu qemu-user gcc-powerpc-linux-gnu libc-dev-powerpc-cross
+            packages: qemu-user gcc-powerpc-linux-gnu libc-dev-powerpc-cross
 
           - name: Ubuntu GCC PPC64
             os: ubuntu-latest
             compiler: powerpc64-linux-gnu-gcc
             configure-args: --warn --static
             chost: powerpc-linux-gnu
-            packages: qemu qemu-user gcc-powerpc64-linux-gnu libc-dev-ppc64-cross
+            packages: qemu-user gcc-powerpc64-linux-gnu libc-dev-ppc64-cross
             cflags: -static
             ldflags: -static
 
@@ -147,14 +147,14 @@ jobs:
             compiler: powerpc64le-linux-gnu-gcc
             configure-args: --warn
             chost: powerpc64le-linux-gnu
-            packages: qemu qemu-user gcc-powerpc64le-linux-gnu libc-dev-ppc64el-cross
+            packages: qemu-user gcc-powerpc64le-linux-gnu libc-dev-ppc64el-cross
 
           - name: Ubuntu GCC S390X
             os: ubuntu-latest
             compiler: s390x-linux-gnu-gcc
             configure-args: --warn --static
             chost: s390x-linux-gnu
-            packages: qemu qemu-user gcc-s390x-linux-gnu libc-dev-s390x-cross
+            packages: qemu-user gcc-s390x-linux-gnu libc-dev-s390x-cross
             cflags: -static
             ldflags: -static
 
@@ -163,7 +163,7 @@ jobs:
             compiler: s390x-linux-gnu-gcc
             configure-args: --warn --static --without-crc32-vx
             chost: s390x-linux-gnu
-            packages: qemu qemu-user gcc-s390x-linux-gnu libc-dev-s390x-cross
+            packages: qemu-user gcc-s390x-linux-gnu libc-dev-s390x-cross
             cflags: -static
             ldflags: -static
 
@@ -172,7 +172,7 @@ jobs:
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcc' || 's390x-linux-gnu-gcc' }}
             configure-args: --warn --static --with-dfltcc-deflate --with-dfltcc-inflate
             chost: ${{ github.repository != 'zlib-ng/zlib-ng' &&  's390x-linux-gnu' || '' }}
-            packages: ${{ github.repository != 'zlib-ng/zlib-ng' && 'qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross' || '' }}
+            packages: ${{ github.repository != 'zlib-ng/zlib-ng' && 'qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross' || '' }}
             cflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
             ldflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
 
@@ -181,7 +181,7 @@ jobs:
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcc' || 's390x-linux-gnu-gcc' }}
             configure-args: --warn --zlib-compat --static --with-dfltcc-deflate --with-dfltcc-inflate
             chost: ${{ github.repository != 'zlib-ng/zlib-ng' &&  's390x-linux-gnu' || '' }}
-            packages: ${{ github.repository != 'zlib-ng/zlib-ng' && 'qemu qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross' || '' }}
+            packages: ${{ github.repository != 'zlib-ng/zlib-ng' && 'qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross' || '' }}
             cflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
             ldflags: ${{ github.repository != 'zlib-ng/zlib-ng' && '-static' || '' }}
 

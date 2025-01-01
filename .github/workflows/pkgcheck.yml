@@ -32,7 +32,7 @@ jobs:
             compiler: arm-linux-gnueabihf-gcc
             cxx-compiler: arm-linux-gnueabihf-g++
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake
-            packages: qemu gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross
+            packages: qemu-user gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-dev-armhf-cross
 
           - name: Ubuntu GCC AARCH64
             os: ubuntu-latest
@@ -40,7 +40,7 @@ jobs:
             compiler: aarch64-linux-gnu-gcc
             cxx-compiler: aarch64-linux-gnu-g++
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake
-            packages: qemu gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross
+            packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross
 
           - name: Ubuntu GCC MIPS
             os: ubuntu-latest
@@ -48,7 +48,7 @@ jobs:
             compiler: mips-linux-gnu-gcc
             cxx-compiler: mips-linux-gnu-g++
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mips.cmake
-            packages: qemu gcc-mips-linux-gnu g++-mips-linux-gnu libc6-dev-mips-cross
+            packages: qemu-user gcc-mips-linux-gnu g++-mips-linux-gnu libc6-dev-mips-cross
 
           - name: Ubuntu GCC MIPS64
             os: ubuntu-latest
@@ -56,7 +56,7 @@ jobs:
             compiler: mips64-linux-gnuabi64-gcc
             cxx-compiler: mips64-linux-gnuabi64-g++
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mips64.cmake
-            packages: qemu gcc-mips64-linux-gnuabi64 g++-mips64-linux-gnuabi64 libc6-dev-mips64-cross
+            packages: qemu-user gcc-mips64-linux-gnuabi64 g++-mips64-linux-gnuabi64 libc6-dev-mips64-cross
 
           - name: Ubuntu GCC PPC
             os: ubuntu-latest
@@ -64,7 +64,7 @@ jobs:
             compiler: powerpc-linux-gnu-gcc
             cxx-compiler: powerpc-linux-gnu-g++
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake
-            packages: qemu gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc6-dev-powerpc-cross
+            packages: qemu-user gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc6-dev-powerpc-cross
 
           - name: Ubuntu GCC PPC64LE
             os: ubuntu-latest
@@ -72,7 +72,7 @@ jobs:
             compiler: powerpc64le-linux-gnu-gcc
             cxx-compiler: powerpc64le-linux-gnu-g++
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
-            packages: qemu gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
+            packages: qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
 
           - name: macOS Clang
             os: macOS-latest
