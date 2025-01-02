@@ -151,89 +151,89 @@ jobs:
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu-user gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libc-dev-armel-cross
+            packages: qemu-user crossbuild-essential-armel
             codecov: ubuntu_gcc_armsf
 
           - name: Ubuntu GCC ARM SF Compat No Opt UBSAN
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
-            packages: qemu-user gcc-arm-linux-gnueabi g++-arm-linux-gnueabi libc-dev-armel-cross
+            packages: qemu-user crossbuild-essential-armel
             codecov: ubuntu_gcc_armsf_compat_no_opt
 
           - name: Ubuntu GCC ARM HF ASAN
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu-user gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc-dev-armel-cross
+            packages: qemu-user crossbuild-essential-armhf
             codecov: ubuntu_gcc_armhf
 
           - name: Ubuntu GCC ARM HF No ACLE ASAN
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_ACLE=OFF -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu-user gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc-dev-armel-cross
+            packages: qemu-user crossbuild-essential-armhf
             codecov: ubuntu_gcc_armhf_no_acle
 
           - name: Ubuntu GCC ARM HF No NEON ASAN
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_NEON=OFF -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu-user gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc-dev-armel-cross
+            packages: qemu-user crossbuild-essential-armhf
             codecov: ubuntu_gcc_armhf_no_neon
 
           - name: Ubuntu GCC ARM HF Compat No Opt UBSAN
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
-            packages: qemu-user gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc-dev-armel-cross
+            packages: qemu-user crossbuild-essential-armhf
             codecov: ubuntu_gcc_armhf_compat_no_opt
 
           - name: Ubuntu GCC AARCH64 ASAN
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
+            packages: qemu-user crossbuild-essential-arm64
             codecov: ubuntu_gcc_aarch64
 
           - name: Ubuntu GCC AARCH64 No ACLE UBSAN
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_ACLE=OFF -DWITH_SANITIZER=Undefined
-            packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
+            packages: qemu-user crossbuild-essential-arm64
             codecov: ubuntu_gcc_aarch64_no_acle
 
           - name: Ubuntu GCC AARCH64 No NEON UBSAN
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_NEON=OFF -DWITH_SANITIZER=Undefined
-            packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
+            packages: qemu-user crossbuild-essential-arm64
             codecov: ubuntu_gcc_aarch64_no_neon
 
           - name: Ubuntu GCC AARCH64 Compat No Opt UBSAN
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
-            packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
+            packages: qemu-user crossbuild-essential-arm64
             codecov: ubuntu_gcc_aarch64_compat_no_opt
 
           - name: Ubuntu GCC MIPS
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mips.cmake
-            packages: qemu-user gcc-mips-linux-gnu g++-mips-linux-gnu libc-dev-mips-cross
+            packages: qemu-user crossbuild-essential-mips
             codecov: ubuntu_gcc_mips
 
           - name: Ubuntu GCC MIPS64
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mips64.cmake
-            packages: qemu-user gcc-mips64-linux-gnuabi64 g++-mips64-linux-gnuabi64 libc-dev-mips64-cross
+            packages: qemu-user crossbuild-essential-mips64
             codecov: ubuntu_gcc_mips64
 
           - name: Ubuntu GCC PPC
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake
-            packages: qemu-user gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc-dev-powerpc-cross
+            packages: qemu-user crossbuild-essential-powerpc
             codecov: ubuntu_gcc_ppc
 
           - name: Ubuntu GCC PPC No Power8
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake -DWITH_POWER8=OFF
-            packages: qemu-user gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc-dev-powerpc-cross
+            packages: qemu-user crossbuild-essential-powerpc
             codecov: ubuntu_gcc_ppc_no_power8
 
           - name: Ubuntu GCC PPC64
@@ -253,35 +253,35 @@ jobs:
           - name: Ubuntu Clang PPC64 Power9
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64-clang.cmake
-            packages: qemu-user clang binutils-powerpc64-linux-gnu libc-dev-ppc64-cross libgcc-15-dev-ppc64-cross libstdc++-15-dev-ppc64-cross
+            packages: qemu-user clang binutils-powerpc64-linux-gnu libgcc-11-dev-ppc64-cross libc-dev-ppc64-cross libstdc++-11-dev-ppc64-cross
 
           - name: Ubuntu GCC PPC64LE
-            os: ubuntu-20.04
+            os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
-            packages: qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc-dev-ppc64el-cross
+            packages: qemu-user crossbuild-essential-ppc64el
             codecov: ubuntu_gcc_ppc64le
 
           - name: Ubuntu GCC PPC64LE No VSX
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le-power9.cmake -DWITH_POWER8=OFF -DWITH_POWER9=OFF
-            packages: qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc-dev-ppc64el-cross
+            packages: qemu-user crossbuild-essential-ppc64el
             codecov: ubuntu_gcc_ppc64le_novsx
 
           - name: Ubuntu GCC PPC64LE Power9
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le-power9.cmake
-            packages: qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc-dev-ppc64el-cross
+            packages: qemu-user crossbuild-essential-ppc64el
             codecov: ubuntu_gcc_ppc64le_power9
 
           - name: Ubuntu Clang PPC64LE Power9
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le-clang.cmake
-            packages: qemu-user clang binutils-powerpc64le-linux-gnu libc-dev-ppc64el-cross libgcc-15-dev-ppc64el-cross libstdc++-15-dev-ppc64el-cross
+            packages: qemu-user crossbuild-essential-ppc64el
 
           - name: Ubuntu GCC SPARC64
             os: ubuntu-20.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake
-            packages: qemu-user gcc-sparc64-linux-gnu g++-sparc64-linux-gnu libc-dev-sparc64-cross
+            packages: qemu qemu-user gcc-sparc64-linux-gnu g++-sparc64-linux-gnu libc-dev-sparc64-cross
             ldflags: -static
             codecov: ubuntu_gcc_sparc64
 
@@ -289,7 +289,7 @@ jobs:
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
+            packages: qemu-user crossbuild-essential-s390x
             ldflags: -static
             codecov: ubuntu_gcc_s390x
 
@@ -297,7 +297,7 @@ jobs:
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_CRC32_VX=OFF -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
+            packages: qemu-user crossbuild-essential-s390x
             ldflags: -static
             codecov: ubuntu_gcc_s390x_no_crc32
 
