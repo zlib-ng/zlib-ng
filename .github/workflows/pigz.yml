@@ -106,7 +106,7 @@ jobs:
       if: matrix.codecov
       run: |
         python3 -u -m pip install gcovr
-        python3 -m gcovr -j 3 --verbose \
+        python3 -m gcovr -j 3 --gcov-ignore-parse-errors --verbose \
           --exclude-unreachable-branches \
           --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
           --root . \
