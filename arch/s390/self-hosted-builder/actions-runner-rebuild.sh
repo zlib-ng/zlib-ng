@@ -1,43 +1,46 @@
 #!/usr/bin/bash
 set -ex
 
-if [ ! -f /etc/actions-runner ]; then
-    echo "Error: /etc/actions-runner env file not found"
-    exit 1
-fi
-
-# Use local file if run interactively, otherwise wget the current one.
-if [ -t 0 ] ; then
-    if [ ! -f actions-runner.Dockerfile ]; then
-        echo "Error: actions-runner.Dockerfile not found"
-        exit 1
-    fi
-    DOCKERFILE=actions-runner.Dockerfile
+if [ -f actions-runner.Dockerfile ]; then
+    MODE=1
 else
-    DOCKERFILE="$(mktemp)"
-    wget https://raw.githubusercontent.com/zlib-ng/zlib-ng/refs/heads/develop/arch/s390/self-hosted-builder/actions-runner.Dockerfile -O $DOCKERFILE
+    MODE=2
+    TMPDIR="$(mktemp -d)"
+    cd $TMPDIR
+    wget https://raw.githubusercontent.com/zlib-ng/zlib-ng/refs/heads/develop/arch/s390/self-hosted-builder/actions-runner.Dockerfile
+    wget https://raw.githubusercontent.com/zlib-ng/zlib-ng/refs/heads/develop/arch/s390/self-hosted-builder/actions-runner
+    wget https://raw.githubusercontent.com/zlib-ng/zlib-ng/refs/heads/develop/arch/s390/self-hosted-builder/entrypoint
 fi
 
 # Stop service
-systemctl stop actions-runner
+systemctl stop actions-runner || true
 
-# Delete container
-podman container rm gaplib-actions-runner
+# Delete old container
+podman container rm gaplib-actions-runner || true
 
-# Delete image
+# Delete old image
 podman image rm localhost/zlib-ng/actions-runner
 
-# Build image
-podman build --squash -f $DOCKERFILE --tag zlib-ng/actions-runner .
+# Build new image
+podman build --squash -f actions-runner.Dockerfile --tag zlib-ng/actions-runner . 2>&1 | tee /var/log/actions-runner-build.log
 
-# Create container
-podman create --replace --name=gaplib-actions-runner --env-file=/etc/actions-runner --init --volume=actions-runner-temp:/home/actions-runner zlib-ng/actions-runner
+# Create new container
+podman create --replace --name=gaplib-actions-runner --env-file=/etc/actions-runner --init \
+       --volume=actions-runner-temp:/home/actions-runner zlib-ng/actions-runner 2>&1 | tee -a /var/log/actions-runner-build.log
 
 # Start service
-systemctl start actions-runner
+systemctl start actions-runner || true
+
+# Cleanup
+podman image prune -af || true
 
 # Clean up tempfile
-if [ ! -t 0 ] ; then
-    rm $DOCKERFILE
-    echo "Deleted dockerfile $DOCKERFILE"
+if [ "$MODE" == "2" ] ; then
+    cd $TMPDIR
+    rm actions-runner.Dockerfile
+    rm actions-runner
+    rm entrypoint
+    cd ..
+    rmdir $TMPDIR
+    echo "Deleted tempfiles."
 fi

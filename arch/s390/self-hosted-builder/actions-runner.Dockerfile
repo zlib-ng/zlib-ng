@@ -38,8 +38,8 @@ RUN     rm -rf /tmp/runner /var/cache/dnf/* /tmp/runner.patch /tmp/global.json &
 USER    actions-runner
 
 # Scripts.
-COPY    entrypoint /usr/bin/
-COPY    actions-runner /usr/bin/
+COPY    --chmod=555 entrypoint /usr/bin/
+COPY    --chmod=555 actions-runner /usr/bin/
 WORKDIR /home/actions-runner
 ENTRYPOINT ["/usr/bin/entrypoint"]
 CMD     ["/usr/bin/actions-runner"]
