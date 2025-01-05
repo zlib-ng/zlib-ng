@@ -1,3 +1,5 @@
+#ifndef DEFLATE_QUICK_H
+#define DEFLATE_QUICK_H
 /*
  * The deflate_quick deflate strategy, designed to be used when cycles are
  * at a premium.
@@ -44,7 +46,7 @@ extern const ct_data static_dtree[D_CODES];
     } \
 }
 
-Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
+Z_INTERNAL block_state DEFLATE_QUICK(deflate_state *s, int flush) {
     Pos hash_head;
     int64_t dist;
     unsigned match_len, last;
@@ -94,7 +96,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
                 const uint8_t *match_start = s->window + hash_head;
 
                 if (zng_memcmp_2(str_start, match_start) == 0) {
-                    match_len = FUNCTABLE_CALL(compare256)(str_start+2, match_start+2) + 2;
+                    match_len = COMPARE256(str_start+2, match_start+2) + 2;
 
                     if (match_len >= WANT_MIN_MATCH) {
                         if (UNLIKELY(match_len > s->lookahead))
@@ -128,3 +130,5 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     QUICK_END_BLOCK(s, 0);
     return block_done;
 }
+
+#endif

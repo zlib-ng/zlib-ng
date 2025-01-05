@@ -46,4 +46,8 @@ Z_INTERNAL uint32_t compare256_rvv(const uint8_t *src0, const uint8_t *src1) {
 
 #include "match_tpl.h"
 
+#define DEFLATE_QUICK       deflate_quick_rvv
+
+#include "deflate_quick_tpl.h"
+
 #endif // RISCV_RVV

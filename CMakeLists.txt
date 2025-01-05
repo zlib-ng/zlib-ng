@@ -1086,6 +1086,7 @@ set(ZLIB_PRIVATE_HDRS
     crc32_braid_tbl.h
     deflate.h
     deflate_p.h
+    deflate_quick_tpl.h
     functable.h
     inffast_tpl.h
     inffixed_tbl.h
@@ -1117,7 +1118,6 @@ set(ZLIB_SRCS
     deflate_fast.c
     deflate_huff.c
     deflate_medium.c
-    deflate_quick.c
     deflate_rle.c
     deflate_slow.c
     deflate_stored.c

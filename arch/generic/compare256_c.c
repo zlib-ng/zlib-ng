@@ -29,3 +29,8 @@ Z_INTERNAL uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1) {
 #define LONGEST_MATCH_SLOW
 #define LONGEST_MATCH       longest_match_slow_c
 #include "match_tpl.h"
+
+// Generic deflate_quick_c
+#define DEFLATE_QUICK       deflate_quick_c
+
+#include "deflate_quick_tpl.h"

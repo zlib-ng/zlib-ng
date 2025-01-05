@@ -12,6 +12,7 @@ uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, unsigned len, unsign
 
 #  ifdef HAVE_BUILTIN_CTZ
     uint32_t compare256_sse2(const uint8_t *src0, const uint8_t *src1);
+    block_state deflate_quick_sse2(deflate_state *s, int flush);
     uint32_t longest_match_sse2(deflate_state *const s, Pos cur_match);
     uint32_t longest_match_slow_sse2(deflate_state *const s, Pos cur_match);
     void slide_hash_sse2(deflate_state *s);
@@ -37,6 +38,7 @@ uint8_t* chunkmemset_safe_avx2(uint8_t *out, uint8_t *from, unsigned len, unsign
 
 #  ifdef HAVE_BUILTIN_CTZ
     uint32_t compare256_avx2(const uint8_t *src0, const uint8_t *src1);
+    block_state deflate_quick_avx2(deflate_state *s, int flush);
     uint32_t longest_match_avx2(deflate_state *const s, Pos cur_match);
     uint32_t longest_match_slow_avx2(deflate_state *const s, Pos cur_match);
     void slide_hash_avx2(deflate_state *s);
@@ -78,6 +80,8 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #    define native_chunkmemset_safe chunkmemset_safe_sse2
 #    undef native_chunksize
 #    define native_chunksize chunksize_sse2
+#    undef native_deflate_quick
+#    define native_deflate_quick deflate_quick_sse2
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_sse2
 #    undef native_slide_hash
@@ -129,6 +133,8 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #    define native_chunkmemset_safe chunkmemset_safe_avx2
 #    undef native_chunksize
 #    define native_chunksize chunksize_avx2
+#    undef native_deflate_quick
+#    define native_deflate_quick deflate_quick_avx2
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_avx2
 #    undef native_slide_hash

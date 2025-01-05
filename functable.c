@@ -59,11 +59,11 @@ static void init_functable(void) {
     ft.crc32_fold_copy = &crc32_fold_copy_c;
     ft.crc32_fold_final = &crc32_fold_final_c;
     ft.crc32_fold_reset = &crc32_fold_reset_c;
+    ft.deflate_quick = &deflate_quick_c;
     ft.inflate_fast = &inflate_fast_c;
     ft.slide_hash = &slide_hash_c;
     ft.longest_match = &longest_match_c;
     ft.longest_match_slow = &longest_match_slow_c;
-    ft.compare256 = &compare256_c;
 
     // Select arch-optimized functions
 
@@ -78,7 +78,7 @@ static void init_functable(void) {
         ft.inflate_fast = &inflate_fast_sse2;
         ft.slide_hash = &slide_hash_sse2;
 #  ifdef HAVE_BUILTIN_CTZ
-        ft.compare256 = &compare256_sse2;
+        ft.deflate_quick = &deflate_quick_sse2;
         ft.longest_match = &longest_match_sse2;
         ft.longest_match_slow = &longest_match_slow_sse2;
 #  endif
@@ -119,10 +119,10 @@ static void init_functable(void) {
         ft.adler32_fold_copy = &adler32_fold_copy_avx2;
         ft.chunkmemset_safe = &chunkmemset_safe_avx2;
         ft.chunksize = &chunksize_avx2;
+        ft.deflate_quick = &deflate_quick_avx2;
         ft.inflate_fast = &inflate_fast_avx2;
         ft.slide_hash = &slide_hash_avx2;
 #  ifdef HAVE_BUILTIN_CTZ
-        ft.compare256 = &compare256_avx2;
         ft.longest_match = &longest_match_avx2;
         ft.longest_match_slow = &longest_match_slow_avx2;
 #  endif
@@ -178,6 +178,7 @@ static void init_functable(void) {
         ft.slide_hash = &slide_hash_neon;
 #  ifdef HAVE_BUILTIN_CTZLL
         ft.compare256 = &compare256_neon;
+        ft.deflate_quick = &deflate_quick_neon;
         ft.longest_match = &longest_match_neon;
         ft.longest_match_slow = &longest_match_slow_neon;
 #  endif
@@ -215,7 +216,7 @@ static void init_functable(void) {
     // Power9
 #ifdef POWER9
     if (cf.power.has_arch_3_00) {
-        ft.compare256 = &compare256_power9;
+        ft.deflate_quick = &deflate_quick_power9;
         ft.longest_match = &longest_match_power9;
         ft.longest_match_slow = &longest_match_slow_power9;
     }
@@ -229,7 +230,7 @@ static void init_functable(void) {
         ft.adler32_fold_copy = &adler32_fold_copy_rvv;
         ft.chunkmemset_safe = &chunkmemset_safe_rvv;
         ft.chunksize = &chunksize_rvv;
-        ft.compare256 = &compare256_rvv;
+        ft.deflate_quick = &deflate_quick_rvv;
         ft.inflate_fast = &inflate_fast_rvv;
         ft.longest_match = &longest_match_rvv;
         ft.longest_match_slow = &longest_match_slow_rvv;
@@ -250,12 +251,12 @@ static void init_functable(void) {
     FUNCTABLE_ASSIGN(ft, adler32_fold_copy);
     FUNCTABLE_ASSIGN(ft, chunkmemset_safe);
     FUNCTABLE_ASSIGN(ft, chunksize);
-    FUNCTABLE_ASSIGN(ft, compare256);
     FUNCTABLE_ASSIGN(ft, crc32);
     FUNCTABLE_ASSIGN(ft, crc32_fold);
     FUNCTABLE_ASSIGN(ft, crc32_fold_copy);
     FUNCTABLE_ASSIGN(ft, crc32_fold_final);
     FUNCTABLE_ASSIGN(ft, crc32_fold_reset);
+    FUNCTABLE_ASSIGN(ft, deflate_quick);
     FUNCTABLE_ASSIGN(ft, inflate_fast);
     FUNCTABLE_ASSIGN(ft, longest_match);
     FUNCTABLE_ASSIGN(ft, longest_match_slow);
@@ -290,11 +291,6 @@ static uint32_t chunksize_stub(void) {
     return functable.chunksize();
 }
 
-static uint32_t compare256_stub(const uint8_t* src0, const uint8_t* src1) {
-    init_functable();
-    return functable.compare256(src0, src1);
-}
-
 static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
     init_functable();
     return functable.crc32(crc, buf, len);
@@ -318,6 +314,11 @@ static uint32_t crc32_fold_final_stub(crc32_fold* crc) {
 static uint32_t crc32_fold_reset_stub(crc32_fold* crc) {
     init_functable();
     return functable.crc32_fold_reset(crc);
+}
+
+block_state deflate_quick_stub(deflate_state* s, int flush) {
+    init_functable();
+    return functable.deflate_quick(s, flush);
 }
 
 static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start) {
@@ -347,12 +348,12 @@ Z_INTERNAL struct functable_s functable = {
     adler32_fold_copy_stub,
     chunkmemset_safe_stub,
     chunksize_stub,
-    compare256_stub,
     crc32_stub,
     crc32_fold_stub,
     crc32_fold_copy_stub,
     crc32_fold_final_stub,
     crc32_fold_reset_stub,
+    deflate_quick_stub,
     inflate_fast_stub,
     longest_match_stub,
     longest_match_slow_stub,

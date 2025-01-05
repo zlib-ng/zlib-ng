@@ -14,6 +14,7 @@ Z_INTERNAL uint32_t crc32_fold_final_c(crc32_fold *crc);
 
 Z_INTERNAL uint32_t adler32_fold_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 
+Z_INTERNAL block_state deflate_quick_c(deflate_state *s, int flush);
 
 typedef uint32_t (*adler32_func)(uint32_t adler, const uint8_t *buf, size_t len);
 typedef uint32_t (*compare256_func)(const uint8_t *src0, const uint8_t *src1);
@@ -47,6 +48,7 @@ uint32_t longest_match_slow_c(deflate_state *const s, Pos cur_match);
 #  define native_crc32_fold_copy crc32_fold_copy_c
 #  define native_crc32_fold_final crc32_fold_final_c
 #  define native_crc32_fold_reset crc32_fold_reset_c
+#  define native_deflate_quick deflate_quick_c
 #  define native_inflate_fast inflate_fast_c
 #  define native_slide_hash slide_hash_c
 #  define native_longest_match longest_match_c

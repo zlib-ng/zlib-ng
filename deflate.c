@@ -111,7 +111,7 @@ const char PREFIX(deflate_copyright)[] = " deflate 1.3.1 Copyright 1995-2024 Jea
 static int deflateStateCheck      (PREFIX3(stream) *strm);
 Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_fast  (deflate_state *s, int flush);
-Z_INTERNAL block_state deflate_quick (deflate_state *s, int flush);
+Z_INTERNAL block_state deflate_quick_stub(deflate_state *s, int flush);
 #ifndef NO_MEDIUM_STRATEGY
 Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush);
 #endif
@@ -147,7 +147,7 @@ static const config configuration_table[10] = {
 /* 1 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
 /* 2 */ {4,    5, 16,    8, deflate_fast},
 #else
-/* 1 */ {0,    0,  0,    0, deflate_quick},
+/* 1 */ {0,    0,  0,    0, deflate_quick_stub},
 /* 2 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
 #endif
 
