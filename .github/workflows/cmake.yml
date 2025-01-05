@@ -466,7 +466,7 @@ jobs:
             compiler: clang-15
             cxx-compiler: clang++-15
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
-            packages:  ninja-build clang-15 llvm-15-tools
+            packages:  ninja-build clang-15 llvm-15-tools libclang-rt-15-dev
             gcov-exec: llvm-cov-15 gcov
             # https://github.com/llvm/llvm-project/issues/55785
             msan-options: use_sigaltstack=0
@@ -677,7 +677,7 @@ jobs:
     - name: Compile LLVM C++ libraries (MSAN)
       if: contains(matrix.name, 'MSAN')
       run: |
-        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-16.0.6
+        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-15.0.7
         cmake -S llvm-project/runtimes -B llvm-project/build -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
           -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
