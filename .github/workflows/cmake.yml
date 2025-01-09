@@ -194,31 +194,31 @@ jobs:
             codecov: ubuntu_gcc_armhf_compat_no_opt
 
           - name: Ubuntu GCC AARCH64 ASAN
-            os: ubuntu-latest
+            os: ubuntu-22.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            packages: qemu-user crossbuild-essential-arm64
+            packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             gcov-exec: aarch64-linux-gnu-gcov
             codecov: ubuntu_gcc_aarch64
 
           - name: Ubuntu GCC AARCH64 No ACLE UBSAN
-            os: ubuntu-latest
+            os: ubuntu-22.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_ACLE=OFF -DWITH_SANITIZER=Undefined
-            packages: qemu-user crossbuild-essential-arm64
+            packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             gcov-exec: aarch64-linux-gnu-gcov
             codecov: ubuntu_gcc_aarch64_no_acle
 
           - name: Ubuntu GCC AARCH64 No NEON UBSAN
-            os: ubuntu-latest
+            os: ubuntu-22.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_NEON=OFF -DWITH_SANITIZER=Undefined
-            packages: qemu-user crossbuild-essential-arm64
+            packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             gcov-exec: aarch64-linux-gnu-gcov
             codecov: ubuntu_gcc_aarch64_no_neon
 
           - name: Ubuntu GCC AARCH64 Compat No Opt UBSAN
-            os: ubuntu-latest
+            os: ubuntu-22.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
-            packages: qemu-user crossbuild-essential-arm64
+            packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             gcov-exec: aarch64-linux-gnu-gcov
             codecov: ubuntu_gcc_aarch64_compat_no_opt
 
