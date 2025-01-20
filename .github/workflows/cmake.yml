@@ -272,9 +272,10 @@ jobs:
             packages: qemu-user clang binutils-powerpc64-linux-gnu libgcc-11-dev-ppc64-cross libc-dev-ppc64-cross libstdc++-11-dev-ppc64-cross
 
           - name: Ubuntu GCC PPC64LE
-            os: ubuntu-latest
+            # qemu appears to be broken in newer versions of Ubuntu (see issue 1378)
+            os: ubuntu-20.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
-            packages: qemu-user crossbuild-essential-ppc64el
+            packages: qemu qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc-dev-ppc64el-cross
             gcov-exec: powerpc64le-linux-gnu-gcov
             codecov: ubuntu_gcc_ppc64le
 
@@ -298,6 +299,7 @@ jobs:
             packages: qemu-user crossbuild-essential-ppc64el
 
           - name: Ubuntu GCC SPARC64
+            # qemu appears to be broken in newer versions of Ubuntu (see issue 1378)
             os: ubuntu-20.04
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake
             packages: qemu qemu-user gcc-sparc64-linux-gnu g++-sparc64-linux-gnu libc-dev-sparc64-cross
