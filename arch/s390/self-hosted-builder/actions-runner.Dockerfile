@@ -32,6 +32,15 @@ RUN     tar -xf /tmp/runner/_package/*.tar.gz -C /home/actions-runner && \
 
 #VOLUME  /home/actions-runner
 
+# Workaround: Install custom clang version to avoid compiler bug, ref #1852
+RUN     mkdir /tmp/clang
+
+COPY    clang/*.rpm /tmp/clang
+
+RUN     dnf -y upgrade /tmp/clang/*.rpm && \
+        rm -rf /tmp/clang
+
+# Cleanup
 RUN     rm -rf /tmp/runner /var/cache/dnf/* /tmp/runner.patch /tmp/global.json && \
         dnf clean all
 

@@ -44,6 +44,7 @@ if [ $REG_TOKEN = "null" ]; then
 fi
 
 # (Re-)register the runner.
+./config.sh remove --token "$REG_TOKEN" || true
 set -x
 ./config.sh \
     --url "https://github.com/$REPO" \
