@@ -291,7 +291,7 @@ int32_t Z_EXPORT PREFIX(inflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32
     if (bits > 16 || state->bits + (unsigned int)bits > 32)
         return Z_STREAM_ERROR;
     value &= (1L << bits) - 1;
-    state->hold += (unsigned)value << state->bits;
+    state->hold += (uint64_t)value << state->bits;
     state->bits += (unsigned int)bits;
     return Z_OK;
 }
@@ -387,7 +387,7 @@ static void updatewindow(PREFIX3(stream) *strm, const uint8_t *end, uint32_t len
     do { \
         if (have == 0) goto inf_leave; \
         have--; \
-        hold += ((unsigned)(*next++) << bits); \
+        hold += ((uint64_t)(*next++) << bits); \
         bits += 8; \
     } while (0)
 
@@ -479,7 +479,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
     unsigned char *put;         /* next output */
     unsigned char *from;        /* where to copy match bytes from */
     unsigned have, left;        /* available input and output */
-    uint32_t hold;              /* bit buffer */
+    uint64_t hold;              /* bit buffer */
     unsigned bits;              /* bits in bit buffer */
     uint32_t in, out;           /* save starting available input and output */
     unsigned copy;              /* number of stored or match bytes to copy */
@@ -577,7 +577,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
         case TIME:
             NEEDBITS(32);
             if (state->head != NULL)
-                state->head->time = hold;
+                state->head->time = (unsigned)(hold);
             if ((state->flags & 0x0200) && (state->wrap & 4))
                 CRC4(state->check, hold);
             INITBITS();
@@ -704,7 +704,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
 #endif
         case DICTID:
             NEEDBITS(32);
-            strm->adler = state->check = ZSWAP32(hold);
+            strm->adler = state->check = ZSWAP32((unsigned)hold);
             INITBITS();
             state->mode = DICT;
             Z_FALLTHROUGH;
@@ -1128,7 +1128,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
 #ifdef GUNZIP
                      state->flags ? hold :
 #endif
-                     ZSWAP32(hold)) != state->check) {
+                     ZSWAP32((unsigned)hold)) != state->check) {
                     SET_BAD("incorrect data check");
                     break;
                 }

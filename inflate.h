@@ -121,7 +121,7 @@ struct ALIGNED_(64) inflate_state {
     uint32_t chunksize;         /* size of memory copying chunk */
 
         /* bit accumulator */
-    uint32_t hold;              /* input bit accumulator */
+    uint64_t hold;              /* input bit accumulator */
     unsigned bits;              /* number of bits in "in" */
         /* fixed and dynamic code tables */
     unsigned lenbits;           /* index bits for lencode */
@@ -141,7 +141,7 @@ struct ALIGNED_(64) inflate_state {
     code *next;                 /* next available space in codes[] */
 
 #if defined(_M_IX86) || defined(_M_ARM)
-    uint32_t padding[2];
+    uint32_t padding[1];
 #endif
     struct crc32_fold_s ALIGNED_(16) crc_fold;
 
