@@ -43,7 +43,7 @@ public:
     }
 
     void Bench(benchmark::State& state) {
-        int err;
+        int err = 0;
 
         for (auto _ : state) {
             err = PREFIX(compress)(outbuff, &maxlen, inbuff, (size_t)state.range(0));

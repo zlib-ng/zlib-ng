@@ -33,7 +33,7 @@ public:
 
     void Bench(benchmark::State& state, compare256_rle_func compare256_rle) {
         int32_t match_len = (int32_t)state.range(0) - 1;
-        uint32_t len;
+        uint32_t len = 0;
 
         str2[match_len] = 0;
         for (auto _ : state) {
