@@ -32,7 +32,13 @@ static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
 }
 
 static inline void chunkmemset_16(uint8_t *from, chunk_t *chunk) {
+    /* See explanation in chunkset_avx512.c */
+#if defined(_MSC_VER) && _MSC_VER <= 1900
+    halfchunk_t half = _mm_loadu_si128((__m128i*)from);
+    *chunk = _mm256_inserti128_si256(_mm256_castsi128_si256(half), half, 1);
+#else
     *chunk = _mm256_broadcastsi128_si256(_mm_loadu_si128((__m128i*)from));
+#endif
 }
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
