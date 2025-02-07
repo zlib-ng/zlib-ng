@@ -106,6 +106,11 @@ if(BASEARCH_ARM_FOUND)
     option(WITH_ARMV8 "Build with ARMv8 CRC32 intrinsics" ON)
     option(WITH_NEON "Build with NEON intrinsics" ON)
     cmake_dependent_option(WITH_ARMV6 "Build with ARMv6 SIMD" ON "NOT ARCH MATCHES \"aarch64\"" OFF)
+
+    # Provided for backward compatibility
+    if(DEFINED WITH_ACLE)
+        set(WITH_ARMV8 ${WITH_ACLE})
+    endif()
 elseif(BASEARCH_PPC_FOUND)
     option(WITH_ALTIVEC "Build with AltiVec (VMX) optimisations for PowerPC" ON)
     option(WITH_POWER8 "Build with optimisations for POWER8" ON)

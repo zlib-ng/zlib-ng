@@ -199,6 +199,8 @@ case "$1" in
     -6* | --64) build64=1; shift ;;
     --without-vpclmulqdq) buildvpclmulqdq=0; shift ;;
     --without-armv8) buildarmv8=0; shift ;;
+    # Provided for backward compatibility
+    --without-acle) buildarmv8=0; shift ;;
     --without-neon) buildneon=0; shift ;;
     --without-armv6) buildarmv6=0; shift ;;
     --without-altivec) buildaltivec=0 ; shift ;;
