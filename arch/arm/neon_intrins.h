@@ -62,6 +62,18 @@ static inline void vst1q_u16_x4(uint16_t *p, uint16x8x4_t a) {
     vst1q_u16(p + 24, a.val[3]);
 }
 #  endif // HASLD4 check
+
+#  ifndef _MSC_VER
+#    define vld1_u8_ex(p, align) vld1_u8(HINT_ALIGNED((p), (align)/8))
+#    define vld1q_u8_ex(p, align) vld1q_u8(HINT_ALIGNED((p), (align)/8))
+#    define vld1q_u64_ex(p, align) vld1q_u64(HINT_ALIGNED((p), (align)/8))
+#  endif
+#  if !defined(_MSC_VER) || !defined(ARM_NEON_HASLD4)
+#    define vld1q_u8_x4_ex(p, align) vld1q_u8_x4(HINT_ALIGNED((p), (align)/8))
+#    define vld1q_u16_x4_ex(p, align) vld1q_u16_x4(HINT_ALIGNED((p), (align)/8))
+#    define vst1q_u16_x4_ex(p, a, align) vst1q_u16_x4(HINT_ALIGNED((p), (align)/8), a)
+#  endif
+
 #endif
 
 #endif // include guard ARM_NEON_INTRINS_H

@@ -113,18 +113,18 @@ Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, con
         uint64_t vc;
 
         /* Load first 9 vector chunks (144 bytes) */
-        uint64x2_t x0 = vld1q_u64((const uint64_t*)buf2), y0;
-        uint64x2_t x1 = vld1q_u64((const uint64_t*)(buf2 + 16)), y1;
-        uint64x2_t x2 = vld1q_u64((const uint64_t*)(buf2 + 32)), y2;
-        uint64x2_t x3 = vld1q_u64((const uint64_t*)(buf2 + 48)), y3;
-        uint64x2_t x4 = vld1q_u64((const uint64_t*)(buf2 + 64)), y4;
-        uint64x2_t x5 = vld1q_u64((const uint64_t*)(buf2 + 80)), y5;
-        uint64x2_t x6 = vld1q_u64((const uint64_t*)(buf2 + 96)), y6;
-        uint64x2_t x7 = vld1q_u64((const uint64_t*)(buf2 + 112)), y7;
-        uint64x2_t x8 = vld1q_u64((const uint64_t*)(buf2 + 128)), y8;
+        uint64x2_t x0 = vld1q_u64_ex((const uint64_t*)buf2, 128), y0;
+        uint64x2_t x1 = vld1q_u64_ex((const uint64_t*)(buf2 + 16), 128), y1;
+        uint64x2_t x2 = vld1q_u64_ex((const uint64_t*)(buf2 + 32), 128), y2;
+        uint64x2_t x3 = vld1q_u64_ex((const uint64_t*)(buf2 + 48), 128), y3;
+        uint64x2_t x4 = vld1q_u64_ex((const uint64_t*)(buf2 + 64), 128), y4;
+        uint64x2_t x5 = vld1q_u64_ex((const uint64_t*)(buf2 + 80), 128), y5;
+        uint64x2_t x6 = vld1q_u64_ex((const uint64_t*)(buf2 + 96), 128), y6;
+        uint64x2_t x7 = vld1q_u64_ex((const uint64_t*)(buf2 + 112), 128), y7;
+        uint64x2_t x8 = vld1q_u64_ex((const uint64_t*)(buf2 + 128), 128), y8;
         uint64x2_t k;
         /* k = {x^144 mod P, x^144+64 mod P} for 144-byte fold */
-        { static const uint64_t ALIGNED_(16) k_[] = {0x26b70c3d, 0x3f41287a}; k = vld1q_u64(k_); }
+        { static const uint64_t ALIGNED_(16) k_[] = {0x26b70c3d, 0x3f41287a}; k = vld1q_u64_ex(k_, 128); }
         buf2 += 144;
 
         /* Fold 9 vectors + 3-way parallel scalar CRC */
@@ -144,15 +144,15 @@ Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, con
                 y8 = clmul_lo(x8, k), x8 = clmul_hi(x8, k);
 
                 /* EOR3: combine hi*k, lo*k, and new data in one instruction */
-                x0 = veor3q_u64(x0, y0, vld1q_u64((const uint64_t*)buf2));
-                x1 = veor3q_u64(x1, y1, vld1q_u64((const uint64_t*)(buf2 + 16)));
-                x2 = veor3q_u64(x2, y2, vld1q_u64((const uint64_t*)(buf2 + 32)));
-                x3 = veor3q_u64(x3, y3, vld1q_u64((const uint64_t*)(buf2 + 48)));
-                x4 = veor3q_u64(x4, y4, vld1q_u64((const uint64_t*)(buf2 + 64)));
-                x5 = veor3q_u64(x5, y5, vld1q_u64((const uint64_t*)(buf2 + 80)));
-                x6 = veor3q_u64(x6, y6, vld1q_u64((const uint64_t*)(buf2 + 96)));
-                x7 = veor3q_u64(x7, y7, vld1q_u64((const uint64_t*)(buf2 + 112)));
-                x8 = veor3q_u64(x8, y8, vld1q_u64((const uint64_t*)(buf2 + 128)));
+                x0 = veor3q_u64(x0, y0, vld1q_u64_ex((const uint64_t*)buf2, 128));
+                x1 = veor3q_u64(x1, y1, vld1q_u64_ex((const uint64_t*)(buf2 + 16), 128));
+                x2 = veor3q_u64(x2, y2, vld1q_u64_ex((const uint64_t*)(buf2 + 32), 128));
+                x3 = veor3q_u64(x3, y3, vld1q_u64_ex((const uint64_t*)(buf2 + 48), 128));
+                x4 = veor3q_u64(x4, y4, vld1q_u64_ex((const uint64_t*)(buf2 + 64), 128));
+                x5 = veor3q_u64(x5, y5, vld1q_u64_ex((const uint64_t*)(buf2 + 80), 128));
+                x6 = veor3q_u64(x6, y6, vld1q_u64_ex((const uint64_t*)(buf2 + 96), 128));
+                x7 = veor3q_u64(x7, y7, vld1q_u64_ex((const uint64_t*)(buf2 + 112), 128));
+                x8 = veor3q_u64(x8, y8, vld1q_u64_ex((const uint64_t*)(buf2 + 128), 128));
 
                 /* 3-way parallel scalar CRC (16 bytes each) */
                 crc0 = __crc32d(crc0, *(const uint64_t*)buf);
@@ -168,7 +168,7 @@ Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, con
 
         /* Reduce 9 vectors to 1 using tree reduction */
         /* Step 1: x0 = fold(x0, x1), shift x2..x8 down */
-        { static const uint64_t ALIGNED_(16) k_[] = {0xae689191, 0xccaa009e}; k = vld1q_u64(k_); }
+        { static const uint64_t ALIGNED_(16) k_[] = {0xae689191, 0xccaa009e}; k = vld1q_u64_ex(k_, 128); }
         y0 = clmul_lo(x0, k), x0 = clmul_hi(x0, k);
         x0 = veor3q_u64(x0, y0, x1);
         x1 = x2, x2 = x3, x3 = x4, x4 = x5, x5 = x6, x6 = x7, x7 = x8;
@@ -184,14 +184,14 @@ Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, con
         x6 = veor3q_u64(x6, y6, x7);
 
         /* Step 3: fold pairs (x0,x2), (x4,x6) */
-        { static const uint64_t ALIGNED_(16) k_[] = {0xf1da05aa, 0x81256527}; k = vld1q_u64(k_); }
+        { static const uint64_t ALIGNED_(16) k_[] = {0xf1da05aa, 0x81256527}; k = vld1q_u64_ex(k_, 128); }
         y0 = clmul_lo(x0, k), x0 = clmul_hi(x0, k);
         y4 = clmul_lo(x4, k), x4 = clmul_hi(x4, k);
         x0 = veor3q_u64(x0, y0, x2);
         x4 = veor3q_u64(x4, y4, x6);
 
         /* Step 4: final fold (x0, x4) -> x0 */
-        { static const uint64_t ALIGNED_(16) k_[] = {0x8f352d95, 0x1d9513d7}; k = vld1q_u64(k_); }
+        { static const uint64_t ALIGNED_(16) k_[] = {0x8f352d95, 0x1d9513d7}; k = vld1q_u64_ex(k_, 128); }
         y0 = clmul_lo(x0, k), x0 = clmul_hi(x0, k);
         x0 = veor3q_u64(x0, y0, x4);
 
