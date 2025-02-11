@@ -1,5 +1,5 @@
 /* inftrees.c -- generate Huffman trees for efficient decoding
- * Copyright (C) 1995-2024 Mark Adler
+ * Copyright (C) 1995-2025 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -7,7 +7,7 @@
 #include "zutil.h"
 #include "inftrees.h"
 
-const char PREFIX(inflate_copyright)[] = " inflate 1.3.1 Copyright 1995-2024 Mark Adler ";
+const char PREFIX(inflate_copyright)[] = " inflate 1.3.1 Copyright 1995-2025 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
