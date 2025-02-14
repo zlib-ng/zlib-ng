@@ -80,6 +80,8 @@ OBJZ = \
 	arch/generic/chunkset_c.o \
 	arch/generic/compare256_c.o \
 	arch/generic/crc32_braid_c.o \
+	arch/generic/crc32_c.o \
+	arch/generic/crc32_chorba_c.o \
 	arch/generic/crc32_fold_c.o \
 	arch/generic/slide_hash_c.o \
 	adler32.o \
@@ -120,6 +122,8 @@ PIC_OBJZ = \
 	arch/generic/chunkset_c.lo \
 	arch/generic/compare256_c.lo \
 	arch/generic/crc32_braid_c.lo \
+	arch/generic/crc32_c.lo \
+	arch/generic/crc32_chorba_c.lo \
 	arch/generic/crc32_fold_c.lo \
 	arch/generic/slide_hash_c.lo \
 	adler32.lo \

@@ -202,12 +202,12 @@ uint32_t Z_INTERNAL crc32_s390_vx(uint32_t crc, const unsigned char *buf, size_t
     size_t prealign, aligned, remaining;
 
     if (len < VX_MIN_LEN + VX_ALIGN_MASK)
-        return PREFIX(crc32_braid)(crc, buf, len);
+        return PREFIX(crc32_c)(crc, buf, len);
 
     if ((uintptr_t)buf & VX_ALIGN_MASK) {
         prealign = VX_ALIGNMENT - ((uintptr_t)buf & VX_ALIGN_MASK);
         len -= prealign;
-        crc = PREFIX(crc32_braid)(crc, buf, prealign);
+        crc = PREFIX(crc32_c)(crc, buf, prealign);
         buf += prealign;
     }
     aligned = len & ~VX_ALIGN_MASK;
@@ -216,7 +216,7 @@ uint32_t Z_INTERNAL crc32_s390_vx(uint32_t crc, const unsigned char *buf, size_t
     crc = crc32_le_vgfm_16(crc ^ 0xffffffff, buf, aligned) ^ 0xffffffff;
 
     if (remaining)
-        crc = PREFIX(crc32_braid)(crc, buf + aligned, remaining);
+        crc = PREFIX(crc32_c)(crc, buf + aligned, remaining);
 
     return crc;
 }

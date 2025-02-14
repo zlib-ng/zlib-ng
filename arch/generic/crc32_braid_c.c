@@ -59,11 +59,7 @@ static z_word_t crc_word(z_word_t data) {
 #endif /* W */
 
 /* ========================================================================= */
-Z_INTERNAL uint32_t PREFIX(crc32_braid)(uint32_t crc, const uint8_t *buf, size_t len) {
-    uint32_t c;
-
-    /* Pre-condition the CRC */
-    c = (~crc) & 0xffffffff;
+Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t len) {
 
 #ifdef W
     /* If provided enough bytes, do a braided CRC calculation. */
@@ -210,6 +206,15 @@ Z_INTERNAL uint32_t PREFIX(crc32_braid)(uint32_t crc, const uint8_t *buf, size_t
         len--;
         DO1;
     }
+
+    /* Return the CRC, post-conditioned. */
+    return c;
+}
+
+uint32_t PREFIX(crc32_braid)(uint32_t c, const uint8_t *buf, size_t len) {
+    c = (~c) & 0xffffffff;
+
+    c = crc32_braid_internal(c, buf, len);
 
     /* Return the CRC, post-conditioned. */
     return c ^ 0xffffffff;

@@ -54,7 +54,7 @@ static void init_functable(void) {
     ft.adler32_fold_copy = &adler32_fold_copy_c;
     ft.chunkmemset_safe = &chunkmemset_safe_c;
     ft.chunksize = &chunksize_c;
-    ft.crc32 = &PREFIX(crc32_braid);
+    ft.crc32 = &PREFIX(crc32_c);
     ft.crc32_fold = &crc32_fold_c;
     ft.crc32_fold_copy = &crc32_fold_copy_c;
     ft.crc32_fold_final = &crc32_fold_final_c;

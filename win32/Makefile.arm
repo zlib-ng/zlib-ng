@@ -59,6 +59,8 @@ OBJS = \
 	crc32.obj \
 	crc32_braid_c.obj \
 	crc32_braid_comb.obj \
+	crc32_c.obj \
+	crc32_chorba_c.obj \
 	crc32_fold_c.obj \
 	deflate.obj \
 	deflate_fast.obj \
@@ -210,6 +212,8 @@ cpu_features.obj: $(TOP)/cpu_features.c $(TOP)/cpu_features.h $(TOP)/zbuild.h
 crc32.obj: $(TOP)/crc32.c $(TOP)/zbuild.h $(TOP)/functable.h $(TOP)/crc32_braid_tbl.h
 crc32_braid_c.obj: $(TOP)/arch/generic/crc32_braid_c.c $(TOP)/zbuild.h $(TOP)/crc32_braid_p.h $(TOP)/crc32_braid_tbl.h
 crc32_braid_comb.obj: $(TOP)/crc32_braid_comb.c $(TOP)/zutil.h $(TOP)/crc32_braid_p.h $(TOP)/crc32_braid_tbl.h $(TOP)/crc32_braid_comb_p.h
+crc32_c.obj: $(TOP)/arch/generic/crc32_c.c $(TOP)/zbuild.h $(TOP)/crc32_braid_p.h
+crc32_chorba_c.obj: $(TOP)/arch/generic/crc32_chorba_c.c $(TOP)/zbuild.h $(TOP)/crc32_braid_p.h $(TOP)/crc32_braid_tbl.h
 crc32_fold_c.obj: $(TOP)/arch/generic/crc32_fold_c.c $(TOP)/zbuild.h $(TOP)/crc32.h $(TOP)/functable.h $(TOP)/zutil.h
 deflate.obj: $(TOP)/deflate.c $(TOP)/zbuild.h $(TOP)/deflate.h $(TOP)/deflate_p.h $(TOP)/functable.h
 deflate_fast.obj: $(TOP)/deflate_fast.c $(TOP)/zbuild.h $(TOP)/deflate.h $(TOP)/deflate_p.h $(TOP)/functable.h

@@ -224,6 +224,7 @@ INSTANTIATE_TEST_SUITE_P(crc32, crc32_variant, testing::ValuesIn(tests));
         hash(GetParam(), func); \
     }
 
+TEST_CRC32(generic, PREFIX(crc32_c), 1)
 TEST_CRC32(braid, PREFIX(crc32_braid), 1)
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION

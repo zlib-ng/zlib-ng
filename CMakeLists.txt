@@ -1121,6 +1121,8 @@ set(ZLIB_SRCS
     arch/generic/chunkset_c.c
     arch/generic/compare256_c.c
     arch/generic/crc32_braid_c.c
+    arch/generic/crc32_c.c
+    arch/generic/crc32_chorba_c.c
     arch/generic/crc32_fold_c.c
     arch/generic/slide_hash_c.c
     adler32.c
