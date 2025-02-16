@@ -89,4 +89,40 @@ static inline __m512i _mm512_zextsi128_si512(__m128i a) {
 #  undef _mm512_extracti32x4_epi32
 #  define _mm512_extracti32x4_epi32(v1, e1) _mm512_maskz_extracti32x4_epi32(UINT8_MAX, v1, e1)
 #endif
+
+#if defined(_MSC_VER) && !defined(__clang__)
+#include <intrin.h>
+/* For whatever reason this intrinsic is 64 bit only with MSVC?
+ * While we don't have 64 bit GPRs, it should at least be able to move it to stack
+ * or shuffle it over 2 registers */
+#if !defined(_M_AMD64)
+/* So, while we can't move directly to a GPR, hopefully this move to
+ * a stack resident variable doesn't equate to something awful */
+static inline int64_t _mm_cvtsi128_si64x(__m128i a) {
+    union { __m128i v; int64_t i; } u;
+    u.v = a;
+    return u.i;
+}
+
+static inline __m128i _mm_cvtsi64x_si128(int64_t a) {
+   return _mm_set_epi64x(0, a);
+}
+#endif
+#endif
+
+
+#if defined(__clang__)
+#define _mm_cvtsi64x_si128(v) _mm_cvtsi64_si128(v)
+#define _mm_cvtsi128_si64x(v) _mm_cvtsi128_si64(v)
+#endif
+
+#if defined(__GNUC__) && !defined( __x86_64__) && !defined(__clang__)
+static inline int64_t _mm_cvtsi128_si64x(__m128i a) {
+    union { __m128i v; int64_t i; } u;
+    u.v = a;
+    return u.i;
+}
+#define _mm_cvtsi64x_si128(a) _mm_set_epi64x(0, a)
+#endif
+
 #endif // include guard X86_INTRINS_H

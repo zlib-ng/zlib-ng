@@ -6,6 +6,14 @@
 #ifndef X86_FUNCTIONS_H_
 #define X86_FUNCTIONS_H_
 
+/* So great news, your compiler is broken and causes stack smashing. Rather than
+ * notching out its compilation we'll just remove the assignment in the functable.
+ * Further context:
+ * https://developercommunity.visualstudio.com/t/Stack-corruption-with-v142-toolchain-whe/10853479 */
+#if defined(_MSC_VER) && !defined(_M_AMD64) && _MSC_VER >= 1920 && _MSC_VER <= 1929
+#define NO_CHORBA_SSE2
+#endif
+
 #ifdef X86_SSE2
 uint32_t chunksize_sse2(void);
 uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
@@ -17,6 +25,9 @@ uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, unsigned len, unsign
     void slide_hash_sse2(deflate_state *s);
 #  endif
     void inflate_fast_sse2(PREFIX3(stream)* strm, uint32_t start);
+#   if !defined(WITHOUT_CHORBA)
+    uint32_t crc32_chorba_sse2(uint32_t crc32, const uint8_t *buf, size_t len);
+#   endif
 #endif
 
 #ifdef X86_SSSE3
@@ -70,7 +81,6 @@ uint32_t crc32_fold_vpclmulqdq_final(crc32_fold *crc);
 uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #endif
 
-
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // X86 - SSE2
 #  if (defined(X86_SSE2) && defined(__SSE2__)) || defined(__x86_64__) || defined(_M_X64) || defined(X86_NOCHECK_SSE2)
@@ -89,6 +99,10 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #      define native_longest_match longest_match_sse2
 #      undef native_longest_match_slow
 #      define native_longest_match_slow longest_match_slow_sse2
+#      if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE2)
+#          undef native_crc32
+#          define native_crc32 crc32_chorba_sse2
+#      endif
 #    endif
 #endif
 // X86 - SSSE3

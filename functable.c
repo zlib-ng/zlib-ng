@@ -75,6 +75,9 @@ static void init_functable(void) {
     {
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
         ft.chunksize = &chunksize_sse2;
+#if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE2)
+        ft.crc32 = &crc32_chorba_sse2;
+#endif
         ft.inflate_fast = &inflate_fast_sse2;
         ft.slide_hash = &slide_hash_sse2;
 #  ifdef HAVE_BUILTIN_CTZ

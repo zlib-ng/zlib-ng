@@ -68,6 +68,12 @@ BENCHMARK_CRC32(braid, crc32_braid, 1);
 BENCHMARK_CRC32(native, native_crc32, 1);
 #else
 
+#ifndef WITHOUT_CHORBA
+#   if defined(X86_SSE2) && !defined(NO_CHORBA_SSE2)
+    BENCHMARK_CRC32(chorba_sse2, crc32_chorba_sse2, test_cpu_features.x86.has_sse2);
+#   endif
+#endif
+
 #ifdef ARM_CRC32
 BENCHMARK_CRC32(armv8, crc32_armv8, test_cpu_features.arm.has_crc32);
 #endif

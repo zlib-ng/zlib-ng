@@ -34,6 +34,7 @@ all: \
 	chunkset_avx512.o chunkset_avx512.lo \
 	chunkset_sse2.o chunkset_sse2.lo \
 	chunkset_ssse3.o chunkset_ssse3.lo \
+	chorba_sse2.o chorba_sse2.lo \
 	compare256_avx2.o compare256_avx2.lo \
 	compare256_sse2.o compare256_sse2.lo \
 	crc32_pclmulqdq.o crc32_pclmulqdq.lo \
@@ -70,6 +71,12 @@ chunkset_ssse3.o:
 
 chunkset_ssse3.lo:
 	$(CC) $(SFLAGS) $(SSSE3FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_ssse3.c
+
+chorba_sse2.o:
+	$(CC) $(CFLAGS) $(SSE2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chorba_sse2.c
+
+chorba_sse2.lo:
+	$(CC) $(CFLAGS) $(SSE2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chorba_sse2.c
 
 compare256_avx2.o:
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_avx2.c

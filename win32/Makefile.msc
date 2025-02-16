@@ -60,6 +60,7 @@ OBJS = \
 	chunkset_avx2.obj \
 	chunkset_sse2.obj \
 	chunkset_ssse3.obj \
+    chorba_sse2.obj \
 	compare256_c.obj \
 	compare256_avx2.obj \
 	compare256_sse2.obj \
@@ -210,6 +211,7 @@ adler32_sse42.obj: $(TOP)/arch/x86/adler32_sse42.c $(TOP)/zbuild.h $(TOP)/adler3
 adler32_ssse3.obj: $(TOP)/arch/x86/adler32_ssse3.c $(TOP)/zbuild.h $(TOP)/adler32_p.h \
                    $(TOP)/arch/x86/adler32_ssse3_p.h
 adler32_fold_c.obj: $(TOP)/arch/generic/adler32_fold_c.c $(TOP)/zbuild.h $(TOP)/functable.h
+chorba_sse2.obj: $(TOP)/arch/x86/chorba_sse2.c $(TOP)/zbuild.h $(TOP)/crc32_braid_tbl.h $(TOP)/crc32_braid_p.h
 chunkset_c.obj: $(TOP)/arch/generic/chunkset_c.c $(TOP)/zbuild.h $(TOP)/chunkset_tpl.h $(TOP)/inffast_tpl.h
 chunkset_avx2.obj: $(TOP)/arch/x86/chunkset_avx2.c $(TOP)/zbuild.h $(TOP)/chunkset_tpl.h $(TOP)/inffast_tpl.h $(TOP)/arch/generic/chunk_permute_table.h
 chunkset_sse2.obj: $(TOP)/arch/x86/chunkset_sse2.c $(TOP)/zbuild.h $(TOP)/chunkset_tpl.h $(TOP)/inffast_tpl.h
