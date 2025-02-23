@@ -714,6 +714,18 @@ else
 fi
 echo >> configure.log
 
+# Check for -Wunguarded-availability-new compiler support
+echo "" > test.c
+  cat > $test.c <<EOF
+int main() { return 0; }
+EOF
+if $cc $CFLAGS -Wunguarded-availability-new -c $test.c >> configure.log 2>&1; then
+  echo "Checking for -Wunguarded-availability-new... Yes." | tee -a configure.log
+  TEST_ALIGNED_ALLOC_FLAGS="$TEST_ALIGNED_ALLOC_FLAGS -Wunguarded-availability-new -Werror"
+else
+  echo "Checking for -Wunguarded-availability-new... No." | tee -a configure.log
+fi
+
 cat > $test.c <<EOF
 #define _ISOC11_SOURCE 1
 #include <stdlib.h>
@@ -724,7 +736,7 @@ int main(void) {
   return 0;
 }
 EOF
-if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
+if try $CC $CFLAGS $TEST_ALIGNED_ALLOC_FLAGS -o $test $test.c $LDSHAREDLIBC; then
   echo "Checking for aligned_alloc... Yes." | tee -a configure.log
   CFLAGS="${CFLAGS} -DHAVE_ALIGNED_ALLOC"
   SFLAGS="${SFLAGS} -DHAVE_ALIGNED_ALLOC"

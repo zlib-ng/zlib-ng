@@ -570,6 +570,13 @@ jobs:
             cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF
             codecov: win64_gcc_compat_no_opt
 
+          - name: macOS Clang (Target 10.10)
+            os: macos-13
+            compiler: clang
+            cxx-compiler: clang++
+            cmake-args: -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10
+            ldflags: -ld_classic
+
           - name: macOS Clang ASAN
             os: macos-13
             compiler: clang
