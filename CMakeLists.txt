@@ -363,6 +363,21 @@ if(MSVC)
 endif()
 
 #
+# Additional flags for features checking
+#
+set(ADDITIONAL_CHECK_FLAGS )
+if(APPLE)
+    check_c_compiler_flag(-Werror=unguarded-availability HAVE_W_ERROR_UNGUARDED_AVAILABILITY)
+    if(HAVE_W_ERROR_UNGUARDED_AVAILABILITY)
+        set(ADDITIONAL_CHECK_FLAGS "${ADDITIONAL_CHECK_FLAGS} -Werror=unguarded-availability")
+    endif()
+    check_c_compiler_flag(-Werror=unguarded-availability-new HAVE_W_ERROR_UNGUARDED_AVAILABILITY_NEW)
+    if(HAVE_W_ERROR_UNGUARDED_AVAILABILITY_NEW)
+        set(ADDITIONAL_CHECK_FLAGS "${ADDITIONAL_CHECK_FLAGS} -Werror=unguarded-availability-new")
+    endif()
+endif()
+
+#
 # Check for standard/system includes
 #
 check_include_file(arm_acle.h  HAVE_ARM_ACLE_H)
@@ -407,31 +422,31 @@ set(CMAKE_REQUIRED_DEFINITIONS) # clear variable
 #
 # Check for fseeko and other optional functions
 #
+set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
 check_function_exists(fseeko HAVE_FSEEKO)
 if(NOT HAVE_FSEEKO)
     add_definitions(-DNO_FSEEKO)
 endif()
+set(CMAKE_REQUIRED_FLAGS)
 
+set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
 check_function_exists(strerror HAVE_STRERROR)
 if(NOT HAVE_STRERROR)
     add_definitions(-DNO_STRERROR)
 endif()
+set(CMAKE_REQUIRED_FLAGS)
 
 set(CMAKE_REQUIRED_DEFINITIONS -D_POSIX_C_SOURCE=200112L)
+set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
 check_symbol_exists(posix_memalign stdlib.h HAVE_POSIX_MEMALIGN)
 if(HAVE_POSIX_MEMALIGN)
     add_definitions(-DHAVE_POSIX_MEMALIGN)
 endif()
+set(CMAKE_REQUIRED_FLAGS)
 set(CMAKE_REQUIRED_DEFINITIONS)
 
 set(CMAKE_REQUIRED_DEFINITIONS -D_ISOC11_SOURCE=1)
-set(CMAKE_REQUIRED_FLAGS)
-if(APPLE)
-    check_c_compiler_flag(-Wunguarded-availability-new HAVE_W_UNGUARDED_AVAILABILITY_NEW)
-    if(HAVE_W_UNGUARDED_AVAILABILITY_NEW)
-        set(CMAKE_REQUIRED_FLAGS "-Wunguarded-availability-new -Werror")
-    endif()
-endif()
+set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
 check_symbol_exists(aligned_alloc stdlib.h HAVE_ALIGNED_ALLOC)
 if(HAVE_ALIGNED_ALLOC)
     add_definitions(-DHAVE_ALIGNED_ALLOC)
