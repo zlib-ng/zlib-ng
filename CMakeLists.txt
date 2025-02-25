@@ -600,13 +600,6 @@ if(MSVC)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
 endif()
 
-if(BASEARCH_X86_FOUND)
-    # FORCE_SSE2 option will only be shown if HAVE_SSE2_INTRIN is true
-    if("${ARCH}" MATCHES "i[3-6]86")
-        cmake_dependent_option(FORCE_SSE2 "Always assume CPU is SSE2 capable" OFF "HAVE_SSE2_INTRIN" OFF)
-    endif()
-endif()
-
 #
 # Enable deflate_quick at level 1
 #
@@ -925,6 +918,10 @@ if(WITH_OPTIM)
         endif()
         if(WITH_SSE2)
             check_sse2_intrinsics()
+            # FORCE_SSE2 option will only be shown if HAVE_SSE2_INTRIN is true
+            if("${ARCH}" MATCHES "i[3-6]86")
+                cmake_dependent_option(FORCE_SSE2 "Always assume CPU is SSE2 capable" OFF "HAVE_SSE2_INTRIN" OFF)
+            endif()
             if(HAVE_SSE2_INTRIN)
                 add_definitions(-DX86_SSE2)
                 set(SSE2_SRCS ${ARCHDIR}/chunkset_sse2.c ${ARCHDIR}/compare256_sse2.c ${ARCHDIR}/slide_hash_sse2.c)
