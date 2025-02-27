@@ -130,11 +130,11 @@ typedef struct zng_gz_header_s {
     int32_t         xflags;     /* extra flags (not used when writing a gzip file) */
     int32_t         os;         /* operating system */
     uint8_t         *extra;     /* pointer to extra field or NULL if none */
+    uint8_t         *name;      /* pointer to zero-terminated file name or NULL */
+    uint8_t         *comment;   /* pointer to zero-terminated comment or NULL */
     uint32_t        extra_len;  /* extra field length (valid if extra != NULL) */
     uint32_t        extra_max;  /* space at extra (only when reading header) */
-    uint8_t         *name;      /* pointer to zero-terminated file name or NULL */
     uint32_t        name_max;   /* space at name (only when reading header) */
-    uint8_t         *comment;   /* pointer to zero-terminated comment or NULL */
     uint32_t        comm_max;   /* space at comment (only when reading header) */
     int32_t         hcrc;       /* true if there was or will be a header crc */
     int32_t         done;       /* true when done reading gzip header (not used when writing a gzip file) */
@@ -1812,9 +1812,9 @@ typedef enum {
 } zng_deflate_param;
 
 typedef struct {
-    zng_deflate_param param;  /* parameter ID */
     void   *buf;              /* parameter value */
     size_t  size;             /* parameter value size */
+    zng_deflate_param param;  /* parameter ID */
     int32_t status;           /* result of the last set/get call */
 } zng_deflate_param_value;
 
