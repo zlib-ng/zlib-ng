@@ -15,7 +15,7 @@ RUN     cd /tmp && \
         git clone -q https://github.com/actions/runner && \
         cd runner && \
         git checkout $(git describe --tags $(git rev-list --tags --max-count=1)) -b build && \
-        wget https://github.com/anup-kodlekere/gaplib/raw/refs/heads/main/build-files/runner-sdk-8.patch && \
+        wget https://github.com/anup-kodlekere/gaplib/raw/refs/heads/main/patches/runner-main-sdk8-s390x.patch -O runner-sdk-8.patch && \
         git apply runner-sdk-8.patch && \
         sed -i'' -e /version/s/8......\"$/$8.0.100\"/ src/global.json
 
