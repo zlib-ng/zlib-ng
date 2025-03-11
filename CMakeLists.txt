@@ -447,6 +447,9 @@ if(NOT HAVE_STRERROR)
 endif()
 set(CMAKE_REQUIRED_FLAGS)
 
+#
+# Check for aligned memory allocation support: POSIX
+#
 set(CMAKE_REQUIRED_DEFINITIONS -D_POSIX_C_SOURCE=200112L)
 set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
 check_symbol_exists(posix_memalign stdlib.h HAVE_POSIX_MEMALIGN)
@@ -456,6 +459,9 @@ endif()
 set(CMAKE_REQUIRED_FLAGS)
 set(CMAKE_REQUIRED_DEFINITIONS)
 
+#
+# Check for aligned memory allocation support: C11
+#
 set(CMAKE_REQUIRED_DEFINITIONS -D_ISOC11_SOURCE=1)
 set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
 check_symbol_exists(aligned_alloc stdlib.h HAVE_ALIGNED_ALLOC)
@@ -465,6 +471,28 @@ endif()
 set(CMAKE_REQUIRED_FLAGS)
 set(CMAKE_REQUIRED_DEFINITIONS)
 
+#
+# Check for aligned memory allocation support: GNU extension
+# Note: memalign() is deprecated in glibc
+#
+check_symbol_exists(memalign malloc.h HAVE_MEMALIGN)
+if(HAVE_MEMALIGN)
+    add_definitions(-DHAVE_MEMALIGN)
+endif()
+set(CMAKE_REQUIRED_DEFINITIONS)
+
+#
+# Check for aligned memory allocation support: MSVC extensions
+#
+check_symbol_exists(_aligned_malloc malloc.h HAVE__ALIGNED_MALLOC)
+if(HAVE__ALIGNED_MALLOC)
+    add_definitions(-DHAVE__ALIGNED_MALLOC)
+endif()
+set(CMAKE_REQUIRED_DEFINITIONS)
+
+#
+# Check whether a sanitizer was requested
+#
 if(WITH_SANITIZER STREQUAL "Address")
     add_address_sanitizer()
 elseif(WITH_SANITIZER STREQUAL "Memory")

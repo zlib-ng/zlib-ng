@@ -724,6 +724,8 @@ EOF
 fi
 echo >> configure.log
 
+
+# check for aligned memory allocation support: POSIX
 cat > $test.c <<EOF
 #define _POSIX_C_SOURCE 200112L
 #include <stdlib.h>
@@ -744,6 +746,7 @@ else
 fi
 echo >> configure.log
 
+# check for aligned memory allocation support: C11
 cat > $test.c <<EOF
 #define _ISOC11_SOURCE 1
 #include <stdlib.h>
@@ -762,6 +765,47 @@ else
   echo "Checking for aligned_alloc... No." | tee -a configure.log
 fi
 echo >> configure.log
+
+
+# check for aligned memory allocation support: GNU extension
+# Note: memalign() is deprecated in glibc
+cat > $test.c <<EOF
+#include <malloc.h>
+int main(void) {
+  void *ptr = memalign(64, 10);
+  if (ptr)
+    free(ptr);
+  return 0;
+}
+EOF
+if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
+  echo "Checking for memalign... Yes." | tee -a configure.log
+  CFLAGS="${CFLAGS} -DHAVE_MEMALIGN"
+  SFLAGS="${SFLAGS} -DHAVE_MEMALIGN"
+else
+  echo "Checking for memalign... No." | tee -a configure.log
+fi
+echo >> configure.log
+
+# check for aligned memory allocation support: MSVC extensions
+cat > $test.c <<EOF
+#include <malloc.h>
+int main(void) {
+  void *ptr = _aligned_malloc(10, 64);
+  if (ptr)
+    _aligned_free(ptr);
+  return 0;
+}
+EOF
+if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
+  echo "Checking for _aligned_malloc... Yes." | tee -a configure.log
+  CFLAGS="${CFLAGS} -DHAVE__ALIGNED_MALLOC"
+  SFLAGS="${SFLAGS} -DHAVE__ALIGNED_MALLOC"
+else
+  echo "Checking for _aligned_malloc... No." | tee -a configure.log
+fi
+echo >> configure.log
+
 
 # check for strerror() for use by gz* functions
 cat > $test.c <<EOF
