@@ -11,7 +11,7 @@
  * Further context:
  * https://developercommunity.visualstudio.com/t/Stack-corruption-with-v142-toolchain-whe/10853479 */
 #if defined(_MSC_VER) && !defined(_M_AMD64) && _MSC_VER >= 1920 && _MSC_VER <= 1929
-#define NO_CHORBA_SSE2
+#define NO_CHORBA_SSE
 #endif
 
 #ifdef X86_SSE2
@@ -34,6 +34,12 @@ uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, unsigned len, unsign
 uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len);
 uint8_t* chunkmemset_safe_ssse3(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 void inflate_fast_ssse3(PREFIX3(stream) *strm, uint32_t start);
+#endif
+
+#ifdef X86_SSE41
+#   if !defined(WITHOUT_CHORBA)
+    uint32_t crc32_chorba_sse41(uint32_t crc32, const uint8_t *buf, size_t len);
+#   endif
 #endif
 
 #ifdef X86_SSE42
@@ -104,7 +110,7 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #      define native_longest_match longest_match_sse2
 #      undef native_longest_match_slow
 #      define native_longest_match_slow longest_match_slow_sse2
-#      if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE2)
+#      if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE)
 #          undef native_crc32
 #          define native_crc32 crc32_chorba_sse2
 #      endif
@@ -119,6 +125,10 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_ssse3
 #  endif
+#  if !defined(WITHOUT_CHORBA) && defined(X86_SSE41) && defined(__SSE4_1__) && !defined(NO_CHORBA_SSE)
+#   undef native_crc32
+#   define native_crc32 crc32_chorba_sse41
+#   endif
 // X86 - SSE4.2
 #  if defined(X86_SSE42) && defined(__SSE4_2__)
 #    undef native_adler32_fold_copy

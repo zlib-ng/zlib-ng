@@ -13,6 +13,7 @@ AVX512VNNIFLAG=-mavx512vnni -mbmi2
 AVX2FLAG=-mavx2 -mbmi2
 SSE2FLAG=-msse2
 SSSE3FLAG=-mssse3
+SSE41FLAG=-msse4.1
 SSE42FLAG=-msse4.2
 PCLMULFLAG=-mpclmul
 VPCLMULFLAG=-mvpclmulqdq
@@ -35,6 +36,7 @@ all: \
 	chunkset_sse2.o chunkset_sse2.lo \
 	chunkset_ssse3.o chunkset_ssse3.lo \
 	chorba_sse2.o chorba_sse2.lo \
+	chorba_sse41.o chorba_sse41.lo \
 	compare256_avx2.o compare256_avx2.lo \
 	compare256_avx512.o compare256_avx512.lo \
 	compare256_sse2.o compare256_sse2.lo \
@@ -78,6 +80,12 @@ chorba_sse2.o:
 
 chorba_sse2.lo:
 	$(CC) $(CFLAGS) $(SSE2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chorba_sse2.c
+
+chorba_sse41.o:
+	$(CC) $(CFLAGS) $(SSE41FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chorba_sse41.c
+
+chorba_sse41.lo:
+	$(CC) $(CFLAGS) $(SSE41FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chorba_sse41.c
 
 compare256_avx2.o:
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_avx2.c

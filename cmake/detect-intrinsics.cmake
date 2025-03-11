@@ -565,6 +565,29 @@ macro(check_ssse3_intrinsics)
     )
 endmacro()
 
+macro(check_sse41_intrinsics)
+    if(NOT NATIVEFLAG)
+        if(CMAKE_C_COMPILER_ID MATCHES "Intel")
+            if(CMAKE_HOST_UNIX OR APPLE)
+                set(SSE41FLAG "-msse4.1")
+            else()
+                set(SSE41FLAG "/arch:SSE4.1")
+            endif()
+        elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+            set(SSE41FLAG "-msse4.1")
+        endif()
+    endif()
+    # Check whether compiler supports SSE4.1 intrinsics
+    set(CMAKE_REQUIRED_FLAGS "${SSE41FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+    check_c_source_compiles(
+        "#include <smmintrin.h>
+        __m128i f(__m128i a, __m128i b) { return _mm_min_epi32(a, b); }
+        int main(void) { return 0; }"
+        HAVE_SSE41_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
 macro(check_sse42_intrinsics)
     if(NOT NATIVEFLAG)
         if(CMAKE_C_COMPILER_ID MATCHES "Intel")

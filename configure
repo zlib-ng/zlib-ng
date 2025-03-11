@@ -111,6 +111,7 @@ avx512vnniflag="${avx512flag} -mavx512vnni"
 avx2flag="-mavx2 -mbmi2"
 sse2flag="-msse2"
 ssse3flag="-mssse3"
+sse41flag="-msse4.1"
 sse42flag="-msse4.2"
 pclmulflag="-mpclmul"
 vpclmulflag="-mvpclmulqdq -mavx512f"
@@ -1535,6 +1536,22 @@ EOF
     fi
 }
 
+check_sse41_intrinsics() {
+    # Check whether compiler supports SSE4.1 intrinsics
+    cat > $test.c << EOF
+#include <smmintrin.h>
+__m128i f(__m128i a, __m128i b) { return _mm_min_epi32(a, b); }
+int main(void) { return 0; }
+EOF
+    if try ${CC} ${CFLAGS} ${sse41flag} $test.c; then
+        echo "Checking for SSE4.1 intrinsics ... Yes." | tee -a configure.log
+        HAVE_SSE41_INTRIN=1
+    else
+        echo "Checking for SSE4.1 intrinsics ... No." | tee -a configure.log
+        HAVE_SSE41_INTRIN=0
+    fi
+}
+
 check_sse42_intrinsics() {
     # Check whether compiler supports SSE4.2 intrinsics
     cat > $test.c << EOF
@@ -1660,6 +1677,15 @@ case "${ARCH}" in
                 SFLAGS="${SFLAGS} -DX86_SSSE3"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_ssse3.o chunkset_ssse3.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_ssse3.lo chunkset_ssse3.lo"
+            fi
+
+            check_sse41_intrinsics
+
+            if test ${HAVE_SSE41_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_SSE41"
+                SFLAGS="${SFLAGS} -DX86_SSE41"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chorba_sse41.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chorba_sse41.lo"
             fi
 
             check_sse42_intrinsics
@@ -2208,6 +2234,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^AVX512VNNIFLAG *=/s#=.*#=$avx512vnniflag#
 /^SSE2FLAG *=/s#=.*#=$sse2flag#
 /^SSSE3FLAG *=/s#=.*#=$ssse3flag#
+/^SSE41FLAG *=/s#=.*#=$sse41flag#
 /^SSE42FLAG *=/s#=.*#=$sse42flag#
 /^PCLMULFLAG *=/s#=.*#=$pclmulflag#
 /^VPCLMULFLAG *=/s#=.*#=$vpclmulflag#
