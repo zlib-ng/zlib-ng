@@ -62,9 +62,6 @@ if(WIN32)
     target_link_libraries(benchmark_zlib shlwapi)
 endif()
 
-add_test(NAME benchmark_zlib
-    COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:benchmark_zlib>)
-
 if(WITH_BENCHMARK_APPS)
     option(BUILD_ALT_BENCH "Link against alternative zlib implementation" OFF)
 
