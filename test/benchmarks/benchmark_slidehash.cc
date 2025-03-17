@@ -55,6 +55,7 @@ public:
     void TearDown(const ::benchmark::State& state) {
         zng_free(l0);
         zng_free(l1);
+        free(s_g);
     }
 };
 
