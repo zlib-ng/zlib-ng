@@ -19,15 +19,9 @@ jobs:
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DWITH_SANITIZER=Address
+            cxxflags: -Wno-maybe-uninitialized
+            cmake-args: -DWITH_SANITIZER=Address -DWITH_BENCHMARKS=ON
             codecov: ubuntu_gcc
-
-          - name: Ubuntu GCC Benchmark
-            os: ubuntu-latest
-            compiler: gcc
-            cxx-compiler: g++
-            cmake-args: -DWITH_BENCHMARKS=ON
-            codecov: ubuntu_gcc_benchmark
 
           - name: Ubuntu GCC Native Instructions
             os: ubuntu-latest
@@ -88,7 +82,7 @@ jobs:
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_SHARED_LINKER_FLAGS=-m32 -DCMAKE_EXE_LINKER_FLAGS=-m32
+            cmake-args: -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_SHARED_LINKER_FLAGS=-m32 -DCMAKE_EXE_LINKER_FLAGS=-m32 -DWITH_BENCHMARKS=ON
             packages: gcc-multilib g++-multilib
             codecov: ubuntu_gcc_m32
 
@@ -159,7 +153,8 @@ jobs:
 
           - name: Ubuntu GCC ARM HF ASAN
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_SANITIZER=Address
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_SANITIZER=Address -DWITH_BENCHMARKS=ON
+            cxxflags: -Wno-psabi -Wno-maybe-uninitialized
             asan-options: detect_leaks=0
             packages: qemu-user crossbuild-essential-armhf
             gcov-exec: arm-linux-gnueabihf-gcov
@@ -190,7 +185,7 @@ jobs:
 
           - name: Ubuntu GCC AARCH64 ASAN
             os: ubuntu-22.04
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZER=Address
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_SANITIZER=Address -DWITH_BENCHMARKS=ON
             asan-options: detect_leaks=0
             packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             gcov-exec: aarch64-linux-gnu-gcov
@@ -226,7 +221,7 @@ jobs:
 
           - name: Ubuntu GCC MIPS64
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mips64.cmake
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mips64.cmake -DWITH_BENCHMARKS=ON
             packages: qemu-user crossbuild-essential-mips64
             gcov-exec: mips64-linux-gnuabi64-gcov
             codecov: ubuntu_gcc_mips64
@@ -247,7 +242,7 @@ jobs:
 
           - name: Ubuntu GCC PPC64
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64.cmake
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64.cmake -DWITH_BENCHMARKS=ON
             packages: qemu-user gcc-powerpc64-linux-gnu g++-powerpc64-linux-gnu libc-dev-ppc64-cross
             ldflags: -static
             gcov-exec: powerpc64-linux-gnu-gcov
@@ -298,7 +293,7 @@ jobs:
 
           - name: Ubuntu GCC RISC-V
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv.cmake
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv.cmake -DWITH_BENCHMARKS=ON
             packages: qemu-user crossbuild-essential-riscv64
             gcov-exec: riscv64-linux-gnu-gcov
             codecov: ubuntu_gcc_riscv64
@@ -318,7 +313,7 @@ jobs:
 
           - name: Ubuntu GCC S390X ASAN
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_SANITIZER=Address
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_SANITIZER=Address -DWITH_BENCHMARKS=ON
             asan-options: detect_leaks=0
             packages: qemu-user crossbuild-essential-s390x
             ldflags: -static
@@ -340,7 +335,7 @@ jobs:
             cxx-compiler: g++
             cmake-args: >-
               ${{ github.repository != 'zlib-ng/zlib-ng' && '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake' || '' }}
-              -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Address
+              -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Address -DWITH_BENCHMARKS=ON
             packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             asan-options: detect_leaks=0
             ldflags: -static
@@ -387,8 +382,9 @@ jobs:
 
           - name: Ubuntu MinGW x86_64
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-x86_64.cmake
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-x86_64.cmake -DWITH_BENCHMARKS=ON
             packages: wine wine64 gcc-mingw-w64 g++-mingw-w64
+            cxxflags: -Wno-unused-parameter
             ldflags: -static
             gcov-exec: x86_64-w64-mingw32-gcov-posix
             codecov: ubuntu_gcc_mingw_x86_64
@@ -572,7 +568,7 @@ jobs:
             os: macos-13
             compiler: clang
             cxx-compiler: clang++
-            cmake-args: -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10
+            cmake-args: -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 -DWITH_BENCHMARKS=ON
             ldflags: -ld_classic
 
           - name: macOS Clang ASAN
@@ -721,7 +717,7 @@ jobs:
     - name: Run test cases
       # Don't run tests on Windows ARM
       if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false
-      run: ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '3' }}
+      run: ctest --verbose -C Release -E benchmark_zlib --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '3' }}
       working-directory: ${{ matrix.build-dir || '.' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
@@ -755,6 +751,17 @@ jobs:
         name: ${{ matrix.name }} (coverage)
         path: ${{ matrix.codecov }}.xml
         retention-days: 1
+
+    - name: Test benchmarks (crashtest only, no coverage data collection)
+      if: contains(matrix.cmake-args, '-DWITH_BENCHMARKS=ON')
+      run: ctest --verbose -C Release -R ^benchmark_zlib$ --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '3' }}
+      working-directory: ${{ matrix.build-dir || '.' }}
+      env:
+        ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
+        MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
+        TSAN_OPTIONS: ${{ matrix.tsan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
+        LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
+        UBSAN_OPTIONS: ${{ matrix.ubsan-options || 'verbosity=0' }}:print_stacktrace=1:abort_on_error=1:halt_on_error=1
 
     - name: Upload build errors
       uses: actions/upload-artifact@v4

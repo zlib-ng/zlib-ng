@@ -61,7 +61,7 @@ if(WIN32)
 endif()
 
 add_test(NAME benchmark_zlib
-    COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:benchmark_zlib>)
+    COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:benchmark_zlib> "--benchmark_min_time=0")
 
 if(WITH_BENCHMARK_APPS)
     option(BUILD_ALT_BENCH "Link against alternative zlib implementation" OFF)
