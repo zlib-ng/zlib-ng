@@ -74,6 +74,22 @@ gh1235$(EXE): $(SRCDIR)/gh1235.c
 testGH-1235: gh1235$(EXE)
 	$(EMU_RUN) ./gh1235$(EXE)
 
+parameterized_tester$(EXE): $(SRCDIR)/parameterized_tester.c
+	$(CC) $(CFLAGS) -I.. -I$(SRCTOP) -o $@ $< $(TEST_LDFLAGS)
+
+.PHONY: parameterized
+parameterized: test-fireworks test-lcet10 test-paper-100k
+
+.PHONY: test-fireworks test-lcet10 test-paper-100k
+test-fireworks: parameterized_tester$(EXE)
+	$(EMU_RUN) ./parameterized_tester$(EXE) $(SRCDIR)/data/fireworks.jpg
+
+test-lcet10: parameterized_tester$(EXE)
+	$(EMU_RUN) ./parameterized_tester$(EXE) $(SRCDIR)/data/lcet10.txt
+
+test-paper-100k: parameterized_tester$(EXE)
+	$(EMU_RUN) ./parameterized_tester$(EXE) $(SRCDIR)/data/paper-100k.pdf
+
 clean:
 	rm -f *.o *.gcda *.gcno *.gcov
 	rm -f switchlevels$(EXE) gh1235$(EXE)

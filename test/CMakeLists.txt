@@ -47,6 +47,11 @@ configure_test_executable(switchlevels)
 target_link_libraries(switchlevels zlib)
 set(SWITCHLEVELS_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels>)
 
+add_executable(parameterized_tester parameterized_tester.c)
+configure_test_executable(parameterized_tester)
+target_link_libraries(parameterized_tester zlib)
+set(PARAMETERIZED_TESTER_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:parameterized_tester>)
+
 add_executable(infcover infcover.c)
 configure_test_executable(infcover)
 target_link_libraries(infcover zlib)
@@ -78,6 +83,9 @@ if(NOT BASEARCH_WASM32_FOUND)
 
     # Run tests with data files
     include(cmake/test-data.cmake)
+
+    # Run tests with data files
+    include(cmake/test-detect.cmake)
 
     # Run tests targeting GitHub issues
     include(cmake/test-issues.cmake)
