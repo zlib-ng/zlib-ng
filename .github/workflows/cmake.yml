@@ -473,11 +473,6 @@ jobs:
             # https://github.com/llvm/llvm-project/issues/55785
             msan-options: use_sigaltstack=0
 
-          - name: Ubuntu Clang RISC-V
-            os: ubuntu-latest
-            cmake-args: -GNinja -DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain-riscv.cmake -DTOOLCHAIN_PATH=${PWD}/prebuilt-riscv-toolchain-qemu/riscv-clang -DQEMU_PATH=${PWD}/prebuilt-riscv-toolchain-qemu/riscv-qemu/bin/qemu-riscv64
-            packages: build-essential cmake ninja-build
-
           - name: Ubuntu Emscripten WASM32
             os: ubuntu-latest
             chost: wasm32
@@ -651,14 +646,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y --allow-downgrades --no-install-recommends ${{ matrix.packages }}
-
-    - name: Download prebuilt RISC-V Clang toolchain & QEMU emulator
-      if: runner.os == 'Linux' && contains(matrix.name, 'RISC-V')
-      run: |
-        gh release download ubuntu20.04_llvm16.0.0_qemu7.0.0 --repo sifive/prepare-riscv-toolchain-qemu
-        tar zxvf prebuilt-riscv-toolchain-qemu.tar.gz
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install packages (Windows)
       if: runner.os == 'Windows'
