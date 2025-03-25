@@ -30,7 +30,12 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
 
     size_t i = 0;
 
+#if BYTE_ORDER == LITTLE_ENDIAN
     z_word_t next1 = crc;
+#else
+    z_word_t next1 = ZSWAP64(crc);
+#endif
+
     z_word_t next2 = 0;
     z_word_t next3 = 0;
     z_word_t next4 = 0;
@@ -484,7 +489,12 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive (uint32_t crc, const uint6
     uint64_t bitbuffer[32768 / sizeof(uint64_t)];
     const uint8_t* bitbufferbytes = (const uint8_t*) bitbuffer;
     memset(bitbuffer, 0, 32768);
-    bitbuffer[0] ^= crc;
+#if BYTE_ORDER == LITTLE_ENDIAN
+    bitbuffer[0] = crc;
+#else
+    bitbuffer[0] = ZSWAP64(crc);
+#endif
+
     crc = 0;
 
     size_t i = 0;
@@ -634,9 +644,10 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive (uint32_t crc, const uint6
 
     uint8_t* final_bytes = (uint8_t*) final;
 
-    for(size_t j = 0; j < (len-i); j++) {
+    for (size_t j = 0; j < (len-i); j++) {
         crc = crc_table[(crc ^ final_bytes[j] ^ bitbufferbytes[(j+i)]) & 0xff] ^ (crc >> 8);
     }
+
     return crc;
 }
 

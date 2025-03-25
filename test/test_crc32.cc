@@ -26,6 +26,19 @@ typedef struct {
     unsigned long expect;
 } crc32_test;
 
+ALIGNED_(16) uint8_t fullwin_buf[32768];
+
+uint8_t* setup_buf() {
+    for (int i = 0; i < 32768; ++i) {
+        unsigned char ic = (unsigned char)(i % 256);
+        fullwin_buf[i] = ic;
+    }
+
+    return fullwin_buf;
+}
+
+static uint8_t *buf32k = setup_buf();
+
 static const crc32_test tests[] = {
   {0x0, (const uint8_t *)0x0, 0, 0x0},
   {0xffffffff, (const uint8_t *)0x0, 0, 0x0},
@@ -179,7 +192,8 @@ static const crc32_test tests[] = {
     "h{bcmdC+a;t+Cf{6Y_dFq-{X4Yu&7uNfVDh?q&_u.UWJU],-GiH7ADzb7-V.Q%4=+v!$L9W+T=bP]$_:]Vyg}A.ygD.r;h-D]m%&"
     "h{bcmdC+a;t+Cf{6Y_dFq-{X4Yu&7uNfVDh?q&_u.UWJU],-GiH7ADzb7-V.Q%4=+v!$L9W+T=bP]$_:]Vyg}A.ygD.r;h-D]m%&"
     "h{bcmdC+a;t+Cf{6Y_dFq-{X4Yu&7uNfVDh?q&_u.UWJU],-GiH7ADzb7-V.Q%4=+v!$L9W+T=bP]$_:]Vyg}A.ygD.r;h-D]m%&"
-    "h{bcmdC+a;t+Cf{6Y_dFq-{X4Yu&7uNfVDh?q&_u.UWJU],-GiH7ADzb7-V.Q%4=+v!$L9W+T=bP]$_:]Vyg}A.ygD.r;h-D]m%&", 600, 0x888AFA5B}
+    "h{bcmdC+a;t+Cf{6Y_dFq-{X4Yu&7uNfVDh?q&_u.UWJU],-GiH7ADzb7-V.Q%4=+v!$L9W+T=bP]$_:]Vyg}A.ygD.r;h-D]m%&", 600, 0x888AFA5B},
+  {0x0, buf32k, 32768, 0x217726B2}
 };
 
 class crc32_variant : public ::testing::TestWithParam<crc32_test> {
