@@ -305,6 +305,11 @@ jobs:
             gcov-exec: riscv64-linux-gnu-gcov
             codecov: ubuntu_gcc_riscv64
 
+          - name: Ubuntu Clang RISC-V
+            os: ubuntu-latest
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv-clang.cmake
+            packages: qemu-user crossbuild-essential-riscv64
+
           - name: Ubuntu GCC SPARC64
             # qemu appears to be broken in newer versions of Ubuntu (see issue 1378)
             os: ubuntu-20.04
