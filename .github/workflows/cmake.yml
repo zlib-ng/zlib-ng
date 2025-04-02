@@ -646,7 +646,7 @@ jobs:
       run: sudo dpkg --add-architecture i386
 
     - name: Add ubuntu mirrors
-      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
+      if: runner.os == 'Linux' && !contains(matrix.os, 'z15')
       # Github Actions caching proxy is at times unreliable
       run: |
         echo -e 'http://azure.archive.ubuntu.com/ubuntu\tpriority:1\n' | sudo tee /etc/apt/mirrors.txt
@@ -654,10 +654,11 @@ jobs:
         sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
     - name: Install packages (Ubuntu)
-      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
+      if: runner.os == 'Linux' && !contains(matrix.os, 'z15')
       run: |
         sudo apt-get update
-        sudo apt-get install -y --allow-downgrades --no-install-recommends ${{ matrix.packages }}
+        sudo apt-get install -y --allow-downgrades --no-install-recommends \
+            ${{ matrix.packages || 'libgtest-dev libbenchmark-dev' }}
 
     - name: Install packages (Windows)
       if: runner.os == 'Windows'
