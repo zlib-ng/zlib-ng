@@ -722,6 +722,7 @@ echo >> configure.log
 
 cat > $test.c <<EOF
 #define _POSIX_C_SOURCE 200112L
+#define _ISOC11_SOURCE 1
 #include <stdlib.h>
 int main(void) {
   void *ptr = 0;
@@ -741,6 +742,7 @@ fi
 echo >> configure.log
 
 cat > $test.c <<EOF
+#define _POSIX_C_SOURCE 200112L
 #define _ISOC11_SOURCE 1
 #include <stdlib.h>
 int main(void) {
