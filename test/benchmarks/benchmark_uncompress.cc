@@ -51,7 +51,7 @@ public:
             compressed_buff[i] = (uint8_t *)zng_alloc(MAX_SIZE + 1);
             assert(compressed_buff[i] != NULL);
 
-            uLong compressed_size = maxlen;
+            z_uintmax_t compressed_size = maxlen;
             int err = PREFIX(compress)(compressed_buff[i], &compressed_size, inbuff, sizes[i]);
             if (err != Z_OK) {
                 fprintf(stderr, "Compression failed with error %d\n", err);
@@ -68,7 +68,7 @@ public:
             int index = 0;
             while (sizes[index] != state.range(0)) ++index;
 
-            uLong out_size = maxlen;
+            z_uintmax_t out_size = maxlen;
             err = PREFIX(uncompress)(outbuff, &out_size, compressed_buff[index], compressed_sizes[index]);
         }
 
