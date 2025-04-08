@@ -16,11 +16,6 @@ jobs:
             compiler: gcc
             configure-args: --warn
 
-          - name: Ubuntu 20.04 GCC
-            os: ubuntu-20.04
-            compiler: gcc
-            configure-args: --warn
-
           - name: Ubuntu GCC OSB
             os: ubuntu-latest
             compiler: gcc
