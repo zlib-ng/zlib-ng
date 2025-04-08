@@ -311,7 +311,7 @@ jobs:
           - name: Ubuntu GCC SPARC64
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake
-            packages: qemu qemu-user gcc-sparc64-linux-gnu g++-sparc64-linux-gnu libc-dev-sparc64-cross
+            packages: qemu-user gcc-sparc64-linux-gnu g++-sparc64-linux-gnu libc-dev-sparc64-cross
             ldflags: -static
             gcov-exec: sparc64-linux-gnu-gcov
             codecov: ubuntu_gcc_sparc64
