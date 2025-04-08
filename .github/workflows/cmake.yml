@@ -267,11 +267,14 @@ jobs:
             packages: qemu-user clang binutils-powerpc64-linux-gnu libgcc-11-dev-ppc64-cross libc-dev-ppc64-cross libstdc++-11-dev-ppc64-cross
 
           - name: Ubuntu GCC PPC64LE
-            # qemu appears to be broken in newer versions of Ubuntu (see issue 1378)
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
-            packages: qemu qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc-dev-ppc64el-cross
+            # gtest illegal instruction (related? https://bugs.launchpad.net/qemu/+bug/1781281)
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake -DWITH_GTEST=OFF
+            packages: qemu-user crossbuild-essential-ppc64el
             gcov-exec: powerpc64le-linux-gnu-gcov
+            # mcpu required to test power8 with qemu-ppc64le -cpu power8 (see issue 1378)
+            cflags: -mcpu=power8
+            cxxflags: -mcpu=power8
             codecov: ubuntu_gcc_ppc64le
 
           - name: Ubuntu GCC PPC64LE No VSX
@@ -306,7 +309,6 @@ jobs:
             packages: qemu-user crossbuild-essential-riscv64
 
           - name: Ubuntu GCC SPARC64
-            # qemu appears to be broken in newer versions of Ubuntu (see issue 1378)
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake
             packages: qemu qemu-user gcc-sparc64-linux-gnu g++-sparc64-linux-gnu libc-dev-sparc64-cross
@@ -709,6 +711,7 @@ jobs:
         CC: ${{ matrix.compiler }}
         CXX: ${{ matrix.cxx-compiler }}
         CFLAGS: ${{ matrix.cflags }}
+        CXXFLAGS: ${{ matrix.cxxflags }}
         LDFLAGS: ${{ matrix.ldflags }}
         CI: true
 
