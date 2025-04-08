@@ -15,11 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Ubuntu 20.04 GCC
-            os: ubuntu-20.04
-            compiler: gcc
-            cxx-compiler: g++
-
           - name: Ubuntu GCC ASAN
             os: ubuntu-latest
             compiler: gcc
@@ -273,7 +268,7 @@ jobs:
 
           - name: Ubuntu GCC PPC64LE
             # qemu appears to be broken in newer versions of Ubuntu (see issue 1378)
-            os: ubuntu-20.04
+            os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
             packages: qemu qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc-dev-ppc64el-cross
             gcov-exec: powerpc64le-linux-gnu-gcov
@@ -312,7 +307,7 @@ jobs:
 
           - name: Ubuntu GCC SPARC64
             # qemu appears to be broken in newer versions of Ubuntu (see issue 1378)
-            os: ubuntu-20.04
+            os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake
             packages: qemu qemu-user gcc-sparc64-linux-gnu g++-sparc64-linux-gnu libc-dev-sparc64-cross
             ldflags: -static
@@ -397,12 +392,6 @@ jobs:
             codecov: ubuntu_gcc_mingw_x86_64
              # Limit parallel test jobs to prevent wine errors
             parallels-jobs: 1
-
-          - name: Ubuntu 20.04 Clang 6
-            os: ubuntu-20.04
-            compiler: clang-6.0
-            cxx-compiler: clang++-6.0
-            packages: clang-6.0
 
           - name: Ubuntu Clang
             os: ubuntu-latest
