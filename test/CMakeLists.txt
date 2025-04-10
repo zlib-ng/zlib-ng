@@ -204,6 +204,10 @@ if(WITH_GTEST)
             target_compile_options(gtest_zlib PRIVATE /wd4389 /EHsc)
         endif()
 
+        if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+            target_compile_options(gtest_zlib PRIVATE -D_XOPEN_SOURCE=700)
+        endif()
+
         if(WITH_SANITIZER STREQUAL "Memory")
             target_link_directories(gtest_zlib PRIVATE $ENV{LLVM_BUILD_DIR}/lib)
             target_link_options(gtest_zlib PRIVATE
