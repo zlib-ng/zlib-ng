@@ -59,7 +59,7 @@ public:
         } \
         Bench(state, fptr); \
     } \
-    BENCHMARK_REGISTER_F(compare256, name)->Range(1, MAX_COMPARE_SIZE);
+    BENCHMARK_REGISTER_F(compare256, name)->Arg(1)->Arg(10)->Arg(40)->Arg(80)->Arg(100)->Arg(175)->Arg(256);
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 BENCHMARK_COMPARE256(native, native_compare256, 1);
@@ -79,6 +79,9 @@ BENCHMARK_COMPARE256(sse2, compare256_sse2, test_cpu_features.x86.has_sse2);
 #endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
 BENCHMARK_COMPARE256(avx2, compare256_avx2, test_cpu_features.x86.has_avx2);
+#endif
+#if defined(X86_AVX512) && defined(HAVE_BUILTIN_CTZLL)
+BENCHMARK_COMPARE256(avx512, compare256_avx512, test_cpu_features.x86.has_avx512_common);
 #endif
 #if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
 BENCHMARK_COMPARE256(neon, compare256_neon, test_cpu_features.arm.has_neon);

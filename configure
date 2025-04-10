@@ -1694,8 +1694,8 @@ case "${ARCH}" in
             if test ${HAVE_AVX512_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_AVX512"
                 SFLAGS="${SFLAGS} -DX86_AVX512"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_avx512.o chunkset_avx512.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_avx512.lo chunkset_avx512.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_avx512.o chunkset_avx512.o compare256_avx512.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_avx512.lo chunkset_avx512.lo compare256_avx512.lo"
             fi
 
             check_mtune_cascadelake_compiler_flag

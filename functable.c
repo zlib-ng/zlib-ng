@@ -139,6 +139,11 @@ static void init_functable(void) {
         ft.chunkmemset_safe = &chunkmemset_safe_avx512;
         ft.chunksize = &chunksize_avx512;
         ft.inflate_fast = &inflate_fast_avx512;
+#  ifdef HAVE_BUILTIN_CTZLL
+        ft.compare256 = &compare256_avx512;
+        ft.longest_match = &longest_match_avx512;
+        ft.longest_match_slow = &longest_match_slow_avx512;
+#  endif
     }
 #endif
 #ifdef X86_AVX512VNNI
