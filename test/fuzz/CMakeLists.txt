@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.5.1...3.29.0)
 
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-    enable_language(CXX)
-
     if(DEFINED ENV{LIB_FUZZING_ENGINE})
         set(FUZZING_ENGINE $ENV{LIB_FUZZING_ENGINE})
         set(FUZZING_ENGINE_FOUND ON)

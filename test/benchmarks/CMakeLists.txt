@@ -12,8 +12,6 @@ if(NOT DEFINED CMAKE_CXX_EXTENSIONS)
     set(CMAKE_CXX_EXTENSIONS ON)
 endif()
 
-enable_language(CXX)
-
 # Search for Google benchmark package
 find_package(benchmark QUIET)
 if(NOT benchmark_FOUND)
