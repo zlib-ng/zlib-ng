@@ -809,6 +809,61 @@ fi
 echo >> configure.log
 
 
+# check for cpuid support: GNU extensions
+cat > $test.c <<EOF
+#include <cpuid.h>
+#include <stdio.h>
+static inline void cpuid_gnu(int info, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx) {
+    *eax = *ebx = *ecx = *edx = 0;
+    __cpuid(info, *eax, *ebx, *ecx, *edx);
+}
+
+int main(void) {
+  unsigned int eax, ebx, ecx, edx;
+  cpuid_gnu(0, &eax, &ebx, &ecx, &edx);
+  printf("%d\n", eax);
+  return eax;
+}
+EOF
+if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
+  echo "Checking for GNU style __cpuid... Yes." | tee -a configure.log
+  CFLAGS="${CFLAGS} -DHAVE_CPUID_GNU"
+  SFLAGS="${SFLAGS} -DHAVE_CPUID_GNU"
+else
+  echo "Checking for GNU style __cpuid... No." | tee -a configure.log
+fi
+echo >> configure.log
+
+# check for cpuid support: MSVC extensions
+cat > $test.c <<EOF
+#include <intrin.h>
+#include <stdio.h>
+static inline void cpuid_ms(int info, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx) {
+    unsigned int registers[4];
+    __cpuid((int *)registers, info);
+    *eax = registers[0];
+    *ebx = registers[1];
+    *ecx = registers[2];
+    *edx = registers[3];
+}
+
+int main(void) {
+  unsigned int eax, ebx, ecx, edx;
+  cpuid_ms(0, &eax, &ebx, &ecx, &edx);
+  printf("%d\n", eax);
+  return 0;
+}
+EOF
+if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
+  echo "Checking for MS style __cpuid... Yes." | tee -a configure.log
+  CFLAGS="${CFLAGS} -DHAVE_CPUID_MS"
+  SFLAGS="${SFLAGS} -DHAVE_CPUID_MS"
+else
+  echo "Checking for MS style __cpuid... No." | tee -a configure.log
+fi
+echo >> configure.log
+
+
 # check for strerror() for use by gz* functions
 cat > $test.c <<EOF
 #include <string.h>

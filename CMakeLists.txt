@@ -497,6 +497,44 @@ endif()
 set(CMAKE_REQUIRED_DEFINITIONS)
 
 #
+# Check for x86 __cpuid / __cpuid_count support: GNU extensions
+# gcc/clang and MSVC have __cpuid, so check __cpuid_count instead
+check_symbol_exists(__cpuid_count cpuid.h HAVE_CPUID_GNU)
+if(HAVE_CPUID_GNU)
+    add_definitions(-DHAVE_CPUID_GNU)
+endif()
+set(CMAKE_REQUIRED_DEFINITIONS)
+
+#
+# Check for x86 __cpuid / __cpuidex support: MSVC extensions
+# gcc/clang and MSVC have __cpuid, so check __cpuidex instead
+# check_symbol_exists() does not work for intrinsics
+
+check_c_source_compiles(
+"
+#include <intrin.h>
+static inline void cpuid_ms(int info, unsigned int *eax, unsigned int *ebx, unsigned int *ecx, unsigned int *edx) {
+    unsigned int registers[4];
+    __cpuid((int *)registers, info);
+    *eax = registers[0];
+    *ebx = registers[1];
+    *ecx = registers[2];
+    *edx = registers[3];
+}
+
+int main(void) {
+  unsigned int eax, ebx, ecx, edx;
+  cpuid_ms(0, &eax, &ebx, &ecx, &edx);
+  return eax;
+}"
+HAVE_CPUID_MS)
+
+if(HAVE_CPUID_MS)
+    add_definitions(-DHAVE_CPUID_MS)
+endif()
+set(CMAKE_REQUIRED_DEFINITIONS)
+
+#
 # Check whether a sanitizer was requested
 #
 if(WITH_SANITIZER STREQUAL "Address")
