@@ -96,7 +96,6 @@ if(WITH_GTEST OR WITH_BENCHMARKS)
         set(WITH_BENCHMARKS OFF)
         set(WITH_BENCHMARKS OFF PARENT_SCOPE)
     endif()
-    enable_language(CXX)
 endif()
 
 if(WITH_BENCHMARKS)
