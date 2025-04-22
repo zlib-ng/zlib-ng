@@ -11,6 +11,7 @@
 #include "riscv_features.h"
 
 #define ISA_V_HWCAP (1 << ('v' - 'a'))
+#define ISA_ZBC_HWCAP (1 << 29)
 
 int Z_INTERNAL is_kernel_version_greater_or_equal_to_6_5() {
     struct utsname buffer;
@@ -36,6 +37,12 @@ void Z_INTERNAL riscv_check_features_compile_time(struct riscv_cpu_features *fea
 #else
     features->has_rvv = 0;
 #endif
+
+#if defined(__riscv_zbc) && defined(__linux__)
+    features->has_zbc = 1;
+#else
+    features->has_zbc = 0;
+#endif
 }
 
 void Z_INTERNAL riscv_check_features_runtime(struct riscv_cpu_features *features) {
@@ -45,6 +52,7 @@ void Z_INTERNAL riscv_check_features_runtime(struct riscv_cpu_features *features
     unsigned long hw_cap = 0;
 #endif
     features->has_rvv = hw_cap & ISA_V_HWCAP;
+    features->has_zbc = hw_cap & ISA_ZBC_HWCAP;
 }
 
 void Z_INTERNAL riscv_check_features(struct riscv_cpu_features *features) {

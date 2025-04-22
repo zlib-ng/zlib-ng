@@ -241,6 +241,12 @@ static void init_functable(void) {
     }
 #endif
 
+    // RISCV - ZBC
+#ifdef RISCV_CRC32_ZBC
+    if (cf.riscv.has_zbc) {
+        ft.crc32 = &crc32_riscv64_zbc;
+    }
+#endif
 
     // S390
 #ifdef S390_CRC32_VX

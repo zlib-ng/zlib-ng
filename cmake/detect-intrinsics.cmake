@@ -458,6 +458,28 @@ macro(check_rvv_intrinsics)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
+macro(check_riscv_zbc_ext)
+    if(NOT NATIVEFLAG)
+        if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+            set(RISCVZBCFLAG "-march=rv64gc_zbc")
+        endif()
+    endif()
+    # Check whether compiler supports RISC-V Zbc inline asm
+    # gcc-11 / clang-14 at least
+    set(CMAKE_REQUIRED_FLAGS "${RISCVZBCFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+    check_c_source_compiles(
+        "#include <stdint.h>
+        uint64_t f(uint64_t a, uint64_t b) {
+            uint64_t c;
+            __asm__ __volatile__ (\"clmul %[result], %[input_a], %[input_b]\" : [result] \"=r\" (c) : [input_a] \"r\" (a), [input_b] \"r\" (b));
+            return c;
+        }
+        int main(void) { return f(1, 2); }"
+        HAVE_RISCV_ZBC
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
 macro(check_s390_intrinsics)
     check_c_source_compiles(
         "#include <sys/auxv.h>

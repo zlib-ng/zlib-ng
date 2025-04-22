@@ -11,6 +11,7 @@
 
 struct riscv_cpu_features {
     int has_rvv;
+    int has_zbc;
 };
 
 void Z_INTERNAL riscv_check_features(struct riscv_cpu_features *features);
