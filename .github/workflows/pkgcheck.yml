@@ -74,6 +74,14 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake
             packages: qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
 
+          - name: Ubuntu GCC RISC-V
+            os: ubuntu-latest
+            chost: riscv64-linux-gnu
+            compiler: riscv64-linux-gnu-gcc
+            cxx-compiler: riscv64-linux-gnu-g++
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv.cmake
+            packages: qemu-user gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libc6-dev-riscv64-cross
+
           - name: macOS Clang
             os: macOS-latest
             compiler: clang
