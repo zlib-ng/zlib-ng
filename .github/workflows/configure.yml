@@ -228,6 +228,27 @@ jobs:
             configure-args: --warn
             packages: gcc@11
 
+          - name: Ubuntu GCC RISCV64
+            os: ubuntu-latest
+            compiler: riscv64-linux-gnu-gcc
+            configure-args: --warn
+            chost: riscv64-linux-gnu
+            packages: qemu-user crossbuild-essential-riscv64
+
+          - name: Ubuntu GCC RISCV64 No RVV
+            os: ubuntu-latest
+            compiler: riscv64-linux-gnu-gcc
+            configure-args: --warn --without-rvv
+            chost: riscv64-linux-gnu
+            packages: qemu-user crossbuild-essential-riscv64
+
+          - name: Ubuntu GCC RISCV64 Compat No Opt
+            os: ubuntu-latest
+            compiler: riscv64-linux-gnu-gcc
+            configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
+            chost: riscv64-linux-gnu
+            packages: qemu-user crossbuild-essential-riscv64
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
