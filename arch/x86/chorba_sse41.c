@@ -10,8 +10,8 @@
 #include "arch/generic/generic_functions.h"
 #include <assert.h>
 
-extern uint32_t crc32_braid_base(uint32_t c, const uint8_t *buf, size_t len);
-extern uint32_t chorba_small_nondestructive_sse2(uint32_t c, const uint64_t *aligned_buf, size_t aligned_len);
+uint32_t crc32_braid_base(uint32_t c, const uint8_t *buf, size_t len);
+uint32_t chorba_small_nondestructive_sse2(uint32_t c, const uint64_t *aligned_buf, size_t aligned_len);
 
 #define READ_NEXT(in, off, a, b) do { \
         a = _mm_load_si128((__m128i*)(in + off / sizeof(uint64_t))); \
