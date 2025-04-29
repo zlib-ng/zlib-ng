@@ -19,43 +19,43 @@
 #ifdef __aarch64__
 static inline uint32_t __crc32b(uint32_t __a, uint8_t __b) {
     uint32_t __c;
-    __asm__ __volatile__("crc32b %w0, %w1, %w2" : "=r" (__c) : "r"(__a), "r"(__b));
+    __asm__("crc32b %w0, %w1, %w2" : "=r" (__c) : "r"(__a), "r"(__b));
     return __c;
 }
 
 static inline uint32_t __crc32h(uint32_t __a, uint16_t __b) {
     uint32_t __c;
-    __asm__ __volatile__("crc32h %w0, %w1, %w2" : "=r" (__c) : "r"(__a), "r"(__b));
+    __asm__("crc32h %w0, %w1, %w2" : "=r" (__c) : "r"(__a), "r"(__b));
     return __c;
 }
 
 static inline uint32_t __crc32w(uint32_t __a, uint32_t __b) {
     uint32_t __c;
-    __asm__ __volatile__("crc32w %w0, %w1, %w2" : "=r" (__c) : "r"(__a), "r"(__b));
+    __asm__("crc32w %w0, %w1, %w2" : "=r" (__c) : "r"(__a), "r"(__b));
     return __c;
 }
 
 static inline uint32_t __crc32d(uint32_t __a, uint64_t __b) {
     uint32_t __c;
-    __asm__ __volatile__("crc32x %w0, %w1, %x2" : "=r" (__c) : "r"(__a), "r"(__b));
+    __asm__("crc32x %w0, %w1, %x2" : "=r" (__c) : "r"(__a), "r"(__b));
     return __c;
 }
 #else
 static inline uint32_t __crc32b(uint32_t __a, uint8_t __b) {
     uint32_t __c;
-    __asm__ __volatile__("crc32b %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
+    __asm__("crc32b %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
     return __c;
 }
 
 static inline uint32_t __crc32h(uint32_t __a, uint16_t __b) {
     uint32_t __c;
-    __asm__ __volatile__("crc32h %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
+    __asm__("crc32h %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
     return __c;
 }
 
 static inline uint32_t __crc32w(uint32_t __a, uint32_t __b) {
     uint32_t __c;
-    __asm__ __volatile__("crc32w %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
+    __asm__("crc32w %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
     return __c;
 }
 
@@ -76,7 +76,7 @@ typedef uint32_t uint16x2_t;
 
 static inline uint16x2_t __uqsub16(uint16x2_t __a, uint16x2_t __b) {
     uint16x2_t __c;
-    __asm__ __volatile__("uqsub16 %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
+    __asm__("uqsub16 %0, %1, %2" : "=r" (__c) : "r"(__a), "r"(__b));
     return __c;
 }
 #endif

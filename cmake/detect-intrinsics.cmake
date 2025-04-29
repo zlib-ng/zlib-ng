@@ -31,9 +31,9 @@ macro(check_armv8_compiler_flag)
         "unsigned int f(unsigned int a, unsigned int b) {
             unsigned int c;
         #ifdef __aarch64__
-            __asm__ __volatile__ ( \"crc32w %w0, %w1, %w2\" : \"=r\" (c) : \"r\" (a), \"r\" (b));
+            __asm__( \"crc32w %w0, %w1, %w2\" : \"=r\" (c) : \"r\" (a), \"r\" (b));
         #else
-            __asm__ __volatile__ ( \"crc32w %0, %1, %2\" : \"=r\" (c) : \"r\" (a), \"r\" (b));
+            __asm__( \"crc32w %0, %1, %2\" : \"=r\" (c) : \"r\" (a), \"r\" (b));
         #endif
             return (int)c;
         }
@@ -75,7 +75,7 @@ macro(check_armv6_compiler_flag)
     check_c_source_compiles(
         "unsigned int f(unsigned int a, unsigned int b) {
             unsigned int c;
-            __asm__ __volatile__ ( \"uqsub16 %0, %1, %2\" : \"=r\" (c) : \"r\" (a), \"r\" (b) );
+            __asm__( \"uqsub16 %0, %1, %2\" : \"=r\" (c) : \"r\" (a), \"r\" (b) );
             return (int)c;
         }
         int main(void) { return f(1,2); }"
