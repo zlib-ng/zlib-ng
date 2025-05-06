@@ -258,8 +258,6 @@ Z_INTERNAL deflate_allocs* alloc_deflate(PREFIX3(stream) *strm, int windowBits, 
     alloc_bufs->pending_buf = (unsigned char *)HINT_ALIGNED_64(buff + pending_pos);
     alloc_bufs->state = (deflate_state *)HINT_ALIGNED_16(buff + state_pos);
 
-    memset((char *)alloc_bufs->prev, 0, prev_size);
-
     return alloc_bufs;
 }
 

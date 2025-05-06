@@ -9,7 +9,7 @@
 
 extern "C" {
 #  include "zbuild.h"
-#  include "zutil_p.h"
+#  include "zutil.h"
 #  include "compare256_rle.h"
 }
 

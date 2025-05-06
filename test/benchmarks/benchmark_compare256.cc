@@ -9,7 +9,7 @@
 
 extern "C" {
 #  include "zbuild.h"
-#  include "zutil_p.h"
+#  include "zutil.h"
 #  include "arch_functions.h"
 #  include "../test_cpu_features.h"
 #  include "arch/generic/compare256_p.h"

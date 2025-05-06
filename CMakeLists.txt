@@ -457,49 +457,6 @@ endif()
 set(CMAKE_REQUIRED_FLAGS)
 
 #
-# Check for aligned memory allocation support: POSIX
-#
-set(CMAKE_REQUIRED_DEFINITIONS -D_POSIX_C_SOURCE=200112L -D_ISOC11_SOURCE=1)
-set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
-check_symbol_exists(posix_memalign stdlib.h HAVE_POSIX_MEMALIGN)
-if(HAVE_POSIX_MEMALIGN)
-    add_definitions(-DHAVE_POSIX_MEMALIGN)
-endif()
-set(CMAKE_REQUIRED_FLAGS)
-set(CMAKE_REQUIRED_DEFINITIONS)
-
-#
-# Check for aligned memory allocation support: C11
-#
-set(CMAKE_REQUIRED_DEFINITIONS -D_POSIX_C_SOURCE=200112L -D_ISOC11_SOURCE=1)
-set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
-check_symbol_exists(aligned_alloc stdlib.h HAVE_ALIGNED_ALLOC)
-if(HAVE_ALIGNED_ALLOC)
-    add_definitions(-DHAVE_ALIGNED_ALLOC)
-endif()
-set(CMAKE_REQUIRED_FLAGS)
-set(CMAKE_REQUIRED_DEFINITIONS)
-
-#
-# Check for aligned memory allocation support: GNU extension
-# Note: memalign() is deprecated in glibc
-#
-check_symbol_exists(memalign malloc.h HAVE_MEMALIGN)
-if(HAVE_MEMALIGN)
-    add_definitions(-DHAVE_MEMALIGN)
-endif()
-set(CMAKE_REQUIRED_DEFINITIONS)
-
-#
-# Check for aligned memory allocation support: MSVC extensions
-#
-check_symbol_exists(_aligned_malloc malloc.h HAVE__ALIGNED_MALLOC)
-if(HAVE__ALIGNED_MALLOC)
-    add_definitions(-DHAVE__ALIGNED_MALLOC)
-endif()
-set(CMAKE_REQUIRED_DEFINITIONS)
-
-#
 # Check for x86 __cpuid / __cpuid_count support: GNU extensions
 # gcc/clang and MSVC have __cpuid, so check __cpuid_count instead
 check_symbol_exists(__cpuid_count cpuid.h HAVE_CPUID_GNU)
@@ -1250,7 +1207,6 @@ set(ZLIB_PRIVATE_HDRS
     zendian.h
     zmemory.h
     zutil.h
-    zutil_p.h
 )
 set(ZLIB_SRCS
     arch/generic/adler32_c.c

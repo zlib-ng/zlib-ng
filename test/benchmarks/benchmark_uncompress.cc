@@ -9,7 +9,7 @@
 
 extern "C" {
 #  include "zbuild.h"
-#  include "zutil_p.h"
+#  include "zutil.h"
 #  if defined(ZLIB_COMPAT)
 #    include "zlib.h"
 #  else

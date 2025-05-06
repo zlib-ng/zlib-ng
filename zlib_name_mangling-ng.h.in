@@ -162,8 +162,6 @@
 #define zng_vstring            @ZLIB_SYMBOL_PREFIX@zng_vstring
 #define zng_zError             @ZLIB_SYMBOL_PREFIX@zng_zError
 
-#define zng_alloc_aligned      @ZLIB_SYMBOL_PREFIX@zng_alloc_aligned
-#define zng_free_aligned       @ZLIB_SYMBOL_PREFIX@zng_free_aligned
 #define zng_get_crc_table      @ZLIB_SYMBOL_PREFIX@zng_get_crc_table
 #define zng_inflateSyncPoint   @ZLIB_SYMBOL_PREFIX@zng_inflateSyncPoint
 #define zng_inflateUndermine   @ZLIB_SYMBOL_PREFIX@zng_inflateUndermine

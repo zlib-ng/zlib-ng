@@ -9,7 +9,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include "zutil.h"
-#include "zutil_p.h"
 
 extern "C" {
 #  include "zbuild.h"

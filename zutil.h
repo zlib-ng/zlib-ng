@@ -137,4 +137,12 @@ void Z_INTERNAL  PREFIX(zcfree)(void *opaque, void *ptr);
 typedef void *zng_calloc_func(void *opaque, unsigned items, unsigned size);
 typedef void  zng_cfree_func(void *opaque, void *ptr);
 
+static inline void *zng_alloc(size_t size) {
+    return calloc(1, size);
+}
+
+static inline void zng_free(void *ptr) {
+    free(ptr);
+}
+
 #endif /* ZUTIL_H_ */
