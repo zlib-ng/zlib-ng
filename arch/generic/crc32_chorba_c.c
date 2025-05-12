@@ -34,13 +34,15 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
     ALIGNED_(16) z_word_t bitbuffer[bitbuffersizezwords];
 #endif
     const uint8_t* bitbufferbytes = (const uint8_t*) bitbuffer;
+    uint64_t* bitbufferqwords = (uint64_t*) bitbuffer;
+    uint64_t* inputqwords = (uint64_t*) input;
 
     size_t i = 0;
 
 #if BYTE_ORDER == LITTLE_ENDIAN
     z_word_t next1 = crc;
 #else
-    z_word_t next1 = ZSWAP64(crc);
+    z_word_t next1 = ZSWAPWORD(crc);
 #endif
 
     z_word_t next2 = 0;
@@ -414,8 +416,8 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
         uint64_t out4;
         uint64_t out5;
 
-        in1 = input[i / sizeof(z_word_t)] ^ bitbuffer[(i / sizeof(uint64_t)) % bitbuffersizeqwords];
-        in2 = input[(i + 8) / sizeof(z_word_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 1) % bitbuffersizeqwords];
+        in1 = inputqwords[i / sizeof(uint64_t)] ^ bitbufferqwords[(i / sizeof(uint64_t)) % bitbuffersizeqwords];
+        in2 = inputqwords[i / sizeof(uint64_t) + 1] ^ bitbufferqwords[(i / sizeof(uint64_t) + 1) % bitbuffersizeqwords];
 #if BYTE_ORDER == BIG_ENDIAN
         in1 = ZSWAP64(in1);
         in2 = ZSWAP64(in2);
@@ -433,8 +435,8 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
         b3 = (in2 >> 45) ^ (in2 << 44);
         b4 = (in2 >> 20);
 
-        in3 = input[(i + 16) / sizeof(z_word_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 2) % bitbuffersizeqwords];
-        in4 = input[(i + 24) / sizeof(z_word_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 3) % bitbuffersizeqwords];
+        in3 = inputqwords[i / sizeof(uint64_t) + 2] ^ bitbufferqwords[(i / sizeof(uint64_t) + 2) % bitbuffersizeqwords];
+        in4 = inputqwords[i / sizeof(uint64_t) + 3] ^ bitbufferqwords[(i / sizeof(uint64_t) + 3) % bitbuffersizeqwords];
 #if BYTE_ORDER == BIG_ENDIAN
         in3 = ZSWAP64(in3);
         in4 = ZSWAP64(in4);
@@ -474,7 +476,7 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
     next5_64 = ZSWAP64(next5_64);
 #endif
 
-    memcpy(final, input+(i / sizeof(uint64_t)), len-i);
+    memcpy(final, inputqwords + (i / sizeof(uint64_t)), len-i);
     final[0] ^= next1_64;
     final[1] ^= next2_64;
     final[2] ^= next3_64;
