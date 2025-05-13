@@ -228,6 +228,32 @@ public:
     }
 };
 
+/* Test large 1MB buffer with known CRC32 */
+class crc32_large_buf : public ::testing::Test {
+protected:
+    static uint8_t *buffer;
+    static const size_t buffer_size = 1024 * 1024;
+    static const uint32_t expected_hash = 0x0026D5FB;
+
+    static void SetUpTestSuite() {
+        buffer = (uint8_t*)zng_alloc(buffer_size);
+        memset(buffer, 0x55, buffer_size);
+    }
+
+    static void TearDownTestSuite() {
+        zng_free(buffer);
+    }
+
+public:
+    void hash(crc32_func crc32) {
+        const uint32_t actual_hash = crc32(0, buffer, buffer_size);
+        EXPECT_EQ(actual_hash, expected_hash);
+    }
+};
+
+const uint32_t crc32_large_buf::expected_hash;
+uint8_t *crc32_large_buf::buffer = nullptr;
+
 INSTANTIATE_TEST_SUITE_P(crc32, crc32_variant, testing::ValuesIn(tests));
 
 #define TEST_CRC32(name, func, support_flag) \
@@ -237,6 +263,13 @@ INSTANTIATE_TEST_SUITE_P(crc32, crc32_variant, testing::ValuesIn(tests));
             return; \
         } \
         hash(GetParam(), func); \
+    } \
+    TEST_F(crc32_large_buf, name) { \
+        if (!(support_flag)) { \
+            GTEST_SKIP(); \
+            return; \
+        } \
+        hash(func); \
     }
 
 #ifndef WITHOUT_CHORBA
