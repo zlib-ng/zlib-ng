@@ -1,4 +1,7 @@
 #include "zbuild.h"
+#if defined(__EMSCRIPTEN__)
+#  include "zutil_p.h"
+#endif
 #include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
 #include "generic_functions.h"
@@ -25,7 +28,11 @@
  * @note Uses 128KB temporary buffer
  */
 Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_word_t* input, size_t len) {
+#if defined(__EMSCRIPTEN__)
+    z_word_t* bitbuffer = (z_word_t*)zng_alloc(bitbuffersizebytes);
+#else
     ALIGNED_(16) z_word_t bitbuffer[bitbuffersizezwords];
+#endif
     const uint8_t* bitbufferbytes = (const uint8_t*) bitbuffer;
 
     size_t i = 0;
@@ -480,6 +487,9 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
         crc = crc_table[(crc ^ final_bytes[j] ^ bitbufferbytes[(j+i) % bitbuffersizebytes]) & 0xff] ^ (crc >> 8);
     }
 
+#if defined(__EMSCRIPTEN__)
+    zng_free(bitbuffer);
+#endif
     return crc;
 }
 
