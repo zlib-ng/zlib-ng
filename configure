@@ -100,6 +100,7 @@ buildpower8=1
 buildpower9=1
 buildneon=1
 buildrvv=1
+buildzbc=1
 builddfltccdeflate=0
 builddfltccinflate=0
 buildcrc32vx=1
@@ -120,6 +121,11 @@ xsaveflag="-mxsave"
 armv8flag=
 neonflag=
 rvvflag=
+rvvzbcflag=
+zbcflag=
+# We need to set defaults so we can test if either RVV or ZBC or both are disabled
+HAVE_RVV_INTRIN=0
+HAVE_ZBC_EXT=0
 armv6flag=
 noltoflag="-fno-lto"
 vgfmaflag="-march=z13"
@@ -173,7 +179,8 @@ case "$1" in
       echo '    [--without-armv8]           Compiles without ARMv8 CRC32 instruction set' | tee -a configure.log
       echo '    [--without-neon]            Compiles without ARM Neon SIMD instruction set' | tee -a configure.log
       echo '    [--without-armv6]           Compiles without ARMv6 SIMD instruction set' | tee -a configure.log
-      echo '    [--without-rvv]             Compiles without RVV instruction set' | tee -a configure.log
+      echo '    [--without-rvv]             Compiles without RISC-V RVV instruction set' | tee -a configure.log
+      echo '    [--without-zbc]             Compiles without RISC-V ZBC instruction set' | tee -a configure.log
       echo '    [--without-altivec]         Compiles without PPC AltiVec support' | tee -a configure.log
       echo '    [--without-power8]          Compiles without Power8 instruction set' | tee -a configure.log
       echo '    [--with-dfltcc-deflate]     Use DEFLATE CONVERSION CALL instruction for compression on IBM Z' | tee -a configure.log
@@ -211,6 +218,7 @@ case "$1" in
     --without-armv6) buildarmv6=0; shift ;;
     --without-altivec) buildaltivec=0 ; shift ;;
     --without-rvv) buildrvv=0 ; shift ;;
+    --without-zbc) buildzbc=0 ; shift ;;
     --without-power8) buildpower8=0 ; shift ;;
     --without-power9) buildpower9=0 ; shift ;;
     --with-dfltcc-deflate) builddfltccdeflate=1; shift ;;
@@ -943,6 +951,22 @@ else
 fi
 
 echo >> configure.log
+
+# check for linux/auxvec.h
+cat > $test.c <<EOF
+#include <linux/auxvec.h>
+int main() { return 0; }
+EOF
+if try $CC -c $CFLAGS $test.c; then
+  echo "Checking for linux/auxvec.h... Yes." | tee -a configure.log
+  CFLAGS="${CFLAGS} -DHAVE_LINUX_AUXVEC_H"
+  SFLAGS="${SFLAGS} -DHAVE_LINUX_AUXVEC_H"
+else
+  echo "Checking for linux/auxvec.h... No." | tee -a configure.log
+fi
+
+echo >> configure.log
+
 
 # check for ptrdiff_t and save result in zconf.h
 printf "Checking for ptrdiff_t... " | tee -a configure.log
@@ -1712,9 +1736,45 @@ EOF
     if [ -n "$rvvflag" ] && try ${CC} ${CFLAGS} ${rvvflag} $test.c; then
         echo "Checking for RISC-V Vector intrinsics ... Yes." | tee -a configure.log
         HAVE_RVV_INTRIN=1
+        rvvzbcflag="${rvvflag}"
     else
         echo "Checking for RISC-V Vector intrinsics ... No." | tee -a configure.log
         HAVE_RVV_INTRIN=0
+    fi
+}
+
+check_zbc_compiler_flag() {
+    cat > $test.c << EOF
+int main() { return 0; }
+EOF
+    if try $CC -c $CFLAGS -march=rv64gc_zbc $test.c; then
+        echo "Check whether -march=rv64gc_zbc works ... Yes." | tee -a configure.log
+        zbcflag="-march=rv64gc_zbc"
+        if test $buildrvv -eq 1 -a "$HAVE_RVV_INTRIN" -eq 1; then
+            rvvzbcflag="${rvvflag}_zbc"
+        else
+            rvvzbcflag="${zbcflag}"
+        fi
+    else
+        echo "Check whether -march=rv64gc_zbc works ... No." | tee -a configure.log
+        zbcflag=""
+    fi
+
+  cat > $test.c << EOF
+#include <stdint.h>
+uint64_t f(uint64_t a, uint64_t b) {
+    uint64_t c;
+    __asm__ __volatile__ ("clmul %[result], %[input_a], %[input_b]" : [result] "=r" (c) : [input_a] "r" (a), [input_b] "r" (b));
+    return c;
+}
+int main(void) { return f(1, 2); }
+EOF
+    if [ -n "$zbcflag" ] && try ${CC} ${CFLAGS} ${zbcflag} $test.c; then
+        echo "Checking for RISC-V ZBC extension ... Yes." | tee -a configure.log
+        HAVE_ZBC_EXT=1
+    else
+        echo "Checking for RISC-V ZBC extension ... No." | tee -a configure.log
+        HAVE_ZBC_EXT=0
     fi
 }
 
@@ -2093,6 +2153,13 @@ EOF
         ARCHDIR=arch/riscv
 
         if test $without_optimizations -eq 0; then
+            if test $buildrvv -eq 1 -o $buildzbc -eq 1; then
+                CFLAGS="${CFLAGS} -DRISCV_FEATURES"
+                SFLAGS="${SFLAGS} -DRISCV_FEATURES"
+
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} riscv_features.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} riscv_features.lo"
+            fi
             if test $buildrvv -eq 1; then
             check_rvv_compiler_flag
 
@@ -2100,13 +2167,21 @@ EOF
                     CFLAGS="${CFLAGS} -DRISCV_FEATURES -DRISCV_RVV"
                     SFLAGS="${SFLAGS} -DRISCV_FEATURES -DRISCV_RVV"
 
-                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} riscv_features.o"
-                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} riscv_features.lo"
-
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_rvv.o chunkset_rvv.o compare256_rvv.o slide_hash_rvv.o"
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_rvv.lo chunkset_rvv.lo compare256_rvv.lo slide_hash_rvv.lo"
 
                     ARCH="${ARCH}+rvv"
+                fi
+            fi
+            if test $buildzbc -eq 1; then
+            check_zbc_compiler_flag
+
+                if test $HAVE_ZBC_EXT -eq 1; then
+                    CFLAGS="${CFLAGS} -DRISCV_CRC32_ZBC"
+                    SFLAGS="${SFLAGS} -DRISCV_CRC32_ZBC"
+
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_zbc.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_zbc.lo"
                 fi
             fi
         fi
@@ -2364,6 +2439,8 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^VGFMAFLAG *=/s#=.*#=$vgfmaflag#
 /^PPCFLAGS *=/s#=.*#=$vmxflag#
 /^RVVFLAG *=/s#=.*#=$rvvflag#
+/^RVVZBCFLAG *=/s#=.*#=$rvvzbcflag#
+/^ZBCFLAG *=/s#=.*#=$zbcflag#
 " > $ARCHDIR/Makefile
 
 # Append header files dependencies.

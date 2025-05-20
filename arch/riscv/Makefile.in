@@ -15,19 +15,22 @@ SRCTOP=../..
 TOPDIR=$(SRCTOP)
 
 RVVFLAG=
+RVVZBCFLAG=
+ZBCFLAG=
 
 all: \
 	riscv_features.o riscv_features.lo \
 	adler32_rvv.o adler32_rvv.lo \
 	chunkset_rvv.o chunkset_rvv.lo \
 	compare256_rvv.o compare256_rvv.lo \
-	slide_hash_rvv.o slide_hash_rvv.lo
+	slide_hash_rvv.o slide_hash_rvv.lo \
+        crc32_zbc.o crc32_zbc.lo
 
 riscv_features.o: $(SRCDIR)/riscv_features.c
-	$(CC) $(CFLAGS) $(RVVFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/riscv_features.c
+	$(CC) $(CFLAGS) $(RVVZBCFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/riscv_features.c
 
 riscv_features.lo: $(SRCDIR)/riscv_features.c
-	$(CC) $(SFLAGS) $(RVVFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/riscv_features.c
+	$(CC) $(SFLAGS) $(RVVZBCFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/riscv_features.c
 
 adler32_rvv.o: $(SRCDIR)/adler32_rvv.c
 	$(CC) $(CFLAGS) $(RVVFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_rvv.c
@@ -52,6 +55,12 @@ slide_hash_rvv.o: $(SRCDIR)/slide_hash_rvv.c
 
 slide_hash_rvv.lo: $(SRCDIR)/slide_hash_rvv.c
 	$(CC) $(SFLAGS) $(RVVFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_rvv.c
+
+crc32_zbc.o: $(SRCDIR)/crc32_zbc.c
+	$(CC) $(CFLAGS) $(ZBCFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_zbc.c
+
+crc32_zbc.lo: $(SRCDIR)/crc32_zbc.c
+	$(CC) $(SFLAGS) $(ZBCFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_zbc.c
 
 mostlyclean: clean
 clean:

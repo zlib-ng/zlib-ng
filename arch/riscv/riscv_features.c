@@ -60,6 +60,7 @@ void Z_INTERNAL riscv_check_features(struct riscv_cpu_features *features) {
         riscv_check_features_runtime(features);
     else
         riscv_check_features_compile_time(features);
+#ifdef RISCV_RVV
     if (features->has_rvv) {
         size_t e8m1_vec_len;
         intptr_t vtype_reg_val;
@@ -76,4 +77,5 @@ void Z_INTERNAL riscv_check_features(struct riscv_cpu_features *features) {
         // bytes
         features->has_rvv = (vtype_reg_val >= 0 && e8m1_vec_len >= 16);
     }
+#endif
 }
