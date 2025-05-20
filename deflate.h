@@ -142,7 +142,7 @@ typedef struct deflate_allocs_s {
     Pos             *head;
 } deflate_allocs;
 
-struct ALIGNED_(64) internal_state {
+struct internal_state {
     PREFIX3(stream)      *strm;            /* pointer back to this zlib stream */
     unsigned char        *pending_buf;     /* output still pending */
     unsigned char        *pending_out;     /* next pending byte to output to the stream */
@@ -248,7 +248,7 @@ struct ALIGNED_(64) internal_state {
     int padding[2];
 #endif
 
-    struct crc32_fold_s ALIGNED_(16) crc_fold;
+    struct crc32_fold_s crc_fold;
 
                 /* used by trees.c: */
     /* Didn't use ct_data typedef below to suppress compiler warning */
@@ -327,9 +327,9 @@ struct ALIGNED_(64) internal_state {
     int32_t bi_valid;
     /* Number of valid bits in bi_buf.  All bits above the last valid bit are always zero. */
 
+#if defined(_M_IX86) || defined(_M_ARM)
     /* Reserved for future use and alignment purposes */
     int32_t reserved[19];
-#if defined(_M_IX86) || defined(_M_ARM)
     int32_t padding2[4];
 #endif
 };
