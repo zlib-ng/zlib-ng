@@ -2,7 +2,7 @@ prefix=@prefix@
 exec_prefix=@exec_prefix@
 symbol_prefix=@symbol_prefix@
 libdir=@libdir@
-sharedlibdir=@sharedlibdir@
+sharedlibdir=@libdir@
 includedir=@includedir@
 
 Name: zlib@SUFFIX@
