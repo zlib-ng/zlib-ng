@@ -86,11 +86,6 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
  */
 static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
     Assert(len > 0, "chunkcopy should never have a length 0");
-    int32_t align = ((len - 1) % sizeof(chunk_t)) + 1;
-    memcpy(out, from, sizeof(chunk_t));
-    out += align;
-    from += align;
-    len -= align;
     ptrdiff_t dist = out - from;
     if (dist < 0 || dist >= len) {
         memcpy(out, from, len);
@@ -98,18 +93,24 @@ static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len
         from += len;
         return out;
     }
-    if (dist >= sizeof(chunk_t)) {
-        dist = (dist / sizeof(chunk_t)) * sizeof(chunk_t);
-        memcpy(out, from, dist);
-        out += dist;
-        from += dist;
-        len -= dist;
+
+    int32_t align = ((len - 1) % sizeof(chunk_t)) + 1;
+    memcpy(out, from, sizeof(chunk_t));
+    out += align;
+    from += align;
+    len -= align;
+
+    size_t vl = (dist / sizeof(chunk_t)) * sizeof(chunk_t);
+    while (len > dist) {
+        memcpy(out, from, vl);
+        out += vl;
+        from += vl;
+        len -= vl;
     }
-    while (len > 0) {
-        memcpy(out, from, sizeof(chunk_t));
-        out += sizeof(chunk_t);
-        from += sizeof(chunk_t);
-        len -= sizeof(chunk_t);
+
+    if (len > 0) {
+        memcpy(out, from, len);
+        out += len;
     }
     return out;
 }
