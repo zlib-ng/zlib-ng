@@ -249,6 +249,24 @@ jobs:
             chost: riscv64-linux-gnu
             packages: qemu-user crossbuild-essential-riscv64
 
+          - name: Ubuntu GCC 14 LoongArch64
+            os: ubuntu-latest
+            compiler: loongarch64-linux-gnu-gcc-14
+            configure-args: --warn --static
+            chost: loongarch64-linux-gnu
+            packages: qemu-user gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc-dev-loong64-cross
+            cflags: -static
+            ldflags: -static
+
+          - name: Ubuntu GCC 14 LoongArch64 Compat No Opt
+            os: ubuntu-latest
+            compiler: loongarch64-linux-gnu-gcc-14
+            configure-args: --warn --static --zlib-compat --without-optimizations --without-new-strategies
+            chost: loongarch64-linux-gnu
+            packages: qemu-user gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc-dev-loong64-cross
+            cflags: -static
+            ldflags: -static
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
