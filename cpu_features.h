@@ -18,6 +18,8 @@
 #  include "arch/s390/s390_features.h"
 #elif defined(RISCV_FEATURES)
 #  include "arch/riscv/riscv_features.h"
+#elif defined(LOONGARCH_FEATURES)
+#  include "arch/loongarch/loongarch_features.h"
 #endif
 
 struct cpu_features {
@@ -31,6 +33,8 @@ struct cpu_features {
     struct s390_cpu_features s390;
 #elif defined(RISCV_FEATURES)
     struct riscv_cpu_features riscv;
+#elif defined(LOONGARCH_FEATURES)
+    struct loongarch_cpu_features loongarch;
 #else
     char empty;
 #endif

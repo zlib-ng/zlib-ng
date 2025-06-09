@@ -104,6 +104,7 @@ buildzbc=1
 builddfltccdeflate=0
 builddfltccinflate=0
 buildcrc32vx=1
+buildcrc32la=1
 floatabi=
 forcesse2=0
 # For CPUs that can benefit from AVX512, it seems GCC generates suboptimal
@@ -224,6 +225,7 @@ case "$1" in
     --with-dfltcc-deflate) builddfltccdeflate=1; shift ;;
     --with-dfltcc-inflate) builddfltccinflate=1; shift ;;
     --without-crc32-vx) buildcrc32vx=0; shift ;;
+    --without-crc32-la) buildcrc32la=0; shift ;;
     --with-reduced-mem) reducedmem=1; shift ;;
     --force-sse2) forcesse2=1; shift ;;
     -a*=* | --archs=*) ARCHS=$(echo $1 | sed 's/.*=//'); shift ;;
@@ -358,6 +360,8 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       ARCH=powerpc64le ;;
     riscv64)
       ARCH=riscv64 ;;
+    loongarch64)
+      ARCH=loongarch64 ;;
   esac
   CFLAGS="-O2 ${CFLAGS}"
   if test -n "${ARCHS}"; then
@@ -1708,6 +1712,27 @@ EOF
     fi
 }
 
+check_la64_crc_intrinsics() {
+    # Check whether "crc" intrinsic is available
+
+    cat > $test.c << EOF
+#include <larchintrin.h>
+int main(void) {
+    char ch = 'a';
+    int crc = __crc_w_b_w(ch, 0);
+    return crc;
+}
+EOF
+    printf "Checking for CRC support... " | tee -a configure.log
+    if try $CC -c $CFLAGS $test.c; then
+        HAVE_LA64_CRC_INTRIN=1
+        echo "Yes." | tee -a configure.log
+    else
+        HAVE_LA64_CRC_INTRIN=0
+        echo "No." | tee -a configure.log
+    fi
+}
+
 check_rvv_compiler_flag() {
     cat > $test.c << EOF
 int main() { return 0; }
@@ -2226,6 +2251,30 @@ EOF
             fi
         fi
     ;;
+    # loongarch specific optimizations
+    loongarch64)
+        ARCHDIR=arch/loongarch
+
+        # Enable arch-specific optimizations
+        if test $without_optimizations -eq 0; then
+            CFLAGS="${CFLAGS} -DLOONGARCH_FEATURES"
+            SFLAGS="${SFLAGS} -DLOONGARCH_FEATURES"
+
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} loongarch_features.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} loongarch_features.lo"
+
+            if test $buildcrc32la -eq 1; then
+                check_la64_crc_intrinsics
+                if test $HAVE_LA64_CRC_INTRIN -eq 1; then
+                    CFLAGS="${CFLAGS} -DLOONGARCH_CRC"
+                    SFLAGS="${SFLAGS} -DLOONGARCH_CRC"
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_la.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_la.lo"
+                fi
+            fi
+        fi
+    ;;
+
     *)
         [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=$ARCH
     ;;

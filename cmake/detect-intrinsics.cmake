@@ -676,3 +676,17 @@ macro(check_xsave_intrinsics)
         HAVE_XSAVE_INTRIN FAIL_REGEX "not supported")
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
+
+macro(check_la64_crc_intrinsics)
+    # Check whether compiler supports "crc" intrinsic
+    set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG} ${ZNOLTOFLAG}")
+    check_c_source_compiles(
+        "#include <larchintrin.h>
+        int main(void) {
+            char ch = 'a';
+            int crc = __crc_w_b_w(ch, 0);
+            return crc;
+        }"
+        HAVE_LA64_CRC_INTRIN)
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()

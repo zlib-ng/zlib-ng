@@ -321,5 +321,8 @@ TEST_CRC32(chorba_sse2, crc32_chorba_sse2, test_cpu_features.x86.has_sse2)
 #if !defined(WITHOUT_CHORBA) && defined(X86_SSE41) && !defined(NO_CHORBA_SSE)
 TEST_CRC32(chorba_sse41, crc32_chorba_sse41, test_cpu_features.x86.has_sse41)
 #endif
+#if defined(LOONGARCH_CRC)
+TEST_CRC32(loongarch64, crc32_loongarch64, test_cpu_features.loongarch.has_crc)
+#endif
 
 #endif

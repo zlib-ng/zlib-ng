@@ -97,5 +97,8 @@ BENCHMARK_CRC32(pclmulqdq, crc32_pclmulqdq, test_cpu_features.x86.has_pclmulqdq)
 /* CRC32 fold does a memory copy while hashing */
 BENCHMARK_CRC32(vpclmulqdq, crc32_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq));
 #endif
+#ifdef LOONGARCH_CRC
+BENCHMARK_CRC32(loongarch64, crc32_loongarch64, test_cpu_features.loongarch.has_crc);
+#endif
 
 #endif

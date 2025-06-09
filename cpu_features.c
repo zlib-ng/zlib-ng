@@ -19,5 +19,7 @@ Z_INTERNAL void cpu_check_features(struct cpu_features *features) {
     s390_check_features(&features->s390);
 #elif defined(RISCV_FEATURES)
     riscv_check_features(&features->riscv);
+#elif defined(LOONGARCH_FEATURES)
+    loongarch_check_features(&features->loongarch);
 #endif
 }

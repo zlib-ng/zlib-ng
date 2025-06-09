@@ -269,6 +269,13 @@ static void init_functable(void) {
         ft.crc32 = crc32_s390_vx;
 #endif
 
+    // LOONGARCH
+#ifdef LOONGARCH_CRC
+    if (cf.loongarch.has_crc) {
+        ft.crc32 = crc32_loongarch64;
+    }
+#endif
+
     // Assign function pointers individually for atomic operation
     FUNCTABLE_ASSIGN(ft, force_init);
     FUNCTABLE_ASSIGN(ft, adler32);
