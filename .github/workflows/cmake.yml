@@ -502,25 +502,25 @@ jobs:
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v142
 
-          - name: Windows MSVC 2019 v141 Win32
-            os: windows-2019
+          - name: Windows MSVC 2022 v141 Win32
+            os: windows-2022
             compiler: cl
-            cmake-args: -G "Visual Studio 16 2019" -A Win32 -T v141
+            cmake-args: -G "Visual Studio 17 2022" -A Win32 -T v141
 
-          - name: Windows MSVC 2019 v141 Win64
-            os: windows-2019
+          - name: Windows MSVC 2022 v141 Win64
+            os: windows-2022
             compiler: cl
-            cmake-args: -G "Visual Studio 16 2019" -A x64 -T v141
+            cmake-args: -G "Visual Studio 17 2022" -A x64 -T v141
 
-          - name: Windows MSVC 2019 v140 Win32
-            os: windows-2019
+          - name: Windows MSVC 2022 v140 Win32
+            os: windows-2022
             compiler: cl
-            cmake-args: -G "Visual Studio 16 2019" -A Win32 -T v140
+            cmake-args: -G "Visual Studio 17 2022" -A Win32,version=10.0.14393.0 -T v140 -DCMAKE_SYSTEM_VERSION=10.0.14393.0
 
-          - name: Windows MSVC 2019 v140 Win64
-            os: windows-2019
+          - name: Windows MSVC 2022 v140 Win64
+            os: windows-2022
             compiler: cl
-            cmake-args: -G "Visual Studio 16 2019" -A x64 -T v140
+            cmake-args: -G "Visual Studio 17 2022" -A x64,version=10.0.14393.0 -T v140 -DCMAKE_SYSTEM_VERSION=10.0.14393.0
 
           - name: Windows MSVC ARM No Test
             os: windows-latest
@@ -654,6 +654,40 @@ jobs:
         # zlib-ng does not need perl, so simply remove it.
         choco uninstall --no-progress strawberryperl
         choco install --no-progress ninja ${{ matrix.packages }}
+
+    - name: Install Visual Studio toolset v140 (Windows)
+      if: contains(matrix.name, 'v140')
+      run: |
+        # Windows 10 SDK (10.0.14393.795)
+        # https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/index-legacy
+        Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=838916 -OutFile sdksetup.exe -UseBasicParsing
+        Unblock-File sdksetup.exe
+        Start-Process -Wait sdksetup.exe -ArgumentList "/q", "/norestart", "/ceip off", "/features OptionId.WindowsSoftwareDevelopmentKit"
+
+        Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
+        $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+        $componentsToInstall= @(
+          "Microsoft.VisualStudio.Component.VC.140"
+        )
+        [string]$workloadArgs = $componentsToInstall | ForEach-Object {" --add " +  $_}
+        $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"",$workloadArgs, '--quiet', '--norestart', '--nocache')
+        # should be run twice
+        $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+        $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+
+    - name: Install Visual Studio toolset v141 (Windows)
+      if: contains(matrix.name, 'v141')
+      run: |
+        Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
+        $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+        $componentsToInstall= @(
+          "Microsoft.VisualStudio.Component.VC.v141.x86.x64"
+        )
+        [string]$workloadArgs = $componentsToInstall | ForEach-Object {" --add " +  $_}
+        $Arguments = ('/c', "vs_installer.exe", 'modify', '--installPath', "`"$InstallPath`"",$workloadArgs, '--quiet', '--norestart', '--nocache')
+        # should be run twice
+        $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
+        $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
 
     - name: Install packages (macOS)
       if: runner.os == 'macOS'
