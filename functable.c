@@ -275,6 +275,16 @@ static void init_functable(void) {
         ft.crc32 = crc32_loongarch64;
     }
 #endif
+#ifdef LOONGARCH_LSX
+    if (cf.loongarch.has_lsx) {
+        ft.slide_hash = slide_hash_lsx;
+    }
+#endif
+#ifdef LOONGARCH_LASX
+    if (cf.loongarch.has_lasx) {
+        ft.slide_hash = slide_hash_lasx;
+    }
+#endif
 
     // Assign function pointers individually for atomic operation
     FUNCTABLE_ASSIGN(ft, force_init);

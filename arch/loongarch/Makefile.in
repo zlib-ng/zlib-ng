@@ -19,7 +19,9 @@ TOPDIR=$(SRCTOP)
 
 all: \
 	loongarch_features.o loongarch_features.lo \
-    crc32_la.o crc32_la.lo
+	crc32_la.o crc32_la.lo \
+	slide_hash_lasx.o slide_hash_lasx.lo \
+	slide_hash_lsx.o slide_hash_lsx.lo
 
 loongarch_features.o: $(SRCDIR)/loongarch_features.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/loongarch_features.c
@@ -32,6 +34,18 @@ crc32_la.o: $(SRCDIR)/crc32_la.c
 
 crc32_la.lo: $(SRCDIR)/crc32_la.c
 	$(CC) $(SFLAGS) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_la.c
+
+slide_hash_lasx.o:
+	$(CC) $(CFLAGS) $(LASXFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_lasx.c
+
+slide_hash_lasx.lo:
+	$(CC) $(SFLAGS) $(LASXFLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_lasx.c
+
+slide_hash_lsx.o:
+	$(CC) $(CFLAGS) $(LSXFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_lsx.c
+
+slide_hash_lsx.lo:
+	$(CC) $(SFLAGS) $(LSXFLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_lsx.c
 
 mostlyclean: clean
 clean:
