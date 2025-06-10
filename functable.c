@@ -273,6 +273,8 @@ static void init_functable(void) {
 #ifdef LOONGARCH_CRC
     if (cf.loongarch.has_crc) {
         ft.crc32 = crc32_loongarch64;
+        ft.crc32_fold = &crc32_fold_loongarch64;
+        ft.crc32_fold_copy = &crc32_fold_copy_loongarch64;
     }
 #endif
 #ifdef LOONGARCH_LSX

@@ -10,6 +10,8 @@
 
 #ifdef LOONGARCH_CRC
 uint32_t crc32_loongarch64(uint32_t crc, const uint8_t *buf, size_t len);
+void     crc32_fold_copy_loongarch64(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len);
+void     crc32_fold_loongarch64(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc);
 #endif
 
 #ifdef LOONGARCH_LSX
@@ -25,6 +27,10 @@ void slide_hash_lasx(deflate_state *s);
 #  if defined(LOONGARCH_CRC)
 #    undef native_crc32
 #    define native_crc32 crc32_loongarch64
+#    undef native_crc32_fold
+#    define native_crc32_fold crc32_fold_loongarch64
+#    undef native_crc32_fold_copy
+#    define native_crc32_fold_copy crc32_fold_copy_loongarch64
 #  endif
 #  if defined(LOONGARCH_LSX) && defined(__loongarch_sx)
 #    undef native_slide_hash
