@@ -10,6 +10,8 @@
 
 struct loongarch_cpu_features {
     int has_crc;
+    int has_lsx;
+    int has_lasx;
 };
 
 void Z_INTERNAL loongarch_check_features(struct loongarch_cpu_features *features);

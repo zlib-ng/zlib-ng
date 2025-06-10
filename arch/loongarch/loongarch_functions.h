@@ -18,6 +18,10 @@ uint32_t crc32_loongarch64(uint32_t crc, const uint8_t *buf, size_t len);
 #    undef native_crc32
 #    define native_crc32 crc32_loongarch64
 #  endif
+#  if defined(LOONGARCH_LSX) && defined(__loongarch_sx)
+#  endif
+#  if defined(LOONGARCH_LASX) && defined(__loongarch_asx)
+#  endif
 #endif
 
 #endif /* LOONGARCH_FUNCTIONS_H_ */

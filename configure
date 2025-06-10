@@ -119,6 +119,8 @@ sse42flag="-msse4.2"
 pclmulflag="-mpclmul"
 vpclmulflag="-mvpclmulqdq -mavx512f"
 xsaveflag="-mxsave"
+lsxflag="-mlsx"
+lasxflag="-mlasx"
 armv8flag=
 neonflag=
 rvvflag=
@@ -1733,6 +1735,42 @@ EOF
     fi
 }
 
+check_lsx_intrinsics() {
+    # Check whether compiler supports LSX intrinsics
+    cat > $test.c << EOF
+#include <lsxintrin.h>
+__m128i f(__m128i a, __m128i b) {
+    return __lsx_vabsd_b(a, b);
+}
+int main(void) { return 0; }
+EOF
+    if try ${CC} ${CFLAGS} ${lsxflag} $test.c; then
+        echo "Checking for LSX intrinsics ... Yes." | tee -a configure.log
+        HAVE_LSX_INTRIN=1
+    else
+        echo "Checking for LSX intrinsics ... No." | tee -a configure.log
+        HAVE_LSX_INTRIN=0
+    fi
+}
+
+check_lasx_intrinsics() {
+    # Check whether compiler supports LASX intrinsics
+    cat > $test.c << EOF
+#include <lasxintrin.h>
+__m256i f(__m256i a, __m256i b) {
+    return __lasx_xvabsd_b(a, b);
+}
+int main(void) { return 0; }
+EOF
+    if try ${CC} ${CFLAGS} ${lasxflag} $test.c; then
+        echo "Checking for LASX intrinsics ... Yes." | tee -a configure.log
+        HAVE_LASX_INTRIN=1
+    else
+        echo "Checking for LASX intrinsics ... No." | tee -a configure.log
+        HAVE_LASX_INTRIN=0
+    fi
+}
+
 check_rvv_compiler_flag() {
     cat > $test.c << EOF
 int main() { return 0; }
@@ -2272,6 +2310,20 @@ EOF
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_la.lo"
                 fi
             fi
+
+            check_lsx_intrinsics
+            if test $HAVE_LSX_INTRIN -eq 1; then
+                CFLAGS="${CFLAGS} -DLOONGARCH_LSX"
+                SFLAGS="${SFLAGS} -DLOONGARCH_LSX"
+
+            fi
+
+            check_lasx_intrinsics
+            if test $HAVE_LASX_INTRIN -eq 1; then
+                CFLAGS="${CFLAGS} -DLOONGARCH_LASX"
+                SFLAGS="${SFLAGS} -DLOONGARCH_LASX"
+
+            fi
         fi
     ;;
 
@@ -2341,6 +2393,8 @@ echo xsaveflag = $xsaveflag >> configure.log
 echo armv8flag = $armv8flag >> configure.log
 echo neonflag = $neonflag >> configure.log
 echo armv6flag = $armv6flag >> configure.log
+echo lsxflag = $lsxflag >> configure.log
+echo lasxflag = $lasxflag >> configure.log
 echo ARCHDIR = ${ARCHDIR} >> configure.log
 echo ARCH_STATIC_OBJS = ${ARCH_STATIC_OBJS} >> configure.log
 echo ARCH_SHARED_OBJS = ${ARCH_SHARED_OBJS} >> configure.log
@@ -2490,6 +2544,8 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^RVVFLAG *=/s#=.*#=$rvvflag#
 /^RVVZBCFLAG *=/s#=.*#=$rvvzbcflag#
 /^ZBCFLAG *=/s#=.*#=$zbcflag#
+/^LSXFLAG *=/s#=.*#=$lsxflag#
+/^LASXFLAG *=/s#=.*#=$lasxflag#
 " > $ARCHDIR/Makefile
 
 # Append header files dependencies.

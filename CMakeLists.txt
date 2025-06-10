@@ -131,6 +131,8 @@ elseif(BASEARCH_S360_FOUND)
     option(WITH_CRC32_VX "Build with vectorized CRC32 on IBM Z" ON)
 elseif(BASEARCH_LOONGARCH_FOUND)
     option(WITH_CRC32_LA "Build with vectorized CRC32 on LoongArch" ON)
+    option(WITH_LSX "Build with vectorized LSX on LoongArch" ON)
+    cmake_dependent_option(WITH_LASX "Build with vectorized LASX on LoongArch" ON "WITH_LSX" OFF)
 elseif(BASEARCH_X86_FOUND)
     option(WITH_SSE2 "Build with SSE2" ON)
     cmake_dependent_option(WITH_SSSE3 "Build with SSSE3" ON "WITH_SSE2" OFF)
@@ -163,6 +165,8 @@ mark_as_advanced(FORCE
     WITH_RVV
     WITH_RISCV_ZBC
     WITH_CRC32_LA
+    WITH_LSX
+    WITH_LASX
     WITH_INFLATE_STRICT
     WITH_INFLATE_ALLOW_INVALID_DIST
     INSTALL_UTILS
@@ -1028,6 +1032,31 @@ if(WITH_OPTIM)
                 set(WITH_CRC32_LA OFF)
             endif()
         endif()
+
+        if(WITH_LSX)
+            check_lsx_intrinsics()
+            if(HAVE_LSX_INTRIN)
+                add_definitions(-DLOONGARCH_LSX)
+                #set(LSX_SRCS ${ARCHDIR}/)
+                #list(APPEND ZLIB_ARCH_SRCS ${LSX_SRCS})
+                #set_property(SOURCE ${LSX_SRCS} PROPERTY COMPILE_FLAGS "${LSXFLAG} ${NOLTOFLAG}")
+            else()
+                set(HAVE_LSX_INTRIN OFF)
+            endif()
+        endif()
+
+        if(WITH_LASX)
+            check_lasx_intrinsics()
+            if(HAVE_LASX_INTRIN AND HAVE_LSX_INTRIN)
+                add_definitions(-DLOONGARCH_LASX)
+                #set(LASX_SRCS ${ARCHDIR}/)
+                #list(APPEND ZLIB_ARCH_SRCS ${LASX_SRCS})
+                #set_property(SOURCE ${LASX_SRCS} PROPERTY COMPILE_FLAGS "${LASXFLAG} ${NOLTOFLAG}")
+            else()
+                set(HAVE_LASX_INTRIN OFF)
+            endif()
+        endif()
+
     elseif(BASEARCH_X86_FOUND)
         add_definitions(-DX86_FEATURES)
         list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/x86_functions.h)
@@ -1586,6 +1615,8 @@ elseif(BASEARCH_S360_FOUND)
     add_feature_info(WITH_CRC32_VX WITH_CRC32_VX "Build with vectorized CRC32 on IBM Z")
 elseif(BASEARCH_LOONGARCH_FOUND)
     add_feature_info(WITH_CRC32_LA WITH_CRC32_LA "Build with vectorized CRC32 on LoongArch")
+    add_feature_info(WITH_LSX WITH_LSX "Build with vectorized LSX on LoongArch")
+    add_feature_info(WITH_LASX WITH_LASX "Build with vectorized LASX on LoongArch")
 elseif(BASEARCH_X86_FOUND)
     add_feature_info(WITH_AVX2 WITH_AVX2 "Build with AVX2")
     add_feature_info(WITH_AVX512 WITH_AVX512 "Build with AVX512")

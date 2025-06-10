@@ -690,3 +690,37 @@ macro(check_la64_crc_intrinsics)
         HAVE_LA64_CRC_INTRIN)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
+
+macro(check_lsx_intrinsics)
+    if(NOT NATIVEFLAG)
+        set(LSXFLAG "-mlsx")
+    endif()
+    # Check whether compiler supports LSX intrinsics
+    set(CMAKE_REQUIRED_FLAGS "${LSXFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+    check_c_source_compiles(
+        "#include <lsxintrin.h>
+        __m128i f(__m128i a, __m128i b) {
+            return __lsx_vabsd_b(a, b);
+        }
+        int main(void) { return 0; }"
+        HAVE_LSX_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
+macro(check_lasx_intrinsics)
+    if(NOT NATIVEFLAG)
+        set(LASXFLAG "-mlasx")
+    endif()
+    # Check whether compiler supports LASX intrinsics
+    set(CMAKE_REQUIRED_FLAGS "${LASXFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+    check_c_source_compiles(
+        "#include <lasxintrin.h>
+        __m256i f(__m256i a, __m256i b) {
+            return __lasx_xvabsd_b(a, b);
+        }
+        int main(void) { return 0; }"
+        HAVE_LASX_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
