@@ -92,5 +92,11 @@ BENCHMARK_COMPARE256(power9, compare256_power9, test_cpu_features.power.has_arch
 #ifdef RISCV_RVV
 BENCHMARK_COMPARE256(rvv, compare256_rvv, test_cpu_features.riscv.has_rvv);
 #endif
+#if defined(LOONGARCH_LSX) && defined(HAVE_BUILTIN_CTZ)
+BENCHMARK_COMPARE256(lsx, compare256_lsx, test_cpu_features.loongarch.has_lsx);
+#endif
+#if defined(LOONGARCH_LASX) && defined(HAVE_BUILTIN_CTZ)
+BENCHMARK_COMPARE256(lasx, compare256_lasx, test_cpu_features.loongarch.has_lasx);
+#endif
 
 #endif

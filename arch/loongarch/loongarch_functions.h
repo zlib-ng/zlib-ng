@@ -16,10 +16,20 @@ void     crc32_fold_loongarch64(crc32_fold *crc, const uint8_t *src, size_t len,
 
 #ifdef LOONGARCH_LSX
 void slide_hash_lsx(deflate_state *s);
+#  ifdef HAVE_BUILTIN_CTZ
+    uint32_t compare256_lsx(const uint8_t *src0, const uint8_t *src1);
+    uint32_t longest_match_lsx(deflate_state *const s, Pos cur_match);
+    uint32_t longest_match_slow_lsx(deflate_state *const s, Pos cur_match);
+#  endif
 #endif
 
 #ifdef LOONGARCH_LASX
 void slide_hash_lasx(deflate_state *s);
+#  ifdef HAVE_BUILTIN_CTZ
+    uint32_t compare256_lasx(const uint8_t *src0, const uint8_t *src1);
+    uint32_t longest_match_lasx(deflate_state *const s, Pos cur_match);
+    uint32_t longest_match_slow_lasx(deflate_state *const s, Pos cur_match);
+#  endif
 #endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
@@ -35,10 +45,26 @@ void slide_hash_lasx(deflate_state *s);
 #  if defined(LOONGARCH_LSX) && defined(__loongarch_sx)
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_lsx
+#    ifdef HAVE_BUILTIN_CTZ
+#      undef native_compare256
+#      define native_compare256 compare256_lsx
+#      undef native_longest_match
+#      define native_longest_match longest_match_lsx
+#      undef native_longest_match_slow
+#      define native_longest_match_slow longest_match_slow_lsx
+#    endif
 #  endif
 #  if defined(LOONGARCH_LASX) && defined(__loongarch_asx)
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_lasx
+#    ifdef HAVE_BUILTIN_CTZ
+#      undef native_compare256
+#      define native_compare256 compare256_lasx
+#      undef native_longest_match
+#      define native_longest_match longest_match_lasx
+#      undef native_longest_match_slow
+#      define native_longest_match_slow longest_match_slow_lasx
+#    endif
 #  endif
 #endif
 

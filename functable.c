@@ -280,11 +280,21 @@ static void init_functable(void) {
 #ifdef LOONGARCH_LSX
     if (cf.loongarch.has_lsx) {
         ft.slide_hash = slide_hash_lsx;
+#  ifdef HAVE_BUILTIN_CTZ
+        ft.compare256 = &compare256_lsx;
+        ft.longest_match = &longest_match_lsx;
+        ft.longest_match_slow = &longest_match_slow_lsx;
+#  endif
     }
 #endif
 #ifdef LOONGARCH_LASX
     if (cf.loongarch.has_lasx) {
         ft.slide_hash = slide_hash_lasx;
+#  ifdef HAVE_BUILTIN_CTZ
+        ft.compare256 = &compare256_lasx;
+        ft.longest_match = &longest_match_lasx;
+        ft.longest_match_slow = &longest_match_slow_lasx;
+#  endif
     }
 #endif
 

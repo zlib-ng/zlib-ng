@@ -2316,8 +2316,8 @@ EOF
                 CFLAGS="${CFLAGS} -DLOONGARCH_LSX"
                 SFLAGS="${SFLAGS} -DLOONGARCH_LSX"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_hash_lsx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_hash_lsx.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare256_lsx.o slide_hash_lsx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare256_lsx.lo slide_hash_lsx.lo"
             fi
 
             check_lasx_intrinsics
@@ -2325,8 +2325,8 @@ EOF
                 CFLAGS="${CFLAGS} -DLOONGARCH_LASX"
                 SFLAGS="${SFLAGS} -DLOONGARCH_LASX"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} slide_hash_lasx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_hash_lasx.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare256_lasx.o slide_hash_lasx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare256_lasx.lo slide_hash_lasx.lo"
             fi
         fi
     ;;

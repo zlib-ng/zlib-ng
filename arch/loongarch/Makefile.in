@@ -20,6 +20,8 @@ TOPDIR=$(SRCTOP)
 all: \
 	loongarch_features.o loongarch_features.lo \
 	crc32_la.o crc32_la.lo \
+	compare256_lasx.o compare256_lasx.lo \
+	compare256_lsx.o compare256_lsx.lo \
 	slide_hash_lasx.o slide_hash_lasx.lo \
 	slide_hash_lsx.o slide_hash_lsx.lo
 
@@ -34,6 +36,18 @@ crc32_la.o: $(SRCDIR)/crc32_la.c
 
 crc32_la.lo: $(SRCDIR)/crc32_la.c
 	$(CC) $(SFLAGS) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_la.c
+
+compare256_lasx.o:
+	$(CC) $(CFLAGS) $(LASXFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_lasx.c
+
+compare256_lasx.lo:
+	$(CC) $(SFLAGS) $(LASXFLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_lasx.c
+
+compare256_lsx.o:
+	$(CC) $(CFLAGS) $(LSXFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_lsx.c
+
+compare256_lsx.lo:
+	$(CC) $(SFLAGS) $(LSXFLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_lsx.c
 
 slide_hash_lasx.o:
 	$(CC) $(CFLAGS) $(LASXFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_lasx.c
