@@ -12,4 +12,15 @@ static inline int lsx_movemask_b(__m128i v) {
     return __lsx_vpickve2gr_w(__lsx_vmskltz_b(v), 0);
 }
 
+static inline __m128i lsx_shuffle_b(__m128i a, __m128i b) {
+    /* most significant bit is set - negative 8-bit integer */
+    __m128i msb_mask = __lsx_vslti_b(b, 0);
+
+    /* shuffle, clear msb in indices vector b */
+    __m128i dst = __lsx_vshuf_b(a, a, __lsx_vandi_b(b, 0xF));
+
+    /* invert and apply mask - clear dst-element if b-msb is set */
+    return __lsx_vand_v(dst, __lsx_vnor_v(msb_mask, msb_mask));
+}
+
 #endif // include guard LSXINTRIN_EXT_H

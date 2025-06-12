@@ -285,6 +285,9 @@ static void init_functable(void) {
         ft.longest_match = &longest_match_lsx;
         ft.longest_match_slow = &longest_match_slow_lsx;
 #  endif
+        ft.chunksize = &chunksize_lsx;
+        ft.chunkmemset_safe = &chunkmemset_safe_lsx;
+        ft.inflate_fast = &inflate_fast_lsx;
     }
 #endif
 #ifdef LOONGARCH_LASX
