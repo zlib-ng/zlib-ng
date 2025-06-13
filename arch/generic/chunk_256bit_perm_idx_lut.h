@@ -1,7 +1,10 @@
-#ifndef _AVX2_TABLES_H
-#define _AVX2_TABLES_H
+/* chunk_256bit_perm_idx_lut.h - shared AVX512/AVX2/LASX permutation idx lut for use with chunkmemset family of functions.
+ * For conditions of distribution and use, see copyright notice in zlib.h
+ */
+#ifndef CHUNK_256BIT_PERM_IDX_LUT_H_
+#define CHUNK_256BIT_PERM_IDX_LUT_H_
 
-#include "../generic/chunk_permute_table.h"
+#include "chunk_permute_table.h"
 
 /* Populate don't cares so that this is a direct lookup (with some indirection into the permute table), because dist can
  * never be 0 - 2, we'll start with an offset, subtracting 3 from the input */

@@ -298,6 +298,9 @@ static void init_functable(void) {
         ft.longest_match = &longest_match_lasx;
         ft.longest_match_slow = &longest_match_slow_lasx;
 #  endif
+        ft.chunksize = &chunksize_lasx;
+        ft.chunkmemset_safe = &chunkmemset_safe_lasx;
+        ft.inflate_fast = &inflate_fast_lasx;
     }
 #endif
 

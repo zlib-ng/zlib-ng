@@ -33,6 +33,9 @@ void slide_hash_lasx(deflate_state *s);
     uint32_t longest_match_lasx(deflate_state *const s, Pos cur_match);
     uint32_t longest_match_slow_lasx(deflate_state *const s, Pos cur_match);
 #  endif
+uint32_t chunksize_lasx(void);
+uint8_t* chunkmemset_safe_lasx(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
+void inflate_fast_lasx(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
@@ -66,6 +69,12 @@ void slide_hash_lasx(deflate_state *s);
 #  if defined(LOONGARCH_LASX) && defined(__loongarch_asx)
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_lasx
+#    undef native_chunksize
+#    define native_chunksize chunksize_lasx
+#    undef native_chunkmemset_safe
+#    define native_chunkmemset_safe chunkmemset_safe_lasx
+#    undef native_inflate_fast
+#    define native_inflate_fast inflate_fast_lasx
 #    ifdef HAVE_BUILTIN_CTZ
 #      undef native_compare256
 #      define native_compare256 compare256_lasx

@@ -1,13 +1,17 @@
-/* chunkset_avx2.c -- AVX2 inline functions to copy small data chunks.
+/* chunkset_lasx.c -- LASX inline functions to copy small data chunks, based on Intel AVX2 implementation
+ * Copyright (C) 2025 Vladislav Shchapov <vladislav@shchapov.ru>
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 #include "zbuild.h"
 #include "zmemory.h"
 
-#ifdef X86_AVX2
+#ifdef LOONGARCH_LASX
+
+#include <lasxintrin.h>
+#include "lasxintrin_ext.h"
+#include "lsxintrin_ext.h"
+
 #include "arch/generic/chunk_256bit_perm_idx_lut.h"
-#include <immintrin.h>
-#include "x86_intrins.h"
 
 typedef __m256i chunk_t;
 typedef __m128i halfchunk_t;
@@ -20,33 +24,28 @@ typedef __m128i halfchunk_t;
 #define HAVE_HALF_CHUNK
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
-    *chunk = _mm256_set1_epi16(zng_memread_2(from));
+    *chunk = __lasx_xvreplgr2vr_h(zng_memread_2(from));
 }
 
 static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
-    *chunk = _mm256_set1_epi32(zng_memread_4(from));
+    *chunk = __lasx_xvreplgr2vr_w(zng_memread_4(from));
 }
 
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
-    *chunk = _mm256_set1_epi64x(zng_memread_8(from));
+    *chunk = __lasx_xvreplgr2vr_d(zng_memread_8(from));
 }
 
 static inline void chunkmemset_16(uint8_t *from, chunk_t *chunk) {
-    /* See explanation in chunkset_avx512.c */
-#if defined(_MSC_VER) && _MSC_VER <= 1900
-    halfchunk_t half = _mm_loadu_si128((__m128i*)from);
-    *chunk = _mm256_inserti128_si256(_mm256_castsi128_si256(half), half, 1);
-#else
-    *chunk = _mm256_broadcastsi128_si256(_mm_loadu_si128((__m128i*)from));
-#endif
+    halfchunk_t half = __lsx_vld(from, 0);
+    *chunk = lasx_inserti128_si256(lasx_castsi128_si256(half), half, 1);
 }
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
-    *chunk = _mm256_loadu_si256((__m256i *)s);
+    *chunk = __lasx_xvld(s, 0);
 }
 
 static inline void storechunk(uint8_t *out, chunk_t *chunk) {
-    _mm256_storeu_si256((__m256i *)out, *chunk);
+    __lasx_xvst(*chunk, out, 0);
 }
 
 static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t dist) {
@@ -64,66 +63,64 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
         /* This simpler case still requires us to shuffle in 128 bit lanes, so we must apply a static offset after
          * broadcasting the first vector register to both halves. This is _marginally_ faster than doing two separate
          * shuffles and combining the halves later */
-        const __m256i permute_xform =
-            _mm256_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                             16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16);
-        __m256i perm_vec = _mm256_load_si256((__m256i*)(permute_table+lut_rem.idx));
-        __m128i ret_vec0 = _mm_loadu_si128((__m128i*)buf);
-        perm_vec = _mm256_add_epi8(perm_vec, permute_xform);
-        ret_vec = _mm256_inserti128_si256(_mm256_castsi128_si256(ret_vec0), ret_vec0, 1);
-        ret_vec = _mm256_shuffle_epi8(ret_vec, perm_vec);
+        const __m256i permute_xform = lasx_inserti128_si256(__lasx_xvreplgr2vr_b(0), __lsx_vreplgr2vr_b(16), 1);
+        __m256i perm_vec = __lasx_xvld(permute_table+lut_rem.idx, 0);
+        __m128i ret_vec0 = __lsx_vld(buf, 0);
+        perm_vec = __lasx_xvadd_b(perm_vec, permute_xform);
+        ret_vec = lasx_inserti128_si256(lasx_castsi128_si256(ret_vec0), ret_vec0, 1);
+        ret_vec = lasx_shuffle_b(ret_vec, perm_vec);
     }  else {
-        __m128i ret_vec0 = _mm_loadu_si128((__m128i*)buf);
-        __m128i ret_vec1 = _mm_loadu_si128((__m128i*)(buf + 16));
+        __m128i ret_vec0 = __lsx_vld(buf, 0);
+        __m128i ret_vec1 = __lsx_vld(buf, 16);
         /* Take advantage of the fact that only the latter half of the 256 bit vector will actually differ */
-        __m128i perm_vec1 = _mm_load_si128((__m128i*)(permute_table + lut_rem.idx));
-        __m128i xlane_permutes = _mm_cmpgt_epi8(_mm_set1_epi8(16), perm_vec1);
-        __m128i xlane_res  = _mm_shuffle_epi8(ret_vec0, perm_vec1);
+        __m128i perm_vec1 = __lsx_vld(permute_table + lut_rem.idx, 0);
+        __m128i xlane_permutes = __lsx_vslt_b(perm_vec1, __lsx_vreplgr2vr_b(16));
+        __m128i xlane_res  = lsx_shuffle_b(ret_vec0, perm_vec1);
         /* Since we can't wrap twice, we can simply keep the later half exactly how it is instead of having to _also_
          * shuffle those values */
-        __m128i latter_half = _mm_blendv_epi8(ret_vec1, xlane_res, xlane_permutes);
-        ret_vec = _mm256_inserti128_si256(_mm256_castsi128_si256(ret_vec0), latter_half, 1);
+        __m128i latter_half = __lsx_vbitsel_v(ret_vec1, xlane_res, xlane_permutes);
+        ret_vec = lasx_inserti128_si256(lasx_castsi128_si256(ret_vec0), latter_half, 1);
     }
 
     return ret_vec;
 }
 
 static inline void loadhalfchunk(uint8_t const *s, halfchunk_t *chunk) {
-    *chunk = _mm_loadu_si128((__m128i *)s);
+    *chunk = __lsx_vld(s, 0);
 }
 
 static inline void storehalfchunk(uint8_t *out, halfchunk_t *chunk) {
-    _mm_storeu_si128((__m128i *)out, *chunk);
+    __lsx_vst(*chunk, out, 0);
 }
 
 static inline chunk_t halfchunk2whole(halfchunk_t *chunk) {
     /* We zero extend mostly to appease some memory sanitizers. These bytes are ultimately
      * unlikely to be actually written or read from */
-    return _mm256_zextsi128_si256(*chunk);
+    return lasx_zextsi128_si256(*chunk);
 }
 
 static inline halfchunk_t GET_HALFCHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t dist) {
     lut_rem_pair lut_rem = perm_idx_lut[dist - 3];
     __m128i perm_vec, ret_vec;
     __msan_unpoison(buf + dist, 16 - dist);
-    ret_vec = _mm_loadu_si128((__m128i*)buf);
+    ret_vec = __lsx_vld(buf, 0);
     *chunk_rem = half_rem_vals[dist - 3];
 
-    perm_vec = _mm_load_si128((__m128i*)(permute_table + lut_rem.idx));
-    ret_vec = _mm_shuffle_epi8(ret_vec, perm_vec);
+    perm_vec = __lsx_vld(permute_table + lut_rem.idx, 0);
+    ret_vec = lsx_shuffle_b(ret_vec, perm_vec);
 
     return ret_vec;
 }
 
-#define CHUNKSIZE        chunksize_avx2
-#define CHUNKCOPY        chunkcopy_avx2
-#define CHUNKUNROLL      chunkunroll_avx2
-#define CHUNKMEMSET      chunkmemset_avx2
-#define CHUNKMEMSET_SAFE chunkmemset_safe_avx2
+#define CHUNKSIZE        chunksize_lasx
+#define CHUNKCOPY        chunkcopy_lasx
+#define CHUNKUNROLL      chunkunroll_lasx
+#define CHUNKMEMSET      chunkmemset_lasx
+#define CHUNKMEMSET_SAFE chunkmemset_safe_lasx
 
 #include "chunkset_tpl.h"
 
-#define INFLATE_FAST     inflate_fast_avx2
+#define INFLATE_FAST     inflate_fast_lasx
 
 #include "inffast_tpl.h"
 
