@@ -395,5 +395,8 @@ TEST_ADLER32(avx512_vnni, adler32_avx512_vnni, test_cpu_features.x86.has_avx512v
 #ifdef LOONGARCH_LSX
 TEST_ADLER32(lsx, adler32_lsx, test_cpu_features.loongarch.has_lsx)
 #endif
+#ifdef LOONGARCH_LASX
+TEST_ADLER32(lasx, adler32_lasx, test_cpu_features.loongarch.has_lasx)
+#endif
 
 #endif

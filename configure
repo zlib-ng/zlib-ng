@@ -2325,8 +2325,8 @@ EOF
                 CFLAGS="${CFLAGS} -DLOONGARCH_LASX"
                 SFLAGS="${SFLAGS} -DLOONGARCH_LASX"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chunkset_lasx.o compare256_lasx.o slide_hash_lasx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chunkset_lasx.lo compare256_lasx.lo slide_hash_lasx.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_lasx.o chunkset_lasx.o compare256_lasx.o slide_hash_lasx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_lasx.lo chunkset_lasx.lo compare256_lasx.lo slide_hash_lasx.lo"
             fi
         fi
     ;;

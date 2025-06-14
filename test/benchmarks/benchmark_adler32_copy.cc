@@ -131,5 +131,9 @@ BENCHMARK_ADLER32_COPY(avx512_vnni, adler32_fold_copy_avx512_vnni, test_cpu_feat
 BENCHMARK_ADLER32_BASELINE_COPY(lsx_baseline, adler32_lsx, test_cpu_features.loongarch.has_lsx);
 BENCHMARK_ADLER32_COPY(lsx, adler32_fold_copy_lsx, test_cpu_features.loongarch.has_lsx);
 #endif
+#ifdef LOONGARCH_LASX
+BENCHMARK_ADLER32_BASELINE_COPY(lasx_baseline, adler32_lasx, test_cpu_features.loongarch.has_lasx);
+BENCHMARK_ADLER32_COPY(lasx, adler32_fold_copy_lasx, test_cpu_features.loongarch.has_lasx);
+#endif
 
 #endif

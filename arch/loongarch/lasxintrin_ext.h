@@ -9,6 +9,13 @@
 #include <lasxintrin.h>
 
 
+static inline __m256i lasx_sad_bu(__m256i a, __m256i b) {
+    __m256i tmp = __lasx_xvabsd_bu(a, b);
+    tmp = __lasx_xvhaddw_hu_bu(tmp, tmp);
+    tmp = __lasx_xvhaddw_wu_hu(tmp, tmp);
+    return __lasx_xvhaddw_du_wu(tmp, tmp);
+}
+
 static inline int lasx_movemask_b(__m256i v) {
     v = __lasx_xvmskltz_b(v);
     return __lasx_xvpickve2gr_w(v, 0) | (__lasx_xvpickve2gr_w(v, 4) << 16);

@@ -294,6 +294,8 @@ static void init_functable(void) {
 #endif
 #ifdef LOONGARCH_LASX
     if (cf.loongarch.has_lasx) {
+        ft.adler32 = &adler32_lasx;
+        ft.adler32_fold_copy = &adler32_fold_copy_lasx;
         ft.slide_hash = slide_hash_lasx;
 #  ifdef HAVE_BUILTIN_CTZ
         ft.compare256 = &compare256_lasx;

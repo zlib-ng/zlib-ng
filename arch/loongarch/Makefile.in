@@ -20,6 +20,7 @@ TOPDIR=$(SRCTOP)
 all: \
 	loongarch_features.o loongarch_features.lo \
 	crc32_la.o crc32_la.lo \
+	adler32_lasx.o adler32_lasx.lo \
 	adler32_lsx.o adler32_lsx.lo \
 	chunkset_lasx.o chunkset_lasx.lo \
 	chunkset_lsx.o chunkset_lsx.lo \
@@ -39,6 +40,12 @@ crc32_la.o: $(SRCDIR)/crc32_la.c
 
 crc32_la.lo: $(SRCDIR)/crc32_la.c
 	$(CC) $(SFLAGS) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_la.c
+
+adler32_lasx.o:
+	$(CC) $(CFLAGS) $(LASXFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_lasx.c
+
+adler32_lasx.lo:
+	$(CC) $(SFLAGS) $(LASXFLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_lasx.c
 
 adler32_lsx.o:
 	$(CC) $(CFLAGS) $(LSXFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_lsx.c
