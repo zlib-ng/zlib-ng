@@ -2316,8 +2316,8 @@ EOF
                 CFLAGS="${CFLAGS} -DLOONGARCH_LSX"
                 SFLAGS="${SFLAGS} -DLOONGARCH_LSX"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chunkset_lsx.o compare256_lsx.o slide_hash_lsx.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chunkset_lsx.lo compare256_lsx.lo slide_hash_lsx.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_lsx.o chunkset_lsx.o compare256_lsx.o slide_hash_lsx.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_lsx.lo chunkset_lsx.lo compare256_lsx.lo slide_hash_lsx.lo"
             fi
 
             check_lasx_intrinsics

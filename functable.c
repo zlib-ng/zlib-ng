@@ -279,6 +279,8 @@ static void init_functable(void) {
 #endif
 #ifdef LOONGARCH_LSX
     if (cf.loongarch.has_lsx) {
+        ft.adler32 = &adler32_lsx;
+        ft.adler32_fold_copy = &adler32_fold_copy_lsx;
         ft.slide_hash = slide_hash_lsx;
 #  ifdef HAVE_BUILTIN_CTZ
         ft.compare256 = &compare256_lsx;

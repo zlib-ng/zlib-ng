@@ -8,6 +8,13 @@
 #include <lsxintrin.h>
 
 
+static inline __m128i lsx_sad_bu(__m128i a, __m128i b) {
+    __m128i tmp = __lsx_vabsd_bu(a, b);
+    tmp = __lsx_vhaddw_hu_bu(tmp, tmp);
+    tmp = __lsx_vhaddw_wu_hu(tmp, tmp);
+    return __lsx_vhaddw_du_wu(tmp, tmp);
+}
+
 static inline int lsx_movemask_b(__m128i v) {
     return __lsx_vpickve2gr_w(__lsx_vmskltz_b(v), 0);
 }

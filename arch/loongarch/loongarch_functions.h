@@ -15,6 +15,8 @@ void     crc32_fold_loongarch64(crc32_fold *crc, const uint8_t *src, size_t len,
 #endif
 
 #ifdef LOONGARCH_LSX
+uint32_t adler32_lsx(uint32_t adler, const uint8_t *src, size_t len);
+uint32_t adler32_fold_copy_lsx(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 void slide_hash_lsx(deflate_state *s);
 #  ifdef HAVE_BUILTIN_CTZ
     uint32_t compare256_lsx(const uint8_t *src0, const uint8_t *src1);
@@ -49,6 +51,10 @@ void inflate_fast_lasx(PREFIX3(stream) *strm, uint32_t start);
 #    define native_crc32_fold_copy crc32_fold_copy_loongarch64
 #  endif
 #  if defined(LOONGARCH_LSX) && defined(__loongarch_sx)
+#    undef native_adler32
+#    define native_adler32 adler32_lsx
+#    undef native_adler32_fold_copy
+#    define native_adler32_fold_copy adler32_fold_copy_lsx
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_lsx
 #    undef native_chunksize
