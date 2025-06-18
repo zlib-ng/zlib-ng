@@ -19,11 +19,11 @@ Features
 * Modern C11 syntax and a clean code layout
 * Deflate medium and quick algorithms based on Intel’s zlib fork
 * Support for CPU intrinsics when available
-  * Adler32 implementation using SSSE3, AVX2, AVX512, AVX512-VNNI, Neon, VMX & VSX
-  * CRC32-B implementation using PCLMULQDQ, VPCLMULQDQ, ARMv8, & IBM Z
-  * Slide hash implementations using SSE2, AVX2, ARMv6, Neon, VMX & VSX
-  * Compare256 implementations using SSE2, AVX2, Neon, POWER9 & RVV
-  * Inflate chunk copying using SSE2, SSSE3, AVX, Neon & VSX
+  * Adler32 implementation using SSSE3, AVX2, AVX512, AVX512-VNNI, Neon, VMX & VSX, LSX, LASX
+  * CRC32-B implementation using PCLMULQDQ, VPCLMULQDQ, ARMv8, & IBM Z, LoongArch
+  * Slide hash implementations using SSE2, AVX2, ARMv6, Neon, VMX & VSX, LSX, LASX
+  * Compare256 implementations using SSE2, AVX2, Neon, POWER9 & RVV, LSX, LASX
+  * Inflate chunk copying using SSE2, SSSE3, AVX, Neon & VSX, LSX, LASX
   * Support for hardware-accelerated deflate using IBM Z DFLTCC
 * Safe unaligned memory read/writes and large bit buffer improvements
 * Includes improvements from Cloudflare and Intel forks
@@ -31,7 +31,7 @@ Features
 * Comprehensive set of CMake unit tests
 * Code sanitizers, fuzzing, and coverage
 * GitHub Actions continuous integration on Windows, macOS, and Linux
-  * Emulated CI for ARM, AARCH64, PPC, PPC64, RISCV, SPARC64, S390x using qemu
+  * Emulated CI for ARM, AARCH64, LoongArch, PPC, PPC64, RISCV, SPARC64, S390x using qemu
 
 
 History
