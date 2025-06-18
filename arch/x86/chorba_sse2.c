@@ -33,7 +33,7 @@ Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint64_
     uint64_t next4 = 0;
     uint64_t next5 = 0;
 
-    __m128i next12 = _mm_cvtsi64x_si128(next1);
+    __m128i next12 = _mm_cvtsi64_si128(next1);
     __m128i next34 = _mm_setzero_si128();
     __m128i next56 = _mm_setzero_si128();
     __m128i ab1, ab2, ab3, ab4, cd1, cd2, cd3, cd4;
@@ -802,11 +802,11 @@ Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint64_
         next56 = _mm_unpackhi_epi64(cd4, _mm_setzero_si128());
     }
 
-    next1 = _mm_cvtsi128_si64x(next12);
-    next2 = _mm_cvtsi128_si64x(_mm_unpackhi_epi64(next12, next12));
-    next3 = _mm_cvtsi128_si64x(next34);
-    next4 = _mm_cvtsi128_si64x(_mm_unpackhi_epi64(next34, next34));
-    next5 = _mm_cvtsi128_si64x(next56);
+    next1 = _mm_cvtsi128_si64(next12);
+    next2 = _mm_cvtsi128_si64(_mm_unpackhi_epi64(next12, next12));
+    next3 = _mm_cvtsi128_si64(next34);
+    next4 = _mm_cvtsi128_si64(_mm_unpackhi_epi64(next34, next34));
+    next5 = _mm_cvtsi128_si64(next56);
 
     /* Skip the call to memcpy */
     size_t copy_len = len - i;

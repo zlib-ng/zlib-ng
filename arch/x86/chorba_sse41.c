@@ -93,7 +93,7 @@ static Z_FORCEINLINE uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
     }
 
     /* We need to mix this in */
-    __m128i init_crc = _mm_cvtsi64x_si128(crc);
+    __m128i init_crc = _mm_cvtsi64_si128(crc);
     crc = 0;
 
     size_t i = 0;
