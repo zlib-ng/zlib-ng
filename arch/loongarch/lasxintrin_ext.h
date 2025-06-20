@@ -9,6 +9,65 @@
 #include <lasxintrin.h>
 
 
+#ifdef __clang__
+#  define LA_VREGS_PREFIX "$vr"
+#  define LA_XREGS_PREFIX "$xr"
+#else /* GCC */
+#  define LA_VREGS_PREFIX "$f"
+#  define LA_XREGS_PREFIX "$f"
+#endif
+#define LA_ALL_REGS "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31"
+
+static inline __m256i lasx_zextsi128_si256(__m128i in) {
+    __m256i out = __lasx_xvldi(0);
+    __asm__ volatile (
+        ".irp i," LA_ALL_REGS                  "\n\t"
+        " .ifc %[out], " LA_XREGS_PREFIX"\\i    \n\t"
+        "  .irp j," LA_ALL_REGS                "\n\t"
+        "   .ifc %[in], " LA_VREGS_PREFIX "\\j  \n\t"
+        "    xvpermi.q $xr\\i, $xr\\j, 0x20     \n\t"
+        "   .endif                              \n\t"
+        "  .endr                                \n\t"
+        " .endif                                \n\t"
+        ".endr                                  \n\t"
+        : [out] "+f" (out) : [in] "f" (in)
+    );
+    return out;
+}
+
+static inline __m256i lasx_set_si128(__m128i inhi, __m128i inlo) {
+    __m256i out;
+    __asm__ volatile (
+        ".irp i," LA_ALL_REGS                  "\n\t"
+        " .ifc %[hi], " LA_VREGS_PREFIX "\\i    \n\t"
+        "  .irp j," LA_ALL_REGS                "\n\t"
+        "   .ifc %[lo], " LA_VREGS_PREFIX "\\j  \n\t"
+        "    xvpermi.q $xr\\i, $xr\\j, 0x20     \n\t"
+        "   .endif                              \n\t"
+        "  .endr                                \n\t"
+        " .endif                                \n\t"
+        ".endr                                  \n\t"
+        ".ifnc %[out], %[hi]                    \n\t"
+        ".irp i," LA_ALL_REGS                  "\n\t"
+        " .ifc %[out], " LA_XREGS_PREFIX "\\i   \n\t"
+        "  .irp j," LA_ALL_REGS                "\n\t"
+        "   .ifc %[hi], " LA_VREGS_PREFIX "\\j  \n\t"
+        "    xvori.b $xr\\i, $xr\\j, 0          \n\t"
+        "   .endif                              \n\t"
+        "  .endr                                \n\t"
+        " .endif                                \n\t"
+        ".endr                                  \n\t"
+        ".endif                                 \n\t"
+        : [out] "=f" (out), [hi] "+f" (inhi)
+        : [lo] "f" (inlo)
+    );
+    return out;
+}
+
+static inline __m256i lasx_broadcastsi128_si256(__m128i in) {
+    return lasx_set_si128(in, in);
+}
+
 static inline __m256i lasx_sad_bu(__m256i a, __m256i b) {
     __m256i tmp = __lasx_xvabsd_bu(a, b);
     tmp = __lasx_xvhaddw_hu_bu(tmp, tmp);
@@ -19,23 +78,6 @@ static inline __m256i lasx_sad_bu(__m256i a, __m256i b) {
 static inline int lasx_movemask_b(__m256i v) {
     v = __lasx_xvmskltz_b(v);
     return __lasx_xvpickve2gr_w(v, 0) | (__lasx_xvpickve2gr_w(v, 4) << 16);
-}
-
-static inline __m256i lasx_castsi128_si256(__m128i v)
-{
-    return (__m256i) { v[0], v[1], 0, 0 };
-}
-
-static inline __m256i lasx_inserti128_si256(__m256i a, __m128i b, const int imm8) {
-    if (imm8 == 0)
-        return __lasx_xvpermi_q(a, lasx_castsi128_si256(b), 0x30);
-    else
-        return __lasx_xvpermi_q(a, lasx_castsi128_si256(b), 0x02);
-}
-
-static inline __m256i lasx_zextsi128_si256(__m128i v) {
-    return (__m256i) { v[0], v[1], 0, 0 };
-    /* return lasx_inserti128_si256(__lasx_xvreplgr2vr_w(0), v, 0); */
 }
 
 /* See: lsx_shuffle_b */

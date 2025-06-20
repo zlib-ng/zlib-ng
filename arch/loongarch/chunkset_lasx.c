@@ -36,8 +36,7 @@ static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
 }
 
 static inline void chunkmemset_16(uint8_t *from, chunk_t *chunk) {
-    halfchunk_t half = __lsx_vld(from, 0);
-    *chunk = lasx_inserti128_si256(lasx_castsi128_si256(half), half, 1);
+    *chunk = lasx_broadcastsi128_si256(__lsx_vld(from, 0));
 }
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
@@ -63,11 +62,11 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
         /* This simpler case still requires us to shuffle in 128 bit lanes, so we must apply a static offset after
          * broadcasting the first vector register to both halves. This is _marginally_ faster than doing two separate
          * shuffles and combining the halves later */
-        const __m256i permute_xform = lasx_inserti128_si256(__lasx_xvreplgr2vr_b(0), __lsx_vreplgr2vr_b(16), 1);
+        const __m256i permute_xform = lasx_set_si128(__lsx_vreplgr2vr_b(16), __lsx_vreplgr2vr_b(0));
         __m256i perm_vec = __lasx_xvld(permute_table+lut_rem.idx, 0);
         __m128i ret_vec0 = __lsx_vld(buf, 0);
         perm_vec = __lasx_xvadd_b(perm_vec, permute_xform);
-        ret_vec = lasx_inserti128_si256(lasx_castsi128_si256(ret_vec0), ret_vec0, 1);
+        ret_vec = lasx_set_si128(ret_vec0, ret_vec0);
         ret_vec = lasx_shuffle_b(ret_vec, perm_vec);
     }  else {
         __m128i ret_vec0 = __lsx_vld(buf, 0);
@@ -79,7 +78,7 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
         /* Since we can't wrap twice, we can simply keep the later half exactly how it is instead of having to _also_
          * shuffle those values */
         __m128i latter_half = __lsx_vbitsel_v(ret_vec1, xlane_res, xlane_permutes);
-        ret_vec = lasx_inserti128_si256(lasx_castsi128_si256(ret_vec0), latter_half, 1);
+        ret_vec = lasx_set_si128(latter_half, ret_vec0);
     }
 
     return ret_vec;
