@@ -14,26 +14,66 @@
 
 Z_INTERNAL uint32_t crc32_loongarch64(uint32_t crc, const uint8_t *buf,
                                       size_t len) {
-    crc = (~crc) & 0xffffffff;
+    Z_REGISTER uint32_t c;
+    Z_REGISTER uint16_t buf2;
+    Z_REGISTER uint32_t buf4;
+    Z_REGISTER uint64_t buf8;
 
-    while (len >= 8) {
-        crc = (uint32_t)__crc_w_d_w((long int)zng_memread_8(buf), (int)crc);
-        buf += 8;
-        len -= 8;
-    }
-    if (len & 4) {
-        crc = (uint32_t)__crc_w_w_w((int)zng_memread_4(buf), (int)crc);
-        buf += 4;
-    }
-    if (len & 2) {
-        crc = (uint32_t)__crc_w_h_w((short)zng_memread_2(buf), (int)crc);
-        buf += 2;
-    }
-    if (len & 1) {
-        crc = (uint32_t)__crc_w_b_w((char)(*buf), (int)crc);
+    c = ~crc;
+
+    if (UNLIKELY(len == 1)) {
+        c = (uint32_t)__crc_w_b_w((char)(*buf), (int)c);
+        c = ~c;
+        return c;
     }
 
-    return crc ^ 0xffffffff;
+    if ((ptrdiff_t)buf & (sizeof(uint64_t) - 1)) {
+        if (len && ((ptrdiff_t)buf & 1)) {
+            c = (uint32_t)__crc_w_b_w((char)(*buf++), (int)c);
+            len--;
+        }
+
+        if ((len >= sizeof(uint16_t)) && ((ptrdiff_t)buf & (sizeof(uint32_t) - 1))) {
+            buf2 = *((uint16_t*)buf);
+            c = (uint32_t)__crc_w_h_w((short)buf2, (int)c);
+            buf += sizeof(uint16_t);
+            len -= sizeof(uint16_t);
+        }
+
+        if ((len >= sizeof(uint32_t)) && ((ptrdiff_t)buf & (sizeof(uint64_t) - 1))) {
+            buf4 = *((uint32_t*)buf);
+            c = (uint32_t)__crc_w_w_w((int)buf4, (int)c);
+            len -= sizeof(uint32_t);
+            buf += sizeof(uint32_t);
+        }
+
+    }
+
+    while (len >= sizeof(uint64_t)) {
+        buf8 = *((uint64_t*)buf);
+        c = (uint32_t)__crc_w_d_w((long int)buf8, (int)c);
+        len -= sizeof(uint64_t);
+        buf += sizeof(uint64_t);
+    }
+
+    if (len & sizeof(uint32_t)) {
+        buf4 = *((uint32_t*)buf);
+        c = (uint32_t)__crc_w_w_w((int)buf4, (int)c);
+        buf += sizeof(uint32_t);
+    }
+
+    if (len & sizeof(uint16_t)) {
+        buf2 = *((uint16_t*)buf);
+        c = (uint32_t)__crc_w_h_w((short)buf2, (int)c);
+        buf += sizeof(uint16_t);
+    }
+
+    if (len & sizeof(uint8_t)) {
+        c = (uint32_t)__crc_w_b_w((char)(*buf), (int)c);
+    }
+
+    c = ~c;
+    return c;
 }
 
 

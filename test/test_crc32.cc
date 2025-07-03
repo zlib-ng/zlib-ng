@@ -282,7 +282,7 @@ TEST_CRC32(native, native_crc32, 1)
 
 #else
 
-#ifdef ARM_CRC32
+#if defined(ARM_CRC32) || defined(LOONGARCH_CRC)
 static const int align_offsets[] = {
     1, 2, 3, 4, 5, 6, 7
 };
@@ -295,7 +295,9 @@ static const int align_offsets[] = {
         } \
         hash(GetParam(), func); \
     }
+#endif
 
+#ifdef ARM_CRC32
 INSTANTIATE_TEST_SUITE_P(crc32_alignment, crc32_align, testing::ValuesIn(align_offsets));
 TEST_CRC32(armv8, crc32_armv8, test_cpu_features.arm.has_crc32)
 TEST_CRC32_ALIGN(armv8_align, crc32_armv8, test_cpu_features.arm.has_crc32)
@@ -322,7 +324,9 @@ TEST_CRC32(chorba_sse2, crc32_chorba_sse2, test_cpu_features.x86.has_sse2)
 TEST_CRC32(chorba_sse41, crc32_chorba_sse41, test_cpu_features.x86.has_sse41)
 #endif
 #if defined(LOONGARCH_CRC)
+INSTANTIATE_TEST_SUITE_P(crc32_alignment, crc32_align, testing::ValuesIn(align_offsets));
 TEST_CRC32(loongarch64, crc32_loongarch64, test_cpu_features.loongarch.has_crc)
+TEST_CRC32_ALIGN(loongarch64_align, crc32_loongarch64, test_cpu_features.loongarch.has_crc)
 #endif
 
 #endif
