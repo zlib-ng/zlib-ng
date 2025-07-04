@@ -33,7 +33,7 @@ podman build --squash -f actions-runner.Dockerfile --tag zlib-ng/actions-runner 
 
 # Create new container
 podman create --replace --name=gaplib-actions-runner --env-file=/etc/actions-runner --init \
-       --volume=actions-runner-temp:/home/actions-runner zlib-ng/actions-runner 2>&1 | tee -a /var/log/actions-runner-build.log
+       zlib-ng/actions-runner 2>&1 | tee -a /var/log/actions-runner-build.log
 
 # Start service
 systemctl start actions-runner || true
