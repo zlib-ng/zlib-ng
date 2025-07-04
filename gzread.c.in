@@ -8,6 +8,7 @@
 #include "gzguts.h"
 
 /* Local functions */
+static int gz_read_init(gz_state *state);
 static int gz_load(gz_state *, unsigned char *, unsigned, unsigned *);
 static int gz_avail(gz_state *);
 static int gz_look(gz_state *);
@@ -15,6 +16,22 @@ static int gz_decomp(gz_state *);
 static int gz_fetch(gz_state *);
 static int gz_skip(gz_state *, z_off64_t);
 static size_t gz_read(gz_state *, void *, size_t);
+
+static int gz_read_init(gz_state *state) {
+    /* Allocate gz buffers */
+    if (gz_buffer_alloc(state) != 0) {
+        gz_error(state, Z_MEM_ERROR, "out of memory");
+        return -1;
+    }
+
+    /* Initialize inflate state */
+    if (PREFIX(inflateInit2)(&(state->strm), MAX_WBITS + 16) != Z_OK) {
+        gz_buffer_free(state);
+        gz_error(state, Z_MEM_ERROR, "out of memory");
+        return -1;
+    }
+    return 0;
+}
 
 /* Use read() to load a buffer -- return -1 on error, otherwise 0.  Read from
    state->fd, and update state->eof, state->err, and state->msg as appropriate.
@@ -81,19 +98,9 @@ static int gz_avail(gz_state *state) {
 static int gz_look(gz_state *state) {
     PREFIX3(stream) *strm = &(state->strm);
 
-    if (state->size == 0) {
-        /* Allocate gz buffers */
-        if (gz_buffer_alloc(state) != 0) {
-            return -1;
-        }
-
-        /* Initialize inflate state */
-        if (PREFIX(inflateInit2)(&(state->strm), MAX_WBITS + 16) != Z_OK) {    /* gunzip */
-            gz_buffer_free(state);
-            gz_error(state, Z_MEM_ERROR, "out of memory");
-            return -1;
-        }
-    }
+    /* allocate memory if this is the first time through */
+    if (state->size == 0 && gz_read_init(state) == -1)
+        return -1;
 
     /* get at least the magic bytes in the input buffer */
     if (strm->avail_in < 2) {

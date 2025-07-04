@@ -9,7 +9,7 @@
 #include "gzguts.h"
 
 /* Local functions */
-static int gz_init(gz_state *);
+static int gz_write_init(gz_state *);
 static int gz_comp(gz_state *, int);
 static int gz_zero(gz_state *, z_off64_t);
 static size_t gz_write(gz_state *, void const *, size_t);
@@ -17,13 +17,14 @@ static size_t gz_write(gz_state *, void const *, size_t);
 /* Initialize state for writing a gzip file.  Mark initialization by setting
    state->size to non-zero.  Return -1 on a memory allocation failure, or 0 on
    success. */
-static int gz_init(gz_state *state) {
-    int ret;
+static int gz_write_init(gz_state *state) {
     PREFIX3(stream) *strm = &(state->strm);
 
     /* Allocate gz buffers */
-    if (gz_buffer_alloc(state) != 0)
+    if (gz_buffer_alloc(state) != 0) {
+        gz_error(state, Z_MEM_ERROR, "out of memory");
         return -1;
+    }
 
     /* only need deflate state if compressing */
     if (!state->direct) {
@@ -45,7 +46,7 @@ static int gz_init(gz_state *state) {
 }
 
 /* Compress whatever is at avail_in and next_in and write to the output file.
-   Return -1 if there is an error writing to the output file or if gz_init()
+   Return -1 if there is an error writing to the output file or if gz_write_init()
    fails to allocate memory, otherwise 0.  flush is assumed to be a valid
    deflate() flush value.  If flush is Z_FINISH, then the deflate() state is
    reset to start a new gzip stream.  If gz->direct is true, then simply write
@@ -57,7 +58,7 @@ static int gz_comp(gz_state *state, int flush) {
     PREFIX3(stream) *strm = &(state->strm);
 
     /* allocate memory if this is the first time through */
-    if (state->size == 0 && gz_init(state) == -1)
+    if (state->size == 0 && gz_write_init(state) == -1)
         return -1;
 
     /* write directly if requested */
@@ -155,7 +156,7 @@ static size_t gz_write(gz_state *state, void const *buf, size_t len) {
         return 0;
 
     /* allocate memory if this is the first time through */
-    if (state->size == 0 && gz_init(state) == -1)
+    if (state->size == 0 && gz_write_init(state) == -1)
         return 0;
 
     /* check for seek request */
@@ -350,7 +351,7 @@ int Z_EXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list va) {
         return Z_STREAM_ERROR;
 
     /* make sure we have some buffer space */
-    if (state->size == 0 && gz_init(state) == -1)
+    if (state->size == 0 && gz_write_init(state) == -1)
         return state->err;
 
     /* check for seek request */
