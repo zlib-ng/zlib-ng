@@ -112,6 +112,7 @@ typedef struct {
     unsigned want;          /* requested buffer size, default is GZBUFSIZE */
     unsigned char *in;      /* input buffer (double-sized when writing) */
     unsigned char *out;     /* output buffer (double-sized when reading) */
+    unsigned char *buffers; /* Pointer to the real input/output buffer allocation */
     int direct;             /* 0 if processing gzip, 1 if transparent */
         /* just for reading */
     int how;                /* 0: get header, 1: copy, 2: decompress */
@@ -135,6 +136,10 @@ typedef gz_state *gz_statep;
 
 /* shared functions */
 void Z_INTERNAL gz_error(gz_state *, int, const char *);
+int  Z_INTERNAL gz_buffer_alloc(gz_state *state);
+void Z_INTERNAL gz_buffer_free(gz_state *state);
+void Z_INTERNAL gz_state_free(gz_state *state);
+
 #ifdef ZLIB_COMPAT
 unsigned Z_INTERNAL gz_intmax(void);
 #endif

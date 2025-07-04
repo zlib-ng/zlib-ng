@@ -21,43 +21,22 @@ static int gz_init(gz_state *state) {
     int ret;
     PREFIX3(stream) *strm = &(state->strm);
 
-    /* allocate input buffer (double size for gzprintf) */
-    state->in = (unsigned char *)zng_alloc(state->want << 1);
-    if (state->in == NULL) {
-        gz_error(state, Z_MEM_ERROR, "out of memory");
+    /* Allocate gz buffers */
+    if (gz_buffer_alloc(state) != 0)
         return -1;
-    }
-    memset(state->in, 0, state->want << 1);
 
-    /* only need output buffer and deflate state if compressing */
+    /* only need deflate state if compressing */
     if (!state->direct) {
-        /* allocate output buffer */
-        state->out = (unsigned char *)zng_alloc(state->want);
-        if (state->out == NULL) {
-            zng_free(state->in);
-            gz_error(state, Z_MEM_ERROR, "out of memory");
-            return -1;
-        }
-
         /* allocate deflate memory, set up for gzip compression */
-        strm->zalloc = NULL;
-        strm->zfree = NULL;
-        strm->opaque = NULL;
         ret = PREFIX(deflateInit2)(strm, state->level, Z_DEFLATED, MAX_WBITS + 16, DEF_MEM_LEVEL, state->strategy);
         if (ret != Z_OK) {
-            zng_free(state->out);
-            zng_free(state->in);
+            gz_buffer_free(state);
             gz_error(state, Z_MEM_ERROR, "out of memory");
             return -1;
         }
         strm->next_in = NULL;
-    }
 
-    /* mark state as initialized */
-    state->size = state->want;
-
-    /* initialize write buffer if compressing */
-    if (!state->direct) {
+        /* initialize write buffer */
         strm->avail_out = state->size;
         strm->next_out = state->out;
         state->x.next = strm->next_out;
@@ -513,14 +492,13 @@ int Z_EXPORT PREFIX(gzclose_w)(gzFile file) {
     if (state->size) {
         if (!state->direct) {
             (void)PREFIX(deflateEnd)(&(state->strm));
-            zng_free(state->out);
         }
-        zng_free(state->in);
+        gz_buffer_free(state);
     }
     gz_error(state, Z_OK, NULL);
     free(state->path);
     if (close(state->fd) == -1)
         ret = Z_ERRNO;
-    zng_free(state);
+    gz_state_free(state);
     return ret;
 }

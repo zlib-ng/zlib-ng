@@ -81,29 +81,15 @@ static int gz_avail(gz_state *state) {
 static int gz_look(gz_state *state) {
     PREFIX3(stream) *strm = &(state->strm);
 
-    /* allocate read buffers and inflate memory */
     if (state->size == 0) {
-        /* allocate buffers */
-        state->in = (unsigned char *)zng_alloc(state->want);
-        state->out = (unsigned char *)zng_alloc(state->want << 1);
-        if (state->in == NULL || state->out == NULL) {
-            zng_free(state->out);
-            zng_free(state->in);
-            gz_error(state, Z_MEM_ERROR, "out of memory");
+        /* Allocate gz buffers */
+        if (gz_buffer_alloc(state) != 0) {
             return -1;
         }
-        state->size = state->want;
 
-        /* allocate inflate memory */
-        state->strm.zalloc = NULL;
-        state->strm.zfree = NULL;
-        state->strm.opaque = NULL;
-        state->strm.avail_in = 0;
-        state->strm.next_in = NULL;
+        /* Initialize inflate state */
         if (PREFIX(inflateInit2)(&(state->strm), MAX_WBITS + 16) != Z_OK) {    /* gunzip */
-            zng_free(state->out);
-            zng_free(state->in);
-            state->size = 0;
+            gz_buffer_free(state);
             gz_error(state, Z_MEM_ERROR, "out of memory");
             return -1;
         }
@@ -594,8 +580,7 @@ int Z_EXPORT PREFIX(gzclose_r)(gzFile file) {
     /* free memory and close file */
     if (state->size) {
         PREFIX(inflateEnd)(&(state->strm));
-        zng_free(state->out);
-        zng_free(state->in);
+        gz_buffer_free(state);
     }
     err = state->err == Z_BUF_ERROR ? Z_BUF_ERROR : Z_OK;
     gz_error(state, Z_OK, NULL);
