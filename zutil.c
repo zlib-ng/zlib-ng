@@ -100,6 +100,8 @@ const char * Z_EXPORT PREFIX(zError)(int err) {
     return ERR_MSG(err);
 }
 
+// Zlib-ng's default alloc/free implementation, used unless
+// application supplies its own alloc/free functions.
 void Z_INTERNAL *PREFIX(zcalloc)(void *opaque, unsigned items, unsigned size) {
     Z_UNUSED(opaque);
     return zng_alloc((size_t)items * (size_t)size);
