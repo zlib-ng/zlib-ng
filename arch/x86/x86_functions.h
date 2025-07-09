@@ -115,7 +115,7 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #          define native_crc32 crc32_chorba_sse2
 #      endif
 #    endif
-#endif
+#  endif
 // X86 - SSSE3
 #  if defined(X86_SSSE3) && defined(__SSSE3__)
 #    undef native_adler32
@@ -125,30 +125,30 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_ssse3
 #  endif
+// X86 - SSE4.1
 #  if !defined(WITHOUT_CHORBA) && defined(X86_SSE41) && defined(__SSE4_1__) && !defined(NO_CHORBA_SSE)
 #   undef native_crc32
 #   define native_crc32 crc32_chorba_sse41
-#   endif
+#  endif
 // X86 - SSE4.2
 #  if defined(X86_SSE42) && defined(__SSE4_2__)
 #    undef native_adler32_fold_copy
 #    define native_adler32_fold_copy adler32_fold_copy_sse42
 #  endif
-
 // X86 - PCLMUL
-#if defined(X86_PCLMULQDQ_CRC) && defined(__PCLMUL__)
-#  undef native_crc32
-#  define native_crc32 crc32_pclmulqdq
-#  undef native_crc32_fold
-#  define native_crc32_fold crc32_fold_pclmulqdq
-#  undef native_crc32_fold_copy
-#  define native_crc32_fold_copy crc32_fold_pclmulqdq_copy
-#  undef native_crc32_fold_final
-#  define native_crc32_fold_final crc32_fold_pclmulqdq_final
-#  undef native_crc32_fold_reset
-#  define native_crc32_fold_reset crc32_fold_pclmulqdq_reset
-#endif
-// X86 - AVX
+#  if defined(X86_PCLMULQDQ_CRC) && defined(__PCLMUL__)
+#    undef native_crc32
+#    define native_crc32 crc32_pclmulqdq
+#    undef native_crc32_fold
+#    define native_crc32_fold crc32_fold_pclmulqdq
+#    undef native_crc32_fold_copy
+#    define native_crc32_fold_copy crc32_fold_pclmulqdq_copy
+#    undef native_crc32_fold_final
+#    define native_crc32_fold_final crc32_fold_pclmulqdq_final
+#    undef native_crc32_fold_reset
+#    define native_crc32_fold_reset crc32_fold_pclmulqdq_reset
+#  endif
+// X86 - AVX2
 #  if defined(X86_AVX2) && defined(__AVX2__)
 #    undef native_adler32
 #    define native_adler32 adler32_avx2
@@ -171,7 +171,6 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #      define native_longest_match_slow longest_match_slow_avx2
 #    endif
 #  endif
-
 // X86 - AVX512 (F,DQ,BW,Vl)
 #  if defined(X86_AVX512) && defined(__AVX512F__) && defined(__AVX512DQ__) && defined(__AVX512BW__) && defined(__AVX512VL__)
 #    undef native_adler32

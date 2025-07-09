@@ -52,7 +52,7 @@ void     slide_hash_c(deflate_state *s);
 #  define native_adler32_fold_copy adler32_fold_copy_c
 #  define native_chunkmemset_safe chunkmemset_safe_c
 #  define native_chunksize chunksize_c
-#  define native_crc32 PREFIX(crc32_c)
+#  define native_crc32 crc32_c
 #  define native_crc32_fold crc32_fold_c
 #  define native_crc32_fold_copy crc32_fold_copy_c
 #  define native_crc32_fold_final crc32_fold_final_c

@@ -39,6 +39,7 @@ void slide_hash_armv6(deflate_state *s);
 #  if (defined(ARM_NEON) && (defined(__ARM_NEON__) || defined(__ARM_NEON))) || ARM_NOCHECK_NEON
 #    undef native_adler32
 #    define native_adler32 adler32_neon
+#    undef native_adler32_fold_copy
 #    define native_adler32_fold_copy adler32_fold_copy_neon
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_neon
