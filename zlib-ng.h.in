@@ -1211,7 +1211,7 @@ unsigned long zng_zlibCompileFlags(void);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_compress(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t sourceLen);
+int zng_compress(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t sourceLen);
 /*
      Compresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
@@ -1226,7 +1226,7 @@ int32_t zng_compress(uint8_t *dest, size_t *destLen, const uint8_t *source, size
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_compress2(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t sourceLen, int32_t level);
+int zng_compress2(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t sourceLen, int level);
 /*
      Compresses the source buffer into the destination buffer.  The level
    parameter has the same meaning as in deflateInit.  sourceLen is the byte
@@ -1249,7 +1249,7 @@ size_t zng_compressBound(size_t sourceLen);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_uncompress(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t sourceLen);
+int zng_uncompress(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t sourceLen);
 /*
      Decompresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
@@ -1268,7 +1268,7 @@ int32_t zng_uncompress(uint8_t *dest, size_t *destLen, const uint8_t *source, si
 
 
 Z_EXTERN Z_EXPORT
-int32_t zng_uncompress2(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t *sourceLen);
+int zng_uncompress2(uint8_t *dest, size_t *destLen, const uint8_t *source, size_t *sourceLen);
 /*
      Same as uncompress, except that sourceLen is a pointer, where the
    length of the source is *sourceLen.  On return, *sourceLen is the number of
@@ -1351,7 +1351,7 @@ gzFile zng_gzdopen(int fd, const char *mode);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzbuffer(gzFile file, uint32_t size);
+int zng_gzbuffer(gzFile file, unsigned size);
 /*
      Set the internal buffer size used by this library's functions for file to
    size.  The default buffer size is 8192 bytes.  This function must be called
@@ -1368,7 +1368,7 @@ int32_t zng_gzbuffer(gzFile file, uint32_t size);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzsetparams(gzFile file, int32_t level, int32_t strategy);
+int zng_gzsetparams(gzFile file, int level, int strategy);
 /*
      Dynamically update the compression level and strategy for file.  See the
    description of deflateInit2 for the meaning of these parameters. Previously
@@ -1380,7 +1380,7 @@ int32_t zng_gzsetparams(gzFile file, int32_t level, int32_t strategy);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzread(gzFile file, void *buf, uint32_t len);
+int zng_gzread(gzFile file, void *buf, unsigned len);
 /*
      Read and decompress up to len uncompressed bytes from file into buf.  If
    the input file is not in gzip format, gzread copies the given number of
@@ -1435,7 +1435,7 @@ size_t zng_gzfread(void *buf, size_t size, size_t nitems, gzFile file);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzwrite(gzFile file, void const *buf, uint32_t len);
+int zng_gzwrite(gzFile file, void const *buf, unsigned len);
 /*
      Compress and write the len uncompressed bytes at buf to file. gzwrite
    returns the number of uncompressed bytes written or 0 in case of error.
@@ -1454,7 +1454,7 @@ size_t zng_gzfwrite(void const *buf, size_t size, size_t nitems, gzFile file);
 */
 
 Z_EXTERN Z_EXPORTVA
-int32_t zng_gzprintf(gzFile file, const char *format, ...);
+int zng_gzprintf(gzFile file, const char *format, ...);
 /*
      Convert, format, compress, and write the arguments (...) to file under
    control of the string format, as in fprintf.  gzprintf returns the number of
@@ -1470,7 +1470,7 @@ int32_t zng_gzprintf(gzFile file, const char *format, ...);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzputs(gzFile file, const char *s);
+int zng_gzputs(gzFile file, const char *s);
 /*
      Compress and write the given null-terminated string s to file, excluding
    the terminating null character.
@@ -1479,7 +1479,7 @@ int32_t zng_gzputs(gzFile file, const char *s);
 */
 
 Z_EXTERN Z_EXPORT
-char * zng_gzgets(gzFile file, char *buf, int32_t len);
+char * zng_gzgets(gzFile file, char *buf, int len);
 /*
      Read and decompress bytes from file into buf, until len-1 characters are
    read, or until a newline character is read and transferred to buf, or an
@@ -1494,14 +1494,14 @@ char * zng_gzgets(gzFile file, char *buf, int32_t len);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzputc(gzFile file, int32_t c);
+int zng_gzputc(gzFile file, int c);
 /*
      Compress and write c, converted to an unsigned char, into file.  gzputc
    returns the value that was written, or -1 in case of error.
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzgetc(gzFile file);
+int zng_gzgetc(gzFile file);
 /*
      Read and decompress one byte from file.  gzgetc returns this byte or -1
    in case of end of file or error.  This is implemented as a macro for speed.
@@ -1511,7 +1511,7 @@ int32_t zng_gzgetc(gzFile file);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzungetc(int32_t c, gzFile file);
+int zng_gzungetc(int c, gzFile file);
 /*
      Push c back onto the stream for file to be read as the first character on
    the next read.  At least one character of push-back is always allowed.
@@ -1524,7 +1524,7 @@ int32_t zng_gzungetc(int32_t c, gzFile file);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzflush(gzFile file, int32_t flush);
+int zng_gzflush(gzFile file, int flush);
 /*
      Flush all pending output to file.  The parameter flush is as in the
    deflate() function.  The return value is the zlib error number (see function
@@ -1559,7 +1559,7 @@ z_off64_t zng_gzseek(gzFile file, z_off64_t offset, int whence);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzrewind(gzFile file);
+int zng_gzrewind(gzFile file);
 /*
      Rewind file. This function is supported only for reading.
 
@@ -1588,7 +1588,7 @@ z_off64_t zng_gzoffset(gzFile file);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzeof(gzFile file);
+int zng_gzeof(gzFile file);
 /*
      Return true (1) if the end-of-file indicator for file has been set while
    reading, false (0) otherwise.  Note that the end-of-file indicator is set
@@ -1604,7 +1604,7 @@ int32_t zng_gzeof(gzFile file);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzdirect(gzFile file);
+int zng_gzdirect(gzFile file);
 /*
      Return true (1) if file is being copied directly while reading, or false
    (0) if file is a gzip stream being decompressed.
@@ -1626,7 +1626,7 @@ int32_t zng_gzdirect(gzFile file);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzclose(gzFile file);
+int zng_gzclose(gzFile file);
 /*
      Flush all pending output for file, if necessary, close file and
    deallocate the (de)compression state.  Note that once file is closed, you
@@ -1640,9 +1640,9 @@ int32_t zng_gzclose(gzFile file);
 */
 
 Z_EXTERN Z_EXPORT
-int32_t zng_gzclose_r(gzFile file);
+int zng_gzclose_r(gzFile file);
 Z_EXTERN Z_EXPORT
-int32_t zng_gzclose_w(gzFile file);
+int zng_gzclose_w(gzFile file);
 /*
      Same as gzclose(), but gzclose_r() is only for use when reading, and
    gzclose_w() is only for use when writing or appending.  The advantage to
@@ -1654,7 +1654,7 @@ int32_t zng_gzclose_w(gzFile file);
 */
 
 Z_EXTERN Z_EXPORT
-const char * zng_gzerror(gzFile file, int32_t *errnum);
+const char * zng_gzerror(gzFile file, int *errnum);
 /*
      Return the error message for the last error which occurred on file.
    errnum is set to zlib error number.  If an error occurred in the file system
@@ -1848,7 +1848,7 @@ int32_t zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value *params, 
 */
 
 /* undocumented functions */
-Z_EXTERN Z_EXPORT const char *     zng_zError           (int32_t);
+Z_EXTERN Z_EXPORT const char *     zng_zError           (int);
 Z_EXTERN Z_EXPORT int32_t          zng_inflateSyncPoint (zng_stream *);
 Z_EXTERN Z_EXPORT const uint32_t * zng_get_crc_table    (void);
 Z_EXTERN Z_EXPORT int32_t          zng_inflateUndermine (zng_stream *, int32_t);
@@ -1861,7 +1861,7 @@ Z_EXTERN Z_EXPORT int32_t          zng_deflateResetKeep (zng_stream *);
 #  if defined(_WIN32)
      Z_EXTERN Z_EXPORT gzFile zng_gzopen_w(const wchar_t *path, const char *mode);
 #  endif
-Z_EXTERN Z_EXPORTVA int32_t zng_gzvprintf(gzFile file, const char *format, va_list va);
+Z_EXTERN Z_EXPORTVA int zng_gzvprintf(gzFile file, const char *format, va_list va);
 #endif
 
 #ifdef __cplusplus
