@@ -63,8 +63,10 @@ static void insert_match(deflate_state *s, struct match match) {
         return;
     }
 
-    /* Insert new strings in the hash table. */
-    if (s->lookahead >= WANT_MIN_MATCH) {
+    /* Insert new strings in the hash table only if the match length
+     * is not too large. This saves time but degrades compression.
+     */
+    if (match.match_length <= 16 * s->max_insert_length && s->lookahead >= WANT_MIN_MATCH) {
         match.match_length--; /* string at strstart already in table */
         match.strstart++;
 
