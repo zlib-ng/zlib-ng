@@ -26,9 +26,9 @@
 } while (0)
 
 #  if defined(__arm__) && defined(__clang__) && \
-    (!defined(__clang_major__) || __clang_major__ < 20) && \
-    (defined(__ANDROID__) || defined(__APPLE__))
-/* Android & iOS have too strict alignment requirement (:256) for x4 NEON intrinsics */
+    (!defined(__clang_major__) || __clang_major__ < 20)
+/* Clang versions before 20 have too strict of an alignment
+ * requirement (:256) for x4 NEON intrinsics */
 #    undef ARM_NEON_HASLD4
 #    undef vld1q_u16_x4
 #    undef vld1q_u8_x4
