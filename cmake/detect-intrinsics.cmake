@@ -27,30 +27,32 @@ macro(check_armv8_compiler_flag)
     endif()
     # Check whether compiler supports ARMv8 inline asm
     set(CMAKE_REQUIRED_FLAGS "${ARMV8FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "unsigned int f(unsigned int a, unsigned int b) {
-            unsigned int c;
-        #ifdef __aarch64__
-            __asm__( \"crc32w %w0, %w1, %w2\" : \"=r\" (c) : \"r\" (a), \"r\" (b));
-        #else
-            __asm__( \"crc32w %0, %1, %2\" : \"=r\" (c) : \"r\" (a), \"r\" (b));
-        #endif
-            return (int)c;
-        }
-        int main(void) { return f(1,2); }"
+    check_c_source_compiles([=[
+unsigned int f(unsigned int a, unsigned int b) {
+    unsigned int c;
+#ifdef __aarch64__
+    __asm__( "crc32w %w0, %w1, %w2" : "=r" (c) : "r" (a), "r" (b));
+#else
+    __asm__( "crc32w %0, %1, %2" : "=r" (c) : "r" (a), "r" (b));
+#endif
+    return (int)c;
+}
+int main(void) { return f(1,2); }
+]=]
         HAVE_ARMV8_INLINE_ASM
     )
     # Check whether compiler supports ARMv8 intrinsics
-    check_c_source_compiles(
-        "#if defined(_MSC_VER)
-        #include <intrin.h>
-        #else
-        #include <arm_acle.h>
-        #endif
-        unsigned int f(unsigned int a, unsigned int b) {
-            return __crc32w(a, b);
-        }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#if defined(_MSC_VER)
+#include <intrin.h>
+#else
+#include <arm_acle.h>
+#endif
+unsigned int f(unsigned int a, unsigned int b) {
+    return __crc32w(a, b);
+}
+int main(void) { return 0; }
+]=]
         HAVE_ARMV8_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
@@ -72,30 +74,32 @@ macro(check_armv6_compiler_flag)
     endif()
     # Check whether compiler supports ARMv6 inline asm
     set(CMAKE_REQUIRED_FLAGS "${ARMV6FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "unsigned int f(unsigned int a, unsigned int b) {
-            unsigned int c;
-            __asm__( \"uqsub16 %0, %1, %2\" : \"=r\" (c) : \"r\" (a), \"r\" (b) );
-            return (int)c;
-        }
-        int main(void) { return f(1,2); }"
+    check_c_source_compiles([=[
+unsigned int f(unsigned int a, unsigned int b) {
+    unsigned int c;
+    __asm__( "uqsub16 %0, %1, %2" : "=r" (c) : "r" (a), "r" (b) );
+    return (int)c;
+}
+int main(void) { return f(1,2); }
+]=]
         HAVE_ARMV6_INLINE_ASM
     )
     # Check whether compiler supports ARMv6 intrinsics
-    check_c_source_compiles(
-        "#if defined(_MSC_VER)
-        #include <intrin.h>
-        #else
-        #include <arm_acle.h>
-        #endif
-        unsigned int f(unsigned int a, unsigned int b) {
-        #if defined(_MSC_VER)
-            return _arm_uqsub16(a, b);
-        #else
-            return __uqsub16(a, b);
-        #endif
-        }
-        int main(void) { return f(1,2); }"
+    check_c_source_compiles([=[
+#if defined(_MSC_VER)
+#include <intrin.h>
+#else
+#include <arm_acle.h>
+#endif
+unsigned int f(unsigned int a, unsigned int b) {
+#if defined(_MSC_VER)
+    return _arm_uqsub16(a, b);
+#else
+    return __uqsub16(a, b);
+#endif
+}
+int main(void) { return f(1,2); }
+]=]
         HAVE_ARMV6_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
@@ -128,13 +132,14 @@ macro(check_avx512_intrinsics)
     endif()
     # Check whether compiler supports AVX512 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${AVX512FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <immintrin.h>
-        __m512i f(__m512i y) {
-          __m512i x = _mm512_set1_epi8(2);
-          return _mm512_sub_epi8(x, y);
-        }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#include <immintrin.h>
+__m512i f(__m512i y) {
+    __m512i x = _mm512_set1_epi8(2);
+    return _mm512_sub_epi8(x, y);
+}
+int main(void) { return 0; }
+]=]
         HAVE_AVX512_INTRIN
     )
 endmacro()
@@ -164,13 +169,18 @@ macro(check_avx512vnni_intrinsics)
     endif()
     # Check whether compiler supports AVX512vnni intrinsics
     set(CMAKE_REQUIRED_FLAGS "${AVX512VNNIFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <immintrin.h>
-        __m512i f(__m512i x, __m512i y) {
-            __m512i z = _mm512_setzero_epi32();
-            return _mm512_dpbusd_epi32(z, x, y);
-        }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#include <immintrin.h>
+int main(void) {
+    const __m512i z512 = _mm512_setzero_si512();
+    const __m256i z256 = _mm256_setzero_si256();
+    volatile __m512i r512 = _mm512_dpbusd_epi32(z512, z512, z512);
+    volatile __m256i r256 = _mm256_dpbusd_epi32(z256, z256, z256);
+    (void)r512;
+    (void)r256;
+    return 0;
+}
+]=]
         HAVE_AVX512VNNI_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
@@ -192,13 +202,14 @@ macro(check_avx2_intrinsics)
     endif()
     # Check whether compiler supports AVX2 intrinics
     set(CMAKE_REQUIRED_FLAGS "${AVX2FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <immintrin.h>
-        __m256i f(__m256i x) {
-            const __m256i y = _mm256_set1_epi16(1);
-            return _mm256_subs_epu16(x, y);
-        }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#include <immintrin.h>
+__m256i f(__m256i x) {
+    const __m256i y = _mm256_set1_epi16(1);
+    return _mm256_subs_epu16(x, y);
+}
+int main(void) { return 0; }
+]=]
         HAVE_AVX2_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
@@ -216,43 +227,46 @@ macro(check_neon_compiler_flag)
     endif()
     # Check whether compiler supports NEON flag
     set(CMAKE_REQUIRED_FLAGS "${NEONFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#if defined(_M_ARM64) || defined(_M_ARM64EC)
-        #  include <arm64_neon.h>
-        #else
-        #  include <arm_neon.h>
-        #endif
-        int main() { return 0; }"
+    check_c_source_compiles([=[
+#if defined(_M_ARM64) || defined(_M_ARM64EC)
+#  include <arm64_neon.h>
+#else
+#  include <arm_neon.h>
+#endif
+int main() { return 0; }
+]=]
         NEON_AVAILABLE FAIL_REGEX "not supported")
     # Check whether compiler native flag is enough for NEON support
     # Some GCC versions don't enable FPU (vector unit) when using -march=native
     if(NEON_AVAILABLE AND NATIVEFLAG AND (NOT "${ARCH}" MATCHES "aarch64"))
-        check_c_source_compiles(
-            "#include <arm_neon.h>
-            uint8x16_t f(uint8x16_t x, uint8x16_t y) {
-                return vaddq_u8(x, y);
-            }
-            int main(int argc, char* argv[]) {
-                uint8x16_t a = vdupq_n_u8(argc);
-                uint8x16_t b = vdupq_n_u8(argc);
-                uint8x16_t result = f(a, b);
-                return result[0];
-            }"
+        check_c_source_compiles([=[
+#include <arm_neon.h>
+uint8x16_t f(uint8x16_t x, uint8x16_t y) {
+    return vaddq_u8(x, y);
+}
+int main(int argc, char* argv[]) {
+    uint8x16_t a = vdupq_n_u8(argc);
+    uint8x16_t b = vdupq_n_u8(argc);
+    uint8x16_t result = f(a, b);
+    return result[0];
+}
+]=]
             ARM_NEON_SUPPORT_NATIVE
         )
         if(NOT ARM_NEON_SUPPORT_NATIVE)
             set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG} -mfpu=neon ${ZNOLTOFLAG}")
-            check_c_source_compiles(
-                "#include <arm_neon.h>
-                uint8x16_t f(uint8x16_t x, uint8x16_t y) {
-                    return vaddq_u8(x, y);
-                }
-                int main(int argc, char* argv[]) {
-                    uint8x16_t a = vdupq_n_u8(argc);
-                    uint8x16_t b = vdupq_n_u8(argc);
-                    uint8x16_t result = f(a, b);
-                    return result[0];
-                }"
+            check_c_source_compiles([=[
+#include <arm_neon.h>
+uint8x16_t f(uint8x16_t x, uint8x16_t y) {
+    return vaddq_u8(x, y);
+}
+int main(int argc, char* argv[]) {
+    uint8x16_t a = vdupq_n_u8(argc);
+    uint8x16_t b = vdupq_n_u8(argc);
+    uint8x16_t result = f(a, b);
+    return result[0];
+}
+]=]
                 ARM_NEON_SUPPORT_NATIVE_MFPU
             )
             if(ARM_NEON_SUPPORT_NATIVE_MFPU)
@@ -279,14 +293,15 @@ macro(check_neon_ld4_intrinsics)
     endif()
     # Check whether compiler supports loading 4 neon vecs into a register range
     set(CMAKE_REQUIRED_FLAGS "${NEONFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#if defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
-        #  include <arm64_neon.h>
-        #else
-        #  include <arm_neon.h>
-        #endif
-        int32x4x4_t f(int var[16]) { return vld1q_s32_x4(var); }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#if defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+#  include <arm64_neon.h>
+#else
+#  include <arm_neon.h>
+#endif
+int32x4x4_t f(int var[16]) { return vld1q_s32_x4(var); }
+int main(void) { return 0; }
+]=]
         NEON_HAS_LD4)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
@@ -301,11 +316,12 @@ macro(check_pclmulqdq_intrinsics)
     if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
         # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
         set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-        check_c_source_compiles(
-            "#include <immintrin.h>
-            #include <wmmintrin.h>
-            __m128i f(__m128i a, __m128i b) { return _mm_clmulepi64_si128(a, b, 0x10); }
-            int main(void) { return 0; }"
+        check_c_source_compiles([=[
+#include <immintrin.h>
+#include <wmmintrin.h>
+__m128i f(__m128i a, __m128i b) { return _mm_clmulepi64_si128(a, b, 0x10); }
+int main(void) { return 0; }
+]=]
             HAVE_PCLMULQDQ_INTRIN
         )
         set(CMAKE_REQUIRED_FLAGS)
@@ -323,14 +339,15 @@ macro(check_vpclmulqdq_intrinsics)
     # Check whether compiler supports VPCLMULQDQ intrinsics
     if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
         set(CMAKE_REQUIRED_FLAGS "${VPCLMULFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-        check_c_source_compiles(
-            "#include <immintrin.h>
-            #include <wmmintrin.h>
-            __m512i f(__m512i a) {
-                __m512i b = _mm512_setzero_si512();
-                return _mm512_clmulepi64_epi128(a, b, 0x10);
-            }
-            int main(void) { return 0; }"
+        check_c_source_compiles([=[
+#include <immintrin.h>
+#include <wmmintrin.h>
+__m512i f(__m512i a) {
+    __m512i b = _mm512_setzero_si512();
+    return _mm512_clmulepi64_epi128(a, b, 0x10);
+}
+int main(void) { return 0; }
+]=]
             HAVE_VPCLMULQDQ_INTRIN
         )
         set(CMAKE_REQUIRED_FLAGS)
@@ -342,15 +359,16 @@ endmacro()
 macro(check_ppc_intrinsics)
     # Check if compiler supports AltiVec
     set(CMAKE_REQUIRED_FLAGS "-maltivec ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <altivec.h>
-        int main(void)
-        {
-            vector int a = vec_splats(0);
-            vector int b = vec_splats(0);
-            a = vec_add(a, b);
-            return 0;
-        }"
+    check_c_source_compiles([=[
+#include <altivec.h>
+int main(void)
+{
+    vector int a = vec_splats(0);
+    vector int b = vec_splats(0);
+    a = vec_add(a, b);
+    return 0;
+}
+]=]
         HAVE_ALTIVEC
         )
     set(CMAKE_REQUIRED_FLAGS)
@@ -360,15 +378,16 @@ macro(check_ppc_intrinsics)
     endif()
 
     set(CMAKE_REQUIRED_FLAGS "-maltivec -mno-vsx ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <altivec.h>
-        int main(void)
-        {
-            vector int a = vec_splats(0);
-            vector int b = vec_splats(0);
-            a = vec_add(a, b);
-            return 0;
-        }"
+    check_c_source_compiles([=[
+#include <altivec.h>
+int main(void)
+{
+    vector int a = vec_splats(0);
+    vector int b = vec_splats(0);
+    a = vec_add(a, b);
+    return 0;
+}
+]=]
         HAVE_NOVSX
         )
     set(CMAKE_REQUIRED_FLAGS)
@@ -379,20 +398,21 @@ macro(check_ppc_intrinsics)
 
     # Check if we have what we need for AltiVec optimizations
     set(CMAKE_REQUIRED_FLAGS "${PPCFLAGS} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <sys/auxv.h>
-        #ifdef __FreeBSD__
-        #include <machine/cpu.h>
-        #endif
-        int main() {
-        #ifdef __FreeBSD__
-            unsigned long hwcap;
-            elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-            return (hwcap & PPC_FEATURE_HAS_ALTIVEC);
-        #else
-            return (getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC);
-        #endif
-        }"
+    check_c_source_compiles([=[
+#include <sys/auxv.h>
+#ifdef __FreeBSD__
+#include <machine/cpu.h>
+#endif
+int main() {
+#ifdef __FreeBSD__
+    unsigned long hwcap;
+    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    return (hwcap & PPC_FEATURE_HAS_ALTIVEC);
+#else
+    return (getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC);
+#endif
+}
+]=]
         HAVE_VMX
     )
     set(CMAKE_REQUIRED_FLAGS)
@@ -406,29 +426,31 @@ macro(check_power8_intrinsics)
     endif()
     # Check if we have what we need for POWER8 optimizations
     set(CMAKE_REQUIRED_FLAGS "${POWER8FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <sys/auxv.h>
-        #ifdef __FreeBSD__
-        #include <machine/cpu.h>
-        #endif
-        int main() {
-        #ifdef __FreeBSD__
-            unsigned long hwcap;
-            elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
-            return (hwcap & PPC_FEATURE2_ARCH_2_07);
-        #else
-            return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
-        #endif
-        }"
+    check_c_source_compiles([=[
+#include <sys/auxv.h>
+#ifdef __FreeBSD__
+#include <machine/cpu.h>
+#endif
+int main() {
+#ifdef __FreeBSD__
+    unsigned long hwcap;
+    elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
+    return (hwcap & PPC_FEATURE2_ARCH_2_07);
+#else
+    return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
+#endif
+}
+]=]
         HAVE_POWER8_INTRIN
     )
     if(NOT HAVE_POWER8_INTRIN AND HAVE_LINUX_AUXVEC_H)
-        check_c_source_compiles(
-            "#include <sys/auxv.h>
-            #include <linux/auxvec.h>
-            int main() {
-                return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
-            }"
+        check_c_source_compiles([=[
+#include <sys/auxv.h>
+#include <linux/auxvec.h>
+int main() {
+    return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
+}
+]=]
             HAVE_POWER8_INTRIN2
         )
         if(HAVE_POWER8_INTRIN2)
@@ -448,11 +470,12 @@ macro(check_rvv_intrinsics)
     endif()
     # Check whether compiler supports RVV
     set(CMAKE_REQUIRED_FLAGS "${RISCVFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <riscv_vector.h>
-        int main() {
-            return 0;
-        }"
+    check_c_source_compiles([=[
+#include <riscv_vector.h>
+int main() {
+    return 0;
+}
+]=]
         HAVE_RVV_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
@@ -467,28 +490,30 @@ macro(check_riscv_zbc_ext)
     # Check whether compiler supports RISC-V Zbc inline asm
     # gcc-11 / clang-14 at least
     set(CMAKE_REQUIRED_FLAGS "${RISCVZBCFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <stdint.h>
-        uint64_t f(uint64_t a, uint64_t b) {
-            uint64_t c;
-            __asm__ __volatile__ (\"clmul %[result], %[input_a], %[input_b]\" : [result] \"=r\" (c) : [input_a] \"r\" (a), [input_b] \"r\" (b));
-            return c;
-        }
-        int main(void) { return f(1, 2); }"
+    check_c_source_compiles([=[
+#include <stdint.h>
+uint64_t f(uint64_t a, uint64_t b) {
+    uint64_t c;
+    __asm__ __volatile__ ("clmul %[result], %[input_a], %[input_b]" : [result] "=r" (c) : [input_a] "r" (a), [input_b] "r" (b));
+    return c;
+}
+int main(void) { return f(1, 2); }
+]=]
         HAVE_RISCV_ZBC
     )
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
 macro(check_s390_intrinsics)
-    check_c_source_compiles(
-        "#include <sys/auxv.h>
-        #ifndef HWCAP_S390_VXRS
-        #define HWCAP_S390_VXRS (1 << 11)
-        #endif
-        int main() {
-            return (getauxval(AT_HWCAP) & HWCAP_S390_VXRS);
-        }"
+    check_c_source_compiles([=[
+#include <sys/auxv.h>
+#ifndef HWCAP_S390_VXRS
+#define HWCAP_S390_VXRS (1 << 11)
+#endif
+int main() {
+    return (getauxval(AT_HWCAP) & HWCAP_S390_VXRS);
+}
+]=]
         HAVE_S390_INTRIN
     )
 endmacro()
@@ -501,29 +526,31 @@ macro(check_power9_intrinsics)
     endif()
     # Check if we have what we need for POWER9 optimizations
     set(CMAKE_REQUIRED_FLAGS "${POWER9FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <sys/auxv.h>
-        #ifdef __FreeBSD__
-        #include <machine/cpu.h>
-        #endif
-        int main() {
-        #ifdef __FreeBSD__
-            unsigned long hwcap;
-            elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
-            return (hwcap & PPC_FEATURE2_ARCH_3_00);
-        #else
-            return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_3_00);
-        #endif
-        }"
+    check_c_source_compiles([=[
+#include <sys/auxv.h>
+#ifdef __FreeBSD__
+#include <machine/cpu.h>
+#endif
+int main() {
+#ifdef __FreeBSD__
+    unsigned long hwcap;
+    elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
+    return (hwcap & PPC_FEATURE2_ARCH_3_00);
+#else
+    return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_3_00);
+#endif
+}
+]=]
         HAVE_POWER9_INTRIN
     )
     if(NOT HAVE_POWER9_INTRIN AND HAVE_LINUX_AUXVEC_H)
-        check_c_source_compiles(
-            "#include <sys/auxv.h>
-            #include <linux/auxvec.h>
-            int main() {
-                return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_3_00);
-            }"
+        check_c_source_compiles([=[
+#include <sys/auxv.h>
+#include <linux/auxvec.h>
+int main() {
+    return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_3_00);
+}
+]=]
             HAVE_POWER9_INTRIN2
         )
         if(HAVE_POWER9_INTRIN2)
@@ -553,10 +580,11 @@ macro(check_sse2_intrinsics)
     endif()
     # Check whether compiler supports SSE2 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${SSE2FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <immintrin.h>
-        __m128i f(__m128i x, __m128i y) { return _mm_sad_epu8(x, y); }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#include <immintrin.h>
+__m128i f(__m128i x, __m128i y) { return _mm_sad_epu8(x, y); }
+int main(void) { return 0; }
+]=]
         HAVE_SSE2_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
@@ -576,13 +604,14 @@ macro(check_ssse3_intrinsics)
     endif()
     # Check whether compiler supports SSSE3 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${SSSE3FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <immintrin.h>
-        __m128i f(__m128i u) {
-          __m128i v = _mm_set1_epi32(1);
-          return _mm_hadd_epi32(u, v);
-        }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#include <immintrin.h>
+__m128i f(__m128i u) {
+    __m128i v = _mm_set1_epi32(1);
+    return _mm_hadd_epi32(u, v);
+}
+int main(void) { return 0; }
+]=]
         HAVE_SSSE3_INTRIN
     )
 endmacro()
@@ -601,10 +630,11 @@ macro(check_sse41_intrinsics)
     endif()
     # Check whether compiler supports SSE4.1 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${SSE41FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <smmintrin.h>
-        __m128i f(__m128i a, __m128i b) { return _mm_min_epi32(a, b); }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#include <smmintrin.h>
+__m128i f(__m128i a, __m128i b) { return _mm_min_epi32(a, b); }
+int main(void) { return 0; }
+]=]
         HAVE_SSE41_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
@@ -624,10 +654,11 @@ macro(check_sse42_intrinsics)
     endif()
     # Check whether compiler supports SSE4.2 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${SSE42FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <nmmintrin.h>
-        unsigned int f(unsigned int a, unsigned int b) { return _mm_crc32_u32(a, b); }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#include <nmmintrin.h>
+unsigned int f(unsigned int a, unsigned int b) { return _mm_crc32_u32(a, b); }
+int main(void) { return 0; }
+]=]
         HAVE_SSE42_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
@@ -645,15 +676,16 @@ macro(check_vgfma_intrinsics)
     endif()
     # Check whether compiler supports "VECTOR GALOIS FIELD MULTIPLY SUM AND ACCUMULATE" intrinsic
     set(CMAKE_REQUIRED_FLAGS "${VGFMAFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <vecintrin.h>
-        int main(void) {
-            unsigned long long a __attribute__((vector_size(16))) = { 0 };
-            unsigned long long b __attribute__((vector_size(16))) = { 0 };
-            unsigned char c __attribute__((vector_size(16))) = { 0 };
-            c = vec_gfmsum_accum_128(a, b, c);
-            return c[0];
-        }"
+    check_c_source_compiles([=[
+#include <vecintrin.h>
+int main(void) {
+    unsigned long long a __attribute__((vector_size(16))) = { 0 };
+    unsigned long long b __attribute__((vector_size(16))) = { 0 };
+    unsigned char c __attribute__((vector_size(16))) = { 0 };
+    c = vec_gfmsum_accum_128(a, b, c);
+    return c[0];
+}
+]=]
         HAVE_VGFMA_INTRIN FAIL_REGEX "not supported")
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
@@ -663,16 +695,17 @@ macro(check_xsave_intrinsics)
         set(XSAVEFLAG "-mxsave")
     endif()
     set(CMAKE_REQUIRED_FLAGS "${XSAVEFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#ifdef _MSC_VER
-        #  include <intrin.h>
-        #elif __GNUC__ == 8 && __GNUC_MINOR__ > 1
-        #  include <xsaveintrin.h>
-        #else
-        #  include <immintrin.h>
-        #endif
-        unsigned int f(unsigned int a) { return (int) _xgetbv(a); }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#ifdef _MSC_VER
+#  include <intrin.h>
+#elif __GNUC__ == 8 && __GNUC_MINOR__ > 1
+#  include <xsaveintrin.h>
+#else
+#  include <immintrin.h>
+#endif
+unsigned int f(unsigned int a) { return (int) _xgetbv(a); }
+int main(void) { return 0; }
+]=]
         HAVE_XSAVE_INTRIN FAIL_REGEX "not supported")
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
@@ -680,13 +713,14 @@ endmacro()
 macro(check_la64_crc_intrinsics)
     # Check whether compiler supports "crc" intrinsic
     set(CMAKE_REQUIRED_FLAGS "${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <larchintrin.h>
-        int main(void) {
-            char ch = 'a';
-            int crc = __crc_w_b_w(ch, 0);
-            return crc;
-        }"
+    check_c_source_compiles([=[
+#include <larchintrin.h>
+int main(void) {
+    char ch = 'a';
+    int crc = __crc_w_b_w(ch, 0);
+    return crc;
+}
+]=]
         HAVE_LA64_CRC_INTRIN)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
@@ -697,12 +731,13 @@ macro(check_lsx_intrinsics)
     endif()
     # Check whether compiler supports LSX intrinsics
     set(CMAKE_REQUIRED_FLAGS "${LSXFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <lsxintrin.h>
-        __m128i f(__m128i a, __m128i b) {
-            return __lsx_vabsd_b(a, b);
-        }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#include <lsxintrin.h>
+__m128i f(__m128i a, __m128i b) {
+    return __lsx_vabsd_b(a, b);
+}
+int main(void) { return 0; }
+]=]
         HAVE_LSX_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
@@ -714,12 +749,13 @@ macro(check_lasx_intrinsics)
     endif()
     # Check whether compiler supports LASX intrinsics
     set(CMAKE_REQUIRED_FLAGS "${LASXFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <lasxintrin.h>
-        __m256i f(__m256i a, __m256i b) {
-            return __lasx_xvabsd_b(a, b);
-        }
-        int main(void) { return 0; }"
+    check_c_source_compiles([=[
+#include <lasxintrin.h>
+__m256i f(__m256i a, __m256i b) {
+    return __lasx_xvabsd_b(a, b);
+}
+int main(void) { return 0; }
+]=]
         HAVE_LASX_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
