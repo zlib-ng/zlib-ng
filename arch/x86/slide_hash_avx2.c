@@ -21,9 +21,9 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, const __m256i 
     do {
         __m256i value, result;
 
-        value = _mm256_loadu_si256((__m256i *)table);
+        value = _mm256_load_si256((__m256i *)table);
         result = _mm256_subs_epu16(value, wsize);
-        _mm256_storeu_si256((__m256i *)table, result);
+        _mm256_store_si256((__m256i *)table, result);
 
         table -= 16;
         entries -= 16;

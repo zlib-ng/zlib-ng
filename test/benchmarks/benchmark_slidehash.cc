@@ -25,13 +25,13 @@ private:
 
 public:
     void SetUp(const ::benchmark::State& state) {
-        l0 = (uint16_t *)zng_alloc(HASH_SIZE * sizeof(uint16_t));
+        l0 = (uint16_t *)zng_alloc_aligned(HASH_SIZE * sizeof(uint16_t), 64);
 
         for (uint32_t i = 0; i < HASH_SIZE; i++) {
             l0[i] = rand();
         }
 
-        l1 = (uint16_t *)zng_alloc(MAX_RANDOM_INTS * sizeof(uint16_t));
+        l1 = (uint16_t *)zng_alloc_aligned(MAX_RANDOM_INTS * sizeof(uint16_t), 64);
 
         for (int32_t i = 0; i < MAX_RANDOM_INTS; i++) {
             l1[i] = rand();
@@ -53,8 +53,8 @@ public:
     }
 
     void TearDown(const ::benchmark::State& state) {
-        zng_free(l0);
-        zng_free(l1);
+        zng_free_aligned(l0);
+        zng_free_aligned(l1);
         free(s_g);
     }
 };
@@ -66,7 +66,7 @@ public:
         } \
         Bench(state, fptr); \
     } \
-    BENCHMARK_REGISTER_F(slide_hash, name)->RangeMultiplier(2)->Range(1024, MAX_RANDOM_INTS);
+    BENCHMARK_REGISTER_F(slide_hash, name)->RangeMultiplier(2)->Range(512, MAX_RANDOM_INTS);
 
 BENCHMARK_SLIDEHASH(c, slide_hash_c, 1);
 
