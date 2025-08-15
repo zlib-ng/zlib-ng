@@ -57,9 +57,9 @@ Z_INTERNAL uint32_t UPDATE_HASH(uint32_t h, uint32_t val) {
  * the previous length of the hash chain.
  */
 Z_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, uint32_t str) {
-    Pos head;
     uint8_t *strstart = s->window + str + HASH_CALC_OFFSET;
     uint32_t val, hm;
+    Pos head;
 
     HASH_CALC_VAR_INIT;
     HASH_CALC_READ;
@@ -87,6 +87,11 @@ Z_INTERNAL void INSERT_STRING(deflate_state *const s, uint32_t str, uint32_t cou
     uint8_t *strstart = s->window + str + HASH_CALC_OFFSET;
     uint8_t *strend = strstart + count;
 
+    /* Local pointers to avoid indirection */
+    Pos *headp = s->head;
+    Pos *prevp = s->prev;
+    const unsigned int w_mask = s->w_mask;
+
     for (Pos idx = (Pos)str; strstart < strend; idx++, strstart++) {
         uint32_t val, hm;
 
@@ -96,10 +101,10 @@ Z_INTERNAL void INSERT_STRING(deflate_state *const s, uint32_t str, uint32_t cou
         HASH_CALC_VAR &= HASH_CALC_MASK;
         hm = HASH_CALC_VAR;
 
-        Pos head = s->head[hm];
+        Pos head = headp[hm];
         if (LIKELY(head != idx)) {
-            s->prev[idx & s->w_mask] = head;
-            s->head[hm] = idx;
+            prevp[idx & w_mask] = head;
+            headp[hm] = idx;
         }
     }
 }
