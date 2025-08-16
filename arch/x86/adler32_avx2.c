@@ -41,10 +41,12 @@ rem_peel:
         }
     }
 
-    __m256i vs1, vs2;
+    __m256i vs1, vs2, vs2_0;
 
-    const __m256i dot2v = _mm256_setr_epi8(32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15,
-                                           14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
+    const __m256i dot2v = _mm256_setr_epi8(64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47,
+                                           46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33);
+    const __m256i dot2v_0 = _mm256_setr_epi8(32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15,
+                                             14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
     const __m256i dot3v = _mm256_set1_epi16(1);
     const __m256i zero = _mm256_setzero_si256();
 
@@ -53,10 +55,43 @@ rem_peel:
         vs2 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(adler1));
         __m256i vs1_0 = vs1;
         __m256i vs3 = _mm256_setzero_si256();
+        vs2_0 = vs3;
 
         size_t k = MIN(len, NMAX);
         k -= k % 32;
         len -= k;
+
+        while (k >= 64) {
+            __m256i vbuf = _mm256_loadu_si256((__m256i*)src);
+            __m256i vbuf_0 = _mm256_loadu_si256((__m256i*)(src + 32));
+            src += 64;
+            k -= 64;
+
+            __m256i vs1_sad = _mm256_sad_epu8(vbuf, zero);
+            __m256i vs1_sad2 = _mm256_sad_epu8(vbuf_0, zero);
+
+            if (COPY) {
+                _mm256_storeu_si256((__m256i*)dst, vbuf);
+                _mm256_storeu_si256((__m256i*)(dst + 32), vbuf_0);
+                dst += 64;
+            }
+
+            vs1 = _mm256_add_epi32(vs1, vs1_sad);
+            vs3 = _mm256_add_epi32(vs3, vs1_0);
+            __m256i v_short_sum2 = _mm256_maddubs_epi16(vbuf, dot2v); // sum 32 uint8s to 16 shorts
+            __m256i v_short_sum2_0 = _mm256_maddubs_epi16(vbuf_0, dot2v_0); // sum 32 uint8s to 16 shorts
+            __m256i vsum2 = _mm256_madd_epi16(v_short_sum2, dot3v); // sum 16 shorts to 8 uint32s
+            __m256i vsum2_0 = _mm256_madd_epi16(v_short_sum2_0, dot3v); // sum 16 shorts to 8 uint32s
+            vs1 = _mm256_add_epi32(vs1_sad2, vs1);
+            vs2 = _mm256_add_epi32(vsum2, vs2);
+            vs2_0 = _mm256_add_epi32(vsum2_0, vs2_0);
+            vs1_0 = vs1;
+        }
+
+        vs2 = _mm256_add_epi32(vs2_0, vs2);
+        vs3 = _mm256_slli_epi32(vs3, 6);
+        vs2 = _mm256_add_epi32(vs3, vs2);
+        vs3 = _mm256_setzero_si256();
 
         while (k >= 32) {
             /*
@@ -76,7 +111,7 @@ rem_peel:
  
             vs1 = _mm256_add_epi32(vs1, vs1_sad);
             vs3 = _mm256_add_epi32(vs3, vs1_0);
-            __m256i v_short_sum2 = _mm256_maddubs_epi16(vbuf, dot2v); // sum 32 uint8s to 16 shorts
+            __m256i v_short_sum2 = _mm256_maddubs_epi16(vbuf, dot2v_0); // sum 32 uint8s to 16 shorts
             __m256i vsum2 = _mm256_madd_epi16(v_short_sum2, dot3v); // sum 16 shorts to 8 uint32s
             vs2 = _mm256_add_epi32(vsum2, vs2);
             vs1_0 = vs1;
