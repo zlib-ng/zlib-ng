@@ -101,7 +101,7 @@ void Z_INTERNAL x86_check_features(struct x86_cpu_features *features) {
         cpuidex(7, 0, &eax, &ebx, &ecx, &edx);
 
         // check BMI2 bit
-        features->has_bmi2 = ebx & 0x8;
+        features->has_bmi2 = ebx & 0x100;
 
         // check AVX2 bit if the OS supports saving YMM registers
         if (features->has_os_save_ymm) {
