@@ -67,45 +67,6 @@ const char PREFIX(deflate_copyright)[] = " deflate 1.3.1 Copyright 1995-2024 Jea
  */
 
 /* ===========================================================================
- *  Architecture-specific hooks.
- */
-#ifdef S390_DFLTCC_DEFLATE
-#  include "arch/s390/dfltcc_deflate.h"
-/* DFLTCC instructions require window to be page-aligned */
-#  define PAD_WINDOW            PAD_4096
-#  define WINDOW_PAD_SIZE       4096
-#  define HINT_ALIGNED_WINDOW   HINT_ALIGNED_4096
-#else
-#  define PAD_WINDOW            PAD_64
-#  define WINDOW_PAD_SIZE       64
-#  define HINT_ALIGNED_WINDOW   HINT_ALIGNED_64
-/* Adjust the window size for the arch-specific deflate code. */
-#  define DEFLATE_ADJUST_WINDOW_SIZE(n) (n)
-/* Invoked at the beginning of deflateSetDictionary(). Useful for checking arch-specific window data. */
-#  define DEFLATE_SET_DICTIONARY_HOOK(strm, dict, dict_len) do {} while (0)
-/* Invoked at the beginning of deflateGetDictionary(). Useful for adjusting arch-specific window data. */
-#  define DEFLATE_GET_DICTIONARY_HOOK(strm, dict, dict_len) do {} while (0)
-/* Invoked at the end of deflateResetKeep(). Useful for initializing arch-specific extension blocks. */
-#  define DEFLATE_RESET_KEEP_HOOK(strm) do {} while (0)
-/* Invoked at the beginning of deflateParams(). Useful for updating arch-specific compression parameters. */
-#  define DEFLATE_PARAMS_HOOK(strm, level, strategy, hook_flush) do {} while (0)
-/* Returns whether the last deflate(flush) operation did everything it's supposed to do. */
-#  define DEFLATE_DONE(strm, flush) 1
-/* Adjusts the upper bound on compressed data length based on compression parameters and uncompressed data length.
- * Useful when arch-specific deflation code behaves differently than regular zlib-ng algorithms. */
-#  define DEFLATE_BOUND_ADJUST_COMPLEN(strm, complen, sourceLen) do {} while (0)
-/* Returns whether an optimistic upper bound on compressed data length should *not* be used.
- * Useful when arch-specific deflation code behaves differently than regular zlib-ng algorithms. */
-#  define DEFLATE_NEED_CONSERVATIVE_BOUND(strm) 0
-/* Invoked for each deflate() call. Useful for plugging arch-specific deflation code. */
-#  define DEFLATE_HOOK(strm, flush, bstate) 0
-/* Returns whether zlib-ng should compute a checksum. Set to 0 if arch-specific deflation code already does that. */
-#  define DEFLATE_NEED_CHECKSUM(strm) 1
-/* Returns whether reproducibility parameter can be set to a given value. */
-#  define DEFLATE_CAN_SET_REPRODUCIBLE(strm, reproducible) 1
-#endif
-
-/* ===========================================================================
  *  Function prototypes.
  */
 static int deflateStateCheck      (PREFIX3(stream) *strm);
