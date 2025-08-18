@@ -66,7 +66,7 @@ static const static_tree_desc  static_bl_desc =
  */
 
 static void init_block       (deflate_state *s);
-static void pqdownheap       (deflate_state *s, ct_data *tree, int k);
+static void pqdownheap       (unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k);
 static void gen_bitlen       (deflate_state *s, tree_desc *desc);
 static void build_tree       (deflate_state *s, tree_desc *desc);
 static void scan_tree        (deflate_state *s, ct_data *tree, int max_code);
@@ -125,13 +125,12 @@ static void init_block(deflate_state *s) {
 
 /* ===========================================================================
  * Remove the smallest element from the heap and recreate the heap with
- * one less element. Updates heap and heap_len.
+ * one less element. Updates heap and heap_len. Used by build_tree().
  */
-#define pqremove(s, tree, top) \
-{\
-    top = s->heap[SMALLEST]; \
-    s->heap[SMALLEST] = s->heap[s->heap_len--]; \
-    pqdownheap(s, tree, SMALLEST); \
+#define pqremove(s, depth, heap, tree, top) { \
+    top = heap[SMALLEST]; \
+    heap[SMALLEST] = heap[s->heap_len--]; \
+    pqdownheap(depth, heap, s->heap_len, tree, SMALLEST); \
 }
 
 /* ===========================================================================
@@ -146,30 +145,31 @@ static void init_block(deflate_state *s) {
  * Restore the heap property by moving down the tree starting at node k,
  * exchanging a node with the smallest of its two sons if necessary, stopping
  * when the heap property is re-established (each father smaller than its
- * two sons).
+ * two sons). Used by build_tree().
  */
-static void pqdownheap(deflate_state *s, ct_data *tree, int k) {
+static void pqdownheap(unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k) {
     /* tree: the tree to restore */
     /* k: node to move down */
-    int v = s->heap[k];
     int j = k << 1;  /* left son of k */
-    while (j <= s->heap_len) {
+    const int v = heap[k];
+
+    while (j <= heap_len) {
         /* Set j to the smallest of the two sons: */
-        if (j < s->heap_len && smaller(tree, s->heap[j+1], s->heap[j], s->depth)) {
+        if (j < heap_len && smaller(tree, heap[j+1], heap[j], depth)) {
             j++;
         }
         /* Exit if v is smaller than both sons */
-        if (smaller(tree, v, s->heap[j], s->depth))
+        if (smaller(tree, v, heap[j], depth))
             break;
 
         /* Exchange v with the smallest son */
-        s->heap[k] = s->heap[j];
+        heap[k] = heap[j];
         k = j;
 
         /* And continue down the tree, setting j to the left son of k */
         j <<= 1;
     }
-    s->heap[k] = v;
+    heap[k] = v;
 }
 
 /* ===========================================================================
@@ -321,6 +321,8 @@ Z_INTERNAL void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
  */
 static void build_tree(deflate_state *s, tree_desc *desc) {
     /* desc: the tree descriptor */
+    unsigned char *depth  = s->depth;
+    int *heap             = s->heap;
     ct_data *tree         = desc->dyn_tree;
     const ct_data *stree  = desc->stat_desc->static_tree;
     int elems             = desc->stat_desc->elems;
@@ -337,8 +339,8 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
 
     for (n = 0; n < elems; n++) {
         if (tree[n].Freq != 0) {
-            s->heap[++(s->heap_len)] = max_code = n;
-            s->depth[n] = 0;
+            heap[++(s->heap_len)] = max_code = n;
+            depth[n] = 0;
         } else {
             tree[n].Len = 0;
         }
@@ -350,9 +352,9 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
      * two codes of non zero frequency.
      */
     while (s->heap_len < 2) {
-        node = s->heap[++(s->heap_len)] = (max_code < 2 ? ++max_code : 0);
+        node = heap[++(s->heap_len)] = (max_code < 2 ? ++max_code : 0);
         tree[node].Freq = 1;
-        s->depth[node] = 0;
+        depth[node] = 0;
         s->opt_len--;
         if (stree)
             s->static_len -= stree[node].Len;
@@ -364,23 +366,23 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
      * establish sub-heaps of increasing lengths:
      */
     for (n = s->heap_len/2; n >= 1; n--)
-        pqdownheap(s, tree, n);
+        pqdownheap(depth, heap, s->heap_len, tree, n);
 
     /* Construct the Huffman tree by repeatedly combining the least two
      * frequent nodes.
      */
     node = elems;              /* next internal node of the tree */
     do {
-        pqremove(s, tree, n);  /* n = node of least frequency */
-        m = s->heap[SMALLEST]; /* m = node of next least frequency */
+        pqremove(s, depth, heap, tree, n);  /* n = node of least frequency */
+        m = heap[SMALLEST]; /* m = node of next least frequency */
 
-        s->heap[--(s->heap_max)] = n; /* keep the nodes sorted by frequency */
-        s->heap[--(s->heap_max)] = m;
+        heap[--(s->heap_max)] = n; /* keep the nodes sorted by frequency */
+        heap[--(s->heap_max)] = m;
 
         /* Create a new node father of n and m */
         tree[node].Freq = tree[n].Freq + tree[m].Freq;
-        s->depth[node] = (unsigned char)((s->depth[n] >= s->depth[m] ?
-                                          s->depth[n] : s->depth[m]) + 1);
+        depth[node] = (unsigned char)((depth[n] >= depth[m] ?
+                                          depth[n] : depth[m]) + 1);
         tree[n].Dad = tree[m].Dad = (uint16_t)node;
 #ifdef DUMP_BL_TREE
         if (tree == s->bl_tree) {
@@ -389,11 +391,11 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
         }
 #endif
         /* and insert the new node in the heap */
-        s->heap[SMALLEST] = node++;
-        pqdownheap(s, tree, SMALLEST);
+        heap[SMALLEST] = node++;
+        pqdownheap(depth, heap, s->heap_len, tree, SMALLEST);
     } while (s->heap_len >= 2);
 
-    s->heap[--(s->heap_max)] = s->heap[SMALLEST];
+    heap[--(s->heap_max)] = heap[SMALLEST];
 
     /* At this point, the fields freq and dad are set. We can now
      * generate the bit lengths.
