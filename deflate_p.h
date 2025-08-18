@@ -98,6 +98,32 @@ static inline int zng_tr_tally_dist(deflate_state* s, uint32_t dist, uint32_t le
     return (s->sym_next == s->sym_end);
 }
 
+/* =========================================================================
+ * Flush as much pending output as possible. All deflate() output, except for some
+ * deflate_stored() output, goes through this function so some applications may wish to
+ * modify it to avoid allocating a large strm->next_out buffer and copying into it.
+ * See also read_buf().
+ */
+Z_FORCEINLINE static void flush_pending_inline(PREFIX3(stream) *strm) {
+    uint32_t len;
+    deflate_state *s = strm->state;
+
+    zng_tr_flush_bits(s);
+    len = MIN(s->pending, strm->avail_out);
+    if (len == 0)
+        return;
+
+    Tracev((stderr, "[FLUSH]"));
+    memcpy(strm->next_out, s->pending_out, len);
+    strm->next_out  += len;
+    s->pending_out  += len;
+    strm->total_out += len;
+    strm->avail_out -= len;
+    s->pending      -= len;
+    if (s->pending == 0)
+        s->pending_out = s->pending_buf;
+}
+
 /* ===========================================================================
  * Reverse the first len bits of a code using bit manipulation
  */

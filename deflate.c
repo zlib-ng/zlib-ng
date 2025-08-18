@@ -741,29 +741,10 @@ unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long
 }
 
 /* =========================================================================
- * Flush as much pending output as possible. All deflate() output, except for
- * some deflate_stored() output, goes through this function so some
- * applications may wish to modify it to avoid allocating a large
- * strm->next_out buffer and copying into it. (See also read_buf()).
+ * Flush as much pending output as possible. See flush_pending_inline()
  */
 Z_INTERNAL void PREFIX(flush_pending)(PREFIX3(stream) *strm) {
-    uint32_t len;
-    deflate_state *s = strm->state;
-
-    zng_tr_flush_bits(s);
-    len = MIN(s->pending, strm->avail_out);
-    if (len == 0)
-        return;
-
-    Tracev((stderr, "[FLUSH]"));
-    memcpy(strm->next_out, s->pending_out, len);
-    strm->next_out  += len;
-    s->pending_out  += len;
-    strm->total_out += len;
-    strm->avail_out -= len;
-    s->pending      -= len;
-    if (s->pending == 0)
-        s->pending_out = s->pending_buf;
+    flush_pending_inline(strm);
 }
 
 /* ===========================================================================
@@ -797,7 +778,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
 
     /* Flush as much pending output as possible */
     if (s->pending != 0) {
-        PREFIX(flush_pending)(strm);
+        flush_pending_inline(strm);
         if (strm->avail_out == 0) {
             /* Since avail_out is 0, deflate will be called again with
              * more output space, but possibly with both pending and
@@ -983,7 +964,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
         s->status = BUSY_STATE;
 
         /* Compression must start with an empty pending buffer */
-        PREFIX(flush_pending)(strm);
+        flush_pending_inline(strm);
         if (s->pending != 0) {
             s->last_flush = -1;
             return Z_OK;
@@ -1059,7 +1040,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
         if (s->wrap == 1)
             put_uint32_msb(s, strm->adler);
     }
-    PREFIX(flush_pending)(strm);
+    flush_pending_inline(strm);
     /* If avail_out is zero, the application will call deflate again
      * to flush the rest.
      */
