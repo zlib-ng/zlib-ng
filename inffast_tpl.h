@@ -151,11 +151,18 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     do {
         REFILL();
         memcpy(&here, &lcode[hold & lmask], 4);
+        /* unroll literal */
         if (here.op == 0) {
+            Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
+                    "inflate:         literal '%c'\n" :
+                    "inflate:         literal 0x%02x\n", here.val));
             *out++ = (unsigned char)(here.val);
             DROPBITS(here.bits);
             memcpy(&here, &lcode[hold & lmask], 4);
             if (here.op == 0) {
+                Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
+                        "inflate:         literal '%c'\n" :
+                        "inflate:         literal 0x%02x\n", here.val));
                 *out++ = (unsigned char)(here.val);
                 DROPBITS(here.bits);
                 memcpy(&here, &lcode[hold & lmask], 4);
