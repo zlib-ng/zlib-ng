@@ -67,8 +67,8 @@ static const static_tree_desc  static_bl_desc =
 
 static void init_block       (deflate_state *s);
 static void pqdownheap       (unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k);
-static void gen_bitlen       (deflate_state *s, tree_desc *desc);
 static void build_tree       (deflate_state *s, tree_desc *desc);
+static void gen_bitlen       (deflate_state *s, tree_desc *desc);
 static void scan_tree        (deflate_state *s, ct_data *tree, int max_code);
 static void send_tree        (deflate_state *s, ct_data *tree, int max_code);
 static int  build_bl_tree    (deflate_state *s);
@@ -124,6 +124,14 @@ static void init_block(deflate_state *s) {
 
 
 /* ===========================================================================
+ * Compares to subtrees, using the tree depth as tie breaker when
+ * the subtrees have equal frequency. This minimizes the worst case length.
+ */
+#define smaller(tree, n, m, depth) \
+    (tree[n].Freq < tree[m].Freq || \
+    (tree[n].Freq == tree[m].Freq && depth[n] <= depth[m]))
+
+/* ===========================================================================
  * Remove the smallest element from the heap and recreate the heap with
  * one less element. Updates heap and heap_len. Used by build_tree().
  */
@@ -132,14 +140,6 @@ static void init_block(deflate_state *s) {
     heap[SMALLEST] = heap[s->heap_len--]; \
     pqdownheap(depth, heap, s->heap_len, tree, SMALLEST); \
 }
-
-/* ===========================================================================
- * Compares to subtrees, using the tree depth as tie breaker when
- * the subtrees have equal frequency. This minimizes the worst case length.
- */
-#define smaller(tree, n, m, depth) \
-    (tree[n].Freq < tree[m].Freq || \
-    (tree[n].Freq == tree[m].Freq && depth[n] <= depth[m]))
 
 /* ===========================================================================
  * Restore the heap property by moving down the tree starting at node k,
@@ -170,145 +170,6 @@ static void pqdownheap(unsigned char *depth, int *heap, const int heap_len, ct_d
         j <<= 1;
     }
     heap[k] = v;
-}
-
-/* ===========================================================================
- * Compute the optimal bit lengths for a tree and update the total bit length
- * for the current block.
- * IN assertion: the fields freq and dad are set, heap[heap_max] and
- *    above are the tree nodes sorted by increasing frequency.
- * OUT assertions: the field len is set to the optimal bit length, the
- *     array bl_count contains the frequencies for each bit length.
- *     The length opt_len is updated; static_len is also updated if stree is
- *     not null.
- */
-static void gen_bitlen(deflate_state *s, tree_desc *desc) {
-    /* desc: the tree descriptor */
-    ct_data *tree           = desc->dyn_tree;
-    int max_code            = desc->max_code;
-    const ct_data *stree    = desc->stat_desc->static_tree;
-    const int *extra        = desc->stat_desc->extra_bits;
-    int base                = desc->stat_desc->extra_base;
-    unsigned int max_length = desc->stat_desc->max_length;
-    int h;              /* heap index */
-    int n, m;           /* iterate over the tree elements */
-    unsigned int bits;  /* bit length */
-    int xbits;          /* extra bits */
-    uint16_t f;         /* frequency */
-    int overflow = 0;   /* number of elements with bit length too large */
-
-    for (bits = 0; bits <= MAX_BITS; bits++)
-        s->bl_count[bits] = 0;
-
-    /* In a first pass, compute the optimal bit lengths (which may
-     * overflow in the case of the bit length tree).
-     */
-    tree[s->heap[s->heap_max]].Len = 0; /* root of the heap */
-
-    for (h = s->heap_max + 1; h < HEAP_SIZE; h++) {
-        n = s->heap[h];
-        bits = tree[tree[n].Dad].Len + 1u;
-        if (bits > max_length){
-            bits = max_length;
-            overflow++;
-        }
-        tree[n].Len = (uint16_t)bits;
-        /* We overwrite tree[n].Dad which is no longer needed */
-
-        if (n > max_code) /* not a leaf node */
-            continue;
-
-        s->bl_count[bits]++;
-        xbits = 0;
-        if (n >= base)
-            xbits = extra[n-base];
-        f = tree[n].Freq;
-        s->opt_len += (unsigned long)f * (unsigned int)(bits + xbits);
-        if (stree)
-            s->static_len += (unsigned long)f * (unsigned int)(stree[n].Len + xbits);
-    }
-    if (overflow == 0)
-        return;
-
-    Tracev((stderr, "\nbit length overflow\n"));
-    /* This happens for example on obj2 and pic of the Calgary corpus */
-
-    /* Find the first bit length which could increase: */
-    do {
-        bits = max_length - 1;
-        while (s->bl_count[bits] == 0)
-            bits--;
-        s->bl_count[bits]--;       /* move one leaf down the tree */
-        s->bl_count[bits+1] += 2u; /* move one overflow item as its brother */
-        s->bl_count[max_length]--;
-        /* The brother of the overflow item also moves one step up,
-         * but this does not affect bl_count[max_length]
-         */
-        overflow -= 2;
-    } while (overflow > 0);
-
-    /* Now recompute all bit lengths, scanning in increasing frequency.
-     * h is still equal to HEAP_SIZE. (It is simpler to reconstruct all
-     * lengths instead of fixing only the wrong ones. This idea is taken
-     * from 'ar' written by Haruhiko Okumura.)
-     */
-    for (bits = max_length; bits != 0; bits--) {
-        n = s->bl_count[bits];
-        while (n != 0) {
-            m = s->heap[--h];
-            if (m > max_code)
-                continue;
-            if (tree[m].Len != bits) {
-                Tracev((stderr, "code %d bits %d->%u\n", m, tree[m].Len, bits));
-                s->opt_len += (unsigned long)(bits * tree[m].Freq);
-                s->opt_len -= (unsigned long)(tree[m].Len * tree[m].Freq);
-                tree[m].Len = (uint16_t)bits;
-            }
-            n--;
-        }
-    }
-}
-
-/* ===========================================================================
- * Generate the codes for a given tree and bit counts (which need not be
- * optimal).
- * IN assertion: the array bl_count contains the bit length statistics for
- * the given tree and the field len is set for all tree elements.
- * OUT assertion: the field code is set for all tree elements of non
- *     zero code length.
- */
-Z_INTERNAL void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
-    /* tree: the tree to decorate */
-    /* max_code: largest code with non zero frequency */
-    /* bl_count: number of codes at each bit length */
-    uint16_t next_code[MAX_BITS+1];  /* next code value for each bit length */
-    unsigned int code = 0;           /* running code value */
-    int bits;                        /* bit index */
-    int n;                           /* code index */
-
-    /* The distribution counts are first used to generate the code values
-     * without bit reversal.
-     */
-    for (bits = 1; bits <= MAX_BITS; bits++) {
-        code = (code + bl_count[bits-1]) << 1;
-        next_code[bits] = (uint16_t)code;
-    }
-    /* Check that the bit counts in bl_count are consistent. The last code
-     * must be all ones.
-     */
-    Assert(code + bl_count[MAX_BITS]-1 == (1 << MAX_BITS)-1, "inconsistent bit counts");
-    Tracev((stderr, "\ngen_codes: max_code %d ", max_code));
-
-    for (n = 0;  n <= max_code; n++) {
-        int len = tree[n].Len;
-        if (len == 0)
-            continue;
-        /* Now reverse the bits */
-        tree[n].Code = PREFIX(bi_reverse)(next_code[len]++, len);
-
-        Tracecv(tree != static_ltree, (stderr, "\nn %3d %c l %2d c %4x (%x) ",
-             n, (isgraph(n & 0xff) ? n : ' '), len, tree[n].Code, next_code[len]-1));
-    }
 }
 
 /* ===========================================================================
@@ -404,6 +265,145 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
 
     /* The field len is now set, we can generate the bit codes */
     gen_codes((ct_data *)tree, max_code, s->bl_count);
+}
+
+/* ===========================================================================
+ * Compute the optimal bit lengths for a tree and update the total bit length
+ * for the current block.
+ * IN assertion: the fields freq and dad are set, heap[heap_max] and
+ *    above are the tree nodes sorted by increasing frequency.
+ * OUT assertions: the field len is set to the optimal bit length, the
+ *     array bl_count contains the frequencies for each bit length.
+ *     The length opt_len is updated; static_len is also updated if stree is
+ *     not null. Used by build_tree().
+ */
+static void gen_bitlen(deflate_state *s, tree_desc *desc) {
+    /* desc: the tree descriptor */
+    ct_data *tree           = desc->dyn_tree;
+    int max_code            = desc->max_code;
+    const ct_data *stree    = desc->stat_desc->static_tree;
+    const int *extra        = desc->stat_desc->extra_bits;
+    int base                = desc->stat_desc->extra_base;
+    unsigned int max_length = desc->stat_desc->max_length;
+    int h;              /* heap index */
+    int n, m;           /* iterate over the tree elements */
+    unsigned int bits;  /* bit length */
+    int xbits;          /* extra bits */
+    uint16_t f;         /* frequency */
+    int overflow = 0;   /* number of elements with bit length too large */
+
+    for (bits = 0; bits <= MAX_BITS; bits++)
+        s->bl_count[bits] = 0;
+
+    /* In a first pass, compute the optimal bit lengths (which may
+     * overflow in the case of the bit length tree).
+     */
+    tree[s->heap[s->heap_max]].Len = 0; /* root of the heap */
+
+    for (h = s->heap_max + 1; h < HEAP_SIZE; h++) {
+        n = s->heap[h];
+        bits = tree[tree[n].Dad].Len + 1u;
+        if (bits > max_length){
+            bits = max_length;
+            overflow++;
+        }
+        tree[n].Len = (uint16_t)bits;
+        /* We overwrite tree[n].Dad which is no longer needed */
+
+        if (n > max_code) /* not a leaf node */
+            continue;
+
+        s->bl_count[bits]++;
+        xbits = 0;
+        if (n >= base)
+            xbits = extra[n-base];
+        f = tree[n].Freq;
+        s->opt_len += (unsigned long)f * (unsigned int)(bits + xbits);
+        if (stree)
+            s->static_len += (unsigned long)f * (unsigned int)(stree[n].Len + xbits);
+    }
+    if (overflow == 0)
+        return;
+
+    Tracev((stderr, "\nbit length overflow\n"));
+    /* This happens for example on obj2 and pic of the Calgary corpus */
+
+    /* Find the first bit length which could increase: */
+    do {
+        bits = max_length - 1;
+        while (s->bl_count[bits] == 0)
+            bits--;
+        s->bl_count[bits]--;       /* move one leaf down the tree */
+        s->bl_count[bits+1] += 2u; /* move one overflow item as its brother */
+        s->bl_count[max_length]--;
+        /* The brother of the overflow item also moves one step up,
+         * but this does not affect bl_count[max_length]
+         */
+        overflow -= 2;
+    } while (overflow > 0);
+
+    /* Now recompute all bit lengths, scanning in increasing frequency.
+     * h is still equal to HEAP_SIZE. (It is simpler to reconstruct all
+     * lengths instead of fixing only the wrong ones. This idea is taken
+     * from 'ar' written by Haruhiko Okumura.)
+     */
+    for (bits = max_length; bits != 0; bits--) {
+        n = s->bl_count[bits];
+        while (n != 0) {
+            m = s->heap[--h];
+            if (m > max_code)
+                continue;
+            if (tree[m].Len != bits) {
+                Tracev((stderr, "code %d bits %d->%u\n", m, tree[m].Len, bits));
+                s->opt_len += (unsigned long)(bits * tree[m].Freq);
+                s->opt_len -= (unsigned long)(tree[m].Len * tree[m].Freq);
+                tree[m].Len = (uint16_t)bits;
+            }
+            n--;
+        }
+    }
+}
+
+/* ===========================================================================
+ * Generate the codes for a given tree and bit counts (which need not be
+ * optimal).
+ * IN assertion: the array bl_count contains the bit length statistics for
+ * the given tree and the field len is set for all tree elements.
+ * OUT assertion: the field code is set for all tree elements of non
+ *     zero code length. Used by build_tree().
+ */
+Z_INTERNAL void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
+    /* tree: the tree to decorate */
+    /* max_code: largest code with non zero frequency */
+    /* bl_count: number of codes at each bit length */
+    uint16_t next_code[MAX_BITS+1];  /* next code value for each bit length */
+    unsigned int code = 0;           /* running code value */
+    int bits;                        /* bit index */
+    int n;                           /* code index */
+
+    /* The distribution counts are first used to generate the code values
+     * without bit reversal.
+     */
+    for (bits = 1; bits <= MAX_BITS; bits++) {
+        code = (code + bl_count[bits-1]) << 1;
+        next_code[bits] = (uint16_t)code;
+    }
+    /* Check that the bit counts in bl_count are consistent. The last code
+     * must be all ones.
+     */
+    Assert(code + bl_count[MAX_BITS]-1 == (1 << MAX_BITS)-1, "inconsistent bit counts");
+    Tracev((stderr, "\ngen_codes: max_code %d ", max_code));
+
+    for (n = 0;  n <= max_code; n++) {
+        int len = tree[n].Len;
+        if (len == 0)
+            continue;
+        /* Now reverse the bits */
+        tree[n].Code = PREFIX(bi_reverse)(next_code[len]++, len);
+
+        Tracecv(tree != static_ltree, (stderr, "\nn %3d %c l %2d c %4x (%x) ",
+             n, (isgraph(n & 0xff) ? n : ' '), len, tree[n].Code, next_code[len]-1));
+    }
 }
 
 /* ===========================================================================
