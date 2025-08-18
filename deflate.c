@@ -48,9 +48,9 @@
  */
 
 #include "zbuild.h"
+#include "functable.h"
 #include "deflate.h"
 #include "deflate_p.h"
-#include "functable.h"
 
 /* Avoid conflicts with zlib.h macros */
 #ifdef ZLIB_COMPAT
@@ -81,7 +81,6 @@ Z_INTERNAL block_state deflate_rle   (deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_huff  (deflate_state *s, int flush);
 static void lm_set_level         (deflate_state *s, int level);
 static void lm_init              (deflate_state *s);
-Z_INTERNAL unsigned read_buf  (PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
 /* ===========================================================================
  * Local data
@@ -1142,37 +1141,6 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
 }
 
 /* ===========================================================================
- * Read a new buffer from the current input stream, update the adler32
- * and total number of bytes read.  All deflate() input goes through
- * this function so some applications may wish to modify it to avoid
- * allocating a large strm->next_in buffer and copying from it.
- * (See also flush_pending()).
- */
-Z_INTERNAL unsigned PREFIX(read_buf)(PREFIX3(stream) *strm, unsigned char *buf, unsigned size) {
-    uint32_t len = MIN(strm->avail_in, size);
-    if (len == 0)
-        return 0;
-
-    strm->avail_in  -= len;
-
-    if (!DEFLATE_NEED_CHECKSUM(strm)) {
-        memcpy(buf, strm->next_in, len);
-#ifdef GZIP
-    } else if (strm->state->wrap == 2) {
-        FUNCTABLE_CALL(crc32_fold_copy)(&strm->state->crc_fold, buf, strm->next_in, len);
-#endif
-    } else if (strm->state->wrap == 1) {
-        strm->adler = FUNCTABLE_CALL(adler32_fold_copy)(strm->adler, buf, strm->next_in, len);
-    } else {
-        memcpy(buf, strm->next_in, len);
-    }
-    strm->next_in  += len;
-    strm->total_in += len;
-
-    return len;
-}
-
-/* ===========================================================================
  * Set longest match variables based on level configuration
  */
 static void lm_set_level(deflate_state *s, int level) {
@@ -1274,7 +1242,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
          */
         Assert(more >= 2, "more < 2");
 
-        n = PREFIX(read_buf)(s->strm, s->window + s->strstart + s->lookahead, more);
+        n = read_buf(s->strm, s->window + s->strstart + s->lookahead, more);
         s->lookahead += n;
 
         /* Initialize the hash value now that we have some input: */

@@ -9,6 +9,8 @@
 #ifndef DEFLATE_P_H
 #define DEFLATE_P_H
 
+#include "functable.h"
+
 /* Forward declare common non-inlined functions declared in deflate.c */
 
 #ifdef ZLIB_DEBUG
@@ -48,7 +50,6 @@ static inline void check_match(deflate_state *s, Pos start, Pos match, int lengt
 #endif
 
 Z_INTERNAL void PREFIX(flush_pending)(PREFIX3(stream) *strm);
-Z_INTERNAL unsigned PREFIX(read_buf)(PREFIX3(stream) *strm, unsigned char *buf, unsigned size);
 
 /* ===========================================================================
  * Save the match info and tally the frequency counts. Return true if
@@ -107,6 +108,36 @@ static inline uint16_t bi_reverse(unsigned code, int len) {
 #define bitrev8(b) \
     (uint8_t)((((uint8_t)(b) * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32)
     return (bitrev8(code >> 8) | (uint16_t)bitrev8(code) << 8) >> (16 - len);
+}
+
+/* ===========================================================================
+ * Read a new buffer from the current input stream, update the adler32 and total number of
+ * bytes read.  All deflate() input goes through this function so some applications may wish
+ * to modify it to avoid allocating a large strm->next_in buffer and copying from it.
+ * See also flush_pending_inline().
+ */
+Z_FORCEINLINE static unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size) {
+    uint32_t len = MIN(strm->avail_in, size);
+
+    if (len == 0)
+        return 0;
+
+    if (!DEFLATE_NEED_CHECKSUM(strm)) {
+        memcpy(buf, strm->next_in, len);
+#ifdef GZIP
+    } else if (strm->state->wrap == 2) {
+        FUNCTABLE_CALL(crc32_fold_copy)(&strm->state->crc_fold, buf, strm->next_in, len);
+#endif
+    } else if (strm->state->wrap == 1) {
+        strm->adler = FUNCTABLE_CALL(adler32_fold_copy)(strm->adler, buf, strm->next_in, len);
+    } else {
+        memcpy(buf, strm->next_in, len);
+    }
+
+    strm->avail_in -= len;
+    strm->next_in  += len;
+    strm->total_in += len;
+    return len;
 }
 
 /* ===========================================================================
