@@ -150,7 +150,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
        input data or output space */
     do {
         REFILL();
-        memcpy(&here, &lcode[hold & lmask], 4);
+        memcpy(&here, &lcode[hold & lmask], sizeof(code));
         /* unroll literal */
         if (here.op == 0) {
             Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
@@ -158,14 +158,14 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                     "inflate:         literal 0x%02x\n", here.val));
             *out++ = (unsigned char)(here.val);
             DROPBITS(here.bits);
-            memcpy(&here, &lcode[hold & lmask], 4);
+            memcpy(&here, &lcode[hold & lmask], sizeof(code));
             if (here.op == 0) {
                 Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
                         "inflate:         literal '%c'\n" :
                         "inflate:         literal 0x%02x\n", here.val));
                 *out++ = (unsigned char)(here.val);
                 DROPBITS(here.bits);
-                memcpy(&here, &lcode[hold & lmask], 4);
+                memcpy(&here, &lcode[hold & lmask], sizeof(code));
             }
         }
       dolen:
@@ -181,7 +181,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
             len += BITS(op);
             DROPBITS(op);
             Tracevv((stderr, "inflate:         length %u\n", len));
-            memcpy(&here, &dcode[hold & dmask], 4);
+            memcpy(&here, &dcode[hold & dmask], sizeof(code));
             if (bits < MAX_BITS + MAX_DIST_EXTRA_BITS) {
                 REFILL();
             }
@@ -283,14 +283,14 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                         out = CHUNKMEMSET(out, out - dist, len);
                 }
             } else if ((here.op & 64) == 0) {      /* 2nd level distance code */
-                memcpy(&here, &dcode[here.val + BITS(here.op)], 4);
+                memcpy(&here, &dcode[here.val + BITS(here.op)], sizeof(code));
                 goto dodist;
             } else {
                 SET_BAD("invalid distance code");
                 break;
             }
         } else if ((here.op & 64) == 0) {       /* 2nd level length code */
-            memcpy(&here, &lcode[here.val + BITS(here.op)], 4);
+            memcpy(&here, &lcode[here.val + BITS(here.op)], sizeof(code));
             goto dolen;
         } else if (here.op & 32) {              /* end-of-block */
             Tracevv((stderr, "inflate:         end of block\n"));
