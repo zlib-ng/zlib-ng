@@ -66,7 +66,7 @@ static const static_tree_desc  static_bl_desc =
  */
 
 static void init_block       (deflate_state *s);
-static void pqdownheap       (unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k);
+static inline void pqdownheap       (unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k);
 static void build_tree       (deflate_state *s, tree_desc *desc);
 static void gen_bitlen       (deflate_state *s, tree_desc *desc);
 static void scan_tree        (deflate_state *s, ct_data *tree, int max_code);
@@ -147,7 +147,7 @@ static void init_block(deflate_state *s) {
  * when the heap property is re-established (each father smaller than its
  * two sons). Used by build_tree().
  */
-static void pqdownheap(unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k) {
+static inline void pqdownheap(unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k) {
     /* tree: the tree to restore */
     /* k: node to move down */
     int j = k << 1;  /* left son of k */
