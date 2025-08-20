@@ -29,10 +29,14 @@ static int gz_write_init(gz_state *state) {
     /* only need deflate state if compressing */
     if (!state->direct) {
         /* allocate deflate memory, set up for gzip compression */
-        ret = PREFIX(deflateInit2)(strm, state->level, Z_DEFLATED, MAX_WBITS + 16, DEF_MEM_LEVEL, state->strategy);
+        int ret = PREFIX(deflateInit2)(strm, state->level, Z_DEFLATED, MAX_WBITS + 16, DEF_MEM_LEVEL, state->strategy);
         if (ret != Z_OK) {
             gz_buffer_free(state);
-            gz_error(state, Z_MEM_ERROR, "out of memory");
+            if (ret == Z_MEM_ERROR) {
+                gz_error(state, Z_MEM_ERROR, "out of memory");
+            } else {
+                gz_error(state, Z_STREAM_ERROR, "invalid compression parameters");
+            }
             return -1;
         }
         strm->next_in = NULL;

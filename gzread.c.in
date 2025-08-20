@@ -25,9 +25,14 @@ static int gz_read_init(gz_state *state) {
     }
 
     /* Initialize inflate state */
-    if (PREFIX(inflateInit2)(&(state->strm), MAX_WBITS + 16) != Z_OK) {
+    int ret = PREFIX(inflateInit2)(&(state->strm), MAX_WBITS + 16);
+    if (ret != Z_OK) {
         gz_buffer_free(state);
-        gz_error(state, Z_MEM_ERROR, "out of memory");
+        if (ret == Z_MEM_ERROR) {
+            gz_error(state, Z_MEM_ERROR, "out of memory");
+        } else {
+            gz_error(state, Z_STREAM_ERROR, "invalid compression parameters");
+        }
         return -1;
     }
     return 0;
