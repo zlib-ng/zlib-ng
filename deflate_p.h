@@ -117,6 +117,7 @@ static inline uint16_t bi_reverse(unsigned code, int len) {
  * See also flush_pending_inline().
  */
 Z_FORCEINLINE static unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf, unsigned size) {
+    deflate_state *s = strm->state;
     uint32_t len = MIN(strm->avail_in, size);
 
     if (len == 0)
@@ -125,10 +126,10 @@ Z_FORCEINLINE static unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf
     if (!DEFLATE_NEED_CHECKSUM(strm)) {
         memcpy(buf, strm->next_in, len);
 #ifdef GZIP
-    } else if (strm->state->wrap == 2) {
-        FUNCTABLE_CALL(crc32_fold_copy)(&strm->state->crc_fold, buf, strm->next_in, len);
+    } else if (s->wrap == 2) {
+        FUNCTABLE_CALL(crc32_fold_copy)(&s->crc_fold, buf, strm->next_in, len);
 #endif
-    } else if (strm->state->wrap == 1) {
+    } else if (s->wrap == 1) {
         strm->adler = FUNCTABLE_CALL(adler32_fold_copy)(strm->adler, buf, strm->next_in, len);
     } else {
         memcpy(buf, strm->next_in, len);
