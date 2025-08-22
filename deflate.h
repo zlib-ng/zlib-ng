@@ -432,7 +432,6 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
 void Z_INTERNAL zng_tr_flush_bits(deflate_state *s);
 void Z_INTERNAL zng_tr_align(deflate_state *s);
 void Z_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored_len, int last);
-uint16_t Z_INTERNAL PREFIX(bi_reverse)(unsigned code, int len);
 void Z_INTERNAL PREFIX(flush_pending)(PREFIX3(streamp) strm);
 #define d_code(dist) ((dist) < 256 ? zng_dist_code[dist] : zng_dist_code[256+((dist)>>7)])
 /* Mapping from a distance to a distance code. dist is the distance - 1 and

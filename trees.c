@@ -32,6 +32,7 @@
 
 #include "zbuild.h"
 #include "deflate.h"
+#include "deflate_p.h"
 #include "trees.h"
 #include "trees_emit.h"
 #include "trees_tbl.h"
@@ -399,7 +400,7 @@ Z_INTERNAL void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
         if (len == 0)
             continue;
         /* Now reverse the bits */
-        tree[n].Code = PREFIX(bi_reverse)(next_code[len]++, len);
+        tree[n].Code = bi_reverse(next_code[len]++, len);
 
         Tracecv(tree != static_ltree, (stderr, "\nn %3d %c l %2d c %4x (%x) ",
              n, (isgraph(n & 0xff) ? n : ' '), len, tree[n].Code, next_code[len]-1));
@@ -814,16 +815,4 @@ void Z_INTERNAL zng_tr_flush_bits(deflate_state *s) {
         s->bi_buf >>= 8;
         s->bi_valid -= 8;
     }
-}
-
-/* ===========================================================================
- * Reverse the first len bits of a code using bit manipulation
- */
-Z_INTERNAL uint16_t PREFIX(bi_reverse)(unsigned code, int len) {
-    /* code: the value to invert */
-    /* len: its bit length */
-    Assert(len >= 1 && len <= 15, "code length must be 1-15");
-#define bitrev8(b) \
-    (uint8_t)((((uint8_t)(b) * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32)
-    return (bitrev8(code >> 8) | (uint16_t)bitrev8(code) << 8) >> (16 - len);
 }

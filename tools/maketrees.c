@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include "zbuild.h"
 #include "deflate.h"
+#include "deflate_p.h"
 #include "trees.h"
 
 static ct_data static_ltree[L_CODES+2];
@@ -90,7 +91,7 @@ static void tr_static_init(void) {
     /* The static distance tree is trivial: */
     for (n = 0; n < D_CODES; n++) {
         static_dtree[n].Len = 5;
-        static_dtree[n].Code = PREFIX(bi_reverse)((unsigned)n, 5);
+        static_dtree[n].Code = bi_reverse((unsigned)n, 5);
     }
 }
 

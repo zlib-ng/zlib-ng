@@ -15,6 +15,7 @@
 
 #include "zbuild.h"
 #include "deflate.h"
+#include "deflate_p.h"
 #include "trees_emit.h"
 #include "dfltcc_deflate.h"
 #include "dfltcc_detail.h"
@@ -90,7 +91,7 @@ static inline dfltcc_cc dfltcc_cmpr(PREFIX3(streamp) strm) {
 static inline void send_eobs(PREFIX3(streamp) strm, const struct dfltcc_param_v0 *param) {
     deflate_state *state = (deflate_state *)strm->state;
 
-    send_bits(state, PREFIX(bi_reverse)(param->eobs >> (15 - param->eobl), param->eobl), param->eobl, state->bi_buf, state->bi_valid);
+    send_bits(state, bi_reverse(param->eobs >> (15 - param->eobl), param->eobl), param->eobl, state->bi_buf, state->bi_valid);
     PREFIX(flush_pending)(strm);
     if (state->pending != 0) {
         /* The remaining data is located in pending_out[0:pending]. If someone
