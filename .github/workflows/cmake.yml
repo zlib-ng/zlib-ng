@@ -622,11 +622,12 @@ jobs:
 
           - name: macOS GCC UBSAN (ARM64)
             os: macos-latest
-            compiler: gcc-13
-            cxx-compiler: g++-13
+            # GCC 13.4 throws _bounds.h include error on newer versions of macOS SDK
+            compiler: gcc-14
+            cxx-compiler: g++-14
             cmake-args: -DWITH_SANITIZER=Undefined
-            packages: gcc@13
-            gcov-exec: gcov-13
+            packages: gcc@14
+            gcov-exec: gcov-14
             codecov: macos_gcc_arm64
 
           - name: macOS Clang Native Instructions (ARM64)
