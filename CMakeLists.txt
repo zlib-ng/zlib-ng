@@ -21,7 +21,7 @@ if(NOT DEFINED CMAKE_C_EXTENSIONS)
     set(CMAKE_C_EXTENSIONS OFF)       # Boolean specifying whether compiler specific extensions are requested
 endif()
 set(VALID_C_STANDARDS "99" "11")
-if(CMAKE_VERSION VERSION_GREATER_EQUAL 3.21)
+if(CMAKE_VERSION VERSION_GREATER 3.20)
     list(APPEND VALID_C_STANDARDS "17")
 endif()
 if(NOT CMAKE_C_STANDARD IN_LIST VALID_C_STANDARDS)
