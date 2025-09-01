@@ -443,10 +443,10 @@ jobs:
 
           - name: Ubuntu Clang C23
             os: ubuntu-latest
-            compiler: clang-15
-            cxx-compiler: clang++-15
+            compiler: clang-18
+            cxx-compiler: clang++-18
             cmake-args: -DCMAKE_C_STANDARD=23
-            packages: clang-15 llvm-15 llvm-15-tools
+            packages: clang-18 llvm-18 llvm-18-tools
 
           # Check for undefined symbols in the version script for the modern api
           - name: Ubuntu Clang Undefined Symbols
