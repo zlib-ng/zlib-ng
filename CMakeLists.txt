@@ -34,7 +34,13 @@ string(REGEX REPLACE ".*#define[ \t]+ZLIBNG_VERSION[ \t]+\"([-0-9A-Za-z.]+)\".*"
 message(STATUS "ZLIB_HEADER_VERSION: ${ZLIB_HEADER_VERSION}")
 message(STATUS "ZLIBNG_HEADER_VERSION: ${ZLIBNG_HEADER_VERSION}")
 
-project(zlib VERSION ${ZLIB_HEADER_VERSION} LANGUAGES C)
+if (NOT DEFINED PROJECT_NAME)
+    # Only declare zlib project if we're not already part of another cmake project
+    project(zlib VERSION ${ZLIB_HEADER_VERSION} LANGUAGES C)
+    set(ZLIB_PROJECT_DECLARED TRUE)
+else()
+    set(ZLIB_PROJECT_DECLARED FALSE)
+endif()
 
 include(CheckTypeSize)
 include(CheckSymbolExists)
@@ -72,15 +78,18 @@ endif()
 
 # Make sure we use an appropriate BUILD_TYPE by default, "Release" to be exact
 # this should select the maximum generic optimisation on the current platform (i.e. -O3 for gcc/clang)
-get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
-if(NOT GENERATOR_IS_MULTI_CONFIG)
-    if(NOT CMAKE_BUILD_TYPE)
-        set(CMAKE_BUILD_TYPE "Release" CACHE STRING
-            "Choose the type of build, standard options are: Debug Release RelWithDebInfo MinSizeRel."
-            FORCE)
-        add_feature_info(CMAKE_BUILD_TYPE 1 "Build type: ${CMAKE_BUILD_TYPE} (default)")
-    else()
-        add_feature_info(CMAKE_BUILD_TYPE 1 "Build type: ${CMAKE_BUILD_TYPE} (selected)")
+if (ZLIB_PROJECT_DECLARED)
+    # Only change build type if ZLIB project is declared, leaving parent cmake settings intact otherwise.
+    get_property(GENERATOR_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if(NOT GENERATOR_IS_MULTI_CONFIG)
+        if(NOT CMAKE_BUILD_TYPE)
+            set(CMAKE_BUILD_TYPE "Release" CACHE STRING
+                "Choose the type of build, standard options are: Debug Release RelWithDebInfo MinSizeRel."
+                FORCE)
+            add_feature_info(CMAKE_BUILD_TYPE 1 "Build type: ${CMAKE_BUILD_TYPE} (default)")
+        else()
+            add_feature_info(CMAKE_BUILD_TYPE 1 "Build type: ${CMAKE_BUILD_TYPE} (selected)")
+        endif()
     endif()
 endif()
 
@@ -353,12 +362,15 @@ if(NOT WITH_RUNTIME_CPU_DETECTION)
 endif()
 
 # Force disable LTO if WITH_NATIVE_INSTRUCTIONS is not active
-if(NOT WITH_NATIVE_INSTRUCTIONS)
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
-    foreach(_cfg_name IN LISTS CMAKE_CONFIGURATION_TYPES)
-        string(TOUPPER "${_cfg_name}" _cfg_name_uc)
-        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${_cfg_name_uc} OFF)
-    endforeach()
+if(ZLIB_PROJECT_DECLARED)
+    # Only change cmake build instructions when building as standalone project
+    if(NOT WITH_NATIVE_INSTRUCTIONS)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION OFF)
+        foreach(_cfg_name IN LISTS CMAKE_CONFIGURATION_TYPES)
+            string(TOUPPER "${_cfg_name}" _cfg_name_uc)
+            set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_${_cfg_name_uc} OFF)
+        endforeach()
+    endif()
 endif()
 
 # Apply warning compiler flags
@@ -407,70 +419,80 @@ endif()
 #
 # Check for standard/system includes
 #
-check_include_file(arm_acle.h  HAVE_ARM_ACLE_H)
-if(HAVE_ARM_ACLE_H)
-    add_definitions(-DHAVE_ARM_ACLE_H)
+if (NOT MSVC)
+    check_include_file(arm_acle.h  HAVE_ARM_ACLE_H)
+    if(HAVE_ARM_ACLE_H)
+        add_definitions(-DHAVE_ARM_ACLE_H)
+    endif()
+    check_include_file(sys/auxv.h  HAVE_SYS_AUXV_H)
+    if(HAVE_SYS_AUXV_H)
+        add_definitions(-DHAVE_SYS_AUXV_H)
+    endif()
+    check_include_file(sys/sdt.h   HAVE_SYS_SDT_H)
+    if(HAVE_SYS_SDT_H)
+        add_definitions(-DHAVE_SYS_SDT_H)
+    endif()
+    check_include_file(unistd.h    HAVE_UNISTD_H)
 endif()
-check_include_file(sys/auxv.h  HAVE_SYS_AUXV_H)
-if(HAVE_SYS_AUXV_H)
-    add_definitions(-DHAVE_SYS_AUXV_H)
-endif()
-check_include_file(sys/sdt.h   HAVE_SYS_SDT_H)
-if(HAVE_SYS_SDT_H)
-    add_definitions(-DHAVE_SYS_SDT_H)
-endif()
-check_include_file(unistd.h    HAVE_UNISTD_H)
 
 #
 # Check for Linux includes
 #
-check_include_file(linux/auxvec.h HAVE_LINUX_AUXVEC_H)
-if(HAVE_LINUX_AUXVEC_H)
-    add_definitions(-DHAVE_LINUX_AUXVEC_H)
+if (NOT MSVC)
+    check_include_file(linux/auxvec.h HAVE_LINUX_AUXVEC_H)
+    if(HAVE_LINUX_AUXVEC_H)
+        add_definitions(-DHAVE_LINUX_AUXVEC_H)
+    endif()
 endif()
 
 #
 # Check to see if we have large file support
 #
-set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
-check_type_size(off64_t OFF64_T)
-if(HAVE_OFF64_T)
-    add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
-else()
-    check_type_size(_off64_t _OFF64_T)
-    if(HAVE__OFF64_T)
+if (NOT MSVC)
+    set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
+    check_type_size(off64_t OFF64_T)
+    if(HAVE_OFF64_T)
         add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
     else()
-        check_type_size(__off64_t __OFF64_T)
+        check_type_size(_off64_t _OFF64_T)
+        if(HAVE__OFF64_T)
+            add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
+        else()
+            check_type_size(__off64_t __OFF64_T)
+        endif()
     endif()
+    set(CMAKE_REQUIRED_DEFINITIONS) # clear variable
 endif()
-set(CMAKE_REQUIRED_DEFINITIONS) # clear variable
 
 #
 # Check for fseeko and other optional functions
 #
-set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
-check_function_exists(fseeko HAVE_FSEEKO)
-if(NOT HAVE_FSEEKO)
-    add_definitions(-DNO_FSEEKO)
-endif()
-set(CMAKE_REQUIRED_FLAGS)
+if (NOT MSVC)
+    set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
+    check_function_exists(fseeko HAVE_FSEEKO)
+    if(NOT HAVE_FSEEKO)
+        add_definitions(-DNO_FSEEKO)
+    endif()
+    set(CMAKE_REQUIRED_FLAGS)
 
-set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
-check_function_exists(strerror HAVE_STRERROR)
-if(NOT HAVE_STRERROR)
-    add_definitions(-DNO_STRERROR)
+    set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
+    check_function_exists(strerror HAVE_STRERROR)
+    if(NOT HAVE_STRERROR)
+        add_definitions(-DNO_STRERROR)
+    endif()
+    set(CMAKE_REQUIRED_FLAGS)
 endif()
-set(CMAKE_REQUIRED_FLAGS)
 
 #
 # Check for x86 __cpuid / __cpuid_count support: GNU extensions
 # gcc/clang and MSVC have __cpuid, so check __cpuid_count instead
-check_symbol_exists(__cpuid_count cpuid.h HAVE_CPUID_GNU)
-if(HAVE_CPUID_GNU)
-    add_definitions(-DHAVE_CPUID_GNU)
+if (NOT MSVC)
+    check_symbol_exists(__cpuid_count cpuid.h HAVE_CPUID_GNU)
+    if(HAVE_CPUID_GNU)
+        add_definitions(-DHAVE_CPUID_GNU)
+    endif()
+    set(CMAKE_REQUIRED_DEFINITIONS)
 endif()
-set(CMAKE_REQUIRED_DEFINITIONS)
 
 #
 # Check for x86 __cpuid / __cpuidex support: MSVC extensions
@@ -517,7 +539,9 @@ endif()
 #
 # Check whether compiler supports -fno-semantic-interposition parameter
 #
-check_c_compiler_flag(-fno-semantic-interposition HAVE_NO_INTERPOSITION)
+if (NOT MSVC)
+    check_c_compiler_flag(-fno-semantic-interposition HAVE_NO_INTERPOSITION)
+endif()
 
 #
 # Check if we can hide zlib internal symbols that are linked between separate source files using hidden
