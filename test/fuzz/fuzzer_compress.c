@@ -11,8 +11,8 @@
 static const uint8_t *data;
 static size_t dataLen;
 
-static void check_compress_level(uint8_t *compr, z_size_t comprLen,
-                                 uint8_t *uncompr, z_size_t uncomprLen,
+static void check_compress_level(uint8_t *compr, z_uintmax_t comprLen,
+                                 uint8_t *uncompr, z_uintmax_t uncomprLen,
                                  int level) {
     PREFIX(compress2)(compr, &comprLen, data, dataLen, level);
     PREFIX(uncompress)(uncompr, &uncomprLen, compr, comprLen);
@@ -37,7 +37,7 @@ static void write_zlib_header(uint8_t *s) {
     put_byte(s, 1, (header & 0xff));
 }
 
-static void check_decompress(uint8_t *compr, size_t comprLen) {
+static void check_decompress(uint8_t *compr, z_uintmax_t comprLen) {
     /* We need to write a valid zlib header of size two bytes. Copy the input data
        in a larger buffer. Do not modify the input data to avoid libFuzzer error:
        fuzz target overwrites its const input. */
@@ -46,7 +46,7 @@ static void check_decompress(uint8_t *compr, size_t comprLen) {
     memcpy(copy + 2, data, dataLen);
     write_zlib_header(copy);
 
-    PREFIX(uncompress)(compr, &comprLen, copy, copyLen);
+    PREFIX(uncompress)(compr, &comprLen, copy, (z_uintmax_t)copyLen);
     free(copy);
 }
 
