@@ -127,7 +127,7 @@ jobs:
       if: runner.os == 'macOS'
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '15.2'
+        xcode-version: '16.4'
 
     - name: Compare builds
       run: sh test/pkgcheck.sh
