@@ -712,6 +712,15 @@ jobs:
         $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
         $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
 
+    - name: Install Windows 11 SDK (ARM)
+      if: contains(matrix.name, 'MSVC ARM ')
+      run: |
+        # Windows 11 SDK (10.0.22621.2428)
+        # https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/index-legacy
+        Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=2250105 -OutFile sdksetup.exe -UseBasicParsing
+        Unblock-File sdksetup.exe
+        Start-Process -Wait sdksetup.exe -ArgumentList "/q", "/norestart", "/ceip off"
+
     - name: Install packages (macOS)
       if: runner.os == 'macOS'
       run: brew install ninja ${{ matrix.packages }}
