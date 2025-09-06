@@ -621,7 +621,7 @@ jobs:
             codecov: macos_gcc
 
           - name: macOS GCC UBSAN (ARM64)
-            os: macos-latest
+            os: macos-14
             compiler: gcc-13
             cxx-compiler: g++-13
             cmake-args: -DWITH_SANITIZER=Undefined
