@@ -24,7 +24,7 @@ static void gz_reset(gz_state *);
 static gzFile gz_open(const void *, int, const char *);
 
 /* Initialize struct for gzFile state */
-static gzFile gz_state_init() {
+static gzFile gz_state_init(void) {
     /* allocate gzFile structure to return */
     gz_state *state = (gz_state *)zng_alloc(sizeof(gz_state));
     if (state == NULL)

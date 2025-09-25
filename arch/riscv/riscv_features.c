@@ -13,7 +13,7 @@
 #define ISA_V_HWCAP (1 << ('v' - 'a'))
 #define ISA_ZBC_HWCAP (1 << 29)
 
-int Z_INTERNAL is_kernel_version_greater_or_equal_to_6_5() {
+int Z_INTERNAL is_kernel_version_greater_or_equal_to_6_5(void) {
     struct utsname buffer;
     if (uname(&buffer) == -1) {
         // uname failed

@@ -25,7 +25,7 @@
 #  include <windows.h>
 #endif
 
-static int arm_has_crc32() {
+static int arm_has_crc32(void) {
 #if defined(__linux__) && defined(ARM_AUXV_HAS_CRC32)
 #  ifdef HWCAP_CRC32
     return (getauxval(AT_HWCAP) & HWCAP_CRC32) != 0 ? 1 : 0;
@@ -61,7 +61,7 @@ static int arm_has_crc32() {
 
 /* AArch64 has neon. */
 #if !defined(__aarch64__) && !defined(_M_ARM64) && !defined(_M_ARM64EC)
-static inline int arm_has_neon() {
+static inline int arm_has_neon(void) {
 #if defined(__linux__) && defined(ARM_AUXV_HAS_NEON)
 #  ifdef HWCAP_ARM_NEON
     return (getauxval(AT_HWCAP) & HWCAP_ARM_NEON) != 0 ? 1 : 0;
@@ -89,7 +89,7 @@ static inline int arm_has_neon() {
 
 /* AArch64 does not have ARMv6 SIMD. */
 #if !defined(__aarch64__) && !defined(_M_ARM64) && !defined(_M_ARM64EC)
-static inline int arm_has_simd() {
+static inline int arm_has_simd(void) {
 #if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
     const char *platform = (const char *)getauxval(AT_PLATFORM);
     return strncmp(platform, "v6l", 3) == 0
