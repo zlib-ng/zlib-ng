@@ -30,9 +30,9 @@ foreach(FUZZER ${FUZZERS})
     endif()
 
     if(NOT DEFINED BUILD_SHARED_LIBS)
-        target_link_libraries(${FUZZER} zlibstatic)
+        target_link_libraries(${FUZZER} zlib-ng-static)
     else()
-        target_link_libraries(${FUZZER} zlib)
+        target_link_libraries(${FUZZER} zlib-ng)
     endif()
 
     if(FUZZING_ENGINE_FOUND)

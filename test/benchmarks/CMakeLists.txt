@@ -56,7 +56,7 @@ target_include_directories(benchmark_zlib PRIVATE
     ${PROJECT_BINARY_DIR}
     ${benchmark_SOURCE_DIR}/benchmark/include)
 
-target_link_libraries(benchmark_zlib zlibstatic benchmark::benchmark)
+target_link_libraries(benchmark_zlib zlib-ng-static benchmark::benchmark)
 if(WIN32)
     target_link_libraries(benchmark_zlib shlwapi)
 endif()
@@ -111,5 +111,5 @@ if(WITH_BENCHMARK_APPS)
     # We need the static png library if we're statically linking to zlib,
     # otherwise it will resolve these things in the system provided dynamic
     # libraries (likely linked to stock zlib)
-    target_link_libraries(benchmark_zlib_apps libpng.a zlibstatic benchmark::benchmark)
+    target_link_libraries(benchmark_zlib_apps libpng.a zlib-ng-static benchmark::benchmark)
 endif()
