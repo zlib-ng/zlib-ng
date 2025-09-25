@@ -405,6 +405,10 @@ if(APPLE)
     if(HAVE_W_ERROR_UNGUARDED_AVAILABILITY_NEW)
         set(ADDITIONAL_CHECK_FLAGS "${ADDITIONAL_CHECK_FLAGS} -Werror=unguarded-availability-new")
     endif()
+    check_c_compiler_flag(-Werror=unused-command-line-argument HAVE_W_ERROR_UNUSED_COMMAND_LINE_ARGUMENT)
+    if(HAVE_W_ERROR_UNUSED_COMMAND_LINE_ARGUMENT)
+        set(ADDITIONAL_CHECK_FLAGS "${ADDITIONAL_CHECK_FLAGS} -Werror=unused-command-line-argument")
+    endif()
 endif()
 
 #
@@ -520,7 +524,9 @@ endif()
 #
 # Check whether compiler supports -fno-semantic-interposition parameter
 #
+set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
 check_c_compiler_flag(-fno-semantic-interposition HAVE_NO_INTERPOSITION)
+set(CMAKE_REQUIRED_FLAGS)
 
 #
 # Check if we can hide zlib internal symbols that are linked between separate source files using hidden

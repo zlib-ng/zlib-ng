@@ -679,6 +679,18 @@ else
   echo "Checking for -Werror=unguarded-availability-new... No." | tee -a configure.log
 fi
 
+# Check for -Werror=unused-command-line-argument compiler support
+echo "" > test.c
+  cat > $test.c <<EOF
+int main() { return 0; }
+EOF
+if $cc $CFLAGS -Werror=unused-command-line-argument -c $test.c >> configure.log 2>&1; then
+  echo "Checking for -Werror=unused-command-line-argument... Yes." | tee -a configure.log
+  ADDITIONAL_CHECK_FLAGS="$ADDITIONAL_CHECK_FLAGS -Werror=unused-command-line-argument"
+else
+  echo "Checking for -Werror=unused-command-line-argument... No." | tee -a configure.log
+fi
+
 # check for version script support
 cat > $test.c <<EOF
 int foo(void) { return 0; }
@@ -999,7 +1011,7 @@ echo "" > test.c
   cat > $test.c <<EOF
 int main() { return 0; }
 EOF
-if test "$gcc" -eq 1 && ($cc $CFLAGS -fno-semantic-interposition -c $test.c) >> configure.log 2>&1; then
+if test "$gcc" -eq 1 && ($cc $CFLAGS $ADDITIONAL_CHECK_FLAGS -fno-semantic-interposition -c $test.c) >> configure.log 2>&1; then
   echo "Checking for -fno-semantic-interposition... Yes." | tee -a configure.log
   SFLAGS="$SFLAGS -fno-semantic-interposition"
 else
