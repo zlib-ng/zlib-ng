@@ -22,6 +22,8 @@ void inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
 
 #ifdef ARM_CRC32
 uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, size_t len);
+void     crc32_fold_copy_armv8(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len);
+void     crc32_fold_armv8(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc);
 #endif
 
 #ifdef ARM_SIMD
@@ -62,6 +64,10 @@ void slide_hash_armv6(deflate_state *s);
 #  if (defined(ARM_CRC32) && defined(__ARM_FEATURE_CRC32))
 #    undef native_crc32
 #    define native_crc32 crc32_armv8
+#    undef native_crc32_fold
+#    define native_crc32_fold crc32_fold_armv8
+#    undef native_crc32_fold_copy
+#    define native_crc32_fold_copy crc32_fold_copy_armv8
 #  endif
 #endif
 

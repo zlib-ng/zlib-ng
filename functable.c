@@ -206,6 +206,8 @@ static void init_functable(void) {
 #ifdef ARM_CRC32
     if (cf.arm.has_crc32) {
         ft.crc32 = &crc32_armv8;
+        ft.crc32_fold = &crc32_fold_armv8;
+        ft.crc32_fold_copy = &crc32_fold_copy_armv8;
     }
 #endif
 
