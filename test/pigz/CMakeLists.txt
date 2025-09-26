@@ -120,15 +120,16 @@ if(NOT DEFINED ZLIB_ROOT)
     find_package(Zlib REQUIRED)
 endif()
 
+set(ZLIB_ALIASES ON)
 set(ZLIB_COMPAT ON)
 set(ZLIB_ENABLE_TESTS OFF)
 
 add_subdirectory(${ZLIB_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/zlib EXCLUDE_FROM_ALL)
 
 if(NOT DEFINED BUILD_SHARED_LIBS OR NOT BUILD_SHARED_LIBS)
-    set(ZLIB_TARGET zlib-ng-static)
+    set(ZLIB_TARGET zlibstatic)
 else()
-    set(ZLIB_TARGET zlib-ng)
+    set(ZLIB_TARGET zlib)
 endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${ZLIB_ROOT} ${CMAKE_CURRENT_BINARY_DIR}/zlib)
