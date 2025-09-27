@@ -189,8 +189,8 @@ jobs:
             ldflags: -static
             emu-run: node
 
-          - name: macOS GCC Symbol Prefix
-            os: macos-13
+          - name: macOS GCC Symbol Prefix (Intel)
+            os: macos-15-intel
             compiler: gcc-11
             configure-args: --sprefix=zTest_
             packages: gcc@11
@@ -202,8 +202,8 @@ jobs:
             configure-args: --sprefix=zTest_
             packages: gcc@11
 
-          - name: macOS GCC Symbol Prefix & Compat
-            os: macos-13
+          - name: macOS GCC Symbol Prefix & Compat (Intel)
+            os: macos-15-intel
             compiler: gcc-11
             configure-args: --zlib-compat --sprefix=zTest_
             packages: gcc@11
@@ -215,8 +215,8 @@ jobs:
             configure-args: --zlib-compat --sprefix=zTest_
             packages: gcc@11
 
-          - name: macOS GCC
-            os: macos-13
+          - name: macOS GCC (Intel)
+            os: macos-15-intel
             compiler: gcc-11
             configure-args: --warn
             packages: gcc@11
