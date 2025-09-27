@@ -15,6 +15,8 @@
 #include "x86_intrins.h"
 #include "adler32_avx512_p.h"
 
+uint32_t adler32_avx2(uint32_t adler, const uint8_t *buf, size_t len);
+
 static inline uint32_t adler32_fold_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     if (src == NULL) return 1L;
     if (len == 0) return adler;

@@ -82,30 +82,38 @@ static void init_functable(void) {
 
     // X86 - SSE2
 #ifdef X86_SSE2
-#  if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+#  if !defined(__x86_64__) && !defined(_M_X64)
     if (cf.x86.has_sse2)
 #  endif
     {
+#  if !defined(ZARCHVER) || ZARCHVER == 1
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
         ft.chunksize = &chunksize_sse2;
-#if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE)
-        ft.crc32 = &crc32_chorba_sse2;
-#endif
         ft.inflate_fast = &inflate_fast_sse2;
+#      if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE)
+        ft.crc32 = &crc32_chorba_sse2;
+#      endif
+#  endif
+#  if !defined(ZARCHVER) || ZARCHVER <= 2
         ft.slide_hash = &slide_hash_sse2;
-#  ifdef HAVE_BUILTIN_CTZ
+#      ifdef HAVE_BUILTIN_CTZ
         ft.compare256 = &compare256_sse2;
         ft.longest_match = &longest_match_sse2;
         ft.longest_match_slow = &longest_match_slow_sse2;
+#      endif
 #  endif
     }
 #endif
     // X86 - SSSE3
 #ifdef X86_SSSE3
     if (cf.x86.has_ssse3) {
+#      if !defined(ZARCHVER) || ZARCHVER == 1
         ft.adler32 = &adler32_ssse3;
+#      endif
+#      if !defined(ZARCHVER) || ZARCHVER <= 2
         ft.chunkmemset_safe = &chunkmemset_safe_ssse3;
         ft.inflate_fast = &inflate_fast_ssse3;
+#      endif
     }
 #endif
 
@@ -121,7 +129,9 @@ static void init_functable(void) {
     // X86 - SSE4.2
 #ifdef X86_SSE42
     if (cf.x86.has_sse42) {
+#      if !defined(ZARCHVER) || ZARCHVER <= 2
         ft.adler32_fold_copy = &adler32_fold_copy_sse42;
+#      endif
     }
 #endif
     // X86 - PCLMUL
@@ -141,16 +151,20 @@ static void init_functable(void) {
      * for the shift results as an operand, eliminating several register-register moves when the original value needs
      * to remain intact. They also allow for a count operand that isn't the CL register, avoiding contention there */
     if (cf.x86.has_avx2 && cf.x86.has_bmi2) {
+#      if !defined(ZARCHVER) || ZARCHVER <= 3
         ft.adler32 = &adler32_avx2;
         ft.adler32_fold_copy = &adler32_fold_copy_avx2;
         ft.chunkmemset_safe = &chunkmemset_safe_avx2;
         ft.chunksize = &chunksize_avx2;
         ft.inflate_fast = &inflate_fast_avx2;
+#      endif
         ft.slide_hash = &slide_hash_avx2;
 #  ifdef HAVE_BUILTIN_CTZ
+#      if !defined(ZARCHVER) || ZARCHVER <= 3
         ft.compare256 = &compare256_avx2;
         ft.longest_match = &longest_match_avx2;
         ft.longest_match_slow = &longest_match_slow_avx2;
+#      endif
 #  endif
     }
 #endif

@@ -75,10 +75,14 @@ BENCHMARK_COMPARE256(64, compare256_64, 1);
 #endif
 
 #if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
-BENCHMARK_COMPARE256(sse2, compare256_sse2, test_cpu_features.x86.has_sse2);
+#  if !defined(ZARCHVER) || ZARCHVER <= 2
+    BENCHMARK_COMPARE256(sse2, compare256_sse2, test_cpu_features.x86.has_sse2);
+#  endif
 #endif
 #if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
-BENCHMARK_COMPARE256(avx2, compare256_avx2, test_cpu_features.x86.has_avx2);
+#  if !defined(ZARCHVER) || ZARCHVER <= 3
+    BENCHMARK_COMPARE256(avx2, compare256_avx2, test_cpu_features.x86.has_avx2);
+#  endif
 #endif
 #if defined(X86_AVX512) && defined(HAVE_BUILTIN_CTZLL)
 BENCHMARK_COMPARE256(avx512, compare256_avx512, test_cpu_features.x86.has_avx512_common);

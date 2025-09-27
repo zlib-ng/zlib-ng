@@ -320,7 +320,9 @@ TEST_CRC32(pclmulqdq, crc32_pclmulqdq, test_cpu_features.x86.has_pclmulqdq)
 TEST_CRC32(vpclmulqdq, crc32_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq))
 #endif
 #if !defined(WITHOUT_CHORBA) && defined(X86_SSE2) && !defined(NO_CHORBA_SSE)
-TEST_CRC32(chorba_sse2, crc32_chorba_sse2, test_cpu_features.x86.has_sse2)
+#    if !defined(ZARCHVER) || ZARCHVER == 1
+        TEST_CRC32(chorba_sse2, crc32_chorba_sse2, test_cpu_features.x86.has_sse2)
+#    endif
 #endif
 #if !defined(WITHOUT_CHORBA) && defined(X86_SSE41) && !defined(NO_CHORBA_SSE)
 TEST_CRC32(chorba_sse41, crc32_chorba_sse41, test_cpu_features.x86.has_sse41)

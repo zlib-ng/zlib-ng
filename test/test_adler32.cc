@@ -385,7 +385,9 @@ TEST_ADLER32(rvv, adler32_rvv, test_cpu_features.riscv.has_rvv)
 TEST_ADLER32(ssse3, adler32_ssse3, test_cpu_features.x86.has_ssse3)
 #endif
 #ifdef X86_AVX2
-TEST_ADLER32(avx2, adler32_avx2, test_cpu_features.x86.has_avx2)
+#  if !defined(ZARCHVER) || ZARCHVER <= 3
+    TEST_ADLER32(avx2, adler32_avx2, test_cpu_features.x86.has_avx2)
+#  endif
 #endif
 #ifdef X86_AVX512
 TEST_ADLER32(avx512, adler32_avx512, test_cpu_features.x86.has_avx512_common)

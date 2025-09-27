@@ -17,6 +17,8 @@
 #include "adler32_avx512_p.h"
 #include "adler32_avx2_p.h"
 
+uint32_t adler32_avx2(uint32_t adler, const uint8_t *buf, size_t len);
+
 Z_INTERNAL uint32_t adler32_avx512_vnni(uint32_t adler, const uint8_t *src, size_t len) {
     if (src == NULL) return 1L;
     if (len == 0) return adler;

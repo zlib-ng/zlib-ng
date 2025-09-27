@@ -113,12 +113,16 @@ BENCHMARK_ADLER32_BASELINE_COPY(rvv, adler32_rvv, test_cpu_features.riscv.has_rv
 #endif
 
 #ifdef X86_SSE42
-BENCHMARK_ADLER32_BASELINE_COPY(sse42_baseline, adler32_ssse3, test_cpu_features.x86.has_ssse3);
-BENCHMARK_ADLER32_COPY(sse42, adler32_fold_copy_sse42, test_cpu_features.x86.has_sse42);
+#  if !defined(ZARCHVER) || ZARCHVER <= 2
+    BENCHMARK_ADLER32_BASELINE_COPY(sse42_baseline, adler32_ssse3, test_cpu_features.x86.has_ssse3);
+    BENCHMARK_ADLER32_COPY(sse42, adler32_fold_copy_sse42, test_cpu_features.x86.has_sse42);
+#  endif
 #endif
 #ifdef X86_AVX2
-BENCHMARK_ADLER32_BASELINE_COPY(avx2_baseline, adler32_avx2, test_cpu_features.x86.has_avx2);
-BENCHMARK_ADLER32_COPY(avx2, adler32_fold_copy_avx2, test_cpu_features.x86.has_avx2);
+#  if !defined(ZARCHVER) || ZARCHVER <= 3
+    BENCHMARK_ADLER32_BASELINE_COPY(avx2_baseline, adler32_avx2, test_cpu_features.x86.has_avx2);
+    BENCHMARK_ADLER32_COPY(avx2, adler32_fold_copy_avx2, test_cpu_features.x86.has_avx2);
+#  endif
 #endif
 #ifdef X86_AVX512
 BENCHMARK_ADLER32_BASELINE_COPY(avx512_baseline, adler32_avx512, test_cpu_features.x86.has_avx512_common);

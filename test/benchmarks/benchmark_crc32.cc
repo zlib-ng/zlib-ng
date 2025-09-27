@@ -72,9 +72,11 @@ BENCHMARK_CRC32(native, native_crc32, 1);
 
 #ifndef WITHOUT_CHORBA
 #   if defined(X86_SSE2) && !defined(NO_CHORBA_SSE)
-    BENCHMARK_CRC32(chorba_sse2, crc32_chorba_sse2, test_cpu_features.x86.has_sse2);
+#       if !defined(ZARCHVER) || ZARCHVER == 1
+         BENCHMARK_CRC32(chorba_sse2, crc32_chorba_sse2, test_cpu_features.x86.has_sse2);
+#       endif
 #       if defined(X86_SSE41) && !defined(NO_CHORBA_SSE)
-        BENCHMARK_CRC32(chorba_sse41, crc32_chorba_sse41, test_cpu_features.x86.has_sse41);
+         BENCHMARK_CRC32(chorba_sse41, crc32_chorba_sse41, test_cpu_features.x86.has_sse41);
 #       endif
 #   endif
 #endif

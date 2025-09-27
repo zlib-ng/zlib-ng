@@ -92,7 +92,9 @@ BENCHMARK_SLIDEHASH(vmx, slide_hash_vmx, test_cpu_features.power.has_altivec);
 BENCHMARK_SLIDEHASH(rvv, slide_hash_rvv, test_cpu_features.riscv.has_rvv);
 #endif
 #ifdef X86_SSE2
-BENCHMARK_SLIDEHASH(sse2, slide_hash_sse2, test_cpu_features.x86.has_sse2);
+#  if !defined(ZARCHVER) || ZARCHVER <= 2
+    BENCHMARK_SLIDEHASH(sse2, slide_hash_sse2, test_cpu_features.x86.has_sse2);
+#  endif
 #endif
 #ifdef X86_AVX2
 BENCHMARK_SLIDEHASH(avx2, slide_hash_avx2, test_cpu_features.x86.has_avx2);
