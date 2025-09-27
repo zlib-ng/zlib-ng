@@ -56,13 +56,15 @@ public:
     } \
     BENCHMARK_REGISTER_F(crc32, name)->Arg(1)->Arg(8)->Arg(12)->Arg(16)->Arg(32)->Arg(64)->Arg(512)->Arg(4<<10)->Arg(32<<10)->Arg(256<<10)->Arg(4096<<10);
 
-#ifndef WITHOUT_CHORBA
-BENCHMARK_CRC32(generic_chorba, crc32_c, 1);
-#else
-BENCHMARK_CRC32(generic, crc32_c, 1);
-#endif
+#ifndef NO_C_FALLBACK
+#   ifndef WITHOUT_CHORBA
+        BENCHMARK_CRC32(generic_chorba, crc32_c, 1);
+#   else
+        BENCHMARK_CRC32(generic, crc32_c, 1);
+#   endif
 
-BENCHMARK_CRC32(braid, crc32_braid, 1);
+    BENCHMARK_CRC32(braid, crc32_braid, 1);
+#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 BENCHMARK_CRC32(native, native_crc32, 1);

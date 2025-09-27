@@ -212,6 +212,7 @@ Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t 
     return c;
 }
 
+#ifndef NO_C_FALLBACK
 Z_INTERNAL uint32_t crc32_braid(uint32_t c, const uint8_t *buf, size_t len) {
     c = (~c) & 0xffffffff;
 
@@ -220,3 +221,4 @@ Z_INTERNAL uint32_t crc32_braid(uint32_t c, const uint8_t *buf, size_t len) {
     /* Return the CRC, post-conditioned. */
     return c ^ 0xffffffff;
 }
+#endif

@@ -84,7 +84,9 @@ public:
     } \
     BENCHMARK_REGISTER_F(adler32_copy, name)->Range(8192, MAX_RANDOM_INTS_SIZE);
 
+#ifndef NO_C_FALLBACK
 BENCHMARK_ADLER32_BASELINE_COPY(c, adler32_c, 1);
+#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 BENCHMARK_ADLER32_BASELINE_COPY(native, native_adler32, 1);

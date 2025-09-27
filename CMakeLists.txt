@@ -104,6 +104,10 @@ option(WITH_CODE_COVERAGE "Enable code coverage reporting" OFF)
 option(WITH_INFLATE_STRICT "Build with strict inflate distance checking" OFF)
 option(WITH_INFLATE_ALLOW_INVALID_DIST "Build with zero fill for inflate invalid distances" OFF)
 
+option(WITH_C_FALLBACK "Build with C fallback functions.
+Causes abort() on init if optimized functions are missing!
+Currently known safe on X86-64 if WITH_OPTIM and WITH_SSE2 is on." ON)
+
 set(ZLIB_SYMBOL_PREFIX "" CACHE STRING "Give this prefix to all publicly exported symbols.
 Useful when embedding into a larger library.
 Default is no prefix (empty prefix).")
@@ -153,6 +157,7 @@ option(INSTALL_UTILS "Copy minigzip and minideflate during install" OFF)
 mark_as_advanced(FORCE
     ZLIB_SYMBOL_PREFIX
     WITH_REDUCED_MEM
+    WITH_C_FALLBACK
     WITH_CRC32_CHORBA
     WITH_ARMV8 WITH_NEON
     WITH_ARMV6
@@ -193,6 +198,14 @@ endif()
 
 if(NOT WITH_CRC32_CHORBA)
     add_definitions(-DWITHOUT_CHORBA)
+endif()
+
+if(${ARCH} MATCHES "x86_64")
+
+endif()
+
+if(NOT WITH_C_FALLBACK)
+    add_definitions(-DNO_C_FALLBACK=1)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^Intel")
@@ -1277,15 +1290,19 @@ set(ZLIB_PRIVATE_HDRS
     zutil.h
     zutil_p.h
 )
-set(ZLIB_SRCS
+set(ZLIB_C_FALLBACK_SRCS
     arch/generic/adler32_c.c
     arch/generic/adler32_fold_c.c
     arch/generic/chunkset_c.c
     arch/generic/compare256_c.c
-    arch/generic/crc32_braid_c.c
     arch/generic/crc32_c.c
+    arch/generic/crc32_braid_c.c
     arch/generic/crc32_fold_c.c
     arch/generic/slide_hash_c.c
+)
+
+
+set(ZLIB_SRCS
     adler32.c
     compress.c
     crc32.c
@@ -1311,6 +1328,9 @@ set(ZLIB_SRCS
 
 if(WITH_CRC32_CHORBA)
     list(APPEND ZLIB_SRCS arch/generic/crc32_chorba_c.c)
+    if(NOT WITH_C_FALLBACK)
+        list(APPEND ZLIB_SRCS arch/generic/crc32_braid_c.c)
+    endif()
 endif()
 
 if(WITH_RUNTIME_CPU_DETECTION)
@@ -1330,6 +1350,10 @@ set(ZLIB_GZFILE_SRCS
 set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_HDRS} ${ZLIB_ARCH_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 if(WITH_GZFILEOP)
     list(APPEND ZLIB_ALL_SRCS ${ZLIB_GZFILE_PRIVATE_HDRS} ${ZLIB_GZFILE_SRCS})
+endif()
+
+if(WITH_C_FALLBACK)
+    list(APPEND ZLIB_ALL_SRCS ${ZLIB_C_FALLBACK_SRCS})
 endif()
 
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
@@ -1553,6 +1577,7 @@ add_feature_info(WITH_GTEST WITH_GTEST "Build gtest_zlib")
 add_feature_info(WITH_FUZZERS WITH_FUZZERS "Build test/fuzz")
 add_feature_info(WITH_BENCHMARKS WITH_BENCHMARKS "Build test/benchmarks")
 add_feature_info(WITH_BENCHMARK_APPS WITH_BENCHMARK_APPS "Build application benchmarks")
+add_feature_info(WITH_C_FALLBACK WITH_C_FALLBACK "Build with C fallbacks")
 add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
 add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
 add_feature_info(WITH_CRC32_CHORBA WITH_CRC32_CHORBA "Use optimized CRC32 algorithm Chorba")

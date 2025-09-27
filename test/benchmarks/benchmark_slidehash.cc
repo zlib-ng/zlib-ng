@@ -68,7 +68,9 @@ public:
     } \
     BENCHMARK_REGISTER_F(slide_hash, name)->RangeMultiplier(2)->Range(512, MAX_RANDOM_INTS);
 
+#ifndef NO_C_FALLBACK
 BENCHMARK_SLIDEHASH(c, slide_hash_c, 1);
+#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 BENCHMARK_SLIDEHASH(native, native_slide_hash, 1);

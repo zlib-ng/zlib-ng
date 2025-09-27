@@ -13,6 +13,7 @@
 #include "functable.h"
 #include "cpu_features.h"
 #include "arch_functions.h"
+#include <stdio.h>
 
 /* Platform has pointer size atomic store */
 #if defined(__GNUC__) || defined(__clang__)
@@ -38,6 +39,15 @@
 #  define FUNCTABLE_BARRIER() do { /* Empty */ } while (0)
 #endif
 
+// Verify all pointers are valid before assigning, abort on failure
+#define FUNCTABLE_VERIFY_ASSIGN(VAR, FUNC_NAME) \
+    if (!VAR.FUNC_NAME) { \
+        fprintf(stderr, "Functable entry not set!\n"); \
+        abort(); \
+    } \
+    FUNCTABLE_ASSIGN(VAR, FUNC_NAME);
+
+
 static void force_init_empty(void) {
     // empty
 }
@@ -48,8 +58,10 @@ static void init_functable(void) {
 
     cpu_check_features(&cf);
 
-    // Generic code
     ft.force_init = &force_init_empty;
+
+#ifndef NO_C_FALLBACK
+    // Generic code
     ft.adler32 = &adler32_c;
     ft.adler32_fold_copy = &adler32_fold_copy_c;
     ft.chunkmemset_safe = &chunkmemset_safe_c;
@@ -64,6 +76,7 @@ static void init_functable(void) {
     ft.longest_match = &longest_match_c;
     ft.longest_match_slow = &longest_match_slow_c;
     ft.compare256 = &compare256_c;
+#endif
 
     // Select arch-optimized functions
 
@@ -309,21 +322,21 @@ static void init_functable(void) {
 #endif
 
     // Assign function pointers individually for atomic operation
-    FUNCTABLE_ASSIGN(ft, force_init);
-    FUNCTABLE_ASSIGN(ft, adler32);
-    FUNCTABLE_ASSIGN(ft, adler32_fold_copy);
-    FUNCTABLE_ASSIGN(ft, chunkmemset_safe);
-    FUNCTABLE_ASSIGN(ft, chunksize);
-    FUNCTABLE_ASSIGN(ft, compare256);
-    FUNCTABLE_ASSIGN(ft, crc32);
-    FUNCTABLE_ASSIGN(ft, crc32_fold);
-    FUNCTABLE_ASSIGN(ft, crc32_fold_copy);
-    FUNCTABLE_ASSIGN(ft, crc32_fold_final);
-    FUNCTABLE_ASSIGN(ft, crc32_fold_reset);
-    FUNCTABLE_ASSIGN(ft, inflate_fast);
-    FUNCTABLE_ASSIGN(ft, longest_match);
-    FUNCTABLE_ASSIGN(ft, longest_match_slow);
-    FUNCTABLE_ASSIGN(ft, slide_hash);
+    FUNCTABLE_VERIFY_ASSIGN(ft, force_init);
+    FUNCTABLE_VERIFY_ASSIGN(ft, adler32);
+    FUNCTABLE_VERIFY_ASSIGN(ft, adler32_fold_copy);
+    FUNCTABLE_VERIFY_ASSIGN(ft, chunkmemset_safe);
+    FUNCTABLE_VERIFY_ASSIGN(ft, chunksize);
+    FUNCTABLE_VERIFY_ASSIGN(ft, compare256);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_copy);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_final);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_reset);
+    FUNCTABLE_VERIFY_ASSIGN(ft, inflate_fast);
+    FUNCTABLE_VERIFY_ASSIGN(ft, longest_match);
+    FUNCTABLE_VERIFY_ASSIGN(ft, longest_match_slow);
+    FUNCTABLE_VERIFY_ASSIGN(ft, slide_hash);
 
     // Memory barrier for weak memory order CPUs
     FUNCTABLE_BARRIER();
