@@ -1214,10 +1214,10 @@ set(ZLIB_PRIVATE_HDRS
     arch_functions.h
     chunkset_tpl.h
     compare256_rle.h
-    crc32.h
     crc32_braid_p.h
     crc32_braid_comb_p.h
     crc32_braid_tbl.h
+    crc32_chorba_p.h
     deflate.h
     deflate_p.h
     fallback_builtins.h

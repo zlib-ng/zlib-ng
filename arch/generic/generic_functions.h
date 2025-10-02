@@ -7,7 +7,6 @@
 
 #include "zendian.h"
 #include "deflate.h"
-#include "crc32_braid_p.h"
 
 typedef uint32_t (*adler32_func)(uint32_t adler, const uint8_t *buf, size_t len);
 typedef uint32_t (*adler32_copy_func)(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
@@ -33,10 +32,6 @@ uint32_t crc32_copy_braid(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t
 
 #ifndef WITHOUT_CHORBA
   uint32_t crc32_chorba(uint32_t crc, const uint8_t *buf, size_t len);
-  uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_word_t* input, size_t len);
-  uint32_t crc32_chorba_32768_nondestructive (uint32_t crc, const uint64_t* input, size_t len);
-  uint32_t crc32_chorba_small_nondestructive (uint32_t crc, const uint64_t* input, size_t len);
-  uint32_t crc32_chorba_small_nondestructive_32bit (uint32_t crc, const uint32_t* input, size_t len);
   uint32_t crc32_copy_chorba(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 

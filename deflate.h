@@ -13,7 +13,6 @@
 #include "zutil.h"
 #include "zendian.h"
 #include "zmemory.h"
-#include "crc32.h"
 
 #ifdef S390_DFLTCC_DEFLATE
 #  include "arch/s390/dfltcc_common.h"

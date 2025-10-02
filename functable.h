@@ -7,7 +7,6 @@
 #define FUNCTABLE_H_
 
 #include "deflate.h"
-#include "crc32.h"
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 

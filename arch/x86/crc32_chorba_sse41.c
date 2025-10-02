@@ -1,9 +1,9 @@
 #if defined(X86_SSE41) && !defined(WITHOUT_CHORBA_SSE)
 
 #include "zbuild.h"
+#include "crc32_chorba_p.h"
 #include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
-#include "crc32.h"
 #include <emmintrin.h>
 #include <smmintrin.h>
 #include "arch/x86/x86_intrins.h"
@@ -315,7 +315,7 @@ Z_INTERNAL uint32_t crc32_chorba_sse41(uint32_t crc, const uint8_t *buf, size_t 
     }
 #if !defined(WITHOUT_CHORBA)
     if (len > CHORBA_LARGE_THRESHOLD)
-        return crc32_chorba_118960_nondestructive(crc, (z_word_t*)buf, len);
+        return crc32_chorba_118960_nondestructive(crc, (chorba_word_t*)buf, len);
 #endif
     if (len > CHORBA_MEDIUM_LOWER_THRESHOLD && len <= CHORBA_MEDIUM_UPPER_THRESHOLD)
         return crc32_chorba_32768_nondestructive_sse41(crc, (const uint64_t*)buf, len);

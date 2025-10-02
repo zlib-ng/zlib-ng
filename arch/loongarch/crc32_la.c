@@ -6,7 +6,6 @@
 #ifdef LOONGARCH_CRC
 
 #include "zbuild.h"
-#include "crc32.h"
 
 #include <larchintrin.h>
 

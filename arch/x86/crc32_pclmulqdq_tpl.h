@@ -23,7 +23,6 @@
 #include <wmmintrin.h>
 #include <smmintrin.h> // _mm_extract_epi32
 
-#include "crc32.h"
 #include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
 #include "crc32_p.h"

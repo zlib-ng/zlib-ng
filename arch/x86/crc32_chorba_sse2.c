@@ -1,9 +1,9 @@
 #if defined(X86_SSE2) && !defined(WITHOUT_CHORBA_SSE)
 
 #include "zbuild.h"
+#include "crc32_chorba_p.h"
 #include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
-#include "crc32.h"
 #include <emmintrin.h>
 #include "arch/x86/x86_intrins.h"
 #include "arch_functions.h"
@@ -857,7 +857,7 @@ Z_INTERNAL uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t l
     }
 #if !defined(WITHOUT_CHORBA)
     if (len > CHORBA_LARGE_THRESHOLD)
-        return crc32_chorba_118960_nondestructive(crc, (const z_word_t*)buf, len);
+        return crc32_chorba_118960_nondestructive(crc, (const chorba_word_t*)buf, len);
 #endif
     return chorba_small_nondestructive_sse2(crc, (const uint64_t*)buf, len);
 }

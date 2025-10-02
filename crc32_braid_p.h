@@ -8,6 +8,9 @@
 
 /* Define BRAID_W and the associated z_word_t type. If BRAID_W is not defined, then a braided
    calculation is not used, and the associated tables and code are not compiled.
+
+   TODO: According to crc32_braid_c.c, BRAID_N=5, BRAID_W=4 is fastest with Sparc64-VII,
+   PowerPC POWER9, and MIPS64 Octeon II processors.
  */
 #ifdef ARCH_64BIT
 #  define BRAID_W 8

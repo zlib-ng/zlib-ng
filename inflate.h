@@ -11,8 +11,6 @@
 #ifndef INFLATE_H_
 #define INFLATE_H_
 
-#include "crc32.h"
-
 #ifdef S390_DFLTCC_INFLATE
 #  include "arch/s390/dfltcc_common.h"
 #  define HAVE_ARCH_INFLATE_STATE

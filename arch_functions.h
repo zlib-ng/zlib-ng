@@ -8,7 +8,6 @@
 
 #include "zbuild.h"
 #include "zutil.h"
-#include "crc32.h"
 #include "deflate.h"
 #include "fallback_builtins.h"
 

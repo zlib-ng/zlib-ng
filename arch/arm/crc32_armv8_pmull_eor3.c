@@ -13,7 +13,6 @@
 #include "zutil.h"
 #include "acle_intrins.h"
 #include "neon_intrins.h"
-#include "crc32.h"
 
 /* Carryless multiply low 64 bits: a[0] * b[0] */
 static inline uint64x2_t clmul_lo(uint64x2_t a, uint64x2_t b) {
