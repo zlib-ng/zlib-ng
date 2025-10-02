@@ -576,8 +576,8 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_
         uint64_t out4;
         uint64_t out5;
 
-        in1 = input[i / sizeof(chorba_word_t)] ^ bitbuffer[(i / sizeof(uint64_t))];
-        in2 = input[(i + 8) / sizeof(chorba_word_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 1)];
+        in1 = input[i / sizeof(uint64_t)] ^ bitbuffer[(i / sizeof(uint64_t))];
+        in2 = input[(i + 8) / sizeof(uint64_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 1)];
         in1 = Z_U64_FROM_LE(in1) ^ next1_64;
         in2 = Z_U64_FROM_LE(in2) ^ next2_64;
 
@@ -591,8 +591,8 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_
         b3 = (in2 >> 45) ^ (in2 << 44);
         b4 = (in2 >> 20);
 
-        in3 = input[(i + 16) / sizeof(chorba_word_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 2)];
-        in4 = input[(i + 24) / sizeof(chorba_word_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 3)];
+        in3 = input[(i + 16) / sizeof(uint64_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 2)];
+        in4 = input[(i + 24) / sizeof(uint64_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 3)];
         in3 = Z_U64_FROM_LE(in3) ^ next3_64 ^ a1;
         in4 = Z_U64_FROM_LE(in4) ^ next4_64 ^ a2 ^ b1;
 
