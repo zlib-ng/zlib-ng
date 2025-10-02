@@ -43,7 +43,7 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
     vst1q_u8(out, *chunk);
 }
 
-static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t dist) {
+static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, size_t *chunk_rem, size_t dist) {
     lut_rem_pair lut_rem = perm_idx_lut[dist - 3];
     *chunk_rem = lut_rem.remval;
 

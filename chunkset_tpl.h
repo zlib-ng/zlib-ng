@@ -21,10 +21,10 @@ static inline size_t CHUNKSIZE(void) {
    without iteration, which will hopefully make the branch prediction more
    reliable. */
 #ifndef HAVE_CHUNKCOPY
-static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
+static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, size_t len) {
     Assert(len > 0, "chunkcopy should never have a length 0");
     chunk_t chunk;
-    int32_t align = ((len - 1) % sizeof(chunk_t)) + 1;
+    size_t align = ((len - 1) % sizeof(chunk_t)) + 1;
     loadchunk(from, &chunk);
     storechunk(out, &chunk);
     out += align;
@@ -64,21 +64,21 @@ static inline uint8_t* CHUNKUNROLL(uint8_t *out, unsigned *dist, unsigned *len) 
 
 #ifndef HAVE_CHUNK_MAG
 /* Loads a magazine to feed into memory of the pattern */
-static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t dist) {
+static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, size_t *chunk_rem, size_t dist) {
         /* This code takes string of length dist from "from" and repeats
          * it for as many times as can fit in a chunk_t (vector register) */
-        uint64_t cpy_dist;
-        uint64_t bytes_remaining = sizeof(chunk_t);
+        size_t cpy_dist;
+        size_t bytes_remaining = sizeof(chunk_t);
         chunk_t chunk_load;
         uint8_t *cur_chunk = (uint8_t *)&chunk_load;
         while (bytes_remaining) {
             cpy_dist = MIN(dist, bytes_remaining);
-            memcpy(cur_chunk, buf, (size_t)cpy_dist);
+            memcpy(cur_chunk, buf, cpy_dist);
             bytes_remaining -= cpy_dist;
             cur_chunk += cpy_dist;
             /* This allows us to bypass an expensive integer division since we're effectively
              * counting in this loop, anyway */
-            *chunk_rem = (uint32_t)cpy_dist;
+            *chunk_rem = cpy_dist;
         }
 
         return chunk_load;
@@ -86,9 +86,10 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
 #endif
 
 #if defined(HAVE_HALF_CHUNK) && !defined(HAVE_HALFCHUNKCOPY)
-static inline uint8_t* HALFCHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
+static inline uint8_t* HALFCHUNKCOPY(uint8_t *out, uint8_t const *from, size_t len) {
+    Assert(len > 0, "halfchunkcopy should never have a length 0");
     halfchunk_t chunk;
-    int32_t align = ((len - 1) % sizeof(halfchunk_t)) + 1;
+    size_t align = ((len - 1) % sizeof(halfchunk_t)) + 1;
     loadhalfchunk(from, &chunk);
     storehalfchunk(out, &chunk);
     out += align;
@@ -107,22 +108,21 @@ static inline uint8_t* HALFCHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned
 
 /* Copy DIST bytes from OUT - DIST into OUT + DIST * k, for 0 <= k < LEN/DIST.
    Return OUT + LEN. */
-static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, unsigned len) {
+static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
     /* Debug performance related issues when len < sizeof(uint64_t):
        Assert(len >= sizeof(uint64_t), "chunkmemset should be called on larger chunks"); */
     Assert(from != out, "chunkmemset cannot have a distance 0");
 
     chunk_t chunk_load;
-    uint32_t chunk_mod = 0;
-    uint32_t adv_amount;
-    int64_t sdist = out - from;
-    uint64_t dist = llabs(sdist);
+    size_t chunk_mod = 0;
+    size_t adv_amount;
+    size_t dist = (size_t)ABS(out - from);
 
     /* We are supporting the case for when we are reading bytes from ahead in the buffer.
      * We now have to handle this, though it wasn't _quite_ clear if this rare circumstance
      * always needed to be handled here or if we're just now seeing it because we are
      * dispatching to this function, more */
-    if (sdist < 0 && dist < len) {
+    if (out < from && dist < len) {
 #ifdef HAVE_MASKED_READWRITE
         /* We can still handle this case if we can mitigate over writing _and_ we
          * fit the entirety of the copy length with one load */
@@ -158,7 +158,7 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, unsigned len) {
             return HALFCHUNKCOPY(out, from, len);
 
         if ((dist % 2) != 0 || dist == 6) {
-            halfchunk_t halfchunk_load = GET_HALFCHUNK_MAG(from, &chunk_mod, (unsigned)dist);
+            halfchunk_t halfchunk_load = GET_HALFCHUNK_MAG(from, &chunk_mod, dist);
 
             if (len == sizeof(halfchunk_t)) {
                 storehalfchunk(out, &halfchunk_load);
@@ -192,7 +192,7 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, unsigned len) {
         chunkmemset_16(from, &chunk_load);
     } else
 #endif
-    chunk_load = GET_CHUNK_MAG(from, &chunk_mod, (unsigned)dist);
+    chunk_load = GET_CHUNK_MAG(from, &chunk_mod, dist);
 
     adv_amount = sizeof(chunk_t) - chunk_mod;
 
@@ -224,11 +224,11 @@ rem_bytes:
     return out;
 }
 
-Z_INTERNAL uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, uint8_t *from, unsigned len, unsigned left) {
+Z_INTERNAL uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, uint8_t *from, size_t len, size_t left) {
 #if OPTIMAL_CMP < 32
-    static const uint32_t align_mask = 7;
+    static const uintptr_t align_mask = 7;
 #elif OPTIMAL_CMP == 32
-    static const uint32_t align_mask = 3;
+    static const uintptr_t align_mask = 3;
 #endif
 
     len = MIN(len, left);
@@ -258,16 +258,16 @@ Z_INTERNAL uint8_t* CHUNKMEMSET_SAFE(uint8_t *out, uint8_t *from, unsigned len, 
     return out;
 }
 
-static inline uint8_t *CHUNKCOPY_SAFE(uint8_t *out, uint8_t *from, uint64_t len, uint8_t *safe)
+static inline uint8_t *CHUNKCOPY_SAFE(uint8_t *out, uint8_t *from, size_t len, uint8_t *safe)
 {
     if (out == from)
         return out + len;
 
-    uint64_t safelen = (safe - out);
+    size_t safelen = (safe - out);
     len = MIN(len, safelen);
 
 #ifndef HAVE_MASKED_READWRITE
-    uint64_t from_dist = (uint64_t)llabs(safe - from);
+    size_t from_dist = (size_t)ABS(safe - from);
     if (UNLIKELY(from_dist < sizeof(chunk_t) || safelen < sizeof(chunk_t))) {
         while (len--) {
             *out++ = *from++;
@@ -277,5 +277,5 @@ static inline uint8_t *CHUNKCOPY_SAFE(uint8_t *out, uint8_t *from, uint64_t len,
     }
 #endif
 
-    return CHUNKMEMSET(out, from, (unsigned)len);
+    return CHUNKMEMSET(out, from, len);
 }

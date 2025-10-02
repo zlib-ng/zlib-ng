@@ -16,7 +16,7 @@ uint32_t crc32_copy_loongarch64(uint32_t crc, uint8_t *dst, const uint8_t *src, 
 #ifdef LOONGARCH_LSX
 uint32_t adler32_lsx(uint32_t adler, const uint8_t *src, size_t len);
 uint32_t adler32_copy_lsx(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
-uint8_t* chunkmemset_safe_lsx(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
+uint8_t* chunkmemset_safe_lsx(uint8_t *out, uint8_t *from, size_t len, size_t left);
 uint32_t compare256_lsx(const uint8_t *src0, const uint8_t *src1);
 void inflate_fast_lsx(PREFIX3(stream) *strm, uint32_t start);
 uint32_t longest_match_lsx(deflate_state *const s, uint32_t cur_match);
@@ -27,7 +27,7 @@ void slide_hash_lsx(deflate_state *s);
 #ifdef LOONGARCH_LASX
 uint32_t adler32_lasx(uint32_t adler, const uint8_t *src, size_t len);
 uint32_t adler32_copy_lasx(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
-uint8_t* chunkmemset_safe_lasx(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
+uint8_t* chunkmemset_safe_lasx(uint8_t *out, uint8_t *from, size_t len, size_t left);
 uint32_t compare256_lasx(const uint8_t *src0, const uint8_t *src1);
 void inflate_fast_lasx(PREFIX3(stream) *strm, uint32_t start);
 uint32_t longest_match_lasx(deflate_state *const s, uint32_t cur_match);

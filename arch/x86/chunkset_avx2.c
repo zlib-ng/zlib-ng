@@ -51,7 +51,7 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
     _mm256_storeu_si256((__m256i *)out, *chunk);
 }
 
-static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t dist) {
+static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, size_t *chunk_rem, size_t dist) {
     lut_rem_pair lut_rem = perm_idx_lut[dist - 3];
     __m256i ret_vec;
     /* While technically we only need to read 4 or 8 bytes into this vector register for a lot of cases, GCC is
@@ -100,7 +100,7 @@ static inline chunk_t halfchunk2whole(halfchunk_t *chunk) {
     return _mm256_zextsi128_si256(*chunk);
 }
 
-static inline halfchunk_t GET_HALFCHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t dist) {
+static inline halfchunk_t GET_HALFCHUNK_MAG(uint8_t *buf, size_t *chunk_rem, size_t dist) {
     lut_rem_pair lut_rem = perm_idx_lut[dist - 3];
     __m128i perm_vec, ret_vec;
     __msan_unpoison(buf + dist, 16 - dist);

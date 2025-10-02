@@ -20,7 +20,7 @@ typedef void     (*slide_hash_func)(deflate_state *s);
 uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 
-uint8_t* chunkmemset_safe_c(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
+uint8_t* chunkmemset_safe_c(uint8_t *out, uint8_t *from, size_t len, size_t left);
 
 #ifdef WITH_ALL_FALLBACKS
 uint32_t compare256_8(const uint8_t *src0, const uint8_t *src1);

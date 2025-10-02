@@ -371,7 +371,7 @@ static uint32_t adler32_copy_stub(uint32_t adler, uint8_t* dst, const uint8_t* s
     return functable.adler32_copy(adler, dst, src, len);
 }
 
-static uint8_t* chunkmemset_safe_stub(uint8_t* out, uint8_t *from, unsigned len, unsigned left) {
+static uint8_t* chunkmemset_safe_stub(uint8_t* out, uint8_t *from, size_t len, size_t left) {
     FUNCTABLE_INIT_ABORT;
     return functable.chunkmemset_safe(out, from, len, left);
 }

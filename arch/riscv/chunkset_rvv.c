@@ -86,17 +86,17 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
  *         After using a single memcpy to copy N chunks, we have to use series of
  *         loadchunk and storechunk to ensure the result is correct.
  */
-static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
+static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, size_t len) {
     Assert(len > 0, "chunkcopy should never have a length 0");
-    ptrdiff_t dist = out - from;
-    if (dist < 0 || dist >= len) {
+    size_t dist = out - from;
+    if (out < from || dist >= len) {
         memcpy(out, from, len);
         out += len;
         from += len;
         return out;
     }
 
-    int32_t align = ((len - 1) % sizeof(chunk_t)) + 1;
+    size_t align = ((len - 1) % sizeof(chunk_t)) + 1;
     memcpy(out, from, sizeof(chunk_t));
     out += align;
     from += align;

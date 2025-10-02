@@ -26,12 +26,12 @@ typedef __mmask16 halfmask_t;
 #define HAVE_CHUNKCOPY
 #define HAVE_HALFCHUNKCOPY
 
-static inline halfmask_t gen_half_mask(unsigned len) {
-   return (halfmask_t)_bzhi_u32(0xFFFF, len);
+static inline halfmask_t gen_half_mask(size_t len) {
+   return (halfmask_t)_bzhi_u32(0xFFFF, (unsigned)len);
 }
 
-static inline mask_t gen_mask(unsigned len) {
-   return (mask_t)_bzhi_u32(0xFFFFFFFF, len);
+static inline mask_t gen_mask(size_t len) {
+   return (mask_t)_bzhi_u32(0xFFFFFFFF, (unsigned)len);
 }
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
@@ -68,11 +68,11 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
     _mm256_storeu_si256((__m256i *)out, *chunk);
 }
 
-static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
+static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, size_t len) {
     Assert(len > 0, "chunkcopy should never have a length 0");
 
     chunk_t chunk;
-    uint32_t rem = len % sizeof(chunk_t);
+    size_t rem = len % sizeof(chunk_t);
 
     if (len < sizeof(chunk_t)) {
         mask_t rem_mask = gen_mask(rem);
@@ -103,7 +103,7 @@ static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len
 #if defined(_MSC_VER) && _MSC_VER < 1943
 #  pragma optimize("", off)
 #endif
-static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t dist) {
+static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, size_t *chunk_rem, size_t dist) {
     lut_rem_pair lut_rem = perm_idx_lut[dist - 3];
     __m256i ret_vec;
     *chunk_rem = lut_rem.remval;
@@ -143,7 +143,7 @@ static inline chunk_t halfchunk2whole(halfchunk_t *chunk) {
     return _mm256_zextsi128_si256(*chunk);
 }
 
-static inline halfchunk_t GET_HALFCHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t dist) {
+static inline halfchunk_t GET_HALFCHUNK_MAG(uint8_t *buf, size_t *chunk_rem, size_t dist) {
     lut_rem_pair lut_rem = perm_idx_lut[dist - 3];
     __m128i perm_vec, ret_vec;
     halfmask_t load_mask = gen_half_mask(dist);
@@ -156,11 +156,11 @@ static inline halfchunk_t GET_HALFCHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, u
     return ret_vec;
 }
 
-static inline uint8_t* HALFCHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len) {
+static inline uint8_t* HALFCHUNKCOPY(uint8_t *out, uint8_t const *from, size_t len) {
     Assert(len > 0, "chunkcopy should never have a length 0");
     halfchunk_t chunk;
 
-    uint32_t rem = len % sizeof(halfchunk_t);
+    size_t rem = len % sizeof(halfchunk_t);
     if (rem == 0) {
         rem = sizeof(halfchunk_t);
     }

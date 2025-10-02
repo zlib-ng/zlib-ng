@@ -201,16 +201,16 @@ static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
 }
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
-static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, uint64_t len, uint8_t *safe) {
-    uint64_t safelen = safe - out;
+static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, size_t len, uint8_t *safe) {
+    size_t safelen = safe - out;
     len = MIN(len, safelen);
     int32_t olap_src = from >= out && from < out + len;
     int32_t olap_dst = out >= from && out < from + len;
-    uint64_t tocopy;
+    size_t tocopy;
 
     /* For all cases without overlap, memcpy is ideal */
     if (!(olap_src || olap_dst)) {
-        memcpy(out, from, (size_t)len);
+        memcpy(out, from, len);
         return out + len;
     }
 
@@ -224,7 +224,7 @@ static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, uint64_t len,
      * initial bulk memcpy of the nonoverlapping region. Then, we can leverage the size of this to determine the safest
      * atomic memcpy size we can pick such that we have non-overlapping regions. This effectively becomes a safe look
      * behind or lookahead distance. */
-    uint64_t non_olap_size = llabs(from - out); // llabs vs labs for compatibility with windows
+    size_t non_olap_size = (size_t)ABS(from - out);
 
     /* So this doesn't give use a worst case scenario of function calls in a loop,
      * we want to instead break this down into copy blocks of fixed lengths
