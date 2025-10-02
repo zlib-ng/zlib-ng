@@ -20,7 +20,9 @@
         d  = _mm_srli_epi64(invec, 20); \
         } while (0);
 
-Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint64_t *input, size_t len) {
+Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint8_t *buf, size_t len) {
+    /* The calling function ensured that this is aligned correctly */
+    const uint64_t* input = (const uint64_t*)buf;
     ALIGNED_(16) uint64_t final[9] = {0};
     uint64_t next1 = ~crc;
     crc = 0;
@@ -857,9 +859,9 @@ Z_INTERNAL uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t l
     }
 #if !defined(WITHOUT_CHORBA)
     if (len > CHORBA_LARGE_THRESHOLD)
-        return crc32_chorba_118960_nondestructive(crc, (const chorba_word_t*)buf, len);
+        return crc32_chorba_118960_nondestructive(crc, buf, len);
 #endif
-    return chorba_small_nondestructive_sse2(crc, (const uint64_t*)buf, len);
+    return chorba_small_nondestructive_sse2(crc, buf, len);
 }
 
 Z_INTERNAL uint32_t crc32_copy_chorba_sse2(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {

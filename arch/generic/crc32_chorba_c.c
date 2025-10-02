@@ -36,7 +36,7 @@
  * @note Requires minimum input size of 118960 + 512 bytes
  * @note Uses 128KB temporary buffer
  */
-Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const chorba_word_t *input, size_t len) {
+Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8_t *buf, size_t len) {
 #if defined(__EMSCRIPTEN__)
     chorba_word_t *bitbuffer = (chorba_word_t*)zng_alloc(bitbuffer_size_bytes);
 #else
@@ -44,7 +44,9 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const chorb
 #endif
     const uint8_t *bitbuffer_bytes = (const uint8_t*)bitbuffer;
     uint64a_t *bitbuffer_qwords = (uint64a_t*)bitbuffer;
-    const uint64a_t *input_qwords = (const uint64a_t*)input;
+    /* The calling function ensured that this is aligned correctly */
+    const chorba_word_t* input = (const chorba_word_t*)buf;
+    const uint64a_t* input_qwords = (const uint64a_t*)buf;
 
     size_t i = 0;
 
@@ -486,7 +488,9 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const chorb
 
 #  if CHORBA_W == 8
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
-Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint64_t* input, size_t len) {
+Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_t* buf, size_t len) {
+    /* The calling function ensured that this is aligned correctly */
+    const uint64_t* input = (const uint64_t*)buf;
     uint64_t bitbuffer[32768 / sizeof(uint64_t)];
     const uint8_t *bitbuffer_bytes = (const uint8_t*)bitbuffer;
     memset(bitbuffer, 0, 32768);
@@ -633,7 +637,9 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint64
 }
 
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
-Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint64_t *input, size_t len) {
+Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_t *buf, size_t len) {
+    /* The calling function ensured that this is aligned correctly */
+    const uint64_t* input = (const uint64_t*)buf;
     uint64_t final[9] = {0};
     uint64_t next1 = ~crc;
     crc = 0;
@@ -1066,7 +1072,9 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint64
 
 #else // CHORBA_W == 8
 
-Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit(uint32_t crc, const uint32_t *input, size_t len) {
+Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit(uint32_t crc, const uint8_t *buf, size_t len) {
+    /* The calling function ensured that this is aligned correctly */
+    const uint32_t* input = (const uint32_t*)buf;
     uint32_t final[20] = {0};
 
     uint32_t next1 = ~crc;
@@ -1250,13 +1258,13 @@ Z_INTERNAL uint32_t crc32_chorba(uint32_t crc, const uint8_t *buf, size_t len) {
         buf += align_diff;
     }
     if (len > CHORBA_LARGE_THRESHOLD)
-        return crc32_chorba_118960_nondestructive(crc, (const chorba_word_t*)buf, len);
+        return crc32_chorba_118960_nondestructive(crc, buf, len);
 #if CHORBA_W == 8
     if (len > CHORBA_MEDIUM_LOWER_THRESHOLD && len <= CHORBA_MEDIUM_UPPER_THRESHOLD)
-        return crc32_chorba_32768_nondestructive(crc, (const uint64_t*)buf, len);
-    return crc32_chorba_small_nondestructive(crc, (const uint64_t*)buf, len);
+        return crc32_chorba_32768_nondestructive(crc, buf, len);
+    return crc32_chorba_small_nondestructive(crc, buf, len);
 #else
-    return crc32_chorba_small_nondestructive_32bit(crc, (const uint32_t*)buf, len);
+    return crc32_chorba_small_nondestructive_32bit(crc, buf, len);
 #endif
 }
 
