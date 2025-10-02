@@ -15,7 +15,6 @@
 #endif
 
 #ifdef X86_SSE2
-uint32_t chunksize_sse2(void);
 uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 
 #  ifdef HAVE_BUILTIN_CTZ
@@ -49,7 +48,6 @@ uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *sr
 #ifdef X86_AVX2
 uint32_t adler32_avx2(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_fold_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
-uint32_t chunksize_avx2(void);
 uint8_t* chunkmemset_safe_avx2(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 
 #  ifdef HAVE_BUILTIN_CTZ
@@ -63,7 +61,6 @@ uint8_t* chunkmemset_safe_avx2(uint8_t *out, uint8_t *from, unsigned len, unsign
 #ifdef X86_AVX512
 uint32_t adler32_avx512(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_fold_copy_avx512(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
-uint32_t chunksize_avx512(void);
 uint8_t* chunkmemset_safe_avx512(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 void inflate_fast_avx512(PREFIX3(stream)* strm, uint32_t start);
 #  ifdef HAVE_BUILTIN_CTZLL
@@ -97,8 +94,6 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #  if (defined(X86_SSE2) && defined(__SSE2__)) || defined(__x86_64__) || defined(_M_X64) || defined(X86_NOCHECK_SSE2)
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_sse2
-#    undef native_chunksize
-#    define native_chunksize chunksize_sse2
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_sse2
 #    undef native_slide_hash
@@ -156,8 +151,6 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #    define native_adler32_fold_copy adler32_fold_copy_avx2
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_avx2
-#    undef native_chunksize
-#    define native_chunksize chunksize_avx2
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_avx2
 #    undef native_slide_hash
@@ -179,8 +172,6 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #    define native_adler32_fold_copy adler32_fold_copy_avx512
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_avx512
-#    undef native_chunksize
-#    define native_chunksize chunksize_avx512
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_avx512
 #    ifdef HAVE_BUILTIN_CTZLL

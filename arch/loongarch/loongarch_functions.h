@@ -23,7 +23,6 @@ void slide_hash_lsx(deflate_state *s);
     uint32_t longest_match_lsx(deflate_state *const s, Pos cur_match);
     uint32_t longest_match_slow_lsx(deflate_state *const s, Pos cur_match);
 #  endif
-uint32_t chunksize_lsx(void);
 uint8_t* chunkmemset_safe_lsx(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 void inflate_fast_lsx(PREFIX3(stream) *strm, uint32_t start);
 #endif
@@ -37,7 +36,6 @@ void slide_hash_lasx(deflate_state *s);
     uint32_t longest_match_lasx(deflate_state *const s, Pos cur_match);
     uint32_t longest_match_slow_lasx(deflate_state *const s, Pos cur_match);
 #  endif
-uint32_t chunksize_lasx(void);
 uint8_t* chunkmemset_safe_lasx(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 void inflate_fast_lasx(PREFIX3(stream) *strm, uint32_t start);
 #endif
@@ -59,8 +57,6 @@ void inflate_fast_lasx(PREFIX3(stream) *strm, uint32_t start);
 #    define native_adler32_fold_copy adler32_fold_copy_lsx
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_lsx
-#    undef native_chunksize
-#    define native_chunksize chunksize_lsx
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_lsx
 #    undef native_inflate_fast
@@ -81,8 +77,6 @@ void inflate_fast_lasx(PREFIX3(stream) *strm, uint32_t start);
 #    define native_adler32_fold_copy adler32_fold_copy_lasx
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_lasx
-#    undef native_chunksize
-#    define native_chunksize chunksize_lasx
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_lasx
 #    undef native_inflate_fast

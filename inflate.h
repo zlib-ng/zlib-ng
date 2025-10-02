@@ -118,7 +118,6 @@ struct ALIGNED_(64) inflate_state {
     uint32_t whave;             /* valid bytes in the window */
     uint32_t wnext;             /* window write index */
     unsigned char *window;      /* allocated sliding window, if needed */
-    uint32_t chunksize;         /* size of memory copying chunk */
 
         /* bit accumulator */
     uint64_t hold;              /* input bit accumulator */

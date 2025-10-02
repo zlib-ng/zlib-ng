@@ -246,7 +246,6 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
     strm->state = (struct internal_state *)state;
     state->strm = strm;
     state->mode = HEAD;     /* to pass state test in inflateReset2() */
-    state->chunksize = FUNCTABLE_CALL(chunksize)();
     ret = PREFIX(inflateReset2)(strm, windowBits);
     if (ret != Z_OK) {
         free_inflate(strm);

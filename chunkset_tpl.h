@@ -6,7 +6,7 @@
 #include <stdlib.h>
 
 /* Returns the chunk size */
-Z_INTERNAL uint32_t CHUNKSIZE(void) {
+static inline size_t CHUNKSIZE(void) {
     return sizeof(chunk_t);
 }
 

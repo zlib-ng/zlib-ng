@@ -53,7 +53,6 @@ static void init_functable(void) {
     ft.adler32 = &adler32_c;
     ft.adler32_fold_copy = &adler32_fold_copy_c;
     ft.chunkmemset_safe = &chunkmemset_safe_c;
-    ft.chunksize = &chunksize_c;
     ft.crc32 = &crc32_c;
     ft.crc32_fold = &crc32_fold_c;
     ft.crc32_fold_copy = &crc32_fold_copy_c;
@@ -74,7 +73,6 @@ static void init_functable(void) {
 #  endif
     {
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
-        ft.chunksize = &chunksize_sse2;
 #if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE)
         ft.crc32 = &crc32_chorba_sse2;
 #endif
@@ -131,7 +129,6 @@ static void init_functable(void) {
         ft.adler32 = &adler32_avx2;
         ft.adler32_fold_copy = &adler32_fold_copy_avx2;
         ft.chunkmemset_safe = &chunkmemset_safe_avx2;
-        ft.chunksize = &chunksize_avx2;
         ft.inflate_fast = &inflate_fast_avx2;
         ft.slide_hash = &slide_hash_avx2;
 #  ifdef HAVE_BUILTIN_CTZ
@@ -147,7 +144,6 @@ static void init_functable(void) {
         ft.adler32 = &adler32_avx512;
         ft.adler32_fold_copy = &adler32_fold_copy_avx512;
         ft.chunkmemset_safe = &chunkmemset_safe_avx512;
-        ft.chunksize = &chunksize_avx512;
         ft.inflate_fast = &inflate_fast_avx512;
 #  ifdef HAVE_BUILTIN_CTZLL
         ft.compare256 = &compare256_avx512;
@@ -192,7 +188,6 @@ static void init_functable(void) {
         ft.adler32 = &adler32_neon;
         ft.adler32_fold_copy = &adler32_fold_copy_neon;
         ft.chunkmemset_safe = &chunkmemset_safe_neon;
-        ft.chunksize = &chunksize_neon;
         ft.inflate_fast = &inflate_fast_neon;
         ft.slide_hash = &slide_hash_neon;
 #  ifdef HAVE_BUILTIN_CTZLL
@@ -224,7 +219,6 @@ static void init_functable(void) {
     if (cf.power.has_arch_2_07) {
         ft.adler32 = &adler32_power8;
         ft.chunkmemset_safe = &chunkmemset_safe_power8;
-        ft.chunksize = &chunksize_power8;
         ft.inflate_fast = &inflate_fast_power8;
         ft.slide_hash = &slide_hash_power8;
     }
@@ -249,7 +243,6 @@ static void init_functable(void) {
         ft.adler32 = &adler32_rvv;
         ft.adler32_fold_copy = &adler32_fold_copy_rvv;
         ft.chunkmemset_safe = &chunkmemset_safe_rvv;
-        ft.chunksize = &chunksize_rvv;
         ft.compare256 = &compare256_rvv;
         ft.inflate_fast = &inflate_fast_rvv;
         ft.longest_match = &longest_match_rvv;
@@ -289,7 +282,6 @@ static void init_functable(void) {
         ft.longest_match = &longest_match_lsx;
         ft.longest_match_slow = &longest_match_slow_lsx;
 #  endif
-        ft.chunksize = &chunksize_lsx;
         ft.chunkmemset_safe = &chunkmemset_safe_lsx;
         ft.inflate_fast = &inflate_fast_lsx;
     }
@@ -304,7 +296,6 @@ static void init_functable(void) {
         ft.longest_match = &longest_match_lasx;
         ft.longest_match_slow = &longest_match_slow_lasx;
 #  endif
-        ft.chunksize = &chunksize_lasx;
         ft.chunkmemset_safe = &chunkmemset_safe_lasx;
         ft.inflate_fast = &inflate_fast_lasx;
     }
@@ -315,7 +306,6 @@ static void init_functable(void) {
     FUNCTABLE_ASSIGN(ft, adler32);
     FUNCTABLE_ASSIGN(ft, adler32_fold_copy);
     FUNCTABLE_ASSIGN(ft, chunkmemset_safe);
-    FUNCTABLE_ASSIGN(ft, chunksize);
     FUNCTABLE_ASSIGN(ft, compare256);
     FUNCTABLE_ASSIGN(ft, crc32);
     FUNCTABLE_ASSIGN(ft, crc32_fold);
@@ -349,11 +339,6 @@ static uint32_t adler32_fold_copy_stub(uint32_t adler, uint8_t* dst, const uint8
 static uint8_t* chunkmemset_safe_stub(uint8_t* out, uint8_t *from, unsigned len, unsigned left) {
     init_functable();
     return functable.chunkmemset_safe(out, from, len, left);
-}
-
-static uint32_t chunksize_stub(void) {
-    init_functable();
-    return functable.chunksize();
 }
 
 static uint32_t compare256_stub(const uint8_t* src0, const uint8_t* src1) {
@@ -412,7 +397,6 @@ Z_INTERNAL struct functable_s functable = {
     adler32_stub,
     adler32_fold_copy_stub,
     chunkmemset_safe_stub,
-    chunksize_stub,
     compare256_stub,
     crc32_stub,
     crc32_fold_stub,

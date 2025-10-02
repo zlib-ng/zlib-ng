@@ -19,7 +19,6 @@ uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_fold_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 
 uint8_t* chunkmemset_safe_c(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
-uint32_t chunksize_c(void);
 
 uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1);
 
@@ -51,7 +50,6 @@ void     slide_hash_c(deflate_state *s);
 #  define native_adler32 adler32_c
 #  define native_adler32_fold_copy adler32_fold_copy_c
 #  define native_chunkmemset_safe chunkmemset_safe_c
-#  define native_chunksize chunksize_c
 #  define native_crc32 crc32_c
 #  define native_crc32_fold crc32_fold_c
 #  define native_crc32_fold_copy crc32_fold_copy_c
