@@ -82,6 +82,11 @@ uint32_t adler32_avx512_vnni(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 
+#ifdef X86_AVX2VNNI
+uint32_t adler32_avx2_vnni(uint32_t adler, const uint8_t *buf, size_t len);
+//uint32_t adler32_copy_avx2_vnni(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+#endif
+
 #ifdef X86_PCLMULQDQ_CRC
 uint32_t crc32_pclmulqdq(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_pclmulqdq(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
@@ -168,6 +173,13 @@ uint32_t crc32_copy_vpclmulqdq_avx512(uint32_t crc, uint8_t *dst, const uint8_t 
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_avx2
 #  endif
+// X86 - AVX2 (VNNI)
+#    if defined(X86_AVX2VNNI) && defined(__AVXVNNI__)
+#      undef native_adler32
+#      define native_adler32 adler32_avx2_vnni
+#      undef native_adler32_fold_copy
+#      define native_adler32_fold_copy adler32_fold_copy_avx2
+#    endif
 // X86 - AVX512 (F,DQ,BW,Vl)
 #  ifdef X86_AVX512_NATIVE
 #    undef native_adler32

@@ -195,6 +195,12 @@ static int init_functable(void) {
         ft.slide_hash = &slide_hash_avx2;
     }
 #endif
+#ifdef X86_AVX2VNNI
+    if (cf.x86.has_avx2vnni) {
+        ft.adler32 = &adler32_avx2_vnni;
+        //ft.adler32_copy = &adler32_copy_avx2_vnni;
+    }
+#endif
     // X86 - AVX512 (F,DQ,BW,Vl)
 #ifdef X86_AVX512
 #  ifndef X86_AVX512_NATIVE

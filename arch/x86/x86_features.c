@@ -122,6 +122,12 @@ void Z_INTERNAL x86_check_features(struct x86_cpu_features *features) {
               && features->has_avx512vl && features->has_bmi2;
             features->has_avx512vnni = ecx & 0x800;
         }
+
+        if (features->has_os_save_ymm) {
+            cpuidex(7, 1, &eax, &ebx, &ecx, &edx);
+            features->has_avx2vnni = eax & 0x10;
+        }
+
     }
 }
 

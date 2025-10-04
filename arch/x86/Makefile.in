@@ -11,6 +11,7 @@ SUFFIX=
 AVX512FLAG=-mavx512f -mavx512dq -mavx512vl -mavx512bw -mbmi2
 AVX512VNNIFLAG=-mavx512vnni -mbmi2
 AVX2FLAG=-mavx2 -mbmi2
+AVX2VNNIFLAG=-mavxvnni ${AVX2FLAG}
 SSE2FLAG=-msse2
 SSSE3FLAG=-mssse3
 SSE41FLAG=-msse4.1
@@ -27,6 +28,7 @@ TOPDIR=$(SRCTOP)
 all: \
 	x86_features.o x86_features.lo \
 	adler32_avx2.o adler32_avx2.lo \
+	adler32_avx2_vnni.o adler32_avx2_vnni.lo \
 	adler32_avx512.o adler32_avx512.lo \
 	adler32_avx512_vnni.o adler32_avx512_vnni.lo \
 	adler32_sse42.o adler32_sse42.lo \
@@ -141,6 +143,12 @@ adler32_avx2.o: $(SRCDIR)/adler32_avx2.c
 
 adler32_avx2.lo: $(SRCDIR)/adler32_avx2.c
 	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx2.c
+
+adler32_avx2_vnni.o: $(SRCDIR)/adler32_avx2_vnni.c
+	$(CC) $(CFLAGS) $(AVX2VNNIFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx2_vnni.c
+
+adler32_avx2_vnni.lo: $(SRCDIR)/adler32_avx2_vnni.c
+	$(CC) $(SFLAGS) $(AVX2VNNIFLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx2_vnni.c
 
 adler32_avx512.o: $(SRCDIR)/adler32_avx512.c
 	$(CC) $(CFLAGS) $(AVX512FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_avx512.c

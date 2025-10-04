@@ -8,6 +8,7 @@
 
 struct x86_cpu_features {
     int has_avx2;
+    int has_avx2vnni;
     int has_avx512f;
     int has_avx512dq;
     int has_avx512bw;
