@@ -190,6 +190,47 @@ macro(check_avx512_intrinsics)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
+macro(check_avx2vnni_intrinsics)
+    if(NOT NATIVEFLAG)
+        if(CMAKE_C_COMPILER_ID MATCHES "Intel")
+            if(CMAKE_HOST_UNIX OR APPLE OR CMAKE_C_COMPILER_ID MATCHES "IntelLLVM")
+                set(AVX2VNNIFLAG "-mavx2 -mavxvnni -mbmi -mbmi2")
+            else()
+            # AVXVNNI support is currently half baked on MSVC. Unknown how ICC handles this
+                set(AVX2VNNIFLAG "")
+                #set(AVX2VNNIFLAG "/arch:AVX2")
+            endif()
+        elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+            set(AVX2VNNIFLAG "-mavx2 -mavxvnni -mbmi -mbmi2")
+            if(NOT MSVC)
+                check_c_compiler_flag("-mtune=raptorlake" HAVE_RAPTOR_LAKE)
+                if(HAVE_RAPTOR_LAKE)
+                    set(AVX2VNNIFLAG "${AVX2VNNIFLAG} -mtune=raptorlake")
+                endif()
+                unset(HAVE_RAPTOR_LAKE)
+            endif()
+        # When AVX2VNNI support is fully baked into MSVC we should uncomment this
+        # See: https://developercommunity.visualstudio.com/t/MSVC-emits-AVX512-code-for-AVX-VNNI-inst/10804143
+        elseif(MSVC)
+            set(AVX2VNNIFLAG "")
+        #    set(AVX2VNNIFLAG "/arch:AVX2")
+        endif()
+    endif()
+    # Check whether compiler supports AVX2vnni intrinsics
+    set(CMAKE_REQUIRED_FLAGS "${AVX2VNNIFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+    check_c_source_compiles(
+        "#include <immintrin.h>
+        int main(void) {
+            const __m256i z256 = _mm256_setzero_si256();
+            volatile __m256i r256 = _mm256_dpbusd_epi32(z256, z256, z256);
+            (void)r256;
+            return 0;
+        }"
+        HAVE_AVX2VNNI_INTRIN
+    )
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
 macro(check_avx512vnni_intrinsics)
     if(NOT NATIVEFLAG)
         if(CMAKE_C_COMPILER_ID MATCHES "Intel")

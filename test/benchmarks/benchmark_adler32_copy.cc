@@ -168,6 +168,11 @@ BENCHMARK_ADLER32_COPY_ONLY(sse42, adler32_copy_sse42, test_cpu_features.x86.has
 #ifdef X86_AVX2
 BENCHMARK_ADLER32_COPY(avx2, adler32_avx, adler32_copy_avx2, test_cpu_features.x86.has_avx2);
 #endif
+/*
+#ifdef X86_AVX2VNNI
+BENCHMARK_ADLER32_COPY(avx2vnni, adler32_avx2_vnni, adler32_copy_avx2_vnni, test_cpu_features.x86.has_avx2vnni);
+#endif
+*/
 #ifdef X86_AVX512
 BENCHMARK_ADLER32_COPY(avx512, adler32_avx512, adler32_copy_avx512, test_cpu_features.x86.has_avx512_common);
 #endif

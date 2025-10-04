@@ -117,6 +117,7 @@ floatabi=
 avx512flag="-mavx512f -mavx512dq -mavx512bw -mavx512vl -mbmi -mbmi2"
 avx512vnniflag="${avx512flag} -mavx512vnni"
 avx2flag="-mavx2 -mbmi -mbmi2"
+avx2vnniflag="${avx2flag} -mavxvnni"
 sse2flag="-msse2"
 ssse3flag="-mssse3"
 sse41flag="-msse4.1"
@@ -1177,6 +1178,40 @@ EOF
     fi
 }
 
+check_mtune_raptorlake_compiler_flag() {
+    # Check whether -mtune=cascadelake works correctly
+    cat > $test.c << EOF
+int main() { return 0; }
+EOF
+    if try $CC -c $CFLAGS -mtune=raptorlake $test.c; then
+        MTUNE_RAPTORLAKE_AVAILABLE=1
+        echo "Check whether -mtune=raptorlake works ... Yes." | tee -a configure.log
+    else
+        echo "Check whether -mtune=raptorlake works ... No." | tee -a configure.log
+        MTUNE_RAPTORLAKE_AVAILABLE=0
+    fi
+}
+
+check_avx2vnni_intrinsics() {
+    # Check whether compiler supports AVX2-VNNI intrinsics
+    cat > $test.c << EOF
+#include <immintrin.h>
+int main(void) {
+    const __m256i z256 = _mm256_setzero_si256();
+    volatile __m256i r256 = _mm256_dpbusd_epi32(z256, z256, z256);
+    (void)r256;
+    return 0;
+}
+EOF
+    if try ${CC} ${CFLAGS} ${avx2vnniflag} $test.c; then
+        echo "Checking for AVX2VNNI intrinsics ... Yes." | tee -a configure.log
+        HAVE_AVX2VNNI_INTRIN=1
+    else
+        echo "Checking for AVX2VNNI intrinsics ... No." | tee -a configure.log
+        HAVE_AVX2VNNI_INTRIN=0
+    fi
+}
+
 check_avx512vnni_intrinsics() {
     # Check whether compiler supports AVX512-VNNI intrinsics
     cat > $test.c << EOF
@@ -1918,6 +1953,21 @@ case "${ARCH}" in
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} slide_hash_avx2.lo chunkset_avx2.lo compare256_avx2.lo adler32_avx2.lo"
             fi
 
+            check_avx2vnni_intrinsics
+
+            if test ${HAVE_AVX2VNNI_INTRIN} -eq 1; then
+                CFLAGS="${CFLAGS} -DX86_AVX2VNNI"
+                SFLAGS="${SFLAGS} -DX86_AVX2VNNI"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_avx2_vnni.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_avx2_vnni.lo"
+            fi
+
+            check_mtune_raptorlake_compiler_flag
+
+            if test ${MTUNE_RAPTORLAKE_AVAILABLE} -eq 1; then
+                avx2vnniflag="${avx2vnniflag} -mtune=raptorlake"
+            fi
+
             check_avx512_intrinsics
 
             if test ${HAVE_AVX512_INTRIN} -eq 1; then
@@ -2349,6 +2399,8 @@ echo ssse3flag = $ssse3flag >> configure.log
 echo sse42flag = $sse42flag >> configure.log
 echo pclmulflag = $pclmulflag >> configure.log
 echo vpclmulflag = $vpclmulflag >> configure.log
+echo avx2flag = $avx2flag >> configure.log
+echo avx2vnniflag = $avx2vnniflag >> configure.log
 echo xsaveflag = $xsaveflag >> configure.log
 echo armv8flag = $armv8flag >> configure.log
 echo pmulleor3flag = $pmulleor3flag >> configure.log
@@ -2488,6 +2540,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^SRCTOP *=/s#=.*#=$SRCDIR#
 /^BUILDDIR *=/s#=.*#=$BUILDDIR#
 /^AVX2FLAG *=/s#=.*#=$avx2flag#
+/^AVX2VNNIFLAG *=/s#=.*#=$avx2vnniflag#
 /^AVX512FLAG *=/s#=.*#=$avx512flag#
 /^AVX512VNNIFLAG *=/s#=.*#=$avx512vnniflag#
 /^SSE2FLAG *=/s#=.*#=$sse2flag#

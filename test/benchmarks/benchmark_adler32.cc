@@ -111,6 +111,9 @@ BENCHMARK_ADLER32(ssse3, adler32_ssse3, test_cpu_features.x86.has_ssse3);
 #ifdef X86_AVX2
 BENCHMARK_ADLER32(avx2, adler32_avx2, test_cpu_features.x86.has_avx2);
 #endif
+#ifdef X86_AVX2VNNI
+BENCHMARK_ADLER32(avx2vnni, adler32_avx2_vnni, test_cpu_features.x86.has_avx2vnni);
+#endif
 #ifdef X86_AVX512
 BENCHMARK_ADLER32(avx512, adler32_avx512, test_cpu_features.x86.has_avx512_common);
 #endif
