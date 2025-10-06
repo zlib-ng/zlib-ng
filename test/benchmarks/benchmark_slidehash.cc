@@ -28,13 +28,13 @@ public:
         l0 = (uint16_t *)zng_alloc_aligned(HASH_SIZE * sizeof(uint16_t), 64);
 
         for (uint32_t i = 0; i < HASH_SIZE; i++) {
-            l0[i] = rand();
+            l0[i] = (uint16_t)rand();
         }
 
         l1 = (uint16_t *)zng_alloc_aligned(MAX_RANDOM_INTS * sizeof(uint16_t), 64);
 
         for (int32_t i = 0; i < MAX_RANDOM_INTS; i++) {
-            l1[i] = rand();
+            l1[i] = (uint16_t)rand();
         }
 
         deflate_state *s = (deflate_state*)malloc(sizeof(deflate_state));

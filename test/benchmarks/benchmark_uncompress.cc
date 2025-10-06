@@ -26,7 +26,7 @@ private:
     uint8_t *inbuff;
     uint8_t *outbuff;
     uint8_t *compressed_buff[NUM_TESTS];
-    uLong compressed_sizes[NUM_TESTS];
+    z_uintmax_t compressed_sizes[NUM_TESTS];
     int64_t sizes[NUM_TESTS] = {1, 64, 1024, 16384, 128*1024, 1024*1024};
 
 public:
