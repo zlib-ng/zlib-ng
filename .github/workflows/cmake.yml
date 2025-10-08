@@ -671,12 +671,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         show-progress: false
 
     - name: Checkout test corpora
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       # Don't test against all corpora with MinGW due to Wine being unable to run parallel jobs
       # without connection timeout. Without parallel jobs test runs using Wine take close to an hour.
       if: contains(matrix.name, 'MinGW') == false
@@ -882,7 +882,7 @@ jobs:
     if: cancelled() == false
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         show-progress: false
 
