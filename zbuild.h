@@ -108,6 +108,17 @@
 #  define z_uintmax_t size_t
 #endif
 
+/* In zlib-compat headers some function return values and parameter types use int or unsigned, but zlib-ng headers use
+   int32_t and uint32_t, which will cause type mismatch when compiling zlib-ng if int32_t is long and uint32_t is
+   unsigned long */
+#if defined(ZLIB_COMPAT)
+#  define z_int32_t int
+#  define z_uint32_t unsigned int
+#else
+#  define z_int32_t int32_t
+#  define z_uint32_t uint32_t
+#endif
+
 /* Minimum of a and b. */
 #define MIN(a, b) ((a) > (b) ? (b) : (a))
 /* Maximum of a and b. */

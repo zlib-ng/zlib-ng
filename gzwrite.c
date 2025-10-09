@@ -215,7 +215,7 @@ static size_t gz_write(gz_state *state, void const *buf, size_t len) {
 }
 
 /* -- see zlib.h -- */
-int Z_EXPORT PREFIX(gzwrite)(gzFile file, void const *buf, unsigned len) {
+z_int32_t Z_EXPORT PREFIX(gzwrite)(gzFile file, void const *buf, z_uint32_t len) {
     gz_state *state;
 
     /* get internal structure */
@@ -229,13 +229,13 @@ int Z_EXPORT PREFIX(gzwrite)(gzFile file, void const *buf, unsigned len) {
 
     /* since an int is returned, make sure len fits in one, otherwise return
        with an error (this avoids a flaw in the interface) */
-    if ((int)len < 0) {
+    if ((z_int32_t)len < 0) {
         gz_error(state, Z_DATA_ERROR, "requested length does not fit in int");
         return 0;
     }
 
     /* write len bytes from buf (the return value will fit in an int) */
-    return (int)gz_write(state, buf, len);
+    return (z_int32_t)gz_write(state, buf, len);
 }
 
 /* -- see zlib.h -- */
@@ -268,7 +268,7 @@ size_t Z_EXPORT PREFIX(gzfwrite)(void const *buf, size_t size, size_t nitems, gz
 }
 
 /* -- see zlib.h -- */
-int Z_EXPORT PREFIX(gzputc)(gzFile file, int c) {
+z_int32_t Z_EXPORT PREFIX(gzputc)(gzFile file, z_int32_t c) {
     unsigned have;
     unsigned char buf[1];
     gz_state *state;
@@ -313,7 +313,7 @@ int Z_EXPORT PREFIX(gzputc)(gzFile file, int c) {
 }
 
 /* -- see zlib.h -- */
-int Z_EXPORT PREFIX(gzputs)(gzFile file, const char *s) {
+z_int32_t Z_EXPORT PREFIX(gzputs)(gzFile file, const char *s) {
     size_t len, put;
     gz_state *state;
 
@@ -337,7 +337,7 @@ int Z_EXPORT PREFIX(gzputs)(gzFile file, const char *s) {
 }
 
 /* -- see zlib.h -- */
-int Z_EXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list va) {
+z_int32_t Z_EXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list va) {
     int len;
     unsigned left;
     char *next;
@@ -393,7 +393,7 @@ int Z_EXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list va) {
     return len;
 }
 
-int Z_EXPORTVA PREFIX(gzprintf)(gzFile file, const char *format, ...) {
+z_int32_t Z_EXPORTVA PREFIX(gzprintf)(gzFile file, const char *format, ...) {
     va_list va;
     int ret;
 
@@ -404,7 +404,7 @@ int Z_EXPORTVA PREFIX(gzprintf)(gzFile file, const char *format, ...) {
 }
 
 /* -- see zlib.h -- */
-int Z_EXPORT PREFIX(gzflush)(gzFile file, int flush) {
+z_int32_t Z_EXPORT PREFIX(gzflush)(gzFile file, z_int32_t flush) {
     gz_state *state;
 
     /* get internal structure */
@@ -433,7 +433,7 @@ int Z_EXPORT PREFIX(gzflush)(gzFile file, int flush) {
 }
 
 /* -- see zlib.h -- */
-int Z_EXPORT PREFIX(gzsetparams)(gzFile file, int level, int strategy) {
+z_int32_t Z_EXPORT PREFIX(gzsetparams)(gzFile file, z_int32_t level, z_int32_t strategy) {
     gz_state *state;
     PREFIX3(stream) *strm;
 
@@ -471,7 +471,7 @@ int Z_EXPORT PREFIX(gzsetparams)(gzFile file, int level, int strategy) {
 }
 
 /* -- see zlib.h -- */
-int Z_EXPORT PREFIX(gzclose_w)(gzFile file) {
+z_int32_t Z_EXPORT PREFIX(gzclose_w)(gzFile file) {
     int ret = Z_OK;
     gz_state *state;
 

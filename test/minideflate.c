@@ -5,6 +5,7 @@
 
 #include "zbuild.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -48,12 +49,12 @@ static void deflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t
 
     read_buf = (uint8_t *)malloc(read_buf_size);
     if (read_buf == NULL) {
-        fprintf(stderr, "failed to create read buffer (%d)\n", read_buf_size);
+        fprintf(stderr, "failed to create read buffer (%" PRId32 ")\n", read_buf_size);
         return;
     }
     write_buf = (uint8_t *)malloc(write_buf_size);
     if (write_buf == NULL) {
-        fprintf(stderr, "failed to create write buffer (%d)\n", write_buf_size);
+        fprintf(stderr, "failed to create write buffer (%" PRId32 ")\n", write_buf_size);
         free(read_buf);
         return;
     }
@@ -134,12 +135,12 @@ static void inflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t
 
     read_buf = (uint8_t *)malloc(read_buf_size);
     if (read_buf == NULL) {
-        fprintf(stderr, "failed to create read buffer (%d)\n", read_buf_size);
+        fprintf(stderr, "failed to create read buffer (%" PRId32 ")\n", read_buf_size);
         return;
     }
     write_buf = (uint8_t *)malloc(write_buf_size);
     if (write_buf == NULL) {
-        fprintf(stderr, "failed to create write buffer (%d)\n", write_buf_size);
+        fprintf(stderr, "failed to create write buffer (%" PRId32 ")\n", write_buf_size);
         free(read_buf);
         return;
     }

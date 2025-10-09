@@ -96,7 +96,7 @@ void Z_INTERNAL z_error(const char *m) {
 /* exported to allow conversion of error code to string for compress() and
  * uncompress()
  */
-const char * Z_EXPORT PREFIX(zError)(int err) {
+const char * Z_EXPORT PREFIX(zError)(z_int32_t err) {
     return ERR_MSG(err);
 }
 

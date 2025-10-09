@@ -73,7 +73,7 @@ static void error(const char *msg) {
  */
 
 static void gz_fatal(gzFile file) {
-    int err;
+    z_int32_t err;
     fprintf(stderr, "%s: %s\n", prog, PREFIX(gzerror)(file, &err));
     PREFIX(gzclose)(file);
     exit(1);

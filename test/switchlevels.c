@@ -9,6 +9,7 @@
 #  include "zlib-ng.h"
 #endif
 
+#include <inttypes.h>
 #include <stdio.h>
 
 #if defined(_WIN32) || defined(__CYGWIN__)
@@ -95,7 +96,7 @@ static int compress_chunk(PREFIX3(stream) *strm, int level, int size, int last) 
         goto free_buf;
     }
     if (strm->avail_in != 0) {
-        fprintf(stderr, "deflate() did not consume %d bytes of input\n", strm->avail_in);
+        fprintf(stderr, "deflate() did not consume %" PRIu32 " bytes of input\n", strm->avail_in);
         goto free_buf;
     }
     if (write_all(buf + size, compsize - strm->avail_out) != 0) {

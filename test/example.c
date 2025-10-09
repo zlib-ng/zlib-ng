@@ -74,7 +74,7 @@ static void test_gzio(const char *fname, unsigned char *uncompr, z_size_t uncomp
 #ifdef NO_GZCOMPRESS
     fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
 #else
-    int err;
+    z_int32_t err;
     size_t read;
     size_t len = strlen(hello)+1;
     gzFile file;
@@ -653,7 +653,7 @@ static void test_deflate_get_dict(unsigned char *compr, size_t comprLen) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
     unsigned char *dictNew = NULL;
-    unsigned int *dictLen;
+    z_uint32_t *dictLen;
 
     c_stream.zalloc = zalloc;
     c_stream.zfree = zfree;
@@ -674,7 +674,7 @@ static void test_deflate_get_dict(unsigned char *compr, size_t comprLen) {
         error("deflate should report Z_STREAM_END\n");
 
     dictNew = calloc(256, 1);
-    dictLen = (unsigned int *)calloc(4, 1);
+    dictLen = (z_uint32_t *)calloc(4, 1);
     err = PREFIX(deflateGetDictionary)(&c_stream, dictNew, dictLen);
 
     CHECK_ERR(err, "deflateGetDictionary");
@@ -695,8 +695,8 @@ static void test_deflate_get_dict(unsigned char *compr, size_t comprLen) {
 static void test_deflate_pending(unsigned char *compr, size_t comprLen) {
     PREFIX3(stream) c_stream; /* compression stream */
     int err;
-    int *bits = calloc(256, 1);
-    unsigned *ped = calloc(256, 1);
+    z_int32_t *bits = calloc(256, 1);
+    z_uint32_t *ped = calloc(256, 1);
     size_t len = strlen(hello)+1;
 
 

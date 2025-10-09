@@ -442,7 +442,7 @@ static void cover_wrap(void) {
 }
 
 /* input and output functions for inflateBack() */
-static unsigned pull(void *desc, z_const unsigned char **buf) {
+static z_uint32_t pull(void *desc, z_const unsigned char **buf) {
     static unsigned int next = 0;
     static unsigned char dat[] = {0x63, 0, 2, 0};
     struct inflate_state *state;
@@ -457,7 +457,7 @@ static unsigned pull(void *desc, z_const unsigned char **buf) {
     return next < sizeof(dat) ? (*buf = dat + next++, 1) : 0;
 }
 
-static int push(void *desc, unsigned char *buf, unsigned len) {
+static z_int32_t push(void *desc, unsigned char *buf, z_uint32_t len) {
     buf += len;
     Z_UNUSED(buf);
     return desc != NULL;        /* force error if desc not null */
