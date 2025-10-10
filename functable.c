@@ -38,11 +38,36 @@
 #  define FUNCTABLE_BARRIER() do { /* Empty */ } while (0)
 #endif
 
-static void force_init_empty(void) {
-    // empty
+/* Verify all pointers are valid before assigning, return 1 on failure
+ * This allows inflateinit/deflateinit functions to gracefully return Z_VERSION_ERROR
+ * if functable initialization fails.
+ */
+#define FUNCTABLE_VERIFY_ASSIGN(VAR, FUNC_NAME) \
+    if (!VAR.FUNC_NAME) { \
+        fprintf(stderr, "Zlib-ng functable failed initialization!\n"); \
+        return 1; \
+    } \
+    FUNCTABLE_ASSIGN(VAR, FUNC_NAME);
+
+/* Functable init & abort on failure.
+ * Abort is needed because some stub functions are reachable without first
+ * calling any inflateinit/deflateinit functions, and have no error propagation.
+ */
+#define FUNCTABLE_INIT_ABORT \
+    if (init_functable()) { \
+        fprintf(stderr, "Zlib-ng functable failed initialization!\n"); \
+        abort(); \
+    };
+
+// Empty stub, used when functable has already been initialized
+static int force_init_empty(void) {
+    return 0;
 }
 
-static void init_functable(void) {
+/* Functable initialization.
+ * Selects the best available optimized functions appropriate for the runtime cpu.
+ */
+static int init_functable(void) {
     struct functable_s ft;
     struct cpu_features cf;
 
@@ -324,91 +349,93 @@ static void init_functable(void) {
 
     // Assign function pointers individually for atomic operation
     FUNCTABLE_ASSIGN(ft, force_init);
-    FUNCTABLE_ASSIGN(ft, adler32);
-    FUNCTABLE_ASSIGN(ft, adler32_fold_copy);
-    FUNCTABLE_ASSIGN(ft, chunkmemset_safe);
-    FUNCTABLE_ASSIGN(ft, compare256);
-    FUNCTABLE_ASSIGN(ft, crc32);
-    FUNCTABLE_ASSIGN(ft, crc32_fold);
-    FUNCTABLE_ASSIGN(ft, crc32_fold_copy);
-    FUNCTABLE_ASSIGN(ft, crc32_fold_final);
-    FUNCTABLE_ASSIGN(ft, crc32_fold_reset);
-    FUNCTABLE_ASSIGN(ft, inflate_fast);
-    FUNCTABLE_ASSIGN(ft, longest_match);
-    FUNCTABLE_ASSIGN(ft, longest_match_slow);
-    FUNCTABLE_ASSIGN(ft, slide_hash);
+    FUNCTABLE_VERIFY_ASSIGN(ft, adler32);
+    FUNCTABLE_VERIFY_ASSIGN(ft, adler32_fold_copy);
+    FUNCTABLE_VERIFY_ASSIGN(ft, chunkmemset_safe);
+    FUNCTABLE_VERIFY_ASSIGN(ft, compare256);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_copy);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_final);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_reset);
+    FUNCTABLE_VERIFY_ASSIGN(ft, inflate_fast);
+    FUNCTABLE_VERIFY_ASSIGN(ft, longest_match);
+    FUNCTABLE_VERIFY_ASSIGN(ft, longest_match_slow);
+    FUNCTABLE_VERIFY_ASSIGN(ft, slide_hash);
 
     // Memory barrier for weak memory order CPUs
     FUNCTABLE_BARRIER();
+
+    return Z_OK;
 }
 
 /* stub functions */
-static void force_init_stub(void) {
-    init_functable();
+static int force_init_stub(void) {
+    return init_functable();
 }
 
 static uint32_t adler32_stub(uint32_t adler, const uint8_t* buf, size_t len) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     return functable.adler32(adler, buf, len);
 }
 
 static uint32_t adler32_fold_copy_stub(uint32_t adler, uint8_t* dst, const uint8_t* src, size_t len) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     return functable.adler32_fold_copy(adler, dst, src, len);
 }
 
 static uint8_t* chunkmemset_safe_stub(uint8_t* out, uint8_t *from, unsigned len, unsigned left) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     return functable.chunkmemset_safe(out, from, len, left);
 }
 
 static uint32_t compare256_stub(const uint8_t* src0, const uint8_t* src1) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     return functable.compare256(src0, src1);
 }
 
 static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     return functable.crc32(crc, buf, len);
 }
 
 static void crc32_fold_stub(crc32_fold* crc, const uint8_t* src, size_t len, uint32_t init_crc) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     functable.crc32_fold(crc, src, len, init_crc);
 }
 
 static void crc32_fold_copy_stub(crc32_fold* crc, uint8_t* dst, const uint8_t* src, size_t len) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     functable.crc32_fold_copy(crc, dst, src, len);
 }
 
 static uint32_t crc32_fold_final_stub(crc32_fold* crc) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     return functable.crc32_fold_final(crc);
 }
 
 static uint32_t crc32_fold_reset_stub(crc32_fold* crc) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     return functable.crc32_fold_reset(crc);
 }
 
 static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     functable.inflate_fast(strm, start);
 }
 
 static uint32_t longest_match_stub(deflate_state* const s, Pos cur_match) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     return functable.longest_match(s, cur_match);
 }
 
 static uint32_t longest_match_slow_stub(deflate_state* const s, Pos cur_match) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     return functable.longest_match_slow(s, cur_match);
 }
 
 static void slide_hash_stub(deflate_state* s) {
-    init_functable();
+    FUNCTABLE_INIT_ABORT;
     functable.slide_hash(s);
 }
 

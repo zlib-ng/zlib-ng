@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdio.h>
 
 /* Determine compiler version of C Standard */
 #ifdef __STDC_VERSION__
@@ -235,7 +236,6 @@
 
 /* Diagnostic functions */
 #ifdef ZLIB_DEBUG
-#  include <stdio.h>
    extern int Z_INTERNAL z_verbose;
    extern void Z_INTERNAL z_error(const char *m);
 #  define Assert(cond, msg) {int _cond = (cond); if (!_cond) z_error(msg);}
