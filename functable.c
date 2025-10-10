@@ -47,9 +47,26 @@ static void init_functable(void) {
     struct cpu_features cf;
 
     cpu_check_features(&cf);
-
-    // Generic code
     ft.force_init = &force_init_empty;
+
+    // Set up generic C code fallbacks
+#ifndef WITH_ALL_FALLBACKS
+#  if (defined(__x86_64__) || defined(_M_X64)) && defined(X86_SSE2)
+    // x86_64 always has SSE2, so we can use SSE2 functions as fallbacks where available.
+    ft.adler32 = &adler32_c;
+    ft.adler32_fold_copy = &adler32_fold_copy_c;
+    ft.crc32 = &crc32_c;
+    ft.crc32_fold = &crc32_fold_c;
+    ft.crc32_fold_copy = &crc32_fold_copy_c;
+    ft.crc32_fold_final = &crc32_fold_final_c;
+    ft.crc32_fold_reset = &crc32_fold_reset_c;
+#    ifndef HAVE_BUILTIN_CTZ
+    ft.longest_match = &longest_match_c;
+    ft.longest_match_slow = &longest_match_slow_c;
+    ft.compare256 = &compare256_c;
+#    endif
+#  endif
+#else // WITH_ALL_FALLBACKS
     ft.adler32 = &adler32_c;
     ft.adler32_fold_copy = &adler32_fold_copy_c;
     ft.chunkmemset_safe = &chunkmemset_safe_c;
@@ -63,8 +80,10 @@ static void init_functable(void) {
     ft.longest_match = &longest_match_c;
     ft.longest_match_slow = &longest_match_slow_c;
     ft.compare256 = &compare256_c;
+#endif
 
     // Select arch-optimized functions
+#ifdef WITH_OPTIM
 
     // X86 - SSE2
 #ifdef X86_SSE2
@@ -73,9 +92,9 @@ static void init_functable(void) {
 #  endif
     {
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
-#if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE)
+#  if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE)
         ft.crc32 = &crc32_chorba_sse2;
-#endif
+#  endif
         ft.inflate_fast = &inflate_fast_sse2;
         ft.slide_hash = &slide_hash_sse2;
 #  ifdef HAVE_BUILTIN_CTZ
@@ -300,6 +319,8 @@ static void init_functable(void) {
         ft.inflate_fast = &inflate_fast_lasx;
     }
 #endif
+
+#endif // WITH_OPTIM
 
     // Assign function pointers individually for atomic operation
     FUNCTABLE_ASSIGN(ft, force_init);

@@ -90,6 +90,7 @@ endif()
 option(WITH_GZFILEOP "Compile with support for gzFile related functions" ON)
 option(ZLIB_COMPAT "Compile with zlib compatible API" OFF)
 option(WITH_OPTIM "Build with optimisation" ON)
+option(WITH_ALL_FALLBACKS "Build all generic fallback functions (Useful for Gbench)" OFF)
 option(WITH_REDUCED_MEM "Reduced memory usage for special cases (reduces performance)" OFF)
 option(WITH_NEW_STRATEGIES "Use new strategies" ON)
 option(WITH_CRC32_CHORBA "Enable optimized CRC32 algorithm Chorba" ON)
@@ -151,6 +152,7 @@ mark_as_advanced(FORCE
     ZLIB_SYMBOL_PREFIX
     WITH_REDUCED_MEM
     WITH_CRC32_CHORBA
+    WITH_ALL_FALLBACKS
     WITH_ARMV8 WITH_NEON
     WITH_ARMV6
     WITH_DFLTCC_DEFLATE
@@ -713,6 +715,7 @@ else()
 endif()
 
 if(WITH_OPTIM)
+    add_definitions(-DWITH_OPTIM)
     if(BASEARCH_ARM_FOUND)
         add_definitions(-DARM_FEATURES)
         if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -1168,6 +1171,9 @@ if(WITH_OPTIM)
             endif()
         endif()
     endif()
+else()
+    # If WITH_OPTIM is disabled, we need all the fallbacks.
+    set(WITH_ALL_FALLBACKS ON)
 endif()
 
 message(STATUS "Architecture-specific source files: ${ZLIB_ARCH_SRCS}")
@@ -1275,14 +1281,6 @@ set(ZLIB_PRIVATE_HDRS
     zutil_p.h
 )
 set(ZLIB_SRCS
-    arch/generic/adler32_c.c
-    arch/generic/adler32_fold_c.c
-    arch/generic/chunkset_c.c
-    arch/generic/compare256_c.c
-    arch/generic/crc32_braid_c.c
-    arch/generic/crc32_c.c
-    arch/generic/crc32_fold_c.c
-    arch/generic/slide_hash_c.c
     adler32.c
     compress.c
     crc32.c
@@ -1306,6 +1304,39 @@ set(ZLIB_SRCS
     zutil.c
 )
 
+set(ZLIB_ALL_FALLBACK_SRCS
+    arch/generic/adler32_c.c
+    arch/generic/adler32_fold_c.c
+    arch/generic/chunkset_c.c
+    arch/generic/compare256_c.c
+    arch/generic/crc32_braid_c.c
+    arch/generic/crc32_c.c
+    arch/generic/crc32_fold_c.c
+    arch/generic/slide_hash_c.c
+)
+
+if(WITH_ALL_FALLBACKS)
+    list(APPEND ZLIB_GENERIC_SRCS ${ZLIB_ALL_FALLBACK_SRCS})
+    add_definitions(-DWITH_ALL_FALLBACKS)
+elseif(${ARCH} STREQUAL "x86_64" AND WITH_SSE2)
+    # x86_64 always has SSE2, so let the SSE2 functions act as fallbacks.
+    list(APPEND ZLIB_GENERIC_SRCS
+        arch/generic/adler32_c.c
+        arch/generic/adler32_fold_c.c
+        arch/generic/crc32_braid_c.c
+        arch/generic/crc32_c.c
+        arch/generic/crc32_fold_c.c
+    )
+
+    # x86_64 does not need compare256 fallback if we have BUILTIN_CTZ
+    if(NOT HAVE_BUILTIN_CTZ)
+        list(APPEND ZLIB_GENERIC_SRCS arch/generic/compare256_c.c)
+    endif()
+else()
+    list(APPEND ZLIB_GENERIC_SRCS ${ZLIB_ALL_FALLBACK_SRCS})
+    add_definitions(-DWITH_ALL_FALLBACKS)
+endif()
+
 if(WITH_CRC32_CHORBA)
     list(APPEND ZLIB_SRCS arch/generic/crc32_chorba_c.c)
 endif()
@@ -1324,7 +1355,7 @@ set(ZLIB_GZFILE_SRCS
     gzwrite.c
 )
 
-set(ZLIB_ALL_SRCS ${ZLIB_SRCS} ${ZLIB_ARCH_HDRS} ${ZLIB_ARCH_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+set(ZLIB_ALL_SRCS ${ZLIB_GENERIC_SRCS} ${ZLIB_SRCS} ${ZLIB_ARCH_HDRS} ${ZLIB_ARCH_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 if(WITH_GZFILEOP)
     list(APPEND ZLIB_ALL_SRCS ${ZLIB_GZFILE_PRIVATE_HDRS} ${ZLIB_GZFILE_SRCS})
 endif()
@@ -1550,6 +1581,7 @@ add_feature_info(WITH_GTEST WITH_GTEST "Build gtest_zlib")
 add_feature_info(WITH_FUZZERS WITH_FUZZERS "Build test/fuzz")
 add_feature_info(WITH_BENCHMARKS WITH_BENCHMARKS "Build test/benchmarks")
 add_feature_info(WITH_BENCHMARK_APPS WITH_BENCHMARK_APPS "Build application benchmarks")
+add_feature_info(WITH_ALL_FALLBACKS WITH_ALL_FALLBACKS "Build all generic fallback functions")
 add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
 add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
 add_feature_info(WITH_CRC32_CHORBA WITH_CRC32_CHORBA "Use optimized CRC32 algorithm Chorba")

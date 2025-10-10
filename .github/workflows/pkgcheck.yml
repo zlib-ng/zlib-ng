@@ -137,7 +137,7 @@ jobs:
         CFLAGS: ${{ matrix.cflags }}
         CXXFLAGS: ${{ matrix.cxxflags }}
         CHOST: ${{ matrix.chost }}
-        CMAKE_ARGS: ${{ matrix.cmake-args }}
+        CMAKE_ARGS: ${{ matrix.cmake-args }} -DWITH_ALL_FALLBACKS=ON
         CONFIGURE_ARGS: ${{ matrix.configure-args }}
         LDFLAGS: ${{ matrix.ldflags }}
 
@@ -147,7 +147,7 @@ jobs:
         CC: ${{ matrix.compiler }}
         CFLAGS: ${{ matrix.cflags }}
         CHOST: ${{ matrix.chost }}
-        CMAKE_ARGS: ${{ matrix.cmake-args }}
+        CMAKE_ARGS: ${{ matrix.cmake-args }} -DWITH_ALL_FALLBACKS=ON
         CONFIGURE_ARGS: ${{ matrix.configure-args }}
         LDFLAGS: ${{ matrix.ldflags }}
 

@@ -204,7 +204,7 @@ Advanced Build Options
 | WITH_SSE42                      |                       | Build with SSE42 intrinsics                                         | ON                     |
 | WITH_PCLMULQDQ                  |                       | Build with PCLMULQDQ intrinsics                                     | ON                     |
 | WITH_VPCLMULQDQ                 | --without-vpclmulqdq  | Build with VPCLMULQDQ intrinsics                                    | ON                     |
-| WITH_ARMV8                      | --without-armv8       | Build with ARMv8 intrinsics                                          | ON                     |
+| WITH_ARMV8                      | --without-armv8       | Build with ARMv8 intrinsics                                         | ON                     |
 | WITH_NEON                       | --without-neon        | Build with NEON intrinsics                                          | ON                     |
 | WITH_ARMV6                      | --without-armv6       | Build with ARMv6 intrinsics                                         | ON                     |
 | WITH_ALTIVEC                    | --without-altivec     | Build with AltiVec (VMX) intrinsics                                 | ON                     |
@@ -217,6 +217,7 @@ Advanced Build Options
 | WITH_INFLATE_ALLOW_INVALID_DIST |                       | Build with zero fill for inflate invalid distances                  | OFF                    |
 | INSTALL_UTILS                   |                       | Copy minigzip and minideflate during install                        | OFF                    |
 | ZLIBNG_ENABLE_TESTS             |                       | Test zlib-ng specific API                                           | ON                     |
+| WITH_ALL_FALLBACKS              |                       | Build with all c-fallbacks (useful for Gbench comparisons)          | OFF                    |
 
 
 Related Projects

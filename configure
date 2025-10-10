@@ -1777,6 +1777,16 @@ if test $without_new_strategies -eq 1; then
     SFLAGS="${SFLAGS} -DNO_QUICK_STRATEGY -DNO_MEDIUM_STRATEGY"
 fi
 
+# CMake can exclude building some of the generic fallback functions,
+# configure does not have the detection code to do so.
+CFLAGS="${CFLAGS} -DWITH_ALL_FALLBACKS"
+SFLAGS="${SFLAGS} -DWITH_ALL_FALLBACKS"
+
+if test $without_optimizations -eq 0; then
+    CFLAGS="${CFLAGS} -DWITH_OPTIM"
+    SFLAGS="${SFLAGS} -DWITH_OPTIM"
+fi
+
 ARCHDIR='arch/generic'
 ARCH_STATIC_OBJS=''
 ARCH_SHARED_OBJS=''
