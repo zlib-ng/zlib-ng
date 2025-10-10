@@ -91,7 +91,7 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // X86 - SSE2
-#  if (defined(X86_SSE2) && defined(__SSE2__)) || defined(__x86_64__) || defined(_M_X64) || defined(X86_NOCHECK_SSE2)
+#  if (defined(X86_SSE2) && defined(__SSE2__)) || defined(__x86_64__) || defined(_M_X64)
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_sse2
 #    undef native_inflate_fast

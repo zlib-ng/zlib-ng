@@ -68,7 +68,7 @@ static void init_functable(void) {
 
     // X86 - SSE2
 #ifdef X86_SSE2
-#  if !defined(__x86_64__) && !defined(_M_X64) && !defined(X86_NOCHECK_SSE2)
+#  if !defined(__x86_64__) && !defined(_M_X64)
     if (cf.x86.has_sse2)
 #  endif
     {
