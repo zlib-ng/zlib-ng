@@ -15,10 +15,6 @@ else
     wget https://raw.githubusercontent.com/zlib-ng/zlib-ng/refs/heads/develop/arch/s390/self-hosted-builder/entrypoint
 fi
 
-# Copy rpms needed to workaround VX compiler bug, ref #1852
-mkdir clang
-cp /clang-19/*.rpm clang/
-
 # Stop service
 systemctl stop actions-runner || true
 
@@ -47,7 +43,6 @@ if [ "$MODE" == "2" ] ; then
     rm actions-runner.Dockerfile
     rm actions-runner
     rm entrypoint
-    rm -rf clang
     cd ..
     rmdir $TMPDIR
     echo "Deleted tempfiles."

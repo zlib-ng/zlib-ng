@@ -1,6 +1,6 @@
 # Self-Hosted IBM Z Github Actions Runner.
 
-FROM    almalinux:9
+FROM    almalinux:10
 
 RUN     dnf update -y -q && \
         dnf install -y -q --enablerepo=crb wget git which sudo jq sed \
@@ -17,7 +17,7 @@ RUN     cd /tmp && \
         cd runner && \
         git checkout $(git tag --sort=-v:refname | grep '^v[0-9]' | head -n1) && \
         git log -n 1 && \
-        wget https://github.com/anup-kodlekere/gaplib/raw/refs/heads/main/patches/runner-main-sdk8-s390x.patch -O runner-sdk-8.patch && \
+        wget https://github.com/ppc64le/gaplib/raw/refs/heads/main/patches/runner-main-sdk8-s390x.patch -O runner-sdk-8.patch && \
         git apply --whitespace=nowarn runner-sdk-8.patch && \
         sed -i'' -e /version/s/8......\"$/$8.0.100\"/ src/global.json
 

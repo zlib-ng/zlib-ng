@@ -364,7 +364,7 @@ jobs:
             gcov-exec: s390x-linux-gnu-gcov
             codecov: ubuntu_gcc_s390x_no_crc32
 
-          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL9' || 'Ubuntu' }} GCC S390X DFLTCC ASAN
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} GCC S390X DFLTCC ASAN
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: gcc
             cxx-compiler: g++
@@ -375,11 +375,11 @@ jobs:
             asan-options: detect_leaks=0
             ldflags: -static
             gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcov' || 's390x-linux-gnu-gcov' }}
-            codecov: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el9_gcc_s390x_dfltcc' || 'ubuntu_gcc_s390x_dfltcc' }}
+            codecov: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_gcc_s390x_dfltcc' || 'ubuntu_gcc_s390x_dfltcc' }}
             # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
 
-          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL9' || 'Ubuntu' }} GCC S390X DFLTCC UBSAN
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} GCC S390X DFLTCC UBSAN
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: gcc
             cxx-compiler: g++
@@ -389,11 +389,11 @@ jobs:
             packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             ldflags: -static
             gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcov' || 's390x-linux-gnu-gcov' }}
-            codecov: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el9_gcc_s390x_dfltcc' || 'ubuntu_gcc_s390x_dfltcc' }}
+            codecov: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_gcc_s390x_dfltcc' || 'ubuntu_gcc_s390x_dfltcc' }}
             # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
 
-          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL9' || 'Ubuntu' }} Clang S390X DFLTCC ${{ (github.repository == 'zlib-ng/zlib-ng' && 'MSAN') || 'Compat' }}
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} Clang S390X DFLTCC ${{ (github.repository == 'zlib-ng/zlib-ng' && 'MSAN') || 'Compat' }}
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'clang-15' }}
             cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'clang++-15' }}
