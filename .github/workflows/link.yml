@@ -33,7 +33,7 @@ jobs:
       run: cmake --build native -j2 --config Release
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: failure()
       with:
         name: Link zlib (CMake Logs)
@@ -64,7 +64,7 @@ jobs:
       run: cmake --build native -j2 --config Release
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: failure()
       with:
         name: Link zlib-ng compat (CMake Logs)

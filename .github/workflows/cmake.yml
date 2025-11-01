@@ -845,7 +845,7 @@ jobs:
           --xml --output ${{ matrix.codecov }}.xml
 
     - name: Upload coverage report artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: matrix.codecov
       with:
         name: ${{ matrix.name }} (coverage)
@@ -864,7 +864,7 @@ jobs:
         UBSAN_OPTIONS: ${{ matrix.ubsan-options || 'verbosity=0' }}:print_stacktrace=1:abort_on_error=1:halt_on_error=1
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       if: failure()
       with:
         name: ${{ matrix.name }} (cmake)
