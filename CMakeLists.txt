@@ -1312,7 +1312,6 @@ set(ZLIB_ALL_FALLBACK_SRCS
     arch/generic/chunkset_c.c
     arch/generic/compare256_c.c
     arch/generic/crc32_braid_c.c
-    arch/generic/crc32_c.c
     arch/generic/crc32_fold_c.c
     arch/generic/slide_hash_c.c
 )
@@ -1326,7 +1325,6 @@ elseif(${ARCH} STREQUAL "x86_64" AND WITH_SSE2)
         arch/generic/adler32_c.c
         arch/generic/adler32_fold_c.c
         arch/generic/crc32_braid_c.c
-        arch/generic/crc32_c.c
         arch/generic/crc32_fold_c.c
     )
 

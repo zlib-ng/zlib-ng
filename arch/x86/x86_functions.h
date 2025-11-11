@@ -24,9 +24,8 @@ uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, unsigned len, unsign
     void slide_hash_sse2(deflate_state *s);
 #  endif
     void inflate_fast_sse2(PREFIX3(stream)* strm, uint32_t start);
-#   if !defined(WITHOUT_CHORBA)
     uint32_t crc32_chorba_sse2(uint32_t crc32, const uint8_t *buf, size_t len);
-#   endif
+    uint32_t chorba_small_nondestructive_sse2(uint32_t c, const uint64_t *aligned_buf, size_t aligned_len);
 #endif
 
 #ifdef X86_SSSE3
@@ -36,9 +35,7 @@ void inflate_fast_ssse3(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
 #ifdef X86_SSE41
-#   if !defined(WITHOUT_CHORBA)
     uint32_t crc32_chorba_sse41(uint32_t crc32, const uint8_t *buf, size_t len);
-#   endif
 #endif
 
 #ifdef X86_SSE42
@@ -105,10 +102,8 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #      define native_longest_match longest_match_sse2
 #      undef native_longest_match_slow
 #      define native_longest_match_slow longest_match_slow_sse2
-#      if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE)
-#          undef native_crc32
-#          define native_crc32 crc32_chorba_sse2
-#      endif
+#      undef native_crc32
+#      define native_crc32 crc32_chorba_sse2
 #    endif
 #  endif
 // X86 - SSSE3
@@ -121,7 +116,7 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #    define native_inflate_fast inflate_fast_ssse3
 #  endif
 // X86 - SSE4.1
-#  if !defined(WITHOUT_CHORBA) && defined(X86_SSE41) && defined(__SSE4_1__) && !defined(NO_CHORBA_SSE)
+#  if defined(X86_SSE41) && defined(__SSE4_1__)
 #   undef native_crc32
 #   define native_crc32 crc32_chorba_sse41
 #  endif
