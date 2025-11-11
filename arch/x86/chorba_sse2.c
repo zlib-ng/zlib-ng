@@ -847,30 +847,26 @@ Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint64_
 }
 
 Z_INTERNAL uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t len) {
-    uint32_t c;
     uint64_t* aligned_buf;
-    size_t aligned_len;
+    uint32_t c = (~crc) & 0xffffffff;
+    uintptr_t algn_diff = ((uintptr_t)16 - ((uintptr_t)buf & 15)) & 15;
 
-    c = (~crc) & 0xffffffff;
-    unsigned long algn_diff = ((uintptr_t)16 - ((uintptr_t)buf & 15)) & 15;
-    if (algn_diff < len) {
+    if (len > algn_diff + CHORBA_SMALL_THRESHOLD_64BIT) {
         if (algn_diff) {
             c = crc32_braid_internal(c, buf, algn_diff);
+            len -= algn_diff;
         }
         aligned_buf = (uint64_t*) (buf + algn_diff);
-        aligned_len = len - algn_diff;
 #if !defined(WITHOUT_CHORBA)
-        if(aligned_len > CHORBA_LARGE_THRESHOLD) {
-            c = crc32_chorba_118960_nondestructive(c, (z_word_t*) aligned_buf, aligned_len);
+        if(len > CHORBA_LARGE_THRESHOLD) {
+            c = crc32_chorba_118960_nondestructive(c, (z_word_t*) aligned_buf, len);
         } else
 #endif
-        if (aligned_len > CHORBA_SMALL_THRESHOLD_64BIT) {
-            c = chorba_small_nondestructive_sse2(c, aligned_buf, aligned_len);
-        } else {
-            c = crc32_braid_internal(c, (uint8_t*) aligned_buf, aligned_len);
+        {
+            c = chorba_small_nondestructive_sse2(c, aligned_buf, len);
         }
-    }
-    else {
+    } else {
+        // Process too short lengths using crc32_braid
         c = crc32_braid_internal(c, buf, len);
     }
 
