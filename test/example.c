@@ -420,7 +420,7 @@ static void test_flush(unsigned char *compr, z_uintmax_t *comprLen) {
     *comprLen = (z_size_t)c_stream.total_out;
 }
 
-#ifdef ZLIBNG_ENABLE_TESTS
+#ifndef TEST_STOCK_ZLIB
 /* ===========================================================================
  * Test inflateSync()
  * We expect a certain compressed block layout, so skip this with the original zlib.
@@ -979,7 +979,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     test_flush(compr, &comprLen);
-#ifdef ZLIBNG_ENABLE_TESTS
+#ifndef TEST_STOCK_ZLIB
     test_sync(compr, comprLen, uncompr, uncomprLen);
 #endif
     comprLen = uncomprLen;

@@ -8,7 +8,7 @@
 static inline int deflate_prime_32(PREFIX3(stream) *stream, uint32_t value) {
     int err;
 
-#ifdef ZLIBNG_ENABLE_TESTS
+#ifndef TEST_STOCK_ZLIB
     err = PREFIX(deflatePrime)(stream, 32, value);
 #else
     /* zlib's deflatePrime() takes at most 16 bits */

@@ -5,7 +5,7 @@ project(zlib-ng-add-subdirecory-test C)
 include(CTest)
 
 set(BUILD_SHARED_LIBS OFF)
-set(ZLIB_ENABLE_TESTS ON CACHE BOOL "Build test binaries" FORCE)
+set(BUILD_TESTING ON CACHE BOOL "Build test binaries" FORCE)
 
 add_subdirectory(../.. zlib-ng)
 

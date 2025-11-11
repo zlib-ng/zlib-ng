@@ -618,6 +618,7 @@ static void cover_inflate(void) {
     inf("63 18 5 40 c 0", "window wrap", 3, -8, 300, Z_OK);
 }
 
+#ifndef TEST_STOCK_ZLIB
 /* cover remaining lines in inftrees.c */
 static void cover_trees(void) {
     int ret;
@@ -641,6 +642,7 @@ static void cover_trees(void) {
     fputs("inflate_table not enough errors\n", stderr);
     Z_UNUSED(ret);
 }
+#endif
 
 /* cover remaining inffast.c decoding and window copying */
 static void cover_fast(void) {
@@ -672,7 +674,9 @@ int main(void) {
     cover_wrap();
     cover_back();
     cover_inflate();
+#ifndef TEST_STOCK_ZLIB
     cover_trees();
+#endif
     cover_fast();
     cover_cve_2022_37434();
     return 0;

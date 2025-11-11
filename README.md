@@ -98,8 +98,6 @@ Build Options
 |:---------------------------|:-------------------------|:------------------------------------------------------------------------------------|---------|
 | ZLIB_COMPAT                | --zlib-compat            | Compile with zlib compatible API                                                    | OFF     |
 | ZLIB_ALIASES               |                          | Provide zlib compatible CMake targets                                               | ON      |
-| ZLIB_ENABLE_TESTS          |                          | Tests masterswitch, does not enable any tests by itself                             | ON      |
-| ZLIBNG_ENABLE_TESTS        |                          | Build test binaries                                                                 | ON      |
 | WITH_GZFILEOP              | --without-gzfileops      | Compile with support for gzFile related functions                                   | ON      |
 | WITH_OPTIM                 | --without-optimizations  | Build with optimisations                                                            | ON      |
 | WITH_NEW_STRATEGIES        | --without-new-strategies | Use new strategies                                                                  | ON      |
@@ -108,6 +106,7 @@ Build Options
 | WITH_GTEST                 |                          | Build tests using GTest framework                                                   | ON      |
 | WITH_BENCHMARKS            |                          | Build benchmarks using Google Benchmark framework                                   | OFF     |
 | INSTALL_UTILS              |                          | Copy minigzip and minideflate during install                                        | OFF     |
+| BUILD_TESTING              |                          | Build test binaries                                                                 | ON      |
 
 
 Install

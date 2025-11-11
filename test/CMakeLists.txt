@@ -7,8 +7,8 @@ macro(configure_test_executable target)
     endif()
 endmacro()
 
-if(ZLIBNG_ENABLE_TESTS)
-    add_definitions(-DZLIBNG_ENABLE_TESTS)
+if(TEST_STOCK_ZLIB)
+    add_definitions(-DTEST_STOCK_ZLIB)
 endif()
 
 add_executable(example example.c)
@@ -53,10 +53,7 @@ target_link_libraries(infcover zlib-ng)
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
     target_sources(infcover PRIVATE ${PROJECT_SOURCE_DIR}/inftrees.c)
 endif()
-# infcover references zng_inflate_table() and struct inflate_state, which are internal to zlib-ng.
-if(ZLIBNG_ENABLE_TESTS)
-    add_test(NAME infcover COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
-endif()
+add_test(NAME infcover COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
 
 add_executable(makefixed ${PROJECT_SOURCE_DIR}/tools/makefixed.c ${PROJECT_SOURCE_DIR}/inftrees.c)
 configure_test_executable(makefixed)
@@ -177,7 +174,7 @@ if(WITH_GTEST)
             list(APPEND TEST_SRCS test_gzio.cc)
         endif()
 
-        if(ZLIBNG_ENABLE_TESTS)
+        if(NOT TEST_STOCK_ZLIB)
             list(APPEND TEST_SRCS
                 test_adler32.cc             # adler32_neon(), etc
                 test_compare256.cc          # compare256_neon(), etc
