@@ -80,7 +80,7 @@ static int init_functable(void) {
     // x86_64 always has SSE2, so we can use SSE2 functions as fallbacks where available.
     ft.adler32 = &adler32_c;
     ft.adler32_fold_copy = &adler32_fold_copy_c;
-    ft.crc32 = &crc32_c;
+    ft.crc32 = &crc32_braid;
     ft.crc32_fold = &crc32_fold_c;
     ft.crc32_fold_copy = &crc32_fold_copy_c;
     ft.crc32_fold_final = &crc32_fold_final_c;
@@ -95,7 +95,7 @@ static int init_functable(void) {
     ft.adler32 = &adler32_c;
     ft.adler32_fold_copy = &adler32_fold_copy_c;
     ft.chunkmemset_safe = &chunkmemset_safe_c;
-    ft.crc32 = &crc32_c;
+    ft.crc32 = &crc32_braid;
     ft.crc32_fold = &crc32_fold_c;
     ft.crc32_fold_copy = &crc32_fold_copy_c;
     ft.crc32_fold_final = &crc32_fold_final_c;
@@ -110,6 +110,11 @@ static int init_functable(void) {
     // Select arch-optimized functions
 #ifdef WITH_OPTIM
 
+    // Chorba generic C fallback
+#ifndef WITHOUT_CHORBA
+    ft.crc32 = &crc32_chorba;
+#endif
+
     // X86 - SSE2
 #ifdef X86_SSE2
 #  if !defined(__x86_64__) && !defined(_M_X64)
@@ -117,7 +122,7 @@ static int init_functable(void) {
 #  endif
     {
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
-#  if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE)
+#  if !defined(WITHOUT_CHORBA_SSE)
         ft.crc32 = &crc32_chorba_sse2;
 #  endif
         ft.inflate_fast = &inflate_fast_sse2;
@@ -139,11 +144,9 @@ static int init_functable(void) {
 #endif
 
     // X86 - SSE4.1
-#ifdef X86_SSE41
+#if defined(X86_SSE41) && !defined(WITHOUT_CHORBA_SSE)
     if (cf.x86.has_sse41) {
-#if !defined(WITHOUT_CHORBA) && !defined(NO_CHORBA_SSE)
         ft.crc32 = &crc32_chorba_sse41;
-#endif
     }
 #endif
 

@@ -6,12 +6,11 @@
 
 #if defined(RISCV_CRC32_ZBC)
 #include "zbuild.h"
+#include "arch_functions.h"
 #include <stdint.h>
 
 #define CLMUL_MIN_LEN 16   // Minimum size of buffer for _crc32_clmul
 #define CLMUL_CHUNK_LEN 16 // Length of chunk for clmul
-
-extern uint32_t crc32_c(uint32_t crc, const uint8_t *buf, size_t len);
 
 #define CONSTANT_R3 0x1751997d0ULL
 #define CONSTANT_R4 0x0ccaa009eULL
@@ -84,12 +83,12 @@ finish_fold:
 Z_INTERNAL uint32_t crc32_riscv64_zbc(uint32_t crc, const uint8_t *buf,
                                       size_t len) {
   if (len < CLMUL_MIN_LEN) {
-    return crc32_c(crc, buf, len);
+    return crc32_braid(crc, buf, len);
   }
 
   uint64_t unaligned_length = len % CLMUL_CHUNK_LEN;
   if (unaligned_length) {
-    crc = crc32_c(crc, buf, unaligned_length);
+    crc = crc32_braid(crc, buf, unaligned_length);
     buf += unaligned_length;
     len -= unaligned_length;
   }

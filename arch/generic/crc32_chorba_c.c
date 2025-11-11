@@ -495,6 +495,7 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
     return crc;
 }
 
+#  if OPTIMAL_CMP == 64
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
 Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive (uint32_t crc, const uint64_t* buf, size_t len) {
     const uint64_t* input = buf;
@@ -1230,6 +1231,8 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive (uint32_t crc, const uint6
     return crc;
 }
 
+#else // OPTIMAL_CMP == 64
+
 Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit (uint32_t crc, const uint32_t* buf, size_t len) {
     const uint32_t* input = buf;
     uint32_t final[20] = {0};
@@ -1441,4 +1444,39 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit (uint32_t crc, const
     crc = crc32_braid_internal(crc, (uint8_t*) final, len-i);
 
     return crc;
+}
+#endif // OPTIMAL_CMP == 64
+
+Z_INTERNAL uint32_t crc32_chorba(uint32_t crc, const uint8_t *buf, size_t len) {
+    uint32_t c = (~crc) & 0xffffffff;
+
+    uint64_t* aligned_buf;
+    size_t aligned_len;
+    unsigned long algn_diff = ((uintptr_t)8 - ((uintptr_t)buf & 0xF)) & 0xF;
+    if (algn_diff < len) {
+        if (algn_diff) {
+            c = crc32_braid_internal(c, buf, algn_diff);
+        }
+        aligned_buf = (uint64_t*) (buf + algn_diff);
+        aligned_len = len - algn_diff;
+        if(aligned_len > CHORBA_LARGE_THRESHOLD)
+            c = crc32_chorba_118960_nondestructive(c, (z_word_t*) aligned_buf, aligned_len);
+#  if OPTIMAL_CMP == 64
+        else if (aligned_len > CHORBA_MEDIUM_LOWER_THRESHOLD && aligned_len <= CHORBA_MEDIUM_UPPER_THRESHOLD)
+            c = crc32_chorba_32768_nondestructive(c, (uint64_t*) aligned_buf, aligned_len);
+        else if (aligned_len > CHORBA_SMALL_THRESHOLD_64BIT)
+            c = crc32_chorba_small_nondestructive(c, (uint64_t*) aligned_buf, aligned_len);
+#  else
+        else if (aligned_len > CHORBA_SMALL_THRESHOLD_32BIT)
+            c = crc32_chorba_small_nondestructive_32bit(c, (uint32_t*) aligned_buf, aligned_len);
+#  endif
+        else
+            c = crc32_braid_internal(c, (uint8_t*) aligned_buf, aligned_len);
+    }
+    else {
+        c = crc32_braid_internal(c, buf, len);
+    }
+
+    /* Return the CRC, post-conditioned. */
+    return c ^ 0xffffffff;
 }

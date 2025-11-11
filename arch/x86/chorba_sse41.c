@@ -1,4 +1,4 @@
-#if !defined(WITHOUT_CHORBA) && defined(X86_SSE41)
+#if defined(X86_SSE41) && !defined(WITHOUT_CHORBA_SSE)
 
 #include "zbuild.h"
 #include "crc32_braid_p.h"
@@ -7,11 +7,7 @@
 #include <emmintrin.h>
 #include <smmintrin.h>
 #include "arch/x86/x86_intrins.h"
-#include "arch/generic/generic_functions.h"
-#include <assert.h>
-
-uint32_t crc32_braid_base(uint32_t c, const uint8_t *buf, size_t len);
-uint32_t chorba_small_nondestructive_sse2(uint32_t c, const uint64_t *aligned_buf, size_t aligned_len);
+#include "arch_functions.h"
 
 #define READ_NEXT(in, off, a, b) do { \
         a = _mm_load_si128((__m128i*)(in + off / sizeof(uint64_t))); \
@@ -321,9 +317,12 @@ Z_INTERNAL uint32_t crc32_chorba_sse41(uint32_t crc, const uint8_t *buf, size_t 
         }
         aligned_buf = (uint64_t*) (buf + algn_diff);
         aligned_len = len - algn_diff;
+#if !defined(WITHOUT_CHORBA)
         if(aligned_len > CHORBA_LARGE_THRESHOLD) {
             c = crc32_chorba_118960_nondestructive(c, (z_word_t*) aligned_buf, aligned_len);
-        } else if (aligned_len > CHORBA_MEDIUM_LOWER_THRESHOLD &&
+        } else
+#endif
+        if (aligned_len > CHORBA_MEDIUM_LOWER_THRESHOLD &&
                    aligned_len <= CHORBA_MEDIUM_UPPER_THRESHOLD) {
             c = crc32_chorba_32768_nondestructive_sse41(c, aligned_buf, aligned_len);
         } else if (aligned_len > CHORBA_SMALL_THRESHOLD_64BIT) {

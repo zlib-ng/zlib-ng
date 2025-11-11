@@ -22,11 +22,11 @@ uint8_t* chunkmemset_safe_c(uint8_t *out, uint8_t *from, unsigned len, unsigned 
 
 uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1);
 
-uint32_t crc32_c(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_braid(uint32_t c, const uint8_t *buf, size_t len);
 uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t len);
 
 #ifndef WITHOUT_CHORBA
+  uint32_t crc32_chorba(uint32_t crc, const uint8_t *buf, size_t len);
   uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_word_t* input, size_t len);
   uint32_t crc32_chorba_32768_nondestructive (uint32_t crc, const uint64_t* buf, size_t len);
   uint32_t crc32_chorba_small_nondestructive (uint32_t crc, const uint64_t* buf, size_t len);
@@ -50,7 +50,11 @@ void     slide_hash_c(deflate_state *s);
 #  define native_adler32 adler32_c
 #  define native_adler32_fold_copy adler32_fold_copy_c
 #  define native_chunkmemset_safe chunkmemset_safe_c
-#  define native_crc32 crc32_c
+#ifndef WITHOUT_CHORBA
+#  define native_crc32 crc32_chorba
+#else
+#  define native_crc32 crc32_braid
+#endif
 #  define native_crc32_fold crc32_fold_c
 #  define native_crc32_fold_copy crc32_fold_copy_c
 #  define native_crc32_fold_final crc32_fold_final_c

@@ -22,9 +22,6 @@
 #include <immintrin.h>
 #include <wmmintrin.h>
 #include <smmintrin.h> // _mm_extract_epi32
-#ifdef X86_VPCLMULQDQ
-#  include <immintrin.h>
-#endif
 
 #include "crc32.h"
 #include "crc32_braid_p.h"
@@ -168,7 +165,6 @@ static void fold_4(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m1
     *xmm_crc3 = _mm_castps_si128(ps_res3);
 }
 
-#ifndef WITHOUT_CHORBA
 static void fold_12(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold12 = _mm_set_epi64x(0x596C8D81, 0xF5E48C85);
     __m128i x_tmp0, x_tmp1, x_tmp2, x_tmp3;
@@ -210,7 +206,6 @@ static void fold_12(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m
     *xmm_crc2 = _mm_castps_si128(ps_res2);
     *xmm_crc3 = _mm_castps_si128(ps_res3);
 }
-#endif
 
 static const unsigned ALIGNED_(32) pshufb_shf_table[60] = {
     0x84838281, 0x88878685, 0x8c8b8a89, 0x008f8e8d, /* shl 15 (16 - 1)/shr1 */
