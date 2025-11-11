@@ -13,38 +13,6 @@
 #define ISA_V_HWCAP (1 << ('v' - 'a'))
 #define ISA_ZBC_HWCAP (1 << 29)
 
-int Z_INTERNAL is_kernel_version_greater_or_equal_to_6_5(void) {
-    struct utsname buffer;
-    if (uname(&buffer) == -1) {
-        // uname failed
-        return 0;
-    }
-
-    int major, minor;
-    if (sscanf(buffer.release, "%d.%d", &major, &minor) != 2) {
-        // Something bad with uname()
-        return 0;
-    }
-
-    if (major > 6 || (major == 6 && minor >= 5))
-        return 1;
-    return 0;
-}
-
-void Z_INTERNAL riscv_check_features_compile_time(struct riscv_cpu_features *features) {
-#if defined(__riscv_v) && defined(__linux__)
-    features->has_rvv = 1;
-#else
-    features->has_rvv = 0;
-#endif
-
-#if defined(__riscv_zbc) && defined(__linux__)
-    features->has_zbc = 1;
-#else
-    features->has_zbc = 0;
-#endif
-}
-
 void Z_INTERNAL riscv_check_features_runtime(struct riscv_cpu_features *features) {
 #if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
     unsigned long hw_cap = getauxval(AT_HWCAP);
@@ -56,10 +24,7 @@ void Z_INTERNAL riscv_check_features_runtime(struct riscv_cpu_features *features
 }
 
 void Z_INTERNAL riscv_check_features(struct riscv_cpu_features *features) {
-    if (is_kernel_version_greater_or_equal_to_6_5())
-        riscv_check_features_runtime(features);
-    else
-        riscv_check_features_compile_time(features);
+    riscv_check_features_runtime(features);
 #ifdef RISCV_RVV
     if (features->has_rvv) {
         size_t e8m1_vec_len;
