@@ -19,11 +19,11 @@ Features
 * Modern C11 syntax and a clean code layout
 * Deflate medium and quick algorithms based on Intel’s zlib fork
 * Support for CPU intrinsics when available
-  * Adler32 implementation using SSSE3, AVX2, AVX512, AVX512-VNNI, Neon, VMX & VSX, LSX, LASX
-  * CRC32-B implementation using PCLMULQDQ, VPCLMULQDQ, ARMv8, & IBM Z, LoongArch
-  * Slide hash implementations using SSE2, AVX2, ARMv6, Neon, VMX & VSX, LSX, LASX
-  * Compare256 implementations using SSE2, AVX2, Neon, POWER9 & RVV, LSX, LASX
-  * Inflate chunk copying using SSE2, SSSE3, AVX, Neon & VSX, LSX, LASX
+  * Adler32 implementation using SSSE3, SSE4.2, AVX2, AVX512, AVX512-VNNI, Neon, VMX & VSX, LSX, LASX, RVV
+  * CRC32-B implementation using SSE2, SSE4.1, (V)PCLMULQDQ, ARMv8, Power8, IBM Z, LoongArch, ZBC
+  * Slide hash implementations using SSE2, AVX2, ARMv6, Neon, Power8, VMX & VSX, LSX, LASX
+  * Compare256 implementations using SSE2, AVX2, AVX512, Neon, Power9, LSX, LASX, RVV
+  * Inflate chunk copying using SSE2, SSSE3, AVX2, AVX512, Neon, Power8, VSX, LSX, LASX, RVV
   * Support for hardware-accelerated deflate using IBM Z DFLTCC
 * Safe unaligned memory read/writes and large bit buffer improvements
 * Includes improvements from Cloudflare and Intel forks
@@ -97,18 +97,17 @@ Build Options
 | CMake                      | configure                | Description                                                                         | Default |
 |:---------------------------|:-------------------------|:------------------------------------------------------------------------------------|---------|
 | ZLIB_COMPAT                | --zlib-compat            | Compile with zlib compatible API                                                    | OFF     |
-| ZLIB_ENABLE_TESTS          |                          | Build test binaries                                                                 | ON      |
+| ZLIB_ALIASES               |                          | Provide zlib compatible CMake targets                                               | ON      |
+| ZLIB_ENABLE_TESTS          |                          | Tests masterswitch, does not enable any tests by itself                             | ON      |
+| ZLIBNG_ENABLE_TESTS        |                          | Build test binaries                                                                 | ON      |
 | WITH_GZFILEOP              | --without-gzfileops      | Compile with support for gzFile related functions                                   | ON      |
 | WITH_OPTIM                 | --without-optimizations  | Build with optimisations                                                            | ON      |
 | WITH_NEW_STRATEGIES        | --without-new-strategies | Use new strategies                                                                  | ON      |
-| WITH_NATIVE_INSTRUCTIONS   |                          | Compiles with full instruction set supported on this host (gcc/clang -march=native) | OFF     |
-| WITH_RUNTIME_CPU_DETECTION |                          | Compiles with runtime CPU detection                                                 | ON      |
-| WITH_SANITIZER             |                          | Build with sanitizer (memory, address, undefined)                                   | OFF     |
-| WITH_GTEST                 |                          | Build gtest_zlib                                                                    | ON      |
-| WITH_FUZZERS               |                          | Build test/fuzz                                                                     | OFF     |
-| WITH_BENCHMARKS            |                          | Build test/benchmarks                                                               | OFF     |
-| WITH_MAINTAINER_WARNINGS   |                          | Build with project maintainer warnings                                              | OFF     |
-| WITH_CODE_COVERAGE         |                          | Enable code coverage reporting                                                      | OFF     |
+| WITH_CRC32_CHORBA          |                          | Build with Chorba optimized CRC32                                                   | ON      |
+| WITH_REDUCED_MEM           | --with-reduced-mem       | Reduce zlib-ng memory usage, affects performance and compression ratio              | OFF     |
+| WITH_GTEST                 |                          | Build tests using GTest framework                                                   | ON      |
+| WITH_BENCHMARKS            |                          | Build benchmarks using Google Benchmark framework                                   | OFF     |
+| INSTALL_UTILS              |                          | Copy minigzip and minideflate during install                                        | OFF     |
 
 
 Install
@@ -193,30 +192,40 @@ zlib was originally created by Jean-loup Gailly (compression) and Mark Adler (de
 Advanced Build Options
 ----------------------
 
-| CMake                           | configure             | Description                                                         | Default                |
-|:--------------------------------|:----------------------|:--------------------------------------------------------------------|------------------------|
-| WITH_AVX2                       |                       | Build with AVX2 intrinsics                                          | ON                     |
-| WITH_AVX512                     |                       | Build with AVX512 intrinsics                                        | ON                     |
-| WITH_AVX512VNNI                 |                       | Build with AVX512VNNI intrinsics                                    | ON                     |
-| WITH_SSE2                       |                       | Build with SSE2 intrinsics                                          | ON                     |
-| WITH_SSSE3                      |                       | Build with SSSE3 intrinsics                                         | ON                     |
-| WITH_SSE42                      |                       | Build with SSE42 intrinsics                                         | ON                     |
-| WITH_PCLMULQDQ                  |                       | Build with PCLMULQDQ intrinsics                                     | ON                     |
-| WITH_VPCLMULQDQ                 | --without-vpclmulqdq  | Build with VPCLMULQDQ intrinsics                                    | ON                     |
-| WITH_ARMV8                      | --without-armv8       | Build with ARMv8 intrinsics                                         | ON                     |
-| WITH_NEON                       | --without-neon        | Build with NEON intrinsics                                          | ON                     |
-| WITH_ARMV6                      | --without-armv6       | Build with ARMv6 intrinsics                                         | ON                     |
-| WITH_ALTIVEC                    | --without-altivec     | Build with AltiVec (VMX) intrinsics                                 | ON                     |
-| WITH_POWER8                     | --without-power8      | Build with POWER8 optimisations                                     | ON                     |
-| WITH_RVV                        |                       | Build with RVV intrinsics                                           | ON                     |
-| WITH_CRC32_VX                   | --without-crc32-vx    | Build with vectorized CRC32 on IBM Z                                | ON                     |
-| WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | Build with DFLTCC intrinsics for compression on IBM Z               | OFF                    |
-| WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | Build with DFLTCC intrinsics for decompression on IBM Z             | OFF                    |
-| WITH_INFLATE_STRICT             |                       | Build with strict inflate distance checking                         | OFF                    |
-| WITH_INFLATE_ALLOW_INVALID_DIST |                       | Build with zero fill for inflate invalid distances                  | OFF                    |
-| INSTALL_UTILS                   |                       | Copy minigzip and minideflate during install                        | OFF                    |
-| ZLIBNG_ENABLE_TESTS             |                       | Test zlib-ng specific API                                           | ON                     |
-| WITH_ALL_FALLBACKS              |                       | Build with all c-fallbacks (useful for Gbench comparisons)          | OFF                    |
+| CMake                           | configure             | Description                                                                         | Default  |
+|:--------------------------------|:----------------------|:------------------------------------------------------------------------------------|----------|
+| WITH_NATIVE_INSTRUCTIONS        |                       | Compiles with full instruction set supported on this host (gcc/clang -march=native) | OFF      |
+| WITH_RUNTIME_CPU_DETECTION      |                       | Compiles with runtime CPU detection                                                 | ON       |
+| WITH_SSE2                       |                       | x86: Build with SSE2 intrinsics                                                     | ON       |
+| WITH_SSSE3                      |                       | x86: Build with SSSE3 intrinsics                                                    | ON       |
+| WITH_SSE41                      |                       | x86: Build with SSE41 intrinsics                                                    | ON       |
+| WITH_SSE42                      |                       | x86: Build with SSE42 intrinsics                                                    | ON       |
+| WITH_PCLMULQDQ                  |                       | x86: Build with PCLMULQDQ intrinsics                                                | ON       |
+| WITH_AVX2                       |                       | x86: Build with AVX2 intrinsics                                                     | ON       |
+| WITH_AVX512                     |                       | x86: Build with AVX512 intrinsics                                                   | ON       |
+| WITH_AVX512VNNI                 |                       | x86: Build with AVX512VNNI intrinsics                                               | ON       |
+| WITH_VPCLMULQDQ                 |                       | x86: Build with VPCLMULQDQ intrinsics                                               | ON       |
+| WITH_ARMV6                      | --without-armv6       | arm: Build with ARMv6 intrinsics                                                    | ON       |
+| WITH_ARMV8                      | --without-armv8       | arm: Build with ARMv8 intrinsics                                                    | ON       |
+| WITH_NEON                       | --without-neon        | arm: Build with NEON intrinsics                                                     | ON       |
+| WITH_ALTIVEC                    | --without-altivec     | ppc: Build with AltiVec (VMX) intrinsics                                            | ON       |
+| WITH_POWER8                     | --without-power8      | ppc: Build with POWER8 intrinsics                                                   | ON       |
+| WITH_POWER9                     | --without-power9      | ppc: Build with POWER9 intrinsics                                                   | ON       |
+| WITH_RVV                        | --without-rvv         | riscv: Build with RVV intrinsics                                                    | ON       |
+| WITH_RISCV_ZBC                  | --without-zbc         | riscv: Build with RiscV ZBC intrinsics                                              | ON       |
+| WITH_CRC32_VX                   | --without-crc32-vx    | s390x: Build with vectorized CRC32 on IBM Z                                         | ON       |
+| WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | s390x: Build with DFLTCC intrinsics for compression on IBM Z                        | OFF      |
+| WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | s390x: Build with DFLTCC intrinsics for decompression on IBM Z                      | OFF      |
+| WITH_LSX                        |                       | loongarch: Build with LSX intrinsics                                                | ON       |
+| WITH_CRC32_LA                   | --without-crc32-la    | loongarch: Build with vectorized CRC32                                              | ON       |
+| WITH_INFLATE_STRICT             |                       | Build with strict inflate distance checking                                         | OFF      |
+| WITH_INFLATE_ALLOW_INVALID_DIST |                       | Build with zero fill for inflate invalid distances                                  | OFF      |
+| WITH_BENCHMARK_APPS             |                       | Build benchmark apps (currently libpng)                                             | OFF      |
+| WITH_ALL_FALLBACKS              |                       | Build with all c-fallbacks (useful for Gbench comparisons)                          | OFF      |
+| WITH_MAINTAINER_WARNINGS        |                       | Build with project maintainer warnings                                              | OFF      |
+| WITH_SANITIZER                  |                       | Build with sanitizer (memory, address, undefined)                                   | OFF      |
+| WITH_FUZZERS                    |                       | Build test/fuzz                                                                     | OFF      |
+| WITH_CODE_COVERAGE              |                       | Enable code coverage reporting                                                      | OFF      |
 
 
 Related Projects

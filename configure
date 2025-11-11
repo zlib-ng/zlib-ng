@@ -178,16 +178,19 @@ case "$1" in
       echo '    [--without-gzfileops]       Compiles without the gzfile parts of the API enabled' | tee -a configure.log
       echo '    [--without-optimizations]   Compiles without support for optional instruction sets' | tee -a configure.log
       echo '    [--without-new-strategies]  Compiles without using new additional deflate strategies' | tee -a configure.log
+      echo '    [--without-vpclmulqdq]      Compiles without x86 VPCLMUL instruction set' | tee -a configure.log
+      echo '    [--without-armv6]           Compiles without ARMv6 SIMD instruction set' | tee -a configure.log
       echo '    [--without-armv8]           Compiles without ARMv8 CRC32 instruction set' | tee -a configure.log
       echo '    [--without-neon]            Compiles without ARM Neon SIMD instruction set' | tee -a configure.log
-      echo '    [--without-armv6]           Compiles without ARMv6 SIMD instruction set' | tee -a configure.log
       echo '    [--without-rvv]             Compiles without RISC-V RVV instruction set' | tee -a configure.log
       echo '    [--without-zbc]             Compiles without RISC-V ZBC instruction set' | tee -a configure.log
       echo '    [--without-altivec]         Compiles without PPC AltiVec support' | tee -a configure.log
       echo '    [--without-power8]          Compiles without Power8 instruction set' | tee -a configure.log
+      echo '    [--without-power9]          Compiles without Power9 instruction set' | tee -a configure.log
       echo '    [--with-dfltcc-deflate]     Use DEFLATE CONVERSION CALL instruction for compression on IBM Z' | tee -a configure.log
       echo '    [--with-dfltcc-inflate]     Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z' | tee -a configure.log
       echo '    [--without-crc32-vx]        Build without vectorized CRC32 on IBM Z' | tee -a configure.log
+      echo '    [--without-crc32-la]        Build without vectorized CRC32 on Loongarch' | tee -a configure.log
       echo '    [--with-reduced-mem]        Reduced memory usage for special cases (reduces performance)' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=$(echo $1 | sed 's/.*=//'); shift ;;
