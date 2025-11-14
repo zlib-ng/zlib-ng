@@ -389,7 +389,7 @@ macro(check_ppc_intrinsics)
         #include <machine/cpu.h>
         #endif
         int main() {
-        #ifdef __FreeBSD__
+        #if defined(__FreeBSD__) || defined(__OpenBSD__)
             unsigned long hwcap;
             elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
             return (hwcap & PPC_FEATURE_HAS_ALTIVEC);
@@ -416,7 +416,7 @@ macro(check_power8_intrinsics)
         #include <machine/cpu.h>
         #endif
         int main() {
-        #ifdef __FreeBSD__
+        #if defined(__FreeBSD__) || defined(__OpenBSD__)
             unsigned long hwcap;
             elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
             return (hwcap & PPC_FEATURE2_ARCH_2_07);
@@ -511,7 +511,7 @@ macro(check_power9_intrinsics)
         #include <machine/cpu.h>
         #endif
         int main() {
-        #ifdef __FreeBSD__
+        #if defined(__FreeBSD__) || defined(__OpenBSD__)
             unsigned long hwcap;
             elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
             return (hwcap & PPC_FEATURE2_ARCH_3_00);
