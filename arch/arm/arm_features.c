@@ -1,7 +1,7 @@
 #include "zbuild.h"
 #include "arm_features.h"
 
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#if defined(HAVE_SYS_AUXV_H)
 #  include <sys/auxv.h>
 #  ifdef ARM_ASM_HWCAP
 #    include <asm/hwcap.h>
@@ -26,11 +26,23 @@
 #endif
 
 static int arm_has_crc32(void) {
-#if defined(__linux__) && defined(ARM_AUXV_HAS_CRC32)
-#  ifdef HWCAP_CRC32
-    return (getauxval(AT_HWCAP) & HWCAP_CRC32) != 0 ? 1 : 0;
+#if defined(ARM_AUXV_HAS_CRC32)
+#  if defined(__FreeBSD__) || defined(__OpenBSD__)
+#    ifdef HWCAP_CRC32
+       unsigned long hwcap = 0;
+       elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+       return (hwcap & HWCAP_CRC32) != 0 ? 1 : 0;
+#    else
+       unsigned long hwcap2 = 0;
+       elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
+       return (hwcap2 & HWCAP2_CRC32) != 0 ? 1 : 0;
+#    endif
 #  else
-    return (getauxval(AT_HWCAP2) & HWCAP2_CRC32) != 0 ? 1 : 0;
+#    ifdef HWCAP_CRC32
+       return (getauxval(AT_HWCAP) & HWCAP_CRC32) != 0 ? 1 : 0;
+#    else
+       return (getauxval(AT_HWCAP2) & HWCAP2_CRC32) != 0 ? 1 : 0;
+#    endif
 #  endif
 #elif defined(__FreeBSD__) && defined(__aarch64__)
     return getenv("QEMU_EMULATING") == NULL
@@ -62,11 +74,17 @@ static int arm_has_crc32(void) {
 /* AArch64 has neon. */
 #if !defined(__aarch64__) && !defined(_M_ARM64) && !defined(_M_ARM64EC)
 static inline int arm_has_neon(void) {
-#if defined(__linux__) && defined(ARM_AUXV_HAS_NEON)
-#  ifdef HWCAP_ARM_NEON
-    return (getauxval(AT_HWCAP) & HWCAP_ARM_NEON) != 0 ? 1 : 0;
+#if defined(ARM_AUXV_HAS_NEON)
+#  if defined(__FreeBSD__) || defined(__OpenBSD__)
+     unsigned long hwcap = 0;
+     elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+     return (hwcap & HWCAP_NEON) != 0 ? 1 : 0;
 #  else
-    return (getauxval(AT_HWCAP) & HWCAP_NEON) != 0 ? 1 : 0;
+#    ifdef HWCAP_ARM_NEON
+       return (getauxval(AT_HWCAP) & HWCAP_ARM_NEON) != 0 ? 1 : 0;
+#    else
+       return (getauxval(AT_HWCAP) & HWCAP_NEON) != 0 ? 1 : 0;
+#    endif
 #  endif
 #elif defined(__APPLE__)
     int hasneon;
