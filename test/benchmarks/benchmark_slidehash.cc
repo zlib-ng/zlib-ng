@@ -77,7 +77,7 @@ public:
     } \
     BENCHMARK_REGISTER_F(slide_hash, name)->RangeMultiplier(2)->Range(512, MAX_RANDOM_INTS);
 
-#if defined(WITH_ALL_FALLBACKS) || !defined(__x86_64__)
+#if defined(WITH_ALL_FALLBACKS) || !(defined(__x86_64__) || defined(_M_X64))
 BENCHMARK_SLIDEHASH(c, slide_hash_c, 1);
 #endif
 
