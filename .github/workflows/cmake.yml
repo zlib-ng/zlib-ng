@@ -606,7 +606,7 @@ jobs:
             codecov: win64_gcc
 
           - name: Windows GCC Native Instructions (AVX)
-            os: windows-latest
+            os: windows-2022
             compiler: gcc
             cxx-compiler: g++
             cmake-args: -G Ninja  -DWITH_NATIVE_INSTRUCTIONS=ON -DNATIVE_ARCH_OVERRIDE="-mavx -mpclmul"
