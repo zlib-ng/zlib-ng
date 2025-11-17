@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.13)
 
 include(FetchContent)
 
@@ -23,7 +23,7 @@ if(NOT benchmark_FOUND)
         set(GBENCHMARK_REPOSITORY https://github.com/google/benchmark.git)
     endif()
     if(NOT DEFINED GBENCHMARK_TAG)
-        set(GBENCHMARK_TAG v1.7.1)
+        set(GBENCHMARK_TAG v1.9.4)
     endif()
 
     FetchContent_Declare(benchmark
