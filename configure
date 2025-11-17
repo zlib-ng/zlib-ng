@@ -29,11 +29,17 @@ if [ -n "${CHOST}" ]; then
     CROSS_PREFIX="${CHOST}-"
     ARCH="$(echo "${NORM_CHOST}" | sed -e 's/-.*//')"
 else
-    ARCH="$(uname -m)"
+    # BSD systems use uname -p for architecture names vs port names
+    case "$(uname -s)" in
+      *BSD | *bsd* | DragonFly)
+          ARCH="$(uname -p)" ;;
+      *)
+          ARCH="$(uname -m)" ;;
+    esac
 fi
 
 case "${ARCH}" in
-    x86_64)
+    amd64 | x86_64)
         case "${CFLAGS}" in
             *-m32*)
                 ARCH=i686
@@ -337,7 +343,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       else
         ARCH=$CC_ARCH
       fi ;;
-    x86_64)
+    amd64 | x86_64)
       # Honor user choice if gcc is multilib and 32-bit is requested
       if test $build32 -ne 1; then
         ARCH=$CC_ARCH
@@ -1794,7 +1800,7 @@ ARCH_SHARED_OBJS=''
 # Set ARCH specific FLAGS
 case "${ARCH}" in
     # x86/amd64 specific optimizations
-    i386 | i486 | i586 | i686 |x86_64)
+    i386 | i486 | i586 | i686 | amd64 | x86_64)
         ARCHDIR=arch/x86
 
         # Enable arch-specific optimizations
