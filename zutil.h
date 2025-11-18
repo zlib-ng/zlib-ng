@@ -112,7 +112,7 @@ extern z_const char * const PREFIX(z_errmsg)[10]; /* indexed by 2-zlib_error */
 #endif
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
-#  define OS_CODE  10
+#  define OS_CODE  11
 #endif
 
 #ifdef __APPLE__
