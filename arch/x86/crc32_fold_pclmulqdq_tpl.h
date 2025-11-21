@@ -111,6 +111,7 @@ Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint
      * the stream at the following offsets: 6, 9, 10, 16, 20, 22,
      * 24, 25, 27, 28, 30, 31, 32 - this is detailed in the paper
      * as "generator_64_bits_unrolled_8" */
+#if !defined(COPY) || defined(__AVX512VL__)
     while (len >= 512 + 64 + 16*8) {
         __m128i chorba8 = _mm_load_si128((__m128i *)src);
         __m128i chorba7 = _mm_load_si128((__m128i *)src + 1);
@@ -322,6 +323,7 @@ Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint
         len -= 512;
         src += 512;
     }
+#endif
 
     while (len >= 64) {
         len -= 64;
