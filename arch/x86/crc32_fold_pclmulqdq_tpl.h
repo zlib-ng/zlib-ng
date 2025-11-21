@@ -112,14 +112,14 @@ Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint
      * 24, 25, 27, 28, 30, 31, 32 - this is detailed in the paper
      * as "generator_64_bits_unrolled_8" */
     while (len >= 512 + 64 + 16*8) {
-        __m128i chorba8 = _mm_loadu_si128((__m128i *)src);
-        __m128i chorba7 = _mm_loadu_si128((__m128i *)src + 1);
-        __m128i chorba6 = _mm_loadu_si128((__m128i *)src + 2);
-        __m128i chorba5 = _mm_loadu_si128((__m128i *)src + 3);
-        __m128i chorba4 = _mm_loadu_si128((__m128i *)src + 4);
-        __m128i chorba3 = _mm_loadu_si128((__m128i *)src + 5);
-        __m128i chorba2 = _mm_loadu_si128((__m128i *)src + 6);
-        __m128i chorba1 = _mm_loadu_si128((__m128i *)src + 7);
+        __m128i chorba8 = _mm_load_si128((__m128i *)src);
+        __m128i chorba7 = _mm_load_si128((__m128i *)src + 1);
+        __m128i chorba6 = _mm_load_si128((__m128i *)src + 2);
+        __m128i chorba5 = _mm_load_si128((__m128i *)src + 3);
+        __m128i chorba4 = _mm_load_si128((__m128i *)src + 4);
+        __m128i chorba3 = _mm_load_si128((__m128i *)src + 5);
+        __m128i chorba2 = _mm_load_si128((__m128i *)src + 6);
+        __m128i chorba1 = _mm_load_si128((__m128i *)src + 7);
 #ifdef COPY
         _mm_storeu_si128((__m128i *)dst, chorba8);
         _mm_storeu_si128((__m128i *)dst + 1, chorba7);
@@ -138,10 +138,10 @@ Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint
         src += 16*8;
         len -= 16*8;
 
-        xmm_t0 = _mm_loadu_si128((__m128i *)src);
-        xmm_t1 = _mm_loadu_si128((__m128i *)src + 1);
-        xmm_t2 = _mm_loadu_si128((__m128i *)src + 2);
-        xmm_t3 = _mm_loadu_si128((__m128i *)src + 3);
+        xmm_t0 = _mm_load_si128((__m128i *)src);
+        xmm_t1 = _mm_load_si128((__m128i *)src + 1);
+        xmm_t2 = _mm_load_si128((__m128i *)src + 2);
+        xmm_t3 = _mm_load_si128((__m128i *)src + 3);
 
         fold_12(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 #ifdef COPY
@@ -160,10 +160,10 @@ Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint
         xmm_crc2 = _mm_xor_si128(xmm_t2, xmm_crc2);
         xmm_crc3 = _mm_xor_si128(xmm_t3, xmm_crc3);
 
-        xmm_t0 = _mm_loadu_si128((__m128i *)src + 4);
-        xmm_t1 = _mm_loadu_si128((__m128i *)src + 5);
-        xmm_t2 = _mm_loadu_si128((__m128i *)src + 6);
-        xmm_t3 = _mm_loadu_si128((__m128i *)src + 7);
+        xmm_t0 = _mm_load_si128((__m128i *)src + 4);
+        xmm_t1 = _mm_load_si128((__m128i *)src + 5);
+        xmm_t2 = _mm_load_si128((__m128i *)src + 6);
+        xmm_t3 = _mm_load_si128((__m128i *)src + 7);
 
         fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 #ifdef COPY
@@ -183,10 +183,10 @@ Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint
         xmm_crc2 = _mm_xor_si128(xmm_t2, xmm_crc2);
         xmm_crc3 = _mm_xor_si128(xmm_t3, xmm_crc3);
 
-        xmm_t0 = _mm_loadu_si128((__m128i *)src + 8);
-        xmm_t1 = _mm_loadu_si128((__m128i *)src + 9);
-        xmm_t2 = _mm_loadu_si128((__m128i *)src + 10);
-        xmm_t3 = _mm_loadu_si128((__m128i *)src + 11);
+        xmm_t0 = _mm_load_si128((__m128i *)src + 8);
+        xmm_t1 = _mm_load_si128((__m128i *)src + 9);
+        xmm_t2 = _mm_load_si128((__m128i *)src + 10);
+        xmm_t3 = _mm_load_si128((__m128i *)src + 11);
 
         fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 #ifdef COPY
@@ -206,10 +206,10 @@ Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint
         xmm_crc2 = _mm_xor_si128(xmm_t2, xmm_crc2);
         xmm_crc3 = _mm_xor_si128(xmm_t3, xmm_crc3);
 
-        xmm_t0 = _mm_loadu_si128((__m128i *)src + 12);
-        xmm_t1 = _mm_loadu_si128((__m128i *)src + 13);
-        xmm_t2 = _mm_loadu_si128((__m128i *)src + 14);
-        xmm_t3 = _mm_loadu_si128((__m128i *)src + 15);
+        xmm_t0 = _mm_load_si128((__m128i *)src + 12);
+        xmm_t1 = _mm_load_si128((__m128i *)src + 13);
+        xmm_t2 = _mm_load_si128((__m128i *)src + 14);
+        xmm_t3 = _mm_load_si128((__m128i *)src + 15);
 
         fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 #ifdef COPY
@@ -229,10 +229,10 @@ Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint
         xmm_crc2 = _mm_xor_si128(xmm_t2, xmm_crc2);
         xmm_crc3 = _mm_xor_si128(xmm_t3, xmm_crc3);
 
-        xmm_t0 = _mm_loadu_si128((__m128i *)src + 16);
-        xmm_t1 = _mm_loadu_si128((__m128i *)src + 17);
-        xmm_t2 = _mm_loadu_si128((__m128i *)src + 18);
-        xmm_t3 = _mm_loadu_si128((__m128i *)src + 19);
+        xmm_t0 = _mm_load_si128((__m128i *)src + 16);
+        xmm_t1 = _mm_load_si128((__m128i *)src + 17);
+        xmm_t2 = _mm_load_si128((__m128i *)src + 18);
+        xmm_t3 = _mm_load_si128((__m128i *)src + 19);
 
         fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 #ifdef COPY
@@ -252,10 +252,10 @@ Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint
         xmm_crc2 = _mm_xor_si128(xmm_t2, xmm_crc2);
         xmm_crc3 = _mm_xor_si128(xmm_t3, xmm_crc3);
 
-        xmm_t0 = _mm_loadu_si128((__m128i *)src + 20);
-        xmm_t1 = _mm_loadu_si128((__m128i *)src + 21);
-        xmm_t2 = _mm_loadu_si128((__m128i *)src + 22);
-        xmm_t3 = _mm_loadu_si128((__m128i *)src + 23);
+        xmm_t0 = _mm_load_si128((__m128i *)src + 20);
+        xmm_t1 = _mm_load_si128((__m128i *)src + 21);
+        xmm_t2 = _mm_load_si128((__m128i *)src + 22);
+        xmm_t3 = _mm_load_si128((__m128i *)src + 23);
 
         fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 #ifdef COPY
@@ -275,10 +275,10 @@ Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint
         xmm_crc2 = _mm_xor_si128(xmm_t2, xmm_crc2);
         xmm_crc3 = _mm_xor_si128(xmm_t3, xmm_crc3);
 
-        xmm_t0 = _mm_loadu_si128((__m128i *)src + 24);
-        xmm_t1 = _mm_loadu_si128((__m128i *)src + 25);
-        xmm_t2 = _mm_loadu_si128((__m128i *)src + 26);
-        xmm_t3 = _mm_loadu_si128((__m128i *)src + 27);
+        xmm_t0 = _mm_load_si128((__m128i *)src + 24);
+        xmm_t1 = _mm_load_si128((__m128i *)src + 25);
+        xmm_t2 = _mm_load_si128((__m128i *)src + 26);
+        xmm_t3 = _mm_load_si128((__m128i *)src + 27);
 
         fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 #ifdef COPY
@@ -297,10 +297,10 @@ Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint
         xmm_crc2 = _mm_xor_si128(xmm_t2, xmm_crc2);
         xmm_crc3 = _mm_xor_si128(xmm_t3, xmm_crc3);
 
-        xmm_t0 = _mm_loadu_si128((__m128i *)src + 28);
-        xmm_t1 = _mm_loadu_si128((__m128i *)src + 29);
-        xmm_t2 = _mm_loadu_si128((__m128i *)src + 30);
-        xmm_t3 = _mm_loadu_si128((__m128i *)src + 31);
+        xmm_t0 = _mm_load_si128((__m128i *)src + 28);
+        xmm_t1 = _mm_load_si128((__m128i *)src + 29);
+        xmm_t2 = _mm_load_si128((__m128i *)src + 30);
+        xmm_t3 = _mm_load_si128((__m128i *)src + 31);
 
         fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 #ifdef COPY
