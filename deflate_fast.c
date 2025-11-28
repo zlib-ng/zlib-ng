@@ -17,9 +17,7 @@
  * matches. It is used only for the fast compression options.
  */
 Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
-    Pos hash_head;        /* head of the hash chain */
     int bflush = 0;       /* set if current block must be flushed */
-    int64_t dist;
     uint32_t match_len = 0;
 
     for (;;) {
@@ -41,8 +39,8 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
          * dictionary, and set hash_head to the head of the hash chain:
          */
         if (s->lookahead >= WANT_MIN_MATCH) {
-            hash_head = quick_insert_string(s, s->strstart);
-            dist = (int64_t)s->strstart - hash_head;
+            Pos hash_head = quick_insert_string(s, s->strstart);
+            int64_t dist = (int64_t)s->strstart - hash_head;
 
             /* Find the longest match, discarding those <= prev_length.
              * At this point we have always match length < WANT_MIN_MATCH
@@ -94,6 +92,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
             FLUSH_BLOCK(s, 0);
     }
     s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
+
     if (UNLIKELY(flush == Z_FINISH)) {
         FLUSH_BLOCK(s, 1);
         return finish_done;

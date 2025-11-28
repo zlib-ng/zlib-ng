@@ -155,7 +155,7 @@ struct ALIGNED_(64) internal_state {
     int                  last_flush;       /* value of flush param for previous deflate call */
     int                  reproducible;     /* Whether reproducible compression results are required. */
 
-    int block_open;
+    unsigned int block_open;
     /* Whether or not a block is currently open for the QUICK deflation scheme.
      * This is set to 1 if there is an active block, or 0 if the block was just closed.
      */
