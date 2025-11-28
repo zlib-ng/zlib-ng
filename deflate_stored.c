@@ -29,7 +29,8 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
      * this is 32K. This can be as small as 507 bytes for memLevel == 1. For
      * large input and output buffers, the stored block size will be larger.
      */
-    unsigned min_block = MIN(s->pending_buf_size - 5, s->w_size);
+    unsigned int w_size = s->w_size;
+    unsigned min_block = MIN(s->pending_buf_size - 5, w_size);
 
     /* Copy as many min_block or larger stored blocks directly to next_out as
      * possible. If flushing, copy the remaining available input to next_out as
@@ -112,23 +113,23 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
         /* If any input was used, then no unused input remains in the window,
          * therefore s->block_start == s->strstart.
          */
-        if (used >= s->w_size) {    /* supplant the previous history */
+        if (used >= w_size) {    /* supplant the previous history */
             s->matches = 2;         /* clear hash */
-            memcpy(s->window, s->strm->next_in - s->w_size, s->w_size);
-            s->strstart = s->w_size;
+            memcpy(s->window, s->strm->next_in - w_size, w_size);
+            s->strstart = w_size;
             s->insert = s->strstart;
         } else {
             if (s->window_size - s->strstart <= used) {
                 /* Slide the window down. */
-                s->strstart -= s->w_size;
-                memcpy(s->window, s->window + s->w_size, s->strstart);
+                s->strstart -= w_size;
+                memcpy(s->window, s->window + w_size, s->strstart);
                 if (s->matches < 2)
                     s->matches++;   /* add a pending slide_hash() */
                 s->insert = MIN(s->insert, s->strstart);
             }
             memcpy(s->window + s->strstart, s->strm->next_in - used, used);
             s->strstart += used;
-            s->insert += MIN(used, s->w_size - s->insert);
+            s->insert += MIN(used, w_size - s->insert);
         }
         s->block_start = (int)s->strstart;
     }
@@ -144,14 +145,14 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
 
     /* Fill the window with any remaining input. */
     have = s->window_size - s->strstart;
-    if (s->strm->avail_in > have && s->block_start >= (int)s->w_size) {
+    if (s->strm->avail_in > have && s->block_start >= (int)w_size) {
         /* Slide the window down. */
-        s->block_start -= (int)s->w_size;
-        s->strstart -= s->w_size;
-        memcpy(s->window, s->window + s->w_size, s->strstart);
+        s->block_start -= (int)w_size;
+        s->strstart -= w_size;
+        memcpy(s->window, s->window + w_size, s->strstart);
         if (s->matches < 2)
             s->matches++;           /* add a pending slide_hash() */
-        have += s->w_size;          /* more space now */
+        have += w_size;          /* more space now */
         s->insert = MIN(s->insert, s->strstart);
     }
 
@@ -159,7 +160,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
     if (have) {
         read_buf(s->strm, s->window + s->strstart, have);
         s->strstart += have;
-        s->insert += MIN(have, s->w_size - s->insert);
+        s->insert += MIN(have, w_size - s->insert);
     }
     s->high_water = MAX(s->high_water, s->strstart);
 
@@ -171,7 +172,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
     have = (s->bi_valid + 42) >> 3;         /* number of header bytes */
         /* maximum stored block length that will fit in pending: */
     have = MIN(s->pending_buf_size - have, MAX_STORED);
-    min_block = MIN(have, s->w_size);
+    min_block = MIN(have, w_size);
     left = (int)s->strstart - s->block_start;
     if (left >= min_block || ((left || flush == Z_FINISH) && flush != Z_NO_FLUSH && s->strm->avail_in == 0 && left <= have)) {
         len = MIN(left, have);
