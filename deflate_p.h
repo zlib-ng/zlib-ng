@@ -156,7 +156,7 @@ Z_FORCEINLINE static unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf
         FUNCTABLE_CALL(crc32_fold_copy)(&s->crc_fold, buf, strm->next_in, len);
 #endif
     } else if (s->wrap == 1) {
-        strm->adler = FUNCTABLE_CALL(adler32_fold_copy)(strm->adler, buf, strm->next_in, len);
+        strm->adler = FUNCTABLE_CALL(adler32_copy)(strm->adler, buf, strm->next_in, len);
     } else {
         memcpy(buf, strm->next_in, len);
     }

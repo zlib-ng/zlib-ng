@@ -29,7 +29,7 @@ static inline uint32_t hsum(__m128i x) {
     return __lsx_vpickve2gr_w(sum4, 0);
 }
 
-static inline uint32_t adler32_fold_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
+static inline uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     if (src == NULL) return 1L;
     if (len == 0) return adler;
 
@@ -146,11 +146,11 @@ rem_peel:
 }
 
 Z_INTERNAL uint32_t adler32_lsx(uint32_t adler, const uint8_t *src, size_t len) {
-    return adler32_fold_copy_impl(adler, NULL, src, len, 0);
+    return adler32_copy_impl(adler, NULL, src, len, 0);
 }
 
-Z_INTERNAL uint32_t adler32_fold_copy_lsx(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
-    return adler32_fold_copy_impl(adler, dst, src, len, 1);
+Z_INTERNAL uint32_t adler32_copy_lsx(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
+    return adler32_copy_impl(adler, dst, src, len, 1);
 }
 
 #endif

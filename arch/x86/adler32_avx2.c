@@ -15,10 +15,10 @@
 #include "adler32_avx2_p.h"
 #include "x86_intrins.h"
 
-extern uint32_t adler32_fold_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+extern uint32_t adler32_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *src, size_t len);
 
-static inline uint32_t adler32_fold_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
+static inline uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     if (src == NULL) return 1L;
     if (len == 0) return adler;
 
@@ -35,7 +35,7 @@ rem_peel:
         }
     } else if (len < 32) {
         if (COPY) {
-            return adler32_fold_copy_sse42(adler, dst, src, len);
+            return adler32_copy_sse42(adler, dst, src, len);
         } else {
             return adler32_ssse3(adler, src, len);
         }
@@ -108,7 +108,7 @@ rem_peel:
                 _mm256_storeu_si256((__m256i*)dst, vbuf);
                 dst += 32;
             }
- 
+
             vs1 = _mm256_add_epi32(vs1, vs1_sad);
             vs3 = _mm256_add_epi32(vs3, vs1_0);
             __m256i v_short_sum2 = _mm256_maddubs_epi16(vbuf, dot2v_0); // sum 32 uint8s to 16 shorts
@@ -170,11 +170,11 @@ rem_peel:
 }
 
 Z_INTERNAL uint32_t adler32_avx2(uint32_t adler, const uint8_t *src, size_t len) {
-    return adler32_fold_copy_impl(adler, NULL, src, len, 0);
+    return adler32_copy_impl(adler, NULL, src, len, 0);
 }
 
-Z_INTERNAL uint32_t adler32_fold_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
-    return adler32_fold_copy_impl(adler, dst, src, len, 1);
+Z_INTERNAL uint32_t adler32_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
+    return adler32_copy_impl(adler, dst, src, len, 1);
 }
 
 #endif

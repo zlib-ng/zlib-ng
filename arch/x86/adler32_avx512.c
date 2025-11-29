@@ -15,7 +15,7 @@
 #include "x86_intrins.h"
 #include "adler32_avx512_p.h"
 
-static inline uint32_t adler32_fold_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
+static inline uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     if (src == NULL) return 1L;
     if (len == 0) return adler;
 
@@ -96,13 +96,12 @@ rem_peel:
     return adler;
 }
 
-Z_INTERNAL uint32_t adler32_fold_copy_avx512(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
-    return adler32_fold_copy_impl(adler, dst, src, len, 1);
+Z_INTERNAL uint32_t adler32_copy_avx512(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
+    return adler32_copy_impl(adler, dst, src, len, 1);
 }
 
 Z_INTERNAL uint32_t adler32_avx512(uint32_t adler, const uint8_t *src, size_t len) {
-    return adler32_fold_copy_impl(adler, NULL, src, len, 0);
+    return adler32_copy_impl(adler, NULL, src, len, 0);
 }
 
 #endif
-

@@ -79,7 +79,7 @@ static int init_functable(void) {
 #  if (defined(__x86_64__) || defined(_M_X64)) && defined(X86_SSE2)
     // x86_64 always has SSE2, so we can use SSE2 functions as fallbacks where available.
     ft.adler32 = &adler32_c;
-    ft.adler32_fold_copy = &adler32_fold_copy_c;
+    ft.adler32_copy = &adler32_copy_c;
     ft.crc32 = &crc32_braid;
     ft.crc32_fold = &crc32_fold_c;
     ft.crc32_fold_copy = &crc32_fold_copy_c;
@@ -93,7 +93,7 @@ static int init_functable(void) {
 #  endif
 #else // WITH_ALL_FALLBACKS
     ft.adler32 = &adler32_c;
-    ft.adler32_fold_copy = &adler32_fold_copy_c;
+    ft.adler32_copy = &adler32_copy_c;
     ft.chunkmemset_safe = &chunkmemset_safe_c;
     ft.crc32 = &crc32_braid;
     ft.crc32_fold = &crc32_fold_c;
@@ -153,7 +153,7 @@ static int init_functable(void) {
     // X86 - SSE4.2
 #ifdef X86_SSE42
     if (cf.x86.has_sse42) {
-        ft.adler32_fold_copy = &adler32_fold_copy_sse42;
+        ft.adler32_copy = &adler32_copy_sse42;
     }
 #endif
     // X86 - PCLMUL
@@ -174,7 +174,7 @@ static int init_functable(void) {
      * to remain intact. They also allow for a count operand that isn't the CL register, avoiding contention there */
     if (cf.x86.has_avx2 && cf.x86.has_bmi2) {
         ft.adler32 = &adler32_avx2;
-        ft.adler32_fold_copy = &adler32_fold_copy_avx2;
+        ft.adler32_copy = &adler32_copy_avx2;
         ft.chunkmemset_safe = &chunkmemset_safe_avx2;
         ft.inflate_fast = &inflate_fast_avx2;
         ft.slide_hash = &slide_hash_avx2;
@@ -189,7 +189,7 @@ static int init_functable(void) {
 #ifdef X86_AVX512
     if (cf.x86.has_avx512_common) {
         ft.adler32 = &adler32_avx512;
-        ft.adler32_fold_copy = &adler32_fold_copy_avx512;
+        ft.adler32_copy = &adler32_copy_avx512;
         ft.chunkmemset_safe = &chunkmemset_safe_avx512;
         ft.inflate_fast = &inflate_fast_avx512;
 #  ifdef HAVE_BUILTIN_CTZLL
@@ -202,7 +202,7 @@ static int init_functable(void) {
 #ifdef X86_AVX512VNNI
     if (cf.x86.has_avx512vnni) {
         ft.adler32 = &adler32_avx512_vnni;
-        ft.adler32_fold_copy = &adler32_fold_copy_avx512_vnni;
+        ft.adler32_copy = &adler32_copy_avx512_vnni;
     }
 #endif
     // X86 - VPCLMULQDQ
@@ -233,7 +233,7 @@ static int init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_neon;
-        ft.adler32_fold_copy = &adler32_fold_copy_neon;
+        ft.adler32_copy = &adler32_copy_neon;
         ft.chunkmemset_safe = &chunkmemset_safe_neon;
         ft.inflate_fast = &inflate_fast_neon;
         ft.slide_hash = &slide_hash_neon;
@@ -288,7 +288,7 @@ static int init_functable(void) {
 #ifdef RISCV_RVV
     if (cf.riscv.has_rvv) {
         ft.adler32 = &adler32_rvv;
-        ft.adler32_fold_copy = &adler32_fold_copy_rvv;
+        ft.adler32_copy = &adler32_copy_rvv;
         ft.chunkmemset_safe = &chunkmemset_safe_rvv;
         ft.compare256 = &compare256_rvv;
         ft.inflate_fast = &inflate_fast_rvv;
@@ -322,7 +322,7 @@ static int init_functable(void) {
 #ifdef LOONGARCH_LSX
     if (cf.loongarch.has_lsx) {
         ft.adler32 = &adler32_lsx;
-        ft.adler32_fold_copy = &adler32_fold_copy_lsx;
+        ft.adler32_copy = &adler32_copy_lsx;
         ft.slide_hash = slide_hash_lsx;
 #  ifdef HAVE_BUILTIN_CTZ
         ft.compare256 = &compare256_lsx;
@@ -336,7 +336,7 @@ static int init_functable(void) {
 #ifdef LOONGARCH_LASX
     if (cf.loongarch.has_lasx) {
         ft.adler32 = &adler32_lasx;
-        ft.adler32_fold_copy = &adler32_fold_copy_lasx;
+        ft.adler32_copy = &adler32_copy_lasx;
         ft.slide_hash = slide_hash_lasx;
 #  ifdef HAVE_BUILTIN_CTZ
         ft.compare256 = &compare256_lasx;
@@ -353,7 +353,7 @@ static int init_functable(void) {
     // Assign function pointers individually for atomic operation
     FUNCTABLE_ASSIGN(ft, force_init);
     FUNCTABLE_VERIFY_ASSIGN(ft, adler32);
-    FUNCTABLE_VERIFY_ASSIGN(ft, adler32_fold_copy);
+    FUNCTABLE_VERIFY_ASSIGN(ft, adler32_copy);
     FUNCTABLE_VERIFY_ASSIGN(ft, chunkmemset_safe);
     FUNCTABLE_VERIFY_ASSIGN(ft, compare256);
     FUNCTABLE_VERIFY_ASSIGN(ft, crc32);
@@ -382,9 +382,9 @@ static uint32_t adler32_stub(uint32_t adler, const uint8_t* buf, size_t len) {
     return functable.adler32(adler, buf, len);
 }
 
-static uint32_t adler32_fold_copy_stub(uint32_t adler, uint8_t* dst, const uint8_t* src, size_t len) {
+static uint32_t adler32_copy_stub(uint32_t adler, uint8_t* dst, const uint8_t* src, size_t len) {
     FUNCTABLE_INIT_ABORT;
-    return functable.adler32_fold_copy(adler, dst, src, len);
+    return functable.adler32_copy(adler, dst, src, len);
 }
 
 static uint8_t* chunkmemset_safe_stub(uint8_t* out, uint8_t *from, unsigned len, unsigned left) {
@@ -446,7 +446,7 @@ static void slide_hash_stub(deflate_state* s) {
 Z_INTERNAL struct functable_s functable = {
     force_init_stub,
     adler32_stub,
-    adler32_fold_copy_stub,
+    adler32_copy_stub,
     chunkmemset_safe_stub,
     compare256_stub,
     crc32_stub,

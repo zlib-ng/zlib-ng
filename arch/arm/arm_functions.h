@@ -7,7 +7,7 @@
 
 #ifdef ARM_NEON
 uint32_t adler32_neon(uint32_t adler, const uint8_t *buf, size_t len);
-uint32_t adler32_fold_copy_neon(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+uint32_t adler32_copy_neon(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 uint8_t* chunkmemset_safe_neon(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 
 #  ifdef HAVE_BUILTIN_CTZLL
@@ -40,8 +40,8 @@ void slide_hash_armv6(deflate_state *s);
 #  if (defined(ARM_NEON) && (defined(__ARM_NEON__) || defined(__ARM_NEON))) || ARM_NOCHECK_NEON
 #    undef native_adler32
 #    define native_adler32 adler32_neon
-#    undef native_adler32_fold_copy
-#    define native_adler32_fold_copy adler32_fold_copy_neon
+#    undef native_adler32_copy
+#    define native_adler32_copy adler32_copy_neon
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_neon
 #    undef native_inflate_fast

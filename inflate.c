@@ -32,7 +32,7 @@ static inline void inf_chksum_cpy(PREFIX3(stream) *strm, uint8_t *dst,
     } else
 #endif
     {
-        strm->adler = state->check = FUNCTABLE_CALL(adler32_fold_copy)(state->check, dst, src, copy);
+        strm->adler = state->check = FUNCTABLE_CALL(adler32_copy)(state->check, dst, src, copy);
     }
 }
 

@@ -19,7 +19,7 @@ typedef void     (*slide_hash_func)(deflate_state *s);
 
 
 uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len);
-uint32_t adler32_fold_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+uint32_t adler32_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 
 uint8_t* chunkmemset_safe_c(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 
@@ -51,7 +51,7 @@ void     slide_hash_c(deflate_state *s);
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // Generic code
 #  define native_adler32 adler32_c
-#  define native_adler32_fold_copy adler32_fold_copy_c
+#  define native_adler32_copy adler32_copy_c
 #  define native_chunkmemset_safe chunkmemset_safe_c
 #ifndef WITHOUT_CHORBA
 #  define native_crc32 crc32_chorba

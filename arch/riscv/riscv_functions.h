@@ -11,7 +11,7 @@
 
 #ifdef RISCV_RVV
 uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len);
-uint32_t adler32_fold_copy_rvv(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+uint32_t adler32_copy_rvv(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 uint8_t* chunkmemset_safe_rvv(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 uint32_t compare256_rvv(const uint8_t *src0, const uint8_t *src1);
 
@@ -30,8 +30,8 @@ uint32_t crc32_riscv64_zbc(uint32_t crc, const uint8_t *buf, size_t len);
 #  if defined(RISCV_RVV) && defined(__riscv_v) && defined(__linux__)
 #    undef native_adler32
 #    define native_adler32 adler32_rvv
-#    undef native_adler32_fold_copy
-#    define native_adler32_fold_copy adler32_fold_copy_rvv
+#    undef native_adler32_copy
+#    define native_adler32_copy adler32_copy_rvv
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_rvv
 #    undef native_compare256

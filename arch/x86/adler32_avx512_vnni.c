@@ -109,7 +109,7 @@ rem_peel:
     return adler;
 }
 
-Z_INTERNAL uint32_t adler32_fold_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
+Z_INTERNAL uint32_t adler32_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
     if (src == NULL) return 1L;
     if (len == 0) return adler;
 

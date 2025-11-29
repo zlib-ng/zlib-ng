@@ -92,16 +92,16 @@ BENCHMARK_ADLER32_BASELINE_COPY(native, native_adler32, 1);
 
 #ifdef ARM_NEON
 /* If we inline this copy for neon, the function would go here */
-BENCHMARK_ADLER32_COPY(neon, adler32_fold_copy_neon, test_cpu_features.arm.has_neon);
+BENCHMARK_ADLER32_COPY(neon, adler32_copy_neon, test_cpu_features.arm.has_neon);
 BENCHMARK_ADLER32_BASELINE_COPY(neon_copy_baseline, adler32_neon, test_cpu_features.arm.has_neon);
 #endif
 
 #ifdef PPC_VMX
-//BENCHMARK_ADLER32_COPY(vmx_inline_copy, adler32_fold_copy_vmx, test_cpu_features.power.has_altivec);
+//BENCHMARK_ADLER32_COPY(vmx_inline_copy, adler32_copy_vmx, test_cpu_features.power.has_altivec);
 BENCHMARK_ADLER32_BASELINE_COPY(vmx_copy_baseline, adler32_vmx, test_cpu_features.power.has_altivec);
 #endif
 #ifdef POWER8_VSX
-//BENCHMARK_ADLER32_COPY(power8_inline_copy, adler32_fold_copy_power8, test_cpu_features.power.has_arch_2_07);
+//BENCHMARK_ADLER32_COPY(power8_inline_copy, adler32_copy_power8, test_cpu_features.power.has_arch_2_07);
 BENCHMARK_ADLER32_BASELINE_COPY(power8, adler32_power8, test_cpu_features.power.has_arch_2_07);
 #endif
 
@@ -112,28 +112,28 @@ BENCHMARK_ADLER32_BASELINE_COPY(rvv, adler32_rvv, test_cpu_features.riscv.has_rv
 
 #ifdef X86_SSE42
 BENCHMARK_ADLER32_BASELINE_COPY(sse42_baseline, adler32_ssse3, test_cpu_features.x86.has_ssse3);
-BENCHMARK_ADLER32_COPY(sse42, adler32_fold_copy_sse42, test_cpu_features.x86.has_sse42);
+BENCHMARK_ADLER32_COPY(sse42, adler32_copy_sse42, test_cpu_features.x86.has_sse42);
 #endif
 #ifdef X86_AVX2
 BENCHMARK_ADLER32_BASELINE_COPY(avx2_baseline, adler32_avx2, test_cpu_features.x86.has_avx2);
-BENCHMARK_ADLER32_COPY(avx2, adler32_fold_copy_avx2, test_cpu_features.x86.has_avx2);
+BENCHMARK_ADLER32_COPY(avx2, adler32_copy_avx2, test_cpu_features.x86.has_avx2);
 #endif
 #ifdef X86_AVX512
 BENCHMARK_ADLER32_BASELINE_COPY(avx512_baseline, adler32_avx512, test_cpu_features.x86.has_avx512_common);
-BENCHMARK_ADLER32_COPY(avx512, adler32_fold_copy_avx512, test_cpu_features.x86.has_avx512_common);
+BENCHMARK_ADLER32_COPY(avx512, adler32_copy_avx512, test_cpu_features.x86.has_avx512_common);
 #endif
 #ifdef X86_AVX512VNNI
 BENCHMARK_ADLER32_BASELINE_COPY(avx512_vnni_baseline, adler32_avx512_vnni, test_cpu_features.x86.has_avx512vnni);
-BENCHMARK_ADLER32_COPY(avx512_vnni, adler32_fold_copy_avx512_vnni, test_cpu_features.x86.has_avx512vnni);
+BENCHMARK_ADLER32_COPY(avx512_vnni, adler32_copy_avx512_vnni, test_cpu_features.x86.has_avx512vnni);
 #endif
 
 #ifdef LOONGARCH_LSX
 BENCHMARK_ADLER32_BASELINE_COPY(lsx_baseline, adler32_lsx, test_cpu_features.loongarch.has_lsx);
-BENCHMARK_ADLER32_COPY(lsx, adler32_fold_copy_lsx, test_cpu_features.loongarch.has_lsx);
+BENCHMARK_ADLER32_COPY(lsx, adler32_copy_lsx, test_cpu_features.loongarch.has_lsx);
 #endif
 #ifdef LOONGARCH_LASX
 BENCHMARK_ADLER32_BASELINE_COPY(lasx_baseline, adler32_lasx, test_cpu_features.loongarch.has_lasx);
-BENCHMARK_ADLER32_COPY(lasx, adler32_fold_copy_lasx, test_cpu_features.loongarch.has_lasx);
+BENCHMARK_ADLER32_COPY(lasx, adler32_copy_lasx, test_cpu_features.loongarch.has_lasx);
 #endif
 
 #endif
