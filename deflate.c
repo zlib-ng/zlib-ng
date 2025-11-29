@@ -1137,10 +1137,12 @@ static void lm_set_level(deflate_state *s, int level) {
         s->update_hash = &update_hash_roll;
         s->insert_string = &insert_string_roll;
         s->quick_insert_string = &quick_insert_string_roll;
+        s->quick_insert_value = &quick_insert_value_roll;
     } else {
         s->update_hash = update_hash;
         s->insert_string = insert_string;
         s->quick_insert_string = quick_insert_string;
+        s->quick_insert_value = quick_insert_value;
     }
 
     s->level = level;

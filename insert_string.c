@@ -17,5 +17,6 @@
 #define UPDATE_HASH          update_hash
 #define INSERT_STRING        insert_string
 #define QUICK_INSERT_STRING  quick_insert_string
+#define QUICK_INSERT_VALUE   quick_insert_value
 
 #include "insert_string_tpl.h"

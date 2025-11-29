@@ -5,6 +5,7 @@
  */
 
 #include "zbuild.h"
+#include "zmemory.h"
 #include "deflate.h"
 #include "deflate_p.h"
 #include "functable.h"
@@ -21,6 +22,8 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
     uint32_t match_len = 0;
 
     for (;;) {
+        uint8_t lc;
+
         /* Make sure that we always have enough lookahead, except
          * at the end of the input file. We need STD_MAX_MATCH bytes
          * for the next match, plus WANT_MIN_MATCH bytes to insert the
@@ -39,8 +42,14 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
          * dictionary, and set hash_head to the head of the hash chain:
          */
         if (s->lookahead >= WANT_MIN_MATCH) {
-            Pos hash_head = quick_insert_string(s, s->strstart);
+#if BYTE_ORDER == LITTLE_ENDIAN
+            uint32_t str_val = zng_memread_4(&s->window[s->strstart]);
+#else
+            uint32_t str_val = ZSWAP32(zng_memread_4(&s->window[s->strstart]));
+#endif
+            Pos hash_head = quick_insert_value(s, s->strstart, str_val);
             int64_t dist = (int64_t)s->strstart - hash_head;
+            lc = (uint8_t)str_val;
 
             /* Find the longest match, discarding those <= prev_length.
              * At this point we have always match length < WANT_MIN_MATCH
@@ -53,6 +62,8 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
                 match_len = FUNCTABLE_CALL(longest_match)(s, hash_head);
                 /* longest_match() sets match_start */
             }
+        } else {
+            lc = s->window[s->strstart];
         }
 
         if (match_len >= WANT_MIN_MATCH) {
@@ -84,7 +95,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
             match_len = 0;
         } else {
             /* No match, output a literal byte */
-            bflush = zng_tr_tally_lit(s, s->window[s->strstart]);
+            bflush = zng_tr_tally_lit(s, lc);
             s->lookahead--;
             s->strstart++;
         }

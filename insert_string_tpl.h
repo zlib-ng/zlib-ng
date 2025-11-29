@@ -52,6 +52,28 @@ Z_INTERNAL uint32_t UPDATE_HASH(uint32_t h, uint32_t val) {
 }
 
 /* ===========================================================================
+ * Quick insert string str in the dictionary using a pre-read value and set match_head
+ * to the previous head of the hash chain (the most recent string with same hash key).
+ * Return the previous length of the hash chain.
+ */
+Z_INTERNAL Pos QUICK_INSERT_VALUE(deflate_state *const s, uint32_t str, uint32_t val) {
+    uint32_t hm;
+    Pos head;
+
+    HASH_CALC_VAR_INIT;
+    HASH_CALC(HASH_CALC_VAR, val);
+    HASH_CALC_VAR &= HASH_CALC_MASK;
+    hm = HASH_CALC_VAR;
+
+    head = s->head[hm];
+    if (LIKELY(head != str)) {
+        s->prev[str & s->w_mask] = head;
+        s->head[hm] = (Pos)str;
+    }
+    return head;
+}
+
+/* ===========================================================================
  * Quick insert string str in the dictionary and set match_head to the previous head
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.

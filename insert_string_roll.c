@@ -20,5 +20,6 @@
 #define UPDATE_HASH          update_hash_roll
 #define INSERT_STRING        insert_string_roll
 #define QUICK_INSERT_STRING  quick_insert_string_roll
+#define QUICK_INSERT_VALUE   quick_insert_value_roll
 
 #include "insert_string_tpl.h"
