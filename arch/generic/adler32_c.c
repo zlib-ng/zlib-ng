@@ -7,7 +7,6 @@
 #include "functable.h"
 #include "adler32_p.h"
 
-/* ========================================================================= */
 Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
     uint32_t sum2;
     unsigned n;
@@ -51,4 +50,10 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
 
     /* do remaining bytes (less than NMAX, still just one modulo) */
     return adler32_len_64(adler, buf, len, sum2);
+}
+
+Z_INTERNAL uint32_t adler32_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
+    adler = FUNCTABLE_CALL(adler32)(adler, src, len);
+    memcpy(dst, src, len);
+    return adler;
 }

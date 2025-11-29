@@ -76,7 +76,6 @@ pkgconfigdir = ${libdir}/pkgconfig
 
 OBJZ = \
 	arch/generic/adler32_c.o \
-	arch/generic/adler32_fold_c.o \
 	arch/generic/chunkset_c.o \
 	arch/generic/compare256_c.o \
 	arch/generic/crc32_braid_c.o \
@@ -117,7 +116,6 @@ OBJC = $(OBJZ) $(OBJG)
 
 PIC_OBJZ = \
 	arch/generic/adler32_c.lo \
-	arch/generic/adler32_fold_c.lo \
 	arch/generic/chunkset_c.lo \
 	arch/generic/compare256_c.lo \
 	arch/generic/crc32_braid_c.lo \

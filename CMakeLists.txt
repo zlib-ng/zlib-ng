@@ -1318,7 +1318,6 @@ set(ZLIB_SRCS
 
 set(ZLIB_ALL_FALLBACK_SRCS
     arch/generic/adler32_c.c
-    arch/generic/adler32_fold_c.c
     arch/generic/chunkset_c.c
     arch/generic/compare256_c.c
     arch/generic/crc32_braid_c.c
@@ -1333,7 +1332,6 @@ elseif(${ARCH} STREQUAL "x86_64" AND WITH_SSE2)
     # x86_64 always has SSE2, so let the SSE2 functions act as fallbacks.
     list(APPEND ZLIB_GENERIC_SRCS
         arch/generic/adler32_c.c
-        arch/generic/adler32_fold_c.c
         arch/generic/crc32_braid_c.c
         arch/generic/crc32_fold_c.c
     )
