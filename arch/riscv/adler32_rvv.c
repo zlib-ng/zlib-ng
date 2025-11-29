@@ -125,12 +125,12 @@ static inline uint32_t adler32_rvv_impl(uint32_t adler, uint8_t* restrict dst, c
     return adler | (sum2 << 16);
 }
 
-Z_INTERNAL uint32_t adler32_copy_rvv(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
-    return adler32_rvv_impl(adler, dst, src, len, 1);
-}
-
 Z_INTERNAL uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len) {
     return adler32_rvv_impl(adler, NULL, buf, len, 0);
+}
+
+Z_INTERNAL uint32_t adler32_copy_rvv(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
+    return adler32_rvv_impl(adler, dst, src, len, 1);
 }
 
 #endif // RISCV_RVV
