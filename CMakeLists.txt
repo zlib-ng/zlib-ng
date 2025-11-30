@@ -118,7 +118,7 @@ set(WITH_SANITIZER AUTO CACHE STRING "Enable sanitizer support")
 set_property(CACHE WITH_SANITIZER PROPERTY STRINGS "Memory" "Address" "Undefined" "Thread")
 
 if(BASEARCH_ARM_FOUND)
-    cmake_dependent_option(WITH_ARMV6 "Build with ARMv6 SIMD" ON "NOT ARCH MATCHES \"aarch64\"" OFF)
+    cmake_dependent_option(WITH_ARMV6 "Build with ARMv6 SIMD" ON "NOT ARCH MATCHES \"aarch64|arm64\"" OFF)
     option(WITH_ARMV8 "Build with ARMv8 CRC32 intrinsics" ON)
     option(WITH_NEON "Build with NEON intrinsics" ON)
 

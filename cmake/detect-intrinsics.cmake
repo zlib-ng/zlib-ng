@@ -211,7 +211,7 @@ endmacro()
 macro(check_neon_compiler_flag)
     if(NOT NATIVEFLAG)
         if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-            if("${ARCH}" MATCHES "aarch64")
+            if("${ARCH}" MATCHES "aarch64|arm64")
                 set(NEONFLAG "-march=armv8-a+simd")
             else()
                 set(NEONFLAG "-mfpu=neon")
@@ -230,7 +230,7 @@ macro(check_neon_compiler_flag)
         NEON_AVAILABLE FAIL_REGEX "not supported")
     # Check whether compiler native flag is enough for NEON support
     # Some GCC versions don't enable FPU (vector unit) when using -march=native
-    if(NEON_AVAILABLE AND NATIVEFLAG AND (NOT "${ARCH}" MATCHES "aarch64"))
+    if(NEON_AVAILABLE AND NATIVEFLAG AND (NOT "${ARCH}" MATCHES "aarch64|arm64"))
         check_c_source_compiles(
             "#include <arm_neon.h>
             uint8x16_t f(uint8x16_t x, uint8x16_t y) {
@@ -274,7 +274,7 @@ endmacro()
 macro(check_neon_ld4_intrinsics)
     if(NOT NATIVEFLAG)
         if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-            if("${ARCH}" MATCHES "aarch64")
+            if("${ARCH}" MATCHES "aarch64|arm64")
                 set(NEONFLAG "-march=armv8-a+simd")
             else()
                 set(NEONFLAG "-mfpu=neon")
