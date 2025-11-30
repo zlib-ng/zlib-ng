@@ -23,6 +23,7 @@
 #include "deflate_p.h"
 #include "functable.h"
 #include "trees_emit.h"
+#include "insert_string_p.h"
 
 extern const ct_data static_ltree[L_CODES+2];
 extern const ct_data static_dtree[D_CODES];

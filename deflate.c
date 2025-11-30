@@ -51,6 +51,7 @@
 #include "functable.h"
 #include "deflate.h"
 #include "deflate_p.h"
+#include "insert_string_p.h"
 
 /* Avoid conflicts with zlib.h macros */
 #ifdef ZLIB_COMPAT
@@ -415,6 +416,7 @@ static int deflateStateCheck(PREFIX3(stream) *strm) {
 /* ========================================================================= */
 int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8_t *dictionary, uint32_t dictLength) {
     deflate_state *s;
+    insert_string_cb insert_string_func;
     unsigned int str, n;
     int wrap;
     uint32_t avail;
@@ -426,6 +428,11 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     wrap = s->wrap;
     if (wrap == 2 || (wrap == 1 && s->status != INIT_STATE) || s->lookahead)
         return Z_STREAM_ERROR;
+
+    if (s->level >= 9)
+        insert_string_func = insert_string_roll;
+    else
+        insert_string_func = insert_string;
 
     /* when using zlib wrappers, compute Adler-32 for provided dictionary */
     if (wrap == 1)
@@ -454,7 +461,7 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     while (s->lookahead >= STD_MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (STD_MIN_MATCH - 1);
-        s->insert_string(s, str, n);
+        insert_string_func(s, str, n);
         s->strstart = str + n;
         s->lookahead = STD_MIN_MATCH - 1;
         PREFIX(fill_window)(s);
@@ -1129,22 +1136,6 @@ static void lm_set_level(deflate_state *s, int level) {
     s->good_match       = configuration_table[level].good_length;
     s->nice_match       = configuration_table[level].nice_length;
     s->max_chain_length = configuration_table[level].max_chain;
-
-    /* Use rolling hash for deflate_slow algorithm with level 9. It allows us to
-     * properly lookup different hash chains to speed up longest_match search. Since hashing
-     * method changes depending on the level we cannot put this into functable. */
-    if (s->max_chain_length > 1024) {
-        s->update_hash = &update_hash_roll;
-        s->insert_string = &insert_string_roll;
-        s->quick_insert_string = &quick_insert_string_roll;
-        s->quick_insert_value = &quick_insert_value_roll;
-    } else {
-        s->update_hash = update_hash;
-        s->insert_string = insert_string;
-        s->quick_insert_string = quick_insert_string;
-        s->quick_insert_value = quick_insert_value;
-    }
-
     s->level = level;
 }
 
@@ -1182,11 +1173,18 @@ static void lm_init(deflate_state *s) {
  */
 
 void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
+    insert_string_cb insert_string_func;
     unsigned n;
     unsigned int more;    /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;
+    int level = s->level;
 
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
+
+    if (level >= 9)
+        insert_string_func = insert_string_roll;
+    else
+        insert_string_func = insert_string;
 
     do {
         more = s->window_size - s->lookahead - s->strstart;
@@ -1231,17 +1229,17 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
         /* Initialize the hash value now that we have some input: */
         if (s->lookahead + s->insert >= STD_MIN_MATCH) {
             unsigned int str = s->strstart - s->insert;
-            if (UNLIKELY(s->max_chain_length > 1024)) {
-                s->ins_h = s->update_hash(s->window[str], s->window[str+1]);
+            if (UNLIKELY(level >= 9)) {
+                s->ins_h = update_hash_roll(s->window[str], s->window[str+1]);
             } else if (str >= 1) {
-                s->quick_insert_string(s, str + 2 - STD_MIN_MATCH);
+                quick_insert_string(s, str + 2 - STD_MIN_MATCH);
             }
             unsigned int count = s->insert;
             if (UNLIKELY(s->lookahead == 1)) {
                 count -= 1;
             }
             if (count > 0) {
-                s->insert_string(s, str, count);
+                insert_string_func(s, str, count);
                 s->insert -= count;
             }
         }

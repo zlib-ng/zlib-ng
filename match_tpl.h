@@ -8,12 +8,9 @@
  *  https://github.com/gildor2/fast_zlib
  */
 
-#ifndef MATCH_TPL_H
-#define MATCH_TPL_H
+#include "insert_string_p.h"
 
 #define EARLY_EXIT_TRIGGER_LEVEL 5
-
-#endif
 
 /* Set match_start to the longest match starting at the given string and
  * return its length. Matches shorter or equal to prev_length are discarded,
@@ -91,12 +88,13 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
          * to cur_match). We cannot use s->prev[strstart+1,...] immediately, because
          * these strings are not yet inserted into the hash table.
          */
-        hash = s->update_hash(0, scan[1]);
-        hash = s->update_hash(hash, scan[2]);
+        // use update_hash_roll for deflate_slow
+        hash = update_hash_roll(0, scan[1]);
+        hash = update_hash_roll(hash, scan[2]);
 
         for (i = 3; i <= best_len; i++) {
-            hash = s->update_hash(hash, scan[i]);
-
+            // use update_hash_roll for deflate_slow
+            hash = update_hash_roll(hash, scan[i]);
             /* If we're starting with best_len >= 3, we can use offset search. */
             pos = s->head[hash];
             if (pos < cur_match) {
@@ -203,9 +201,10 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
                  */
                 scan_endstr = scan + len - (STD_MIN_MATCH+1);
 
-                hash = s->update_hash(0, scan_endstr[0]);
-                hash = s->update_hash(hash, scan_endstr[1]);
-                hash = s->update_hash(hash, scan_endstr[2]);
+                // use update_hash_roll for deflate_slow
+                hash = update_hash_roll(0, scan_endstr[0]);
+                hash = update_hash_roll(hash, scan_endstr[1]);
+                hash = update_hash_roll(hash, scan_endstr[2]);
 
                 pos = s->head[hash];
                 if (pos < cur_match) {

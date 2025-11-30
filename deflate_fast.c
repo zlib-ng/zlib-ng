@@ -9,6 +9,7 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "functable.h"
+#include "insert_string_p.h"
 
 /* ===========================================================================
  * Compress as much as possible from the input stream, return the current
@@ -82,7 +83,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
                 match_len--; /* string at strstart already in table */
                 s->strstart++;
 
-                insert_string(s, s->strstart, match_len);
+                insert_string_static(s, s->strstart, match_len);
                 s->strstart += match_len;
             } else {
                 s->strstart += match_len;

@@ -1,6 +1,3 @@
-#ifndef INSERT_STRING_H_
-#define INSERT_STRING_H_
-
 /* insert_string_tpl.h -- Private insert_string functions shared with more than
  *                        one insert string implementation
  *
@@ -22,14 +19,6 @@
  *
  */
 
-#include "zmemory.h"
-
-#ifndef HASH_CALC_OFFSET
-#  define HASH_CALC_OFFSET 0
-#endif
-#ifndef HASH_CALC_MASK
-#  define HASH_CALC_MASK HASH_MASK
-#endif
 #ifndef HASH_CALC_READ
 #  if BYTE_ORDER == LITTLE_ENDIAN
 #    define HASH_CALC_READ \
@@ -46,7 +35,7 @@
  *    input characters, so that a running hash key can be computed from the
  *    previous key instead of complete recalculation each time.
  */
-Z_INTERNAL uint32_t UPDATE_HASH(uint32_t h, uint32_t val) {
+Z_FORCEINLINE static uint32_t UPDATE_HASH(uint32_t h, uint32_t val) {
     HASH_CALC(h, val);
     return h & HASH_CALC_MASK;
 }
@@ -56,7 +45,7 @@ Z_INTERNAL uint32_t UPDATE_HASH(uint32_t h, uint32_t val) {
  * to the previous head of the hash chain (the most recent string with same hash key).
  * Return the previous length of the hash chain.
  */
-Z_INTERNAL Pos QUICK_INSERT_VALUE(deflate_state *const s, uint32_t str, uint32_t val) {
+Z_FORCEINLINE static Pos QUICK_INSERT_VALUE(deflate_state *const s, uint32_t str, uint32_t val) {
     uint32_t hm;
     Pos head;
 
@@ -78,7 +67,7 @@ Z_INTERNAL Pos QUICK_INSERT_VALUE(deflate_state *const s, uint32_t str, uint32_t
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
  */
-Z_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, uint32_t str) {
+Z_FORCEINLINE static Pos QUICK_INSERT_STRING(deflate_state *const s, uint32_t str) {
     uint8_t *strstart = s->window + str + HASH_CALC_OFFSET;
     uint32_t val, hm;
     Pos head;
@@ -105,7 +94,7 @@ Z_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, uint32_t str) {
  *    input characters and the first STD_MIN_MATCH bytes of str are valid
  *    (except for the last STD_MIN_MATCH-1 bytes of the input file).
  */
-Z_INTERNAL void INSERT_STRING(deflate_state *const s, uint32_t str, uint32_t count) {
+Z_FORCEINLINE static void INSERT_STRING(deflate_state *const s, uint32_t str, uint32_t count) {
     uint8_t *strstart = s->window + str + HASH_CALC_OFFSET;
     uint8_t *strend = strstart + count;
 
@@ -130,4 +119,3 @@ Z_INTERNAL void INSERT_STRING(deflate_state *const s, uint32_t str, uint32_t cou
         }
     }
 }
-#endif

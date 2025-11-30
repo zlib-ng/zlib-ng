@@ -1281,6 +1281,7 @@ set(ZLIB_PRIVATE_HDRS
     inflate.h
     inflate_p.h
     inftrees.h
+    insert_string_p.h
     insert_string_tpl.h
     match_tpl.h
     trees.h
@@ -1310,7 +1311,6 @@ set(ZLIB_SRCS
     inflate.c
     inftrees.c
     insert_string.c
-    insert_string_roll.c
     trees.c
     uncompr.c
     zutil.c

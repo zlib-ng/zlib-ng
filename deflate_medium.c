@@ -11,6 +11,7 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "functable.h"
+#include "insert_string_p.h"
 
 struct match {
     uint16_t match_start;

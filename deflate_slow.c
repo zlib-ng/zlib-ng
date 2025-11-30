@@ -8,6 +8,7 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "functable.h"
+#include "insert_string_p.h"
 
 /* ===========================================================================
  * Same as deflate_medium, but achieves better compression. We use a lazy
@@ -15,13 +16,17 @@
  * no better match at the next window position.
  */
 Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
-    int bflush;              /* set if current block must be flushed */
     match_func longest_match;
+    insert_string_cb insert_string_func;
+    int bflush;              /* set if current block must be flushed */
 
-    if (s->max_chain_length <= 1024)
-        longest_match = FUNCTABLE_FPTR(longest_match);
-    else
+    if (s->level >= 9) {
         longest_match = FUNCTABLE_FPTR(longest_match_slow);
+        insert_string_func = insert_string_roll;
+    } else {
+        longest_match = FUNCTABLE_FPTR(longest_match);
+        insert_string_func = insert_string;
+    }
 
     /* Process the input block. */
     for (;;) {
@@ -44,7 +49,10 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
          */
         Pos hash_head = 0;
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
-            hash_head = s->quick_insert_string(s, s->strstart);
+            if (s->level >= 9)
+                hash_head = quick_insert_string_roll(s, s->strstart);
+            else
+                hash_head = quick_insert_string(s, s->strstart);
         }
 
         /* Find the longest match, discarding those <= prev_length.
@@ -93,7 +101,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
                 unsigned int insert_cnt = mov_fwd;
                 if (UNLIKELY(insert_cnt > max_insert - s->strstart))
                     insert_cnt = max_insert - s->strstart;
-                s->insert_string(s, s->strstart + 1, insert_cnt);
+                insert_string_func(s, s->strstart + 1, insert_cnt);
             }
             s->prev_length = 0;
             s->match_available = 0;

@@ -119,20 +119,9 @@ typedef uint16_t Pos;
 /* Type definitions for hash callbacks */
 typedef struct internal_state deflate_state;
 
-typedef uint32_t (* update_hash_cb)        (uint32_t h, uint32_t val);
 typedef void     (* insert_string_cb)      (deflate_state *const s, uint32_t str, uint32_t count);
-typedef Pos      (* quick_insert_string_cb)(deflate_state *const s, uint32_t str);
-typedef Pos      (* quick_insert_value_cb) (deflate_state *const s, uint32_t str, uint32_t val);
-
-uint32_t update_hash             (uint32_t h, uint32_t val);
 void     insert_string           (deflate_state *const s, uint32_t str, uint32_t count);
-Pos      quick_insert_string     (deflate_state *const s, uint32_t str);
-Pos      quick_insert_value      (deflate_state *const s, uint32_t str, uint32_t val);
-
-uint32_t update_hash_roll        (uint32_t h, uint32_t val);
 void     insert_string_roll      (deflate_state *const s, uint32_t str, uint32_t count);
-Pos      quick_insert_string_roll(deflate_state *const s, uint32_t str);
-Pos      quick_insert_value_roll (deflate_state *const s, uint32_t str, uint32_t val);
 
 /* Struct for memory allocation handling */
 typedef struct deflate_allocs_s {
@@ -232,13 +221,6 @@ struct ALIGNED_(64) internal_state {
      * greater than this length. This saves time but degrades compression.
      * max_insert_length is used only for compression levels <= 6.
      */
-
-    update_hash_cb          update_hash;
-    insert_string_cb        insert_string;
-    quick_insert_string_cb  quick_insert_string;
-    quick_insert_value_cb   quick_insert_value;
-    /* Hash function callbacks that can be configured depending on the deflate
-     * algorithm being used */
 
     int level;    /* compression level (1..9) */
     int strategy; /* favor or force Huffman coding*/

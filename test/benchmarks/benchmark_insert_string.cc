@@ -14,10 +14,13 @@ extern "C" {
 #  include "deflate.h"
 #  include "arch_functions.h"
 #  include "../test_cpu_features.h"
+#  include "insert_string_p.h"
 }
 
 #define MAX_WSIZE 32768
 #define TEST_WINDOW_SIZE (MAX_WSIZE * 2)
+
+typedef Pos (* quick_insert_string_cb)(deflate_state *const s, uint32_t str);
 
 // Base class with common setup/teardown for both insert_string benchmarks
 class insert_string_base: public benchmark::Fixture {
