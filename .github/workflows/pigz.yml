@@ -54,12 +54,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         show-progress: 'false'
 
     - name: Checkout test corpora
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         repository: zlib-ng/corpora
         path: test/data/corpora
@@ -139,7 +139,7 @@ jobs:
     if: cancelled() == false
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         show-progress: false
 
