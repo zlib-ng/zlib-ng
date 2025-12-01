@@ -7,6 +7,7 @@
 #if defined(ARM_CRC32)
 #include "acle_intrins.h"
 #include "zbuild.h"
+#include "zmemory.h"
 #include "crc32.h"
 
 static Z_FORCEINLINE Z_TARGET_CRC uint32_t crc32_armv8_copy_impl(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
@@ -36,7 +37,7 @@ static Z_FORCEINLINE Z_TARGET_CRC uint32_t crc32_armv8_copy_impl(uint32_t crc, u
         if ((len >= sizeof(uint16_t)) && ((ptrdiff_t)src & (sizeof(uint32_t) - 1))) {
             val2 = *((uint16_t*)src);
             if (COPY) {
-                *((uint16_t*)dst) = val2;
+                zng_memwrite_2(dst, val2);
                 dst += sizeof(uint16_t);
             }
             c = __crc32h(c, val2);
@@ -47,7 +48,7 @@ static Z_FORCEINLINE Z_TARGET_CRC uint32_t crc32_armv8_copy_impl(uint32_t crc, u
         if ((len >= sizeof(uint32_t)) && ((ptrdiff_t)src & (sizeof(uint64_t) - 1))) {
             val4 = *((uint32_t*)src);
             if (COPY) {
-                *((uint32_t*)dst) = val4;
+                zng_memwrite_4(dst, val4);
                 dst += sizeof(uint32_t);
             }
             c = __crc32w(c, val4);
@@ -59,7 +60,7 @@ static Z_FORCEINLINE Z_TARGET_CRC uint32_t crc32_armv8_copy_impl(uint32_t crc, u
     while (len >= sizeof(uint64_t)) {
         val8 = *((uint64_t*)src);
         if (COPY) {
-            *((uint64_t*)dst) = val8;
+            zng_memwrite_8(dst, val8);
             dst += sizeof(uint64_t);
         }
         c = __crc32d(c, val8);
@@ -70,7 +71,7 @@ static Z_FORCEINLINE Z_TARGET_CRC uint32_t crc32_armv8_copy_impl(uint32_t crc, u
     if (len & sizeof(uint32_t)) {
         val4 = *((uint32_t*)src);
         if (COPY) {
-            *((uint32_t*)dst) = val4;
+            zng_memwrite_4(dst, val4);
             dst += sizeof(uint32_t);
         }
         c = __crc32w(c, val4);
@@ -80,7 +81,7 @@ static Z_FORCEINLINE Z_TARGET_CRC uint32_t crc32_armv8_copy_impl(uint32_t crc, u
     if (len & sizeof(uint16_t)) {
         val2 = *((uint16_t*)src);
         if (COPY) {
-            *((uint16_t*)dst) = val2;
+            zng_memwrite_2(dst, val2);
             dst += sizeof(uint16_t);
         }
         c = __crc32h(c, val2);
