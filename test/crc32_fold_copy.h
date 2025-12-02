@@ -2,13 +2,6 @@
 #include "arch_functions.h"
 
 /* Local test implementations of crc32_fold_copy for various backends. */
-static uint32_t crc32_fold_reset_c(crc32_fold *crc) {
-    crc->value = CRC32_INITIAL_VALUE;
-    return crc->value;
-}
-static uint32_t crc32_fold_final_c(crc32_fold *crc) {
-    return crc->value;
-}
 #ifdef ARM_CRC32
 static void crc32_fold_copy_armv8(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
     crc->value = crc32_armv8(crc->value, src, len);

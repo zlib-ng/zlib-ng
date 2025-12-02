@@ -23,7 +23,7 @@ public:
     void crc32_fold_test(size_t minlen, int onlyzero, crc32_fold_reset_func fold_reset, crc32_fold_copy_func fold_copy,
                          crc32_fold_final_func fold_final, crc32_test params) {
         ALIGNED_(16) crc32_fold crc_st;
-        uint32_t crc;
+        uint32_t crc = CRC32_INITIAL_VALUE;
 
         ASSERT_LE(params.len, BUFSIZE);
 
@@ -33,11 +33,15 @@ public:
             GTEST_SKIP();
         }
 
-        fold_reset(&crc_st);
+        if (fold_reset)
+            fold_reset(&crc_st);
         crc_st.value = params.crc;
 
         fold_copy(&crc_st, dstbuf, params.buf, params.len);
-        crc = fold_final(&crc_st);
+        if (fold_final)
+            crc = fold_final(&crc_st);
+        else
+            crc = crc_st.value;
 
         EXPECT_EQ(crc, params.expect);
         EXPECT_EQ(0, memcmp(params.buf, dstbuf, params.len));
@@ -56,7 +60,7 @@ INSTANTIATE_TEST_SUITE_P(crc32_fc, crc32_fc_variant, testing::ValuesIn(crc32_tes
     }
 
 // Generic test
-TEST_CRC32_FOLD(braid, 0, 0, crc32_fold_reset_c, crc32_fold_copy_braid, crc32_fold_final_c, 1)
+TEST_CRC32_FOLD(braid, 0, 0, NULL, crc32_fold_copy_braid, NULL, 1)
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
     // Native test
@@ -65,17 +69,17 @@ TEST_CRC32_FOLD(braid, 0, 0, crc32_fold_reset_c, crc32_fold_copy_braid, crc32_fo
 
     // Tests of optimized functions
 #  ifdef ARM_CRC32
-    TEST_CRC32_FOLD(armv8, 0, 0, crc32_fold_reset_c, crc32_fold_copy_armv8, crc32_fold_final_c, test_cpu_features.arm.has_crc32)
+    TEST_CRC32_FOLD(armv8, 0, 0, NULL, crc32_fold_copy_armv8, NULL, test_cpu_features.arm.has_crc32)
 #  endif
 #ifndef WITHOUT_CHORBA
-    TEST_CRC32_FOLD(chorba_c, 16, 1, crc32_fold_reset_c, crc32_fold_copy_chorba, crc32_fold_final_c, 1)
+    TEST_CRC32_FOLD(chorba_c, 16, 1, NULL, crc32_fold_copy_chorba, NULL, 1)
 #endif
 #  ifndef WITHOUT_CHORBA_SSE
 #    ifdef X86_SSE2
-    TEST_CRC32_FOLD(chorba_sse2, 16, 1, crc32_fold_reset_c, crc32_fold_copy_chorba_sse2, crc32_fold_final_c, test_cpu_features.x86.has_sse2)
+    TEST_CRC32_FOLD(chorba_sse2, 16, 1, NULL, crc32_fold_copy_chorba_sse2, NULL, test_cpu_features.x86.has_sse2)
 #    endif
 #    ifdef X86_SSE41
-    TEST_CRC32_FOLD(chorba_sse41, 16, 1, crc32_fold_reset_c, crc32_fold_copy_chorba_sse41, crc32_fold_final_c, test_cpu_features.x86.has_sse41)
+    TEST_CRC32_FOLD(chorba_sse41, 16, 1, NULL, crc32_fold_copy_chorba_sse41, NULL, test_cpu_features.x86.has_sse41)
 #    endif
 #  endif
 #  ifdef X86_PCLMULQDQ_CRC
@@ -86,7 +90,7 @@ TEST_CRC32_FOLD(braid, 0, 0, crc32_fold_reset_c, crc32_fold_copy_braid, crc32_fo
     TEST_CRC32_FOLD(vpclmulqdq, 16, 1, crc32_fold_pclmulqdq_reset, crc32_fold_vpclmulqdq_copy, crc32_fold_pclmulqdq_final, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq))
 #  endif
 #  ifdef LOONGARCH_CRC
-    TEST_CRC32_FOLD(loongarch64, 0, 0, crc32_fold_reset_c, crc32_fold_copy_loongarch64, crc32_fold_final_c, test_cpu_features.loongarch.has_crc)
+    TEST_CRC32_FOLD(loongarch64, 0, 0, NULL, crc32_fold_copy_loongarch64, NULL, test_cpu_features.loongarch.has_crc)
 #  endif
 
 #endif
