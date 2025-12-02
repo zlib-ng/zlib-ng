@@ -28,7 +28,7 @@ static inline void inf_chksum_cpy(PREFIX3(stream) *strm, uint8_t *dst,
     struct inflate_state *state = (struct inflate_state*)strm->state;
 #ifdef GUNZIP
     if (state->flags) {
-        if (FUNCTABLE_CALL(crc32_fold_copy)) {
+        if (FUNCTABLE_CALL(crc32_fold_copy) != NULL) {
             FUNCTABLE_CALL(crc32_fold_copy)(&state->crc_fold, dst, src, copy);
         } else {
             strm->adler = state->check = FUNCTABLE_CALL(crc32)(state->check, src, copy);
@@ -45,7 +45,7 @@ static inline void inf_chksum(PREFIX3(stream) *strm, const uint8_t *src, uint32_
     struct inflate_state *state = (struct inflate_state*)strm->state;
 #ifdef GUNZIP
     if (state->flags) {
-        if (FUNCTABLE_CALL(crc32_fold_update)) {
+        if (FUNCTABLE_CALL(crc32_fold_update) != NULL) {
             FUNCTABLE_CALL(crc32_fold_update)(&state->crc_fold, src, len, 0);
         } else {
             strm->adler = state->check = FUNCTABLE_CALL(crc32)(state->check, src, len);
@@ -706,7 +706,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             }
             /* compute crc32 checksum if not in raw mode */
             if ((state->wrap & 4) && state->flags) {
-                if (FUNCTABLE_CALL(crc32_fold_reset)) {
+                if (FUNCTABLE_CALL(crc32_fold_reset) != NULL) {
                     strm->adler = state->check = FUNCTABLE_CALL(crc32_fold_reset)(&state->crc_fold);
                 } else {
                     strm->adler = state->check = CRC32_INITIAL_VALUE;
@@ -1133,7 +1133,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                     }
 #ifdef GUNZIP
                     if (state->flags) {
-                        if (FUNCTABLE_CALL(crc32_fold_final)) {
+                        if (FUNCTABLE_CALL(crc32_fold_final) != NULL) {
                             strm->adler = state->check = FUNCTABLE_CALL(crc32_fold_final)(&state->crc_fold);
                         }
                     }
