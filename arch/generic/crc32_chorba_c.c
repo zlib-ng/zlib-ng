@@ -389,7 +389,7 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
     bitbuffer[(i / sizeof(z_word_t) + 20) % bitbuffersizezwords] ^= next21;
     bitbuffer[(i / sizeof(z_word_t) + 21) % bitbuffersizezwords] ^= next22;
 
-    for (int j = 14870; j < 14870 + 60; j++) {
+    for (int j = 14870; j < 14870 + 64; j++) {
         bitbuffer[(j + (i / sizeof(z_word_t))) % bitbuffersizezwords] = 0;
     }
 
