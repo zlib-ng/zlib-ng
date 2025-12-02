@@ -1,10 +1,10 @@
 #ifndef CRC32_TEST_STRINGS_P_H
 #define CRC32_TEST_STRINGS_P_H
 
-ALIGNED_(16) static uint8_t crc32_fullwin_buf[32768];
+ALIGNED_(16) static uint8_t crc32_fullwin_buf[615336];
 
 static uint8_t* crc32_setup_buf() {
-    for (int i = 0; i < 32768; ++i) {
+    for (int i = 0; i < 615336; ++i) {
         uint8_t ic = (uint8_t)(i % 256);
         crc32_fullwin_buf[i] = ic;
     }
@@ -177,7 +177,18 @@ static const crc32_test crc32_tests[] = {
     "h{bcmdC+a;t+Cf{6Y_dFq-{X4Yu&7uNfVDh?q&_u.UWJU],-GiH7ADzb7-V.Q%4=+v!$L9W+T=bP]$_:]Vyg}A.ygD.r;h-D]m%&"
     "h{bcmdC+a;t+Cf{6Y_dFq-{X4Yu&7uNfVDh?q&_u.UWJU],-GiH7ADzb7-V.Q%4=+v!$L9W+T=bP]$_:]Vyg}A.ygD.r;h-D]m%&", 600, 0x888AFA5B},
   {0x0, buf32k, 32768, 0x217726B2},
-  {0x0, buf32k, 16384, 0xE81722F0}
+  {0x0, buf32k, 16384, 0xE81722F0},
+  {0x0, buf32k, 118960+512, 0xF0D2C66F},
+  {0x0, buf32k, 615078, 0x6A023677},
+  {0x0, buf32k, 615142, 0x8A1B2FC5},
+  {0x0, buf32k, 615270, 0xAF836355},
+  {0x0, buf32k, 615302, 0x42E83C6C},
+  {0x0, buf32k, 615318, 0x563BCB26},
+  {0x0, buf32k, 615326, 0xD39DEA79},
+  {0x0, buf32k, 615330, 0xEC355488},
+  {0x0, buf32k, 615334, 0x391AB77C},
+  {0x0, buf32k, 615335, 0xB43DCEF0},
+  {0x0, buf32k, 615336, 0x27b91614}
 };
 
 #endif /* CRC32_TEST_STRINGS_P_H */

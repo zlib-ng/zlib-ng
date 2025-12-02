@@ -12,7 +12,7 @@ extern "C" {
 #  include "crc32_test_strings_p.h"
 }
 
-#define BUFSIZE 33792U
+#define BUFSIZE 615336U
 
 class crc32_fc_variant : public ::testing::TestWithParam<crc32_test> {
 protected:
