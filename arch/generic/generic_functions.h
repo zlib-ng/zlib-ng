@@ -53,7 +53,10 @@ void     slide_hash_c(deflate_state *s);
 #else
 #  define native_crc32 crc32_braid
 #endif
-#  define native_crc32_fold crc32_fold_c
+#  define native_crc32_fold_copy NULL
+#  define native_crc32_fold_final NULL
+#  define native_crc32_fold_reset NULL
+#  define native_crc32_fold_update NULL
 #  define native_inflate_fast inflate_fast_c
 #  define native_slide_hash slide_hash_c
 #  define native_longest_match longest_match_c

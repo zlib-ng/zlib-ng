@@ -30,7 +30,7 @@ struct functable_s {
     uint8_t* (* chunkmemset_safe)   (uint8_t *out, uint8_t *from, unsigned len, unsigned left);
     uint32_t (* compare256)         (const uint8_t *src0, const uint8_t *src1);
     uint32_t (* crc32)              (uint32_t crc, const uint8_t *buf, size_t len);
-    void     (* crc32_fold)         (struct crc32_fold_s *crc, const uint8_t *src, size_t len, uint32_t init_crc);
+    void     (* crc32_fold_update)  (struct crc32_fold_s *crc, const uint8_t *src, size_t len, uint32_t init_crc);
     void     (* crc32_fold_copy)    (struct crc32_fold_s *crc, uint8_t *dst, const uint8_t *src, size_t len);
     uint32_t (* crc32_fold_final)   (struct crc32_fold_s *crc);
     uint32_t (* crc32_fold_reset)   (struct crc32_fold_s *crc);

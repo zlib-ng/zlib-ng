@@ -45,8 +45,8 @@ static inline void inf_chksum(PREFIX3(stream) *strm, const uint8_t *src, uint32_
     struct inflate_state *state = (struct inflate_state*)strm->state;
 #ifdef GUNZIP
     if (state->flags) {
-        if (FUNCTABLE_CALL(crc32_fold)) {
-            FUNCTABLE_CALL(crc32_fold)(&state->crc_fold, src, len, 0);
+        if (FUNCTABLE_CALL(crc32_fold_update)) {
+            FUNCTABLE_CALL(crc32_fold_update)(&state->crc_fold, src, len, 0);
         } else {
             strm->adler = state->check = FUNCTABLE_CALL(crc32)(state->check, src, len);
         }

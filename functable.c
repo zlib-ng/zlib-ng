@@ -153,6 +153,7 @@ static int init_functable(void) {
 #ifdef X86_PCLMULQDQ_CRC
     if (cf.x86.has_pclmulqdq) {
         ft.crc32 = &crc32_pclmulqdq;
+        ft.crc32_fold_update = &crc32_fold_pclmulqdq_update;
         ft.crc32_fold_copy = &crc32_fold_pclmulqdq_copy;
         ft.crc32_fold_final = &crc32_fold_pclmulqdq_final;
         ft.crc32_fold_reset = &crc32_fold_pclmulqdq_reset;
@@ -201,6 +202,7 @@ static int init_functable(void) {
 #ifdef X86_VPCLMULQDQ_CRC
     if (cf.x86.has_pclmulqdq && cf.x86.has_avx512_common && cf.x86.has_vpclmulqdq) {
         ft.crc32 = &crc32_vpclmulqdq;
+        ft.crc32_fold_update = &crc32_fold_vpclmulqdq_update;
         ft.crc32_fold_copy = &crc32_fold_vpclmulqdq_copy;
         ft.crc32_fold_final = &crc32_fold_vpclmulqdq_final;
         ft.crc32_fold_reset = &crc32_fold_vpclmulqdq_reset;
@@ -344,7 +346,7 @@ static int init_functable(void) {
     FUNCTABLE_VERIFY_ASSIGN(ft, chunkmemset_safe);
     FUNCTABLE_VERIFY_ASSIGN(ft, compare256);
     FUNCTABLE_VERIFY_ASSIGN(ft, crc32);
-    FUNCTABLE_ASSIGN(ft, crc32_fold);
+    FUNCTABLE_ASSIGN(ft, crc32_fold_update);
     FUNCTABLE_ASSIGN(ft, crc32_fold_copy);
     FUNCTABLE_ASSIGN(ft, crc32_fold_final);
     FUNCTABLE_ASSIGN(ft, crc32_fold_reset);
@@ -389,9 +391,9 @@ static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
     return functable.crc32(crc, buf, len);
 }
 
-static void crc32_fold_stub(crc32_fold* crc, const uint8_t* src, size_t len, uint32_t init_crc) {
+static void crc32_fold_update_stub(crc32_fold* crc, const uint8_t* src, size_t len, uint32_t init_crc) {
     FUNCTABLE_INIT_ABORT;
-    functable.crc32_fold(crc, src, len, init_crc);
+    functable.crc32_fold_update(crc, src, len, init_crc);
 }
 
 static void crc32_fold_copy_stub(crc32_fold* crc, uint8_t* dst, const uint8_t* src, size_t len) {
@@ -437,7 +439,7 @@ Z_INTERNAL struct functable_s functable = {
     chunkmemset_safe_stub,
     compare256_stub,
     crc32_stub,
-    crc32_fold_stub,
+    crc32_fold_update_stub,
     crc32_fold_copy_stub,
     crc32_fold_final_stub,
     crc32_fold_reset_stub,

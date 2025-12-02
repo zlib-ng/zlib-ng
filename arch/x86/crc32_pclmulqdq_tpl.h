@@ -409,6 +409,6 @@ Z_INTERNAL uint32_t CRC32(uint32_t crc32, const uint8_t *buf, size_t len) {
 
     crc32_fold ALIGNED_(16) crc_state;
     CRC32_FOLD_RESET(&crc_state);
-    CRC32_FOLD(&crc_state, buf, len, crc32);
+    CRC32_FOLD_UPDATE(&crc_state, buf, len, crc32);
     return CRC32_FOLD_FINAL(&crc_state);
 }

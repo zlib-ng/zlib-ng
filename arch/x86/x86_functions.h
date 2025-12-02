@@ -76,14 +76,14 @@ uint32_t adler32_fold_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8
 #ifdef X86_PCLMULQDQ_CRC
 uint32_t crc32_fold_pclmulqdq_reset(crc32_fold *crc);
 void     crc32_fold_pclmulqdq_copy(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len);
-void     crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc);
+void     crc32_fold_pclmulqdq_update(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc);
 uint32_t crc32_fold_pclmulqdq_final(crc32_fold *crc);
 uint32_t crc32_pclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #endif
 #ifdef X86_VPCLMULQDQ_CRC
 uint32_t crc32_fold_vpclmulqdq_reset(crc32_fold *crc);
 void     crc32_fold_vpclmulqdq_copy(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len);
-void     crc32_fold_vpclmulqdq(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc);
+void     crc32_fold_vpclmulqdq_update(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc);
 uint32_t crc32_fold_vpclmulqdq_final(crc32_fold *crc);
 uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #endif
@@ -133,8 +133,8 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #  if defined(X86_PCLMULQDQ_CRC) && defined(__PCLMUL__)
 #    undef native_crc32
 #    define native_crc32 crc32_pclmulqdq
-#    undef native_crc32_fold
-#    define native_crc32_fold crc32_fold_pclmulqdq
+#    undef native_crc32_fold_update
+#    define native_crc32_fold_update crc32_fold_pclmulqdq_update
 #    undef native_crc32_fold_copy
 #    define native_crc32_fold_copy crc32_fold_pclmulqdq_copy
 #    undef native_crc32_fold_final
@@ -192,8 +192,8 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #    if defined(__PCLMUL__) && defined(__AVX512F__) && defined(__VPCLMULQDQ__)
 #      undef native_crc32
 #      define native_crc32 crc32_vpclmulqdq
-#      undef native_crc32_fold
-#      define native_crc32_fold crc32_fold_vpclmulqdq
+#      undef native_crc32_fold_update
+#      define native_crc32_fold_update crc32_fold_vpclmulqdq_update
 #      undef native_crc32_fold_copy
 #      define native_crc32_fold_copy crc32_fold_vpclmulqdq_copy
 #      undef native_crc32_fold_final

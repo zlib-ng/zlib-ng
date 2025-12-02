@@ -20,7 +20,7 @@
 #ifdef COPY
 Z_INTERNAL void CRC32_FOLD_COPY(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
 #else
-Z_INTERNAL void CRC32_FOLD(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc) {
+Z_INTERNAL void CRC32_FOLD_UPDATE(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc) {
 #endif
     unsigned long algn_diff;
     __m128i xmm_t0, xmm_t1, xmm_t2, xmm_t3;
