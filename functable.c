@@ -72,6 +72,7 @@ static int init_functable(void) {
     struct cpu_features cf;
 
     cpu_check_features(&cf);
+    memset(&ft, 0, sizeof(ft));
     ft.force_init = &force_init_empty;
 
     // Set up generic C code fallbacks
@@ -81,10 +82,6 @@ static int init_functable(void) {
     ft.adler32 = &adler32_c;
     ft.adler32_fold_copy = &adler32_fold_copy_c;
     ft.crc32 = &crc32_braid;
-    ft.crc32_fold = &crc32_fold_c;
-    ft.crc32_fold_copy = &crc32_fold_copy_c;
-    ft.crc32_fold_final = &crc32_fold_final_c;
-    ft.crc32_fold_reset = &crc32_fold_reset_c;
 #    ifndef HAVE_BUILTIN_CTZ
     ft.longest_match = &longest_match_c;
     ft.longest_match_slow = &longest_match_slow_c;
@@ -96,10 +93,6 @@ static int init_functable(void) {
     ft.adler32_fold_copy = &adler32_fold_copy_c;
     ft.chunkmemset_safe = &chunkmemset_safe_c;
     ft.crc32 = &crc32_braid;
-    ft.crc32_fold = &crc32_fold_c;
-    ft.crc32_fold_copy = &crc32_fold_copy_c;
-    ft.crc32_fold_final = &crc32_fold_final_c;
-    ft.crc32_fold_reset = &crc32_fold_reset_c;
     ft.inflate_fast = &inflate_fast_c;
     ft.slide_hash = &slide_hash_c;
     ft.longest_match = &longest_match_c;
@@ -160,7 +153,6 @@ static int init_functable(void) {
 #ifdef X86_PCLMULQDQ_CRC
     if (cf.x86.has_pclmulqdq) {
         ft.crc32 = &crc32_pclmulqdq;
-        ft.crc32_fold = &crc32_fold_pclmulqdq;
         ft.crc32_fold_copy = &crc32_fold_pclmulqdq_copy;
         ft.crc32_fold_final = &crc32_fold_pclmulqdq_final;
         ft.crc32_fold_reset = &crc32_fold_pclmulqdq_reset;
@@ -209,7 +201,6 @@ static int init_functable(void) {
 #ifdef X86_VPCLMULQDQ_CRC
     if (cf.x86.has_pclmulqdq && cf.x86.has_avx512_common && cf.x86.has_vpclmulqdq) {
         ft.crc32 = &crc32_vpclmulqdq;
-        ft.crc32_fold = &crc32_fold_vpclmulqdq;
         ft.crc32_fold_copy = &crc32_fold_vpclmulqdq_copy;
         ft.crc32_fold_final = &crc32_fold_vpclmulqdq_final;
         ft.crc32_fold_reset = &crc32_fold_vpclmulqdq_reset;
@@ -353,10 +344,10 @@ static int init_functable(void) {
     FUNCTABLE_VERIFY_ASSIGN(ft, chunkmemset_safe);
     FUNCTABLE_VERIFY_ASSIGN(ft, compare256);
     FUNCTABLE_VERIFY_ASSIGN(ft, crc32);
-    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold);
-    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_copy);
-    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_final);
-    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_reset);
+    FUNCTABLE_ASSIGN(ft, crc32_fold);
+    FUNCTABLE_ASSIGN(ft, crc32_fold_copy);
+    FUNCTABLE_ASSIGN(ft, crc32_fold_final);
+    FUNCTABLE_ASSIGN(ft, crc32_fold_reset);
     FUNCTABLE_VERIFY_ASSIGN(ft, inflate_fast);
     FUNCTABLE_VERIFY_ASSIGN(ft, longest_match);
     FUNCTABLE_VERIFY_ASSIGN(ft, longest_match_slow);

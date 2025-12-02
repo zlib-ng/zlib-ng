@@ -28,7 +28,12 @@ static inline void inf_chksum_cpy(PREFIX3(stream) *strm, uint8_t *dst,
     struct inflate_state *state = (struct inflate_state*)strm->state;
 #ifdef GUNZIP
     if (state->flags) {
-        FUNCTABLE_CALL(crc32_fold_copy)(&state->crc_fold, dst, src, copy);
+        if (FUNCTABLE_CALL(crc32_fold_copy)) {
+            FUNCTABLE_CALL(crc32_fold_copy)(&state->crc_fold, dst, src, copy);
+        } else {
+            strm->adler = state->check = FUNCTABLE_CALL(crc32)(state->check, src, copy);
+            memcpy(dst, src, copy);
+        }
     } else
 #endif
     {
@@ -40,7 +45,11 @@ static inline void inf_chksum(PREFIX3(stream) *strm, const uint8_t *src, uint32_
     struct inflate_state *state = (struct inflate_state*)strm->state;
 #ifdef GUNZIP
     if (state->flags) {
-        FUNCTABLE_CALL(crc32_fold)(&state->crc_fold, src, len, 0);
+        if (FUNCTABLE_CALL(crc32_fold)) {
+            FUNCTABLE_CALL(crc32_fold)(&state->crc_fold, src, len, 0);
+        } else {
+            strm->adler = state->check = FUNCTABLE_CALL(crc32)(state->check, src, len);
+        }
     } else
 #endif
     {
@@ -696,8 +705,13 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 state->head->done = 1;
             }
             /* compute crc32 checksum if not in raw mode */
-            if ((state->wrap & 4) && state->flags)
-                strm->adler = state->check = FUNCTABLE_CALL(crc32_fold_reset)(&state->crc_fold);
+            if ((state->wrap & 4) && state->flags) {
+                if (FUNCTABLE_CALL(crc32_fold_reset)) {
+                    strm->adler = state->check = FUNCTABLE_CALL(crc32_fold_reset)(&state->crc_fold);
+                } else {
+                    strm->adler = state->check = CRC32_INITIAL_VALUE;
+                }
+            }
             state->mode = TYPE;
             break;
 #endif
@@ -1118,8 +1132,11 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                         inf_chksum(strm, put - out, out);
                     }
 #ifdef GUNZIP
-                    if (state->flags)
-                        strm->adler = state->check = FUNCTABLE_CALL(crc32_fold_final)(&state->crc_fold);
+                    if (state->flags) {
+                        if (FUNCTABLE_CALL(crc32_fold_final)) {
+                            strm->adler = state->check = FUNCTABLE_CALL(crc32_fold_final)(&state->crc_fold);
+                        }
+                    }
 #endif
                 }
                 out = left;

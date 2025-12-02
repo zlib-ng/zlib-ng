@@ -153,7 +153,12 @@ Z_FORCEINLINE static unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf
         memcpy(buf, strm->next_in, len);
 #ifdef GZIP
     } else if (s->wrap == 2) {
-        FUNCTABLE_CALL(crc32_fold_copy)(&s->crc_fold, buf, strm->next_in, len);
+        if (FUNCTABLE_CALL(crc32_fold_copy)) {
+            FUNCTABLE_CALL(crc32_fold_copy)(&s->crc_fold, buf, strm->next_in, len);
+        } else {
+            strm->adler = FUNCTABLE_CALL(crc32)(strm->adler, strm->next_in, len);
+            memcpy(buf, strm->next_in, len);
+        }
 #endif
     } else if (s->wrap == 1) {
         strm->adler = FUNCTABLE_CALL(adler32_fold_copy)(strm->adler, buf, strm->next_in, len);

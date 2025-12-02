@@ -56,7 +56,6 @@ INSTANTIATE_TEST_SUITE_P(crc32_fc, crc32_fc_variant, testing::ValuesIn(crc32_tes
     }
 
 // Generic test
-TEST_CRC32_FOLD(generic, 0, 0, crc32_fold_reset_c, crc32_fold_copy_c, crc32_fold_final_c, 1)
 TEST_CRC32_FOLD(braid, 0, 0, crc32_fold_reset_c, crc32_fold_copy_braid, crc32_fold_final_c, 1)
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
