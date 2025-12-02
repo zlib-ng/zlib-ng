@@ -7,8 +7,8 @@
 
 extern "C" {
 #  include "zbuild.h"
-#  include "arch_functions.h"
 #  include "test_cpu_features.h"
+#  include "crc32_fold_copy.h"
 #  include "crc32_test_strings_p.h"
 }
 

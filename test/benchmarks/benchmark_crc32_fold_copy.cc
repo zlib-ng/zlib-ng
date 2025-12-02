@@ -8,37 +8,11 @@
 
 extern "C" {
 #  include "zbuild.h"
-#  include "arch_functions.h"
+#  include "../crc32_fold_copy.h"
 #  include "../test_cpu_features.h"
 }
 
 #define BUFSIZE (32768 + 16 + 16)
-
-// We have no function that gives us direct access to these, so we have a local implementation for benchmarks
-static void crc32_fold_copy_braid(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
-    crc->value = crc32_braid(crc->value, src, len);
-    memcpy(dst, src, len);
-}
-#ifndef WITHOUT_CHORBA
-static void crc32_fold_copy_chorba(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
-    crc->value = crc32_chorba(crc->value, src, len);
-    memcpy(dst, src, len);
-}
-#endif
-#ifndef WITHOUT_CHORBA_SSE
-#  ifdef X86_SSE2
-    static void crc32_fold_copy_chorba_sse2(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
-        crc->value = crc32_chorba_sse2(crc->value, src, len);
-        memcpy(dst, src, len);
-    }
-#  endif
-#  ifdef X86_SSE41
-    static void crc32_fold_copy_chorba_sse41(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
-        crc->value = crc32_chorba_sse41(crc->value, src, len);
-        memcpy(dst, src, len);
-    }
-#  endif
-#endif
 
 class crc32_fc: public benchmark::Fixture {
 protected:
@@ -104,11 +78,11 @@ BENCHMARK_CRC32_FOLD(braid_c, crc32_fold_reset_c, crc32_fold_copy_braid, crc32_f
 #else
 
     // Optimized functions
-#  ifndef WITHOUT_CHORBA
-    BENCHMARK_CRC32_FOLD(chorba_c, crc32_fold_reset_c, crc32_fold_copy_chorba, crc32_fold_final_c, 1)
-#  endif
 #  ifdef ARM_CRC32
     BENCHMARK_CRC32_FOLD(armv8, crc32_fold_reset_c, crc32_fold_copy_armv8, crc32_fold_final_c, test_cpu_features.arm.has_crc32)
+#  endif
+#  ifndef WITHOUT_CHORBA
+    BENCHMARK_CRC32_FOLD(chorba_c, crc32_fold_reset_c, crc32_fold_copy_chorba, crc32_fold_final_c, 1)
 #  endif
 #  ifndef WITHOUT_CHORBA_SSE
 #    ifdef X86_SSE2
