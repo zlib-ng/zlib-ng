@@ -88,7 +88,7 @@ public:
 
 #define BENCHMARK_CRC32_FOLD(name, resfunc, copyfunc, finfunc, support_flag) \
     BENCHMARK_DEFINE_F(crc32_fc, name)(benchmark::State& state) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
         } \
         Bench(state, resfunc, copyfunc, finfunc); \

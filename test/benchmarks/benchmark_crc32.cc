@@ -49,7 +49,7 @@ public:
 
 #define BENCHMARK_CRC32(name, fptr, support_flag) \
     BENCHMARK_DEFINE_F(crc32, name)(benchmark::State& state) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
         } \
         Bench(state, fptr); \

@@ -56,7 +56,7 @@ public:
 
 #define BENCHMARK_ADLER32(name, fptr, support_flag) \
     BENCHMARK_DEFINE_F(adler32, name)(benchmark::State& state) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
         } \
         Bench(state, fptr); \

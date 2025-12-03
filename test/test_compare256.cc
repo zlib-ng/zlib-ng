@@ -53,7 +53,7 @@ static inline void compare256_match_check(compare256_func compare256) {
 
 #define TEST_COMPARE256(name, func, support_flag) \
     TEST(compare256, name) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             GTEST_SKIP(); \
             return; \
         } \

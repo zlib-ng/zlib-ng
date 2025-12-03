@@ -43,7 +43,7 @@ static inline void compare256_rle_match_check(compare256_rle_func compare256_rle
 
 #define TEST_COMPARE256_RLE(name, func, support_flag) \
     TEST(compare256_rle, name) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             GTEST_SKIP(); \
             return; \
         } \

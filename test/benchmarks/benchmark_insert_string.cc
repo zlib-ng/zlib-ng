@@ -94,7 +94,7 @@ public:
 
 #define BENCHMARK_INSERT_STRING(name, fptr, support_flag) \
     BENCHMARK_DEFINE_F(insert_string_bench, name)(benchmark::State& state) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             state.SkipWithError("Function " #name " not supported"); \
         } \
         Bench(state, fptr); \
@@ -149,7 +149,7 @@ public:
 
 #define BENCHMARK_QUICK_INSERT_STRING(name, fptr, support_flag) \
     BENCHMARK_DEFINE_F(quick_insert_string_bench, name)(benchmark::State& state) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             state.SkipWithError("Function " #name " not supported"); \
         } \
         Bench(state, fptr); \

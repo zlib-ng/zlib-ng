@@ -64,7 +64,7 @@ public:
 
 #define BENCHMARK_ADLER32_COPY(name, fptr, support_flag) \
     BENCHMARK_DEFINE_F(adler32_copy, name)(benchmark::State& state) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
         } \
         Bench(state, fptr); \
@@ -73,7 +73,7 @@ public:
 
 #define BENCHMARK_ADLER32_BASELINE_COPY(name, fptr, support_flag) \
     BENCHMARK_DEFINE_F(adler32_copy, name)(benchmark::State& state) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
         } \
         Bench(state, [](uint32_t init_sum, unsigned char *dst, \

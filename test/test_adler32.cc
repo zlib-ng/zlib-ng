@@ -356,7 +356,7 @@ INSTANTIATE_TEST_SUITE_P(adler32, adler32_variant, testing::ValuesIn(tests));
 
 #define TEST_ADLER32(name, func, support_flag) \
     TEST_P(adler32_variant, name) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             GTEST_SKIP(); \
             return; \
         } \

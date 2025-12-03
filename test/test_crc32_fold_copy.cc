@@ -48,7 +48,7 @@ INSTANTIATE_TEST_SUITE_P(crc32_fc, crc32_fc_variant, testing::ValuesIn(crc32_tes
 
 #define TEST_CRC32_FOLD(name, minlen, onlyzero, resfunc, copyfunc, finfunc, support_flag) \
     TEST_P(crc32_fc_variant, name) { \
-        if (!support_flag) { \
+        if (!(support_flag)) { \
             GTEST_SKIP(); \
             return; \
         } \
