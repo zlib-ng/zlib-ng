@@ -19,12 +19,33 @@
 
 #ifdef X86_PCLMULQDQ_CRC
 
-#define CRC32_FOLD_COPY  crc32_fold_pclmulqdq_copy
-#define CRC32_FOLD       crc32_fold_pclmulqdq
-#define CRC32_FOLD_RESET crc32_fold_pclmulqdq_reset
-#define CRC32_FOLD_FINAL crc32_fold_pclmulqdq_final
-#define CRC32            crc32_pclmulqdq
+#include "crc32_fold_pclmulqdq_tpl.h"
 
-#include "crc32_pclmulqdq_tpl.h"
+Z_INTERNAL uint32_t crc32_fold_pclmulqdq_reset(crc32_fold *crc) {
+    return crc32_fold_reset(crc);
+}
 
+Z_INTERNAL uint32_t crc32_fold_pclmulqdq_final(crc32_fold *crc) {
+    return crc32_fold_final(crc);
+}
+
+Z_INTERNAL void crc32_fold_pclmulqdq(crc32_fold *crc, const uint8_t *src, size_t len, uint32_t init_crc) {
+    crc32_fold_copy(crc, NULL, src, len, init_crc, 0);
+}
+
+Z_INTERNAL void crc32_fold_pclmulqdq_copy(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
+    crc32_fold_copy(crc, dst, src, len, 0, 1);
+}
+
+Z_INTERNAL uint32_t crc32_pclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len) {
+    /* For lens smaller than ~12, crc32_small method is faster.
+     * But there are also minimum requirements for the pclmul functions due to alignment */
+    if (len < 16)
+        return crc32_small(crc32, buf, len);
+
+    crc32_fold ALIGNED_(16) crc_state;
+    crc32_fold_reset(&crc_state);
+    crc32_fold_copy(&crc_state, NULL, buf, len, crc32, 0);
+    return crc32_fold_final(&crc_state);
+}
 #endif
