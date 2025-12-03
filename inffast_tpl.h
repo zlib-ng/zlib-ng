@@ -101,13 +101,13 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
        with (1<<bits)-1 to drop those excess bits so that, on function exit, we
        keep the invariant that (state->hold >> state->bits) == 0.
     */
-    unsigned bits;              /* local strm->bits */
+    uint8_t bits;               /* local strm->bits */
     uint64_t hold;              /* local strm->hold */
     unsigned lmask;             /* mask for first level of length codes */
     unsigned dmask;             /* mask for first level of distance codes */
     code const *lcode;          /* local strm->lencode */
     code const *dcode;          /* local strm->distcode */
-    const code *here;           /* retrieved table entry */
+    code here;                  /* retrieved table entry */
     unsigned op;                /* code bits, operation, extra bits, or */
                                 /*  window position, window bytes to copy */
     unsigned len;               /* match length, unused bytes */
@@ -128,7 +128,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     wnext = state->wnext;
     window = state->window;
     hold = state->hold;
-    bits = state->bits;
+    bits = (uint8_t)state->bits;
     lcode = state->lencode;
     dcode = state->distcode;
     lmask = (1U << state->lenbits) - 1;
@@ -149,40 +149,44 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
        input data or output space */
     do {
         REFILL();
-        here = lcode + (hold & lmask);
-        if (here->op == 0) {
-            *out++ = (unsigned char)(here->val);
-            DROPBITS(here->bits);
-            here = lcode + (hold & lmask);
-            if (here->op == 0) {
-                *out++ = (unsigned char)(here->val);
-                DROPBITS(here->bits);
-                here = lcode + (hold & lmask);
+        here = lcode[hold & lmask];
+        Z_TOUCH(here);
+        if (here.op == 0) {
+            *out++ = (unsigned char)(here.val);
+            DROPBITS(here.bits);
+            here = lcode[hold & lmask];
+            Z_TOUCH(here);
+            if (here.op == 0) {
+                *out++ = (unsigned char)(here.val);
+                DROPBITS(here.bits);
+                here = lcode[hold & lmask];
+                Z_TOUCH(here);
             }
         }
       dolen:
-        DROPBITS(here->bits);
-        op = here->op;
+        DROPBITS(here.bits);
+        op = here.op;
         if (op == 0) {                          /* literal */
-            Tracevv((stderr, here->val >= 0x20 && here->val < 0x7f ?
+            Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
                     "inflate:         literal '%c'\n" :
-                    "inflate:         literal 0x%02x\n", here->val));
-            *out++ = (unsigned char)(here->val);
+                    "inflate:         literal 0x%02x\n", here.val));
+            *out++ = (unsigned char)(here.val);
         } else if (op & 16) {                     /* length base */
-            len = here->val;
+            len = here.val;
             op &= MAX_BITS;                       /* number of extra bits */
             len += BITS(op);
             DROPBITS(op);
             Tracevv((stderr, "inflate:         length %u\n", len));
-            here = dcode + (hold & dmask);
+            here = dcode[hold & dmask];
+            Z_TOUCH(here);
             if (bits < MAX_BITS + MAX_DIST_EXTRA_BITS) {
                 REFILL();
             }
           dodist:
-            DROPBITS(here->bits);
-            op = here->op;
+            DROPBITS(here.bits);
+            op = here.op;
             if (op & 16) {                      /* distance base */
-                dist = here->val;
+                dist = here.val;
                 op &= MAX_BITS;                 /* number of extra bits */
                 dist += BITS(op);
 #ifdef INFLATE_STRICT
@@ -277,14 +281,16 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                         out = CHUNKMEMSET(out, out - dist, len);
                 }
             } else if ((op & 64) == 0) {          /* 2nd level distance code */
-                here = dcode + here->val + BITS(op);
+                here = dcode[here.val + BITS(op)];
+                Z_TOUCH(here);
                 goto dodist;
             } else {
                 SET_BAD("invalid distance code");
                 break;
             }
         } else if ((op & 64) == 0) {              /* 2nd level length code */
-            here = lcode + here->val + BITS(op);
+            here = lcode[here.val + BITS(op)];
+            Z_TOUCH(here);
             goto dolen;
         } else if (op & 32) {                     /* end-of-block */
             Tracevv((stderr, "inflate:         end of block\n"));
