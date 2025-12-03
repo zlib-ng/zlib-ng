@@ -18,9 +18,11 @@
 Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     match_func longest_match;
     insert_string_cb insert_string_func;
+    unsigned char *window = s->window;
     int bflush;              /* set if current block must be flushed */
+    int level = s->level;
 
-    if (s->level >= 9) {
+    if (level >= 9) {
         longest_match = FUNCTABLE_FPTR(longest_match_slow);
         insert_string_func = insert_string_roll;
     } else {
@@ -49,7 +51,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
          */
         Pos hash_head = 0;
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
-            if (s->level >= 9)
+            if (level >= 9)
                 hash_head = quick_insert_string_roll(s, s->strstart);
             else
                 hash_head = quick_insert_string(s, s->strstart);
@@ -115,7 +117,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
              * single literal. If there was a match but the current match
              * is longer, truncate the previous match to a single literal.
              */
-            bflush = zng_tr_tally_lit(s, s->window[s->strstart-1]);
+            bflush = zng_tr_tally_lit(s, window[s->strstart-1]);
             if (UNLIKELY(bflush))
                 FLUSH_BLOCK_ONLY(s, 0);
             s->prev_length = match_len;
@@ -135,7 +137,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     }
     Assert(flush != Z_NO_FLUSH, "no flush?");
     if (UNLIKELY(s->match_available)) {
-        Z_UNUSED(zng_tr_tally_lit(s, s->window[s->strstart-1]));
+        Z_UNUSED(zng_tr_tally_lit(s, window[s->strstart-1]));
         s->match_available = 0;
     }
     s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
