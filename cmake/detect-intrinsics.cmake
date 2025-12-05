@@ -211,7 +211,7 @@ endmacro()
 macro(check_neon_compiler_flag)
     if(NOT NATIVEFLAG)
         if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-            if("${ARCH}" MATCHES "aarch64")
+            if(ARCH_64BIT)
                 set(NEONFLAG "-march=armv8-a+simd")
             else()
                 set(NEONFLAG "-mfpu=neon")
@@ -230,7 +230,7 @@ macro(check_neon_compiler_flag)
         NEON_AVAILABLE FAIL_REGEX "not supported")
     # Check whether compiler native flag is enough for NEON support
     # Some GCC versions don't enable FPU (vector unit) when using -march=native
-    if(NEON_AVAILABLE AND NATIVEFLAG AND (NOT "${ARCH}" MATCHES "aarch64"))
+    if(NEON_AVAILABLE AND NATIVEFLAG AND ARCH_32BIT)
         check_c_source_compiles(
             "#include <arm_neon.h>
             uint8x16_t f(uint8x16_t x, uint8x16_t y) {
@@ -274,7 +274,7 @@ endmacro()
 macro(check_neon_ld4_intrinsics)
     if(NOT NATIVEFLAG)
         if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
-            if("${ARCH}" MATCHES "aarch64")
+            if(ARCH_64BIT)
                 set(NEONFLAG "-march=armv8-a+simd")
             else()
                 set(NEONFLAG "-mfpu=neon")
@@ -302,7 +302,7 @@ macro(check_pclmulqdq_intrinsics)
         endif()
     endif()
     # Check whether compiler supports PCLMULQDQ intrinsics
-    if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
+    if(NOT (APPLE AND ARCH_32BIT))
         # The pclmul code currently crashes on Mac in 32bit mode. Avoid for now.
         set(CMAKE_REQUIRED_FLAGS "${PCLMULFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
         check_c_source_compiles(
@@ -325,7 +325,7 @@ macro(check_vpclmulqdq_intrinsics)
         endif()
     endif()
     # Check whether compiler supports VPCLMULQDQ intrinsics
-    if(NOT (APPLE AND "${ARCH}" MATCHES "i386"))
+    if(NOT (APPLE AND ARCH_32BIT))
         set(CMAKE_REQUIRED_FLAGS "${VPCLMULFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
         check_c_source_compiles(
             "#include <immintrin.h>
@@ -548,7 +548,7 @@ macro(check_sse2_intrinsics)
                 set(SSE2FLAG "/arch:SSE2")
             endif()
         elseif(MSVC)
-            if(NOT "${ARCH}" MATCHES "x86_64")
+            if(ARCH_32BIT)
                 set(SSE2FLAG "/arch:SSE2")
             endif()
         elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "NVHPC")
