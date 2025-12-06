@@ -644,6 +644,24 @@ endif()
 set(CMAKE_REQUIRED_FLAGS)
 
 #
+# check for __builtin_bitreverse16() support in the compiler
+#
+set(CMAKE_REQUIRED_FLAGS ${ZNOLTOFLAG})
+check_c_source_compiles(
+    "int main(void) {
+        unsigned short val = 0x1234;
+        unsigned short test = __builtin_bitreverse16(val);
+        (void)test;
+        return 0;
+    }"
+    HAVE_BUILTIN_BITREVERSE16
+)
+if(HAVE_BUILTIN_BITREVERSE16)
+    add_definitions(-DHAVE_BUILTIN_BITREVERSE16)
+endif()
+set(CMAKE_REQUIRED_FLAGS)
+
+#
 # check for ptrdiff_t support
 #
 check_c_source_compiles(

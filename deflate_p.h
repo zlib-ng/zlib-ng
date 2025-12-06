@@ -10,6 +10,7 @@
 #define DEFLATE_P_H
 
 #include "functable.h"
+#include "fallback_builtins.h"
 
 /* Forward declare common non-inlined functions declared in deflate.c */
 
@@ -127,13 +128,11 @@ Z_FORCEINLINE static void flush_pending_inline(PREFIX3(stream) *strm) {
 /* ===========================================================================
  * Reverse the first len bits of a code using bit manipulation
  */
-static inline uint16_t bi_reverse(unsigned code, int len) {
+Z_FORCEINLINE static uint16_t bi_reverse(unsigned code, int len) {
     /* code: the value to invert */
     /* len: its bit length */
     Assert(len >= 1 && len <= 15, "code length must be 1-15");
-#define bitrev8(b) \
-    (uint8_t)((((uint8_t)(b) * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32)
-    return (bitrev8(code >> 8) | (uint16_t)bitrev8(code) << 8) >> (16 - len);
+    return __builtin_bitreverse16((uint16_t)code) >> (16 - len);
 }
 
 /* ===========================================================================

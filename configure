@@ -1141,6 +1141,19 @@ else
     echo "Checking for __builtin_ctzll ... No." | tee -a configure.log
 fi
 
+# Check for __builtin_bitreverse16() support in compiler
+cat > $test.c << EOF
+unsigned short f(unsigned short x) { return __builtin_bitreverse16(x); }
+int main(void) { return 0; }
+EOF
+if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
+    echo "Checking for __builtin_bitreverse16 ... Yes." | tee -a configure.log
+    CFLAGS="$CFLAGS -DHAVE_BUILTIN_BITREVERSE16"
+    SFLAGS="$SFLAGS -DHAVE_BUILTIN_BITREVERSE16"
+else
+    echo "Checking for __builtin_bitreverse16 ... No." | tee -a configure.log
+fi
+
 check_avx2_intrinsics() {
     # Check whether compiler supports AVX2 intrinsics
     cat > $test.c << EOF

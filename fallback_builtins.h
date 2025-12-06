@@ -12,7 +12,7 @@
  * If tzcnt instruction is not supported, the cpu will itself execute bsf instead.
  * Performance tzcnt/bsf is identical on Intel cpu, tzcnt is faster than bsf on AMD cpu.
  */
-static __forceinline int __builtin_ctz(unsigned int value) {
+Z_FORCEINLINE static int __builtin_ctz(unsigned int value) {
     Assert(value != 0, "Invalid input value: 0");
 # if defined(X86_FEATURES) && !(_MSC_VER < 1700)
     return (int)_tzcnt_u32(value);
@@ -28,7 +28,7 @@ static __forceinline int __builtin_ctz(unsigned int value) {
 /* This is not a general purpose replacement for __builtin_ctzll. The function expects that value is != 0.
  * Because of that assumption trailing_zero is not initialized and the return value is not checked.
  */
-static __forceinline int __builtin_ctzll(unsigned long long value) {
+Z_FORCEINLINE static int __builtin_ctzll(unsigned long long value) {
     Assert(value != 0, "Invalid input value: 0");
 # if defined(X86_FEATURES) && !(_MSC_VER < 1700)
     return (int)_tzcnt_u64(value);
@@ -43,5 +43,17 @@ static __forceinline int __builtin_ctzll(unsigned long long value) {
 
 #endif // Microsoft AMD64/IA64/x86/ARM/ARM64 test
 #endif // _MSC_VER & !clang
+
+#ifndef HAVE_BUILTIN_BITREVERSE16
+/* Bit reversal for 8-bit values using multiplication method */
+#define bitrev8(value) \
+    (uint8_t)((((uint8_t)(value) * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32)
+
+/* General purpose bit reversal for 16-bit values */
+Z_FORCEINLINE static uint16_t __builtin_bitreverse16(uint16_t value) {
+    return ((bitrev8(value >> 8) | (uint16_t)bitrev8(value) << 8));
+}
+#define HAVE_BUILTIN_BITREVERSE16
+#endif
 
 #endif // include guard FALLBACK_BUILTINS_H
