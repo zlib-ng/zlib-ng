@@ -141,8 +141,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
 
 #define REFILL() do { \
         hold |= load_64_bits(in, bits); \
-        in += 7; \
-        in -= ((bits >> 3) & 7); \
+        in += (63 ^ bits) >> 3; \
         bits |= 56; \
     } while (0)
 
