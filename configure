@@ -135,7 +135,8 @@ zbcflag=
 HAVE_RVV_INTRIN=0
 HAVE_ZBC_EXT=0
 armv6flag=
-noltoflag="-fno-lto"
+# Set default for noltoflag based on compiler being gcc compatible or not
+noltoflag=
 vgfmaflag="-march=z13"
 vmxflag="-maltivec"
 symbol_prefix=""
@@ -1037,6 +1038,7 @@ int main() { return 0; }
 EOF
   if $cc $CFLAGS -fno-lto -c $test.c >> configure.log 2>&1; then
     echo "Checking for -fno-lto... Yes." | tee -a configure.log
+    noltoflag="-fno-lto"
   else
     echo "Checking for -fno-lto... No." | tee -a configure.log
     noltoflag=""
