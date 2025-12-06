@@ -28,7 +28,7 @@
  */
 Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     unsigned int strstart = s->strstart;
-    const unsigned wmask = s->w_mask;
+    const unsigned wmask = W_MASK(s);
     unsigned char *window = s->window;
     unsigned char *scan = window + strstart;
     Z_REGISTER unsigned char *mbase_start = window;

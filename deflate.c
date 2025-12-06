@@ -303,7 +303,6 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
     s->gzhead = NULL;
     s->w_bits = (unsigned int)windowBits;
     s->w_size = 1 << s->w_bits;
-    s->w_mask = s->w_size - 1;
 
     s->high_water = 0;      /* nothing written to s->window yet */
 

@@ -67,7 +67,7 @@ Z_INTERNAL Pos QUICK_INSERT_VALUE(deflate_state *const s, uint32_t str, uint32_t
 
     head = s->head[hm];
     if (LIKELY(head != str)) {
-        s->prev[str & s->w_mask] = head;
+        s->prev[str & W_MASK(s)] = head;
         s->head[hm] = (Pos)str;
     }
     return head;
@@ -91,7 +91,7 @@ Z_INTERNAL Pos QUICK_INSERT_STRING(deflate_state *const s, uint32_t str) {
 
     head = s->head[hm];
     if (LIKELY(head != str)) {
-        s->prev[str & s->w_mask] = head;
+        s->prev[str & W_MASK(s)] = head;
         s->head[hm] = (Pos)str;
     }
     return head;
@@ -112,7 +112,7 @@ Z_INTERNAL void INSERT_STRING(deflate_state *const s, uint32_t str, uint32_t cou
     /* Local pointers to avoid indirection */
     Pos *headp = s->head;
     Pos *prevp = s->prev;
-    const unsigned int w_mask = s->w_mask;
+    const unsigned int w_mask = W_MASK(s);
 
     for (Pos idx = (Pos)str; strstart < strend; idx++, strstart++) {
         uint32_t val, hm;

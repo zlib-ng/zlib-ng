@@ -167,7 +167,6 @@ struct ALIGNED_(64) internal_state {
 
     unsigned int  w_size;            /* LZ77 window size (32K by default) */
     unsigned int  w_bits;            /* log2(w_size)  (8..16) */
-    unsigned int  w_mask;            /* w_size - 1 */
     unsigned int  lookahead;         /* number of valid bytes ahead in window */
 
     unsigned int high_water;
@@ -421,6 +420,9 @@ static inline void put_uint64(deflate_state *s, uint64_t lld) {
 /* In order to simplify the code, particularly on 16 bit machines, match
  * distances are limited to MAX_DIST instead of WSIZE.
  */
+
+#define W_MASK(s)  ((s)->w_size - 1)
+/* Window mask: w_size is always a power of 2, so w_mask = w_size - 1 */
 
 #define WIN_INIT STD_MAX_MATCH
 /* Number of bytes after end of data in window to initialize in order to avoid
