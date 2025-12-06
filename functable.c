@@ -71,6 +71,7 @@ static int init_functable(void) {
     struct functable_s ft;
     struct cpu_features cf;
 
+    memset(&ft, 0, sizeof(struct functable_s));
     cpu_check_features(&cf);
     ft.force_init = &force_init_empty;
 
