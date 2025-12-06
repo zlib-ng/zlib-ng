@@ -145,6 +145,7 @@ without_optimizations=0
 without_new_strategies=0
 reducedmem=0
 gcc=0
+nvc=0
 warn=0
 debug=0
 visibility=1
@@ -274,15 +275,49 @@ extern int getchar();
 int main() {return getchar();}
 EOF
 
-cc=${CC-${CROSS_PREFIX}gcc}
+cc=
+if [ -n "$CC" ]; then
+  # if CC contains spaces, check that individual commands exist
+  for c in $CC; do
+    cc1=$(command -v "$c" 2> /dev/null)
+    printf "Checking for $c... " | tee -a configure.log
+    if test -z "${cc1}" -o ! -f "${cc1}"; then
+      echo no | tee -a configure.log
+      leave 1
+    else
+      echo ${cc1} | tee -a configure.log
+    fi
+    if [ -z "$cc" ]; then
+      cc="${cc1}"
+    else
+      cc="${cc} ${cc1}"
+    fi
+  done
+  CC=$cc
+else
+  cc=$(command -v ${CROSS_PREFIX}gcc 2> /dev/null)
+  if test -z "$cc" -o ! -f "$cc"; then
+    cc=$(command -v ${CROSS_PREFIX}cc 2> /dev/null)
+  fi
+  if test -z "$cc" -o ! -f "$cc"; then
+    echo "Couldn't find any usable compiler, please set CC environment variable" | tee -a configure.log
+    leave 1
+  fi
+fi
+
 printf "Checking for compiler... " | tee -a configure.log
 case "$cc" in
   *gcc*) gcc=1 ;;
   *clang*) gcc=1 ;;
+  *nvc) gcc=1
+        nvc=1 ;;
 esac
-case $($cc -v 2>&1) in
+# nvc requires input file for -v and prints warning, use --version instead as it's supported by all
+case $($cc --version 2>&1) in
   *gcc*) gcc=1 ;;
   *clang*) gcc=1 ;;
+  *nvc\ *) gcc=1
+           nvc=1 ;;
 esac
 
 if test $build32 -eq 1; then
@@ -334,6 +369,9 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   # Re-check ARCH if the compiler is a cross-compiler.
   if $CC -print-multiarch 1> /dev/null 2>&1 && test -n "$($CC -print-multiarch)" 1> /dev/null 2>&1; then
       CC_ARCH=$($CC $CFLAGS -print-multiarch | sed 's/-.*//g')
+  elif test $nvc -eq 1; then
+      # Not a cross-compiler
+      CC_ARCH=$ARCH
   else
       CC_ARCH=$($CC $CFLAGS -dumpmachine | sed 's/-.*//g')
   fi
