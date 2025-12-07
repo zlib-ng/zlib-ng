@@ -6,6 +6,7 @@
 #include "zbuild.h"
 #include "zutil.h"
 #include "inftrees.h"
+#include "fallback_builtins.h"
 
 const char PREFIX(inflate_copyright)[] = " inflate 1.3.1 Copyright 1995-2024 Mark Adler ";
 /*
@@ -37,6 +38,7 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     unsigned drop;              /* code bits to drop for sub-table */
     int left;                   /* number of prefix codes available */
     unsigned used;              /* code entries in table used */
+    uint16_t rhuff;             /* Reversed huffman code */
     unsigned huff;              /* Huffman code */
     unsigned incr;              /* for incrementing code, index */
     unsigned fill;              /* index for replicating entries */
@@ -187,6 +189,7 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     }
 
     /* initialize state for loop */
+    rhuff = 0;                  /* starting code, reversed */
     huff = 0;                   /* starting code */
     sym = 0;                    /* starting code symbol */
     len = min;                  /* starting code length */
@@ -227,15 +230,8 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
         } while (fill != 0);
 
         /* backwards increment the len-bit code huff */
-        incr = 1U << (len - 1);
-        while (huff & incr)
-            incr >>= 1;
-        if (incr != 0) {
-            huff &= incr - 1;
-            huff += incr;
-        } else {
-            huff = 0;
-        }
+        rhuff += (0x8000u >> (len - 1));
+        huff = __builtin_bitreverse16(rhuff);
 
         /* go to next symbol, update count, len */
         sym++;
