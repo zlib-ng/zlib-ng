@@ -60,7 +60,7 @@ static inline int dfltcc_can_deflate_with_params(PREFIX3(streamp) strm, int leve
 int Z_INTERNAL PREFIX(dfltcc_can_deflate)(PREFIX3(streamp) strm) {
     deflate_state *state = (deflate_state *)strm->state;
 
-    return dfltcc_can_deflate_with_params(strm, state->level, state->w_bits, state->strategy, state->reproducible);
+    return dfltcc_can_deflate_with_params(strm, state->level, W_BITS(state), state->strategy, state->reproducible);
 }
 
 static inline void dfltcc_gdht(PREFIX3(streamp) strm) {
@@ -319,7 +319,7 @@ static int dfltcc_was_deflate_used(PREFIX3(streamp) strm) {
 int Z_INTERNAL PREFIX(dfltcc_deflate_params)(PREFIX3(streamp) strm, int level, int strategy, int *flush) {
     deflate_state *state = (deflate_state *)strm->state;
     int could_deflate = PREFIX(dfltcc_can_deflate)(strm);
-    int can_deflate = dfltcc_can_deflate_with_params(strm, level, state->w_bits, strategy, state->reproducible);
+    int can_deflate = dfltcc_can_deflate_with_params(strm, level, W_BITS(state), strategy, state->reproducible);
 
     if (can_deflate == could_deflate)
         /* We continue to work in the same mode - no changes needed */

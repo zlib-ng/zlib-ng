@@ -31,7 +31,6 @@ public:
 
         // Set up window parameters
         s->w_size = MAX_WSIZE;
-        s->w_bits = 15;
         s->window_size = TEST_WINDOW_SIZE;
 
         // Allocate window

@@ -301,8 +301,7 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
 
     s->wrap = wrap;
     s->gzhead = NULL;
-    s->w_bits = (unsigned int)windowBits;
-    s->w_size = 1 << s->w_bits;
+    s->w_size = 1 << windowBits;
 
     s->high_water = 0;      /* nothing written to s->window yet */
 
@@ -717,7 +716,7 @@ unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long
 
     /* if not default parameters, return conservative bound */
     if (DEFLATE_NEED_CONSERVATIVE_BOUND(strm) ||  /* hook for IBM Z DFLTCC */
-            s->w_bits != MAX_WBITS || HASH_BITS < 15) {
+            W_BITS(s) != MAX_WBITS || HASH_BITS < 15) {
         if (s->level == 0) {
             /* upper bound for stored blocks with length 127 (memLevel == 1) --
                ~4% overhead plus a small constant */
@@ -807,7 +806,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
         s->status = BUSY_STATE;
     if (s->status == INIT_STATE) {
         /* zlib header */
-        unsigned int header = (Z_DEFLATED + ((s->w_bits-8)<<4)) << 8;
+        unsigned int header = (Z_DEFLATED + ((W_BITS(s)-8)<<4)) << 8;
         unsigned int level_flags;
 
         if (s->strategy >= Z_HUFFMAN_ONLY || s->level < 2)
@@ -1079,7 +1078,7 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
 
     memcpy((void *)dest, (void *)source, sizeof(PREFIX3(stream)));
 
-    deflate_allocs *alloc_bufs = alloc_deflate(dest, ss->w_bits, ss->lit_bufsize);
+    deflate_allocs *alloc_bufs = alloc_deflate(dest, W_BITS(ss), ss->lit_bufsize);
     if (alloc_bufs == NULL)
         return Z_MEM_ERROR;
 
