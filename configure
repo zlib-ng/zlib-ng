@@ -2275,6 +2275,12 @@ EOF
                 ARCH="${ARCH}+dfltcc-inflate"
             fi
 
+            if test $builddfltccinflate -eq 1 -o $builddfltccdeflate -eq 1; then
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_common.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_common.lo"
+                ARCH="${ARCH}+dfltcc-common"
+            fi
+
             if test $buildcrc32vx -eq 1; then
                 check_vgfma_intrinsics
                 if test $HAVE_VGFMA_INTRIN -eq 1; then

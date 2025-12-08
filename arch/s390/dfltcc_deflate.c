@@ -13,12 +13,14 @@
         $ make
 */
 
+#include "dfltcc_common.h"
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
 #include "trees_emit.h"
 #include "dfltcc_deflate.h"
 #include "dfltcc_detail.h"
+
 
 void Z_INTERNAL PREFIX(dfltcc_reset_deflate_state)(PREFIX3(streamp) strm) {
     deflate_state *state = (deflate_state *)strm->state;
@@ -27,10 +29,11 @@ void Z_INTERNAL PREFIX(dfltcc_reset_deflate_state)(PREFIX3(streamp) strm) {
     dfltcc_reset_state(&dfltcc_state->common);
 
     /* Initialize tuning parameters */
-    dfltcc_state->level_mask = DFLTCC_LEVEL_MASK;
-    dfltcc_state->block_size = DFLTCC_BLOCK_SIZE;
-    dfltcc_state->block_threshold = DFLTCC_FIRST_FHT_BLOCK_SIZE;
-    dfltcc_state->dht_threshold = DFLTCC_DHT_MIN_SAMPLE_SIZE;
+    dfltcc_state->level_mask = env_dfltcc_level_mask;
+    dfltcc_state->block_size = env_dfltcc_block_size;
+    dfltcc_state->block_threshold = env_dfltcc_block_threshold;
+    dfltcc_state->dht_threshold = env_dfltcc_dht_threshold;
+    dfltcc_state->common.param.ribm = env_dfltcc_ribm;
 }
 
 static inline int dfltcc_can_deflate_with_params(PREFIX3(streamp) strm, int level, uInt window_bits, int strategy,
@@ -59,6 +62,9 @@ static inline int dfltcc_can_deflate_with_params(PREFIX3(streamp) strm, int leve
 
 int Z_INTERNAL PREFIX(dfltcc_can_deflate)(PREFIX3(streamp) strm) {
     deflate_state *state = (deflate_state *)strm->state;
+
+    if (env_dfltcc_disabled)
+        return 0;
 
     return dfltcc_can_deflate_with_params(strm, state->level, state->w_bits, state->strategy, state->reproducible);
 }

@@ -13,6 +13,7 @@
         $ make
 */
 
+#include "dfltcc_common.h"
 #include "zbuild.h"
 #include "zutil.h"
 #include "inftrees.h"
@@ -29,6 +30,9 @@ void Z_INTERNAL PREFIX(dfltcc_reset_inflate_state)(PREFIX3(streamp) strm) {
 int Z_INTERNAL PREFIX(dfltcc_can_inflate)(PREFIX3(streamp) strm) {
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = &state->arch.common;
+
+    if (env_dfltcc_disabled)
+        return 0;
 
     /* Unsupported hardware */
     return is_bit_set(dfltcc_state->af.fns, DFLTCC_XPND) && is_bit_set(dfltcc_state->af.fmts, DFLTCC_FMT0);
