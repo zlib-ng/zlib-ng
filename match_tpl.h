@@ -238,10 +238,10 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 #ifdef LONGEST_MATCH_SLOW
 break_matching:
 
-    if (best_len < s->lookahead)
+    if (best_len < lookahead)
         return best_len;
 
-    return s->lookahead;
+    return lookahead;
 #endif
 }
 

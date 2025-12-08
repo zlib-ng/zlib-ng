@@ -1171,7 +1171,9 @@ static void lm_init(deflate_state *s) {
  */
 
 void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
+    PREFIX3(stream) *strm = s->strm;
     insert_string_cb insert_string_func;
+    unsigned char *window = s->window;
     unsigned n;
     unsigned int more;    /* Amount of free space at the end of the window. */
     unsigned int wsize = s->w_size;
@@ -1191,7 +1193,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
          * move the upper half to the lower one to make room in the upper half.
          */
         if (s->strstart >= wsize+MAX_DIST(s)) {
-            memcpy(s->window, s->window+wsize, (unsigned)wsize);
+            memcpy(window, window + wsize, (unsigned)wsize);
             if (s->match_start >= wsize) {
                 s->match_start -= wsize;
             } else {
@@ -1205,7 +1207,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             FUNCTABLE_CALL(slide_hash)(s);
             more += wsize;
         }
-        if (s->strm->avail_in == 0)
+        if (strm->avail_in == 0)
             break;
 
         /* If there was no sliding:
@@ -1221,14 +1223,14 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
          */
         Assert(more >= 2, "more < 2");
 
-        n = read_buf(s->strm, s->window + s->strstart + s->lookahead, more);
+        n = read_buf(strm, window + s->strstart + s->lookahead, more);
         s->lookahead += n;
 
         /* Initialize the hash value now that we have some input: */
         if (s->lookahead + s->insert >= STD_MIN_MATCH) {
             unsigned int str = s->strstart - s->insert;
             if (UNLIKELY(level >= 9)) {
-                s->ins_h = update_hash_roll(s->window[str], s->window[str+1]);
+                s->ins_h = update_hash_roll(window[str], window[str+1]);
             } else if (str >= 1) {
                 quick_insert_string(s, str + 2 - STD_MIN_MATCH);
             }
@@ -1244,7 +1246,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
         /* If the whole input has less than STD_MIN_MATCH bytes, ins_h is garbage,
          * but this is not important since only literal bytes will be emitted.
          */
-    } while (s->lookahead < MIN_LOOKAHEAD && s->strm->avail_in != 0);
+    } while (s->lookahead < MIN_LOOKAHEAD && strm->avail_in != 0);
 
     /* If the WIN_INIT bytes after the end of the current data have never been
      * written, then zero those bytes in order to avoid memory check reports of
@@ -1264,7 +1266,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             init = s->window_size - curr;
             if (init > WIN_INIT)
                 init = WIN_INIT;
-            memset(s->window + curr, 0, init);
+            memset(window + curr, 0, init);
             s->high_water = curr + init;
         } else if (s->high_water < curr + WIN_INIT) {
             /* High water mark at or above current data, but below current data
@@ -1274,7 +1276,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             init = curr + WIN_INIT - s->high_water;
             if (init > s->window_size - s->high_water)
                 init = s->window_size - s->high_water;
-            memset(s->window + s->high_water, 0, init);
+            memset(window + s->high_water, 0, init);
             s->high_water += init;
         }
     }
