@@ -166,6 +166,7 @@ struct ALIGNED_(64) internal_state {
                 /* used by deflate.c: */
 
     unsigned int  w_size;            /* LZ77 window size (32K by default) */
+    unsigned int  padding3[2];
     unsigned int  lookahead;         /* number of valid bytes ahead in window */
 
     unsigned int high_water;
