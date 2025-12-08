@@ -246,7 +246,7 @@ static int init_functable(void) {
 #endif
     // ARM - PMULL EOR3
 #ifdef ARM_PMULL_EOR3
-    if (cf.arm.has_crc32 && cf.arm.has_pmull && cf.arm.has_eor3) {
+    if (cf.arm.has_crc32 && cf.arm.has_pmull && cf.arm.has_eor3 && cf.arm.has_fast_pmull) {
         ft.crc32 = &crc32_armv8_pmull_eor3;
         ft.crc32_copy = &crc32_copy_armv8_pmull_eor3;
     }

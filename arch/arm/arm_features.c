@@ -158,6 +158,10 @@ static int arm_has_eor3(void) {
 #  if defined(__aarch64__) || defined(_M_ARM64)
     int hassha3;
     size_t size = sizeof(hassha3);
+    if (sysctlbyname("hw.optional.arm.FEAT_SHA3", &hassha3, &size, NULL, 0) == 0 && hassha3 == 1)
+        return 1;
+    /* Fallback to legacy name for older macOS versions */
+    size = sizeof(hassha3);
     return sysctlbyname("hw.optional.armv8_2_sha3", &hassha3, &size, NULL, 0) == 0
       && hassha3 == 1;
 #  else
@@ -224,6 +228,87 @@ static inline int arm_has_simd(void) {
 }
 #endif
 
+#if defined(__aarch64__) && !defined(__APPLE__)
+/* MIDR_EL1 bit field definitions */
+#define MIDR_IMPLEMENTOR(midr)  (((midr) & (0xffU << 24)) >> 24)
+#define MIDR_PARTNUM(midr)      (((midr) & (0xfffU << 4)) >> 4)
+
+/* ARM CPU Implementer IDs */
+#define ARM_IMPLEMENTER_ARM      0x41
+#define ARM_IMPLEMENTER_QUALCOMM 0x51
+#define ARM_IMPLEMENTER_APPLE    0x61
+
+/* ARM CPU Part Numbers */
+
+/* Cortex-X series - Multiple PMULL lanes */
+#define ARM_PART_CORTEX_X1   0xd44
+#define ARM_PART_CORTEX_X1C  0xd4c
+#define ARM_PART_CORTEX_X2   0xd48
+#define ARM_PART_CORTEX_X3   0xd4e
+#define ARM_PART_CORTEX_X4   0xd82
+#define ARM_PART_CORTEX_X925 0xd85
+
+/* Neoverse V/N2 series - Multiple PMULL lanes */
+#define ARM_PART_NEOVERSE_N2 0xd49
+#define ARM_PART_NEOVERSE_V1 0xd40
+#define ARM_PART_NEOVERSE_V2 0xd4f
+#define ARM_PART_NEOVERSE_V3 0xd8e
+
+/* Snapdragon X Elite/Plus - Custom core */
+#define QUALCOMM_PART_ORYON 0x001
+#endif
+
+/* Determine if CPU has fast PMULL (multiple execution units) */
+static inline int arm_cpu_has_fast_pmull(void) {
+#if defined(__APPLE__)
+    /* On macOS, all Apple Silicon has fast PMULL */
+    return 1;
+#elif defined(__aarch64__)
+#  if defined(__linux__)
+    /* We have to support the CPUID feature in HWCAP */
+    if (!(getauxval(AT_HWCAP) & HWCAP_CPUID))
+        return 0;
+#  elif defined(__FreeBSD__) || defined(__OpenBSD__)
+    unsigned long hwcap = 0;
+    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    if (!(hwcap & HWCAP_CPUID))
+        return 0;
+#  else
+    return 0;
+#  endif
+    uint64_t midr;
+    __asm__ ("mrs %0, midr_el1" : "=r" (midr));
+
+    uint32_t implementer = MIDR_IMPLEMENTOR(midr);
+    uint32_t part = MIDR_PARTNUM(midr);
+
+    if (implementer == ARM_IMPLEMENTER_APPLE) {
+        /* All Apple Silicon (M1+) have fast PMULL */
+        return 1;
+    } else if (implementer == ARM_IMPLEMENTER_ARM) {
+        /* ARM Cortex-X and Neoverse V/N2 series have multi-lane PMULL */
+        switch (part) {
+            case ARM_PART_CORTEX_X1:
+            case ARM_PART_CORTEX_X1C:
+            case ARM_PART_CORTEX_X2:
+            case ARM_PART_CORTEX_X3:
+            case ARM_PART_CORTEX_X4:
+            case ARM_PART_CORTEX_X925:
+            case ARM_PART_NEOVERSE_N2:
+            case ARM_PART_NEOVERSE_V1:
+            case ARM_PART_NEOVERSE_V2:
+            case ARM_PART_NEOVERSE_V3:
+                return 1;
+        }
+    } else if (implementer == ARM_IMPLEMENTER_QUALCOMM) {
+        /* Qualcomm Oryon (Snapdragon X Elite/Plus) has fast PMULL */
+        if (part == QUALCOMM_PART_ORYON)
+            return 1;
+    }
+#endif
+    return 0;
+}
+
 void Z_INTERNAL arm_check_features(struct arm_cpu_features *features) {
 #if defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
     features->has_simd = 0; /* never available */
@@ -235,4 +320,5 @@ void Z_INTERNAL arm_check_features(struct arm_cpu_features *features) {
     features->has_crc32 = arm_has_crc32();
     features->has_pmull = arm_has_pmull();
     features->has_eor3 = arm_has_eor3();
+    features->has_fast_pmull = features->has_pmull && arm_cpu_has_fast_pmull();
 }
