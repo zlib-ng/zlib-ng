@@ -12,6 +12,11 @@
 
 #define EARLY_EXIT_TRIGGER_LEVEL 5
 
+#define GOTO_NEXT_CHAIN \
+    if (--chain_length && (cur_match = prev[cur_match & wmask]) > limit) \
+        continue; \
+    return best_len;
+
 /* Set match_start to the longest match starting at the given string and
  * return its length. Matches shorter or equal to prev_length are discarded,
  * in which case the result is equal to prev_length and match_start is garbage.
@@ -42,11 +47,6 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     Pos match_offset = 0;
     uint64_t scan_start;
     uint64_t scan_end;
-
-#define GOTO_NEXT_CHAIN \
-    if (--chain_length && (cur_match = prev[cur_match & wmask]) > limit) \
-        continue; \
-    return best_len;
 
     /* The code is optimized for STD_MAX_MATCH-2 multiple of 16. */
     Assert(STD_MAX_MATCH == 258, "Code too clever");

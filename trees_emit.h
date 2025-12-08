@@ -78,7 +78,7 @@ extern Z_INTERNAL const int base_dist[D_CODES];
 /* ===========================================================================
  * Flush the bit buffer and align the output on a byte boundary
  */
-static void bi_windup(deflate_state *s) {
+static inline void bi_windup(deflate_state *s) {
     if (s->bi_valid > 56) {
         put_uint64(s, s->bi_buf);
     } else {
@@ -120,7 +120,7 @@ static inline uint32_t zng_emit_lit(deflate_state *s, const ct_data *ltree, unsi
 /* ===========================================================================
  * Emit match distance/length code
  */
-static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree,
+static uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree,
     uint32_t lc, uint32_t dist) {
     uint32_t c, extra;
     uint8_t code;

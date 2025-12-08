@@ -108,9 +108,8 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
                     if (match_len >= WANT_MIN_MATCH) {
                         if (UNLIKELY(match_len > s->lookahead))
                             match_len = s->lookahead;
-                        if (UNLIKELY(match_len > STD_MAX_MATCH))
-                            match_len = STD_MAX_MATCH;
 
+                        Assert(match_len <= STD_MAX_MATCH, "match too long");
                         Assert(s->strstart <= UINT16_MAX, "strstart should fit in uint16_t");
                         check_match(s, (Pos)s->strstart, hash_head, match_len);
 
