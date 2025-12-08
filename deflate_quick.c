@@ -89,9 +89,9 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
 
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
 #if BYTE_ORDER == LITTLE_ENDIAN
-            uint32_t str_val = zng_memread_4(&window[s->strstart]);
+            uint32_t str_val = zng_memread_4(window + s->strstart);
 #else
-            uint32_t str_val = ZSWAP32(zng_memread_4(&window[s->strstart]));
+            uint32_t str_val = ZSWAP32(zng_memread_4(window + s->strstart));
 #endif
             Pos hash_head = quick_insert_value(s, s->strstart, str_val);
             int64_t dist = (int64_t)s->strstart - hash_head;
