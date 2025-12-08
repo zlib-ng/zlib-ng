@@ -25,8 +25,8 @@
    of a literal, the base length or distance, or the offset from
    the current table to the next table.  Each entry is four bytes. */
 typedef struct {
-    unsigned char op;         /* operation, extra bits, table bits */
     unsigned char bits;       /* bits in this part of the code */
+    unsigned char op;         /* operation, extra bits, table bits */
     uint16_t val;             /* offset in table or code value */
 } code;
 
