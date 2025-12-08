@@ -116,7 +116,7 @@ static void init_block(deflate_state *s) {
         s->bl_tree[n].Freq = 0;
 
     s->dyn_ltree[END_BLOCK].Freq = 1;
-    s->opt_len = s->static_len = 0L;
+    s->opt_len = s->static_len = 0;
     s->sym_next = s->matches = 0;
 }
 
@@ -319,9 +319,9 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
         if (n >= base)
             xbits = extra[n-base];
         f = tree[n].Freq;
-        s->opt_len += (unsigned long)f * (unsigned int)(bits + xbits);
+        s->opt_len += (unsigned int)f * (unsigned int)(bits + xbits);
         if (stree)
-            s->static_len += (unsigned long)f * (unsigned int)(stree[n].Len + xbits);
+            s->static_len += (unsigned int)f * (unsigned int)(stree[n].Len + xbits);
     }
     if (overflow == 0)
         return;
@@ -356,8 +356,8 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
                 continue;
             if (tree[m].Len != bits) {
                 Tracev((stderr, "code %d bits %d->%u\n", m, tree[m].Len, bits));
-                s->opt_len += (unsigned long)(bits * tree[m].Freq);
-                s->opt_len -= (unsigned long)(tree[m].Len * tree[m].Freq);
+                s->opt_len += (unsigned int)(bits * tree[m].Freq);
+                s->opt_len -= (unsigned int)(tree[m].Len * tree[m].Freq);
                 tree[m].Len = (uint16_t)bits;
             }
             n--;
@@ -547,8 +547,8 @@ static int build_bl_tree(deflate_state *s) {
             break;
     }
     /* Update opt_len to include the bit length tree and counts */
-    s->opt_len += 3*((unsigned long)max_blindex+1) + 5+5+4;
-    Tracev((stderr, "\ndyn trees: dyn %lu, stat %lu", s->opt_len, s->static_len));
+    s->opt_len += 3*((unsigned int)max_blindex+1) + 5+5+4;
+    Tracev((stderr, "\ndyn trees: dyn %u, stat %u", s->opt_len, s->static_len));
 
     return max_blindex;
 }
@@ -629,7 +629,7 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
     /* buf: input block, or NULL if too old */
     /* stored_len: length of input block */
     /* last: one if this is the last block for a file */
-    unsigned long opt_lenb, static_lenb; /* opt_len and static_len in bytes */
+    unsigned int opt_lenb, static_lenb; /* opt_len and static_len in bytes */
     int max_blindex = 0;  /* index of last bit length code of non zero freq */
 
     /* Build the Huffman trees unless a stored block is forced */
@@ -644,10 +644,10 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
 
         /* Construct the literal and distance trees */
         build_tree(s, (tree_desc *)(&(s->l_desc)));
-        Tracev((stderr, "\nlit data: dyn %lu, stat %lu", s->opt_len, s->static_len));
+        Tracev((stderr, "\nlit data: dyn %u, stat %u", s->opt_len, s->static_len));
 
         build_tree(s, (tree_desc *)(&(s->d_desc)));
-        Tracev((stderr, "\ndist data: dyn %lu, stat %lu", s->opt_len, s->static_len));
+        Tracev((stderr, "\ndist data: dyn %u, stat %u", s->opt_len, s->static_len));
         /* At this point, opt_len and static_len are the total bit lengths of
          * the compressed block data, excluding the tree representations.
          */
@@ -658,10 +658,10 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
         max_blindex = build_bl_tree(s);
 
         /* Determine the best encoding. Compute the block lengths in bytes. */
-        opt_lenb = (s->opt_len+3+7) >> 3;
-        static_lenb = (s->static_len+3+7) >> 3;
+        opt_lenb = (s->opt_len + 3 + 7) >> 3;
+        static_lenb = (s->static_len + 3 + 7) >> 3;
 
-        Tracev((stderr, "\nopt %lu(%lu) stat %lu(%lu) stored %u lit %u ",
+        Tracev((stderr, "\nopt %u(%u) stat %u(%u) stored %u lit %u ",
                 opt_lenb, s->opt_len, static_lenb, s->static_len, stored_len,
                 s->sym_next / 3));
 

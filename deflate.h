@@ -221,17 +221,12 @@ struct ALIGNED_(64) internal_state {
      * max_insert_length is used only for compression levels <= 6.
      */
 
-    int level;    /* compression level (1..9) */
-    int strategy; /* favor or force Huffman coding*/
-
-    unsigned int good_match;
-    /* Use a faster search when the previous match is longer than this */
-
-    int nice_match; /* Stop searching when current match exceeds this */
-
-#if defined(_M_IX86) || defined(_M_ARM)
-    int padding[2];
-#endif
+    int level;                  /* compression level (1..9) */
+    int strategy;               /* favor or force Huffman coding*/
+    unsigned int good_match;    /* Use a faster search when the previous match is longer than this */
+    int nice_match;             /* Stop searching when current match exceeds this */
+    unsigned int matches;       /* number of string matches in current block */
+    unsigned int insert;        /* bytes at end of window left to insert */
 
     struct crc32_fold_s ALIGNED_(16) crc_fold;
 
@@ -291,14 +286,8 @@ struct ALIGNED_(64) internal_state {
     unsigned int sym_next;        /* running index in symbol buffer */
     unsigned int sym_end;         /* symbol table full when sym_next reaches this */
 
-    unsigned long opt_len;        /* bit length of current block with optimal trees */
-    unsigned long static_len;     /* bit length of current block with static trees */
-    unsigned int matches;         /* number of string matches in current block */
-    unsigned int insert;          /* bytes at end of window left to insert */
-
-    /* compressed_len and bits_sent are only used if ZLIB_DEBUG is defined */
-    unsigned long compressed_len; /* total bit length of compressed file mod 2^32 */
-    unsigned long bits_sent;      /* bit length of compressed data sent mod 2^32 */
+    unsigned int opt_len;         /* bit length of current block with optimal trees */
+    unsigned int static_len;      /* bit length of current block with static trees */
 
     deflate_allocs *alloc_bufs;
 
@@ -312,11 +301,14 @@ struct ALIGNED_(64) internal_state {
     int32_t bi_valid;
     /* Number of valid bits in bi_buf.  All bits above the last valid bit are always zero. */
 
+    /* compressed_len and bits_sent are only used if ZLIB_DEBUG is defined */
+#ifdef ZLIB_DEBUG
+    unsigned long compressed_len; /* total bit length of compressed file mod 2^32 */
+    unsigned long bits_sent;      /* bit length of compressed data sent mod 2^32 */
+#endif
+
     /* Reserved for future use and alignment purposes */
     int32_t reserved[19];
-#if defined(_M_IX86) || defined(_M_ARM)
-    int32_t padding2[4];
-#endif
 };
 
 typedef enum {
