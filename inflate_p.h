@@ -80,7 +80,7 @@
         next = strm->next_in; \
         have = strm->avail_in; \
         hold = state->hold; \
-        bits = state->bits; \
+        bits = (uint8_t)state->bits; \
     } while (0)
 
 /* Restore state from registers in inflate() */
@@ -105,7 +105,7 @@
    not enough available input to do that, then return from inflate()/inflateBack(). */
 #define NEEDBITS(n) \
     do { \
-        while (bits < (unsigned)(n)) \
+        while (bits < (uint8_t)(n)) \
             PULLBYTE(); \
     } while (0)
 
@@ -117,7 +117,7 @@
 #define DROPBITS(n) \
     do { \
         hold >>= (n); \
-        bits -= (unsigned)(n); \
+        bits -= (uint8_t)(n); \
     } while (0)
 
 /* Remove zero to seven bits as needed to go to a byte boundary */

@@ -305,7 +305,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     /* return unused bytes (on entry, bits < 8, so in won't go too far back) */
     len = bits >> 3;
     in -= len;
-    bits -= len << 3;
+    bits -= (uint8_t)(len << 3);
     hold &= (UINT64_C(1) << bits) - 1;
 
     /* update state and return */
