@@ -7,6 +7,12 @@
 #include "zutil.h"
 #include "inftrees.h"
 
+#if defined(__SSE2__)
+#  include "arch/x86/x86_intrins.h"
+#elif defined(__ARM_NEON) || defined(__ARM_NEON__)
+#  include "arch/arm/neon_intrins.h"
+#endif
+
 const char PREFIX(inflate_copyright)[] = " inflate 1.3.1 Copyright 1995-2024 Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
@@ -14,6 +20,72 @@ const char PREFIX(inflate_copyright)[] = " inflate 1.3.1 Copyright 1995-2024 Mar
   include such an acknowledgment, I would appreciate that you keep this
   copyright string in the executable of your product.
  */
+
+/* Count number of codes for each code length. */
+static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
+    int sym;
+    static const ALIGNED_(32) uint8_t one[32] = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    };
+
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+    uint8x16_t s1 = vdupq_n_u8(0);
+    uint8x16_t s2 = vdupq_n_u8(0);
+
+    const uint8_t *p = &one[16];
+    if (codes & 1) {
+        s1 = vld1q_u8(&p[-lens[0]]);
+    }
+    for (sym = codes & 1; sym < codes; sym += 2) {
+      s1 = vaddq_u8(s1, vld1q_u8(&p[-lens[sym]]));
+      s2 = vaddq_u8(s2, vld1q_u8(&p[-lens[sym+1]]));
+    }
+
+    vst1q_u16(&count[0], vaddl_u8(vget_low_u8(s1), vget_low_u8(s2)));
+    vst1q_u16(&count[8], vaddl_u8(vget_high_u8(s1), vget_high_u8(s2)));
+
+#elif defined(__SSE2__)
+    __m128i s1 = _mm_setzero_si128();
+    __m128i s2 = _mm_setzero_si128();
+
+    const uint8_t *p = (uint8_t*)&one[16];
+    if (codes & 1) {
+        s1 = _mm_loadu_si128((const __m128i*)&p[-lens[0]]);
+    }
+    for (sym = codes & 1; sym < codes; sym += 2) {
+        s1 = _mm_add_epi8(s1, _mm_loadu_si128((const __m128i*)&p[-lens[sym]]));   // vaddq_u8
+        s2 = _mm_add_epi8(s2, _mm_loadu_si128((const __m128i*)&p[-lens[sym+1]]));
+    }
+
+#  if defined(__AVX2__)
+    __m256i w1 = _mm256_cvtepu8_epi16(s1);
+    __m256i w2 = _mm256_cvtepu8_epi16(s2);
+    __m256i sum = _mm256_add_epi16(w1, w2);
+
+    _mm256_storeu_si256((__m256i*)&count[0], sum);
+#  else
+    __m128i zero = _mm_setzero_si128();
+
+    __m128i s1_lo = _mm_unpacklo_epi8(s1, zero);
+    __m128i s2_lo = _mm_unpacklo_epi8(s2, zero);
+    __m128i sum_lo = _mm_add_epi16(s1_lo, s2_lo);
+    _mm_storeu_si128((__m128i*)&count[0], sum_lo);
+
+    __m128i s1_hi = _mm_unpackhi_epi8(s1, zero);
+    __m128i s2_hi = _mm_unpackhi_epi8(s2, zero);
+    __m128i sum_hi = _mm_add_epi16(s1_hi, s2_hi);
+    _mm_storeu_si128((__m128i*)&count[8], sum_hi);
+#  endif
+#else
+    int len;
+    for (len = 0; len <= MAX_BITS; len++)
+        count[len] = 0;
+    for (sym = 0; sym < codes; sym++)
+        count[lens[sym]]++;
+    Z_UNUSED(one);
+#endif
+}
 
 /*
    Build a set of tables to decode the provided canonical Huffman code.
@@ -28,7 +100,7 @@ const char PREFIX(inflate_copyright)[] = " inflate 1.3.1 Copyright 1995-2024 Mar
    longest code or if it is less than the shortest code.
  */
 int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
-                                code * *table, unsigned *bits, uint16_t *work) {
+                                 code * *table, unsigned *bits, uint16_t *work) {
     unsigned len;               /* a code's length in bits */
     unsigned sym;               /* index of code symbols */
     unsigned min, max;          /* minimum and maximum code lengths */
@@ -47,8 +119,8 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     const uint16_t *base;       /* base value table to use */
     const uint16_t *extra;      /* extra bits table to use */
     unsigned match;             /* use base and extra for symbol >= match */
-    uint16_t count[MAX_BITS+1];  /* number of codes of each length */
-    uint16_t offs[MAX_BITS+1];   /* offsets in table for each length */
+    uint16_t count[MAX_BITS+1]; /* number of codes of each length */
+    uint16_t offs[MAX_BITS+1];  /* offsets in table for each length */
     static const uint16_t lbase[31] = { /* Length codes 257..285 base */
         3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
         35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0};
@@ -96,10 +168,7 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
      */
 
     /* accumulate lengths for codes (assumes lens[] all in 0..MAXBITS) */
-    for (len = 0; len <= MAX_BITS; len++)
-        count[len] = 0;
-    for (sym = 0; sym < codes; sym++)
-        count[lens[sym]]++;
+    count_lengths(lens, codes, count);
 
     /* bound code lengths, force root to be within code lengths */
     root = *bits;

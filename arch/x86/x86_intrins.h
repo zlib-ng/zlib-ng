@@ -1,6 +1,10 @@
 #ifndef X86_INTRINS_H
 #define X86_INTRINS_H
 
+#ifdef __SSE2__
+#include <emmintrin.h>
+#endif
+
 /* Unfortunately GCC didn't support these things until version 10.
  * Similarly, AppleClang didn't support them in Xcode 9.2 but did in 9.3.
  */
