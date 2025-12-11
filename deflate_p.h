@@ -18,7 +18,7 @@
 /* ===========================================================================
  * Check that the match at match_start is indeed a match.
  */
-static inline void check_match(deflate_state *s, Pos start, Pos match, int length) {
+static inline void check_match(deflate_state *s, uint32_t start, uint32_t match, int length) {
     /* check that the match length is valid*/
     if (length < STD_MIN_MATCH || length > STD_MAX_MATCH) {
         fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);

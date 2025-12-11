@@ -49,7 +49,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
         /* Insert the string window[strstart .. strstart+2] in the
          * dictionary, and set hash_head to the head of the hash chain:
          */
-        Pos hash_head = 0;
+        uint32_t hash_head = 0;
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
             if (level >= 9)
                 hash_head = quick_insert_string_roll(s, s->strstart);
@@ -59,7 +59,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
 
         /* Find the longest match, discarding those <= prev_length.
          */
-        s->prev_match = (Pos)s->match_start;
+        s->prev_match = s->match_start;
         uint32_t match_len = STD_MIN_MATCH - 1;
         int64_t dist = (int64_t)s->strstart - hash_head;
 
@@ -68,7 +68,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
              * of window index 0 (in particular we have to avoid a match
              * of the string with itself at the start of the input file).
              */
-            match_len = longest_match(s, (uint32_t)hash_head);
+            match_len = longest_match(s, hash_head);
             /* longest_match() sets match_start */
 
             if (match_len <= 5 && (s->strategy == Z_FILTERED)) {
@@ -86,7 +86,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
             /* Do not insert strings in hash table beyond this. */
 
             Assert((s->strstart-1) <= UINT16_MAX, "strstart-1 should fit in uint16_t");
-            check_match(s, (Pos)(s->strstart - 1), s->prev_match, s->prev_length);
+            check_match(s, s->strstart - 1, s->prev_match, s->prev_length);
 
             bflush = zng_tr_tally_dist(s, s->strstart -1 - s->prev_match, s->prev_length - STD_MIN_MATCH);
 

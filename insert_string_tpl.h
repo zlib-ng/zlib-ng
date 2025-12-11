@@ -45,9 +45,8 @@ Z_FORCEINLINE static uint32_t UPDATE_HASH(uint32_t h, uint32_t val) {
  * to the previous head of the hash chain (the most recent string with same hash key).
  * Return the previous length of the hash chain.
  */
-Z_FORCEINLINE static Pos QUICK_INSERT_VALUE(deflate_state *const s, uint32_t str, uint32_t val) {
-    uint32_t hm;
-    Pos head;
+Z_FORCEINLINE static uint32_t QUICK_INSERT_VALUE(deflate_state *const s, uint32_t str, uint32_t val) {
+    uint32_t hm, head;
 
     HASH_CALC_VAR_INIT;
     HASH_CALC(HASH_CALC_VAR, val);
@@ -56,7 +55,7 @@ Z_FORCEINLINE static Pos QUICK_INSERT_VALUE(deflate_state *const s, uint32_t str
 
     head = s->head[hm];
     if (LIKELY(head != str)) {
-        s->prev[str & W_MASK(s)] = head;
+        s->prev[str & W_MASK(s)] = (Pos)head;
         s->head[hm] = (Pos)str;
     }
     return head;
@@ -67,10 +66,9 @@ Z_FORCEINLINE static Pos QUICK_INSERT_VALUE(deflate_state *const s, uint32_t str
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
  */
-Z_FORCEINLINE static Pos QUICK_INSERT_STRING(deflate_state *const s, uint32_t str) {
+Z_FORCEINLINE static uint32_t QUICK_INSERT_STRING(deflate_state *const s, uint32_t str) {
     uint8_t *strstart = s->window + str + HASH_CALC_OFFSET;
-    uint32_t val, hm;
-    Pos head;
+    uint32_t val, hm, head;
 
     HASH_CALC_VAR_INIT;
     HASH_CALC_READ;
@@ -80,7 +78,7 @@ Z_FORCEINLINE static Pos QUICK_INSERT_STRING(deflate_state *const s, uint32_t st
 
     head = s->head[hm];
     if (LIKELY(head != str)) {
-        s->prev[str & W_MASK(s)] = head;
+        s->prev[str & W_MASK(s)] = (Pos)head;
         s->head[hm] = (Pos)str;
     }
     return head;
@@ -103,8 +101,8 @@ Z_FORCEINLINE static void INSERT_STRING(deflate_state *const s, uint32_t str, ui
     Pos *prevp = s->prev;
     const unsigned int w_mask = W_MASK(s);
 
-    for (Pos idx = (Pos)str; strstart < strend; idx++, strstart++) {
-        uint32_t val, hm;
+    for (uint32_t idx = str; strstart < strend; idx++, strstart++) {
+        uint32_t val, hm, head;
 
         HASH_CALC_VAR_INIT;
         HASH_CALC_READ;
@@ -112,10 +110,10 @@ Z_FORCEINLINE static void INSERT_STRING(deflate_state *const s, uint32_t str, ui
         HASH_CALC_VAR &= HASH_CALC_MASK;
         hm = HASH_CALC_VAR;
 
-        Pos head = headp[hm];
+        head = headp[hm];
         if (LIKELY(head != idx)) {
-            prevp[idx & w_mask] = head;
-            headp[hm] = idx;
+            prevp[idx & w_mask] = (Pos)head;
+            headp[hm] = (Pos)idx;
         }
     }
 }

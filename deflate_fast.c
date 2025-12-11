@@ -49,7 +49,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
 #else
             uint32_t str_val = ZSWAP32(zng_memread_4(window + s->strstart));
 #endif
-            Pos hash_head = quick_insert_value(s, s->strstart, str_val);
+            uint32_t hash_head = quick_insert_value(s, s->strstart, str_val);
             int64_t dist = (int64_t)s->strstart - hash_head;
             lc = (uint8_t)str_val;
 
@@ -71,7 +71,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
         if (match_len >= WANT_MIN_MATCH) {
             Assert(s->strstart <= UINT16_MAX, "strstart should fit in uint16_t");
             Assert(s->match_start <= UINT16_MAX, "match_start should fit in uint16_t");
-            check_match(s, (Pos)s->strstart, (Pos)s->match_start, match_len);
+            check_match(s, s->strstart, s->match_start, match_len);
 
             bflush = zng_tr_tally_dist(s, s->strstart - s->match_start, match_len - STD_MIN_MATCH);
 

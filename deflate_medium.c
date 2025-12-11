@@ -173,7 +173,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
     memset(&next_match, 0, sizeof(struct match));
 
     for (;;) {
-        Pos hash_head = 0;    /* head of the hash chain */
+        uint32_t hash_head = 0;    /* head of the hash chain */
         int bflush = 0;       /* set if current block must be flushed */
         int64_t dist;
 
@@ -219,7 +219,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                  * of window index 0 (in particular we have to avoid a match
                  * of the string with itself at the start of the input file).
                  */
-                current_match.match_length = (uint16_t)FUNCTABLE_CALL(longest_match)(s, (uint32_t)hash_head);
+                current_match.match_length = (uint16_t)FUNCTABLE_CALL(longest_match)(s, hash_head);
                 current_match.match_start = (uint16_t)s->match_start;
                 if (UNLIKELY(current_match.match_length < WANT_MIN_MATCH))
                     current_match.match_length = 1;

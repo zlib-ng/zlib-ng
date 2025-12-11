@@ -196,7 +196,7 @@ struct ALIGNED_(64) internal_state {
      */
 
     unsigned int match_length;       /* length of best match */
-    Pos          prev_match;         /* previous match */
+    uint32_t     prev_match;         /* previous match */
     int          match_available;    /* set if previous match exists */
     unsigned int strstart;           /* start of string to insert */
     unsigned int match_start;        /* start of matching string */
