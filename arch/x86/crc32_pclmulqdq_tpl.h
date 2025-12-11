@@ -1,4 +1,4 @@
-/* crc32_fold_pclmulqdq_tpl.h -- Compute the CRC32 using a parallelized folding
+/* crc32_pclmulqdq_tpl.h -- Compute the CRC32 using a parallelized folding
  * approach with the PCLMULQDQ and VPCMULQDQ instructions.
  *
  * A white paper describing this algorithm can be found at:

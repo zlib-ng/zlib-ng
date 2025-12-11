@@ -19,7 +19,7 @@
 
 #ifdef X86_PCLMULQDQ_CRC
 
-#include "crc32_fold_pclmulqdq_tpl.h"
+#include "crc32_pclmulqdq_tpl.h"
 
 Z_INTERNAL uint32_t crc32_pclmulqdq(uint32_t crc, const uint8_t *buf, size_t len) {
     /* For lens smaller than ~12, crc32_small method is faster.
