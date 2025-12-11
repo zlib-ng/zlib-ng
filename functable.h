@@ -35,8 +35,8 @@ struct functable_s {
     uint32_t (* crc32_fold_final)   (struct crc32_fold_s *crc);
     uint32_t (* crc32_fold_reset)   (struct crc32_fold_s *crc);
     void     (* inflate_fast)       (PREFIX3(stream) *strm, uint32_t start);
-    uint32_t (* longest_match)      (deflate_state *const s, Pos cur_match);
-    uint32_t (* longest_match_slow) (deflate_state *const s, Pos cur_match);
+    uint32_t (* longest_match)      (deflate_state *const s, uint32_t cur_match);
+    uint32_t (* longest_match_slow) (deflate_state *const s, uint32_t cur_match);
     void     (* slide_hash)         (deflate_state *s);
 };
 

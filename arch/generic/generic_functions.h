@@ -43,8 +43,8 @@ uint32_t crc32_fold_final_c(crc32_fold *crc);
 
 void     inflate_fast_c(PREFIX3(stream) *strm, uint32_t start);
 
-uint32_t longest_match_c(deflate_state *const s, Pos cur_match);
-uint32_t longest_match_slow_c(deflate_state *const s, Pos cur_match);
+uint32_t longest_match_c(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_c(deflate_state *const s, uint32_t cur_match);
 
 void     slide_hash_c(deflate_state *s);
 

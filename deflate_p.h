@@ -192,6 +192,6 @@ Z_FORCEINLINE static unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf
 /* Compression function. Returns the block state after the call. */
 typedef block_state (*compress_func) (deflate_state *s, int flush);
 /* Match function. Returns the longest match. */
-typedef uint32_t    (*match_func)    (deflate_state *const s, Pos cur_match);
+typedef uint32_t    (*match_func)    (deflate_state *const s, uint32_t cur_match);
 
 #endif

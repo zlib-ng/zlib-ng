@@ -28,7 +28,7 @@
  * The LONGEST_MATCH_SLOW variant spends more time to attempt to find longer
  * matches once a match has already been found.
  */
-Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
+Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
     const unsigned wmask = W_MASK(s);
     unsigned int strstart = s->strstart;
     const unsigned char *window = s->window;
@@ -39,9 +39,9 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     const unsigned char *scan;
     const unsigned char *mbase_start = window;
     const unsigned char *mbase_end;
-    Pos limit;
+    uint32_t limit;
 #ifdef LONGEST_MATCH_SLOW
-    Pos limit_base;
+    uint32_t limit_base;
 #else
     int32_t early_exit;
 #endif
@@ -49,7 +49,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     uint32_t nice_match = (uint32_t)s->nice_match;
     uint32_t best_len, offset;
     uint32_t lookahead = s->lookahead;
-    Pos match_offset = 0;
+    uint32_t match_offset = 0;
     uint64_t scan_start;
     uint64_t scan_end;
 
@@ -80,13 +80,13 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
     /* Stop when cur_match becomes <= limit. To simplify the code,
      * we prevent matches with the string of window index 0
      */
-    limit = strstart > MAX_DIST(s) ? (Pos)(strstart - MAX_DIST(s)) : 0;
+    limit = strstart > MAX_DIST(s) ? (strstart - MAX_DIST(s)) : 0;
 #ifdef LONGEST_MATCH_SLOW
     limit_base = limit;
     if (best_len >= STD_MIN_MATCH) {
         /* We're continuing search (lazy evaluation). */
         uint32_t hash;
-        Pos pos;
+        uint32_t pos;
 
         /* Find a most distant chain starting from scan with index=1 (index=0 corresponds
          * to cur_match). We cannot use s->prev[strstart+1,...] immediately, because
@@ -102,7 +102,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
             /* If we're starting with best_len >= 3, we can use offset search. */
             pos = head[hash];
             if (pos < cur_match) {
-                match_offset = (Pos)(i - 2);
+                match_offset = i - 2;
                 cur_match = pos;
             }
         }
@@ -180,7 +180,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
             if (UNLIKELY(len > STD_MIN_MATCH && match_start + len < strstart)) {
                 const unsigned char *scan_endstr;
                 uint32_t hash;
-                Pos pos, next_pos;
+                uint32_t pos, next_pos;
 
                 /* Go back to offset 0 */
                 cur_match -= match_offset;
@@ -193,7 +193,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
                         if (pos <= limit_base + i)
                             goto break_matching;
                         next_pos = pos;
-                        match_offset = (Pos)i;
+                        match_offset = i;
                     }
                 }
                 /* Switch cur_match to next_pos chain */
@@ -213,7 +213,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, Pos cur_match) {
 
                 pos = head[hash];
                 if (pos < cur_match) {
-                    match_offset = (Pos)(len - (STD_MIN_MATCH+1));
+                    match_offset = len - (STD_MIN_MATCH+1);
                     if (pos <= limit_base + match_offset)
                         goto break_matching;
                     cur_match = pos;

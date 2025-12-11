@@ -22,8 +22,8 @@ void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start);
 
 #ifdef POWER9
 uint32_t compare256_power9(const uint8_t *src0, const uint8_t *src1);
-uint32_t longest_match_power9(deflate_state *const s, Pos cur_match);
-uint32_t longest_match_slow_power9(deflate_state *const s, Pos cur_match);
+uint32_t longest_match_power9(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_power9(deflate_state *const s, uint32_t cur_match);
 #endif
 
 

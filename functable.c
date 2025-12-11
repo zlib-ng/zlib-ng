@@ -428,12 +428,12 @@ static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start) {
     functable.inflate_fast(strm, start);
 }
 
-static uint32_t longest_match_stub(deflate_state* const s, Pos cur_match) {
+static uint32_t longest_match_stub(deflate_state* const s, uint32_t cur_match) {
     FUNCTABLE_INIT_ABORT;
     return functable.longest_match(s, cur_match);
 }
 
-static uint32_t longest_match_slow_stub(deflate_state* const s, Pos cur_match) {
+static uint32_t longest_match_slow_stub(deflate_state* const s, uint32_t cur_match) {
     FUNCTABLE_INIT_ABORT;
     return functable.longest_match_slow(s, cur_match);
 }
