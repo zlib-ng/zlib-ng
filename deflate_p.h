@@ -128,11 +128,11 @@ Z_FORCEINLINE static void flush_pending_inline(PREFIX3(stream) *strm) {
 /* ===========================================================================
  * Reverse the first len bits of a code using bit manipulation
  */
-Z_FORCEINLINE static uint16_t bi_reverse(unsigned code, int len) {
+Z_FORCEINLINE static uint16_t bi_reverse(uint16_t code, int len) {
     /* code: the value to invert */
     /* len: its bit length */
     Assert(len >= 1 && len <= 15, "code length must be 1-15");
-    return __builtin_bitreverse16((uint16_t)code) >> (16 - len);
+    return __builtin_bitreverse16(code) >> (16 - len);
 }
 
 /* ===========================================================================

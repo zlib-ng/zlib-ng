@@ -378,7 +378,7 @@ Z_INTERNAL void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
     /* max_code: largest code with non zero frequency */
     /* bl_count: number of codes at each bit length */
     uint16_t next_code[MAX_BITS+1];  /* next code value for each bit length */
-    unsigned int code = 0;           /* running code value */
+    uint16_t code = 0;               /* running code value */
     int bits;                        /* bit index */
     int n;                           /* code index */
 
@@ -387,7 +387,7 @@ Z_INTERNAL void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
      */
     for (bits = 1; bits <= MAX_BITS; bits++) {
         code = (code + bl_count[bits-1]) << 1;
-        next_code[bits] = (uint16_t)code;
+        next_code[bits] = code;
     }
     /* Check that the bit counts in bl_count are consistent. The last code
      * must be all ones.

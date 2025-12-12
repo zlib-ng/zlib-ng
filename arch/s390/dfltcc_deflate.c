@@ -91,7 +91,9 @@ static inline dfltcc_cc dfltcc_cmpr(PREFIX3(streamp) strm) {
 static inline void send_eobs(PREFIX3(streamp) strm, const struct dfltcc_param_v0 *param) {
     deflate_state *state = (deflate_state *)strm->state;
 
-    send_bits(state, bi_reverse(param->eobs >> (15 - param->eobl), param->eobl), param->eobl, state->bi_buf, state->bi_valid);
+    send_bits(state, bi_reverse((uint16_t)(param->eobs >> (15 - param->eobl)), param->eobl),
+        param->eobl, state->bi_buf, state->bi_valid);
+
     flush_pending_inline(strm);
     if (state->pending != 0) {
         /* The remaining data is located in pending_out[0:pending]. If someone
