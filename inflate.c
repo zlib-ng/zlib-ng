@@ -479,7 +479,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
     unsigned char *from;        /* where to copy match bytes from */
     unsigned have, left;        /* available input and output */
     uint64_t hold;              /* bit buffer */
-    unsigned bits;              /* bits in bit buffer */
+    bits_t bits;                /* bits in bit buffer */
     uint32_t in, out;           /* save starting available input and output */
     unsigned copy;              /* number of stored or match bytes to copy */
     code here;                  /* current decoding table entry */

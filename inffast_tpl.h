@@ -101,7 +101,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
        with (1<<bits)-1 to drop those excess bits so that, on function exit, we
        keep the invariant that (state->hold >> state->bits) == 0.
     */
-    uint8_t bits;               /* local strm->bits */
+    bits_t bits;                /* local strm->bits */
     uint64_t hold;              /* local strm->hold */
     unsigned lmask;             /* mask for first level of length codes */
     unsigned dmask;             /* mask for first level of distance codes */
@@ -128,7 +128,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     wnext = state->wnext;
     window = state->window;
     hold = state->hold;
-    bits = (uint8_t)state->bits;
+    bits = (bits_t)state->bits;
     lcode = state->lencode;
     dcode = state->distcode;
     lmask = (1U << state->lenbits) - 1;
@@ -305,7 +305,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     /* return unused bytes (on entry, bits < 8, so in won't go too far back) */
     len = bits >> 3;
     in -= len;
-    bits -= (uint8_t)(len << 3);
+    bits -= (bits_t)(len << 3);
     hold &= (UINT64_C(1) << bits) - 1;
 
     /* update state and return */

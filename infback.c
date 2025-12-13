@@ -154,7 +154,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
     unsigned char *put;          /* next output */
     unsigned have, left;         /* available input and output */
     uint64_t hold;               /* bit buffer */
-    uint8_t bits;                /* bits in bit buffer */
+    bits_t bits;                 /* bits in bit buffer */
     unsigned copy;               /* number of stored or match bytes to copy */
     unsigned char *from;         /* where to copy match bytes from */
     code here;                   /* current decoding table entry */
