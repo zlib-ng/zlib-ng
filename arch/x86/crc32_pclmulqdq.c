@@ -22,20 +22,10 @@
 #include "crc32_pclmulqdq_tpl.h"
 
 Z_INTERNAL uint32_t crc32_pclmulqdq(uint32_t crc, const uint8_t *buf, size_t len) {
-    /* For lens smaller than ~12, crc32_small method is faster.
-     * But there are also minimum requirements for the pclmul functions due to alignment */
-    if (len < 16)
-        return crc32_small(crc, buf, len);
-
     return crc32_copy_impl(crc, NULL, buf, len, 0);
 }
 
 Z_INTERNAL uint32_t crc32_copy_pclmulqdq(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
-    /* For lens smaller than ~12, crc32_small method is faster.
-     * But there are also minimum requirements for the pclmul functions due to alignment */
-    if (len < 16)
-        return crc32_small_copy(crc, dst, src, len);
-
     return crc32_copy_impl(crc, dst, src, len, 1);
 }
 #endif
