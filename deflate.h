@@ -240,7 +240,7 @@ struct ALIGNED_(64) internal_state {
     int32_t padding1[1];
 
                 /* Cacheline 3 */
-    struct crc32_fold_s ALIGNED_(16) crc_fold;
+    uint8_t ALIGNED_(16) padding4[68];
 
                 /* used by trees.c: */
     /* Didn't use ct_data typedef below to suppress compiler warning */

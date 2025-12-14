@@ -142,7 +142,7 @@ struct ALIGNED_(64) inflate_state {
 #if defined(_M_IX86) || defined(_M_ARM)
     uint32_t padding[1];
 #endif
-    struct crc32_fold_s ALIGNED_(16) crc_fold;
+    uint8_t ALIGNED_(16) padding4[68];
 
     uint16_t lens[320];         /* temporary storage for code lengths */
     uint16_t work[288];         /* work area for code table building */

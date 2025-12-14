@@ -228,7 +228,7 @@ again:
     if (state->wrap == 1)
         param->cv = strm->adler;
     else if (state->wrap == 2)
-        param->cv = ZSWAP32(state->crc_fold.value);
+        param->cv = ZSWAP32(strm->adler);
 
     /* When opening a block, choose a Huffman-Table Type */
     if (!param->bcf) {
@@ -262,7 +262,7 @@ again:
     if (state->wrap == 1)
         strm->adler = param->cv;
     else if (state->wrap == 2)
-        state->crc_fold.value = ZSWAP32(param->cv);
+        strm->adler = ZSWAP32(param->cv);
 
     /* Unmask the input data */
     strm->avail_in += masked_avail_in;

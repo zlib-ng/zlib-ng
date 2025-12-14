@@ -28,6 +28,15 @@
 #include "crc32_braid_tbl.h"
 #include "x86_intrins.h"
 
+/* sizeof(__m128i) * (4 folds) */
+#define CRC32_FOLD_BUFFER_SIZE (16 * 4)
+
+typedef struct crc32_fold_s {
+    uint8_t fold[CRC32_FOLD_BUFFER_SIZE];
+    uint32_t value;
+} crc32_fold;
+
+
 static const unsigned ALIGNED_(16) crc_k[] = {
     0xccaa009e, 0x00000000, /* rk1 */
     0x751997d0, 0x00000001, /* rk2 */
