@@ -18,30 +18,25 @@
 #define ADLER_DO8(sum1, sum2, buf, i)  {ADLER_DO4(sum1, sum2, buf, i); ADLER_DO4(sum1, sum2, buf, i+4);}
 #define ADLER_DO16(sum1, sum2, buf)    {ADLER_DO8(sum1, sum2, buf, 0); ADLER_DO8(sum1, sum2, buf, 8);}
 
-static inline uint32_t adler32_len_1(uint32_t adler, const uint8_t *buf, uint32_t sum2) {
-    adler += buf[0];
+static inline uint32_t adler32_copy_len_1(uint32_t adler, uint8_t *dst, const uint8_t *buf, uint32_t sum2, const int COPY) {
+    uint8_t c = *buf;
+    if (COPY) {
+        *dst = c;
+    }
+    adler += c;
     adler %= BASE;
     sum2 += adler;
     sum2 %= BASE;
     return adler | (sum2 << 16);
 }
 
-static inline uint32_t adler32_len_16(uint32_t adler, const uint8_t *buf, size_t len, uint32_t sum2) {
-    while (len) {
-        --len;
-        adler += *buf++;
-        sum2 += adler;
-    }
-    adler %= BASE;
-    sum2 %= BASE;            /* only added so many BASE's */
-    /* return recombined sums */
-    return adler | (sum2 << 16);
-}
-
-static inline uint32_t adler32_copy_len_16(uint32_t adler, const uint8_t *buf, uint8_t *dst, size_t len, uint32_t sum2) {
+static inline uint32_t adler32_copy_len_16(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len, uint32_t sum2, const int COPY) {
     while (len--) {
-        *dst = *buf++;
-        adler += *dst++;
+        uint8_t c = *buf++;
+        if (COPY) {
+            *dst++ = c;
+        }
+        adler += c;
         sum2 += adler;
     }
     adler %= BASE;
@@ -50,7 +45,9 @@ static inline uint32_t adler32_copy_len_16(uint32_t adler, const uint8_t *buf, u
     return adler | (sum2 << 16);
 }
 
-static inline uint32_t adler32_len_64(uint32_t adler, const uint8_t *buf, size_t len, uint32_t sum2) {
+static inline uint32_t adler32_copy_len_64(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len, uint32_t sum2, const int COPY) {
+    const uint8_t *src = buf;
+    const size_t src_len = len;
 #ifdef UNROLL_MORE
     while (len >= 16) {
         len -= 16;
@@ -64,7 +61,11 @@ static inline uint32_t adler32_len_64(uint32_t adler, const uint8_t *buf, size_t
 #endif
     }
     /* Process tail (len < 16).  */
-    return adler32_len_16(adler, buf, len, sum2);
+    adler = adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
+    if (COPY) {
+        memcpy(dst, src, src_len);
+    }
+    return adler;
 }
 
 #endif /* ADLER32_P_H */

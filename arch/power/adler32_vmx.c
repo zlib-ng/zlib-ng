@@ -135,7 +135,7 @@ Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) 
 
     /* in case user likes doing a byte at a time, keep it fast */
     if (UNLIKELY(len == 1))
-        return adler32_len_1(adler, buf, sum2);
+        return adler32_copy_len_1(adler, NULL, buf, sum2, 0);
 
     /* initial Adler-32 value (deferred check for len == 1 speed) */
     if (UNLIKELY(buf == NULL))
@@ -143,7 +143,7 @@ Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) 
 
     /* in case short lengths are provided, keep it somewhat fast */
     if (UNLIKELY(len < 16))
-        return adler32_len_16(adler, buf, len, sum2);
+        return adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
 
     // Align buffer
     unsigned int al = 0;

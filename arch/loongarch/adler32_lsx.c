@@ -38,13 +38,8 @@ static inline uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uin
     adler0 = adler & 0xffff;
 
 rem_peel:
-    if (len < 16) {
-        if (COPY) {
-            return adler32_copy_len_16(adler0, src, dst, len, adler1);
-        } else {
-            return adler32_len_16(adler0, src, len, adler1);
-        }
-    }
+    if (len < 16)
+        return adler32_copy_len_16(adler0, dst, src, len, adler1, COPY);
 
     __m128i vbuf, vbuf_0;
     __m128i vs1_0, vs3, vs1, vs2, vs2_0, v_sad_sum1, v_short_sum2, v_short_sum2_0,
