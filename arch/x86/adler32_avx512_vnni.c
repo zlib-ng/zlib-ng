@@ -109,6 +109,7 @@ rem_peel:
     return adler;
 }
 
+/* Use 256-bit vectors when copying because 512-bit variant is slower. */
 Z_INTERNAL uint32_t adler32_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
     if (UNLIKELY(src == NULL)) return 1L;
     if (UNLIKELY(len == 0)) return adler;
