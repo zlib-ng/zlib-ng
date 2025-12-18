@@ -21,8 +21,8 @@ uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, unsigned len, unsign
     uint32_t compare256_sse2(const uint8_t *src0, const uint8_t *src1);
     uint32_t longest_match_sse2(deflate_state *const s, Pos cur_match);
     uint32_t longest_match_slow_sse2(deflate_state *const s, Pos cur_match);
-    void slide_hash_sse2(deflate_state *s);
 #  endif
+    void slide_hash_sse2(deflate_state *s);
     void inflate_fast_sse2(PREFIX3(stream)* strm, uint32_t start);
 #  if !defined(WITHOUT_CHORBA_SSE)
     uint32_t crc32_chorba_sse2(uint32_t crc32, const uint8_t *buf, size_t len);
@@ -53,8 +53,8 @@ uint8_t* chunkmemset_safe_avx2(uint8_t *out, uint8_t *from, unsigned len, unsign
     uint32_t compare256_avx2(const uint8_t *src0, const uint8_t *src1);
     uint32_t longest_match_avx2(deflate_state *const s, Pos cur_match);
     uint32_t longest_match_slow_avx2(deflate_state *const s, Pos cur_match);
-    void slide_hash_avx2(deflate_state *s);
 #  endif
+    void slide_hash_avx2(deflate_state *s);
     void inflate_fast_avx2(PREFIX3(stream)* strm, uint32_t start);
 #endif
 #ifdef X86_AVX512
