@@ -19,7 +19,7 @@ Z_INTERNAL uint32_t adler32_copy_sse42(uint32_t adler, uint8_t *dst, const uint8
     adler0 = adler & 0xffff;
 
 rem_peel:
-    if (len < 16)
+    if (UNLIKELY(len < 16))
        return adler32_copy_len_16(adler0, dst, src, len, adler1, 1);
 
     __m128i vbuf, vbuf_0;

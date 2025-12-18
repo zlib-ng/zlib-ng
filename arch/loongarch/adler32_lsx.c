@@ -30,8 +30,8 @@ static inline uint32_t hsum(__m128i x) {
 }
 
 static inline uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
-    if (src == NULL) return 1L;
-    if (len == 0) return adler;
+    if (UNLIKELY(src == NULL)) return 1L;
+    if (UNLIKELY(len == 0)) return adler;
 
     uint32_t adler0, adler1;
     adler1 = (adler >> 16) & 0xffff;

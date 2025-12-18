@@ -18,8 +18,8 @@
 #include "adler32_avx2_p.h"
 
 Z_INTERNAL uint32_t adler32_avx512_vnni(uint32_t adler, const uint8_t *src, size_t len) {
-    if (src == NULL) return 1L;
-    if (len == 0) return adler;
+    if (UNLIKELY(src == NULL)) return 1L;
+    if (UNLIKELY(len == 0)) return adler;
 
     uint32_t adler0, adler1;
     adler1 = (adler >> 16) & 0xffff;
@@ -110,8 +110,8 @@ rem_peel:
 }
 
 Z_INTERNAL uint32_t adler32_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
-    if (src == NULL) return 1L;
-    if (len == 0) return adler;
+    if (UNLIKELY(src == NULL)) return 1L;
+    if (UNLIKELY(len == 0)) return adler;
 
     uint32_t adler0, adler1;
     adler1 = (adler >> 16) & 0xffff;
