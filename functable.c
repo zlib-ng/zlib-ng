@@ -139,6 +139,7 @@ static int init_functable(void) {
 #ifdef X86_SSSE3
     if (cf.x86.has_ssse3) {
         ft.adler32 = &adler32_ssse3;
+        ft.adler32_copy = &adler32_copy_ssse3;
         ft.chunkmemset_safe = &chunkmemset_safe_ssse3;
         ft.inflate_fast = &inflate_fast_ssse3;
     }

@@ -32,6 +32,7 @@ uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, unsigned len, unsign
 
 #ifdef X86_SSSE3
 uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len);
+uint32_t adler32_copy_ssse3(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 uint8_t* chunkmemset_safe_ssse3(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 void inflate_fast_ssse3(PREFIX3(stream) *strm, uint32_t start);
 #endif
@@ -114,6 +115,8 @@ uint32_t crc32_vpclmulqdq(uint32_t crc32, const uint8_t *buf, size_t len);
 #  if defined(X86_SSSE3) && defined(__SSSE3__)
 #    undef native_adler32
 #    define native_adler32 adler32_ssse3
+#    undef native_adler32_copy
+#    define native_adler32_copy adler32_copy_ssse3
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_ssse3
 #    undef native_inflate_fast
