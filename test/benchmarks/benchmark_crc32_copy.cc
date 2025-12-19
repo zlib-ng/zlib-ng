@@ -1,4 +1,4 @@
-/* benchmark_crc32_fold_copy.cc -- benchmark for crc32 implementations doing folded copying
+/* benchmark_crc32_copy.cc -- benchmark for crc32 implementations with copying
  * Copyright (C) 2025 Hans Kristian Rosbach
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
@@ -14,37 +14,10 @@ extern "C" {
 
 #define BUFSIZE (32768 + 16 + 16)
 
-// We have no function that gives us direct access to these, so we have a local implementation for benchmarks
-static void crc32_fold_copy_braid(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
-    crc->value = crc32_braid(crc->value, src, len);
-    memcpy(dst, src, len);
-}
-#ifndef WITHOUT_CHORBA
-static void crc32_fold_copy_chorba(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
-    crc->value = crc32_chorba(crc->value, src, len);
-    memcpy(dst, src, len);
-}
-#endif
-#ifndef WITHOUT_CHORBA_SSE
-#  ifdef X86_SSE2
-    static void crc32_fold_copy_chorba_sse2(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
-        crc->value = crc32_chorba_sse2(crc->value, src, len);
-        memcpy(dst, src, len);
-    }
-#  endif
-#  ifdef X86_SSE41
-    static void crc32_fold_copy_chorba_sse41(crc32_fold *crc, uint8_t *dst, const uint8_t *src, size_t len) {
-        crc->value = crc32_chorba_sse41(crc->value, src, len);
-        memcpy(dst, src, len);
-    }
-#  endif
-#endif
-
-class crc32_fc: public benchmark::Fixture {
+class crc32_copy: public benchmark::Fixture {
 protected:
     uint32_t *testdata;
     uint8_t *dstbuf;
-    uint32_t crc;
 
 public:
     void SetUp(const ::benchmark::State&) {
@@ -57,24 +30,17 @@ public:
         }
     }
 
-    void Bench(benchmark::State& state, crc32_fold_reset_func fold_reset, crc32_fold_copy_func fold_copy,
-               crc32_fold_final_func fold_final) {
-        ALIGNED_(16) crc32_fold crc_st;
+    void Bench(benchmark::State& state, crc32_copy_func crc32_copy) {
         int misalign = 0;
-        // Prepare an initial crc state
-        fold_reset(&crc_st);
-        crc = 0;
+        uint32_t crc = 0;
 
-        // Benchmark the CRC32 fold copy operation
+        // Benchmark the CRC32 copy operation
         for (auto _ : state) {
-            fold_copy(&crc_st, dstbuf + misalign, (const unsigned char*)testdata + misalign, (size_t)state.range(0));
+            crc = crc32_copy(crc, dstbuf + misalign, (const unsigned char*)testdata + misalign, (size_t)state.range(0));
             misalign++;
             if (misalign > 14)
                 misalign = 0;
         }
-
-        // Finalize the CRC32 calculation
-        crc = fold_final(&crc_st);
 
         // Prevent the result from being optimized away
         benchmark::DoNotOptimize(crc);
@@ -86,46 +52,54 @@ public:
     }
 };
 
-#define BENCHMARK_CRC32_FOLD(name, resfunc, copyfunc, finfunc, support_flag) \
-    BENCHMARK_DEFINE_F(crc32_fc, name)(benchmark::State& state) { \
+#define BENCHMARK_CRC32_COPY(name, copyfunc, support_flag) \
+    BENCHMARK_DEFINE_F(crc32_copy, name)(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
         } \
-        Bench(state, resfunc, copyfunc, finfunc); \
+        Bench(state, copyfunc); \
     } \
-    BENCHMARK_REGISTER_F(crc32_fc, name)->Arg(16)->Arg(48)->Arg(192)->Arg(512)->Arg(4<<10)->Arg(16<<10)->Arg(32<<10);
+    BENCHMARK_REGISTER_F(crc32_copy, name)->Arg(16)->Arg(48)->Arg(192)->Arg(512)->Arg(4<<10)->Arg(16<<10)->Arg(32<<10);
 
-// Generic
-BENCHMARK_CRC32_FOLD(braid_c, crc32_fold_reset_c, crc32_fold_copy_braid, crc32_fold_final_c, 1)
+// Base test
+BENCHMARK_CRC32_COPY(braid, crc32_copy_braid, 1);
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
     // Native
-    BENCHMARK_CRC32_FOLD(native, native_crc32_fold_reset, native_crc32_fold_copy, native_crc32_fold_final, 1)
+    BENCHMARK_CRC32_COPY(native, native_crc32_copy, 1)
 #else
-
     // Optimized functions
 #  ifndef WITHOUT_CHORBA
-    BENCHMARK_CRC32_FOLD(chorba_c, crc32_fold_reset_c, crc32_fold_copy_chorba, crc32_fold_final_c, 1)
-#  endif
-#  ifdef ARM_CRC32
-    BENCHMARK_CRC32_FOLD(armv8, crc32_fold_reset_c, crc32_fold_copy_armv8, crc32_fold_final_c, test_cpu_features.arm.has_crc32)
+    BENCHMARK_CRC32_COPY(chorba, crc32_copy_chorba, 1)
 #  endif
 #  ifndef WITHOUT_CHORBA_SSE
 #    ifdef X86_SSE2
-        BENCHMARK_CRC32_FOLD(chorba_sse2, crc32_fold_reset_c, crc32_fold_copy_chorba_sse2, crc32_fold_final_c, test_cpu_features.x86.has_sse2)
+    BENCHMARK_CRC32_COPY(chorba_sse2, crc32_copy_chorba_sse2, test_cpu_features.x86.has_sse2);
 #    endif
 #    ifdef X86_SSE41
-        BENCHMARK_CRC32_FOLD(chorba_sse41, crc32_fold_reset_c, crc32_fold_copy_chorba_sse41, crc32_fold_final_c, test_cpu_features.x86.has_sse41)
-#     endif
+    BENCHMARK_CRC32_COPY(chorba_sse41, crc32_copy_chorba_sse41, test_cpu_features.x86.has_sse41);
+#    endif
 #  endif
-#  ifdef X86_PCLMULQDQ_CRC
-    BENCHMARK_CRC32_FOLD(pclmulqdq, crc32_fold_pclmulqdq_reset, crc32_fold_pclmulqdq_copy, crc32_fold_pclmulqdq_final, test_cpu_features.x86.has_pclmulqdq)
-#  endif
-#  ifdef X86_VPCLMULQDQ_CRC
-    BENCHMARK_CRC32_FOLD(vpclmulqdq, crc32_fold_pclmulqdq_reset, crc32_fold_vpclmulqdq_copy, crc32_fold_pclmulqdq_final, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq))
+#  ifdef ARM_CRC32
+    BENCHMARK_CRC32_COPY(armv8, crc32_copy_armv8, test_cpu_features.arm.has_crc32)
 #  endif
 #  ifdef LOONGARCH_CRC
-    BENCHMARK_CRC32_FOLD(loongarch64, crc32_fold_reset_c, crc32_fold_copy_loongarch64, crc32_fold_final_c, test_cpu_features.loongarch.has_crc)
+    BENCHMARK_CRC32_COPY(loongarch, crc32_copy_loongarch64, test_cpu_features.loongarch.has_crc)
+#  endif
+#  ifdef POWER8_VSX_CRC32
+    BENCHMARK_CRC32_COPY(power8, crc32_copy_power8, test_cpu_features.power.has_arch_2_07)
+#  endif
+#  ifdef RISCV_CRC32_ZBC
+    BENCHMARK_CRC32_COPY(riscv, crc32_copy_riscv64_zbc, test_cpu_features.riscv.has_zbc)
+#  endif
+#  ifdef S390_CRC32_VX
+    BENCHMARK_CRC32_COPY(vx, crc32_copy_s390_vx, test_cpu_features.s390.has_vx)
+#  endif
+#  ifdef X86_PCLMULQDQ_CRC
+    BENCHMARK_CRC32_COPY(pclmulqdq, crc32_copy_pclmulqdq, test_cpu_features.x86.has_pclmulqdq)
+#  endif
+#  ifdef X86_VPCLMULQDQ_CRC
+    BENCHMARK_CRC32_COPY(vpclmulqdq, crc32_copy_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq))
 #  endif
 
 #endif
