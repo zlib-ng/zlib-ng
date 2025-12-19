@@ -1479,3 +1479,9 @@ Z_INTERNAL uint32_t crc32_chorba(uint32_t crc, const uint8_t *buf, size_t len) {
     /* Return the CRC, post-conditioned. */
     return c ^ 0xffffffff;
 }
+
+uint32_t crc32_copy_chorba(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
+    crc = crc32_chorba(crc, src, len);
+    memcpy(dst, src, len);
+    return crc;
+}

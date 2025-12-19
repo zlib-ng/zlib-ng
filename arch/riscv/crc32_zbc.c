@@ -97,4 +97,9 @@ Z_INTERNAL uint32_t crc32_riscv64_zbc(uint32_t crc, const uint8_t *buf,
   return crc ^ 0xFFFFFFFF;
 }
 
+Z_INTERNAL uint32_t crc32_copy_riscv64_zbc(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
+  crc = crc32_riscv64_zbc(crc, src, len);
+  memcpy(dst, src, len);
+  return crc;
+}
 #endif

@@ -7,6 +7,7 @@
 
 #ifdef S390_CRC32_VX
 uint32_t crc32_s390_vx(uint32_t crc, const uint8_t *buf, size_t len);
+uint32_t crc32_copy_s390_vx(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 
 #ifdef __clang__
 #  if ((__clang_major__ == 18) || (__clang_major__ == 19 && (__clang_minor__ < 1 || (__clang_minor__ == 1 && __clang_patchlevel__ < 2))))
@@ -21,6 +22,8 @@ uint32_t crc32_s390_vx(uint32_t crc, const uint8_t *buf, size_t len);
 #  if defined(S390_CRC32_VX) && defined(__zarch__) && __ARCH__ >= 11 && defined(__VX__)
 #    undef native_crc32
 #    define native_crc32 crc32_s390_vx
+#    undef native_crc32_copy
+#    define native_crc32_copy crc32_copy_s390_vx
 #  endif
 #endif
 

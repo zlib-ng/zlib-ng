@@ -1387,7 +1387,6 @@ set(ZLIB_ALL_FALLBACK_SRCS
     arch/generic/chunkset_c.c
     arch/generic/compare256_c.c
     arch/generic/crc32_braid_c.c
-    arch/generic/crc32_fold_c.c
     arch/generic/slide_hash_c.c
 )
 
@@ -1399,7 +1398,6 @@ elseif(BASEARCH_X86_FOUND AND ARCH_64BIT AND WITH_SSE2)
     list(APPEND ZLIB_GENERIC_SRCS
         arch/generic/adler32_c.c
         arch/generic/crc32_braid_c.c
-        arch/generic/crc32_fold_c.c
     )
 
     # x86_64 does not need compare256 fallback if we have BUILTIN_CTZ

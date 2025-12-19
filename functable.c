@@ -82,10 +82,7 @@ static int init_functable(void) {
     ft.adler32 = &adler32_c;
     ft.adler32_copy = &adler32_copy_c;
     ft.crc32 = &crc32_braid;
-    ft.crc32_fold = &crc32_fold_c;
-    ft.crc32_fold_copy = &crc32_fold_copy_c;
-    ft.crc32_fold_final = &crc32_fold_final_c;
-    ft.crc32_fold_reset = &crc32_fold_reset_c;
+    ft.crc32_copy = &crc32_copy_braid;
 #    ifndef HAVE_BUILTIN_CTZ
     ft.longest_match = &longest_match_c;
     ft.longest_match_slow = &longest_match_slow_c;
@@ -97,10 +94,7 @@ static int init_functable(void) {
     ft.adler32_copy = &adler32_copy_c;
     ft.chunkmemset_safe = &chunkmemset_safe_c;
     ft.crc32 = &crc32_braid;
-    ft.crc32_fold = &crc32_fold_c;
-    ft.crc32_fold_copy = &crc32_fold_copy_c;
-    ft.crc32_fold_final = &crc32_fold_final_c;
-    ft.crc32_fold_reset = &crc32_fold_reset_c;
+    ft.crc32_copy = &crc32_copy_braid;
     ft.inflate_fast = &inflate_fast_c;
     ft.slide_hash = &slide_hash_c;
     ft.longest_match = &longest_match_c;
@@ -114,6 +108,7 @@ static int init_functable(void) {
     // Chorba generic C fallback
 #ifndef WITHOUT_CHORBA
     ft.crc32 = &crc32_chorba;
+    ft.crc32_copy = &crc32_copy_chorba;
 #endif
 
     // X86 - SSE2
@@ -125,6 +120,7 @@ static int init_functable(void) {
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
 #  if !defined(WITHOUT_CHORBA_SSE)
         ft.crc32 = &crc32_chorba_sse2;
+        ft.crc32_copy = &crc32_copy_chorba_sse2;
 #  endif
         ft.inflate_fast = &inflate_fast_sse2;
         ft.slide_hash = &slide_hash_sse2;
@@ -148,6 +144,7 @@ static int init_functable(void) {
 #if defined(X86_SSE41) && !defined(WITHOUT_CHORBA_SSE)
     if (cf.x86.has_sse41) {
         ft.crc32 = &crc32_chorba_sse41;
+        ft.crc32_copy = &crc32_copy_chorba_sse41;
     }
 #endif
 
@@ -161,10 +158,7 @@ static int init_functable(void) {
 #ifdef X86_PCLMULQDQ_CRC
     if (cf.x86.has_pclmulqdq) {
         ft.crc32 = &crc32_pclmulqdq;
-        ft.crc32_fold = &crc32_fold_pclmulqdq;
-        ft.crc32_fold_copy = &crc32_fold_pclmulqdq_copy;
-        ft.crc32_fold_final = &crc32_fold_pclmulqdq_final;
-        ft.crc32_fold_reset = &crc32_fold_pclmulqdq_reset;
+        ft.crc32_copy = &crc32_copy_pclmulqdq;
     }
 #endif
     // X86 - AVX
@@ -210,10 +204,7 @@ static int init_functable(void) {
 #ifdef X86_VPCLMULQDQ_CRC
     if (cf.x86.has_pclmulqdq && cf.x86.has_avx512_common && cf.x86.has_vpclmulqdq) {
         ft.crc32 = &crc32_vpclmulqdq;
-        ft.crc32_fold = &crc32_fold_vpclmulqdq;
-        ft.crc32_fold_copy = &crc32_fold_vpclmulqdq_copy;
-        ft.crc32_fold_final = &crc32_fold_vpclmulqdq_final;
-        ft.crc32_fold_reset = &crc32_fold_vpclmulqdq_reset;
+        ft.crc32_copy = &crc32_copy_vpclmulqdq;
     }
 #endif
 
@@ -249,8 +240,7 @@ static int init_functable(void) {
 #ifdef ARM_CRC32
     if (cf.arm.has_crc32) {
         ft.crc32 = &crc32_armv8;
-        ft.crc32_fold = &crc32_fold_armv8;
-        ft.crc32_fold_copy = &crc32_fold_copy_armv8;
+        ft.crc32_copy = &crc32_copy_armv8;
     }
 #endif
 
@@ -272,8 +262,10 @@ static int init_functable(void) {
     }
 #endif
 #ifdef POWER8_VSX_CRC32
-    if (cf.power.has_arch_2_07)
+    if (cf.power.has_arch_2_07) {
         ft.crc32 = &crc32_power8;
+        ft.crc32_copy = &crc32_copy_power8;
+    }
 #endif
     // Power9
 #ifdef POWER9
@@ -303,21 +295,23 @@ static int init_functable(void) {
 #ifdef RISCV_CRC32_ZBC
     if (cf.riscv.has_zbc) {
         ft.crc32 = &crc32_riscv64_zbc;
+        ft.crc32_copy = &crc32_copy_riscv64_zbc;
     }
 #endif
 
     // S390
 #ifdef S390_CRC32_VX
-    if (cf.s390.has_vx)
+    if (cf.s390.has_vx) {
         ft.crc32 = crc32_s390_vx;
+        ft.crc32_copy = crc32_copy_s390_vx;
+    }
 #endif
 
     // LOONGARCH
 #ifdef LOONGARCH_CRC
     if (cf.loongarch.has_crc) {
         ft.crc32 = crc32_loongarch64;
-        ft.crc32_fold = &crc32_fold_loongarch64;
-        ft.crc32_fold_copy = &crc32_fold_copy_loongarch64;
+        ft.crc32_copy = crc32_copy_loongarch64;
     }
 #endif
 #ifdef LOONGARCH_LSX
@@ -358,10 +352,7 @@ static int init_functable(void) {
     FUNCTABLE_VERIFY_ASSIGN(ft, chunkmemset_safe);
     FUNCTABLE_VERIFY_ASSIGN(ft, compare256);
     FUNCTABLE_VERIFY_ASSIGN(ft, crc32);
-    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold);
-    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_copy);
-    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_final);
-    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_fold_reset);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_copy);
     FUNCTABLE_VERIFY_ASSIGN(ft, inflate_fast);
     FUNCTABLE_VERIFY_ASSIGN(ft, longest_match);
     FUNCTABLE_VERIFY_ASSIGN(ft, longest_match_slow);
@@ -403,24 +394,9 @@ static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
     return functable.crc32(crc, buf, len);
 }
 
-static void crc32_fold_stub(crc32_fold* crc, const uint8_t* src, size_t len, uint32_t init_crc) {
+static uint32_t crc32_copy_stub(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
     FUNCTABLE_INIT_ABORT;
-    functable.crc32_fold(crc, src, len, init_crc);
-}
-
-static void crc32_fold_copy_stub(crc32_fold* crc, uint8_t* dst, const uint8_t* src, size_t len) {
-    FUNCTABLE_INIT_ABORT;
-    functable.crc32_fold_copy(crc, dst, src, len);
-}
-
-static uint32_t crc32_fold_final_stub(crc32_fold* crc) {
-    FUNCTABLE_INIT_ABORT;
-    return functable.crc32_fold_final(crc);
-}
-
-static uint32_t crc32_fold_reset_stub(crc32_fold* crc) {
-    FUNCTABLE_INIT_ABORT;
-    return functable.crc32_fold_reset(crc);
+    return functable.crc32_copy(crc, dst, src, len);
 }
 
 static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start) {
@@ -451,10 +427,7 @@ Z_INTERNAL struct functable_s functable = {
     chunkmemset_safe_stub,
     compare256_stub,
     crc32_stub,
-    crc32_fold_stub,
-    crc32_fold_copy_stub,
-    crc32_fold_final_stub,
-    crc32_fold_reset_stub,
+    crc32_copy_stub,
     inflate_fast_stub,
     longest_match_stub,
     longest_match_slow_stub,

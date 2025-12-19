@@ -521,7 +521,7 @@ int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
 
 #ifdef GZIP
     if (s->wrap == 2) {
-        strm->adler = FUNCTABLE_CALL(crc32_fold_reset)(&s->crc_fold);
+        strm->adler = CRC32_INITIAL_VALUE;
     } else
 #endif
         strm->adler = ADLER32_INITIAL_VALUE;
@@ -847,7 +847,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
 #ifdef GZIP
     if (s->status == GZIP_STATE) {
         /* gzip header */
-        FUNCTABLE_CALL(crc32_fold_reset)(&s->crc_fold);
+        strm->adler = CRC32_INITIAL_VALUE;
         put_byte(s, 31);
         put_byte(s, 139);
         put_byte(s, 8);
@@ -964,7 +964,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
                 }
             }
             put_short(s, (uint16_t)strm->adler);
-            FUNCTABLE_CALL(crc32_fold_reset)(&s->crc_fold);
+            strm->adler = CRC32_INITIAL_VALUE;
         }
         s->status = BUSY_STATE;
 
@@ -1035,8 +1035,6 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
     /* Write the trailer */
 #ifdef GZIP
     if (s->wrap == 2) {
-        strm->adler = FUNCTABLE_CALL(crc32_fold_final)(&s->crc_fold);
-
         put_uint32(s, strm->adler);
         put_uint32(s, (uint32_t)strm->total_in);
     } else

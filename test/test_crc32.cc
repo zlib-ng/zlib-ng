@@ -140,7 +140,7 @@ TEST_CRC32(vpclmulqdq, crc32_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq &&
     TEST_CRC32(chorba_sse41, crc32_chorba_sse41, test_cpu_features.x86.has_sse41)
 #   endif
 #endif
-#if defined(LOONGARCH_CRC)
+#ifdef LOONGARCH_CRC
 INSTANTIATE_TEST_SUITE_P(crc32_alignment, crc32_align, testing::ValuesIn(align_offsets));
 TEST_CRC32(loongarch64, crc32_loongarch64, test_cpu_features.loongarch.has_crc)
 TEST_CRC32_ALIGN(loongarch64_align, crc32_loongarch64, test_cpu_features.loongarch.has_crc)

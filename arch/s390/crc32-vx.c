@@ -220,3 +220,9 @@ uint32_t Z_INTERNAL crc32_s390_vx(uint32_t crc, const unsigned char *buf, size_t
 
     return crc;
 }
+
+Z_INTERNAL uint32_t crc32_copy_s390_vx(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
+    crc = crc32_s390_vx(crc, src, len);
+    memcpy(dst, src, len);
+    return crc;
+}

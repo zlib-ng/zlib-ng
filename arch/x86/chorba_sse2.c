@@ -873,4 +873,10 @@ Z_INTERNAL uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t l
     /* Return the CRC, post-conditioned. */
     return c ^ 0xffffffff;
 }
+
+Z_INTERNAL uint32_t crc32_copy_chorba_sse2(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
+    crc = crc32_chorba_sse2(crc, src, len);
+    memcpy(dst, src, len);
+    return crc;
+}
 #endif

@@ -394,6 +394,18 @@ static inline uint32_t crc32_small(uint32_t crc, const uint8_t *buf, size_t len)
     return c ^ 0xffffffff;
 }
 
+static inline uint32_t crc32_small_copy(uint32_t crc, uint8_t *dst, const uint8_t *buf, size_t len) {
+    uint32_t c = (~crc) & 0xffffffff;
+
+    while (len) {
+        len--;
+        *dst++ = *buf;
+        CRC_DO1;
+    }
+
+    return c ^ 0xffffffff;
+}
+
 static inline void crc32_fold_load(__m128i *fold, __m128i *fold0, __m128i *fold1, __m128i *fold2, __m128i *fold3) {
     *fold0 = _mm_load_si128(fold + 0);
     *fold1 = _mm_load_si128(fold + 1);

@@ -23,6 +23,7 @@ void inflate_fast_rvv(PREFIX3(stream) *strm, uint32_t start);
 
 #ifdef RISCV_CRC32_ZBC
 uint32_t crc32_riscv64_zbc(uint32_t crc, const uint8_t *buf, size_t len);
+uint32_t crc32_copy_riscv64_zbc(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
@@ -50,6 +51,8 @@ uint32_t crc32_riscv64_zbc(uint32_t crc, const uint8_t *buf, size_t len);
 #  if (defined(RISCV_CRC32_ZBC) && defined (__riscv_zbc))
 #    undef native_crc32
 #    define native_crc32 crc32_riscv64_zbc
+#    undef native_crc32_copy
+#    define native_crc32_copy crc32_copy_riscv64_zbc
 #  endif
 #endif
 

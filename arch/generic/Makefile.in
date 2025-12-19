@@ -18,7 +18,6 @@ all: \
  compare256_c.o compare256_c.lo \
  crc32_braid_c.o crc32_braid_c.lo \
  crc32_chorba_c.o crc32_chorba_c.lo \
- crc32_fold_c.o crc32_fold_c.lo \
  slide_hash_c.o slide_hash_c.lo
 
 
@@ -51,12 +50,6 @@ crc32_chorba_c.o: $(SRCDIR)/crc32_chorba_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/crc32
 
 crc32_chorba_c.lo: $(SRCDIR)/crc32_chorba_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/crc32_braid_p.h $(SRCTOP)/crc32_braid_tbl.h
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_chorba_c.c
-
-crc32_fold_c.o: $(SRCDIR)/crc32_fold_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/functable.h
-	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_c.c
-
-crc32_fold_c.lo: $(SRCDIR)/crc32_fold_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/functable.h
-	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_fold_c.c
 
 slide_hash_c.o: $(SRCDIR)/slide_hash_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/deflate.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_c.c

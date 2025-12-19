@@ -44,7 +44,7 @@ add_executable(benchmark_zlib
     benchmark_compare256_rle.cc
     benchmark_compress.cc
     benchmark_crc32.cc
-    benchmark_crc32_fold_copy.cc
+    benchmark_crc32_copy.cc
     benchmark_insert_string.cc
     benchmark_main.cc
     benchmark_slidehash.cc

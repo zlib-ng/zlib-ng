@@ -83,6 +83,12 @@ out:
     return crc;
 }
 
+Z_INTERNAL uint32_t crc32_copy_power8(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
+    crc = crc32_power8(crc, src, len);
+    memcpy(dst, src, len);
+    return crc;
+}
+
 /* When we have a load-store in a single-dispatch group and address overlap
  * such that forward is not allowed (load-hit-store) the group must be flushed.
  * A group ending NOP prevents the flush.
