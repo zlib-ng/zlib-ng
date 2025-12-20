@@ -324,7 +324,7 @@ jobs:
 
           - name: Ubuntu GCC 14 LoongArch64 LSX
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-loongarch64-gcc-14.cmake -DWITH_BENCHMARKS=ON -DWITH_LASX=OFF
+            cmake-args: -DCOMPILER_SUFFIX=-14 -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-loongarch64-gcc.cmake -DWITH_BENCHMARKS=ON -DWITH_LASX=OFF
             packages: qemu-user gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc-dev-loong64-cross
             ldflags: -static
             gcov-exec: loongarch64-linux-gnu-gcov-14
@@ -332,7 +332,7 @@ jobs:
 
           - name: Ubuntu GCC 14 LoongArch64
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-loongarch64-gcc-14.cmake -DWITH_BENCHMARKS=ON
+            cmake-args: -DCOMPILER_SUFFIX=-14 -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-loongarch64-gcc.cmake -DWITH_BENCHMARKS=ON
             packages: qemu-user gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc-dev-loong64-cross
             ldflags: -static
             gcov-exec: loongarch64-linux-gnu-gcov-14
