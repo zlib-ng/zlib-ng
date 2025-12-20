@@ -36,7 +36,7 @@ static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
 }
 
 static inline void chunkmemset_16(uint8_t *from, chunk_t *chunk) {
-    *chunk = lasx_broadcastsi128_si256(__lsx_vld(from, 0));
+    *chunk = lasx_broadcast_128(__lsx_vld(from, 0));
 }
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
@@ -64,7 +64,7 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
          * shuffles and combining the halves later */
         __m256i perm_vec = __lasx_xvld(permute_table+lut_rem.idx, 0);
         __m128i ret_vec0 = __lsx_vld(buf, 0);
-        ret_vec = lasx_set_si128(ret_vec0, ret_vec0);
+        ret_vec = __lasx_concat_128(ret_vec0, ret_vec0);
         ret_vec = lasx_shuffle_b(ret_vec, perm_vec);
     }  else {
         __m128i ret_vec0 = __lsx_vld(buf, 0);
@@ -76,7 +76,7 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
         /* Since we can't wrap twice, we can simply keep the later half exactly how it is instead of having to _also_
          * shuffle those values */
         __m128i latter_half = __lsx_vbitsel_v(ret_vec1, xlane_res, xlane_permutes);
-        ret_vec = lasx_set_si128(latter_half, ret_vec0);
+        ret_vec = __lasx_concat_128(ret_vec0, latter_half);
     }
 
     return ret_vec;
@@ -93,7 +93,7 @@ static inline void storehalfchunk(uint8_t *out, halfchunk_t *chunk) {
 static inline chunk_t halfchunk2whole(halfchunk_t *chunk) {
     /* We zero extend mostly to appease some memory sanitizers. These bytes are ultimately
      * unlikely to be actually written or read from */
-    return lasx_zextsi128_si256(*chunk);
+    return lasx_zext_128(*chunk);
 }
 
 static inline halfchunk_t GET_HALFCHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t dist) {
