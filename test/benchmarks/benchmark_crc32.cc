@@ -23,7 +23,7 @@ private:
     uint32_t *random_ints;
 
 public:
-    void SetUp(const ::benchmark::State& state) {
+    void SetUp(const ::benchmark::State&) {
         random_ints = (uint32_t *)zng_alloc(MAX_RANDOM_INTS_SIZE);
         assert(random_ints != NULL);
 
@@ -42,7 +42,7 @@ public:
         benchmark::DoNotOptimize(hash);
     }
 
-    void TearDown(const ::benchmark::State& state) {
+    void TearDown(const ::benchmark::State&) {
         zng_free(random_ints);
     }
 };

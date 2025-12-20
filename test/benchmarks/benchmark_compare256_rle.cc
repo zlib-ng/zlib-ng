@@ -21,7 +21,7 @@ private:
     uint8_t *str2;
 
 public:
-    void SetUp(const ::benchmark::State& state) {
+    void SetUp(const ::benchmark::State&) {
         str1 = (uint8_t *)zng_alloc(MAX_COMPARE_SIZE);
         assert(str1 != NULL);
         memset(str1, 'a', MAX_COMPARE_SIZE);
@@ -44,7 +44,7 @@ public:
         benchmark::DoNotOptimize(len);
     }
 
-    void TearDown(const ::benchmark::State& state) {
+    void TearDown(const ::benchmark::State&) {
         zng_free(str1);
         zng_free(str2);
     }

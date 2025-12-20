@@ -23,7 +23,7 @@ private:
     uint32_t *random_ints;
 
 public:
-    void SetUp(const ::benchmark::State& state) {
+    void SetUp(const ::benchmark::State&) {
         /* Control the alignment so that we have the best case scenario for loads. With
          * AVX512, unaligned loads can mean we're crossing a cacheline boundary at every load.
          * And while this is a realistic scenario, it makes it difficult to compare benchmark
@@ -49,7 +49,7 @@ public:
         benchmark::DoNotOptimize(hash);
     }
 
-    void TearDown(const ::benchmark::State& state) {
+    void TearDown(const ::benchmark::State&) {
         zng_free(random_ints);
     }
 };

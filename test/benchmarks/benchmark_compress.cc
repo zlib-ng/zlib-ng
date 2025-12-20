@@ -26,7 +26,7 @@ private:
     uint8_t *outbuff;
 
 public:
-    void SetUp(const ::benchmark::State& state) {
+    void SetUp(const ::benchmark::State&) {
         const char teststr[42] = "Hello hello World broken Test tast mello.";
         maxlen = MAX_SIZE;
 
@@ -52,7 +52,7 @@ public:
         benchmark::DoNotOptimize(err);
     }
 
-    void TearDown(const ::benchmark::State& state) {
+    void TearDown(const ::benchmark::State&) {
         zng_free(inbuff);
         zng_free(outbuff);
     }

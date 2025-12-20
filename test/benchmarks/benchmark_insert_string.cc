@@ -28,7 +28,7 @@ protected:
     deflate_state *s;
 
 public:
-    void SetUp(const ::benchmark::State& state) {
+    void SetUp(const ::benchmark::State&) {
         s = (deflate_state*)zng_alloc(sizeof(deflate_state));
         memset(s, 0, sizeof(deflate_state));
 
@@ -57,7 +57,7 @@ public:
         }
     }
 
-    void TearDown(const ::benchmark::State& state) {
+    void TearDown(const ::benchmark::State&) {
         zng_free(s->window);
         zng_free(s->head);
         zng_free(s->prev);

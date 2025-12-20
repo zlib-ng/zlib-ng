@@ -30,7 +30,7 @@ private:
     size_t sizes[NUM_TESTS] = {1, 64, 1024, 16384, 128*1024, 1024*1024};
 
 public:
-    void SetUp(const ::benchmark::State& state) {
+    void SetUp(const ::benchmark::State&) {
         const char teststr[42] = "Hello hello World broken Test tast mello.";
         maxlen = MAX_SIZE;
 
@@ -66,7 +66,7 @@ public:
 
         for (auto _ : state) {
             int index = 0;
-            while (sizes[index] != state.range(0)) ++index;
+            while (sizes[index] != (size_t)state.range(0)) ++index;
 
             z_uintmax_t out_size = maxlen;
             err = PREFIX(uncompress)(outbuff, &out_size, compressed_buff[index], compressed_sizes[index]);
@@ -75,7 +75,7 @@ public:
         benchmark::DoNotOptimize(err);
     }
 
-    void TearDown(const ::benchmark::State& state) {
+    void TearDown(const ::benchmark::State&) {
         zng_free(inbuff);
         zng_free(outbuff);
 

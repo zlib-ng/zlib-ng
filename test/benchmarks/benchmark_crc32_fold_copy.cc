@@ -47,7 +47,7 @@ protected:
     uint32_t crc;
 
 public:
-    void SetUp(const ::benchmark::State& state) {
+    void SetUp(const ::benchmark::State&) {
         testdata = (uint32_t *)malloc(BUFSIZE);
         dstbuf = (uint8_t *)malloc(BUFSIZE);
         assert((testdata != NULL) && (dstbuf != NULL));
@@ -80,7 +80,7 @@ public:
         benchmark::DoNotOptimize(crc);
     }
 
-    void TearDown(const ::benchmark::State& state) {
+    void TearDown(const ::benchmark::State&) {
         free(testdata);
         free(dstbuf);
     }

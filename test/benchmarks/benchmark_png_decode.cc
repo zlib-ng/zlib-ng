@@ -16,7 +16,7 @@ public:
         init_compressible(img_bytes, width*height);
     }
 
-    void SetUp(const ::benchmark::State& state) {
+    void SetUp(const ::benchmark::State&) {
         output_img_buf = (uint8_t*)malloc(IMWIDTH * IMHEIGHT * 3);
         assert(output_img_buf != NULL);
         init_img(output_img_buf, IMWIDTH, IMHEIGHT);
@@ -38,7 +38,7 @@ public:
         }
     }
 
-    void TearDown(const ::benchmark::State &state) {
+    void TearDown(const ::benchmark::State &) {
         free(output_img_buf);
         for (int i = 0; i < 10; ++i) {
             free(inpng[i].buf);
@@ -51,7 +51,7 @@ private:
     bool test_files_found = false;
 
 public:
-    void SetUp(const ::benchmark::State &state) {
+    void SetUp(const ::benchmark::State &) {
         output_img_buf = NULL;
         output_img_buf = (uint8_t*)malloc(IMWIDTH * IMHEIGHT * 3);
         /* Let's take all the images at different compression levels and jam their bytes into buffers */

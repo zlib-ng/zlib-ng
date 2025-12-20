@@ -19,7 +19,7 @@ public:
         init_compressible(img_bytes, width * height);
     }
 
-    void SetUp(const ::benchmark::State& state) {
+    void SetUp(const ::benchmark::State&) {
         input_img_buf = (uint8_t*)malloc(IMWIDTH * IMHEIGHT * 3);
         outpng.buf = (uint8_t*)malloc(IMWIDTH * IMHEIGHT * 3);
         /* Using malloc rather than zng_alloc so that we can call realloc.
@@ -42,7 +42,7 @@ public:
         }
     }
 
-    void TearDown(const ::benchmark::State &state) {
+    void TearDown(const ::benchmark::State &) {
         free(input_img_buf);
         free(outpng.buf);
     }

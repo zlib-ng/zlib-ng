@@ -33,7 +33,7 @@ public:
      *
      * @param state Benchmark-provided state object from Google Benchmark (supplied by the framework).
      */
-    void SetUp(const ::benchmark::State& state) {
+    void SetUp(const ::benchmark::State&) {
         l0 = (uint16_t *)zng_alloc_aligned(HASH_SIZE * sizeof(uint16_t), 64);
 
         for (uint32_t i = 0; i < HASH_SIZE; i++) {
@@ -61,7 +61,7 @@ public:
         }
     }
 
-    void TearDown(const ::benchmark::State& state) {
+    void TearDown(const ::benchmark::State&) {
         zng_free_aligned(l0);
         zng_free_aligned(l1);
         free(s_g);
