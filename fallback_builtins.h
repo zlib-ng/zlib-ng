@@ -45,6 +45,15 @@ Z_FORCEINLINE static int __builtin_ctzll(unsigned long long value) {
 #endif // _MSC_VER & !clang
 
 #ifndef HAVE_BUILTIN_BITREVERSE16
+
+#ifdef __loongarch__
+/* LoongArch bit reversal for 16-bit values */
+Z_FORCEINLINE static uint16_t __builtin_bitreverse16(uint16_t value) {
+    uint32_t res;
+    __asm__ volatile("bitrev.w %0, %1" : "=r"(res) : "r"(value));
+    return (uint16_t)(res >> 16);
+}
+#else
 /* Bit reversal for 8-bit values using multiplication method */
 #define bitrev8(value) \
     (uint8_t)((((uint8_t)(value) * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32)
@@ -53,6 +62,9 @@ Z_FORCEINLINE static int __builtin_ctzll(unsigned long long value) {
 Z_FORCEINLINE static uint16_t __builtin_bitreverse16(uint16_t value) {
     return ((bitrev8(value >> 8) | (uint16_t)bitrev8(value) << 8));
 }
+#undef bitrev8
+#endif
+
 #define HAVE_BUILTIN_BITREVERSE16
 #endif
 
