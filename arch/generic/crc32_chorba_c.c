@@ -416,6 +416,15 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
         uint64_t out4;
         uint64_t out5;
 
+/*
+Suppress warning "bitbuffer may be used uninitialized".
+https://github.com/zlib-ng/zlib-ng/issues/1926
+*/
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
+
         in1 = inputqwords[i / sizeof(uint64_t)] ^ bitbufferqwords[(i / sizeof(uint64_t)) % bitbuffersizeqwords];
         in2 = inputqwords[i / sizeof(uint64_t) + 1] ^ bitbufferqwords[(i / sizeof(uint64_t) + 1) % bitbuffersizeqwords];
 #if BYTE_ORDER == BIG_ENDIAN
@@ -443,6 +452,10 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
 #endif
         in3 ^= next3_64 ^ a1;
         in4 ^= next4_64 ^ a2 ^ b1;
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
         c1 = (in3 << 17) ^ (in3 << 55);
         c2 = (in3 >> 47) ^ (in3 >> 9) ^ (in3 << 19);
