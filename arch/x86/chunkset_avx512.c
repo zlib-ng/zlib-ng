@@ -111,13 +111,9 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
      * loads to avoid an out of bounds read on the heap */
 
     if (dist < 16) {
-        const __m256i permute_xform =
-            _mm256_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                             16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16);
         __m256i perm_vec = _mm256_load_si256((__m256i*)(permute_table+lut_rem.idx));
         halfmask_t load_mask = gen_half_mask(dist);
         __m128i ret_vec0 = _mm_maskz_loadu_epi8(load_mask, buf);
-        perm_vec = _mm256_add_epi8(perm_vec, permute_xform);
         ret_vec = _mm256_inserti128_si256(_mm256_castsi128_si256(ret_vec0), ret_vec0, 1);
         ret_vec = _mm256_shuffle_epi8(ret_vec, perm_vec);
     }  else {

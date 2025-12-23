@@ -64,12 +64,8 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
         /* This simpler case still requires us to shuffle in 128 bit lanes, so we must apply a static offset after
          * broadcasting the first vector register to both halves. This is _marginally_ faster than doing two separate
          * shuffles and combining the halves later */
-        const __m256i permute_xform =
-            _mm256_setr_epi8(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                             16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16, 16);
         __m256i perm_vec = _mm256_load_si256((__m256i*)(permute_table+lut_rem.idx));
         __m128i ret_vec0 = _mm_loadu_si128((__m128i*)buf);
-        perm_vec = _mm256_add_epi8(perm_vec, permute_xform);
         ret_vec = _mm256_inserti128_si256(_mm256_castsi128_si256(ret_vec0), ret_vec0, 1);
         ret_vec = _mm256_shuffle_epi8(ret_vec, perm_vec);
     }  else {
