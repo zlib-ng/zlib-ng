@@ -9,7 +9,8 @@
 /* Define BRAID_W and the associated z_word_t type. If BRAID_W is not defined, then a braided
    calculation is not used, and the associated tables and code are not compiled.
  */
-#if defined(__x86_64__) || defined(_M_AMD64) || defined(__aarch64__) || defined(_M_ARM64) || defined(__powerpc64__)
+#if defined(__x86_64__) || defined(_M_AMD64) || defined(__aarch64__) || defined(_M_ARM64) || defined(__powerpc64__) \
+    || (defined(__loongarch__) && __loongarch_grlen == 64) || defined(__e2k__)
 #  define BRAID_W 8
     typedef uint64_t z_word_t;
 #else
