@@ -28,7 +28,7 @@
 #include "crc32_braid_tbl.h"
 #include "x86_intrins.h"
 
-static void fold_1(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
+static inline void fold_1(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold4 = _mm_set_epi32( 0x00000001, 0x54442bd4,
                                              0x00000001, 0xc6e41596);
     __m128i x_tmp3;
@@ -49,7 +49,7 @@ static void fold_1(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m1
     *xmm_crc3 = _mm_castps_si128(ps_res);
 }
 
-static void fold_2(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
+static inline void fold_2(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold4 = _mm_set_epi32( 0x00000001, 0x54442bd4,
                                              0x00000001, 0xc6e41596);
     __m128i x_tmp3, x_tmp2;
@@ -78,7 +78,7 @@ static void fold_2(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m1
     *xmm_crc3 = _mm_castps_si128(ps_res31);
 }
 
-static void fold_3(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
+static inline void fold_3(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold4 = _mm_set_epi32( 0x00000001, 0x54442bd4,
                                              0x00000001, 0xc6e41596);
     __m128i x_tmp3;
@@ -113,7 +113,7 @@ static void fold_3(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m1
     *xmm_crc3 = _mm_castps_si128(ps_res32);
 }
 
-static void fold_4(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
+static inline void fold_4(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold4 = _mm_set_epi32( 0x00000001, 0x54442bd4,
                                              0x00000001, 0xc6e41596);
     __m128i x_tmp0, x_tmp1, x_tmp2, x_tmp3;
@@ -156,7 +156,7 @@ static void fold_4(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m1
     *xmm_crc3 = _mm_castps_si128(ps_res3);
 }
 
-static void fold_12(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
+static inline void fold_12(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold12 = _mm_set_epi64x(0x596C8D81, 0xF5E48C85);
     __m128i x_tmp0, x_tmp1, x_tmp2, x_tmp3;
     __m128 ps_crc0, ps_crc1, ps_crc2, ps_crc3;
@@ -199,7 +199,7 @@ static void fold_12(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m
 }
 
 #ifdef X86_VPCLMULQDQ
-static void fold_16(__m512i *zmm_crc0, __m512i *zmm_crc1, __m512i *zmm_crc2, __m512i *zmm_crc3,
+static inline void fold_16(__m512i *zmm_crc0, __m512i *zmm_crc1, __m512i *zmm_crc2, __m512i *zmm_crc3,
     const __m512i *zmm_t0, const __m512i *zmm_t1, const __m512i *zmm_t2, const __m512i *zmm_t3) {
     const __m512i zmm_fold16 = _mm512_set4_epi32(
         0x00000001, 0x1542778a, 0x00000001, 0x322d1430);
@@ -239,8 +239,8 @@ static const unsigned ALIGNED_(32) pshufb_shf_table[60] = {
     0x0201008f, 0x06050403, 0x0a090807, 0x0e0d0c0b  /* shl  1 (16 -15)/shr15*/
 };
 
-static void partial_fold(const size_t len, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2,
-                         __m128i *xmm_crc3, __m128i *xmm_crc_part) {
+static inline void partial_fold(const size_t len, __m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2,
+    __m128i *xmm_crc3, __m128i *xmm_crc_part) {
     const __m128i xmm_fold4 = _mm_set_epi32(0x00000001, 0x54442bd4,
                                             0x00000001, 0xc6e41596);
     const __m128i xmm_mask3 = _mm_set1_epi32((int32_t)0x80808080);
@@ -333,7 +333,7 @@ static inline uint32_t fold_final(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i 
     return ~crc;
 }
 
-static inline uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
+Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     size_t copy_len = len;
     if (len >= 16) {
         /* Calculate 16-byte alignment offset */
