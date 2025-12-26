@@ -28,23 +28,6 @@
 #include "crc32_braid_tbl.h"
 #include "x86_intrins.h"
 
-static const unsigned ALIGNED_(16) crc_k[] = {
-    0xccaa009e, 0x00000000, /* rk1 */
-    0x751997d0, 0x00000001, /* rk2 */
-    0xccaa009e, 0x00000000, /* rk5 */
-    0x63cd6124, 0x00000001, /* rk6 */
-    0xf7011640, 0x00000001, /* rk7 */
-    0xdb710640, 0x00000001  /* rk8 */
-};
-
-static const unsigned ALIGNED_(16) crc_mask[4] = {
-    0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000
-};
-
-static const unsigned ALIGNED_(16) crc_mask2[4] = {
-    0x00000000, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF
-};
-
 static void fold_1(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold4 = _mm_set_epi32( 0x00000001, 0x54442bd4,
                                              0x00000001, 0xc6e41596);
@@ -316,64 +299,36 @@ static inline uint32_t crc32_copy_small(uint32_t crc, uint8_t *dst, const uint8_
 }
 
 static inline uint32_t fold_final(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
-    const __m128i xmm_mask  = _mm_load_si128((__m128i *)crc_mask);
-    const __m128i xmm_mask2 = _mm_load_si128((__m128i *)crc_mask2);
-    __m128i x_tmp0, x_tmp1, x_tmp2, crc_fold;
+    __m128i x_tmp0, x_tmp1, x_tmp2;
+    const __m128i k12 = _mm_set_epi32(0x00000001, 0x751997d0, 0x00000000, 0xccaa009e);
+    const __m128i barrett_k = _mm_set_epi32(0x00000001, 0xdb710640, 0xb4e5b025, 0xf7011641);
     uint32_t crc;
 
-    /*
-     * k1
-     */
-    crc_fold = _mm_load_si128((__m128i *)crc_k);
-
-    x_tmp0 = _mm_clmulepi64_si128(*xmm_crc0, crc_fold, 0x10);
-    *xmm_crc0 = _mm_clmulepi64_si128(*xmm_crc0, crc_fold, 0x01);
+    /* Fold 4x128-bit into a single 128-bit value using k1/k2 constants */
+    x_tmp0 = _mm_clmulepi64_si128(*xmm_crc0, k12, 0x10);
+    *xmm_crc0 = _mm_clmulepi64_si128(*xmm_crc0, k12, 0x01);
     *xmm_crc1 = _mm_xor_si128(*xmm_crc1, x_tmp0);
     *xmm_crc1 = _mm_xor_si128(*xmm_crc1, *xmm_crc0);
 
-    x_tmp1 = _mm_clmulepi64_si128(*xmm_crc1, crc_fold, 0x10);
-    *xmm_crc1 = _mm_clmulepi64_si128(*xmm_crc1, crc_fold, 0x01);
+    x_tmp1 = _mm_clmulepi64_si128(*xmm_crc1, k12, 0x10);
+    *xmm_crc1 = _mm_clmulepi64_si128(*xmm_crc1, k12, 0x01);
     *xmm_crc2 = _mm_xor_si128(*xmm_crc2, x_tmp1);
     *xmm_crc2 = _mm_xor_si128(*xmm_crc2, *xmm_crc1);
 
-    x_tmp2 = _mm_clmulepi64_si128(*xmm_crc2, crc_fold, 0x10);
-    *xmm_crc2 = _mm_clmulepi64_si128(*xmm_crc2, crc_fold, 0x01);
+    x_tmp2 = _mm_clmulepi64_si128(*xmm_crc2, k12, 0x10);
+    *xmm_crc2 = _mm_clmulepi64_si128(*xmm_crc2, k12, 0x01);
     *xmm_crc3 = _mm_xor_si128(*xmm_crc3, x_tmp2);
     *xmm_crc3 = _mm_xor_si128(*xmm_crc3, *xmm_crc2);
 
-    /*
-     * k5
-     */
-    crc_fold = _mm_load_si128((__m128i *)(crc_k + 4));
+    /* Reduce 128-bits to 32-bits using two-stage Barrett reduction */
+    x_tmp0 = _mm_clmulepi64_si128(*xmm_crc3, barrett_k, 0x00);
+    x_tmp1 = _mm_clmulepi64_si128(x_tmp0, barrett_k, 0x10);
+    x_tmp1 = _mm_and_si128(x_tmp1, _mm_setr_epi32(0, 0, ~0, 0));
+    x_tmp0 = _mm_xor_si128(x_tmp1, *xmm_crc3);
+    x_tmp0 = _mm_clmulepi64_si128(x_tmp0, barrett_k, 0x01);
+    x_tmp0 = _mm_clmulepi64_si128(x_tmp0, barrett_k, 0x10);
 
-    *xmm_crc0 = *xmm_crc3;
-    *xmm_crc3 = _mm_clmulepi64_si128(*xmm_crc3, crc_fold, 0);
-    *xmm_crc0 = _mm_srli_si128(*xmm_crc0, 8);
-    *xmm_crc3 = _mm_xor_si128(*xmm_crc3, *xmm_crc0);
-
-    *xmm_crc0 = *xmm_crc3;
-    *xmm_crc3 = _mm_slli_si128(*xmm_crc3, 4);
-    *xmm_crc3 = _mm_clmulepi64_si128(*xmm_crc3, crc_fold, 0x10);
-    *xmm_crc3 = _mm_xor_si128(*xmm_crc3, *xmm_crc0);
-    *xmm_crc3 = _mm_and_si128(*xmm_crc3, xmm_mask2);
-
-    /*
-     * k7
-     */
-    *xmm_crc1 = *xmm_crc3;
-    *xmm_crc2 = *xmm_crc3;
-    crc_fold = _mm_load_si128((__m128i *)(crc_k + 8));
-
-    *xmm_crc3 = _mm_clmulepi64_si128(*xmm_crc3, crc_fold, 0);
-    *xmm_crc3 = _mm_xor_si128(*xmm_crc3, *xmm_crc2);
-    *xmm_crc3 = _mm_and_si128(*xmm_crc3, xmm_mask);
-
-    *xmm_crc2 = *xmm_crc3;
-    *xmm_crc3 = _mm_clmulepi64_si128(*xmm_crc3, crc_fold, 0x10);
-    *xmm_crc3 = _mm_xor_si128(*xmm_crc3, *xmm_crc2);
-    *xmm_crc3 = _mm_xor_si128(*xmm_crc3, *xmm_crc1);
-
-    crc = ((uint32_t)_mm_extract_epi32(*xmm_crc3, 2));
+    crc = ((uint32_t)_mm_extract_epi32(x_tmp0, 2));
 
     return ~crc;
 }
