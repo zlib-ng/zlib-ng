@@ -97,8 +97,7 @@ BENCHMARK_ADLER32_BASELINE_COPY(neon_copy_baseline, adler32_neon, test_cpu_featu
 #endif
 
 #ifdef PPC_VMX
-//BENCHMARK_ADLER32_COPY(vmx_inline_copy, adler32_copy_vmx, test_cpu_features.power.has_altivec);
-BENCHMARK_ADLER32_BASELINE_COPY(vmx_copy_baseline, adler32_vmx, test_cpu_features.power.has_altivec);
+BENCHMARK_ADLER32_COPY(vmx, adler32_copy_vmx, test_cpu_features.power.has_altivec);
 #endif
 #ifdef POWER8_VSX
 //BENCHMARK_ADLER32_COPY(power8_inline_copy, adler32_copy_power8, test_cpu_features.power.has_arch_2_07);

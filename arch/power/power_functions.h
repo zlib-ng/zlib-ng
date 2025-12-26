@@ -9,6 +9,7 @@
 
 #ifdef PPC_VMX
 uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len);
+uint32_t adler32_copy_vmx(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 void slide_hash_vmx(deflate_state *s);
 #endif
 
@@ -32,6 +33,8 @@ uint32_t longest_match_slow_power9(deflate_state *const s, uint32_t cur_match);
 #  if defined(PPC_VMX) && defined(__ALTIVEC__)
 #    undef native_adler32
 #    define native_adler32 adler32_vmx
+#    undef native_adler32_copy
+#    define native_adler32_copy adler32_copy_vmx
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_vmx
 #  endif
