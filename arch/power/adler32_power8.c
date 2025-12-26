@@ -52,7 +52,7 @@ static inline vector unsigned int vec_sumsu(vector unsigned int __a, vector unsi
     return __a;
 }
 
-Z_INTERNAL uint32_t adler32_power8(uint32_t adler, const uint8_t *buf, size_t len) {
+static inline uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, size_t len) {
     uint32_t s1 = adler & 0xffff;
     uint32_t s2 = (adler >> 16) & 0xffff;
 
@@ -150,4 +150,14 @@ Z_INTERNAL uint32_t adler32_power8(uint32_t adler, const uint8_t *buf, size_t le
     return adler32_copy_len_16(s1, NULL, buf, len, s2, 0);
 }
 
+Z_INTERNAL uint32_t adler32_power8(uint32_t adler, const uint8_t *buf, size_t len) {
+    return adler32_impl(adler, buf, len);
+}
+
+/* VSX/VMX stores can have higher latency than optimized memcpy on POWER8+ */
+Z_INTERNAL uint32_t adler32_copy_power8(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len) {
+    adler = adler32_impl(adler, buf, len);
+    memcpy(dst, buf, len);
+    return adler;
+}
 #endif /* POWER8_VSX */

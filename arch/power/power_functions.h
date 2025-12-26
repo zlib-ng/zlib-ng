@@ -15,6 +15,7 @@ void slide_hash_vmx(deflate_state *s);
 
 #ifdef POWER8_VSX
 uint32_t adler32_power8(uint32_t adler, const uint8_t *buf, size_t len);
+uint32_t adler32_copy_power8(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len);
 uint8_t* chunkmemset_safe_power8(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
 uint32_t crc32_power8(uint32_t crc, const uint8_t *buf, size_t len);
 void slide_hash_power8(deflate_state *s);
@@ -42,6 +43,8 @@ uint32_t longest_match_slow_power9(deflate_state *const s, uint32_t cur_match);
 #  if defined(POWER8_VSX) && defined(_ARCH_PWR8) && defined(__VSX__)
 #    undef native_adler32
 #    define native_adler32 adler32_power8
+#    undef native_adler32_copy
+#    define native_adler32_copy adler32_copy_power8
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_power8
 #    undef native_inflate_fast
