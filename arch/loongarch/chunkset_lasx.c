@@ -62,10 +62,8 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, uint32_t *chunk_rem, uint32_t 
         /* This simpler case still requires us to shuffle in 128 bit lanes, so we must apply a static offset after
          * broadcasting the first vector register to both halves. This is _marginally_ faster than doing two separate
          * shuffles and combining the halves later */
-        const __m256i permute_xform = lasx_set_si128(__lsx_vreplgr2vr_b(16), __lsx_vreplgr2vr_b(0));
         __m256i perm_vec = __lasx_xvld(permute_table+lut_rem.idx, 0);
         __m128i ret_vec0 = __lsx_vld(buf, 0);
-        perm_vec = __lasx_xvadd_b(perm_vec, permute_xform);
         ret_vec = lasx_set_si128(ret_vec0, ret_vec0);
         ret_vec = lasx_shuffle_b(ret_vec, perm_vec);
     }  else {
