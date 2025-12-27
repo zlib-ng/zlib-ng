@@ -1,5 +1,5 @@
 /* benchmark_uncompress.cc -- benchmark uncompress()
- * Copyright (C) 2024 Hans Kristian Rosbach
+ * Copyright (C) 2024-2025 Hans Kristian Rosbach
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -15,6 +15,7 @@ extern "C" {
 #  else
 #    include "zlib-ng.h"
 #  endif
+#  include "compressible_data_p.h"
 }
 
 #define MAX_SIZE (1024 * 1024)
@@ -22,39 +23,39 @@ extern "C" {
 
 class uncompress_bench: public benchmark::Fixture {
 private:
-    size_t maxlen;
     uint8_t *inbuff;
     uint8_t *outbuff;
     uint8_t *compressed_buff[NUM_TESTS];
     z_uintmax_t compressed_sizes[NUM_TESTS];
-    size_t sizes[NUM_TESTS] = {1, 64, 1024, 16384, 128*1024, 1024*1024};
+    uint32_t sizes[NUM_TESTS] = {1, 64, 1024, 16384, 128*1024, 1024*1024};
 
 public:
-    void SetUp(const ::benchmark::State&) {
-        const char teststr[42] = "Hello hello World broken Test tast mello.";
-        maxlen = MAX_SIZE;
+    void SetUp(::benchmark::State& state) {
+        outbuff = (uint8_t *)malloc(MAX_SIZE + 16);
+        if (outbuff == NULL) {
+            state.SkipWithError("malloc failed");
+            return;
+        }
 
-        inbuff = (uint8_t *)zng_alloc(MAX_SIZE + 1);
-        assert(inbuff != NULL);
-
-        outbuff = (uint8_t *)zng_alloc(MAX_SIZE + 1);
-        assert(outbuff != NULL);
-
-        // Initialize input buffer
-        int pos = 0;
-        for (int32_t i = 0; i < MAX_SIZE - 42 ; i+=42){
-           pos += sprintf((char *)inbuff+pos, "%s", teststr);
+        // Initialize input buffer with highly compressible data, interspersed
+        // with small amounts of random data and 3-byte matches.
+        inbuff = gen_compressible_data(MAX_SIZE);
+        if (inbuff == NULL) {
+            free(outbuff);
+            outbuff = NULL;
+            state.SkipWithError("gen_compressible_data() failed");
+            return;
         }
 
         // Compress data into different buffers
-        for (size_t i = 0; i < NUM_TESTS; ++i) {
-            compressed_buff[i] = (uint8_t *)zng_alloc(MAX_SIZE + 1);
+        for (int i = 0; i < NUM_TESTS; ++i) {
+            compressed_buff[i] = (uint8_t *)zng_alloc(sizes[i] + 64);
             assert(compressed_buff[i] != NULL);
 
-            z_uintmax_t compressed_size = maxlen;
-            int err = PREFIX(compress)(compressed_buff[i], &compressed_size, inbuff, sizes[i]);
+            z_uintmax_t compressed_size = sizes[i] + 64;
+            int err = PREFIX(compress2)(compressed_buff[i], &compressed_size, inbuff, sizes[i], Z_BEST_COMPRESSION);
             if (err != Z_OK) {
-                fprintf(stderr, "Compression failed with error %d\n", err);
+                fprintf(stderr, "compress() failed with error %d\n", err);
                 abort();
             }
             compressed_sizes[i] = compressed_size;
@@ -62,24 +63,26 @@ public:
     }
 
     void Bench(benchmark::State& state) {
-        int err = 0;
+        int err;
 
         for (auto _ : state) {
             int index = 0;
-            while (sizes[index] != (size_t)state.range(0)) ++index;
+            while (sizes[index] != (uint32_t)state.range(0)) ++index;
 
-            z_uintmax_t out_size = maxlen;
+            z_uintmax_t out_size = MAX_SIZE;
             err = PREFIX(uncompress)(outbuff, &out_size, compressed_buff[index], compressed_sizes[index]);
+            if (err != Z_OK) {
+                fprintf(stderr, "uncompress() failed with error %d\n", err);
+                abort();
+            }
         }
-
-        benchmark::DoNotOptimize(err);
     }
 
     void TearDown(const ::benchmark::State&) {
-        zng_free(inbuff);
-        zng_free(outbuff);
+        free(inbuff);
+        free(outbuff);
 
-        for (size_t i = 0; i < NUM_TESTS; ++i) {
+        for (int i = 0; i < NUM_TESTS; ++i) {
             zng_free(compressed_buff[i]);
         }
     }
