@@ -53,10 +53,12 @@ rem_peel:
         }
     }
 
-    __m256i vs1, vs2;
+    __m256i vs1, vs2, vs2_0;
 
-    const __m256i dot2v = (__m256i)((v32i8){ 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15,
-                                             14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 });
+    const __m256i dot2v = (__m256i)((v32i8){ 64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47,
+                                             46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33 });
+    const __m256i dot2v_0 = (__m256i)((v32i8){ 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15,
+                                               14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1 });
     const __m256i dot3v = __lasx_xvreplgr2vr_h(1);
     const __m256i zero = __lasx_xvldi(0);
 
@@ -66,10 +68,43 @@ rem_peel:
 
         __m256i vs1_0 = vs1;
         __m256i vs3 = __lasx_xvldi(0);
+        vs2_0 = vs3;
 
         size_t k = MIN(len, NMAX);
         k -= k % 32;
         len -= k;
+
+        while (k >= 64) {
+            __m256i vbuf = __lasx_xvld(src, 0);
+            __m256i vbuf_0 = __lasx_xvld(src, 32);
+            src += 64;
+            k -= 64;
+
+            __m256i vs1_sad = lasx_sad_bu(vbuf, zero);
+            __m256i vs1_sad2 = lasx_sad_bu(vbuf_0, zero);
+
+            if (COPY) {
+                __lasx_xvst(vbuf, dst, 0);
+                __lasx_xvst(vbuf_0, dst, 32);
+                dst += 64;
+            }
+
+            vs1 = __lasx_xvadd_w(vs1, vs1_sad);
+            vs3 = __lasx_xvadd_w(vs3, vs1_0);
+            __m256i v_short_sum2 = lasx_maddubs_w_h(vbuf, dot2v); // sum 32 uint8s to 16 shorts
+            __m256i v_short_sum2_0 = lasx_maddubs_w_h(vbuf_0, dot2v_0); // sum 32 uint8s to 16 shorts
+            __m256i vsum2 = lasx_madd_w_h(v_short_sum2, dot3v); // sum 16 shorts to 8 uint32s
+            __m256i vsum2_0 = lasx_madd_w_h(v_short_sum2_0, dot3v); // sum 16 shorts to 8 uint32s
+            vs1 = __lasx_xvadd_w(vs1_sad2, vs1);
+            vs2 = __lasx_xvadd_w(vsum2, vs2);
+            vs2_0 = __lasx_xvadd_w(vsum2_0, vs2_0);
+            vs1_0 = vs1;
+        }
+
+        vs2 = __lasx_xvadd_w(vs2_0, vs2);
+        vs3 = __lasx_xvslli_w(vs3, 6);
+        vs2 = __lasx_xvadd_w(vs3, vs2);
+        vs3 = __lasx_xvldi(0);
 
         while (k >= 32) {
             /*
@@ -89,8 +124,8 @@ rem_peel:
 
             vs1 = __lasx_xvadd_w(vs1, vs1_sad);
             vs3 = __lasx_xvadd_w(vs3, vs1_0);
-            __m256i v_short_sum2 = __lasx_xvsadd_h(__lasx_xvmulwod_h_bu_b(vbuf, dot2v), __lasx_xvmulwev_h_bu_b(vbuf, dot2v)); // sum 32 uint8s to 16 shorts
-            __m256i vsum2 = __lasx_xvmaddwod_w_h(__lasx_xvmulwev_w_h(v_short_sum2, dot3v), v_short_sum2, dot3v); // sum 16 shorts to 8 uint32s
+            __m256i v_short_sum2 = lasx_maddubs_w_h(vbuf, dot2v_0); // sum 32 uint8s to 16 shorts
+            __m256i vsum2 = lasx_madd_w_h(v_short_sum2, dot3v); // sum 16 shorts to 8 uint32s
             vs2 = __lasx_xvadd_w(vsum2, vs2);
             vs1_0 = vs1;
         }

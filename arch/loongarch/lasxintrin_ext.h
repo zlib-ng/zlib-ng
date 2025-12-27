@@ -38,6 +38,14 @@ static inline __m256i lasx_sad_bu(__m256i a, __m256i b) {
     return __lasx_xvhaddw_du_wu(tmp, tmp);
 }
 
+static inline __m256i lasx_maddubs_w_h(__m256i a, __m256i b) {
+    return __lasx_xvsadd_h(__lasx_xvmulwod_h_bu_b(a, b), __lasx_xvmulwev_h_bu_b(a, b));
+}
+
+static inline __m256i lasx_madd_w_h(__m256i a, __m256i b) {
+    return __lasx_xvmaddwod_w_h(__lasx_xvmulwev_w_h(a, b), a, b);
+}
+
 static inline int lasx_movemask_b(__m256i v) {
     v = __lasx_xvmskltz_b(v);
     return __lasx_xvpickve2gr_w(v, 0) | (__lasx_xvpickve2gr_w(v, 4) << 16);
