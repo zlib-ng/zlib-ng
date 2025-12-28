@@ -18,7 +18,7 @@ extern "C" {
 #  include "compressible_data_p.h"
 }
 
-#define MAX_SIZE (32 * 1024)
+#define MAX_SIZE (64 * 1024)
 
 class compress_bench: public benchmark::Fixture {
 private:
@@ -69,6 +69,6 @@ public:
     BENCHMARK_DEFINE_F(compress_bench, name)(benchmark::State& state) { \
         Bench(state); \
     } \
-    BENCHMARK_REGISTER_F(compress_bench, name)->Arg(1)->Arg(8)->Arg(16)->Arg(32)->Arg(64)->Arg(512)->Arg(4<<10)->Arg(32<<10);
+    BENCHMARK_REGISTER_F(compress_bench, name)->Arg(1)->Arg(16)->Arg(48)->Arg(256)->Arg(1<<10)->Arg(4<<10)->Arg(16<<10)->Arg(64<<10);
 
 BENCHMARK_COMPRESS(compress_bench);
