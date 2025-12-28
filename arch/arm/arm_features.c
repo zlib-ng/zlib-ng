@@ -71,6 +71,109 @@ static int arm_has_crc32(void) {
 #endif
 }
 
+static int arm_has_pmull(void) {
+#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#  ifdef HWCAP_PMULL
+    return (getauxval(AT_HWCAP) & HWCAP_PMULL) != 0 ? 1 : 0;
+#  else
+    /* PMULL is part of crypto extension, check for AES as proxy */
+#    ifdef HWCAP_AES
+    return (getauxval(AT_HWCAP) & HWCAP_AES) != 0 ? 1 : 0;
+#    else
+    return 0;
+#    endif
+#  endif
+#elif defined(__FreeBSD__) && defined(__aarch64__)
+    /* Check for AES feature as PMULL is part of crypto extension */
+    return getenv("QEMU_EMULATING") == NULL
+      && ID_AA64ISAR0_AES_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_AES_BASE;
+#elif defined(__OpenBSD__) && defined(__aarch64__)
+    int haspmull = 0;
+    int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
+    uint64_t isar0 = 0;
+    size_t len = sizeof(isar0);
+    if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
+      if (ID_AA64ISAR0_AES(isar0) >= ID_AA64ISAR0_AES_BASE)
+          haspmull = 1;
+    }
+    return haspmull;
+#elif defined(__APPLE__)
+#  if defined(__aarch64__) || defined(_M_ARM64)
+    int haspmull;
+    size_t size = sizeof(haspmull);
+    return sysctlbyname("hw.optional.arm.FEAT_PMULL", &haspmull, &size, NULL, 0) == 0
+      && haspmull == 1;
+#  else
+    return 0;
+#  endif
+#elif defined(_WIN32)
+    /* Windows checks for crypto/AES support */
+#  ifdef PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE
+    return IsProcessorFeaturePresent(PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE);
+#  else
+    return 0;
+#  endif
+#elif defined(__ARM_FEATURE_CRYPTO) || defined(__ARM_FEATURE_AES)
+    /* Compile-time check */
+    return 1;
+#else
+    return 0;
+#endif
+}
+
+static int arm_has_eor3(void) {
+#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+    /* EOR3 is part of SHA3 extension, check HWCAP2_SHA3 */
+#  ifdef HWCAP2_SHA3
+    return (getauxval(AT_HWCAP2) & HWCAP2_SHA3) != 0 ? 1 : 0;
+#  elif defined(HWCAP_SHA3)
+    return (getauxval(AT_HWCAP) & HWCAP_SHA3) != 0 ? 1 : 0;
+#  else
+    return 0;
+#  endif
+#elif defined(__FreeBSD__) && defined(__aarch64__)
+    /* FreeBSD: check for SHA3 in id_aa64isar0_el1 */
+#  ifdef ID_AA64ISAR0_SHA3_VAL
+    return getenv("QEMU_EMULATING") == NULL
+      && ID_AA64ISAR0_SHA3_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_SHA3_BASE;
+#  else
+    return 0;
+#  endif
+#elif defined(__OpenBSD__) && defined(__aarch64__)
+#  ifdef ID_AA64ISAR0_SHA3
+    int haseor3 = 0;
+    int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
+    uint64_t isar0 = 0;
+    size_t len = sizeof(isar0);
+    if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
+      if (ID_AA64ISAR0_SHA3(isar0) >= ID_AA64ISAR0_SHA3_IMPL)
+          haseor3 = 1;
+    }
+    return haseor3;
+#  else
+    return 0;
+#  endif
+#elif defined(__APPLE__)
+    /* All Apple Silicon (M1+) has SHA3/EOR3 support */
+#  if defined(__aarch64__) || defined(_M_ARM64)
+    int hassha3;
+    size_t size = sizeof(hassha3);
+    return sysctlbyname("hw.optional.armv8_2_sha3", &hassha3, &size, NULL, 0) == 0
+      && hassha3 == 1;
+#  else
+    return 0;
+#  endif
+#elif defined(_WIN32)
+    /* Windows: No direct API for SHA3, return 0 for now */
+    return 0;
+#elif defined(__ARM_FEATURE_SHA3)
+    /* Compile-time check */
+    return 1;
+#else
+    return 0;
+#endif
+}
+
 /* AArch64 has neon. */
 #if !defined(__aarch64__) && !defined(_M_ARM64) && !defined(_M_ARM64EC)
 static inline int arm_has_neon(void) {
@@ -130,4 +233,6 @@ void Z_INTERNAL arm_check_features(struct arm_cpu_features *features) {
     features->has_neon = arm_has_neon();
 #endif
     features->has_crc32 = arm_has_crc32();
+    features->has_pmull = arm_has_pmull();
+    features->has_eor3 = arm_has_eor3();
 }

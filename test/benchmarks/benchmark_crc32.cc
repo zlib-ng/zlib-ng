@@ -76,6 +76,9 @@ BENCHMARK_CRC32(chorba_c, crc32_chorba, 1);
 #ifdef ARM_CRC32
 BENCHMARK_CRC32(armv8, crc32_armv8, test_cpu_features.arm.has_crc32);
 #endif
+#ifdef ARM_PMULL_EOR3
+BENCHMARK_CRC32(armv8_pmull_eor3, crc32_armv8_pmull_eor3, test_cpu_features.arm.has_crc32 && test_cpu_features.arm.has_pmull && test_cpu_features.arm.has_eor3);
+#endif
 #ifdef RISCV_CRC32_ZBC
 BENCHMARK_CRC32(riscv, crc32_riscv64_zbc, test_cpu_features.riscv.has_zbc);
 #endif

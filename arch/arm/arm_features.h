@@ -9,6 +9,8 @@ struct arm_cpu_features {
     int has_simd;
     int has_neon;
     int has_crc32;
+    int has_pmull;
+    int has_eor3;
 };
 
 void Z_INTERNAL arm_check_features(struct arm_cpu_features *features);

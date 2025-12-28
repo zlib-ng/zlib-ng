@@ -23,6 +23,10 @@ void inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start);
 uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_armv8(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
+#ifdef ARM_PMULL_EOR3
+uint32_t crc32_armv8_pmull_eor3(uint32_t crc, const uint8_t *buf, size_t len);
+uint32_t crc32_copy_armv8_pmull_eor3(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
+#endif
 
 #ifdef ARM_SIMD
 void slide_hash_armv6(deflate_state *s);
@@ -62,6 +66,13 @@ void slide_hash_armv6(deflate_state *s);
 #    define native_crc32 crc32_armv8
 #    undef native_crc32_copy
 #    define native_crc32_copy crc32_copy_armv8
+#  endif
+// ARM - PMULL EOR3
+#  if (defined(ARM_PMULL_EOR3) && defined(__ARM_FEATURE_CRC32) && defined(__ARM_FEATURE_CRYPTO) && defined(__ARM_FEATURE_SHA3))
+#    undef native_crc32
+#    define native_crc32 crc32_armv8_pmull_eor3
+#    undef native_crc32_copy
+#    define native_crc32_copy crc32_copy_armv8_pmull_eor3
 #  endif
 #endif
 

@@ -20,7 +20,7 @@ Features
 * Deflate medium and quick algorithms based on Intel’s zlib fork
 * Support for CPU intrinsics when available
   * Adler32 implementation using SSSE3, SSE4.2, AVX2, AVX512, AVX512-VNNI, Neon, VMX & VSX, LSX, LASX, RVV
-  * CRC32-B implementation using SSE2, SSE4.1, (V)PCLMULQDQ, ARMv8, Power8, IBM Z, LoongArch, ZBC
+  * CRC32-B implementation using SSE2, SSE4.1, (V)PCLMULQDQ, ARMv8, ARMv8.2 PMULL+EOR3, Power8, IBM Z, LoongArch, ZBC
   * Slide hash implementations using SSE2, AVX2, ARMv6, Neon, Power8, VMX & VSX, LSX, LASX
   * Compare256 implementations using SSE2, AVX2, AVX512, Neon, Power9, LSX, LASX, RVV
   * Inflate chunk copying using SSE2, SSSE3, AVX2, AVX512, Neon, Power8, VSX, LSX, LASX, RVV

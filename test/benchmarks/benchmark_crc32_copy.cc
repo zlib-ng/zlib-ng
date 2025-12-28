@@ -83,6 +83,9 @@ BENCHMARK_CRC32_COPY(braid, crc32_copy_braid, 1);
 #  ifdef ARM_CRC32
     BENCHMARK_CRC32_COPY(armv8, crc32_copy_armv8, test_cpu_features.arm.has_crc32)
 #  endif
+#  ifdef ARM_PMULL_EOR3
+    BENCHMARK_CRC32_COPY(armv8_pmull_eor3, crc32_copy_armv8_pmull_eor3, test_cpu_features.arm.has_crc32 && test_cpu_features.arm.has_pmull && test_cpu_features.arm.has_eor3)
+#  endif
 #  ifdef LOONGARCH_CRC
     BENCHMARK_CRC32_COPY(loongarch, crc32_copy_loongarch64, test_cpu_features.loongarch.has_crc)
 #  endif

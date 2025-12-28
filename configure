@@ -127,6 +127,7 @@ xsaveflag="-mxsave"
 lsxflag="-mlsx"
 lasxflag="-mlasx"
 armv8flag=
+pmulleor3flag=
 neonflag=
 rvvflag=
 rvvzbcflag=
@@ -1314,6 +1315,49 @@ EOF
     fi
 }
 
+check_armv8_pmull_eor3_intrinsics() {
+    # Check whether -march=armv8.2-a+crc+crypto+sha3 works correctly
+    cat > $test.c << EOF
+int main() { return 0; }
+EOF
+    if try $CC -c $CFLAGS -march=armv8.2-a+crc+crypto+sha3 $test.c; then
+        echo "Check whether -march=armv8.2-a+crc+crypto+sha3 works ... Yes." | tee -a configure.log
+        pmulleor3flag="-march=armv8.2-a+crc+crypto+sha3"
+    else
+        echo "Check whether -march=armv8.2-a+crc+crypto+sha3 works ... No." | tee -a configure.log
+        if try $CC -c $CFLAGS -march=armv8-a+crc+crypto+sha3 $test.c; then
+            echo "Check whether -march=armv8-a+crc+crypto+sha3 works ... Yes." | tee -a configure.log
+            pmulleor3flag="-march=armv8-a+crc+crypto+sha3"
+        else
+            echo "Check whether -march=armv8-a+crc+crypto+sha3 works ... No." | tee -a configure.log
+            pmulleor3flag=""
+        fi
+    fi
+
+    # Check whether compiler supports ARMv8 PMULL + EOR3 intrinsics
+    if test -n "$pmulleor3flag"; then
+        cat > $test.c << EOF
+#include <arm_neon.h>
+poly128_t f(poly64_t a, poly64_t b) {
+    return vmull_p64(a, b);
+}
+uint64x2_t g(uint64x2_t a, uint64x2_t b, uint64x2_t c) {
+    return veor3q_u64(a, b, c);
+}
+int main(void) { return 0; }
+EOF
+        if try ${CC} ${CFLAGS} ${pmulleor3flag} $test.c; then
+            echo "Checking for ARMv8 PMULL+EOR3 intrinsics ... Yes." | tee -a configure.log
+            HAVE_PMULL_EOR3_INTRIN=1
+        else
+            echo "Checking for ARMv8 PMULL+EOR3 intrinsics ... No." | tee -a configure.log
+            HAVE_PMULL_EOR3_INTRIN=0
+        fi
+    else
+        HAVE_PMULL_EOR3_INTRIN=0
+    fi
+}
+
 check_neon_compiler_flag() {
     if test "$ARCH" = "aarch64"; then
         neonflag="-march=armv8-a+simd"
@@ -2107,23 +2151,6 @@ EOF
                 fi
             fi
 
-            if test $buildarmv8 -eq 1; then
-                check_armv8_intrinsics
-
-                if test $HAVE_ARMV8_INTRIN -eq 1 || test $HAVE_ARMV8_INLINE_ASM -eq 1; then
-                    CFLAGS="${CFLAGS} -DARM_CRC32"
-                    SFLAGS="${SFLAGS} -DARM_CRC32"
-
-                    if test $HAVE_ARMV8_INTRIN -eq 1; then
-                        CFLAGS="${CFLAGS} -DARM_CRC32_INTRIN"
-                        SFLAGS="${SFLAGS} -DARM_CRC32_INTRIN"
-                    fi
-
-                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_armv8.o"
-                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_armv8.lo"
-                fi
-            fi
-
             if test $buildneon -eq 1; then
                 check_neon_compiler_flag
 
@@ -2160,6 +2187,35 @@ EOF
                 fi
             fi
 
+            if test $buildarmv8 -eq 1; then
+                check_armv8_intrinsics
+
+                if test $HAVE_ARMV8_INTRIN -eq 1 || test $HAVE_ARMV8_INLINE_ASM -eq 1; then
+                    CFLAGS="${CFLAGS} -DARM_CRC32"
+                    SFLAGS="${SFLAGS} -DARM_CRC32"
+
+                    if test $HAVE_ARMV8_INTRIN -eq 1; then
+                        CFLAGS="${CFLAGS} -DARM_CRC32_INTRIN"
+                        SFLAGS="${SFLAGS} -DARM_CRC32_INTRIN"
+                    fi
+
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_armv8.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_armv8.lo"
+
+                    # Check for PMULL support (requires NEON too)
+                    if test $buildneon -eq 1 && test $NEON_AVAILABLE -eq 1; then
+                        # Check for PMULL+EOR3 support (ARMv8.2-A SHA3 extension)
+                        check_armv8_pmull_eor3_intrinsics
+
+                        if test $HAVE_PMULL_EOR3_INTRIN -eq 1; then
+                            CFLAGS="${CFLAGS} -DARM_PMULL_EOR3"
+                            SFLAGS="${SFLAGS} -DARM_PMULL_EOR3"
+                            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_armv8_pmull_eor3.o"
+                            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_armv8_pmull_eor3.lo"
+                        fi
+                    fi
+                fi
+            fi
         fi
     ;;
     powerpc*)
@@ -2406,6 +2462,7 @@ echo pclmulflag = $pclmulflag >> configure.log
 echo vpclmulflag = $vpclmulflag >> configure.log
 echo xsaveflag = $xsaveflag >> configure.log
 echo armv8flag = $armv8flag >> configure.log
+echo pmulleor3flag = $pmulleor3flag >> configure.log
 echo neonflag = $neonflag >> configure.log
 echo armv6flag = $armv6flag >> configure.log
 echo lsxflag = $lsxflag >> configure.log
@@ -2551,6 +2608,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^VPCLMULFLAG *=/s#=.*#=$vpclmulflag#
 /^XSAVEFLAG *=/s#=.*#=$xsaveflag#
 /^ARMV8FLAG *=/s#=.*#=$armv8flag#
+/^PMULLEOR3FLAG *=/s#=.*#=$pmulleor3flag#
 /^NEONFLAG *=/s#=.*#=$neonflag#
 /^ARMV6FLAG *=/s#=.*#=$armv6flag#
 /^NOLTOFLAG *=/s#=.*#=$noltoflag#

@@ -42,7 +42,6 @@ Z_INTERNAL Z_TARGET_CRC uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, s
             len -= sizeof(uint32_t);
             buf += sizeof(uint32_t);
         }
-
     }
 
     while (len >= sizeof(uint64_t)) {
