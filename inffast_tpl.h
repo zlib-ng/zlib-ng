@@ -151,20 +151,20 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
         REFILL();
         here = lcode[hold & lmask];
         Z_TOUCH(here);
+        DROPBITS(here.bits);
         if (here.op == 0) {
             *out++ = (unsigned char)(here.val);
-            DROPBITS(here.bits);
             here = lcode[hold & lmask];
             Z_TOUCH(here);
+            DROPBITS(here.bits);
             if (here.op == 0) {
                 *out++ = (unsigned char)(here.val);
-                DROPBITS(here.bits);
                 here = lcode[hold & lmask];
                 Z_TOUCH(here);
+                DROPBITS(here.bits);
             }
         }
       dolen:
-        DROPBITS(here.bits);
         op = here.op;
         if (op == 0) {                          /* literal */
             Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
@@ -291,6 +291,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
         } else if ((op & 64) == 0) {              /* 2nd level length code */
             here = lcode[here.val + BITS(op)];
             Z_TOUCH(here);
+            DROPBITS(here.bits);
             goto dolen;
         } else if (op & 32) {                     /* end-of-block */
             Tracevv((stderr, "inflate:         end of block\n"));
