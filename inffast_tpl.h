@@ -147,6 +147,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
         Z_TOUCH(here);
         old = hold;
         DROPBITS(here.bits);
+      preloaded:
         if (LIKELY(here.op == 0)) {
             TRACE_LITERAL(here.val);
             *out++ = (unsigned char)(here.val);
@@ -191,6 +192,13 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                 }
 #endif
                 TRACE_DISTANCE(dist);
+
+                /* preload and shift for next iteration */
+                REFILL();
+                here = lcode[hold & lmask];
+                Z_TOUCH(here);
+                old = hold;
+                DROPBITS(here.bits);
                 op = (unsigned)(out - beg);     /* max distance in output */
                 if (UNLIKELY(dist > op)) {      /* see if copy from window */
                     op = dist - op;             /* distance back in window */
@@ -198,7 +206,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
 #ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
                         if (LIKELY(state->sane)) {
                             SET_BAD("invalid distance too far back");
-                            break;
+                            goto chunk_break;
                         }
                         unsigned gap = op - whave;
                         unsigned zeros = MIN(len, gap);
@@ -206,15 +214,15 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                         out += zeros;
                         len -= zeros;
                         if (UNLIKELY(len == 0))
-                            continue;
+                            goto chunk_continue;
                         op = whave;
                         if (UNLIKELY(op == 0)) {/* copy from already-decoded output */
                             out = chunkcopy_safe(out, out - dist, len, safe);
-                            continue;
+                            goto chunk_continue;
                         }
 #else
                         SET_BAD("invalid distance too far back");
-                        break;
+                        goto chunk_break;
 #endif
                     }
                     from = window;
@@ -269,6 +277,17 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                     else
                         out = CHUNKMEMSET(out, out - dist, len);
                 }
+
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+              chunk_continue:
+#endif
+                if (in < last && out < end)
+                    goto preloaded;
+
+              chunk_break:
+                /* undo pre-shift */
+                hold = old;
+                bits += here.bits;
             } else if (UNLIKELY((op & 64) == 0)) {          /* 2nd level distance code */
                 here = dcode[here.val + BITS(op)];
                 Z_TOUCH(here);
