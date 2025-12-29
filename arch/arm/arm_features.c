@@ -23,10 +23,18 @@
 #  include <sys/sysctl.h>
 #elif defined(_WIN32)
 #  include <windows.h>
+#  ifndef PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE
+#    define PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE 30
+#  endif
+#  ifndef PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE
+#    define PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE 64
+#  endif
 #endif
 
 static int arm_has_crc32(void) {
-#if defined(ARM_AUXV_HAS_CRC32)
+#if defined(__ARM_FEATURE_CRC32)
+    return 1;
+#elif defined(ARM_AUXV_HAS_CRC32)
 #  if defined(__FreeBSD__) || defined(__OpenBSD__)
 #    ifdef HWCAP_CRC32
        unsigned long hwcap = 0;
@@ -64,15 +72,16 @@ static int arm_has_crc32(void) {
       && hascrc32 == 1;
 #elif defined(_WIN32)
     return IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE);
-#elif defined(ARM_NOCHECK_CRC32)
-    return 1;
 #else
     return 0;
 #endif
 }
 
 static int arm_has_pmull(void) {
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#if defined(__ARM_FEATURE_CRYPTO) || defined(__ARM_FEATURE_AES)
+    /* Compile-time check */
+    return 1;
+#elif defined(__linux__) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_PMULL
     return (getauxval(AT_HWCAP) & HWCAP_PMULL) != 0 ? 1 : 0;
 #  else
@@ -108,21 +117,17 @@ static int arm_has_pmull(void) {
 #  endif
 #elif defined(_WIN32)
     /* Windows checks for crypto/AES support */
-#  ifdef PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE
     return IsProcessorFeaturePresent(PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE);
-#  else
-    return 0;
-#  endif
-#elif defined(__ARM_FEATURE_CRYPTO) || defined(__ARM_FEATURE_AES)
-    /* Compile-time check */
-    return 1;
 #else
     return 0;
 #endif
 }
 
 static int arm_has_eor3(void) {
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#if defined(__ARM_FEATURE_SHA3)
+    /* Compile-time check */
+    return 1;
+#elif defined(__linux__) && defined(HAVE_SYS_AUXV_H)
     /* EOR3 is part of SHA3 extension, check HWCAP2_SHA3 */
 #  ifdef HWCAP2_SHA3
     return (getauxval(AT_HWCAP2) & HWCAP2_SHA3) != 0 ? 1 : 0;
@@ -168,11 +173,7 @@ static int arm_has_eor3(void) {
     return 0;
 #  endif
 #elif defined(_WIN32)
-    /* Windows: No direct API for SHA3, return 0 for now */
-    return 0;
-#elif defined(__ARM_FEATURE_SHA3)
-    /* Compile-time check */
-    return 1;
+    return IsProcessorFeaturePresent(PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE);
 #else
     return 0;
 #endif
