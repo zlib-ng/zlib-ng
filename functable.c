@@ -114,7 +114,7 @@ static int init_functable(void) {
     // X86 - SSE2
 #ifdef X86_SSE2
 #  if !defined(__x86_64__) && !defined(_M_X64)
-    if (cf.x86.has_sse2)
+    if (cf.x86.has_sse2 || has_static_sse2)
 #  endif
     {
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
@@ -133,7 +133,7 @@ static int init_functable(void) {
 #endif
     // X86 - SSSE3
 #ifdef X86_SSSE3
-    if (cf.x86.has_ssse3) {
+    if (cf.x86.has_ssse3 || has_static_ssse3) {
         ft.adler32 = &adler32_ssse3;
         ft.adler32_copy = &adler32_copy_ssse3;
         ft.chunkmemset_safe = &chunkmemset_safe_ssse3;
@@ -143,7 +143,7 @@ static int init_functable(void) {
 
     // X86 - SSE4.1
 #if defined(X86_SSE41) && !defined(WITHOUT_CHORBA_SSE)
-    if (cf.x86.has_sse41) {
+    if (cf.x86.has_sse41 || has_static_sse41) {
         ft.crc32 = &crc32_chorba_sse41;
         ft.crc32_copy = &crc32_copy_chorba_sse41;
     }
@@ -151,13 +151,13 @@ static int init_functable(void) {
 
     // X86 - SSE4.2
 #ifdef X86_SSE42
-    if (cf.x86.has_sse42) {
+    if (cf.x86.has_sse42 || has_static_sse42) {
         ft.adler32_copy = &adler32_copy_sse42;
     }
 #endif
     // X86 - PCLMUL
 #ifdef X86_PCLMULQDQ_CRC
-    if (cf.x86.has_pclmulqdq) {
+    if (cf.x86.has_pclmulqdq || has_static_pclmulqdq) {
         ft.crc32 = &crc32_pclmulqdq;
         ft.crc32_copy = &crc32_copy_pclmulqdq;
     }
@@ -168,7 +168,7 @@ static int init_functable(void) {
      * flagless shifts, resulting in fewer flag stalls for the pipeline, and allows us to set destination registers
      * for the shift results as an operand, eliminating several register-register moves when the original value needs
      * to remain intact. They also allow for a count operand that isn't the CL register, avoiding contention there */
-    if (cf.x86.has_avx2 && cf.x86.has_bmi2) {
+    if ((cf.x86.has_avx2 && cf.x86.has_bmi2) || (has_static_avx2 && has_static_bmi2)) {
         ft.adler32 = &adler32_avx2;
         ft.adler32_copy = &adler32_copy_avx2;
         ft.chunkmemset_safe = &chunkmemset_safe_avx2;
@@ -183,7 +183,7 @@ static int init_functable(void) {
 #endif
     // X86 - AVX512 (F,DQ,BW,Vl)
 #ifdef X86_AVX512
-    if (cf.x86.has_avx512_common) {
+    if (cf.x86.has_avx512_common || has_static_avx512_common) {
         ft.adler32 = &adler32_avx512;
         ft.adler32_copy = &adler32_copy_avx512;
         ft.chunkmemset_safe = &chunkmemset_safe_avx512;
@@ -196,14 +196,14 @@ static int init_functable(void) {
     }
 #endif
 #ifdef X86_AVX512VNNI
-    if (cf.x86.has_avx512vnni) {
+    if (cf.x86.has_avx512vnni || has_static_avx512vnni) {
         ft.adler32 = &adler32_avx512_vnni;
         ft.adler32_copy = &adler32_copy_avx512_vnni;
     }
 #endif
     // X86 - VPCLMULQDQ
 #ifdef X86_VPCLMULQDQ_CRC
-    if (cf.x86.has_pclmulqdq && cf.x86.has_avx512_common && cf.x86.has_vpclmulqdq) {
+    if ((cf.x86.has_pclmulqdq && cf.x86.has_avx512_common && cf.x86.has_vpclmulqdq) || (has_static_pclmulqdq && has_static_avx512_common && has_static_vpclmulqdq)) {
         ft.crc32 = &crc32_vpclmulqdq;
         ft.crc32_copy = &crc32_copy_vpclmulqdq;
     }

@@ -27,4 +27,55 @@ struct x86_cpu_features {
 
 void Z_INTERNAL x86_check_features(struct x86_cpu_features *features);
 
+#if defined(__SSE2__)
+#define has_static_sse2 1
+#else
+#define has_static_sse2 0
+#endif
+#if defined(__SSSE3__)
+#define has_static_ssse3 1
+#else
+#define has_static_ssse3 0
+#endif
+#if defined(__SSE4_1__)
+#define has_static_sse41 1
+#else
+#define has_static_sse41 0
+#endif
+#if defined(__SSE4_2__)
+#define has_static_sse42 1
+#else
+#define has_static_sse42 0
+#endif
+#if defined(__PCLMUL__)
+#define has_static_pclmulqdq 1
+#else
+#define has_static_pclmulqdq 0
+#endif
+#if defined(__AVX2__)
+#define has_static_avx2 1
+#else
+#define has_static_avx2 0
+#endif
+#if defined(__BMI2__)
+#define has_static_bmi2 1
+#else
+#define has_static_bmi2 0
+#endif
+#if defined(__AVX512F__) && defined(__AVX512DQ__) && defined(__AVX512BW__) && defined(__AVX512VL__) && defined(__BMI2__)
+#define has_static_avx512_common 1
+#else
+#define has_static_avx512_common 0
+#endif
+#if defined(__AVX512VNNI__)
+#define has_static_avx512vnni 1
+#else
+#define has_static_avx512vnni 0
+#endif
+#if defined(__VPCLMULQDQ__)
+#define has_static_vpclmulqdq 1
+#else
+#define has_static_vpclmulqdq 0
+#endif
+
 #endif /* X86_FEATURES_H_ */
