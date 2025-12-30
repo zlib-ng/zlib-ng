@@ -37,9 +37,11 @@ public:
         assert(outbuff != NULL);
 
         int pos = 0;
-        for (int32_t i = 0; i < MAX_SIZE - 42 ; i+=42){
-           pos += sprintf((char *)inbuff+pos, "%s", teststr);
+        while (pos < MAX_SIZE) {
+            inbuff[pos] = teststr[pos % 41];
+            pos++;
         }
+        inbuff[pos] = '\0';
     }
 
     void Bench(benchmark::State& state) {
