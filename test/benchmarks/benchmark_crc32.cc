@@ -89,11 +89,9 @@ BENCHMARK_CRC32(power8, crc32_power8, test_cpu_features.power.has_arch_2_07);
 BENCHMARK_CRC32(vx, crc32_s390_vx, test_cpu_features.s390.has_vx);
 #endif
 #ifdef X86_PCLMULQDQ_CRC
-/* CRC32 fold does a memory copy while hashing */
 BENCHMARK_CRC32(pclmulqdq, crc32_pclmulqdq, test_cpu_features.x86.has_pclmulqdq);
 #endif
 #ifdef X86_VPCLMULQDQ_CRC
-/* CRC32 fold does a memory copy while hashing */
 BENCHMARK_CRC32(vpclmulqdq, crc32_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq));
 #endif
 #ifdef LOONGARCH_CRC
