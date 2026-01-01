@@ -887,7 +887,7 @@ jobs:
         show-progress: false
 
     - name: Download all reports
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         merge-multiple: true
 
