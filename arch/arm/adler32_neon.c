@@ -20,7 +20,7 @@ static const uint16_t ALIGNED_(64) taps[64] = {
     16, 15, 14, 13, 12, 11, 10, 9,
     8, 7, 6, 5, 4, 3, 2, 1 };
 
-static Z_FORCEINLINE void NEON_accum32_copy(uint32_t *s, uint8_t *dst, const uint8_t *buf, size_t len) {
+Z_FORCEINLINE static void NEON_accum32_copy(uint32_t *s, uint8_t *dst, const uint8_t *buf, size_t len) {
     uint32x4_t adacc = vdupq_n_u32(0);
     uint32x4_t s2acc = vdupq_n_u32(0);
     uint32x4_t s2acc_0 = vdupq_n_u32(0);
@@ -144,7 +144,7 @@ static Z_FORCEINLINE void NEON_accum32_copy(uint32_t *s, uint8_t *dst, const uin
     s[1] = vget_lane_u32(as, 1);
 }
 
-static Z_FORCEINLINE void NEON_accum32(uint32_t *s, const uint8_t *buf, size_t len) {
+Z_FORCEINLINE static void NEON_accum32(uint32_t *s, const uint8_t *buf, size_t len) {
     uint32x4_t adacc = vdupq_n_u32(0);
     uint32x4_t s2acc = vdupq_n_u32(0);
     uint32x4_t s2acc_0 = vdupq_n_u32(0);
@@ -265,7 +265,7 @@ static void NEON_handle_tail(uint32_t *pair, const uint8_t *buf, size_t len) {
     }
 }
 
-static Z_FORCEINLINE uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
+Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     /* split Adler-32 into component sums */
     uint32_t sum2 = (adler >> 16) & 0xffff;
     adler &= 0xffff;

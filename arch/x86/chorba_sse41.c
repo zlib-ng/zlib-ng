@@ -52,7 +52,7 @@
     out3 = _mm_xor_si128(in[4], xor3); \
     } while (0)
 
-static Z_FORCEINLINE uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t crc, const uint64_t* buf, size_t len) {
+Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t crc, const uint64_t* buf, size_t len) {
     const uint64_t* input = buf;
     ALIGNED_(16) uint64_t bitbuffer[32768 / sizeof(uint64_t)];
     __m128i *bitbuffer_v = (__m128i*)bitbuffer;

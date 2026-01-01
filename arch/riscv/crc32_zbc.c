@@ -31,8 +31,7 @@ static inline uint64_t clmulh(uint64_t a, uint64_t b) {
   return res;
 }
 
-static inline uint32_t crc32_clmul_impl(uint64_t crc, const unsigned char *buf,
-                                        uint64_t len) {
+Z_FORCEINLINE static uint32_t crc32_clmul_impl(uint64_t crc, const unsigned char *buf, uint64_t len) {
   const uint64_t *buf64 = (const uint64_t *)buf;
   uint64_t low = buf64[0] ^ crc;
   uint64_t high = buf64[1];

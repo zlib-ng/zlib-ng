@@ -52,7 +52,7 @@ static inline vector unsigned int vec_sumsu(vector unsigned int __a, vector unsi
     return __a;
 }
 
-static inline uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, size_t len) {
+Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, size_t len) {
     uint32_t s1 = adler & 0xffff;
     uint32_t s2 = (adler >> 16) & 0xffff;
 

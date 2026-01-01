@@ -18,7 +18,7 @@
 extern uint32_t adler32_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *src, size_t len);
 
-static inline uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
+Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     if (UNLIKELY(src == NULL)) return 1L;
     if (UNLIKELY(len == 0)) return adler;
 

@@ -14,7 +14,7 @@
 
 #include <immintrin.h>
 
-static inline uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, size_t len) {
+Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, size_t len) {
     uint32_t sum2;
 
      /* split Adler-32 into component sums */

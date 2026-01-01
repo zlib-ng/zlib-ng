@@ -29,7 +29,7 @@ static inline uint32_t hsum(__m128i x) {
     return __lsx_vpickve2gr_w(sum4, 0);
 }
 
-static inline uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
+Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     if (UNLIKELY(src == NULL)) return 1L;
     if (UNLIKELY(len == 0)) return adler;
 
