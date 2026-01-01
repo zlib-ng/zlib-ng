@@ -72,15 +72,30 @@ static int arm_has_crc32(void) {
 }
 
 static int arm_has_pmull(void) {
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
-#  ifdef HWCAP_PMULL
-    return (getauxval(AT_HWCAP) & HWCAP_PMULL) != 0 ? 1 : 0;
-#  else
-    /* PMULL is part of crypto extension, check for AES as proxy */
-#    ifdef HWCAP_AES
-    return (getauxval(AT_HWCAP) & HWCAP_AES) != 0 ? 1 : 0;
+#if (defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
+#  if defined(__FreeBSD__) || defined(__OpenBSD__)
+     unsigned long hwcap = 0;
+     elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+#    ifdef HWCAP_PMULL
+      return (hwcap & HWCAP_PMULL) != 0 ? 1 : 0;
 #    else
-    return 0;
+      /* PMULL is part of crypto extension, check for AES as proxy */
+#      ifdef HWCAP_AES
+      return (hwcap & HWCAP_AES) != 0 ? 1 : 0;
+#      else
+      return 0;
+#      endif
+#    endif
+#  else
+#    ifdef HWCAP_PMULL
+      return (getauxval(AT_HWCAP) & HWCAP_PMULL) != 0 ? 1 : 0;
+#    else
+      /* PMULL is part of crypto extension, check for AES as proxy */
+#      ifdef HWCAP_AES
+      return (getauxval(AT_HWCAP) & HWCAP_AES) != 0 ? 1 : 0;
+#      else
+      return 0;
+#      endif
 #    endif
 #  endif
 #elif defined(__FreeBSD__) && defined(__aarch64__)
@@ -122,14 +137,29 @@ static int arm_has_pmull(void) {
 }
 
 static int arm_has_eor3(void) {
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
-    /* EOR3 is part of SHA3 extension, check HWCAP2_SHA3 */
-#  ifdef HWCAP2_SHA3
-    return (getauxval(AT_HWCAP2) & HWCAP2_SHA3) != 0 ? 1 : 0;
-#  elif defined(HWCAP_SHA3)
-    return (getauxval(AT_HWCAP) & HWCAP_SHA3) != 0 ? 1 : 0;
+#if (defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
+#  if defined(__FreeBSD__) || defined(__OpenBSD__)
+      /* EOR3 is part of SHA3 extension, check HWCAP2_SHA3 */
+#    ifdef HWCAP2_SHA3
+      unsigned long hwcap2 = 0;
+      elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
+      return (hwcap2 & HWCAP2_SHA3) != 0 ? 1 : 0;
+#    elif defined(HWCAP_SHA3)
+      unsigned long hwcap = 0;
+      elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+      return (hwcap & HWCAP_SHA3) != 0 ? 1 : 0;
+#    else
+      return 0;
+#    endif
 #  else
-    return 0;
+      /* EOR3 is part of SHA3 extension, check HWCAP2_SHA3 */
+#    ifdef HWCAP2_SHA3
+      return (getauxval(AT_HWCAP2) & HWCAP2_SHA3) != 0 ? 1 : 0;
+#    elif defined(HWCAP_SHA3)
+      return (getauxval(AT_HWCAP) & HWCAP_SHA3) != 0 ? 1 : 0;
+#    else
+      return 0;
+#    endif
 #  endif
 #elif defined(__FreeBSD__) && defined(__aarch64__)
     /* FreeBSD: check for SHA3 in id_aa64isar0_el1 */
