@@ -360,12 +360,13 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         len -= 16;
         xmm_t0 = _mm_load_si128((__m128i *)src);
         src += 16;
+
+        fold_1(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             dst += 16;
         }
         xmm_t0 = _mm_xor_si128(xmm_t0, _mm_cvtsi32_si128(crc));
-        fold_1(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
         xmm_crc3 = _mm_xor_si128(xmm_crc3, xmm_t0);
     }
 
@@ -409,6 +410,8 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
             zmm_t2 = _mm512_loadu_si512((__m512i *)src + 2);
             zmm_t3 = _mm512_loadu_si512((__m512i *)src + 3);
             src += 256;
+
+            fold_16(&zmm_crc0, &zmm_crc1, &zmm_crc2, &zmm_crc3, &zmm_t0, &zmm_t1, &zmm_t2, &zmm_t3);
             if (COPY) {
                 _mm512_storeu_si512((__m512i *)dst, zmm_t0);
                 _mm512_storeu_si512((__m512i *)dst + 1, zmm_t1);
@@ -416,8 +419,6 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
                 _mm512_storeu_si512((__m512i *)dst + 3, zmm_t3);
                 dst += 256;
             }
-
-            fold_16(&zmm_crc0, &zmm_crc1, &zmm_crc2, &zmm_crc3, &zmm_t0, &zmm_t1, &zmm_t2, &zmm_t3);
         }
 
         // zmm_crc[0,1,2,3] -> zmm_crc0
@@ -697,13 +698,14 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t1 = _mm_load_si128((__m128i *)src + 1);
         xmm_t2 = _mm_load_si128((__m128i *)src + 2);
         src += 48;
+
+        fold_3(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
             _mm_storeu_si128((__m128i *)dst + 2, xmm_t2);
             dst += 48;
         }
-        fold_3(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 
         xmm_crc1 = _mm_xor_si128(xmm_crc1, xmm_t0);
         xmm_crc2 = _mm_xor_si128(xmm_crc2, xmm_t1);
@@ -714,12 +716,13 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t0 = _mm_load_si128((__m128i *)src);
         xmm_t1 = _mm_load_si128((__m128i *)src + 1);
         src += 32;
+
+        fold_2(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
             dst += 32;
         }
-        fold_2(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 
         xmm_crc2 = _mm_xor_si128(xmm_crc2, xmm_t0);
         xmm_crc3 = _mm_xor_si128(xmm_crc3, xmm_t1);
@@ -727,11 +730,12 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         len -= 16;
         xmm_t0 = _mm_load_si128((__m128i *)src);
         src += 16;
+
+        fold_1(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             dst += 16;
         }
-        fold_1(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
 
         xmm_crc3 = _mm_xor_si128(xmm_crc3, xmm_t0);
     }
