@@ -210,7 +210,7 @@ static inline uint32_t fold_final(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i 
     __m128i x_tmp0 = _mm_clmulepi64_si128(*xmm_crc3, barrett_k, 0x00);
     __m128i x_tmp1 = _mm_clmulepi64_si128(x_tmp0, barrett_k, 0x10);
 
-    x_tmp1 = _mm_and_si128(x_tmp1, _mm_setr_epi32(0, 0, ~0, 0));
+    x_tmp1 = _mm_blend_epi16(x_tmp1, _mm_setzero_si128(), 0xcf);
     x_tmp0 = _mm_xor_si128(x_tmp1, *xmm_crc3);
 
     __m128i x_res_a = _mm_clmulepi64_si128(x_tmp0, barrett_k, 0x01);
