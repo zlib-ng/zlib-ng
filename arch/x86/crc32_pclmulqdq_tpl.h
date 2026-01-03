@@ -310,8 +310,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_crc2 = _mm512_extracti32x4_epi32(zmm_crc0, 2);
         xmm_crc3 = _mm512_extracti32x4_epi32(zmm_crc0, 3);
     }
-#endif
-
+#else
     /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398
      * We interleave the PCLMUL-base folds with 8x scaled generator
      * polynomial copies; we read 8x QWORDS and then XOR them into
@@ -505,6 +504,8 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
 #ifndef __AVX512VL__
     }
 #endif
+
+#endif  /* X86_VPCLMULQDQ */
 
     while (len >= 64) {
         len -= 64;
