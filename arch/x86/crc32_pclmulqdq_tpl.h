@@ -242,36 +242,36 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
     if (len >= 256) {
         len -= 256;
 
-        // zmm register init from xmm state and first 256 bytes
-        __m512i zmm_crc0 = _mm512_setzero_si512();
-        __m512i zmm_crc1, zmm_crc2, zmm_crc3;
+        __m512i zmm_crc0, zmm_crc1, zmm_crc2, zmm_crc3;
         __m512i zmm_t0, zmm_t1, zmm_t2, zmm_t3;
+        __m512i z_low0, z_high0;
         const __m512i zmm_fold4 = _mm512_set4_epi32(
             0x00000001, 0x54442bd4, 0x00000001, 0xc6e41596);
         const __m512i zmm_fold16 = _mm512_set4_epi32(
             0x00000001, 0x1542778a, 0x00000001, 0x322d1430);
 
-        zmm_t0 = _mm512_loadu_si512((__m512i *)src);
+        zmm_crc0 = _mm512_loadu_si512((__m512i *)src);
         zmm_crc1 = _mm512_loadu_si512((__m512i *)src + 1);
         zmm_crc2 = _mm512_loadu_si512((__m512i *)src + 2);
         zmm_crc3 = _mm512_loadu_si512((__m512i *)src + 3);
         src += 256;
         if (COPY) {
-            _mm512_storeu_si512((__m512i *)dst, zmm_t0);
+            _mm512_storeu_si512((__m512i *)dst, zmm_crc0);
             _mm512_storeu_si512((__m512i *)dst + 1, zmm_crc1);
             _mm512_storeu_si512((__m512i *)dst + 2, zmm_crc2);
             _mm512_storeu_si512((__m512i *)dst + 3, zmm_crc3);
             dst += 256;
         }
 
-        // Combine 4 partial CRCs into zmm_crc0 using clmul with the folding polynomial (zmm_fold4)
-        zmm_crc0 = _mm512_inserti32x4(zmm_crc0, xmm_crc0, 0);
-        zmm_crc0 = _mm512_inserti32x4(zmm_crc0, xmm_crc1, 1);
-        zmm_crc0 = _mm512_inserti32x4(zmm_crc0, xmm_crc2, 2);
-        zmm_crc0 = _mm512_inserti32x4(zmm_crc0, xmm_crc3, 3);
-        __m512i z0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
-        zmm_crc0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-        zmm_crc0 = _mm512_ternarylogic_epi32(zmm_crc0, z0, zmm_t0, 0x96);
+        // Fold existing xmm state into first 64 bytes
+        zmm_t0 = _mm512_inserti32x4(_mm512_setzero_si512(), xmm_crc0, 0);
+        zmm_t0 = _mm512_inserti32x4(zmm_t0, xmm_crc1, 1);
+        zmm_t0 = _mm512_inserti32x4(zmm_t0, xmm_crc2, 2);
+        zmm_t0 = _mm512_inserti32x4(zmm_t0, xmm_crc3, 3);
+
+        z_low0 = _mm512_clmulepi64_epi128(zmm_t0, zmm_fold4, 0x01);
+        z_high0 = _mm512_clmulepi64_epi128(zmm_t0, zmm_fold4, 0x10);
+        zmm_crc0 = _mm512_ternarylogic_epi32(zmm_crc0, z_low0, z_high0, 0x96);
 
         while (len >= 256) {
             len -= 256;
@@ -292,17 +292,17 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         }
 
         // zmm_crc[0,1,2,3] -> zmm_crc0
-        z0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
-        zmm_crc0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-        zmm_crc0 = _mm512_ternarylogic_epi32(zmm_crc0, z0, zmm_crc1, 0x96);
+        z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
+        z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
+        zmm_crc0 = _mm512_ternarylogic_epi32(z_low0, z_high0, zmm_crc1, 0x96);
 
-        z0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
-        zmm_crc0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-        zmm_crc0 = _mm512_ternarylogic_epi32(zmm_crc0, z0, zmm_crc2, 0x96);
+        z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
+        z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
+        zmm_crc0 = _mm512_ternarylogic_epi32(z_low0, z_high0, zmm_crc2, 0x96);
 
-        z0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
-        zmm_crc0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-        zmm_crc0 = _mm512_ternarylogic_epi32(zmm_crc0, z0, zmm_crc3, 0x96);
+        z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
+        z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
+        zmm_crc0 = _mm512_ternarylogic_epi32(z_low0, z_high0, zmm_crc3, 0x96);
 
         // zmm_crc0 -> xmm_crc[0, 1, 2, 3]
         xmm_crc0 = _mm512_extracti32x4_epi32(zmm_crc0, 0);
