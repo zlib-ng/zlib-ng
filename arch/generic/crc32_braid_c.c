@@ -70,10 +70,10 @@ Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t 
         int k;
 
         /* Compute the CRC up to a z_word_t boundary. */
-        while (len && ((uintptr_t)buf & (BRAID_W - 1)) != 0) {
-            len--;
+        size_t align_diff = (size_t)MIN(ALIGN_DIFF(buf, BRAID_W), len);
+        len -= align_diff;
+        while (align_diff--)
             CRC_DO1;
-        }
 
         /* Compute the CRC on as many BRAID_N z_word_t blocks as are available. */
         blks = len / (BRAID_N * BRAID_W);

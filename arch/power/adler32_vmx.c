@@ -123,7 +123,7 @@ static inline uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, size_t l
     uint32_t pair[16] ALIGNED_(16);
     memset(&pair[2], 0, 14);
     int n = NMAX;
-    unsigned int done = 0, i;
+    unsigned int done = 0;
 
     /* Split Adler-32 into component sums, it can be supplied by
      * the caller sites (e.g. in a PNG file).
@@ -146,23 +146,17 @@ static inline uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, size_t l
         return adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
 
     // Align buffer
-    unsigned int al = 0;
-    if ((uintptr_t)buf & 0xf) {
-        al = 16-((uintptr_t)buf & 0xf);
-        if (al > len) {
-            al=len;
-        }
-        vmx_handle_head_or_tail(pair, buf, al);
-
-        done += al;
+    size_t align_len = (size_t)MIN(ALIGN_DIFF(buf, 16), len);
+    if (align_len) {
+        vmx_handle_head_or_tail(pair, buf, align_len);
+        done += align_len;
         /* Rather than rebasing, we can reduce the max sums for the
          * first round only */
-        n -= al;
+        n -= align_len;
     }
-    for (i = al; i < len; i += n) {
+    for (size_t i = align_len; i < len; i += n) {
         int remaining = (int)(len-i);
-        n = MIN(remaining, (i == al) ? n : NMAX);
-
+        n = MIN(remaining, (i == align_len) ? n : NMAX);
         if (n < 16)
             break;
 

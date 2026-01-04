@@ -63,7 +63,7 @@ Z_INTERNAL uint32_t crc32_power8(uint32_t crc, const unsigned char *p, size_t _l
     }
 
     if ((unsigned long)p & VMX_ALIGN_MASK) {
-        prealign = VMX_ALIGN - ((unsigned long)p & VMX_ALIGN_MASK);
+        prealign = (unsigned int)ALIGN_DIFF(p, VMX_ALIGN);
         crc = crc32_align(crc, p, prealign);
         len -= prealign;
         p += prealign;

@@ -245,6 +245,10 @@
 #define HINT_ALIGNED_64(p) HINT_ALIGNED((p),64)
 #define HINT_ALIGNED_4096(p) HINT_ALIGNED((p),4096)
 
+/* Number of bytes needed to align ptr to the next alignment boundary */
+#define ALIGN_DIFF(ptr, align) \
+    (((uintptr_t)(align) - ((uintptr_t)(ptr) & ((align) - 1))) & ((align) - 1))
+
 /* PADSZ returns needed bytes to pad bpos to pad size
  * PAD_NN calculates pad size and adds it to bpos, returning the result.
  * All take an integer or a pointer as bpos input.

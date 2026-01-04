@@ -847,19 +847,19 @@ Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint64_
 }
 
 Z_INTERNAL uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t len) {
-    uint64_t* aligned_buf;
+    uint64_t *aligned_buf;
     uint32_t c = (~crc) & 0xffffffff;
-    uintptr_t algn_diff = ((uintptr_t)16 - ((uintptr_t)buf & 15)) & 15;
+    uintptr_t align_diff = ALIGN_DIFF(buf, 16);
 
-    if (len > algn_diff + CHORBA_SMALL_THRESHOLD_64BIT) {
-        if (algn_diff) {
-            c = crc32_braid_internal(c, buf, algn_diff);
-            len -= algn_diff;
+    if (len > align_diff + CHORBA_SMALL_THRESHOLD_64BIT) {
+        if (align_diff) {
+            c = crc32_braid_internal(c, buf, align_diff);
+            len -= align_diff;
         }
-        aligned_buf = (uint64_t*) (buf + algn_diff);
+        aligned_buf = (uint64_t*)(buf + align_diff);
 #if !defined(WITHOUT_CHORBA)
-        if(len > CHORBA_LARGE_THRESHOLD) {
-            c = crc32_chorba_118960_nondestructive(c, (z_word_t*) aligned_buf, len);
+        if (len > CHORBA_LARGE_THRESHOLD) {
+            c = crc32_chorba_118960_nondestructive(c, (z_word_t*)aligned_buf, len);
         } else
 #endif
         {

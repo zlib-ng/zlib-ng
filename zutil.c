@@ -114,8 +114,8 @@ void Z_INTERNAL PREFIX(zcfree)(void *opaque, void *ptr) {
 
 /* Provide aligned allocations, only used by gz* code */
 void Z_INTERNAL *zng_alloc_aligned(unsigned size, unsigned align) {
-    uintptr_t return_ptr, original_ptr;
-    uint32_t alloc_size, align_diff;
+    uintptr_t return_ptr, original_ptr, align_diff;
+    uint32_t alloc_size;
     void *ptr;
 
     /* Allocate enough memory for proper alignment and to store the original memory pointer */
@@ -125,7 +125,7 @@ void Z_INTERNAL *zng_alloc_aligned(unsigned size, unsigned align) {
         return NULL;
 
     /* Calculate return pointer address with space enough to store original pointer */
-    align_diff = align - ((uintptr_t)ptr % align);
+    align_diff = ALIGN_DIFF(ptr, align);
     return_ptr = (uintptr_t)ptr + align_diff;
     if (align_diff < sizeof(void *))
         return_ptr += align;
