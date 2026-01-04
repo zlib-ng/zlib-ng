@@ -10,12 +10,7 @@
 #include <larchintrin.h>
 
 Z_INTERNAL uint32_t crc32_loongarch64(uint32_t crc, const uint8_t *buf, size_t len) {
-    Z_REGISTER uint32_t c;
-    Z_REGISTER uint16_t buf2;
-    Z_REGISTER uint32_t buf4;
-    Z_REGISTER uint64_t buf8;
-
-    c = ~crc;
+    uint32_t c = ~crc;
 
     if (UNLIKELY(len == 1)) {
         c = (uint32_t)__crc_w_b_w((char)(*buf), (int)c);
@@ -30,15 +25,13 @@ Z_INTERNAL uint32_t crc32_loongarch64(uint32_t crc, const uint8_t *buf, size_t l
         }
 
         if ((len >= sizeof(uint16_t)) && ((ptrdiff_t)buf & (sizeof(uint32_t) - 1))) {
-            buf2 = *((uint16_t*)buf);
-            c = (uint32_t)__crc_w_h_w((short)buf2, (int)c);
+            c = (uint32_t)__crc_w_h_w((short)*((uint16_t*)buf), (int)c);
             buf += sizeof(uint16_t);
             len -= sizeof(uint16_t);
         }
 
         if ((len >= sizeof(uint32_t)) && ((ptrdiff_t)buf & (sizeof(uint64_t) - 1))) {
-            buf4 = *((uint32_t*)buf);
-            c = (uint32_t)__crc_w_w_w((int)buf4, (int)c);
+            c = (uint32_t)__crc_w_w_w((int)*((uint32_t*)buf), (int)c);
             len -= sizeof(uint32_t);
             buf += sizeof(uint32_t);
         }
@@ -46,21 +39,18 @@ Z_INTERNAL uint32_t crc32_loongarch64(uint32_t crc, const uint8_t *buf, size_t l
     }
 
     while (len >= sizeof(uint64_t)) {
-        buf8 = *((uint64_t*)buf);
-        c = (uint32_t)__crc_w_d_w((long int)buf8, (int)c);
+        c = (uint32_t)__crc_w_d_w((long int)*((uint64_t*)buf), (int)c);
         len -= sizeof(uint64_t);
         buf += sizeof(uint64_t);
     }
 
     if (len & sizeof(uint32_t)) {
-        buf4 = *((uint32_t*)buf);
-        c = (uint32_t)__crc_w_w_w((int)buf4, (int)c);
+        c = (uint32_t)__crc_w_w_w((int)*((uint32_t*)buf), (int)c);
         buf += sizeof(uint32_t);
     }
 
     if (len & sizeof(uint16_t)) {
-        buf2 = *((uint16_t*)buf);
-        c = (uint32_t)__crc_w_h_w((short)buf2, (int)c);
+        c = (uint32_t)__crc_w_h_w((short)*((uint16_t*)buf), (int)c);
         buf += sizeof(uint16_t);
     }
 
