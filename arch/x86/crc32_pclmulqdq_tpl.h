@@ -285,7 +285,7 @@ static inline void partial_fold(const size_t len, __m128i *xmm_crc0, __m128i *xm
 }
 
 static inline uint32_t crc32_copy_small(uint32_t crc, uint8_t *dst, const uint8_t *buf, size_t len, const int COPY) {
-    uint32_t c = (~crc) & 0xffffffff;
+    uint32_t c = ~crc;
 
     while (len) {
         len--;
@@ -295,7 +295,7 @@ static inline uint32_t crc32_copy_small(uint32_t crc, uint8_t *dst, const uint8_
         CRC_DO1;
     }
 
-    return c ^ 0xffffffff;
+    return ~c;
 }
 
 static inline uint32_t fold_final(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {

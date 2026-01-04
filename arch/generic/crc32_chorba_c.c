@@ -1449,7 +1449,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit (uint32_t crc, const
 
 Z_INTERNAL uint32_t crc32_chorba(uint32_t crc, const uint8_t *buf, size_t len) {
     uint64_t *aligned_buf;
-    uint32_t c = (~crc) & 0xffffffff;
+    uint32_t c = ~crc;
     uintptr_t align_diff = ALIGN_DIFF(buf, 8);
 
     if (len > align_diff + CHORBA_SMALL_THRESHOLD) {
@@ -1477,7 +1477,7 @@ Z_INTERNAL uint32_t crc32_chorba(uint32_t crc, const uint8_t *buf, size_t len) {
     }
 
     /* Return the CRC, post-conditioned. */
-    return c ^ 0xffffffff;
+    return ~c;
 }
 
 uint32_t crc32_copy_chorba(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {

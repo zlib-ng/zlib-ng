@@ -306,7 +306,7 @@ static Z_FORCEINLINE uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
 
 Z_INTERNAL uint32_t crc32_chorba_sse41(uint32_t crc, const uint8_t *buf, size_t len) {
     uint64_t *aligned_buf;
-    uint32_t c = (~crc) & 0xffffffff;
+    uint32_t c = ~crc;
     uintptr_t align_diff = ALIGN_DIFF(buf, 16);
 
     if (len > align_diff + CHORBA_SMALL_THRESHOLD_64BIT) {
@@ -331,7 +331,7 @@ Z_INTERNAL uint32_t crc32_chorba_sse41(uint32_t crc, const uint8_t *buf, size_t 
     }
 
     /* Return the CRC, post-conditioned. */
-    return c ^ 0xffffffff;
+    return ~c;
 }
 
 Z_INTERNAL uint32_t crc32_copy_chorba_sse41(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {

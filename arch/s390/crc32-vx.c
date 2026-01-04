@@ -213,7 +213,7 @@ uint32_t Z_INTERNAL crc32_s390_vx(uint32_t crc, const unsigned char *buf, size_t
     aligned = len & ~VX_ALIGN_MASK;
     remaining = len & VX_ALIGN_MASK;
 
-    crc = crc32_le_vgfm_16(crc ^ 0xffffffff, buf, aligned) ^ 0xffffffff;
+    crc = ~crc32_le_vgfm_16(~crc, buf, aligned);
 
     if (remaining)
         crc = crc32_braid(crc, buf + aligned, remaining);

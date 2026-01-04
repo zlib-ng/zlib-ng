@@ -208,17 +208,11 @@ Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t 
         CRC_DO1;
     }
 
-    /* Return the CRC, post-conditioned. */
     return c;
 }
 
 Z_INTERNAL uint32_t crc32_braid(uint32_t crc, const uint8_t *buf, size_t len) {
-    crc = (~crc) & 0xffffffff;
-
-    crc = crc32_braid_internal(crc, buf, len);
-
-    /* Return the CRC, post-conditioned. */
-    return crc ^ 0xffffffff;
+    return ~crc32_braid_internal(~crc, buf, len);
 }
 
 Z_INTERNAL uint32_t crc32_copy_braid(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
