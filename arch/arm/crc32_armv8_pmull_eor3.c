@@ -66,28 +66,29 @@ Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, con
     }
 
     /* Align to 16-byte boundary for vector path */
-    if ((ptrdiff_t)buf & 15) {
-        if (len && ((ptrdiff_t)buf & 1)) {
+    uintptr_t align_diff = ALIGN_DIFF(buf, 16);
+    if (align_diff) {
+        if (len && (align_diff & 1)) {
             crc0 = __crc32b(crc0, *buf++);
             len--;
         }
 
-        if ((len >= sizeof(uint16_t)) && ((ptrdiff_t)buf & (sizeof(uint32_t) - 1))) {
+        if (len >= 2 && (align_diff & 2)) {
             crc0 = __crc32h(crc0, *((uint16_t*)buf));
-            buf += sizeof(uint16_t);
-            len -= sizeof(uint16_t);
+            buf += 2;
+            len -= 2;
         }
 
-        if ((len >= sizeof(uint32_t)) && ((ptrdiff_t)buf & (sizeof(uint64_t) - 1))) {
+        if (len >= 4 && (align_diff & 4)) {
             crc0 = __crc32w(crc0, *((uint32_t*)buf));
-            len -= sizeof(uint32_t);
-            buf += sizeof(uint32_t);
+            len -= 4;
+            buf += 4;
         }
 
-        if (len >= sizeof(uint64_t) && ((ptrdiff_t)buf & (sizeof(uint64_t)))) {
+        if (len >= 8 && (align_diff & 8)) {
             crc0 = __crc32d(crc0, *((uint64_t*)buf));
-            buf += sizeof(uint64_t);
-            len -= sizeof(uint64_t);
+            buf += 8;
+            len -= 8;
         }
     }
 
@@ -235,23 +236,23 @@ Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, con
     }
 
     /* Process remaining bytes */
-    while (len >= sizeof(uint64_t)) {
+    while (len >= 8) {
         crc0 = __crc32d(crc0, *((uint64_t*)buf));
-        len -= sizeof(uint64_t);
-        buf += sizeof(uint64_t);
+        len -= 8;
+        buf += 8;
     }
 
-    if (len & sizeof(uint32_t)) {
+    if (len & 4) {
         crc0 = __crc32w(crc0, *((uint32_t*)buf));
-        buf += sizeof(uint32_t);
+        buf += 4;
     }
 
-    if (len & sizeof(uint16_t)) {
+    if (len & 2) {
         crc0 = __crc32h(crc0, *((uint16_t*)buf));
-        buf += sizeof(uint16_t);
+        buf += 2;
     }
 
-    if (len & sizeof(uint8_t)) {
+    if (len & 1) {
         crc0 = __crc32b(crc0, *buf);
     }
 
