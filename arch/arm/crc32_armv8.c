@@ -18,42 +18,43 @@ Z_INTERNAL Z_TARGET_CRC uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, s
         return c;
     }
 
-    if ((ptrdiff_t)buf & (sizeof(uint64_t) - 1)) {
-        if (len && ((ptrdiff_t)buf & 1)) {
+    uintptr_t align_diff = ALIGN_DIFF(buf, 8);
+    if (align_diff) {
+        if (len && (align_diff & 1)) {
             c = __crc32b(c, *buf++);
             len--;
         }
 
-        if ((len >= sizeof(uint16_t)) && ((ptrdiff_t)buf & (sizeof(uint32_t) - 1))) {
+        if (len >= 2 && (align_diff & 2)) {
             c = __crc32h(c, *((uint16_t*)buf));
-            buf += sizeof(uint16_t);
-            len -= sizeof(uint16_t);
+            buf += 2;
+            len -= 2;
         }
 
-        if ((len >= sizeof(uint32_t)) && ((ptrdiff_t)buf & (sizeof(uint64_t) - 1))) {
+        if (len >= 4 && (align_diff & 4)) {
             c = __crc32w(c, *((uint32_t*)buf));
-            len -= sizeof(uint32_t);
-            buf += sizeof(uint32_t);
+            len -= 4;
+            buf += 4;
         }
     }
 
-    while (len >= sizeof(uint64_t)) {
+    while (len >= 8) {
         c = __crc32d(c, *((uint64_t*)buf));
-        len -= sizeof(uint64_t);
-        buf += sizeof(uint64_t);
+        len -= 8;
+        buf += 8;
     }
 
-    if (len & sizeof(uint32_t)) {
+    if (len & 4) {
         c = __crc32w(c, *((uint32_t*)buf));
-        buf += sizeof(uint32_t);
+        buf += 4;
     }
 
-    if (len & sizeof(uint16_t)) {
+    if (len & 2) {
         c = __crc32h(c, *((uint16_t*)buf));
-        buf += sizeof(uint16_t);
+        buf += 2;
     }
 
-    if (len & sizeof(uint8_t)) {
+    if (len & 1) {
         c = __crc32b(c, *buf);
     }
 
