@@ -147,6 +147,13 @@ jobs:
             cmake-args: -DWITH_PCLMULQDQ=OFF -DWITH_SANITIZER=Undefined
             codecov: ubuntu_gcc_no_pclmulqdq
 
+          - name: Ubuntu GCC No AVX512VNNI UBSAN
+            os: ubuntu-latest
+            compiler: gcc
+            cxx-compiler: g++
+            cmake-args: -DWITH_AVX512VNNI=OFF -DWITH_SANITIZER=Undefined
+            codecov: ubuntu_gcc_no_avx512vnni
+
           - name: Ubuntu GCC Compat No Opt ASAN
             os: ubuntu-latest
             compiler: gcc
