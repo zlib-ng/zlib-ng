@@ -1,6 +1,13 @@
 #ifndef ADLER32_TEST_STRINGS_P_H
 #define ADLER32_TEST_STRINGS_P_H
 
+typedef struct {
+    uint32_t adler;
+    const uint8_t *buf;
+    uint32_t len;
+    uint32_t expect;
+} adler32_test;
+
 static const uint8_t long_string[5552] = {
     'q','j','d','w','q','4','8','m','B','u','k','J','V','U','z','V','V','f','M','j','i','q','S','W','L','5','G','n','F','S','P','Q',
     'Q','D','i','6','m','E','9','Z','a','A','P','h','9','d','r','b','5','t','X','U','U','L','w','q','e','k','E','H','6','W','7','k',

@@ -177,6 +177,7 @@ if(WITH_GTEST)
         if(NOT TEST_STOCK_ZLIB)
             list(APPEND TEST_SRCS
                 test_adler32.cc             # adler32_neon(), etc
+                test_adler32_copy.cc        # adler32_copy implementations
                 test_compare256.cc          # compare256_neon(), etc
                 test_compare256_rle.cc      # compare256_rle(), etc
                 test_crc32.cc               # crc32_armv8(), etc

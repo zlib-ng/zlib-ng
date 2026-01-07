@@ -10,6 +10,7 @@
 #include "crc32_braid_p.h"
 
 typedef uint32_t (*adler32_func)(uint32_t adler, const uint8_t *buf, size_t len);
+typedef uint32_t (*adler32_copy_func)(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 typedef uint32_t (*compare256_func)(const uint8_t *src0, const uint8_t *src1);
 typedef uint32_t (*crc32_func)(uint32_t crc, const uint8_t *buf, size_t len);
 typedef uint32_t (*crc32_copy_func)(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);

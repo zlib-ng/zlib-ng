@@ -17,13 +17,6 @@ extern "C" {
 
 #include <gtest/gtest.h>
 
-typedef struct {
-    uint32_t adler;
-    const uint8_t *buf;
-    uint32_t len;
-    uint32_t expect;
-} adler32_test;
-
 class adler32_variant : public ::testing::TestWithParam<adler32_test> {
 public:
     void hash(adler32_test param, adler32_func adler32) {
