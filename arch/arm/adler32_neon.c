@@ -161,10 +161,13 @@ Z_FORCEINLINE static void neon_accum32_copy(uint32_t *s, uint8_t *dst, const uin
     s[1] = vget_lane_u32(as, 1);
 }
 
-Z_FORCEINLINE static void NEON_handle_tail(uint32_t *pair, const uint8_t *buf, size_t len) {
-    unsigned int i;
-    for (i = 0; i < len; ++i) {
-        pair[0] += buf[i];
+Z_FORCEINLINE static void neon_tail_copy(uint32_t *pair, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
+    while (len--) {
+        uint8_t c = *src++;
+        if (COPY) {
+            *dst++ = c;
+        }
+        pair[0] += c;
         pair[1] += pair[0];
     }
 }
@@ -208,18 +211,8 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
     unsigned int align_adj = (align_offset) ? 32 - align_offset : 0;
 
     if (align_offset && len >= (16 + align_adj)) {
-        NEON_handle_tail(pair, src, align_adj);
-
-        if (COPY) {
-            const uint8_t* __restrict src_noalias = src;
-            uint8_t* __restrict dst_noalias = dst;
-            unsigned cpy_len = align_adj;
-
-            while (cpy_len--) {
-                *dst_noalias++ = *src_noalias++;
-            }
-        }
-
+        neon_tail_copy(pair, dst, src, align_adj, COPY);
+        dst += align_adj;
         n -= align_adj;
         done += align_adj;
 
@@ -247,14 +240,8 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
 
     /* Handle the tail elements. */
     if (done < len) {
-        NEON_handle_tail(pair, (src + done), len - done);
-        if (COPY) {
-            const uint8_t* __restrict src_noalias = src + done;
-            uint8_t* __restrict dst_noalias = dst + done;
-            while (done++ != len) {
-                *dst_noalias++ = *src_noalias++;
-            }
-        }
+        neon_tail_copy(pair, dst + done, src + done, len - done, COPY);
+
         pair[0] %= BASE;
         pair[1] %= BASE;
     }
