@@ -2,6 +2,7 @@
 #if defined(__EMSCRIPTEN__)
 #  include "zutil_p.h"
 #endif
+#include "zmemory.h"
 #include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
 #include "generic_functions.h"
@@ -10,6 +11,12 @@
 #define bitbuffersizebytes (16 * 1024 * sizeof(z_word_t))
 #define bitbuffersizezwords (bitbuffersizebytes / sizeof(z_word_t))
 #define bitbuffersizeqwords (bitbuffersizebytes / sizeof(uint64_t))
+
+#if defined(HAVE_MAY_ALIAS) && BRAID_W != 8
+    typedef uint64_t __attribute__ ((__may_alias__)) uint64a_t;
+#else
+    typedef uint64_t uint64a_t;
+#endif
 
 /**
  * Implements the Chorba algorithm for CRC32 computation (https://arxiv.org/abs/2412.16398).
@@ -34,8 +41,8 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
     ALIGNED_(16) z_word_t bitbuffer[bitbuffersizezwords];
 #endif
     const uint8_t* bitbufferbytes = (const uint8_t*) bitbuffer;
-    uint64_t* bitbufferqwords = (uint64_t*) bitbuffer;
-    uint64_t* inputqwords = (uint64_t*) input;
+    uint64a_t* bitbufferqwords = (uint64a_t*) bitbuffer;
+    const uint64a_t* inputqwords = (const uint64a_t*) input;
 
     size_t i = 0;
 
@@ -497,8 +504,7 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
 
 #  if OPTIMAL_CMP == 64
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
-Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive (uint32_t crc, const uint64_t* buf, size_t len) {
-    const uint64_t* input = buf;
+Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive (uint32_t crc, const uint64_t* input, size_t len) {
     uint64_t bitbuffer[32768 / sizeof(uint64_t)];
     const uint8_t* bitbufferbytes = (const uint8_t*) bitbuffer;
     memset(bitbuffer, 0, 32768);
@@ -665,8 +671,7 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive (uint32_t crc, const uint6
 }
 
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
-Z_INTERNAL uint32_t crc32_chorba_small_nondestructive (uint32_t crc, const uint64_t* buf, size_t len) {
-    const uint64_t* input = buf;
+Z_INTERNAL uint32_t crc32_chorba_small_nondestructive (uint32_t crc, const uint64_t* input, size_t len) {
     uint64_t final[9] = {0};
     uint64_t next1 = crc;
     crc = 0;
@@ -1233,8 +1238,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive (uint32_t crc, const uint6
 
 #else // OPTIMAL_CMP == 64
 
-Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit (uint32_t crc, const uint32_t* buf, size_t len) {
-    const uint32_t* input = buf;
+Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit (uint32_t crc, const uint32_t* input, size_t len) {
     uint32_t final[20] = {0};
 
     uint32_t next1 = crc;
