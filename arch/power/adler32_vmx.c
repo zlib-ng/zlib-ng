@@ -155,15 +155,8 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
         done += (n / 16) * 16;
     }
 
-    /* Handle the tail elements. */
-    if (done < len) {
-        vmx_handle_head_or_tail(pair, (buf + done), len - done);
-        pair[0] %= BASE;
-        pair[1] %= BASE;
-    }
-
-    /* D = B * 65536 + A, see: https://en.wikipedia.org/wiki/Adler-32. */
-    return (pair[1] << 16) | pair[0];
+    /* Process tail (len < 16).  */
+    return adler32_copy_len_16(pair[0], NULL, buf + done, len - done, pair[1], 0);
 }
 
 Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) {

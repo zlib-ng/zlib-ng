@@ -42,7 +42,7 @@ static inline uint32_t adler32_copy_len_16(uint32_t adler, uint8_t *dst, const u
     }
     adler %= BASE;
     sum2 %= BASE;            /* only added so many BASE's */
-    /* return recombined sums */
+    /* D = B * 65536 + A, see: https://en.wikipedia.org/wiki/Adler-32. */
     return adler | (sum2 << 16);
 }
 
