@@ -134,15 +134,15 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
         return adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
 
     // Align buffer
-    size_t align_len = (size_t)MIN(ALIGN_DIFF(buf, 16), len);
-    if (align_len) {
-        adler32_copy_len_16_pair(pair, NULL, buf, align_len, 0);
-        done += align_len;
+    size_t align_diff = ALIGN_DIFF(buf, 16);
+    if (align_diff) {
+        adler32_copy_len_16_pair(pair, NULL, buf, align_diff, 0);
+        done += align_diff;
         /* Rather than rebasing, we can reduce the max sums for the
          * first round only */
-        n -= align_len;
+        n -= align_diff;
     }
-    for (size_t i = align_len; i < len; i += n) {
+    for (size_t i = align_diff; i < len; i += n) {
         int remaining = (int)(len-i);
         n = MIN(remaining, (i == align_len) ? n : NMAX);
         if (n < 16)
