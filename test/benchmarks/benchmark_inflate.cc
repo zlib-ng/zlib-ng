@@ -128,10 +128,10 @@ public:
                 return;
             }
 
-            strm.avail_in = compressed_sizes[index];    // Size of the input
-            strm.next_in = compressed_buff[index];      // Pointer to the compressed data
-            strm.avail_out = MAX_SIZE;                  // Max size for output
-            strm.next_out = outbuff;                    // Output buffer
+            strm.avail_in = (uint32_t)compressed_sizes[index];  // Size of the input
+            strm.next_in = compressed_buff[index];              // Pointer to the compressed data
+            strm.avail_out = MAX_SIZE;                          // Max size for output
+            strm.next_out = outbuff;                            // Output buffer
 
             // Perform decompression
             err = PREFIX(inflate)(&strm, Z_FINISH);
