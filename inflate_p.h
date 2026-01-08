@@ -73,7 +73,7 @@
 #endif
 
 /* Compiler optimization for bit accumulator on x86 architectures */
-#if defined(__x86_64__) || defined(__i386__)
+#ifdef ARCH_X86
 typedef uint8_t bits_t;
 #else
 typedef unsigned bits_t;

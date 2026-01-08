@@ -130,7 +130,8 @@
 /* Force the compiler to treat variable as modified. Empty asm statement with a "+r" constraint prevents
    the compiler from reordering or eliminating loads into the variable. This can help keep critical latency
    chains in the hot path from being shortened or optimized away. */
-#if (defined(__GNUC__) || defined(__clang__)) && (defined(__x86_64__) || defined(__i386__) || defined(__aarch64__))
+#if (defined(__GNUC__) || defined(__clang__)) && \
+        (defined(ARCH_X86) || (defined(ARCH_ARM) && defined(ARCH_64BIT)))
 #  define Z_TOUCH(var) __asm__ ("" : "+r"(var))
 #else
 #  define Z_TOUCH(var) (void)(var)
@@ -288,7 +289,7 @@
  */
 #if !defined(OPTIMAL_CMP)
 #  ifdef ARCH_64BIT
-#    if defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#    ifdef ARCH_ARM
 #      if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
 #        define OPTIMAL_CMP 64
 #      else
@@ -298,7 +299,7 @@
 #      define OPTIMAL_CMP 64
 #    endif
 #  elif defined(ARCH_32BIT)
-#    if defined(__arm__) || defined(_M_ARM)
+#    ifdef ARCH_ARM
 #      if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
 #        define OPTIMAL_CMP 32
 #      else

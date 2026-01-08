@@ -1,14 +1,14 @@
 #ifndef ARM_NEON_INTRINS_H
 #define ARM_NEON_INTRINS_H
 
-#if defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+#if defined(_MSC_VER) && defined(ARCH_ARM) && defined(ARCH_64BIT)
 /* arm64_neon.h is MSVC specific */
 #  include <arm64_neon.h>
 #else
 #  include <arm_neon.h>
 #endif
 
-#if defined(ARM_NEON) && !defined(__aarch64__) && !defined(_M_ARM64) && !defined(_M_ARM64EC)
+#if defined(ARM_NEON) && defined(ARCH_ARM) && defined(ARCH_32BIT)
 /* Compatibility shim for the _high family of functions */
 #define vmull_high_u8(a, b) vmull_u8(vget_high_u8(a), vget_high_u8(b))
 #define vmlal_high_u8(a, b, c) vmlal_u8(a, vget_high_u8(b), vget_high_u8(c))
@@ -25,7 +25,7 @@
     out.val[3] = vqsubq_u16(a.val[3], b); \
 } while (0)
 
-#  if defined(__arm__) && defined(__clang__) && \
+#  if defined(ARCH_ARM) && defined(ARCH_32BIT) && defined(__clang__) && \
     (!defined(__clang_major__) || __clang_major__ < 20)
 /* Clang versions before 20 have too strict of an
  * alignment requirement (:256) for x4 NEON intrinsics */

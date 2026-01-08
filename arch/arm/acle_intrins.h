@@ -9,7 +9,7 @@
 #endif
 
 #ifdef ARM_CRC32
-#if defined(__aarch64__)
+#if defined(ARCH_ARM) && defined(ARCH_64BIT)
 #  define Z_TARGET_CRC Z_TARGET("+crc")
 #else
 #  define Z_TARGET_CRC
@@ -21,7 +21,7 @@
 #endif
 
 #if !defined(ARM_CRC32_INTRIN) && !defined(_MSC_VER)
-#ifdef __aarch64__
+#if defined(ARCH_ARM) && defined(ARCH_64BIT)
 static inline uint32_t __crc32b(uint32_t __a, uint8_t __b) {
     uint32_t __c;
     __asm__("crc32b %w0, %w1, %w2" : "=r" (__c) : "r"(__a), "r"(__b));

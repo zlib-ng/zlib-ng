@@ -114,7 +114,7 @@ static inline __m128i _mm_cvtsi64_si128(int64_t a) {
 #endif
 #endif
 
-#if defined(__GNUC__) && defined(__i386__) && !defined(__clang__)
+#if defined(__GNUC__) && defined(ARCH_X86) && defined(ARCH_32BIT) && !defined(__clang__)
 static inline int64_t _mm_cvtsi128_si64(__m128i a) {
     union { __m128i v; int64_t i; } u;
     u.v = a;

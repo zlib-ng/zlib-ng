@@ -2,7 +2,7 @@
 #define FALLBACK_BUILTINS_H
 
 #if defined(_MSC_VER) && !defined(__clang__)
-#if defined(_M_IX86) || defined(_M_AMD64) || defined(_M_IA64) ||  defined(_M_ARM) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(ARCH_X86) || defined(ARCH_IA64) || defined(ARCH_ARM)
 
 #include <intrin.h>
 
@@ -41,7 +41,7 @@ Z_FORCEINLINE static int __builtin_ctzll(unsigned long long value) {
 #define HAVE_BUILTIN_CTZLL
 #endif // ARCH_64BIT
 
-#endif // Microsoft AMD64/IA64/x86/ARM/ARM64 test
+#endif // ARCH_X86 || ARCH_IA64 || ARCH_ARM
 #endif // _MSC_VER & !clang
 
 #ifndef HAVE_BUILTIN_BITREVERSE16
