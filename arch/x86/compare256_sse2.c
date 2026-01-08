@@ -13,10 +13,6 @@
 #include <emmintrin.h>
 
 static inline uint32_t compare256_sse2_static(const uint8_t *src0, const uint8_t *src1) {
-    uint32_t len = 0;
-    int align_offset = ((uintptr_t)src0) & 15;
-    const uint8_t *end0 = src0 + 256;
-    const uint8_t *end1 = src1 + 256;
     __m128i xmm_src0, xmm_src1, xmm_cmp;
 
     /* Do the first load unaligned, than all subsequent ones we have at least
@@ -31,18 +27,20 @@ static inline uint32_t compare256_sse2_static(const uint8_t *src0, const uint8_t
      * since a lot of those uops are shared and fused */
     if (mask != 0xFFFF) {
         uint32_t match_byte = (uint32_t)__builtin_ctz(~mask);
-        return len + match_byte;
+        return match_byte;
     }
 
+    const uint8_t *last0 = src0 + 240;
+    const uint8_t *last1 = src1 + 240;
+
+    int align_offset = ((uintptr_t)src0) & 15;
     int align_adv = 16 - align_offset;
-    len += align_adv;
+    uint32_t len = align_adv;
+
     src0 += align_adv;
     src1 += align_adv;
 
-    /* Do a flooring division (should just be a shift right) */
-    int num_iter = (256 - len) / 16;
-
-    for (int i = 0; i < num_iter; ++i) {
+    for (int i = 0; i < 15; ++i) {
         xmm_src0 = _mm_load_si128((__m128i*)src0);
         xmm_src1 = _mm_loadu_si128((__m128i*)src1);
         xmm_cmp = _mm_cmpeq_epi8(xmm_src0, xmm_src1);
@@ -60,19 +58,15 @@ static inline uint32_t compare256_sse2_static(const uint8_t *src0, const uint8_t
     }
 
     if (align_offset) {
-        src0 = end0 - 16;
-        src1 = end1 - 16;
-        len = 256 - 16;
-
-        xmm_src0 = _mm_loadu_si128((__m128i*)src0);
-        xmm_src1 = _mm_loadu_si128((__m128i*)src1);
+        xmm_src0 = _mm_loadu_si128((__m128i*)last0);
+        xmm_src1 = _mm_loadu_si128((__m128i*)last1);
         xmm_cmp = _mm_cmpeq_epi8(xmm_src0, xmm_src1);
 
         mask = (unsigned)_mm_movemask_epi8(xmm_cmp);
 
         if (mask != 0xFFFF) {
             uint32_t match_byte = (uint32_t)__builtin_ctz(~mask);
-            return len + match_byte;
+            return 240 + match_byte;
         }
     }
 
