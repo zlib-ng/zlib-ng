@@ -20,7 +20,7 @@ extern "C" {
 class adler32_variant : public ::testing::TestWithParam<hash_test> {
 public:
     void hash(hash_test param, adler32_func adler32) {
-        uint32_t adler = adler32((uint32_t)param.adler, param.buf, param.len);
+        uint32_t adler = adler32((uint32_t)param.initial_adler, param.buf, param.len);
         EXPECT_EQ(adler, param.expect_adler);
     }
 };

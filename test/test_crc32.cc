@@ -21,9 +21,9 @@ public:
         uint32_t crc = 0;
         if (param.buf != NULL) {
             if (param.len) {
-                crc = crc32(param.crc, param.buf, param.len);
+                crc = crc32(param.initial_crc, param.buf, param.len);
             } else {
-                crc = param.crc;
+                crc = param.initial_crc;
             }
         }
         EXPECT_EQ(crc, param.expect_crc);

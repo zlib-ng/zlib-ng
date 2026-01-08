@@ -25,7 +25,7 @@ public:
             GTEST_SKIP();
         }
 
-        uint32_t adler = copyfunc(params.adler, dstbuf, params.buf, params.len);
+        uint32_t adler = copyfunc(params.initial_adler, dstbuf, params.buf, params.len);
 
         EXPECT_EQ(adler, params.expect_adler);
         EXPECT_EQ(0, memcmp(params.buf, dstbuf, params.len));

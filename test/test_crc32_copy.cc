@@ -25,7 +25,7 @@ public:
             GTEST_SKIP();
         }
 
-        uint32_t crc = copyfunc(params.crc, dstbuf, params.buf, params.len);
+        uint32_t crc = copyfunc(params.initial_crc, dstbuf, params.buf, params.len);
 
         EXPECT_EQ(crc, params.expect_crc);
         EXPECT_EQ(0, memcmp(params.buf, dstbuf, params.len));
