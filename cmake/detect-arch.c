@@ -8,7 +8,8 @@
     #error archfound x86_64
 
 // x86
-#elif defined(__i386) || defined(_M_IX86)
+#elif defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || \
+      defined(__i386) || defined(_M_IX86)
     #error archfound i686
 
 // ARM
