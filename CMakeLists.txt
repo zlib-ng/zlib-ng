@@ -240,6 +240,16 @@ elseif(MSVC)
             set(NEONFLAG "/arch:VFPv4")
         endif()
     endif()
+
+    # Workaround for MSVC. By default MSVC does not define the __SSE*__ macros.
+    # We explicitly define the __SSE__ and __SSE2__ macros, since starting with MSVS 2012
+    # the default instruction set is SSE2.
+    if(BASEARCH_X86_FOUND)
+        add_definitions(
+            -D__SSE__=1
+            -D__SSE2__=1
+        )
+    endif()
 elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "NVHPC")
     # Enable warnings in GCC and Clang
     set(WARNFLAGS -Wall)
@@ -361,8 +371,6 @@ if(NOT WITH_RUNTIME_CPU_DETECTION)
         set(CMAKE_REQUIRED_FLAGS)
         if(MSVC_IS_ENABLED_AVX)
             add_definitions(
-                -D__SSE__=1
-                -D__SSE2__=1
                 -D__SSE3__=1
                 -D__SSSE3__=1
                 -D__SSE4_1__=1
