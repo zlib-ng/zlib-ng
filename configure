@@ -342,36 +342,58 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
       # Honor user choice if gcc is multilib and 64-bit is requested
       if test $build64 -eq 1; then
         ARCH=x86_64
+        ARCH_64BIT=1
       else
         ARCH=$CC_ARCH
+        ARCH_32BIT=1
       fi ;;
     amd64 | x86_64)
       # Honor user choice if gcc is multilib and 32-bit is requested
       if test $build32 -ne 1; then
         ARCH=$CC_ARCH
+        ARCH_64BIT=1
+      else
+        ARCH_32BIT=1
       fi ;;
     arm | armeb)
       ARCH=arm
+      ARCH_32BIT=1
       if test "${uname}" = "eabi"; then
         uname=arm
       fi ;;
     armv8l)
-      ARCH=armv8-a ;;
+      ARCH=armv8-a
+      ARCH_32BIT=1 ;;
     aarch64 | aarch64_be | arm64)
       if test "${uname}" = "elf"; then
         uname=aarch64
       fi
-      ARCH=aarch64 ;;
+      ARCH=aarch64
+      ARCH_64BIT=1 ;;
+    mips | mipsel)
+      ARCH=mips
+      ARCH_32BIT=1 ;;
+    mips64 | mips64el)
+      ARCH=mips64
+      ARCH_64BIT=1 ;;
     powerpc | ppc)
-      ARCH=powerpc ;;
+      ARCH=powerpc
+      ARCH_32BIT=1 ;;
     powerpc64 | ppc64)
-      ARCH=powerpc64 ;;
+      ARCH=powerpc64
+      ARCH_64BIT=1 ;;
     powerpc64le | ppc64le)
-      ARCH=powerpc64le ;;
+      ARCH=powerpc64le
+      ARCH_64BIT=1 ;;
     riscv64)
-      ARCH=riscv64 ;;
+      ARCH=riscv64
+      ARCH_64BIT=1 ;;
+    s390x)
+      ARCH=s390x
+      ARCH_64BIT=1 ;;
     loongarch64)
-      ARCH=loongarch64 ;;
+      ARCH=loongarch64
+      ARCH_64BIT=1 ;;
   esac
   CFLAGS="-O2 ${CFLAGS}"
   if test -n "${ARCHS}"; then
@@ -1861,6 +1883,15 @@ fi
 ARCHDIR='arch/generic'
 ARCH_STATIC_OBJS=''
 ARCH_SHARED_OBJS=''
+
+# Set ARCH bitness defines
+if test -n "$ARCH_64BIT"; then
+    CFLAGS="${CFLAGS} -DARCH_64BIT"
+    SFLAGS="${SFLAGS} -DARCH_64BIT"
+elif test -n "$ARCH_32BIT"; then
+    CFLAGS="${CFLAGS} -DARCH_32BIT"
+    SFLAGS="${SFLAGS} -DARCH_32BIT"
+fi
 
 # Set ARCH specific FLAGS
 case "${ARCH}" in

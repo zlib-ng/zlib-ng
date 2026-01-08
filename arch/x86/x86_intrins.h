@@ -99,7 +99,7 @@ static inline __m512i _mm512_zextsi128_si512(__m128i a) {
 /* For whatever reason this intrinsic is 64 bit only with MSVC?
  * While we don't have 64 bit GPRs, it should at least be able to move it to stack
  * or shuffle it over 2 registers */
-#if !defined(_M_AMD64)
+#ifdef ARCH_32BIT
 /* So, while we can't move directly to a GPR, hopefully this move to
  * a stack resident variable doesn't equate to something awful */
 static inline int64_t _mm_cvtsi128_si64(__m128i a) {

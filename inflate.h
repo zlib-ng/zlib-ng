@@ -139,7 +139,7 @@ struct ALIGNED_(64) inflate_state {
     uint32_t have;              /* number of code lengths in lens[] */
     code *next;                 /* next available space in codes[] */
 
-#if defined(_M_IX86) || defined(_M_ARM)
+#ifdef ARCH_32BIT
     uint32_t padding[1];
 #endif
     uint8_t ALIGNED_(16) padding4[68];
@@ -159,7 +159,7 @@ struct ALIGNED_(64) inflate_state {
 #ifdef HAVE_ARCH_INFLATE_STATE
     arch_inflate_state arch;    /* architecture-specific extensions */
 #endif
-#if defined(_M_IX86) || defined(_M_ARM)
+#ifdef ARCH_32BIT
     int padding2[8];
 #endif
 };

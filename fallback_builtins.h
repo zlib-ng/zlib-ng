@@ -24,7 +24,7 @@ Z_FORCEINLINE static int __builtin_ctz(unsigned int value) {
 }
 #define HAVE_BUILTIN_CTZ
 
-#ifdef _M_AMD64
+#ifdef ARCH_64BIT
 /* This is not a general purpose replacement for __builtin_ctzll. The function expects that value is != 0.
  * Because of that assumption trailing_zero is not initialized and the return value is not checked.
  */
@@ -39,7 +39,7 @@ Z_FORCEINLINE static int __builtin_ctzll(unsigned long long value) {
 # endif
 }
 #define HAVE_BUILTIN_CTZLL
-#endif // Microsoft AMD64
+#endif // ARCH_64BIT
 
 #endif // Microsoft AMD64/IA64/x86/ARM/ARM64 test
 #endif // _MSC_VER & !clang

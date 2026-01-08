@@ -10,7 +10,7 @@
  * notching out its compilation we'll just remove the assignment in the functable.
  * Further context:
  * https://developercommunity.visualstudio.com/t/Stack-corruption-with-v142-toolchain-whe/10853479 */
-#if defined(_MSC_VER) && !defined(_M_AMD64) && _MSC_VER >= 1920 && _MSC_VER <= 1929
+#if defined(_MSC_VER) && defined(ARCH_32BIT) && _MSC_VER >= 1920 && _MSC_VER <= 1929
 #define NO_CHORBA_SSE
 #endif
 
@@ -87,7 +87,7 @@ uint32_t crc32_copy_vpclmulqdq(uint32_t crc, uint8_t *dst, const uint8_t *src, s
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // X86 - SSE2
-#  if (defined(X86_SSE2) && defined(__SSE2__)) || defined(__x86_64__) || defined(_M_X64)
+#  if (defined(X86_SSE2) && defined(__SSE2__)) || defined(ARCH_64BIT)
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_sse2
 #    undef native_inflate_fast

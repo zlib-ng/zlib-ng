@@ -77,7 +77,7 @@ static int init_functable(void) {
 
     // Set up generic C code fallbacks
 #ifndef WITH_ALL_FALLBACKS
-#  if (defined(__x86_64__) || defined(_M_X64)) && defined(X86_SSE2)
+#  if defined(ARCH_64BIT) && defined(X86_SSE2)
     // x86_64 always has SSE2, so we can use SSE2 functions as fallbacks where available.
     ft.adler32 = &adler32_c;
     ft.adler32_copy = &adler32_copy_c;
@@ -113,7 +113,7 @@ static int init_functable(void) {
 
     // X86 - SSE2
 #ifdef X86_SSE2
-#  if !defined(__x86_64__) && !defined(_M_X64)
+#  ifdef ARCH_32BIT
     if (cf.x86.has_sse2)
 #  endif
     {

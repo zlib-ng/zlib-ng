@@ -287,27 +287,26 @@
  *       utilizing unaligned C pointers that are known to have undefined behavior.
  */
 #if !defined(OPTIMAL_CMP)
-#  if defined(__x86_64__) || defined(_M_X64) || defined(__amd64__) || defined(_M_AMD64)
-#    define OPTIMAL_CMP 64
-#  elif defined(__i386__) || defined(__i486__) || defined(__i586__) || \
-        defined(__i686__) || defined(_X86_) || defined(_M_IX86)
-#    define OPTIMAL_CMP 32
-#  elif defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
-#    if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
+#  ifdef ARCH_64BIT
+#    if defined(__aarch64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#      if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
+#        define OPTIMAL_CMP 64
+#      else
+#        define OPTIMAL_CMP 8
+#      endif
+#    else
 #      define OPTIMAL_CMP 64
-#    else
-#      define OPTIMAL_CMP 8
 #    endif
-#  elif defined(__arm__) || defined(_M_ARM)
-#    if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
+#  elif defined(ARCH_32BIT)
+#    if defined(__arm__) || defined(_M_ARM)
+#      if defined(__ARM_FEATURE_UNALIGNED) || defined(_WIN32)
+#        define OPTIMAL_CMP 32
+#      else
+#        define OPTIMAL_CMP 8
+#      endif
+#    else
 #      define OPTIMAL_CMP 32
-#    else
-#      define OPTIMAL_CMP 8
 #    endif
-#  elif defined(__powerpc64__) || defined(__ppc64__)
-#    define OPTIMAL_CMP 64
-#  elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__)
-#    define OPTIMAL_CMP 32
 #  endif
 #endif
 #if !defined(OPTIMAL_CMP)
