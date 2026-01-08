@@ -214,8 +214,6 @@ static inline dfltcc_cc dfltcc(int fn, void *param,
     return (cc >> 28) & 3;
 }
 
-#define ALIGN_UP(p, size) (__typeof__(p))(((uintptr_t)(p) + ((size) - 1)) & ~((size) - 1))
-
 static inline void dfltcc_reset_state(struct dfltcc_state *dfltcc_state) {
     /* Initialize available functions */
     if (is_dfltcc_enabled()) {

@@ -449,9 +449,9 @@ void Z_INTERNAL PREFIX(flush_pending)(PREFIX3(streamp) strm);
 /* Bit buffer and compress bits calculation debugging */
 #ifdef ZLIB_DEBUG
 #  define cmpr_bits_add(s, len)     s->compressed_len += (len)
-#  define cmpr_bits_align(s)        s->compressed_len = (s->compressed_len + 7) & ~7L
+#  define cmpr_bits_align(s)        s->compressed_len = ALIGN_UP(s->compressed_len, 8)
 #  define sent_bits_add(s, bits)    s->bits_sent += (bits)
-#  define sent_bits_align(s)        s->bits_sent = (s->bits_sent + 7) & ~7L
+#  define sent_bits_align(s)        s->bits_sent = ALIGN_UP(s->bits_sent, 8)
 #else
 #  define cmpr_bits_add(s, len)     Z_UNUSED(len)
 #  define cmpr_bits_align(s)

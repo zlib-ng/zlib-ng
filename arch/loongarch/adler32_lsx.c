@@ -49,8 +49,7 @@ rem_peel:
 
     while (len >= 16) {
 
-        k = MIN(len, NMAX);
-        k -= k % 16;
+        k = ALIGN_DOWN(MIN(len, NMAX), 16);
         len -= k;
 
         vs1 = __lsx_vinsgr2vr_w(zero, adler0, 0);

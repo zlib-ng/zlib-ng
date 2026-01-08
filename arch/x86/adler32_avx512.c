@@ -40,7 +40,6 @@ rem_peel:
                                           56, 57, 58, 59, 60, 61, 62, 63, 64);
     const __m512i dot3v = _mm512_set1_epi16(1);
     const __m512i zero = _mm512_setzero_si512();
-    size_t k;
 
     while (len >= 64) {
         __m512i vs1 = _mm512_zextsi128_si512(_mm_cvtsi32_si128(adler0));
@@ -48,8 +47,7 @@ rem_peel:
         vs1_0 = vs1;
         vs3 = _mm512_setzero_si512();
 
-        k = MIN(len, NMAX);
-        k -= k % 64;
+        size_t k = ALIGN_DOWN(MIN(len, NMAX), 64);
         len -= k;
 
         while (k >= 64) {

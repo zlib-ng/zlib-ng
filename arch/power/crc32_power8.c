@@ -66,11 +66,11 @@ Z_INTERNAL uint32_t crc32_power8(uint32_t crc, const unsigned char *p, size_t _l
         p += prealign;
     }
 
-    crc = __crc32_vpmsum(crc, p, len & ~VMX_ALIGN_MASK);
+    crc = __crc32_vpmsum(crc, p, ALIGN_DOWN(len, VMX_ALIGN));
 
     tail = len & VMX_ALIGN_MASK;
     if (tail) {
-        p += len & ~VMX_ALIGN_MASK;
+        p += ALIGN_DOWN(len, VMX_ALIGN);
         crc = crc32_align(crc, p, tail);
     }
 

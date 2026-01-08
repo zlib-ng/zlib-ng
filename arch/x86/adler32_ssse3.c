@@ -81,8 +81,7 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
         vs2_0 = _mm_setzero_si128();
         vs1_0 = vs1;
 
-        k = (len < max_iters ? len : max_iters);
-        k -= k % 16;
+        k = ALIGN_DOWN(MIN(len, max_iters), 16);
         len -= k;
 
         while (k >= 32) {

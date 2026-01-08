@@ -29,12 +29,9 @@ rem_peel:
     const __m128i dot2v = _mm_setr_epi8(32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17);
     const __m128i dot2v_0 = _mm_setr_epi8(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
     const __m128i dot3v = _mm_set1_epi16(1);
-    size_t k;
 
     while (len >= 16) {
-
-        k = MIN(len, NMAX);
-        k -= k % 16;
+        size_t k = ALIGN_DOWN(MIN(len, NMAX), 16);
         len -= k;
 
         vs1 = _mm_cvtsi32_si128(adler0);

@@ -40,8 +40,7 @@ rem_peel:
     while (len >= 64) {
         vs1 = _mm512_zextsi128_si512(_mm_cvtsi32_si128(adler0));
         vs2 = _mm512_zextsi128_si512(_mm_cvtsi32_si128(adler1));
-        size_t k = MIN(len, NMAX);
-        k -= k % 64;
+        size_t k = ALIGN_DOWN(MIN(len, NMAX), 64);
         len -= k;
         __m512i vs1_0 = vs1;
         __m512i vs3 = _mm512_setzero_si512();
@@ -131,9 +130,10 @@ rem_peel_copy:
     while (len >= 32) {
         vs1 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(adler0));
         vs2 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(adler1));
-        size_t k = MIN(len, NMAX);
-        k -= k % 32;
+
+        size_t k = ALIGN_DOWN(MIN(len, NMAX), 32);
         len -= k;
+
         __m256i vs1_0 = vs1;
         __m256i vs3 = _mm256_setzero_si256();
         /* We might get a tad bit more ILP here if we sum to a second register in the loop */

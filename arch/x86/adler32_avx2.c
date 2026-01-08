@@ -50,8 +50,7 @@ rem_peel:
         __m256i vs3 = _mm256_setzero_si256();
         vs2_0 = vs3;
 
-        size_t k = MIN(len, NMAX);
-        k -= k % 32;
+        size_t k = ALIGN_DOWN(MIN(len, NMAX), 32);
         len -= k;
 
         while (k >= 64) {
