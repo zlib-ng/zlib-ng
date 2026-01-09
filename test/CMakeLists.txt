@@ -94,7 +94,12 @@ endif()
 if(WITH_GTEST)
     # Google test requires at least C++11
     if(NOT DEFINED CMAKE_CXX_STANDARD)
-        set(CMAKE_CXX_STANDARD 11)
+        # Use older version of Google test to support older versions of GCC
+        if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQUAL 5.3)
+            set(CMAKE_CXX_STANDARD 11)
+        else()
+            set(CMAKE_CXX_STANDARD 14)
+        endif()
     endif()
 
     # Google test requires MSAN instrumented LLVM C++ libraries
@@ -126,7 +131,7 @@ if(WITH_GTEST)
             if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS_EQUAL 5.3)
                 set(GTEST_TAG release-1.10.0)
             else()
-                set(GTEST_TAG release-1.12.1)
+                set(GTEST_TAG v1.16.0)
             endif()
         endif()
 
