@@ -62,7 +62,7 @@ jobs:
             codecov: ubuntu_gcc_osb
             cflags: -O3
 
-          - name: Ubuntu GCC -O3 OSB add_subdirectory
+          - name: Ubuntu GCC OSB add_subdirectory
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
@@ -847,6 +847,8 @@ jobs:
         python3 -u -m pip install gcovr
         python3 -m gcovr ${{ matrix.build-dir || '' }} -j 3 --gcov-ignore-parse-errors --verbose \
           --exclude-unreachable-branches \
+          --merge-mode-functions separate \
+          --merge-lines \
           --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
           --root ${{ matrix.build-src-dir || '.' }} \
           --xml --output ${{ matrix.codecov }}.xml
