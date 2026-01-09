@@ -134,13 +134,10 @@ if(WITH_GTEST)
         message(STATUS "Git checking out GoogleTest ${GTEST_TAG}")
         FetchContent_Declare(googletest
             GIT_REPOSITORY ${GTEST_REPOSITORY}
-            GIT_TAG ${GTEST_TAG})
+            GIT_TAG ${GTEST_TAG}
+            ${ZNG_FetchContent_Declare_EXCLUDE_FROM_ALL})
 
-        FetchContent_GetProperties(googletest)
-        if(NOT googletest_POPULATED)
-            FetchContent_Populate(googletest)
-            add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
-        endif()
+        ZNG_FetchContent_MakeAvailable(googletest)
         add_library(GTest::GTest ALIAS gtest)
         add_library(GTest::Main ALIAS gtest_main)
     endif()

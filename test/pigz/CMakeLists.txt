@@ -65,10 +65,7 @@ FetchContent_Declare(pigz
     GIT_REPOSITORY https://github.com/madler/pigz.git
     GIT_TAG ${PIGZ_TAG})
 
-FetchContent_GetProperties(pigz)
-if(NOT pigz_POPULATED)
-    FetchContent_Populate(pigz)
-endif()
+FetchContent_MakeAvailable(pigz)
 
 set(PIGZ_SRCS
     ${pigz_SOURCE_DIR}/pigz.c

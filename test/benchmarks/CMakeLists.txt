@@ -28,13 +28,10 @@ if(NOT benchmark_FOUND)
 
     FetchContent_Declare(benchmark
         GIT_REPOSITORY ${GBENCHMARK_REPOSITORY}
-        GIT_TAG ${GBENCHMARK_TAG})
+        GIT_TAG ${GBENCHMARK_TAG}
+        ${ZNG_FetchContent_Declare_EXCLUDE_FROM_ALL})
 
-    FetchContent_GetProperties(benchmark)
-    if(NOT benchmark_POPULATED)
-        FetchContent_Populate(benchmark)
-        add_subdirectory(${benchmark_SOURCE_DIR} ${benchmark_BINARY_DIR} EXCLUDE_FROM_ALL)
-    endif()
+    ZNG_FetchContent_MakeAvailable(benchmark)
 endif()
 
 add_executable(benchmark_zlib
@@ -74,14 +71,11 @@ if(WITH_BENCHMARK_APPS)
 
     if(NOT PNG_FOUND)
         FetchContent_Declare(PNG
-            GIT_REPOSITORY https://github.com/glennrp/libpng.git)
+            GIT_REPOSITORY https://github.com/glennrp/libpng.git
+            ${ZNG_FetchContent_Declare_EXCLUDE_FROM_ALL})
 
-        FetchContent_GetProperties(PNG)
-        if(NOT PNG_POPULATED)
-            FetchContent_Populate(PNG)
-            set(PNG_INCLUDE_DIR ${png_SOURCE_DIR})
-            add_subdirectory(${png_SOURCE_DIR} ${png_BINARY_DIR})
-        endif()
+        ZNG_FetchContent_MakeAvailable(PNG)
+        set(PNG_INCLUDE_DIR ${png_SOURCE_DIR})
     endif()
 
     set(BENCH_APP_SRCS
