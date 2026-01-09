@@ -137,6 +137,7 @@ macro(check_avx512_intrinsics)
         int main(void) { return 0; }"
         HAVE_AVX512_INTRIN
     )
+    set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
 macro(check_avx512vnni_intrinsics)
@@ -589,6 +590,7 @@ macro(check_ssse3_intrinsics)
         int main(void) { return 0; }"
         HAVE_SSSE3_INTRIN
     )
+    set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
 macro(check_sse41_intrinsics)
