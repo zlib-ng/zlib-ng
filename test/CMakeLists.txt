@@ -110,7 +110,7 @@ if(WITH_GTEST)
         find_package(GTest)
     endif()
 
-    if(NOT TARGET GTest::GTest AND NOT CMAKE_VERSION VERSION_LESS 3.11)
+    if(NOT TARGET GTest::GTest)
         include(FetchContent)
 
         # Prevent overriding the parent project's compiler/linker settings for Windows

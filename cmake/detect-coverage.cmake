@@ -3,13 +3,8 @@
 
 macro(add_code_coverage)
     # Check for -coverage flag support for Clang/GCC
-    if(CMAKE_VERSION VERSION_LESS 3.14)
-        set(CMAKE_REQUIRED_LIBRARIES -lgcov)
-    else()
-        set(CMAKE_REQUIRED_LINK_OPTIONS -coverage)
-    endif()
+    set(CMAKE_REQUIRED_LINK_OPTIONS -coverage)
     check_c_compiler_flag(-coverage HAVE_COVERAGE)
-    set(CMAKE_REQUIRED_LIBRARIES)
     set(CMAKE_REQUIRED_LINK_OPTIONS)
 
     if(HAVE_COVERAGE)
@@ -18,13 +13,8 @@ macro(add_code_coverage)
         message(STATUS "Code coverage enabled using: -coverage")
     else()
         # Some versions of GCC don't support -coverage shorthand
-        if(CMAKE_VERSION VERSION_LESS 3.14)
-            set(CMAKE_REQUIRED_LIBRARIES -lgcov)
-        else()
-            set(CMAKE_REQUIRED_LINK_OPTIONS -lgcov -fprofile-arcs)
-        endif()
+        set(CMAKE_REQUIRED_LINK_OPTIONS -lgcov -fprofile-arcs)
         check_c_compiler_flag("-ftest-coverage -fprofile-arcs -fprofile-values" HAVE_TEST_COVERAGE)
-        set(CMAKE_REQUIRED_LIBRARIES)
         set(CMAKE_REQUIRED_LINK_OPTIONS)
 
         if(HAVE_TEST_COVERAGE)
