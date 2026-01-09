@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14...3.31.0)
+cmake_minimum_required(VERSION 3.14...4.2.1)
 message(STATUS "Using CMake version ${CMAKE_VERSION}")
 
 if(POLICY CMP0169)

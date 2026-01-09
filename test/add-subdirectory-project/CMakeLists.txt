@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.1...3.29.0)
+cmake_minimum_required(VERSION 3.14...4.2.1)
 
 project(zlib-ng-add-subdirecory-test C)
 

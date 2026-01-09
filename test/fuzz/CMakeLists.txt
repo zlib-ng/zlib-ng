@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5.1...3.29.0)
+cmake_minimum_required(VERSION 3.14...4.2.1)
 
 if(CMAKE_C_COMPILER_ID MATCHES "Clang")
     if(DEFINED ENV{LIB_FUZZING_ENGINE})

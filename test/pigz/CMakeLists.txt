@@ -18,7 +18,7 @@
 #   PTHREADS4W_ROOT     - Path to pthreads4w source directory on Windows.
 #                         If not specified then threading will be disabled.
 
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.14...4.2.1)
 
 include(CheckCCompilerFlag)
 include(FeatureSummary)
