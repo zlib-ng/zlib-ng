@@ -1,27 +1,134 @@
 codecov:
-  max_report_age: off
+  max_report_age: false
   notify:
-    wait_for_ci: false
+    wait_for_ci: true
   require_ci_to_pass: false
+
 comment:
   require_base: false
   require_head: false
+
 coverage:
   status:
     project:
       default:
         threshold: 0.07
+        informational: true
+
+component_management:
+  default_rules: # Defaults inherited by all components
+    statuses:
+      - type: project
+        target: auto
+  individual_components:
+    - component_id: deflate
+      name: deflate
+      paths:
+        - compare*
+        - compress*
+        - deflate*
+        - insert*
+        - match*
+        - arch/generic/compare*
+        - arch/generic/slide*
+    - component_id: inflate
+      name: inflate
+      paths:
+        - chunkset*
+        - inf*
+        - uncompr*
+        - arch/generic/chunk*
+    - component_id: gzlib
+      name: gzlib
+      paths:
+        - gz*
+    - component_id: adler32
+      name: adler32
+      paths:
+        - adler32*
+        - arch/generic/adler32*
+    - component_id: crc32
+      name: crc32
+      paths:
+        - crc32*
+        - arch/generic/crc32*
+    - component_id: common
+      name: common
+      paths:
+        - arch_functions.h
+        - cpu*
+        - fallback*
+        - functable*
+        - trees*
+        - zbuild*
+        - zendian*
+        - zlib*
+        - zmemory*
+        - zutil*
+        - arch/generic/generic_functions.h
+    - component_id: arch_arm
+      name: arch_arm
+      paths:
+        - arch/arm/**
+    - component_id: arch_loongarch
+      name: arch_loongarch
+      paths:
+        - arch/loongarch/**
+    - component_id: arch_power
+      name: arch_power
+      paths:
+        - arch/power/**
+    - component_id: arch_riscv
+      name: arch_riscv
+      paths:
+        - arch/riscv/**
+    - component_id: arch_s390
+      name: arch_s390
+      paths:
+        - arch/s390/**
+    - component_id: arch_x86
+      name: arch_x86
+      paths:
+        - arch/x86/**
+    - component_id: minigzip
+      name: minigzip
+      paths:
+        - test/minigzip.c
+    - component_id: minideflate
+      name: minideflate
+      paths:
+        - test/minideflate.c
+    - component_id: tools
+      name: tools
+      paths:
+        - tools/**
+    - component_id: tests
+      name: tests
+      paths:
+        - test/**
+        - "!test/minigzip.c"
+        - "!test/minideflate.c"
+        - "!test/benchmarks/**"
+    - component_id: benchmarks
+      name: benchmarks
+      paths:
+        - test/benchmarks/**
+
+github_checks:
+    annotations: false
+
 fixes:
-- '/home/actions-runner/_work/zlib-ng/zlib-ng::'
-- '/home/actions-runner/_work/zlib-ng/zlib-ng/build/::'
+  - '/home/actions-runner/_work/zlib-ng/zlib-ng::'
+  - '/home/actions-runner/_work/zlib-ng/zlib-ng/build/::'
+
 ignore:
-- usr/include/.*
-- /usr/include/.*
-- /build/usr/include/.*
-- usr/lib/.*
-- /usr/lib/.*
-- /build/usr/lib/.*
-- usr/lib64/.*
-- /usr/lib64/.*
-- /build/usr/lib64/.*
-- _deps/**/*
+  - usr/include/.*
+  - /usr/include/.*
+  - /build/usr/include/.*
+  - usr/lib/.*
+  - /usr/lib/.*
+  - /build/usr/lib/.*
+  - usr/lib64/.*
+  - /usr/lib64/.*
+  - /build/usr/lib64/.*
+  - _deps/**/*
