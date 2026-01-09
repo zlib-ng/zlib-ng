@@ -10,7 +10,7 @@ on:
     tags:
       - '*'
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.actor }}-${{ github.sha }}
   cancel-in-progress: true
 jobs:
   fuzzing:
