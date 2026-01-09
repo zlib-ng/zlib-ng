@@ -686,7 +686,7 @@ jobs:
       uses: actions/checkout@v6
       # Don't test against all corpora with MinGW due to Wine being unable to run parallel jobs
       # without connection timeout. Without parallel jobs test runs using Wine take close to an hour.
-      if: contains(matrix.name, 'MinGW') == false
+      if: contains(matrix.name, 'MinGW') == false && !contains(matrix.cmake-args, 'WITH_SANITIZER')
       with:
         repository: zlib-ng/corpora
         path: test/data/corpora
