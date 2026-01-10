@@ -235,10 +235,10 @@ gzlib.o: $(SRCDIR)/gzlib.c
 gzlib.lo: $(SRCDIR)/gzlib.c
 	$(CC) $(SFLAGS) -DPIC -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $<
 
-gzread.o: gzread.c
+gzread.o: $(SRCDIR)/gzread.c
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $<
 
-gzread.lo: gzread.c
+gzread.lo: $(SRCDIR)/gzread.c
 	$(CC) $(SFLAGS) -DPIC -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $<
 
 gzwrite.o: $(SRCDIR)/gzwrite.c
@@ -381,7 +381,7 @@ maintainer-clean: distclean
 distclean: clean
 	@if [ -f $(ARCHDIR)/Makefile ]; then $(MAKE) -C $(ARCHDIR) distclean; fi
 	@if [ -f test/Makefile ]; then $(MAKE) -C test distclean; fi
-	rm -f $(PKGFILE) configure.log zconf.h zconf.h.cmakein zlib$(SUFFIX).h zlib_name_mangling$(SUFFIX).h *.pc gzread.c
+	rm -f $(PKGFILE) configure.log zconf.h zconf.h.cmakein zlib$(SUFFIX).h zlib_name_mangling$(SUFFIX).h *.pc gzread_mangle.h
 	-@rm -f .DS_Store
 # Reset Makefile if building inside source tree
 	@if [ -f Makefile.in ]; then \

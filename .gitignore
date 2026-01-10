@@ -79,7 +79,7 @@ a.out
 Makefile.tmp
 /makecrct
 /maketrees
-gzread.c
+gzread_mangle.h
 
 /Debug
 /example.dir

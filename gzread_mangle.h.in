@@ -1,0 +1,7 @@
+/* gzread_mangle.h.in -- gzgetc name mangling helper
+ * This file undefines the macro from zlib.h/zlib-ng.h to allow the real
+ * function to be defined in gzread.c. This is tricky because the prefix
+ * is not known ahead of time, thus the need for sed or similar.
+ */
+#undef @ZLIB_SYMBOL_PREFIX@gzgetc
+#undef @ZLIB_SYMBOL_PREFIX@zng_gzgetc

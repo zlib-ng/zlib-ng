@@ -6,6 +6,7 @@
 #include "zbuild.h"
 #include "zutil_p.h"
 #include "gzguts.h"
+#include "gzread_mangle.h"
 
 /* Local functions */
 static int gz_read_init(gz_state *state);
@@ -402,8 +403,6 @@ size_t Z_EXPORT PREFIX(gzfread)(void *buf, size_t size, size_t nitems, gzFile fi
 }
 
 /* -- see zlib.h -- */
-#undef @ZLIB_SYMBOL_PREFIX@gzgetc
-#undef @ZLIB_SYMBOL_PREFIX@zng_gzgetc
 z_int32_t Z_EXPORT PREFIX(gzgetc)(gzFile file) {
     unsigned char buf[1];
     gz_state *state;

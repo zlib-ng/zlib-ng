@@ -889,8 +889,8 @@ if [ "$SRCDIR" != "$BUILDDIR" ]; then
     rm -f $SRCDIR/zlib_name_mangling${SUFFIX}.h
 fi
 
-# Rename @ZLIB_SYMBOL_PREFIX@ to $symbol_prefix in gzread.c, zlib.h and zlib_name_mangling.h
-sed < $SRCDIR/gzread.c.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > gzread.c
+# Substitute @ZLIB_SYMBOL_PREFIX@ with $symbol_prefix in gzread_mangle.h, zlib.h and zlib_name_mangling.h
+sed < $SRCDIR/gzread_mangle.h.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > gzread_mangle.h
 sed < $SRCDIR/zlib${SUFFIX}.h.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > zlib${SUFFIX}.h
 if [ ! -z "$symbol_prefix" ]; then
   sed < $SRCDIR/zlib_name_mangling${SUFFIX}.h.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > zlib_name_mangling${SUFFIX}.h
