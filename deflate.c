@@ -350,13 +350,6 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
 
     s->pending_buf_size = s->lit_bufsize * 4;
 
-    if (s->window == NULL || s->prev == NULL || s->head == NULL || s->pending_buf == NULL) {
-        s->status = FINISH_STATE;
-        strm->msg = ERR_MSG(Z_MEM_ERROR);
-        PREFIX(deflateEnd)(strm);
-        return Z_MEM_ERROR;
-    }
-
 #ifdef LIT_MEM
     s->d_buf = (uint16_t *)(s->pending_buf + (s->lit_bufsize << 1));
     s->l_buf = s->pending_buf + (s->lit_bufsize << 2);
