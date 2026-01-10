@@ -37,12 +37,13 @@ jobs:
             cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON -DNATIVE_ARCH_OVERRIDE="-mavx -mpclmul"
             codecov: ubuntu_gcc_native_inst_avx
 
-          - name: Ubuntu GCC Symbol Prefix
+          - name: Ubuntu GCC Symbol Prefix -O0
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
             cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_
             codecov: ubuntu_gcc_sprefix
+            cflags: -O0
 
           - name: Ubuntu GCC Compat Symbol Prefix
             os: ubuntu-latest
@@ -86,17 +87,18 @@ jobs:
             packages: gcc-multilib g++-multilib
             codecov: ubuntu_gcc_m32
 
-          - name: Ubuntu GCC C17
+          - name: Ubuntu GCC C17 MMAP
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
             cmake-args: -DCMAKE_C_STANDARD=17
+            cflags: -DUSE_MMAP
 
-          - name: Ubuntu GCC C23
+          - name: Ubuntu GCC C23 Reduced memory
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DCMAKE_C_STANDARD=23
+            cmake-args: -DCMAKE_C_STANDARD=23 -DWITH_REDUCED_MEM=ON
 
           - name: Ubuntu GCC No Chorba
             os: ubuntu-latest
