@@ -12,8 +12,16 @@ coverage:
   status:
     project:
       default:
-        threshold: 0.07
+        target: 80%      # Target 80% project coverage
+        threshold: 10    # Allow pass even when project coverage drops by 10% (because of AVX512)
         informational: true
+        paths:
+          - "!test/"     # Don't count coverage of tests towards project coverage
+          - "!tools/"    #               --"--     tools     --"--
+    patch:
+      default:
+        target: auto
+        threshold: 10
 
 component_management:
   default_rules: # Defaults inherited by all components
@@ -110,7 +118,7 @@ component_management:
         - "!test/minideflate.c"
 
 github_checks:
-    annotations: false
+  annotations: false
 
 fixes:
   - '/home/actions-runner/_work/zlib-ng/zlib-ng::'
