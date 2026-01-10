@@ -12,14 +12,22 @@ coverage:
   status:
     project:
       default:
-        threshold: 0.07
-        informational: true
+        target: 80%      # Target 80% project coverage
+        threshold: 10    # Allow pass even when project coverage drops by 10% (because of AVX512)
+        paths:
+          - "!test/"     # Don't count coverage of tests towards project coverage
+          - "!tools/"    #               --"--     tools     --"--
+    patch:
+      default:
+        target: auto
+        threshold: 10    # Allow 10% worse coverage of changed code
 
 component_management:
   default_rules: # Defaults inherited by all components
     statuses:
       - type: project
         target: auto
+        threshold: 0.2   # Most components should have only minimal coverage changes
   individual_components:
     - component_id: deflate
       name: deflate
@@ -54,6 +62,7 @@ component_management:
         - arch/generic/crc32*
     - component_id: common
       name: common
+      threshold: 2       # CI changes between AVX2 and AVX-512 capable hosts
       paths:
         - arch_functions.h
         - cpu*
@@ -88,6 +97,7 @@ component_management:
         - arch/s390/**
     - component_id: arch_x86
       name: arch_x86
+      threshold: 10      # CI changes between AVX2 and AVX-512 capable hosts
       paths:
         - arch/x86/**
     - component_id: minigzip
@@ -110,7 +120,7 @@ component_management:
         - "!test/minideflate.c"
 
 github_checks:
-    annotations: false
+  annotations: false
 
 fixes:
   - '/home/actions-runner/_work/zlib-ng/zlib-ng::'
