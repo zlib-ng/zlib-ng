@@ -108,11 +108,6 @@ component_management:
         - test/**
         - "!test/minigzip.c"
         - "!test/minideflate.c"
-        - "!test/benchmarks/**"
-    - component_id: benchmarks
-      name: benchmarks
-      paths:
-        - test/benchmarks/**
 
 github_checks:
     annotations: false
@@ -122,6 +117,8 @@ fixes:
   - '/home/actions-runner/_work/zlib-ng/zlib-ng/build/::'
 
 ignore:
+  - test/benchmarks/**
+  - "**/benchmark_*"
   - usr/include/.*
   - /usr/include/.*
   - /build/usr/include/.*
@@ -131,4 +128,4 @@ ignore:
   - usr/lib64/.*
   - /usr/lib64/.*
   - /build/usr/lib64/.*
-  - _deps/**/*
+  - _deps/**
