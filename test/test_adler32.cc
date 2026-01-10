@@ -12,20 +12,20 @@ extern "C" {
 #  include "zbuild.h"
 #  include "arch_functions.h"
 #  include "test_cpu_features.h"
-#  include "adler32_test_strings_p.h"
+#  include "hash_test_strings_p.h"
 }
 
 #include <gtest/gtest.h>
 
-class adler32_variant : public ::testing::TestWithParam<adler32_test> {
+class adler32_variant : public ::testing::TestWithParam<hash_test> {
 public:
-    void hash(adler32_test param, adler32_func adler32) {
+    void hash(hash_test param, adler32_func adler32) {
         uint32_t adler = adler32((uint32_t)param.adler, param.buf, param.len);
-        EXPECT_EQ(adler, param.expect);
+        EXPECT_EQ(adler, param.expect_adler);
     }
 };
 
-INSTANTIATE_TEST_SUITE_P(adler32, adler32_variant, testing::ValuesIn(tests));
+INSTANTIATE_TEST_SUITE_P(adler32, adler32_variant, testing::ValuesIn(hash_tests));
 
 #define TEST_ADLER32(name, func, support_flag) \
     TEST_P(adler32_variant, name) { \

@@ -12,12 +12,12 @@ extern "C" {
 #  include "zbuild.h"
 #  include "arch_functions.h"
 #  include "test_cpu_features.h"
-#  include "crc32_test_strings_p.h"
+#  include "hash_test_strings_p.h"
 }
 
-class crc32_variant : public ::testing::TestWithParam<crc32_test> {
+class crc32_variant : public ::testing::TestWithParam<hash_test> {
 public:
-    void hash(crc32_test param, crc32_func crc32) {
+    void hash(hash_test param, crc32_func crc32) {
         uint32_t crc = 0;
         if (param.buf != NULL) {
             if (param.len) {
@@ -26,7 +26,7 @@ public:
                 crc = param.crc;
             }
         }
-        EXPECT_EQ(crc, param.expect);
+        EXPECT_EQ(crc, param.expect_crc);
     }
 };
 
@@ -69,7 +69,7 @@ public:
 
 uint8_t *crc32_large_buf::buffer = nullptr;
 
-INSTANTIATE_TEST_SUITE_P(crc32, crc32_variant, testing::ValuesIn(crc32_tests));
+INSTANTIATE_TEST_SUITE_P(crc32, crc32_variant, testing::ValuesIn(hash_tests));
 
 #define TEST_CRC32(name, func, support_flag) \
     TEST_P(crc32_variant, name) { \

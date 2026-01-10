@@ -9,34 +9,30 @@ extern "C" {
 #  include "zbuild.h"
 #  include "arch_functions.h"
 #  include "test_cpu_features.h"
-#  include "adler32_test_strings_p.h"
+#  include "hash_test_strings_p.h"
 }
 
-#define BUFSIZE 615336U
-
-class adler32_copy_variant : public ::testing::TestWithParam<adler32_test> {
+class adler32_copy_variant : public ::testing::TestWithParam<hash_test> {
 protected:
-    uint8_t dstbuf[BUFSIZE];
+    uint8_t dstbuf[HASH_TEST_MAX_LENGTH];
 
 public:
     /* Ensure that adler32 copy functions returns the correct adler and copies the data */
-    void adler32_copy_test(adler32_copy_func copyfunc, adler32_test params) {
-        uint32_t adler = 0;
-
-        ASSERT_LE(params.len, BUFSIZE);
+    void adler32_copy_test(adler32_copy_func copyfunc, hash_test params) {
+        ASSERT_LE(params.len, HASH_TEST_MAX_LENGTH);
 
         if (params.buf == NULL) {
             GTEST_SKIP();
         }
 
-        adler = copyfunc(params.adler, dstbuf, params.buf, params.len);
+        uint32_t adler = copyfunc(params.adler, dstbuf, params.buf, params.len);
 
-        EXPECT_EQ(adler, params.expect);
+        EXPECT_EQ(adler, params.expect_adler);
         EXPECT_EQ(0, memcmp(params.buf, dstbuf, params.len));
     }
 };
 
-INSTANTIATE_TEST_SUITE_P(adler32_copy, adler32_copy_variant, testing::ValuesIn(tests));
+INSTANTIATE_TEST_SUITE_P(adler32_copy, adler32_copy_variant, testing::ValuesIn(hash_tests));
 
 #define TEST_ADLER32_COPY(name, copyfunc, support_flag) \
     TEST_P(adler32_copy_variant, name) { \

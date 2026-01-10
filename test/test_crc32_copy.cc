@@ -9,34 +9,30 @@ extern "C" {
 #  include "zbuild.h"
 #  include "arch_functions.h"
 #  include "test_cpu_features.h"
-#  include "crc32_test_strings_p.h"
+#  include "hash_test_strings_p.h"
 }
 
-#define BUFSIZE 615336U
-
-class crc32_copy_variant : public ::testing::TestWithParam<crc32_test> {
+class crc32_copy_variant : public ::testing::TestWithParam<hash_test> {
 protected:
-    uint8_t dstbuf[BUFSIZE];
+    uint8_t dstbuf[HASH_TEST_MAX_LENGTH];
 
 public:
     /* Ensure that crc32 copy functions returns the correct crc and copies the data */
-    void crc32_copy_test(crc32_copy_func copyfunc, crc32_test params) {
-        uint32_t crc = 0;
-
-        ASSERT_LE(params.len, BUFSIZE);
+    void crc32_copy_test(crc32_copy_func copyfunc, hash_test params) {
+        ASSERT_LE(params.len, HASH_TEST_MAX_LENGTH);
 
         if (params.buf == NULL) {
             GTEST_SKIP();
         }
 
-        crc = copyfunc(params.crc, dstbuf, params.buf, params.len);
+        uint32_t crc = copyfunc(params.crc, dstbuf, params.buf, params.len);
 
-        EXPECT_EQ(crc, params.expect);
+        EXPECT_EQ(crc, params.expect_crc);
         EXPECT_EQ(0, memcmp(params.buf, dstbuf, params.len));
     }
 };
 
-INSTANTIATE_TEST_SUITE_P(crc32_copy, crc32_copy_variant, testing::ValuesIn(crc32_tests));
+INSTANTIATE_TEST_SUITE_P(crc32_copy, crc32_copy_variant, testing::ValuesIn(hash_tests));
 
 #define TEST_CRC32_COPY(name, copyfunc, support_flag) \
     TEST_P(crc32_copy_variant, name) { \
