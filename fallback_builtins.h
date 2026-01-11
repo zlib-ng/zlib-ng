@@ -1,6 +1,11 @@
 #ifndef FALLBACK_BUILTINS_H
 #define FALLBACK_BUILTINS_H
 
+/* Provide fallback for compilers that don't support __has_builtin */
+#  ifndef __has_builtin
+#    define __has_builtin(x) 0
+#  endif
+
 #if defined(_MSC_VER) && !defined(__clang__)
 
 #include <intrin.h>
@@ -42,13 +47,13 @@ Z_FORCEINLINE static int __builtin_ctzll(unsigned long long value) {
 
 #endif // _MSC_VER && !__clang__
 
-#if !(defined(__has_builtin) && __has_builtin(__builtin_bitreverse16))
+#if !__has_builtin(__builtin_bitreverse16)
 
 #  if defined(ARCH_ARM) && defined(ARCH_64BIT) && !defined(_MSC_VER)
 /* ARM bit reversal for 16-bit values using rbit instruction */
 Z_FORCEINLINE static uint16_t __builtin_bitreverse16(uint16_t value) {
     uint32_t res;
-#    if defined(__has_builtin) && __has_builtin(__builtin_rbit)
+#    if __has_builtin(__builtin_rbit)
     res = __builtin_rbit((uint32_t)value);
 #    else
     __asm__ volatile("rbit %w0, %w1" : "=r"(res) : "r"((uint32_t)value));
