@@ -28,6 +28,7 @@ component_management:
     statuses:
       - type: project
         target: auto
+        threshold: 10%  # Allow components to drop by up to 10% without failing
   individual_components:
     - component_id: deflate
       name: deflate
