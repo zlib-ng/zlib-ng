@@ -1661,6 +1661,16 @@ if(BUILD_TESTING)
     add_subdirectory(test)
 endif()
 
+#============================================================================
+# Config summary
+#============================================================================
+message("")
+message(STATUS "The following defines have been set (partial list):\n")
+get_property(propvalraw DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY COMPILE_DEFINITIONS)
+list(SORT propvalraw)
+string(REPLACE ";" " " propval "${propvalraw}")
+message("CURRENT_SOURCE_DIR: ${propval}\n")
+
 add_feature_info(WITH_GZFILEOP WITH_GZFILEOP "Compile with support for gzFile related functions")
 add_feature_info(ZLIB_COMPAT ZLIB_COMPAT "Compile with zlib compatible API")
 add_feature_info(ZLIB_ALIASES ZLIB_ALIASES "Compile with zlib compatible CMake targets")
@@ -1715,7 +1725,7 @@ endif()
 
 add_feature_info(INSTALL_UTILS INSTALL_UTILS "Copy minigzip and minideflate during install")
 
-FEATURE_SUMMARY(WHAT ALL INCLUDE_QUIET_PACKAGES)
+feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES)
 
 #============================================================================
 # CPack
