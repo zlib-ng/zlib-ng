@@ -29,7 +29,7 @@
 #include "x86_intrins.h"
 
 #if defined(X86_VPCLMULQDQ) && defined(__AVX512VL__)
-#  define mm_xor3_si128(a, b, c) _mm_ternarylogic_epi32(a, b, c, 0x96)
+#  define mm_xor3_si128(a, b, c) _mm_ternarylogic_epi64(a, b, c, 0x96)
 #else
 #  define mm_xor3_si128(a, b, c) _mm_xor_si128(_mm_xor_si128(a, b), c)
 #endif
@@ -115,10 +115,10 @@ static inline void fold_16(__m512i *zmm_crc0, __m512i *zmm_crc1, __m512i *zmm_cr
     __m512i z_low3  = _mm512_clmulepi64_epi128(*zmm_crc3, zmm_fold16, 0x01);
     __m512i z_high3 = _mm512_clmulepi64_epi128(*zmm_crc3, zmm_fold16, 0x10);
 
-    *zmm_crc0 = _mm512_ternarylogic_epi32(z_low0, z_high0, zmm_t0, 0x96);
-    *zmm_crc1 = _mm512_ternarylogic_epi32(z_low1, z_high1, zmm_t1, 0x96);
-    *zmm_crc2 = _mm512_ternarylogic_epi32(z_low2, z_high2, zmm_t2, 0x96);
-    *zmm_crc3 = _mm512_ternarylogic_epi32(z_low3, z_high3, zmm_t3, 0x96);
+    *zmm_crc0 = _mm512_ternarylogic_epi64(z_low0, z_high0, zmm_t0, 0x96);
+    *zmm_crc1 = _mm512_ternarylogic_epi64(z_low1, z_high1, zmm_t1, 0x96);
+    *zmm_crc2 = _mm512_ternarylogic_epi64(z_low2, z_high2, zmm_t2, 0x96);
+    *zmm_crc3 = _mm512_ternarylogic_epi64(z_low3, z_high3, zmm_t3, 0x96);
 }
 #endif
 
@@ -209,13 +209,13 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
 
         // Fold existing xmm state into first 64 bytes
         zmm_t0 = _mm512_castsi128_si512(xmm_crc0);
-        zmm_t0 = _mm512_inserti32x4(zmm_t0, xmm_crc1, 1);
-        zmm_t0 = _mm512_inserti32x4(zmm_t0, xmm_crc2, 2);
-        zmm_t0 = _mm512_inserti32x4(zmm_t0, xmm_crc3, 3);
+        zmm_t0 = _mm512_inserti64x2(zmm_t0, xmm_crc1, 1);
+        zmm_t0 = _mm512_inserti64x2(zmm_t0, xmm_crc2, 2);
+        zmm_t0 = _mm512_inserti64x2(zmm_t0, xmm_crc3, 3);
 
         z_low0 = _mm512_clmulepi64_epi128(zmm_t0, zmm_fold4, 0x01);
         z_high0 = _mm512_clmulepi64_epi128(zmm_t0, zmm_fold4, 0x10);
-        zmm_crc0 = _mm512_ternarylogic_epi32(zmm_crc0, z_low0, z_high0, 0x96);
+        zmm_crc0 = _mm512_ternarylogic_epi64(zmm_crc0, z_low0, z_high0, 0x96);
 
         while (len >= 256) {
             len -= 256;
@@ -238,21 +238,21 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         // zmm_crc[0,1,2,3] -> zmm_crc0
         z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
         z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-        zmm_crc0 = _mm512_ternarylogic_epi32(z_low0, z_high0, zmm_crc1, 0x96);
+        zmm_crc0 = _mm512_ternarylogic_epi64(z_low0, z_high0, zmm_crc1, 0x96);
 
         z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
         z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-        zmm_crc0 = _mm512_ternarylogic_epi32(z_low0, z_high0, zmm_crc2, 0x96);
+        zmm_crc0 = _mm512_ternarylogic_epi64(z_low0, z_high0, zmm_crc2, 0x96);
 
         z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
         z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-        zmm_crc0 = _mm512_ternarylogic_epi32(z_low0, z_high0, zmm_crc3, 0x96);
+        zmm_crc0 = _mm512_ternarylogic_epi64(z_low0, z_high0, zmm_crc3, 0x96);
 
         // zmm_crc0 -> xmm_crc[0, 1, 2, 3]
-        xmm_crc0 = _mm512_extracti32x4_epi32(zmm_crc0, 0);
-        xmm_crc1 = _mm512_extracti32x4_epi32(zmm_crc0, 1);
-        xmm_crc2 = _mm512_extracti32x4_epi32(zmm_crc0, 2);
-        xmm_crc3 = _mm512_extracti32x4_epi32(zmm_crc0, 3);
+        xmm_crc0 = _mm512_extracti64x2_epi64(zmm_crc0, 0);
+        xmm_crc1 = _mm512_extracti64x2_epi64(zmm_crc0, 1);
+        xmm_crc2 = _mm512_extracti64x2_epi64(zmm_crc0, 2);
+        xmm_crc3 = _mm512_extracti64x2_epi64(zmm_crc0, 3);
     }
 #else
     /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398
