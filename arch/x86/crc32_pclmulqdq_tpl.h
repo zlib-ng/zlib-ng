@@ -264,7 +264,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         }
 
         // Fold existing xmm state into first 64 bytes
-        zmm_t0 = _mm512_inserti32x4(_mm512_setzero_si512(), xmm_crc0, 0);
+        zmm_t0 = _mm512_castsi128_si512(xmm_crc0);
         zmm_t0 = _mm512_inserti32x4(zmm_t0, xmm_crc1, 1);
         zmm_t0 = _mm512_inserti32x4(zmm_t0, xmm_crc2, 2);
         zmm_t0 = _mm512_inserti32x4(zmm_t0, xmm_crc3, 3);
