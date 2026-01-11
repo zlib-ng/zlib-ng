@@ -187,21 +187,13 @@ jobs:
             gcov-exec: arm-linux-gnueabihf-gcov
             codecov: ubuntu_gcc_armhf
 
-          - name: Ubuntu GCC ARM HF No ARMv8 ASAN
+          - name: Ubuntu GCC ARM HF No Neon No ARMv8 ASAN
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_ARMV8=OFF -DWITH_SANITIZER=Address
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_NEON=OFF -DWITH_ARMV8=OFF -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
             packages: qemu-user crossbuild-essential-armhf
             gcov-exec: arm-linux-gnueabihf-gcov
-            codecov: ubuntu_gcc_armhf_no_armv8
-
-          - name: Ubuntu GCC ARM HF No NEON ASAN
-            os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_NEON=OFF -DWITH_SANITIZER=Address
-            asan-options: detect_leaks=0
-            packages: qemu-user crossbuild-essential-armhf
-            gcov-exec: arm-linux-gnueabihf-gcov
-            codecov: ubuntu_gcc_armhf_no_neon
+            codecov: ubuntu_gcc_armhf_no_neon_no_armv8
 
           - name: Ubuntu GCC ARM HF Compat No Opt UBSAN
             os: ubuntu-latest
@@ -217,20 +209,6 @@ jobs:
             packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
             gcov-exec: aarch64-linux-gnu-gcov
             codecov: ubuntu_gcc_aarch64
-
-          - name: Ubuntu GCC AARCH64 No ARMv8 UBSAN
-            os: ubuntu-22.04
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_ARMV8=OFF -DWITH_SANITIZER=Undefined
-            packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
-            gcov-exec: aarch64-linux-gnu-gcov
-            codecov: ubuntu_gcc_aarch64_no_armv8
-
-          - name: Ubuntu GCC AARCH64 No NEON UBSAN
-            os: ubuntu-22.04
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64.cmake -DWITH_NEON=OFF -DWITH_SANITIZER=Undefined
-            packages: qemu-user gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc-dev-arm64-cross
-            gcov-exec: aarch64-linux-gnu-gcov
-            codecov: ubuntu_gcc_aarch64_no_neon
 
           - name: Ubuntu GCC AARCH64 Compat No Opt UBSAN
             os: ubuntu-22.04
@@ -330,14 +308,6 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv-clang.cmake
             packages: qemu-user crossbuild-essential-riscv64
 
-          - name: Ubuntu GCC 14 LoongArch64 LSX
-            os: ubuntu-latest
-            cmake-args: -DCOMPILER_SUFFIX=-14 -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-loongarch64-gcc.cmake -DWITH_BENCHMARKS=ON -DWITH_LASX=OFF
-            packages: qemu-user gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc-dev-loong64-cross
-            ldflags: -static
-            gcov-exec: loongarch64-linux-gnu-gcov-14
-            codecov: ubuntu_gcc14_loongarch64_lsx
-
           - name: Ubuntu GCC 14 LoongArch64
             os: ubuntu-latest
             cmake-args: -DCOMPILER_SUFFIX=-14 -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-loongarch64-gcc.cmake -DWITH_BENCHMARKS=ON
@@ -345,6 +315,14 @@ jobs:
             ldflags: -static
             gcov-exec: loongarch64-linux-gnu-gcov-14
             codecov: ubuntu_gcc14_loongarch64
+
+          - name: Ubuntu GCC 14 LoongArch64 No LASX
+            os: ubuntu-latest
+            cmake-args: -DCOMPILER_SUFFIX=-14 -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-loongarch64-gcc.cmake -DWITH_BENCHMARKS=ON -DWITH_LASX=OFF
+            packages: qemu-user gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc-dev-loong64-cross
+            ldflags: -static
+            gcov-exec: loongarch64-linux-gnu-gcov-14
+            codecov: ubuntu_gcc14_loongarch64_no_lasx
 
           - name: Ubuntu GCC SPARC64
             os: ubuntu-latest
@@ -406,12 +384,12 @@ jobs:
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'clang-15' }}
             cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'clang++-15' }}
             cmake-args: >-
-              ${{ github.repository != 'zlib-ng/zlib-ng' && '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON' || '-GNinja -DWITH_SANITIZER=Memory' }}
+              ${{ github.repository == 'zlib-ng/zlib-ng' && '-GNinja -DWITH_SANITIZER=Memory' || '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON' }}
               -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON
-            gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcov' || 's390x-linux-gnu-gcov' }}
             packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
+            # codecov disabled, causes MSAN errors
 
           - name: Ubuntu MinGW i686
             os: ubuntu-22.04
@@ -617,21 +595,14 @@ jobs:
             cmake-args: -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 -DWITH_BENCHMARKS=ON
             ldflags: -ld_classic
 
-          - name: macOS Clang ASAN (Intel)
+          - name: macOS Clang (Intel) ASAN
             os: macos-15-intel
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_SANITIZER=Address
             codecov: macos_clang
 
-          - name: macOS Clang ASAN (ARM64)
-            os: macos-latest
-            compiler: clang
-            cxx-compiler: clang++
-            cmake-args: -DWITH_SANITIZER=Address
-            codecov: macos_clang_arm64
-
-          - name: macOS GCC UBSAN (Intel)
+          - name: macOS GCC (Intel) UBSAN
             os: macos-15-intel
             compiler: gcc-13
             cxx-compiler: g++-13
@@ -640,7 +611,21 @@ jobs:
             gcov-exec: gcov-13
             codecov: macos_gcc
 
-          - name: macOS GCC UBSAN (ARM64)
+          - name: macOS Clang (Intel) Native Instructions
+            os: macos-15-intel
+            compiler: clang
+            cxx-compiler: clang++
+            cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
+            codecov: macos_clang_native_intel
+
+          - name: macOS Clang (ARM64) ASAN
+            os: macos-latest
+            compiler: clang
+            cxx-compiler: clang++
+            cmake-args: -DWITH_SANITIZER=Address
+            codecov: macos_clang_arm64
+
+          - name: macOS GCC (ARM64) UBSAN
             os: macos-14
             compiler: gcc-13
             cxx-compiler: g++-13
@@ -649,13 +634,7 @@ jobs:
             gcov-exec: gcov-13
             codecov: macos_gcc_arm64
 
-          - name: macOS Clang Native Instructions (Intel)
-            os: macos-15-intel
-            compiler: clang
-            cxx-compiler: clang++
-            cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
-
-          - name: macOS Clang Native Instructions (ARM64)
+          - name: macOS Clang (ARM64) Native Instructions
             os: macos-latest
             compiler: clang
             cxx-compiler: clang++
