@@ -381,8 +381,8 @@ jobs:
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} Clang S390X DFLTCC ${{ (github.repository == 'zlib-ng/zlib-ng' && 'MSAN') || 'Compat' }}
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
-            compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'clang-15' }}
-            cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'clang++-15' }}
+            compiler: clang
+            cxx-compiler: clang++
             cmake-args: >-
               ${{ github.repository == 'zlib-ng/zlib-ng' && '-GNinja -DWITH_SANITIZER=Memory' || '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON' }}
               -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON
@@ -412,84 +412,91 @@ jobs:
              # Limit parallel test jobs to prevent wine errors
             parallels-jobs: 1
 
-          - name: Ubuntu Clang
+          - name: Ubuntu Clang-15
             os: ubuntu-latest
             compiler: clang-15
             cxx-compiler: clang++-15
-            packages: clang-15 llvm-15 llvm-15-tools
+            cmake-args: -DCMAKE_LINKER_TYPE=LLD
+            packages: clang-15 lld
             gcov-exec: llvm-cov-15 gcov
             codecov: ubuntu_clang
 
           - name: Ubuntu Clang C17 MMAP
             os: ubuntu-latest
-            compiler: clang-15
-            cxx-compiler: clang++-15
+            compiler: clang
+            cxx-compiler: clang++
             cmake-args: -DCMAKE_LINKER_TYPE=LLD -DCMAKE_C_STANDARD=17
             cflags: -DUSE_MMAP
-            packages: clang-15 llvm-15 llvm-15-tools lld
+            packages: llvm-18 lld
+            gcov-exec: llvm-cov-18 gcov
+            codecov: ubuntu_clang_c17_mmap
 
-          - name: Ubuntu Clang C23
+          - name: Ubuntu Clang-20 C23
             os: ubuntu-latest
-            compiler: clang-18
-            cxx-compiler: clang++-18
-            cmake-args: -DCMAKE_C_STANDARD=23
-            packages: clang-18 llvm-18 llvm-18-tools
+            compiler: clang-20
+            cxx-compiler: clang++-20
+            cmake-args: -DCMAKE_LINKER_TYPE=LLD -DCMAKE_C_STANDARD=23
+            packages: clang-20 lld
+            # codecov disabled for clang-20, errors
 
           # Check for undefined symbols in the version script for the modern api
-          - name: Ubuntu Clang Undefined Symbols
+          - name: Ubuntu Clang-20 Undefined Symbols
             os: ubuntu-latest
-            compiler: clang-15
-            cxx-compiler: clang++-15
+            compiler: clang-20
+            cxx-compiler: clang++-20
             cmake-args: -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld -Wl,--no-undefined-version" -DZLIBNG_ENABLE_TESTS=OFF
-            build-shared: ON
-            packages: clang-15 llvm-15 lld
+            build-shared: 'ON'
+            packages: clang-20 lld
+            # codecov disabled, no tests run
 
           # Check for undefined symbols in the version script for the compat api
-          - name: Ubuntu Clang Undefined Symbols Compat
+          - name: Ubuntu Clang-20 Undefined Symbols Compat
             os: ubuntu-latest
-            compiler: clang-15
-            cxx-compiler: clang++-15
+            compiler: clang-20
+            cxx-compiler: clang++-20
             cmake-args: -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld -Wl,--no-undefined-version" -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_COMPAT=ON
-            build-shared: ON
-            packages: clang-15 llvm-15 lld
+            build-shared: 'ON'
+            packages: clang-20 lld
+            # codecov disabled, no tests run
 
           - name: Ubuntu Clang Inflate Strict REDUCED_MEM
             os: ubuntu-latest
-            compiler: clang-15
-            cxx-compiler: clang++-15
+            compiler: clang
+            cxx-compiler: clang++
             cmake-args: -DWITH_INFLATE_STRICT=ON -DWITH_REDUCED_MEM=ON
-            packages: clang-15 llvm-15 llvm-15-tools
-            gcov-exec: llvm-cov-15 gcov
+            packages: llvm-18
+            gcov-exec: llvm-cov-18 gcov
             codecov: ubuntu_clang_inflate_strict_reduced_mem
 
           - name: Ubuntu Clang Inflate Allow Invalid Dist
             os: ubuntu-latest
-            compiler: clang-15
-            cxx-compiler: clang++-15
+            compiler: clang
+            cxx-compiler: clang++
             cmake-args: -DWITH_INFLATE_ALLOW_INVALID_DIST=ON
-            packages: clang-15 llvm-15 llvm-15-tools
-            gcov-exec: llvm-cov-15 gcov
+            packages: llvm-18
+            gcov-exec: llvm-cov-18 gcov
             codecov: ubuntu_clang_inflate_allow_invalid_dist
 
           - name: Ubuntu Clang Compat Debug
             os: ubuntu-latest
-            compiler: clang-15
-            cxx-compiler: clang++-15
+            compiler: clang
+            cxx-compiler: clang++
             cmake-args: -DZLIB_COMPAT=ON
-            packages: clang-15 llvm-15 llvm-15-tools
-            gcov-exec: llvm-cov-15 gcov
-            codecov: ubuntu_clang_compat_debug
+            packages: llvm-18
+            gcov-exec: llvm-cov-18 gcov
             build-config: Debug
+            codecov: ubuntu_clang_compat_debug
 
-          - name: Ubuntu Clang MSAN
+          - name: Ubuntu Clang-20 MSAN
             os: ubuntu-latest
-            compiler: clang-15
-            cxx-compiler: clang++-15
+            compiler: clang-20
+            cxx-compiler: clang++-20
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
-            packages:  ninja-build clang-15 llvm-15-tools libclang-rt-15-dev
-            gcov-exec: llvm-cov-15 gcov
+            packages: ninja-build clang-20 llvm-20 libclang-rt-20-dev
+            gcov-exec: llvm-cov-20 gcov
             # https://github.com/llvm/llvm-project/issues/55785
             msan-options: use_sigaltstack=0
+            # codecov disabled for clang-20, errors
 
           - name: Ubuntu Emscripten WASM32
             os: ubuntu-latest
@@ -744,7 +751,7 @@ jobs:
     - name: Compile LLVM C++ libraries (MSAN)
       if: contains(matrix.name, 'MSAN')
       run: |
-        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch llvmorg-15.0.7
+        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch release/20.x
         cmake -S llvm-project/runtimes -B llvm-project/build -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
           -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
