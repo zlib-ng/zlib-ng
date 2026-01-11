@@ -86,17 +86,18 @@ jobs:
             packages: gcc-multilib g++-multilib
             codecov: ubuntu_gcc_m32
 
-          - name: Ubuntu GCC C17
+          - name: Ubuntu GCC C17 MMAP
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
             cmake-args: -DCMAKE_C_STANDARD=17
+            cflags: -DUSE_MMAP
 
-          - name: Ubuntu GCC C23
+          - name: Ubuntu GCC C23 REDUCED_MEM
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DCMAKE_C_STANDARD=23
+            cmake-args: -DCMAKE_C_STANDARD=23 -DWITH_REDUCED_MEM=ON
 
           - name: Ubuntu GCC No Chorba
             os: ubuntu-latest
@@ -441,12 +442,13 @@ jobs:
             gcov-exec: llvm-cov-15 gcov
             codecov: ubuntu_clang
 
-          - name: Ubuntu Clang C17
+          - name: Ubuntu Clang C17 MMAP
             os: ubuntu-latest
             compiler: clang-15
             cxx-compiler: clang++-15
-            cmake-args: -DCMAKE_C_STANDARD=17
-            packages: clang-15 llvm-15 llvm-15-tools
+            cmake-args: -DCMAKE_LINKER_TYPE=LLD -DCMAKE_C_STANDARD=17
+            cflags: -DUSE_MMAP
+            packages: clang-15 llvm-15 llvm-15-tools lld
 
           - name: Ubuntu Clang C23
             os: ubuntu-latest
@@ -473,14 +475,14 @@ jobs:
             build-shared: ON
             packages: clang-15 llvm-15 lld
 
-          - name: Ubuntu Clang Inflate Strict
+          - name: Ubuntu Clang Inflate Strict REDUCED_MEM
             os: ubuntu-latest
             compiler: clang-15
             cxx-compiler: clang++-15
-            cmake-args: -DWITH_INFLATE_STRICT=ON
+            cmake-args: -DWITH_INFLATE_STRICT=ON -DWITH_REDUCED_MEM=ON
             packages: clang-15 llvm-15 llvm-15-tools
             gcov-exec: llvm-cov-15 gcov
-            codecov: ubuntu_clang_inflate_strict
+            codecov: ubuntu_clang_inflate_strict_reduced_mem
 
           - name: Ubuntu Clang Inflate Allow Invalid Dist
             os: ubuntu-latest
@@ -491,31 +493,14 @@ jobs:
             gcov-exec: llvm-cov-15 gcov
             codecov: ubuntu_clang_inflate_allow_invalid_dist
 
-          - name: Ubuntu Clang Reduced Memory
+          - name: Ubuntu Clang Compat Debug
             os: ubuntu-latest
             compiler: clang-15
             cxx-compiler: clang++-15
-            cmake-args: -DWITH_REDUCED_MEM=ON
+            cmake-args: -DZLIB_COMPAT=ON
             packages: clang-15 llvm-15 llvm-15-tools
             gcov-exec: llvm-cov-15 gcov
-            codecov: ubuntu_clang_reduced_mem
-
-          - name: Ubuntu Clang Memory Map
-            os: ubuntu-latest
-            compiler: clang-15
-            cxx-compiler: clang++-15
-            cflags: -DUSE_MMAP
-            packages: clang-15 llvm-15 llvm-15-tools
-            gcov-exec: llvm-cov-15 gcov
-            codecov: ubuntu_clang_mmap
-
-          - name: Ubuntu Clang Debug
-            os: ubuntu-latest
-            compiler: clang-15
-            cxx-compiler: clang++-15
-            packages: clang-15 llvm-15 llvm-15-tools
-            gcov-exec: llvm-cov-15 gcov
-            codecov: ubuntu_clang_debug
+            codecov: ubuntu_clang_compat_debug
             build-config: Debug
 
           - name: Ubuntu Clang MSAN
