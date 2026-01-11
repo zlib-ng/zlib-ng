@@ -556,12 +556,19 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_crc3 = _mm_shuffle_epi8(xmm_crc3, xmm_shr);
 
         /* Insert the partial input into crc3 */
+#if defined(__AVX512BW__) && defined(__AVX512VL__)
+        __mmask16 k = (1 << len) - 1;
+        __m128i xmm_crc_part = _mm_maskz_loadu_epi8(k, src);
+        if (COPY) {
+            _mm_mask_storeu_epi8(dst, k, xmm_crc_part);
+        }
+#else
         __m128i xmm_crc_part = _mm_setzero_si128();
         memcpy(&xmm_crc_part, src, len);
         if (COPY) {
             memcpy(dst, src, len);
         }
-
+#endif
         __m128i part_aligned = _mm_shuffle_epi8(xmm_crc_part, xmm_shl);
         xmm_crc3 = _mm_xor_si128(xmm_crc3, part_aligned);
 
