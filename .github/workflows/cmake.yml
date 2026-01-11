@@ -59,8 +59,8 @@ jobs:
             build-src-dir: ../zlib-ng
             # Build with readonly project directory require CMake 3.19+
             readonly-project-dir: true
-            codecov: ubuntu_gcc_osb
             cflags: -O3
+            # Skipping codecov to allow -O3
 
           - name: Ubuntu GCC OSB add_subdirectory
             os: ubuntu-latest
@@ -69,14 +69,15 @@ jobs:
             build-dir: ../build
             build-src-dir: ../zlib-ng/test/add-subdirectory-project
             readonly-project-dir: true
+            codecov: ubuntu_gcc_osb
 
           - name: Ubuntu GCC -O1 UBSAN
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
             cmake-args: -DWITH_SANITIZER=Undefined
-            codecov: ubuntu_gcc_o1
             cflags: -O1
+            # Skipping codecov to allow -O1
 
           - name: Ubuntu GCC 32-bit
             os: ubuntu-latest
@@ -92,12 +93,14 @@ jobs:
             cxx-compiler: g++
             cmake-args: -DCMAKE_C_STANDARD=17
             cflags: -DUSE_MMAP
+            codecov: ubuntu_gcc_c17_mmap
 
           - name: Ubuntu GCC C23 REDUCED_MEM
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
             cmake-args: -DCMAKE_C_STANDARD=23 -DWITH_REDUCED_MEM=ON
+            codecov: ubuntu_gcc_c23_reduced_mem
 
           - name: Ubuntu GCC No Chorba
             os: ubuntu-latest
@@ -160,8 +163,8 @@ jobs:
             compiler: gcc
             cxx-compiler: g++
             cmake-args: -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Address
-            codecov: ubuntu_gcc_compat_no_opt
             cflags: -DNOT_TWEAK_COMPILER
+            codecov: ubuntu_gcc_compat_no_opt
 
           - name: Ubuntu GCC ARM SF ASAN
             os: ubuntu-latest
@@ -265,6 +268,7 @@ jobs:
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64-clang.cmake
             packages: qemu-user clang binutils-powerpc64-linux-gnu libgcc-11-dev-ppc64-cross libc-dev-ppc64-cross libstdc++-11-dev-ppc64-cross
+            # Codecov disabled for clang on power9, errors
 
           - name: Ubuntu GCC PPC64LE
             os: ubuntu-latest
@@ -295,6 +299,7 @@ jobs:
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le-clang.cmake
             packages: qemu-user crossbuild-essential-ppc64el
+            # Codecov disabled for clang on power9, errors
 
           - name: Ubuntu GCC RISC-V
             os: ubuntu-latest
@@ -307,6 +312,7 @@ jobs:
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv-clang.cmake
             packages: qemu-user crossbuild-essential-riscv64
+            # Codecov disabled for clang on riscv, errors
 
           - name: Ubuntu GCC 14 LoongArch64
             os: ubuntu-latest
@@ -419,7 +425,7 @@ jobs:
             cmake-args: -DCMAKE_LINKER_TYPE=LLD
             packages: clang-15 lld
             gcov-exec: llvm-cov-15 gcov
-            codecov: ubuntu_clang
+            # Codecov disabled for clang-15, errors
 
           - name: Ubuntu Clang C17 MMAP
             os: ubuntu-latest
@@ -502,78 +508,94 @@ jobs:
             os: ubuntu-latest
             chost: wasm32
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_C_COMPILER_TARGET=wasm32 -DCMAKE_CROSSCOMPILING_EMULATOR=${EMSDK_NODE} -DZLIB_COMPAT=ON
+            # codecov disabled for wasm
 
           - name: Windows MSVC 2022 v143 Win32
             os: windows-latest
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A Win32 -T v143
+            # codecov disabled for msvc
 
           - name: Windows MSVC 2022 v143 Win64
             os: windows-latest
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v143
+            # codecov disabled for msvc
 
           - name: Windows MSVC 2022 v143 Win64 Native Instructions (AVX)
             os: windows-latest
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v143 -DWITH_NATIVE_INSTRUCTIONS=ON -DNATIVE_ARCH_OVERRIDE=/arch:AVX
+            # codecov disabled for msvc
 
           - name: Windows MSVC 2022 v143 Win64 C17
             os: windows-latest
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v143 -DCMAKE_C_STANDARD=17
+            # codecov disabled for msvc
 
           - name: Windows MSVC 2022 v142 Win32
             os: windows-latest
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A Win32 -T v142
+            # codecov disabled for msvc
 
           - name: Windows MSVC 2022 v142 Win64
             os: windows-latest
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v142
+            # codecov disabled for msvc
 
           - name: Windows MSVC 2022 v141 Win32
             os: windows-2022
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A Win32 -T v141
+            # codecov disabled for msvc
 
           - name: Windows MSVC 2022 v141 Win64
             os: windows-2022
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v141
+            # codecov disabled for msvc
 
           - name: Windows MSVC 2022 v140 Win32
             os: windows-2022
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A Win32,version=10.0.14393.0 -T v140 -DCMAKE_SYSTEM_VERSION=10.0.14393.0
+            # codecov disabled for msvc
 
           - name: Windows MSVC 2022 v140 Win64
             os: windows-2022
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64,version=10.0.14393.0 -T v140 -DCMAKE_SYSTEM_VERSION=10.0.14393.0
+            # codecov disabled for msvc
 
           - name: Windows MSVC ARM No Test
             os: windows-latest
             compiler: cl
             cmake-args: -A ARM,version=10.0.22621.0
+            # codecov disabled for msvc
 
           - name: Windows MSVC ARM64 No Test
             os: windows-latest
             compiler: cl
             cmake-args: -A ARM64
+            # codecov disabled for msvc
 
           - name: Windows ClangCl Win32
             os: windows-latest
             cmake-args: -T ClangCl -A Win32
+            # codecov disabled for clangcl
 
           - name: Windows ClangCl Win64
             os: windows-latest
             cmake-args: -T ClangCl -A x64
+            # codecov disabled for clangcl
 
           - name: Windows ClangCl Win64 Native Instructions (AVX)
             os: windows-latest
             cmake-args: -T ClangCl -A x64 -DWITH_NATIVE_INSTRUCTIONS=ON -DNATIVE_ARCH_OVERRIDE="-mavx -mpclmul"
+            # codecov disabled for clangcl
 
           - name: Windows GCC
             os: windows-latest
@@ -587,6 +609,7 @@ jobs:
             compiler: gcc
             cxx-compiler: g++
             cmake-args: -G Ninja  -DWITH_NATIVE_INSTRUCTIONS=ON -DNATIVE_ARCH_OVERRIDE="-mavx -mpclmul"
+            codecov: win64_gcc_native_avx
 
           - name: Windows GCC Compat No Opt
             os: windows-latest
@@ -601,13 +624,14 @@ jobs:
             cxx-compiler: clang++
             cmake-args: -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 -DWITH_BENCHMARKS=ON
             ldflags: -ld_classic
+            codecov: macos_clang_intel
 
           - name: macOS Clang (Intel) ASAN
             os: macos-15-intel
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_SANITIZER=Address
-            codecov: macos_clang
+            codecov: macos_clang_intel_asan
 
           - name: macOS GCC (Intel) UBSAN
             os: macos-15-intel
@@ -616,7 +640,7 @@ jobs:
             cmake-args: -DWITH_SANITIZER=Undefined
             packages: gcc@13
             gcov-exec: gcov-13
-            codecov: macos_gcc
+            codecov: macos_gcc_intel_ubsan
 
           - name: macOS Clang (Intel) Native Instructions
             os: macos-15-intel
@@ -639,13 +663,14 @@ jobs:
             cmake-args: -DWITH_SANITIZER=Undefined
             packages: gcc@13
             gcov-exec: gcov-13
-            codecov: macos_gcc_arm64
+            codecov: macos_gcc_arm64_ubsan
 
           - name: macOS Clang (ARM64) Native Instructions
             os: macos-latest
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
+            codecov: macos_clang_arm64_native
 
     steps:
     - name: Checkout repository
