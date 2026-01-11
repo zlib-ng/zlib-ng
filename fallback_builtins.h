@@ -42,15 +42,7 @@ Z_FORCEINLINE static int __builtin_ctzll(unsigned long long value) {
 
 #endif // _MSC_VER && !__clang__
 
-/* Double-check whether or not __builtin_bitreverse16 is available. It
-   may not be defined unless compiled for arch. */
-#if !defined(HAVE_BUILTIN_BITREVERSE16) && defined(__has_builtin)
-#  if __has_builtin(__builtin_bitreverse16)
-#    define HAVE_BUILTIN_BITREVERSE16
-#  endif
-#endif
-
-#ifndef HAVE_BUILTIN_BITREVERSE16
+#if !(defined(__has_builtin) && __has_builtin(__builtin_bitreverse16))
 
 #  ifdef __loongarch__
 /* LoongArch bit reversal for 16-bit values */
@@ -71,7 +63,6 @@ Z_FORCEINLINE static uint16_t __builtin_bitreverse16(uint16_t value) {
 #    undef bitrev8
 #  endif
 
-#define HAVE_BUILTIN_BITREVERSE16
-#endif
+#endif // __builtin_bitreverse16
 
 #endif // include guard FALLBACK_BUILTINS_H
