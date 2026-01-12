@@ -25,11 +25,13 @@
 /minigzip64
 /minigzipsh
 /switchlevels
+/zlib.map
 /zlib.pc
 /zlib-ng.pc
 /zconf-ng.h.included
 /zlib_name_mangling-ng.h
 /zlib-ng.h
+/zlib-ng.map
 
 .DS_Store
 *_fuzzer

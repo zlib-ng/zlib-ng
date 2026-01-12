@@ -22,7 +22,7 @@ static int gz_write_init(gz_state *state) {
 
     /* Allocate gz buffers */
     if (gz_buffer_alloc(state) != 0) {
-        gz_error(state, Z_MEM_ERROR, "out of memory");
+        PREFIX(gz_error)(state, Z_MEM_ERROR, "out of memory");
         return -1;
     }
 
@@ -33,9 +33,9 @@ static int gz_write_init(gz_state *state) {
         if (ret != Z_OK) {
             gz_buffer_free(state);
             if (ret == Z_MEM_ERROR) {
-                gz_error(state, Z_MEM_ERROR, "out of memory");
+                PREFIX(gz_error)(state, Z_MEM_ERROR, "out of memory");
             } else {
-                gz_error(state, Z_STREAM_ERROR, "invalid compression parameters");
+                PREFIX(gz_error)(state, Z_STREAM_ERROR, "invalid compression parameters");
             }
             return -1;
         }
@@ -69,7 +69,7 @@ static int gz_comp(gz_state *state, int flush) {
     if (state->direct) {
         got = write(state->fd, strm->next_in, strm->avail_in);
         if (got < 0 || (unsigned)got != strm->avail_in) {
-            gz_error(state, Z_ERRNO, zstrerror());
+            PREFIX(gz_error)(state, Z_ERRNO, zstrerror());
             return -1;
         }
         strm->avail_in = 0;
@@ -93,7 +93,7 @@ static int gz_comp(gz_state *state, int flush) {
         if (strm->avail_out == 0 || (flush != Z_NO_FLUSH && (flush != Z_FINISH || ret == Z_STREAM_END))) {
             have = (unsigned)(strm->next_out - state->x.next);
             if (have && ((got = write(state->fd, state->x.next, (unsigned long)have)) < 0 || (unsigned)got != have)) {
-                gz_error(state, Z_ERRNO, zstrerror());
+                PREFIX(gz_error)(state, Z_ERRNO, zstrerror());
                 return -1;
             }
             if (strm->avail_out == 0) {
@@ -108,7 +108,7 @@ static int gz_comp(gz_state *state, int flush) {
         have = strm->avail_out;
         ret = PREFIX(deflate)(strm, flush);
         if (ret == Z_STREAM_ERROR) {
-            gz_error(state, Z_STREAM_ERROR, "internal error: deflate stream corrupt");
+            PREFIX(gz_error)(state, Z_STREAM_ERROR, "internal error: deflate stream corrupt");
             return -1;
         }
         have -= strm->avail_out;
@@ -230,7 +230,7 @@ z_int32_t Z_EXPORT PREFIX(gzwrite)(gzFile file, void const *buf, z_uint32_t len)
     /* since an int is returned, make sure len fits in one, otherwise return
        with an error (this avoids a flaw in the interface) */
     if ((z_int32_t)len < 0) {
-        gz_error(state, Z_DATA_ERROR, "requested length does not fit in int");
+        PREFIX(gz_error)(state, Z_DATA_ERROR, "requested length does not fit in int");
         return 0;
     }
 
@@ -259,7 +259,7 @@ size_t Z_EXPORT PREFIX(gzfwrite)(void const *buf, size_t size, size_t nitems, gz
     /* compute bytes to read -- error on overflow */
     len = nitems * size;
     if (len / size != nitems) {
-        gz_error(state, Z_STREAM_ERROR, "request does not fit in a size_t");
+        PREFIX(gz_error)(state, Z_STREAM_ERROR, "request does not fit in a size_t");
         return 0;
     }
 
@@ -329,7 +329,7 @@ z_int32_t Z_EXPORT PREFIX(gzputs)(gzFile file, const char *s) {
     /* write string */
     len = strlen(s);
     if ((int)len < 0 || (unsigned)len != len) {
-        gz_error(state, Z_STREAM_ERROR, "string length does not fit in int");
+        PREFIX(gz_error)(state, Z_STREAM_ERROR, "string length does not fit in int");
         return -1;
     }
     put = gz_write(state, s, len);
@@ -500,7 +500,7 @@ z_int32_t Z_EXPORT PREFIX(gzclose_w)(gzFile file) {
         }
         gz_buffer_free(state);
     }
-    gz_error(state, Z_OK, NULL);
+    PREFIX(gz_error)(state, Z_OK, NULL);
     free(state->path);
     if (close(state->fd) == -1)
         ret = Z_ERRNO;
