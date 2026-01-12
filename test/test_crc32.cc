@@ -18,14 +18,7 @@ extern "C" {
 class crc32_variant : public ::testing::TestWithParam<hash_test> {
 public:
     void hash(hash_test param, crc32_func crc32) {
-        uint32_t crc = 0;
-        if (param.buf != NULL) {
-            if (param.len) {
-                crc = crc32(param.initial_crc, param.buf, param.len);
-            } else {
-                crc = param.initial_crc;
-            }
-        }
+        uint32_t crc = crc32(param.initial_crc, param.buf, param.len);
         EXPECT_EQ(crc, param.expect_crc);
     }
 };
@@ -37,11 +30,7 @@ class crc32_align : public ::testing::TestWithParam<int> {
 public:
     void hash(int param, crc32_func crc32) {
         uint8_t *buf = (uint8_t*)zng_alloc(sizeof(uint8_t) * (128 + param));
-        if (buf != NULL) {
-            (void)crc32(0, buf + param, 128);
-        } else {
-            FAIL();
-        }
+        (void)crc32(0, buf + param, 128);
         zng_free(buf);
     }
 };

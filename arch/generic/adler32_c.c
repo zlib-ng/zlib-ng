@@ -19,10 +19,6 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
     if (UNLIKELY(len == 1))
         return adler32_copy_len_1(adler, NULL, buf, sum2, 0);
 
-    /* initial Adler-32 value (deferred check for len == 1 speed) */
-    if (UNLIKELY(buf == NULL))
-        return 1L;
-
     /* in case short lengths are provided, keep it somewhat fast */
     if (UNLIKELY(len < 16))
         return adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);

@@ -19,24 +19,28 @@ const uint32_t * Z_EXPORT PREFIX(get_crc_table)(void) {
 
 #ifdef ZLIB_COMPAT
 unsigned long Z_EXPORT PREFIX(crc32_z)(unsigned long crc, const unsigned char *buf, size_t len) {
-    if (buf == NULL) return 0;
-
+    if (buf == NULL)
+        return CRC32_INITIAL_VALUE;
     return (unsigned long)FUNCTABLE_CALL(crc32)((uint32_t)crc, buf, len);
 }
 #else
 uint32_t Z_EXPORT PREFIX(crc32_z)(uint32_t crc, const unsigned char *buf, size_t len) {
-    if (buf == NULL) return 0;
-
+    if (buf == NULL)
+        return CRC32_INITIAL_VALUE;
     return FUNCTABLE_CALL(crc32)(crc, buf, len);
 }
 #endif
 
 #ifdef ZLIB_COMPAT
 unsigned long Z_EXPORT PREFIX(crc32)(unsigned long crc, const unsigned char *buf, unsigned int len) {
+    if (buf == NULL)
+        return CRC32_INITIAL_VALUE;
     return (unsigned long)PREFIX(crc32_z)((uint32_t)crc, buf, len);
 }
 #else
 uint32_t Z_EXPORT PREFIX(crc32)(uint32_t crc, const unsigned char *buf, uint32_t len) {
+    if (buf == NULL)
+        return CRC32_INITIAL_VALUE;
     return PREFIX(crc32_z)(crc, buf, len);
 }
 #endif

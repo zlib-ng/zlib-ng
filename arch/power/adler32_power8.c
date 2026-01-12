@@ -60,10 +60,6 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
     if (UNLIKELY(len == 1))
         return adler32_copy_len_1(s1, NULL, buf, s2, 0);
 
-    /* If buffer is empty or len=0 we need to return adler initial value.  */
-    if (UNLIKELY(buf == NULL))
-        return 1;
-
     /* This is faster than VSX code for len < 64.  */
     if (len < 64)
         return adler32_copy_len_64(s1, NULL, buf, len, s2, 0);

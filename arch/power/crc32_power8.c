@@ -52,9 +52,6 @@ Z_INTERNAL uint32_t crc32_power8(uint32_t crc, const unsigned char *p, size_t _l
 
     unsigned long len = (unsigned long) _len;
 
-    if (p == (const unsigned char *) 0x0)
-        return 0;
-
     crc ^= 0xffffffff;
 
     if (len < VMX_ALIGN + VMX_ALIGN_MASK) {

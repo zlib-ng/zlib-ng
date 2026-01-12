@@ -21,10 +21,6 @@ public:
     void adler32_copy_test(adler32_copy_func copyfunc, hash_test params) {
         ASSERT_LE(params.len, HASH_TEST_MAX_LENGTH);
 
-        if (params.buf == NULL) {
-            GTEST_SKIP();
-        }
-
         uint32_t adler = copyfunc(params.initial_adler, dstbuf, params.buf, params.len);
 
         EXPECT_EQ(adler, params.expect_adler);

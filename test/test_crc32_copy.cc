@@ -21,10 +21,6 @@ public:
     void crc32_copy_test(crc32_copy_func copyfunc, hash_test params) {
         ASSERT_LE(params.len, HASH_TEST_MAX_LENGTH);
 
-        if (params.buf == NULL) {
-            GTEST_SKIP();
-        }
-
         uint32_t crc = copyfunc(params.initial_crc, dstbuf, params.buf, params.len);
 
         EXPECT_EQ(crc, params.expect_crc);
