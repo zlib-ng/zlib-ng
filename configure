@@ -741,7 +741,8 @@ cat > $test.map <<EOF
 };
 EOF
 if test $shared -eq 1; then
-  LDVERSIONSCRIPT="-Wl,--version-script,$SRCDIR/$MAPNAME"
+  sed < $SRCDIR/zlib${SUFFIX}.map.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > zlib${SUFFIX}.map
+  LDVERSIONSCRIPT="-Wl,--version-script,$BUILDDIR/$MAPNAME"
   if try $CC -c $SFLAGS $test.c && try $LDSHARED $LDVERSIONSCRIPT $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
     echo "Checking for version script support... $LDVERSIONSCRIPT." | tee -a configure.log
   else

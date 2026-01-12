@@ -135,7 +135,7 @@ typedef struct {
 typedef gz_state *gz_statep;
 
 /* shared functions */
-void Z_INTERNAL gz_error(gz_state *, int, const char *);
+void Z_INTERNAL PREFIX(gz_error)(gz_state *, int, const char *);
 int  Z_INTERNAL gz_buffer_alloc(gz_state *state);
 void Z_INTERNAL gz_buffer_free(gz_state *state);
 void Z_INTERNAL gz_state_free(gz_state *state);

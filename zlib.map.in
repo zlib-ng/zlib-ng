@@ -1,0 +1,98 @@
+ZLIB_1.2.0 {
+  global:
+    @ZLIB_SYMBOL_PREFIX@compressBound;
+    @ZLIB_SYMBOL_PREFIX@deflateBound;
+    @ZLIB_SYMBOL_PREFIX@inflateBack;
+    @ZLIB_SYMBOL_PREFIX@inflateBackEnd;
+    @ZLIB_SYMBOL_PREFIX@inflateBackInit_;
+    @ZLIB_SYMBOL_PREFIX@inflateCopy;
+  local:
+    @ZLIB_SYMBOL_PREFIX@deflate_copyright;
+    @ZLIB_SYMBOL_PREFIX@inflate_copyright;
+    @ZLIB_SYMBOL_PREFIX@zcalloc;
+    @ZLIB_SYMBOL_PREFIX@zcfree;
+    @ZLIB_SYMBOL_PREFIX@z_errmsg;
+    @ZLIB_SYMBOL_PREFIX@gz_error;
+    @ZLIB_SYMBOL_PREFIX@gz_intmax;
+    _*;
+};
+
+ZLIB_1.2.0.2 {
+    @ZLIB_SYMBOL_PREFIX@gzclearerr;
+    @ZLIB_SYMBOL_PREFIX@gzungetc;
+    @ZLIB_SYMBOL_PREFIX@zlibCompileFlags;
+} ZLIB_1.2.0;
+
+ZLIB_1.2.0.8 {
+    @ZLIB_SYMBOL_PREFIX@deflatePrime;
+} ZLIB_1.2.0.2;
+
+ZLIB_1.2.2 {
+    @ZLIB_SYMBOL_PREFIX@adler32_combine;
+    @ZLIB_SYMBOL_PREFIX@crc32_combine;
+    @ZLIB_SYMBOL_PREFIX@deflateSetHeader;
+    @ZLIB_SYMBOL_PREFIX@inflateGetHeader;
+} ZLIB_1.2.0.8;
+
+ZLIB_1.2.2.3 {
+    @ZLIB_SYMBOL_PREFIX@deflateTune;
+    @ZLIB_SYMBOL_PREFIX@gzdirect;
+} ZLIB_1.2.2;
+
+ZLIB_1.2.2.4 {
+    @ZLIB_SYMBOL_PREFIX@inflatePrime;
+} ZLIB_1.2.2.3;
+
+ZLIB_1.2.3.3 {
+    @ZLIB_SYMBOL_PREFIX@adler32_combine64;
+    @ZLIB_SYMBOL_PREFIX@crc32_combine64;
+    @ZLIB_SYMBOL_PREFIX@gzopen64;
+    @ZLIB_SYMBOL_PREFIX@gzseek64;
+    @ZLIB_SYMBOL_PREFIX@gztell64;
+    @ZLIB_SYMBOL_PREFIX@inflateUndermine;
+} ZLIB_1.2.2.4;
+
+ZLIB_1.2.3.4 {
+    @ZLIB_SYMBOL_PREFIX@inflateReset2;
+    @ZLIB_SYMBOL_PREFIX@inflateMark;
+} ZLIB_1.2.3.3;
+
+ZLIB_1.2.3.5 {
+    @ZLIB_SYMBOL_PREFIX@gzbuffer;
+    @ZLIB_SYMBOL_PREFIX@gzoffset;
+    @ZLIB_SYMBOL_PREFIX@gzoffset64;
+    @ZLIB_SYMBOL_PREFIX@gzclose_r;
+    @ZLIB_SYMBOL_PREFIX@gzclose_w;
+} ZLIB_1.2.3.4;
+
+ZLIB_1.2.5.1 {
+    @ZLIB_SYMBOL_PREFIX@deflatePending;
+} ZLIB_1.2.3.5;
+
+ZLIB_1.2.5.2 {
+    @ZLIB_SYMBOL_PREFIX@deflateResetKeep;
+    @ZLIB_SYMBOL_PREFIX@gzgetc_;
+    @ZLIB_SYMBOL_PREFIX@inflateResetKeep;
+} ZLIB_1.2.5.1;
+
+ZLIB_1.2.7.1 {
+    @ZLIB_SYMBOL_PREFIX@inflateGetDictionary;
+    @ZLIB_SYMBOL_PREFIX@gzvprintf;
+} ZLIB_1.2.5.2;
+
+ZLIB_1.2.9 {
+    @ZLIB_SYMBOL_PREFIX@inflateCodesUsed;
+    @ZLIB_SYMBOL_PREFIX@inflateValidate;
+    @ZLIB_SYMBOL_PREFIX@uncompress2;
+    @ZLIB_SYMBOL_PREFIX@gzfread;
+    @ZLIB_SYMBOL_PREFIX@gzfwrite;
+    @ZLIB_SYMBOL_PREFIX@deflateGetDictionary;
+    @ZLIB_SYMBOL_PREFIX@adler32_z;
+    @ZLIB_SYMBOL_PREFIX@crc32_z;
+} ZLIB_1.2.7.1;
+
+ZLIB_1.2.12 {
+    @ZLIB_SYMBOL_PREFIX@crc32_combine_gen;
+    @ZLIB_SYMBOL_PREFIX@crc32_combine_gen64;
+    @ZLIB_SYMBOL_PREFIX@crc32_combine_op;
+} ZLIB_1.2.9;

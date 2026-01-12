@@ -62,7 +62,7 @@ static void gz_reset(gz_state *state) {
     else                            /* for writing ... */
         state->reset = 0;           /* no deflateReset pending */
     state->seek = 0;                /* no seek request pending */
-    gz_error(state, Z_OK, NULL);    /* clear error */
+    PREFIX(gz_error)(state, Z_OK, NULL);    /* clear error */
     state->x.pos = 0;               /* no uncompressed data yet */
     state->strm.avail_in = 0;       /* no input data yet */
 }
@@ -89,7 +89,7 @@ int Z_INTERNAL gz_buffer_alloc(gz_state *state) {
     /* Return error if memory allocation failed */
     if (state->in == NULL || (out_size && state->out == NULL)) {
         gz_buffer_free(state);
-        gz_error(state, Z_MEM_ERROR, "out of memory");
+        PREFIX(gz_error)(state, Z_MEM_ERROR, "out of memory");
         return -1;
     }
 
@@ -397,7 +397,7 @@ z_off64_t Z_EXPORT PREFIX4(gzseek)(gzFile file, z_off64_t offset, int whence) {
         state->eof = 0;
         state->past = 0;
         state->seek = 0;
-        gz_error(state, Z_OK, NULL);
+        PREFIX(gz_error)(state, Z_OK, NULL);
         state->strm.avail_in = 0;
         state->x.pos += offset;
         return state->x.pos;
@@ -546,7 +546,7 @@ void Z_EXPORT PREFIX(gzclearerr)(gzFile file) {
         state->eof = 0;
         state->past = 0;
     }
-    gz_error(state, Z_OK, NULL);
+    PREFIX(gz_error)(state, Z_OK, NULL);
 }
 
 /* Create an error message in allocated memory and set state->err and
@@ -555,7 +555,7 @@ void Z_EXPORT PREFIX(gzclearerr)(gzFile file) {
    memory).  Simply save the error message as a static string.  If there is an
    allocation failure constructing the error message, then convert the error to
    out of memory. */
-void Z_INTERNAL gz_error(gz_state *state, int err, const char *msg) {
+void Z_INTERNAL PREFIX(gz_error)(gz_state *state, int err, const char *msg) {
     /* free previously allocated message and clear */
     if (state->msg != NULL) {
         if (state->err != Z_MEM_ERROR)
