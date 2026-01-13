@@ -44,7 +44,18 @@ Z_FORCEINLINE static int __builtin_ctzll(unsigned long long value) {
 
 #if !(defined(__has_builtin) && __has_builtin(__builtin_bitreverse16))
 
-#  ifdef __loongarch__
+#  if defined(ARCH_ARM) && defined(ARCH_64BIT) && !defined(_MSC_VER)
+/* ARM bit reversal for 16-bit values using rbit instruction */
+Z_FORCEINLINE static uint16_t __builtin_bitreverse16(uint16_t value) {
+    uint32_t res;
+#    if defined(__has_builtin) && __has_builtin(__builtin_rbit)
+    res = __builtin_rbit((uint32_t)value);
+#    else
+    __asm__ volatile("rbit %w0, %w1" : "=r"(res) : "r"((uint32_t)value));
+#    endif
+    return (uint16_t)(res >> 16);
+}
+#  elif defined(ARCH_LOONGARCH)
 /* LoongArch bit reversal for 16-bit values */
 Z_FORCEINLINE static uint16_t __builtin_bitreverse16(uint16_t value) {
     uint32_t res;
