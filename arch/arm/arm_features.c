@@ -6,12 +6,12 @@
 #  ifdef ARM_ASM_HWCAP
 #    include <asm/hwcap.h>
 #  endif
-#elif defined(__FreeBSD__) && defined(__aarch64__)
+#elif defined(__FreeBSD__) && defined(ARCH_64BIT)
 #  include <machine/armreg.h>
 #  ifndef ID_AA64ISAR0_CRC32_VAL
 #    define ID_AA64ISAR0_CRC32_VAL ID_AA64ISAR0_CRC32
 #  endif
-#elif defined(__OpenBSD__) && defined(__aarch64__)
+#elif defined(__OpenBSD__) && defined(ARCH_64BIT)
 #  include <machine/armreg.h>
 #  include <machine/cpu.h>
 #  include <sys/sysctl.h>
@@ -45,10 +45,10 @@ static int arm_has_crc32(void) {
        has_crc32 = (getauxval(AT_HWCAP2) & HWCAP2_CRC32) != 0;
 #    endif
 #  endif
-#elif defined(__FreeBSD__) && defined(__aarch64__)
+#elif defined(__FreeBSD__) && defined(ARCH_64BIT)
     has_crc32 = getenv("QEMU_EMULATING") == NULL
       && ID_AA64ISAR0_CRC32_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_CRC32_BASE;
-#elif defined(__OpenBSD__) && defined(__aarch64__)
+#elif defined(__OpenBSD__) && defined(ARCH_64BIT)
     int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
     uint64_t isar0 = 0;
     size_t len = sizeof(isar0);
@@ -77,11 +77,11 @@ static int arm_has_pmull(void) {
     /* PMULL is part of crypto extension, check for AES as proxy */
     has_pmull = (getauxval(AT_HWCAP) & HWCAP_AES) != 0;
 #  endif
-#elif defined(__FreeBSD__) && defined(__aarch64__)
+#elif defined(__FreeBSD__) && defined(ARCH_64BIT)
     /* Check for AES feature as PMULL is part of crypto extension */
     has_pmull = getenv("QEMU_EMULATING") == NULL
       && ID_AA64ISAR0_AES_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_AES_BASE;
-#elif defined(__OpenBSD__) && defined(__aarch64__)
+#elif defined(__OpenBSD__) && defined(ARCH_64BIT)
     int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
     uint64_t isar0 = 0;
     size_t len = sizeof(isar0);
@@ -89,12 +89,10 @@ static int arm_has_pmull(void) {
       has_pmull = ID_AA64ISAR0_AES(isar0) >= ID_AA64ISAR0_AES_BASE;
     }
 #elif defined(__APPLE__)
-#  if defined(__aarch64__) || defined(_M_ARM64)
     int has_feat = 0;
     size_t size = sizeof(has_feat);
     has_pmull = sysctlbyname("hw.optional.arm.FEAT_PMULL", &has_feat, &size, NULL, 0) == 0
         && has_feat == 1;
-#  endif
 #elif defined(_WIN32)
     /* Windows checks for crypto/AES support */
 #  ifdef PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE
@@ -116,13 +114,13 @@ static int arm_has_eor3(void) {
 #  elif defined(HWCAP_SHA3)
     has_eor3 = (getauxval(AT_HWCAP) & HWCAP_SHA3) != 0;
 #  endif
-#elif defined(__FreeBSD__) && defined(__aarch64__)
+#elif defined(__FreeBSD__) && defined(ARCH_64BIT)
     /* FreeBSD: check for SHA3 in id_aa64isar0_el1 */
 #  ifdef ID_AA64ISAR0_SHA3_VAL
     has_eor3 = getenv("QEMU_EMULATING") == NULL
       && ID_AA64ISAR0_SHA3_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_SHA3_BASE;
 #  endif
-#elif defined(__OpenBSD__) && defined(__aarch64__)
+#elif defined(__OpenBSD__) && defined(ARCH_64BIT)
 #  ifdef ID_AA64ISAR0_SHA3
     int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
     uint64_t isar0 = 0;
@@ -133,7 +131,6 @@ static int arm_has_eor3(void) {
 #  endif
 #elif defined(__APPLE__)
     /* All Apple Silicon (M1+) has SHA3/EOR3 support */
-#  if defined(__aarch64__) || defined(_M_ARM64)
     int has_feat = 0;
     size_t size = sizeof(has_feat);
     has_eor3 = sysctlbyname("hw.optional.arm.FEAT_SHA3", &has_feat, &size, NULL, 0) == 0
@@ -144,7 +141,6 @@ static int arm_has_eor3(void) {
         has_eor3 = sysctlbyname("hw.optional.armv8_2_sha3", &has_feat, &size, NULL, 0) == 0
             && has_feat == 1;
     }
-#  endif
 #elif defined(__ARM_FEATURE_SHA3)
     /* Compile-time check */
     has_eor3 = 1;
@@ -202,7 +198,7 @@ static inline int arm_has_simd(void) {
 }
 #endif
 
-#if defined(__aarch64__) && !defined(__APPLE__)
+#if defined(ARCH_64BIT) && !defined(__APPLE__)
 /* MIDR_EL1 bit field definitions */
 #define MIDR_IMPLEMENTOR(midr)  (((midr) & (0xffU << 24)) >> 24)
 #define MIDR_PARTNUM(midr)      (((midr) & (0xfffU << 4)) >> 4)
@@ -256,7 +252,7 @@ static inline int arm_cpu_has_fast_pmull(void) {
 #if defined(__APPLE__)
     /* On macOS, all Apple Silicon has fast PMULL */
     has_fast_pmull = 1;
-#elif defined(__aarch64__)
+#elif defined(ARCH_64BIT) && !defined(_WIN32)
 #  if defined(__linux__)
     /* We have to support the CPUID feature in HWCAP */
     if (!arm_has_cpuid())
