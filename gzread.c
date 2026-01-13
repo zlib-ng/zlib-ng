@@ -209,6 +209,7 @@ static int gz_decomp(gz_state *state) {
    end of the input file has been reached and all data has been processed.  */
 static int gz_fetch(gz_state *state) {
     PREFIX3(stream) *strm = &(state->strm);
+    Assert(state->x.have == 0, "Invalid state->x.have");
 
     do {
         switch (state->how) {
@@ -229,6 +230,9 @@ static int gz_fetch(gz_state *state) {
             strm->next_out = state->out;
             if (gz_decomp(state) == -1)
                 return -1;
+            continue;
+        default:    // Can't happen
+            return -1;
         }
     } while (state->x.have == 0 && (!state->eof || strm->avail_in));
     return 0;
