@@ -90,9 +90,9 @@ Z_INTERNAL uint32_t crc32_riscv64_zbc(uint32_t crc, const uint8_t *buf, size_t l
         buf += unaligned_length;
         len -= unaligned_length;
     }
-    crc ^= 0xFFFFFFFF;
-    crc = crc32_clmul_impl(crc, buf, len);
-    return crc ^ 0xFFFFFFFF;
+
+    crc = crc32_clmul_impl(~crc, buf, len);
+    return ~crc;
 }
 
 Z_INTERNAL uint32_t crc32_copy_riscv64_zbc(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
