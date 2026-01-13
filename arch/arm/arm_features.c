@@ -43,7 +43,7 @@ static int arm_has_crc32(void) {
     if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
       has_crc32 = ID_AA64ISAR0_CRC32(isar0) >= ID_AA64ISAR0_CRC32_BASE;
     }
-#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_CRC32
     unsigned long hwcap = 0;
     elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
@@ -86,7 +86,7 @@ static int arm_has_pmull(void) {
     if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
       has_pmull = ID_AA64ISAR0_AES(isar0) >= ID_AA64ISAR0_AES_BASE;
     }
-#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_PMULL
     unsigned long hwcap = 0;
     elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
@@ -138,7 +138,7 @@ static int arm_has_eor3(void) {
       has_eor3 = ID_AA64ISAR0_SHA3(isar0) >= ID_AA64ISAR0_SHA3_IMPL;
     }
 #  endif
-#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP2_SHA3
     unsigned long hwcap2 = 0;
     elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
@@ -177,7 +177,7 @@ static inline int arm_has_neon(void) {
 #  elif defined(HWCAP_NEON)
     has_neon = (getauxval(AT_HWCAP) & HWCAP_NEON) != 0;
 #  endif
-#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_NEON
     unsigned long hwcap = 0;
     elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
@@ -255,7 +255,7 @@ static inline int arm_has_cpuid(void) {
 #  elif defined(HWCAP2_CPUID)
     has_cpuid = (getauxval(AT_HWCAP2) & HWCAP2_CPUID) != 0;
 #  endif
-#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+#elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_CPUID
     unsigned long hwcap = 0;
     elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
