@@ -232,6 +232,7 @@ static int gz_fetch(gz_state *state) {
                 return -1;
             continue;
         default:    // Can't happen
+            Z_UNREACHABLE();
             return -1;
         }
     } while (state->x.have == 0 && (!state->eof || strm->avail_in));

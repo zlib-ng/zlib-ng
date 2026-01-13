@@ -711,6 +711,7 @@ unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long
         break;
 #endif
     default:                                /* for compiler happiness */
+        Z_UNREACHABLE();
         wraplen = ZLIB_WRAPLEN;
     }
 

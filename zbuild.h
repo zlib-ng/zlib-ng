@@ -48,6 +48,17 @@
 #  endif
 #endif
 
+/* Hint to compiler that a block of code is unreachable, typically in a switch default condition */
+#ifndef Z_UNREACHABLE
+#  if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+#    define Z_UNREACHABLE() unreachable()           // C23 approach
+#  elif (defined(__GNUC__) && (__GNUC__ >= 5)) || defined(__clang__)
+#    define Z_UNREACHABLE() __builtin_unreachable()
+#  else
+#    define Z_UNREACHABLE()
+#  endif
+#endif
+
 #ifndef Z_TARGET
 #  if Z_HAS_ATTRIBUTE(__target__)
 #    define Z_TARGET(x) __attribute__((__target__(x)))
