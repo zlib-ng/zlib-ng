@@ -86,6 +86,17 @@ static int arm_has_pmull(void) {
     if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
       has_pmull = ID_AA64ISAR0_AES(isar0) >= ID_AA64ISAR0_AES_BASE;
     }
+#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+#  ifdef HWCAP_PMULL
+    unsigned long hwcap = 0;
+    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    has_pmull = (hwcap & HWCAP_PMULL) != 0;
+#  elif defined(HWCAP_AES)
+    /* PMULL is part of crypto extension, check for AES as proxy */
+    unsigned long hwcap = 0;
+    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    has_pmull = (hwcap & HWCAP_AES) != 0;
+#  endif
 #elif defined(__APPLE__)
     int has_feat = 0;
     size_t size = sizeof(has_feat);
@@ -126,6 +137,16 @@ static int arm_has_eor3(void) {
     if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
       has_eor3 = ID_AA64ISAR0_SHA3(isar0) >= ID_AA64ISAR0_SHA3_IMPL;
     }
+#  endif
+#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+#  ifdef HWCAP2_SHA3
+    unsigned long hwcap2 = 0;
+    elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
+    has_eor3 = (hwcap2 & HWCAP2_SHA3) != 0;
+#  elif defined(HWCAP_SHA3)
+    unsigned long hwcap = 0;
+    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    has_eor3 = (hwcap & HWCAP_SHA3) != 0;
 #  endif
 #elif defined(__APPLE__)
     /* All Apple Silicon (M1+) has SHA3/EOR3 support */
