@@ -78,7 +78,11 @@ macro(check_armv8_pmull_eor3_compiler_flag)
         #else
         #  include <arm_neon.h>
         #endif
+        #ifdef _MSC_VER
+        __n128 f(__n64 a, __n64 b) {
+        #else
         poly128_t f(poly64_t a, poly64_t b) {
+        #endif
             return vmull_p64(a, b);
         }
         uint64x2_t g(uint64x2_t a, uint64x2_t b, uint64x2_t c) {

@@ -160,6 +160,10 @@ static int arm_has_eor3(void) {
         has_eor3 = sysctlbyname("hw.optional.armv8_2_sha3", &has_feat, &size, NULL, 0) == 0
             && has_feat == 1;
     }
+#elif defined(_WIN32)
+#  ifdef PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE
+    has_eor3 = IsProcessorFeaturePresent(PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE);
+#  endif
 #elif defined(__ARM_FEATURE_SHA3)
     /* Compile-time check */
     has_eor3 = 1;

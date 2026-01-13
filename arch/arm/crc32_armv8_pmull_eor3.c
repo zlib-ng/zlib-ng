@@ -16,9 +16,15 @@
 
 /* Carryless multiply low 64 bits: a[0] * b[0] */
 static inline uint64x2_t clmul_lo(uint64x2_t a, uint64x2_t b) {
+#ifdef _MSC_VER
+    return vreinterpretq_u64_p128(vmull_p64(
+        vget_low_p64(vreinterpret_p64_u64(a)),
+        vget_low_p64(vreinterpret_p64_u64(b))));
+#else
     return vreinterpretq_u64_p128(vmull_p64(
         vget_lane_p64(vreinterpret_p64_u64(vget_low_u64(a)), 0),
         vget_lane_p64(vreinterpret_p64_u64(vget_low_u64(b)), 0)));
+#endif
 }
 
 /* Carryless multiply high 64 bits: a[1] * b[1] */
@@ -28,7 +34,11 @@ static inline uint64x2_t clmul_hi(uint64x2_t a, uint64x2_t b) {
 
 /* Carryless multiply of two 32-bit scalars: a * b (returns 64-bit result in 128-bit vector) */
 static inline uint64x2_t clmul_scalar(uint32_t a, uint32_t b) {
-  return vreinterpretq_u64_p128(vmull_p64((poly64_t)a, (poly64_t)b));
+#ifdef _MSC_VER
+    return vreinterpretq_u64_p128(vmull_p64(vdup_n_p64((poly64_t)a), vdup_n_p64((poly64_t)b)));
+#else
+    return vreinterpretq_u64_p128(vmull_p64((poly64_t)a, (poly64_t)b));
+#endif
 }
 
 /* Compute x^n mod P (CRC-32 polynomial) in log(n) time, where P = 0x104c11db7 */
