@@ -760,52 +760,6 @@ if(WITH_OPTIM)
     add_definitions(-DWITH_OPTIM)
     if(BASEARCH_ARM_FOUND)
         add_definitions(-DARM_FEATURES)
-        if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-            if(ARCH_32BIT)
-                check_c_source_compiles(
-                    "#include <sys/auxv.h>
-                    int main() {
-                      return (getauxval(AT_HWCAP) & HWCAP_ARM_NEON);
-                    }"
-                    ARM_AUXV_HAS_NEON
-                )
-                if(ARM_AUXV_HAS_NEON)
-                    add_definitions(-DARM_AUXV_HAS_NEON)
-                else()
-                    check_c_source_compiles(
-                        "#include <sys/auxv.h>
-                        int main() {
-                          return (getauxval(AT_HWCAP) & HWCAP_NEON);
-                        }"
-                        ARM_AUXV_HAS_NEON
-                    )
-                    if (ARM_AUXV_HAS_NEON)
-                        add_definitions(-DARM_AUXV_HAS_NEON)
-                    else()
-                        message(STATUS "Neither HWCAP_ARM_NEON or HWCAP_NEON present in sys/auxv.h; cannot detect support at runtime.")
-                    endif()
-                endif()
-            endif()
-        endif()
-        if(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
-           ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD")
-            if(ARCH_32BIT)
-                check_c_source_compiles(
-                    "#include <sys/auxv.h>
-                    int main() {
-                      unsigned long hwcap;
-                      elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-                      return (hwcap & HWCAP_NEON);
-                    }"
-                    ARM_AUXV_HAS_NEON
-                )
-                if(ARM_AUXV_HAS_NEON)
-                    add_definitions(-DARM_AUXV_HAS_NEON)
-                else()
-                    message(STATUS "HWCAP_NEON not present in sys/auxv.h; cannot detect support at runtime.")
-                endif()
-            endif()
-        endif()
         list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm_functions.h)
         if(WITH_RUNTIME_CPU_DETECTION)
             list(APPEND ZLIB_ARCH_HDRS ${ARCHDIR}/arm_features.h)

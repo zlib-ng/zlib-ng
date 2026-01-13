@@ -2071,54 +2071,6 @@ EOF
                 echo "Checking for arm_acle.h... No." | tee -a configure.log
             fi
 
-
-            if test $LINUX -eq 1; then
-                if test "$ARCH" != "aarch64"; then
-                    cat > $test.c <<EOF
-#include <sys/auxv.h>
-int main() {
-    return (getauxval(AT_HWCAP) & HWCAP_ARM_NEON);
-}
-EOF
-                    if try $CC -c $CFLAGS $test.c; then
-                        CFLAGS="${CFLAGS} -DARM_AUXV_HAS_NEON"
-                        SFLAGS="${SFLAGS} -DARM_AUXV_HAS_NEON"
-                    else
-                        cat > $test.c <<EOF
-#include <sys/auxv.h>
-int main() {
-    return (getauxval(AT_HWCAP) & HWCAP_NEON);
-}
-EOF
-                        if try $CC -c $CFLAGS $test.c; then
-                            CFLAGS="${CFLAGS} -DARM_AUXV_HAS_NEON"
-                            SFLAGS="${SFLAGS} -DARM_AUXV_HAS_NEON"
-                        else
-                            echo "Neither HWCAP_ARM_NEON or HWCAP_NEON present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
-                        fi
-                    fi
-                fi
-            fi
-
-            if test $FREEBSD -eq 1 -o $OPENBSD -eq 1; then
-                if test "$ARCH" != "aarch64"; then
-                    cat > $test.c <<EOF
-#include <sys/auxv.h>
-int main() {
-    unsigned long hwcap;
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-    return (hwcap & HWCAP_NEON);
-}
-EOF
-                    if try $CC -c $CFLAGS $test.c; then
-                        CFLAGS="${CFLAGS} -DARM_AUXV_HAS_NEON"
-                        SFLAGS="${SFLAGS} -DARM_AUXV_HAS_NEON"
-                    else
-                        echo "HWCAP_NEON not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
-                    fi
-                fi
-            fi
-
             if test $buildneon -eq 1; then
                 check_neon_compiler_flag
 

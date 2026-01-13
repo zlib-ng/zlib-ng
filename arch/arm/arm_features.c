@@ -150,17 +150,17 @@ static int arm_has_eor3(void) {
 #if defined(ARCH_ARM) && defined(ARCH_32BIT)
 static inline int arm_has_neon(void) {
     int has_neon = 0;
-#if defined(ARM_AUXV_HAS_NEON)
-#  if defined(__FreeBSD__) || defined(__OpenBSD__)
-     unsigned long hwcap = 0;
-     elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-     has_neon = (hwcap & HWCAP_NEON) != 0;
-#  else
-#    ifdef HWCAP_ARM_NEON
-       has_neon = (getauxval(AT_HWCAP) & HWCAP_ARM_NEON) != 0;
-#    else
-       has_neon = (getauxval(AT_HWCAP) & HWCAP_NEON) != 0;
-#    endif
+#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#  ifdef HWCAP_ARM_NEON
+    has_neon = (getauxval(AT_HWCAP) & HWCAP_ARM_NEON) != 0;
+#  elif defined(HWCAP_NEON)
+    has_neon = (getauxval(AT_HWCAP) & HWCAP_NEON) != 0;
+#  endif
+#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+#  ifdef HWCAP_NEON
+    unsigned long hwcap = 0;
+    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    has_neon = (hwcap & HWCAP_NEON) != 0;
 #  endif
 #elif defined(__APPLE__)
     int has_feat = 0;
