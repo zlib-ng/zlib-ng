@@ -158,8 +158,10 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
             uint32_t match_start = cur_match - match_offset;
             s->match_start = match_start;
 
-            /* Do not look for matches beyond the end of the input. */
-            if (len > lookahead)
+            /* Do not look for better matches if the current match reaches
+             * or exceeds the end of the input.
+             */
+            if (len >= lookahead)
                 return lookahead;
             if (len >= nice_match)
                 return len;
