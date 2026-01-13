@@ -207,9 +207,10 @@ static inline int arm_has_simd(void) {
     int has_simd = 0;
 #if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
     const char *platform = (const char *)getauxval(AT_PLATFORM);
-    has_simd = strncmp(platform, "v6l", 3) == 0
+    has_simd = platform
+       && (strncmp(platform, "v6l", 3) == 0
         || strncmp(platform, "v7l", 3) == 0
-        || strncmp(platform, "v8l", 3) == 0;
+        || strncmp(platform, "v8l", 3) == 0);
 #elif defined(ARM_NOCHECK_SIMD)
     has_simd = 1;
 #endif
