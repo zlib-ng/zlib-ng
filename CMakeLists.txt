@@ -761,44 +761,7 @@ if(WITH_OPTIM)
     if(BASEARCH_ARM_FOUND)
         add_definitions(-DARM_FEATURES)
         if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-            if(ARCH_64BIT)
-                check_c_source_compiles(
-                    "#include <sys/auxv.h>
-                    int main() {
-                        return (getauxval(AT_HWCAP) & HWCAP_CRC32);
-                    }"
-                    ARM_AUXV_HAS_CRC32
-                )
-                if(ARM_AUXV_HAS_CRC32)
-                    add_definitions(-DARM_AUXV_HAS_CRC32)
-                else()
-                   message(STATUS "HWCAP_CRC32 not present in sys/auxv.h; cannot detect support at runtime.")
-                endif()
-            else()
-                check_c_source_compiles(
-                    "#include <sys/auxv.h>
-                    int main() {
-                        return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
-                    }"
-                    ARM_AUXV_HAS_CRC32
-                )
-                if(ARM_AUXV_HAS_CRC32)
-                    add_definitions(-DARM_AUXV_HAS_CRC32)
-                else()
-                    check_c_source_compiles(
-                        "#include <sys/auxv.h>
-                        #include <asm/hwcap.h>
-                        int main() {
-                            return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
-                        }"
-                        ARM_HWCAP_HAS_CRC32
-                    )
-                    if (ARM_HWCAP_HAS_CRC32)
-                        add_definitions(-DARM_AUXV_HAS_CRC32 -DARM_ASM_HWCAP)
-                    else()
-                        message(STATUS "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime.")
-                    endif()
-                endif()
+            if(ARCH_32BIT)
                 check_c_source_compiles(
                     "#include <sys/auxv.h>
                     int main() {
@@ -826,36 +789,7 @@ if(WITH_OPTIM)
         endif()
         if(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
            ${CMAKE_SYSTEM_NAME} STREQUAL "OpenBSD")
-            if(ARCH_64BIT)
-                check_c_source_compiles(
-                    "#include <sys/auxv.h>
-                    int main() {
-                        unsigned long hwcap;
-                        elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-                        return (hwcap & HWCAP_CRC32);
-                    }"
-                    ARM_AUXV_HAS_CRC32
-                )
-                if(ARM_AUXV_HAS_CRC32)
-                    add_definitions(-DARM_AUXV_HAS_CRC32)
-                else()
-                    message(STATUS "HWCAP_CRC32 not present in sys/auxv.h; cannot detect support at runtime.")
-                endif()
-            else()
-                check_c_source_compiles(
-                    "#include <sys/auxv.h>
-                    int main() {
-                        unsigned long hwcap2;
-                        elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
-                        return (hwcap2 & HWCAP2_CRC32);
-                    }"
-                    ARM_AUXV_HAS_CRC32
-                )
-                if(ARM_AUXV_HAS_CRC32)
-                    add_definitions(-DARM_AUXV_HAS_CRC32)
-                else()
-                    message(STATUS "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime.")
-                endif()
+            if(ARCH_32BIT)
                 check_c_source_compiles(
                     "#include <sys/auxv.h>
                     int main() {

@@ -27,23 +27,11 @@
 
 static int arm_has_crc32(void) {
     int has_crc32 = 0;
-#if defined(ARM_AUXV_HAS_CRC32)
-#  if defined(__FreeBSD__) || defined(__OpenBSD__)
-#    ifdef HWCAP_CRC32
-       unsigned long hwcap = 0;
-       elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-       has_crc32 = (hwcap & HWCAP_CRC32) != 0;
-#    else
-       unsigned long hwcap2 = 0;
-       elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
-       has_crc32 = (hwcap2 & HWCAP2_CRC32) != 0;
-#    endif
-#  else
-#    ifdef HWCAP_CRC32
-       has_crc32 = (getauxval(AT_HWCAP) & HWCAP_CRC32) != 0;
-#    else
-       has_crc32 = (getauxval(AT_HWCAP2) & HWCAP2_CRC32) != 0;
-#    endif
+#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#  ifdef HWCAP_CRC32
+    has_crc32 = (getauxval(AT_HWCAP) & HWCAP_CRC32) != 0;
+#  elif defined(HWCAP2_CRC32)
+    has_crc32 = (getauxval(AT_HWCAP2) & HWCAP2_CRC32) != 0;
 #  endif
 #elif defined(__FreeBSD__) && defined(ARCH_64BIT)
     has_crc32 = getenv("QEMU_EMULATING") == NULL
@@ -55,6 +43,16 @@ static int arm_has_crc32(void) {
     if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
       has_crc32 = ID_AA64ISAR0_CRC32(isar0) >= ID_AA64ISAR0_CRC32_BASE;
     }
+#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+#  ifdef HWCAP_CRC32
+    unsigned long hwcap = 0;
+    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    has_crc32 = (hwcap & HWCAP_CRC32) != 0;
+#  elif defined(HWCAP2_CRC32)
+    unsigned long hwcap2 = 0;
+    elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
+    has_crc32 = (hwcap2 & HWCAP2_CRC32) != 0;
+#  endif
 #elif defined(__APPLE__)
     int has_feat = 0;
     size_t size = sizeof(has_feat);

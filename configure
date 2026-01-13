@@ -2073,45 +2073,7 @@ EOF
 
 
             if test $LINUX -eq 1; then
-                if test "$ARCH" = "aarch64"; then
-                    cat > $test.c <<EOF
-#include <sys/auxv.h>
-int main() {
-    return (getauxval(AT_HWCAP) & HWCAP_CRC32);
-}
-EOF
-                    if try $CC -c $CFLAGS $test.c; then
-                        CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
-                        SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
-                    else
-                        echo "HWCAP_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
-                    fi
-                else
-                    cat > $test.c <<EOF
-#include <sys/auxv.h>
-int main() {
-    return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
-}
-EOF
-                    if try $CC -c $CFLAGS $test.c; then
-                        CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
-                        SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
-                    else
-                        cat > $test.c <<EOF
-#include <sys/auxv.h>
-#include <asm/hwcap.h>
-int main() {
-    return (getauxval(AT_HWCAP2) & HWCAP2_CRC32);
-}
-EOF
-                        if try $CC -c $CFLAGS $test.c; then
-                            CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32 -DARM_ASM_HWCAP"
-                            SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32 -DARM_ASM_HWCAP"
-                        else
-                            echo "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
-                        fi
-                    fi
-
+                if test "$ARCH" != "aarch64"; then
                     cat > $test.c <<EOF
 #include <sys/auxv.h>
 int main() {
@@ -2139,37 +2101,7 @@ EOF
             fi
 
             if test $FREEBSD -eq 1 -o $OPENBSD -eq 1; then
-                if test "$ARCH" = "aarch64"; then
-                    cat > $test.c <<EOF
-#include <sys/auxv.h>
-int main() {
-    unsigned long hwcap;
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-    return (hwcap & HWCAP_CRC32);
-}
-EOF
-                    if try $CC -c $CFLAGS $test.c; then
-                        CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
-                        SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
-                    else
-                        echo "HWCAP_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
-                    fi
-                else
-                    cat > $test.c <<EOF
-#include <sys/auxv.h>
-int main() {
-    unsigned long hwcap2;
-    elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
-    return (hwcap2 & HWCAP2_CRC32);
-}
-EOF
-                    if try $CC -c $CFLAGS $test.c; then
-                        CFLAGS="${CFLAGS} -DARM_AUXV_HAS_CRC32"
-                        SFLAGS="${SFLAGS} -DARM_AUXV_HAS_CRC32"
-                    else
-                        echo "HWCAP2_CRC32 not present in sys/auxv.h; cannot detect support at runtime." | tee -a configure.log
-                    fi
-
+                if test "$ARCH" != "aarch64"; then
                     cat > $test.c <<EOF
 #include <sys/auxv.h>
 int main() {
