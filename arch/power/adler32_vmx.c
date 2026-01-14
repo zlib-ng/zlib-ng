@@ -47,10 +47,7 @@ static void vmx_accum32(uint32_t *s, const uint8_t *buf, size_t len) {
      * data dependency bubble in the sum */
     vector unsigned int adacc_0 = zero;
 
-    int num_iter = len / 4;
-    int rem = len & 3;
-
-    for (int i = 0; i < num_iter; ++i) {
+    while (len >= 64) {
         vector unsigned char d0 = vec_ld(0, buf);
         vector unsigned char d1 = vec_ld(16, buf);
         vector unsigned char d2 = vec_ld(32, buf);
@@ -74,25 +71,26 @@ static void vmx_accum32(uint32_t *s, const uint8_t *buf, size_t len) {
         adacc_prev = adacc;
         adacc_prev_0 = adacc_0;
         buf += 64;
+        len -= 64;
     }
 
     adacc = vec_add(adacc, adacc_0);
     s3acc = vec_add(s3acc, s3acc_0);
     s3acc = vec_sl(s3acc, vec_splat_u32(6));
 
-    if (rem) {
+    if (len >= 16) {
         adacc_prev = vec_add(adacc_prev_0, adacc_prev);
         adacc_prev = vec_sl(adacc_prev, vec_splat_u32(4));
-        while (rem--) {
+        while (len >= 16) {
             vector unsigned char d0 = vec_ld(0, buf);
             adacc = vec_sum4s(d0, adacc);
             s3acc = vec_add(s3acc, adacc_prev);
             s2acc = vec_msum(t3, d0, s2acc);
             adacc_prev = vec_sl(adacc, vec_splat_u32(4));
             buf += 16;
+            len -= 16;
         }
     }
-
 
     /* Sum up independent second sums */
     s2acc = vec_add(s2acc, s2acc_0);
@@ -114,8 +112,6 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
     uint32_t sum2;
     uint32_t pair[16] ALIGNED_(16);
     memset(&pair[2], 0, 14);
-    int n = NMAX;
-    unsigned int done = 0;
 
     /* Split Adler-32 into component sums, it can be supplied by
      * the caller sites (e.g. in a PNG file).
@@ -133,30 +129,28 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
     if (UNLIKELY(len < 16))
         return adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
 
-    // Align buffer
-    size_t align_diff = ALIGN_DIFF(buf, 16);
+    /* Align buffer to 16 bytes */
+    uintptr_t align_diff = ALIGN_DIFF(buf, 16);
     if (align_diff) {
         adler32_copy_len_16_pair(pair, NULL, buf, align_diff, 0);
-        done += align_diff;
-        /* Rather than rebasing, we can reduce the max sums for the
-         * first round only */
-        n -= align_diff;
+        buf += align_diff;
+        len -= align_diff;
     }
-    for (size_t i = align_diff; i < len; i += n) {
-        int remaining = (int)(len-i);
-        n = MIN(remaining, (i == align_len) ? n : NMAX);
-        if (n < 16)
-            break;
 
-        vmx_accum32(pair, buf + i, n / 16);
+    while (len >= 16) {
+        size_t n = MIN(len, NMAX) & ~15;  /* Round down to nearest 16 bytes */
+
+        vmx_accum32(pair, buf, n);
+
         pair[0] %= BASE;
         pair[1] %= BASE;
 
-        done += (n / 16) * 16;
+        buf += n;
+        len -= n;
     }
 
     /* Process tail (len < 16).  */
-    return adler32_copy_len_16(pair[0], NULL, buf + done, len - done, pair[1], 0);
+    return adler32_copy_len_16_pair(pair, NULL, buf, len, 0);
 }
 
 Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) {
