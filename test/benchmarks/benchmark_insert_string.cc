@@ -10,7 +10,6 @@
 
 extern "C" {
 #  include "zbuild.h"
-#  include "zutil_p.h"
 #  include "deflate.h"
 #  include "arch_functions.h"
 #  include "../test_cpu_features.h"
@@ -29,7 +28,7 @@ protected:
 
 public:
     void SetUp(const ::benchmark::State&) {
-        s = (deflate_state*)zng_alloc(sizeof(deflate_state));
+        s = (deflate_state*)zng_alloc_aligned(sizeof(deflate_state), 64);
         memset(s, 0, sizeof(deflate_state));
 
         // Set up window parameters
@@ -37,11 +36,11 @@ public:
         s->window_size = TEST_WINDOW_SIZE;
 
         // Allocate window
-        s->window = (uint8_t*)zng_alloc(TEST_WINDOW_SIZE);
+        s->window = (uint8_t*)zng_alloc_aligned(TEST_WINDOW_SIZE, 64);
 
         // Allocate hash tables
-        s->head = (Pos*)zng_alloc(HASH_SIZE * sizeof(Pos));
-        s->prev = (Pos*)zng_alloc(MAX_WSIZE * sizeof(Pos));
+        s->head = (Pos*)zng_alloc_aligned(HASH_SIZE * sizeof(Pos), 64);
+        s->prev = (Pos*)zng_alloc_aligned(MAX_WSIZE * sizeof(Pos), 64);
 
         // Initialize hash tables
         memset(s->head, 0, HASH_SIZE * sizeof(Pos));
@@ -58,10 +57,10 @@ public:
     }
 
     void TearDown(const ::benchmark::State&) {
-        zng_free(s->window);
-        zng_free(s->head);
-        zng_free(s->prev);
-        zng_free(s);
+        zng_free_aligned(s->window);
+        zng_free_aligned(s->head);
+        zng_free_aligned(s->prev);
+        zng_free_aligned(s);
     }
 };
 
