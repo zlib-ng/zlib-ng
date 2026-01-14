@@ -105,16 +105,8 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t* restric
     sum2 %= BASE;
     adler %= BASE;
 
-    while (left--) {
-        if (COPY) *dst++ = *src;
-        adler += *src++;
-        sum2 += adler;
-    }
-
-    sum2 %= BASE;
-    adler %= BASE;
-
-    return adler | (sum2 << 16);
+    /* Process tail (left < 256). */
+    return adler32_copy_len_64(adler, dst, src, left, sum2, COPY);
 }
 
 Z_INTERNAL uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len) {
