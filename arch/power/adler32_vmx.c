@@ -119,19 +119,9 @@ static void vmx_accum32(uint32_t *s, const uint8_t *buf, size_t len) {
 }
 
 Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, size_t len) {
-    uint32_t sum2;
-    uint32_t pair[16] ALIGNED_(16);
-    memset(&pair[2], 0, 14);
-    int n = NMAX;
-    unsigned int done = 0;
-
-    /* Split Adler-32 into component sums, it can be supplied by
-     * the caller sites (e.g. in a PNG file).
-     */
-    sum2 = (adler >> 16) & 0xffff;
+    /* Split Adler-32 into component sums */
+    uint32_t sum2 = (adler >> 16) & 0xffff;
     adler &= 0xffff;
-    pair[0] = adler;
-    pair[1] = sum2;
 
     /* in case user likes doing a byte at a time, keep it fast */
     if (UNLIKELY(len == 1))
@@ -141,7 +131,15 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
     if (UNLIKELY(len < 16))
         return adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
 
+    uint32_t pair[4] ALIGNED_(16);
+    pair[0] = adler;
+    pair[1] = sum2;
+    pair[2] = 0;
+    pair[3] = 0;
+
     // Align buffer
+    int n = NMAX;
+    unsigned int done = 0;
     size_t align_len = (size_t)MIN(ALIGN_DIFF(buf, 16), len);
     if (align_len) {
         vmx_handle_head_or_tail(pair, buf, align_len);
