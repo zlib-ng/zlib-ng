@@ -13,14 +13,6 @@
 
 #define vmx_zero()  (vec_splat_u32(0))
 
-static inline void vmx_handle_head_or_tail(uint32_t *pair, const uint8_t *buf, size_t len) {
-    unsigned int i;
-    for (i = 0; i < len; ++i) {
-        pair[0] += buf[i];
-        pair[1] += pair[0];
-    }
-}
-
 static void vmx_accum32(uint32_t *s, const uint8_t *buf, size_t len) {
     /* Different taps for the separable components of sums */
     const vector unsigned char t0 = {64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49};
@@ -144,7 +136,7 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
     // Align buffer
     size_t align_len = (size_t)MIN(ALIGN_DIFF(buf, 16), len);
     if (align_len) {
-        vmx_handle_head_or_tail(pair, buf, align_len);
+        adler32_copy_len_16_pair(pair, NULL, buf, align_len, 0);
         done += align_len;
         /* Rather than rebasing, we can reduce the max sums for the
          * first round only */

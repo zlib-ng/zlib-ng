@@ -158,17 +158,6 @@ Z_FORCEINLINE static void neon_accum32_copy(uint32_t *s, uint8_t *dst, const uin
     s[1] = vget_lane_u32(as, 1);
 }
 
-Z_FORCEINLINE static void neon_tail_copy(uint32_t *pair, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
-    while (len--) {
-        uint8_t c = *src++;
-        if (COPY) {
-            *dst++ = c;
-        }
-        pair[0] += c;
-        pair[1] += pair[0];
-    }
-}
-
 Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     /* split Adler-32 into component sums */
     uint32_t sum2 = (adler >> 16) & 0xffff;
@@ -200,7 +189,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
      * it's unclear how many SIPs will benefit from it. */
     uintptr_t align_diff = ALIGN_DIFF(src, 32);
     if (align_diff) {
-        neon_tail_copy(pair, dst, src, align_diff, COPY);
+        adler32_copy_len_16_pair(pair, dst, src, align_diff, COPY);
         if (COPY)
             dst += align_diff;
         src += align_diff;
@@ -222,7 +211,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
     }
 
     /* Process tail (len < 16).  */
-    return adler32_copy_len_16(pair[0], dst, src, len, pair[1], COPY);
+    return adler32_copy_len_16_pair(pair, dst, src, len, COPY);
 }
 
 Z_INTERNAL uint32_t adler32_neon(uint32_t adler, const uint8_t *src, size_t len) {

@@ -27,6 +27,7 @@ static inline uint32_t adler32_copy_len_1(uint32_t adler, uint8_t *dst, const ui
     adler %= BASE;
     sum2 += adler;
     sum2 %= BASE;
+    /* D = B * 65536 + A, see: https://en.wikipedia.org/wiki/Adler-32. */
     return adler | (sum2 << 16);
 }
 
@@ -66,6 +67,22 @@ static inline uint32_t adler32_copy_len_64(uint32_t adler, uint8_t *dst, const u
         memcpy(dst, src, src_len);
     }
     return adler;
+}
+
+Z_FORCEINLINE static uint32_t adler32_copy_len_16_pair(uint32_t *pair, uint8_t *dst, const uint8_t *buf, size_t len, const int COPY) {
+    while (len--) {
+        uint8_t c = *buf++;
+        if (COPY) {
+            *dst++ = c;
+        }
+        pair[0] += c;
+        pair[1] += pair[0];
+    }
+    /* Optimized away when return value not used */
+    uint32_t adler = pair[0] % BASE;
+    uint32_t sum2 = pair[1] % BASE;
+    /* D = B * 65536 + A, see: https://en.wikipedia.org/wiki/Adler-32. */
+    return adler | (sum2 << 16);
 }
 
 #endif /* ADLER32_P_H */
