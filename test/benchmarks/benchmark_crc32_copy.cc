@@ -4,7 +4,6 @@
  */
 
 #include <benchmark/benchmark.h>
-#include <assert.h>
 
 extern "C" {
 #  include "zbuild.h"
@@ -12,7 +11,9 @@ extern "C" {
 #  include "../test_cpu_features.h"
 }
 
-#define BUFSIZE (32768 + 16 + 16)
+// Hash copy functions are used on strm->next_in buffers, we process
+// 512-32k sizes (x2 for initial fill) at a time if enough data is available.
+#define BUFSIZE (65536 + 64)
 
 class crc32_copy: public benchmark::Fixture {
 protected:
@@ -20,46 +21,67 @@ protected:
     uint8_t *dstbuf;
 
 public:
-    void SetUp(const ::benchmark::State&) {
-        testdata = (uint32_t *)malloc(BUFSIZE);
-        dstbuf = (uint8_t *)malloc(BUFSIZE);
-        assert((testdata != NULL) && (dstbuf != NULL));
+    void SetUp(::benchmark::State& state) {
+        testdata = (uint32_t *)zng_alloc_aligned(BUFSIZE, 64);
+        dstbuf = (uint8_t *)zng_alloc_aligned(BUFSIZE, 64);
+        if (testdata == NULL || dstbuf == NULL) {
+            state.SkipWithError("malloc failed");
+            return;
+        }
 
         for (uint32_t i = 0; i < BUFSIZE/sizeof(uint32_t); i++) {
             testdata[i] = rand();
         }
     }
 
-    void Bench(benchmark::State& state, crc32_copy_func crc32_copy) {
+    // Benchmark CRC32_copy, with rolling buffer misalignment for consistent results
+    void Bench(benchmark::State& state, crc32_copy_func crc32_copy, const int DO_ALIGNED) {
         int misalign = 0;
-        uint32_t crc = 0;
+        uint32_t hash = 0;
 
-        // Benchmark the CRC32 copy operation
         for (auto _ : state) {
-            crc = crc32_copy(crc, dstbuf + misalign, (const unsigned char*)testdata + misalign, (size_t)state.range(0));
-            misalign++;
-            if (misalign > 14)
+            hash = crc32_copy(hash, dstbuf + misalign, (const unsigned char*)testdata + misalign, (size_t)state.range(0));
+            if (misalign >= 63)
                 misalign = 0;
+            else
+                misalign += (DO_ALIGNED) ? 16 : 1;
         }
 
         // Prevent the result from being optimized away
-        benchmark::DoNotOptimize(crc);
+        benchmark::DoNotOptimize(hash);
     }
 
     void TearDown(const ::benchmark::State&) {
-        free(testdata);
-        free(dstbuf);
+        zng_free_aligned(testdata);
+        zng_free_aligned(dstbuf);
     }
 };
 
-#define BENCHMARK_CRC32_COPY(name, copyfunc, support_flag) \
+// Misaligned
+#define BENCHMARK_CRC32_COPY_MISALIGNED(name, copyfunc, support_flag) \
     BENCHMARK_DEFINE_F(crc32_copy, name)(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
         } \
-        Bench(state, copyfunc); \
+        Bench(state, copyfunc, 0); \
     } \
-    BENCHMARK_REGISTER_F(crc32_copy, name)->Arg(16)->Arg(48)->Arg(192)->Arg(512)->Arg(4<<10)->Arg(16<<10)->Arg(32<<10);
+    BENCHMARK_REGISTER_F(crc32_copy, name)->Arg(32)->Arg(512)->Arg(8<<10)->Arg(32<<10)->Arg(64<<10);
+
+// Aligned
+#define ALIGNED_NAME(name) name##_aligned
+#define BENCHMARK_CRC32_COPY_ALIGNED(name, copyfunc, support_flag) \
+    BENCHMARK_DEFINE_F(crc32_copy, ALIGNED_NAME(name))(benchmark::State& state) { \
+        if (!(support_flag)) { \
+            state.SkipWithError("CPU does not support " #name); \
+        } \
+        Bench(state, copyfunc, 1); \
+    } \
+    BENCHMARK_REGISTER_F(crc32_copy, ALIGNED_NAME(name))->Arg(16)->Arg(32)->Arg(64)->Arg(512);
+
+// Queue both misaligned and aligned for each benchmark
+#define BENCHMARK_CRC32_COPY(name, copyfunc, support_flag) \
+    BENCHMARK_CRC32_COPY_MISALIGNED(name, copyfunc, support_flag); \
+    BENCHMARK_CRC32_COPY_ALIGNED(name, copyfunc, support_flag);
 
 // Base test
 BENCHMARK_CRC32_COPY(braid, crc32_copy_braid, 1);
