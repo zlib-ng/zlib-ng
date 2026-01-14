@@ -21,7 +21,7 @@ extern "C" {
 #define MAX_SIZE (1024 * 1024)
 #define NUM_TESTS 6
 
-class inflate: public benchmark::Fixture {
+class inflate_bench: public benchmark::Fixture {
 private:
     uint8_t *inbuff;
     uint8_t *outbuff;
@@ -161,9 +161,9 @@ public:
 };
 
 #define BENCHMARK_INFLATE(name) \
-    BENCHMARK_DEFINE_F(inflate, name)(benchmark::State& state) { \
+    BENCHMARK_DEFINE_F(inflate_bench, name)(benchmark::State& state) { \
         Bench(state); \
     } \
-    BENCHMARK_REGISTER_F(inflate, name)->Arg(1)->Arg(64)->Arg(1024)->Arg(16<<10)->Arg(128<<10)->Arg(1024<<10);
+    BENCHMARK_REGISTER_F(inflate_bench, name)->Arg(1)->Arg(64)->Arg(1024)->Arg(16<<10)->Arg(128<<10)->Arg(1024<<10);
 
 BENCHMARK_INFLATE(inflate_nocrc);
