@@ -18,19 +18,6 @@
 #define ADLER_DO8(sum1, sum2, buf, i)  {ADLER_DO4(sum1, sum2, buf, i); ADLER_DO4(sum1, sum2, buf, i+4);}
 #define ADLER_DO16(sum1, sum2, buf)    {ADLER_DO8(sum1, sum2, buf, 0); ADLER_DO8(sum1, sum2, buf, 8);}
 
-static inline uint32_t adler32_copy_len_1(uint32_t adler, uint8_t *dst, const uint8_t *buf, uint32_t sum2, const int COPY) {
-    uint8_t c = *buf;
-    if (COPY) {
-        *dst = c;
-    }
-    adler += c;
-    adler %= BASE;
-    sum2 += adler;
-    sum2 %= BASE;
-    /* D = B * 65536 + A, see: https://en.wikipedia.org/wiki/Adler-32. */
-    return adler | (sum2 << 16);
-}
-
 static inline uint32_t adler32_copy_len_16(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len, uint32_t sum2, const int COPY) {
     while (len--) {
         uint8_t c = *buf++;

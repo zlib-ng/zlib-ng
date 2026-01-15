@@ -58,7 +58,7 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
 
     /* in case user likes doing a byte at a time, keep it fast */
     if (UNLIKELY(len == 1))
-        return adler32_copy_len_1(s1, NULL, buf, s2, 0);
+        return adler32_copy_len_16(s1, NULL, buf, 1, s2, 0);
 
     /* This is faster than VSX code for len < 64.  */
     if (len < 64)

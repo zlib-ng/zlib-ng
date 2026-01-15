@@ -19,7 +19,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t* restric
 
     /* in case user likes doing a byte at a time, keep it fast */
     if (UNLIKELY(len == 1))
-        return adler32_copy_len_1(adler, dst, src, sum2, COPY);
+        return adler32_copy_len_16(adler, dst, src, 1, sum2, COPY);
 
     /* in case short lengths are provided, keep it somewhat fast */
     if (UNLIKELY(len < 16))
