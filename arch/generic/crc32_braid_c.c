@@ -10,6 +10,7 @@
 #include "zbuild.h"
 #include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
+#include "crc32_p.h"
 
 /*
   A CRC of a message is computed on BRAID_N braids of words in the message, where
@@ -203,12 +204,7 @@ Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t 
         len -= 8;
         CRC_DO8;
     }
-    while (len) {
-        len--;
-        CRC_DO1;
-    }
-
-    return c;
+    return crc32_copy_small(c, NULL, buf, len, 0);
 }
 
 Z_INTERNAL uint32_t crc32_braid(uint32_t crc, const uint8_t *buf, size_t len) {

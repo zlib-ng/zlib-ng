@@ -26,6 +26,7 @@
 #include "crc32.h"
 #include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
+#include "crc32_p.h"
 #include "x86_intrins.h"
 
 #ifdef X86_VPCLMULQDQ
@@ -136,20 +137,6 @@ static inline void fold_16(__m512i *zmm_crc0, __m512i *zmm_crc1, __m512i *zmm_cr
 }
 #endif
 
-static inline uint32_t crc32_copy_small(uint32_t crc, uint8_t *dst, const uint8_t *buf, size_t len, const int COPY) {
-    uint32_t c = ~crc;
-
-    while (len) {
-        len--;
-        if (COPY) {
-            *dst++ = *buf;
-        }
-        CRC_DO1;
-    }
-
-    return ~c;
-}
-
 Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     size_t copy_len = len;
     if (len >= 16) {
@@ -162,7 +149,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
     }
 
     if (copy_len > 0) {
-        crc = crc32_copy_small(crc, dst, src, copy_len, COPY);
+        crc = crc32_copy_small(~crc, dst, src, copy_len, COPY);
         src += copy_len;
         len -= copy_len;
         if (COPY) {
