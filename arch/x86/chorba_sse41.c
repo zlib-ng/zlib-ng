@@ -52,8 +52,7 @@
     out3 = _mm_xor_si128(in[4], xor3); \
     } while (0)
 
-Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t crc, const uint64_t* buf, size_t len) {
-    const uint64_t* input = buf;
+Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t crc, const uint64_t* input, size_t len) {
     ALIGNED_(16) uint64_t bitbuffer[32768 / sizeof(uint64_t)];
     __m128i *bitbuffer_v = (__m128i*)bitbuffer;
     const uint8_t* bitbufferbytes = (const uint8_t*) bitbuffer;
@@ -89,7 +88,7 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
     }
 
     /* We need to mix this in */
-    __m128i init_crc = _mm_cvtsi64_si128(crc);
+    __m128i init_crc = _mm_cvtsi64_si128(~crc);
     crc = 0;
 
     size_t i = 0;
@@ -301,37 +300,26 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
     for(size_t j = 0; j < (len-i); j++) {
         crc = crc_table[(crc ^ final_bytes[j] ^ bitbufferbytes[(j+i)]) & 0xff] ^ (crc >> 8);
     }
-    return crc;
+    return ~crc;
 }
 
 Z_INTERNAL uint32_t crc32_chorba_sse41(uint32_t crc, const uint8_t *buf, size_t len) {
-    uint64_t *aligned_buf;
-    uint32_t c = ~crc;
     uintptr_t align_diff = ALIGN_DIFF(buf, 16);
+    if (len <= align_diff + CHORBA_SMALL_THRESHOLD_64BIT)
+        return crc32_braid(crc, buf, len);
 
-    if (len > align_diff + CHORBA_SMALL_THRESHOLD_64BIT) {
-        if (align_diff) {
-            c = crc32_braid_internal(c, buf, align_diff);
-            len -= align_diff;
-        }
-        aligned_buf = (uint64_t*)(buf + align_diff);
-#if !defined(WITHOUT_CHORBA)
-        if (len > CHORBA_LARGE_THRESHOLD) {
-            c = crc32_chorba_118960_nondestructive(c, (z_word_t*)aligned_buf, len);
-        } else
-#endif
-        if (len > CHORBA_MEDIUM_LOWER_THRESHOLD && len <= CHORBA_MEDIUM_UPPER_THRESHOLD) {
-            c = crc32_chorba_32768_nondestructive_sse41(c, aligned_buf, len);
-        } else {
-            c = chorba_small_nondestructive_sse2(c, aligned_buf, len);
-        }
-    } else {
-        // Process too short lengths using crc32_braid
-        c = crc32_braid_internal(c, buf, len);
+    if (align_diff) {
+        crc = crc32_braid(crc, buf, align_diff);
+        len -= align_diff;
+        buf += align_diff;
     }
-
-    /* Return the CRC, post-conditioned. */
-    return ~c;
+#if !defined(WITHOUT_CHORBA)
+    if (len > CHORBA_LARGE_THRESHOLD)
+        return crc32_chorba_118960_nondestructive(crc, (z_word_t*)buf, len);
+#endif
+    if (len > CHORBA_MEDIUM_LOWER_THRESHOLD && len <= CHORBA_MEDIUM_UPPER_THRESHOLD)
+        return crc32_chorba_32768_nondestructive_sse41(crc, (const uint64_t*)buf, len);
+    return chorba_small_nondestructive_sse2(crc, (const uint64_t*)buf, len);
 }
 
 Z_INTERNAL uint32_t crc32_copy_chorba_sse41(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {

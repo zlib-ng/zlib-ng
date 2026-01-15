@@ -25,7 +25,6 @@ uint8_t* chunkmemset_safe_c(uint8_t *out, uint8_t *from, unsigned len, unsigned 
 uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1);
 
 uint32_t crc32_braid(uint32_t crc, const uint8_t *buf, size_t len);
-uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_braid(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 
 #ifndef WITHOUT_CHORBA

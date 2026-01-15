@@ -61,7 +61,8 @@ static z_word_t crc_word(z_word_t data) {
 #endif /* BRAID_W */
 
 /* ========================================================================= */
-Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t len) {
+Z_INTERNAL uint32_t crc32_braid(uint32_t crc, const uint8_t *buf, size_t len) {
+    crc = ~crc;
 
 #ifdef BRAID_W
     /* If provided enough bytes, do a braided CRC calculation. */
@@ -73,7 +74,7 @@ Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t 
         /* Compute the CRC up to a z_word_t boundary. */
         size_t align_diff = (size_t)MIN(ALIGN_DIFF(buf, BRAID_W), len);
         if (align_diff) {
-            c = crc32_copy_small(c, NULL, buf, align_diff, BRAID_W - 1, 0);
+            crc = crc32_copy_small(crc, NULL, buf, align_diff, BRAID_W - 1, 0);
             len -= align_diff;
             buf += align_diff;
         }
@@ -100,7 +101,7 @@ Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t 
 #endif
 #endif
         /* Initialize the CRC for each braid. */
-        crc0 = Z_WORD_FROM_LE(c);
+        crc0 = Z_WORD_FROM_LE(crc);
 #if BRAID_N > 1
         crc1 = 0;
 #if BRAID_N > 2
@@ -193,7 +194,7 @@ Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t 
 #endif
         words += BRAID_N;
         Assert(comb <= UINT32_MAX, "comb should fit in uint32_t");
-        c = (uint32_t)Z_WORD_FROM_LE(comb);
+        crc = (uint32_t)Z_WORD_FROM_LE(comb);
 
         /* Update the pointer to the remaining bytes to process. */
         buf = (const unsigned char *)words;
@@ -202,11 +203,7 @@ Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t 
 #endif /* BRAID_W */
 
     /* Complete the computation of the CRC on any remaining bytes. */
-    return crc32_copy_small(c, NULL, buf, len, (BRAID_N * BRAID_W) - 1, 0);
-}
-
-Z_INTERNAL uint32_t crc32_braid(uint32_t crc, const uint8_t *buf, size_t len) {
-    return ~crc32_braid_internal(~crc, buf, len);
+    return ~crc32_copy_small(crc, NULL, buf, len, (BRAID_N * BRAID_W) - 1, 0);
 }
 
 Z_INTERNAL uint32_t crc32_copy_braid(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {

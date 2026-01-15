@@ -46,7 +46,7 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
 
     size_t i = 0;
 
-    z_word_t next1 = Z_WORD_FROM_LE(crc);
+    z_word_t next1 = Z_WORD_FROM_LE(~crc);
 
     z_word_t next2 = 0;
     z_word_t next3 = 0;
@@ -479,16 +479,16 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const z_wo
 #if defined(__EMSCRIPTEN__)
     zng_free(bitbuffer);
 #endif
-    return crc;
+    return ~crc;
 }
 
 #  if OPTIMAL_CMP == 64
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
-Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive (uint32_t crc, const uint64_t* input, size_t len) {
+Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint64_t* input, size_t len) {
     uint64_t bitbuffer[32768 / sizeof(uint64_t)];
     const uint8_t* bitbufferbytes = (const uint8_t*) bitbuffer;
     memset(bitbuffer, 0, 32768);
-    bitbuffer[0] = Z_U64_TO_LE(crc);
+    bitbuffer[0] = Z_U64_TO_LE(~crc);
 
     crc = 0;
 
@@ -627,13 +627,13 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive (uint32_t crc, const uint6
         crc = crc_table[(crc ^ final_bytes[j] ^ bitbufferbytes[(j+i)]) & 0xff] ^ (crc >> 8);
     }
 
-    return crc;
+    return ~crc;
 }
 
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
-Z_INTERNAL uint32_t crc32_chorba_small_nondestructive (uint32_t crc, const uint64_t* input, size_t len) {
+Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint64_t* input, size_t len) {
     uint64_t final[9] = {0};
-    uint64_t next1 = crc;
+    uint64_t next1 = ~crc;
     crc = 0;
     uint64_t next2 = 0;
     uint64_t next3 = 0;
@@ -1059,9 +1059,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive (uint32_t crc, const uint6
     final[3] ^= Z_U64_TO_LE(next4);
     final[4] ^= Z_U64_TO_LE(next5);
 
-    crc = crc32_braid_internal(crc, (uint8_t*) final, len-i);
-
-    return crc;
+    return crc32_braid(~crc, (uint8_t*)final, len-i);
 }
 
 #else // OPTIMAL_CMP == 64
@@ -1069,7 +1067,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive (uint32_t crc, const uint6
 Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit (uint32_t crc, const uint32_t* input, size_t len) {
     uint32_t final[20] = {0};
 
-    uint32_t next1 = crc;
+    uint32_t next1 = ~crc;
     crc = 0;
     uint32_t next2 = 0;
     uint32_t next3 = 0;
@@ -1235,43 +1233,29 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit (uint32_t crc, const
     final[8] ^= Z_U32_TO_LE(next9);
     final[9] ^= Z_U32_TO_LE(next10);
 
-    crc = crc32_braid_internal(crc, (uint8_t*) final, len-i);
-
-    return crc;
+    return crc32_braid(~crc, (uint8_t*)final, len-i);
 }
 #endif // OPTIMAL_CMP == 64
 
 Z_INTERNAL uint32_t crc32_chorba(uint32_t crc, const uint8_t *buf, size_t len) {
-    uint64_t *aligned_buf;
-    uint32_t c = ~crc;
     uintptr_t align_diff = ALIGN_DIFF(buf, 8);
+    if (len <= align_diff + CHORBA_SMALL_THRESHOLD)
+        return crc32_braid(crc, buf, len);
 
-    if (len > align_diff + CHORBA_SMALL_THRESHOLD) {
-        if (align_diff) {
-            c = crc32_braid_internal(c, buf, align_diff);
-            len -= align_diff;
-        }
-        aligned_buf = (uint64_t*)(buf + align_diff);
-        if(len > CHORBA_LARGE_THRESHOLD) {
-            c = crc32_chorba_118960_nondestructive(c, (z_word_t*)aligned_buf, len);
-#  if OPTIMAL_CMP == 64
-        } else if (len > CHORBA_MEDIUM_LOWER_THRESHOLD && len <= CHORBA_MEDIUM_UPPER_THRESHOLD) {
-            c = crc32_chorba_32768_nondestructive(c, (uint64_t*)aligned_buf, len);
-#  endif
-        } else {
-#  if OPTIMAL_CMP == 64
-            c = crc32_chorba_small_nondestructive(c, (uint64_t*)aligned_buf, len);
-#  else
-            c = crc32_chorba_small_nondestructive_32bit(c, (uint32_t*)aligned_buf, len);
-#  endif
-        }
-    } else {
-        // Process too short lengths using crc32_braid
-        c = crc32_braid_internal(c, buf, len);
+    if (align_diff) {
+        crc = crc32_braid(crc, buf, align_diff);
+        len -= align_diff;
+        buf += align_diff;
     }
-
-    /* Return the CRC, post-conditioned. */
-    return ~c;
+    if (len > CHORBA_LARGE_THRESHOLD)
+        return crc32_chorba_118960_nondestructive(crc, (const z_word_t*)buf, len);
+#if OPTIMAL_CMP == 64
+    if (len > CHORBA_MEDIUM_LOWER_THRESHOLD && len <= CHORBA_MEDIUM_UPPER_THRESHOLD)
+        return crc32_chorba_32768_nondestructive(crc, (const uint64_t*)buf, len);
+    return crc32_chorba_small_nondestructive(crc, (const uint64_t*)buf, len);
+#else
+    return crc32_chorba_small_nondestructive_32bit(crc, (const uint32_t*)buf, len);
+#endif
 }
 
 uint32_t crc32_copy_chorba(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
