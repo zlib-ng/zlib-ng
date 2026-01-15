@@ -108,7 +108,7 @@ static void vmx_accum32(uint32_t *s, const uint8_t *buf, size_t len) {
     vec_ste(s2acc, 0, s+1);
 }
 
-Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, size_t len) {
+Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) {
     uint32_t sum2 = (adler >> 16) & 0xffff;
     adler &= 0xffff;
 
@@ -151,13 +151,9 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
     return adler32_copy_small_pair(pair, NULL, buf, len, 16, 0);
 }
 
-Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) {
-    return adler32_impl(adler, buf, len);
-}
-
 /* VMX stores can have higher latency than optimized memcpy */
 Z_INTERNAL uint32_t adler32_copy_vmx(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
-    adler = adler32_impl(adler, src, len);
+    adler = adler32_vmx(adler, src, len);
     memcpy(dst, src, len);
     return adler;
 }
