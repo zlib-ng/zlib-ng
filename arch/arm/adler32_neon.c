@@ -39,10 +39,7 @@ Z_FORCEINLINE static void neon_accum32_copy(uint32_t *s, uint8_t *dst, const uin
     uint16x8_t s2_4, s2_5, s2_6, s2_7;
     s2_4 = s2_5 = s2_6 = s2_7 = vdupq_n_u16(0);
 
-    size_t num_iter = len >> 2;
-    int rem = len & 3;
-
-    for (size_t i = 0; i < num_iter; ++i) {
+    while (len >= 64) {
         uint8x16_t d0, d1, d2, d3;
 
         if (COPY) {
@@ -97,33 +94,33 @@ Z_FORCEINLINE static void neon_accum32_copy(uint32_t *s, uint8_t *dst, const uin
 
         adacc_prev = adacc;
         buf += 64;
+        len -= 64;
     }
 
     s3acc = vshlq_n_u32(s3acc, 6);
 
-    if (rem) {
-        uint32x4_t s3acc_0 = vdupq_n_u32(0);
-        while (rem--) {
-            uint8x16_t d0 = vld1q_u8(buf);
+    uint32x4_t s3acc_0 = vdupq_n_u32(0);
+    while (len >= 16) {
+        uint8x16_t d0 = vld1q_u8(buf);
 
-            if (COPY) {
-                vst1q_u8(dst, d0);
-                dst += 16;
-            }
-
-            uint16x8_t adler;
-            adler = vpaddlq_u8(d0);
-            s2_6 = vaddw_u8(s2_6, vget_low_u8(d0));
-            s2_7 = vaddw_high_u8(s2_7, d0);
-            adacc = vpadalq_u16(adacc, adler);
-            s3acc_0 = vaddq_u32(s3acc_0, adacc_prev);
-            adacc_prev = adacc;
-            buf += 16;
+        if (COPY) {
+            vst1q_u8(dst, d0);
+            dst += 16;
         }
 
-        s3acc_0 = vshlq_n_u32(s3acc_0, 4);
-        s3acc = vaddq_u32(s3acc_0, s3acc);
+        uint16x8_t adler;
+        adler = vpaddlq_u8(d0);
+        s2_6 = vaddw_u8(s2_6, vget_low_u8(d0));
+        s2_7 = vaddw_high_u8(s2_7, d0);
+        adacc = vpadalq_u16(adacc, adler);
+        s3acc_0 = vaddq_u32(s3acc_0, adacc_prev);
+        adacc_prev = adacc;
+        buf += 16;
+        len -= 16;
     }
+
+    s3acc_0 = vshlq_n_u32(s3acc_0, 4);
+    s3acc = vaddq_u32(s3acc_0, s3acc);
 
     uint16x8x4_t t0_t3 = vld1q_u16_x4(taps);
     uint16x8x4_t t4_t7 = vld1q_u16_x4(taps + 32);
@@ -182,16 +179,10 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
         return adler32_copy_len_1(adler, dst, src, sum2, COPY);
 
     /* in case short lengths are provided, keep it somewhat fast */
-    if (UNLIKELY(len < 16))
-        return adler32_copy_len_16(adler, dst, src, len, sum2, COPY);
+    if (UNLIKELY(len < 64))
+        return adler32_copy_len_64(adler, dst, src, len, sum2, COPY);
 
     uint32_t pair[2];
-    int n = NMAX;
-    unsigned int done = 0;
-
-    /* Split Adler-32 into component sums, it can be supplied by
-     * the caller sites (e.g. in a PNG file).
-     */
     pair[0] = adler;
     pair[1] = sum2;
 
@@ -207,47 +198,31 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
      * of the buffer). 32 bytes should strike a balance, though. Clang and
      * GCC on Linux will not emit this hint in the encoded instruction and
      * it's unclear how many SIPs will benefit from it. */
-    unsigned int align_offset = ((uintptr_t)src & 31);
-    unsigned int align_adj = (align_offset) ? 32 - align_offset : 0;
-
-    if (align_offset && len >= (16 + align_adj)) {
-        neon_tail_copy(pair, dst, src, align_adj, COPY);
-        dst += align_adj;
-        n -= align_adj;
-        done += align_adj;
-
-    } else {
-        /* If here, we failed the len criteria test, it wouldn't be
-         * worthwhile to do scalar aligning sums */
-        align_adj = 0;
+    uintptr_t align_diff = ALIGN_DIFF(src, 32);
+    if (align_diff) {
+        neon_tail_copy(pair, dst, src, align_diff, COPY);
+        if (COPY)
+            dst += align_diff;
+        src += align_diff;
+        len -= align_diff;
     }
 
-    while (done < len) {
-        int remaining = (int)(len - done);
-        n = MIN(remaining, (done == align_adj) ? n : NMAX);
+    while (len >= 16) {
+        size_t n = MIN(len, NMAX) & ~15;  /* Round down to nearest 16 bytes */
 
-        if (n < 16)
-            break;
-
-        neon_accum32_copy(pair, dst + done, src + done, n >> 4, COPY);
+        neon_accum32_copy(pair, dst, src, n, COPY);
 
         pair[0] %= BASE;
         pair[1] %= BASE;
 
-        int actual_nsums = (n >> 4) << 4;
-        done += actual_nsums;
+        if (COPY)
+            dst += n;
+        src += n;
+        len -= n;
     }
 
-    /* Handle the tail elements. */
-    if (done < len) {
-        neon_tail_copy(pair, dst + done, src + done, len - done, COPY);
-
-        pair[0] %= BASE;
-        pair[1] %= BASE;
-    }
-
-    /* D = B * 65536 + A, see: https://en.wikipedia.org/wiki/Adler-32. */
-    return (pair[1] << 16) | pair[0];
+    /* Process tail (len < 16).  */
+    return adler32_copy_len_16(pair[0], dst, src, len, pair[1], COPY);
 }
 
 Z_INTERNAL uint32_t adler32_neon(uint32_t adler, const uint8_t *src, size_t len) {
