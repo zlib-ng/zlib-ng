@@ -15,10 +15,8 @@
 #include <immintrin.h>
 
 Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, size_t len) {
-    uint32_t sum2;
-
-     /* split Adler-32 into component sums */
-    sum2 = (adler >> 16) & 0xffff;
+    /* split Adler-32 into component sums */
+    uint32_t sum2 = (adler >> 16) & 0xffff;
     adler &= 0xffff;
 
     /* in case user likes doing a byte at a time, keep it fast */
@@ -42,12 +40,10 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
      * additions worthwhile or if it's worth it to just eat the cost of an unaligned
      * load. This is a pretty simple test, just test if 16 - the remainder + len is
      * < 16 */
-    size_t max_iters = NMAX;
-    size_t rem = (uintptr_t)buf & 15;
-    size_t align_offset = 16 - rem;
     size_t k = 0;
-    if (rem) {
-        if (len < 16 + align_offset) {
+    size_t align_diff = ALIGN_DIFF(buf, 16);
+    if (align_diff) {
+        if (len < 16 + align_diff) {
             /* Let's eat the cost of this one unaligned load so that
              * we don't completely skip over the vectorization. Doing
              * 16 bytes at a time unaligned is better than 16 + <= 15
@@ -62,17 +58,16 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
             goto unaligned_jmp;
         }
 
-        for (size_t i = 0; i < align_offset; ++i) {
-            adler += *(buf++);
-            sum2 += adler;
-        }
+        uint32_t pair[2];
+        pair[0] = adler;
+        pair[1] = sum2;
+        adler32_copy_len_16_pair(pair, NULL, buf, align_diff, 0);
+        adler = pair[0];
+        sum2 = pair[1];
 
-        /* lop off the max number of sums based on the scalar sums done
-         * above */
-        len -= align_offset;
-        max_iters -= align_offset;
+        buf += align_diff;
+        len -= align_diff;
     }
-
 
     while (len >= 16) {
         vs1 = _mm_cvtsi32_si128(adler);
@@ -81,8 +76,7 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
         vs2_0 = _mm_setzero_si128();
         vs1_0 = vs1;
 
-        k = (len < max_iters ? len : max_iters);
-        k -= k % 16;
+        k = MIN(len, NMAX) & ~15;  /* Round down to nearest 16 bytes */
         len -= k;
 
         while (k >= 32) {
@@ -142,7 +136,6 @@ unaligned_jmp:
          * 0 and 2. This saves us some contention on the shuffle port(s) */
         adler = partial_hsum(vs1) % BASE;
         sum2 = hsum(vs2) % BASE;
-        max_iters = NMAX;
     }
 
     /* Process tail (len < 16).  */
