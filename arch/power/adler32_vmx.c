@@ -114,11 +114,11 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
 
     /* in case user likes doing a byte at a time, keep it fast */
     if (UNLIKELY(len == 1))
-        return adler32_copy_len_16(adler, NULL, buf, 1, sum2, 0);
+        return adler32_copy_small(adler, NULL, buf, 1, sum2, 0);
 
     /* in case short lengths are provided, keep it somewhat fast */
     if (UNLIKELY(len < 16))
-        return adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
+        return adler32_copy_small(adler, NULL, buf, len, sum2, 0);
 
     /* Split Adler-32 into component sums */
     uint32_t pair[4] ALIGNED_(16);
@@ -130,7 +130,7 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
     /* Align buffer to 16 bytes */
     uintptr_t align_diff = ALIGN_DIFF(buf, 16);
     if (align_diff) {
-        adler32_copy_len_16_pair(pair, NULL, buf, align_diff, 0);
+        adler32_copy_small_pair(pair, NULL, buf, align_diff, 0);
         buf += align_diff;
         len -= align_diff;
     }
@@ -148,7 +148,7 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
     }
 
     /* Process tail (len < 16).  */
-    return adler32_copy_len_16_pair(pair, NULL, buf, len, 0);
+    return adler32_copy_small_pair(pair, NULL, buf, len, 0);
 }
 
 Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) {
