@@ -200,10 +200,6 @@ Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t 
 #endif /* BRAID_W */
 
     /* Complete the computation of the CRC on any remaining bytes. */
-    while (len >= 8) {
-        len -= 8;
-        CRC_DO8;
-    }
     return crc32_copy_small(c, NULL, buf, len, 0);
 }
 

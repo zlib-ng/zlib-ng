@@ -13,12 +13,14 @@
 
 Z_FORCEINLINE static uint32_t crc32_copy_small(uint32_t crc, uint8_t *dst, const uint8_t *buf, size_t len, const int COPY) {
     uint32_t c = crc;
-
-    while (len) {
-        len--;
-        if (COPY) {
-            *dst++ = *buf;
-        }
+    if (COPY) {
+        memcpy(dst, buf, len);
+    }
+    while (len >= 8) {
+        len -= 8;
+        CRC_DO8;
+    }
+    while (len--) {
         CRC_DO1;
     }
 
