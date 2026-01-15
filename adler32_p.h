@@ -18,14 +18,16 @@
 #define ADLER_DO8(sum1, sum2, buf, i)  {ADLER_DO4(sum1, sum2, buf, i); ADLER_DO4(sum1, sum2, buf, i+4);}
 #define ADLER_DO16(sum1, sum2, buf)    {ADLER_DO8(sum1, sum2, buf, 0); ADLER_DO8(sum1, sum2, buf, 8);}
 
-Z_FORCEINLINE static uint32_t adler32_copy_small(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len, uint32_t sum2, const int COPY) {
+Z_FORCEINLINE static uint32_t adler32_copy_small(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len, uint32_t sum2, const int MAX_LEN, const int COPY) {
     if (COPY) {
         memcpy(dst, buf, len);
     }
-    while (len >= 16) {
-        len -= 16;
-        ADLER_DO16(adler, sum2, buf);
-        buf += 16;
+    if (MAX_LEN > 16) {
+        while (len >= 16) {
+            len -= 16;
+            ADLER_DO16(adler, sum2, buf);
+            buf += 16;
+        }
     }
     while (len >= 8) {
         len -= 8;
@@ -40,14 +42,16 @@ Z_FORCEINLINE static uint32_t adler32_copy_small(uint32_t adler, uint8_t *dst, c
     return (adler % BASE) | ((sum2 % BASE) << 16);
 }
 
-Z_FORCEINLINE static uint32_t adler32_copy_small_pair(uint32_t *pair, uint8_t *dst, const uint8_t *buf, size_t len, const int COPY) {
+Z_FORCEINLINE static uint32_t adler32_copy_small_pair(uint32_t *pair, uint8_t *dst, const uint8_t *buf, size_t len, const int MAX_LEN, const int COPY) {
     if (COPY) {
         memcpy(dst, buf, len);
     }
-    while (len >= 16) {
-        len -= 16;
-        ADLER_DO16(pair[0], pair[1], buf);
-        buf += 16;
+    if (MAX_LEN > 16) {
+        while (len >= 16) {
+            len -= 16;
+            ADLER_DO16(pair[0], pair[1], buf);
+            buf += 16;
+        }
     }
     while (len >= 8) {
         len -= 8;
