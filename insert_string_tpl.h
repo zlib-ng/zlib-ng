@@ -20,13 +20,7 @@
  */
 
 #ifndef HASH_CALC_READ
-#  if BYTE_ORDER == LITTLE_ENDIAN
-#    define HASH_CALC_READ \
-        val = zng_memread_4(strstart);
-#  else
-#    define HASH_CALC_READ \
-        val = ZSWAP32(zng_memread_4(strstart));
-#  endif
+#  define HASH_CALC_READ val = Z_U32_FROM_LE(zng_memread_4(strstart));
 #endif
 
 /* ===========================================================================

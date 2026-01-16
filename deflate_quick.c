@@ -88,22 +88,14 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         }
 
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
-#if BYTE_ORDER == LITTLE_ENDIAN
-            uint32_t str_val = zng_memread_4(window + s->strstart);
-#else
-            uint32_t str_val = ZSWAP32(zng_memread_4(window + s->strstart));
-#endif
+            uint32_t str_val = Z_U32_FROM_LE(zng_memread_4(window + s->strstart));
             uint32_t hash_head = quick_insert_value(s, s->strstart, str_val);
             int64_t dist = (int64_t)s->strstart - hash_head;
             lc = (uint8_t)str_val;
 
             if (dist <= MAX_DIST(s) && dist > 0) {
                 const uint8_t *match_start = window + hash_head;
-#if BYTE_ORDER == LITTLE_ENDIAN
-                uint32_t match_val = zng_memread_4(match_start);
-#else
-                uint32_t match_val = ZSWAP32(zng_memread_4(match_start));
-#endif
+                uint32_t match_val = Z_U32_FROM_LE(zng_memread_4(match_start));
 
                 if (str_val == match_val) {
                     const uint8_t *str_start = window + s->strstart;

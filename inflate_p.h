@@ -6,6 +6,8 @@
 #define INFLATE_P_H
 
 #include <stdlib.h>
+
+#include "zendian.h"
 #include "zmemory.h"
 
 /* Architecture-specific hooks. */
@@ -57,18 +59,14 @@
 #ifdef GUNZIP
 #  define CRC2(check, word) \
     do { \
-        hbuf[0] = (unsigned char)(word); \
-        hbuf[1] = (unsigned char)((word) >> 8); \
-        check = PREFIX(crc32)(check, hbuf, 2); \
+        uint16_t tmp = Z_U16_TO_LE((uint16_t)(word)); \
+        check = PREFIX(crc32)(check, (const unsigned char *)&tmp, 2); \
     } while (0)
 
 #  define CRC4(check, word) \
     do { \
-        hbuf[0] = (unsigned char)(word); \
-        hbuf[1] = (unsigned char)((word) >> 8); \
-        hbuf[2] = (unsigned char)((word) >> 16); \
-        hbuf[3] = (unsigned char)((word) >> 24); \
-        check = PREFIX(crc32)(check, hbuf, 4); \
+        uint32_t tmp = Z_U32_TO_LE((uint32_t)(word)); \
+        check = PREFIX(crc32)(check, (const unsigned char *)&tmp, 4); \
     } while (0)
 #endif
 
@@ -147,12 +145,7 @@ typedef unsigned bits_t;
 /* Load 64 bits from IN and place the bytes at offset BITS in the result. */
 static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
     uint64_t chunk = zng_memread_8(in);
-
-#if BYTE_ORDER == LITTLE_ENDIAN
-    return chunk << bits;
-#else
-    return ZSWAP64(chunk) << bits;
-#endif
+    return Z_U64_FROM_LE(chunk) << bits;
 }
 
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */

@@ -486,9 +486,6 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
     code last;                  /* parent table entry */
     unsigned len;               /* length to copy for repeats, bits to drop */
     int32_t ret;                /* return code */
-#ifdef GUNZIP
-    unsigned char hbuf[4];      /* buffer for gzip header crc calculation */
-#endif
     static const uint16_t order[19] = /* permutation of code lengths */
         {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 

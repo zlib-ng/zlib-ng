@@ -44,11 +44,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
          * dictionary, and set hash_head to the head of the hash chain:
          */
         if (s->lookahead >= WANT_MIN_MATCH) {
-#if BYTE_ORDER == LITTLE_ENDIAN
-            uint32_t str_val = zng_memread_4(window + s->strstart);
-#else
-            uint32_t str_val = ZSWAP32(zng_memread_4(window + s->strstart));
-#endif
+            uint32_t str_val = Z_U32_FROM_LE(zng_memread_4(window + s->strstart));
             uint32_t hash_head = quick_insert_value(s, s->strstart, str_val);
             int64_t dist = (int64_t)s->strstart - hash_head;
             lc = (uint8_t)str_val;

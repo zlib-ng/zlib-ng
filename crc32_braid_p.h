@@ -12,20 +12,16 @@
 #ifdef ARCH_64BIT
 #  define BRAID_W 8
     typedef uint64_t z_word_t;
+#  define Z_WORD_FROM_LE(word) Z_U64_FROM_LE(word)
 #else
 #  define BRAID_W 4
     typedef uint32_t z_word_t;
+#  define Z_WORD_FROM_LE(word) Z_U32_FROM_LE(word)
 #endif
 
 #if BYTE_ORDER == LITTLE_ENDIAN
-#  define ZSWAPWORD(word) (word)
 #  define BRAID_TABLE crc_braid_table
 #elif BYTE_ORDER == BIG_ENDIAN
-#  if BRAID_W == 8
-#    define ZSWAPWORD(word) ZSWAP64(word)
-#  elif BRAID_W == 4
-#    define ZSWAPWORD(word) ZSWAP32(word)
-#  endif
 #  define BRAID_TABLE crc_braid_big_table
 #else
 #  error "No endian defined"

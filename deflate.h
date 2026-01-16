@@ -334,9 +334,7 @@ typedef enum {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_short(deflate_state *s, uint16_t w) {
-#if BYTE_ORDER == BIG_ENDIAN
-    w = ZSWAP16(w);
-#endif
+    w = Z_U16_TO_LE(w);
     zng_memwrite_2(&s->pending_buf[s->pending], w);
     s->pending += 2;
 }
@@ -346,9 +344,7 @@ static inline void put_short(deflate_state *s, uint16_t w) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_short_msb(deflate_state *s, uint16_t w) {
-#if BYTE_ORDER == LITTLE_ENDIAN
-    w = ZSWAP16(w);
-#endif
+    w = Z_U16_TO_BE(w);
     zng_memwrite_2(&s->pending_buf[s->pending], w);
     s->pending += 2;
 }
@@ -358,9 +354,7 @@ static inline void put_short_msb(deflate_state *s, uint16_t w) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint32(deflate_state *s, uint32_t dw) {
-#if BYTE_ORDER == BIG_ENDIAN
-    dw = ZSWAP32(dw);
-#endif
+    dw = Z_U32_TO_LE(dw);
     zng_memwrite_4(&s->pending_buf[s->pending], dw);
     s->pending += 4;
 }
@@ -370,9 +364,7 @@ static inline void put_uint32(deflate_state *s, uint32_t dw) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
-#if BYTE_ORDER == LITTLE_ENDIAN
-    dw = ZSWAP32(dw);
-#endif
+    dw = Z_U32_TO_BE(dw);
     zng_memwrite_4(&s->pending_buf[s->pending], dw);
     s->pending += 4;
 }
@@ -382,9 +374,7 @@ static inline void put_uint32_msb(deflate_state *s, uint32_t dw) {
  * IN assertion: there is enough room in pending_buf.
  */
 static inline void put_uint64(deflate_state *s, uint64_t lld) {
-#if BYTE_ORDER == BIG_ENDIAN
-    lld = ZSWAP64(lld);
-#endif
+    lld = Z_U64_TO_LE(lld);
     zng_memwrite_8(&s->pending_buf[s->pending], lld);
     s->pending += 8;
 }

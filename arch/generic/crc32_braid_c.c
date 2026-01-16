@@ -97,7 +97,7 @@ Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t 
 #endif
 #endif
         /* Initialize the CRC for each braid. */
-        crc0 = ZSWAPWORD(c);
+        crc0 = Z_WORD_FROM_LE(c);
 #if BRAID_N > 1
         crc1 = 0;
 #if BRAID_N > 2
@@ -190,7 +190,7 @@ Z_INTERNAL uint32_t crc32_braid_internal(uint32_t c, const uint8_t *buf, size_t 
 #endif
         words += BRAID_N;
         Assert(comb <= UINT32_MAX, "comb should fit in uint32_t");
-        c = (uint32_t)ZSWAPWORD(comb);
+        c = (uint32_t)Z_WORD_FROM_LE(comb);
 
         /* Update the pointer to the remaining bytes to process. */
         buf = (const unsigned char *)words;
