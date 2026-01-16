@@ -163,17 +163,19 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                 *out++ = (unsigned char)(here.val);
                 here = lcode[hold & lmask];
                 Z_TOUCH(here);
+            dolen:
                 DROPBITS(here.bits);
+                if (here.op == 0) {
+                    TRACE_LITERAL(here.val);
+                    *out++ = (unsigned char)(here.val);
+                    continue;
+                }
             }
         }
-      dolen:
         op = here.op;
-        if (op == 0) {                          /* literal */
-            TRACE_LITERAL(here.val);
-            *out++ = (unsigned char)(here.val);
-        } else if (op & 16) {                     /* length base */
+        if (op & 16) {                          /* length base */
             len = here.val;
-            op &= MAX_BITS;                       /* number of extra bits */
+            op &= MAX_BITS;                     /* number of extra bits */
             len += BITS(op);
             DROPBITS(op);
             TRACE_LENGTH(len);
@@ -291,7 +293,6 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
         } else if ((op & 64) == 0) {              /* 2nd level length code */
             here = lcode[here.val + BITS(op)];
             Z_TOUCH(here);
-            DROPBITS(here.bits);
             goto dolen;
         } else if (op & 32) {                     /* end-of-block */
             TRACE_END_OF_BLOCK();
