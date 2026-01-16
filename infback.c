@@ -393,9 +393,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
 
             /* process literal */
             if ((int)(here.op) == 0) {
-                Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
-                        "inflate:         literal '%c'\n" :
-                        "inflate:         literal 0x%02x\n", here.val));
+                TRACE_LITERAL(here.val);
                 ROOM();
                 *put++ = (unsigned char)(state->length);
                 left--;
@@ -405,7 +403,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
 
             /* process end of block */
             if (here.op & 32) {
-                Tracevv((stderr, "inflate:         end of block\n"));
+                TRACE_END_OF_BLOCK();
                 state->mode = TYPE;
                 break;
             }
@@ -423,7 +421,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                 state->length += BITS(state->extra);
                 DROPBITS(state->extra);
             }
-            Tracevv((stderr, "inflate:         length %u\n", state->length));
+            TRACE_LENGTH(state->length);
 
             /* get distance code */
             for (;;) {
@@ -462,7 +460,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                 break;
             }
 #endif
-            Tracevv((stderr, "inflate:         distance %u\n", state->offset));
+            TRACE_DISTANCE(state->offset);
 
             /* copy match from window to output */
             do {

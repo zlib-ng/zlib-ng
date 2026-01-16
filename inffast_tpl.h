@@ -153,11 +153,13 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
         Z_TOUCH(here);
         DROPBITS(here.bits);
         if (here.op == 0) {
+            TRACE_LITERAL(here.val);
             *out++ = (unsigned char)(here.val);
             here = lcode[hold & lmask];
             Z_TOUCH(here);
             DROPBITS(here.bits);
             if (here.op == 0) {
+                TRACE_LITERAL(here.val);
                 *out++ = (unsigned char)(here.val);
                 here = lcode[hold & lmask];
                 Z_TOUCH(here);
@@ -167,16 +169,14 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
       dolen:
         op = here.op;
         if (op == 0) {                          /* literal */
-            Tracevv((stderr, here.val >= 0x20 && here.val < 0x7f ?
-                    "inflate:         literal '%c'\n" :
-                    "inflate:         literal 0x%02x\n", here.val));
+            TRACE_LITERAL(here.val);
             *out++ = (unsigned char)(here.val);
         } else if (op & 16) {                     /* length base */
             len = here.val;
             op &= MAX_BITS;                       /* number of extra bits */
             len += BITS(op);
             DROPBITS(op);
-            Tracevv((stderr, "inflate:         length %u\n", len));
+            TRACE_LENGTH(len);
             here = dcode[hold & dmask];
             Z_TOUCH(here);
             if (bits < MAX_BITS + MAX_DIST_EXTRA_BITS) {
@@ -196,7 +196,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                 }
 #endif
                 DROPBITS(op);
-                Tracevv((stderr, "inflate:         distance %u\n", dist));
+                TRACE_DISTANCE(dist);
                 op = (unsigned)(out - beg);     /* max distance in output */
                 if (dist > op) {                /* see if copy from window */
                     op = dist - op;             /* distance back in window */
@@ -294,7 +294,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
             DROPBITS(here.bits);
             goto dolen;
         } else if (op & 32) {                     /* end-of-block */
-            Tracevv((stderr, "inflate:         end of block\n"));
+            TRACE_END_OF_BLOCK();
             state->mode = TYPE;
             break;
         } else {

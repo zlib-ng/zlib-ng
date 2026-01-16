@@ -141,6 +141,21 @@ typedef unsigned bits_t;
         strm->msg = (char *)errmsg; \
     } while (0)
 
+/* Trace macros for debugging */
+#define TRACE_LITERAL(val) \
+    Tracevv((stderr, val >= 0x20 && val < 0x7f ? \
+            "inflate:         literal '%c'\n" : \
+            "inflate:         literal 0x%02x\n", val))
+
+#define TRACE_LENGTH(len) \
+    Tracevv((stderr, "inflate:         length %u\n", len))
+
+#define TRACE_DISTANCE(dist) \
+    Tracevv((stderr, "inflate:         distance %u\n", dist))
+
+#define TRACE_END_OF_BLOCK() \
+    Tracevv((stderr, "inflate:         end of block\n"))
+
 #define INFLATE_FAST_MIN_HAVE 15
 #define INFLATE_FAST_MIN_LEFT 260
 
