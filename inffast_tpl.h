@@ -150,6 +150,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     do {
         REFILL();
         here = lcode[hold & lmask];
+      dolenlit:
         Z_TOUCH(here);
         DROPBITS(here.bits);
         if (here.op == 0) {
@@ -281,6 +282,13 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                         out = CHUNKCOPY(out, out - dist, len);
                     else
                         out = CHUNKMEMSET(out, out - dist, len);
+                }
+                /* After match copy, jump directly to next decode if safe.
+                   This avoids the loop condition check and REFILL at the top. */
+                if (LIKELY(in < last && out < end)) {
+                    REFILL();
+                    here = lcode[hold & lmask];
+                    goto dolenlit;
                 }
             } else if ((op & 64) == 0) {          /* 2nd level distance code */
                 here = dcode[here.val + BITS(op)];
