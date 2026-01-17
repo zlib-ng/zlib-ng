@@ -85,25 +85,26 @@ static void gz_fatal(gzFile file) {
  * success, Z_ERRNO otherwise.
  */
 static int gz_compress_mmap(FILE *in, gzFile out) {
-    int len;
     int ifd = fileno(in);
-    char *buf;      /* mmap'ed buffer for the entire input file */
-    off_t buf_len;  /* length of the input file */
+    void *buf;      /* mmap'ed buffer for the entire input file */
+    size_t buf_len; /* length of the input file */
+    size_t len;
     struct stat sb;
 
     /* Determine the size of the file, needed for mmap: */
     if (fstat(ifd, &sb) < 0) return Z_ERRNO;
-    buf_len = sb.st_size;
-    if (buf_len <= 0) return Z_ERRNO;
+    /* Check size_t overflow */
+    if (sb.st_size <= 0 || sb.st_size > PTRDIFF_MAX) return Z_ERRNO;
+    buf_len = (size_t)sb.st_size;
 
     /* Now do the actual mmap: */
-    buf = mmap((void *)0, buf_len, PROT_READ, MAP_SHARED, ifd, (off_t)0);
-    if (buf == (char *)(-1)) return Z_ERRNO;
+    buf = mmap(NULL, buf_len, PROT_READ, MAP_SHARED, ifd, (off_t)0);
+    if (buf == MAP_FAILED) return Z_ERRNO;
 
     /* Compress the whole file at once: */
-    len = PREFIX(gzwrite)(out, buf, (unsigned)buf_len);
+    len = PREFIX(gzfwrite)(buf, 1, buf_len, out);
 
-    if (len != (int)buf_len) gz_fatal(out);
+    if (len != buf_len) gz_fatal(out);
 
     munmap(buf, buf_len);
     fclose(in);
