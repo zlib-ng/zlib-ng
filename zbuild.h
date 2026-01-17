@@ -18,6 +18,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "zarch.h"
+
 /* Determine compiler version of C Standard */
 #ifdef __STDC_VERSION__
 #  if __STDC_VERSION__ >= 199901L
