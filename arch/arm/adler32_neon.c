@@ -9,8 +9,8 @@
 #ifdef ARM_NEON
 
 #include "zbuild.h"
-#include "adler32_p.h"
 #include "neon_intrins.h"
+#include "adler32_p.h"
 
 static const uint16_t ALIGNED_(64) taps[64] = {
     64, 63, 62, 61, 60, 59, 58, 57,

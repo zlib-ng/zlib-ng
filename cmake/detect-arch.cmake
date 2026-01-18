@@ -11,17 +11,17 @@ elseif(EMSCRIPTEN)
 elseif(CMAKE_CROSSCOMPILING)
     set(ARCH ${CMAKE_C_COMPILER_TARGET})
 else()
-    # Let preprocessor parse archdetect.c and raise an error containing the arch identifier
+    # Compile and run detect-arch.c which prints architecture name to stderr
     try_run(
         run_result_unused
         compile_result_unused
         ${CMAKE_CURRENT_BINARY_DIR}
         ${CMAKE_CURRENT_LIST_DIR}/detect-arch.c
-        COMPILE_OUTPUT_VARIABLE RAWOUTPUT
         CMAKE_FLAGS CMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
+        RUN_OUTPUT_VARIABLE RAWOUTPUT
     )
 
-    # Find basearch tag, and extract the arch word into BASEARCH variable
+    # Find archfound tag, and extract the arch word into ARCH variable
     string(REGEX REPLACE ".*archfound ([a-zA-Z0-9_]+).*" "\\1" ARCH "${RAWOUTPUT}")
     if(NOT ARCH)
         set(ARCH unknown)
