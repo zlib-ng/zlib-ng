@@ -12,6 +12,8 @@
 #include "zbuild.h"
 #include "deflate.h"
 
+#ifdef LOONGARCH_LSX
+
 #include <lsxintrin.h>
 #include <assert.h>
 
@@ -62,3 +64,5 @@ Z_INTERNAL void slide_hash_lsx(deflate_state *s) {
 
     slide_hash_chain(s->head, s->prev, HASH_SIZE, wsize, xmm_wsize);
 }
+
+#endif

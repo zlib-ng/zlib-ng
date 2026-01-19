@@ -11,6 +11,8 @@
 #include "zbuild.h"
 #include "deflate.h"
 
+#ifdef X86_SSE2
+
 #include <immintrin.h>
 #include <assert.h>
 
@@ -61,3 +63,5 @@ Z_INTERNAL void slide_hash_sse2(deflate_state *s) {
 
     slide_hash_chain(s->head, s->prev, HASH_SIZE, wsize, xmm_wsize);
 }
+
+#endif

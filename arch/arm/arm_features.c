@@ -1,6 +1,8 @@
 #include "zbuild.h"
 #include "arm_features.h"
 
+#ifdef ARM_FEATURES
+
 #if defined(HAVE_SYS_AUXV_H)
 #  include <sys/auxv.h>
 #  ifdef ARM_ASM_HWCAP
@@ -328,3 +330,5 @@ void Z_INTERNAL arm_check_features(struct arm_cpu_features *features) {
     features->has_eor3 = arm_has_eor3();
     features->has_fast_pmull = features->has_pmull && arm_cpu_has_fast_pmull();
 }
+
+#endif

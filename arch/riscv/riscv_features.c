@@ -1,3 +1,5 @@
+#ifdef RISCV_FEATURES
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,3 +46,5 @@ void Z_INTERNAL riscv_check_features(struct riscv_cpu_features *features) {
     }
 #endif
 }
+
+#endif

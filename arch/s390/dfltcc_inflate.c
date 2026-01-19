@@ -13,6 +13,8 @@
         $ make
 */
 
+#ifdef S390_DFLTCC_INFLATE
+
 #include "zbuild.h"
 #include "zutil.h"
 #include "inftrees.h"
@@ -189,3 +191,5 @@ int Z_INTERNAL PREFIX(dfltcc_inflate_get_dictionary)(PREFIX3(streamp) strm,
         *dict_length = param->hl;
     return Z_OK;
 }
+
+#endif

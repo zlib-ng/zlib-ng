@@ -3,6 +3,9 @@
  * Contributed by Alex Chiang <alex.chiang@sifive.com>
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
+
+#ifdef RISCV_RVV
+
 #include <riscv_vector.h>
 #include "zbuild.h"
 
@@ -118,3 +121,5 @@ static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len
 #define INFLATE_FAST     inflate_fast_rvv
 
 #include "inffast_tpl.h"
+
+#endif

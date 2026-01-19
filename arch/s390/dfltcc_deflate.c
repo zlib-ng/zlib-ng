@@ -13,6 +13,8 @@
         $ make
 */
 
+#ifdef S390_DFLTCC_DEFLATE
+
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
@@ -384,3 +386,5 @@ int Z_INTERNAL PREFIX(dfltcc_deflate_get_dictionary)(PREFIX3(streamp) strm, unsi
         *dict_length = param->hl;
     return Z_OK;
 }
+
+#endif

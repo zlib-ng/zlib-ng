@@ -15,6 +15,8 @@
 #include "zbuild.h"
 #include "arch_functions.h"
 
+#ifdef S390_CRC32_VX
+
 #include <vecintrin.h>
 
 typedef unsigned char uv16qi __attribute__((vector_size(16)));
@@ -226,3 +228,5 @@ Z_INTERNAL uint32_t crc32_copy_s390_vx(uint32_t crc, uint8_t *dst, const uint8_t
     memcpy(dst, src, len);
     return crc;
 }
+
+#endif

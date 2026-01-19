@@ -13,6 +13,8 @@
 #include "zbuild.h"
 #include "deflate.h"
 
+#ifdef LOONGARCH_LASX
+
 #include <lasxintrin.h>
 
 static inline void slide_hash_chain(Pos *table, uint32_t entries, const __m256i wsize) {
@@ -39,3 +41,5 @@ Z_INTERNAL void slide_hash_lasx(deflate_state *s) {
     slide_hash_chain(s->head, HASH_SIZE, ymm_wsize);
     slide_hash_chain(s->prev, wsize, ymm_wsize);
 }
+
+#endif

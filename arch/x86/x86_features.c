@@ -10,6 +10,7 @@
 #include "zbuild.h"
 #include "x86_features.h"
 
+#ifdef X86_FEATURES
 
 #if defined(HAVE_CPUID_MS)
 #   include <intrin.h>
@@ -125,3 +126,5 @@ void Z_INTERNAL x86_check_features(struct x86_cpu_features *features) {
         }
     }
 }
+
+#endif

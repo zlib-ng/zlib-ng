@@ -25,6 +25,8 @@
  * This code uses gcc vector builtins instead using assembly directly.
  */
 
+#ifdef POWER8_VSX_CRC32
+
 #include <altivec.h>
 #include "zendian.h"
 #include "zbuild.h"
@@ -588,3 +590,5 @@ static unsigned int ALIGNED_(32) __crc32_vpmsum(unsigned int crc, const void* p,
     return v0[1];
 #endif
 }
+
+#endif
