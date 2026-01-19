@@ -259,14 +259,6 @@ Z_FORCEINLINE static void NEON_accum32(uint32_t *s, const uint8_t *buf, size_t l
     s[1] = vget_lane_u32(as, 1);
 }
 
-static void NEON_handle_tail(uint32_t *pair, const uint8_t *buf, size_t len) {
-    unsigned int i;
-    for (i = 0; i < len; ++i) {
-        pair[0] += buf[i];
-        pair[1] += pair[0];
-    }
-}
-
 Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     /* split Adler-32 into component sums */
     uint32_t sum2 = (adler >> 16) & 0xffff;
@@ -274,11 +266,11 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
 
     /* in case user likes doing a byte at a time, keep it fast */
     if (UNLIKELY(len == 1))
-        return adler32_copy_len_1(adler, dst, src, sum2, COPY);
+        return adler32_copy_tail(adler, dst, src, 1, sum2, 1, 1, COPY);
 
     /* in case short lengths are provided, keep it somewhat fast */
     if (UNLIKELY(len < 16))
-        return adler32_copy_len_16(adler, dst, src, len, sum2, COPY);
+        return adler32_copy_tail(adler, dst, src, len, sum2, 1, 15, COPY);
 
     uint32_t pair[2];
     int n = NMAX;
@@ -308,21 +300,10 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
     unsigned int align_adj = (align_offset) ? 32 - align_offset : 0;
 
     if (align_offset && len >= (16 + align_adj)) {
-        NEON_handle_tail(pair, src, align_adj);
-
-        if (COPY) {
-            const uint8_t* __restrict src_noalias = src;
-            uint8_t* __restrict dst_noalias = dst;
-            unsigned cpy_len = align_adj;
-
-            while (cpy_len--) {
-                *dst_noalias++ = *src_noalias++;
-            }
-        }
+        adler32_copy_align(&pair[0], dst, src, align_adj, &pair[1], 31, COPY);
 
         n -= align_adj;
         done += align_adj;
-
     } else {
         /* If here, we failed the len criteria test, it wouldn't be
          * worthwhile to do scalar aligning sums */
@@ -348,22 +329,8 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
         done += actual_nsums;
     }
 
-    /* Handle the tail elements. */
-    if (done < len) {
-        NEON_handle_tail(pair, (src + done), len - done);
-        if (COPY) {
-            const uint8_t* __restrict src_noalias = src + done;
-            uint8_t* __restrict dst_noalias = dst + done;
-            while (done++ != len) {
-                *dst_noalias++ = *src_noalias++;
-            }
-        }
-        pair[0] %= BASE;
-        pair[1] %= BASE;
-    }
-
-    /* D = B * 65536 + A, see: https://en.wikipedia.org/wiki/Adler-32. */
-    return (pair[1] << 16) | pair[0];
+    /* Process tail (len < 16).  */
+    return adler32_copy_tail(pair[0], dst + done, src + done, len - done, pair[1], done < len, 15, COPY);
 }
 
 Z_INTERNAL uint32_t adler32_neon(uint32_t adler, const uint8_t *src, size_t len) {

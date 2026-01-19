@@ -18,11 +18,11 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t* restric
 
     /* in case user likes doing a byte at a time, keep it fast */
     if (UNLIKELY(len == 1))
-        return adler32_copy_len_1(adler, dst, src, sum2, COPY);
+        return adler32_copy_tail(adler, dst, src, 1, sum2, 1, 1, COPY);
 
     /* in case short lengths are provided, keep it somewhat fast */
     if (UNLIKELY(len < 16))
-        return adler32_copy_len_16(adler, dst, src, len, sum2, COPY);
+        return adler32_copy_tail(adler, dst, src, len, sum2, 1, 15, COPY);
 
     size_t left = len;
     size_t vl = __riscv_vsetvlmax_e8m1();
@@ -104,16 +104,8 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t* restric
     sum2 %= BASE;
     adler %= BASE;
 
-    while (left--) {
-        if (COPY) *dst++ = *src;
-        adler += *src++;
-        sum2 += adler;
-    }
-
-    sum2 %= BASE;
-    adler %= BASE;
-
-    return adler | (sum2 << 16);
+    /* Process tail (left < 256). */
+    return adler32_copy_tail(adler, dst, src, left, sum2, left != 0, 255, COPY);
 }
 
 Z_INTERNAL uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len) {

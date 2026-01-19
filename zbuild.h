@@ -178,6 +178,14 @@
 #  define Z_REGISTER
 #endif
 
+#if defined(_MSC_VER)
+#  define Z_RESTRICT __restrict
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
+#  define Z_RESTRICT restrict
+#else
+#  define Z_RESTRICT __restrict__
+#endif
+
 /* Reverse the bytes in a value. Use compiler intrinsics when
    possible to take advantage of hardware implementations. */
 #if defined(_MSC_VER) && (_MSC_VER >= 1300)

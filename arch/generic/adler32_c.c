@@ -17,11 +17,11 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
 
     /* in case user likes doing a byte at a time, keep it fast */
     if (UNLIKELY(len == 1))
-        return adler32_copy_len_1(adler, NULL, buf, sum2, 0);
+        return adler32_copy_tail(adler, NULL, buf, 1, sum2, 1, 1, 0);
 
     /* in case short lengths are provided, keep it somewhat fast */
     if (UNLIKELY(len < 16))
-        return adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
+        return adler32_copy_tail(adler, NULL, buf, len, sum2, 1, 15, 0);
 
     /* do length NMAX blocks -- requires just one modulo operation */
     while (len >= NMAX) {
@@ -45,7 +45,7 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
     }
 
     /* do remaining bytes (less than NMAX, still just one modulo) */
-    return adler32_copy_len_64(adler, NULL, buf, len, sum2, 0);
+    return adler32_copy_tail(adler, NULL, buf, len, sum2, len != 0, NMAX - 1, 0);
 }
 
 Z_INTERNAL uint32_t adler32_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {

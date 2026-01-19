@@ -21,11 +21,11 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len
 
     /* in case user likes doing a byte at a time, keep it fast */
     if (UNLIKELY(len == 1))
-        return adler32_copy_len_1(adler, NULL, buf, sum2, 0);
+        return adler32_copy_tail(adler, NULL, buf, 1, sum2, 1, 1, 0);
 
     /* in case short lengths are provided, keep it somewhat fast */
     if (UNLIKELY(len < 16))
-        return adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
+        return adler32_copy_tail(adler, NULL, buf, len, sum2, 1, 15, 0);
 
     const __m128i dot2v = _mm_setr_epi8(32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17);
     const __m128i dot2v_0 = _mm_setr_epi8(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
@@ -60,13 +60,11 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len
             goto unaligned_jmp;
         }
 
-        for (size_t i = 0; i < align_offset; ++i) {
-            adler += *(buf++);
-            sum2 += adler;
-        }
+        adler32_copy_align(&adler, NULL, buf, align_offset, &sum2, 15, 0);
 
         /* lop off the max number of sums based on the scalar sums done
          * above */
+        buf += align_offset;
         len -= align_offset;
         max_iters -= align_offset;
     }
@@ -143,7 +141,7 @@ unaligned_jmp:
     }
 
     /* Process tail (len < 16).  */
-    return adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
+    return adler32_copy_tail(adler, NULL, buf, len, sum2, len != 0, 15, 0);
 }
 
 /* SSSE3 unaligned stores have a huge penalty, so we use memcpy. */

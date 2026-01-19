@@ -18,54 +18,81 @@
 #define ADLER_DO8(sum1, sum2, buf, i)  {ADLER_DO4(sum1, sum2, buf, i); ADLER_DO4(sum1, sum2, buf, i+4);}
 #define ADLER_DO16(sum1, sum2, buf)    {ADLER_DO8(sum1, sum2, buf, 0); ADLER_DO8(sum1, sum2, buf, 8);}
 
-static inline uint32_t adler32_copy_len_1(uint32_t adler, uint8_t *dst, const uint8_t *buf, uint32_t sum2, const int COPY) {
-    uint8_t c = *buf;
-    if (COPY) {
-        *dst = c;
-    }
-    adler += c;
-    adler %= BASE;
-    sum2 += adler;
-    sum2 %= BASE;
-    return adler | (sum2 << 16);
-}
-
-static inline uint32_t adler32_copy_len_16(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len, uint32_t sum2, const int COPY) {
-    while (len--) {
-        uint8_t c = *buf++;
+Z_FORCEINLINE static void adler32_copy_align(uint32_t *Z_RESTRICT adler, uint8_t *dst, const uint8_t *buf, size_t len,
+                                             uint32_t *Z_RESTRICT sum2, const int MAX_LEN, const int COPY) {
+    Z_UNUSED(MAX_LEN);
+    if (len & 1) {
         if (COPY) {
-            *dst++ = c;
+            *dst = *buf;
+            dst += 1;
         }
-        adler += c;
-        sum2 += adler;
+        ADLER_DO1(*adler, *sum2, buf, 0);
+        buf += 1;
     }
-    adler %= BASE;
-    sum2 %= BASE;            /* only added so many BASE's */
-    /* return recombined sums */
-    return adler | (sum2 << 16);
+    if (len & 2) {
+        if (COPY) {
+            memcpy(dst, buf, 2);
+            dst += 2;
+        }
+        ADLER_DO2(*adler, *sum2, buf, 0);
+        buf += 2;
+    }
+    while (len >= 4) {
+        if (COPY) {
+            memcpy(dst, buf, 4);
+            dst += 4;
+        }
+        len -= 4;
+        ADLER_DO4(*adler, *sum2, buf, 0);
+        buf += 4;
+    }
 }
 
-static inline uint32_t adler32_copy_len_64(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len, uint32_t sum2, const int COPY) {
-    const uint8_t *src = buf;
-    const size_t src_len = len;
-#ifdef UNROLL_MORE
-    while (len >= 16) {
-        len -= 16;
-        ADLER_DO16(adler, sum2, buf);
-        buf += 16;
-#else
-    while (len >= 8) {
-        len -= 8;
-        ADLER_DO8(adler, sum2, buf, 0);
-        buf += 8;
-#endif
+Z_FORCEINLINE static uint32_t adler32_copy_tail(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len,
+                                                uint32_t sum2, const int REBASE, const int MAX_LEN, const int COPY) {
+    if (len) {
+        /* DO16 loop for large remainders only (scalar, risc-v). */
+        if (MAX_LEN >= 32) {
+            while (len >= 16) {
+                if (COPY) {
+                    memcpy(dst, buf, 16);
+                    dst += 16;
+                }
+                len -= 16;
+                ADLER_DO16(adler, sum2, buf);
+                buf += 16;
+            }
+        }
+        /* DO4 loop avoids GCC x86 register pressure from hoisted DO8/DO16 loads. */
+        while (len >= 4) {
+            if (COPY) {
+                memcpy(dst, buf, 4);
+                dst += 4;
+            }
+            len -= 4;
+            ADLER_DO4(adler, sum2, buf, 0);
+            buf += 4;
+        }
+        if (len & 2) {
+            if (COPY) {
+                memcpy(dst, buf, 2);
+                dst += 2;
+            }
+            ADLER_DO2(adler, sum2, buf, 0);
+            buf += 2;
+        }
+        if (len & 1) {
+            if (COPY)
+                *dst = *buf;
+            ADLER_DO1(adler, sum2, buf, 0);
+        }
     }
-    /* Process tail (len < 16).  */
-    adler = adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
-    if (COPY) {
-        memcpy(dst, src, src_len);
+    if (REBASE) {
+        adler %= BASE;
+        sum2 %= BASE;
     }
-    return adler;
+    /* D = B * 65536 + A, see: https://en.wikipedia.org/wiki/Adler-32. */
+    return adler | (sum2 << 16);
 }
 
 #endif /* ADLER32_P_H */

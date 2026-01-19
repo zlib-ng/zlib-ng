@@ -59,11 +59,11 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
 
     /* in case user likes doing a byte at a time, keep it fast */
     if (UNLIKELY(len == 1))
-        return adler32_copy_len_1(s1, NULL, buf, s2, 0);
+        return adler32_copy_tail(s1, NULL, buf, 1, s2, 1, 1, 0);
 
     /* This is faster than VSX code for len < 64.  */
     if (len < 64)
-        return adler32_copy_len_64(s1, NULL, buf, len, s2, 0);
+        return adler32_copy_tail(s1, NULL, buf, len, s2, 1, 63, 0);
 
     /* Use POWER VSX instructions for len >= 64. */
     const vector unsigned int v_zeros = { 0 };
@@ -144,7 +144,7 @@ Z_FORCEINLINE static uint32_t adler32_impl(uint32_t adler, const uint8_t *buf, s
     s2 = vs2[0] % BASE;
 
     /* Process tail (len < 16).  */
-    return adler32_copy_len_16(s1, NULL, buf, len, s2, 0);
+    return adler32_copy_tail(s1, NULL, buf, len, s2, len != 0, 15, 0);
 }
 
 Z_INTERNAL uint32_t adler32_power8(uint32_t adler, const uint8_t *buf, size_t len) {

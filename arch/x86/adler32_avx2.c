@@ -25,7 +25,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
 
 rem_peel:
     if (len < 16) {
-        return adler32_copy_len_16(adler0, dst, src, len, adler1, COPY);
+        return adler32_copy_tail(adler0, dst, src, len, adler1, 1, 15, COPY);
     } else if (len < 32) {
         if (COPY) {
             return adler32_copy_sse42(adler, dst, src, len);

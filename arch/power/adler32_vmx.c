@@ -15,14 +15,6 @@
 
 #define vmx_zero()  (vec_splat_u32(0))
 
-static inline void vmx_handle_head_or_tail(uint32_t *pair, const uint8_t *buf, size_t len) {
-    unsigned int i;
-    for (i = 0; i < len; ++i) {
-        pair[0] += buf[i];
-        pair[1] += pair[0];
-    }
-}
-
 static void vmx_accum32(uint32_t *s, const uint8_t *buf, size_t len) {
     /* Different taps for the separable components of sums */
     const vector unsigned char t0 = {64, 63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49};
@@ -127,11 +119,11 @@ Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) 
 
     /* in case user likes doing a byte at a time, keep it fast */
     if (UNLIKELY(len == 1))
-        return adler32_copy_len_1(adler, NULL, buf, sum2, 0);
+        return adler32_copy_tail(adler, NULL, buf, 1, sum2, 1, 1, 0);
 
     /* in case short lengths are provided, keep it somewhat fast */
     if (UNLIKELY(len < 16))
-        return adler32_copy_len_16(adler, NULL, buf, len, sum2, 0);
+        return adler32_copy_tail(adler, NULL, buf, len, sum2, 1, 15, 0);
 
     uint32_t pair[4] ALIGNED_(16);
     pair[0] = adler;
@@ -144,7 +136,7 @@ Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) 
     unsigned int done = 0;
     size_t align_len = (size_t)MIN(ALIGN_DIFF(buf, 16), len);
     if (align_len) {
-        vmx_handle_head_or_tail(pair, buf, align_len);
+        adler32_copy_align(&pair[0], NULL, buf, align_len, &pair[1], 15, 0);
         done += align_len;
         /* Rather than rebasing, we can reduce the max sums for the
          * first round only */
@@ -163,15 +155,8 @@ Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) 
         done += (n / 16) * 16;
     }
 
-    /* Handle the tail elements. */
-    if (done < len) {
-        vmx_handle_head_or_tail(pair, (buf + done), len - done);
-        pair[0] %= BASE;
-        pair[1] %= BASE;
-    }
-
-    /* D = B * 65536 + A, see: https://en.wikipedia.org/wiki/Adler-32. */
-    return (pair[1] << 16) | pair[0];
+    /* Process tail (len < 16).  */
+    return adler32_copy_tail(pair[0], NULL, buf + done, len - done, pair[1], done < len, 15, 0);
 }
 
 /* VMX stores can have higher latency than optimized memcpy */
