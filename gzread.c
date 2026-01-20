@@ -537,7 +537,7 @@ char * Z_EXPORT PREFIX(gzgets)(gzFile file, char *buf, z_int32_t len) {
             }
 
             /* look for end-of-line in current output buffer */
-            n = state->x.have > left ? left : state->x.have;
+            n = MIN(state->x.have, left);
             eol = (unsigned char *)memchr(state->x.next, '\n', n);
             if (eol != NULL)
                 n = (unsigned)(eol - state->x.next) + 1;

@@ -331,7 +331,7 @@ static void inf(char *hex, char *what, unsigned step, int win, unsigned len, int
         ret = PREFIX(inflateEnd)(&copy);        assert(ret == Z_OK);
         err = 9;                        /* don't care next time around */
         have += strm.avail_in;
-        strm.avail_in = step > have ? have : step;
+        strm.avail_in = MIN(step, have);
         have -= strm.avail_in;
     } while (strm.avail_in);
     free(in);

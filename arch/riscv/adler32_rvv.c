@@ -27,7 +27,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t* restric
 
     size_t left = len;
     size_t vl = __riscv_vsetvlmax_e8m1();
-    vl = vl > 256 ? 256 : vl;
+    vl = MIN(vl, 256);
     vuint32m4_t v_buf32_accu = __riscv_vmv_v_x_u32m4(0, vl);
     vuint32m4_t v_adler32_prev_accu = __riscv_vmv_v_x_u32m4(0, vl);
     vuint16m2_t v_buf16_accu;
