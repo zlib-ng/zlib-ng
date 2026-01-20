@@ -1,4 +1,4 @@
-/* chunkset.c -- inline functions to copy small data chunks.
+/* chunkset_c.c -- inline functions to copy small data chunks.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -6,8 +6,6 @@
 #include "zmemory.h"
 
 typedef uint64_t chunk_t;
-
-#define CHUNK_SIZE 8
 
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
