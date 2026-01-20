@@ -111,7 +111,7 @@ Default is no prefix (empty prefix).")
 
 # Add multi-choice option
 set(WITH_SANITIZER AUTO CACHE STRING "Enable sanitizer support")
-set_property(CACHE WITH_SANITIZER PROPERTY STRINGS "Memory" "Address" "Undefined" "Thread")
+set_property(CACHE WITH_SANITIZER PROPERTY STRINGS "None" "Memory" "Address" "Undefined" "Thread")
 
 if(BASEARCH_ARM_FOUND)
     cmake_dependent_option(WITH_ARMV6 "Build with ARMv6 SIMD" ON ARCH_32BIT OFF)
