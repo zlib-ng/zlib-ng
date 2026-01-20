@@ -311,9 +311,9 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
 
     /* update state and return */
     strm->next_in = in;
-    strm->next_out = out;
     strm->avail_in = (unsigned)(in < last ? (INFLATE_FAST_MIN_HAVE - 1) + (last - in)
                                           : (INFLATE_FAST_MIN_HAVE - 1) - (in - last));
+    strm->next_out = out;
     strm->avail_out = (unsigned)(out < end ? (INFLATE_FAST_MIN_LEFT - 1) + (end - out)
                                            : (INFLATE_FAST_MIN_LEFT - 1) - (out - end));
 

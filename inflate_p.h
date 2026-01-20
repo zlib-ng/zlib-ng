@@ -80,10 +80,10 @@ typedef unsigned bits_t;
 /* Load registers with state in inflate() for speed */
 #define LOAD() \
     do { \
-        put = strm->next_out; \
-        left = strm->avail_out; \
         next = strm->next_in; \
         have = strm->avail_in; \
+        put = strm->next_out; \
+        left = strm->avail_out; \
         hold = state->hold; \
         bits = (bits_t)state->bits; \
     } while (0)
@@ -91,10 +91,10 @@ typedef unsigned bits_t;
 /* Restore state from registers in inflate() */
 #define RESTORE() \
     do { \
-        strm->next_out = put; \
-        strm->avail_out = left; \
         strm->next_in = (z_const unsigned char *)next; \
         strm->avail_in = have; \
+        strm->next_out = put; \
+        strm->avail_out = left; \
         state->hold = hold; \
         state->bits = bits; \
     } while (0)

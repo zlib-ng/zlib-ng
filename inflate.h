@@ -102,9 +102,9 @@ struct ALIGNED_(64) inflate_state {
     int last;                   /* true if processing last block */
     int wrap;                   /* bit 0 true for zlib, bit 1 true for gzip,
                                    bit 2 true to validate check value */
-    int havedict;               /* true if dictionary provided */
     int flags;                  /* gzip header method and flags, 0 if zlib, or
                                    -1 if raw or no header yet */
+    int havedict;               /* true if dictionary provided */
     unsigned was;               /* initial length of match, for inflateMark */
     unsigned long check;        /* protected copy of check value */
     unsigned long total;        /* protected copy of output count */
@@ -114,9 +114,9 @@ struct ALIGNED_(64) inflate_state {
         /* sliding window */
     unsigned wbits;             /* log base 2 of requested window size */
     uint32_t wsize;             /* window size or zero if not using window */
-    uint32_t wbufsize;          /* real size of the allocated window buffer, including padding */
     uint32_t whave;             /* valid bytes in the window */
     uint32_t wnext;             /* window write index */
+    uint32_t wbufsize;          /* real size of the allocated window buffer, including padding */
     unsigned char *window;      /* allocated sliding window, if needed */
 
         /* bit accumulator */

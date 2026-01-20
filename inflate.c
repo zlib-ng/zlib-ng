@@ -1326,8 +1326,8 @@ int32_t Z_EXPORT PREFIX(inflateSync)(PREFIX3(stream) *strm) {
 
     /* search available input */
     len = syncsearch(&(state->have), strm->next_in, strm->avail_in);
-    strm->avail_in -= len;
     strm->next_in += len;
+    strm->avail_in -= len;
     strm->total_in += len;
 
     /* return no joy or set up to restart inflate() on a new block */
