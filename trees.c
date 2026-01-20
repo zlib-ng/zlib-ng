@@ -724,6 +724,10 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
     unsigned char *sym_buf = s->sym_buf;
 #endif
 
+    /* Keep bi_buf and bi_valid in registers across the entire loop */
+    uint64_t bi_buf = s->bi_buf;
+    uint32_t bi_valid = s->bi_valid;
+
     if (sym_next != 0) {
         do {
 #ifdef LIT_MEM
@@ -741,9 +745,9 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
             sx += 3;
 #endif
             if (dist == 0) {
-                zng_emit_lit(s, ltree, lc);
+                zng_emit_lit(s, ltree, lc, &bi_buf, &bi_valid);
             } else {
-                zng_emit_dist(s, ltree, dtree, lc, dist);
+                zng_emit_dist(s, ltree, dtree, lc, dist, &bi_buf, &bi_valid);
             } /* literal or match pair ? */
 
             /* Check for no overlay of pending_buf on needed symbols */
@@ -755,7 +759,11 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
         } while (sx < sym_next);
     }
 
-    zng_emit_end_block(s, ltree, 0);
+    zng_emit_end_block(s, ltree, 0, &bi_buf, &bi_valid);
+
+    /* Write back to state */
+    s->bi_buf = bi_buf;
+    s->bi_valid = bi_valid;
 }
 
 /* ===========================================================================
