@@ -207,21 +207,16 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                             SET_BAD("invalid distance too far back");
                             break;
                         }
-                        if (len <= op - whave) {
-                            do {
-                                *out++ = 0;
-                            } while (--len);
+                        unsigned gap = op - whave;
+                        unsigned zeros = MIN(len, gap);
+                        memset(out, 0, zeros);  /* fill missing bytes with zeros */
+                        out += zeros;
+                        len -= zeros;
+                        if (len == 0)
                             continue;
-                        }
-                        len -= op - whave;
-                        do {
-                            *out++ = 0;
-                        } while (--op > whave);
-                        if (op == 0) {
-                            from = out - dist;
-                            do {
-                                *out++ = *from++;
-                            } while (--len);
+                        op = whave;
+                        if (op == 0) {          /* copy from already-decoded output */
+                            out = chunkcopy_safe(out, out - dist, len, safe);
                             continue;
                         }
 #else
