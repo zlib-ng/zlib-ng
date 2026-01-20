@@ -117,3 +117,16 @@ Z_FORCEINLINE static void INSERT_STRING(deflate_state *const s, uint32_t str, ui
         }
     }
 }
+
+// Cleanup
+#undef HASH_SLIDE
+#undef HASH_CALC
+#undef HASH_CALC_READ
+#undef HASH_CALC_MASK
+#undef HASH_CALC_OFFSET
+#undef HASH_CALC_VAR
+#undef HASH_CALC_VAR_INIT
+#undef UPDATE_HASH
+#undef INSERT_STRING
+#undef QUICK_INSERT_STRING
+#undef QUICK_INSERT_VALUE

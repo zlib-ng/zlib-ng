@@ -24,19 +24,6 @@
 
 #include "insert_string_tpl.h"
 
-// Cleanup
-#undef HASH_SLIDE
-#undef HASH_CALC
-#undef HASH_CALC_READ
-#undef HASH_CALC_MASK
-#undef HASH_CALC_OFFSET
-#undef HASH_CALC_VAR
-#undef HASH_CALC_VAR_INIT
-#undef UPDATE_HASH
-#undef INSERT_STRING
-#undef QUICK_INSERT_STRING
-#undef QUICK_INSERT_VALUE
-
 // Rolling insert_string, level 9
 #define HASH_SLIDE           5
 
