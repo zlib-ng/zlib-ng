@@ -62,13 +62,16 @@ extern const unsigned char Z_INTERNAL zng_dist_code[];
 
 static inline int zng_tr_tally_lit(deflate_state *s, unsigned char c) {
     /* c is the unmatched char */
+    unsigned int sym_next = s->sym_next;
 #ifdef LIT_MEM
-    s->d_buf[s->sym_next] = 0;
-    s->l_buf[s->sym_next++] = c;
+    s->d_buf[sym_next] = 0;
+    s->l_buf[sym_next] = c;
+    s->sym_next = sym_next + 1;
 #else
-    s->sym_buf[s->sym_next++] = 0;
-    s->sym_buf[s->sym_next++] = 0;
-    s->sym_buf[s->sym_next++] = c;
+    s->sym_buf[sym_next] = 0;
+    s->sym_buf[sym_next+1] = 0;
+    s->sym_buf[sym_next+2] = c;
+    s->sym_next = sym_next + 3;
 #endif
     s->dyn_ltree[c].Freq++;
     Tracevv((stderr, "%c", c));
@@ -79,15 +82,18 @@ static inline int zng_tr_tally_lit(deflate_state *s, unsigned char c) {
 static inline int zng_tr_tally_dist(deflate_state* s, uint32_t dist, uint32_t len) {
     /* dist: distance of matched string */
     /* len: match length-STD_MIN_MATCH */
+    unsigned int sym_next = s->sym_next;
 #ifdef LIT_MEM
     Assert(dist <= UINT16_MAX, "dist should fit in uint16_t");
     Assert(len <= UINT8_MAX, "len should fit in uint8_t");
-    s->d_buf[s->sym_next] = (uint16_t)dist;
-    s->l_buf[s->sym_next++] = (uint8_t)len;
+    s->d_buf[sym_next] = (uint16_t)dist;
+    s->l_buf[sym_next] = (uint8_t)len;
+    s->sym_next = sym_next + 1;
 #else
-    s->sym_buf[s->sym_next++] = (uint8_t)(dist);
-    s->sym_buf[s->sym_next++] = (uint8_t)(dist >> 8);
-    s->sym_buf[s->sym_next++] = (uint8_t)len;
+    s->sym_buf[sym_next] = (uint8_t)(dist);
+    s->sym_buf[sym_next+1] = (uint8_t)(dist >> 8);
+    s->sym_buf[sym_next+2] = (uint8_t)len;
+    s->sym_next = sym_next + 3;
 #endif
     s->matches++;
     dist--;
