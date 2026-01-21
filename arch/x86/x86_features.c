@@ -7,10 +7,10 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#ifdef X86_FEATURES
+
 #include "zbuild.h"
 #include "x86_features.h"
-
-#ifdef X86_FEATURES
 
 #if defined(HAVE_CPUID_MS)
 #   include <intrin.h>

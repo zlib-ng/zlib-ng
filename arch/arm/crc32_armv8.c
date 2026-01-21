@@ -4,10 +4,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#if defined(ARM_CRC32)
-#include "acle_intrins.h"
+#ifdef ARM_CRC32
+
 #include "zbuild.h"
 #include "crc32.h"
+#include "acle_intrins.h"
 
 Z_INTERNAL Z_TARGET_CRC uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, size_t len) {
     uint32_t c = ~crc;

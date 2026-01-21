@@ -4,9 +4,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#if defined(RISCV_CRC32_ZBC)
+#ifdef RISCV_CRC32_ZBC
+
 #include "zbuild.h"
 #include "arch_functions.h"
+
 #include <stdint.h>
 
 #define CLMUL_MIN_LEN 16   // Minimum size of buffer for _crc32_clmul

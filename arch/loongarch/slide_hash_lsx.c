@@ -9,10 +9,11 @@
  *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-#include "zbuild.h"
-#include "deflate.h"
 
 #ifdef LOONGARCH_LSX
+
+#include "zbuild.h"
+#include "deflate.h"
 
 #include <lsxintrin.h>
 #include <assert.h>

@@ -27,9 +27,8 @@
 
 #ifdef POWER8_VSX_CRC32
 
-#include <altivec.h>
-#include "zendian.h"
 #include "zbuild.h"
+#include "zendian.h"
 
 #include "crc32_constants.h"
 #include "crc32_braid_tbl.h"

@@ -3,9 +3,11 @@
  */
 
 #ifdef POWER8_VSX
-#include <altivec.h>
+
 #include "zbuild.h"
 #include "zmemory.h"
+
+#include <altivec.h>
 
 typedef vector unsigned char chunk_t;
 

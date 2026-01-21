@@ -3,10 +3,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#ifdef LOONGARCH_LSX
+
 #include "zbuild.h"
 #include "zmemory.h"
 
-#if defined(LOONGARCH_LSX)
 #include <lsxintrin.h>
 #include "lsxintrin_ext.h"
 #include "arch/generic/chunk_128bit_perm_idx_lut.h"

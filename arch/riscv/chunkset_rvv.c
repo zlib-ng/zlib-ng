@@ -6,8 +6,9 @@
 
 #ifdef RISCV_RVV
 
-#include <riscv_vector.h>
 #include "zbuild.h"
+
+#include <riscv_vector.h>
 
 /*
  * RISC-V glibc would enable RVV optimized memcpy at runtime by IFUNC,

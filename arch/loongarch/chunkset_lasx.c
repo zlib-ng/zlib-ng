@@ -2,10 +2,11 @@
  * Copyright (C) 2025 Vladislav Shchapov <vladislav@shchapov.ru>
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-#include "zbuild.h"
-#include "zmemory.h"
 
 #ifdef LOONGARCH_LASX
+
+#include "zbuild.h"
+#include "zmemory.h"
 
 #include <lasxintrin.h>
 #include "lasxintrin_ext.h"

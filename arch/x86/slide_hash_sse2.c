@@ -8,10 +8,11 @@
  *
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-#include "zbuild.h"
-#include "deflate.h"
 
 #ifdef X86_SSE2
+
+#include "zbuild.h"
+#include "deflate.h"
 
 #include <immintrin.h>
 #include <assert.h>

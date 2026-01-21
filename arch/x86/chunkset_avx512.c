@@ -1,10 +1,11 @@
 /* chunkset_avx512.c -- AVX512 inline functions to copy small data chunks.
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
-#include "zbuild.h"
-#include "zmemory.h"
 
 #ifdef X86_AVX512
+
+#include "zbuild.h"
+#include "zmemory.h"
 
 #include "arch/generic/chunk_256bit_perm_idx_lut.h"
 #include <immintrin.h>

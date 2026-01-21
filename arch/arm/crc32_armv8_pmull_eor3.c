@@ -7,7 +7,8 @@
  * Uses 3-way parallel scalar CRC + 9 PMULL vector lanes, processing 192 bytes/iter.
  */
 
-#if defined(ARM_PMULL_EOR3)
+#ifdef ARM_PMULL_EOR3
+
 #include "zbuild.h"
 #include "zutil.h"
 #include "acle_intrins.h"

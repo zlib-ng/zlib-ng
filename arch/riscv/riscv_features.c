@@ -1,5 +1,8 @@
 #ifdef RISCV_FEATURES
 
+#include "zbuild.h"
+#include "riscv_features.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,9 +11,6 @@
 #if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
 #  include <sys/auxv.h>
 #endif
-
-#include "zbuild.h"
-#include "riscv_features.h"
 
 #define ISA_V_HWCAP (1 << ('v' - 'a'))
 #define ISA_ZBC_HWCAP (1 << 29)

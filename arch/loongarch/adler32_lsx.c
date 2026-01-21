@@ -7,10 +7,10 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#ifdef LOONGARCH_LSX
+
 #include "zbuild.h"
 #include "adler32_p.h"
-
-#ifdef LOONGARCH_LSX
 
 #include <lsxintrin.h>
 #include "lsxintrin_ext.h"

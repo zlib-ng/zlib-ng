@@ -3,9 +3,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#if defined(LOONGARCH_CRC)
+#ifdef LOONGARCH_CRC
+
 #include "zbuild.h"
 #include "crc32.h"
+
 #include <stdint.h>
 #include <larchintrin.h>
 

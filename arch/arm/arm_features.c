@@ -1,7 +1,7 @@
+#ifdef ARM_FEATURES
+
 #include "zbuild.h"
 #include "arm_features.h"
-
-#ifdef ARM_FEATURES
 
 #if defined(HAVE_SYS_AUXV_H)
 #  include <sys/auxv.h>

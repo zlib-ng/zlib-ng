@@ -2,10 +2,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#ifdef X86_SSSE3
+
 #include "zbuild.h"
 #include "zmemory.h"
 
-#if defined(X86_SSSE3)
 #include <immintrin.h>
 #include "arch/generic/chunk_128bit_perm_idx_lut.h"
 

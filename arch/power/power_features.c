@@ -4,6 +4,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#if defined(PPC_FEATURES) || defined(POWER_FEATURES)
+
+#include "zbuild.h"
+#include "power_features.h"
+
 #ifdef HAVE_SYS_AUXV_H
 #  include <sys/auxv.h>
 #endif
@@ -13,8 +18,6 @@
 #ifdef __FreeBSD__
 #  include <machine/cpu.h>
 #endif
-#include "zbuild.h"
-#include "power_features.h"
 
 void Z_INTERNAL power_check_features(struct power_cpu_features *features) {
 #ifdef PPC_FEATURES
@@ -47,3 +50,5 @@ void Z_INTERNAL power_check_features(struct power_cpu_features *features) {
 #endif
 #endif
 }
+
+#endif

@@ -6,11 +6,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#ifdef X86_SSE42
+
 #include "zbuild.h"
 #include "adler32_p.h"
 #include "adler32_ssse3_p.h"
-
-#ifdef X86_SSE42
 
 #include <immintrin.h>
 

@@ -6,10 +6,10 @@
 
 #ifdef RISCV_RVV
 
-#include <riscv_vector.h>
-
 #include "zbuild.h"
 #include "deflate.h"
+
+#include <riscv_vector.h>
 
 static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize) {
     size_t vl;

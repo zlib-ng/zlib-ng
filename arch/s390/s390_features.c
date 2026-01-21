@@ -1,7 +1,7 @@
+#ifdef S390_FEATURES
+
 #include "zbuild.h"
 #include "s390_features.h"
-
-#ifdef S390_FEATURES
 
 #ifdef HAVE_SYS_AUXV_H
 #  include <sys/auxv.h>

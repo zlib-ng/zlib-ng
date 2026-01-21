@@ -6,10 +6,12 @@
  */
 
 #ifdef PPC_VMX
-#include <altivec.h>
+
 #include "zbuild.h"
 #include "zendian.h"
 #include "adler32_p.h"
+
+#include <altivec.h>
 
 #define vmx_zero()  (vec_splat_u32(0))
 

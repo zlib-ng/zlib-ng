@@ -3,9 +3,10 @@
  */
 
 #ifdef ARM_NEON
-#include "neon_intrins.h"
+
 #include "zbuild.h"
 #include "zmemory.h"
+#include "neon_intrins.h"
 #include "arch/generic/chunk_128bit_perm_idx_lut.h"
 
 typedef uint8x16_t chunk_t;

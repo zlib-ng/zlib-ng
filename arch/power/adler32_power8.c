@@ -38,9 +38,10 @@
 
 #ifdef POWER8_VSX
 
-#include <altivec.h>
 #include "zbuild.h"
 #include "adler32_p.h"
+
+#include <altivec.h>
 
 /* Vector across sum unsigned int (saturate).  */
 static inline vector unsigned int vec_sumsu(vector unsigned int __a, vector unsigned int __b) {

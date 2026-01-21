@@ -12,6 +12,8 @@
 #ifndef POWER_INTRINS_H
 #define POWER_INTRINS_H
 
+#include <altivec.h>
+
 #if defined (__clang__)
 /*
  * These stubs fix clang incompatibilities with GCC builtins.

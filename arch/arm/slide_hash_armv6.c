@@ -3,10 +3,11 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#if defined(ARM_SIMD)
-#include "acle_intrins.h"
+#ifdef ARM_SIMD
+
 #include "zbuild.h"
 #include "deflate.h"
+#include "acle_intrins.h"
 
 /* SIMD version of hash_chain rebase */
 static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize) {
