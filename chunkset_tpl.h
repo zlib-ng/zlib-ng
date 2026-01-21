@@ -16,7 +16,7 @@ static inline size_t CHUNKSIZE(void) {
    sizeof chunk_t bytes (or that they don't overlap at all or simply that
    the distance is less than the length of the copy).
 
-   Aside from better memory bus utilisation, this means that short copies
+   Aside from better memory bus utilization, this means that short copies
    (chunk_t bytes or fewer) will fall straight through the loop
    without iteration, which will hopefully make the branch prediction more
    reliable. */
@@ -49,7 +49,6 @@ static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, unsigned len
    This assumption holds because inflate_fast() starts every iteration with at
    least 258 bytes of output space available (258 being the maximum length
    output from a single token; see inflate_fast()'s assumptions below). */
-#ifndef HAVE_CHUNKUNROLL
 static inline uint8_t* CHUNKUNROLL(uint8_t *out, unsigned *dist, unsigned *len) {
     unsigned char const *from = out - *dist;
     chunk_t chunk;
@@ -62,7 +61,6 @@ static inline uint8_t* CHUNKUNROLL(uint8_t *out, unsigned *dist, unsigned *len) 
     }
     return out;
 }
-#endif
 
 #ifndef HAVE_CHUNK_MAG
 /* Loads a magazine to feed into memory of the pattern */
@@ -281,3 +279,19 @@ static inline uint8_t *CHUNKCOPY_SAFE(uint8_t *out, uint8_t *from, uint64_t len,
 
     return CHUNKMEMSET(out, from, (unsigned)len);
 }
+
+// Cleanup
+#undef CHUNKCOPY
+#undef CHUNKMEMSET
+#undef CHUNKMEMSET_SAFE
+#undef CHUNKSIZE
+#undef CHUNKUNROLL
+#undef HAVE_CHUNKCOPY
+#undef HAVE_CHUNKMEMSET_2
+#undef HAVE_CHUNKMEMSET_4
+#undef HAVE_CHUNKMEMSET_8
+#undef HAVE_CHUNKMEMSET_16
+#undef HAVE_CHUNK_MAG
+#undef HAVE_HALFCHUNKCOPY
+#undef HAVE_HALF_CHUNK
+#undef HAVE_MASKED_READWRITE
