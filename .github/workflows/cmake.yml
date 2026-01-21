@@ -5,7 +5,9 @@ env:
   GTEST_COLOR: 1
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  # Don't abort on push to avoid incomplete coveralls uploads
+  cancel-in-progress: ${{ github.event_name != 'push' }}
+
 jobs:
   cmake:
     name: ${{ matrix.name }}
@@ -812,6 +814,7 @@ jobs:
         source ./venv/${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}/activate
         python3 -u -m pip install gcovr
         python3 -m gcovr -j 3 --gcov-ignore-parse-errors --verbose \
+          --exclude '(.*/|^)(_deps|benchmarks)/.*' \
           --exclude-unreachable-branches \
           --merge-mode-functions separate \
           --merge-lines \
@@ -825,6 +828,16 @@ jobs:
         name: ${{ matrix.name }} (coverage)
         path: ${{ matrix.codecov }}.xml
         retention-days: 1
+
+    - name: Upload job coverage report to coveralls
+      uses: coverallsapp/github-action@v2
+      if: (matrix.codecov && !contains(matrix.os, 'z15') && (env.COVERALLS_REPO_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng'))
+      with:
+        file: ${{ matrix.codecov }}.xml
+        flag-name: "${{ matrix.name }}-${{ github.event_name }}"
+        parallel: true
+      env:
+        COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"
 
     - name: Test benchmarks (crashtest only, no coverage data collection)
       if: contains(matrix.cmake-args, '-DWITH_BENCHMARKS=ON')
@@ -867,15 +880,23 @@ jobs:
     - name: Display all coverage artifacts
       run: |
         ls -R *.xml
-        echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g'`" >> $GITHUB_ENV
+        echo "COVERAGE_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g'`" >> $GITHUB_ENV
 
-    - name: Upload reports
+    - name: Upload reports to codecov
       uses: codecov/codecov-action@v5
       if: (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
       with:
-        files: ${{ env.CODECOV_REPORTS }}
-        name: cmake-umbrella
+        files: ${{ env.COVERAGE_REPORTS }}
+        name: "cmake-umbrella-${{ github.event_name }}"
         verbose: true
         fail_ci_if_error: true
       env:
         CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
+
+    - name: Upload to Coveralls - Final
+      uses: coverallsapp/github-action@v2
+      if: (env.COVERALLS_REPO_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
+      with:
+        parallel-finished: true
+      env:
+        COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"

@@ -107,6 +107,7 @@ jobs:
       run: |
         python3 -u -m pip install gcovr
         python3 -m gcovr -j 3 --gcov-ignore-parse-errors --verbose \
+          --exclude '(.*/|^)(_deps|benchmarks)/.*' \
           --exclude-unreachable-branches \
           --merge-mode-functions separate \
           --merge-lines \
@@ -153,14 +154,14 @@ jobs:
     - name: Display all coverage artifacts
       run: |
         ls -R *.xml
-        echo "CODECOV_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g'`" >> $GITHUB_ENV
+        echo "COVERAGE_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g'`" >> $GITHUB_ENV
 
-    - name: Upload reports
+    - name: Upload reports to codecov
       uses: codecov/codecov-action@v5
       if: (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
       with:
-        files: ${{ env.CODECOV_REPORTS }}
-        name: pigz-umbrella
+        files: ${{ env.COVERAGE_REPORTS }}
+        name: "pigz-umbrella-${{ github.event_name }}"
         verbose: true
         fail_ci_if_error: true
       env:
