@@ -279,19 +279,3 @@ static inline uint8_t *CHUNKCOPY_SAFE(uint8_t *out, uint8_t *from, uint64_t len,
 
     return CHUNKMEMSET(out, from, (unsigned)len);
 }
-
-// Cleanup
-#undef CHUNKCOPY
-#undef CHUNKMEMSET
-#undef CHUNKMEMSET_SAFE
-#undef CHUNKSIZE
-#undef CHUNKUNROLL
-#undef HAVE_CHUNKCOPY
-#undef HAVE_CHUNKMEMSET_2
-#undef HAVE_CHUNKMEMSET_4
-#undef HAVE_CHUNKMEMSET_8
-#undef HAVE_CHUNKMEMSET_16
-#undef HAVE_CHUNK_MAG
-#undef HAVE_HALFCHUNKCOPY
-#undef HAVE_HALF_CHUNK
-#undef HAVE_MASKED_READWRITE

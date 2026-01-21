@@ -336,3 +336,20 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
    - Larger unrolled copy loops (three is about right)
    - Moving len -= 3 statement into middle of loop
  */
+
+ // Cleanup
+#undef CHUNKCOPY
+#undef CHUNKMEMSET
+#undef CHUNKMEMSET_SAFE
+#undef CHUNKSIZE
+#undef CHUNKUNROLL
+#undef HAVE_CHUNKCOPY
+#undef HAVE_CHUNKMEMSET_2
+#undef HAVE_CHUNKMEMSET_4
+#undef HAVE_CHUNKMEMSET_8
+#undef HAVE_CHUNKMEMSET_16
+#undef HAVE_CHUNK_MAG
+#undef HAVE_HALFCHUNKCOPY
+#undef HAVE_HALF_CHUNK
+#undef HAVE_MASKED_READWRITE
+#undef INFLATE_FAST
