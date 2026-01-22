@@ -10,8 +10,6 @@
  * RISC-V glibc would enable RVV optimized memcpy at runtime by IFUNC,
  * so we prefer using large size chunk and copy memory as much as possible.
  */
-#define CHUNK_SIZE 32
-
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
