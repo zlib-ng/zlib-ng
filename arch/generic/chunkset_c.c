@@ -7,8 +7,6 @@
 
 typedef uint64_t chunk_t;
 
-#define CHUNK_SIZE 8
-
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
 
