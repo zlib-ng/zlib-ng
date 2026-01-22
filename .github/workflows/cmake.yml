@@ -51,25 +51,12 @@ jobs:
             cmake-args: -DZLIB_COMPAT=ON -DZLIB_SYMBOL_PREFIX=zTest_
             codecov: ubuntu_gcc_compat_sprefix
 
-          - name: Ubuntu GCC -O3 OSB
+          - name: Ubuntu GCC -O3
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            build-dir: ../build
-            build-src-dir: ../zlib-ng
-            # Build with readonly project directory require CMake 3.19+
-            readonly-project-dir: true
             cflags: -O3
             # Skipping codecov to allow -O3
-
-          - name: Ubuntu GCC OSB add_subdirectory
-            os: ubuntu-latest
-            compiler: gcc
-            cxx-compiler: g++
-            build-dir: ../build
-            build-src-dir: ../zlib-ng/test/add-subdirectory-project
-            readonly-project-dir: true
-            codecov: ubuntu_gcc_osb
 
           - name: Ubuntu GCC -O1 UBSAN
             os: ubuntu-latest
@@ -791,16 +778,11 @@ jobs:
         CC: ${{ matrix.compiler }}
         CXX: ${{ matrix.cxx-compiler }}
 
-    - name: Make source tree read-only
-      shell: bash
-      run: chmod -R a-w .
-      if: matrix.readonly-project-dir
-
     - name: Generate project files
       shell: bash
       # Shared libraries turned off for qemu ppc* and sparc & reduce code coverage sources
       run: |
-        cmake -S ${{ matrix.build-src-dir || '.' }} -B ${{ matrix.build-dir || '.' }} ${{ matrix.cmake-args }} \
+        cmake -S . ${{ matrix.cmake-args }} \
           -DCMAKE_BUILD_TYPE=${{ matrix.build-config || 'Release' }} \
           -DBUILD_SHARED_LIBS=${{ matrix.build-shared || 'OFF' }} \
           -DWITH_FUZZERS=ON \
@@ -815,13 +797,12 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: cmake --build ${{ matrix.build-dir || '.' }} -j2 --config ${{ matrix.build-config || 'Release' }}
+      run: cmake --build . --verbose -j2 --config ${{ matrix.build-config || 'Release' }}
 
     - name: Run test cases
       # Don't run tests on Windows ARM
       if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false
       run: ctest --verbose -C Release -E benchmark_zlib --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '3' }}
-      working-directory: ${{ matrix.build-dir || '.' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
@@ -829,24 +810,18 @@ jobs:
         LSAN_OPTIONS: ${{ matrix.lsan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
         UBSAN_OPTIONS: ${{ matrix.ubsan-options || 'verbosity=0' }}:print_stacktrace=1:abort_on_error=1:halt_on_error=1
 
-    - name: Make source tree writable
-      shell: bash
-      run: chmod -R +w .
-      if: matrix.readonly-project-dir
-
     - name: Generate coverage report
       if: matrix.codecov
       shell: bash
       run: |
-        python3 -u -m venv ${{ matrix.build-dir || '.' }}/venv
-        source ${{ matrix.build-dir || '.' }}/venv/${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}/activate
+        python3 -u -m venv ./venv
+        source ./venv/${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}/activate
         python3 -u -m pip install gcovr
-        python3 -m gcovr ${{ matrix.build-dir || '' }} -j 3 --gcov-ignore-parse-errors --verbose \
+        python3 -m gcovr -j 3 --gcov-ignore-parse-errors --verbose \
           --exclude-unreachable-branches \
           --merge-mode-functions separate \
           --merge-lines \
           --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
-          --root ${{ matrix.build-src-dir || '.' }} \
           --xml --output ${{ matrix.codecov }}.xml
 
     - name: Upload coverage report artifact
@@ -860,7 +835,6 @@ jobs:
     - name: Test benchmarks (crashtest only, no coverage data collection)
       if: contains(matrix.cmake-args, '-DWITH_BENCHMARKS=ON')
       run: ctest --verbose -C Release -R ^benchmark_zlib$ --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '3' }}
-      working-directory: ${{ matrix.build-dir || '.' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
