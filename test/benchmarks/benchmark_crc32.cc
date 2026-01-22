@@ -41,10 +41,10 @@ public:
                 misalign = 0;
             else
                 misalign += (DO_ALIGNED) ? 16 : 1;
-        }
 
-        // Prevent the result from being optimized away
-        benchmark::DoNotOptimize(hash);
+            // Prevent the result from being optimized away
+            benchmark::DoNotOptimize(hash);
+        }
     }
 
     void TearDown(const ::benchmark::State&) {

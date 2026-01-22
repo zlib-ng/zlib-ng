@@ -54,9 +54,10 @@ public:
                 fprintf(stderr, "compress() failed with error %d\n", err);
                 abort();
             }
-        }
 
-        benchmark::DoNotOptimize(err);
+            // Prevent the result from being optimized away
+            benchmark::DoNotOptimize(err);
+        }
     }
 
     void TearDown(const ::benchmark::State&) {

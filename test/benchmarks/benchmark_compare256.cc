@@ -49,10 +49,10 @@ public:
                 misalign = 0;
             else
                 misalign++;
-        }
 
-        // Prevent the result from being optimized away
-        benchmark::DoNotOptimize(len);
+            // Prevent the result from being optimized away
+            benchmark::DoNotOptimize(len);
+        }
     }
 
     void TearDown(const ::benchmark::State&) {
