@@ -37,26 +37,20 @@ jobs:
             cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON -DNATIVE_ARCH_OVERRIDE="-mavx -mpclmul"
             codecov: ubuntu_gcc_native_inst_avx
 
-          - name: Ubuntu GCC Symbol Prefix
+          - name: Ubuntu GCC Symbol Prefix -O3
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_
-            codecov: ubuntu_gcc_sprefix
+            cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_ -DWITH_BENCHMARKS=ON
+            cflags: -O3
+            # Skipping codecov to allow -O3
 
           - name: Ubuntu GCC Compat Symbol Prefix
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DZLIB_COMPAT=ON -DZLIB_SYMBOL_PREFIX=zTest_
+            cmake-args: -DZLIB_COMPAT=ON -DZLIB_SYMBOL_PREFIX=zTest_ -DWITH_BENCHMARKS=ON
             codecov: ubuntu_gcc_compat_sprefix
-
-          - name: Ubuntu GCC -O3
-            os: ubuntu-latest
-            compiler: gcc
-            cxx-compiler: g++
-            cflags: -O3
-            # Skipping codecov to allow -O3
 
           - name: Ubuntu GCC -O1 UBSAN
             os: ubuntu-latest
