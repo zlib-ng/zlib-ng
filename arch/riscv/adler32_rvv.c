@@ -10,7 +10,6 @@
 #include "adler32_p.h"
 
 #include <riscv_vector.h>
-#include <stdint.h>
 
 Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t* restrict dst, const uint8_t *src, size_t len, int COPY) {
     /* split Adler-32 into component sums */

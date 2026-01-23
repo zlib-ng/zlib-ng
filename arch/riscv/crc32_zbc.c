@@ -9,8 +9,6 @@
 #include "zbuild.h"
 #include "arch_functions.h"
 
-#include <stdint.h>
-
 #define CLMUL_MIN_LEN 16   // Minimum size of buffer for _crc32_clmul
 #define CLMUL_CHUNK_LEN 16 // Length of chunk for clmul
 

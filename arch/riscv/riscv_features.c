@@ -3,9 +3,6 @@
 #include "zbuild.h"
 #include "riscv_features.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 #include <sys/utsname.h>
 
 #if defined(__linux__) && defined(HAVE_SYS_AUXV_H)

@@ -8,7 +8,6 @@
 #include "zbuild.h"
 #include "crc32.h"
 
-#include <stdint.h>
 #include <larchintrin.h>
 
 Z_INTERNAL uint32_t crc32_loongarch64(uint32_t crc, const uint8_t *buf, size_t len) {
