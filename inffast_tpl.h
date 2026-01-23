@@ -147,14 +147,14 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
         Z_TOUCH(here);
         old = hold;
         DROPBITS(here.bits);
-        if (here.op == 0) {
+        if (LIKELY(here.op == 0)) {
             TRACE_LITERAL(here.val);
             *out++ = (unsigned char)(here.val);
             here = lcode[hold & lmask];
             Z_TOUCH(here);
             old = hold;
             DROPBITS(here.bits);
-            if (here.op == 0) {
+            if (LIKELY(here.op == 0)) {
                 TRACE_LITERAL(here.val);
                 *out++ = (unsigned char)(here.val);
                 here = lcode[hold & lmask];
@@ -162,7 +162,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
             dolen:
                 old = hold;
                 DROPBITS(here.bits);
-                if (here.op == 0) {
+                if (LIKELY(here.op == 0)) {
                     TRACE_LITERAL(here.val);
                     *out++ = (unsigned char)(here.val);
                     continue;
@@ -170,33 +170,33 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
             }
         }
         op = here.op;
-        if (op & 16) {                          /* length base */
+        if (LIKELY(op & 16)) {                  /* length base */
             len = here.val + EXTRA_BITS(old, here, op);
             TRACE_LENGTH(len);
             here = dcode[hold & dmask];
             Z_TOUCH(here);
-            if (bits < MAX_BITS + MAX_DIST_EXTRA_BITS) {
+            if (UNLIKELY(bits < MAX_BITS + MAX_DIST_EXTRA_BITS)) {
                 REFILL();
             }
           dodist:
             old = hold;
             DROPBITS(here.bits);
             op = here.op;
-            if (op & 16) {                      /* distance base */
+            if (LIKELY(op & 16)) {              /* distance base */
                 dist = here.val + EXTRA_BITS(old, here, op);
 #ifdef INFLATE_STRICT
-                if (dist > state->dmax) {
+                if (UNLIKELY(dist > state->dmax)) {
                     SET_BAD("invalid distance too far back");
                     break;
                 }
 #endif
                 TRACE_DISTANCE(dist);
                 op = (unsigned)(out - beg);     /* max distance in output */
-                if (dist > op) {                /* see if copy from window */
+                if (UNLIKELY(dist > op)) {      /* see if copy from window */
                     op = dist - op;             /* distance back in window */
-                    if (op > whave) {
+                    if (UNLIKELY(op > whave)) {
 #ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
-                        if (state->sane) {
+                        if (LIKELY(state->sane)) {
                             SET_BAD("invalid distance too far back");
                             break;
                         }
@@ -205,10 +205,10 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                         memset(out, 0, zeros);  /* fill missing bytes with zeros */
                         out += zeros;
                         len -= zeros;
-                        if (len == 0)
+                        if (UNLIKELY(len == 0))
                             continue;
                         op = whave;
-                        if (op == 0) {          /* copy from already-decoded output */
+                        if (UNLIKELY(op == 0)) {/* copy from already-decoded output */
                             out = chunkcopy_safe(out, out - dist, len, safe);
                             continue;
                         }
@@ -218,26 +218,26 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
 #endif
                     }
                     from = window;
-                    if (wnext == 0) {           /* very common case */
+                    if (LIKELY(wnext == 0)) {           /* very common case */
                         from += wsize - op;
-                    } else if (wnext >= op) {   /* contiguous in window */
+                    } else if (LIKELY(wnext >= op)) {   /* contiguous in window */
                         from += wnext - op;
-                    } else {                    /* wrap around window */
+                    } else {                            /* wrap around window */
                         op -= wnext;
                         from += wsize - op;
-                        if (op < len) {         /* some from end of window */
+                        if (UNLIKELY(op < len)) {       /* some from end of window */
                             len -= op;
                             out = CHUNKCOPY_SAFE(out, from, op, safe);
-                            from = window;      /* more from start of window */
+                            from = window;              /* more from start of window */
                             op = wnext;
                             /* This (rare) case can create a situation where
                                the first chunkcopy below must be checked.
                              */
                         }
                     }
-                    if (op < len) {             /* still need some from output */
+                    if (UNLIKELY(op < len)) {           /* still need some from output */
                         len -= op;
-                        if (!extra_safe) {
+                        if (LIKELY(!extra_safe)) {
                             out = CHUNKCOPY_SAFE(out, from, op, safe);
                             out = CHUNKUNROLL(out, &dist, &len);
                             out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
@@ -247,14 +247,14 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                         }
                     } else {
 #ifndef HAVE_MASKED_READWRITE
-                        if (extra_safe)
+                        if (UNLIKELY(extra_safe))
                             out = chunkcopy_safe(out, from, len, safe);
                         else
 #endif
                             out = CHUNKCOPY_SAFE(out, from, len, safe);
                     }
 #ifndef HAVE_MASKED_READWRITE
-                } else if (extra_safe) {
+                } else if (UNLIKELY(extra_safe)) {
                     /* Whole reference is in range of current output. */
                         out = chunkcopy_safe(out, out - dist, len, safe);
 #endif
@@ -264,12 +264,12 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                        so unroll and roundoff operations can write beyond `out+len` so long
                        as they stay within 258 bytes of `out`.
                     */
-                    if (dist >= len || dist >= CHUNKSIZE())
+                    if (LIKELY(dist >= len || dist >= CHUNKSIZE()))
                         out = CHUNKCOPY(out, out - dist, len);
                     else
                         out = CHUNKMEMSET(out, out - dist, len);
                 }
-            } else if ((op & 64) == 0) {          /* 2nd level distance code */
+            } else if (UNLIKELY((op & 64) == 0)) {          /* 2nd level distance code */
                 here = dcode[here.val + BITS(op)];
                 Z_TOUCH(here);
                 goto dodist;
@@ -277,11 +277,11 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                 SET_BAD("invalid distance code");
                 break;
             }
-        } else if ((op & 64) == 0) {              /* 2nd level length code */
+        } else if (UNLIKELY((op & 64) == 0)) {              /* 2nd level length code */
             here = lcode[here.val + BITS(op)];
             Z_TOUCH(here);
             goto dolen;
-        } else if (op & 32) {                     /* end-of-block */
+        } else if (UNLIKELY(op & 32)) {                     /* end-of-block */
             TRACE_END_OF_BLOCK();
             state->mode = TYPE;
             break;
