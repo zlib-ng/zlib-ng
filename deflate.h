@@ -227,16 +227,15 @@ struct ALIGNED_(64) internal_state {
     unsigned int good_match;    /* Use a faster search when the previous match is longer than this */
     int nice_match;             /* Stop searching when current match exceeds this */
     unsigned int insert;        /* bytes at end of window left to insert */
-
-    uint64_t bi_buf;            /* Output buffer.
-                                 * Bits are inserted starting at the bottom (least significant bits). */
     int32_t bi_valid;           /* Number of valid bits in bi_buf.
                                  * All bits above the last valid bit are always zero. */
+    uint64_t bi_buf;            /* Output buffer.
+                                 * Bits are inserted starting at the bottom (least significant bits). */
 
     int heap_len;               /* number of elements in the heap */
     int heap_max;               /* element of largest frequency */
 
-    int32_t padding1[1];
+    int32_t padding1[2];
 
                 /* Cacheline 3+ - Huffman trees and symbol buffers (trees.c) */
 
@@ -268,6 +267,7 @@ struct ALIGNED_(64) internal_state {
     unsigned char depth[2*L_CODES+1];
     /* Depth of each subtree used as tie breaker for trees of equal frequency
      */
+    uint8_t padding3[3];        /* explicit padding for lit_bufsize alignment */
 
     unsigned int  lit_bufsize;
     /* Size of match buffer for literals/lengths.  There are 4 reasons for
