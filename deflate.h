@@ -249,6 +249,14 @@ struct ALIGNED_(64) internal_state {
     struct tree_desc_s d_desc;               /* desc. for distance tree */
     struct tree_desc_s bl_desc;              /* desc. for bit length tree */
 
+                /* Cacheline 46 - Symbol tallying (accessed with dyn_ltree/dyn_dtree) */
+
+    unsigned int sym_next;        /* running index in symbol buffer */
+    unsigned int sym_end;         /* symbol table full when sym_next reaches this */
+    unsigned int matches;         /* number of string matches in current block */
+    unsigned int opt_len;         /* bit length of current block with optimal trees */
+    unsigned int static_len;      /* bit length of current block with static trees */
+
     uint16_t bl_count[MAX_BITS+1];
     /* number of codes at each bit length for an optimal tree */
 
@@ -281,6 +289,8 @@ struct ALIGNED_(64) internal_state {
      *   - I can't count above 4
      */
 
+                /* Cacheline 92 */
+
 #ifdef LIT_MEM
 #   define LIT_BUFS 5
     uint16_t *d_buf;              /* buffer for distances */
@@ -289,15 +299,6 @@ struct ALIGNED_(64) internal_state {
 #   define LIT_BUFS 4
     unsigned char *sym_buf;       /* buffer for distances and literals/lengths */
 #endif
-
-    unsigned int sym_next;        /* running index in symbol buffer */
-    unsigned int sym_end;         /* symbol table full when sym_next reaches this */
-    unsigned int matches;         /* number of string matches in current block */
-
-                /* Cacheline 92 - Block statistics */
-
-    unsigned int opt_len;         /* bit length of current block with optimal trees */
-    unsigned int static_len;      /* bit length of current block with static trees */
 
     deflate_allocs *alloc_bufs;
 
