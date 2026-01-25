@@ -279,11 +279,10 @@ static inline int arm_cpu_has_fast_pmull(void) {
     /* On macOS, all Apple Silicon has fast PMULL */
     has_fast_pmull = 1;
 #elif defined(ARCH_64BIT) && !defined(_WIN32)
-#  if defined(__linux__)
-    /* We have to support the CPUID feature in HWCAP */
+    /* We need CPUID feature to read MIDR register */
     if (!arm_has_cpuid())
         return has_fast_pmull;
-#  endif
+
     uint64_t midr;
     __asm__ ("mrs %0, midr_el1" : "=r" (midr));
 
