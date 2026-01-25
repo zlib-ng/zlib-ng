@@ -374,21 +374,23 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             /* get a literal, length, or end-of-block code */
             for (;;) {
                 here = state->lencode[BITS(state->lenbits)];
-                if (here.bits <= bits)
+                if (CODE_BITS(here) <= bits)
                     break;
                 PULLBYTE();
             }
             if (here.op && (here.op & 0xf0) == 0) {
+                unsigned last_bits;
                 last = here;
+                last_bits = CODE_BITS(last);
                 for (;;) {
-                    here = state->lencode[last.val + (BITS(last.bits + last.op) >> last.bits)];
-                    if ((unsigned)last.bits + (unsigned)here.bits <= bits)
+                    here = state->lencode[last.val + (BITS(last_bits + (last.op & 15)) >> last_bits)];
+                    if (last_bits + CODE_BITS(here) <= bits)
                         break;
                     PULLBYTE();
                 }
-                DROPBITS(last.bits);
+                DROPBITS(last_bits);
             }
-            DROPBITS(here.bits);
+            DROPBITS(CODE_BITS(here));
             state->length = here.val;
 
             /* process literal */
@@ -415,7 +417,7 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             }
 
             /* length code -- get extra bits, if any */
-            state->extra = (here.op & MAX_BITS);
+            state->extra = CODE_EXTRA(here);
             if (state->extra) {
                 NEEDBITS(state->extra);
                 state->length += BITS(state->extra);
@@ -426,27 +428,29 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             /* get distance code */
             for (;;) {
                 here = state->distcode[BITS(state->distbits)];
-                if (here.bits <= bits)
+                if (CODE_BITS(here) <= bits)
                     break;
                 PULLBYTE();
             }
             if ((here.op & 0xf0) == 0) {
+                unsigned last_bits;
                 last = here;
+                last_bits = CODE_BITS(last);
                 for (;;) {
-                    here = state->distcode[last.val + (BITS(last.bits + last.op) >> last.bits)];
-                    if ((unsigned)last.bits + (unsigned)here.bits <= bits)
+                    here = state->distcode[last.val + (BITS(last_bits + (last.op & 15)) >> last_bits)];
+                    if (last_bits + CODE_BITS(here) <= bits)
                         break;
                     PULLBYTE();
                 }
-                DROPBITS(last.bits);
+                DROPBITS(last_bits);
             }
-            DROPBITS(here.bits);
+            DROPBITS(CODE_BITS(here));
             if (here.op & 64) {
                 SET_BAD("invalid distance code");
                 break;
             }
             state->offset = here.val;
-            state->extra = (here.op & MAX_BITS);
+            state->extra = CODE_EXTRA(here);
 
             /* get distance extra bits, if any */
             if (state->extra) {

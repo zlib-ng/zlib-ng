@@ -6,6 +6,7 @@
 #include "zbuild.h"
 #include "zutil.h"
 #include "inftrees.h"
+#include "inflate_p.h"
 #include "fallback_builtins.h"
 
 #if defined(__SSE2__)
@@ -291,7 +292,9 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
         /* create table entry */
         here.bits = (unsigned char)(len - drop);
         if (LIKELY(work[sym] >= match)) {
-            here.op = (unsigned char)(extra[work[sym] - match]);
+            unsigned op = extra[work[sym] - match];
+            here.op = COMBINE_OP(op, here.bits);
+            here.bits = COMBINE_BITS(here.bits, op);
             here.val = base[work[sym] - match];
         } else if (work[sym] + 1U < match) {
             here.op = (unsigned char)0;

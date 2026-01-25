@@ -113,6 +113,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     unsigned char *from;        /* where to copy match from */
     unsigned dist;              /* match distance */
     unsigned extra_safe;        /* copy chunks safely in all cases */
+    uint64_t old;               /* look-behind buffer for extra bits */
 
     /* copy state to local variables */
     state = (struct inflate_state *)strm->state;
@@ -138,24 +139,20 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
        window is overwritten then future matches with far distances will fail to copy correctly. */
     extra_safe = (wsize != 0 && out >= window && out + INFLATE_FAST_MIN_LEFT <= window + state->wbufsize);
 
-#define REFILL() do { \
-        hold |= load_64_bits(in, bits); \
-        in += (63 ^ bits) >> 3; \
-        bits |= 56; \
-    } while (0)
-
     /* decode literals and length/distances until end-of-block or not enough
        input data or output space */
     do {
         REFILL();
         here = lcode[hold & lmask];
         Z_TOUCH(here);
+        old = hold;
         DROPBITS(here.bits);
         if (here.op == 0) {
             TRACE_LITERAL(here.val);
             *out++ = (unsigned char)(here.val);
             here = lcode[hold & lmask];
             Z_TOUCH(here);
+            old = hold;
             DROPBITS(here.bits);
             if (here.op == 0) {
                 TRACE_LITERAL(here.val);
@@ -163,6 +160,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                 here = lcode[hold & lmask];
                 Z_TOUCH(here);
             dolen:
+                old = hold;
                 DROPBITS(here.bits);
                 if (here.op == 0) {
                     TRACE_LITERAL(here.val);
@@ -173,10 +171,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
         }
         op = here.op;
         if (op & 16) {                          /* length base */
-            len = here.val;
-            op &= MAX_BITS;                     /* number of extra bits */
-            len += BITS(op);
-            DROPBITS(op);
+            len = here.val + EXTRA_BITS(old, here, op);
             TRACE_LENGTH(len);
             here = dcode[hold & dmask];
             Z_TOUCH(here);
@@ -184,19 +179,17 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                 REFILL();
             }
           dodist:
+            old = hold;
             DROPBITS(here.bits);
             op = here.op;
             if (op & 16) {                      /* distance base */
-                dist = here.val;
-                op &= MAX_BITS;                 /* number of extra bits */
-                dist += BITS(op);
+                dist = here.val + EXTRA_BITS(old, here, op);
 #ifdef INFLATE_STRICT
                 if (dist > state->dmax) {
                     SET_BAD("invalid distance too far back");
                     break;
                 }
 #endif
-                DROPBITS(op);
                 TRACE_DISTANCE(dist);
                 op = (unsigned)(out - beg);     /* max distance in output */
                 if (dist > op) {                /* see if copy from window */

@@ -485,6 +485,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
     code here;                  /* current decoding table entry */
     code last;                  /* parent table entry */
     unsigned len;               /* length to copy for repeats, bits to drop */
+    unsigned code_bits;         /* bits in current/parent code */
     int32_t ret;                /* return code */
     static const uint16_t order[19] = /* permutation of code lengths */
         {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
@@ -936,23 +937,26 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             /* get a literal, length, or end-of-block code */
             for (;;) {
                 here = state->lencode[BITS(state->lenbits)];
-                if (here.bits <= bits)
+                if (CODE_BITS(here) <= bits)
                     break;
                 PULLBYTE();
             }
             if (here.op && (here.op & 0xf0) == 0) {
+                unsigned last_bits;
                 last = here;
+                last_bits = CODE_BITS(last);
                 for (;;) {
-                    here = state->lencode[last.val + (BITS(last.bits + last.op) >> last.bits)];
-                    if ((unsigned)last.bits + (unsigned)here.bits <= bits)
+                    here = state->lencode[last.val + (BITS(last_bits + (last.op & 15)) >> last_bits)];
+                    if (last_bits + CODE_BITS(here) <= bits)
                         break;
                     PULLBYTE();
                 }
-                DROPBITS(last.bits);
-                state->back += last.bits;
+                DROPBITS(last_bits);
+                state->back += last_bits;
             }
-            DROPBITS(here.bits);
-            state->back += here.bits;
+            code_bits = CODE_BITS(here);
+            DROPBITS(code_bits);
+            state->back += code_bits;
             state->length = here.val;
 
             /* process literal */
@@ -977,7 +981,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             }
 
             /* length code */
-            state->extra = (here.op & MAX_BITS);
+            state->extra = CODE_EXTRA(here);
             state->mode = LENEXT;
             Z_FALLTHROUGH;
 
@@ -998,29 +1002,32 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             /* get distance code */
             for (;;) {
                 here = state->distcode[BITS(state->distbits)];
-                if (here.bits <= bits)
+                if (CODE_BITS(here) <= bits)
                     break;
                 PULLBYTE();
             }
             if ((here.op & 0xf0) == 0) {
+                unsigned last_bits;
                 last = here;
+                last_bits = CODE_BITS(last);
                 for (;;) {
-                    here = state->distcode[last.val + (BITS(last.bits + last.op) >> last.bits)];
-                    if ((unsigned)last.bits + (unsigned)here.bits <= bits)
+                    here = state->distcode[last.val + (BITS(last_bits + (last.op & 15)) >> last_bits)];
+                    if (last_bits + CODE_BITS(here) <= bits)
                         break;
                     PULLBYTE();
                 }
-                DROPBITS(last.bits);
-                state->back += last.bits;
+                DROPBITS(last_bits);
+                state->back += last_bits;
             }
-            DROPBITS(here.bits);
-            state->back += here.bits;
+            code_bits = CODE_BITS(here);
+            DROPBITS(code_bits);
+            state->back += code_bits;
             if (here.op & 64) {
                 SET_BAD("invalid distance code");
                 break;
             }
             state->offset = here.val;
-            state->extra = (here.op & MAX_BITS);
+            state->extra = CODE_EXTRA(here);
             state->mode = DISTEXT;
             Z_FALLTHROUGH;
 
