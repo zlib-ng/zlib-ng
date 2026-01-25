@@ -10,5 +10,8 @@
 
 int main(void) {
     fprintf(stderr, "archfound " ARCH_NAME "\n");
+#ifdef ARCH_VERSION_STR
+    fprintf(stderr, "archversion " ARCH_VERSION_STR "\n");
+#endif
     return 0;
 }

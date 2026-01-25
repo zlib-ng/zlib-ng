@@ -6,6 +6,9 @@
 #ifndef ZARCH_H
 #define ZARCH_H
 
+#define ZARCH_STRINGIZE(X) ZARCH_DOSTRINGIZE(X)
+#define ZARCH_DOSTRINGIZE(X) #X
+
 /* x86_64 */
 #if defined(__x86_64__) || defined(_M_X64)
 #  define ARCH_X86
@@ -181,6 +184,15 @@
 #    define ARCH_32BIT
 #    define ARCH_NAME "wasm32"
 #  endif
+
+/* Elbrus 2000 (aka e2k) */
+#elif defined(__e2k__)
+#  define ARCH_E2K
+/* e2k reuse x86 optimizations */
+#  define ARCH_X86
+#  define ARCH_64BIT
+#  define ARCH_NAME "e2k"
+#  define ARCH_VERSION_STR ZARCH_STRINGIZE(__iset__)
 
 /* Unrecognized architecture */
 #else

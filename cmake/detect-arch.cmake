@@ -8,8 +8,6 @@ elseif(MSVC)
     set(ARCH ${MSVC_C_ARCHITECTURE_ID})
 elseif(EMSCRIPTEN)
     set(ARCH "wasm32")
-elseif(CMAKE_CROSSCOMPILING)
-    set(ARCH ${CMAKE_C_COMPILER_TARGET})
 else()
     # Compile detect-arch.c and read the architecture name from the binary
     try_compile(
@@ -20,14 +18,20 @@ else()
         COPY_FILE ${CMAKE_CURRENT_BINARY_DIR}/detect-arch.bin
     )
     if(COMPILE_RESULT)
-        file(STRINGS ${CMAKE_CURRENT_BINARY_DIR}/detect-arch.bin
-            RAWOUTPUT REGEX "archfound [a-zA-Z0-9_]+")
+        # Find archfound tag, and extract the arch word into ARCH variable
+        file(STRINGS ${CMAKE_CURRENT_BINARY_DIR}/detect-arch.bin RAWOUTPUT REGEX "archfound [a-zA-Z0-9_]+")
+        string(REGEX REPLACE ".*archfound ([a-zA-Z0-9_]+).*" "\\1" ARCH "${RAWOUTPUT}")
+
+        # Find archversion tag, and extract the archversion word into ARCHVERSION variable
+        file(STRINGS ${CMAKE_CURRENT_BINARY_DIR}/detect-arch.bin RAWOUTPUT REGEX "archversion [0-9]+")
+        string(REGEX REPLACE ".*archversion ([0-9]+).*" "\\1" ARCHVERSION "${RAWOUTPUT}")
     endif()
 
-    # Find archfound tag, and extract the arch word into ARCH variable
-    string(REGEX REPLACE ".*archfound ([a-zA-Z0-9_]+).*" "\\1" ARCH "${RAWOUTPUT}")
     if(NOT ARCH)
         set(ARCH unknown)
+    endif()
+    if(NOT ARCHVERSION)
+        set(ARCHVERSION 0)
     endif()
 endif()
 
@@ -143,6 +147,12 @@ elseif("${ARCH}" MATCHES "wasm(32|64)")
     else()
         set(ARCH_BITS 32)
     endif()
+elseif("${ARCH}" MATCHES "e2k")
+    set(BASEARCH "e2k")
+    set(BASEARCH_E2K_FOUND TRUE)
+    set(ARCH_BITS 64)
+
+    message(STATUS "Arch version ${BASEARCH}v${ARCHVERSION}.")
 else()
     set(BASEARCH "x86")
     set(BASEARCH_X86_FOUND TRUE)
