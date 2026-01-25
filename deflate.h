@@ -135,7 +135,7 @@ typedef struct deflate_allocs_s {
 } deflate_allocs;
 
 struct ALIGNED_(64) internal_state {
-                /* Cacheline 0 */
+                /* Cacheline 0 - Stream and pending buffer management */
     PREFIX3(stream)      *strm;            /* pointer back to this zlib stream */
     unsigned char        *pending_buf;     /* output still pending */
     unsigned char        *pending_out;     /* next pending byte to output to the stream */
@@ -153,7 +153,7 @@ struct ALIGNED_(64) internal_state {
      * This is set to 1 if there is an active block, or 0 if the block was just closed.
      */
 
-                /* Cacheline 1 */
+                /* Cacheline 1 - Window and hash table pointers */
 
     unsigned int  lookahead;    /* number of valid bytes ahead in window */
     unsigned int strstart;      /* start of string to insert */
@@ -198,7 +198,7 @@ struct ALIGNED_(64) internal_state {
     int          match_available;    /* set if previous match exists */
     uint32_t     prev_match;         /* previous match (used by deflate_slow) */
 
-                /* Cacheline 2 */
+                /* Cacheline 2 - Match finding and compression parameters */
 
     unsigned int match_start;        /* start of matching string */
 
@@ -238,9 +238,8 @@ struct ALIGNED_(64) internal_state {
 
     int32_t padding1[1];
 
-                /* Cacheline 3 */
+                /* Cacheline 3+ - Huffman trees and symbol buffers (trees.c) */
 
-                /* used by trees.c: */
     /* Didn't use ct_data typedef below to suppress compiler warning */
     struct ct_data_s dyn_ltree[HEAP_SIZE];   /* literal and length tree */
     struct ct_data_s dyn_dtree[2*D_CODES+1]; /* distance tree */
@@ -294,6 +293,9 @@ struct ALIGNED_(64) internal_state {
     unsigned int sym_next;        /* running index in symbol buffer */
     unsigned int sym_end;         /* symbol table full when sym_next reaches this */
     unsigned int matches;         /* number of string matches in current block */
+
+                /* Cacheline 92 - Block statistics */
+
     unsigned int opt_len;         /* bit length of current block with optimal trees */
     unsigned int static_len;      /* bit length of current block with static trees */
 
