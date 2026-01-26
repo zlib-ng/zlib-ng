@@ -149,7 +149,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
     }
 
     if (copy_len > 0) {
-        crc = crc32_copy_small(~crc, dst, src, copy_len, COPY);
+        crc = ~crc32_copy_small(~crc, dst, src, copy_len, 31, COPY);
         src += copy_len;
         len -= copy_len;
         if (COPY) {
