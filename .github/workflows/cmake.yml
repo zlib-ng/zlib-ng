@@ -92,20 +92,6 @@ jobs:
             cmake-args: -DWITH_CHORBA=OFF
             codecov: ubuntu_gcc_no_chorba
 
-          - name: Ubuntu GCC No CTZLL
-            os: ubuntu-latest
-            compiler: gcc
-            cxx-compiler: g++
-            cmake-args: -DWITH_OPTIM=OFF -DHAVE_BUILTIN_CTZLL=OFF
-            codecov: ubuntu_gcc_no_ctzll
-
-          - name: Ubuntu GCC No CTZ
-            os: ubuntu-latest
-            compiler: gcc
-            cxx-compiler: g++
-            cmake-args: -DWITH_OPTIM=OFF -DHAVE_BUILTIN_CTZLL=OFF -DHAVE_BUILTIN_CTZ=OFF
-            codecov: ubuntu_gcc_no_ctz
-
           - name: Ubuntu GCC SSE2 UBSAN
             os: ubuntu-latest
             compiler: gcc

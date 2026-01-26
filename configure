@@ -1142,32 +1142,6 @@ else
     echo "Checking for __builtin_assume_aligned() ... No." | tee -a configure.log
 fi
 
-# Check for __builtin_ctz() support in compiler
-cat > $test.c << EOF
-long f(unsigned int x) { return __builtin_ctz(x); }
-int main(void) { return 0; }
-EOF
-if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
-    echo "Checking for __builtin_ctz ... Yes." | tee -a configure.log
-    CFLAGS="$CFLAGS -DHAVE_BUILTIN_CTZ"
-    SFLAGS="$SFLAGS -DHAVE_BUILTIN_CTZ"
-else
-    echo "Checking for __builtin_ctz ... No." | tee -a configure.log
-fi
-
-# Check for __builtin_ctzll() support in compiler
-cat > $test.c << EOF
-long f(unsigned long long x) { return __builtin_ctzll(x); }
-int main(void) { return 0; }
-EOF
-if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
-    echo "Checking for __builtin_ctzll ... Yes." | tee -a configure.log
-    CFLAGS="$CFLAGS -DHAVE_BUILTIN_CTZLL"
-    SFLAGS="$SFLAGS -DHAVE_BUILTIN_CTZLL"
-else
-    echo "Checking for __builtin_ctzll ... No." | tee -a configure.log
-fi
-
 check_avx2_intrinsics() {
     # Check whether compiler supports AVX2 intrinsics
     cat > $test.c << EOF

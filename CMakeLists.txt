@@ -616,42 +616,6 @@ endif()
 set(CMAKE_REQUIRED_FLAGS)
 
 #
-# check for __builtin_ctz() support in the compiler
-#
-set(CMAKE_REQUIRED_FLAGS ${ZNOLTOFLAG})
-check_c_source_compiles(
-    "int main(void) {
-        unsigned int zero = 0;
-        long test = __builtin_ctz(zero);
-        (void)test;
-        return 0;
-    }"
-    HAVE_BUILTIN_CTZ
-)
-if(HAVE_BUILTIN_CTZ)
-    add_definitions(-DHAVE_BUILTIN_CTZ)
-endif()
-set(CMAKE_REQUIRED_FLAGS)
-
-#
-# check for __builtin_ctzll() support in the compiler
-#
-set(CMAKE_REQUIRED_FLAGS ${ZNOLTOFLAG})
-check_c_source_compiles(
-    "int main(void) {
-        unsigned int zero = 0;
-        long test = __builtin_ctzll(zero);
-        (void)test;
-        return 0;
-    }"
-    HAVE_BUILTIN_CTZLL
-)
-if(HAVE_BUILTIN_CTZLL)
-    add_definitions(-DHAVE_BUILTIN_CTZLL)
-endif()
-set(CMAKE_REQUIRED_FLAGS)
-
-#
 # check for ptrdiff_t support
 #
 check_c_source_compiles(
