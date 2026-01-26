@@ -132,7 +132,7 @@ Z_FORCEINLINE static uint16_t bi_reverse(uint16_t code, int len) {
     /* code: the value to invert */
     /* len: its bit length */
     Assert(len >= 1 && len <= 15, "code length must be 1-15");
-    return __builtin_bitreverse16(code) >> (16 - len);
+    return zng_bitreverse16(code) >> (16 - len);
 }
 
 /* ===========================================================================
