@@ -12,14 +12,21 @@
 #define ISA_V_HWCAP (1 << ('v' - 'a'))
 #define ISA_ZBC_HWCAP (1 << 29)
 
-void Z_INTERNAL riscv_check_features_runtime(struct riscv_cpu_features *features) {
+static int riscv_check_features_runtime_hwcap(struct riscv_cpu_features *features) {
 #if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
     unsigned long hw_cap = getauxval(AT_HWCAP);
-#else
-    unsigned long hw_cap = 0;
-#endif
+
     features->has_rvv = hw_cap & ISA_V_HWCAP;
     features->has_zbc = hw_cap & ISA_ZBC_HWCAP;
+
+    return 1;
+#else
+    return 0;
+#endif
+}
+
+static void riscv_check_features_runtime(struct riscv_cpu_features *features) {
+    riscv_check_features_runtime_hwcap(features);
 }
 
 void Z_INTERNAL riscv_check_features(struct riscv_cpu_features *features) {
