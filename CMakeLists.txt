@@ -458,6 +458,10 @@ check_include_file(linux/auxvec.h HAVE_LINUX_AUXVEC_H)
 if(HAVE_LINUX_AUXVEC_H)
     add_definitions(-DHAVE_LINUX_AUXVEC_H)
 endif()
+check_include_file(asm/hwprobe.h  HAVE_ASM_HWPROBE_H)
+if(HAVE_ASM_HWPROBE_H)
+    add_definitions(-DHAVE_ASM_HWPROBE_H)
+endif()
 
 #
 # Check to see if we have large file support

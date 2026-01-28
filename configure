@@ -2185,6 +2185,16 @@ EOF
 
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} riscv_features.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} riscv_features.lo"
+                cat > $test.c <<EOF
+#include <asm/hwprobe.h>
+EOF
+                if try $CC -c $CFLAGS $test.c; then
+                    echo "Checking for asm/hwprobe.h... Yes." | tee -a configure.log
+                    CFLAGS="${CFLAGS} -DHAVE_ASM_HWPROBE_H"
+                    SFLAGS="${SFLAGS} -DHAVE_ASM_HWPROBE_H"
+                else
+                    echo "Checking for asm/hwprobe.h... No." | tee -a configure.log
+                fi
             fi
             if test $buildrvv -eq 1; then
             check_rvv_compiler_flag
