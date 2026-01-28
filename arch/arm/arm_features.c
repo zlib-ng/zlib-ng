@@ -35,16 +35,6 @@ static int arm_has_crc32(void) {
 #  elif defined(HWCAP2_CRC32)
     has_crc32 = (getauxval(AT_HWCAP2) & HWCAP2_CRC32) != 0;
 #  endif
-#elif defined(__FreeBSD__) && defined(ARCH_64BIT)
-    has_crc32 = getenv("QEMU_EMULATING") == NULL
-      && ID_AA64ISAR0_CRC32_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_CRC32_BASE;
-#elif defined(__OpenBSD__) && defined(ARCH_64BIT)
-    int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
-    uint64_t isar0 = 0;
-    size_t len = sizeof(isar0);
-    if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
-      has_crc32 = ID_AA64ISAR0_CRC32(isar0) >= ID_AA64ISAR0_CRC32_BASE;
-    }
 #elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_CRC32
     unsigned long hwcap = 0;
@@ -55,6 +45,16 @@ static int arm_has_crc32(void) {
     elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
     has_crc32 = (hwcap2 & HWCAP2_CRC32) != 0;
 #  endif
+#elif defined(__FreeBSD__) && defined(ARCH_64BIT)
+    has_crc32 = getenv("QEMU_EMULATING") == NULL
+      && ID_AA64ISAR0_CRC32_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_CRC32_BASE;
+#elif defined(__OpenBSD__) && defined(ARCH_64BIT)
+    int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
+    uint64_t isar0 = 0;
+    size_t len = sizeof(isar0);
+    if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
+      has_crc32 = ID_AA64ISAR0_CRC32(isar0) >= ID_AA64ISAR0_CRC32_BASE;
+    }
 #elif defined(__APPLE__)
     int has_feat = 0;
     size_t size = sizeof(has_feat);
@@ -77,17 +77,6 @@ static int arm_has_pmull(void) {
     /* PMULL is part of crypto extension, check for AES as proxy */
     has_pmull = (getauxval(AT_HWCAP) & HWCAP_AES) != 0;
 #  endif
-#elif defined(__FreeBSD__) && defined(ARCH_64BIT)
-    /* Check for AES feature as PMULL is part of crypto extension */
-    has_pmull = getenv("QEMU_EMULATING") == NULL
-      && ID_AA64ISAR0_AES_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_AES_BASE;
-#elif defined(__OpenBSD__) && defined(ARCH_64BIT)
-    int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
-    uint64_t isar0 = 0;
-    size_t len = sizeof(isar0);
-    if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
-      has_pmull = ID_AA64ISAR0_AES(isar0) >= ID_AA64ISAR0_AES_BASE;
-    }
 #elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_PMULL
     unsigned long hwcap = 0;
@@ -99,6 +88,17 @@ static int arm_has_pmull(void) {
     elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
     has_pmull = (hwcap & HWCAP_AES) != 0;
 #  endif
+#elif defined(__FreeBSD__) && defined(ARCH_64BIT)
+    /* Check for AES feature as PMULL is part of crypto extension */
+    has_pmull = getenv("QEMU_EMULATING") == NULL
+      && ID_AA64ISAR0_AES_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_AES_BASE;
+#elif defined(__OpenBSD__) && defined(ARCH_64BIT)
+    int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
+    uint64_t isar0 = 0;
+    size_t len = sizeof(isar0);
+    if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
+      has_pmull = ID_AA64ISAR0_AES(isar0) >= ID_AA64ISAR0_AES_BASE;
+    }
 #elif defined(__APPLE__)
     int has_feat = 0;
     size_t size = sizeof(has_feat);
@@ -125,6 +125,16 @@ static int arm_has_eor3(void) {
 #  elif defined(HWCAP_SHA3)
     has_eor3 = (getauxval(AT_HWCAP) & HWCAP_SHA3) != 0;
 #  endif
+#elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
+#  ifdef HWCAP2_SHA3
+    unsigned long hwcap2 = 0;
+    elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
+    has_eor3 = (hwcap2 & HWCAP2_SHA3) != 0;
+#  elif defined(HWCAP_SHA3)
+    unsigned long hwcap = 0;
+    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    has_eor3 = (hwcap & HWCAP_SHA3) != 0;
+#  endif
 #elif defined(__FreeBSD__) && defined(ARCH_64BIT)
     /* FreeBSD: check for SHA3 in id_aa64isar0_el1 */
 #  ifdef ID_AA64ISAR0_SHA3_VAL
@@ -139,16 +149,6 @@ static int arm_has_eor3(void) {
     if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
       has_eor3 = ID_AA64ISAR0_SHA3(isar0) >= ID_AA64ISAR0_SHA3_IMPL;
     }
-#  endif
-#elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
-#  ifdef HWCAP2_SHA3
-    unsigned long hwcap2 = 0;
-    elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
-    has_eor3 = (hwcap2 & HWCAP2_SHA3) != 0;
-#  elif defined(HWCAP_SHA3)
-    unsigned long hwcap = 0;
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-    has_eor3 = (hwcap & HWCAP_SHA3) != 0;
 #  endif
 #elif defined(__APPLE__)
     /* All Apple Silicon (M1+) has SHA3/EOR3 support */
