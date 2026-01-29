@@ -26,8 +26,6 @@
 #  endif
 #endif
 
-#include <string.h>
-
 static inline void cpuid(int info, unsigned* eax, unsigned* ebx, unsigned* ecx, unsigned* edx) {
 #if defined(HAVE_CPUID_MS)
     unsigned int registers[4];
