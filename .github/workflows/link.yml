@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         show-progress: 'false'
 
     - name: Checkout zlib repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         show-progress: 'false'
         repository: madler/zlib
@@ -33,7 +33,7 @@ jobs:
       run: cmake --build native -j2 --config Release
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: failure()
       with:
         name: Link zlib (CMake Logs)
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         show-progress: 'false'
 
@@ -64,7 +64,7 @@ jobs:
       run: cmake --build native -j2 --config Release
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: failure()
       with:
         name: Link zlib-ng compat (CMake Logs)

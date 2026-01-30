@@ -5,11 +5,11 @@ concurrency:
   cancel-in-progress: true
 jobs:
   static-analysis:
-    name: GCC
+    name: GCC-14
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         show-progress: 'false'
 
@@ -21,7 +21,7 @@ jobs:
         sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
     - name: Install packages (Ubuntu)
-      run: sudo apt-get install -y gcc-10
+      run: sudo apt-get install -y gcc-14
 
     - name: Generate project files
       run: |
@@ -32,7 +32,7 @@ jobs:
           -DWITH_CODE_COVERAGE=OFF \
           -DWITH_MAINTAINER_WARNINGS=OFF
       env:
-        CC: gcc-10
+        CC: gcc-14
         CFLAGS:
           -fanalyzer
           -Werror
@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
       with:
         show-progress: 'false'
 

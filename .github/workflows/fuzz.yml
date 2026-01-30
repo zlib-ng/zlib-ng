@@ -31,7 +31,7 @@ jobs:
         dry-run: false
 
     - name: Upload Crash
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       if: failure()
       with:
         name: artifacts

@@ -1,0 +1,72 @@
+name: OSB
+on: [push, pull_request]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  cmake:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 80
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu GCC OSB
+            os: ubuntu-latest
+            compiler: gcc
+            cxx-compiler: g++
+            build-dir: ../build
+            build-src-dir: ../zlib-ng
+            cmake-args: -DWITH_BENCHMARKS=ON
+
+          - name: Ubuntu GCC OSB add_subdirectory
+            os: ubuntu-latest
+            compiler: gcc
+            cxx-compiler: g++
+            build-dir: ../build
+            build-src-dir: ../zlib-ng/test/add-subdirectory-project
+            cmake-args: -DWITH_BENCHMARKS=ON
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+      with:
+        show-progress: false
+
+    - name: Make source tree read-only
+      shell: bash
+      run: chmod -R a-w .
+
+    - name: Generate project files
+      shell: bash
+      run: |
+        cmake -S ${{ matrix.build-src-dir || '.' }} -B ${{ matrix.build-dir || '.' }} \
+          ${{ matrix.cmake-args }} \
+          -DWITH_MAINTAINER_WARNINGS=ON
+      env:
+        CC: ${{ matrix.compiler }}
+        CXX: ${{ matrix.cxx-compiler }}
+        CI: true
+
+    - name: Compile source code
+      run: cmake --build ${{ matrix.build-dir || '.' }} --verbose -j2
+
+    - name: Run test cases
+      run: ctest --verbose -C Release --output-on-failure --max-width 120 -j 3
+      working-directory: ${{ matrix.build-dir || '.' }}
+
+    - name: Make source tree writable
+      shell: bash
+      run: chmod -R +w .
+
+    - name: Upload build errors
+      uses: actions/upload-artifact@v6
+      if: failure()
+      with:
+        name: ${{ matrix.name }}
+        path: |
+          **/CMakeFiles/CMakeOutput.log
+          **/CMakeFiles/CMakeError.log
+          **/Testing/Temporary/*
+        retention-days: 30
