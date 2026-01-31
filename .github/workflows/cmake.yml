@@ -662,6 +662,7 @@ jobs:
             cflags: -march=elbrus-v4
             cxxflags: -march=elbrus-v4 -DBENCHMARK_HAS_NO_INLINE_ASSEMBLY
             ldflags: -static
+            # Skipping codecov to allow optimized build
 
           - name: Ubuntu LCC e2kv5
             os: ubuntu-latest
@@ -670,6 +671,17 @@ jobs:
             cflags: -march=elbrus-v5
             cxxflags: -march=elbrus-v5 -DBENCHMARK_HAS_NO_INLINE_ASSEMBLY
             ldflags: -static
+            # Skipping codecov to allow optimized build
+
+          - name: Ubuntu LCC e2kv5 (codecov)
+            os: ubuntu-latest
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-e2k-lcc.cmake -DMCST_LCC_PREFIX=/opt/mcst/lcc-1.29.12.e2k-v5.8c2.linux-6.1 -DQEMU_CPU=elbrus-v5
+            toolchain: 1.29.12.e2k-v5.8c2.linux-6.1
+            cflags: -march=elbrus-v5
+            cxxflags: -march=elbrus-v5
+            ldflags: -static
+            gcov-exec: /opt/mcst/lcc-1.29.12.e2k-v5.8c2.linux-6.1/gcov/bin/gcov
+            codecov: linux_mcst_lcc_e2kv5
 
           - name: Ubuntu LCC e2kv6
             os: ubuntu-latest
@@ -678,6 +690,7 @@ jobs:
             cflags: -march=elbrus-v6
             cxxflags: -march=elbrus-v6 -DBENCHMARK_HAS_NO_INLINE_ASSEMBLY
             ldflags: -static
+            # Skipping codecov to allow optimized build
 
     steps:
     - name: Checkout repository
