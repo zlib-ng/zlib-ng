@@ -167,7 +167,7 @@ Z_INTERNAL deflate_allocs* alloc_deflate(PREFIX3(stream) *strm, int windowBits, 
     int window_size = DEFLATE_ADJUST_WINDOW_SIZE((1 << windowBits) * 2);
     int prev_size = (1 << windowBits) * (int)sizeof(Pos);
     int head_size = HASH_SIZE * sizeof(Pos);
-    int pending_size = lit_bufsize * LIT_BUFS;
+    int pending_size = (lit_bufsize * LIT_BUFS) + 1;
     int state_size = sizeof(deflate_state);
     int alloc_size = sizeof(deflate_allocs);
 

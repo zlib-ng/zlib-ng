@@ -11,6 +11,7 @@
 
 #include "functable.h"
 #include "fallback_builtins.h"
+#include "zmemory.h"
 
 /* Forward declare common non-inlined functions declared in deflate.c */
 
@@ -68,9 +69,13 @@ static inline int zng_tr_tally_lit(deflate_state *s, unsigned char c) {
     s->l_buf[sym_next] = c;
     s->sym_next = sym_next + 1;
 #else
+#  if OPTIMAL_CMP >= 32
+    zng_memwrite_4(&s->sym_buf[sym_next], Z_U32_TO_LE((uint32_t)c << 16));
+#  else
     s->sym_buf[sym_next] = 0;
     s->sym_buf[sym_next+1] = 0;
     s->sym_buf[sym_next+2] = c;
+#  endif
     s->sym_next = sym_next + 3;
 #endif
     s->dyn_ltree[c].Freq++;
@@ -90,9 +95,13 @@ static inline int zng_tr_tally_dist(deflate_state* s, uint32_t dist, uint32_t le
     s->l_buf[sym_next] = (uint8_t)len;
     s->sym_next = sym_next + 1;
 #else
+#  if OPTIMAL_CMP >= 32
+    zng_memwrite_4(&s->sym_buf[sym_next], Z_U32_TO_LE(dist | ((uint32_t)len << 16)));
+#  else
     s->sym_buf[sym_next] = (uint8_t)(dist);
     s->sym_buf[sym_next+1] = (uint8_t)(dist >> 8);
     s->sym_buf[sym_next+2] = (uint8_t)len;
+#  endif
     s->sym_next = sym_next + 3;
 #endif
     s->matches++;

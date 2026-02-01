@@ -730,9 +730,15 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
             dist = d_buf[sx];
             lc = l_buf[sx++];
 #else
-            dist = sym_buf[sx++] & 0xff;
-            dist += (unsigned)(sym_buf[sx++] & 0xff) << 8;
-            lc = sym_buf[sx++];
+#  if OPTIMAL_CMP >= 32
+            uint32_t val = Z_U32_FROM_LE(zng_memread_4(&sym_buf[sx]));
+            dist = val & 0xffff;
+            lc = (val >> 16) & 0xff;
+#  else
+            dist = sym_buf[sx] + ((unsigned)sym_buf[sx + 1] << 8);
+            lc = sym_buf[sx + 2];
+#  endif
+            sx += 3;
 #endif
             if (dist == 0) {
                 zng_emit_lit(s, ltree, lc);

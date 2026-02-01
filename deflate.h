@@ -28,9 +28,11 @@
 #  define GZIP
 #endif
 
-/* define LIT_MEM to slightly increase the speed of deflate (order 1% to 2%) at
-   the cost of a larger memory footprint */
-#ifndef NO_LIT_MEM
+/* LIT_MEM uses separate distance/length buffers instead of the overlaid sym_buf.
+   This uses ~20% more memory but is 1-2% faster on platforms without fast unaligned
+   access. By default, LIT_MEM is only enabled when OPTIMAL_CMP < 32. Define LIT_MEM
+   to force separate buffers, or NO_LIT_MEM to force sym_buf usage. */
+#if !defined(LIT_MEM) && !defined(NO_LIT_MEM) && (OPTIMAL_CMP < 32)
 #  define LIT_MEM
 #endif
 
