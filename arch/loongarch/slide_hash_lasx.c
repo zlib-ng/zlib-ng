@@ -20,17 +20,20 @@
 
 static inline void slide_hash_chain(Pos *table, uint32_t entries, const __m256i wsize) {
     table += entries;
-    table -= 16;
+    table -= 32;
 
     do {
-        __m256i value, result;
+        __m256i value1, value2, result1, result2;
 
-        value = __lasx_xvld(table, 0);
-        result = __lasx_xvssub_hu(value, wsize);
-        __lasx_xvst(result, table, 0);
+        value1 = __lasx_xvld(table, 0);
+        value2 = __lasx_xvld(table, 32);
+        result1 = __lasx_xvssub_hu(value1, wsize);
+        result2 = __lasx_xvssub_hu(value2, wsize);
+        __lasx_xvst(result1, table, 0);
+        __lasx_xvst(result2, table, 32);
 
-        table -= 16;
-        entries -= 16;
+        table -= 32;
+        entries -= 32;
     } while (entries > 0);
 }
 
