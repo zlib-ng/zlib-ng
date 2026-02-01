@@ -35,11 +35,11 @@ all: \
 	chunkset_avx512.o chunkset_avx512.lo \
 	chunkset_sse2.o chunkset_sse2.lo \
 	chunkset_ssse3.o chunkset_ssse3.lo \
-	chorba_sse2.o chorba_sse2.lo \
-	chorba_sse41.o chorba_sse41.lo \
 	compare256_avx2.o compare256_avx2.lo \
 	compare256_avx512.o compare256_avx512.lo \
 	compare256_sse2.o compare256_sse2.lo \
+	crc32_chorba_sse2.o crc32_chorba_sse2.lo \
+	crc32_chorba_sse41.o crc32_chorba_sse41.lo \
 	crc32_pclmulqdq.o crc32_pclmulqdq.lo \
 	crc32_vpclmulqdq.o crc32_vpclmulqdq.lo \
 	slide_hash_avx2.o slide_hash_avx2.lo \
@@ -75,18 +75,6 @@ chunkset_ssse3.o:
 chunkset_ssse3.lo:
 	$(CC) $(SFLAGS) $(SSSE3FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_ssse3.c
 
-chorba_sse2.o:
-	$(CC) $(CFLAGS) $(SSE2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chorba_sse2.c
-
-chorba_sse2.lo:
-	$(CC) $(SFLAGS) $(SSE2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chorba_sse2.c
-
-chorba_sse41.o:
-	$(CC) $(CFLAGS) $(SSE41FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chorba_sse41.c
-
-chorba_sse41.lo:
-	$(CC) $(SFLAGS) $(SSE41FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/chorba_sse41.c
-
 compare256_avx2.o:
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_avx2.c
 
@@ -104,6 +92,18 @@ compare256_sse2.o:
 
 compare256_sse2.lo:
 	$(CC) $(SFLAGS) $(SSE2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_sse2.c
+
+crc32_chorba_sse2.o:
+	$(CC) $(CFLAGS) $(SSE2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_chorba_sse2.c
+
+crc32_chorba_sse2.lo:
+	$(CC) $(SFLAGS) $(SSE2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_chorba_sse2.c
+
+crc32_chorba_sse41.o:
+	$(CC) $(CFLAGS) $(SSE41FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_chorba_sse41.c
+
+crc32_chorba_sse41.lo:
+	$(CC) $(SFLAGS) $(SSE41FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_chorba_sse41.c
 
 crc32_pclmulqdq.o:
 	$(CC) $(CFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_pclmulqdq.c

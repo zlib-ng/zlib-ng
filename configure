@@ -1902,8 +1902,8 @@ case "${ARCH}" in
             if test ${HAVE_SSE2_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE2"
                 SFLAGS="${SFLAGS} -DX86_SSE2"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chunkset_sse2.o chorba_sse2.o compare256_sse2.o slide_hash_sse2.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chunkset_sse2.lo chorba_sse2.lo compare256_sse2.lo slide_hash_sse2.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chunkset_sse2.o compare256_sse2.o crc32_chorba_sse2.o slide_hash_sse2.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chunkset_sse2.lo compare256_sse2.lo crc32_chorba_sse2.lo slide_hash_sse2.lo"
             fi
 
             check_ssse3_intrinsics
@@ -1920,8 +1920,8 @@ case "${ARCH}" in
             if test ${HAVE_SSE41_INTRIN} -eq 1; then
                 CFLAGS="${CFLAGS} -DX86_SSE41"
                 SFLAGS="${SFLAGS} -DX86_SSE41"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} chorba_sse41.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} chorba_sse41.lo"
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_chorba_sse41.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_chorba_sse41.lo"
             fi
 
             check_sse42_intrinsics
