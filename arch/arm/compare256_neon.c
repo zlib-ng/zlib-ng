@@ -8,7 +8,7 @@
 #include "deflate.h"
 #include "fallback_builtins.h"
 
-#if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
+#if defined(ARM_NEON)
 #include "neon_intrins.h"
 
 static inline uint32_t compare256_neon_static(const uint8_t *src0, const uint8_t *src1) {

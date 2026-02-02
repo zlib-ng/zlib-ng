@@ -4,11 +4,12 @@
  */
 
 #include "zbuild.h"
+#include "zendian.h"
 #include "zmemory.h"
 #include "deflate.h"
 #include "fallback_builtins.h"
 
-#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
+#ifdef X86_SSE2
 
 #include <emmintrin.h>
 

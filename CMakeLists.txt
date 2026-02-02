@@ -1218,7 +1218,6 @@ set(ZLIB_PUBLIC_HDRS
 )
 set(ZLIB_PRIVATE_HDRS
     arch/generic/chunk_permute_table.h
-    arch/generic/compare256_p.h
     arch/generic/generic_functions.h
     adler32_p.h
     arch_functions.h
@@ -1289,11 +1288,6 @@ elseif(BASEARCH_X86_FOUND AND ARCH_64BIT AND WITH_SSE2)
         arch/generic/adler32_c.c
         arch/generic/crc32_braid_c.c
     )
-
-    # x86_64 does not need compare256 fallback if we have BUILTIN_CTZ
-    if(NOT HAVE_BUILTIN_CTZ)
-        list(APPEND ZLIB_GENERIC_SRCS arch/generic/compare256_c.c)
-    endif()
 else()
     list(APPEND ZLIB_GENERIC_SRCS ${ZLIB_ALL_FALLBACK_SRCS})
     add_definitions(-DWITH_ALL_FALLBACKS)

@@ -69,10 +69,4 @@ public:
     BENCHMARK_REGISTER_F(compare256_rle, name)->Arg(1)->Arg(10)->Arg(40)->Arg(80)->Arg(100)->Arg(175)->Arg(256);;
 
 BENCHMARK_COMPARE256_RLE(8, compare256_rle_8, 1);
-BENCHMARK_COMPARE256_RLE(16, compare256_rle_16, 1);
-#if defined(HAVE_BUILTIN_CTZ)
-BENCHMARK_COMPARE256_RLE(32, compare256_rle_32, 1);
-#endif
-#if defined(HAVE_BUILTIN_CTZLL)
 BENCHMARK_COMPARE256_RLE(64, compare256_rle_64, 1);
-#endif

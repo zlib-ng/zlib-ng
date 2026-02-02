@@ -5,11 +5,12 @@
  */
 
 #include "zbuild.h"
+#include "zendian.h"
 #include "zmemory.h"
 #include "deflate.h"
 #include "fallback_builtins.h"
 
-#if defined(LOONGARCH_LSX) && defined(HAVE_BUILTIN_CTZ)
+#ifdef LOONGARCH_LSX
 
 #include <lsxintrin.h>
 #include "lsxintrin_ext.h"

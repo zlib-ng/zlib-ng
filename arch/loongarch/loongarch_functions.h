@@ -16,27 +16,23 @@ uint32_t crc32_copy_loongarch64(uint32_t crc, uint8_t *dst, const uint8_t *src, 
 #ifdef LOONGARCH_LSX
 uint32_t adler32_lsx(uint32_t adler, const uint8_t *src, size_t len);
 uint32_t adler32_copy_lsx(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
-void slide_hash_lsx(deflate_state *s);
-#  ifdef HAVE_BUILTIN_CTZ
-    uint32_t compare256_lsx(const uint8_t *src0, const uint8_t *src1);
-    uint32_t longest_match_lsx(deflate_state *const s, uint32_t cur_match);
-    uint32_t longest_match_slow_lsx(deflate_state *const s, uint32_t cur_match);
-#  endif
 uint8_t* chunkmemset_safe_lsx(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
+uint32_t compare256_lsx(const uint8_t *src0, const uint8_t *src1);
 void inflate_fast_lsx(PREFIX3(stream) *strm, uint32_t start);
+uint32_t longest_match_lsx(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_lsx(deflate_state *const s, uint32_t cur_match);
+void slide_hash_lsx(deflate_state *s);
 #endif
 
 #ifdef LOONGARCH_LASX
 uint32_t adler32_lasx(uint32_t adler, const uint8_t *src, size_t len);
 uint32_t adler32_copy_lasx(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
-void slide_hash_lasx(deflate_state *s);
-#  ifdef HAVE_BUILTIN_CTZ
-    uint32_t compare256_lasx(const uint8_t *src0, const uint8_t *src1);
-    uint32_t longest_match_lasx(deflate_state *const s, uint32_t cur_match);
-    uint32_t longest_match_slow_lasx(deflate_state *const s, uint32_t cur_match);
-#  endif
 uint8_t* chunkmemset_safe_lasx(uint8_t *out, uint8_t *from, unsigned len, unsigned left);
+uint32_t compare256_lasx(const uint8_t *src0, const uint8_t *src1);
 void inflate_fast_lasx(PREFIX3(stream) *strm, uint32_t start);
+uint32_t longest_match_lasx(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_lasx(deflate_state *const s, uint32_t cur_match);
+void slide_hash_lasx(deflate_state *s);
 #endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
@@ -52,40 +48,36 @@ void inflate_fast_lasx(PREFIX3(stream) *strm, uint32_t start);
 #    define native_adler32 adler32_lsx
 #    undef native_adler32_copy
 #    define native_adler32_copy adler32_copy_lsx
-#    undef native_slide_hash
-#    define native_slide_hash slide_hash_lsx
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_lsx
+#    undef native_compare256
+#    define native_compare256 compare256_lsx
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_lsx
-#    ifdef HAVE_BUILTIN_CTZ
-#      undef native_compare256
-#      define native_compare256 compare256_lsx
-#      undef native_longest_match
-#      define native_longest_match longest_match_lsx
-#      undef native_longest_match_slow
-#      define native_longest_match_slow longest_match_slow_lsx
-#    endif
+#    undef native_longest_match
+#    define native_longest_match longest_match_lsx
+#    undef native_longest_match_slow
+#    define native_longest_match_slow longest_match_slow_lsx
+#    undef native_slide_hash
+#    define native_slide_hash slide_hash_lsx
 #  endif
 #  if defined(LOONGARCH_LASX) && defined(__loongarch_asx)
 #    undef native_adler32
 #    define native_adler32 adler32_lasx
 #    undef native_adler32_copy
 #    define native_adler32_copy adler32_copy_lasx
-#    undef native_slide_hash
-#    define native_slide_hash slide_hash_lasx
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_lasx
+#    undef native_compare256
+#    define native_compare256 compare256_lasx
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_lasx
-#    ifdef HAVE_BUILTIN_CTZ
-#      undef native_compare256
-#      define native_compare256 compare256_lasx
-#      undef native_longest_match
-#      define native_longest_match longest_match_lasx
-#      undef native_longest_match_slow
-#      define native_longest_match_slow longest_match_slow_lasx
-#    endif
+#    undef native_longest_match
+#    define native_longest_match longest_match_lasx
+#    undef native_longest_match_slow
+#    define native_longest_match_slow longest_match_slow_lasx
+#    undef native_slide_hash
+#    define native_slide_hash slide_hash_lasx
 #  endif
 #endif
 

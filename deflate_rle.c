@@ -12,12 +12,8 @@
 
 #if OPTIMAL_CMP == 8
 #  define compare256_rle compare256_rle_8
-#elif defined(HAVE_BUILTIN_CTZLL)
-#  define compare256_rle compare256_rle_64
-#elif defined(HAVE_BUILTIN_CTZ)
-#  define compare256_rle compare256_rle_32
 #else
-#  define compare256_rle compare256_rle_16
+#  define compare256_rle compare256_rle_64
 #endif
 
 /* ===========================================================================

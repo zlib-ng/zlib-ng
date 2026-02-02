@@ -9,7 +9,6 @@ extern "C" {
 #  include "zbuild.h"
 #  include "arch_functions.h"
 #  include "../test_cpu_features.h"
-#  include "arch/generic/compare256_p.h"
 }
 
 #define MAX_COMPARE_SIZE (256 + 64)
@@ -74,25 +73,21 @@ public:
 BENCHMARK_COMPARE256(native, native_compare256, 1);
 #else
 
+#ifdef WITH_ALL_FALLBACKS
 BENCHMARK_COMPARE256(8, compare256_8, 1);
-BENCHMARK_COMPARE256(16, compare256_16, 1);
-#if defined(HAVE_BUILTIN_CTZ)
-BENCHMARK_COMPARE256(32, compare256_32, 1);
-#endif
-#if defined(HAVE_BUILTIN_CTZLL)
 BENCHMARK_COMPARE256(64, compare256_64, 1);
 #endif
 
-#if defined(X86_SSE2) && defined(HAVE_BUILTIN_CTZ)
+#ifdef X86_SSE2
 BENCHMARK_COMPARE256(sse2, compare256_sse2, test_cpu_features.x86.has_sse2);
 #endif
-#if defined(X86_AVX2) && defined(HAVE_BUILTIN_CTZ)
+#ifdef X86_AVX2
 BENCHMARK_COMPARE256(avx2, compare256_avx2, test_cpu_features.x86.has_avx2);
 #endif
-#if defined(X86_AVX512) && defined(HAVE_BUILTIN_CTZLL)
+#ifdef X86_AVX512
 BENCHMARK_COMPARE256(avx512, compare256_avx512, test_cpu_features.x86.has_avx512_common);
 #endif
-#if defined(ARM_NEON) && defined(HAVE_BUILTIN_CTZLL)
+#ifdef ARM_NEON
 BENCHMARK_COMPARE256(neon, compare256_neon, test_cpu_features.arm.has_neon);
 #endif
 #ifdef POWER9
@@ -101,10 +96,10 @@ BENCHMARK_COMPARE256(power9, compare256_power9, test_cpu_features.power.has_arch
 #ifdef RISCV_RVV
 BENCHMARK_COMPARE256(rvv, compare256_rvv, test_cpu_features.riscv.has_rvv);
 #endif
-#if defined(LOONGARCH_LSX) && defined(HAVE_BUILTIN_CTZ)
+#ifdef LOONGARCH_LSX
 BENCHMARK_COMPARE256(lsx, compare256_lsx, test_cpu_features.loongarch.has_lsx);
 #endif
-#if defined(LOONGARCH_LASX) && defined(HAVE_BUILTIN_CTZ)
+#ifdef LOONGARCH_LASX
 BENCHMARK_COMPARE256(lasx, compare256_lasx, test_cpu_features.loongarch.has_lasx);
 #endif
 

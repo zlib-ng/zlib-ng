@@ -5,11 +5,12 @@
  */
 
 #include "zbuild.h"
+#include "zendian.h"
 #include "zmemory.h"
 #include "deflate.h"
 #include "fallback_builtins.h"
 
-#if defined(X86_AVX512) && defined(HAVE_BUILTIN_CTZLL)
+#ifdef X86_AVX512
 
 #include <immintrin.h>
 #ifdef _MSC_VER
@@ -33,7 +34,7 @@ static inline uint32_t compare256_avx512_static(const uint8_t *src0, const uint8
     // 16 bytes
     xmm_src0_0 = _mm_loadu_si128((__m128i*)src0);
     xmm_src1_0 = _mm_loadu_si128((__m128i*)src1);
-    mask_0 = (uint32_t)_mm_cmpeq_epu8_mask(xmm_src0_0, xmm_src1_0); // zero-extended to use __builtin_ctz
+    mask_0 = (uint32_t)_mm_cmpeq_epu8_mask(xmm_src0_0, xmm_src1_0);
     if (mask_0 != 0x0000FFFF)
         return zng_ctz32(~mask_0); /* Invert bits so identical = 0 */
 

@@ -4,111 +4,52 @@
  */
 
 #include "zbuild.h"
+#include "zendian.h"
 #include "zmemory.h"
 #include "fallback_builtins.h"
 
 typedef uint32_t (*compare256_rle_func)(const uint8_t* src0, const uint8_t* src1);
 
-/* 8-bit integer comparison */
+/* 8-bit RLE comparison for hardware without unaligned loads */
 static inline uint32_t compare256_rle_8(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
+    uint8_t val = *src0;
 
     do {
-        if (*src0 != *src1)
+        if (val != src1[0])
             return len;
-        src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src1 += 1, len += 1;
-        if (*src0 != *src1)
-            return len;
-        src1 += 1, len += 1;
+        if (val != src1[1])
+            return len + 1;
+        if (val != src1[2])
+            return len + 2;
+        if (val != src1[3])
+            return len + 3;
+        if (val != src1[4])
+            return len + 4;
+        if (val != src1[5])
+            return len + 5;
+        if (val != src1[6])
+            return len + 6;
+        if (val != src1[7])
+            return len + 7;
+        src1 += 8, len += 8;
     } while (len < 256);
 
     return 256;
 }
 
-/* 16-bit integer comparison */
-static inline uint32_t compare256_rle_16(const uint8_t *src0, const uint8_t *src1) {
-    uint32_t len = 0;
-    uint16_t src0_cmp;
-
-    src0_cmp = zng_memread_2(src0);
-
-    do {
-        if (src0_cmp != zng_memread_2(src1))
-            return len + (*src0 == *src1);
-        src1 += 2, len += 2;
-        if (src0_cmp != zng_memread_2(src1))
-            return len + (*src0 == *src1);
-        src1 += 2, len += 2;
-        if (src0_cmp != zng_memread_2(src1))
-            return len + (*src0 == *src1);
-        src1 += 2, len += 2;
-        if (src0_cmp != zng_memread_2(src1))
-            return len + (*src0 == *src1);
-        src1 += 2, len += 2;
-    } while (len < 256);
-
-    return 256;
-}
-
-#ifdef HAVE_BUILTIN_CTZ
-/* 32-bit integer comparison */
-static inline uint32_t compare256_rle_32(const uint8_t *src0, const uint8_t *src1) {
-    uint32_t sv, len = 0;
-    uint16_t src0_cmp;
-
-    src0_cmp = zng_memread_2(src0);
-    sv = ((uint32_t)src0_cmp << 16) | src0_cmp;
-
-    do {
-        uint32_t mv, diff;
-
-        mv = zng_memread_4(src1);
-
-        diff = sv ^ mv;
-        if (diff)
-            return len + zng_ctz32(Z_U32_TO_LE(diff)) / 8;
-
-        src1 += 4, len += 4;
-    } while (len < 256);
-
-    return 256;
-}
-#endif
-
-#ifdef HAVE_BUILTIN_CTZLL
-/* 64-bit integer comparison */
+/* 64-bit RLE comparison for hardware with unaligned loads */
 static inline uint32_t compare256_rle_64(const uint8_t *src0, const uint8_t *src1) {
     uint32_t src0_cmp32, len = 0;
     uint16_t src0_cmp;
-    uint64_t sv;
+    uint64_t sv, mv, diff;
 
     src0_cmp = zng_memread_2(src0);
     src0_cmp32 = ((uint32_t)src0_cmp << 16) | src0_cmp;
     sv = ((uint64_t)src0_cmp32 << 32) | src0_cmp32;
 
     do {
-        uint64_t mv, diff;
-
         mv = zng_memread_8(src1);
-
         diff = sv ^ mv;
         if (diff)
             return len + zng_ctz64(Z_U64_TO_LE(diff)) / 8;
@@ -118,4 +59,3 @@ static inline uint32_t compare256_rle_64(const uint8_t *src0, const uint8_t *src
 
     return 256;
 }
-#endif

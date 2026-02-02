@@ -83,23 +83,18 @@ static int init_functable(void) {
     ft.adler32_copy = &adler32_copy_c;
     ft.crc32 = &crc32_braid;
     ft.crc32_copy = &crc32_copy_braid;
-#    ifndef HAVE_BUILTIN_CTZ
-    ft.longest_match = &longest_match_c;
-    ft.longest_match_slow = &longest_match_slow_c;
-    ft.compare256 = &compare256_c;
-#    endif
 #  endif
 #else // WITH_ALL_FALLBACKS
     ft.adler32 = &adler32_c;
     ft.adler32_copy = &adler32_copy_c;
     ft.chunkmemset_safe = &chunkmemset_safe_c;
+    ft.compare256 = &compare256_c;
     ft.crc32 = &crc32_braid;
     ft.crc32_copy = &crc32_copy_braid;
     ft.inflate_fast = &inflate_fast_c;
-    ft.slide_hash = &slide_hash_c;
     ft.longest_match = &longest_match_c;
     ft.longest_match_slow = &longest_match_slow_c;
-    ft.compare256 = &compare256_c;
+    ft.slide_hash = &slide_hash_c;
 #endif
 
     // Select arch-optimized functions
@@ -118,17 +113,15 @@ static int init_functable(void) {
 #  endif
     {
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
+        ft.compare256 = &compare256_sse2;
 #  if !defined(WITHOUT_CHORBA_SSE)
         ft.crc32 = &crc32_chorba_sse2;
         ft.crc32_copy = &crc32_copy_chorba_sse2;
 #  endif
         ft.inflate_fast = &inflate_fast_sse2;
-        ft.slide_hash = &slide_hash_sse2;
-#  ifdef HAVE_BUILTIN_CTZ
-        ft.compare256 = &compare256_sse2;
         ft.longest_match = &longest_match_sse2;
         ft.longest_match_slow = &longest_match_slow_sse2;
-#  endif
+        ft.slide_hash = &slide_hash_sse2;
     }
 #endif
     // X86 - SSSE3
@@ -172,13 +165,11 @@ static int init_functable(void) {
         ft.adler32 = &adler32_avx2;
         ft.adler32_copy = &adler32_copy_avx2;
         ft.chunkmemset_safe = &chunkmemset_safe_avx2;
-        ft.inflate_fast = &inflate_fast_avx2;
-        ft.slide_hash = &slide_hash_avx2;
-#  ifdef HAVE_BUILTIN_CTZ
         ft.compare256 = &compare256_avx2;
+        ft.inflate_fast = &inflate_fast_avx2;
         ft.longest_match = &longest_match_avx2;
         ft.longest_match_slow = &longest_match_slow_avx2;
-#  endif
+        ft.slide_hash = &slide_hash_avx2;
     }
 #endif
     // X86 - AVX512 (F,DQ,BW,Vl)
@@ -187,12 +178,10 @@ static int init_functable(void) {
         ft.adler32 = &adler32_avx512;
         ft.adler32_copy = &adler32_copy_avx512;
         ft.chunkmemset_safe = &chunkmemset_safe_avx512;
-        ft.inflate_fast = &inflate_fast_avx512;
-#  ifdef HAVE_BUILTIN_CTZLL
         ft.compare256 = &compare256_avx512;
+        ft.inflate_fast = &inflate_fast_avx512;
         ft.longest_match = &longest_match_avx512;
         ft.longest_match_slow = &longest_match_slow_avx512;
-#  endif
     }
 #endif
 #ifdef X86_AVX512VNNI
@@ -228,13 +217,11 @@ static int init_functable(void) {
         ft.adler32 = &adler32_neon;
         ft.adler32_copy = &adler32_copy_neon;
         ft.chunkmemset_safe = &chunkmemset_safe_neon;
-        ft.inflate_fast = &inflate_fast_neon;
-        ft.slide_hash = &slide_hash_neon;
-#  ifdef HAVE_BUILTIN_CTZLL
         ft.compare256 = &compare256_neon;
+        ft.inflate_fast = &inflate_fast_neon;
         ft.longest_match = &longest_match_neon;
         ft.longest_match_slow = &longest_match_slow_neon;
-#  endif
+        ft.slide_hash = &slide_hash_neon;
     }
 #endif
     // ARM - CRC32
@@ -327,28 +314,24 @@ static int init_functable(void) {
     if (cf.loongarch.has_lsx) {
         ft.adler32 = &adler32_lsx;
         ft.adler32_copy = &adler32_copy_lsx;
-        ft.slide_hash = slide_hash_lsx;
-#  ifdef HAVE_BUILTIN_CTZ
+        ft.chunkmemset_safe = &chunkmemset_safe_lsx;
         ft.compare256 = &compare256_lsx;
+        ft.inflate_fast = &inflate_fast_lsx;
         ft.longest_match = &longest_match_lsx;
         ft.longest_match_slow = &longest_match_slow_lsx;
-#  endif
-        ft.chunkmemset_safe = &chunkmemset_safe_lsx;
-        ft.inflate_fast = &inflate_fast_lsx;
+        ft.slide_hash = slide_hash_lsx;
     }
 #endif
 #ifdef LOONGARCH_LASX
     if (cf.loongarch.has_lasx) {
         ft.adler32 = &adler32_lasx;
         ft.adler32_copy = &adler32_copy_lasx;
-        ft.slide_hash = slide_hash_lasx;
-#  ifdef HAVE_BUILTIN_CTZ
+        ft.chunkmemset_safe = &chunkmemset_safe_lasx;
         ft.compare256 = &compare256_lasx;
+        ft.inflate_fast = &inflate_fast_lasx;
         ft.longest_match = &longest_match_lasx;
         ft.longest_match_slow = &longest_match_slow_lasx;
-#  endif
-        ft.chunkmemset_safe = &chunkmemset_safe_lasx;
-        ft.inflate_fast = &inflate_fast_lasx;
+        ft.slide_hash = slide_hash_lasx;
     }
 #endif
 

@@ -51,10 +51,4 @@ static inline void compare256_rle_match_check(compare256_rle_func compare256_rle
     }
 
 TEST_COMPARE256_RLE(8, compare256_rle_8, 1)
-TEST_COMPARE256_RLE(16, compare256_rle_16, 1)
-#if defined(HAVE_BUILTIN_CTZ)
-TEST_COMPARE256_RLE(32, compare256_rle_32, 1)
-#endif
-#if defined(HAVE_BUILTIN_CTZLL)
 TEST_COMPARE256_RLE(64, compare256_rle_64, 1)
-#endif
