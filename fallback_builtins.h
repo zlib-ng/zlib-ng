@@ -1,51 +1,71 @@
 #ifndef FALLBACK_BUILTINS_H
 #define FALLBACK_BUILTINS_H
 
-/* Provide fallback for compilers that don't support __has_builtin */
-#  ifndef __has_builtin
-#    define __has_builtin(x) 0
-#  endif
-
 #if defined(_MSC_VER) && !defined(__clang__)
+#  include <intrin.h>
+#endif
 
-#include <intrin.h>
+/* Provide fallback for compilers that don't support __has_builtin */
+#ifndef __has_builtin
+#  define __has_builtin(x) 0
+#endif
 
-/* This is not a general purpose replacement for __builtin_ctz. The function expects that value is != 0.
- * Because of that assumption trailing_zero is not initialized and the return value is not checked.
- * Tzcnt and bsf give identical results except when input value is 0, therefore this can not be allowed.
- * If tzcnt instruction is not supported, the cpu will itself execute bsf instead.
- * Performance tzcnt/bsf is identical on Intel cpu, tzcnt is faster than bsf on AMD cpu.
- */
-Z_FORCEINLINE static int __builtin_ctz(unsigned int value) {
+/* Count trailing zeros (CTZ) functions with portable fallback.
+ *
+ * Predicate: Input must be non-zero. The result is undefined for zero input because
+ * __builtin_ctz, BSF, and TZCNT all have undefined/different behavior for zero. TZCNT
+ * returns operand size for zero, BSF leaves destination undefined, and __builtin_ctz
+ * is explicitly undefined per GCC/Clang docs. */
+
+Z_FORCEINLINE static uint32_t zng_ctz32(uint32_t value) {
     Assert(value != 0, "Invalid input value: 0");
+#if __has_builtin(__builtin_ctz)
+    return (uint32_t)__builtin_ctz(value);
+#elif defined(_MSC_VER) && !defined(__clang__)
 #  if defined(X86_FEATURES) && !(_MSC_VER < 1700)
-    return (int)_tzcnt_u32(value);
+    /* tzcnt falls back to bsf on cpus without BMI1, and is equal or faster on all x86 cpus. */
+    return (uint32_t)_tzcnt_u32(value);
 #  else
     unsigned long trailing_zero;
     _BitScanForward(&trailing_zero, value);
-    return (int)trailing_zero;
+    return (uint32_t)trailing_zero;
 #  endif
+#else
+    /* De Bruijn CTZ for 32-bit values */
+    static const uint8_t debruijn_ctz32[32] = {
+        0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+        31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+    };
+    uint32_t lsb = value & (~value + 1u);
+    return debruijn_ctz32[(lsb * 0x077CB531U) >> 27];
+#endif
 }
-#  define HAVE_BUILTIN_CTZ
 
-#  ifdef ARCH_64BIT
-/* This is not a general purpose replacement for __builtin_ctzll. The function expects that value is != 0.
- * Because of that assumption trailing_zero is not initialized and the return value is not checked.
- */
-Z_FORCEINLINE static int __builtin_ctzll(unsigned long long value) {
+Z_FORCEINLINE static uint32_t zng_ctz64(uint64_t value) {
     Assert(value != 0, "Invalid input value: 0");
+#if __has_builtin(__builtin_ctzll)
+    return (uint32_t)__builtin_ctzll(value);
+#elif defined(_MSC_VER) && !defined(__clang__) && defined(ARCH_64BIT)
 #  if defined(X86_FEATURES) && !(_MSC_VER < 1700)
-    return (int)_tzcnt_u64(value);
+    /* tzcnt falls back to bsf on cpus without BMI1, and is equal or faster on all x86 cpus. */
+    return (uint32_t)_tzcnt_u64(value);
 #  else
     unsigned long trailing_zero;
     _BitScanForward64(&trailing_zero, value);
-    return (int)trailing_zero;
+    return (uint32_t)trailing_zero;
 #  endif
+#else
+    /* De Bruijn CTZ for 64-bit values */
+    static const uint8_t debruijn_ctz64[64] = {
+        63, 0, 1, 52, 2, 6, 53, 26, 3, 37, 40, 7, 33, 54, 47, 27,
+        61, 4, 38, 45, 43, 41, 21, 8, 23, 34, 58, 55, 48, 17, 28, 10,
+        62, 51, 5, 25, 36, 39, 32, 46, 60, 44, 42, 20, 22, 57, 16, 9,
+        50, 24, 35, 31, 59, 19, 56, 15, 49, 30, 18, 14, 29, 13, 12, 11
+    };
+    uint64_t lsb = value & (~value + 1ull);
+    return debruijn_ctz64[(lsb * 0x045FBAC7992A70DAULL) >> 58];
+#endif
 }
-#  define HAVE_BUILTIN_CTZLL
-#  endif // ARCH_64BIT
-
-#endif // _MSC_VER && !__clang__
 
 #if !__has_builtin(__builtin_bitreverse16)
 

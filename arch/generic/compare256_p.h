@@ -78,14 +78,8 @@ static inline uint32_t compare256_32(const uint8_t *src0, const uint8_t *src1) {
         mv = zng_memread_4(src1);
 
         diff = sv ^ mv;
-        if (diff) {
-#  if BYTE_ORDER == LITTLE_ENDIAN
-            uint32_t match_byte = __builtin_ctz(diff) / 8;
-#  else
-            uint32_t match_byte = __builtin_clz(diff) / 8;
-#  endif
-            return len + match_byte;
-        }
+        if (diff)
+            return len + zng_ctz32(Z_U32_FROM_LE(diff)) / 8;
 
         src0 += 4, src1 += 4, len += 4;
     } while (len < 256);
@@ -106,14 +100,8 @@ static inline uint32_t compare256_64(const uint8_t *src0, const uint8_t *src1) {
         mv = zng_memread_8(src1);
 
         diff = sv ^ mv;
-        if (diff) {
-#  if BYTE_ORDER == LITTLE_ENDIAN
-            uint64_t match_byte = __builtin_ctzll(diff) / 8;
-#  else
-            uint64_t match_byte = __builtin_clzll(diff) / 8;
-#  endif
-            return len + (uint32_t)match_byte;
-        }
+        if (diff)
+            return len + zng_ctz64(Z_U64_FROM_LE(diff)) / 8;
 
         src0 += 8, src1 += 8, len += 8;
     } while (len < 256);

@@ -25,10 +25,8 @@ static inline uint32_t compare256_sse2_static(const uint8_t *src0, const uint8_t
 
     /* Compiler _may_ turn this branch into a ptest + movemask,
      * since a lot of those uops are shared and fused */
-    if (mask != 0xFFFF) {
-        uint32_t match_byte = (uint32_t)__builtin_ctz(~mask);
-        return match_byte;
-    }
+    if (mask != 0xFFFF)
+        return zng_ctz32(~mask);
 
     const uint8_t *last0 = src0 + 240;
     const uint8_t *last1 = src1 + 240;
@@ -49,10 +47,8 @@ static inline uint32_t compare256_sse2_static(const uint8_t *src0, const uint8_t
 
         /* Compiler _may_ turn this branch into a ptest + movemask,
          * since a lot of those uops are shared and fused */
-        if (mask != 0xFFFF) {
-            uint32_t match_byte = (uint32_t)__builtin_ctz(~mask);
-            return len + match_byte;
-        }
+        if (mask != 0xFFFF)
+            return len + zng_ctz32(~mask);
 
         len += 16, src0 += 16, src1 += 16;
     }
@@ -64,10 +60,8 @@ static inline uint32_t compare256_sse2_static(const uint8_t *src0, const uint8_t
 
         mask = (unsigned)_mm_movemask_epi8(xmm_cmp);
 
-        if (mask != 0xFFFF) {
-            uint32_t match_byte = (uint32_t)__builtin_ctz(~mask);
-            return 240 + match_byte;
-        }
+        if (mask != 0xFFFF)
+            return 240 + zng_ctz32(~mask);
     }
 
     return 256;

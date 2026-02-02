@@ -24,16 +24,12 @@ static inline uint32_t compare256_neon_static(const uint8_t *src0, const uint8_t
         cmp = veorq_u8(a, b);
 
         lane = vgetq_lane_u64(vreinterpretq_u64_u8(cmp), 0);
-        if (lane) {
-            uint32_t match_byte = (uint32_t)__builtin_ctzll(lane) / 8;
-            return len + match_byte;
-        }
+        if (lane)
+            return len + zng_ctz64(lane) / 8;
         len += 8;
         lane = vgetq_lane_u64(vreinterpretq_u64_u8(cmp), 1);
-        if (lane) {
-            uint32_t match_byte = (uint32_t)__builtin_ctzll(lane) / 8;
-            return len + match_byte;
-        }
+        if (lane)
+            return len + zng_ctz64(lane) / 8;
         len += 8;
 
         src0 += 16, src1 += 16;

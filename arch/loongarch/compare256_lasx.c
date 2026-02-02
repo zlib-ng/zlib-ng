@@ -23,10 +23,8 @@ static inline uint32_t compare256_lasx_static(const uint8_t *src0, const uint8_t
         ymm_src1 = __lasx_xvld(src1, 0);
         ymm_cmp = __lasx_xvseq_b(ymm_src0, ymm_src1); /* non-identical bytes = 00, identical bytes = FF */
         unsigned mask = (unsigned)lasx_movemask_b(ymm_cmp);
-        if (mask != 0xFFFFFFFF) {
-            uint32_t match_byte = (uint32_t)__builtin_ctz(~mask); /* Invert bits so identical = 0 */
-            return len + match_byte;
-        }
+        if (mask != 0xFFFFFFFF)
+            return len + zng_ctz32(~mask); /* Invert bits so identical = 0 */
 
         src0 += 32, src1 += 32, len += 32;
 
@@ -34,10 +32,8 @@ static inline uint32_t compare256_lasx_static(const uint8_t *src0, const uint8_t
         ymm_src1 = __lasx_xvld(src1, 0);
         ymm_cmp = __lasx_xvseq_b(ymm_src0, ymm_src1);
         mask = (unsigned)lasx_movemask_b(ymm_cmp);
-        if (mask != 0xFFFFFFFF) {
-            uint32_t match_byte = (uint32_t)__builtin_ctz(~mask);
-            return len + match_byte;
-        }
+        if (mask != 0xFFFFFFFF)
+            return len + zng_ctz32(~mask);
 
         src0 += 32, src1 += 32, len += 32;
     } while (len < 256);

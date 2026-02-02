@@ -24,10 +24,8 @@ static inline uint32_t compare256_avx2_static(const uint8_t *src0, const uint8_t
         ymm_src1 = _mm256_loadu_si256((__m256i*)src1);
         ymm_cmp = _mm256_cmpeq_epi8(ymm_src0, ymm_src1); /* non-identical bytes = 00, identical bytes = FF */
         unsigned mask = (unsigned)_mm256_movemask_epi8(ymm_cmp);
-        if (mask != 0xFFFFFFFF) {
-            uint32_t match_byte = (uint32_t)__builtin_ctz(~mask); /* Invert bits so identical = 0 */
-            return len + match_byte;
-        }
+        if (mask != 0xFFFFFFFF)
+            return len + zng_ctz32(~mask); /* Invert bits so identical = 0 */
 
         src0 += 32, src1 += 32, len += 32;
 
@@ -35,10 +33,8 @@ static inline uint32_t compare256_avx2_static(const uint8_t *src0, const uint8_t
         ymm_src1 = _mm256_loadu_si256((__m256i*)src1);
         ymm_cmp = _mm256_cmpeq_epi8(ymm_src0, ymm_src1);
         mask = (unsigned)_mm256_movemask_epi8(ymm_cmp);
-        if (mask != 0xFFFFFFFF) {
-            uint32_t match_byte = (uint32_t)__builtin_ctz(~mask);
-            return len + match_byte;
-        }
+        if (mask != 0xFFFFFFFF)
+            return len + zng_ctz32(~mask);
 
         src0 += 32, src1 += 32, len += 32;
     } while (len < 256);
