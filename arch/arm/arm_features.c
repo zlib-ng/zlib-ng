@@ -29,7 +29,10 @@
 
 static int arm_has_crc32(void) {
     int has_crc32 = 0;
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#if defined(__ARM_FEATURE_CRC32)
+    /* Compile-time check */
+    has_crc32 = 1;
+#elif defined(__linux__) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_CRC32
     has_crc32 = (getauxval(AT_HWCAP) & HWCAP_CRC32) != 0;
 #  elif defined(HWCAP2_CRC32)
@@ -62,15 +65,16 @@ static int arm_has_crc32(void) {
         && has_feat == 1;
 #elif defined(_WIN32)
     has_crc32 = IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE);
-#elif defined(ARM_NOCHECK_CRC32)
-    has_crc32 = 1;
 #endif
     return has_crc32;
 }
 
 static int arm_has_pmull(void) {
     int has_pmull = 0;
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#if defined(__ARM_FEATURE_CRYPTO) || defined(__ARM_FEATURE_AES)
+    /* Compile-time check */
+    has_pmull = 1;
+#elif defined(__linux__) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_PMULL
     has_pmull = (getauxval(AT_HWCAP) & HWCAP_PMULL) != 0;
 #  elif defined(HWCAP_AES)
@@ -109,16 +113,16 @@ static int arm_has_pmull(void) {
 #  ifdef PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE
     has_pmull = IsProcessorFeaturePresent(PF_ARM_V8_CRYPTO_INSTRUCTIONS_AVAILABLE);
 #  endif
-#elif defined(__ARM_FEATURE_CRYPTO) || defined(__ARM_FEATURE_AES)
-    /* Compile-time check */
-    has_pmull = 1;
 #endif
     return has_pmull;
 }
 
 static int arm_has_eor3(void) {
     int has_eor3 = 0;
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#if defined(__ARM_FEATURE_SHA3)
+    /* Compile-time check */
+    has_eor3 = 1;
+#elif defined(__linux__) && defined(HAVE_SYS_AUXV_H)
     /* EOR3 is part of SHA3 extension, check HWCAP2_SHA3 */
 #  ifdef HWCAP2_SHA3
     has_eor3 = (getauxval(AT_HWCAP2) & HWCAP2_SHA3) != 0;
@@ -166,9 +170,6 @@ static int arm_has_eor3(void) {
 #  ifdef PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE
     has_eor3 = IsProcessorFeaturePresent(PF_ARM_SHA3_INSTRUCTIONS_AVAILABLE);
 #  endif
-#elif defined(__ARM_FEATURE_SHA3)
-    /* Compile-time check */
-    has_eor3 = 1;
 #endif
     return has_eor3;
 }
@@ -177,7 +178,10 @@ static int arm_has_eor3(void) {
 #ifdef ARCH_32BIT
 static inline int arm_has_neon(void) {
     int has_neon = 0;
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#if defined(__ARM_NEON__) || defined(__ARM_NEON)
+    /* Compile-time check */
+    has_neon = 1;
+#elif defined(__linux__) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_ARM_NEON
     has_neon = (getauxval(AT_HWCAP) & HWCAP_ARM_NEON) != 0;
 #  elif defined(HWCAP_NEON)
@@ -199,10 +203,6 @@ static inline int arm_has_neon(void) {
     has_neon = 1; /* Always supported */
 #  endif
 #endif
-
-#ifdef ARM_NOCHECK_NEON
-    has_neon = 1;
-#endif
     return has_neon;
 }
 #endif
@@ -211,14 +211,15 @@ static inline int arm_has_neon(void) {
 #ifdef ARCH_32BIT
 static inline int arm_has_simd(void) {
     int has_simd = 0;
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#if defined(__ARM_FEATURE_SIMD32)
+    /* Compile-time check for ARMv6 SIMD */
+    has_simd = 1;
+#elif defined(__linux__) && defined(HAVE_SYS_AUXV_H)
     const char *platform = (const char *)getauxval(AT_PLATFORM);
     has_simd = platform
        && (strncmp(platform, "v6l", 3) == 0
         || strncmp(platform, "v7l", 3) == 0
         || strncmp(platform, "v8l", 3) == 0);
-#elif defined(ARM_NOCHECK_SIMD)
-    has_simd = 1;
 #endif
     return has_simd;
 }
