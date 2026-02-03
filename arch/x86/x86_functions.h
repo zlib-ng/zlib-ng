@@ -94,6 +94,8 @@ uint32_t crc32_copy_vpclmulqdq(uint32_t crc, uint8_t *dst, const uint8_t *src, s
 #    if !defined(WITHOUT_CHORBA_SSE)
 #      undef native_crc32
 #      define native_crc32 crc32_chorba_sse2
+#      undef native_crc32_copy
+#      define native_crc32_copy crc32_copy_chorba_sse2
 #    endif
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_sse2
