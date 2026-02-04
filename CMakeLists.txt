@@ -110,7 +110,7 @@ Useful when embedding into a larger library.
 Default is no prefix (empty prefix).")
 
 # Add multi-choice option
-set(WITH_SANITIZER AUTO CACHE STRING "Enable sanitizer support")
+set(WITH_SANITIZER OFF CACHE STRING "Enable sanitizer support")
 set_property(CACHE WITH_SANITIZER PROPERTY STRINGS "OFF" "Memory" "Address" "Undefined" "Thread")
 
 if(BASEARCH_ARM_FOUND)
