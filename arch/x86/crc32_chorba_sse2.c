@@ -20,7 +20,7 @@
         d  = _mm_srli_epi64(invec, 20); \
         } while (0);
 
-Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint64_t* input, size_t len) {
+Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint64_t *input, size_t len) {
     ALIGNED_(16) uint64_t final[9] = {0};
     uint64_t next1 = ~crc;
     crc = 0;
@@ -37,7 +37,7 @@ Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint64_
     size_t i = 0;
 
     /* This is weird, doing for vs while drops 10% off the exec time */
-    for(; (i + 256 + 40 + 32 + 32) < len; i += 32) {
+    for (; (i + 256 + 40 + 32 + 32) < len; i += 32) {
         __m128i in1in2, in3in4;
 
         /*
@@ -51,12 +51,12 @@ Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint64_
         uint64_t chorba8 = input[i / sizeof(uint64_t) + 7];
         */
 
-        const uint64_t *inputPtr = input + (i / sizeof(uint64_t));
-        const __m128i *inputPtr128 = (__m128i*)inputPtr;
-        __m128i chorba12 = _mm_load_si128(inputPtr128++);
-        __m128i chorba34 = _mm_load_si128(inputPtr128++);
-        __m128i chorba56 = _mm_load_si128(inputPtr128++);
-        __m128i chorba78 = _mm_load_si128(inputPtr128++);
+        const uint64_t *input_ptr = input + (i / sizeof(uint64_t));
+        const __m128i *input_ptr_128 = (__m128i*)input_ptr;
+        __m128i chorba12 = _mm_load_si128(input_ptr_128++);
+        __m128i chorba34 = _mm_load_si128(input_ptr_128++);
+        __m128i chorba56 = _mm_load_si128(input_ptr_128++);
+        __m128i chorba78 = _mm_load_si128(input_ptr_128++);
 
         chorba12 = _mm_xor_si128(chorba12, next12);
         chorba34 = _mm_xor_si128(chorba34, next34);
@@ -720,7 +720,7 @@ Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint64_
         next56 = _mm_unpackhi_epi64(cd4, _mm_setzero_si128());
     }
 
-    for(; (i + 40 + 32) < len; i += 32) {
+    for (; (i + 40 + 32) < len; i += 32) {
         __m128i in1in2, in3in4;
 
         /*in1 = input[i / sizeof(uint64_t)];

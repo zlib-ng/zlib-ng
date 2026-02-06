@@ -52,10 +52,10 @@
     out3 = _mm_xor_si128(in[4], xor3); \
     } while (0)
 
-Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t crc, const uint64_t* input, size_t len) {
+Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t crc, const uint64_t *input, size_t len) {
     ALIGNED_(16) uint64_t bitbuffer[32768 / sizeof(uint64_t)];
     __m128i *bitbuffer_v = (__m128i*)bitbuffer;
-    const uint8_t* bitbufferbytes = (const uint8_t*) bitbuffer;
+    const uint8_t *bitbuffer_bytes = (const uint8_t*)bitbuffer;
     __m128i z = _mm_setzero_si128();
 
     __m128i *bitbuf128 = &bitbuffer_v[64];
@@ -98,7 +98,7 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
     __m128i buf182 = z;
     __m128i buf210 = z;
 
-    for(; i + 300*8+64 < len && i < 22 * 8; i += 64) {
+    for (; i + 300*8+64 < len && i < 22 * 8; i += 64) {
         __m128i in12, in34, in56, in78,
                 in_1, in23, in45, in67, in8_;
 
@@ -127,7 +127,7 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
         STORE4(in12, in34, in56, in78, bitbuf300);
     }
 
-    for(; i + 300*8+64 < len && i < 32 * 8; i += 64) {
+    for (; i + 300*8+64 < len && i < 32 * 8; i += 64) {
         __m128i in12, in34, in56, in78,
                 in_1, in23, in45, in67, in8_;
         READ4(in12, in34, in56, in78, inptr);
@@ -152,7 +152,7 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
         STORE4(in12, in34, in56, in78, bitbuf300);
     }
 
-    for(; i + 300*8+64 < len && i < 84 * 8; i += 64) {
+    for (; i + 300*8+64 < len && i < 84 * 8; i += 64) {
         __m128i in12, in34, in56, in78,
                 in_1, in23, in45, in67, in8_;
         READ4(in12, in34, in56, in78, inptr);
@@ -177,7 +177,7 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
         STORE4(in12, in34, in56, in78, bitbuf300);
     }
 
-    for(; i + 300*8+64 < len; i += 64) {
+    for (; i + 300*8+64 < len; i += 64) {
         __m128i in12, in34, in56, in78,
                 in_1, in23, in45, in67, in8_;
 
@@ -254,7 +254,7 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
     next34 = z;
     next56 = z;
 
-    for(; (i + 72 < len); i += 32) {
+    for (; (i + 72 < len); i += 32) {
         __m128i in1in2, in3in4;
         __m128i in1in2_, in3in4_;
         __m128i ab1, ab2, ab3, ab4;
@@ -295,10 +295,10 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
     ++final128;
     _mm_store_si128(final128, _mm_xor_si128(_mm_load_si128(final128), next56));
 
-    uint8_t* final_bytes = (uint8_t*) final;
+    uint8_t *final_bytes = (uint8_t*)final;
 
-    for(size_t j = 0; j < (len-i); j++) {
-        crc = crc_table[(crc ^ final_bytes[j] ^ bitbufferbytes[(j+i)]) & 0xff] ^ (crc >> 8);
+    for (size_t j = 0; j < (len-i); j++) {
+        crc = crc_table[(crc ^ final_bytes[j] ^ bitbuffer_bytes[(j+i)]) & 0xff] ^ (crc >> 8);
     }
     return ~crc;
 }
