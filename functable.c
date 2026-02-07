@@ -77,12 +77,47 @@ static int init_functable(void) {
 
     // Set up generic C code fallbacks
 #ifndef WITH_ALL_FALLBACKS
-#  if defined(ARCH_X86) && defined(ARCH_64BIT) && defined(X86_SSE2)
-    // x86_64 always has SSE2, so we can use SSE2 functions as fallbacks where available.
+    // Only use necessary generic functions when no suitable simd versions are available.
+#  ifdef X86_SSE2_NATIVE
+    // x86_64 always has SSE2
     ft.adler32 = &adler32_c;
     ft.adler32_copy = &adler32_copy_c;
     ft.crc32 = &crc32_braid;
     ft.crc32_copy = &crc32_copy_braid;
+#  elif defined(ARM_NEON_NATIVE)
+#    ifndef ARM_CRC32_NATIVE
+    ft.crc32 = &crc32_braid;
+    ft.crc32_copy = &crc32_copy_braid;
+#    endif
+#  elif defined(POWER8_VSX_NATIVE)
+#    ifndef POWER9_NATIVE
+    ft.compare256 = &compare256_c;
+    ft.longest_match = &longest_match_c;
+    ft.longest_match_slow = &longest_match_slow_c;
+#    endif
+#    ifndef POWER8_VSX_CRC32_NATIVE
+    ft.crc32 = &crc32_braid;
+    ft.crc32_copy = &crc32_copy_braid;
+#    endif
+#  elif defined(LOONGARCH_LSX_NATIVE)
+#    ifndef LOONGARCH_CRC
+    ft.crc32 = &crc32_braid;
+    ft.crc32_copy = &crc32_copy_braid;
+#    endif
+#  elif defined(RISCV_RVV_NATIVE)
+#    ifndef RISCV_ZBC_NATIVE
+    ft.crc32 = &crc32_braid;
+    ft.crc32_copy = &crc32_copy_braid;
+#    endif
+#  elif defined(S390_CRC32_VX_NATIVE)
+    ft.adler32 = &adler32_c;
+    ft.adler32_copy = &adler32_copy_c;
+    ft.chunkmemset_safe = &chunkmemset_safe_c;
+    ft.compare256 = &compare256_c;
+    ft.inflate_fast = &inflate_fast_c;
+    ft.longest_match = &longest_match_c;
+    ft.longest_match_slow = &longest_match_slow_c;
+    ft.slide_hash = &slide_hash_c;
 #  endif
 #else // WITH_ALL_FALLBACKS
     ft.adler32 = &adler32_c;
@@ -108,60 +143,82 @@ static int init_functable(void) {
 
     // X86 - SSE2
 #ifdef X86_SSE2
-#  ifdef ARCH_32BIT
+#  ifndef X86_SSE2_NATIVE
     if (cf.x86.has_sse2)
 #  endif
     {
+#  ifndef X86_AVX2_NATIVE
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
         ft.compare256 = &compare256_sse2;
-#  if !defined(WITHOUT_CHORBA_SSE)
-        ft.crc32 = &crc32_chorba_sse2;
-        ft.crc32_copy = &crc32_copy_chorba_sse2;
-#  endif
         ft.inflate_fast = &inflate_fast_sse2;
         ft.longest_match = &longest_match_sse2;
         ft.longest_match_slow = &longest_match_slow_sse2;
         ft.slide_hash = &slide_hash_sse2;
+#  endif
+#  if !defined(WITHOUT_CHORBA_SSE) && !defined(X86_PCLMULQDQ_NATIVE)
+        ft.crc32 = &crc32_chorba_sse2;
+        ft.crc32_copy = &crc32_copy_chorba_sse2;
+#  endif
     }
 #endif
     // X86 - SSSE3
 #ifdef X86_SSSE3
-    if (cf.x86.has_ssse3) {
+#  ifndef X86_SSSE3_NATIVE
+    if (cf.x86.has_ssse3)
+#  endif
+    {
         ft.adler32 = &adler32_ssse3;
         ft.adler32_copy = &adler32_copy_ssse3;
+#  ifndef X86_AVX2_NATIVE
         ft.chunkmemset_safe = &chunkmemset_safe_ssse3;
         ft.inflate_fast = &inflate_fast_ssse3;
+#  endif
     }
 #endif
 
     // X86 - SSE4.1
-#if defined(X86_SSE41) && !defined(WITHOUT_CHORBA_SSE)
-    if (cf.x86.has_sse41) {
+#if defined(X86_SSE41) && !defined(X86_PCLMULQDQ_NATIVE)
+#  ifndef X86_SSE41_NATIVE
+    if (cf.x86.has_sse41)
+#  endif
+    {
+#  ifndef WITHOUT_CHORBA_SSE
         ft.crc32 = &crc32_chorba_sse41;
         ft.crc32_copy = &crc32_copy_chorba_sse41;
+#  endif
     }
 #endif
 
     // X86 - SSE4.2
-#ifdef X86_SSE42
-    if (cf.x86.has_sse42) {
+#if defined(X86_SSE42) && !defined(X86_AVX512_NATIVE)
+#  ifndef X86_SSE42_NATIVE
+    if (cf.x86.has_sse42)
+#  endif
+    {
         ft.adler32_copy = &adler32_copy_sse42;
     }
 #endif
     // X86 - PCLMUL
-#ifdef X86_PCLMULQDQ_CRC
-    if (cf.x86.has_pclmulqdq) {
+#if defined(X86_PCLMULQDQ_CRC) && !defined(X86_VPCLMULQDQ_NATIVE)
+#  ifndef X86_PCLMULQDQ_NATIVE
+    if (cf.x86.has_pclmulqdq)
+#  endif
+    {
         ft.crc32 = &crc32_pclmulqdq;
         ft.crc32_copy = &crc32_copy_pclmulqdq;
     }
 #endif
-    // X86 - AVX
+    // X86 - AVX2
 #ifdef X86_AVX2
     /* BMI2 support is all but implicit with AVX2 but let's sanity check this just in case. Enabling BMI2 allows for
      * flagless shifts, resulting in fewer flag stalls for the pipeline, and allows us to set destination registers
      * for the shift results as an operand, eliminating several register-register moves when the original value needs
      * to remain intact. They also allow for a count operand that isn't the CL register, avoiding contention there */
-    if (cf.x86.has_avx2 && cf.x86.has_bmi2) {
+#  ifndef X86_AVX2_NATIVE
+    if (cf.x86.has_avx2 && cf.x86.has_bmi2)
+#  endif
+    {
+#  ifndef X86_AVX512_NATIVE
         ft.adler32 = &adler32_avx2;
         ft.adler32_copy = &adler32_copy_avx2;
         ft.chunkmemset_safe = &chunkmemset_safe_avx2;
@@ -169,14 +226,20 @@ static int init_functable(void) {
         ft.inflate_fast = &inflate_fast_avx2;
         ft.longest_match = &longest_match_avx2;
         ft.longest_match_slow = &longest_match_slow_avx2;
+#  endif
         ft.slide_hash = &slide_hash_avx2;
     }
 #endif
     // X86 - AVX512 (F,DQ,BW,Vl)
 #ifdef X86_AVX512
-    if (cf.x86.has_avx512_common) {
+#  ifndef X86_AVX512_NATIVE
+    if (cf.x86.has_avx512_common)
+#  endif
+    {
+#  ifndef X86_AVX512VNNI_NATIVE
         ft.adler32 = &adler32_avx512;
         ft.adler32_copy = &adler32_copy_avx512;
+#  endif
         ft.chunkmemset_safe = &chunkmemset_safe_avx512;
         ft.compare256 = &compare256_avx512;
         ft.inflate_fast = &inflate_fast_avx512;
@@ -185,14 +248,20 @@ static int init_functable(void) {
     }
 #endif
 #ifdef X86_AVX512VNNI
-    if (cf.x86.has_avx512vnni) {
+#  ifndef X86_AVX512VNNI_NATIVE
+    if (cf.x86.has_avx512vnni)
+#  endif
+    {
         ft.adler32 = &adler32_avx512_vnni;
         ft.adler32_copy = &adler32_copy_avx512_vnni;
     }
 #endif
     // X86 - VPCLMULQDQ
 #ifdef X86_VPCLMULQDQ_CRC
-    if (cf.x86.has_pclmulqdq && cf.x86.has_avx512_common && cf.x86.has_vpclmulqdq) {
+#  ifndef X86_VPCLMULQDQ_NATIVE
+    if (cf.x86.has_pclmulqdq && cf.x86.has_avx512_common && cf.x86.has_vpclmulqdq)
+#  endif
+    {
         ft.crc32 = &crc32_vpclmulqdq;
         ft.crc32_copy = &crc32_copy_vpclmulqdq;
     }
@@ -200,8 +269,8 @@ static int init_functable(void) {
 
 
     // ARM - SIMD
-#ifdef ARM_SIMD
-#  ifndef ARM_NOCHECK_SIMD
+#if defined(ARM_SIMD) && !defined(ARM_NEON_NATIVE)
+#  ifndef ARM_SIMD_NATIVE
     if (cf.arm.has_simd)
 #  endif
     {
@@ -210,7 +279,7 @@ static int init_functable(void) {
 #endif
     // ARM - NEON
 #ifdef ARM_NEON
-#  ifndef ARM_NOCHECK_NEON
+#  ifndef ARM_NEON_NATIVE
     if (cf.arm.has_neon)
 #  endif
     {
@@ -225,15 +294,21 @@ static int init_functable(void) {
     }
 #endif
     // ARM - CRC32
-#ifdef ARM_CRC32
-    if (cf.arm.has_crc32) {
+#if defined(ARM_CRC32) && !defined(ARM_PMULL_EOR3_NATIVE)
+#  ifndef ARM_CRC32_NATIVE
+    if (cf.arm.has_crc32)
+#  endif
+    {
         ft.crc32 = &crc32_armv8;
         ft.crc32_copy = &crc32_copy_armv8;
     }
 #endif
     // ARM - PMULL EOR3
 #ifdef ARM_PMULL_EOR3
-    if (cf.arm.has_crc32 && cf.arm.has_pmull && cf.arm.has_eor3 && cf.arm.has_fast_pmull) {
+#  ifndef ARM_PMULL_EOR3_NATIVE
+    if (cf.arm.has_crc32 && cf.arm.has_pmull && cf.arm.has_eor3 && cf.arm.has_fast_pmull)
+#  endif
+    {
         ft.crc32 = &crc32_armv8_pmull_eor3;
         ft.crc32_copy = &crc32_copy_armv8_pmull_eor3;
     }
@@ -241,7 +316,10 @@ static int init_functable(void) {
 
     // Power - VMX
 #ifdef PPC_VMX
-    if (cf.power.has_altivec) {
+#  ifndef PPC_VMX_NATIVE
+    if (cf.power.has_altivec)
+#  endif
+    {
         ft.adler32 = &adler32_vmx;
         ft.adler32_copy = &adler32_copy_vmx;
         ft.slide_hash = &slide_hash_vmx;
@@ -249,7 +327,10 @@ static int init_functable(void) {
 #endif
     // Power8 - VSX
 #ifdef POWER8_VSX
-    if (cf.power.has_arch_2_07) {
+#  ifndef POWER8_VSX_NATIVE
+    if (cf.power.has_arch_2_07)
+#  endif
+    {
         ft.adler32 = &adler32_power8;
         ft.adler32_copy = &adler32_copy_power8;
         ft.chunkmemset_safe = &chunkmemset_safe_power8;
@@ -258,14 +339,20 @@ static int init_functable(void) {
     }
 #endif
 #ifdef POWER8_VSX_CRC32
-    if (cf.power.has_arch_2_07) {
+#  ifndef POWER8_VSX_CRC32_NATIVE
+    if (cf.power.has_arch_2_07)
+#  endif
+    {
         ft.crc32 = &crc32_power8;
         ft.crc32_copy = &crc32_copy_power8;
     }
 #endif
     // Power9
 #ifdef POWER9
-    if (cf.power.has_arch_3_00) {
+#  ifndef POWER9_NATIVE
+    if (cf.power.has_arch_3_00)
+#  endif
+    {
         ft.compare256 = &compare256_power9;
         ft.longest_match = &longest_match_power9;
         ft.longest_match_slow = &longest_match_slow_power9;
@@ -275,7 +362,10 @@ static int init_functable(void) {
 
     // RISCV - RVV
 #ifdef RISCV_RVV
-    if (cf.riscv.has_rvv) {
+#  ifndef RISCV_RVV_NATIVE
+    if (cf.riscv.has_rvv)
+#  endif
+    {
         ft.adler32 = &adler32_rvv;
         ft.adler32_copy = &adler32_copy_rvv;
         ft.chunkmemset_safe = &chunkmemset_safe_rvv;
@@ -289,7 +379,10 @@ static int init_functable(void) {
 
     // RISCV - ZBC
 #ifdef RISCV_CRC32_ZBC
-    if (cf.riscv.has_zbc) {
+#  ifndef RISCV_ZBC_NATIVE
+    if (cf.riscv.has_zbc)
+#  endif
+    {
         ft.crc32 = &crc32_riscv64_zbc;
         ft.crc32_copy = &crc32_copy_riscv64_zbc;
     }
@@ -297,7 +390,10 @@ static int init_functable(void) {
 
     // S390
 #ifdef S390_CRC32_VX
-    if (cf.s390.has_vx) {
+#  ifndef S390_CRC32_VX_NATIVE
+    if (cf.s390.has_vx)
+#  endif
+    {
         ft.crc32 = &crc32_s390_vx;
         ft.crc32_copy = &crc32_copy_s390_vx;
     }
@@ -305,13 +401,19 @@ static int init_functable(void) {
 
     // LOONGARCH
 #ifdef LOONGARCH_CRC
-    if (cf.loongarch.has_crc) {
+#  ifndef LOONGARCH_CRC_NATIVE
+    if (cf.loongarch.has_crc)
+#  endif
+    {
         ft.crc32 = &crc32_loongarch64;
         ft.crc32_copy = &crc32_copy_loongarch64;
     }
 #endif
-#ifdef LOONGARCH_LSX
-    if (cf.loongarch.has_lsx) {
+#if defined(LOONGARCH_LSX) && !defined(LOONGARCH_LASX_NATIVE)
+#  ifndef LOONGARCH_LSX_NATIVE
+    if (cf.loongarch.has_lsx)
+#  endif
+    {
         ft.adler32 = &adler32_lsx;
         ft.adler32_copy = &adler32_copy_lsx;
         ft.chunkmemset_safe = &chunkmemset_safe_lsx;
@@ -323,7 +425,10 @@ static int init_functable(void) {
     }
 #endif
 #ifdef LOONGARCH_LASX
-    if (cf.loongarch.has_lasx) {
+#  ifndef LOONGARCH_LASX_NATIVE
+    if (cf.loongarch.has_lasx)
+#  endif
+    {
         ft.adler32 = &adler32_lasx;
         ft.adler32_copy = &adler32_copy_lasx;
         ft.chunkmemset_safe = &chunkmemset_safe_lasx;

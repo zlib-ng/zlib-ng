@@ -9,6 +9,8 @@
 #ifndef RISCV_FUNCTIONS_H_
 #define RISCV_FUNCTIONS_H_
 
+#include "riscv_natives.h"
+
 #ifdef RISCV_RVV
 uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_copy_rvv(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
@@ -28,7 +30,7 @@ uint32_t crc32_copy_riscv64_zbc(uint32_t crc, uint8_t *dst, const uint8_t *src, 
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // RISCV - RVV
-#  if defined(RISCV_RVV) && defined(__riscv_v) && defined(__linux__)
+#  ifdef RISCV_RVV_NATIVE
 #    undef native_adler32
 #    define native_adler32 adler32_rvv
 #    undef native_adler32_copy
@@ -46,9 +48,8 @@ uint32_t crc32_copy_riscv64_zbc(uint32_t crc, uint8_t *dst, const uint8_t *src, 
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_rvv
 #  endif
-
 // RISCV - CRC32
-#  if (defined(RISCV_CRC32_ZBC) && defined (__riscv_zbc))
+#  ifdef RISCV_ZBC_NATIVE
 #    undef native_crc32
 #    define native_crc32 crc32_riscv64_zbc
 #    undef native_crc32_copy

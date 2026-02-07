@@ -5,6 +5,8 @@
 #ifndef ARM_FUNCTIONS_H_
 #define ARM_FUNCTIONS_H_
 
+#include "arm_natives.h"
+
 #ifdef ARM_NEON
 uint32_t adler32_neon(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_copy_neon(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
@@ -29,15 +31,14 @@ uint32_t crc32_copy_armv8_pmull_eor3(uint32_t crc, uint8_t *dst, const uint8_t *
 void slide_hash_armv6(deflate_state *s);
 #endif
 
-
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // ARM - SIMD
-#  if (defined(ARM_SIMD) && defined(__ARM_FEATURE_SIMD32)) || defined(ARM_NOCHECK_SIMD)
+#  ifdef ARM_SIMD_NATIVE
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_armv6
 #  endif
 // ARM - NEON
-#  if (defined(ARM_NEON) && (defined(__ARM_NEON__) || defined(__ARM_NEON))) || ARM_NOCHECK_NEON
+#  ifdef ARM_NEON_NATIVE
 #    undef native_adler32
 #    define native_adler32 adler32_neon
 #    undef native_adler32_copy
@@ -56,14 +57,14 @@ void slide_hash_armv6(deflate_state *s);
 #    define native_slide_hash slide_hash_neon
 #  endif
 // ARM - CRC32
-#  if (defined(ARM_CRC32) && defined(__ARM_FEATURE_CRC32))
+#  ifdef ARM_CRC32_NATIVE
 #    undef native_crc32
 #    define native_crc32 crc32_armv8
 #    undef native_crc32_copy
 #    define native_crc32_copy crc32_copy_armv8
 #  endif
 // ARM - PMULL EOR3
-#  if (defined(ARM_PMULL_EOR3) && defined(__ARM_FEATURE_CRC32) && defined(__ARM_FEATURE_CRYPTO) && defined(__ARM_FEATURE_SHA3))
+#  ifdef ARM_PMULL_EOR3_NATIVE
 #    undef native_crc32
 #    define native_crc32 crc32_armv8_pmull_eor3
 #    undef native_crc32_copy
