@@ -18,13 +18,27 @@ uint32_t longest_match_slow_neon(deflate_state *const s, uint32_t cur_match);
 void slide_hash_neon(deflate_state *s);
 #endif
 
+#ifndef ARM_NEON_NATIVE
+#  define ADLER32_FALLBACK
+#  define CHUNKSET_FALLBACK
+#  define COMPARE256_FALLBACK
+#  ifndef ARM_SIMD_NATIVE
+#    define SLIDE_HASH_FALLBACK
+#  endif
+#endif
+
 #ifdef ARM_CRC32
 uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_armv8(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
+
 #ifdef ARM_PMULL_EOR3
 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_armv8_pmull_eor3(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
+#endif
+
+#if !defined(ARM_CRC32_NATIVE) && !defined(ARM_PMULL_EOR3_NATIVE)
+#  define CRC32_BRAID_FALLBACK
 #endif
 
 #ifdef ARM_SIMD

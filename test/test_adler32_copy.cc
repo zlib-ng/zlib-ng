@@ -40,7 +40,9 @@ INSTANTIATE_TEST_SUITE_P(adler32_copy, adler32_copy_variant, testing::ValuesIn(h
     }
 
 // Base test
+#ifdef ADLER32_FALLBACK
 TEST_ADLER32_COPY(c, adler32_copy_c, 1)
+#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
     // Native test

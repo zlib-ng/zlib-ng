@@ -7,6 +7,12 @@
 
 #include "s390_natives.h"
 
+#define ADLER32_FALLBACK
+#define CHUNKSET_FALLBACK
+#define COMPARE256_FALLBACK
+#define CRC32_BRAID_FALLBACK  /* used by crc32_s390_vx */
+#define SLIDE_HASH_FALLBACK
+
 #ifdef S390_CRC32_VX
 uint32_t crc32_s390_vx(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_s390_vx(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);

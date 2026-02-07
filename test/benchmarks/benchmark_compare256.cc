@@ -73,7 +73,7 @@ public:
 BENCHMARK_COMPARE256(native, native_compare256, 1);
 #else
 
-#ifdef WITH_ALL_FALLBACKS
+#ifdef COMPARE256_FALLBACK
 BENCHMARK_COMPARE256(8, compare256_8, 1);
 BENCHMARK_COMPARE256(64, compare256_64, 1);
 #endif

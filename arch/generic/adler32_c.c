@@ -4,6 +4,10 @@
  */
 
 #include "zbuild.h"
+#include "arch_functions.h"
+
+#ifdef ADLER32_FALLBACK
+
 #include "functable.h"
 #include "adler32_p.h"
 
@@ -53,3 +57,5 @@ Z_INTERNAL uint32_t adler32_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *
     memcpy(dst, src, len);
     return adler;
 }
+
+#endif /* ADLER32_FALLBACK */

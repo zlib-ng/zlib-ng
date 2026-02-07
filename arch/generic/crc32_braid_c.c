@@ -8,6 +8,11 @@
  */
 
 #include "zbuild.h"
+#include "arch_functions.h"
+
+/* Used by chorba fallback and by arch-specific implementations (s390 vx, risc-v zbc). */
+#ifdef CRC32_BRAID_FALLBACK
+
 #include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
 #include "crc32_p.h"
@@ -211,3 +216,5 @@ Z_INTERNAL uint32_t crc32_copy_braid(uint32_t crc, uint8_t *dst, const uint8_t *
     memcpy(dst, src, len);
     return crc;
 }
+
+#endif /* CRC32_BRAID_FALLBACK */

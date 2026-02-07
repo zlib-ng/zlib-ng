@@ -1,13 +1,14 @@
-#if defined(X86_SSE41) && !defined(WITHOUT_CHORBA_SSE)
-
 #include "zbuild.h"
+#include "arch_functions.h"
+
+#if defined(X86_SSE41) && !defined(WITHOUT_CHORBA_SSE) && defined(CRC32_CHORBA_FALLBACK)
+
 #include "crc32_chorba_p.h"
 #include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
 #include <emmintrin.h>
 #include <smmintrin.h>
 #include "arch/x86/x86_intrins.h"
-#include "arch_functions.h"
 
 #define READ_NEXT(in, off, a, b) do { \
         a = _mm_load_si128((__m128i*)(in + off / sizeof(uint64_t))); \

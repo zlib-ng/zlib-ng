@@ -25,10 +25,26 @@ void slide_hash_power8(deflate_state *s);
 void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
+#if !defined(PPC_VMX_NATIVE) && !defined(POWER8_VSX_NATIVE)
+#  define ADLER32_FALLBACK
+#  define SLIDE_HASH_FALLBACK
+#endif
+
+#ifndef POWER8_VSX_NATIVE
+#  define CHUNKSET_FALLBACK
+#endif
+#ifndef POWER8_VSX_CRC32_NATIVE
+#  define CRC32_BRAID_FALLBACK
+#endif
+
 #ifdef POWER9
 uint32_t compare256_power9(const uint8_t *src0, const uint8_t *src1);
 uint32_t longest_match_power9(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_slow_power9(deflate_state *const s, uint32_t cur_match);
+#endif
+
+#ifndef POWER9_NATIVE
+#  define COMPARE256_FALLBACK
 #endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION

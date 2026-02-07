@@ -3,6 +3,10 @@
  */
 
 #include "zbuild.h"
+#include "arch_functions.h"
+
+#ifdef CHUNKSET_FALLBACK
+
 #include "zmemory.h"
 
 typedef uint64_t chunk_t;
@@ -38,3 +42,5 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
 #define INFLATE_FAST     inflate_fast_c
 
 #include "inffast_tpl.h"
+
+#endif /* CHUNKSET_FALLBACK */

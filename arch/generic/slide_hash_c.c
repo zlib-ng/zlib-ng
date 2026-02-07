@@ -5,6 +5,10 @@
  */
 
 #include "zbuild.h"
+#include "arch_functions.h"
+
+#ifdef SLIDE_HASH_FALLBACK
+
 #include "deflate.h"
 
 /* ===========================================================================
@@ -50,3 +54,5 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
     slide_hash_c_chain(s->head, HASH_SIZE, wsize);
     slide_hash_c_chain(s->prev, wsize, wsize);
 }
+
+#endif /* SLIDE_HASH_FALLBACK */

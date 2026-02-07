@@ -63,7 +63,7 @@ static inline void compare256_match_check(compare256_func compare256) {
 TEST_COMPARE256(native, native_compare256, 1)
 #else
 
-#ifdef WITH_ALL_FALLBACKS
+#ifdef COMPARE256_FALLBACK
 TEST_COMPARE256(8, compare256_8, 1)
 TEST_COMPARE256(64, compare256_64, 1)
 #endif

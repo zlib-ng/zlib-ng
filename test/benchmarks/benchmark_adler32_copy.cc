@@ -128,7 +128,9 @@ public:
     BENCHMARK_ADLER32_COPY_ONLY(name, copyfunc, support_flag)
 #endif
 
+#ifdef ADLER32_FALLBACK
 BENCHMARK_ADLER32_COPY(c, adler32_c, adler32_copy_c, 1);
+#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 BENCHMARK_ADLER32_COPY(native, native_adler32, native_adler32_copy, 1);
