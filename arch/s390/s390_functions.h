@@ -5,6 +5,8 @@
 #ifndef S390_FUNCTIONS_H_
 #define S390_FUNCTIONS_H_
 
+#include "s390_natives.h"
+
 #ifdef S390_CRC32_VX
 uint32_t crc32_s390_vx(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_s390_vx(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
@@ -19,7 +21,8 @@ uint32_t crc32_copy_s390_vx(uint32_t crc, uint8_t *dst, const uint8_t *src, size
 #endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
-#  if defined(S390_CRC32_VX) && defined(__zarch__) && __ARCH__ >= 11 && defined(__VX__)
+// S390 - CRC32 VX
+#  ifdef S390_CRC32_VX_NATIVE
 #    undef native_crc32
 #    define native_crc32 crc32_s390_vx
 #    undef native_crc32_copy
