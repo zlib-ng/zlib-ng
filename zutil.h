@@ -17,6 +17,18 @@
 #  include "zlib-ng.h"
 #endif
 
+#ifdef WITH_NUMA
+#  include <numa.h>
+#endif
+
+#if defined(HAVE_PTHREAD_H)
+#  include <pthread.h>
+#endif
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef unsigned char uch; /* Included for compatibility with external code only */
 typedef uint16_t ush;      /* Included for compatibility with external code only */
 typedef unsigned long ulg;
@@ -136,7 +148,28 @@ void Z_INTERNAL  PREFIX(zcfree)(void *opaque, void *ptr);
 void Z_INTERNAL *zng_alloc_aligned(unsigned size, unsigned align);
 void Z_INTERNAL zng_free_aligned(void *ptr);
 
+#ifdef WITH_NUMA
+void Z_INTERNAL *zng_numa_alloc(size_t size);
+void Z_INTERNAL zng_numa_free(void *ptr, size_t size);
+#endif
+
 typedef void *zng_calloc_func(void *opaque, unsigned items, unsigned size);
 typedef void  zng_cfree_func(void *opaque, void *ptr);
+
+#if defined(HAVE_PTHREAD_H)
+typedef struct zng_thread_s {
+    pthread_t handle;
+    void *(*start_routine)(void *);
+    void *arg;
+    int node;
+} zng_thread;
+
+int Z_INTERNAL zng_thread_create(zng_thread *thread, void *(*start_routine)(void *), void *arg, int node);
+void Z_INTERNAL zng_thread_join(zng_thread *thread);
+#endif
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ZUTIL_H_ */

@@ -3,6 +3,10 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#if defined(HAVE_PTHREAD_H) && defined(WITH_NUMA)
+#  define _GNU_SOURCE
+#endif
+
 #include "zbuild.h"
 #include "zutil_p.h"
 #include "zutil.h"
@@ -104,12 +108,20 @@ const char * Z_EXPORT PREFIX(zError)(z_int32_t err) {
 // application supplies its own alloc/free functions.
 void Z_INTERNAL *PREFIX(zcalloc)(void *opaque, unsigned items, unsigned size) {
     Z_UNUSED(opaque);
+#ifdef WITH_NUMA
+    return zng_numa_alloc((size_t)items * (size_t)size);
+#else
     return zng_alloc((size_t)items * (size_t)size);
+#endif
 }
 
 void Z_INTERNAL PREFIX(zcfree)(void *opaque, void *ptr) {
     Z_UNUSED(opaque);
+#ifdef WITH_NUMA
+    zng_numa_free(ptr, 0);
+#else
     zng_free(ptr);
+#endif
 }
 
 /* Provide aligned allocations, only used by gz* code */
@@ -120,7 +132,11 @@ void Z_INTERNAL *zng_alloc_aligned(unsigned size, unsigned align) {
 
     /* Allocate enough memory for proper alignment and to store the original memory pointer */
     alloc_size = sizeof(void *) + size + align;
+#ifdef WITH_NUMA
+    ptr = zng_numa_alloc(alloc_size);
+#else
     ptr = zng_alloc(alloc_size);
+#endif
     if (!ptr)
         return NULL;
 
@@ -147,5 +163,48 @@ void Z_INTERNAL zng_free_aligned(void *ptr) {
     void *free_ptr = *(void **)original_ptr;
 
     /* Free original memory allocation */
+#ifdef WITH_NUMA
+    zng_numa_free(free_ptr, 0);
+#else
     zng_free(free_ptr);
+#endif
 }
+
+#ifdef WITH_NUMA
+void Z_INTERNAL *zng_numa_alloc(size_t size) {
+    return numa_alloc_local(size);
+}
+
+void Z_INTERNAL zng_numa_free(void *ptr, size_t size) {
+    numa_free(ptr, size);
+}
+#endif
+
+#if defined(HAVE_PTHREAD_H)
+#ifdef WITH_NUMA
+#include <sched.h>
+static void *zng_thread_launcher(void *arg) {
+    zng_thread *thread = (zng_thread *)arg;
+    cpu_set_t cpuset;
+    CPU_ZERO(&cpuset);
+    CPU_SET(thread->node, &cpuset);
+    pthread_setaffinity_np(thread->handle, sizeof(cpu_set_t), &cpuset);
+    return thread->start_routine(thread->arg);
+}
+#endif
+
+int Z_INTERNAL zng_thread_create(zng_thread *thread, void *(*start_routine)(void *), void *arg, int node) {
+    thread->start_routine = start_routine;
+    thread->arg = arg;
+    thread->node = node;
+#ifdef WITH_NUMA
+    return pthread_create(&thread->handle, NULL, zng_thread_launcher, thread);
+#else
+    return pthread_create(&thread->handle, NULL, start_routine, arg);
+#endif
+}
+
+void Z_INTERNAL zng_thread_join(zng_thread *thread) {
+    pthread_join(thread->handle, NULL);
+}
+#endif

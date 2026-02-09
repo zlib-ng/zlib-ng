@@ -126,6 +126,9 @@ void     insert_string_roll      (deflate_state *const s, uint32_t str, uint32_t
 /* Struct for memory allocation handling */
 typedef struct deflate_allocs_s {
     char            *buf_start;
+#ifdef WITH_NUMA
+    size_t           buf_size;
+#endif
     free_func        zfree;
     deflate_state   *state;
     unsigned char   *window;

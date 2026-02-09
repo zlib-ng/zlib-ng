@@ -61,6 +61,9 @@ set(MAKEFIXED_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makefixed>)
 
 add_executable(maketrees ${PROJECT_SOURCE_DIR}/tools/maketrees.c ${PROJECT_SOURCE_DIR}/trees.c ${PROJECT_SOURCE_DIR}/zutil.c)
 configure_test_executable(maketrees)
+if(ZLIB_LIBS)
+    target_link_libraries(maketrees PRIVATE ${ZLIB_LIBS})
+endif()
 set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees>)
 
 add_executable(makecrct ${PROJECT_SOURCE_DIR}/tools/makecrct.c)

@@ -200,7 +200,11 @@ Z_INTERNAL deflate_allocs* alloc_deflate(PREFIX3(stream) *strm, int windowBits, 
     int total_size = PAD_64(curr_size + (WINDOW_PAD_SIZE - 1));
 
     /* Allocate buffer, align to 64-byte cacheline, and zerofill the resulting buffer */
+#ifdef WITH_NUMA
+    char *original_buf = (char *)zng_numa_alloc(total_size);
+#else
     char *original_buf = (char *)strm->zalloc(strm->opaque, 1, total_size);
+#endif
     if (original_buf == NULL)
         return NULL;
 
@@ -210,6 +214,9 @@ Z_INTERNAL deflate_allocs* alloc_deflate(PREFIX3(stream) *strm, int windowBits, 
     /* Initialize alloc_bufs */
     deflate_allocs *alloc_bufs  = (struct deflate_allocs_s *)(buff + alloc_pos);
     alloc_bufs->buf_start = original_buf;
+#ifdef WITH_NUMA
+    alloc_bufs->buf_size = total_size;
+#endif
     alloc_bufs->zfree = strm->zfree;
 
     /* Assign buffers */
@@ -232,7 +239,11 @@ static inline void free_deflate(PREFIX3(stream) *strm) {
 
     if (state->alloc_bufs != NULL) {
         deflate_allocs *alloc_bufs = state->alloc_bufs;
+#ifdef WITH_NUMA
+        zng_numa_free(alloc_bufs->buf_start, alloc_bufs->buf_size);
+#else
         alloc_bufs->zfree(strm->opaque, alloc_bufs->buf_start);
+#endif
         strm->state = NULL;
     }
 }
