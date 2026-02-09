@@ -163,14 +163,11 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
 
 Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
     /* Align the first struct to start on a new cacheline, this allows us to fit both structs in one cacheline */
-    ALIGNED_(16) struct match current_match;
-                 struct match next_match;
+    ALIGNED_(16) struct match current_match = {0};
+                 struct match next_match = {0};
 
     /* For levels below 5, don't check the next position for a better match */
     int early_exit = s->level < 5;
-
-    memset(&current_match, 0, sizeof(struct match));
-    memset(&next_match, 0, sizeof(struct match));
 
     for (;;) {
         uint32_t hash_head = 0;    /* head of the hash chain */
