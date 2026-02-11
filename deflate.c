@@ -1002,7 +1002,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
             if (flush == Z_PARTIAL_FLUSH) {
                 zng_tr_align(s);
             } else if (flush != Z_BLOCK) { /* FULL_FLUSH or SYNC_FLUSH */
-                zng_tr_stored_block(s, (char*)0, 0L, 0);
+                zng_tr_stored_block(s, NULL, 0L, 0);
                 /* For a full flush, this empty block will be recognized
                  * as a special marker by inflate_sync().
                  */

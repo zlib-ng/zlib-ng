@@ -172,7 +172,7 @@ Z_FORCEINLINE static unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf
  */
 #define FLUSH_BLOCK_ONLY(s, last) { \
     zng_tr_flush_block(s, (s->block_start >= 0 ? \
-                   (char *)&s->window[(unsigned)s->block_start] : \
+                   &s->window[(unsigned)s->block_start] : \
                    NULL), \
                    (uint32_t)((int)s->strstart - s->block_start), \
                    (last)); \

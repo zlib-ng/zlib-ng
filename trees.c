@@ -592,7 +592,7 @@ static void send_all_trees(deflate_state *s, int lcodes, int dcodes, int blcodes
 /* ===========================================================================
  * Send a stored block
  */
-void Z_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored_len, int last) {
+void Z_INTERNAL zng_tr_stored_block(deflate_state *s, unsigned char *buf, uint32_t stored_len, int last) {
     /* buf: input block */
     /* stored_len: length of input block */
     /* last: one if this is the last block for a file */
@@ -604,7 +604,7 @@ void Z_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored
     cmpr_bits_add(s, 32);
     sent_bits_add(s, 32);
     if (stored_len) {
-        memcpy(s->pending_buf + s->pending, (unsigned char *)buf, stored_len);
+        memcpy(s->pending_buf + s->pending, buf, stored_len);
         s->pending += stored_len;
         cmpr_bits_add(s, stored_len << 3);
         sent_bits_add(s, stored_len << 3);
@@ -625,7 +625,7 @@ void Z_INTERNAL zng_tr_align(deflate_state *s) {
  * Determine the best encoding for the current block: dynamic trees, static
  * trees or store, and write out the encoded block.
  */
-void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_len, int last) {
+void Z_INTERNAL zng_tr_flush_block(deflate_state *s, unsigned char *buf, uint32_t stored_len, int last) {
     /* buf: input block, or NULL if too old */
     /* stored_len: length of input block */
     /* last: one if this is the last block for a file */

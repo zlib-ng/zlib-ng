@@ -66,7 +66,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
          * including any pending bits. This also updates the debugging counts.
          */
         last = flush == Z_FINISH && len == left + s->strm->avail_in ? 1 : 0;
-        zng_tr_stored_block(s, (char *)0, 0L, last);
+        zng_tr_stored_block(s, NULL, 0L, last);
 
         /* Replace the lengths in the dummy stored block with len. */
         s->pending -= 4;
@@ -177,7 +177,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
     if (left >= min_block || ((left || flush == Z_FINISH) && flush != Z_NO_FLUSH && s->strm->avail_in == 0 && left <= have)) {
         len = MIN(left, have);
         last = flush == Z_FINISH && s->strm->avail_in == 0 && len == left ? 1 : 0;
-        zng_tr_stored_block(s, (char *)s->window + s->block_start, len, last);
+        zng_tr_stored_block(s, s->window + s->block_start, len, last);
         s->block_start += (int)len;
         PREFIX(flush_pending)(s->strm);
     }
