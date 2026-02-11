@@ -219,7 +219,7 @@ Z_INTERNAL deflate_allocs* alloc_deflate(PREFIX3(stream) *strm, int windowBits, 
     alloc_bufs->pending_buf = (unsigned char *)HINT_ALIGNED_64(buff + pending_pos);
     alloc_bufs->state = (deflate_state *)HINT_ALIGNED_16(buff + state_pos);
 
-    memset((char *)alloc_bufs->prev, 0, prev_size);
+    memset(alloc_bufs->prev, 0, prev_size);
 
     return alloc_bufs;
 }
@@ -1075,7 +1075,7 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
 
     ss = source->state;
 
-    memcpy((void *)dest, (void *)source, sizeof(PREFIX3(stream)));
+    memcpy(dest, source, sizeof(PREFIX3(stream)));
 
     deflate_allocs *alloc_bufs = alloc_deflate(dest, W_BITS(ss), ss->lit_bufsize);
     if (alloc_bufs == NULL)
@@ -1099,8 +1099,8 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     }
 
     memcpy(ds->window, ss->window, DEFLATE_ADJUST_WINDOW_SIZE(ds->w_size * 2 * sizeof(unsigned char)));
-    memcpy((void *)ds->prev, (void *)ss->prev, ds->w_size * sizeof(Pos));
-    memcpy((void *)ds->head, (void *)ss->head, HASH_SIZE * sizeof(Pos));
+    memcpy(ds->prev, ss->prev, ds->w_size * sizeof(Pos));
+    memcpy(ds->head, ss->head, HASH_SIZE * sizeof(Pos));
     memcpy(ds->pending_buf, ss->pending_buf, ds->lit_bufsize * LIT_BUFS);
 
     ds->pending_out = ds->pending_buf + (ss->pending_out - ss->pending_buf);

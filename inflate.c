@@ -1383,7 +1383,7 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     state = (struct inflate_state *)source->state;
 
     /* copy stream */
-    memcpy((void *)dest, (void *)source, sizeof(PREFIX3(stream)));
+    memcpy(dest, source, sizeof(PREFIX3(stream)));
 
     /* allocate space */
     inflate_allocs *alloc_bufs = alloc_inflate(dest);
