@@ -10,7 +10,7 @@
 // Zlib-ng's default alloc/free implementation, used unless
 // application supplies its own alloc/free functions.
 static inline void *zng_alloc(size_t size) {
-    return (void *)malloc(size);
+    return malloc(size);
 }
 
 static inline void zng_free(void *ptr) {

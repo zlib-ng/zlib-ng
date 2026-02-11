@@ -204,7 +204,7 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
     } else
 #endif
         len = strlen((const char *)path);
-    state->path = (char *)malloc(len + 1);
+    state->path = malloc(len + 1);
     if (state->path == NULL) {
         gz_state_free(state);
         return NULL;
@@ -577,7 +577,7 @@ void Z_INTERNAL PREFIX(gz_error)(gz_state *state, int err, const char *msg) {
         return;
 
     /* construct error message with path */
-    if ((state->msg = (char *)malloc(strlen(state->path) + strlen(msg) + 3)) == NULL) {
+    if ((state->msg = malloc(strlen(state->path) + strlen(msg) + 3)) == NULL) {
         state->err = Z_MEM_ERROR;
         return;
     }
