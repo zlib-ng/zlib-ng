@@ -50,7 +50,7 @@ extern "C" {
 #endif
 
 #define ZLIBNG_VERSION "2.3.3"
-#define ZLIBNG_VERNUM 0x020301F0L   /* MMNNRRSM: major minor revision status modified */
+#define ZLIBNG_VERNUM 0x020303F0L   /* MMNNRRSM: major minor revision status modified */
 #define ZLIBNG_VER_MAJOR 2
 #define ZLIBNG_VER_MINOR 3
 #define ZLIBNG_VER_REVISION 3
