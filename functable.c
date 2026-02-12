@@ -245,6 +245,7 @@ static int init_functable(void) {
         ft.inflate_fast = &inflate_fast_avx512;
         ft.longest_match = &longest_match_avx512;
         ft.longest_match_slow = &longest_match_slow_avx512;
+        ft.slide_hash = &slide_hash_avx512;
     }
 #endif
 #ifdef X86_AVX512VNNI

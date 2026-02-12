@@ -44,6 +44,7 @@ all: \
 	crc32_vpclmulqdq_avx2.o crc32_vpclmulqdq_avx2.lo \
 	crc32_vpclmulqdq_avx512.o crc32_vpclmulqdq_avx512.lo \
 	slide_hash_avx2.o slide_hash_avx2.lo \
+	slide_hash_avx512.o slide_hash_avx512.lo \
 	slide_hash_sse2.o slide_hash_sse2.lo
 
 x86_features.o:
@@ -129,6 +130,12 @@ slide_hash_avx2.o:
 
 slide_hash_avx2.lo:
 	$(CC) $(SFLAGS) $(AVX2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_avx2.c
+
+slide_hash_avx512.o:
+	$(CC) $(CFLAGS) $(AVX512FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_avx512.c
+
+slide_hash_avx512.lo:
+	$(CC) $(SFLAGS) $(AVX512FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_avx512.c
 
 slide_hash_sse2.o:
 	$(CC) $(CFLAGS) $(SSE2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_sse2.c

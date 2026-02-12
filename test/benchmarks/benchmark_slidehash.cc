@@ -106,6 +106,9 @@ BENCHMARK_SLIDEHASH(sse2, slide_hash_sse2, test_cpu_features.x86.has_sse2);
 #ifdef X86_AVX2
 BENCHMARK_SLIDEHASH(avx2, slide_hash_avx2, test_cpu_features.x86.has_avx2);
 #endif
+#ifdef X86_AVX512
+BENCHMARK_SLIDEHASH(avx512, slide_hash_avx512, test_cpu_features.x86.has_avx512_common);
+#endif
 #ifdef LOONGARCH_LSX
 BENCHMARK_SLIDEHASH(lsx, slide_hash_lsx, test_cpu_features.loongarch.has_lsx);
 #endif
