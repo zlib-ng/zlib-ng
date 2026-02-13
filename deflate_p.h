@@ -72,7 +72,6 @@ static inline int zng_tr_tally_lit(deflate_state *s, unsigned char c) {
 #endif
     s->dyn_ltree[c].Freq++;
     Tracevv((stderr, "%c", c));
-    Assert(c <= (STD_MAX_MATCH-STD_MIN_MATCH), "zng_tr_tally: bad literal");
     return (s->sym_next == s->sym_end);
 }
 
@@ -80,8 +79,8 @@ static inline int zng_tr_tally_dist(deflate_state* s, uint32_t dist, uint32_t le
     /* dist: distance of matched string */
     /* len: match length-STD_MIN_MATCH */
 #ifdef LIT_MEM
-    Assert(dist <= UINT16_MAX, "dist should fit in uint16_t");
-    Assert(len <= UINT8_MAX, "len should fit in uint8_t");
+    AssertHint(dist <= UINT16_MAX, "dist should fit in uint16_t");
+    AssertHint(len <= UINT8_MAX, "len should fit in uint8_t");
     s->d_buf[s->sym_next] = (uint16_t)dist;
     s->l_buf[s->sym_next++] = (uint8_t)len;
 #else
@@ -91,7 +90,7 @@ static inline int zng_tr_tally_dist(deflate_state* s, uint32_t dist, uint32_t le
 #endif
     s->matches++;
     dist--;
-    Assert(dist < MAX_DIST(s) && (uint16_t)d_code(dist) < (uint16_t)D_CODES,
+    AssertHint(dist < MAX_DIST(s) && (uint16_t)d_code(dist) < (uint16_t)D_CODES,
         "zng_tr_tally: bad match");
 
     s->dyn_ltree[zng_length_code[len] + LITERALS + 1].Freq++;

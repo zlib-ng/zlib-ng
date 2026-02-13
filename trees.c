@@ -81,6 +81,7 @@ static int  detect_data_type (deflate_state *s);
  * Initialize the tree data structures for a new zlib stream.
  */
 void Z_INTERNAL zng_tr_init(deflate_state *s) {
+    Assume(s != NULL);
     s->l_desc.dyn_tree = s->dyn_ltree;
     s->l_desc.stat_desc = &static_l_desc;
 
@@ -105,6 +106,7 @@ void Z_INTERNAL zng_tr_init(deflate_state *s) {
  * Initialize a new block.
  */
 static void init_block(deflate_state *s) {
+    Assume(s != NULL);
     int n; /* iterates over tree elements */
 
     /* Initialize the trees. */
@@ -151,6 +153,7 @@ static void init_block(deflate_state *s) {
 static inline void pqdownheap(unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k) {
     /* tree: the tree to restore */
     /* k: node to move down */
+    Assume(depth != NULL && heap != NULL && tree != NULL);
     int j = k << 1;  /* left son of k */
     const int v = heap[k];
 
@@ -280,6 +283,7 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
  */
 static void gen_bitlen(deflate_state *s, tree_desc *desc) {
     /* desc: the tree descriptor */
+    Assume(s != NULL && desc != NULL);
     ct_data *tree           = desc->dyn_tree;
     int max_code            = desc->max_code;
     const ct_data *stree    = desc->stat_desc->static_tree;
@@ -414,6 +418,7 @@ Z_INTERNAL void gen_codes(ct_data *tree, int max_code, uint16_t *bl_count) {
 static void scan_tree(deflate_state *s, ct_data *tree, int max_code) {
     /* tree: the tree to be scanned */
     /* max_code: and its largest code of non zero frequency */
+    Assume(s != NULL && tree != NULL);
     int n;                     /* iterates over all tree elements */
     int prevlen = -1;          /* last emitted length */
     int curlen;                /* length of current code */
@@ -462,6 +467,8 @@ static void scan_tree(deflate_state *s, ct_data *tree, int max_code) {
 static void send_tree(deflate_state *s, ct_data *tree, int max_code) {
     /* tree: the tree to be scanned */
     /* max_code and its largest code of non zero frequency */
+    Assume(s != NULL && tree != NULL);
+    Assume(s->bi_valid <= BIT_BUF_SIZE);
     int n;                     /* iterates over all tree elements */
     int prevlen = -1;          /* last emitted length */
     int curlen;                /* length of current code */
@@ -493,7 +500,7 @@ static void send_tree(deflate_state *s, ct_data *tree, int max_code) {
                 send_code(s, curlen, s->bl_tree, bi_buf, bi_valid);
                 count--;
             }
-            Assert(count >= 3 && count <= 6, " 3_6?");
+            AssertHint(count >= 3 && count <= 6, " 3_6?");
             send_code(s, REP_3_6, s->bl_tree, bi_buf, bi_valid);
             send_bits(s, count-3, 2, bi_buf, bi_valid);
 
@@ -526,6 +533,7 @@ static void send_tree(deflate_state *s, ct_data *tree, int max_code) {
  * bl_order of the last bit length code to send.
  */
 static int build_bl_tree(deflate_state *s) {
+    Assume(s != NULL);
     int max_blindex;  /* index of last bit length code of non zero freq */
 
     /* Determine the bit length frequencies for literal and distance trees */
@@ -559,10 +567,12 @@ static int build_bl_tree(deflate_state *s) {
  * IN assertion: lcodes >= 257, dcodes >= 1, blcodes >= 4.
  */
 static void send_all_trees(deflate_state *s, int lcodes, int dcodes, int blcodes) {
+    Assume(s != NULL);
+    Assume(s->bi_valid <= BIT_BUF_SIZE);
     int rank;                    /* index in bl_order */
 
-    Assert(lcodes >= 257 && dcodes >= 1 && blcodes >= 4, "not enough codes");
-    Assert(lcodes <= L_CODES && dcodes <= D_CODES && blcodes <= BL_CODES, "too many codes");
+    AssertHint(lcodes >= 257 && dcodes >= 1 && blcodes >= 4, "not enough codes");
+    AssertHint(lcodes <= L_CODES && dcodes <= D_CODES && blcodes <= BL_CODES, "too many codes");
 
     // Temp local variables
     uint32_t bi_valid = s->bi_valid;
@@ -596,6 +606,8 @@ void Z_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored
     /* buf: input block */
     /* stored_len: length of input block */
     /* last: one if this is the last block for a file */
+    Assume(s != NULL);
+
     zng_tr_emit_tree(s, STORED_BLOCK, last); /* send block type */
     zng_tr_emit_align(s);                    /* align on byte boundary */
     cmpr_bits_align(s);
@@ -616,6 +628,7 @@ void Z_INTERNAL zng_tr_stored_block(deflate_state *s, char *buf, uint32_t stored
  * This takes 10 bits, of which 7 may remain in the bit buffer.
  */
 void Z_INTERNAL zng_tr_align(deflate_state *s) {
+    Assume(s != NULL);
     zng_tr_emit_tree(s, STATIC_TREES, 0);
     zng_tr_emit_end_block(s, static_ltree, 0);
     zng_tr_flush_bits(s);
@@ -629,6 +642,8 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
     /* buf: input block, or NULL if too old */
     /* stored_len: length of input block */
     /* last: one if this is the last block for a file */
+    Assume(s != NULL);
+
     unsigned int opt_lenb, static_lenb; /* opt_len and static_len in bytes */
     int max_blindex = 0;  /* index of last bit length code of non zero freq */
 
@@ -669,7 +684,7 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
             opt_lenb = static_lenb;
 
     } else {
-        Assert(buf != NULL, "lost buf");
+        AssertHint(buf != NULL, "lost buf");
         opt_lenb = static_lenb = stored_len + 5; /* force a stored block */
     }
 
@@ -711,6 +726,8 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, char *buf, uint32_t stored_
 static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
     /* ltree: literal tree */
     /* dtree: distance tree */
+    Assume(s != NULL && ltree != NULL && dtree != NULL);
+
     unsigned dist;      /* distance of matched string */
     int lc;             /* match length or unmatched char (if dist == 0) */
     unsigned sx = 0;    /* running index in symbol buffers */
@@ -766,6 +783,7 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
  * IN assertion: the fields Freq of dyn_ltree are set.
  */
 static int detect_data_type(deflate_state *s) {
+    Assume(s != NULL);
     /* block_mask is the bit mask of block-listed bytes
      * set bits 0..6, 14..25, and 28..31
      * 0xf3ffc07f = binary 11110011111111111100000001111111
@@ -795,6 +813,8 @@ static int detect_data_type(deflate_state *s) {
  * Flush the bit buffer, keeping at most 7 bits in it.
  */
 void Z_INTERNAL zng_tr_flush_bits(deflate_state *s) {
+    Assume(s != NULL);
+    Assume(s->bi_valid <= BIT_BUF_SIZE);
     if (s->bi_valid >= 48) {
         put_uint32(s, (uint32_t)s->bi_buf);
         put_short(s, (uint16_t)(s->bi_buf >> 32));

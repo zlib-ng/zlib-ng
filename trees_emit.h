@@ -44,6 +44,7 @@ extern Z_INTERNAL const int base_dist[D_CODES];
  *       otherwise the shifts will overflow.
  */
 #define send_bits(s, t_val, t_len, bi_buf, bi_valid) {\
+    Assume(bi_valid <= BIT_BUF_SIZE);\
     uint64_t val = (uint64_t)t_val;\
     uint32_t len = (uint32_t)t_len;\
     uint32_t total_bits = bi_valid + len;\
@@ -79,6 +80,7 @@ extern Z_INTERNAL const int base_dist[D_CODES];
  * Flush the bit buffer and align the output on a byte boundary
  */
 static inline void bi_windup(deflate_state *s) {
+    Assume(s->bi_valid <= BIT_BUF_SIZE);
     if (s->bi_valid > 56) {
         put_uint64(s, s->bi_buf);
     } else {
@@ -104,6 +106,7 @@ static inline void bi_windup(deflate_state *s) {
  * Emit literal code
  */
 static inline uint32_t zng_emit_lit(deflate_state *s, const ct_data *ltree, unsigned c) {
+    Assume(s->bi_valid <= BIT_BUF_SIZE);
     uint32_t bi_valid = s->bi_valid;
     uint64_t bi_buf = s->bi_buf;
 
@@ -122,6 +125,7 @@ static inline uint32_t zng_emit_lit(deflate_state *s, const ct_data *ltree, unsi
  */
 static uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree,
     uint32_t lc, uint32_t dist) {
+    Assume(s->bi_valid <= BIT_BUF_SIZE);
     uint32_t c, extra;
     uint8_t code;
     uint64_t match_bits;
@@ -132,7 +136,7 @@ static uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_d
     /* Send the length code, len is the match length - STD_MIN_MATCH */
     code = zng_length_code[lc];
     c = code+LITERALS+1;
-    Assert(c < L_CODES, "bad l_code");
+    AssertHint(c < L_CODES, "bad l_code");
     send_code_trace(s, c);
 
     match_bits = ltree[c].Code;
@@ -146,7 +150,7 @@ static uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_d
 
     dist--; /* dist is now the match distance - 1 */
     code = d_code(dist);
-    Assert(code < D_CODES, "bad d_code");
+    AssertHint(code < D_CODES, "bad d_code");
     send_code_trace(s, code);
 
     /* Send the distance code */
@@ -171,6 +175,7 @@ static uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_d
  * Emit end block
  */
 static inline void zng_emit_end_block(deflate_state *s, const ct_data *ltree, const int last) {
+    Assume(s->bi_valid <= BIT_BUF_SIZE);
     uint32_t bi_valid = s->bi_valid;
     uint64_t bi_buf = s->bi_buf;
     send_code(s, END_BLOCK, ltree, bi_buf, bi_valid);
@@ -200,6 +205,7 @@ static inline void zng_tr_emit_dist(deflate_state *s, const ct_data *ltree, cons
  * Emit start of block
  */
 static inline void zng_tr_emit_tree(deflate_state *s, int type, const int last) {
+    Assume(s->bi_valid <= BIT_BUF_SIZE);
     uint32_t bi_valid = s->bi_valid;
     uint64_t bi_buf = s->bi_buf;
     uint32_t header_bits = (type << 1) + last;

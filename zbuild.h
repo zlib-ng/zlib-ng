@@ -284,19 +284,55 @@
 #ifdef ZLIB_DEBUG
    extern int Z_INTERNAL z_verbose;
    extern void Z_INTERNAL z_error(const char *m);
-#  define Assert(cond, msg) {int _cond = (cond); if (!(_cond)) z_error(msg);}
 #  define Trace(x) {if (z_verbose >= 0) fprintf x;}
 #  define Tracev(x) {if (z_verbose > 0) fprintf x;}
 #  define Tracevv(x) {if (z_verbose > 1) fprintf x;}
 #  define Tracec(c, x) {if (z_verbose > 0 && (c)) fprintf x;}
 #  define Tracecv(c, x) {if (z_verbose > 1 && (c)) fprintf x;}
 #else
-#  define Assert(cond, msg)
 #  define Trace(x)
 #  define Tracev(x)
 #  define Tracevv(x)
 #  define Tracec(c, x)
 #  define Tracecv(c, x)
+#endif
+
+/* Prepare compiler-specific assume intrinsics */
+#if defined(__clang__) && __has_builtin(__builtin_assume)
+  #define z_assume(...) __builtin_assume(__VA_ARGS__)
+#elif defined(__GNUC__) && __GNUC__ >= 13
+  #define z_assume(...) __attribute__((assume(__VA_ARGS__)))
+#elif defined(_MSC_VER) && _MSC_VER >= 1700
+  #define z_assume(...) __assume(__VA_ARGS__)
+#else
+  #define z_assume(...)
+#endif
+/*
+   Assume     - Run check in Debug builds, send hint to compiler in Release builds.
+   Assert     - Run check in Debug builds
+   AssertHint - Run check in Debug builds, send hint to compiler in Release builds.
+   Both Assert types require a second parameter msg containing an error message.
+
+   The Assume(cond) and AssertHint(cond,msg) macros provides hints to compiler and
+   static analyzers about what value range is valid for a variable, helping them
+   better understand and optimize for real use.
+   To ensure this does not hide bugs, compilation in debug mode will replace hinting
+   with assert checks of the hint, and will throw an error on failed checks.
+
+   Example:
+    void process_buffer(char* buf, size_t len) {
+      Assume(len <= 1024);  // Hint to compiler about maximum size
+      ...
+    }
+*/
+#ifdef ZLIB_DEBUG
+#  define Assert(cond, msg)     {int _cond = (cond); if (!(_cond)) z_error(msg);}
+#  define AssertHint(cond, msg) Assert(cond,msg)
+#  define Assume(cond)          Assert(cond, "Value assumption failed")
+#else
+#  define Assert(cond, msg)
+#  define AssertHint(cond, msg) z_assume(cond)
+#  define Assume(cond)          z_assume(cond)
 #endif
 
 /* OPTIMAL_CMP values determine the comparison width:
