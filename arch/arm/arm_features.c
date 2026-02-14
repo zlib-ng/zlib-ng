@@ -174,7 +174,7 @@ static int arm_has_eor3(void) {
 }
 
 /* AArch64 has neon. */
-#if defined(ARCH_ARM) && defined(ARCH_32BIT)
+#ifdef ARCH_32BIT
 static inline int arm_has_neon(void) {
     int has_neon = 0;
 #if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
@@ -208,7 +208,7 @@ static inline int arm_has_neon(void) {
 #endif
 
 /* AArch64 does not have ARMv6 SIMD. */
-#if defined(ARCH_ARM) && defined(ARCH_32BIT)
+#ifdef ARCH_32BIT
 static inline int arm_has_simd(void) {
     int has_simd = 0;
 #if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
@@ -317,7 +317,7 @@ static inline int arm_cpu_has_fast_pmull(void) {
 }
 
 void Z_INTERNAL arm_check_features(struct arm_cpu_features *features) {
-#if defined(ARCH_ARM) && defined(ARCH_64BIT)
+#ifdef ARCH_64BIT
     features->has_simd = 0; /* never available */
     features->has_neon = 1; /* always available */
 #else
