@@ -252,7 +252,6 @@ static inline int arm_has_simd(void) {
 
 /* Snapdragon X Elite/Plus - Custom core */
 #define QUALCOMM_PART_ORYON 0x001
-#endif
 
 static inline int arm_has_cpuid(void) {
     int has_cpuid = 0;
@@ -271,6 +270,7 @@ static inline int arm_has_cpuid(void) {
 #endif
     return has_cpuid;
 }
+#endif
 
 /* Determine if CPU has fast PMULL (multiple execution units) */
 static inline int arm_cpu_has_fast_pmull(void) {
@@ -320,9 +320,12 @@ void Z_INTERNAL arm_check_features(struct arm_cpu_features *features) {
 #if defined(ARCH_ARM) && defined(ARCH_64BIT)
     features->has_simd = 0; /* never available */
     features->has_neon = 1; /* always available */
-#else
+#elif defined(ARCH_ARM) && defined(ARCH_32BIT)
     features->has_simd = arm_has_simd();
     features->has_neon = arm_has_neon();
+#else
+    features->has_simd = 0;
+    features->has_neon = 0;
 #endif
     features->has_crc32 = arm_has_crc32();
     features->has_pmull = arm_has_pmull();
