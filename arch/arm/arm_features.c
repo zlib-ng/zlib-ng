@@ -224,7 +224,7 @@ static inline int arm_has_simd(void) {
 }
 #endif
 
-#if defined(ARCH_64BIT) && !defined(__APPLE__)
+#if defined(ARCH_64BIT) && !defined(__APPLE__) && !defined(_WIN32)
 /* MIDR_EL1 bit field definitions */
 #define MIDR_IMPLEMENTOR(midr)  (((midr) & (0xffU << 24)) >> 24)
 #define MIDR_PARTNUM(midr)      (((midr) & (0xfffU << 4)) >> 4)
@@ -252,7 +252,6 @@ static inline int arm_has_simd(void) {
 
 /* Snapdragon X Elite/Plus - Custom core */
 #define QUALCOMM_PART_ORYON 0x001
-#endif
 
 static inline int arm_has_cpuid(void) {
     int has_cpuid = 0;
@@ -271,6 +270,7 @@ static inline int arm_has_cpuid(void) {
 #endif
     return has_cpuid;
 }
+#endif
 
 /* Determine if CPU has fast PMULL (multiple execution units) */
 static inline int arm_cpu_has_fast_pmull(void) {
