@@ -1,5 +1,5 @@
 name: CMake
-on: [push, pull_request]
+on: [push, pull_request, workflow_dispatch]
 env:
   TERM: xterm-256color
   GTEST_COLOR: 1
