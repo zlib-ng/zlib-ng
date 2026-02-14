@@ -109,3 +109,6 @@ RelWithDebInfo
 # Test datasets
 test/data/corpora/
 test/data/local/
+
+# CodeQL build artifacts
+/_codeql_*
