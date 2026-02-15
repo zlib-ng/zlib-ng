@@ -103,7 +103,7 @@ if(WITH_GTEST)
     endif()
 
     # Google test requires MSAN instrumented LLVM C++ libraries
-    if(WITH_SANITIZER STREQUAL "Memory")
+    if(WITH_SANITIZER STREQUAL "memory")
         if(NOT DEFINED ENV{LLVM_BUILD_DIR})
             message(FATAL_ERROR "MSAN instrumented C++ libraries required!")
         endif()
@@ -202,7 +202,7 @@ if(WITH_GTEST)
             target_compile_options(gtest_zlib PRIVATE -D_XOPEN_SOURCE=700)
         endif()
 
-        if(WITH_SANITIZER STREQUAL "Memory")
+        if(WITH_SANITIZER STREQUAL "memory")
             target_link_directories(gtest_zlib PRIVATE $ENV{LLVM_BUILD_DIR}/lib)
             target_link_options(gtest_zlib PRIVATE
                 -stdlib=libc++

@@ -39,6 +39,7 @@ include(CheckIncludeFile)
 include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
+include(CheckLinkerFlag)
 include(CMakeDependentOption)
 include(CMakePackageConfigHelpers)
 include(CTest)
@@ -111,7 +112,7 @@ Default is no prefix (empty prefix).")
 
 # Add multi-choice option
 set(WITH_SANITIZER OFF CACHE STRING "Enable sanitizer support")
-set_property(CACHE WITH_SANITIZER PROPERTY STRINGS "OFF" "Memory" "Address" "Undefined" "Thread")
+set_property(CACHE WITH_SANITIZER PROPERTY STRINGS "OFF" "memory" "address" "undefined" "thread")
 
 if(BASEARCH_ARM_FOUND)
     cmake_dependent_option(WITH_ARMV6 "Build with ARMv6 SIMD" ON ARCH_32BIT OFF)
@@ -563,14 +564,22 @@ set(CMAKE_REQUIRED_DEFINITIONS)
 #
 # Check whether a sanitizer was requested
 #
-if(WITH_SANITIZER STREQUAL "Address")
+message(STATUS "Checking for sanitizer option")
+
+string(TOLOWER "${WITH_SANITIZER}" WITH_SANITIZER)
+if(NOT WITH_SANITIZER)
+    message(STATUS " sanitizer not enabled")
+elseif(WITH_SANITIZER STREQUAL "address")
     add_address_sanitizer()
-elseif(WITH_SANITIZER STREQUAL "Memory")
+elseif(WITH_SANITIZER STREQUAL "memory")
     add_memory_sanitizer()
-elseif(WITH_SANITIZER STREQUAL "Thread")
+elseif(WITH_SANITIZER STREQUAL "thread")
     add_thread_sanitizer()
-elseif(WITH_SANITIZER STREQUAL "Undefined")
+elseif(WITH_SANITIZER STREQUAL "undefined")
     add_undefined_sanitizer()
+else()
+    message(FATAL_ERROR "Unknown WITH_SANITIZER option: '${WITH_SANITIZER}'\n"
+                    "WITH_SANITIZER must be one of: 'memory', 'address', 'undefined', 'thread'")
 endif()
 
 #
