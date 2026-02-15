@@ -469,6 +469,7 @@ jobs:
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
             packages: ninja-build clang-20 llvm-20 libclang-rt-20-dev
             gcov-exec: llvm-cov-20 gcov
+            build-config: Debug
             # https://github.com/llvm/llvm-project/issues/55785
             msan-options: use_sigaltstack=0
             # Coverage disabled for clang-20, errors
@@ -816,8 +817,30 @@ jobs:
       if: contains(matrix.packages, 'wine')
       run: wineboot --init
 
+    - name: Set LLVM_BUILD_DIR for LLVM C++ libraries (MSAN)
+      if: contains(matrix.name, 'MSAN') && startsWith(matrix.compiler, 'clang')
+      run: |
+        echo "LLVM_BUILD_DIR=`pwd`/llvm-project/build" >> $GITHUB_ENV
+
+    - name: Get latest hash change for LLVM C++ libraries (MSAN)
+      if: contains(matrix.name, 'MSAN') && startsWith(matrix.compiler, 'clang')
+      id: llvm-remote-hash
+      run: |
+        HASH=$(git ls-remote https://github.com/llvm/llvm-project refs/heads/release/20.x | cut -f1)
+        echo "value=$HASH" >> $GITHUB_OUTPUT
+
+    - name: Cache LLVM C++ libraries (MSAN)
+      if: contains(matrix.name, 'MSAN') && startsWith(matrix.compiler, 'clang')
+      id: cache-llvm
+      uses: actions/cache@v5
+      with:
+        path: |
+          ${{ env.LLVM_BUILD_DIR }}/lib
+          ${{ env.LLVM_BUILD_DIR }}/include
+        key: cache-llvm-${{ matrix.os }}-${{ runner.arch }}-${{ matrix.compiler }}-${{ steps.llvm-remote-hash.outputs.value }}
+
     - name: Compile LLVM C++ libraries (MSAN)
-      if: contains(matrix.name, 'MSAN')
+      if: contains(matrix.name, 'MSAN') && startsWith(matrix.compiler, 'clang') && steps.cache-llvm.outputs.cache-hit != 'true'
       run: |
         # Use sparse-checkout to download only the folders we need (176MB instead of 2302MB)
         git clone --depth=1 --filter=blob:none https://github.com/llvm/llvm-project --no-checkout --branch release/20.x
@@ -834,7 +857,6 @@ jobs:
           -DLLVM_INCLUDE_TESTS=OFF \
           -DLLVM_INCLUDE_DOCS=OFF
         cmake --build build -j5 -- cxx cxxabi
-        echo "LLVM_BUILD_DIR=`pwd`/build" >> $GITHUB_ENV
       env:
         CFLAGS: -O2
         CC: ${{ matrix.compiler }}
@@ -864,7 +886,7 @@ jobs:
     - name: Run test cases
       # Don't run tests on 32-bit Windows ARM
       if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false || runner.arch == 'ARM64'
-      run: ctest --verbose -C Release -E benchmark_zlib --output-on-failure --max-width 120 -j ${{ matrix.parallel-jobs || '5' }}
+      run: ctest --verbose -C ${{ matrix.build-config || 'Release' }} -E benchmark_zlib --output-on-failure --max-width 120 -j ${{ matrix.parallel-jobs || '5' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
