@@ -8,7 +8,9 @@ elseif(MSVC)
     set(ARCH ${MSVC_C_ARCHITECTURE_ID})
 elseif(EMSCRIPTEN)
     set(ARCH "wasm32")
-else()
+endif()
+
+if(NOT ARCH OR ARCH STREQUAL "")
     # Compile detect-arch.c and read the architecture name from the binary
     try_compile(
         COMPILE_RESULT
