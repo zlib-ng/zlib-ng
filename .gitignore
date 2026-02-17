@@ -51,6 +51,7 @@ foo.gz
 *.vcxproj.filters
 *.vcxproj.user
 .vs
+.vscode
 
 CMakeCache.txt
 CMakeFiles
