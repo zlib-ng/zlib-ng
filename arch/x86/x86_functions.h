@@ -8,12 +8,14 @@
 
 #include "x86_natives.h"
 
-/* So great news, your compiler is broken and causes stack smashing. Rather than
- * notching out its compilation we'll just remove the assignment in the functable.
- * Further context:
+#if !defined(X86_PCLMULQDQ_NATIVE) && !defined(X86_VPCLMULQDQ_NATIVE)
+#  define CRC32_BRAID_FALLBACK
+/* SSE2/SSE4.1 chorba variants need braid fallback */
+#  if !defined(WITHOUT_CHORBA) && (!defined(_MSC_VER) || _MSC_VER > 1930)
+/* Visual Studio 2019 and prior can't compile the SSE2/SSE4.1 chorba variants due to stack corruption bug.
  * https://developercommunity.visualstudio.com/t/Stack-corruption-with-v142-toolchain-whe/10853479 */
-#if defined(_MSC_VER) && defined(ARCH_32BIT) && _MSC_VER >= 1920 && _MSC_VER <= 1929
-#define NO_CHORBA_SSE
+#    define CRC32_CHORBA_SSE_FALLBACK
+#  endif
 #endif
 
 #ifdef X86_SSE2
@@ -24,7 +26,7 @@ uint32_t longest_match_sse2(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_slow_sse2(deflate_state *const s, uint32_t cur_match);
 void slide_hash_sse2(deflate_state *s);
 
-#  if !defined(WITHOUT_CHORBA) && !defined(WITHOUT_CHORBA_SSE)
+#  ifdef CRC32_CHORBA_SSE_FALLBACK
     uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t len);
     uint32_t crc32_copy_chorba_sse2(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
     uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint8_t *buf, size_t len);
@@ -49,7 +51,7 @@ void inflate_fast_ssse3(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
 #if defined(X86_SSE41)
-#  if !defined(WITHOUT_CHORBA) && !defined(WITHOUT_CHORBA_SSE)
+#  ifdef CRC32_CHORBA_SSE_FALLBACK
     uint32_t crc32_chorba_sse41(uint32_t crc, const uint8_t *buf, size_t len);
     uint32_t crc32_copy_chorba_sse41(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #  endif
@@ -92,10 +94,6 @@ uint32_t crc32_vpclmulqdq(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_vpclmulqdq(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 
-#if !defined(X86_PCLMULQDQ_NATIVE) && !defined(X86_VPCLMULQDQ_NATIVE)
-#  define CRC32_BRAID_FALLBACK
-#endif
-
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // X86 - SSE2
 #  ifdef X86_SSE2_NATIVE
@@ -104,7 +102,7 @@ uint32_t crc32_copy_vpclmulqdq(uint32_t crc, uint8_t *dst, const uint8_t *src, s
 #    define native_inflate_fast inflate_fast_sse2
 #    define native_longest_match longest_match_sse2
 #    define native_longest_match_slow longest_match_slow_sse2
-#    if !defined(WITHOUT_CHORBA) && !defined(WITHOUT_CHORBA_SSE)
+#    ifdef CRC32_CHORBA_SSE_FALLBACK
 #      define native_crc32 crc32_chorba_sse2
 #      define native_crc32_copy crc32_copy_chorba_sse2
 #    endif
@@ -121,7 +119,7 @@ uint32_t crc32_copy_vpclmulqdq(uint32_t crc, uint8_t *dst, const uint8_t *src, s
 #  endif
 // X86 - SSE4.1
 #  if defined(X86_SSE41_NATIVE)
-#    if !defined(WITHOUT_CHORBA) && !defined(WITHOUT_CHORBA_SSE)
+#    ifdef CRC32_CHORBA_SSE_FALLBACK
 #      undef native_crc32
 #      define native_crc32 crc32_chorba_sse41
 #      undef native_crc32_copy

@@ -88,7 +88,7 @@ BENCHMARK_CRC32(chorba_c, crc32_chorba, 1);
 BENCHMARK_CRC32(native, native_crc32, 1);
 #else
 
-#if defined(CRC32_CHORBA_FALLBACK) && !defined(WITHOUT_CHORBA_SSE)
+#ifdef CRC32_CHORBA_SSE_FALLBACK
 #   ifdef X86_SSE2
     BENCHMARK_CRC32(chorba_sse2, crc32_chorba_sse2, test_cpu_features.x86.has_sse2);
 #   endif

@@ -117,7 +117,7 @@ static inline void init_functable_x86(struct functable_s *ft, struct cpu_feature
         ft->slide_hash = &slide_hash_sse2;
 #  endif
 #  if !defined(X86_SSE41_NATIVE) && !defined(X86_PCLMULQDQ_NATIVE)
-#    if !defined(WITHOUT_CHORBA) && !defined(WITHOUT_CHORBA_SSE)
+#    ifdef CRC32_CHORBA_SSE_FALLBACK
         ft->crc32 = &crc32_chorba_sse2;
         ft->crc32_copy = &crc32_copy_chorba_sse2;
 #    endif
@@ -145,7 +145,7 @@ static inline void init_functable_x86(struct functable_s *ft, struct cpu_feature
     if (cf->x86.has_sse41)
 #  endif
     {
-#  if !defined(WITHOUT_CHORBA) && !defined(WITHOUT_CHORBA_SSE)
+#  ifdef CRC32_CHORBA_SSE_FALLBACK
         ft->crc32 = &crc32_chorba_sse41;
         ft->crc32_copy = &crc32_copy_chorba_sse41;
 #  endif

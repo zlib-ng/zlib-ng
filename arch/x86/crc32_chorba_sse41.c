@@ -1,7 +1,7 @@
 #include "zbuild.h"
 #include "arch_functions.h"
 
-#if defined(X86_SSE41) && !defined(WITHOUT_CHORBA_SSE) && defined(CRC32_CHORBA_FALLBACK)
+#if defined(X86_SSE41) && defined(CRC32_CHORBA_SSE_FALLBACK)
 
 #include "crc32_chorba_p.h"
 #include "crc32_braid_p.h"
