@@ -913,6 +913,7 @@ jobs:
       with:
         name: ${{ matrix.name }} (cmake)
         path: |
+          **/CMakeFiles/CMakeConfigureLog.yaml
           **/CMakeFiles/CMakeOutput.log
           **/CMakeFiles/CMakeError.log
           **/Testing/Temporary/*
