@@ -70,6 +70,12 @@ TEST_CRC32_COPY(braid, crc32_copy_braid, 1)
 #  ifdef RISCV_CRC32_ZBC
     TEST_CRC32_COPY(riscv, crc32_copy_riscv64_zbc, test_cpu_features.riscv.has_zbc)
 #  endif
+#  ifdef POWER8_VSX_CRC32
+    TEST_CRC32_COPY(power8, crc32_copy_power8, test_cpu_features.power.has_arch_2_07)
+#  endif
+#  ifdef S390_CRC32_VX
+    TEST_CRC32_COPY(vx, crc32_copy_s390_vx, test_cpu_features.s390.has_vx)
+#  endif
 #  ifdef X86_PCLMULQDQ_CRC
     TEST_CRC32_COPY(pclmulqdq, crc32_copy_pclmulqdq, test_cpu_features.x86.has_pclmulqdq)
 #  endif
