@@ -1298,15 +1298,12 @@ set(ZLIB_GENERIC_SRCS
     arch/generic/chunkset_c.c
     arch/generic/compare256_c.c
     arch/generic/crc32_braid_c.c
+    arch/generic/crc32_chorba_c.c
     arch/generic/slide_hash_c.c
 )
 
 if(WITH_ALL_FALLBACKS)
     add_definitions(-DWITH_ALL_FALLBACKS)
-endif()
-
-if(WITH_CRC32_CHORBA)
-    list(APPEND ZLIB_SRCS arch/generic/crc32_chorba_c.c)
 endif()
 
 if(WITH_RUNTIME_CPU_DETECTION)

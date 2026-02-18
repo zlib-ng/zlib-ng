@@ -131,7 +131,7 @@ TEST_CRC32(vpclmulqdq_avx2, crc32_vpclmulqdq_avx2, (test_cpu_features.x86.has_pc
 #ifdef X86_VPCLMULQDQ_AVX512
 TEST_CRC32(vpclmulqdq_avx512, crc32_vpclmulqdq_avx512, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq))
 #endif
-#if defined(CRC32_CHORBA_FALLBACK) && !defined(WITHOUT_CHORBA_SSE)
+#ifdef CRC32_CHORBA_SSE_FALLBACK
 #   ifdef X86_SSE2
     TEST_CRC32(chorba_sse2, crc32_chorba_sse2, test_cpu_features.x86.has_sse2)
 #   endif

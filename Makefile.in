@@ -79,6 +79,7 @@ OBJZ = \
 	arch/generic/chunkset_c.o \
 	arch/generic/compare256_c.o \
 	arch/generic/crc32_braid_c.o \
+	arch/generic/crc32_chorba_c.o \
 	arch/generic/slide_hash_c.o \
 	adler32.o \
 	compress.o \
@@ -100,7 +101,6 @@ OBJZ = \
 	trees.o \
 	uncompr.o \
 	zutil.o \
-	arch/generic/crc32_chorba_c.o \
 	cpu_features.o \
 	$(ARCH_STATIC_OBJS)
 
@@ -117,6 +117,7 @@ PIC_OBJZ = \
 	arch/generic/chunkset_c.lo \
 	arch/generic/compare256_c.lo \
 	arch/generic/crc32_braid_c.lo \
+	arch/generic/crc32_chorba_c.lo \
 	arch/generic/slide_hash_c.lo \
 	adler32.lo \
 	compress.lo \
@@ -138,7 +139,6 @@ PIC_OBJZ = \
 	trees.lo \
 	uncompr.lo \
 	zutil.lo \
-	arch/generic/crc32_chorba_c.lo \
 	cpu_features.lo \
 	$(ARCH_SHARED_OBJS)
 

@@ -1,7 +1,7 @@
 #include "zbuild.h"
 #include "arch_functions.h"
 
-#if defined(X86_SSE41) && !defined(WITHOUT_CHORBA_SSE) && defined(CRC32_CHORBA_FALLBACK)
+#if defined(X86_SSE41) && defined(CRC32_CHORBA_SSE_FALLBACK)
 
 #include "crc32_chorba_p.h"
 #include "crc32_braid_p.h"
@@ -322,7 +322,7 @@ Z_INTERNAL uint32_t crc32_chorba_sse41(uint32_t crc, const uint8_t *buf, size_t 
         len -= align_diff;
         buf += align_diff;
     }
-#if !defined(WITHOUT_CHORBA)
+#ifdef CRC32_CHORBA_FALLBACK
     if (len > CHORBA_LARGE_THRESHOLD)
         return crc32_chorba_118960_nondestructive(crc, buf, len);
 #endif

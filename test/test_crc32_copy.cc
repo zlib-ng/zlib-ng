@@ -52,7 +52,7 @@ TEST_CRC32_COPY(chorba, crc32_copy_chorba, 1)
     TEST_CRC32_COPY(native, native_crc32_copy, 1)
 #else
     // Optimized functions
-#  if defined(CRC32_CHORBA_FALLBACK) && !defined(WITHOUT_CHORBA_SSE)
+#  ifdef CRC32_CHORBA_SSE_FALLBACK
 #    ifdef X86_SSE2
     TEST_CRC32_COPY(chorba_sse2, crc32_copy_chorba_sse2, test_cpu_features.x86.has_sse2)
 #    endif

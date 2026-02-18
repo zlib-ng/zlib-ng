@@ -120,7 +120,7 @@ static int init_functable(void) {
         ft.longest_match_roll = &longest_match_roll_sse2;
         ft.slide_hash = &slide_hash_sse2;
 #  endif
-#  if !defined(WITHOUT_CHORBA_SSE) && !defined(X86_PCLMULQDQ_NATIVE)
+#  if defined(CRC32_CHORBA_SSE_FALLBACK) && !defined(X86_SSE41_NATIVE) && !defined(X86_PCLMULQDQ_NATIVE)
         ft.crc32 = &crc32_chorba_sse2;
         ft.crc32_copy = &crc32_copy_chorba_sse2;
 #  endif
@@ -147,7 +147,7 @@ static int init_functable(void) {
     if (cf.x86.has_sse41)
 #  endif
     {
-#  ifndef WITHOUT_CHORBA_SSE
+#  ifdef CRC32_CHORBA_SSE_FALLBACK
         ft.crc32 = &crc32_chorba_sse41;
         ft.crc32_copy = &crc32_copy_chorba_sse41;
 #  endif

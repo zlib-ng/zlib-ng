@@ -8,6 +8,13 @@
 
 #include "x86_natives.h"
 
+#if !defined(X86_PCLMULQDQ_NATIVE) && !defined(X86_VPCLMULQDQ_NATIVE)
+#  define CRC32_BRAID_FALLBACK
+#  ifndef WITHOUT_CHORBA_SSE
+#    define CRC32_CHORBA_SSE_FALLBACK
+#  endif
+#endif
+
 #ifdef X86_SSE2
 uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, size_t len, size_t left);
 uint32_t compare256_sse2(const uint8_t *src0, const uint8_t *src1);
@@ -16,7 +23,7 @@ uint32_t longest_match_sse2(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_sse2(deflate_state *const s, uint32_t cur_match);
 void slide_hash_sse2(deflate_state *s);
 
-#  if !defined(WITHOUT_CHORBA) && !defined(WITHOUT_CHORBA_SSE)
+#  ifdef CRC32_CHORBA_SSE_FALLBACK
     uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t len);
     uint32_t crc32_copy_chorba_sse2(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
     uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint8_t *buf, size_t len);
@@ -41,7 +48,7 @@ void inflate_fast_ssse3(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
 #if defined(X86_SSE41)
-#  if !defined(WITHOUT_CHORBA) && !defined(WITHOUT_CHORBA_SSE)
+#  ifdef CRC32_CHORBA_SSE_FALLBACK
     uint32_t crc32_chorba_sse41(uint32_t crc, const uint8_t *buf, size_t len);
     uint32_t crc32_copy_chorba_sse41(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #  endif
@@ -88,10 +95,6 @@ uint32_t crc32_vpclmulqdq_avx512(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_vpclmulqdq_avx512(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 
-#if !defined(X86_PCLMULQDQ_NATIVE) && !defined(X86_VPCLMULQDQ_NATIVE)
-#  define CRC32_BRAID_FALLBACK
-#endif
-
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // X86 - SSE2
 #  ifdef X86_SSE2_NATIVE
@@ -105,7 +108,7 @@ uint32_t crc32_copy_vpclmulqdq_avx512(uint32_t crc, uint8_t *dst, const uint8_t 
 #    define native_longest_match longest_match_sse2
 #    undef native_longest_match_roll
 #    define native_longest_match_roll longest_match_roll_sse2
-#    if !defined(WITHOUT_CHORBA) && !defined(WITHOUT_CHORBA_SSE)
+#    ifdef CRC32_CHORBA_SSE_FALLBACK
 #      undef native_crc32
 #      define native_crc32 crc32_chorba_sse2
 #      undef native_crc32_copy
@@ -127,7 +130,7 @@ uint32_t crc32_copy_vpclmulqdq_avx512(uint32_t crc, uint8_t *dst, const uint8_t 
 #  endif
 // X86 - SSE4.1
 #  if defined(X86_SSE41_NATIVE)
-#    if !defined(WITHOUT_CHORBA) && !defined(WITHOUT_CHORBA_SSE)
+#    ifdef CRC32_CHORBA_SSE_FALLBACK
 #      undef native_crc32
 #      define native_crc32 crc32_chorba_sse41
 #      undef native_crc32_copy
