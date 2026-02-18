@@ -25,7 +25,7 @@ void slide_hash_sse2(deflate_state *s);
 #  if !defined(WITHOUT_CHORBA_SSE)
     uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t len);
     uint32_t crc32_copy_chorba_sse2(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
-    uint32_t chorba_small_nondestructive_sse2(uint32_t c, const uint8_t *aligned_buf, size_t aligned_len);
+    uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint8_t *buf, size_t len);
 #  endif
 #endif
 

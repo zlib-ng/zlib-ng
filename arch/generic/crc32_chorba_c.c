@@ -488,7 +488,7 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
 
 #  if CHORBA_W == 8
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
-Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_t* buf, size_t len) {
+Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_t *buf, size_t len) {
     /* The calling function ensured that this is aligned correctly */
     const uint64_t* input = (const uint64_t*)buf;
     uint64_t bitbuffer[32768 / sizeof(uint64_t)];

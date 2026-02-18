@@ -26,9 +26,9 @@
     typedef uint32_t chorba_word_t;
 #endif
 
-Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive (uint32_t crc, const uint8_t* input, size_t len);
-Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive (uint32_t crc, const uint8_t* input, size_t len);
-Z_INTERNAL uint32_t crc32_chorba_small_nondestructive (uint32_t crc, const uint8_t* input, size_t len);
-Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit (uint32_t crc, const uint8_t* input, size_t len);
+Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8_t *buf, size_t len);
+Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_t *buf, size_t len);
+Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_t *buf, size_t len);
+Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit(uint32_t crc, const uint8_t *buf, size_t len);
 
 #endif /* CRC32_CHORBA_P_H_ */
