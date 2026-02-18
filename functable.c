@@ -298,8 +298,8 @@ static int init_functable(void) {
     // S390
 #ifdef S390_CRC32_VX
     if (cf.s390.has_vx) {
-        ft.crc32 = crc32_s390_vx;
-        ft.crc32_copy = crc32_copy_s390_vx;
+        ft.crc32 = &crc32_s390_vx;
+        ft.crc32_copy = &crc32_copy_s390_vx;
     }
 #endif
 
