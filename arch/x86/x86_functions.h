@@ -99,30 +99,20 @@ uint32_t crc32_copy_vpclmulqdq(uint32_t crc, uint8_t *dst, const uint8_t *src, s
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // X86 - SSE2
 #  ifdef X86_SSE2_NATIVE
-#    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_sse2
-#    undef native_compare256
 #    define native_compare256 compare256_sse2
-#    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_sse2
-#    undef native_longest_match
 #    define native_longest_match longest_match_sse2
-#    undef native_longest_match_slow
 #    define native_longest_match_slow longest_match_slow_sse2
 #    if !defined(WITHOUT_CHORBA) && !defined(WITHOUT_CHORBA_SSE)
-#      undef native_crc32
 #      define native_crc32 crc32_chorba_sse2
-#      undef native_crc32_copy
 #      define native_crc32_copy crc32_copy_chorba_sse2
 #    endif
-#    undef native_slide_hash
 #    define native_slide_hash slide_hash_sse2
 #  endif
 // X86 - SSSE3
 #  ifdef X86_SSSE3_NATIVE
-#    undef native_adler32
 #    define native_adler32 adler32_ssse3
-#    undef native_adler32_copy
 #    define native_adler32_copy adler32_copy_ssse3
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_ssse3

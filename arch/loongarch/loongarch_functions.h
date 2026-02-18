@@ -51,27 +51,17 @@ void slide_hash_lasx(deflate_state *s);
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // LOONGARCH - CRC32
 #  ifdef LOONGARCH_CRC_NATIVE
-#    undef native_crc32
 #    define native_crc32 crc32_loongarch64
-#    undef native_crc32_copy
 #    define native_crc32_copy crc32_copy_loongarch64
 #  endif
 #  ifdef LOONGARCH_LSX_NATIVE
-#    undef native_adler32
 #    define native_adler32 adler32_lsx
-#    undef native_adler32_copy
 #    define native_adler32_copy adler32_copy_lsx
-#    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_lsx
-#    undef native_compare256
 #    define native_compare256 compare256_lsx
-#    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_lsx
-#    undef native_longest_match
 #    define native_longest_match longest_match_lsx
-#    undef native_longest_match_slow
 #    define native_longest_match_slow longest_match_slow_lsx
-#    undef native_slide_hash
 #    define native_slide_hash slide_hash_lsx
 #  endif
 #  ifdef LOONGARCH_LASX_NATIVE

@@ -48,24 +48,16 @@ void slide_hash_armv6(deflate_state *s);
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // ARM - SIMD
 #  ifdef ARM_SIMD_NATIVE
-#    undef native_slide_hash
 #    define native_slide_hash slide_hash_armv6
 #  endif
 // ARM - NEON
 #  ifdef ARM_NEON_NATIVE
-#    undef native_adler32
 #    define native_adler32 adler32_neon
-#    undef native_adler32_copy
 #    define native_adler32_copy adler32_copy_neon
-#    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_neon
-#    undef native_compare256
 #    define native_compare256 compare256_neon
-#    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_neon
-#    undef native_longest_match
 #    define native_longest_match longest_match_neon
-#    undef native_longest_match_slow
 #    define native_longest_match_slow longest_match_slow_neon
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_neon
