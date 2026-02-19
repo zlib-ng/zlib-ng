@@ -191,7 +191,7 @@ typedef unsigned bits_t;
 #define TRACE_END_OF_BLOCK() \
     Tracevv((stderr, "inflate:         end of block\n"))
 
-#define INFLATE_FAST_MIN_HAVE 22
+#define INFLATE_FAST_MIN_HAVE 15
 #define INFLATE_FAST_MIN_LEFT 260
 
 /* Load 64 bits from IN and place the bytes at offset BITS in the result. */

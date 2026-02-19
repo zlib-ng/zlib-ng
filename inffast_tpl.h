@@ -176,30 +176,35 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
             TRACE_LENGTH(len);
             here = dcode[hold & dmask];
             Z_TOUCH(here);
-            if (UNLIKELY(bits < MAX_BITS + MAX_DIST_EXTRA_BITS)) {
-                REFILL();
-            }
-          dodist:
-            old = hold;
-            DROPBITS(here.bits);
-            op = here.op;
-            if (LIKELY(op & 16)) {              /* distance base */
-                dist = here.val + EXTRA_BITS(old, here, op);
-#ifdef INFLATE_STRICT
-                if (UNLIKELY(dist > state->dmax)) {
-                    SET_BAD("invalid distance too far back");
-                    break;
+            {
+                unsigned do_preload = 1;
+                if (UNLIKELY(bits < MAX_BITS + MAX_DIST_EXTRA_BITS)) {
+                    REFILL();
+                    do_preload = 0;
                 }
-#endif
-                TRACE_DISTANCE(dist);
-
-                /* preload and shift for next iteration */
-                REFILL();
-                here = lcode[hold & lmask];
-                Z_TOUCH(here);
+              dodist:
                 old = hold;
                 DROPBITS(here.bits);
-                op = (unsigned)(out - beg);     /* max distance in output */
+                op = here.op;
+                if (LIKELY(op & 16)) {              /* distance base */
+                    dist = here.val + EXTRA_BITS(old, here, op);
+#ifdef INFLATE_STRICT
+                    if (UNLIKELY(dist > state->dmax)) {
+                        SET_BAD("invalid distance too far back");
+                        break;
+                    }
+#endif
+                    TRACE_DISTANCE(dist);
+
+                    if (LIKELY(do_preload)) {
+                        /* preload and shift for next iteration */
+                        REFILL();
+                        here = lcode[hold & lmask];
+                        Z_TOUCH(here);
+                        old = hold;
+                        DROPBITS(here.bits);
+                    }
+                    op = (unsigned)(out - beg);     /* max distance in output */
                 if (UNLIKELY(dist > op)) {      /* see if copy from window */
                     op = dist - op;             /* distance back in window */
                     if (UNLIKELY(op > whave)) {
@@ -281,13 +286,17 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
 #ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
               chunk_continue:
 #endif
-                if (in < last && out < end)
-                    goto preloaded;
+                if (LIKELY(do_preload)) {
+                    if (in < last && out < end)
+                        goto preloaded;
+                }
 
               chunk_break:
-                /* undo pre-shift */
-                hold = old;
-                bits += here.bits;
+                if (do_preload) {
+                    /* undo pre-shift */
+                    hold = old;
+                    bits += here.bits;
+                }
             } else if (UNLIKELY((op & 64) == 0)) {          /* 2nd level distance code */
                 here = dcode[here.val + BITS(op)];
                 Z_TOUCH(here);
@@ -296,6 +305,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                 SET_BAD("invalid distance code");
                 break;
             }
+        } /* end do_preload block */
         } else if (UNLIKELY((op & 64) == 0)) {              /* 2nd level length code */
             here = lcode[here.val + BITS(op)];
             Z_TOUCH(here);
