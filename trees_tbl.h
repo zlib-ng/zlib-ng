@@ -118,15 +118,33 @@ const unsigned char Z_INTERNAL zng_length_code[STD_MAX_MATCH-STD_MIN_MATCH+1] = 
 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 27, 28
 };
 
-Z_INTERNAL const int base_length[LENGTH_CODES] = {
-0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 20, 24, 28, 32, 40, 48, 56,
-64, 80, 96, 112, 128, 160, 192, 224, 0
+/* Combined base + extra_bits tables for single-lookup optimization.
+ * Length table: bits 0-7 = base_length, bits 8-11 = extra_lbits
+ * Distance table: bits 0-15 = base_dist, bits 16-19 = extra_dbits
+ */
+#define LBASE_EXTRA(base, extra) ((extra) << 8 | (base))
+#define DBASE_EXTRA(base, extra) ((extra) << 16 | (base))
+
+Z_INTERNAL const uint16_t lbase_extra[LENGTH_CODES] = {
+LBASE_EXTRA(  0, 0), LBASE_EXTRA(  1, 0), LBASE_EXTRA(  2, 0), LBASE_EXTRA(  3, 0),
+LBASE_EXTRA(  4, 0), LBASE_EXTRA(  5, 0), LBASE_EXTRA(  6, 0), LBASE_EXTRA(  7, 0),
+LBASE_EXTRA(  8, 1), LBASE_EXTRA( 10, 1), LBASE_EXTRA( 12, 1), LBASE_EXTRA( 14, 1),
+LBASE_EXTRA( 16, 2), LBASE_EXTRA( 20, 2), LBASE_EXTRA( 24, 2), LBASE_EXTRA( 28, 2),
+LBASE_EXTRA( 32, 3), LBASE_EXTRA( 40, 3), LBASE_EXTRA( 48, 3), LBASE_EXTRA( 56, 3),
+LBASE_EXTRA( 64, 4), LBASE_EXTRA( 80, 4), LBASE_EXTRA( 96, 4), LBASE_EXTRA(112, 4),
+LBASE_EXTRA(128, 5), LBASE_EXTRA(160, 5), LBASE_EXTRA(192, 5), LBASE_EXTRA(224, 5),
+LBASE_EXTRA(  0, 0)
 };
 
-Z_INTERNAL const int base_dist[D_CODES] = {
-    0,     1,     2,     3,     4,     6,     8,    12,    16,    24,
-   32,    48,    64,    96,   128,   192,   256,   384,   512,   768,
- 1024,  1536,  2048,  3072,  4096,  6144,  8192, 12288, 16384, 24576
+Z_INTERNAL const uint32_t dbase_extra[D_CODES] = {
+DBASE_EXTRA(    0,  0), DBASE_EXTRA(    1,  0), DBASE_EXTRA(    2,  0), DBASE_EXTRA(    3,  0),
+DBASE_EXTRA(    4,  1), DBASE_EXTRA(    6,  1), DBASE_EXTRA(    8,  2), DBASE_EXTRA(   12,  2),
+DBASE_EXTRA(   16,  3), DBASE_EXTRA(   24,  3), DBASE_EXTRA(   32,  4), DBASE_EXTRA(   48,  4),
+DBASE_EXTRA(   64,  5), DBASE_EXTRA(   96,  5), DBASE_EXTRA(  128,  6), DBASE_EXTRA(  192,  6),
+DBASE_EXTRA(  256,  7), DBASE_EXTRA(  384,  7), DBASE_EXTRA(  512,  8), DBASE_EXTRA(  768,  8),
+DBASE_EXTRA( 1024,  9), DBASE_EXTRA( 1536,  9), DBASE_EXTRA( 2048, 10), DBASE_EXTRA( 3072, 10),
+DBASE_EXTRA( 4096, 11), DBASE_EXTRA( 6144, 11), DBASE_EXTRA( 8192, 12), DBASE_EXTRA(12288, 12),
+DBASE_EXTRA(16384, 13), DBASE_EXTRA(24576, 13)
 };
 
 #endif /* TREES_TBL_H_ */
