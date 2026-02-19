@@ -21,7 +21,7 @@ z_const char * const PREFIX(z_errmsg)[10] = {
 };
 
 const char PREFIX3(vstring)[] =
-    " zlib-ng 2.3.1";
+    " zlib-ng 2.3.90 devel";
 
 #ifdef ZLIB_COMPAT
 const char * Z_EXPORT zlibVersion(void) {
