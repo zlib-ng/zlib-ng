@@ -144,6 +144,12 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     /* decode literals and length/distances until end-of-block or not enough
        input data or output space */
     preloaded = 0;
+#ifdef _MSC_VER
+    here.bits = 0;     /* silence C4701 potentially uninitialized */
+    here.op = 0;
+    here.val = 0;
+    old = 0;
+#endif
     do {
         if (!preloaded) {
             REFILL();
