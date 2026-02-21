@@ -53,7 +53,11 @@
 /* Hint to compiler that a block of code is unreachable, typically in a switch default condition */
 #ifndef Z_UNREACHABLE
 #  if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
-#    define Z_UNREACHABLE() unreachable()           // C23 approach
+#    if !defined(unreachable) && defined(_MSC_VER)
+#      define Z_UNREACHABLE() __assume(0)
+#    else
+#      define Z_UNREACHABLE() unreachable()           // C23 approach
+#    endif
 #  elif (defined(__GNUC__) && (__GNUC__ >= 5)) || defined(__clang__)
 #    define Z_UNREACHABLE() __builtin_unreachable()
 #  else
