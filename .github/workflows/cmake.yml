@@ -479,6 +479,12 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=${EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake -DCMAKE_C_COMPILER_TARGET=wasm32 -DCMAKE_CROSSCOMPILING_EMULATOR=${EMSDK_NODE} -DZLIB_COMPAT=ON
             # codecov disabled for wasm
 
+          - name: Windows MSVC 2026 v145 Win64 C23
+            os: windows-2025-vs2026
+            compiler: cl
+            cmake-args: -G "Visual Studio 18 2026" -A x64 -T v145 -DCMAKE_C_STANDARD=23
+            # codecov disabled for msvc
+
           - name: Windows MSVC 2022 v143 Win32
             os: windows-latest
             compiler: cl
