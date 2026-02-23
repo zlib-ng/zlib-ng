@@ -38,37 +38,33 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len
     /* If our buffer is unaligned (likely), make the determination whether
      * or not there's enough of a buffer to consume to make the scalar, aligning
      * additions worthwhile or if it's worth it to just eat the cost of an unaligned
-     * load. This is a pretty simple test, just test if 16 - the remainder + len is
-     * < 16 */
-    size_t max_iters = NMAX;
-    size_t rem = (uintptr_t)buf & 15;
-    size_t align_offset = 16 - rem;
+     * load. This is a pretty simple test, just test if len < 32 */
+    size_t n = NMAX;
     size_t k = 0;
-    if (rem) {
-        if (len < 16 + align_offset) {
-            /* Let's eat the cost of this one unaligned load so that
-             * we don't completely skip over the vectorization. Doing
-             * 16 bytes at a time unaligned is better than 16 + <= 15
-             * sums */
-            vbuf = _mm_loadu_si128((__m128i*)buf);
-            len -= 16;
-            buf += 16;
-            vs1 = _mm_cvtsi32_si128(adler);
-            vs2 = _mm_cvtsi32_si128(sum2);
-            vs3 = _mm_setzero_si128();
-            vs1_0 = vs1;
-            goto unaligned_jmp;
-        }
 
-        adler32_copy_align(&adler, NULL, buf, align_offset, &sum2, 15, 0);
-
-        /* lop off the max number of sums based on the scalar sums done
-         * above */
-        buf += align_offset;
-        len -= align_offset;
-        max_iters -= align_offset;
+    if (len < 32) {
+        /* Let's eat the cost of this one unaligned load so that
+         * we don't completely skip over the vectorization. Doing
+         * 16 bytes at a time unaligned is better than 16 + <= 15
+         * sums */
+        vbuf = _mm_loadu_si128((__m128i*)buf);
+        len -= 16;
+        buf += 16;
+        vs1 = _mm_cvtsi32_si128(adler);
+        vs2 = _mm_cvtsi32_si128(sum2);
+        vs3 = _mm_setzero_si128();
+        vs1_0 = vs1;
+        goto unaligned_jmp;
     }
 
+    size_t align_diff = MIN(ALIGN_DIFF(buf, 16), len);
+    if (align_diff) {
+        adler32_copy_align(&adler, NULL, buf, align_diff, &sum2, 15, 0);
+
+        buf += align_diff;
+        len -= align_diff;
+        n -= align_diff;
+    }
 
     while (len >= 16) {
         vs1 = _mm_cvtsi32_si128(adler);
@@ -77,7 +73,7 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len
         vs2_0 = _mm_setzero_si128();
         vs1_0 = vs1;
 
-        k = ALIGN_DOWN(MIN(len, max_iters), 16);
+        k = ALIGN_DOWN(MIN(len, n), 16);
         len -= k;
 
         while (k >= 32) {
@@ -137,7 +133,7 @@ unaligned_jmp:
          * 0 and 2. This saves us some contention on the shuffle port(s) */
         adler = partial_hsum(vs1) % BASE;
         sum2 = hsum(vs2) % BASE;
-        max_iters = NMAX;
+        n = NMAX;
     }
 
     /* Process tail (len < 16).  */

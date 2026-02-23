@@ -273,8 +273,6 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
         return adler32_copy_tail(adler, dst, src, len, sum2, 1, 15, COPY);
 
     uint32_t pair[2];
-    int n = NMAX;
-    unsigned int done = 0;
 
     /* Split Adler-32 into component sums, it can be supplied by
      * the caller sites (e.g. in a PNG file).
@@ -295,43 +293,39 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
      * alignment, but it's unclear which other SIPs will benefit from it.
      * In the copying variant we use fallback to 4x loads and 4x stores,
      * as ld1x4 seems to block ILP when stores are in the mix */
-    unsigned int align_offset = ((uintptr_t)src & 31);
-    unsigned int align_adj = (align_offset) ? 32 - align_offset : 0;
-
-    if (len < (16 + align_adj)) {
-        return adler32_copy_tail(pair[0], dst, src, len, pair[1], 1, 15, COPY);
-    } else if (align_offset) {
-        adler32_copy_align(&pair[0], dst, src, align_adj, &pair[1], 31, COPY);
-
-        n -= align_adj;
-        done += align_adj;
-    } else {
-        /* If here, we failed the len criteria test, it wouldn't be
-         * worthwhile to do scalar aligning sums */
-        align_adj = 0;
-    }
-
-    while (done < len) {
-        int remaining = (int)(len - done);
-        n = MIN(remaining, (done == align_adj) ? n : NMAX);
-
-        if (n < 16)
-            break;
+    size_t align_diff = MIN(ALIGN_DIFF(src, 32), len);
+    size_t n = NMAX;
+    if (align_diff) {
+        adler32_copy_align(&pair[0], dst, src, align_diff, &pair[1], 31, COPY);
 
         if (COPY)
-            NEON_accum32_copy(pair, dst + done, src + done, n >> 4);
+            dst += align_diff;
+        src += align_diff;
+        len -= align_diff;
+        n -= align_diff;
+    }
+
+    while (len >= 16) {
+        n = MIN(len, n);
+
+        if (COPY)
+            NEON_accum32_copy(pair, dst, src, n >> 4);
         else
-            NEON_accum32(pair, src + done, n >> 4);
+            NEON_accum32(pair, src, n >> 4);
 
         pair[0] %= BASE;
         pair[1] %= BASE;
 
-        int actual_nsums = (n >> 4) << 4;
-        done += actual_nsums;
+        size_t k = (n >> 4) << 4;
+        src += k;
+        if (COPY)
+            dst += k;
+        len -= k;
+        n = NMAX;
     }
 
     /* Process tail (len < 16).  */
-    return adler32_copy_tail(pair[0], dst + done, src + done, len - done, pair[1], done < len, 15, COPY);
+    return adler32_copy_tail(pair[0], dst, src, len, pair[1], len != 0 || align_diff, 15, COPY);
 }
 
 Z_INTERNAL uint32_t adler32_neon(uint32_t adler, const uint8_t *src, size_t len) {

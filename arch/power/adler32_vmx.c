@@ -132,31 +132,31 @@ Z_INTERNAL uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len) 
     pair[3] = 0;
 
     // Align buffer
-    int n = NMAX;
-    unsigned int done = 0;
-    size_t align_len = (size_t)MIN(ALIGN_DIFF(buf, 16), len);
-    if (align_len) {
-        adler32_copy_align(&pair[0], NULL, buf, align_len, &pair[1], 15, 0);
-        done += align_len;
-        /* Rather than rebasing, we can reduce the max sums for the
-         * first round only */
-        n -= align_len;
-    }
-    for (size_t i = align_len; i < len; i += n) {
-        int remaining = (int)(len-i);
-        n = MIN(remaining, (i == align_len) ? n : NMAX);
-        if (n < 16)
-            break;
+    size_t align_diff = MIN(ALIGN_DIFF(buf, 16), len);
+    size_t n = NMAX;
+    if (align_diff) {
+        adler32_copy_align(&pair[0], NULL, buf, align_diff, &pair[1], 15, 0);
 
-        vmx_accum32(pair, buf + i, n / 16);
+        buf += align_diff;
+        len -= align_diff;
+        n -= align_diff;
+    }
+
+    while (len >= 16) {
+        n = MIN(len, n);
+
+        vmx_accum32(pair, buf, n / 16);
         pair[0] %= BASE;
         pair[1] %= BASE;
 
-        done += (n / 16) * 16;
+        size_t k = (n / 16) * 16;
+        buf += k;
+        len -= k;
+        n = NMAX;
     }
 
     /* Process tail (len < 16).  */
-    return adler32_copy_tail(pair[0], NULL, buf + done, len - done, pair[1], done < len, 15, 0);
+    return adler32_copy_tail(pair[0], NULL, buf, len, pair[1], len != 0 || align_diff, 15, 0);
 }
 
 /* VMX stores can have higher latency than optimized memcpy */
