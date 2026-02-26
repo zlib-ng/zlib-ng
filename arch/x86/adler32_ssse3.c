@@ -11,6 +11,7 @@
 #include "zbuild.h"
 #include "adler32_p.h"
 #include "adler32_ssse3_p.h"
+#include "adler32_x86_p.h"
 
 #include <immintrin.h>
 
@@ -24,8 +25,8 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len
         return adler32_copy_tail(adler, NULL, buf, 1, sum2, 1, 1, 0);
 
     /* in case short lengths are provided, keep it somewhat fast */
-    if (UNLIKELY(len < 16))
-        return adler32_copy_tail(adler, NULL, buf, len, sum2, 1, 15, 0);
+    if (UNLIKELY(len < 32))
+        return adler32_copy_tail_x86(adler, NULL, buf, len, sum2, 31, 0);
 
     const __m128i dot2v = _mm_setr_epi8(32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17);
     const __m128i dot2v_0 = _mm_setr_epi8(16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1);
@@ -45,21 +46,6 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len
     size_t align_offset = 16 - rem;
     size_t k = 0;
     if (rem) {
-        if (len < 16 + align_offset) {
-            /* Let's eat the cost of this one unaligned load so that
-             * we don't completely skip over the vectorization. Doing
-             * 16 bytes at a time unaligned is better than 16 + <= 15
-             * sums */
-            vbuf = _mm_loadu_si128((__m128i*)buf);
-            len -= 16;
-            buf += 16;
-            vs1 = _mm_cvtsi32_si128(adler);
-            vs2 = _mm_cvtsi32_si128(sum2);
-            vs3 = _mm_setzero_si128();
-            vs1_0 = vs1;
-            goto unaligned_jmp;
-        }
-
         adler32_copy_align(&adler, NULL, buf, align_offset, &sum2, 15, 0);
 
         /* lop off the max number of sums based on the scalar sums done
@@ -119,7 +105,6 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len
             buf += 16;
             k -= 16;
 
-unaligned_jmp:
             v_sad_sum1 = _mm_sad_epu8(vbuf, zero);
             vs1 = _mm_add_epi32(v_sad_sum1, vs1);
             vs3 = _mm_add_epi32(vs1_0, vs3);

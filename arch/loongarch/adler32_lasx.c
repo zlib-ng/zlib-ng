@@ -11,28 +11,7 @@
 #ifdef LOONGARCH_LASX
 
 #include "zbuild.h"
-#include "adler32_p.h"
-
-#include <lasxintrin.h>
-#include "lasxintrin_ext.h"
-
-
-/* 32 bit horizontal sum */
-static inline uint32_t hsum256(__m256i x) {
-    __m256i sum1 = __lasx_xvadd_w(x, __lasx_xvbsrl_v(x, 8));
-    __m256i sum2 = __lasx_xvadd_w(sum1, __lasx_xvpermi_d(sum1, 0x2));
-    __m256i sum3 = __lasx_xvadd_w(sum2, __lasx_xvbsrl_v(sum2, 4));
-    return (uint32_t)__lasx_xvpickve2gr_wu(sum3, 0);
-}
-
-static inline uint32_t partial_hsum256(__m256i x) {
-    __m256i sum1 = __lasx_xvadd_w(x, __lasx_xvbsrl_v(x, 8));
-    __m256i sum2 = __lasx_xvadd_w(sum1, __lasx_xvpermi_d(sum1, 0x2));
-    return (uint32_t)__lasx_xvpickve2gr_wu(sum2, 0);
-}
-
-extern uint32_t adler32_copy_lsx(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
-extern uint32_t adler32_lsx(uint32_t adler, const uint8_t *src, size_t len);
+#include "adler32_loongarch_p.h"
 
 Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     uint32_t adler0, adler1;
@@ -40,14 +19,8 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
     adler0 = adler & 0xffff;
 
 rem_peel:
-    if (len < 16) {
-        return adler32_copy_tail(adler0, dst, src, len, adler1, 1, 15, COPY);
-    } else if (len < 32) {
-        if (COPY) {
-            return adler32_copy_lsx(adler, dst, src, len);
-        } else {
-            return adler32_lsx(adler, src, len);
-        }
+    if (len < 32) {
+        return adler32_copy_tail_loongarch(adler0, dst, src, len, adler1, 31, COPY);
     }
 
     __m256i vs1, vs2, vs2_0;

@@ -10,24 +10,7 @@
 #ifdef LOONGARCH_LSX
 
 #include "zbuild.h"
-#include "adler32_p.h"
-
-#include <lsxintrin.h>
-#include "lsxintrin_ext.h"
-
-static inline uint32_t partial_hsum(__m128i x) {
-    __m128i second_int = __lsx_vbsrl_v(x, 8);
-    __m128i sum = __lsx_vadd_w(x, second_int);
-    return __lsx_vpickve2gr_w(sum, 0);
-}
-
-static inline uint32_t hsum(__m128i x) {
-    __m128i sum1 = __lsx_vilvh_d(x, x);
-    __m128i sum2 = __lsx_vadd_w(x, sum1);
-    __m128i sum3 = __lsx_vshuf4i_w(sum2, 0x01);
-    __m128i sum4 = __lsx_vadd_w(sum2, sum3);
-    return __lsx_vpickve2gr_w(sum4, 0);
-}
+#include "adler32_loongarch_p.h"
 
 Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     uint32_t adler0, adler1;
@@ -124,8 +107,8 @@ rem_peel:
         vs3 = __lsx_vslli_w(vs3, 4);
         vs2 = __lsx_vadd_w(vs2, vs3);
 
-        adler0 = partial_hsum(vs1) % BASE;
-        adler1 = hsum(vs2) % BASE;
+        adler0 = partial_hsum128(vs1) % BASE;
+        adler1 = hsum128(vs2) % BASE;
     }
 
     /* If this is true, there's fewer than 16 elements remaining */

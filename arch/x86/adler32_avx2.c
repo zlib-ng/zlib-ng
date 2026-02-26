@@ -11,12 +11,8 @@
 
 #include "zbuild.h"
 #include <immintrin.h>
-#include "adler32_p.h"
-#include "adler32_avx2_p.h"
+#include "adler32_x86_p.h"
 #include "x86_intrins.h"
-
-extern uint32_t adler32_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
-extern uint32_t adler32_ssse3(uint32_t adler, const uint8_t *src, size_t len);
 
 Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     uint32_t adler0, adler1;
@@ -24,15 +20,8 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
     adler0 = adler & 0xffff;
 
 rem_peel:
-    if (len < 16) {
-        return adler32_copy_tail(adler0, dst, src, len, adler1, 1, 15, COPY);
-    } else if (len < 32) {
-        if (COPY) {
-            return adler32_copy_sse42(adler, dst, src, len);
-        } else {
-            return adler32_ssse3(adler, src, len);
-        }
-    }
+    if (len < 64)
+        return adler32_copy_tail_x86(adler0, dst, src, len, adler1, 63, COPY);
 
     __m256i vs1, vs2, vs2_0;
 

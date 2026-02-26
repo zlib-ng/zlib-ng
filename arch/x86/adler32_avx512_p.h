@@ -32,7 +32,7 @@ static inline uint32_t _mm512_reduce_add_epu32(__m512i x) {
     return _mm_cvtsi128_si32(sum4);
 }
 
-static inline uint32_t partial_hsum(__m512i x) {
+static inline uint32_t partial_hsum512(__m512i x) {
     /* We need a permutation vector to extract every other integer. The
      * rest are going to be zeros. Marking this const so the compiler stands
      * a better chance of keeping this resident in a register through entire

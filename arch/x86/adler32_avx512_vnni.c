@@ -16,6 +16,7 @@
 #include "x86_intrins.h"
 #include "adler32_avx512_p.h"
 #include "adler32_avx2_p.h"
+#include "adler32_x86_p.h"
 
 Z_INTERNAL uint32_t adler32_avx512_vnni(uint32_t adler, const uint8_t *src, size_t len) {
     uint32_t adler0, adler1;
@@ -23,11 +24,8 @@ Z_INTERNAL uint32_t adler32_avx512_vnni(uint32_t adler, const uint8_t *src, size
     adler0 = adler & 0xffff;
 
 rem_peel:
-    if (len < 32)
-        return adler32_ssse3(adler, src, len);
-
     if (len < 64)
-        return adler32_avx2(adler, src, len);
+        return adler32_copy_tail_x86(adler0, NULL, src, len, adler1, 63, 0);
 
     const __m512i dot2v = _mm512_set_epi8(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
                                           20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37,
@@ -91,7 +89,7 @@ rem_peel:
         vs2 = _mm512_add_epi32(vs2, vs3);
         vs2 = _mm512_add_epi32(vs2, vs2_1);
 
-        adler0 = partial_hsum(vs1) % BASE;
+        adler0 = partial_hsum512(vs1) % BASE;
         adler1 = _mm512_reduce_add_epu32(vs2) % BASE;
     }
 
@@ -112,14 +110,8 @@ Z_INTERNAL uint32_t adler32_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const
     adler0 = adler & 0xffff;
 
 rem_peel_copy:
-    if (len < 32) {
-        /* This handles the remaining copies, just call normal adler checksum after this */
-        __mmask32 storemask = (0xFFFFFFFFUL >> (32 - len));
-        __m256i copy_vec = _mm256_maskz_loadu_epi8(storemask, src);
-        _mm256_mask_storeu_epi8(dst, storemask, copy_vec);
-
-        return adler32_ssse3(adler, src, len);
-    }
+    if (len < 64)
+        return adler32_copy_tail_x86(adler0, dst, src, len, adler1, 63, 1);
 
     const __m256i dot2v = _mm256_set_epi8(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
                                           20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32);
