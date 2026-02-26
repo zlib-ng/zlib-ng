@@ -34,20 +34,27 @@ if(NOT benchmark_FOUND)
     ZNG_FetchContent_MakeAvailable(benchmark)
 endif()
 
-add_executable(benchmark_zlib
+# Public API benchmarks
+set(BENCH_PUBLIC_SRCS
+    benchmark_compress.cc
+    benchmark_inflate.cc
+    benchmark_uncompress.cc
+    benchmark_main.cc
+    )
+
+# Internal benchmarks
+set(BENCH_INTERNAL_SRCS
     benchmark_adler32.cc
     benchmark_adler32_copy.cc
     benchmark_compare256.cc
     benchmark_compare256_rle.cc
-    benchmark_compress.cc
     benchmark_crc32.cc
     benchmark_crc32_copy.cc
     benchmark_insert_string.cc
-    benchmark_inflate.cc
-    benchmark_main.cc
     benchmark_slidehash.cc
-    benchmark_uncompress.cc
     )
+
+add_executable(benchmark_zlib ${BENCH_PUBLIC_SRCS})
 
 target_compile_definitions(benchmark_zlib PRIVATE -DBENCHMARK_STATIC_DEFINE)
 target_include_directories(benchmark_zlib PRIVATE
@@ -55,7 +62,14 @@ target_include_directories(benchmark_zlib PRIVATE
     ${PROJECT_BINARY_DIR}
     ${benchmark_SOURCE_DIR}/benchmark/include)
 
-target_link_libraries(benchmark_zlib zlib-ng-static benchmark::benchmark)
+target_link_libraries(benchmark_zlib benchmark::benchmark)
+if(ZLIB_LIBRARY)
+    target_link_libraries(benchmark_zlib ${ZLIB_LIBRARY})
+else()
+    target_sources(benchmark_zlib PRIVATE ${BENCH_INTERNAL_SRCS})
+    target_link_libraries(benchmark_zlib zlib-ng-static)
+endif()
+
 if(WIN32)
     target_link_libraries(benchmark_zlib shlwapi)
 endif()
