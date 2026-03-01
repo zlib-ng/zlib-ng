@@ -116,7 +116,7 @@ jobs:
           --xml --output ${{ matrix.codecov }}.xml
 
     - name: Upload coverage report artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: matrix.codecov
       with:
         name: ${{ matrix.name }} (coverage)
@@ -124,7 +124,7 @@ jobs:
         retention-days: 1
 
     - name: Upload build errors
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       if: failure()
       with:
         name: ${{ matrix.name }} (cmake)
