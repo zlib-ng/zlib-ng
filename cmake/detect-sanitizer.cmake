@@ -128,8 +128,10 @@ macro(add_undefined_sanitizer)
         float-divide-by-zero
         function
         integer-divide-by-zero
+        implicit-conversion
         local-bounds
         null
+        nullability
         nonnull-attribute
         pointer-overflow
         return
