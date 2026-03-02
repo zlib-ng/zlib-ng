@@ -132,11 +132,11 @@ macro(add_undefined_sanitizer)
         shift-exponent
         signed-integer-overflow
         undefined
-        unsigned-integer-overflow
-        unsigned-shift-base
         vla-bound
         vptr
         )
+
+    # unsigned-integer-overflow and unsigned-shift-base are not enabled, as they are not undefined in C/C++
 
     # Object size sanitizer has no effect at -O0 and produces compiler warning if enabled
     if(NOT CMAKE_C_FLAGS MATCHES "-O0")
