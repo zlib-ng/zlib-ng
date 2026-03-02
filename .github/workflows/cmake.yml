@@ -602,14 +602,12 @@ jobs:
             cmake-args: -DWITH_SANITIZER=Address
             codecov: macos_clang_intel_asan
 
-          - name: macOS GCC (Intel) UBSAN
+          - name: macOS Clang (Intel) UBSAN
             os: macos-15-intel
-            compiler: gcc-13
-            cxx-compiler: g++-13
+            compiler: clang
+            cxx-compiler: clang++
             cmake-args: -DWITH_SANITIZER=Undefined
-            packages: gcc@13
-            gcov-exec: gcov-13
-            codecov: macos_gcc_intel_ubsan
+            codecov: macos_clang_intel_ubsan
 
           - name: macOS Clang (Intel) Native Instructions
             os: macos-15-intel
@@ -625,14 +623,12 @@ jobs:
             cmake-args: -DWITH_SANITIZER=Address
             codecov: macos_clang_arm64
 
-          - name: macOS GCC (ARM64) UBSAN
-            os: macos-14
-            compiler: gcc-13
-            cxx-compiler: g++-13
+          - name: macOS Clang (ARM64) UBSAN
+            os: macos-latest
+            compiler: clang
+            cxx-compiler: clang++
             cmake-args: -DWITH_SANITIZER=Undefined
-            packages: gcc@13
-            gcov-exec: gcov-13
-            codecov: macos_gcc_arm64_ubsan
+            codecov: macos_clang_arm64_ubsan
 
           - name: macOS Clang (ARM64) Native Instructions
             os: macos-latest

@@ -173,31 +173,27 @@ jobs:
             ldflags: -static
             emu-run: node
 
-          - name: macOS GCC (Intel)
+          - name: macOS Clang (Intel)
             os: macos-15-intel
-            compiler: gcc-11
+            compiler: clang
             configure-args: --warn
-            packages: gcc@11
 
-          - name: macOS GCC (Intel) Compat No Opt
+          - name: macOS Clang (Intel) Compat No Opt
             os: macos-15-intel
-            compiler: gcc-11
+            compiler: clang
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
-            packages: gcc@11
 
-          - name: macOS GCC (ARM64)
+          - name: macOS Clang (ARM64)
             os: macos-latest
-            compiler: gcc-11
+            compiler: clang
             cflags: -std=gnu11
             configure-args: --warn
-            packages: gcc@11
 
-          - name: macOS GCC (ARM64) Compat No Opt
+          - name: macOS Clang (ARM64) Compat No Opt
             os: macos-latest
-            compiler: gcc-11
+            compiler: clang
             cflags: -std=gnu11
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
-            packages: gcc@11
 
           - name: Ubuntu GCC RISCV64
             os: ubuntu-latest
