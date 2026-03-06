@@ -121,7 +121,15 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
             dst1 = dst + klen;
             dst2 = dst + klen * 2;
             dst_v = dst + klen * 3;
-            memcpy(dst_v, srcv, 144);
+            vst1q_u8(dst_v, vreinterpretq_u8_u64(x0));
+            vst1q_u8(dst_v + 16, vreinterpretq_u8_u64(x1));
+            vst1q_u8(dst_v + 32, vreinterpretq_u8_u64(x2));
+            vst1q_u8(dst_v + 48, vreinterpretq_u8_u64(x3));
+            vst1q_u8(dst_v + 64, vreinterpretq_u8_u64(x4));
+            vst1q_u8(dst_v + 80, vreinterpretq_u8_u64(x5));
+            vst1q_u8(dst_v + 96, vreinterpretq_u8_u64(x6));
+            vst1q_u8(dst_v + 112, vreinterpretq_u8_u64(x7));
+            vst1q_u8(dst_v + 128, vreinterpretq_u8_u64(x8));
             dst_v += 144;
         }
         srcv += 144;
@@ -143,39 +151,65 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
                 y8 = clmul_lo(x8, k), x8 = clmul_hi(x8, k);
 
                 /* EOR3: combine hi*k, lo*k, and new data in one instruction */
-                x0 = veor3q_u64(x0, y0, vld1q_u64_ex((const uint64_t*)srcv, 128));
-                x1 = veor3q_u64(x1, y1, vld1q_u64_ex((const uint64_t*)(srcv + 16), 128));
-                x2 = veor3q_u64(x2, y2, vld1q_u64_ex((const uint64_t*)(srcv + 32), 128));
-                x3 = veor3q_u64(x3, y3, vld1q_u64_ex((const uint64_t*)(srcv + 48), 128));
-                x4 = veor3q_u64(x4, y4, vld1q_u64_ex((const uint64_t*)(srcv + 64), 128));
-                x5 = veor3q_u64(x5, y5, vld1q_u64_ex((const uint64_t*)(srcv + 80), 128));
-                x6 = veor3q_u64(x6, y6, vld1q_u64_ex((const uint64_t*)(srcv + 96), 128));
-                x7 = veor3q_u64(x7, y7, vld1q_u64_ex((const uint64_t*)(srcv + 112), 128));
-                x8 = veor3q_u64(x8, y8, vld1q_u64_ex((const uint64_t*)(srcv + 128), 128));
-                if (COPY) {
-                    memcpy(dst_v, srcv, 144);
-                    dst_v += 144;
+                {
+                    uint64x2_t d0 = vld1q_u64_ex((const uint64_t*)srcv, 128);
+                    uint64x2_t d1 = vld1q_u64_ex((const uint64_t*)(srcv + 16), 128);
+                    uint64x2_t d2 = vld1q_u64_ex((const uint64_t*)(srcv + 32), 128);
+                    uint64x2_t d3 = vld1q_u64_ex((const uint64_t*)(srcv + 48), 128);
+                    uint64x2_t d4 = vld1q_u64_ex((const uint64_t*)(srcv + 64), 128);
+                    uint64x2_t d5 = vld1q_u64_ex((const uint64_t*)(srcv + 80), 128);
+                    uint64x2_t d6 = vld1q_u64_ex((const uint64_t*)(srcv + 96), 128);
+                    uint64x2_t d7 = vld1q_u64_ex((const uint64_t*)(srcv + 112), 128);
+                    uint64x2_t d8 = vld1q_u64_ex((const uint64_t*)(srcv + 128), 128);
+                    if (COPY) {
+                        vst1q_u8(dst_v, vreinterpretq_u8_u64(d0));
+                        vst1q_u8(dst_v + 16, vreinterpretq_u8_u64(d1));
+                        vst1q_u8(dst_v + 32, vreinterpretq_u8_u64(d2));
+                        vst1q_u8(dst_v + 48, vreinterpretq_u8_u64(d3));
+                        vst1q_u8(dst_v + 64, vreinterpretq_u8_u64(d4));
+                        vst1q_u8(dst_v + 80, vreinterpretq_u8_u64(d5));
+                        vst1q_u8(dst_v + 96, vreinterpretq_u8_u64(d6));
+                        vst1q_u8(dst_v + 112, vreinterpretq_u8_u64(d7));
+                        vst1q_u8(dst_v + 128, vreinterpretq_u8_u64(d8));
+                        dst_v += 144;
+                    }
+                    x0 = veor3q_u64(x0, y0, d0);
+                    x1 = veor3q_u64(x1, y1, d1);
+                    x2 = veor3q_u64(x2, y2, d2);
+                    x3 = veor3q_u64(x3, y3, d3);
+                    x4 = veor3q_u64(x4, y4, d4);
+                    x5 = veor3q_u64(x5, y5, d5);
+                    x6 = veor3q_u64(x6, y6, d6);
+                    x7 = veor3q_u64(x7, y7, d7);
+                    x8 = veor3q_u64(x8, y8, d8);
                 }
 
                 /* 3-way parallel scalar CRC (16 bytes each) */
-                if (COPY) {
-                    memcpy(dst0, src0, 16);
-                    dst0 += 16;
+                {
+                    uint64_t s0a = *(const uint64_t*)src0;
+                    uint64_t s0b = *(const uint64_t*)(src0 + 8);
+                    uint64_t s1a = *(const uint64_t*)src1;
+                    uint64_t s1b = *(const uint64_t*)(src1 + 8);
+                    uint64_t s2a = *(const uint64_t*)src2;
+                    uint64_t s2b = *(const uint64_t*)(src2 + 8);
+                    if (COPY) {
+                        memcpy(dst0, &s0a, 8);
+                        memcpy(dst0 + 8, &s0b, 8);
+                        dst0 += 16;
+                        memcpy(dst1, &s1a, 8);
+                        memcpy(dst1 + 8, &s1b, 8);
+                        dst1 += 16;
+                        memcpy(dst2, &s2a, 8);
+                        memcpy(dst2 + 8, &s2b, 8);
+                        dst2 += 16;
+                    }
+                    crc0 = __crc32d(crc0, s0a);
+                    crc0 = __crc32d(crc0, s0b);
+                    crc1 = __crc32d(crc1, s1a);
+                    crc1 = __crc32d(crc1, s1b);
+                    crc2 = __crc32d(crc2, s2a);
+                    crc2 = __crc32d(crc2, s2b);
                 }
-                crc0 = __crc32d(crc0, *(const uint64_t*)src0);
-                crc0 = __crc32d(crc0, *(const uint64_t*)(src0 + 8));
-                if (COPY) {
-                    memcpy(dst1, src1, 16);
-                    dst1 += 16;
-                }
-                crc1 = __crc32d(crc1, *(const uint64_t*)src1);
-                crc1 = __crc32d(crc1, *(const uint64_t*)(src1 + 8));
-                if (COPY) {
-                    memcpy(dst2, src2, 16);
-                    dst2 += 16;
-                }
-                crc2 = __crc32d(crc2, *(const uint64_t*)src2);
-                crc2 = __crc32d(crc2, *(const uint64_t*)(src2 + 8));
                 src0 += 16;
                 src1 += 16;
                 src2 += 16;
@@ -213,18 +247,28 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
         x0 = veor3q_u64(x0, y0, x4);
 
         /* Process final scalar chunk */
-        if (COPY)
-            memcpy(dst0, src0, 16);
-        crc0 = __crc32d(crc0, *(const uint64_t*)src0);
-        crc0 = __crc32d(crc0, *(const uint64_t*)(src0 + 8));
-        if (COPY)
-            memcpy(dst1, src1, 16);
-        crc1 = __crc32d(crc1, *(const uint64_t*)src1);
-        crc1 = __crc32d(crc1, *(const uint64_t*)(src1 + 8));
-        if (COPY)
-            memcpy(dst2, src2, 16);
-        crc2 = __crc32d(crc2, *(const uint64_t*)src2);
-        crc2 = __crc32d(crc2, *(const uint64_t*)(src2 + 8));
+        {
+            uint64_t s0a = *(const uint64_t*)src0;
+            uint64_t s0b = *(const uint64_t*)(src0 + 8);
+            uint64_t s1a = *(const uint64_t*)src1;
+            uint64_t s1b = *(const uint64_t*)(src1 + 8);
+            uint64_t s2a = *(const uint64_t*)src2;
+            uint64_t s2b = *(const uint64_t*)(src2 + 8);
+            if (COPY) {
+                memcpy(dst0, &s0a, 8);
+                memcpy(dst0 + 8, &s0b, 8);
+                memcpy(dst1, &s1a, 8);
+                memcpy(dst1 + 8, &s1b, 8);
+                memcpy(dst2, &s2a, 8);
+                memcpy(dst2 + 8, &s2b, 8);
+            }
+            crc0 = __crc32d(crc0, s0a);
+            crc0 = __crc32d(crc0, s0b);
+            crc1 = __crc32d(crc1, s1a);
+            crc1 = __crc32d(crc1, s1b);
+            crc2 = __crc32d(crc2, s2a);
+            crc2 = __crc32d(crc2, s2b);
+        }
 
         /* Shift and combine 3 scalar CRCs */
         vc0 = crc_shift(crc0, klen * 2 + blk * 144);
@@ -262,21 +306,20 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
 
         /* 3-way parallel scalar CRC */
         do {
+            uint64_t v0 = *(const uint64_t*)buf0;
+            uint64_t v1 = *(const uint64_t*)buf1;
+            uint64_t v2 = *(const uint64_t*)buf2;
             if (COPY) {
-                memcpy(dst0, buf0, 8);
+                memcpy(dst0, &v0, 8);
                 dst0 += 8;
-            }
-            crc0 = __crc32d(crc0, *(const uint64_t*)buf0);
-            if (COPY) {
-                memcpy(dst1, buf1, 8);
+                memcpy(dst1, &v1, 8);
                 dst1 += 8;
-            }
-            crc1 = __crc32d(crc1, *(const uint64_t*)buf1);
-            if (COPY) {
-                memcpy(dst2, buf2, 8);
+                memcpy(dst2, &v2, 8);
                 dst2 += 8;
             }
-            crc2 = __crc32d(crc2, *(const uint64_t*)buf2);
+            crc0 = __crc32d(crc0, v0);
+            crc1 = __crc32d(crc1, v1);
+            crc2 = __crc32d(crc2, v2);
             buf0 += 8;
             buf1 += 8;
             buf2 += 8;
@@ -290,9 +333,12 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
 
         /* Process final 8 bytes with combined CRC */
         crc0 = crc2;
-        if (COPY)
-            memcpy(dst2, buf2, 8);
-        crc0 = __crc32d(crc0, *(const uint64_t*)buf2 ^ vc);
+        {
+            uint64_t vf = *(const uint64_t*)buf2;
+            if (COPY)
+                memcpy(dst2, &vf, 8);
+            crc0 = __crc32d(crc0, vf ^ vc);
+        }
         src = buf2 + 8;
         len -= 8;
         if (COPY)
