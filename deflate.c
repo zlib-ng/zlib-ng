@@ -712,7 +712,9 @@ unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long
 #endif
     default:                                /* for compiler happiness */
         Z_UNREACHABLE();
+#if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 202311L
         wraplen = ZLIB_WRAPLEN;
+#endif
     }
 
     /* if not default parameters, return conservative bound */

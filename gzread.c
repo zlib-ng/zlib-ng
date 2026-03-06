@@ -233,7 +233,9 @@ static int gz_fetch(gz_state *state) {
             continue;
         default:    // Can't happen
             Z_UNREACHABLE();
+#if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 202311L
             return -1;
+#endif
         }
     } while (state->x.have == 0 && (!state->eof || strm->avail_in));
     return 0;
