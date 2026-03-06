@@ -294,7 +294,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
      * In the copying variant we use fallback to 4x loads and 4x stores,
      * as ld1x4 seems to block ILP when stores are in the mix */
     size_t align_diff = MIN(ALIGN_DIFF(src, 32), len);
-    size_t n = NMAX;
+    size_t n = NMAX_ALIGNED32;
     if (align_diff) {
         adler32_copy_align(&pair[0], dst, src, align_diff, &pair[1], 31, COPY);
 
@@ -302,7 +302,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
             dst += align_diff;
         src += align_diff;
         len -= align_diff;
-        n -= align_diff;
+        n = ALIGN_DOWN(n - align_diff, 32);
     }
 
     while (len >= 16) {
@@ -321,7 +321,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
         if (COPY)
             dst += k;
         len -= k;
-        n = NMAX;
+        n = NMAX_ALIGNED32;
     }
 
     /* Process tail (len < 16).  */
