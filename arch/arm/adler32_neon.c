@@ -169,7 +169,7 @@ Z_FORCEINLINE static void NEON_accum32(uint32_t *s, const uint8_t *buf, size_t l
     int rem = len & 3;
 
     for (size_t i = 0; i < num_iter; ++i) {
-        uint8x16x4_t d0_d3 = vld1q_u8_x4_ex(buf, 128);
+        uint8x16x4_t d0_d3 = vld1q_u8_x4_ex(buf, 256);
 
         /* Unfortunately it doesn't look like there's a direct sum 8 bit to 32
          * bit instruction, we'll have to make due summing to 16 bits first */
