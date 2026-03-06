@@ -10,25 +10,30 @@
 #include "acle_intrins.h"
 #include "crc32_armv8_p.h"
 
-Z_INTERNAL Z_TARGET_CRC uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, size_t len) {
+Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len,
+                                                           const int COPY) {
     uint32_t c = ~crc;
 
     if (UNLIKELY(len == 1)) {
-        c = __crc32b(c, *buf);
+        if (COPY)
+            *dst = *src;
+        c = __crc32b(c, *src);
         return ~c;
     }
 
     /* Align to 8-byte boundary for tail processing */
-    uintptr_t align_diff = ALIGN_DIFF(buf, 8);
+    uintptr_t align_diff = ALIGN_DIFF(src, 8);
     if (align_diff)
-        c = crc32_armv8_align(c, &buf, &len, align_diff);
+        c = crc32_armv8_align(c, &dst, &src, &len, align_diff, COPY);
 
-    return crc32_armv8_tail(c, buf, len);
+    return crc32_armv8_tail(c, dst, src, len, COPY);
+}
+
+Z_INTERNAL Z_TARGET_CRC uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, size_t len) {
+    return crc32_copy_impl(crc, NULL, buf, len, 0);
 }
 
 Z_INTERNAL Z_TARGET_CRC uint32_t crc32_copy_armv8(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
-    crc = crc32_armv8(crc, src, len);
-    memcpy(dst, src, len);
-    return crc;
+    return crc32_copy_impl(crc, dst, src, len, 1);
 }
 #endif

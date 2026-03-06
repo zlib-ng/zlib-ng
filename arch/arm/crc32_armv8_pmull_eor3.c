@@ -70,6 +70,7 @@ static inline uint64x2_t crc_shift(uint32_t crc, size_t nbytes) {
 
 Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, const uint8_t *buf, size_t len) {
     uint32_t crc0 = ~crc;
+    uint8_t *dst = NULL;
 
     if (UNLIKELY(len == 1)) {
         crc0 = __crc32b(crc0, *buf);
@@ -79,7 +80,7 @@ Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, con
     /* Align to 16-byte boundary for vector path */
     uintptr_t align_diff = ALIGN_DIFF(buf, 16);
     if (align_diff)
-        crc0 = crc32_armv8_align(crc0, &buf, &len, align_diff);
+        crc0 = crc32_armv8_align(crc0, &dst, &buf, &len, align_diff, 0);
 
     /* 3-way scalar CRC + 9-way PMULL folding (192 bytes/iter) */
     if (len >= 192) {
@@ -225,7 +226,7 @@ Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, con
     }
 
     /* Process remaining bytes */
-    return crc32_armv8_tail(crc0, buf, len);
+    return crc32_armv8_tail(crc0, NULL, buf, len, 0);
 }
 
 Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_armv8_pmull_eor3(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
