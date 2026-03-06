@@ -13,6 +13,7 @@
 #include "zutil.h"
 #include "acle_intrins.h"
 #include "neon_intrins.h"
+#include "crc32_armv8_p.h"
 
 /* Carryless multiply low 64 bits: a[0] * b[0] */
 static inline uint64x2_t clmul_lo(uint64x2_t a, uint64x2_t b) {
@@ -77,30 +78,8 @@ Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, con
 
     /* Align to 16-byte boundary for vector path */
     uintptr_t align_diff = ALIGN_DIFF(buf, 16);
-    if (align_diff) {
-        if (len && (align_diff & 1)) {
-            crc0 = __crc32b(crc0, *buf++);
-            len--;
-        }
-
-        if (len >= 2 && (align_diff & 2)) {
-            crc0 = __crc32h(crc0, *((uint16_t*)buf));
-            buf += 2;
-            len -= 2;
-        }
-
-        if (len >= 4 && (align_diff & 4)) {
-            crc0 = __crc32w(crc0, *((uint32_t*)buf));
-            len -= 4;
-            buf += 4;
-        }
-
-        if (len >= 8 && (align_diff & 8)) {
-            crc0 = __crc32d(crc0, *((uint64_t*)buf));
-            buf += 8;
-            len -= 8;
-        }
-    }
+    if (align_diff)
+        crc0 = crc32_armv8_align(crc0, &buf, &len, align_diff);
 
     /* 3-way scalar CRC + 9-way PMULL folding (192 bytes/iter) */
     if (len >= 192) {
@@ -246,27 +225,7 @@ Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_armv8_pmull_eor3(uint32_t crc, con
     }
 
     /* Process remaining bytes */
-    while (len >= 8) {
-        crc0 = __crc32d(crc0, *((uint64_t*)buf));
-        len -= 8;
-        buf += 8;
-    }
-
-    if (len & 4) {
-        crc0 = __crc32w(crc0, *((uint32_t*)buf));
-        buf += 4;
-    }
-
-    if (len & 2) {
-        crc0 = __crc32h(crc0, *((uint16_t*)buf));
-        buf += 2;
-    }
-
-    if (len & 1) {
-        crc0 = __crc32b(crc0, *buf);
-    }
-
-    return ~crc0;
+    return crc32_armv8_tail(crc0, buf, len);
 }
 
 Z_INTERNAL Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_armv8_pmull_eor3(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
