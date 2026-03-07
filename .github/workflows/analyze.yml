@@ -54,7 +54,7 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: cmake --build . -j2 --config Release > /dev/null
+      run: cmake --build . -j5 --config Release > /dev/null
 
   Clang:
     runs-on: ubuntu-latest
@@ -82,4 +82,4 @@ jobs:
     - name: Compile source code
       run: |
         scan-build --status-bugs \
-          cmake --build . -j2 --config Release > /dev/null
+          cmake --build . -j5 --config Release > /dev/null

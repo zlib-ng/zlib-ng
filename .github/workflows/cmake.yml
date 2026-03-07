@@ -334,8 +334,6 @@ jobs:
             ldflags: -static
             gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcov' || 's390x-linux-gnu-gcov' }}
             coverage: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_gcc_s390x_dfltcc' || 'ubuntu_gcc_s390x_dfltcc' }}
-            # The dedicated z15 test VM has 4 cores
-            parallels-jobs: 4
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang' || 'Ubuntu GCC' }} S390X DFLTCC ASAN
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
@@ -348,8 +346,6 @@ jobs:
             asan-options: detect_leaks=0
             gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'llvm-cov gcov' || 's390x-linux-gnu-gcov' }}
             coverage: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_clang_s390x_dfltcc_asan' || 'ubuntu_gcc_s390x_dfltcc_asan' }}
-            # The dedicated z15 test VM has 4 cores
-            parallels-jobs: 4
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang' || 'Ubuntu GCC' }} S390X DFLTCC UBSAN
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
@@ -361,8 +357,6 @@ jobs:
             packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'llvm-cov gcov' || 's390x-linux-gnu-gcov' }}
             coverage: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_clang_s390x_dfltcc_ubsan' || 'ubuntu_gcc_s390x_dfltcc_ubsan' }}
-            # The dedicated z15 test VM has 4 cores
-            parallels-jobs: 4
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} Clang S390X DFLTCC ${{ (github.repository == 'zlib-ng/zlib-ng' && 'MSAN') || 'Compat' }}
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
@@ -372,8 +366,6 @@ jobs:
               ${{ github.repository == 'zlib-ng/zlib-ng' && '-GNinja -DWITH_SANITIZER=Memory' || '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON' }}
               -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON
             packages: qemu-user libc-dev-s390x-cross
-            # The dedicated z15 test VM has 4 cores
-            parallels-jobs: 4
             # Coverage disabled, causes MSAN errors
 
           - name: Ubuntu MinGW i686
@@ -384,7 +376,7 @@ jobs:
             gcov-exec: i686-w64-mingw32-gcov-posix
             coverage: ubuntu_gcc_mingw_i686
             # Limit parallel test jobs to prevent wine errors
-            parallels-jobs: 1
+            parallel-jobs: 1
 
           - name: Ubuntu MinGW x86_64
             os: ubuntu-latest
@@ -395,7 +387,7 @@ jobs:
             gcov-exec: x86_64-w64-mingw32-gcov-posix
             coverage: ubuntu_gcc_mingw_x86_64
              # Limit parallel test jobs to prevent wine errors
-            parallels-jobs: 1
+            parallel-jobs: 1
 
           - name: Ubuntu Clang-15
             os: ubuntu-latest
@@ -843,7 +835,7 @@ jobs:
           -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
           -DLLVM_INCLUDE_TESTS=OFF \
           -DLLVM_INCLUDE_DOCS=OFF
-        cmake --build build -j3 -- cxx cxxabi
+        cmake --build build -j5 -- cxx cxxabi
         echo "LLVM_BUILD_DIR=`pwd`/build" >> $GITHUB_ENV
       env:
         CFLAGS: -O2
@@ -869,12 +861,12 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: cmake --build . --verbose -j2 --config ${{ matrix.build-config || 'Release' }}
+      run: cmake --build . --verbose -j5 --config ${{ matrix.build-config || 'Release' }}
 
     - name: Run test cases
       # Don't run tests on Windows ARM
       if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false
-      run: ctest --verbose -C Release -E benchmark_zlib --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '3' }}
+      run: ctest --verbose -C Release -E benchmark_zlib --output-on-failure --max-width 120 -j ${{ matrix.parallel-jobs || '5' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
@@ -889,7 +881,7 @@ jobs:
         python3 -u -m venv ./venv
         source ./venv/${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}/activate
         python3 -u -m pip install gcovr
-        python3 -m gcovr -j 3 --gcov-ignore-parse-errors --verbose \
+        python3 -m gcovr -j 5 --gcov-ignore-parse-errors --verbose \
           --exclude '(.*/|^)(_deps|benchmarks)/.*' \
           --exclude-unreachable-branches \
           --merge-mode-functions separate \
@@ -909,7 +901,7 @@ jobs:
 
     - name: Test benchmarks (crashtest only, no coverage data collection)
       if: contains(matrix.cmake-args, '-DWITH_BENCHMARKS=ON')
-      run: ctest --verbose -C Release -R ^benchmark_zlib$ --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '3' }}
+      run: ctest --verbose -C Release -R ^benchmark_zlib$ --output-on-failure --max-width 120 -j ${{ matrix.parallel-jobs || '5' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1

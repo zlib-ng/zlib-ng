@@ -95,18 +95,18 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: cmake --build . -j2 --config ${{ matrix.build-config || 'Release' }}
+      run: cmake --build . -j5 --config ${{ matrix.build-config || 'Release' }}
       working-directory: test/pigz
 
     - name: Run test cases
-      run: ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallels-jobs || '3' }}
+      run: ctest --verbose -C Release --output-on-failure --max-width 120 -j ${{ matrix.parallel-jobs || '5' }}
       working-directory: test/pigz
 
     - name: Generate coverage report
       if: matrix.coverage
       run: |
         python3 -u -m pip install gcovr
-        python3 -m gcovr -j 3 --gcov-ignore-parse-errors --verbose \
+        python3 -m gcovr -j 5 --gcov-ignore-parse-errors --verbose \
           --exclude '(.*/|^)(_deps|benchmarks)/.*' \
           --exclude-unreachable-branches \
           --merge-mode-functions separate \

@@ -278,7 +278,7 @@ jobs:
         CI: true
 
     - name: Compile source code
-      run: make -j2
+      run: make -j5
       working-directory: ${{ matrix.build-dir }}
 
     - name: Run test cases
