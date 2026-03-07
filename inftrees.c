@@ -13,6 +13,8 @@
 #  include "arch/x86/x86_intrins.h"
 #elif defined(__ARM_NEON) || defined(__ARM_NEON__)
 #  include "arch/arm/neon_intrins.h"
+#elif defined(__ALTIVEC__)
+#  include "arch/power/power_intrins.h"
 #endif
 
 const char PREFIX(inflate_copyright)[] = " inflate 1.3.1 Copyright 1995-2024 Mark Adler ";
@@ -25,7 +27,8 @@ const char PREFIX(inflate_copyright)[] = " inflate 1.3.1 Copyright 1995-2024 Mar
 
 /* Count number of codes for each code length. */
 static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
-    int sym;
+    /* IBM...made some weird choices for VSX/VMX. Basically vec_ld has an inherent
+     * endianness but we don't want to force VSX to be needed */
     static const ALIGNED_(16) uint8_t one[256] = {
         1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -45,7 +48,31 @@ static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
     };
 
-#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#if defined(__ALTIVEC__)
+    vector unsigned char s1 = vec_splat_u8(0);
+    vector unsigned char s2 = vec_splat_u8(0);
+
+    if (codes & 1) {
+        s1 = vec_ld(16 * lens[0], one);
+        --codes;
+        ++lens;
+    }
+
+    while (codes) {
+        s1 = vec_add(s1, vec_ld(16 * lens[0], one));
+        s2 = vec_add(s2, vec_ld(16 * lens[1], one));
+        codes -= 2;
+        lens += 2;
+    }
+
+    vector unsigned short sum_lo = vec_add(vec_unpackh(s1), vec_unpackh(s2));
+    vector unsigned short sum_hi = vec_add(vec_unpackl(s1), vec_unpackl(s2));
+
+    vec_st(sum_lo, 0, &count[0]);
+    vec_st(sum_hi, 0, &count[8]);
+
+#elif defined(__ARM_NEON) || defined(__ARM_NEON__)
+    int sym;
     uint8x16_t s1 = vdupq_n_u8(0);
     uint8x16_t s2 = vdupq_n_u8(0);
 
@@ -53,14 +80,15 @@ static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
         s1 = vld1q_u8(&one[16 * lens[0]]);
     }
     for (sym = codes & 1; sym < codes; sym += 2) {
-      s1 = vaddq_u8(s1, vld1q_u8(&one[16 * lens[sym]]));
-      s2 = vaddq_u8(s2, vld1q_u8(&one[16 * lens[sym+1]]));
+        s1 = vaddq_u8(s1, vld1q_u8(&one[16 * lens[sym]]));
+        s2 = vaddq_u8(s2, vld1q_u8(&one[16 * lens[sym+1]]));
     }
 
     vst1q_u16(&count[0], vaddl_u8(vget_low_u8(s1), vget_low_u8(s2)));
     vst1q_u16(&count[8], vaddl_u8(vget_high_u8(s1), vget_high_u8(s2)));
 
 #elif defined(__SSE2__)
+    int sym;
     __m128i s1 = _mm_setzero_si128();
     __m128i s2 = _mm_setzero_si128();
 
@@ -92,7 +120,7 @@ static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
     _mm_storeu_si128((__m128i*)&count[8], sum_hi);
 #  endif
 #else
-    int len;
+    int len, sym;
     for (len = 0; len <= MAX_BITS; len++)
         count[len] = 0;
     for (sym = 0; sym < codes; sym++)
@@ -134,7 +162,7 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     const uint16_t *base;       /* base value table to use */
     const uint16_t *extra;      /* extra bits table to use */
     unsigned match;             /* use base and extra for symbol >= match */
-    uint16_t count[MAX_BITS+1]; /* number of codes of each length */
+    uint16_t ALIGNED_(16) count[MAX_BITS+1]; /* number of codes of each length */
     uint16_t offs[MAX_BITS+1];  /* offsets in table for each length */
     static const uint16_t lbase[31] = { /* Length codes 257..285 base */
         3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
