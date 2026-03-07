@@ -3,10 +3,6 @@ on: [workflow_call, workflow_dispatch]
 env:
   TERM: xterm-256color
   GTEST_COLOR: 1
-concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  # Don't abort on push to avoid incomplete coverage uploads
-  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
   cmake:
