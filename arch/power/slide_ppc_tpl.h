@@ -12,15 +12,27 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize
     Pos *p = table;
 
     do {
-        vector unsigned short value, result;
+        /* Do the pointer arithmetic early to hopefully overlap the vector unit */
+        Pos *q = p;
+        p += 32;
+        vector unsigned short value0, value1, value2, value3;
+        vector unsigned short result0, result1, result2, result3;
 
-        value = vec_ld(0, p);
-        result = vec_subs(value, vmx_wsize);
-        vec_st(result, 0, p);
+        value0 = vec_ld(0, q);
+        value1 = vec_ld(16, q);
+        value2 = vec_ld(32, q);
+        value3 = vec_ld(48, q);
+        result0 = vec_subs(value0, vmx_wsize);
+        result1 = vec_subs(value1, vmx_wsize);
+        result2 = vec_subs(value2, vmx_wsize);
+        result3 = vec_subs(value3, vmx_wsize);
+        vec_st(result0, 0, q);
+        vec_st(result1, 16, q);
+        vec_st(result2, 32, q);
+        vec_st(result3, 48, q);
 
-        p += 8;
-        entries -= 8;
-   } while (entries > 0);
+        entries -= 32;
+   } while (entries);
 }
 
 void Z_INTERNAL SLIDE_PPC(deflate_state *s) {
