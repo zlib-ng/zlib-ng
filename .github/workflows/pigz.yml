@@ -14,12 +14,12 @@ jobs:
           - name: Ubuntu GCC
             os: ubuntu-latest
             compiler: gcc
-            codecov: ubuntu_gcc_pigz
+            coverage: ubuntu_gcc_pigz
 
           - name: Ubuntu GCC Symbol Prefix
             os: ubuntu-latest
             compiler: gcc
-            codecov: ubuntu_gcc_pigz
+            coverage: ubuntu_gcc_pigz_prefix
             cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_
 
           - name: Ubuntu Clang
@@ -27,14 +27,14 @@ jobs:
             compiler: clang
             packages: llvm-15 llvm-15-tools
             gcov-exec: llvm-cov-15 gcov
-            codecov: ubuntu_clang_pigz
+            coverage: ubuntu_clang_pigz
 
           - name: Ubuntu Clang No Optim
             os: ubuntu-latest
             compiler: clang
             packages: llvm-15 llvm-15-tools
             gcov-exec: llvm-cov-15 gcov
-            codecov: ubuntu_clang_pigz_no_optim
+            coverage: ubuntu_clang_pigz_no_optim
             cmake-args: -DWITH_OPTIM=OFF
 
             # Use v2.6 due to NOTHREADS bug https://github.com/madler/pigz/issues/97
@@ -43,14 +43,14 @@ jobs:
             compiler: clang
             packages: llvm-15 llvm-15-tools
             gcov-exec: llvm-cov-15 gcov
-            codecov: ubuntu_clang_pigz_no_threads
+            coverage: ubuntu_clang_pigz_no_threads
             cmake-args: -DWITH_THREADS=OFF -DPIGZ_VERSION=v2.6
 
           - name: Ubuntu GCC AARCH64
             os: ubuntu-latest
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=../../cmake/toolchain-aarch64.cmake
             packages: qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
-            codecov: ubuntu_gcc_pigz_aarch64
+            coverage: ubuntu_gcc_pigz_aarch64
 
     steps:
     - name: Checkout repository
@@ -103,7 +103,7 @@ jobs:
       working-directory: test/pigz
 
     - name: Generate coverage report
-      if: matrix.codecov
+      if: matrix.coverage
       run: |
         python3 -u -m pip install gcovr
         python3 -m gcovr -j 3 --gcov-ignore-parse-errors --verbose \
@@ -113,14 +113,14 @@ jobs:
           --merge-lines \
           --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
           --root . \
-          --xml --output ${{ matrix.codecov }}.xml
+          --xml --output ${{ matrix.coverage }}.xml
 
     - name: Upload coverage report artifact
       uses: actions/upload-artifact@v7
-      if: matrix.codecov
+      if: matrix.coverage
       with:
         name: ${{ matrix.name }} (coverage)
-        path: ${{ matrix.codecov }}.xml
+        path: ${{ matrix.coverage }}.xml
         retention-days: 1
 
     - name: Upload build errors
@@ -132,7 +132,7 @@ jobs:
           **/CMakeFiles/CMakeOutput.log
           **/CMakeFiles/CMakeError.log
           **/Testing/Temporary/*
-          coverage.xml
+          ${{ matrix.coverage }}.xml
         retention-days: 30
 
   coverage:
