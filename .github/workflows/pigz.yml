@@ -115,14 +115,6 @@ jobs:
           --root . \
           --xml --output ${{ matrix.coverage }}.xml
 
-    - name: Upload coverage report artifact
-      uses: actions/upload-artifact@v7
-      if: matrix.coverage
-      with:
-        name: ${{ matrix.name }} (coverage)
-        path: ${{ matrix.coverage }}.xml
-        retention-days: 1
-
     - name: Upload build errors
       uses: actions/upload-artifact@v7
       if: failure()
@@ -134,35 +126,3 @@ jobs:
           **/Testing/Temporary/*
           ${{ matrix.coverage }}.xml
         retention-days: 30
-
-  coverage:
-    name: Upload Coverage Reports
-    runs-on: ubuntu-latest
-    needs: pigz
-    if: cancelled() == false
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v6
-      with:
-        show-progress: false
-
-    - name: Download all reports
-      uses: actions/download-artifact@v8
-      with:
-        merge-multiple: true
-
-    - name: Display all coverage artifacts
-      run: |
-        ls -R *.xml
-        echo "COVERAGE_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g'`" >> $GITHUB_ENV
-
-    - name: Upload reports to codecov
-      uses: codecov/codecov-action@v5
-      if: (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
-      with:
-        files: ${{ env.COVERAGE_REPORTS }}
-        name: "pigz-umbrella-${{ github.event_name }}"
-        verbose: true
-        fail_ci_if_error: true
-      env:
-        CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"

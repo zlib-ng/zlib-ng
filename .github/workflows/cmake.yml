@@ -347,7 +347,7 @@ jobs:
             packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             asan-options: detect_leaks=0
             gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'llvm-cov gcov' || 's390x-linux-gnu-gcov' }}
-            codecov: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_clang_s390x_dfltcc_asan' || 'ubuntu_gcc_s390x_dfltcc_asan' }}
+            coverage: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_clang_s390x_dfltcc_asan' || 'ubuntu_gcc_s390x_dfltcc_asan' }}
             # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
 
@@ -897,14 +897,6 @@ jobs:
           --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
           --xml --output ${{ matrix.coverage }}.xml
 
-    - name: Upload coverage report artifact
-      uses: actions/upload-artifact@v7
-      if: matrix.coverage
-      with:
-        name: ${{ matrix.name }} (coverage)
-        path: ${{ matrix.coverage }}.xml
-        retention-days: 1
-
     - name: Upload job coverage report to coveralls
       uses: coverallsapp/github-action@v2
       if: (matrix.coverage && !contains(matrix.os, 'z15') && (env.COVERALLS_REPO_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng'))
@@ -944,32 +936,6 @@ jobs:
     needs: cmake
     if: cancelled() == false
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v6
-      with:
-        show-progress: false
-
-    - name: Download all reports
-      uses: actions/download-artifact@v8
-      with:
-        merge-multiple: true
-
-    - name: Display all coverage artifacts
-      run: |
-        ls -R *.xml
-        echo "COVERAGE_REPORTS=`ls -p *.xml | grep -v / | tr '\n' ',' | sed 's/,$//g'`" >> $GITHUB_ENV
-
-    - name: Upload reports to codecov
-      uses: codecov/codecov-action@v5
-      if: (env.CODECOV_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
-      with:
-        files: ${{ env.COVERAGE_REPORTS }}
-        name: "cmake-umbrella-${{ github.event_name }}"
-        verbose: true
-        fail_ci_if_error: true
-      env:
-        CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
-
     - name: Upload to Coveralls - Final
       uses: coverallsapp/github-action@v2
       if: (env.COVERALLS_REPO_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
