@@ -307,50 +307,60 @@ jobs:
             gcov-exec: sparc64-linux-gnu-gcov
             codecov: ubuntu_gcc_sparc64
 
-          - name: Ubuntu GCC S390X ASAN
+          - name: Ubuntu GCC S390x
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_SANITIZER=Address -DWITH_BENCHMARKS=ON
-            asan-options: detect_leaks=0
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_BENCHMARKS=ON
             packages: qemu-user crossbuild-essential-s390x
             ldflags: -static
             gcov-exec: s390x-linux-gnu-gcov
             codecov: ubuntu_gcc_s390x
 
-          - name: Ubuntu GCC S390X No vectorized CRC32 ASAN
+          - name: Ubuntu GCC S390X No vectorized CRC32
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_CRC32_VX=OFF -DWITH_SANITIZER=Address
-            asan-options: detect_leaks=0
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_CRC32_VX=OFF
             packages: qemu-user crossbuild-essential-s390x
             ldflags: -static
             gcov-exec: s390x-linux-gnu-gcov
             codecov: ubuntu_gcc_s390x_no_crc32
 
-          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} GCC S390X DFLTCC ASAN
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} GCC S390X DFLTCC Compat
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: gcc
             cxx-compiler: g++
             cmake-args: >-
               ${{ github.repository != 'zlib-ng/zlib-ng' && '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake' || '' }}
-              -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Address -DWITH_BENCHMARKS=ON
+              -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_BENCHMARKS=ON -DZLIB_COMPAT=ON
             packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
-            asan-options: detect_leaks=0
             ldflags: -static
             gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcov' || 's390x-linux-gnu-gcov' }}
             codecov: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_gcc_s390x_dfltcc' || 'ubuntu_gcc_s390x_dfltcc' }}
             # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
 
-          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} GCC S390X DFLTCC UBSAN
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang' || 'Ubuntu GCC' }} S390X DFLTCC ASAN
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
-            compiler: gcc
-            cxx-compiler: g++
+            compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'gcc' }}
+            cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'g++' }}
+            cmake-args: >-
+              ${{ github.repository != 'zlib-ng/zlib-ng' && '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake' || '' }}
+              -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Address
+            packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
+            asan-options: detect_leaks=0
+            gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'llvm-cov gcov' || 's390x-linux-gnu-gcov' }}
+            codecov: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_clang_s390x_dfltcc_asan' || 'ubuntu_gcc_s390x_dfltcc_asan' }}
+            # The dedicated z15 test VM has 4 cores
+            parallels-jobs: 4
+
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang' || 'Ubuntu GCC' }} S390X DFLTCC UBSAN
+            os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
+            compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'gcc' }}
+            cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'g++' }}
             cmake-args: >-
               ${{ github.repository != 'zlib-ng/zlib-ng' && '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake' || '' }}
               -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Undefined
             packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
-            ldflags: -static
-            gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcov' || 's390x-linux-gnu-gcov' }}
-            codecov: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_gcc_s390x_dfltcc' || 'ubuntu_gcc_s390x_dfltcc' }}
+            gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'llvm-cov gcov' || 's390x-linux-gnu-gcov' }}
+            codecov: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_clang_s390x_dfltcc_ubsan' || 'ubuntu_gcc_s390x_dfltcc_ubsan' }}
             # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
 
@@ -361,7 +371,7 @@ jobs:
             cmake-args: >-
               ${{ github.repository == 'zlib-ng/zlib-ng' && '-GNinja -DWITH_SANITIZER=Memory' || '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON' }}
               -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON
-            packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
+            packages: qemu-user libc-dev-s390x-cross
             # The dedicated z15 test VM has 4 cores
             parallels-jobs: 4
             # codecov disabled, causes MSAN errors
