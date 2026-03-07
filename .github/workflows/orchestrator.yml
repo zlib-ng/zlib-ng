@@ -1,0 +1,25 @@
+name: Orchestrator
+on: [push, pull_request]
+
+jobs:
+  cmake:
+    uses: ./.github/workflows/cmake.yml
+    secrets: inherit
+
+  pigz:
+    uses: ./.github/workflows/pigz.yml
+    secrets: inherit
+
+  # This job only starts if ALL reusable workflows above succeed
+  final-upload:
+    needs: [cmake, pigz]
+    runs-on: ubuntu-slim
+    if: success()
+    steps:
+      - name: Coveralls - Finalize
+        uses: coverallsapp/github-action@v2
+        if: (env.COVERALLS_REPO_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
+        with:
+          parallel-finished: true
+        env:
+          COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"

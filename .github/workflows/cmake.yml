@@ -1,5 +1,5 @@
 name: CMake
-on: [push, pull_request, workflow_dispatch]
+on: [workflow_call, workflow_dispatch]
 env:
   TERM: xterm-256color
   GTEST_COLOR: 1
@@ -899,13 +899,16 @@ jobs:
 
     - name: Upload job coverage report to coveralls
       uses: coverallsapp/github-action@v2
-      if: (matrix.coverage && !contains(matrix.os, 'z15') && (env.COVERALLS_REPO_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng'))
+      env:
+        COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"
+      if: |
+        matrix.codecov
+        && !contains(matrix.os, 'z15')
+        && (env.COVERALLS_REPO_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
       with:
         file: ${{ matrix.coverage }}.xml
         flag-name: "${{ matrix.name }}-${{ github.event_name }}"
         parallel: true
-      env:
-        COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"
 
     - name: Test benchmarks (crashtest only, no coverage data collection)
       if: contains(matrix.cmake-args, '-DWITH_BENCHMARKS=ON')
@@ -929,17 +932,3 @@ jobs:
           **/Testing/Temporary/*
           ${{ matrix.coverage }}.xml
         retention-days: 30
-
-  coverage:
-    name: Upload Coverage Reports
-    runs-on: ubuntu-latest
-    needs: cmake
-    if: cancelled() == false
-    steps:
-    - name: Upload to Coveralls - Final
-      uses: coverallsapp/github-action@v2
-      if: (env.COVERALLS_REPO_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
-      with:
-        parallel-finished: true
-      env:
-        COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"
