@@ -47,9 +47,7 @@ jobs:
             cmake-args: -DWITH_THREADS=OFF -DPIGZ_VERSION=v2.6
 
           - name: Ubuntu GCC AARCH64
-            os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=../../cmake/toolchain-aarch64.cmake
-            packages: qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
+            os: ubuntu-24.04-arm
             coverage: ubuntu_gcc_pigz_aarch64
 
     steps:

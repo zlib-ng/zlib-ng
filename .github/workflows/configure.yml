@@ -34,53 +34,49 @@ jobs:
             configure-args: --warn --zlib-compat --sprefix=zTest_
 
           - name: Ubuntu GCC ARM SF
-            os: ubuntu-latest
+            os: ubuntu-24.04-arm
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn
             chost: arm-linux-gnueabi
             packages: qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
 
           - name: Ubuntu GCC ARM SF Compat No Opt No Gzfileops
-            os: ubuntu-latest
+            os: ubuntu-24.04-arm
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies --without-gzfileops
             chost: arm-linux-gnueabi
             packages: qemu-user gcc-arm-linux-gnueabi libc-dev-armel-cross
 
           - name: Ubuntu GCC ARM HF
-            os: ubuntu-latest
+            os: ubuntu-24.04-arm
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn
             chost: arm-linux-gnueabihf
             packages: qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu GCC ARM HF No Neon No ARMv8
-            os: ubuntu-latest
+            os: ubuntu-24.04-arm
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --without-neon --without-armv8
             chost: arm-linux-gnueabihf
             packages: qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu GCC ARM HF Compat No Opt
-            os: ubuntu-latest
+            os: ubuntu-24.04-arm
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: arm-linux-gnueabihf
             packages: qemu-user gcc-arm-linux-gnueabihf libc-dev-armel-cross
 
           - name: Ubuntu GCC AARCH64
-            os: ubuntu-latest
-            compiler: aarch64-linux-gnu-gcc
+            os: ubuntu-24.04-arm
+            compiler: gcc
             configure-args: --warn
-            chost: aarch64-linux-gnu
-            packages: qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
           - name: Ubuntu GCC AARCH64 Compat No Opt
-            os: ubuntu-latest
-            compiler: aarch64-linux-gnu-gcc
+            os: ubuntu-24.04-arm
+            compiler: gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
-            chost: aarch64-linux-gnu
-            packages: qemu-user gcc-aarch64-linux-gnu libc-dev-arm64-cross
 
           - name: Ubuntu GCC MIPS
             os: ubuntu-latest
