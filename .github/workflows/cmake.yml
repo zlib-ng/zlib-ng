@@ -819,18 +819,24 @@ jobs:
     - name: Compile LLVM C++ libraries (MSAN)
       if: contains(matrix.name, 'MSAN')
       run: |
-        git clone --depth=1 https://github.com/llvm/llvm-project --single-branch --branch release/20.x
-        cmake -S llvm-project/runtimes -B llvm-project/build -G Ninja \
+        # Use sparse-checkout to download only the folders we need (176MB instead of 2302MB)
+        git clone --depth=1 --filter=blob:none https://github.com/llvm/llvm-project --no-checkout --branch release/20.x
+        cd llvm-project
+        git sparse-checkout set cmake runtimes libc libcxx libcxxabi llvm/cmake
+        git checkout
+        cmake -S runtimes -B build -G Ninja \
           -DCMAKE_BUILD_TYPE=Release \
           -DLLVM_ENABLE_RUNTIMES="libcxx;libcxxabi" \
           -DLLVM_USE_SANITIZER=MemoryWithOrigins \
           -DLIBCXXABI_USE_LLVM_UNWINDER=OFF \
+          -DLIBCXX_ENABLE_STATIC=OFF \
           -DLIBCXX_INCLUDE_BENCHMARKS=OFF \
           -DLLVM_INCLUDE_TESTS=OFF \
           -DLLVM_INCLUDE_DOCS=OFF
-        cmake --build llvm-project/build -j3 -- cxx cxxabi
-        echo "LLVM_BUILD_DIR=`pwd`/llvm-project/build" >> $GITHUB_ENV
+        cmake --build build -j3 -- cxx cxxabi
+        echo "LLVM_BUILD_DIR=`pwd`/build" >> $GITHUB_ENV
       env:
+        CFLAGS: -O2
         CC: ${{ matrix.compiler }}
         CXX: ${{ matrix.cxx-compiler }}
 
