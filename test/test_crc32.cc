@@ -30,6 +30,7 @@ class crc32_align : public ::testing::TestWithParam<int> {
 public:
     void hash(int param, crc32_func crc32) {
         uint8_t *buf = (uint8_t*)zng_alloc(sizeof(uint8_t) * (128 + param));
+        memset(buf + param, 0, 128);
         (void)crc32(0, buf + param, 128);
         zng_free(buf);
     }
