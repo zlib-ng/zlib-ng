@@ -148,12 +148,12 @@ jobs:
 
           - name: Ubuntu GCC ARM HF ASAN
             os: ubuntu-24.04-arm
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_SANITIZER=Address -DWITH_BENCHMARKS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_BENCHMARKS=ON -DWITH_SANITIZER=Address
             cxxflags: -Wno-psabi -Wno-maybe-uninitialized
             asan-options: detect_leaks=0
             packages: qemu-user crossbuild-essential-armhf
             gcov-exec: arm-linux-gnueabihf-gcov
-            coverage: ubuntu_gcc_armhf
+            coverage: ubuntu_gcc_armhf_asan
 
           - name: Ubuntu GCC ARM HF No Neon No ARMv8 ASAN
             os: ubuntu-24.04-arm
@@ -163,23 +163,30 @@ jobs:
             gcov-exec: arm-linux-gnueabihf-gcov
             coverage: ubuntu_gcc_armhf_no_neon_no_armv8
 
-          - name: Ubuntu GCC ARM HF Compat No Opt UBSAN
+          - name: Ubuntu GCC ARM HF Compat UBSAN
             os: ubuntu-24.04-arm
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DZLIB_COMPAT=ON -DWITH_SANITIZER=Undefined
             packages: qemu-user crossbuild-essential-armhf
             gcov-exec: arm-linux-gnueabihf-gcov
-            coverage: ubuntu_gcc_armhf_compat_no_opt
+            coverage: ubuntu_gcc_armhf_compat_ubsan
 
           - name: Ubuntu GCC AARCH64 ASAN
             os: ubuntu-24.04-arm
-            cmake-args: -DWITH_SANITIZER=Address -DWITH_BENCHMARKS=ON
+            cmake-args: -DWITH_BENCHMARKS=ON -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
-            coverage: ubuntu_gcc_aarch64
+            coverage: ubuntu_gcc_aarch64_asan
 
-          - name: Ubuntu GCC AARCH64 Compat No Opt UBSAN
+          - name: Ubuntu GCC AARCH64 Compat UBSAN
             os: ubuntu-24.04-arm
-            cmake-args: -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
-            coverage: ubuntu_gcc_aarch64_compat_no_opt
+            cmake-args: -DZLIB_COMPAT=ON -DWITH_SANITIZER=Undefined
+            coverage: ubuntu_gcc_aarch64_compat_ubsan
+
+          - name: Ubuntu Clang AARCH64 MSAN
+            os: ubuntu-24.04-arm
+            compiler: clang
+            cxx-compiler: clang++
+            cmake-args: -DWITH_SANITIZER=Memory
+            # Coverage disabled, causes MSAN errors
 
           - name: Ubuntu GCC MIPS
             os: ubuntu-latest
