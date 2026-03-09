@@ -131,22 +131,19 @@ jobs:
             cflags: -DNOT_TWEAK_COMPILER
             coverage: ubuntu_gcc_compat_no_opt
 
-            # ARM SF jobs aren't working -- disable for now until a solution is found
+          - name: Ubuntu GCC ARM SF
+            os: ubuntu-24.04-arm
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake
+            packages: qemu-user crossbuild-essential-armel
+            gcov-exec: arm-linux-gnueabi-gcov
+            coverage: ubuntu_gcc_armsf
 
-#           - name: Ubuntu GCC ARM SF ASAN
-#             os: ubuntu-24.04-arm
-#             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DWITH_SANITIZER=Address
-#             asan-options: detect_leaks=0
-#             packages: qemu-user crossbuild-essential-armel
-#             gcov-exec: arm-linux-gnueabi-gcov
-#             coverage: ubuntu_gcc_armsf
-#
-#           - name: Ubuntu GCC ARM SF Compat No Opt UBSAN
-#             os: ubuntu-24.04-arm
-#             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF -DWITH_SANITIZER=Undefined
-#             packages: qemu-user crossbuild-essential-armel
-#             gcov-exec: arm-linux-gnueabi-gcov
-#             coverage: ubuntu_gcc_armsf_compat_no_opt
+          - name: Ubuntu GCC ARM SF Compat No Opt
+            os: ubuntu-24.04-arm
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF
+            packages: qemu-user crossbuild-essential-armel
+            gcov-exec: arm-linux-gnueabi-gcov
+            coverage: ubuntu_gcc_armsf_compat_no_opt
 
           - name: Ubuntu GCC ARM HF ASAN
             os: ubuntu-24.04-arm
