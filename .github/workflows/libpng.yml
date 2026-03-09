@@ -1,5 +1,5 @@
 name: Libpng
-on: [push, pull_request, workflow_dispatch]
+on: [workflow_call, workflow_dispatch]
 jobs:
   libpng:
     name: Ubuntu Clang

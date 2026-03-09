@@ -10,6 +10,12 @@ on:
       - '2.*'
     tags:
       - '*'
+concurrency:
+  # Group by workflow name and branch/PR to only cancel runs on the same branch
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Only cancels in-progress runs if the branch is not 'stable' or 'develop'
+  cancel-in-progress: ${{ !contains(fromJSON('["refs/heads/stable", "refs/heads/develop"]'), github.ref) }}
+
 jobs:
   fuzzing:
     name: Fuzzing

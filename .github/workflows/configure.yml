@@ -1,5 +1,5 @@
 name: Configure
-on: [push, pull_request, workflow_dispatch]
+on: [workflow_call, workflow_dispatch]
 jobs:
   configure:
     name: ${{ matrix.name }}

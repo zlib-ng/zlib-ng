@@ -1,5 +1,5 @@
 name: Static Analysis
-on: [push, pull_request, workflow_dispatch]
+on: [workflow_call, workflow_dispatch]
 jobs:
   static-analysis:
     name: GCC-14
