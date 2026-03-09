@@ -41,7 +41,8 @@ all: \
 	crc32_chorba_sse2.o crc32_chorba_sse2.lo \
 	crc32_chorba_sse41.o crc32_chorba_sse41.lo \
 	crc32_pclmulqdq.o crc32_pclmulqdq.lo \
-	crc32_vpclmulqdq.o crc32_vpclmulqdq.lo \
+	crc32_vpclmulqdq_avx2.o crc32_vpclmulqdq_avx2.lo \
+	crc32_vpclmulqdq_avx512.o crc32_vpclmulqdq_avx512.lo \
 	slide_hash_avx2.o slide_hash_avx2.lo \
 	slide_hash_sse2.o slide_hash_sse2.lo
 
@@ -111,11 +112,17 @@ crc32_pclmulqdq.o:
 crc32_pclmulqdq.lo:
 	$(CC) $(SFLAGS) $(PCLMULFLAG) $(SSE42FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_pclmulqdq.c
 
-crc32_vpclmulqdq.o:
-	$(CC) $(CFLAGS) $(PCLMULFLAG) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq.c
+crc32_vpclmulqdq_avx2.o:
+	$(CC) $(CFLAGS) $(PCLMULFLAG) $(VPCLMULFLAG) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq_avx2.c
 
-crc32_vpclmulqdq.lo:
-	$(CC) $(SFLAGS) $(PCLMULFLAG) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq.c
+crc32_vpclmulqdq_avx2.lo:
+	$(CC) $(SFLAGS) $(PCLMULFLAG) $(VPCLMULFLAG) $(AVX2FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq_avx2.c
+
+crc32_vpclmulqdq_avx512.o:
+	$(CC) $(CFLAGS) $(PCLMULFLAG) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq_avx512.c
+
+crc32_vpclmulqdq_avx512.lo:
+	$(CC) $(SFLAGS) $(PCLMULFLAG) $(VPCLMULFLAG) $(AVX512FLAG) $(NOLTOFLAG) -DPIC $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vpclmulqdq_avx512.c
 
 slide_hash_avx2.o:
 	$(CC) $(CFLAGS) $(AVX2FLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_avx2.c

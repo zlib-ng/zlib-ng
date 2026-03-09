@@ -256,14 +256,24 @@ static int init_functable(void) {
         ft.adler32_copy = &adler32_copy_avx512_vnni;
     }
 #endif
-    // X86 - VPCLMULQDQ
-#ifdef X86_VPCLMULQDQ_CRC
-#  ifndef X86_VPCLMULQDQ_NATIVE
+    // X86 - VPCLMULQDQ (AVX2)
+#ifdef X86_VPCLMULQDQ_AVX2
+#  ifndef X86_VPCLMULQDQ_AVX2_NATIVE
+    if (cf.x86.has_pclmulqdq && cf.x86.has_avx2 && cf.x86.has_vpclmulqdq)
+#  endif
+    {
+        ft.crc32 = &crc32_vpclmulqdq_avx2;
+        ft.crc32_copy = &crc32_copy_vpclmulqdq_avx2;
+    }
+#endif
+    // X86 - VPCLMULQDQ (AVX-512)
+#ifdef X86_VPCLMULQDQ_AVX512
+#  ifndef X86_VPCLMULQDQ_AVX512_NATIVE
     if (cf.x86.has_pclmulqdq && cf.x86.has_avx512_common && cf.x86.has_vpclmulqdq)
 #  endif
     {
-        ft.crc32 = &crc32_vpclmulqdq;
-        ft.crc32_copy = &crc32_copy_vpclmulqdq;
+        ft.crc32 = &crc32_vpclmulqdq_avx512;
+        ft.crc32_copy = &crc32_copy_vpclmulqdq_avx512;
     }
 #endif
 

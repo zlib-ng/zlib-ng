@@ -28,7 +28,8 @@
 #include "crc32_p.h"
 #include "x86_intrins.h"
 
-#ifdef X86_VPCLMULQDQ
+/* 512-bit VPCLMULQDQ path requires AVX-512F */
+#if defined(X86_VPCLMULQDQ) && defined(__AVX512F__)
 #  if defined(_MSC_VER) && _MSC_VER < 1920
      /* Use epi32 variants for older MSVC toolchains (v141/v140) to avoid cast warnings */
 #    define z512_xor3_epi64(a, b, c)     _mm512_ternarylogic_epi32(a, b, c, 0x96)
@@ -42,6 +43,10 @@
 #  ifdef __AVX512VL__
 #    define z128_xor3_epi64(a, b, c)  _mm_ternarylogic_epi64(a, b, c, 0x96)
 #  endif
+#endif
+/* 256-bit VPCLMULQDQ macros (doesn't require AVX-512) */
+#if defined(X86_VPCLMULQDQ) && !defined(__AVX512F__)
+#  define z256_xor3_epi64(a, b, c)    _mm256_xor_si256(_mm256_xor_si256(a, b), c)
 #endif
 
 #ifndef z128_xor3_epi64
@@ -117,7 +122,8 @@ static inline void fold_12(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_cr
     *xmm_crc3 = _mm_xor_si128(x_low3, x_high3);
 }
 
-#ifdef X86_VPCLMULQDQ
+/* 512-bit fold function requires AVX-512F */
+#if defined(X86_VPCLMULQDQ) && defined(__AVX512F__)
 static inline void fold_16(__m512i *zmm_crc0, __m512i *zmm_crc1, __m512i *zmm_crc2, __m512i *zmm_crc3,
     const __m512i zmm_t0, const __m512i zmm_t1, const __m512i zmm_t2, const __m512i zmm_t3, const __m512i zmm_fold16) {
     __m512i z_low0  = _mm512_clmulepi64_epi128(*zmm_crc0, zmm_fold16, 0x01);
@@ -133,6 +139,25 @@ static inline void fold_16(__m512i *zmm_crc0, __m512i *zmm_crc1, __m512i *zmm_cr
     *zmm_crc1 = z512_xor3_epi64(z_low1, z_high1, zmm_t1);
     *zmm_crc2 = z512_xor3_epi64(z_low2, z_high2, zmm_t2);
     *zmm_crc3 = z512_xor3_epi64(z_low3, z_high3, zmm_t3);
+}
+#endif
+/* 256-bit fold function for VPCLMULQDQ without AVX-512 */
+#if defined(X86_VPCLMULQDQ) && !defined(__AVX512F__)
+static inline void fold_8(__m256i *ymm_crc0, __m256i *ymm_crc1, __m256i *ymm_crc2, __m256i *ymm_crc3,
+    const __m256i ymm_t0, const __m256i ymm_t1, const __m256i ymm_t2, const __m256i ymm_t3, const __m256i ymm_fold8) {
+    __m256i y_low0  = _mm256_clmulepi64_epi128(*ymm_crc0, ymm_fold8, 0x01);
+    __m256i y_high0 = _mm256_clmulepi64_epi128(*ymm_crc0, ymm_fold8, 0x10);
+    __m256i y_low1  = _mm256_clmulepi64_epi128(*ymm_crc1, ymm_fold8, 0x01);
+    __m256i y_high1 = _mm256_clmulepi64_epi128(*ymm_crc1, ymm_fold8, 0x10);
+    __m256i y_low2  = _mm256_clmulepi64_epi128(*ymm_crc2, ymm_fold8, 0x01);
+    __m256i y_high2 = _mm256_clmulepi64_epi128(*ymm_crc2, ymm_fold8, 0x10);
+    __m256i y_low3  = _mm256_clmulepi64_epi128(*ymm_crc3, ymm_fold8, 0x01);
+    __m256i y_high3 = _mm256_clmulepi64_epi128(*ymm_crc3, ymm_fold8, 0x10);
+
+    *ymm_crc0 = z256_xor3_epi64(y_low0, y_high0, ymm_t0);
+    *ymm_crc1 = z256_xor3_epi64(y_low1, y_high1, ymm_t1);
+    *ymm_crc2 = z256_xor3_epi64(y_low2, y_high2, ymm_t2);
+    *ymm_crc3 = z256_xor3_epi64(y_low3, y_high3, ymm_t3);
 }
 #endif
 
@@ -181,7 +206,8 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_crc3 = z128_xor3_epi64(xmm_crc3, xmm_t0, _mm_cvtsi32_si128(crc));
     }
 
-#ifdef X86_VPCLMULQDQ
+/* 512-bit VPCLMULQDQ path requires AVX-512F */
+#if defined(X86_VPCLMULQDQ) && defined(__AVX512F__)
     if (len >= 256) {
         len -= 256;
 
@@ -252,6 +278,95 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_crc1 = z512_extracti64x2(zmm_crc0, 1);
         xmm_crc2 = z512_extracti64x2(zmm_crc0, 2);
         xmm_crc3 = z512_extracti64x2(zmm_crc0, 3);
+    }
+/* 256-bit VPCLMULQDQ path */
+#elif defined(X86_VPCLMULQDQ)
+    if (len >= 128) {
+        len -= 128;
+
+        __m256i ymm_crc0, ymm_crc1, ymm_crc2, ymm_crc3;
+        __m256i ymm_t0, ymm_t1, ymm_t2, ymm_t3;
+        __m256i y_low0, y_high0;
+        const __m256i ymm_fold4 = _mm256_set_epi32(
+            0x00000001, 0x54442bd4, 0x00000001, 0xc6e41596,
+            0x00000001, 0x54442bd4, 0x00000001, 0xc6e41596);
+        const __m256i ymm_fold8 = _mm256_set_epi32(
+            0x00000001, 0xe88ef372, 0x00000001, 0x4a7fe880,
+            0x00000001, 0xe88ef372, 0x00000001, 0x4a7fe880);
+
+        ymm_crc0 = _mm256_loadu_si256((__m256i *)src);
+        ymm_crc1 = _mm256_loadu_si256((__m256i *)src + 1);
+        ymm_crc2 = _mm256_loadu_si256((__m256i *)src + 2);
+        ymm_crc3 = _mm256_loadu_si256((__m256i *)src + 3);
+        src += 128;
+        if (COPY) {
+            _mm256_storeu_si256((__m256i *)dst, ymm_crc0);
+            _mm256_storeu_si256((__m256i *)dst + 1, ymm_crc1);
+            _mm256_storeu_si256((__m256i *)dst + 2, ymm_crc2);
+            _mm256_storeu_si256((__m256i *)dst + 3, ymm_crc3);
+            dst += 128;
+        }
+
+        // Fold existing xmm state into first 32 bytes
+        ymm_t0 = _mm256_castsi128_si256(xmm_crc0);
+        ymm_t0 = _mm256_inserti128_si256(ymm_t0, xmm_crc1, 1);
+
+        y_low0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x01);
+        y_high0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x10);
+        ymm_crc0 = z256_xor3_epi64(ymm_crc0, y_low0, y_high0);
+
+        ymm_t0 = _mm256_castsi128_si256(xmm_crc2);
+        ymm_t0 = _mm256_inserti128_si256(ymm_t0, xmm_crc3, 1);
+
+        y_low0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x01);
+        y_high0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x10);
+        ymm_crc1 = z256_xor3_epi64(ymm_crc1, y_low0, y_high0);
+
+        while (len >= 128) {
+            len -= 128;
+            ymm_t0 = _mm256_loadu_si256((__m256i *)src);
+            ymm_t1 = _mm256_loadu_si256((__m256i *)src + 1);
+            ymm_t2 = _mm256_loadu_si256((__m256i *)src + 2);
+            ymm_t3 = _mm256_loadu_si256((__m256i *)src + 3);
+            src += 128;
+
+            fold_8(&ymm_crc0, &ymm_crc1, &ymm_crc2, &ymm_crc3, ymm_t0, ymm_t1, ymm_t2, ymm_t3, ymm_fold8);
+            if (COPY) {
+                _mm256_storeu_si256((__m256i *)dst, ymm_t0);
+                _mm256_storeu_si256((__m256i *)dst + 1, ymm_t1);
+                _mm256_storeu_si256((__m256i *)dst + 2, ymm_t2);
+                _mm256_storeu_si256((__m256i *)dst + 3, ymm_t3);
+                dst += 128;
+            }
+        }
+
+        // Extract 8 x 128-bit lanes from 4 x 256-bit registers
+        __m128i xmm_a0 = _mm256_castsi256_si128(ymm_crc0);
+        __m128i xmm_a1 = _mm256_extracti128_si256(ymm_crc0, 1);
+        __m128i xmm_a2 = _mm256_castsi256_si128(ymm_crc1);
+        __m128i xmm_a3 = _mm256_extracti128_si256(ymm_crc1, 1);
+        __m128i xmm_a4 = _mm256_castsi256_si128(ymm_crc2);
+        __m128i xmm_a5 = _mm256_extracti128_si256(ymm_crc2, 1);
+        __m128i xmm_a6 = _mm256_castsi256_si128(ymm_crc3);
+        __m128i xmm_a7 = _mm256_extracti128_si256(ymm_crc3, 1);
+
+        // Fold 8 -> 4 using xmm_fold4 (fold by 64 bytes = gap between lane N and lane N+4)
+        __m128i x_low, x_high;
+        x_low  = _mm_clmulepi64_si128(xmm_a0, xmm_fold4, 0x01);
+        x_high = _mm_clmulepi64_si128(xmm_a0, xmm_fold4, 0x10);
+        xmm_crc0 = z128_xor3_epi64(x_low, x_high, xmm_a4);
+
+        x_low  = _mm_clmulepi64_si128(xmm_a1, xmm_fold4, 0x01);
+        x_high = _mm_clmulepi64_si128(xmm_a1, xmm_fold4, 0x10);
+        xmm_crc1 = z128_xor3_epi64(x_low, x_high, xmm_a5);
+
+        x_low  = _mm_clmulepi64_si128(xmm_a2, xmm_fold4, 0x01);
+        x_high = _mm_clmulepi64_si128(xmm_a2, xmm_fold4, 0x10);
+        xmm_crc2 = z128_xor3_epi64(x_low, x_high, xmm_a6);
+
+        x_low  = _mm_clmulepi64_si128(xmm_a3, xmm_fold4, 0x01);
+        x_high = _mm_clmulepi64_si128(xmm_a3, xmm_fold4, 0x10);
+        xmm_crc3 = z128_xor3_epi64(x_low, x_high, xmm_a7);
     }
 #else
     /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398

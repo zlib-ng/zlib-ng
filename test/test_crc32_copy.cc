@@ -79,8 +79,11 @@ TEST_CRC32_COPY(braid, crc32_copy_braid, 1)
 #  ifdef X86_PCLMULQDQ_CRC
     TEST_CRC32_COPY(pclmulqdq, crc32_copy_pclmulqdq, test_cpu_features.x86.has_pclmulqdq)
 #  endif
-#  ifdef X86_VPCLMULQDQ_CRC
-    TEST_CRC32_COPY(vpclmulqdq, crc32_copy_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq))
+#  ifdef X86_VPCLMULQDQ_AVX2
+    TEST_CRC32_COPY(vpclmulqdq_avx2, crc32_copy_vpclmulqdq_avx2, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx2 && test_cpu_features.x86.has_vpclmulqdq))
+#  endif
+#  ifdef X86_VPCLMULQDQ_AVX512
+    TEST_CRC32_COPY(vpclmulqdq_avx512, crc32_copy_vpclmulqdq_avx512, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq))
 #  endif
 
 #endif

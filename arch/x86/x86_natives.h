@@ -29,9 +29,6 @@
 #  ifdef X86_PCLMULQDQ_CRC
 #    define X86_PCLMULQDQ_NATIVE
 #  endif
-#  if defined(__AVX512F__) && defined(__VPCLMULQDQ__)
-#    define X86_VPCLMULQDQ_NATIVE
-#  endif
 #endif
 #if defined(__AVX2__)
 #  ifdef X86_AVX2
@@ -46,6 +43,14 @@
 #if defined(__AVX512VNNI__)
 #  ifdef X86_AVX512VNNI
 #    define X86_AVX512VNNI_NATIVE
+#  endif
+#endif
+#if defined(__VPCLMULQDQ__)
+#  if defined(X86_VPCLMULQDQ_AVX2) && defined(X86_AVX2_NATIVE)
+#    define X86_VPCLMULQDQ_AVX2_NATIVE
+#  endif
+#  if defined(X86_VPCLMULQDQ_AVX512) && defined(X86_AVX512_NATIVE)
+#    define X86_VPCLMULQDQ_AVX512_NATIVE
 #  endif
 #endif
 

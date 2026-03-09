@@ -359,19 +359,19 @@ endmacro()
 
 macro(check_vpclmulqdq_intrinsics)
     if(NOT NATIVEFLAG)
-        if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "IntelLLVM" OR CMAKE_C_COMPILER_ID MATCHES "NVHPC")
-            set(VPCLMULFLAG "-mvpclmulqdq -mavx512f")
+        if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang|IntelLLVM|NVHPC")
+            set(VPCLMULFLAG "-mvpclmulqdq")
         endif()
     endif()
     # Check whether compiler supports VPCLMULQDQ intrinsics
     if(NOT (APPLE AND ARCH_32BIT))
-        set(CMAKE_REQUIRED_FLAGS "${VPCLMULFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+        set(CMAKE_REQUIRED_FLAGS "${VPCLMULFLAG} ${AVX2FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
         check_c_source_compiles(
             "#include <immintrin.h>
             #include <wmmintrin.h>
-            __m512i f(__m512i a) {
-                __m512i b = _mm512_setzero_si512();
-                return _mm512_clmulepi64_epi128(a, b, 0x10);
+            __m256i f(__m256i a) {
+                __m256i b = _mm256_setzero_si256();
+                return _mm256_clmulepi64_epi128(a, b, 0x10);
             }
             int main(void) { return 0; }"
             HAVE_VPCLMULQDQ_INTRIN

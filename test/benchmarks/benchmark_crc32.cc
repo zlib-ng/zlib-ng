@@ -112,8 +112,11 @@ BENCHMARK_CRC32(vx, crc32_s390_vx, test_cpu_features.s390.has_vx);
 #ifdef X86_PCLMULQDQ_CRC
 BENCHMARK_CRC32(pclmulqdq, crc32_pclmulqdq, test_cpu_features.x86.has_pclmulqdq);
 #endif
-#ifdef X86_VPCLMULQDQ_CRC
-BENCHMARK_CRC32(vpclmulqdq, crc32_vpclmulqdq, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq));
+#ifdef X86_VPCLMULQDQ_AVX2
+BENCHMARK_CRC32(vpclmulqdq_avx2, crc32_vpclmulqdq_avx2, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx2 && test_cpu_features.x86.has_vpclmulqdq));
+#endif
+#ifdef X86_VPCLMULQDQ_AVX512
+BENCHMARK_CRC32(vpclmulqdq_avx512, crc32_vpclmulqdq_avx512, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq));
 #endif
 #ifdef LOONGARCH_CRC
 BENCHMARK_CRC32(loongarch64, crc32_loongarch64, test_cpu_features.loongarch.has_crc);

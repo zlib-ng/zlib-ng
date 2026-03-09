@@ -75,9 +75,13 @@ uint32_t adler32_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8_t *s
 uint32_t crc32_pclmulqdq(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_pclmulqdq(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
-#ifdef X86_VPCLMULQDQ_CRC
-uint32_t crc32_vpclmulqdq(uint32_t crc, const uint8_t *buf, size_t len);
-uint32_t crc32_copy_vpclmulqdq(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
+#ifdef X86_VPCLMULQDQ_AVX2
+uint32_t crc32_vpclmulqdq_avx2(uint32_t crc, const uint8_t *buf, size_t len);
+uint32_t crc32_copy_vpclmulqdq_avx2(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
+#endif
+#ifdef X86_VPCLMULQDQ_AVX512
+uint32_t crc32_vpclmulqdq_avx512(uint32_t crc, const uint8_t *buf, size_t len);
+uint32_t crc32_copy_vpclmulqdq_avx512(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
@@ -174,13 +178,18 @@ uint32_t crc32_copy_vpclmulqdq(uint32_t crc, uint8_t *dst, const uint8_t *src, s
 #      undef native_adler32_copy
 #      define native_adler32_copy adler32_copy_avx512_vnni
 #    endif
+#  endif
 // X86 - VPCLMULQDQ
-#    ifdef X86_VPCLMULQDQ_NATIVE
-#      undef native_crc32
-#      define native_crc32 crc32_vpclmulqdq
-#      undef native_crc32_copy
-#      define native_crc32_copy crc32_copy_vpclmulqdq
-#    endif
+#  ifdef X86_VPCLMULQDQ_AVX512_NATIVE
+#    undef native_crc32
+#    define native_crc32 crc32_vpclmulqdq_avx512
+#    undef native_crc32_copy
+#    define native_crc32_copy crc32_copy_vpclmulqdq_avx512
+#  elif defined(X86_VPCLMULQDQ_AVX2_NATIVE)
+#    undef native_crc32
+#    define native_crc32 crc32_vpclmulqdq_avx2
+#    undef native_crc32_copy
+#    define native_crc32_copy crc32_copy_vpclmulqdq_avx2
 #  endif
 #endif
 
