@@ -44,7 +44,7 @@ macro(add_code_coverage)
     # Set optimization level to zero for code coverage builds
     if (WITH_CODE_COVERAGE)
         # Use CMake compiler flag variables due to add_compile_options failure on Windows GCC
-        set(CMAKE_C_FLAGS "-O0 ${CMAKE_C_FLAGS}")
-        set(CMAKE_CXX_FLAGS "-O0 ${CMAKE_CXX_FLAGS}")
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
     endif()
 endmacro()
