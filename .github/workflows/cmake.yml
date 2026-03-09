@@ -350,14 +350,14 @@ jobs:
             gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'llvm-cov gcov' || 's390x-linux-gnu-gcov' }}
             coverage: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_clang_s390x_dfltcc_ubsan' || 'ubuntu_gcc_s390x_dfltcc_ubsan' }}
 
-          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} Clang S390X DFLTCC ${{ (github.repository == 'zlib-ng/zlib-ng' && 'MSAN') || 'Compat' }}
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang' || 'Ubuntu GCC' }} S390X DFLTCC ${{ (github.repository == 'zlib-ng/zlib-ng' && 'MSAN') || 'Compat' }}
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
-            compiler: clang
-            cxx-compiler: clang++
+            compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'gcc' }}
+            cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'g++' }}
             cmake-args: >-
               ${{ github.repository == 'zlib-ng/zlib-ng' && '-GNinja -DWITH_SANITIZER=Memory' || '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DZLIB_COMPAT=ON' }}
               -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON
-            packages: qemu-user libc-dev-s390x-cross
+            packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             # Coverage disabled, causes MSAN errors
 
           - name: Ubuntu MinGW i686
