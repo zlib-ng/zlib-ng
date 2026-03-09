@@ -545,8 +545,8 @@ jobs:
             cmake-args: -A ARM,version=10.0.22621.0
             # Coverage disabled for msvc
 
-          - name: Windows MSVC ARM64 No Test
-            os: windows-latest
+          - name: Windows MSVC ARM64
+            os: windows-11-arm
             compiler: cl
             cmake-args: -A ARM64
             # Coverage disabled for msvc
@@ -856,8 +856,8 @@ jobs:
       run: cmake --build . --verbose -j5 --config ${{ matrix.build-config || 'Release' }}
 
     - name: Run test cases
-      # Don't run tests on Windows ARM
-      if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false
+      # Don't run tests on 32-bit Windows ARM
+      if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false || runner.arch == 'ARM64'
       run: ctest --verbose -C Release -E benchmark_zlib --output-on-failure --max-width 120 -j ${{ matrix.parallel-jobs || '5' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
