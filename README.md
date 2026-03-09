@@ -16,6 +16,7 @@ Features
 
 * Zlib compatible API with support for dual-linking
 * Modernized native API based on zlib API for ease of porting
+* Major speed improvements, x86-64 can be about 4x faster than stock zlib for example.
 * Modern C11 syntax and a clean code layout
 * Deflate medium and quick algorithms based on Intel’s zlib fork
 * Support for CPU intrinsics when available
@@ -31,7 +32,8 @@ Features
 * Comprehensive set of CMake unit tests
 * Code sanitizers, fuzzing, and coverage
 * GitHub Actions continuous integration on Windows, macOS, and Linux
-  * Emulated CI for ARM, AARCH64, LoongArch, PPC, PPC64, RISCV, SPARC64, S390x using qemu
+  * Native CI for Aarch64, S390x, x86, x86-64
+  * Emulated CI for ARM, LoongArch, PPC, PPC64, RISCV, SPARC64, S390x using qemu
 
 
 History
