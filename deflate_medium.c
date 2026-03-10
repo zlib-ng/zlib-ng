@@ -90,6 +90,36 @@ static void insert_match(deflate_state *s, struct match match) {
     }
 }
 
+Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t hash_head) {
+    struct match m;
+    int64_t dist;
+
+    m.strstart = (uint16_t)s->strstart;
+    m.orgstart = m.strstart;
+
+    dist = (int64_t)s->strstart - hash_head;
+    if (dist <= MAX_DIST(s) && dist > 0 && hash_head != 0) {
+        /* To simplify the code, we prevent matches with the string
+         * of window index 0 (in particular we have to avoid a match
+         * of the string with itself at the start of the input file).
+         */
+        m.match_length = (uint16_t)FUNCTABLE_CALL(longest_match)(s, hash_head);
+        m.match_start = (uint16_t)s->match_start;
+        if (UNLIKELY(m.match_length < WANT_MIN_MATCH))
+            m.match_length = 1;
+        if (UNLIKELY(m.match_start >= m.strstart)) {
+            /* this can happen due to some restarts */
+            m.match_length = 1;
+        }
+    } else {
+        /* Set up the match to be a 1 byte literal */
+        m.match_start = 0;
+        m.match_length = 1;
+    }
+
+    return m;
+}
+
 static void fizzle_matches(deflate_state *s, struct match *current, struct match *next) {
     unsigned char *window;
     unsigned char *match, *orig;
@@ -167,7 +197,6 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
     for (;;) {
         uint32_t hash_head = 0;    /* head of the hash chain */
         int bflush = 0;       /* set if current block must be flushed */
-        int64_t dist;
 
         /* Make sure that we always have enough lookahead, except
          * at the end of the input file. We need STD_MAX_MATCH bytes
@@ -198,32 +227,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                 hash_head = quick_insert_string(s, s->strstart);
             }
 
-            current_match.strstart = (uint16_t)s->strstart;
-            current_match.orgstart = current_match.strstart;
-
-            /* Find the longest match, discarding those <= prev_length.
-             * At this point we have always match_length < WANT_MIN_MATCH
-             */
-
-            dist = (int64_t)s->strstart - hash_head;
-            if (dist <= MAX_DIST(s) && dist > 0 && hash_head != 0) {
-                /* To simplify the code, we prevent matches with the string
-                 * of window index 0 (in particular we have to avoid a match
-                 * of the string with itself at the start of the input file).
-                 */
-                current_match.match_length = (uint16_t)FUNCTABLE_CALL(longest_match)(s, hash_head);
-                current_match.match_start = (uint16_t)s->match_start;
-                if (UNLIKELY(current_match.match_length < WANT_MIN_MATCH))
-                    current_match.match_length = 1;
-                if (UNLIKELY(current_match.match_start >= current_match.strstart)) {
-                    /* this can happen due to some restarts */
-                    current_match.match_length = 1;
-                }
-            } else {
-                /* Set up the match to be a 1 byte literal */
-                current_match.match_start = 0;
-                current_match.match_length = 1;
-            }
+            current_match = find_best_match(s, hash_head);
         }
 
         insert_match(s, current_match);
@@ -233,34 +237,9 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
             s->strstart = current_match.strstart + current_match.match_length;
             hash_head = quick_insert_string(s, s->strstart);
 
-            next_match.strstart = (uint16_t)s->strstart;
-            next_match.orgstart = next_match.strstart;
-
-            /* Find the longest match, discarding those <= prev_length.
-             * At this point we have always match_length < WANT_MIN_MATCH
-             */
-
-            dist = (int64_t)s->strstart - hash_head;
-            if (dist <= MAX_DIST(s) && dist > 0 && hash_head != 0) {
-                /* To simplify the code, we prevent matches with the string
-                 * of window index 0 (in particular we have to avoid a match
-                 * of the string with itself at the start of the input file).
-                 */
-                next_match.match_length = (uint16_t)FUNCTABLE_CALL(longest_match)(s, hash_head);
-                next_match.match_start = (uint16_t)s->match_start;
-                if (UNLIKELY(next_match.match_start >= next_match.strstart)) {
-                    /* this can happen due to some restarts */
-                    next_match.match_length = 1;
-                }
-                if (next_match.match_length < WANT_MIN_MATCH)
-                    next_match.match_length = 1;
-                else
-                    fizzle_matches(s, &current_match, &next_match);
-            } else {
-                /* Set up the match to be a 1 byte literal */
-                next_match.match_start = 0;
-                next_match.match_length = 1;
-            }
+            next_match = find_best_match(s, hash_head);
+            if (next_match.match_length >= WANT_MIN_MATCH)
+                fizzle_matches(s, &current_match, &next_match);
 
             s->strstart = current_match.strstart;
         } else {
