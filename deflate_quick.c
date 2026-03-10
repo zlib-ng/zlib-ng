@@ -28,21 +28,21 @@
 extern const ct_data static_ltree[L_CODES+2];
 extern const ct_data static_dtree[D_CODES];
 
-#define QUICK_START_BLOCK(s, last) { \
-    zng_tr_emit_tree(s, STATIC_TREES, last); \
-    s->block_open = 1 + last; \
-    s->block_start = (int)s->strstart; \
+Z_FORCEINLINE static void quick_start_block(deflate_state *s, int last) {
+    zng_tr_emit_tree(s, STATIC_TREES, last);
+    s->block_open = 1 + last;
+    s->block_start = (int)s->strstart;
 }
 
-#define QUICK_END_BLOCK(s, last) { \
-    if (s->block_open) { \
-        zng_tr_emit_end_block(s, static_ltree, last); \
-        s->block_open = 0; \
-        s->block_start = (int)s->strstart; \
-        PREFIX(flush_pending)(s->strm); \
-        if (s->strm->avail_out == 0) \
-            return (last) ? finish_started : need_more; \
-    } \
+Z_FORCEINLINE static int quick_end_block(deflate_state *s, int last) {
+    if (s->block_open) {
+        zng_tr_emit_end_block(s, static_ltree, last);
+        s->block_open = 0;
+        s->block_start = (int)s->strstart;
+        PREFIX(flush_pending)(s->strm);
+        return (s->strm->avail_out == 0);
+    }
+    return 0;
 }
 
 Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
@@ -51,13 +51,14 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
 
     if (UNLIKELY(last && s->block_open != 2)) {
         /* Emit end of previous block */
-        QUICK_END_BLOCK(s, 0);
+        if (quick_end_block(s, 0))
+            return need_more;
         /* Emit start of last block */
-        QUICK_START_BLOCK(s, last);
+        quick_start_block(s, last);
     } else if (UNLIKELY(s->block_open == 0 && s->lookahead > 0)) {
         /* Start new block only when we have lookahead data, so that if no
            input data is given an empty block will not be written */
-        QUICK_START_BLOCK(s, last);
+        quick_start_block(s, last);
     }
 
     window = s->window;
@@ -83,7 +84,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
             if (UNLIKELY(s->block_open == 0)) {
                 /* Start new block when we have lookahead data, so that if no
                    input data is given an empty block will not be written */
-                QUICK_START_BLOCK(s, last);
+                quick_start_block(s, last);
             }
         }
 
@@ -126,10 +127,12 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
 
     s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
     if (UNLIKELY(last)) {
-        QUICK_END_BLOCK(s, 1);
+        if (quick_end_block(s, 1))
+            return finish_started;
         return finish_done;
     }
 
-    QUICK_END_BLOCK(s, 0);
+    if (quick_end_block(s, 0))
+        return need_more;
     return block_done;
 }
