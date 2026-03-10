@@ -557,6 +557,12 @@ jobs:
             cmake-args: -A ARM64
             # Coverage disabled for msvc
 
+          - name: Windows MSVC ARM64EC
+            os: windows-11-arm
+            compiler: cl
+            cmake-args: -A ARM64EC
+            # Coverage disabled for msvc
+
           - name: Windows ClangCl Win32
             os: windows-latest
             cmake-args: -T ClangCl -A Win32
