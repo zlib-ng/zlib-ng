@@ -69,6 +69,15 @@ jobs:
       shell: bash
       run:  echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
 
+    - name: Install Windows 11 SDK (ARM)
+      if: matrix.name == 'Windows MSVC ARM' || matrix.name == 'Windows MSVC ARM Compat'
+      run: |
+        # Windows 11 SDK (10.0.22621.2428)
+        # https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/index-legacy
+        Invoke-WebRequest -Method Get -Uri https://go.microsoft.com/fwlink/p/?LinkId=2250105 -OutFile sdksetup.exe -UseBasicParsing
+        Unblock-File sdksetup.exe
+        Start-Process -Wait sdksetup.exe -ArgumentList "/q", "/norestart", "/ceip off"
+
     - name: Generate project files
       shell: bash
       run: |
