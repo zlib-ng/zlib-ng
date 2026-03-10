@@ -361,12 +361,14 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
 
         case LEN:
             /* use inflate_fast() if we have enough input and output */
-            if (have >= INFLATE_FAST_MIN_HAVE &&
-                left >= INFLATE_FAST_MIN_LEFT) {
+            if (have >= INFLATE_FAST_MIN_HAVE && left >= INFLATE_FAST_MIN_SAFE) {
                 RESTORE();
                 if (state->whave < state->wsize)
                     state->whave = state->wsize - left;
-                FUNCTABLE_CALL(inflate_fast)(strm, state->wsize);
+                /* inflateBack() writes directly into the window, so out and window
+                   always overlap. Pass safe_mode=1 to use safe chunk copy functions
+                   that prevent overwriting window data needed by future back-references. */
+                FUNCTABLE_CALL(inflate_fast)(strm, state->wsize, 1);
                 LOAD();
                 break;
             }
@@ -484,6 +486,28 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                     *put++ = *from++;
                 } while (--copy);
             } while (state->length != 0);
+            break;
+
+        case MATCH:
+            /* Copy back-reference that inflate_fast() could not complete due to
+               insufficient output space. state->length and state->offset were set
+               by the safe_mode MATCH bailout in inflate_fast(). */
+            do {
+                ROOM();
+                copy = state->wsize - state->offset;
+                if (copy < left) {
+                    from = put + copy;
+                    copy = left - copy;
+                    copy = MIN(copy, state->length);
+                    put = chunkcopy_safe(put, from, copy, put + left);
+                } else {
+                    copy = MIN(state->length, left);
+                    put = FUNCTABLE_CALL(chunkmemset_safe)(put, put - state->offset, copy, left);
+                }
+                state->length -= copy;
+                left -= copy;
+            } while (state->length != 0);
+            state->mode = LEN;
             break;
 
         case DONE:

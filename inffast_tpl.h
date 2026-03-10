@@ -49,7 +49,7 @@
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
-void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
+void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mode) {
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
     z_const unsigned char *in;  /* local strm->next_in */
@@ -112,7 +112,6 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     unsigned len;               /* match length, unused bytes */
     unsigned char *from;        /* where to copy match from */
     unsigned dist;              /* match distance */
-    unsigned extra_safe;        /* copy chunks safely in all cases */
     uint64_t old;               /* look-behind buffer for extra bits */
 
     /* copy state to local variables */
@@ -121,8 +120,8 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     last = in + (strm->avail_in - (INFLATE_FAST_MIN_HAVE - 1));
     out = strm->next_out;
     beg = out - (start - strm->avail_out);
-    end = out + (strm->avail_out - (INFLATE_FAST_MIN_LEFT - 1));
     safe = out + strm->avail_out;
+    end = safe - (safe_mode ? INFLATE_FAST_MIN_SAFE : INFLATE_FAST_MIN_LEFT) + 1;
     wsize = state->wsize;
     whave = state->whave;
     wnext = state->wnext;
@@ -133,11 +132,6 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     dcode = state->distcode;
     lmask = (1U << state->lenbits) - 1;
     dmask = (1U << state->distbits) - 1;
-
-    /* Detect if out and window point to the same memory allocation. In this instance it is
-       necessary to use safe chunk copy functions to prevent overwriting the window. If the
-       window is overwritten then future matches with far distances will fail to copy correctly. */
-    extra_safe = (wsize != 0 && out >= window && out + INFLATE_FAST_MIN_LEFT <= window + state->wbufsize);
 
     /* decode literals and length/distances until end-of-block or not enough
        input data or output space */
@@ -191,6 +185,16 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                 }
 #endif
                 TRACE_DISTANCE(dist);
+
+                /* In safe mode, if there isn't enough output space for the full copy,
+                   bail to the slow path's MATCH state which handles partial copies. */
+                if (UNLIKELY(safe_mode && len > (unsigned)(safe - out))) {
+                    state->mode = MATCH;
+                    state->length = len;
+                    state->offset = dist;
+                    break;
+                }
+
                 op = (unsigned)(out - beg);     /* max distance in output */
                 if (UNLIKELY(dist > op)) {      /* see if copy from window */
                     op = dist - op;             /* distance back in window */
@@ -237,7 +241,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                     }
                     if (UNLIKELY(op < len)) {           /* still need some from output */
                         len -= op;
-                        if (LIKELY(!extra_safe)) {
+                        if (LIKELY(!safe_mode)) {
                             out = CHUNKCOPY_SAFE(out, from, op, safe);
                             out = CHUNKUNROLL(out, &dist, &len);
                             out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
@@ -247,14 +251,14 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                         }
                     } else {
 #ifndef HAVE_MASKED_READWRITE
-                        if (UNLIKELY(extra_safe))
+                        if (UNLIKELY(safe_mode))
                             out = chunkcopy_safe(out, from, len, safe);
                         else
 #endif
                             out = CHUNKCOPY_SAFE(out, from, len, safe);
                     }
 #ifndef HAVE_MASKED_READWRITE
-                } else if (UNLIKELY(extra_safe)) {
+                } else if (UNLIKELY(safe_mode)) {
                     /* Whole reference is in range of current output. */
                         out = chunkcopy_safe(out, out - dist, len, safe);
 #endif
@@ -302,8 +306,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     strm->next_out = out;
     strm->avail_in = (unsigned)(in < last ? (INFLATE_FAST_MIN_HAVE - 1) + (last - in)
                                           : (INFLATE_FAST_MIN_HAVE - 1) - (in - last));
-    strm->avail_out = (unsigned)(out < end ? (INFLATE_FAST_MIN_LEFT - 1) + (end - out)
-                                           : (INFLATE_FAST_MIN_LEFT - 1) - (out - end));
+    strm->avail_out = (unsigned)(safe - out);
 
     Assert(bits <= 32, "Remaining bits greater than 32");
     state->hold = (uint32_t)hold;

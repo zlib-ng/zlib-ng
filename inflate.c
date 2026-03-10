@@ -925,9 +925,9 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
 
         case LEN:
             /* use inflate_fast() if we have enough input and output */
-            if (have >= INFLATE_FAST_MIN_HAVE && left >= INFLATE_FAST_MIN_LEFT) {
+            if (have >= INFLATE_FAST_MIN_HAVE && left >= INFLATE_FAST_MIN_SAFE) {
                 RESTORE();
-                FUNCTABLE_CALL(inflate_fast)(strm, out);
+                FUNCTABLE_CALL(inflate_fast)(strm, out, left < INFLATE_FAST_MIN_LEFT);
                 LOAD();
                 if (state->mode == TYPE)
                     state->back = -1;

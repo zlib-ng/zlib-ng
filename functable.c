@@ -478,9 +478,9 @@ static uint32_t crc32_copy_stub(uint32_t crc, uint8_t *dst, const uint8_t *src, 
     return functable.crc32_copy(crc, dst, src, len);
 }
 
-static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start) {
+static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start, int safe_mode) {
     FUNCTABLE_INIT_ABORT;
-    functable.inflate_fast(strm, start);
+    functable.inflate_fast(strm, start, safe_mode);
 }
 
 static uint32_t longest_match_stub(deflate_state* const s, uint32_t cur_match) {

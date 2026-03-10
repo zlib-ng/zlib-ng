@@ -22,7 +22,7 @@ uint32_t compare256_rvv(const uint8_t *src0, const uint8_t *src1);
 uint32_t longest_match_rvv(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_rvv(deflate_state *const s, uint32_t cur_match);
 void slide_hash_rvv(deflate_state *s);
-void inflate_fast_rvv(PREFIX3(stream) *strm, uint32_t start);
+void inflate_fast_rvv(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 #endif
 
 #ifndef RISCV_RVV_NATIVE

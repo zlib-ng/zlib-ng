@@ -19,7 +19,7 @@
 #ifdef X86_SSE2
 uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, size_t len, size_t left);
 uint32_t compare256_sse2(const uint8_t *src0, const uint8_t *src1);
-void inflate_fast_sse2(PREFIX3(stream)* strm, uint32_t start);
+void inflate_fast_sse2(PREFIX3(stream)* strm, uint32_t start, int safe_mode);
 uint32_t longest_match_sse2(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_sse2(deflate_state *const s, uint32_t cur_match);
 void slide_hash_sse2(deflate_state *s);
@@ -41,7 +41,7 @@ void slide_hash_sse2(deflate_state *s);
 uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_copy_ssse3(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 uint8_t* chunkmemset_safe_ssse3(uint8_t *out, uint8_t *from, size_t len, size_t left);
-void inflate_fast_ssse3(PREFIX3(stream) *strm, uint32_t start);
+void inflate_fast_ssse3(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 #endif
 
 #ifndef X86_SSSE3_NATIVE
@@ -64,7 +64,7 @@ uint32_t adler32_avx2(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 uint8_t* chunkmemset_safe_avx2(uint8_t *out, uint8_t *from, size_t len, size_t left);
 uint32_t compare256_avx2(const uint8_t *src0, const uint8_t *src1);
-void inflate_fast_avx2(PREFIX3(stream)* strm, uint32_t start);
+void inflate_fast_avx2(PREFIX3(stream)* strm, uint32_t start, int safe_mode);
 uint32_t longest_match_avx2(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_avx2(deflate_state *const s, uint32_t cur_match);
 void slide_hash_avx2(deflate_state *s);
@@ -74,7 +74,7 @@ uint32_t adler32_avx512(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_copy_avx512(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 uint8_t* chunkmemset_safe_avx512(uint8_t *out, uint8_t *from, size_t len, size_t left);
 uint32_t compare256_avx512(const uint8_t *src0, const uint8_t *src1);
-void inflate_fast_avx512(PREFIX3(stream)* strm, uint32_t start);
+void inflate_fast_avx512(PREFIX3(stream)* strm, uint32_t start, int safe_mode);
 uint32_t longest_match_avx512(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_avx512(deflate_state *const s, uint32_t cur_match);
 #endif
