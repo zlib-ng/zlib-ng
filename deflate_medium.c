@@ -57,8 +57,6 @@ static void insert_match(deflate_state *s, struct match match) {
                 } else {
                     insert_string(s, match.strstart, match.orgstart - match.strstart + 1);
                 }
-                match.strstart += match.match_length;
-                match.match_length = 0;
             }
         }
         return;
@@ -80,11 +78,8 @@ static void insert_match(deflate_state *s, struct match match) {
         } else if (match.orgstart < match.strstart + match.match_length) {
             insert_string(s, match.orgstart, match.strstart + match.match_length - match.orgstart);
         }
-        match.strstart += match.match_length;
-        match.match_length = 0;
     } else {
         match.strstart += match.match_length;
-        match.match_length = 0;
 
         if (match.strstart >= (STD_MIN_MATCH - 2))
             quick_insert_string(s, match.strstart + 2 - STD_MIN_MATCH);
