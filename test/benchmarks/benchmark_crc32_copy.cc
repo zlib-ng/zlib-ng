@@ -128,17 +128,19 @@ public:
 #endif
 
 // Base test
+#ifdef CRC32_BRAID_FALLBACK
 BENCHMARK_CRC32_COPY(braid, crc32_braid, crc32_copy_braid, 1);
+#endif
+#ifdef CRC32_CHORBA_FALLBACK
+BENCHMARK_CRC32_COPY(chorba, crc32_chorba, crc32_copy_chorba, 1)
+#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
     // Native
     BENCHMARK_CRC32_COPY(native, native_crc32, native_crc32_copy, 1)
 #else
     // Optimized functions
-#  ifndef WITHOUT_CHORBA
-    BENCHMARK_CRC32_COPY(chorba, crc32_chorba, crc32_copy_chorba, 1)
-#  endif
-#  ifndef WITHOUT_CHORBA_SSE
+#  if defined(CRC32_CHORBA_FALLBACK) && !defined(WITHOUT_CHORBA_SSE)
 #    ifdef X86_SSE2
     BENCHMARK_CRC32_COPY(chorba_sse2, crc32_chorba_sse2, crc32_copy_chorba_sse2, test_cpu_features.x86.has_sse2);
 #    endif

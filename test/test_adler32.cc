@@ -36,7 +36,9 @@ INSTANTIATE_TEST_SUITE_P(adler32, adler32_variant, testing::ValuesIn(hash_tests)
         hash(GetParam(), func); \
     }
 
+#ifdef ADLER32_FALLBACK
 TEST_ADLER32(c, adler32_c, 1)
+#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 TEST_ADLER32(native, native_adler32, 1)

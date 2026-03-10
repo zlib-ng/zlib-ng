@@ -1,5 +1,8 @@
 #include "zbuild.h"
-#include "zendian.h"
+#include "arch_functions.h"
+
+#ifdef CRC32_CHORBA_FALLBACK
+
 #if defined(__EMSCRIPTEN__)
 #  include "zutil_p.h"
 #endif
@@ -7,7 +10,6 @@
 #include "crc32_chorba_p.h"
 #include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
-#include "generic_functions.h"
 
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
 #define bitbuffer_size_bytes (16 * 1024 * sizeof(chorba_word_t))
@@ -1273,3 +1275,5 @@ uint32_t crc32_copy_chorba(uint32_t crc, uint8_t *dst, const uint8_t *src, size_
     memcpy(dst, src, len);
     return crc;
 }
+
+#endif /* CRC32_CHORBA_FALLBACK */

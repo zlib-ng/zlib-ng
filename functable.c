@@ -75,60 +75,25 @@ static int init_functable(void) {
     cpu_check_features(&cf);
     ft.force_init = &force_init_empty;
 
-    // Set up generic C code fallbacks
-#ifndef WITH_ALL_FALLBACKS
     // Only use necessary generic functions when no suitable simd versions are available.
-#  ifdef X86_SSE2_NATIVE
-    // x86_64 always has SSE2
+#ifdef ADLER32_FALLBACK
     ft.adler32 = &adler32_c;
     ft.adler32_copy = &adler32_copy_c;
-    ft.crc32 = &crc32_braid;
-    ft.crc32_copy = &crc32_copy_braid;
-#  elif defined(ARM_NEON_NATIVE)
-#    ifndef ARM_CRC32_NATIVE
-    ft.crc32 = &crc32_braid;
-    ft.crc32_copy = &crc32_copy_braid;
-#    endif
-#  elif defined(POWER8_VSX_NATIVE)
-#    ifndef POWER9_NATIVE
-    ft.compare256 = &compare256_c;
-    ft.longest_match = &longest_match_c;
-    ft.longest_match_slow = &longest_match_slow_c;
-#    endif
-#    ifndef POWER8_VSX_CRC32_NATIVE
-    ft.crc32 = &crc32_braid;
-    ft.crc32_copy = &crc32_copy_braid;
-#    endif
-#  elif defined(LOONGARCH_LSX_NATIVE)
-#    ifndef LOONGARCH_CRC
-    ft.crc32 = &crc32_braid;
-    ft.crc32_copy = &crc32_copy_braid;
-#    endif
-#  elif defined(RISCV_RVV_NATIVE)
-#    ifndef RISCV_ZBC_NATIVE
-    ft.crc32 = &crc32_braid;
-    ft.crc32_copy = &crc32_copy_braid;
-#    endif
-#  elif defined(S390_VX_NATIVE)
-    ft.adler32 = &adler32_c;
-    ft.adler32_copy = &adler32_copy_c;
+#endif
+#ifdef CHUNKSET_FALLBACK
     ft.chunkmemset_safe = &chunkmemset_safe_c;
-    ft.compare256 = &compare256_c;
     ft.inflate_fast = &inflate_fast_c;
+#endif
+#ifdef COMPARE256_FALLBACK
+    ft.compare256 = &compare256_c;
     ft.longest_match = &longest_match_c;
     ft.longest_match_slow = &longest_match_slow_c;
-    ft.slide_hash = &slide_hash_c;
-#  endif
-#else // WITH_ALL_FALLBACKS
-    ft.adler32 = &adler32_c;
-    ft.adler32_copy = &adler32_copy_c;
-    ft.chunkmemset_safe = &chunkmemset_safe_c;
-    ft.compare256 = &compare256_c;
+#endif
+#ifdef CRC32_BRAID_FALLBACK
     ft.crc32 = &crc32_braid;
     ft.crc32_copy = &crc32_copy_braid;
-    ft.inflate_fast = &inflate_fast_c;
-    ft.longest_match = &longest_match_c;
-    ft.longest_match_slow = &longest_match_slow_c;
+#endif
+#ifdef SLIDE_HASH_FALLBACK
     ft.slide_hash = &slide_hash_c;
 #endif
 
@@ -136,7 +101,7 @@ static int init_functable(void) {
 #ifdef WITH_OPTIM
 
     // Chorba generic C fallback
-#ifndef WITHOUT_CHORBA
+#ifdef CRC32_CHORBA_FALLBACK
     ft.crc32 = &crc32_chorba;
     ft.crc32_copy = &crc32_copy_chorba;
 #endif

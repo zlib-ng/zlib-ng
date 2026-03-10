@@ -77,7 +77,9 @@ public:
     BENCHMARK_ADLER32_MISALIGNED(name, hashfunc, support_flag); \
     BENCHMARK_ADLER32_ALIGNED(name, hashfunc, support_flag);
 
+#ifdef ADLER32_FALLBACK
 BENCHMARK_ADLER32(c, adler32_c, 1);
+#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 BENCHMARK_ADLER32(native, native_adler32, 1);

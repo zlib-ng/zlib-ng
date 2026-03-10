@@ -40,17 +40,19 @@ INSTANTIATE_TEST_SUITE_P(crc32_copy, crc32_copy_variant, testing::ValuesIn(hash_
     }
 
 // Base test
+#ifdef CRC32_BRAID_FALLBACK
 TEST_CRC32_COPY(braid, crc32_copy_braid, 1)
+#endif
+#ifdef CRC32_CHORBA_FALLBACK
+TEST_CRC32_COPY(chorba, crc32_copy_chorba, 1)
+#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
     // Native test
     TEST_CRC32_COPY(native, native_crc32_copy, 1)
 #else
     // Optimized functions
-#  ifndef WITHOUT_CHORBA
-    TEST_CRC32_COPY(chorba, crc32_copy_chorba, 1)
-#  endif
-#  ifndef WITHOUT_CHORBA_SSE
+#  if defined(CRC32_CHORBA_FALLBACK) && !defined(WITHOUT_CHORBA_SSE)
 #    ifdef X86_SSE2
     TEST_CRC32_COPY(chorba_sse2, crc32_copy_chorba_sse2, test_cpu_features.x86.has_sse2)
 #    endif

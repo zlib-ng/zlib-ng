@@ -77,7 +77,12 @@ INSTANTIATE_TEST_SUITE_P(crc32, crc32_variant, testing::ValuesIn(hash_tests));
         hash(func); \
     }
 
+#ifdef CRC32_BRAID_FALLBACK
 TEST_CRC32(braid, crc32_braid, 1)
+#endif
+#ifdef CRC32_CHORBA_FALLBACK
+TEST_CRC32(chorba_c, crc32_chorba, 1)
+#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 TEST_CRC32(native, native_crc32, 1)
@@ -99,9 +104,6 @@ static const int align_offsets[] = {
     }
 #endif
 
-#ifndef WITHOUT_CHORBA
-TEST_CRC32(chorba_c, crc32_chorba, 1)
-#endif
 #ifdef ARM_CRC32
 INSTANTIATE_TEST_SUITE_P(crc32_alignment, crc32_align, testing::ValuesIn(align_offsets));
 TEST_CRC32(armv8, crc32_armv8, test_cpu_features.arm.has_crc32)
@@ -129,7 +131,7 @@ TEST_CRC32(vpclmulqdq_avx2, crc32_vpclmulqdq_avx2, (test_cpu_features.x86.has_pc
 #ifdef X86_VPCLMULQDQ_AVX512
 TEST_CRC32(vpclmulqdq_avx512, crc32_vpclmulqdq_avx512, (test_cpu_features.x86.has_pclmulqdq && test_cpu_features.x86.has_avx512_common && test_cpu_features.x86.has_vpclmulqdq))
 #endif
-#ifndef WITHOUT_CHORBA_SSE
+#if defined(CRC32_CHORBA_FALLBACK) && !defined(WITHOUT_CHORBA_SSE)
 #   ifdef X86_SSE2
     TEST_CRC32(chorba_sse2, crc32_chorba_sse2, test_cpu_features.x86.has_sse2)
 #   endif

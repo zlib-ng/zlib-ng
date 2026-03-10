@@ -1297,7 +1297,7 @@ set(ZLIB_SRCS
     zutil.c
 )
 
-set(ZLIB_ALL_FALLBACK_SRCS
+set(ZLIB_GENERIC_SRCS
     arch/generic/adler32_c.c
     arch/generic/chunkset_c.c
     arch/generic/compare256_c.c
@@ -1306,16 +1306,6 @@ set(ZLIB_ALL_FALLBACK_SRCS
 )
 
 if(WITH_ALL_FALLBACKS)
-    list(APPEND ZLIB_GENERIC_SRCS ${ZLIB_ALL_FALLBACK_SRCS})
-    add_definitions(-DWITH_ALL_FALLBACKS)
-elseif(BASEARCH_X86_FOUND AND ARCH_64BIT AND WITH_SSE2)
-    # x86_64 always has SSE2, so let the SSE2 functions act as fallbacks.
-    list(APPEND ZLIB_GENERIC_SRCS
-        arch/generic/adler32_c.c
-        arch/generic/crc32_braid_c.c
-    )
-else()
-    list(APPEND ZLIB_GENERIC_SRCS ${ZLIB_ALL_FALLBACK_SRCS})
     add_definitions(-DWITH_ALL_FALLBACKS)
 endif()
 

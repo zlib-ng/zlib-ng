@@ -11,6 +11,8 @@
 
 #include "riscv_natives.h"
 
+#define CRC32_BRAID_FALLBACK  /* used by crc32_zbc */
+
 #ifdef RISCV_RVV
 uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_copy_rvv(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
@@ -21,6 +23,13 @@ uint32_t longest_match_rvv(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_slow_rvv(deflate_state *const s, uint32_t cur_match);
 void slide_hash_rvv(deflate_state *s);
 void inflate_fast_rvv(PREFIX3(stream) *strm, uint32_t start);
+#endif
+
+#ifndef RISCV_RVV_NATIVE
+#  define ADLER32_FALLBACK
+#  define CHUNKSET_FALLBACK
+#  define COMPARE256_FALLBACK
+#  define SLIDE_HASH_FALLBACK
 #endif
 
 #ifdef RISCV_CRC32_ZBC
