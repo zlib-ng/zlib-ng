@@ -9,21 +9,10 @@
 #define ZARCH_STRINGIZE(X) ZARCH_DOSTRINGIZE(X)
 #define ZARCH_DOSTRINGIZE(X) #X
 
-/* x86_64 */
-#if defined(__x86_64__) || defined(_M_X64)
-#  define ARCH_X86
-#  define ARCH_64BIT
-#  define ARCH_NAME "x86_64"
-
-/* x86 (32-bit) */
-#elif defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || \
-      defined(__i386) || defined(_M_IX86)
-#  define ARCH_X86
-#  define ARCH_32BIT
-#  define ARCH_NAME "i686"
+/* ARM64EC defines both _M_ARM64EC and _M_AMD64/_M_X64, so check for ARM first. */
 
 /* ARM 64-bit */
-#elif defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
+#if defined(__aarch64__) || defined(__arm64__) || defined(_M_ARM64) || defined(_M_ARM64EC)
 #  define ARCH_ARM
 #  define ARCH_64BIT
 #  define ARCH_NAME "aarch64"
@@ -51,6 +40,19 @@
 #  else
 #    define ARCH_NAME "arm"
 #  endif
+
+/* x86_64 */
+#elif defined(__x86_64__) || defined(_M_X64)
+#  define ARCH_X86
+#  define ARCH_64BIT
+#  define ARCH_NAME "x86_64"
+
+/* x86 (32-bit) */
+#elif defined(__i386__) || defined(__i486__) || defined(__i586__) || defined(__i686__) || \
+      defined(__i386) || defined(_M_IX86)
+#  define ARCH_X86
+#  define ARCH_32BIT
+#  define ARCH_NAME "i686"
 
 /* PowerPC */
 #elif defined(__powerpc__) || defined(__ppc__) || defined(__PPC__)
