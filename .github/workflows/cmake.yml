@@ -827,6 +827,10 @@ jobs:
       id: llvm-remote-hash
       run: |
         HASH=$(git ls-remote https://github.com/llvm/llvm-project refs/heads/release/20.x | cut -f1)
+        if [ -z "$HASH" ]; then
+          echo "Failed to fetch LLVM remote hash"
+          exit 1
+        fi
         echo "value=$HASH" >> $GITHUB_OUTPUT
 
     - name: Cache LLVM C++ libraries (MSAN)
