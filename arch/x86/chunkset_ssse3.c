@@ -5,6 +5,7 @@
 #ifdef X86_SSSE3
 
 #include "zbuild.h"
+#include "zsanitizer.h"
 #include "zmemory.h"
 
 #include <immintrin.h>

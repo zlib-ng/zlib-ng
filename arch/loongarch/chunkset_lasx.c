@@ -6,6 +6,7 @@
 #ifdef LOONGARCH_LASX
 
 #include "zbuild.h"
+#include "zsanitizer.h"
 #include "zmemory.h"
 
 #include <lasxintrin.h>

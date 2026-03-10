@@ -5,6 +5,7 @@
 #ifdef ARM_NEON
 
 #include "zbuild.h"
+#include "zsanitizer.h"
 #include "zmemory.h"
 #include "neon_intrins.h"
 #include "arch/generic/chunk_128bit_perm_idx_lut.h"

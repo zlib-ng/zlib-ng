@@ -6,6 +6,7 @@
 #ifdef LOONGARCH_LSX
 
 #include "zbuild.h"
+#include "zsanitizer.h"
 #include "zmemory.h"
 
 #include <lsxintrin.h>

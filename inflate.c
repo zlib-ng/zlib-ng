@@ -4,6 +4,7 @@
  */
 
 #include "zbuild.h"
+#include "zsanitizer.h"
 #include "zutil.h"
 #include "inftrees.h"
 #include "inflate.h"

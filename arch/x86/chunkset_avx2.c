@@ -5,6 +5,7 @@
 #ifdef X86_AVX2
 
 #include "zbuild.h"
+#include "zsanitizer.h"
 #include "zmemory.h"
 
 #include "arch/generic/chunk_256bit_perm_idx_lut.h"

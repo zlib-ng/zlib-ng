@@ -1,4 +1,5 @@
 #include "zbuild.h"
+#include "zsanitizer.h"
 #include <stdio.h>
 
 #ifdef HAVE_SYS_SDT_H
