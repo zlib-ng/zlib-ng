@@ -157,6 +157,7 @@ if(WITH_GTEST)
             test_deflate_dict.cc
             test_deflate_hash_head_0.cc
             test_deflate_header.cc
+            test_deflate.cc
             test_deflate_params.cc
             test_deflate_pending.cc
             test_deflate_prime.cc

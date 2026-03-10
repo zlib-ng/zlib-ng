@@ -15,7 +15,7 @@ extern "C" {
 #  else
 #    include "zlib-ng.h"
 #  endif
-#  include "compressible_data_p.h"
+#  include "test/compressible_data_p.h"
 }
 
 #define MAX_SIZE (1024 * 1024)
