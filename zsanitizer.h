@@ -5,12 +5,21 @@
 #ifndef ZSANITIZER_H
 #define ZSANITIZER_H
 
+/* Detect sanitizer availability */
 #if defined(__has_feature)
 #  if __has_feature(address_sanitizer)
 #    define Z_ADDRESS_SANITIZER 1
 #  endif
-#elif defined(__SANITIZE_ADDRESS__)
+#  if __has_feature(memory_sanitizer)
+#    define Z_MEMORY_SANITIZER 1
+#  endif
+#elif defined(__SANITIZE_ADDRESS__)  /* GCC supports ASAN only */
 #  define Z_ADDRESS_SANITIZER 1
+#endif
+
+/* Include sanitizer headers */
+#ifdef Z_MEMORY_SANITIZER
+#  include <sanitizer/msan_interface.h>
 #endif
 
 /*
@@ -30,13 +39,7 @@ void __asan_storeN(void *, long);
 #  define __asan_storeN(a, size) do { Z_UNUSED(a); Z_UNUSED(size); } while (0)
 #endif
 
-#if defined(__has_feature)
-#  if __has_feature(memory_sanitizer)
-#    define Z_MEMORY_SANITIZER 1
-#    include <sanitizer/msan_interface.h>
-#  endif
-#endif
-
+/* Handle intentional uninitialized memory access */
 #ifndef Z_MEMORY_SANITIZER
 #  define __msan_check_mem_is_initialized(a, size) do { Z_UNUSED(a); Z_UNUSED(size); } while (0)
 #  define __msan_unpoison(a, size) do { Z_UNUSED(a); Z_UNUSED(size); } while (0)
@@ -51,10 +54,10 @@ void __asan_storeN(void *, long);
 } while (0)
 
 /* Notify sanitizer runtime about an upcoming write access. */
-#define instrument_write(a, size) do { \
-   void *__a = (void *)(a);            \
-   long __size = size;                 \
-   __asan_storeN(__a, __size);         \
+#define instrument_write(a, size) do {  \
+    void *__a = (void *)(a);            \
+    long __size = size;                 \
+    __asan_storeN(__a, __size);         \
 } while (0)
 
 /* Notify sanitizer runtime about an upcoming read/write access. */
