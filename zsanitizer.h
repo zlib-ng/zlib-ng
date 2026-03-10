@@ -31,8 +31,8 @@
  */
 #ifdef Z_ADDRESS_SANITIZER
 #  ifndef __cplusplus
-void __asan_loadN(void *, long);
-void __asan_storeN(void *, long);
+void __asan_loadN(uintptr_t, uintptr_t);
+void __asan_storeN(uintptr_t, uintptr_t);
 #  endif
 #else
 #  define __asan_loadN(a, size) do { Z_UNUSED(a); Z_UNUSED(size); } while (0)
@@ -46,26 +46,26 @@ void __asan_storeN(void *, long);
 #endif
 
 /* Notify sanitizer runtime about an upcoming read access. */
-#define instrument_read(a, size) do {             \
-    void *__a = (void *)(a);                      \
-    long __size = size;                           \
-    __asan_loadN(__a, __size);                    \
-    __msan_check_mem_is_initialized(__a, __size); \
+#define instrument_read(a, size) do {                     \
+    uintptr_t __a = (uintptr_t)(a);                       \
+    uintptr_t __size = size;                              \
+    __asan_loadN(__a, __size);                            \
+    __msan_check_mem_is_initialized((void *)__a, __size); \
 } while (0)
 
 /* Notify sanitizer runtime about an upcoming write access. */
 #define instrument_write(a, size) do {  \
-    void *__a = (void *)(a);            \
-    long __size = size;                 \
+    uintptr_t __a = (uintptr_t)(a);     \
+    uintptr_t __size = size;            \
     __asan_storeN(__a, __size);         \
 } while (0)
 
 /* Notify sanitizer runtime about an upcoming read/write access. */
-#define instrument_read_write(a, size) do {       \
-    void *__a = (void *)(a);                      \
-    long __size = size;                           \
-    __asan_storeN(__a, __size);                   \
-    __msan_check_mem_is_initialized(__a, __size); \
+#define instrument_read_write(a, size) do {               \
+    uintptr_t __a = (uintptr_t)(a);                       \
+    uintptr_t __size = size;                              \
+    __asan_storeN(__a, __size);                           \
+    __msan_check_mem_is_initialized((void *)__a, __size); \
 } while (0)
 
 #endif
