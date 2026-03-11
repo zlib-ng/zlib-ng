@@ -7,7 +7,7 @@
 #if defined(PPC_FEATURES) || defined(POWER_FEATURES)
 
 #include "zbuild.h"
-#include "power_features.h"
+#include "cpu_features.h"
 
 #ifdef HAVE_SYS_AUXV_H
 #  include <sys/auxv.h>
@@ -20,25 +20,16 @@
 #endif
 
 void Z_INTERNAL power_check_features(struct power_cpu_features *features) {
+#ifdef HAVE_ZNG_GETAUXVAL
 #ifdef PPC_FEATURES
-    unsigned long hwcap;
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-#else
-    hwcap = getauxval(AT_HWCAP);
-#endif
+    unsigned long hwcap = zng_getauxval(AT_HWCAP);
 
     if (hwcap & PPC_FEATURE_HAS_ALTIVEC)
         features->has_altivec = 1;
 #endif
 
 #ifdef POWER_FEATURES
-    unsigned long hwcap2;
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
-    elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
-#else
-    hwcap2 = getauxval(AT_HWCAP2);
-#endif
+    unsigned long hwcap2 = zng_getauxval(AT_HWCAP2);
 
 #ifdef POWER8_VSX
     if (hwcap2 & PPC_FEATURE2_ARCH_2_07)
@@ -47,6 +38,7 @@ void Z_INTERNAL power_check_features(struct power_cpu_features *features) {
 #ifdef POWER9
     if (hwcap2 & PPC_FEATURE2_ARCH_3_00)
         features->has_arch_3_00 = 1;
+#endif
 #endif
 #endif
 }

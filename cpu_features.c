@@ -23,3 +23,19 @@ Z_INTERNAL void cpu_check_features(struct cpu_features *features) {
     loongarch_check_features(&features->loongarch);
 #endif
 }
+
+#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#include <sys/auxv.h>
+
+Z_INTERNAL unsigned long zng_getauxval(unsigned long type) {
+    return getauxval(type);
+}
+#elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
+#include <sys/auxv.h>
+
+Z_INTERNAL unsigned long zng_getauxval(unsigned long type) {
+    unsigned long val = 0;
+    elf_aux_info(type, &val, sizeof(val));
+    return val;
+}
+#endif

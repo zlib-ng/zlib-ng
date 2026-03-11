@@ -42,6 +42,11 @@ struct cpu_features {
 
 void cpu_check_features(struct cpu_features *features);
 
+#if (defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
+Z_INTERNAL unsigned long zng_getauxval(unsigned long type);
+#define HAVE_ZNG_GETAUXVAL
+#endif
+
 #endif
 
 #endif

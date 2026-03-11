@@ -10,7 +10,7 @@
 #ifdef X86_FEATURES
 
 #include "zbuild.h"
-#include "x86_features.h"
+#include "cpu_features.h"
 
 #if defined(HAVE_CPUID_MS)
 #   include <intrin.h>

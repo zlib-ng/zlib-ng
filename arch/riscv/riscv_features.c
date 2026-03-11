@@ -3,11 +3,11 @@
 #define _DEFAULT_SOURCE 1 /* For syscall() */
 
 #include "zbuild.h"
-#include "riscv_features.h"
+#include "cpu_features.h"
 
 #include <sys/utsname.h>
 
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#ifdef HAVE_SYS_AUXV_H
 #  include <sys/auxv.h>
 #endif
 
@@ -55,8 +55,8 @@ static int riscv_check_features_runtime_hwprobe(struct riscv_cpu_features *featu
 }
 
 static int riscv_check_features_runtime_hwcap(struct riscv_cpu_features *features) {
-#if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
-    unsigned long hw_cap = getauxval(AT_HWCAP);
+#ifdef HAVE_ZNG_GETAUXVAL
+    unsigned long hw_cap = zng_getauxval(AT_HWCAP);
 
     features->has_rvv = hw_cap & ISA_V_HWCAP;
     features->has_zbc = hw_cap & ISA_ZBC_HWCAP;
