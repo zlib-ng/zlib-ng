@@ -905,20 +905,30 @@ fi
 cat > $test.c <<EOF
 #include <sys/auxv.h>
 int main() {
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
-  int test;
-  return elf_aux_info(AT_PAGESZ, &test, sizeof(test));
-#else
   return getauxval(0);
-#endif
 }
 EOF
 if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
-  echo "Checking for getauxval() or elf_aux_info() in sys/auxv.h... Yes." | tee -a configure.log
-  CFLAGS="${CFLAGS} -DHAVE_SYS_AUXV_H"
-  SFLAGS="${SFLAGS} -DHAVE_SYS_AUXV_H"
+  echo "Checking for getauxval() in sys/auxv.h... Yes." | tee -a configure.log
+  CFLAGS="${CFLAGS} -DHAVE_GETAUXVAL -DHAVE_SYS_AUXV_H"
+  SFLAGS="${SFLAGS} -DHAVE_GETAUXVAL -DHAVE_SYS_AUXV_H"
 else
-  echo "Checking for getauxval() or elf_aux_info() in sys/auxv.h... No." | tee -a configure.log
+  echo "Checking for getauxval() in sys/auxv.h... No." | tee -a configure.log
+
+  cat > $test.c <<EOF
+#include <sys/auxv.h>
+int main() {
+  int test;
+  return elf_aux_info(AT_PAGESZ, &test, sizeof(test));
+}
+EOF
+  if try $CC $CFLAGS -o $test $test.c $LDSHAREDLIBC; then
+    echo "Checking for elf_aux_info() in sys/auxv.h... Yes." | tee -a configure.log
+    CFLAGS="${CFLAGS} -DHAVE_ELF_AUX_INFO -DHAVE_SYS_AUXV_H"
+    SFLAGS="${SFLAGS} -DHAVE_ELF_AUX_INFO -DHAVE_SYS_AUXV_H"
+  else
+    echo "Checking for elf_aux_info() in sys/auxv.h... No." | tee -a configure.log
+  fi
 fi
 
 # We need to remove consigured files (zconf.h etc) from source directory if building outside of it
@@ -1559,45 +1569,18 @@ EOF
         else
             echo "Checking if -mno-vsx is supported ... No." | tee -a configure.log
         fi
-        cat > $test.c << EOF
-#ifdef __FreeBSD__
-#include <machine/cpu.h>
-#endif
-#include <sys/auxv.h>
-int main() {
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
-  unsigned long hwcap;
-  elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-  return (hwcap & PPC_FEATURE_HAS_ALTIVEC);
-#else
-  return (getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC);
-#endif
-}
-EOF
-        if try $CC -c $CFLAGS -maltivec $test.c; then
-            HAVE_VMX=1
-            echo "Check whether VMX instructions are available ... Yes." | tee -a configure.log
-        else
-            HAVE_VMX=0
-            echo "Check whether VMX instructions are available ... No." | tee -a configure.log
-        fi
 }
 
 check_power8_intrinsics() {
     # Check whether features needed by POWER8 optimisations are available
     cat > $test.c << EOF
-#ifdef __FreeBSD__
-#include <machine/cpu.h>
-#endif
-#include <sys/auxv.h>
-int main() {
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
-  unsigned long hwcap;
-  elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
-  return (hwcap & PPC_FEATURE2_ARCH_2_07);
-#else
-  return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
-#endif
+#include <altivec.h>
+int main(void)
+{
+    vector int a = vec_splats(0);
+    vector int b = vec_splats(0);
+    a = vec_add(a, b);
+    return 0;
 }
 EOF
     if test $buildpower8 -eq 1 && try $CC -c $CFLAGS -mcpu=power8 $test.c; then
@@ -1612,18 +1595,13 @@ EOF
 check_power9_intrinsics() {
     # Check whether features needed by POWER9 optimisations are available
     cat > $test.c << EOF
-#ifdef __FreeBSD__
-#include <machine/cpu.h>
-#endif
-#include <sys/auxv.h>
-int main() {
-#if defined(__FreeBSD__) || defined(__OpenBSD__)
-  unsigned long hwcap;
-  elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
-  return (hwcap & PPC_FEATURE2_ARCH_3_00);
-#else
-  return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_3_00);
-#endif
+#include <altivec.h>
+int main(void)
+{
+    vector int a = vec_splats(0);
+    vector int b = vec_splats(0);
+    a = vec_add(a, b);
+    return 0;
 }
 EOF
     if test $buildpower9 -eq 1 && try $CC -c $CFLAGS -mcpu=power9 $test.c; then
@@ -1896,7 +1874,6 @@ case "${ARCH}" in
         if test $without_optimizations -eq 0; then
             CFLAGS="${CFLAGS} -DX86_FEATURES"
             SFLAGS="${SFLAGS} -DX86_FEATURES"
-
             ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} x86_features.o"
             ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} x86_features.lo"
 
@@ -2149,20 +2126,16 @@ EOF
         ARCHDIR=arch/power
 
         if test $without_optimizations -eq 0; then
+            CFLAGS="${CFLAGS} -DPOWER_FEATURES"
+            SFLAGS="${SFLAGS} -DPOWER_FEATURES"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power_features.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power_features.lo"
 
             check_ppc_intrinsics
             check_power8_intrinsics
             check_power9_intrinsics
 
-            if test $HAVE_VMX -eq 1; then
-                CFLAGS="${CFLAGS} -DPPC_FEATURES"
-                SFLAGS="${SFLAGS} -DPPC_FEATURES"
-            fi
-            if test $HAVE_VMX -eq 1 -o $HAVE_POWER8_INTRIN -eq 1; then
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} power_features.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} power_features.lo"
-            fi
-            if test $HAVE_VMX -eq 1 -a $HAVE_ALTIVEC_INTRIN -eq 1; then
+            if test $HAVE_ALTIVEC_INTRIN -eq 1; then
                 CFLAGS="${CFLAGS} -DPPC_VMX"
                 SFLAGS="${SFLAGS} -DPPC_VMX"
 
@@ -2170,8 +2143,8 @@ EOF
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_vmx.lo slide_hash_vmx.lo"
             fi
             if test $HAVE_POWER8_INTRIN -eq 1; then
-                CFLAGS="${CFLAGS} -DPOWER8_VSX -DPOWER_FEATURES"
-                SFLAGS="${SFLAGS} -DPOWER8_VSX -DPOWER_FEATURES"
+                CFLAGS="${CFLAGS} -DPOWER8_VSX"
+                SFLAGS="${SFLAGS} -DPOWER8_VSX"
 
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_power8.o chunkset_power8.o slide_hash_power8.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_power8.lo chunkset_power8.lo slide_hash_power8.lo"
@@ -2185,8 +2158,8 @@ EOF
                 esac
             fi
             if test $HAVE_POWER9_INTRIN -eq 1; then
-                CFLAGS="${CFLAGS} -DPOWER9 -DPOWER_FEATURES"
-                SFLAGS="${SFLAGS} -DPOWER9 -DPOWER_FEATURES"
+                CFLAGS="${CFLAGS} -DPOWER9"
+                SFLAGS="${SFLAGS} -DPOWER9"
 
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} compare256_power9.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} compare256_power9.lo"
@@ -2198,29 +2171,29 @@ EOF
         ARCHDIR=arch/riscv
 
         if test $without_optimizations -eq 0; then
-            if test $buildrvv -eq 1 -o $buildzbc -eq 1; then
-                CFLAGS="${CFLAGS} -DRISCV_FEATURES"
-                SFLAGS="${SFLAGS} -DRISCV_FEATURES"
+            CFLAGS="${CFLAGS} -DRISCV_FEATURES"
+            SFLAGS="${SFLAGS} -DRISCV_FEATURES"
 
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} riscv_features.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} riscv_features.lo"
-                cat > $test.c <<EOF
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} riscv_features.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} riscv_features.lo"
+
+            cat > $test.c <<EOF
 #include <asm/hwprobe.h>
 EOF
-                if try $CC -c $CFLAGS $test.c; then
-                    echo "Checking for asm/hwprobe.h... Yes." | tee -a configure.log
-                    CFLAGS="${CFLAGS} -DHAVE_ASM_HWPROBE_H"
-                    SFLAGS="${SFLAGS} -DHAVE_ASM_HWPROBE_H"
-                else
-                    echo "Checking for asm/hwprobe.h... No." | tee -a configure.log
-                fi
+            if try $CC -c $CFLAGS $test.c; then
+                echo "Checking for asm/hwprobe.h... Yes." | tee -a configure.log
+                CFLAGS="${CFLAGS} -DHAVE_ASM_HWPROBE_H"
+                SFLAGS="${SFLAGS} -DHAVE_ASM_HWPROBE_H"
+            else
+                echo "Checking for asm/hwprobe.h... No." | tee -a configure.log
             fi
+
             if test $buildrvv -eq 1; then
             check_rvv_compiler_flag
 
                 if test $HAVE_RVV_INTRIN -eq 1; then
-                    CFLAGS="${CFLAGS} -DRISCV_FEATURES -DRISCV_RVV"
-                    SFLAGS="${SFLAGS} -DRISCV_FEATURES -DRISCV_RVV"
+                    CFLAGS="${CFLAGS} -DRISCV_RVV"
+                    SFLAGS="${SFLAGS} -DRISCV_RVV"
 
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_rvv.o chunkset_rvv.o compare256_rvv.o slide_hash_rvv.o"
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_rvv.lo chunkset_rvv.lo compare256_rvv.lo slide_hash_rvv.lo"
@@ -2246,12 +2219,10 @@ EOF
         ARCHDIR=arch/s390
 
         if test $without_optimizations -eq 0; then
-            if test $buildcrc32vx -eq 1; then
-                CFLAGS="${CFLAGS} -DS390_FEATURES"
-                SFLAGS="${SFLAGS} -DS390_FEATURES"
-                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} s390_features.o"
-                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} s390_features.lo"
-            fi
+            CFLAGS="${CFLAGS} -DS390_FEATURES"
+            SFLAGS="${SFLAGS} -DS390_FEATURES"
+            ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} s390_features.o"
+            ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} s390_features.lo"
 
             if test $builddfltccdeflate -eq 1; then
                 CFLAGS="${CFLAGS} -DS390_DFLTCC_DEFLATE"

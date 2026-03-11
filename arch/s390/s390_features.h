@@ -11,4 +11,4 @@ struct s390_cpu_features {
 
 void Z_INTERNAL s390_check_features(struct s390_cpu_features *features);
 
-#endif
+#endif /* S390_FEATURES_H_ */

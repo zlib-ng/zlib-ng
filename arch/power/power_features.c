@@ -4,7 +4,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#if defined(PPC_FEATURES) || defined(POWER_FEATURES)
+#ifdef POWER_FEATURES
 
 #include "zbuild.h"
 #include "cpu_features.h"
@@ -12,7 +12,7 @@
 #ifdef HAVE_SYS_AUXV_H
 #  include <sys/auxv.h>
 #endif
-#ifdef POWER_NEED_AUXVEC_H
+#ifdef HAVE_LINUX_AUXVEC_H
 #  include <linux/auxvec.h>
 #endif
 #ifdef __FreeBSD__
@@ -21,14 +21,14 @@
 
 void Z_INTERNAL power_check_features(struct power_cpu_features *features) {
 #ifdef HAVE_ZNG_GETAUXVAL
-#ifdef PPC_FEATURES
+#ifdef PPC_VMX
     unsigned long hwcap = zng_getauxval(AT_HWCAP);
 
     if (hwcap & PPC_FEATURE_HAS_ALTIVEC)
         features->has_altivec = 1;
 #endif
 
-#ifdef POWER_FEATURES
+#if defined(POWER8_VSX) || defined(POWER9)
     unsigned long hwcap2 = zng_getauxval(AT_HWCAP2);
 
 #ifdef POWER8_VSX
