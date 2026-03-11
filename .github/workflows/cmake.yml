@@ -333,17 +333,17 @@ jobs:
             gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcov' || 's390x-linux-gnu-gcov' }}
             coverage: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_gcc_s390x_dfltcc' || 'ubuntu_gcc_s390x_dfltcc' }}
 
-          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang' || 'Ubuntu GCC' }} S390X DFLTCC ASAN
+          - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang S390X DFLTCC ASAN' || 'Ubuntu GCC S390X DFLTCC' }}
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'gcc' }}
             cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'g++' }}
             cmake-args: >-
-              ${{ github.repository != 'zlib-ng/zlib-ng' && '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake' || '' }}
-              -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON -DWITH_SANITIZER=Address
+              ${{ github.repository == 'zlib-ng/zlib-ng' && '-DWITH_SANITIZER=Address' || '-DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake' }}
+              -DWITH_DFLTCC_DEFLATE=ON -DWITH_DFLTCC_INFLATE=ON
             packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             asan-options: detect_leaks=0
             gcov-exec: ${{ github.repository == 'zlib-ng/zlib-ng' && 'llvm-cov gcov' || 's390x-linux-gnu-gcov' }}
-            coverage: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_clang_s390x_dfltcc_asan' || 'ubuntu_gcc_s390x_dfltcc_asan' }}
+            coverage: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_clang_s390x_dfltcc_asan' || 'ubuntu_gcc_s390x_dfltcc' }}
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang' || 'Ubuntu GCC' }} S390X DFLTCC UBSAN
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
