@@ -333,7 +333,14 @@ Z_INTERNAL uint32_t adler32_neon(uint32_t adler, const uint8_t *src, size_t len)
 }
 
 Z_INTERNAL uint32_t adler32_copy_neon(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
+#if OPTIMAL_CMP >= 32
     return adler32_copy_impl(adler, dst, src, len, 1);
+#else
+    /* Without unaligned access, interleaved stores get decomposed into byte ops */
+    adler = adler32_neon(adler, src, len);
+    memcpy(dst, src, len);
+    return adler;
+#endif
 }
 
 #endif
