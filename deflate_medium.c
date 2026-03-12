@@ -22,23 +22,24 @@ struct match {
 
 static int emit_match(deflate_state *s, struct match match) {
     int bflush = 0;
+    uint32_t match_len = match.match_length;
+
+    /* None of the below functions care about s->lookahead, so decrement it early */
+    s->lookahead -= match_len;
 
     /* matches that are not long enough we need to emit as literals */
-    if (match.match_length < WANT_MIN_MATCH) {
-        while (match.match_length) {
+    if (match_len < WANT_MIN_MATCH) {
+        while (match_len) {
             bflush += zng_tr_tally_lit(s, s->window[match.strstart]);
-            s->lookahead--;
+            match_len--;
             match.strstart++;
-            match.match_length--;
         }
         return bflush;
     }
 
-    check_match(s, match.strstart, match.match_start, match.match_length);
+    check_match(s, match.strstart, match.match_start, match_len);
 
-    bflush += zng_tr_tally_dist(s, match.strstart - match.match_start, match.match_length - STD_MIN_MATCH);
-
-    s->lookahead -= match.match_length;
+    bflush += zng_tr_tally_dist(s, match.strstart - match.match_start, match_len - STD_MIN_MATCH);
     return bflush;
 }
 
