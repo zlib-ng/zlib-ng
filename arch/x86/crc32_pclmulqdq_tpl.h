@@ -53,7 +53,8 @@
 #  define z128_xor3_epi64(a, b, c)    _mm_xor_si128(_mm_xor_si128(a, b), c)
 #endif
 
-static inline void fold_1(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3, const __m128i xmm_fold4) {
+static inline void fold_state_1(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3,
+                                const __m128i xmm_fold4) {
     __m128i x_low  = _mm_clmulepi64_si128(*xmm_crc0, xmm_fold4, 0x01);
     __m128i x_high = _mm_clmulepi64_si128(*xmm_crc0, xmm_fold4, 0x10);
 
@@ -63,7 +64,8 @@ static inline void fold_1(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc
     *xmm_crc3 = _mm_xor_si128(x_low, x_high);
 }
 
-static inline void fold_2(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3, const __m128i xmm_fold4) {
+static inline void fold_state_2(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3,
+                                const __m128i xmm_fold4) {
     __m128i x_low0  = _mm_clmulepi64_si128(*xmm_crc0, xmm_fold4, 0x01);
     __m128i x_high0 = _mm_clmulepi64_si128(*xmm_crc0, xmm_fold4, 0x10);
     __m128i x_low1  = _mm_clmulepi64_si128(*xmm_crc1, xmm_fold4, 0x01);
@@ -75,7 +77,8 @@ static inline void fold_2(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc
     *xmm_crc3 = _mm_xor_si128(x_low1, x_high1);
 }
 
-static inline void fold_3(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3, const __m128i xmm_fold4) {
+static inline void fold_state_3(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3,
+                                const __m128i xmm_fold4) {
     __m128i x_low0  = _mm_clmulepi64_si128(*xmm_crc0, xmm_fold4, 0x01);
     __m128i x_high0 = _mm_clmulepi64_si128(*xmm_crc0, xmm_fold4, 0x10);
     __m128i x_low1  = _mm_clmulepi64_si128(*xmm_crc1, xmm_fold4, 0x01);
@@ -89,7 +92,8 @@ static inline void fold_3(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc
     *xmm_crc3 = _mm_xor_si128(x_low2, x_high2);
 }
 
-static inline void fold_4(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3, const __m128i xmm_fold4) {
+static inline void fold_state_4(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3,
+                                const __m128i xmm_fold4) {
     __m128i x_low0  = _mm_clmulepi64_si128(*xmm_crc0, xmm_fold4, 0x01);
     __m128i x_high0 = _mm_clmulepi64_si128(*xmm_crc0, xmm_fold4, 0x10);
     __m128i x_low1  = _mm_clmulepi64_si128(*xmm_crc1, xmm_fold4, 0x01);
@@ -105,7 +109,7 @@ static inline void fold_4(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc
     *xmm_crc3 = _mm_xor_si128(x_low3, x_high3);
 }
 
-static inline void fold_12(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
+static inline void fold_state_12(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3) {
     const __m128i xmm_fold12 = _mm_set_epi64x(0x596C8D81, 0xF5E48C85);
     __m128i x_low0  = _mm_clmulepi64_si128(*xmm_crc0, xmm_fold12, 0x01);
     __m128i x_high0 = _mm_clmulepi64_si128(*xmm_crc0, xmm_fold12, 0x10);
@@ -124,8 +128,9 @@ static inline void fold_12(__m128i *xmm_crc0, __m128i *xmm_crc1, __m128i *xmm_cr
 
 /* 512-bit fold function requires AVX-512F */
 #if defined(X86_VPCLMULQDQ) && defined(__AVX512F__)
-static inline void fold_16(__m512i *zmm_crc0, __m512i *zmm_crc1, __m512i *zmm_crc2, __m512i *zmm_crc3,
-    const __m512i zmm_t0, const __m512i zmm_t1, const __m512i zmm_t2, const __m512i zmm_t3, const __m512i zmm_fold16) {
+static inline void fold_state_16(__m512i *zmm_crc0, __m512i *zmm_crc1, __m512i *zmm_crc2, __m512i *zmm_crc3,
+                                 const __m512i zmm_t0, const __m512i zmm_t1, const __m512i zmm_t2,
+                                 const __m512i zmm_t3, const __m512i zmm_fold16) {
     __m512i z_low0  = _mm512_clmulepi64_epi128(*zmm_crc0, zmm_fold16, 0x01);
     __m512i z_high0 = _mm512_clmulepi64_epi128(*zmm_crc0, zmm_fold16, 0x10);
     __m512i z_low1  = _mm512_clmulepi64_epi128(*zmm_crc1, zmm_fold16, 0x01);
@@ -140,11 +145,85 @@ static inline void fold_16(__m512i *zmm_crc0, __m512i *zmm_crc1, __m512i *zmm_cr
     *zmm_crc2 = z512_xor3_epi64(z_low2, z_high2, zmm_t2);
     *zmm_crc3 = z512_xor3_epi64(z_low3, z_high3, zmm_t3);
 }
+
+static inline void fold_block_16(const uint8_t **src, uint8_t **dst, size_t *len, __m128i *xmm_crc0,
+                                 __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3, const int COPY) {
+    *len -= 256;
+
+    __m512i zmm_crc0, zmm_crc1, zmm_crc2, zmm_crc3;
+    __m512i zmm_t0, zmm_t1, zmm_t2, zmm_t3;
+    __m512i z_low0, z_high0;
+    const __m512i zmm_fold4 = _mm512_set4_epi32(
+        0x00000001, 0x54442bd4, 0x00000001, 0xc6e41596);
+    const __m512i zmm_fold16 = _mm512_set4_epi32(
+        0x00000001, 0x1542778a, 0x00000001, 0x322d1430);
+
+    zmm_crc0 = _mm512_loadu_si512((__m512i *)*src);
+    zmm_crc1 = _mm512_loadu_si512((__m512i *)*src + 1);
+    zmm_crc2 = _mm512_loadu_si512((__m512i *)*src + 2);
+    zmm_crc3 = _mm512_loadu_si512((__m512i *)*src + 3);
+    *src += 256;
+    if (COPY) {
+        _mm512_storeu_si512((__m512i *)*dst, zmm_crc0);
+        _mm512_storeu_si512((__m512i *)*dst + 1, zmm_crc1);
+        _mm512_storeu_si512((__m512i *)*dst + 2, zmm_crc2);
+        _mm512_storeu_si512((__m512i *)*dst + 3, zmm_crc3);
+        *dst += 256;
+    }
+
+    // Fold existing xmm state into first 64 bytes
+    zmm_t0 = _mm512_castsi128_si512(*xmm_crc0);
+    zmm_t0 = z512_inserti64x2(zmm_t0, *xmm_crc1, 1);
+    zmm_t0 = z512_inserti64x2(zmm_t0, *xmm_crc2, 2);
+    zmm_t0 = z512_inserti64x2(zmm_t0, *xmm_crc3, 3);
+
+    z_low0 = _mm512_clmulepi64_epi128(zmm_t0, zmm_fold4, 0x01);
+    z_high0 = _mm512_clmulepi64_epi128(zmm_t0, zmm_fold4, 0x10);
+    zmm_crc0 = z512_xor3_epi64(zmm_crc0, z_low0, z_high0);
+
+    while (*len >= 256) {
+        *len -= 256;
+        zmm_t0 = _mm512_loadu_si512((__m512i *)*src);
+        zmm_t1 = _mm512_loadu_si512((__m512i *)*src + 1);
+        zmm_t2 = _mm512_loadu_si512((__m512i *)*src + 2);
+        zmm_t3 = _mm512_loadu_si512((__m512i *)*src + 3);
+        *src += 256;
+
+        fold_state_16(&zmm_crc0, &zmm_crc1, &zmm_crc2, &zmm_crc3, zmm_t0, zmm_t1, zmm_t2, zmm_t3, zmm_fold16);
+        if (COPY) {
+            _mm512_storeu_si512((__m512i *)*dst, zmm_t0);
+            _mm512_storeu_si512((__m512i *)*dst + 1, zmm_t1);
+            _mm512_storeu_si512((__m512i *)*dst + 2, zmm_t2);
+            _mm512_storeu_si512((__m512i *)*dst + 3, zmm_t3);
+            *dst += 256;
+        }
+    }
+
+    // zmm_crc[0,1,2,3] -> zmm_crc0
+    z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
+    z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
+    zmm_crc0 = z512_xor3_epi64(z_low0, z_high0, zmm_crc1);
+
+    z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
+    z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
+    zmm_crc0 = z512_xor3_epi64(z_low0, z_high0, zmm_crc2);
+
+    z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
+    z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
+    zmm_crc0 = z512_xor3_epi64(z_low0, z_high0, zmm_crc3);
+
+    // zmm_crc0 -> xmm_crc[0, 1, 2, 3]
+    *xmm_crc0 = z512_extracti64x2(zmm_crc0, 0);
+    *xmm_crc1 = z512_extracti64x2(zmm_crc0, 1);
+    *xmm_crc2 = z512_extracti64x2(zmm_crc0, 2);
+    *xmm_crc3 = z512_extracti64x2(zmm_crc0, 3);
+}
 #endif
 /* 256-bit fold function for VPCLMULQDQ without AVX-512 */
 #if defined(X86_VPCLMULQDQ) && !defined(__AVX512F__)
-static inline void fold_8(__m256i *ymm_crc0, __m256i *ymm_crc1, __m256i *ymm_crc2, __m256i *ymm_crc3,
-    const __m256i ymm_t0, const __m256i ymm_t1, const __m256i ymm_t2, const __m256i ymm_t3, const __m256i ymm_fold8) {
+static inline void fold_state_8(__m256i *ymm_crc0, __m256i *ymm_crc1, __m256i *ymm_crc2, __m256i *ymm_crc3,
+                                const __m256i ymm_t0, const __m256i ymm_t1, const __m256i ymm_t2,
+                                const __m256i ymm_t3, const __m256i ymm_fold8) {
     __m256i y_low0  = _mm256_clmulepi64_epi128(*ymm_crc0, ymm_fold8, 0x01);
     __m256i y_high0 = _mm256_clmulepi64_epi128(*ymm_crc0, ymm_fold8, 0x10);
     __m256i y_low1  = _mm256_clmulepi64_epi128(*ymm_crc1, ymm_fold8, 0x01);
@@ -159,9 +238,100 @@ static inline void fold_8(__m256i *ymm_crc0, __m256i *ymm_crc1, __m256i *ymm_crc
     *ymm_crc2 = z256_xor3_epi64(y_low2, y_high2, ymm_t2);
     *ymm_crc3 = z256_xor3_epi64(y_low3, y_high3, ymm_t3);
 }
+
+static inline void fold_block_8(const uint8_t **src, uint8_t **dst, size_t *len, __m128i *xmm_crc0,
+                                __m128i *xmm_crc1, __m128i *xmm_crc2, __m128i *xmm_crc3,
+                                const __m128i xmm_fold4, const int COPY) {
+    *len -= 128;
+
+    __m256i ymm_crc0, ymm_crc1, ymm_crc2, ymm_crc3;
+    __m256i ymm_t0, ymm_t1, ymm_t2, ymm_t3;
+    __m256i y_low0, y_high0;
+    const __m256i ymm_fold4 = _mm256_set_epi32(
+        0x00000001, 0x54442bd4, 0x00000001, 0xc6e41596,
+        0x00000001, 0x54442bd4, 0x00000001, 0xc6e41596);
+    const __m256i ymm_fold8 = _mm256_set_epi32(
+        0x00000001, 0xe88ef372, 0x00000001, 0x4a7fe880,
+        0x00000001, 0xe88ef372, 0x00000001, 0x4a7fe880);
+
+    ymm_crc0 = _mm256_loadu_si256((__m256i *)*src);
+    ymm_crc1 = _mm256_loadu_si256((__m256i *)*src + 1);
+    ymm_crc2 = _mm256_loadu_si256((__m256i *)*src + 2);
+    ymm_crc3 = _mm256_loadu_si256((__m256i *)*src + 3);
+    *src += 128;
+    if (COPY) {
+        _mm256_storeu_si256((__m256i *)*dst, ymm_crc0);
+        _mm256_storeu_si256((__m256i *)*dst + 1, ymm_crc1);
+        _mm256_storeu_si256((__m256i *)*dst + 2, ymm_crc2);
+        _mm256_storeu_si256((__m256i *)*dst + 3, ymm_crc3);
+        *dst += 128;
+    }
+
+    // Fold existing xmm state into first 32 bytes
+    ymm_t0 = _mm256_castsi128_si256(*xmm_crc0);
+    ymm_t0 = _mm256_inserti128_si256(ymm_t0, *xmm_crc1, 1);
+
+    y_low0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x01);
+    y_high0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x10);
+    ymm_crc0 = z256_xor3_epi64(ymm_crc0, y_low0, y_high0);
+
+    ymm_t0 = _mm256_castsi128_si256(*xmm_crc2);
+    ymm_t0 = _mm256_inserti128_si256(ymm_t0, *xmm_crc3, 1);
+
+    y_low0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x01);
+    y_high0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x10);
+    ymm_crc1 = z256_xor3_epi64(ymm_crc1, y_low0, y_high0);
+
+    while (*len >= 128) {
+        *len -= 128;
+        ymm_t0 = _mm256_loadu_si256((__m256i *)*src);
+        ymm_t1 = _mm256_loadu_si256((__m256i *)*src + 1);
+        ymm_t2 = _mm256_loadu_si256((__m256i *)*src + 2);
+        ymm_t3 = _mm256_loadu_si256((__m256i *)*src + 3);
+        *src += 128;
+
+        fold_state_8(&ymm_crc0, &ymm_crc1, &ymm_crc2, &ymm_crc3, ymm_t0, ymm_t1, ymm_t2, ymm_t3, ymm_fold8);
+        if (COPY) {
+            _mm256_storeu_si256((__m256i *)*dst, ymm_t0);
+            _mm256_storeu_si256((__m256i *)*dst + 1, ymm_t1);
+            _mm256_storeu_si256((__m256i *)*dst + 2, ymm_t2);
+            _mm256_storeu_si256((__m256i *)*dst + 3, ymm_t3);
+            *dst += 128;
+        }
+    }
+
+    // Extract 8 x 128-bit lanes from 4 x 256-bit registers
+    __m128i xmm_a0 = _mm256_castsi256_si128(ymm_crc0);
+    __m128i xmm_a1 = _mm256_extracti128_si256(ymm_crc0, 1);
+    __m128i xmm_a2 = _mm256_castsi256_si128(ymm_crc1);
+    __m128i xmm_a3 = _mm256_extracti128_si256(ymm_crc1, 1);
+    __m128i xmm_a4 = _mm256_castsi256_si128(ymm_crc2);
+    __m128i xmm_a5 = _mm256_extracti128_si256(ymm_crc2, 1);
+    __m128i xmm_a6 = _mm256_castsi256_si128(ymm_crc3);
+    __m128i xmm_a7 = _mm256_extracti128_si256(ymm_crc3, 1);
+
+    // Fold 8 -> 4 using xmm_fold4 (fold by 64 bytes = gap between lane N and lane N+4)
+    __m128i x_low, x_high;
+    x_low  = _mm_clmulepi64_si128(xmm_a0, xmm_fold4, 0x01);
+    x_high = _mm_clmulepi64_si128(xmm_a0, xmm_fold4, 0x10);
+    *xmm_crc0 = z128_xor3_epi64(x_low, x_high, xmm_a4);
+
+    x_low  = _mm_clmulepi64_si128(xmm_a1, xmm_fold4, 0x01);
+    x_high = _mm_clmulepi64_si128(xmm_a1, xmm_fold4, 0x10);
+    *xmm_crc1 = z128_xor3_epi64(x_low, x_high, xmm_a5);
+
+    x_low  = _mm_clmulepi64_si128(xmm_a2, xmm_fold4, 0x01);
+    x_high = _mm_clmulepi64_si128(xmm_a2, xmm_fold4, 0x10);
+    *xmm_crc2 = z128_xor3_epi64(x_low, x_high, xmm_a6);
+
+    x_low  = _mm_clmulepi64_si128(xmm_a3, xmm_fold4, 0x01);
+    x_high = _mm_clmulepi64_si128(xmm_a3, xmm_fold4, 0x10);
+    *xmm_crc3 = z128_xor3_epi64(x_low, x_high, xmm_a7);
+}
 #endif
 
-Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
+Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len,
+                                              const int COPY) {
     size_t copy_len = len;
     if (len >= 16) {
         /* Calculate 16-byte alignment offset */
@@ -198,7 +368,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t0 = _mm_load_si128((__m128i *)src);
         src += 16;
 
-        fold_1(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_1(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             dst += 16;
@@ -206,168 +376,14 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_crc3 = z128_xor3_epi64(xmm_crc3, xmm_t0, _mm_cvtsi32_si128(crc));
     }
 
-/* 512-bit VPCLMULQDQ path requires AVX-512F */
 #if defined(X86_VPCLMULQDQ) && defined(__AVX512F__)
-    if (len >= 256) {
-        len -= 256;
-
-        __m512i zmm_crc0, zmm_crc1, zmm_crc2, zmm_crc3;
-        __m512i zmm_t0, zmm_t1, zmm_t2, zmm_t3;
-        __m512i z_low0, z_high0;
-        const __m512i zmm_fold4 = _mm512_set4_epi32(
-            0x00000001, 0x54442bd4, 0x00000001, 0xc6e41596);
-        const __m512i zmm_fold16 = _mm512_set4_epi32(
-            0x00000001, 0x1542778a, 0x00000001, 0x322d1430);
-
-        zmm_crc0 = _mm512_loadu_si512((__m512i *)src);
-        zmm_crc1 = _mm512_loadu_si512((__m512i *)src + 1);
-        zmm_crc2 = _mm512_loadu_si512((__m512i *)src + 2);
-        zmm_crc3 = _mm512_loadu_si512((__m512i *)src + 3);
-        src += 256;
-        if (COPY) {
-            _mm512_storeu_si512((__m512i *)dst, zmm_crc0);
-            _mm512_storeu_si512((__m512i *)dst + 1, zmm_crc1);
-            _mm512_storeu_si512((__m512i *)dst + 2, zmm_crc2);
-            _mm512_storeu_si512((__m512i *)dst + 3, zmm_crc3);
-            dst += 256;
-        }
-
-        // Fold existing xmm state into first 64 bytes
-        zmm_t0 = _mm512_castsi128_si512(xmm_crc0);
-        zmm_t0 = z512_inserti64x2(zmm_t0, xmm_crc1, 1);
-        zmm_t0 = z512_inserti64x2(zmm_t0, xmm_crc2, 2);
-        zmm_t0 = z512_inserti64x2(zmm_t0, xmm_crc3, 3);
-
-        z_low0 = _mm512_clmulepi64_epi128(zmm_t0, zmm_fold4, 0x01);
-        z_high0 = _mm512_clmulepi64_epi128(zmm_t0, zmm_fold4, 0x10);
-        zmm_crc0 = z512_xor3_epi64(zmm_crc0, z_low0, z_high0);
-
-        while (len >= 256) {
-            len -= 256;
-            zmm_t0 = _mm512_loadu_si512((__m512i *)src);
-            zmm_t1 = _mm512_loadu_si512((__m512i *)src + 1);
-            zmm_t2 = _mm512_loadu_si512((__m512i *)src + 2);
-            zmm_t3 = _mm512_loadu_si512((__m512i *)src + 3);
-            src += 256;
-
-            fold_16(&zmm_crc0, &zmm_crc1, &zmm_crc2, &zmm_crc3, zmm_t0, zmm_t1, zmm_t2, zmm_t3, zmm_fold16);
-            if (COPY) {
-                _mm512_storeu_si512((__m512i *)dst, zmm_t0);
-                _mm512_storeu_si512((__m512i *)dst + 1, zmm_t1);
-                _mm512_storeu_si512((__m512i *)dst + 2, zmm_t2);
-                _mm512_storeu_si512((__m512i *)dst + 3, zmm_t3);
-                dst += 256;
-            }
-        }
-
-        // zmm_crc[0,1,2,3] -> zmm_crc0
-        z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
-        z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-        zmm_crc0 = z512_xor3_epi64(z_low0, z_high0, zmm_crc1);
-
-        z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
-        z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-        zmm_crc0 = z512_xor3_epi64(z_low0, z_high0, zmm_crc2);
-
-        z_low0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x01);
-        z_high0 = _mm512_clmulepi64_epi128(zmm_crc0, zmm_fold4, 0x10);
-        zmm_crc0 = z512_xor3_epi64(z_low0, z_high0, zmm_crc3);
-
-        // zmm_crc0 -> xmm_crc[0, 1, 2, 3]
-        xmm_crc0 = z512_extracti64x2(zmm_crc0, 0);
-        xmm_crc1 = z512_extracti64x2(zmm_crc0, 1);
-        xmm_crc2 = z512_extracti64x2(zmm_crc0, 2);
-        xmm_crc3 = z512_extracti64x2(zmm_crc0, 3);
-    }
-/* 256-bit VPCLMULQDQ path */
+    /* 512-bit VPCLMULQDQ path requires AVX-512F */
+    if (len >= 256)
+        fold_block_16(&src, &dst, &len, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, COPY);
 #elif defined(X86_VPCLMULQDQ)
-    if (len >= 128) {
-        len -= 128;
-
-        __m256i ymm_crc0, ymm_crc1, ymm_crc2, ymm_crc3;
-        __m256i ymm_t0, ymm_t1, ymm_t2, ymm_t3;
-        __m256i y_low0, y_high0;
-        const __m256i ymm_fold4 = _mm256_set_epi32(
-            0x00000001, 0x54442bd4, 0x00000001, 0xc6e41596,
-            0x00000001, 0x54442bd4, 0x00000001, 0xc6e41596);
-        const __m256i ymm_fold8 = _mm256_set_epi32(
-            0x00000001, 0xe88ef372, 0x00000001, 0x4a7fe880,
-            0x00000001, 0xe88ef372, 0x00000001, 0x4a7fe880);
-
-        ymm_crc0 = _mm256_loadu_si256((__m256i *)src);
-        ymm_crc1 = _mm256_loadu_si256((__m256i *)src + 1);
-        ymm_crc2 = _mm256_loadu_si256((__m256i *)src + 2);
-        ymm_crc3 = _mm256_loadu_si256((__m256i *)src + 3);
-        src += 128;
-        if (COPY) {
-            _mm256_storeu_si256((__m256i *)dst, ymm_crc0);
-            _mm256_storeu_si256((__m256i *)dst + 1, ymm_crc1);
-            _mm256_storeu_si256((__m256i *)dst + 2, ymm_crc2);
-            _mm256_storeu_si256((__m256i *)dst + 3, ymm_crc3);
-            dst += 128;
-        }
-
-        // Fold existing xmm state into first 32 bytes
-        ymm_t0 = _mm256_castsi128_si256(xmm_crc0);
-        ymm_t0 = _mm256_inserti128_si256(ymm_t0, xmm_crc1, 1);
-
-        y_low0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x01);
-        y_high0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x10);
-        ymm_crc0 = z256_xor3_epi64(ymm_crc0, y_low0, y_high0);
-
-        ymm_t0 = _mm256_castsi128_si256(xmm_crc2);
-        ymm_t0 = _mm256_inserti128_si256(ymm_t0, xmm_crc3, 1);
-
-        y_low0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x01);
-        y_high0 = _mm256_clmulepi64_epi128(ymm_t0, ymm_fold4, 0x10);
-        ymm_crc1 = z256_xor3_epi64(ymm_crc1, y_low0, y_high0);
-
-        while (len >= 128) {
-            len -= 128;
-            ymm_t0 = _mm256_loadu_si256((__m256i *)src);
-            ymm_t1 = _mm256_loadu_si256((__m256i *)src + 1);
-            ymm_t2 = _mm256_loadu_si256((__m256i *)src + 2);
-            ymm_t3 = _mm256_loadu_si256((__m256i *)src + 3);
-            src += 128;
-
-            fold_8(&ymm_crc0, &ymm_crc1, &ymm_crc2, &ymm_crc3, ymm_t0, ymm_t1, ymm_t2, ymm_t3, ymm_fold8);
-            if (COPY) {
-                _mm256_storeu_si256((__m256i *)dst, ymm_t0);
-                _mm256_storeu_si256((__m256i *)dst + 1, ymm_t1);
-                _mm256_storeu_si256((__m256i *)dst + 2, ymm_t2);
-                _mm256_storeu_si256((__m256i *)dst + 3, ymm_t3);
-                dst += 128;
-            }
-        }
-
-        // Extract 8 x 128-bit lanes from 4 x 256-bit registers
-        __m128i xmm_a0 = _mm256_castsi256_si128(ymm_crc0);
-        __m128i xmm_a1 = _mm256_extracti128_si256(ymm_crc0, 1);
-        __m128i xmm_a2 = _mm256_castsi256_si128(ymm_crc1);
-        __m128i xmm_a3 = _mm256_extracti128_si256(ymm_crc1, 1);
-        __m128i xmm_a4 = _mm256_castsi256_si128(ymm_crc2);
-        __m128i xmm_a5 = _mm256_extracti128_si256(ymm_crc2, 1);
-        __m128i xmm_a6 = _mm256_castsi256_si128(ymm_crc3);
-        __m128i xmm_a7 = _mm256_extracti128_si256(ymm_crc3, 1);
-
-        // Fold 8 -> 4 using xmm_fold4 (fold by 64 bytes = gap between lane N and lane N+4)
-        __m128i x_low, x_high;
-        x_low  = _mm_clmulepi64_si128(xmm_a0, xmm_fold4, 0x01);
-        x_high = _mm_clmulepi64_si128(xmm_a0, xmm_fold4, 0x10);
-        xmm_crc0 = z128_xor3_epi64(x_low, x_high, xmm_a4);
-
-        x_low  = _mm_clmulepi64_si128(xmm_a1, xmm_fold4, 0x01);
-        x_high = _mm_clmulepi64_si128(xmm_a1, xmm_fold4, 0x10);
-        xmm_crc1 = z128_xor3_epi64(x_low, x_high, xmm_a5);
-
-        x_low  = _mm_clmulepi64_si128(xmm_a2, xmm_fold4, 0x01);
-        x_high = _mm_clmulepi64_si128(xmm_a2, xmm_fold4, 0x10);
-        xmm_crc2 = z128_xor3_epi64(x_low, x_high, xmm_a6);
-
-        x_low  = _mm_clmulepi64_si128(xmm_a3, xmm_fold4, 0x01);
-        x_high = _mm_clmulepi64_si128(xmm_a3, xmm_fold4, 0x10);
-        xmm_crc3 = z128_xor3_epi64(x_low, x_high, xmm_a7);
-    }
+    /* 256-bit VPCLMULQDQ path (doesn't require AVX-512F) */
+    if (len >= 128)
+        fold_block_8(&src, &dst, &len, &xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4, COPY);
 #else
     /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398
      * We interleave the PCLMUL-base folds with 8x scaled generator
@@ -409,7 +425,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t2 = _mm_load_si128((__m128i *)src + 2);
         xmm_t3 = _mm_load_si128((__m128i *)src + 3);
 
-        fold_12(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
+        fold_state_12(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
@@ -428,7 +444,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t2 = _mm_load_si128((__m128i *)src + 6);
         xmm_t3 = _mm_load_si128((__m128i *)src + 7);
 
-        fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
@@ -447,7 +463,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t2 = _mm_load_si128((__m128i *)src + 10);
         xmm_t3 = _mm_load_si128((__m128i *)src + 11);
 
-        fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
@@ -466,7 +482,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t2 = _mm_load_si128((__m128i *)src + 14);
         xmm_t3 = _mm_load_si128((__m128i *)src + 15);
 
-        fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
@@ -485,7 +501,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t2 = _mm_load_si128((__m128i *)src + 18);
         xmm_t3 = _mm_load_si128((__m128i *)src + 19);
 
-        fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
@@ -504,7 +520,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t2 = _mm_load_si128((__m128i *)src + 22);
         xmm_t3 = _mm_load_si128((__m128i *)src + 23);
 
-        fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
@@ -523,7 +539,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t2 = _mm_load_si128((__m128i *)src + 26);
         xmm_t3 = _mm_load_si128((__m128i *)src + 27);
 
-        fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
@@ -542,7 +558,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t2 = _mm_load_si128((__m128i *)src + 30);
         xmm_t3 = _mm_load_si128((__m128i *)src + 31);
 
-        fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
@@ -573,7 +589,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t3 = _mm_load_si128((__m128i *)src + 3);
         src += 64;
 
-        fold_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_4(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
@@ -599,7 +615,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t2 = _mm_load_si128((__m128i *)src + 2);
         src += 48;
 
-        fold_3(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_3(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
@@ -617,7 +633,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t1 = _mm_load_si128((__m128i *)src + 1);
         src += 32;
 
-        fold_2(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_2(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             _mm_storeu_si128((__m128i *)dst + 1, xmm_t1);
@@ -631,7 +647,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_impl(uint32_t crc, uint8_t *dst, const 
         xmm_t0 = _mm_load_si128((__m128i *)src);
         src += 16;
 
-        fold_1(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
+        fold_state_1(&xmm_crc0, &xmm_crc1, &xmm_crc2, &xmm_crc3, xmm_fold4);
         if (COPY) {
             _mm_storeu_si128((__m128i *)dst, xmm_t0);
             dst += 16;
