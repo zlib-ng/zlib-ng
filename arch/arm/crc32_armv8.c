@@ -34,6 +34,13 @@ Z_INTERNAL Z_TARGET_CRC uint32_t crc32_armv8(uint32_t crc, const uint8_t *buf, s
 }
 
 Z_INTERNAL Z_TARGET_CRC uint32_t crc32_copy_armv8(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
+#if OPTIMAL_CMP >= 32
     return crc32_copy_impl(crc, dst, src, len, 1);
+#else
+    /* Without unaligned access, interleaved stores get decomposed into byte ops */
+    crc = crc32_armv8(crc, src, len);
+    memcpy(dst, src, len);
+    return crc;
+#endif
 }
 #endif
