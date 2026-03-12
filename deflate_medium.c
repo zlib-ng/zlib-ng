@@ -82,9 +82,7 @@ static void insert_match(deflate_state *s, struct match match) {
         }
     } else {
         strstart += match_len;
-
-        if (strstart >= (STD_MIN_MATCH - 2))
-            quick_insert_string(s, strstart + 2 - STD_MIN_MATCH);
+        quick_insert_string(s, strstart + 2 - STD_MIN_MATCH);
 
         /* If lookahead < WANT_MIN_MATCH, ins_h is garbage, but it does not
          * matter since it will be recomputed at next deflate call.
