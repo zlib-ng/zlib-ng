@@ -9,48 +9,58 @@ concurrency:
 jobs:
   # Workflows not handled here: fuzz, lint, release
 
-  analyze:
-    name: Static Analysis
-    uses: ./.github/workflows/analyze.yml
-    secrets: inherit
-
-  cmake:
-    name: CMake
-    uses: ./.github/workflows/cmake.yml
-    secrets: inherit
-
-  codeql:
-    name: CodeQL
-    uses: ./.github/workflows/codeql.yml
-    secrets: inherit
-
-  configure:
-    name: Configure
-    uses: ./.github/workflows/configure.yml
-    secrets: inherit
-
-  libpng:
-    name: Libpng
-    uses: ./.github/workflows/libpng.yml
-    secrets: inherit
-
-  link:
-    name: Link
-    uses: ./.github/workflows/link.yml
-    secrets: inherit
-
+  # OSB runs first, the rest won't start unless it succeeds
+  # This guards against spending a lot of time testing code that is unable to compile.
   osb:
     name: OSB
     uses: ./.github/workflows/osb.yml
     secrets: inherit
 
+  analyze:
+    name: Static Analysis
+    needs: osb
+    uses: ./.github/workflows/analyze.yml
+    secrets: inherit
+
+  cmake:
+    name: CMake
+    needs: osb
+    uses: ./.github/workflows/cmake.yml
+    secrets: inherit
+
+  codeql:
+    name: CodeQL
+    needs: osb
+    uses: ./.github/workflows/codeql.yml
+    secrets: inherit
+
+  configure:
+    name: Configure
+    needs: osb
+    uses: ./.github/workflows/configure.yml
+    secrets: inherit
+
+  libpng:
+    name: Libpng
+    needs: osb
+    uses: ./.github/workflows/libpng.yml
+    secrets: inherit
+
+  link:
+    name: Link
+    needs: osb
+    uses: ./.github/workflows/link.yml
+    secrets: inherit
+
   pigz:
     name: Pigz
+    needs: osb
     uses: ./.github/workflows/pigz.yml
     secrets: inherit
 
   pkgcheck:
     name: Package Check
+    needs: osb
     uses: ./.github/workflows/pkgcheck.yml
     secrets: inherit
 
