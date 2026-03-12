@@ -122,24 +122,17 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
     return m;
 }
 
+/* fizzle_matches assumes:
+ * - current->match_length > 1
+ * - (current->match_length - 1) <= next->match_start
+ * - (current->match_length - 1) <= next->strstart
+ */
 static void fizzle_matches(deflate_state *s, struct match *current, struct match *next) {
-    unsigned char *window;
+    unsigned char *window = s->window;
     unsigned char *match, *orig;
     struct match c, n;
     int changed = 0;
     Pos limit;
-    /* step zero: sanity checks */
-
-    if (current->match_length <= 1)
-        return;
-
-    if (UNLIKELY(current->match_length > 1 + next->match_start))
-        return;
-
-    if (UNLIKELY(current->match_length > 1 + next->strstart))
-        return;
-
-    window = s->window;
 
     match = window - current->match_length + 1 + next->match_start;
     orig  = window - current->match_length + 1 + next->strstart;
@@ -176,10 +169,7 @@ static void fizzle_matches(deflate_state *s, struct match *current, struct match
         changed++;
     }
 
-    if (!changed)
-        return;
-
-    if (c.match_length <= 1 && n.match_length != 2) {
+    if (changed && c.match_length <= 1 && n.match_length != 2) {
         n.orgstart++;
         *current = c;
         *next = n;
@@ -241,8 +231,14 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
             hash_head = quick_insert_string(s, s->strstart);
 
             next_match = find_best_match(s, hash_head);
-            if (next_match.match_length >= WANT_MIN_MATCH)
+
+            uint32_t tmp_cmatch_len_sub = current_match.match_length - 1;
+            if (tmp_cmatch_len_sub
+                     && next_match.match_length >= WANT_MIN_MATCH
+                     && tmp_cmatch_len_sub <= next_match.match_start
+                     && tmp_cmatch_len_sub <= next_match.strstart) {
                 fizzle_matches(s, &current_match, &next_match);
+            }
 
             s->strstart = current_match.strstart;
         } else {
