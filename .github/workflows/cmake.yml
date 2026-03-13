@@ -652,8 +652,8 @@ jobs:
 
           - name: Ubuntu LCC e2kv4
             os: ubuntu-latest
-            cmake-args: -DWITH_BENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-e2k-lcc.cmake -DMCST_LCC_PREFIX=/opt/mcst/lcc-1.29.12.e2k-v4.8c.linux-6.1 -DQEMU_CPU=elbrus-v4 -DBENCHMARK_ENABLE_WERROR=OFF -DBENCHMARK_FORCE_WERROR=OFF
-            toolchain: 1.29.12.e2k-v4.8c.linux-6.1
+            cmake-args: -DWITH_BENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-e2k-lcc.cmake -DMCST_LCC_PREFIX=/opt/mcst/lcc-1.29.16.e2k-v4.linux-6.1 -DQEMU_CPU=elbrus-v4 -DBENCHMARK_ENABLE_WERROR=OFF -DBENCHMARK_FORCE_WERROR=OFF
+            toolchain: 1.29.16.e2k-v4.linux-6.1
             cflags: -march=elbrus-v4
             cxxflags: -march=elbrus-v4 -DBENCHMARK_HAS_NO_INLINE_ASSEMBLY
             ldflags: -static
@@ -661,8 +661,8 @@ jobs:
 
           - name: Ubuntu LCC e2kv5
             os: ubuntu-latest
-            cmake-args: -DWITH_BENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-e2k-lcc.cmake -DMCST_LCC_PREFIX=/opt/mcst/lcc-1.29.12.e2k-v5.8c2.linux-6.1 -DQEMU_CPU=elbrus-v5 -DBENCHMARK_ENABLE_WERROR=OFF -DBENCHMARK_FORCE_WERROR=OFF
-            toolchain: 1.29.12.e2k-v5.8c2.linux-6.1
+            cmake-args: -DWITH_BENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-e2k-lcc.cmake -DMCST_LCC_PREFIX=/opt/mcst/lcc-1.29.16.e2k-v5.linux-6.1 -DQEMU_CPU=elbrus-v5 -DBENCHMARK_ENABLE_WERROR=OFF -DBENCHMARK_FORCE_WERROR=OFF
+            toolchain: 1.29.16.e2k-v5.linux-6.1
             cflags: -march=elbrus-v5
             cxxflags: -march=elbrus-v5 -DBENCHMARK_HAS_NO_INLINE_ASSEMBLY
             ldflags: -static
@@ -670,18 +670,18 @@ jobs:
 
           - name: Ubuntu LCC e2kv5 (coverage)
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-e2k-lcc.cmake -DMCST_LCC_PREFIX=/opt/mcst/lcc-1.29.12.e2k-v5.8c2.linux-6.1 -DQEMU_CPU=elbrus-v5
-            toolchain: 1.29.12.e2k-v5.8c2.linux-6.1
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-e2k-lcc.cmake -DMCST_LCC_PREFIX=/opt/mcst/lcc-1.29.16.e2k-v5.linux-6.1 -DQEMU_CPU=elbrus-v5
+            toolchain: 1.29.16.e2k-v5.linux-6.1
             cflags: -march=elbrus-v5
             cxxflags: -march=elbrus-v5
             ldflags: -static
-            gcov-exec: /opt/mcst/lcc-1.29.12.e2k-v5.8c2.linux-6.1/gcov/bin/gcov
+            gcov-exec: /opt/mcst/lcc-1.29.16.e2k-v5.linux-6.1/gcov/bin/gcov
             coverage: linux_mcst_lcc_e2kv5
 
           - name: Ubuntu LCC e2kv6
             os: ubuntu-latest
-            cmake-args: -DWITH_BENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-e2k-lcc.cmake -DMCST_LCC_PREFIX=/opt/mcst/lcc-1.29.12.e2k-v6.2c3.linux-6.1 -DQEMU_CPU=elbrus-v6 -DBENCHMARK_ENABLE_WERROR=OFF -DBENCHMARK_FORCE_WERROR=OFF
-            toolchain: 1.29.12.e2k-v6.2c3.linux-6.1
+            cmake-args: -DWITH_BENCHMARKS=ON -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-e2k-lcc.cmake -DMCST_LCC_PREFIX=/opt/mcst/lcc-1.29.16.e2k-v6.linux-6.1 -DQEMU_CPU=elbrus-v6 -DBENCHMARK_ENABLE_WERROR=OFF -DBENCHMARK_FORCE_WERROR=OFF
+            toolchain: 1.29.16.e2k-v6.linux-6.1
             cflags: -march=elbrus-v6
             cxxflags: -march=elbrus-v6 -DBENCHMARK_HAS_NO_INLINE_ASSEMBLY
             ldflags: -static
@@ -797,9 +797,9 @@ jobs:
       if: contains(matrix.name, 'e2k') && steps.cache-lcc.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        wget -q https://dev.mcst.ru/downloads/2025-06-27/cross-sp-${{ matrix.toolchain }}_64.tgz
-        sudo tar -xzf cross-sp-${{ matrix.toolchain }}_64.tgz -C /
-        rm -f cross-sp-${{ matrix.toolchain }}_64.tgz
+        wget -q https://dev.mcst.ru/downloads/2026-03-13/cross-sp-public-osl-${{ matrix.toolchain }}_64.tgz
+        sudo tar -xzf cross-sp-public-osl-${{ matrix.toolchain }}_64.tgz -C /
+        rm -f cross-sp-public-osl-${{ matrix.toolchain }}_64.tgz
 
     # Get qemu-e2k-static from github actions cache or download from dev.mcst.ru and save to cache
     - name: Cache MCST QEMU (Ubuntu)
