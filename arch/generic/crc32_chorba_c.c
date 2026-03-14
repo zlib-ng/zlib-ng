@@ -75,6 +75,10 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
     chorba_word_t next22 = 0;
     crc = 0;
 
+    /* Make the temporary state explicitly zero-initialized so later XOR updates
+     * do not depend on the compiler inferring the staged write coverage. */
+    memset(bitbuffer, 0, bitbuffer_size_bytes);
+
     // do a first pass to zero out bitbuffer
     for (; i < (14848 * sizeof(chorba_word_t)); i += (32 * sizeof(chorba_word_t))) {
         chorba_word_t in1, in2, in3, in4, in5, in6, in7, in8;
