@@ -3,6 +3,7 @@
  */
 
 #include "zbuild.h"
+#include "zmemory.h"
 
 
 Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_align(uint32_t crc, uint8_t **dst, const uint8_t **buf,
@@ -21,7 +22,7 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_align(uint32_t crc, uint8_t 
     if (*len >= 2 && (align_diff & 2)) {
         uint16_t val = *((uint16_t*)*buf);
         if (COPY) {
-            memcpy(*dst, &val, 2);
+            zng_memwrite_2(*dst, val);
             *dst += 2;
         }
         crc = CRC32H(crc, val);
@@ -32,7 +33,7 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_align(uint32_t crc, uint8_t 
     if (*len >= 4 && (align_diff & 4)) {
         uint32_t val = *((uint32_t*)*buf);
         if (COPY) {
-            memcpy(*dst, &val, 4);
+            zng_memwrite_4(*dst, val);
             *dst += 4;
         }
         crc = CRC32W(crc, val);
@@ -43,7 +44,7 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_align(uint32_t crc, uint8_t 
     if (*len >= 8 && (align_diff & 8)) {
         uint64_t val = *((uint64_t*)*buf);
         if (COPY) {
-            memcpy(*dst, &val, 8);
+            zng_memwrite_8(*dst, val);
             *dst += 8;
         }
         crc = CRC32D(crc, val);
@@ -59,7 +60,7 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_tail(uint32_t crc, uint8_t *
     while (len >= 8) {
         uint64_t val = *((uint64_t*)buf);
         if (COPY) {
-            memcpy(dst, &val, 8);
+            zng_memwrite_8(dst, val);
             dst += 8;
         }
         crc = CRC32D(crc, val);
@@ -70,7 +71,7 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_tail(uint32_t crc, uint8_t *
     if (len & 4) {
         uint32_t val = *((uint32_t*)buf);
         if (COPY) {
-            memcpy(dst, &val, 4);
+            zng_memwrite_4(dst, val);
             dst += 4;
         }
         crc = CRC32W(crc, val);
@@ -80,7 +81,7 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_tail(uint32_t crc, uint8_t *
     if (len & 2) {
         uint16_t val = *((uint16_t*)buf);
         if (COPY) {
-            memcpy(dst, &val, 2);
+            zng_memwrite_2(dst, val);
             dst += 2;
         }
         crc = CRC32H(crc, val);

@@ -69,6 +69,39 @@ static inline void zng_memwrite_8(void *ptr, uint64_t val) {
 #endif
 }
 
+static inline void zng_memcpy_2(void *dst, const void *src) {
+#if defined(HAVE_MAY_ALIAS)
+    zng_memwrite_2(dst, zng_memread_2(src));
+#else
+    memcpy(dst, src, 2);
+#endif
+}
+
+static inline void zng_memcpy_4(void *dst, const void *src) {
+#if defined(HAVE_MAY_ALIAS)
+    zng_memwrite_4(dst, zng_memread_4(src));
+#else
+    memcpy(dst, src, 4);
+#endif
+}
+
+static inline void zng_memcpy_8(void *dst, const void *src) {
+#if defined(HAVE_MAY_ALIAS)
+    zng_memwrite_8(dst, zng_memread_8(src));
+#else
+    memcpy(dst, src, 8);
+#endif
+}
+
+static inline void zng_memcpy_16(void *dst, const void *src) {
+#if defined(HAVE_MAY_ALIAS)
+    zng_memwrite_8((uint8_t *)dst,     zng_memread_8((const uint8_t *)src    ));
+    zng_memwrite_8((uint8_t *)dst + 8, zng_memread_8((const uint8_t *)src + 8));
+#else
+    memcpy(dst, src, 16);
+#endif
+}
+
 /* Use zng_memread_* instead of memcmp to avoid older compilers not converting memcmp
    calls to unaligned comparisons when unaligned access is supported. Use memcmp only when
    unaligned support is not available to avoid an extra call to memcpy. */

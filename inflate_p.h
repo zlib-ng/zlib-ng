@@ -236,21 +236,21 @@ static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, size_t len, u
         len -= tocopy;
 
         while (tocopy >= 16) {
-            memcpy(out, from, 16);
+            zng_memcpy_16(out, from);
             out += 16;
             from += 16;
             tocopy -= 16;
         }
 
         if (tocopy >= 8) {
-            memcpy(out, from, 8);
+            zng_memcpy_8(out, from);
             out += 8;
             from += 8;
             tocopy -= 8;
         }
 
         if (tocopy >= 4) {
-            memcpy(out, from, 4);
+            zng_memcpy_4(out, from);
             out += 4;
             from += 4;
             tocopy -= 4;

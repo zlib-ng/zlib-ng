@@ -10,6 +10,7 @@
 #ifdef ARM_PMULL_EOR3
 
 #include "zbuild.h"
+#include "zmemory.h"
 #include "zutil.h"
 #include "acle_intrins.h"
 #include "neon_intrins.h"
@@ -193,14 +194,14 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
                     uint64_t s2a = *(const uint64_t*)src2;
                     uint64_t s2b = *(const uint64_t*)(src2 + 8);
                     if (COPY) {
-                        memcpy(dst0, &s0a, 8);
-                        memcpy(dst0 + 8, &s0b, 8);
+                        zng_memwrite_8(dst0, s0a);
+                        zng_memwrite_8(dst0 + 8, s0b);
                         dst0 += 16;
-                        memcpy(dst1, &s1a, 8);
-                        memcpy(dst1 + 8, &s1b, 8);
+                        zng_memwrite_8(dst1, s1a);
+                        zng_memwrite_8(dst1 + 8, s1b);
                         dst1 += 16;
-                        memcpy(dst2, &s2a, 8);
-                        memcpy(dst2 + 8, &s2b, 8);
+                        zng_memwrite_8(dst2, s2a);
+                        zng_memwrite_8(dst2 + 8, s2b);
                         dst2 += 16;
                     }
                     crc0 = __crc32d(crc0, s0a);
@@ -255,12 +256,12 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
             uint64_t s2a = *(const uint64_t*)src2;
             uint64_t s2b = *(const uint64_t*)(src2 + 8);
             if (COPY) {
-                memcpy(dst0, &s0a, 8);
-                memcpy(dst0 + 8, &s0b, 8);
-                memcpy(dst1, &s1a, 8);
-                memcpy(dst1 + 8, &s1b, 8);
-                memcpy(dst2, &s2a, 8);
-                memcpy(dst2 + 8, &s2b, 8);
+                zng_memwrite_8(dst0, s0a);
+                zng_memwrite_8(dst0 + 8, s0b);
+                zng_memwrite_8(dst1, s1a);
+                zng_memwrite_8(dst1 + 8, s1b);
+                zng_memwrite_8(dst2, s2a);
+                zng_memwrite_8(dst2 + 8, s2b);
             }
             crc0 = __crc32d(crc0, s0a);
             crc0 = __crc32d(crc0, s0b);
@@ -310,11 +311,11 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
             uint64_t v1 = *(const uint64_t*)buf1;
             uint64_t v2 = *(const uint64_t*)buf2;
             if (COPY) {
-                memcpy(dst0, &v0, 8);
+                zng_memwrite_8(dst0, v0);
                 dst0 += 8;
-                memcpy(dst1, &v1, 8);
+                zng_memwrite_8(dst1, v1);
                 dst1 += 8;
-                memcpy(dst2, &v2, 8);
+                zng_memwrite_8(dst2, v2);
                 dst2 += 8;
             }
             crc0 = __crc32d(crc0, v0);
@@ -336,7 +337,7 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
         {
             uint64_t vf = *(const uint64_t*)buf2;
             if (COPY)
-                memcpy(dst2, &vf, 8);
+                zng_memwrite_8(dst2, vf);
             crc0 = __crc32d(crc0, vf ^ vc);
         }
         src = buf2 + 8;
