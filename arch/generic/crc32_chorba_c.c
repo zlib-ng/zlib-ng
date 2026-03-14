@@ -14,9 +14,11 @@
 #define bitbuffer_size_zwords (bitbuffer_size_bytes / sizeof(chorba_word_t))
 #define bitbuffer_size_qwords (bitbuffer_size_bytes / sizeof(uint64_t))
 
-#if defined(HAVE_MAY_ALIAS) && CHORBA_W != 8
+#if defined(HAVE_MAY_ALIAS)
+    typedef chorba_word_t __attribute__ ((__may_alias__)) chorba_worda_t;
     typedef uint64_t __attribute__ ((__may_alias__)) uint64a_t;
 #else
+    typedef chorba_word_t chorba_worda_t;
     typedef uint64_t uint64a_t;
 #endif
 
@@ -38,14 +40,14 @@
  */
 Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8_t *buf, size_t len) {
 #if defined(__EMSCRIPTEN__)
-    chorba_word_t *bitbuffer = (chorba_word_t*)zng_alloc(bitbuffer_size_bytes);
+    chorba_worda_t *bitbuffer = (chorba_worda_t*)zng_alloc(bitbuffer_size_bytes);
 #else
-    ALIGNED_(16) chorba_word_t bitbuffer[bitbuffer_size_zwords];
+    ALIGNED_(16) chorba_worda_t bitbuffer[bitbuffer_size_zwords];
 #endif
     const uint8_t *bitbuffer_bytes = (const uint8_t*)bitbuffer;
     uint64a_t *bitbuffer_qwords = (uint64a_t*)bitbuffer;
     /* The calling function ensured that this is aligned correctly */
-    const chorba_word_t* input = (const chorba_word_t*)buf;
+    const chorba_worda_t* input = (const chorba_worda_t*)buf;
     const uint64a_t* input_qwords = (const uint64a_t*)buf;
 
     size_t i = 0;
@@ -74,10 +76,6 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
     chorba_word_t next21 = 0;
     chorba_word_t next22 = 0;
     crc = 0;
-
-    /* Make the temporary state explicitly zero-initialized so later XOR updates
-     * do not depend on the compiler inferring the staged write coverage. */
-    memset(bitbuffer, 0, bitbuffer_size_bytes);
 
     // do a first pass to zero out bitbuffer
     for (; i < (14848 * sizeof(chorba_word_t)); i += (32 * sizeof(chorba_word_t))) {
