@@ -22,144 +22,6 @@ static const uint16_t ALIGNED_(64) taps[64] = {
     16, 15, 14, 13, 12, 11, 10, 9,
     8, 7, 6, 5, 4, 3, 2, 1 };
 
-Z_FORCEINLINE static void NEON_accum32(uint32_t *s, uint8_t *dst, const uint8_t *buf, size_t len, const int COPY) {
-    uint32x4_t adacc = vdupq_n_u32(0);
-    uint32x4_t s2acc = vdupq_n_u32(0);
-    uint32x4_t s2acc_0 = vdupq_n_u32(0);
-    uint32x4_t s2acc_1 = vdupq_n_u32(0);
-    uint32x4_t s2acc_2 = vdupq_n_u32(0);
-
-    adacc = vsetq_lane_u32(s[0], adacc, 0);
-    s2acc = vsetq_lane_u32(s[1], s2acc, 0);
-
-    uint32x4_t s3acc = vdupq_n_u32(0);
-    uint32x4_t adacc_prev = adacc;
-
-    uint16x8_t s2_0, s2_1, s2_2, s2_3;
-    s2_0 = s2_1 = s2_2 = s2_3 = vdupq_n_u16(0);
-
-    uint16x8_t s2_4, s2_5, s2_6, s2_7;
-    s2_4 = s2_5 = s2_6 = s2_7 = vdupq_n_u16(0);
-
-    size_t num_iter = len >> 2;
-    int rem = len & 3;
-
-    for (size_t i = 0; i < num_iter; ++i) {
-        uint8x16_t d0, d1, d2, d3;
-
-        /* In the copying variant we use 4x loads and 4x stores,
-         * as ld1x4 seems to block ILP when stores are in the mix */
-        if (COPY) {
-            d0 = vld1q_u8_ex(buf, 128);
-            d1 = vld1q_u8_ex(buf + 16, 128);
-            d2 = vld1q_u8_ex(buf + 32, 128);
-            d3 = vld1q_u8_ex(buf + 48, 128);
-
-            vst1q_u8(dst, d0);
-            vst1q_u8(dst + 16, d1);
-            vst1q_u8(dst + 32, d2);
-            vst1q_u8(dst + 48, d3);
-            dst += 64;
-        } else {
-            uint8x16x4_t d0_d3 = vld1q_u8_x4_ex(buf, 256);
-            d0 = d0_d3.val[0];
-            d1 = d0_d3.val[1];
-            d2 = d0_d3.val[2];
-            d3 = d0_d3.val[3];
-        }
-
-        /* Unfortunately it doesn't look like there's a direct sum 8 bit to 32
-         * bit instruction, we'll have to make due summing to 16 bits first */
-        uint16x8x2_t hsum, hsum_fold;
-        hsum.val[0] = vpaddlq_u8(d0);
-        hsum.val[1] = vpaddlq_u8(d1);
-
-        hsum_fold.val[0] = vpadalq_u8(hsum.val[0], d2);
-        hsum_fold.val[1] = vpadalq_u8(hsum.val[1], d3);
-
-        adacc = vpadalq_u16(adacc, hsum_fold.val[0]);
-        s3acc = vaddq_u32(s3acc, adacc_prev);
-        adacc = vpadalq_u16(adacc, hsum_fold.val[1]);
-
-        /* If we do straight widening additions to the 16 bit values, we don't incur
-         * the usual penalties of a pairwise add. We can defer the multiplications
-         * until the very end. These will not overflow because we are incurring at
-         * most 408 loop iterations (NMAX / 64), and a given lane is only going to be
-         * summed into once. This means for the maximum input size, the largest value
-         * we will see is 255 * 102 = 26010, safely under uint16 max */
-        s2_0 = vaddw_u8(s2_0, vget_low_u8(d0));
-        s2_1 = vaddw_high_u8(s2_1, d0);
-        s2_2 = vaddw_u8(s2_2, vget_low_u8(d1));
-        s2_3 = vaddw_high_u8(s2_3, d1);
-        s2_4 = vaddw_u8(s2_4, vget_low_u8(d2));
-        s2_5 = vaddw_high_u8(s2_5, d2);
-        s2_6 = vaddw_u8(s2_6, vget_low_u8(d3));
-        s2_7 = vaddw_high_u8(s2_7, d3);
-
-        adacc_prev = adacc;
-        buf += 64;
-    }
-
-    s3acc = vshlq_n_u32(s3acc, 6);
-
-    if (rem) {
-        uint32x4_t s3acc_0 = vdupq_n_u32(0);
-        while (rem--) {
-            uint8x16_t d0 = vld1q_u8_ex(buf, 128);
-            if (COPY) {
-                vst1q_u8(dst, d0);
-                dst += 16;
-            }
-            uint16x8_t adler;
-            adler = vpaddlq_u8(d0);
-            s2_6 = vaddw_u8(s2_6, vget_low_u8(d0));
-            s2_7 = vaddw_high_u8(s2_7, d0);
-            adacc = vpadalq_u16(adacc, adler);
-            s3acc_0 = vaddq_u32(s3acc_0, adacc_prev);
-            adacc_prev = adacc;
-            buf += 16;
-        }
-
-        s3acc_0 = vshlq_n_u32(s3acc_0, 4);
-        s3acc = vaddq_u32(s3acc_0, s3acc);
-    }
-
-    uint16x8x4_t t0_t3 = vld1q_u16_x4_ex(taps, 256);
-    uint16x8x4_t t4_t7 = vld1q_u16_x4_ex(taps + 32, 256);
-
-    s2acc = vmlal_high_u16(s2acc, t0_t3.val[0], s2_0);
-    s2acc_0 = vmlal_u16(s2acc_0, vget_low_u16(t0_t3.val[0]), vget_low_u16(s2_0));
-    s2acc_1 = vmlal_high_u16(s2acc_1, t0_t3.val[1], s2_1);
-    s2acc_2 = vmlal_u16(s2acc_2, vget_low_u16(t0_t3.val[1]), vget_low_u16(s2_1));
-
-    s2acc = vmlal_high_u16(s2acc, t0_t3.val[2], s2_2);
-    s2acc_0 = vmlal_u16(s2acc_0, vget_low_u16(t0_t3.val[2]), vget_low_u16(s2_2));
-    s2acc_1 = vmlal_high_u16(s2acc_1, t0_t3.val[3], s2_3);
-    s2acc_2 = vmlal_u16(s2acc_2, vget_low_u16(t0_t3.val[3]), vget_low_u16(s2_3));
-
-    s2acc = vmlal_high_u16(s2acc, t4_t7.val[0], s2_4);
-    s2acc_0 = vmlal_u16(s2acc_0, vget_low_u16(t4_t7.val[0]), vget_low_u16(s2_4));
-    s2acc_1 = vmlal_high_u16(s2acc_1, t4_t7.val[1], s2_5);
-    s2acc_2 = vmlal_u16(s2acc_2, vget_low_u16(t4_t7.val[1]), vget_low_u16(s2_5));
-
-    s2acc = vmlal_high_u16(s2acc, t4_t7.val[2], s2_6);
-    s2acc_0 = vmlal_u16(s2acc_0, vget_low_u16(t4_t7.val[2]), vget_low_u16(s2_6));
-    s2acc_1 = vmlal_high_u16(s2acc_1, t4_t7.val[3], s2_7);
-    s2acc_2 = vmlal_u16(s2acc_2, vget_low_u16(t4_t7.val[3]), vget_low_u16(s2_7));
-
-    s2acc = vaddq_u32(s2acc_0, s2acc);
-    s2acc_2 = vaddq_u32(s2acc_1, s2acc_2);
-    s2acc = vaddq_u32(s2acc, s2acc_2);
-
-    uint32x2_t adacc2, s2acc2, as;
-    s2acc = vaddq_u32(s2acc, s3acc);
-    adacc2 = vpadd_u32(vget_low_u32(adacc), vget_high_u32(adacc));
-    s2acc2 = vpadd_u32(vget_low_u32(s2acc), vget_high_u32(s2acc));
-    as = vpadd_u32(adacc2, s2acc2);
-    s[0] = vget_lane_u32(as, 0);
-    s[1] = vget_lane_u32(as, 1);
-}
-
 Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
     /* split Adler-32 into component sums */
     uint32_t sum2 = (adler >> 16) & 0xffff;
@@ -209,16 +71,146 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
     while (len >= 16) {
         n = MIN(len, n);
 
-        NEON_accum32(pair, dst, src, n >> 4, COPY);
+        uint32x4_t adacc = vdupq_n_u32(0);
+        uint32x4_t s2acc = vdupq_n_u32(0);
+        uint32x4_t s2acc_0 = vdupq_n_u32(0);
+        uint32x4_t s2acc_1 = vdupq_n_u32(0);
+        uint32x4_t s2acc_2 = vdupq_n_u32(0);
+
+        adacc = vsetq_lane_u32(pair[0], adacc, 0);
+        s2acc = vsetq_lane_u32(pair[1], s2acc, 0);
+
+        uint32x4_t s3acc = vdupq_n_u32(0);
+        uint32x4_t adacc_prev = adacc;
+
+        uint16x8_t s2_0, s2_1, s2_2, s2_3;
+        s2_0 = s2_1 = s2_2 = s2_3 = vdupq_n_u16(0);
+
+        uint16x8_t s2_4, s2_5, s2_6, s2_7;
+        s2_4 = s2_5 = s2_6 = s2_7 = vdupq_n_u16(0);
+
+        size_t num_iter = (n >> 4) >> 2;
+        int rem = (n >> 4) & 3;
+
+        for (size_t i = 0; i < num_iter; ++i) {
+            uint8x16_t d0, d1, d2, d3;
+
+            /* In the copying variant we use 4x loads and 4x stores,
+             * as ld1x4 seems to block ILP when stores are in the mix */
+            if (COPY) {
+                d0 = vld1q_u8_ex(src, 128);
+                d1 = vld1q_u8_ex(src + 16, 128);
+                d2 = vld1q_u8_ex(src + 32, 128);
+                d3 = vld1q_u8_ex(src + 48, 128);
+
+                vst1q_u8(dst, d0);
+                vst1q_u8(dst + 16, d1);
+                vst1q_u8(dst + 32, d2);
+                vst1q_u8(dst + 48, d3);
+                dst += 64;
+            } else {
+                uint8x16x4_t d0_d3 = vld1q_u8_x4_ex(src, 256);
+                d0 = d0_d3.val[0];
+                d1 = d0_d3.val[1];
+                d2 = d0_d3.val[2];
+                d3 = d0_d3.val[3];
+            }
+
+            /* Unfortunately it doesn't look like there's a direct sum 8 bit to 32
+             * bit instruction, we'll have to make due summing to 16 bits first */
+            uint16x8x2_t hsum, hsum_fold;
+            hsum.val[0] = vpaddlq_u8(d0);
+            hsum.val[1] = vpaddlq_u8(d1);
+
+            hsum_fold.val[0] = vpadalq_u8(hsum.val[0], d2);
+            hsum_fold.val[1] = vpadalq_u8(hsum.val[1], d3);
+
+            adacc = vpadalq_u16(adacc, hsum_fold.val[0]);
+            s3acc = vaddq_u32(s3acc, adacc_prev);
+            adacc = vpadalq_u16(adacc, hsum_fold.val[1]);
+
+            /* If we do straight widening additions to the 16 bit values, we don't incur
+             * the usual penalties of a pairwise add. We can defer the multiplications
+             * until the very end. These will not overflow because we are incurring at
+             * most 408 loop iterations (NMAX / 64), and a given lane is only going to be
+             * summed into once. This means for the maximum input size, the largest value
+             * we will see is 255 * 102 = 26010, safely under uint16 max */
+            s2_0 = vaddw_u8(s2_0, vget_low_u8(d0));
+            s2_1 = vaddw_high_u8(s2_1, d0);
+            s2_2 = vaddw_u8(s2_2, vget_low_u8(d1));
+            s2_3 = vaddw_high_u8(s2_3, d1);
+            s2_4 = vaddw_u8(s2_4, vget_low_u8(d2));
+            s2_5 = vaddw_high_u8(s2_5, d2);
+            s2_6 = vaddw_u8(s2_6, vget_low_u8(d3));
+            s2_7 = vaddw_high_u8(s2_7, d3);
+
+            adacc_prev = adacc;
+            src += 64;
+        }
+
+        s3acc = vshlq_n_u32(s3acc, 6);
+
+        if (rem) {
+            uint32x4_t s3acc_0 = vdupq_n_u32(0);
+            while (rem--) {
+                uint8x16_t d0 = vld1q_u8_ex(src, 128);
+                if (COPY) {
+                    vst1q_u8(dst, d0);
+                    dst += 16;
+                }
+                uint16x8_t hsum;
+                hsum = vpaddlq_u8(d0);
+                s2_6 = vaddw_u8(s2_6, vget_low_u8(d0));
+                s2_7 = vaddw_high_u8(s2_7, d0);
+                adacc = vpadalq_u16(adacc, hsum);
+                s3acc_0 = vaddq_u32(s3acc_0, adacc_prev);
+                adacc_prev = adacc;
+                src += 16;
+            }
+
+            s3acc_0 = vshlq_n_u32(s3acc_0, 4);
+            s3acc = vaddq_u32(s3acc_0, s3acc);
+        }
+
+        uint16x8x4_t t0_t3 = vld1q_u16_x4_ex(taps, 256);
+        uint16x8x4_t t4_t7 = vld1q_u16_x4_ex(taps + 32, 256);
+
+        s2acc = vmlal_high_u16(s2acc, t0_t3.val[0], s2_0);
+        s2acc_0 = vmlal_u16(s2acc_0, vget_low_u16(t0_t3.val[0]), vget_low_u16(s2_0));
+        s2acc_1 = vmlal_high_u16(s2acc_1, t0_t3.val[1], s2_1);
+        s2acc_2 = vmlal_u16(s2acc_2, vget_low_u16(t0_t3.val[1]), vget_low_u16(s2_1));
+
+        s2acc = vmlal_high_u16(s2acc, t0_t3.val[2], s2_2);
+        s2acc_0 = vmlal_u16(s2acc_0, vget_low_u16(t0_t3.val[2]), vget_low_u16(s2_2));
+        s2acc_1 = vmlal_high_u16(s2acc_1, t0_t3.val[3], s2_3);
+        s2acc_2 = vmlal_u16(s2acc_2, vget_low_u16(t0_t3.val[3]), vget_low_u16(s2_3));
+
+        s2acc = vmlal_high_u16(s2acc, t4_t7.val[0], s2_4);
+        s2acc_0 = vmlal_u16(s2acc_0, vget_low_u16(t4_t7.val[0]), vget_low_u16(s2_4));
+        s2acc_1 = vmlal_high_u16(s2acc_1, t4_t7.val[1], s2_5);
+        s2acc_2 = vmlal_u16(s2acc_2, vget_low_u16(t4_t7.val[1]), vget_low_u16(s2_5));
+
+        s2acc = vmlal_high_u16(s2acc, t4_t7.val[2], s2_6);
+        s2acc_0 = vmlal_u16(s2acc_0, vget_low_u16(t4_t7.val[2]), vget_low_u16(s2_6));
+        s2acc_1 = vmlal_high_u16(s2acc_1, t4_t7.val[3], s2_7);
+        s2acc_2 = vmlal_u16(s2acc_2, vget_low_u16(t4_t7.val[3]), vget_low_u16(s2_7));
+
+        s2acc = vaddq_u32(s2acc_0, s2acc);
+        s2acc_2 = vaddq_u32(s2acc_1, s2acc_2);
+        s2acc = vaddq_u32(s2acc, s2acc_2);
+
+        uint32x2_t adacc2, s2acc2, as;
+        s2acc = vaddq_u32(s2acc, s3acc);
+        adacc2 = vpadd_u32(vget_low_u32(adacc), vget_high_u32(adacc));
+        s2acc2 = vpadd_u32(vget_low_u32(s2acc), vget_high_u32(s2acc));
+        as = vpadd_u32(adacc2, s2acc2);
+        pair[0] = vget_lane_u32(as, 0);
+        pair[1] = vget_lane_u32(as, 1);
 
         pair[0] %= BASE;
         pair[1] %= BASE;
 
-        size_t k = (n >> 4) << 4;
-        src += k;
-        if (COPY)
-            dst += k;
-        len -= k;
+        len -= (n >> 4) << 4;
         n = NMAX_ALIGNED32;
     }
 
