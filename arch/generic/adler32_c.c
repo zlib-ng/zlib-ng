@@ -9,7 +9,7 @@
 
 Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
     uint32_t sum2;
-    unsigned n;
+    size_t n;
 
     /* split Adler-32 into component sums */
     sum2 = (adler >> 16) & 0xffff;
@@ -26,20 +26,21 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
     /* do length NMAX blocks -- requires just one modulo operation */
     while (len >= NMAX) {
         len -= NMAX;
-#ifdef UNROLL_MORE
-        n = NMAX / 16;          /* NMAX is divisible by 16 */
-#else
-        n = NMAX / 8;           /* NMAX is divisible by 8 */
-#endif
+#if OPTIMAL_CMP >= 64
+        n = NMAX;
         do {
-#ifdef UNROLL_MORE
-            ADLER_DO16(adler, sum2, buf);          /* 16 sums unrolled */
-            buf += 16;
+            size_t chunk = MIN(ALIGN_DOWN(n, 8), ADLER32_SWAR_MAX_BYTES);
+            adler32_swar(&adler, NULL, buf, chunk, &sum2, 0);
+            buf += chunk;
+            n -= chunk;
+        } while (n >= 8);
 #else
-            ADLER_DO8(adler, sum2, buf, 0);         /* 8 sums unrolled */
+        n = NMAX / 8;
+        do {
+            ADLER_DO8(adler, sum2, buf, 0);
             buf += 8;
-#endif
         } while (--n);
+#endif
         adler %= BASE;
         sum2 %= BASE;
     }
