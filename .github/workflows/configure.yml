@@ -133,7 +133,7 @@ jobs:
           - name: Ubuntu GCC S390X No vectorized CRC32
             os: ubuntu-latest
             compiler: s390x-linux-gnu-gcc
-            configure-args: --warn --static --without-crc32-vx
+            configure-args: --warn --static --without-s390-vx
             chost: s390x-linux-gnu
             packages: qemu-user gcc-s390x-linux-gnu libc-dev-s390x-cross
             cflags: -static

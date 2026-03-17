@@ -7,7 +7,7 @@ CFLAGS=
 SFLAGS=
 INCLUDES=
 SUFFIX=
-VGFMAFLAG=
+S390VXFLAG=
 NOLTOFLAG=
 
 SRCDIR=.
@@ -32,11 +32,17 @@ dfltcc_inflate.o:
 dfltcc_inflate.lo:
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/dfltcc_inflate.c
 
-crc32-vx.o:
-	$(CC) $(CFLAGS) $(VGFMAFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32-vx.c
+crc32_vx.o:
+	$(CC) $(CFLAGS) $(S390VXFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vx.c
 
-crc32-vx.lo:
-	$(CC) $(SFLAGS) $(VGFMAFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32-vx.c
+crc32_vx.lo:
+	$(CC) $(SFLAGS) $(S390VXFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_vx.c
+
+slide_hash_vx.o:
+	$(CC) $(CFLAGS) $(S390VXFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_vx.c
+
+slide_hash_vx.lo:
+	$(CC) $(SFLAGS) $(S390VXFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/slide_hash_vx.c
 
 mostlyclean: clean
 clean:

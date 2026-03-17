@@ -97,6 +97,9 @@ BENCHMARK_SLIDEHASH(power8, slide_hash_power8, test_cpu_features.power.has_arch_
 #ifdef PPC_VMX
 BENCHMARK_SLIDEHASH(vmx, slide_hash_vmx, test_cpu_features.power.has_altivec);
 #endif
+#ifdef S390_VX
+BENCHMARK_SLIDEHASH(vx, slide_hash_vx, test_cpu_features.s390.has_vx);
+#endif
 #ifdef RISCV_RVV
 BENCHMARK_SLIDEHASH(rvv, slide_hash_rvv, test_cpu_features.riscv.has_rvv);
 #endif

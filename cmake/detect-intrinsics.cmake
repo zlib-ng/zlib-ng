@@ -677,28 +677,28 @@ macro(check_sse42_intrinsics)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
-macro(check_vgfma_intrinsics)
+macro(check_s390_vx_intrinsics)
     if(NOT NATIVEFLAG)
-        set(VGFMAFLAG "-march=z13")
+        set(S390VXFLAG "-march=z13")
         if(CMAKE_C_COMPILER_ID MATCHES "GNU")
-            set(VGFMAFLAG "${VGFMAFLAG} -mzarch")
+            set(S390VXFLAG "${S390VXFLAG} -mzarch")
         endif()
         if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-            set(VGFMAFLAG "${VGFMAFLAG} -fzvector")
+            set(S390VXFLAG "${S390VXFLAG} -fzvector")
         endif()
     endif()
-    # Check whether compiler supports "VECTOR GALOIS FIELD MULTIPLY SUM AND ACCUMULATE" intrinsic
-    set(CMAKE_REQUIRED_FLAGS "${VGFMAFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+    # Check whether compiler supports S390 VX intrinsics
+    set(CMAKE_REQUIRED_FLAGS "${S390VXFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <vecintrin.h>
         int main(void) {
-            unsigned long long a __attribute__((vector_size(16))) = { 0 };
-            unsigned long long b __attribute__((vector_size(16))) = { 0 };
-            unsigned char c __attribute__((vector_size(16))) = { 0 };
-            c = vec_gfmsum_accum_128(a, b, c);
-            return c[0];
+            unsigned char a __attribute__((vector_size(16))) = { 0 };
+            unsigned char b __attribute__((vector_size(16))) = { 0 };
+            a = vec_sub(a, b);
+            a = vec_xl(0, (unsigned char *)0);
+            return a[0];
         }"
-        HAVE_VGFMA_INTRIN FAIL_REGEX "not supported")
+        HAVE_S390_VX_INTRIN FAIL_REGEX "not supported")
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 

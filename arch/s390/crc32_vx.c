@@ -12,7 +12,7 @@
  * relicensed under the zlib license.
  */
 
-#ifdef S390_CRC32_VX
+#ifdef S390_VX
 
 #include "zbuild.h"
 #include "arch_functions.h"

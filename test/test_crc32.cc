@@ -117,7 +117,7 @@ TEST_CRC32(riscv, crc32_riscv64_zbc, test_cpu_features.riscv.has_zbc)
 #ifdef POWER8_VSX_CRC32
 TEST_CRC32(power8, crc32_power8, test_cpu_features.power.has_arch_2_07)
 #endif
-#ifdef S390_CRC32_VX
+#ifdef S390_VX
 TEST_CRC32(vx, crc32_s390_vx, test_cpu_features.s390.has_vx)
 #endif
 #ifdef X86_PCLMULQDQ_CRC

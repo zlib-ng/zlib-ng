@@ -214,7 +214,7 @@ Advanced Build Options
 | WITH_POWER9                     | --without-power9      | ppc: Build with POWER9 intrinsics                                                   | ON       |
 | WITH_RVV                        | --without-rvv         | riscv: Build with RVV intrinsics                                                    | ON       |
 | WITH_RISCV_ZBC                  | --without-zbc         | riscv: Build with RiscV ZBC intrinsics                                              | ON       |
-| WITH_CRC32_VX                   | --without-crc32-vx    | s390x: Build with vectorized CRC32 on IBM Z                                         | ON       |
+| WITH_S390_VX                    | --without-s390-vx     | s390x: Build with S390 VX intrinsics on IBM Z                                       | ON       |
 | WITH_DFLTCC_DEFLATE             | --with-dfltcc-deflate | s390x: Build with DFLTCC intrinsics for compression on IBM Z                        | OFF      |
 | WITH_DFLTCC_INFLATE             | --with-dfltcc-inflate | s390x: Build with DFLTCC intrinsics for decompression on IBM Z                      | OFF      |
 | WITH_LSX                        |                       | loongarch: Build with LSX intrinsics                                                | ON       |

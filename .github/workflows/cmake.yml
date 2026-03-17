@@ -313,9 +313,9 @@ jobs:
             gcov-exec: s390x-linux-gnu-gcov
             coverage: ubuntu_gcc_s390x
 
-          - name: Ubuntu GCC S390X No vectorized CRC32
+          - name: Ubuntu GCC S390X No VX optimizations
             os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_CRC32_VX=OFF
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_S390_VX=OFF
             packages: qemu-user crossbuild-essential-s390x
             ldflags: -static
             gcov-exec: s390x-linux-gnu-gcov

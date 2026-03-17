@@ -109,7 +109,7 @@ buildrvv=1
 buildzbc=1
 builddfltccdeflate=0
 builddfltccinflate=0
-buildcrc32vx=1
+builds390vx=1
 buildcrc32la=1
 floatabi=
 # For CPUs that can benefit from AVX512, it seems GCC generates suboptimal
@@ -138,8 +138,8 @@ HAVE_ZBC_EXT=0
 armv6flag=
 # Set default for noltoflag based on compiler being gcc compatible or not
 noltoflag=
-vgfmaflag="-march=z13"
 vmxflag="-maltivec"
+s390vxflag="-march=z13"
 symbol_prefix=""
 without_optimizations=0
 without_new_strategies=0
@@ -198,7 +198,7 @@ case "$1" in
       echo '    [--without-power9]          Compiles without Power9 instruction set' | tee -a configure.log
       echo '    [--with-dfltcc-deflate]     Use DEFLATE CONVERSION CALL instruction for compression on IBM Z' | tee -a configure.log
       echo '    [--with-dfltcc-inflate]     Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z' | tee -a configure.log
-      echo '    [--without-crc32-vx]        Build without vectorized CRC32 on IBM Z' | tee -a configure.log
+      echo '    [--without-s390-vx]         Build without S390 VX optimizations on IBM Z' | tee -a configure.log
       echo '    [--without-crc32-la]        Build without vectorized CRC32 on Loongarch' | tee -a configure.log
       echo '    [--with-reduced-mem]        Reduced memory usage for special cases (reduces performance)' | tee -a configure.log
         exit 0 ;;
@@ -236,7 +236,9 @@ case "$1" in
     --without-power9) buildpower9=0 ; shift ;;
     --with-dfltcc-deflate) builddfltccdeflate=1; shift ;;
     --with-dfltcc-inflate) builddfltccinflate=1; shift ;;
-    --without-crc32-vx) buildcrc32vx=0; shift ;;
+    # Provided for backward compatibility
+    --without-crc32-vx) builds390vx=0; shift ;;
+    --without-s390-vx) builds390vx=0; shift ;;
     --without-crc32-la) buildcrc32la=0; shift ;;
     --with-reduced-mem) reducedmem=1; shift ;;
     -a*=* | --archs=*) ARCHS=$(echo $1 | sed 's/.*=//'); shift ;;
@@ -1702,38 +1704,38 @@ EOF
     fi
 }
 
-check_vgfma_intrinsics() {
-    # Check whether "VECTOR GALOIS FIELD MULTIPLY SUM AND ACCUMULATE" intrinsic is available
-    printf "Checking for -mzarch... " | tee -a configure.log
+check_s390_vx_intrinsics() {
+    # Check whether S390 VX intrinsics are available
+    printf "Checking for -mzarch (VX)... " | tee -a configure.log
     if try $CC -x c -c /dev/null -o /dev/null -mzarch; then
         echo Yes. | tee -a configure.log
-        vgfmaflag="${vgfmaflag} -mzarch"
+        s390vxflag="${s390vxflag} -mzarch"
     else
         echo No. | tee -a configure.log
     fi
-    printf "Checking for -fzvector... " | tee -a configure.log
+    printf "Checking for -fzvector (VX)... " | tee -a configure.log
     if try $CC -x c -c /dev/null -o /dev/null -fzvector; then
         echo Yes. | tee -a configure.log
-        vgfmaflag="${vgfmaflag} -fzvector"
+        s390vxflag="${s390vxflag} -fzvector"
     else
         echo No. | tee -a configure.log
     fi
     cat > $test.c << EOF
 #include <vecintrin.h>
 int main(void) {
-    unsigned long long a __attribute__((vector_size(16))) = { 0 };
-    unsigned long long b __attribute__((vector_size(16))) = { 0 };
-    unsigned char c __attribute__((vector_size(16))) = { 0 };
-    c = vec_gfmsum_accum_128(a, b, c);
-    return c[0];
+    unsigned char a __attribute__((vector_size(16))) = { 0 };
+    unsigned char b __attribute__((vector_size(16))) = { 0 };
+    a = vec_sub(a, b);
+    a = vec_xl(0, (unsigned char *)0);
+    return a[0];
 }
 EOF
-    printf "Checking for VGFMA support... " | tee -a configure.log
-    if try $CC -c $CFLAGS $vgfmaflag $test.c; then
-        HAVE_VGFMA_INTRIN=1
+    printf "Checking for S390 VX support... " | tee -a configure.log
+    if try $CC -c $CFLAGS $s390vxflag $test.c; then
+        HAVE_S390_VX_INTRIN=1
         echo "Yes." | tee -a configure.log
     else
-        HAVE_VGFMA_INTRIN=0
+        HAVE_S390_VX_INTRIN=0
         echo "No." | tee -a configure.log
     fi
 }
@@ -2246,7 +2248,7 @@ EOF
         ARCHDIR=arch/s390
 
         if test $without_optimizations -eq 0; then
-            if test $buildcrc32vx -eq 1; then
+            if test $builds390vx -eq 1; then
                 CFLAGS="${CFLAGS} -DS390_FEATURES"
                 SFLAGS="${SFLAGS} -DS390_FEATURES"
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} s390_features.o"
@@ -2269,14 +2271,14 @@ EOF
                 ARCH="${ARCH}+dfltcc-inflate"
             fi
 
-            if test $buildcrc32vx -eq 1; then
-                check_vgfma_intrinsics
-                if test $HAVE_VGFMA_INTRIN -eq 1; then
-                    CFLAGS="${CFLAGS} -DS390_CRC32_VX"
-                    SFLAGS="${SFLAGS} -DS390_CRC32_VX"
-                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32-vx.o"
-                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32-vx.lo"
-                    ARCH="${ARCH}+crc32-vx"
+            if test $builds390vx -eq 1; then
+                check_s390_vx_intrinsics
+                if test $HAVE_S390_VX_INTRIN -eq 1; then
+                    CFLAGS="${CFLAGS} -DS390_VX"
+                    SFLAGS="${SFLAGS} -DS390_VX"
+                    ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} crc32_vx.o slide_hash_vx.o"
+                    ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} crc32_vx.lo slide_hash_vx.lo"
+                    ARCH="${ARCH}+s390-vx"
                 fi
             fi
         fi
@@ -2537,7 +2539,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^NEONFLAG *=/s#=.*#=$neonflag#
 /^ARMV6FLAG *=/s#=.*#=$armv6flag#
 /^NOLTOFLAG *=/s#=.*#=$noltoflag#
-/^VGFMAFLAG *=/s#=.*#=$vgfmaflag#
+/^S390VXFLAG *=/s#=.*#=$s390vxflag#
 /^PPCFLAGS *=/s#=.*#=$vmxflag#
 /^RVVFLAG *=/s#=.*#=$rvvflag#
 /^RVVZBCFLAG *=/s#=.*#=$rvvzbcflag#

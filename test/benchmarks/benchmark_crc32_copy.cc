@@ -161,7 +161,7 @@ BENCHMARK_CRC32_COPY(braid, crc32_braid, crc32_copy_braid, 1);
 #  ifdef RISCV_CRC32_ZBC
     BENCHMARK_CRC32_COPY(riscv, crc32_riscv, crc32_copy_riscv64_zbc, test_cpu_features.riscv.has_zbc)
 #  endif
-#  ifdef S390_CRC32_VX
+#  ifdef S390_VX
     BENCHMARK_CRC32_COPY(vx, crc32_s390_vx, crc32_copy_s390_vx, test_cpu_features.s390.has_vx)
 #  endif
 #  ifdef X86_PCLMULQDQ_CRC

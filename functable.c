@@ -109,7 +109,7 @@ static int init_functable(void) {
     ft.crc32 = &crc32_braid;
     ft.crc32_copy = &crc32_copy_braid;
 #    endif
-#  elif defined(S390_CRC32_VX_NATIVE)
+#  elif defined(S390_VX_NATIVE)
     ft.adler32 = &adler32_c;
     ft.adler32_copy = &adler32_copy_c;
     ft.chunkmemset_safe = &chunkmemset_safe_c;
@@ -399,13 +399,14 @@ static int init_functable(void) {
 #endif
 
     // S390
-#ifdef S390_CRC32_VX
-#  ifndef S390_CRC32_VX_NATIVE
+#ifdef S390_VX
+#  ifndef S390_VX_NATIVE
     if (cf.s390.has_vx)
 #  endif
     {
         ft.crc32 = &crc32_s390_vx;
         ft.crc32_copy = &crc32_copy_s390_vx;
+        ft.slide_hash = &slide_hash_vx;
     }
 #endif
 

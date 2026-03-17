@@ -73,7 +73,7 @@ TEST_CRC32_COPY(braid, crc32_copy_braid, 1)
 #  ifdef POWER8_VSX_CRC32
     TEST_CRC32_COPY(power8, crc32_copy_power8, test_cpu_features.power.has_arch_2_07)
 #  endif
-#  ifdef S390_CRC32_VX
+#  ifdef S390_VX
     TEST_CRC32_COPY(vx, crc32_copy_s390_vx, test_cpu_features.s390.has_vx)
 #  endif
 #  ifdef X86_PCLMULQDQ_CRC

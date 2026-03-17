@@ -6,8 +6,8 @@
 #define S390_NATIVES_H_
 
 #if defined(__zarch__) && __ARCH__ >= 11 && defined(__VX__)
-#  ifdef S390_CRC32_VX
-#    define S390_CRC32_VX_NATIVE
+#  ifdef S390_VX
+#    define S390_VX_NATIVE
 #  endif
 #endif
 
