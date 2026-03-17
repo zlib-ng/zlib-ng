@@ -50,7 +50,7 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
 }
 
 Z_INTERNAL uint32_t adler32_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
-    adler = FUNCTABLE_CALL(adler32)(adler, src, len);
+    adler = adler32_c(adler, src, len);
     memcpy(dst, src, len);
     return adler;
 }
