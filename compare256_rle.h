@@ -52,7 +52,7 @@ static inline uint32_t compare256_rle_64(const uint8_t *src0, const uint8_t *src
         mv = zng_memread_8(src1);
         diff = sv ^ mv;
         if (diff)
-            return len + zng_ctz64(Z_U64_TO_LE(diff)) / 8;
+            return len + zng_first_diff_byte64(diff);
 
         src1 += 8, len += 8;
     } while (len < 256);

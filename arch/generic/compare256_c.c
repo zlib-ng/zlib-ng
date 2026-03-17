@@ -44,14 +44,14 @@ static inline uint32_t compare256_64_static(const uint8_t *src0, const uint8_t *
         uint64_t mv = zng_memread_8(src1);
         uint64_t diff = sv ^ mv;
         if (diff)
-            return len + zng_ctz64(Z_U64_TO_LE(diff)) / 8;
+            return len + zng_first_diff_byte64(diff);
         src0 += 8, src1 += 8, len += 8;
 
         sv = zng_memread_8(src0);
         mv = zng_memread_8(src1);
         diff = sv ^ mv;
         if (diff)
-            return len + zng_ctz64(Z_U64_TO_LE(diff)) / 8;
+            return len + zng_first_diff_byte64(diff);
         src0 += 8, src1 += 8, len += 8;
     } while (len < 256);
 

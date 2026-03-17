@@ -67,6 +67,69 @@ Z_FORCEINLINE static uint32_t zng_ctz64(uint64_t value) {
 #endif
 }
 
+/* Count leading zeros (CLZ) functions with portable fallback.
+ *
+ * Predicate: Input must be non-zero. The result is undefined for zero input because
+ * __builtin_clz, BSR, and LZCNT all have undefined/different behavior for zero. LZCNT
+ * returns operand size for zero, BSR leaves destination undefined, and __builtin_clz
+ * is explicitly undefined per GCC/Clang docs. */
+
+Z_FORCEINLINE static uint32_t zng_clz32(uint32_t value) {
+    Assert(value != 0, "Invalid input value: 0");
+#if __has_builtin(__builtin_clz)
+    return (uint32_t)__builtin_clz(value);
+#elif defined(_MSC_VER) && !defined(__clang__)
+    unsigned long leading_zero;
+    _BitScanReverse(&leading_zero, value);
+    return 31u - (uint32_t)leading_zero;
+#else
+    /* Smear the highest set bit down, isolate it, then reuse de Bruijn CTZ */
+    value |= value >> 1;
+    value |= value >> 2;
+    value |= value >> 4;
+    value |= value >> 8;
+    value |= value >> 16;
+    return 31u - zng_ctz32((value >> 1) + 1u);
+#endif
+}
+
+Z_FORCEINLINE static uint32_t zng_clz64(uint64_t value) {
+    Assert(value != 0, "Invalid input value: 0");
+#if __has_builtin(__builtin_clzll)
+    return (uint32_t)__builtin_clzll(value);
+#elif defined(_MSC_VER) && !defined(__clang__) && defined(ARCH_64BIT)
+    unsigned long leading_zero;
+    _BitScanReverse64(&leading_zero, value);
+    return 63u - (uint32_t)leading_zero;
+#elif defined(_MSC_VER) && !defined(__clang__)
+    /* 32-bit MSVC fallback using two 32-bit scans */
+    unsigned long leading_zero;
+    if (_BitScanReverse(&leading_zero, (uint32_t)(value >> 32)))
+        return 31u - (uint32_t)leading_zero;
+    _BitScanReverse(&leading_zero, (uint32_t)value);
+    return 63u - (uint32_t)leading_zero;
+#else
+    /* Smear the highest set bit down, isolate it, then reuse de Bruijn CTZ */
+    value |= value >> 1;
+    value |= value >> 2;
+    value |= value >> 4;
+    value |= value >> 8;
+    value |= value >> 16;
+    value |= value >> 32;
+    return 63u - zng_ctz64((value >> 1) + 1ull);
+#endif
+}
+
+/* Byte-position of the first differing byte in a native-endian XOR diff,
+ * using CTZ on little-endian and CLZ on big-endian to avoid a byte-swap. */
+#if BYTE_ORDER == BIG_ENDIAN
+#  define zng_first_diff_byte32(diff) (zng_clz32(diff) / 8)
+#  define zng_first_diff_byte64(diff) (zng_clz64(diff) / 8)
+#else
+#  define zng_first_diff_byte32(diff) (zng_ctz32(diff) / 8)
+#  define zng_first_diff_byte64(diff) (zng_ctz64(diff) / 8)
+#endif
+
 Z_FORCEINLINE static uint16_t zng_bitreverse16(uint16_t value) {
 #if __has_builtin(__builtin_bitreverse16)
     return (uint16_t)__builtin_bitreverse16(value);
