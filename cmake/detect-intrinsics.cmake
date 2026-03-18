@@ -334,6 +334,30 @@ macro(check_neon_ld4_intrinsics)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
+macro(check_neon_dotprod_compiler_flag)
+    if(NOT NATIVEFLAG)
+        if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+            set(NEONDOTPRODFLAG "-march=armv8.2-a+dotprod")
+        endif()
+    endif()
+    set(CMAKE_REQUIRED_FLAGS "${NEONDOTPRODFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
+    check_c_source_compiles(
+        "#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+        #  include <arm64_neon.h>
+        #else
+        #  include <arm_neon.h>
+        #endif
+        int main(void) {
+            uint8x16_t a = vdupq_n_u8(1);
+            uint8x16_t b = vdupq_n_u8(2);
+            uint32x4_t c = vdupq_n_u32(0);
+            c = vdotq_u32(c, a, b);
+            return vgetq_lane_u32(c, 0);
+        }"
+        NEON_HAS_DOTPROD)
+    set(CMAKE_REQUIRED_FLAGS)
+endmacro()
+
 macro(check_pclmulqdq_intrinsics)
     if(NOT NATIVEFLAG)
         if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "IntelLLVM" OR CMAKE_C_COMPILER_ID MATCHES "NVHPC")

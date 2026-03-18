@@ -11,6 +11,7 @@ SUFFIX=
 ARMV8FLAG=
 PMULLEOR3FLAG=
 NEONFLAG=
+NEONDOTPRODFLAG=
 ARMV6FLAG=
 NOLTOFLAG=
 
@@ -20,6 +21,7 @@ TOPDIR=$(SRCTOP)
 
 all: \
 	adler32_neon.o adler32_neon.lo \
+	adler32_neon_dotprod.o adler32_neon_dotprod.lo \
 	arm_features.o arm_features.lo \
 	chunkset_neon.o chunkset_neon.lo \
 	compare256_neon.o compare256_neon.lo \
@@ -33,6 +35,12 @@ adler32_neon.o:
 
 adler32_neon.lo:
 	$(CC) $(SFLAGS) $(NEONFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_neon.c
+
+adler32_neon_dotprod.o:
+	$(CC) $(CFLAGS) $(NEONDOTPRODFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_neon_dotprod.c
+
+adler32_neon_dotprod.lo:
+	$(CC) $(SFLAGS) $(NEONDOTPRODFLAG) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/adler32_neon_dotprod.c
 
 arm_features.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/arm_features.c

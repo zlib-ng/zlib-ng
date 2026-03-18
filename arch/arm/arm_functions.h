@@ -18,6 +18,11 @@ uint32_t longest_match_roll_neon(deflate_state *const s, uint32_t cur_match);
 void slide_hash_neon(deflate_state *s);
 #endif
 
+#ifdef ARM_NEON_DOTPROD
+uint32_t adler32_neon_dotprod(uint32_t adler, const uint8_t *buf, size_t len);
+uint32_t adler32_copy_neon_dotprod(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+#endif
+
 #ifndef ARM_NEON_NATIVE
 #  define ADLER32_FALLBACK
 #  define CHUNKSET_FALLBACK
@@ -69,6 +74,13 @@ void slide_hash_armv6(deflate_state *s);
 #    define native_longest_match_roll longest_match_roll_neon
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_neon
+#  endif
+// ARM - NEON DotProd
+#  ifdef ARM_NEON_DOTPROD_NATIVE
+#    undef native_adler32
+#    define native_adler32 adler32_neon_dotprod
+#    undef native_adler32_copy
+#    define native_adler32_copy adler32_copy_neon_dotprod
 #  endif
 // ARM - CRC32
 #  ifdef ARM_CRC32_NATIVE

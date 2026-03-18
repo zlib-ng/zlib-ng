@@ -174,6 +174,48 @@ static int arm_has_eor3(void) {
     return has_eor3;
 }
 
+static int arm_has_dotprod(void) {
+    int has_dotprod = 0;
+#if defined(__ARM_FEATURE_DOTPROD)
+    /* Compile-time check */
+    has_dotprod = 1;
+#elif defined(__linux__) && defined(HAVE_SYS_AUXV_H)
+#  ifdef HWCAP_ASIMDDP
+    has_dotprod = (getauxval(AT_HWCAP) & HWCAP_ASIMDDP) != 0;
+#  endif
+#elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
+#  ifdef HWCAP_ASIMDDP
+    unsigned long hwcap = 0;
+    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    has_dotprod = (hwcap & HWCAP_ASIMDDP) != 0;
+#  endif
+#elif defined(__FreeBSD__) && defined(ARCH_64BIT)
+#  ifdef ID_AA64ISAR0_DP_VAL
+    has_dotprod = getenv("QEMU_EMULATING") == NULL
+      && ID_AA64ISAR0_DP_VAL(READ_SPECIALREG(id_aa64isar0_el1)) >= ID_AA64ISAR0_DP_IMPL;
+#  endif
+#elif defined(__OpenBSD__) && defined(ARCH_64BIT)
+#  ifdef ID_AA64ISAR0_DP
+    int isar0_mib[] = { CTL_MACHDEP, CPU_ID_AA64ISAR0 };
+    uint64_t isar0 = 0;
+    size_t len = sizeof(isar0);
+    if (sysctl(isar0_mib, 2, &isar0, &len, NULL, 0) != -1) {
+      has_dotprod = ID_AA64ISAR0_DP(isar0) >= ID_AA64ISAR0_DP_IMPL;
+    }
+#  endif
+#elif defined(__APPLE__)
+    int has_feat = 0;
+    size_t size = sizeof(has_feat);
+    has_dotprod = sysctlbyname("hw.optional.arm.FEAT_DotProd", &has_feat, &size, NULL, 0) == 0
+        && has_feat == 1;
+#elif defined(_WIN32)
+#  ifdef PF_ARM_V82_DP_INSTRUCTIONS_AVAILABLE
+    has_dotprod = IsProcessorFeaturePresent(PF_ARM_V82_DP_INSTRUCTIONS_AVAILABLE);
+#  endif
+#endif
+    return has_dotprod;
+}
+
 /* AArch64 has neon. */
 #ifdef ARCH_32BIT
 static inline int arm_has_neon(void) {
@@ -329,6 +371,7 @@ void Z_INTERNAL arm_check_features(struct arm_cpu_features *features) {
     features->has_pmull = arm_has_pmull();
     features->has_eor3 = arm_has_eor3();
     features->has_fast_pmull = features->has_pmull && arm_cpu_has_fast_pmull();
+    features->has_dotprod = arm_has_dotprod();
 }
 
 #endif

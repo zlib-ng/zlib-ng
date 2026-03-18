@@ -1,8 +1,10 @@
 /* Copyright (C) 1995-2011, 2016 Mark Adler
  * Copyright (C) 2017 ARM Holdings Inc.
+ * Copyright (C) 2025 Nathan Moinvaziri
  * Authors:
  *   Adenilson Cavalcanti <adenilson.cavalcanti@arm.com>
  *   Adam Stylinski <kungfujesus06@gmail.com>
+ *   Nathan Moinvaziri <nathan@nathanm.com>
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -10,7 +12,12 @@
 #include "neon_intrins.h"
 #include "adler32_p.h"
 
+#ifdef USE_DOTPROD
+/* Multiplication table for dotprod - must be uint8_t for vdotq_u32 */
+static const uint8_t ALIGNED_(64) taps[64] = {
+#else
 static const uint16_t ALIGNED_(64) taps[64] = {
+#endif
     64, 63, 62, 61, 60, 59, 58, 57,
     56, 55, 54, 53, 52, 51, 50, 49,
     48, 47, 46, 45, 44, 43, 42, 41,
@@ -69,11 +76,36 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
     while (len >= 16) {
         n = MIN(len, n);
 
+#ifdef USE_DOTPROD
+        /* Use 4 independent accumulator sets to break dependency chains
+         * and allow better instruction-level parallelism */
+        uint32x4_t adacc_a = vdupq_n_u32(0);
+        uint32x4_t adacc_b = vdupq_n_u32(0);
+        uint32x4_t adacc_c = vdupq_n_u32(0);
+        uint32x4_t adacc_d = vdupq_n_u32(0);
+        uint32x4_t s2acc_a = vdupq_n_u32(0);
+        uint32x4_t s2acc_b = vdupq_n_u32(0);
+        uint32x4_t s2acc_c = vdupq_n_u32(0);
+        uint32x4_t s2acc_d = vdupq_n_u32(0);
+        uint32x4_t s1sums_a = vdupq_n_u32(0);
+        uint32x4_t s1sums_b = vdupq_n_u32(0);
+        uint32x4_t s1sums_c = vdupq_n_u32(0);
+        uint32x4_t s1sums_d = vdupq_n_u32(0);
+
+        adacc_a = vsetq_lane_u32(pair[0], adacc_a, 0);
+        s2acc_a = vsetq_lane_u32(pair[1], s2acc_a, 0);
+
+        /* Load multiplication tables as uint8x16_t for dotprod */
+        uint8x16_t t0 = vld1q_u8(taps);
+        uint8x16_t t1 = vld1q_u8(taps + 16);
+        uint8x16_t t2 = vld1q_u8(taps + 32);
+        uint8x16_t t3 = vld1q_u8(taps + 48);
+
+        /* Vector of ones for s1 accumulation */
+        uint8x16_t ones = vdupq_n_u8(1);
+#else
         uint32x4_t adacc = vdupq_n_u32(0);
         uint32x4_t s2acc = vdupq_n_u32(0);
-        uint32x4_t s2acc_0 = vdupq_n_u32(0);
-        uint32x4_t s2acc_1 = vdupq_n_u32(0);
-        uint32x4_t s2acc_2 = vdupq_n_u32(0);
 
         adacc = vsetq_lane_u32(pair[0], adacc, 0);
         s2acc = vsetq_lane_u32(pair[1], s2acc, 0);
@@ -81,11 +113,16 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
         uint32x4_t s3acc = vdupq_n_u32(0);
         uint32x4_t adacc_prev = adacc;
 
+        uint32x4_t s2acc_0 = vdupq_n_u32(0);
+        uint32x4_t s2acc_1 = vdupq_n_u32(0);
+        uint32x4_t s2acc_2 = vdupq_n_u32(0);
+
         uint16x8_t s2_0, s2_1, s2_2, s2_3;
         s2_0 = s2_1 = s2_2 = s2_3 = vdupq_n_u16(0);
 
         uint16x8_t s2_4, s2_5, s2_6, s2_7;
         s2_4 = s2_5 = s2_6 = s2_7 = vdupq_n_u16(0);
+#endif
 
         size_t num_iter = (n >> 4) >> 2;
         int rem = (n >> 4) & 3;
@@ -114,6 +151,26 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
                 d3 = d0_d3.val[3];
             }
 
+#ifdef USE_DOTPROD
+            /* Each 16-byte chunk uses its own accumulator set so that
+             * successive dotprod instructions are independent and can
+             * be pipelined without stalling on the previous result */
+            s1sums_a = vaddq_u32(s1sums_a, adacc_a);
+            adacc_a = vdotq_u32(adacc_a, d0, ones);
+            s2acc_a = vdotq_u32(s2acc_a, d0, t0);
+
+            s1sums_b = vaddq_u32(s1sums_b, adacc_b);
+            adacc_b = vdotq_u32(adacc_b, d1, ones);
+            s2acc_b = vdotq_u32(s2acc_b, d1, t1);
+
+            s1sums_c = vaddq_u32(s1sums_c, adacc_c);
+            adacc_c = vdotq_u32(adacc_c, d2, ones);
+            s2acc_c = vdotq_u32(s2acc_c, d2, t2);
+
+            s1sums_d = vaddq_u32(s1sums_d, adacc_d);
+            adacc_d = vdotq_u32(adacc_d, d3, ones);
+            s2acc_d = vdotq_u32(s2acc_d, d3, t3);
+#else
             /* Unfortunately it doesn't look like there's a direct sum 8 bit to 32
              * bit instruction, we'll have to make due summing to 16 bits first */
             uint16x8x2_t hsum, hsum_fold;
@@ -141,12 +198,25 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
             s2_5 = vaddw_high_u8(s2_5, d2);
             s2_6 = vaddw_u8(s2_6, vget_low_u8(d3));
             s2_7 = vaddw_high_u8(s2_7, d3);
+#endif
 
+#ifndef USE_DOTPROD
             adacc_prev = adacc;
+#endif
             src += 64;
         }
 
+#ifdef USE_DOTPROD
+        /* Combine 4 independent accumulator sets into single vectors
+         * for the remainder loop and final reduction */
+        uint32x4_t adacc = vaddq_u32(vaddq_u32(adacc_a, adacc_b), vaddq_u32(adacc_c, adacc_d));
+        uint32x4_t s2acc = vaddq_u32(vaddq_u32(s2acc_a, s2acc_b), vaddq_u32(s2acc_c, s2acc_d));
+        uint32x4_t s1sums = vaddq_u32(vaddq_u32(s1sums_a, s1sums_b), vaddq_u32(s1sums_c, s1sums_d));
+        uint32x4_t s3acc = vshlq_n_u32(s1sums, 6);
+        uint32x4_t adacc_prev = adacc;
+#else
         s3acc = vshlq_n_u32(s3acc, 6);
+#endif
 
         if (rem) {
             uint32x4_t s3acc_0 = vdupq_n_u32(0);
@@ -156,12 +226,20 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
                     vst1q_u8(dst, d0);
                     dst += 16;
                 }
+
+#ifdef USE_DOTPROD
+                s3acc_0 = vaddq_u32(s3acc_0, adacc_prev);
+                adacc = vdotq_u32(adacc, d0, ones);
+                s2acc = vdotq_u32(s2acc, d0, t3);
+#else
                 uint16x8_t hsum;
                 hsum = vpaddlq_u8(d0);
                 s2_6 = vaddw_u8(s2_6, vget_low_u8(d0));
                 s2_7 = vaddw_high_u8(s2_7, d0);
                 adacc = vpadalq_u16(adacc, hsum);
                 s3acc_0 = vaddq_u32(s3acc_0, adacc_prev);
+#endif
+
                 adacc_prev = adacc;
                 src += 16;
             }
@@ -170,6 +248,12 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
             s3acc = vaddq_u32(s3acc_0, s3acc);
         }
 
+#ifdef USE_DOTPROD
+        /* Dotprod computes weighted sums inline, so final reduction is simple */
+        s2acc = vaddq_u32(s2acc, s3acc);
+        pair[0] = vaddvq_u32(adacc);
+        pair[1] = vaddvq_u32(s2acc);
+#else
         uint16x8x4_t t0_t3 = vld1q_u16_x4_ex(taps, 256);
         uint16x8x4_t t4_t7 = vld1q_u16_x4_ex(taps + 32, 256);
 
@@ -200,6 +284,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
         s2acc = vaddq_u32(s2acc, s3acc);
         pair[0] = vaddvq_u32(adacc);
         pair[1] = vaddvq_u32(s2acc);
+#endif
 
         pair[0] %= BASE;
         pair[1] %= BASE;

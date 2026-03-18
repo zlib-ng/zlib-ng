@@ -129,6 +129,7 @@ lasxflag="-mlasx"
 armv8flag=
 pmulleor3flag=
 neonflag=
+neondotprodflag=
 rvvflag=
 rvvzbcflag=
 zbcflag=
@@ -1334,6 +1335,31 @@ EOF
     fi
 }
 
+check_neon_dotprod_compiler_flag() {
+    neondotprodflag="-march=armv8.2-a+dotprod"
+    cat > $test.c << EOF
+#if defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+#  include <arm64_neon.h>
+#else
+#  include <arm_neon.h>
+#endif
+int main(void) {
+    uint8x16_t a = vdupq_n_u8(1);
+    uint8x16_t b = vdupq_n_u8(2);
+    uint32x4_t c = vdupq_n_u32(0);
+    c = vdotq_u32(c, a, b);
+    return vgetq_lane_u32(c, 0);
+}
+EOF
+    if try $CC -c $CFLAGS $neondotprodflag $test.c; then
+        NEON_HAS_DOTPROD=1
+        echo "Check whether compiler supports NEON dotprod intrinsics ... Yes." | tee -a configure.log
+    else
+        NEON_HAS_DOTPROD=0
+        echo "Check whether compiler supports NEON dotprod intrinsics ... No." | tee -a configure.log
+    fi
+}
+
 check_neon_ld4_intrinsics() {
     cat > $test.c << EOF
 #if defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
@@ -2011,6 +2037,15 @@ EOF
 
                     ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon.o chunkset_neon.o compare256_neon.o slide_hash_neon.o"
                     ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon.lo chunkset_neon.lo compare256_neon.lo slide_hash_neon.lo"
+
+                    check_neon_dotprod_compiler_flag
+
+                    if test $NEON_HAS_DOTPROD -eq 1 && test $ARCH_64BIT -eq 1; then
+                        CFLAGS="${CFLAGS} -DARM_NEON_DOTPROD"
+                        SFLAGS="${SFLAGS} -DARM_NEON_DOTPROD"
+                        ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} adler32_neon_dotprod.o"
+                        ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} adler32_neon_dotprod.lo"
+                    fi
                 fi
             fi
 
@@ -2318,6 +2353,7 @@ echo xsaveflag = $xsaveflag >> configure.log
 echo armv8flag = $armv8flag >> configure.log
 echo pmulleor3flag = $pmulleor3flag >> configure.log
 echo neonflag = $neonflag >> configure.log
+echo neondotprodflag = $neondotprodflag >> configure.log
 echo armv6flag = $armv6flag >> configure.log
 echo lsxflag = $lsxflag >> configure.log
 echo lasxflag = $lasxflag >> configure.log
@@ -2464,6 +2500,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^ARMV8FLAG *=/s#=.*#=$armv8flag#
 /^PMULLEOR3FLAG *=/s#=.*#=$pmulleor3flag#
 /^NEONFLAG *=/s#=.*#=$neonflag#
+/^NEONDOTPRODFLAG *=/s#=.*#=$neondotprodflag#
 /^ARMV6FLAG *=/s#=.*#=$armv6flag#
 /^NOLTOFLAG *=/s#=.*#=$noltoflag#
 /^S390VXFLAG *=/s#=.*#=$s390vxflag#

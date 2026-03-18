@@ -16,6 +16,12 @@
 #    define ARM_NEON_NATIVE
 #  endif
 #endif
+/* DotProd is optional in ARMv8.2+, mandatory in ARMv8.4+ */
+#if defined(__ARM_FEATURE_DOTPROD)
+#  ifdef ARM_NEON_DOTPROD
+#    define ARM_NEON_DOTPROD_NATIVE
+#  endif
+#endif
 /* CRC32 is optional in ARMv8.0, mandatory in ARMv8.1+ */
 #if defined(__ARM_FEATURE_CRC32) || (defined(__ARM_ARCH) && __ARM_ARCH >= 801)
 #  ifdef ARM_CRC32

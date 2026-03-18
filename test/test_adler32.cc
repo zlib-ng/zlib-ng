@@ -47,7 +47,11 @@ TEST_ADLER32(native, native_adler32, 1)
 
 #ifdef ARM_NEON
 TEST_ADLER32(neon, adler32_neon, test_cpu_features.arm.has_neon)
-#elif defined(POWER8_VSX)
+#endif
+#ifdef ARM_NEON_DOTPROD
+TEST_ADLER32(neon_dotprod, adler32_neon_dotprod, test_cpu_features.arm.has_neon && test_cpu_features.arm.has_dotprod)
+#endif
+#if defined(POWER8_VSX)
 TEST_ADLER32(power8, adler32_power8, test_cpu_features.power.has_arch_2_07)
 #elif defined(PPC_VMX)
 TEST_ADLER32(vmx, adler32_vmx, test_cpu_features.power.has_altivec)

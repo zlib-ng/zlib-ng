@@ -268,6 +268,16 @@ static int init_functable(void) {
         ft.slide_hash = &slide_hash_neon;
     }
 #endif
+    // ARM - NEON DotProd
+#ifdef ARM_NEON_DOTPROD
+#  ifndef ARM_NEON_DOTPROD_NATIVE
+    if (cf.arm.has_neon && cf.arm.has_dotprod)
+#  endif
+    {
+        ft.adler32 = &adler32_neon_dotprod;
+        ft.adler32_copy = &adler32_copy_neon_dotprod;
+    }
+#endif
     // ARM - CRC32
 #if defined(ARM_CRC32) && !defined(ARM_PMULL_EOR3_NATIVE)
 #  ifndef ARM_CRC32_NATIVE
