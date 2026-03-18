@@ -6,8 +6,6 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef ARM_NEON
-
 #include "zbuild.h"
 #include "neon_intrins.h"
 #include "adler32_p.h"
@@ -213,20 +211,3 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
     /* Process tail (len < 16).  */
     return adler32_copy_tail(pair[0], dst, src, len, pair[1], len != 0 || align_diff, 15, COPY);
 }
-
-Z_INTERNAL uint32_t adler32_neon(uint32_t adler, const uint8_t *src, size_t len) {
-    return adler32_copy_impl(adler, NULL, src, len, 0);
-}
-
-Z_INTERNAL uint32_t adler32_copy_neon(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
-#if OPTIMAL_CMP >= 32
-    return adler32_copy_impl(adler, dst, src, len, 1);
-#else
-    /* Without unaligned access, interleaved stores get decomposed into byte ops */
-    adler = adler32_neon(adler, src, len);
-    memcpy(dst, src, len);
-    return adler;
-#endif
-}
-
-#endif
