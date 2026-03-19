@@ -99,9 +99,10 @@ jobs:
 
     - name: Generate coverage report
       if: matrix.coverage
+      shell: bash
       run: |
-        python3 -u -m pip install gcovr
-        python3 -m gcovr -j 5 --gcov-ignore-parse-errors --verbose \
+        python -u -m pip install gcovr
+        python -m gcovr -j 5 --gcov-ignore-parse-errors --verbose \
           --exclude '(.*/|^)(_deps|benchmarks)/.*' \
           --exclude-unreachable-branches \
           --merge-mode-functions separate \
