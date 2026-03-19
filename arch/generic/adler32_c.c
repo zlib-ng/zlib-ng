@@ -23,24 +23,26 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
     if (UNLIKELY(len < 16))
         return adler32_copy_tail(adler, NULL, buf, len, sum2, 1, 15, 0);
 
+    /* Align source to 8 bytes so SWAR loads are naturally aligned */
+    size_t align_diff = ALIGN_DIFF(buf, 8);
+    if (align_diff) {
+        adler32_copy_align(&adler, NULL, buf, align_diff, &sum2, 7, 0);
+        buf += align_diff;
+        len -= align_diff;
+    }
+
     /* do length NMAX blocks -- requires just one modulo operation */
     while (len >= NMAX) {
         len -= NMAX;
-#if OPTIMAL_CMP >= 64
         n = NMAX;
+
         do {
             size_t chunk = MIN(ALIGN_DOWN(n, 8), ADLER32_SWAR_MAX_BYTES);
             adler32_swar(&adler, NULL, buf, chunk, &sum2, 0);
             buf += chunk;
             n -= chunk;
         } while (n >= 8);
-#else
-        n = NMAX / 8;
-        do {
-            ADLER_DO8(adler, sum2, buf, 0);
-            buf += 8;
-        } while (--n);
-#endif
+
         adler %= BASE;
         sum2 %= BASE;
     }

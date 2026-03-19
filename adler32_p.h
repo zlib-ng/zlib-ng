@@ -52,9 +52,8 @@ Z_FORCEINLINE static void adler32_copy_align(uint32_t *Z_RESTRICT adler, uint8_t
     }
 }
 
-#if OPTIMAL_CMP >= 64
-/* SWAR scalar adler32 for 64-bit platforms with fast unaligned access. Splits bytes
- * into even/odd lanes packed as 4x16-bit in uint64_t, with prefix sums for s2.
+/* SIMD Within A Register (SWAR) scalar adler32. Splits bytes into
+ * even/odd lanes packed as 4x16-bit in uint64_t, with prefix sums for s2.
  * Reduction uses multiply-and-shift with positional weight constants.
  *
  * Technique pioneered by Michael Niedermayer <michaelni@gmx.at>.
@@ -69,10 +68,11 @@ Z_FORCEINLINE static void adler32_swar(uint32_t *adler, uint8_t *dst, const uint
 
     *sum2 += *adler * (uint32_t)len;
 
+    const uint64_t *src64 = (const uint64_t *)buf;
+
     while (len >= 16) {
-        uint64_t v0, v1;
-        memcpy(&v0, buf, sizeof(v0));
-        memcpy(&v1, buf + 8, sizeof(v1));
+        uint64_t v0 = src64[0];
+        uint64_t v1 = src64[1];
         if (COPY) {
             memcpy(dst, &v0, sizeof(v0));
             memcpy(dst + 8, &v1, sizeof(v1));
@@ -89,14 +89,13 @@ Z_FORCEINLINE static void adler32_swar(uint32_t *adler, uint8_t *dst, const uint
         sum_even +=  v1       & ADLER32_SWAR_EVEN_MASK;
         sum_odd  += (v1 >> 8) & ADLER32_SWAR_EVEN_MASK;
 
-        buf += 16;
+        src64 += 2;
         len -= 16;
     }
 
     /* Handle remaining 8 bytes if present */
     if (len >= 8) {
-        uint64_t v;
-        memcpy(&v, buf, sizeof(v));
+        uint64_t v = *src64;
         if (COPY)
             memcpy(dst, &v, sizeof(v));
 
@@ -131,15 +130,12 @@ Z_FORCEINLINE static void adler32_swar(uint32_t *adler, uint8_t *dst, const uint
 #endif
 }
 
-#endif
-
 Z_FORCEINLINE static uint32_t adler32_copy_tail(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len,
                                                 uint32_t sum2, const int REBASE, const int MAX_LEN, const int COPY) {
     if (len) {
-#if OPTIMAL_CMP >= 64
         Z_UNUSED(MAX_LEN);
-        /* Process using packed 64-bit arithmetic */
-        while (len >= 8) {
+        /* Process using packed 64-bit arithmetic when source is aligned */
+        while (len >= 8 && ((uintptr_t)buf & 7) == 0) {
             size_t chunk = MIN(ALIGN_DOWN(len, 8), ADLER32_SWAR_MAX_BYTES);
             adler32_swar(&adler, dst, buf, chunk, &sum2, COPY);
             buf += chunk;
@@ -147,20 +143,6 @@ Z_FORCEINLINE static uint32_t adler32_copy_tail(uint32_t adler, uint8_t *dst, co
                 dst += chunk;
             len -= chunk;
         }
-#else
-        /* DO16 loop for large remainders only (scalar, risc-v). */
-        if (MAX_LEN >= 32) {
-            while (len >= 16) {
-                if (COPY) {
-                    memcpy(dst, buf, 16);
-                    dst += 16;
-                }
-                len -= 16;
-                ADLER_DO16(adler, sum2, buf);
-                buf += 16;
-            }
-        }
-#endif
         /* DO4 loop avoids GCC x86 register pressure from hoisted DO8/DO16 loads. */
         while (len >= 4) {
             if (COPY) {
