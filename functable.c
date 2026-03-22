@@ -472,6 +472,12 @@ static int init_functable(void) {
     return Z_OK;
 }
 
+#if !defined(_WIN32) && (defined(__GNUC__) || defined(__clang__))
+static void __attribute__((constructor)) functable_constructor(void) {
+    FUNCTABLE_INIT_ABORT;
+}
+#endif
+
 /* stub functions */
 static int force_init_stub(void) {
     return init_functable();
