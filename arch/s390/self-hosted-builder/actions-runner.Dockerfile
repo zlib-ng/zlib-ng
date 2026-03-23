@@ -17,8 +17,9 @@ RUN     cd /tmp && \
         cd runner && \
         git checkout $(git tag --sort=-v:refname | grep '^v[0-9]' | head -n1) && \
         git log -n 1 && \
-        wget https://github.com/ppc64le/gaplib/raw/refs/heads/main/patches/runner-main-sdk8-s390x.patch -O runner-sdk-8.patch && \
-        git apply --whitespace=nowarn runner-sdk-8.patch && \
+        wget https://raw.githubusercontent.com/IBM/action-runner-image-pz/refs/heads/main/patches/runner-sdk8-s390x.patch -O runner-sdk8-s390x.patch && \
+        git apply --whitespace=nowarn runner-sdk8-s390x.patch && \
+
         sed -i'' -e /version/s/8......\"$/$8.0.100\"/ src/global.json
 
 RUN     cd /tmp/runner/src && \

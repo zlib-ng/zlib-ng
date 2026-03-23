@@ -24,6 +24,9 @@ podman container rm gaplib-actions-runner || true
 # Delete old image
 podman image rm localhost/zlib-ng/actions-runner || true
 
+# Prune all unused podman data
+podman system prune -f || true
+
 # Build new image
 podman build --squash -f actions-runner.Dockerfile --tag zlib-ng/actions-runner . 2>&1 | tee /var/log/actions-runner-build.log
 
