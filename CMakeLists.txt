@@ -255,7 +255,7 @@ elseif(MSVC)
     # /Oi ?
     set(WARNFLAGS /W3 /w34242 /WX)
     set(WARNFLAGS_MAINTAINER /W4)
-    set(WARNFLAGS_DISABLE /wd4206 /wd4054 /wd4324)
+    set(WARNFLAGS_DISABLE /wd4206 /wd4054 /wd4310 /wd4324)
     if(BASEARCH_ARM_FOUND)
         add_definitions(-D_ARM_WINAPI_PARTITION_DESKTOP_SDK_AVAILABLE)
         if(ARCH_32BIT)
