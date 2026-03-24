@@ -86,12 +86,15 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         }
 
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
-            hash_head = quick_insert_string(s, s->strstart);
-            dist = (int64_t)s->strstart - hash_head;
+            uint32_t str_val = Z_U32_FROM_LE(zng_memread_4(window + s->strstart));
+            uint32_t hash_head = quick_insert_value(s, s->strstart, str_val);
+            int64_t dist = (int64_t)s->strstart - hash_head;
+            lc = (uint8_t)str_val;
 
             if (dist <= MAX_DIST(s) && dist > 0) {
                 const uint8_t *str_start = s->window + s->strstart;
                 const uint8_t *match_start = s->window + hash_head;
+                uint32_t match_val = Z_U32_FROM_LE(zng_memread_4(match_start));
 
                 if (zng_memcmp_2(str_start, match_start) == 0) {
                     match_len = FUNCTABLE_CALL(compare256)(str_start+2, match_start+2) + 2;

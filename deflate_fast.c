@@ -41,8 +41,10 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
          * dictionary, and set hash_head to the head of the hash chain:
          */
         if (s->lookahead >= WANT_MIN_MATCH) {
-            hash_head = quick_insert_string(s, s->strstart);
-            dist = (int64_t)s->strstart - hash_head;
+            uint32_t str_val = Z_U32_FROM_LE(zng_memread_4(window + s->strstart));
+            uint32_t hash_head = quick_insert_value(s, s->strstart, str_val);
+            int64_t dist = (int64_t)s->strstart - hash_head;
+            lc = (uint8_t)str_val;
 
             /* Find the longest match, discarding those <= prev_length.
              * At this point we have always match length < WANT_MIN_MATCH

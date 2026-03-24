@@ -4,7 +4,6 @@
  */
 
 #include "zbuild.h"
-#include "zendian.h"
 #include "zutil.h"
 #include "inftrees.h"
 #include "inflate.h"
