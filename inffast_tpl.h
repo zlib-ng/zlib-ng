@@ -246,23 +246,25 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
                             out = CHUNKUNROLL(out, &dist, &len);
                             out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
                         } else {
+#ifdef HAVE_MASKED_READWRITE
+                            out = CHUNKCOPY_SAFE(out, from, op, safe);
+                            out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
+#else
                             out = chunkcopy_safe(out, from, op, safe);
                             out = chunkcopy_safe(out, out - dist, len, safe);
+#endif
                         }
                     } else {
-#ifndef HAVE_MASKED_READWRITE
-                        if (UNLIKELY(safe_mode))
-                            out = chunkcopy_safe(out, from, len, safe);
-                        else
-#endif
+#ifdef HAVE_MASKED_READWRITE
+                        out = CHUNKCOPY_SAFE(out, from, len, safe);
+#else
+                        if (LIKELY(!safe_mode))
                             out = CHUNKCOPY_SAFE(out, from, len, safe);
-                    }
-#ifndef HAVE_MASKED_READWRITE
-                } else if (UNLIKELY(safe_mode)) {
-                    /* Whole reference is in range of current output. */
-                        out = chunkcopy_safe(out, out - dist, len, safe);
+                        else
+                            out = chunkcopy_safe(out, from, len, safe);
 #endif
-                } else {
+                    }
+                } else if (LIKELY(!safe_mode)) {
                     /* Whole reference is in range of current output.  No range checks are
                        necessary because we start with room for at least 258 bytes of output,
                        so unroll and roundoff operations can write beyond `out+len` so long
@@ -272,6 +274,12 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
                         out = CHUNKCOPY(out, out - dist, len);
                     else
                         out = CHUNKMEMSET(out, out - dist, len);
+                } else {
+#ifdef HAVE_MASKED_READWRITE
+                    out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
+#else
+                    out = chunkcopy_safe(out, out - dist, len, safe);
+#endif
                 }
             } else if (UNLIKELY((op & 64) == 0)) {          /* 2nd level distance code */
                 here = dcode[here.val + BITS(op)];
