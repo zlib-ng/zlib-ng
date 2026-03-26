@@ -8,7 +8,7 @@
 #ifdef LOONGARCH_FEATURES
 
 #include "zbuild.h"
-#include "loongarch_features.h"
+#include "cpu_features.h"
 
 #include <larchintrin.h>
 

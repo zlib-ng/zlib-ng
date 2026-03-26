@@ -17,7 +17,7 @@
 #  include "arch/x86/x86_functions.h"
 #elif defined(ARM_FEATURES)
 #  include "arch/arm/arm_functions.h"
-#elif defined(PPC_FEATURES) || defined(POWER_FEATURES)
+#elif defined(POWER_FEATURES)
 #  include "arch/power/power_functions.h"
 #elif defined(S390_FEATURES)
 #  include "arch/s390/s390_functions.h"

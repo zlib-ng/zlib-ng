@@ -419,26 +419,6 @@ macro(check_ppc_intrinsics)
     if(HAVE_NOVSX)
         set(PPCFLAGS "${PPCFLAGS} -mno-vsx")
     endif()
-
-    # Check if we have what we need for AltiVec optimizations
-    set(CMAKE_REQUIRED_FLAGS "${PPCFLAGS} ${NATIVEFLAG} ${ZNOLTOFLAG}")
-    check_c_source_compiles(
-        "#include <sys/auxv.h>
-        #ifdef __FreeBSD__
-        #include <machine/cpu.h>
-        #endif
-        int main() {
-        #if defined(__FreeBSD__) || defined(__OpenBSD__)
-            unsigned long hwcap;
-            elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
-            return (hwcap & PPC_FEATURE_HAS_ALTIVEC);
-        #else
-            return (getauxval(AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC);
-        #endif
-        }"
-        HAVE_VMX
-    )
-    set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
 macro(check_power8_intrinsics)
@@ -450,36 +430,16 @@ macro(check_power8_intrinsics)
     # Check if we have what we need for POWER8 optimizations
     set(CMAKE_REQUIRED_FLAGS "${POWER8FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
-        "#include <sys/auxv.h>
-        #ifdef __FreeBSD__
-        #include <machine/cpu.h>
-        #endif
-        int main() {
-        #if defined(__FreeBSD__) || defined(__OpenBSD__)
-            unsigned long hwcap;
-            elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
-            return (hwcap & PPC_FEATURE2_ARCH_2_07);
-        #else
-            return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
-        #endif
+        "#include <altivec.h>
+        int main(void)
+        {
+            vector int a = vec_splats(0);
+            vector int b = vec_splats(0);
+            a = vec_add(a, b);
+            return 0;
         }"
         HAVE_POWER8_INTRIN
     )
-    if(NOT HAVE_POWER8_INTRIN AND HAVE_LINUX_AUXVEC_H)
-        check_c_source_compiles(
-            "#include <sys/auxv.h>
-            #include <linux/auxvec.h>
-            int main() {
-                return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_2_07);
-            }"
-            HAVE_POWER8_INTRIN2
-        )
-        if(HAVE_POWER8_INTRIN2)
-            set(POWER8_NEED_AUXVEC_H 1)
-            set(HAVE_POWER8_INTRIN ${HAVE_POWER8_INTRIN2} CACHE INTERNAL "Have POWER8 intrinsics" FORCE)
-            unset(HAVE_POWER8_INTRIN2 CACHE)
-        endif()
-    endif()
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
@@ -523,19 +483,6 @@ macro(check_riscv_zbc_ext)
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
-macro(check_s390_intrinsics)
-    check_c_source_compiles(
-        "#include <sys/auxv.h>
-        #ifndef HWCAP_S390_VXRS
-        #define HWCAP_S390_VXRS (1 << 11)
-        #endif
-        int main() {
-            return (getauxval(AT_HWCAP) & HWCAP_S390_VXRS);
-        }"
-        HAVE_S390_INTRIN
-    )
-endmacro()
-
 macro(check_power9_intrinsics)
     if(NOT NATIVEFLAG)
         if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
@@ -545,36 +492,16 @@ macro(check_power9_intrinsics)
     # Check if we have what we need for POWER9 optimizations
     set(CMAKE_REQUIRED_FLAGS "${POWER9FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
-        "#include <sys/auxv.h>
-        #ifdef __FreeBSD__
-        #include <machine/cpu.h>
-        #endif
-        int main() {
-        #if defined(__FreeBSD__) || defined(__OpenBSD__)
-            unsigned long hwcap;
-            elf_aux_info(AT_HWCAP2, &hwcap, sizeof(hwcap));
-            return (hwcap & PPC_FEATURE2_ARCH_3_00);
-        #else
-            return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_3_00);
-        #endif
+        "#include <altivec.h>
+        int main(void)
+        {
+            vector int a = vec_splats(0);
+            vector int b = vec_splats(0);
+            a = vec_add(a, b);
+            return 0;
         }"
         HAVE_POWER9_INTRIN
     )
-    if(NOT HAVE_POWER9_INTRIN AND HAVE_LINUX_AUXVEC_H)
-        check_c_source_compiles(
-            "#include <sys/auxv.h>
-            #include <linux/auxvec.h>
-            int main() {
-                return (getauxval(AT_HWCAP2) & PPC_FEATURE2_ARCH_3_00);
-            }"
-            HAVE_POWER9_INTRIN2
-        )
-        if(HAVE_POWER9_INTRIN2)
-            set(POWER9_NEED_AUXVEC_H 1)
-            set(HAVE_POWER9_INTRIN ${HAVE_POWER9_INTRIN2} CACHE INTERNAL "Have POWER9 intrinsics" FORCE)
-            unset(HAVE_POWER9_INTRIN2 CACHE)
-        endif()
-    endif()
     set(CMAKE_REQUIRED_FLAGS)
 endmacro()
 
