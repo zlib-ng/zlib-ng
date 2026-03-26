@@ -45,10 +45,31 @@ static void png_write_cb(png_structp pngp, png_bytep data, png_size_t len) {
     dat->buf_rem -= len;
 }
 
+/* Generate pixel data that resembles a real photograph: smooth gradients with per-pixel
+ * noise and occasional edges. Produces many short deflate matches and scattered literals */
+static void init_realistic(png_bytep buf, uint32_t width, uint32_t height) {
+    uint32_t seed = 0x12345678;
+    for (uint32_t y = 0; y < height; y++) {
+        for (uint32_t x = 0; x < width; x++) {
+            size_t idx = ((size_t)y * width + x) * 3;
+            /* Diagonal gradient as base color */
+            uint8_t base_r = (uint8_t)((x + y) * 179 / (width + height));
+            uint8_t base_g = (uint8_t)((x * 2 + y) * 131 / (width + height));
+            uint8_t base_b = (uint8_t)(y * 241 / height);
+            /* Simple xorshift noise, +/- 15 levels */
+            seed ^= seed << 13;
+            seed ^= seed >> 17;
+            seed ^= seed << 5;
+            int noise = (int)(seed & 0x1F) - 15;
+            buf[idx]     = (uint8_t)MIN(MAX(base_r + noise, 0), 0xFF);
+            buf[idx + 1] = (uint8_t)MIN(MAX(base_g + (noise >> 1), 0), 0xFF);
+            buf[idx + 2] = (uint8_t)MIN(MAX(base_b - noise, 0), 0xFF);
+        }
+    }
+}
+
+/* Generate a highly compressible RGB test image with solid R, G, and B stripes. */
 static void init_compressible(png_bytep buf, size_t num_pix) {
-    /* It doesn't actually matter what we make this, but for
-     * the sake of a reasonable test image, let's make this
-     * be a stripe of R, G, & B, with no alpha channel */
     int32_t i = 0;
     int32_t red_stop = num_pix / 3;
     int32_t blue_stop = 2 * num_pix / 3;
@@ -86,17 +107,17 @@ static inline void encode_png(png_bytep buf, png_dat *outpng, int32_t comp_level
 
     png_set_write_fn(png, outpng, png_write_cb, NULL);
     png_bytep *png_row_ptrs = new png_bytep[height];
-    for (int i = 0; i < IMHEIGHT; ++i) {
+    for (uint32_t i = 0; i < height; ++i) {
         png_row_ptrs[i] = (png_bytep)&buf[3*i*width];
     }
 
-    png_set_IHDR(png, info, IMWIDTH, IMHEIGHT, 8, PNG_COLOR_TYPE_RGB,
+    png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB,
                  PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
                  PNG_FILTER_TYPE_DEFAULT);
-
-    png_write_info(png, info);
     png_set_compression_level(png, comp_level);
     png_set_filter(png, 0, PNG_FILTER_NONE);
+
+    png_write_info(png, info);
     png_write_image(png, (png_bytepp)png_row_ptrs);
     png_write_end(png, NULL);
     png_destroy_write_struct(&png, &info);

@@ -100,6 +100,7 @@ if(WITH_BENCHMARK_APPS)
     set(BENCH_APP_SRCS
         benchmark_png_encode.cc
         benchmark_png_decode.cc
+        benchmark_png_decode_small.cc
         benchmark_main.cc
     )
 
