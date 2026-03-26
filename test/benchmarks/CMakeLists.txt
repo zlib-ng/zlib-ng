@@ -91,7 +91,10 @@ if(WITH_BENCHMARK_APPS)
             ${ZNG_FetchContent_Declare_EXCLUDE_FROM_ALL})
 
         ZNG_FetchContent_MakeAvailable(PNG)
-        set(PNG_INCLUDE_DIR ${png_SOURCE_DIR})
+        set(PNG_INCLUDE_DIRS ${png_SOURCE_DIR} ${png_BINARY_DIR})
+        set(PNG_STATIC_LIBRARY png_static)
+    else()
+        set(PNG_STATIC_LIBRARY libpng.a)
     endif()
 
     set(BENCH_APP_SRCS
@@ -105,23 +108,23 @@ if(WITH_BENCHMARK_APPS)
     if(DEFINED BUILD_ALT_BENCH)
         set(ZLIB_ALT_LIB "libz.a" CACHE FILEPATH "Optional alternative zlib implementation (defaults to stock zlib)")
         add_executable(benchmark_zlib_apps_alt ${BENCH_APP_SRCS})
-        target_link_libraries(benchmark_zlib_apps_alt libpng.a ${ZLIB_ALT_LIB} benchmark::benchmark)
+        target_link_libraries(benchmark_zlib_apps_alt ${PNG_STATIC_LIBRARY} ${ZLIB_ALT_LIB} benchmark::benchmark)
         target_compile_definitions(benchmark_zlib_apps_alt PRIVATE BUILD_ALT=1)
         target_include_directories(benchmark_zlib_apps_alt PRIVATE
             ${PROJECT_SOURCE_DIR}
             ${PROJECT_BINARY_DIR}
-            ${PNG_INCLUDE_DIR}
+            ${PNG_INCLUDE_DIRS}
             ${benchmark_SOURCE_DIR}/benchmark/include)
     endif()
 
     target_include_directories(benchmark_zlib_apps PRIVATE
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_BINARY_DIR}
-        ${PNG_INCLUDE_DIR}
+        ${PNG_INCLUDE_DIRS}
         ${benchmark_SOURCE_DIR}/benchmark/include)
 
     # We need the static png library if we're statically linking to zlib,
     # otherwise it will resolve these things in the system provided dynamic
     # libraries (likely linked to stock zlib)
-    target_link_libraries(benchmark_zlib_apps libpng.a zlib-ng-static benchmark::benchmark)
+    target_link_libraries(benchmark_zlib_apps ${PNG_STATIC_LIBRARY} zlib-ng-static benchmark::benchmark)
 endif()
