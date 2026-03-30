@@ -153,7 +153,7 @@ BENCHMARK_CRC32_COPY(braid, crc32_braid, crc32_copy_braid, 1);
     BENCHMARK_CRC32_COPY(armv8_pmull_eor3, crc32_armv8_pmull_eor3, crc32_copy_armv8_pmull_eor3, test_cpu_features.arm.has_crc32 && test_cpu_features.arm.has_pmull && test_cpu_features.arm.has_eor3)
 #  endif
 #  ifdef LOONGARCH_CRC
-    BENCHMARK_CRC32_COPY(loongarch, crc32_loongarch64, crc32_copy_loongarch64, test_cpu_features.loongarch.has_crc)
+    BENCHMARK_CRC32_COPY(loongarch64, crc32_loongarch64, crc32_copy_loongarch64, test_cpu_features.loongarch.has_crc)
 #  endif
 #  ifdef POWER8_VSX_CRC32
     BENCHMARK_CRC32_COPY(power8, crc32_power8, crc32_copy_power8, test_cpu_features.power.has_arch_2_07)
