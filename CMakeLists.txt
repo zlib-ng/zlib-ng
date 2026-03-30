@@ -1229,7 +1229,7 @@ set(ZLIB_PUBLIC_HDRS
     ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.h
 )
 set(ZLIB_PRIVATE_HDRS
-    arch/generic/chunk_permute_table.h
+    arch/shared/chunk_permute_table.h
     arch/generic/generic_functions.h
     adler32_p.h
     arch_functions.h

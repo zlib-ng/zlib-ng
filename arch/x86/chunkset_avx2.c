@@ -8,7 +8,7 @@
 #include "zsanitizer.h"
 #include "zmemory.h"
 
-#include "arch/generic/chunk_256bit_perm_idx_lut.h"
+#include "arch/shared/chunk_256bit_perm_idx_lut.h"
 #include <immintrin.h>
 #include "x86_intrins.h"
 
