@@ -199,13 +199,9 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
         s2acc_2 = vaddq_u32(s2acc_1, s2acc_2);
         s2acc = vaddq_u32(s2acc, s2acc_2);
 
-        uint32x2_t adacc2, s2acc2, as;
         s2acc = vaddq_u32(s2acc, s3acc);
-        adacc2 = vpadd_u32(vget_low_u32(adacc), vget_high_u32(adacc));
-        s2acc2 = vpadd_u32(vget_low_u32(s2acc), vget_high_u32(s2acc));
-        as = vpadd_u32(adacc2, s2acc2);
-        pair[0] = vget_lane_u32(as, 0);
-        pair[1] = vget_lane_u32(as, 1);
+        pair[0] = vaddvq_u32(adacc);
+        pair[1] = vaddvq_u32(s2acc);
 
         pair[0] %= BASE;
         pair[1] %= BASE;

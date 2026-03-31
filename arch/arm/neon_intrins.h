@@ -14,6 +14,14 @@
 #define vmlal_high_u8(a, b, c) vmlal_u8(a, vget_high_u8(b), vget_high_u8(c))
 #define vmlal_high_u16(a, b, c) vmlal_u16(a, vget_high_u16(b), vget_high_u16(c))
 #define vaddw_high_u8(a, b) vaddw_u8(a, vget_high_u8(b))
+
+/* Emulate vaddvq_u32 as a horizontal add without widening */
+static inline uint32_t vaddvq_u32(uint32x4_t a) {
+    /* Add high and low halves {t0=a0+a2, t1=a1+a3} */
+    uint32x2_t t = vadd_u32(vget_low_u32(a), vget_high_u32(a));
+    /* Pairwise add to scalar (t0+t1) */
+    return vget_lane_u32(vpadd_u32(t, t), 0);
+}
 #endif
 
 #ifdef ARM_NEON
