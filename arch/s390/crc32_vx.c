@@ -17,7 +17,7 @@
 #include "zbuild.h"
 #include "arch_functions.h"
 
-#include <vecintrin.h>
+#include "vx_intrins.h"
 
 typedef unsigned char uv16qi __attribute__((vector_size(16)));
 typedef unsigned int uv4si __attribute__((vector_size(16)));

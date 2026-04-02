@@ -7,7 +7,7 @@
 #include "zbuild.h"
 #include "deflate.h"
 
-#include <vecintrin.h>
+#include "vx_intrins.h"
 
 static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize) {
     const vector unsigned short vmx_wsize = vec_splats(wsize);

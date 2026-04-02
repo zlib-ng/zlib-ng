@@ -1725,7 +1725,7 @@ check_s390_vx_intrinsics() {
 int main(void) {
     unsigned char a __attribute__((vector_size(16))) = { 0 };
     unsigned char b __attribute__((vector_size(16))) = { 0 };
-    a = vec_sub(a, b);
+    a = vec_min(a, b);
     a = vec_xl(0, (unsigned char *)0);
     return a[0];
 }
