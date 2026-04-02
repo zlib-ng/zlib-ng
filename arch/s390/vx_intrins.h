@@ -3,6 +3,11 @@
 
 #include <vecintrin.h>
 
+typedef unsigned char uv16qi __attribute__((vector_size(16)));
+typedef unsigned short uv8hi __attribute__((vector_size(16)));
+typedef unsigned int uv4si __attribute__((vector_size(16)));
+typedef unsigned long long uv2di __attribute__((vector_size(16)));
+
 #ifndef vec_sub
 #define vec_sub(a, b) ((a) - (b))
 #endif

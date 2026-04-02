@@ -10,11 +10,11 @@
 #include "vx_intrins.h"
 
 static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize) {
-    const vector unsigned short vmx_wsize = vec_splats(wsize);
+    const uv8hi vmx_wsize = vec_splats(wsize);
     Pos *p = table;
 
     do {
-        vector unsigned short value, result;
+        uv8hi value, result;
 
         value = vec_xl(0, p);
         result = vec_sub(value, vec_min(value, vmx_wsize));
