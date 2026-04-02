@@ -9,47 +9,53 @@
 #include "arch/x86/x86_intrins.h"
 #include "arch_functions.h"
 
-#define READ_NEXT(in, off, a, b) do { \
+#define READ_NEXT(in, off, a, b) \
+    do { \
         a = _mm_load_si128((__m128i*)(in + off / sizeof(uint64_t))); \
         b = _mm_load_si128((__m128i*)(in + off / sizeof(uint64_t) + 2)); \
-        } while (0);
+    } while (0)
 
-#define NEXT_ROUND(invec, a, b, c, d) do { \
+#define NEXT_ROUND(invec, a, b, c, d) \
+    do { \
         a = _mm_xor_si128(_mm_slli_epi64(invec, 17), _mm_slli_epi64(invec, 55)); \
         b = _mm_xor_si128(_mm_xor_si128(_mm_srli_epi64(invec, 47), _mm_srli_epi64(invec, 9)), _mm_slli_epi64(invec, 19)); \
         c = _mm_xor_si128(_mm_srli_epi64(invec, 45), _mm_slli_epi64(invec, 44)); \
         d  = _mm_srli_epi64(invec, 20); \
-        } while (0);
+    } while (0)
 
-#define REALIGN_CHORBA(in0, in1, in2, in3, out0, out1, out2, out3, out4, shift) do { \
+#define REALIGN_CHORBA(in0, in1, in2, in3, out0, out1, out2, out3, out4, shift) \
+    do { \
         out0 = _mm_slli_si128(in0, shift); \
         out1 = _mm_alignr_epi8(in1, in0, shift); \
         out2 = _mm_alignr_epi8(in2, in1, shift); \
         out3 = _mm_alignr_epi8(in3, in2, shift); \
         out4 = _mm_srli_si128(in3, shift); \
-        } while (0)
+    } while (0)
 
-#define STORE4(out0, out1, out2, out3, out) do { \
+#define STORE4(out0, out1, out2, out3, out) \
+    do { \
         _mm_store_si128(out++, out0); \
         _mm_store_si128(out++, out1); \
         _mm_store_si128(out++, out2); \
         _mm_store_si128(out++, out3); \
     } while (0)
 
-#define READ4(out0, out1, out2, out3, in) do { \
-    out0 = _mm_load_si128(in++); \
-    out1 = _mm_load_si128(in++); \
-    out2 = _mm_load_si128(in++); \
-    out3 = _mm_load_si128(in++); \
+#define READ4(out0, out1, out2, out3, in) \
+    do { \
+        out0 = _mm_load_si128(in++); \
+        out1 = _mm_load_si128(in++); \
+        out2 = _mm_load_si128(in++); \
+        out3 = _mm_load_si128(in++); \
     } while (0)
 
 /* This is intentionally shifted one down to compensate for the deferred store from
  * the last iteration */
-#define READ4_WITHXOR(out0, out1, out2, out3, xor0, xor1, xor2, xor3, in) do { \
-    out0 = _mm_xor_si128(in[1], xor0); \
-    out1 = _mm_xor_si128(in[2], xor1); \
-    out2 = _mm_xor_si128(in[3], xor2); \
-    out3 = _mm_xor_si128(in[4], xor3); \
+#define READ4_WITHXOR(out0, out1, out2, out3, xor0, xor1, xor2, xor3, in) \
+    do { \
+        out0 = _mm_xor_si128(in[1], xor0); \
+        out1 = _mm_xor_si128(in[2], xor1); \
+        out2 = _mm_xor_si128(in[3], xor2); \
+        out3 = _mm_xor_si128(in[4], xor3); \
     } while (0)
 
 Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t crc, const uint8_t *buf, size_t len) {
