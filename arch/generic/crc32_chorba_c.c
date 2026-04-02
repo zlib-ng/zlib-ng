@@ -464,7 +464,6 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
         next3_64 = out3;
         next4_64 = out4;
         next5_64 = out5;
-
     }
 
     memcpy(final, input_qwords + (i / sizeof(uint64_t)), len-i);
