@@ -28,6 +28,15 @@
         d = (invec) >> 20; \
     } while (0)
 
+#define ACCUM_ROUND(n1, n2, n3, n4, n5) \
+    do { \
+        n1 = n5 ^ (a3 ^ b2 ^ c1); \
+        n2 = a4 ^ b3 ^ c2 ^ d1; \
+        n3 = b4 ^ c3 ^ d2; \
+        n4 = c4 ^ d3; \
+        n5 = d4; \
+    } while (0)
+
 /**
  * Implements the Chorba algorithm for CRC32 computation (https://arxiv.org/abs/2412.16398).
  *
@@ -425,11 +434,6 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
         uint64_t c1, c2, c3, c4;
         uint64_t d1, d2, d3, d4;
 
-        uint64_t out1;
-        uint64_t out2;
-        uint64_t out3;
-        uint64_t out4;
-        uint64_t out5;
 
         in1 = input_qwords[i / sizeof(uint64_t)] ^ bitbuffer_qwords[(i / sizeof(uint64_t)) % bitbuffer_size_qwords];
         in2 = input_qwords[i / sizeof(uint64_t) + 1] ^ bitbuffer_qwords[(i / sizeof(uint64_t) + 1) % bitbuffer_size_qwords];
@@ -449,17 +453,7 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
 
         NEXT_ROUND(in4, d1, d2, d3, d4);
 
-        out1 = a3 ^ b2 ^ c1;
-        out2 = a4 ^ b3 ^ c2 ^ d1;
-        out3 = b4 ^ c3 ^ d2;
-        out4 = c4 ^ d3;
-        out5 = d4;
-
-        next1_64 = next5_64 ^ out1;
-        next2_64 = out2;
-        next3_64 = out3;
-        next4_64 = out4;
-        next5_64 = out5;
+        ACCUM_ROUND(next1_64, next2_64, next3_64, next4_64, next5_64);
     }
 
     memcpy(final, input_qwords + (i / sizeof(uint64_t)), len-i);
@@ -565,11 +559,6 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_
         uint64_t c1, c2, c3, c4;
         uint64_t d1, d2, d3, d4;
 
-        uint64_t out1;
-        uint64_t out2;
-        uint64_t out3;
-        uint64_t out4;
-        uint64_t out5;
 
         in1 = input[i / sizeof(uint64_t)] ^ bitbuffer[(i / sizeof(uint64_t))];
         in2 = input[(i + 8) / sizeof(uint64_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 1)];
@@ -589,17 +578,7 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_
 
         NEXT_ROUND(in4, d1, d2, d3, d4);
 
-        out1 = a3 ^ b2 ^ c1;
-        out2 = a4 ^ b3 ^ c2 ^ d1;
-        out3 = b4 ^ c3 ^ d2;
-        out4 = c4 ^ d3;
-        out5 = d4;
-
-        next1_64 = next5_64 ^ out1;
-        next2_64 = out2;
-        next3_64 = out3;
-        next4_64 = out4;
-        next5_64 = out5;
+        ACCUM_ROUND(next1_64, next2_64, next3_64, next4_64, next5_64);
 
     }
 
@@ -644,11 +623,6 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
         uint64_t c1, c2, c3, c4;
         uint64_t d1, d2, d3, d4;
 
-        uint64_t out1;
-        uint64_t out2;
-        uint64_t out3;
-        uint64_t out4;
-        uint64_t out5;
 
         uint64_t chorba1 = Z_U64_FROM_LE(input[i / sizeof(uint64_t)]) ^ next1;
         uint64_t chorba2 = Z_U64_FROM_LE(input[i / sizeof(uint64_t) + 1]) ^ next2;
@@ -676,17 +650,10 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
 
         NEXT_ROUND(in4, d1, d2, d3, d4);
 
-        out1 = a3 ^ b2 ^ c1;
-        out2 = a4 ^ b3 ^ c2 ^ d1;
-        out3 = b4 ^ c3 ^ d2;
-        out4 = c4 ^ d3;
-        out5 = d4;
-
-        next1 = out1;
-        next2 = out2;
-        next3 = out3;
-        next4 = out4;
-        next5 = out5;
+        /* chorba5 already consumed next5, clear it so ACCUM_ROUND
+           does not xor the stale value into next1 */
+        next5 = 0;
+        ACCUM_ROUND(next1, next2, next3, next4, next5);
 
         i += 32;
 
@@ -705,17 +672,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
 
         NEXT_ROUND(in4, d1, d2, d3, d4);
 
-        out1 = a3 ^ b2 ^ c1;
-        out2 = a4 ^ b3 ^ c2 ^ d1;
-        out3 = b4 ^ c3 ^ d2;
-        out4 = c4 ^ d3;
-        out5 = d4;
-
-        next1 = next5 ^ out1;
-        next2 = out2;
-        next3 = out3;
-        next4 = out4;
-        next5 = out5;
+        ACCUM_ROUND(next1, next2, next3, next4, next5);
 
         i += 32;
 
@@ -734,17 +691,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
 
         NEXT_ROUND(in4, d1, d2, d3, d4);
 
-        out1 = a3 ^ b2 ^ c1;
-        out2 = a4 ^ b3 ^ c2 ^ d1;
-        out3 = b4 ^ c3 ^ d2;
-        out4 = c4 ^ d3;
-        out5 = d4;
-
-        next1 = next5 ^ out1;
-        next2 = out2;
-        next3 = out3;
-        next4 = out4;
-        next5 = out5;
+        ACCUM_ROUND(next1, next2, next3, next4, next5);
 
         i += 32;
 
@@ -763,17 +710,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
 
         NEXT_ROUND(in4, d1, d2, d3, d4);
 
-        out1 = a3 ^ b2 ^ c1;
-        out2 = a4 ^ b3 ^ c2 ^ d1;
-        out3 = b4 ^ c3 ^ d2;
-        out4 = c4 ^ d3;
-        out5 = d4;
-
-        next1 = next5 ^ out1;
-        next2 = out2;
-        next3 = out3;
-        next4 = out4;
-        next5 = out5;
+        ACCUM_ROUND(next1, next2, next3, next4, next5);
 
         i += 32;
 
@@ -792,17 +729,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
 
         NEXT_ROUND(in4, d1, d2, d3, d4);
 
-        out1 = a3 ^ b2 ^ c1;
-        out2 = a4 ^ b3 ^ c2 ^ d1;
-        out3 = b4 ^ c3 ^ d2;
-        out4 = c4 ^ d3;
-        out5 = d4;
-
-        next1 = next5 ^ out1;
-        next2 = out2;
-        next3 = out3;
-        next4 = out4;
-        next5 = out5;
+        ACCUM_ROUND(next1, next2, next3, next4, next5);
 
         i += 32;
 
@@ -821,17 +748,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
 
         NEXT_ROUND(in4, d1, d2, d3, d4);
 
-        out1 = a3 ^ b2 ^ c1;
-        out2 = a4 ^ b3 ^ c2 ^ d1;
-        out3 = b4 ^ c3 ^ d2;
-        out4 = c4 ^ d3;
-        out5 = d4;
-
-        next1 = next5 ^ out1;
-        next2 = out2;
-        next3 = out3;
-        next4 = out4;
-        next5 = out5;
+        ACCUM_ROUND(next1, next2, next3, next4, next5);
 
         i += 32;
 
@@ -850,17 +767,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
 
         NEXT_ROUND(in4, d1, d2, d3, d4);
 
-        out1 = a3 ^ b2 ^ c1;
-        out2 = a4 ^ b3 ^ c2 ^ d1;
-        out3 = b4 ^ c3 ^ d2;
-        out4 = c4 ^ d3;
-        out5 = d4;
-
-        next1 = next5 ^ out1;
-        next2 = out2;
-        next3 = out3;
-        next4 = out4;
-        next5 = out5;
+        ACCUM_ROUND(next1, next2, next3, next4, next5);
 
         i += 32;
 
@@ -879,17 +786,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
 
         NEXT_ROUND(in4, d1, d2, d3, d4);
 
-        out1 = a3 ^ b2 ^ c1;
-        out2 = a4 ^ b3 ^ c2 ^ d1;
-        out3 = b4 ^ c3 ^ d2;
-        out4 = c4 ^ d3;
-        out5 = d4;
-
-        next1 = next5 ^ out1;
-        next2 = out2;
-        next3 = out3;
-        next4 = out4;
-        next5 = out5;
+        ACCUM_ROUND(next1, next2, next3, next4, next5);
     }
 
     for (; (i + 40 + 32) < len; i += 32) {
@@ -902,11 +799,6 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
         uint64_t c1, c2, c3, c4;
         uint64_t d1, d2, d3, d4;
 
-        uint64_t out1;
-        uint64_t out2;
-        uint64_t out3;
-        uint64_t out4;
-        uint64_t out5;
 
         in1 = Z_U64_FROM_LE(input[i / sizeof(uint64_t)]) ^ next1;
         in2 = Z_U64_FROM_LE(input[i / sizeof(uint64_t) + 1]) ^ next2;
@@ -922,17 +814,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
 
         NEXT_ROUND(in4, d1, d2, d3, d4);
 
-        out1 = a3 ^ b2 ^ c1;
-        out2 = a4 ^ b3 ^ c2 ^ d1;
-        out3 = b4 ^ c3 ^ d2;
-        out4 = c4 ^ d3;
-        out5 = d4;
-
-        next1 = next5 ^ out1;
-        next2 = out2;
-        next3 = out3;
-        next4 = out4;
-        next5 = out5;
+        ACCUM_ROUND(next1, next2, next3, next4, next5);
     }
 
     memcpy(final, input+(i / sizeof(uint64_t)), len-i);
