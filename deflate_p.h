@@ -19,21 +19,21 @@
 /* ===========================================================================
  * Check that the match at match_start is indeed a match.
  */
-static inline void check_match(deflate_state *s, uint32_t start, uint32_t match, int length) {
+static inline void check_match(deflate_state *s, uint32_t start, uint32_t match, uint32_t length) {
     /* check that the match length is valid*/
     if (length < STD_MIN_MATCH || length > STD_MAX_MATCH) {
-        fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
+        fprintf(stderr, " start %u, match %u, length %u\n", start, match, length);
         z_error("invalid match length");
     }
     /* check that the match isn't at the same position as the start string */
     if (match == start) {
-        fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
+        fprintf(stderr, " start %u, match %u, length %u\n", start, match, length);
         z_error("invalid match position");
     }
     /* check that the match is indeed a match */
     if (memcmp(s->window + match, s->window + start, length) != 0) {
         int32_t i = 0;
-        fprintf(stderr, " start %u, match %u, length %d\n", start, match, length);
+        fprintf(stderr, " start %u, match %u, length %u\n", start, match, length);
         do {
             fprintf(stderr, "  %03d: match [%02x] start [%02x]\n", i++,
                 s->window[match++], s->window[start++]);
@@ -41,7 +41,7 @@ static inline void check_match(deflate_state *s, uint32_t start, uint32_t match,
         z_error("invalid match");
     }
     if (z_verbose > 1) {
-        fprintf(stderr, "\\[%u,%d]", start-match, length);
+        fprintf(stderr, "\\[%u,%u]", start-match, length);
         do {
             putc(s->window[start++], stderr);
         } while (--length != 0);
