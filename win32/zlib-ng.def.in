@@ -19,6 +19,7 @@ EXPORTS
     @ZLIB_SYMBOL_PREFIX@zng_deflateParams
     @ZLIB_SYMBOL_PREFIX@zng_deflateTune
     @ZLIB_SYMBOL_PREFIX@zng_deflateBound
+    @ZLIB_SYMBOL_PREFIX@zng_deflateBound_z
     @ZLIB_SYMBOL_PREFIX@zng_deflatePending
     @ZLIB_SYMBOL_PREFIX@zng_deflatePrime
     @ZLIB_SYMBOL_PREFIX@zng_deflateUsed

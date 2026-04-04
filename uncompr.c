@@ -22,12 +22,22 @@
    Z_DATA_ERROR if the input data was corrupted, including if the input data is
    an incomplete zlib stream.
 */
-z_int32_t Z_EXPORT PREFIX(uncompress2)(unsigned char *dest, z_uintmax_t *destLen, const unsigned char *source, z_uintmax_t *sourceLen) {
+#ifdef ZLIB_COMPAT
+int Z_EXPORT PREFIX(uncompress2_z)(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
+                                   z_size_t *sourceLen) {
+#else
+z_int32_t Z_EXPORT PREFIX(uncompress2)(unsigned char *dest, z_uintmax_t *destLen, const unsigned char *source,
+                                       z_uintmax_t *sourceLen) {
+#endif
     PREFIX3(stream) stream;
     int err;
     const unsigned int max = (unsigned int)-1;
-    z_uintmax_t len, left;
+    z_size_t len, left;
     unsigned char buf[1];    /* for detection of incomplete stream when *destLen == 0 */
+
+    if (sourceLen == NULL || (*sourceLen > 0 && source == NULL) ||
+        destLen == NULL || (*destLen > 0 && dest == NULL))
+        return Z_STREAM_ERROR;
 
     len = *sourceLen;
     if (*destLen) {
@@ -78,3 +88,21 @@ z_int32_t Z_EXPORT PREFIX(uncompress2)(unsigned char *dest, z_uintmax_t *destLen
 z_int32_t Z_EXPORT PREFIX(uncompress)(unsigned char *dest, z_uintmax_t *destLen, const unsigned char *source, z_uintmax_t sourceLen) {
     return PREFIX(uncompress2)(dest, destLen, source, &sourceLen);
 }
+
+#ifdef ZLIB_COMPAT
+int Z_EXPORT PREFIX(uncompress2)(unsigned char *dest, unsigned long *destLen, const unsigned char *source,
+                                 unsigned long *sourceLen) {
+    z_size_t got = destLen ? *destLen : 0, used = sourceLen ? *sourceLen : 0;
+    int ret = PREFIX(uncompress2_z)(dest, &got, source, &used);
+    if (sourceLen)
+        *sourceLen = (unsigned long)used;
+    if (destLen)
+        *destLen = (unsigned long)got;
+    return ret;
+}
+
+z_int32_t Z_EXPORT PREFIX(uncompress_z)(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
+                                        z_size_t sourceLen) {
+    return PREFIX(uncompress2_z)(dest, destLen, source, &sourceLen);
+}
+#endif

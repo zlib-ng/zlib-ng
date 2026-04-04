@@ -20,8 +20,11 @@
 #define adler32_z             @ZLIB_SYMBOL_PREFIX@adler32_z
 #ifndef Z_SOLO
 #  define compress              @ZLIB_SYMBOL_PREFIX@compress
+#  define compress_z            @ZLIB_SYMBOL_PREFIX@compress_z
 #  define compress2             @ZLIB_SYMBOL_PREFIX@compress2
+#  define compress2_z           @ZLIB_SYMBOL_PREFIX@compress2_z
 #  define compressBound         @ZLIB_SYMBOL_PREFIX@compressBound
+#  define compressBound_z       @ZLIB_SYMBOL_PREFIX@compressBound_z
 #endif
 #define crc32                 @ZLIB_SYMBOL_PREFIX@crc32
 #define crc32_combine         @ZLIB_SYMBOL_PREFIX@crc32_combine
@@ -32,6 +35,7 @@
 #define crc32_z               @ZLIB_SYMBOL_PREFIX@crc32_z
 #define deflate               @ZLIB_SYMBOL_PREFIX@deflate
 #define deflateBound          @ZLIB_SYMBOL_PREFIX@deflateBound
+#define deflateBound_z        @ZLIB_SYMBOL_PREFIX@deflateBound_z
 #define deflateCopy           @ZLIB_SYMBOL_PREFIX@deflateCopy
 #define deflateEnd            @ZLIB_SYMBOL_PREFIX@deflateEnd
 #define deflateGetDictionary  @ZLIB_SYMBOL_PREFIX@deflateGetDictionary
@@ -123,7 +127,9 @@
 #define read_buf              @ZLIB_SYMBOL_PREFIX@read_buf
 #ifndef Z_SOLO
 #  define uncompress            @ZLIB_SYMBOL_PREFIX@uncompress
+#  define uncompress_z          @ZLIB_SYMBOL_PREFIX@uncompress_z
 #  define uncompress2           @ZLIB_SYMBOL_PREFIX@uncompress2
+#  define uncompress2_z         @ZLIB_SYMBOL_PREFIX@uncompress2_z
 #endif
 #define zError                @ZLIB_SYMBOL_PREFIX@zError
 #ifndef Z_SOLO
