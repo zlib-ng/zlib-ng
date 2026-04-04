@@ -234,6 +234,7 @@ struct ALIGNED_(64) internal_state {
                                  * Bits are inserted starting at the bottom (least significant bits). */
     int32_t bi_valid;           /* Number of valid bits in bi_buf.
                                  * All bits above the last valid bit are always zero. */
+    int32_t bi_used;            /* Last number of used bits when going to a byte boundary. */
 
     int heap_len;               /* number of elements in the heap */
     int heap_max;               /* element of largest frequency */

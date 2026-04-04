@@ -42,6 +42,7 @@
 #define deflateParams         @ZLIB_SYMBOL_PREFIX@deflateParams
 #define deflatePending        @ZLIB_SYMBOL_PREFIX@deflatePending
 #define deflatePrime          @ZLIB_SYMBOL_PREFIX@deflatePrime
+#define deflateUsed           @ZLIB_SYMBOL_PREFIX@deflateUsed
 #define deflateReset          @ZLIB_SYMBOL_PREFIX@deflateReset
 #define deflateResetKeep      @ZLIB_SYMBOL_PREFIX@deflateResetKeep
 #define deflateSetDictionary  @ZLIB_SYMBOL_PREFIX@deflateSetDictionary

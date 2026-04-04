@@ -780,6 +780,18 @@ int32_t zng_deflatePending(zng_stream *strm, uint32_t *pending, int32_t *bits);
  */
 
 Z_EXTERN Z_EXPORT
+int32_t zng_deflateUsed(zng_stream *strm, int32_t *bits);
+/*
+     deflateUsed() returns in *bits the most recent number of deflate bits used
+   in the last byte when flushing to a byte boundary. The result is in 1..8, or
+   0 if there has not yet been a flush. This helps determine the location of
+   the last bit of a deflate stream.
+
+     deflateUsed returns Z_OK if success, or Z_STREAM_ERROR if the source
+   stream state was inconsistent.
+ */
+
+Z_EXTERN Z_EXPORT
 int32_t zng_deflatePrime(zng_stream *strm, int32_t bits, int32_t value);
 /*
      deflatePrime() inserts bits in the deflate output stream.  The intent

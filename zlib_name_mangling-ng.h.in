@@ -40,6 +40,7 @@
 #define zng_deflateParams         @ZLIB_SYMBOL_PREFIX@zng_deflateParams
 #define zng_deflatePending        @ZLIB_SYMBOL_PREFIX@zng_deflatePending
 #define zng_deflatePrime          @ZLIB_SYMBOL_PREFIX@zng_deflatePrime
+#define zng_deflateUsed           @ZLIB_SYMBOL_PREFIX@zng_deflateUsed
 #define zng_deflateReset          @ZLIB_SYMBOL_PREFIX@zng_deflateReset
 #define zng_deflateResetKeep      @ZLIB_SYMBOL_PREFIX@zng_deflateResetKeep
 #define zng_deflateSetDictionary  @ZLIB_SYMBOL_PREFIX@zng_deflateSetDictionary

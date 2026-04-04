@@ -97,6 +97,7 @@ static inline void bi_windup(deflate_state *s) {
             put_byte(s, s->bi_buf);
         }
     }
+    s->bi_used = ((s->bi_valid - 1) & 7) + 1;
     s->bi_buf = 0;
     s->bi_valid = 0;
 }

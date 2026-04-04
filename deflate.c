@@ -555,6 +555,15 @@ int32_t Z_EXPORT PREFIX(deflatePending)(PREFIX3(stream) *strm, uint32_t *pending
 }
 
 /* ========================================================================= */
+int32_t Z_EXPORT PREFIX(deflateUsed)(PREFIX3(stream) *strm, int32_t *bits) {
+    if (deflateStateCheck(strm))
+        return Z_STREAM_ERROR;
+    if (bits != NULL)
+        *bits = strm->state->bi_used;
+    return Z_OK;
+}
+
+/* ========================================================================= */
 int32_t Z_EXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32_t value) {
     deflate_state *s;
     uint64_t value64 = (uint64_t)value;
