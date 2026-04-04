@@ -251,9 +251,9 @@ struct ALIGNED_(64) internal_state {
     int strategy;               /* favor or force Huffman coding*/
     unsigned int good_match;    /* Use a faster search when the previous match is longer than this */
     int nice_match;             /* Stop searching when current match exceeds this */
-    int32_t padding1;           /* padding */
     unsigned int insert;        /* bytes at end of window left to insert */
 
+    int32_t bi_used;            /* Last number of used bits when going to a byte boundary. */
     uint64_t bi_buf;            /* Output buffer.
                                  * Bits are inserted starting at the bottom (least significant bits). */
     int32_t bi_valid;           /* Number of valid bits in bi_buf.
