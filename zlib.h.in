@@ -1532,6 +1532,11 @@ Z_EXTERN int Z_EXPORT gzungetc(int c, gzFile file);
    output buffer size of pushed characters is allowed.  (See gzbuffer above.)
    The pushed character will be discarded if the stream is repositioned with
    gzseek() or gzrewind().
+
+     gzungetc(-1, file) will force any pending seek to execute. Then gztell()
+   will report the position, even if the requested seek reached end of file.
+   This can be used to determine the number of uncompressed bytes in a gzip
+   file without having to read it into a buffer.
 */
 
 Z_EXTERN int Z_EXPORT gzflush(gzFile file, int flush);
