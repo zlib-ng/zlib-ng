@@ -194,6 +194,8 @@ typedef PTRDIFF_TYPE ptrdiff_t;
 #else
 #  if defined(__MSYS__)
 #    define z_off64_t _off64_t
+#  elif defined(__MINGW32__)
+#    define z_off64_t long long
 #  elif defined(_WIN32) && !defined(__GNUC__)
 #    define z_off64_t __int64
 #  else
