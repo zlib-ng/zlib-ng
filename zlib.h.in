@@ -452,7 +452,7 @@ Z_EXTERN int Z_EXPORT inflate(z_stream *strm, int flush);
 
     The Z_BLOCK option assists in appending to or combining deflate streams.
   To assist in this, on return inflate() always sets strm->data_type to the
-  number of unused bits in the last byte taken from strm->next_in, plus 64 if
+  number of unused bits in the input taken from strm->next_in, plus 64 if
   inflate() is currently decoding the last block in the deflate stream, plus
   128 if inflate() returned immediately after decoding an end-of-block code or
   decoding the complete header up to just before the first byte of the deflate
@@ -974,13 +974,15 @@ Z_EXTERN int Z_EXPORT inflateReset2(z_stream *strm, int windowBits);
 
 Z_EXTERN int Z_EXPORT inflatePrime(z_stream *strm, int bits, int value);
 /*
-     This function inserts bits in the inflate input stream.  The intent is
-   that this function is used to start inflating at a bit position in the
-   middle of a byte.  The provided bits will be used before any bytes are used
-   from next_in.  This function should only be used with raw inflate, and
-   should be used before the first inflate() call after inflateInit2() or
-   inflateReset().  bits must be less than or equal to 16, and that many of the
-   least significant bits of value will be inserted in the input.
+     This function inserts bits in the inflate input stream.  The intent is to
+   use inflatePrime() to start inflating at a bit position in the middle of a
+   byte.  The provided bits will be used before any bytes are used from
+   next_in.  This function should be used with raw inflate, before the first
+   inflate() call, after inflateInit2() or inflateReset().  It can also be used
+   after an inflate() return indicates the end of a deflate block or header
+   when using Z_BLOCK.  bits must be less than or equal to 16, and that many of
+   the least significant bits of value will be inserted in the input.  The
+   other bits in value can be non-zero, and will be ignored.
 
      If bits is negative, then the input stream bit buffer is emptied.  Then
    inflatePrime() can be called again to put bits in the buffer.  This is used
@@ -988,7 +990,15 @@ Z_EXTERN int Z_EXPORT inflatePrime(z_stream *strm, int bits, int value);
    to feeding inflate codes.
 
      inflatePrime returns Z_OK if success, or Z_STREAM_ERROR if the source
-   stream state was inconsistent.
+   stream state was inconsistent, or if bits is out of range.  If inflate was
+   in the middle of processing a header, trailer, or stored block lengths, then
+   it is possible for there to be only eight bits available in the bit buffer.
+   In that case, bits > 8 is considered out of range.  However, when used as
+   outlined above, there will always be 16 bits available in the buffer for
+   insertion.  As noted in its documentation above, inflate records the number
+   of bits in the bit buffer on return in data_type. 32 minus that is the
+   number of bits available for insertion.  inflatePrime does not update
+   data_type with the new number of bits in buffer.
 */
 
 Z_EXTERN long Z_EXPORT inflateMark(z_stream *strm);
