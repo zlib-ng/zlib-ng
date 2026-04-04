@@ -1678,9 +1678,10 @@ Z_EXTERN Z_EXPORT
 const char * zng_gzerror(gzFile file, int32_t *errnum);
 /*
      Return the error message for the last error which occurred on file.
-   errnum is set to zlib error number.  If an error occurred in the file system
-   and not in the compression library, errnum is set to Z_ERRNO and the
-   application may consult errno to get the exact error code.
+   If errnum is not NULL, *errnum is set to zlib error number.  If an error
+   occurred in the file system and not in the compression library, *errnum is
+   set to Z_ERRNO and the application may consult errno to get the exact error
+   code.
 
      The application must not modify the returned string.  Future calls to
    this function may invalidate the previously returned string.  If file is
