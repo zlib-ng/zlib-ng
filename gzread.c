@@ -110,39 +110,42 @@ static int gz_look(gz_state *state) {
     if (state->size == 0 && gz_read_init(state) == -1)
         return -1;
 
-    /* get at least the magic bytes in the input buffer */
-    if (strm->avail_in < 2) {
-        if (gz_avail(state) == -1)
-            return -1;
-        if (strm->avail_in == 0)
-            return 0;
-    }
-
-    /* look for gzip magic bytes -- if there, do gzip decoding (note: there is
-       a logical dilemma here when considering the case of a partially written
-       gzip file, to wit, if a single 31 byte is written, then we cannot tell
-       whether this is a single-byte file, or just a partially written gzip
-       file -- for here we assume that if a gzip file is being written, then
-       the header will be written in a single operation, so that reading a
-       single byte is sufficient indication that it is not a gzip file) */
-    if (strm->avail_in > 1 &&
-            strm->next_in[0] == 31 && strm->next_in[1] == 139) {
+    /* if transparent reading is disabled, which would only be at the start, or
+       if we're looking for a gzip member after the first one, which is not at
+       the start, then proceed directly to look for a gzip member next */
+    if (state->direct == -1 || state->junk == 0) {
         PREFIX(inflateReset)(strm);
         state->how = GZIP;
+        state->junk = state->junk != -1;
         state->direct = 0;
         return 0;
     }
 
-    /* no gzip header -- if we were decoding gzip before, then this is trailing
-       garbage.  Ignore the trailing garbage and finish. */
-    if (state->direct == 0) {
-        strm->avail_in = 0;
-        state->eof = 1;
-        state->x.have = 0;
+    /* otherwise we're at the start with auto-detect -- we check to see if the
+       first four bytes could be gzip header in order to decide whether or not
+       this will be a transparent read */
+
+    /* load any header bytes into the input buffer -- if the input is empty,
+       then it's not an error as this is a transparent read of zero bytes */
+    if (gz_avail(state) == -1)
+        return -1;
+    if (strm->avail_in == 0)
+        return 0;
+
+    /* see if this is (likely) gzip input -- if the first four bytes are
+       consistent with a gzip header, then go look for the first gzip member,
+       otherwise proceed to copy the input transparently */
+    if (strm->avail_in > 3 &&
+            strm->next_in[0] == 31 && strm->next_in[1] == 139 &&
+            strm->next_in[2] == 8 && strm->next_in[3] < 32) {
+        PREFIX(inflateReset)(strm);
+        state->how = GZIP;
+        state->junk = 1;
+        state->direct = 0;
         return 0;
     }
 
-    /* doing raw i/o, copy any leftover input to output -- this assumes that
+    /* doing raw i/o: copy any leftover input to output -- this assumes that
        the output buffer is larger than the input buffer, which also assures
        space for gzungetc() */
     state->x.next = state->out;
@@ -150,7 +153,6 @@ static int gz_look(gz_state *state) {
     state->x.have = strm->avail_in;
     strm->avail_in = 0;
     state->how = COPY;
-    state->direct = 1;
     return 0;
 }
 
@@ -177,6 +179,9 @@ static int gz_decomp(gz_state *state) {
 
         /* decompress and handle errors */
         ret = PREFIX(inflate)(strm, Z_NO_FLUSH);
+        if (strm->avail_out < had)
+            /* any decompressed data marks this as a real gzip stream */
+            state->junk = 0;
         if (ret == Z_STREAM_ERROR || ret == Z_NEED_DICT) {
             PREFIX(gz_error)(state, Z_STREAM_ERROR, "internal error: inflate stream corrupt");
             return -1;
@@ -186,6 +191,12 @@ static int gz_decomp(gz_state *state) {
             return -1;
         }
         if (ret == Z_DATA_ERROR) {              /* deflate stream invalid */
+            if (state->junk == 1) {             /* trailing garbage is ok */
+                strm->avail_in = 0;
+                state->eof = 1;
+                state->how = LOOK;
+                break;
+            }
             PREFIX(gz_error)(state, Z_DATA_ERROR, strm->msg == NULL ? "compressed data error" : strm->msg);
             return -1;
         }
@@ -196,8 +207,10 @@ static int gz_decomp(gz_state *state) {
     state->x.next = strm->next_out - state->x.have;
 
     /* if the gzip stream completed successfully, look for another */
-    if (ret == Z_STREAM_END)
+    if (ret == Z_STREAM_END) {
+        state->junk = 0;
         state->how = LOOK;
+    }
 
     /* good decompression */
     return 0;
