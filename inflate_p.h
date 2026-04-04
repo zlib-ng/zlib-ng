@@ -145,7 +145,7 @@ typedef unsigned bits_t;
 #define SET_BAD(errmsg) \
     do { \
         state->mode = BAD; \
-        strm->msg = (char *)errmsg; \
+        strm->msg = (z_const char *)errmsg; \
     } while (0)
 
 /* Huffman code table entry format for length/distance codes (op & 16 set):
