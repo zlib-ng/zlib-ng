@@ -35,6 +35,10 @@ z_int32_t Z_EXPORT PREFIX(compress2)(unsigned char *dest, z_uintmax_t *destLen, 
     const unsigned int max = (unsigned int)-1;
     z_size_t left;
 
+    if ((sourceLen > 0 && source == NULL) ||
+        destLen == NULL || (*destLen > 0 && dest == NULL))
+        return Z_STREAM_ERROR;
+
     left = *destLen;
     *destLen = 0;
 
@@ -105,7 +109,7 @@ z_size_t Z_EXPORT PREFIX(compressBound_z)(z_size_t sourceLen) {
 
 z_int32_t Z_EXPORT PREFIX(compress2_z)(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
                                        z_size_t sourceLen, z_int32_t level) {
-    z_uintmax_t got = *destLen;
+    z_uintmax_t got = destLen ? *destLen : 0;
     int ret = PREFIX(compress2)(dest, &got, source, (z_uintmax_t)sourceLen, level);
     *destLen = (z_size_t)got;
     return ret;

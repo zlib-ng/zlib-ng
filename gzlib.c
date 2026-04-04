@@ -120,7 +120,7 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
 #endif
 
     /* check input */
-    if (path == NULL)
+    if (path == NULL || mode == NULL)
         return NULL;
 
     /* Initialize gzFile state */
