@@ -33,11 +33,15 @@ EXPORTS
     @ZLIB_SYMBOL_PREFIX@zlibCompileFlags
 ; utility functions
     @ZLIB_SYMBOL_PREFIX@compress
+    @ZLIB_SYMBOL_PREFIX@compress_z
     @ZLIB_SYMBOL_PREFIX@compress2
+    @ZLIB_SYMBOL_PREFIX@compress2_z
     @ZLIB_SYMBOL_PREFIX@compressBound
     @ZLIB_SYMBOL_PREFIX@compressBound_z
     @ZLIB_SYMBOL_PREFIX@uncompress
+    @ZLIB_SYMBOL_PREFIX@uncompress_z
     @ZLIB_SYMBOL_PREFIX@uncompress2
+    @ZLIB_SYMBOL_PREFIX@uncompress2_z
     @ZLIB_SYMBOL_PREFIX@gzopen
     @ZLIB_SYMBOL_PREFIX@gzdopen
     @ZLIB_SYMBOL_PREFIX@gzbuffer

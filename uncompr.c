@@ -78,3 +78,20 @@ z_int32_t Z_EXPORT PREFIX(uncompress2)(unsigned char *dest, z_uintmax_t *destLen
 z_int32_t Z_EXPORT PREFIX(uncompress)(unsigned char *dest, z_uintmax_t *destLen, const unsigned char *source, z_uintmax_t sourceLen) {
     return PREFIX(uncompress2)(dest, destLen, source, &sourceLen);
 }
+
+#ifdef ZLIB_COMPAT
+z_int32_t Z_EXPORT PREFIX(uncompress2_z)(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
+                                         z_size_t *sourceLen) {
+    z_uintmax_t got = *destLen, used = *sourceLen;
+    int ret = PREFIX(uncompress2)(dest, &got, source, &used);
+    *sourceLen = (z_size_t)used;
+    *destLen = (z_size_t)got;
+    return ret;
+}
+
+z_int32_t Z_EXPORT PREFIX(uncompress_z)(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
+                                        z_size_t sourceLen) {
+    z_size_t used = sourceLen;
+    return PREFIX(uncompress2_z)(dest, destLen, source, &used);
+}
+#endif

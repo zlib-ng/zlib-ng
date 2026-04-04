@@ -102,4 +102,17 @@ z_size_t Z_EXPORT PREFIX(compressBound_z)(z_size_t sourceLen) {
     z_size_t bound = (z_size_t)PREFIX(compressBound)((z_uintmax_t)sourceLen);
     return bound < sourceLen ? (z_size_t)-1 : bound;
 }
+
+z_int32_t Z_EXPORT PREFIX(compress2_z)(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
+                                       z_size_t sourceLen, z_int32_t level) {
+    z_uintmax_t got = *destLen;
+    int ret = PREFIX(compress2)(dest, &got, source, (z_uintmax_t)sourceLen, level);
+    *destLen = (z_size_t)got;
+    return ret;
+}
+
+z_int32_t Z_EXPORT PREFIX(compress_z)(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
+                                      z_size_t sourceLen) {
+    return PREFIX(compress2_z)(dest, destLen, source, sourceLen, Z_DEFAULT_COMPRESSION);
+}
 #endif

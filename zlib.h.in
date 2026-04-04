@@ -1239,10 +1239,12 @@ Z_EXTERN unsigned long Z_EXPORT zlibCompileFlags(void);
    stream-oriented functions.  To simplify the interface, some default options
    are assumed (compression level and memory usage, standard memory allocation
    functions).  The source code of these utility functions can be modified if
-   you need special options.
+   you need special options.  The _z versions of the functions use the size_t
+   type for lengths.  Note that a long is 32 bits on Windows.
 */
 
 Z_EXTERN int Z_EXPORT compress(unsigned char *dest, unsigned long *destLen, const unsigned char *source, unsigned long sourceLen);
+Z_EXTERN int Z_EXPORT compress_z(unsigned char *dest, z_size_t *destLen, const unsigned char *source, z_size_t sourceLen);
 /*
      Compresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
@@ -1258,6 +1260,8 @@ Z_EXTERN int Z_EXPORT compress(unsigned char *dest, unsigned long *destLen, cons
 
 Z_EXTERN int Z_EXPORT compress2(unsigned char *dest, unsigned long *destLen, const unsigned char *source,
                               unsigned long sourceLen, int level);
+Z_EXTERN int Z_EXPORT compress2_z(unsigned char *dest, z_size_t *destLen, const unsigned char *source,
+                                  z_size_t sourceLen, int level);
 /*
      Compresses the source buffer into the destination buffer.  The level
    parameter has the same meaning as in deflateInit.  sourceLen is the byte
@@ -1283,6 +1287,7 @@ Z_EXTERN z_size_t Z_EXPORT compressBound_z(z_size_t sourceLen);
 */
 
 Z_EXTERN int Z_EXPORT uncompress(unsigned char *dest, unsigned long *destLen, const unsigned char *source, unsigned long sourceLen);
+Z_EXTERN int Z_EXPORT uncompress_z(unsigned char *dest, z_size_t *destLen, const unsigned char *source, z_size_t sourceLen);
 /*
      Decompresses the source buffer into the destination buffer.  sourceLen is
    the byte length of the source buffer.  Upon entry, destLen is the total size
@@ -1300,8 +1305,10 @@ Z_EXTERN int Z_EXPORT uncompress(unsigned char *dest, unsigned long *destLen, co
 */
 
 
-Z_EXTERN int Z_EXPORT uncompress2 (unsigned char *dest,         unsigned long *destLen,
-                                 const unsigned char *source, unsigned long *sourceLen);
+Z_EXTERN int Z_EXPORT uncompress2(unsigned char *dest, unsigned long *destLen,
+                                  const unsigned char *source, unsigned long *sourceLen);
+Z_EXTERN int Z_EXPORT uncompress2_z(unsigned char *dest, z_size_t *destLen,
+                                    const unsigned char *source, z_size_t *sourceLen);
 /*
      Same as uncompress, except that sourceLen is a pointer, where the
    length of the source is *sourceLen.  On return, *sourceLen is the number of
