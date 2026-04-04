@@ -1033,20 +1033,22 @@ Z_EXTERN int Z_EXPORT inflateGetHeader(z_stream *strm, gz_headerp head);
 
      The text, time, xflags, and os fields are filled in with the gzip header
    contents.  hcrc is set to true if there is a header CRC.  (The header CRC
-   was valid if done is set to one.) If extra is not NULL, then extra_max
-   contains the maximum number of bytes to write to extra.  Once done is true,
-   extra_len contains the actual extra field length, and extra contains the
-   extra field, or that field truncated if extra_max is less than extra_len.
-   If name is not NULL, then up to name_max characters are written there,
-   terminated with a zero unless the length is greater than name_max.  If
-   comment is not NULL, then up to comm_max characters are written there,
-   terminated with a zero unless the length is greater than comm_max.  When any
-   of extra, name, or comment are not NULL and the respective field is not
-   present in the header, then that field is set to NULL to signal its
-   absence.  This allows the use of deflateSetHeader() with the returned
-   structure to duplicate the header.  However if those fields are set to
-   allocated memory, then the application will need to save those pointers
-   elsewhere so that they can be eventually freed.
+   was valid if done is set to one.)  The extra, name, and comment pointers
+   must each be either NULL or point to space to store that information from
+   the header.  If extra is not NULL, then extra_max contains the maximum
+   number of bytes that can be written to extra.  Once done is true, extra_len
+   contains the actual extra field length, and extra contains the extra field,
+   or that field truncated if extra_max is less than extra_len.  If name is not
+   NULL, then up to name_max characters, including the terminating zero, are
+   written there.  If comment is not NULL, then up to comm_max characters,
+   including the terminating zero, are written there.  The application can tell
+   that the name or comment did not fit in the provided space by the absence of
+   a terminating zero.  If any of extra, name, or comment are not present in
+   the header, then that field's pointer is set to NULL.  This allows the use
+   of deflateSetHeader() with the returned structure to duplicate the header.
+   Note that if those fields initially pointed to allocated memory, then the
+   application will need to save them elsewhere so that they can be eventually
+   freed.
 
      If inflateGetHeader is not used, then the header information is simply
    discarded.  The header is always checked for validity, including the header
