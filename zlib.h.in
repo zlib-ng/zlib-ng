@@ -1322,7 +1322,11 @@ Z_EXTERN gzFile Z_EXPORT gzopen(const char *path, const char *mode);
    'R' for run-length encoding as in "wb1R", or 'F' for fixed code compression
    as in "wb9F".  (See the description of deflateInit2 for more information
    about the strategy parameter.)  'T' will request transparent writing or
-   appending with no compression and not using the gzip format.
+   appending with no compression and not using the gzip format. 'T' cannot be
+   used to force transparent reading. Transparent reading is automatically
+   performed if there is no gzip header at the start. Transparent reading can
+   be disabled with the 'G' option, which will instead return an error if there
+   is no gzip header.
 
      "a" can be used instead of "w" to request that the gzip stream that will
    be written be appended to the file.  "+" will result in an error, since

@@ -174,6 +174,9 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
             case 'F':
                 state->strategy = Z_FIXED;
                 break;
+            case 'G':
+                state->direct = -1;
+                break;
             case 'T':
                 state->direct = 1;
                 break;
@@ -190,14 +193,25 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
         return NULL;
     }
 
-    /* can't force transparent read */
+    /* direct is 0, 1 if "T", or -1 if "G" (last "G" or "T" wins) */
     if (state->mode == GZ_READ) {
-        if (state->direct) {
+        if (state->direct == 1) {
+            /* can't force a transparent read */
             gz_state_free(state);
             return NULL;
         }
-        state->direct = 1;      /* for empty file */
+        if (state->direct == 0)
+            /* default when reading is auto-detect of gzip vs. transparent --
+               start with a transparent assumption in case of an empty file */
+            state->direct = 1;
     }
+    else if (state->direct == -1) {
+        /* "G" has no meaning when writing -- disallow it */
+        gz_state_free(state);
+        return NULL;
+    }
+    /* if reading, direct == 1 for auto-detect, -1 for gzip only; if writing or
+       appending, direct == 0 for gzip, 1 for transparent (copy in to out) */
 
     /* save the path name for error messages */
 #ifdef WIDECHAR

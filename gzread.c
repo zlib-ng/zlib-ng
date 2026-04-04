@@ -110,6 +110,16 @@ static int gz_look(gz_state *state) {
     if (state->size == 0 && gz_read_init(state) == -1)
         return -1;
 
+    /* if transparent reading is disabled, which would only be at the start, or
+       if we're looking for a gzip member after the first one, which is not at
+       the start, then proceed directly to look for a gzip member next */
+    if (state->direct == -1) {
+        PREFIX(inflateReset)(strm);
+        state->how = GZIP;
+        state->direct = 0;
+        return 0;
+    }
+
     /* get at least the magic bytes in the input buffer */
     if (strm->avail_in < 2) {
         if (gz_avail(state) == -1)
@@ -574,7 +584,7 @@ z_int32_t Z_EXPORT PREFIX(gzdirect)(gzFile file) {
         (void)gz_look(state);
 
     /* return 1 if transparent, 0 if processing a gzip stream */
-    return state->direct;
+    return state->direct == 1;
 }
 
 /* -- see zlib.h -- */
