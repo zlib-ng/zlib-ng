@@ -98,5 +98,10 @@ ZLIB_1.2.12 {
 } ZLIB_1.2.9;
 
 ZLIB_1.3.2 {
-    @ZLIB_SYMBOL_PREFIX@deflateUsed;
+    @ZLIB_SYMBOL_PREFIX@compress_z;
+    @ZLIB_SYMBOL_PREFIX@compress2_z;
+    @ZLIB_SYMBOL_PREFIX@compressBound_z;
+    @ZLIB_SYMBOL_PREFIX@deflateBound_z;
+    @ZLIB_SYMBOL_PREFIX@uncompress_z;
+    @ZLIB_SYMBOL_PREFIX@uncompress2_z;
 } ZLIB_1.2.12;

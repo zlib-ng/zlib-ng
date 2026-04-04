@@ -752,6 +752,8 @@ int32_t zng_deflateTune(zng_stream *strm, int32_t good_length, int32_t max_lazy,
 
 Z_EXTERN Z_EXPORT
 unsigned long zng_deflateBound(zng_stream *strm, unsigned long sourceLen);
+Z_EXTERN Z_EXPORT
+size_t zng_deflateBound_z(zng_stream *strm, size_t sourceLen);
 /*
      deflateBound() returns an upper bound on the compressed size after
    deflation of sourceLen bytes.  It must be called after deflateInit() or
@@ -763,6 +765,9 @@ unsigned long zng_deflateBound(zng_stream *strm, unsigned long sourceLen);
    to return Z_STREAM_END.  Note that it is possible for the compressed size to
    be larger than the value returned by deflateBound() if flush options other
    than Z_FINISH or Z_NO_FLUSH are used.
+
+     deflateBound_z() is the same, but takes and returns a size_t length.  Note
+   that a long is 32 bits on Windows.
 */
 
 Z_EXTERN Z_EXPORT

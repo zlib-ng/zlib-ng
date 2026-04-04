@@ -30,6 +30,7 @@
 #define zng_crc32_z               @ZLIB_SYMBOL_PREFIX@zng_crc32_z
 #define zng_deflate               @ZLIB_SYMBOL_PREFIX@zng_deflate
 #define zng_deflateBound          @ZLIB_SYMBOL_PREFIX@zng_deflateBound
+#define zng_deflateBound_z        @ZLIB_SYMBOL_PREFIX@zng_deflateBound_z
 #define zng_deflateCopy           @ZLIB_SYMBOL_PREFIX@zng_deflateCopy
 #define zng_deflateEnd            @ZLIB_SYMBOL_PREFIX@zng_deflateEnd
 #define zng_deflateGetDictionary  @ZLIB_SYMBOL_PREFIX@zng_deflateGetDictionary

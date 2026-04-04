@@ -54,6 +54,8 @@
 #include "insert_string_p.h"
 #include "arch_functions.h"
 
+#include <limits.h>
+
 /* Avoid conflicts with zlib.h macros */
 #ifdef ZLIB_COMPAT
 # undef deflateInit
@@ -691,17 +693,20 @@ int32_t Z_EXPORT PREFIX(deflateTune)(PREFIX3(stream) *strm, int32_t good_length,
  * upper bound of about 14% expansion does not seem onerous for output buffer
  * allocation.
  */
-unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long sourceLen) {
+z_size_t Z_EXPORT PREFIX(deflateBound_z)(PREFIX3(stream) *strm, z_size_t sourceLen) {
     deflate_state *s;
-    unsigned long complen, wraplen;
+    z_size_t complen, wraplen;
+    z_size_t bound;
 
     /* conservative upper bound for compressed data */
     complen = sourceLen + ((sourceLen + 7) >> 3) + ((sourceLen + 63) >> 6) + 5;
     DEFLATE_BOUND_ADJUST_COMPLEN(strm, complen, sourceLen);  /* hook for IBM Z DFLTCC */
 
     /* if can't get parameters, return conservative bound plus a wrapper */
-    if (deflateStateCheck(strm))
-        return complen + GZIP_WRAPLEN;
+    if (deflateStateCheck(strm)) {
+        bound = complen + GZIP_WRAPLEN;
+        return bound < sourceLen ? (z_size_t)-1 : bound;
+    }
 
     /* compute wrapper length */
     s = strm->state;
@@ -753,19 +758,26 @@ unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long
             complen = sourceLen + (sourceLen >> 5) + (sourceLen >> 7) + (sourceLen >> 11) + 7;
         }
 
-        return complen + wraplen;
+        bound = complen + wraplen;
+        return bound < sourceLen ? (z_size_t)-1 : bound;
     }
 
 #ifndef NO_QUICK_STRATEGY
-    return sourceLen                       /* The source size itself */
+    bound = sourceLen                      /* The source size itself */
       + (sourceLen == 0 ? 1 : 0)           /* Always at least one byte for any input */
       + (sourceLen < 9 ? 1 : 0)            /* One extra byte for lengths less than 9 */
       + DEFLATE_QUICK_OVERHEAD(sourceLen)  /* Source encoding overhead, padded to next full byte */
       + DEFLATE_BLOCK_OVERHEAD             /* Deflate block overhead bytes */
       + wraplen;                           /* none, zlib or gzip wrapper */
 #else
-    return sourceLen + (sourceLen >> 4) + 7 + wraplen;
+    bound = sourceLen + (sourceLen >> 4) + 7 + wraplen;
 #endif
+    return bound < sourceLen ? (z_size_t)-1 : bound;
+}
+
+unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long sourceLen) {
+    size_t bound = PREFIX(deflateBound_z)(strm, sourceLen);
+    return (unsigned long)MIN(ULONG_MAX, bound);
 }
 
 /* =========================================================================
