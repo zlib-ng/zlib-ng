@@ -79,10 +79,12 @@ static int gz_avail(gz_state *state) {
         if (strm->avail_in) {       /* copy what's there to the start */
             unsigned char *p = state->in;
             unsigned const char *q = strm->next_in;
-            unsigned n = strm->avail_in;
-            do {
-                *p++ = *q++;
-            } while (--n);
+            if (q != p) {
+                unsigned n = strm->avail_in;
+                do {
+                    *p++ = *q++;
+                } while (--n);
+            }
         }
         if (gz_load(state, state->in + strm->avail_in, state->size - strm->avail_in, &got) == -1)
             return -1;
