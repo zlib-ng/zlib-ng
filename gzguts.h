@@ -13,11 +13,26 @@
 #  define Z_INTERNAL
 #endif
 
+#if defined(_WIN32)
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  ifndef _CRT_SECURE_NO_WARNINGS
+#    define _CRT_SECURE_NO_WARNINGS
+#  endif
+#  ifndef _CRT_NONSTDC_NO_DEPRECATE
+#    define _CRT_NONSTDC_NO_DEPRECATE
+#  endif
+#endif
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <fcntl.h>
+#ifndef _WIN32
+#  include <unistd.h>
+#endif
 
 #if defined(ZLIB_COMPAT)
 #  include "zlib.h"
@@ -31,7 +46,10 @@
 
 #if defined(_WIN32)
 #  include <io.h>
-#  define WIDECHAR
+#  include <sys/stat.h>
+#  ifndef WIDECHAR
+#    define WIDECHAR
+#  endif
 #endif
 
 #ifdef WINAPI_FAMILY
