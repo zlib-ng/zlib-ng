@@ -142,7 +142,6 @@ typedef struct {
     int reset;              /* true if a reset is pending after a Z_FINISH */
         /* seek request */
     z_off64_t skip;         /* amount to skip (already rewound if backwards) */
-    int seek;               /* true if seek request pending */
         /* error information */
     int err;                /* error code */
     char *msg;              /* error message */
