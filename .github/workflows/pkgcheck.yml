@@ -13,15 +13,12 @@ jobs:
             compiler: gcc
             cxx-compiler: g++
 
-          - name: Ubuntu GCC -m32
+          - name: Ubuntu GCC (i686)
             os: ubuntu-latest
-            compiler: gcc
-            cxx-compiler: g++
-            packages: gcc-multilib g++-multilib
-            cmake-args: -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32
-            cflags: -m32
-            cxxflags: -m32
-            ldflags: -m32
+            compiler: i686-linux-gnu-gcc
+            cxx-compiler: i686-linux-gnu-g++
+            packages: gcc-i686-linux-gnu g++-i686-linux-gnu libc6-dev-i386-cross
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-i686.cmake
 
           - name: Ubuntu GCC ARM HF
             os: ubuntu-24.04-arm
