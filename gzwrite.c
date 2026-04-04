@@ -1,5 +1,5 @@
 /* gzwrite.c -- zlib functions for writing gzip files
- * Copyright (C) 2004-2025 Mark Adler
+ * Copyright (C) 2004-2026 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
