@@ -16,6 +16,7 @@ EXPORTS
     @ZLIB_SYMBOL_PREFIX@deflateBound
     @ZLIB_SYMBOL_PREFIX@deflatePending
     @ZLIB_SYMBOL_PREFIX@deflatePrime
+    @ZLIB_SYMBOL_PREFIX@deflateUsed
     @ZLIB_SYMBOL_PREFIX@deflateSetHeader
     @ZLIB_SYMBOL_PREFIX@inflateSetDictionary
     @ZLIB_SYMBOL_PREFIX@inflateGetDictionary

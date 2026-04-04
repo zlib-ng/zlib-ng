@@ -1,3 +1,8 @@
+ZLIB_NG_2.4.0 {
+  global:
+    @ZLIB_SYMBOL_PREFIX@zng_deflateUsed;
+};
+
 ZLIB_NG_2.1.0 {
   global:
     @ZLIB_SYMBOL_PREFIX@zng_deflateInit;
