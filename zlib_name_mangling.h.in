@@ -22,6 +22,7 @@
 #  define compress              @ZLIB_SYMBOL_PREFIX@compress
 #  define compress2             @ZLIB_SYMBOL_PREFIX@compress2
 #  define compressBound         @ZLIB_SYMBOL_PREFIX@compressBound
+#  define compressBound_z       @ZLIB_SYMBOL_PREFIX@compressBound_z
 #endif
 #define crc32                 @ZLIB_SYMBOL_PREFIX@crc32
 #define crc32_combine         @ZLIB_SYMBOL_PREFIX@crc32_combine
@@ -32,6 +33,7 @@
 #define crc32_z               @ZLIB_SYMBOL_PREFIX@crc32_z
 #define deflate               @ZLIB_SYMBOL_PREFIX@deflate
 #define deflateBound          @ZLIB_SYMBOL_PREFIX@deflateBound
+#define deflateBound_z        @ZLIB_SYMBOL_PREFIX@deflateBound_z
 #define deflateCopy           @ZLIB_SYMBOL_PREFIX@deflateCopy
 #define deflateEnd            @ZLIB_SYMBOL_PREFIX@deflateEnd
 #define deflateGetDictionary  @ZLIB_SYMBOL_PREFIX@deflateGetDictionary

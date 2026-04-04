@@ -96,3 +96,10 @@ z_uintmax_t Z_EXPORT PREFIX(compressBound)(z_uintmax_t sourceLen) {
     return sourceLen + (sourceLen >> 4) + 7 + ZLIB_WRAPLEN;
 #endif
 }
+
+#ifdef ZLIB_COMPAT
+z_size_t Z_EXPORT PREFIX(compressBound_z)(z_size_t sourceLen) {
+    z_size_t bound = (z_size_t)PREFIX(compressBound)((z_uintmax_t)sourceLen);
+    return bound < sourceLen ? (z_size_t)-1 : bound;
+}
+#endif

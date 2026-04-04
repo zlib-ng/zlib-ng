@@ -750,6 +750,13 @@ unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long
 #endif
 }
 
+#ifdef ZLIB_COMPAT
+z_size_t Z_EXPORT PREFIX(deflateBound_z)(PREFIX3(stream) *strm, z_size_t sourceLen) {
+    z_size_t bound = (z_size_t)PREFIX(deflateBound)(strm, (unsigned long)sourceLen);
+    return bound < sourceLen ? (z_size_t)-1 : bound;
+}
+#endif
+
 /* =========================================================================
  * Flush as much pending output as possible. See flush_pending_inline()
  */
