@@ -698,13 +698,13 @@ unsigned long Z_EXPORT PREFIX(deflateBound)(PREFIX3(stream) *strm, unsigned long
     complen = sourceLen + ((sourceLen + 7) >> 3) + ((sourceLen + 63) >> 6) + 5;
     DEFLATE_BOUND_ADJUST_COMPLEN(strm, complen, sourceLen);  /* hook for IBM Z DFLTCC */
 
-    /* if can't get parameters, return conservative bound plus zlib wrapper */
+    /* if can't get parameters, return conservative bound plus a wrapper */
     if (deflateStateCheck(strm))
-        return complen + 6;
+        return complen + GZIP_WRAPLEN;
 
     /* compute wrapper length */
     s = strm->state;
-    switch (s->wrap) {
+    switch (ABS(s->wrap)) {
     case 0:                                 /* raw deflate */
         wraplen = 0;
         break;
