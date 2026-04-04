@@ -751,7 +751,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                 Tracev((stderr, "inflate:     dynamic codes block%s\n", state->last ? " (last)" : ""));
                 state->mode = TABLE;
                 break;
-            case 3:
+            default:
                 SET_BAD("invalid block type");
             }
             DROPBITS(2);

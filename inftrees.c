@@ -143,27 +143,27 @@ static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
  */
 int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
                                  code * *table, unsigned *bits, uint16_t *work) {
-    unsigned len;               /* a code's length in bits */
-    unsigned sym;               /* index of code symbols */
-    unsigned min, max;          /* minimum and maximum code lengths */
-    unsigned root;              /* number of index bits for root table */
-    unsigned curr;              /* number of index bits for current table */
-    unsigned drop;              /* code bits to drop for sub-table */
-    int left;                   /* number of prefix codes available */
-    unsigned used;              /* code entries in table used */
-    uint16_t rhuff;             /* Reversed huffman code */
-    unsigned huff;              /* Huffman code */
-    unsigned incr;              /* for incrementing code, index */
-    unsigned fill;              /* index for replicating entries */
-    unsigned low;               /* low bits for current root entry */
-    unsigned mask;              /* mask for low root bits */
-    code here;                  /* table entry for duplication */
-    code *next;                 /* next available space in table */
-    const uint16_t *base;       /* base value table to use */
-    const uint16_t *extra;      /* extra bits table to use */
-    unsigned match;             /* use base and extra for symbol >= match */
+    unsigned len;                 /* a code's length in bits */
+    unsigned sym;                 /* index of code symbols */
+    unsigned min, max;            /* minimum and maximum code lengths */
+    unsigned root;                /* number of index bits for root table */
+    unsigned curr;                /* number of index bits for current table */
+    unsigned drop;                /* code bits to drop for sub-table */
+    int left;                     /* number of prefix codes available */
+    unsigned used;                /* code entries in table used */
+    uint16_t rhuff;               /* Reversed huffman code */
+    unsigned huff;                /* Huffman code */
+    unsigned incr;                /* for incrementing code, index */
+    unsigned fill;                /* index for replicating entries */
+    unsigned low;                 /* low bits for current root entry */
+    unsigned mask;                /* mask for low root bits */
+    code here;                    /* table entry for duplication */
+    code *next;                   /* next available space in table */
+    const uint16_t *base = NULL;  /* base value table to use */
+    const uint16_t *extra = NULL; /* extra bits table to use */
+    unsigned match = 0;           /* use base and extra for symbol >= match */
     uint16_t ALIGNED_(16) count[MAX_BITS+1]; /* number of codes of each length */
-    uint16_t offs[MAX_BITS+1];  /* offsets in table for each length */
+    uint16_t offs[MAX_BITS+1];    /* offsets in table for each length */
     static const uint16_t lbase[31] = { /* Length codes 257..285 base */
         3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23, 27, 31,
         35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0};
@@ -292,10 +292,9 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
         extra = lext;
         match = 257;
         break;
-    default:    /* DISTS */
+    case DISTS:
         base = dbase;
         extra = dext;
-        match = 0;
     }
 
     /* initialize state for loop */
