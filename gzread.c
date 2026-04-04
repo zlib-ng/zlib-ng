@@ -574,7 +574,7 @@ z_int32_t Z_EXPORT PREFIX(gzdirect)(gzFile file) {
         (void)gz_look(state);
 
     /* return 1 if transparent, 0 if processing a gzip stream */
-    return state->direct;
+    return state->direct == 1;
 }
 
 /* -- see zlib.h -- */
