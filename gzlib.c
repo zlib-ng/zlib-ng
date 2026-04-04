@@ -43,6 +43,7 @@ static gzFile gz_state_init(void) {
     state->mode = GZ_NONE;
     state->level = Z_DEFAULT_COMPRESSION;
     state->strategy = Z_DEFAULT_STRATEGY;
+    state->err = Z_OK;
     state->msg = NULL;
     return (gzFile)state;
 }
