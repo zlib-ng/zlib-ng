@@ -37,7 +37,7 @@ static int emit_match(deflate_state *s, struct match match) {
         return bflush;
     }
 
-    check_match(s, match.strstart, match.match_start, match_len);
+    check_match(s, match.strstart, match.match_start, (int)match_len);
 
     bflush += zng_tr_tally_dist(s, match.strstart - match.match_start, match_len - STD_MIN_MATCH);
     return bflush;

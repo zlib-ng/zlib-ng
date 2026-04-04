@@ -108,7 +108,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
 
                         Assert(match_len <= STD_MAX_MATCH, "match too long");
                         Assert(s->strstart <= UINT16_MAX, "strstart should fit in uint16_t");
-                        check_match(s, s->strstart, hash_head, match_len);
+                        check_match(s, s->strstart, hash_head, (int)match_len);
 
                         zng_tr_emit_dist(s, static_ltree, static_dtree, match_len - STD_MIN_MATCH, (uint32_t)dist);
                         s->lookahead -= match_len;
