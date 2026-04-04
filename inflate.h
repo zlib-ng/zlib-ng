@@ -119,7 +119,7 @@ struct ALIGNED_(64) inflate_state {
 
         /* bit accumulator */
     uint64_t hold;              /* input bit accumulator */
-    unsigned bits;              /* number of bits in "in" */
+    unsigned bits;              /* number of bits in hold */
         /* fixed and dynamic code tables */
     unsigned lenbits;           /* index bits for lencode */
     code const *lencode;        /* starting table for length/literal codes */
