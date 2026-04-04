@@ -14,10 +14,14 @@
 
 /* ========================================================================= */
 static uint32_t crc32_combine_(uint32_t crc1, uint32_t crc2, z_off64_t len2) {
+    if (len2 < 0)
+        return 0;
     return multmodp(x2nmodp(len2, 3), crc1) ^ crc2;
 }
 static uint32_t crc32_combine_gen_(z_off64_t len2) {
-     return x2nmodp(len2, 3);
+    if (len2 < 0)
+        return 0;
+    return x2nmodp(len2, 3);
 }
 static uint32_t crc32_combine_op_(uint32_t crc1, uint32_t crc2, const uint32_t op) {
     return multmodp(op, crc1) ^ crc2;
