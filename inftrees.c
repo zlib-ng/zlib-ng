@@ -159,9 +159,9 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     unsigned mask;              /* mask for low root bits */
     code here;                  /* table entry for duplication */
     code *next;                 /* next available space in table */
-    const uint16_t *base;       /* base value table to use */
-    const uint16_t *extra;      /* extra bits table to use */
-    unsigned match;             /* use base and extra for symbol >= match */
+    const uint16_t *base = NULL; /* base value table to use */
+    const uint16_t *extra = NULL; /* extra bits table to use */
+    unsigned match = 0;         /* use base and extra for symbol >= match */
     uint16_t ALIGNED_(16) count[MAX_BITS+1]; /* number of codes of each length */
     uint16_t offs[MAX_BITS+1];  /* offsets in table for each length */
     static const uint16_t lbase[31] = { /* Length codes 257..285 base */
@@ -284,7 +284,6 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     /* set up for code type */
     switch (type) {
     case CODES:
-        base = extra = work;    /* dummy value--not used */
         match = 20;
         break;
     case LENS:
@@ -292,10 +291,9 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
         extra = lext;
         match = 257;
         break;
-    default:    /* DISTS */
+    case DISTS:
         base = dbase;
         extra = dext;
-        match = 0;
     }
 
     /* initialize state for loop */
