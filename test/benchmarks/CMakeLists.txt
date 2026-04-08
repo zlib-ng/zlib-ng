@@ -13,7 +13,7 @@ if(NOT DEFINED CMAKE_CXX_EXTENSIONS)
 endif()
 
 # Search for Google benchmark package
-find_package(benchmark QUIET)
+find_package(benchmark 1.9.2 QUIET)
 if(NOT benchmark_FOUND)
     # Fetch google benchmark source code from official repository
     set(BENCHMARK_ENABLE_TESTING OFF)
@@ -32,11 +32,17 @@ if(NOT benchmark_FOUND)
         ${ZNG_FetchContent_Declare_EXCLUDE_FROM_ALL})
 
     ZNG_FetchContent_MakeAvailable(benchmark)
+
+    # GCC 13+ false positive in std_function.h (google/benchmark#1973)
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+        target_compile_options(benchmark PRIVATE -Wno-maybe-uninitialized)
+    endif()
 endif()
 
 # Public API benchmarks
 set(BENCH_PUBLIC_SRCS
     benchmark_compress.cc
+    benchmark_corpora.cc
     benchmark_inflate.cc
     benchmark_inflate_chunked.cc
     benchmark_uncompress.cc
@@ -58,7 +64,9 @@ set(BENCH_INTERNAL_SRCS
 
 add_executable(benchmark_zlib ${BENCH_PUBLIC_SRCS})
 
-target_compile_definitions(benchmark_zlib PRIVATE -DBENCHMARK_STATIC_DEFINE)
+target_compile_definitions(benchmark_zlib PRIVATE
+    -DBENCHMARK_STATIC_DEFINE
+    -DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/test/data")
 target_include_directories(benchmark_zlib PRIVATE
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_BINARY_DIR}
