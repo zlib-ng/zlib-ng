@@ -144,9 +144,10 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
     do {
         /* This lookup needs bits >= MAX_LEN_ROOT_BITS, which every path here
            guarantees: each refill leaves bits >= 56, the literal-only paths
-           loop after consuming at most 35 bits, and the distance path refills
-           to at least MAX_BITS + MAX_DIST_EXTRA_BITS + MAX_LEN_ROOT_BITS
-           before consuming at most MAX_BITS + MAX_DIST_EXTRA_BITS. */
+           loop after consuming at most 2*MAX_LEN_ROOT_BITS + MAX_BITS bits, and
+           the distance path refills to at least MAX_BITS + MAX_DIST_EXTRA_BITS
+           + MAX_LEN_ROOT_BITS before consuming at most MAX_BITS +
+           MAX_DIST_EXTRA_BITS. */
         here = lcode[hold & lmask];
         Z_TOUCH(here);
         /* No-op on the first iteration: the pre-loop refill already filled hold
