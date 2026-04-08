@@ -5,7 +5,7 @@ These benchmarks are written using [Google Benchmark](https://github.com/google/
 
 To increase the number of times each benchmark iteration is run use:
 
-```
+```sh
 --benchmark_repetitions=20
 ```
 
@@ -13,8 +13,16 @@ To increase the number of times each benchmark iteration is run use:
 
 To filter out which benchmarks are performed use:
 
-```
+```sh
 --benchmark_filter="adler32*"
+```
+
+*Cooldown*
+
+To insert a cooldown sleep between benchmark families to mitigate thermal throttling:
+
+```sh
+--benchmark_cooldown=3
 ```
 
 There are two different benchmarks, micro and macro.
