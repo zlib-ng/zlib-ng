@@ -10,6 +10,10 @@
 #include "crc32_fold.h"
 #include "adler32_fold.h"
 
+#if defined(_MSC_VER)
+#  include <intrin.h>
+#endif
+
 #ifdef ZLIB_COMPAT
 typedef struct z_stream_s z_stream;
 #else
@@ -38,5 +42,30 @@ struct functable_s {
 };
 
 Z_INTERNAL extern struct functable_s functable;
+
+/* Relaxed atomic read from the functable, matching the atomic stores
+ * in FUNCTABLE_ASSIGN (functable.c).  Using relaxed ordering is
+ * sufficient: the values written are deterministic per CPU, so any
+ * value we read (stale stub or final pointer) is safe to call.
+ *
+ * GCC/Clang: use __atomic_load_n with __ATOMIC_RELAXED.
+ * MSVC: _InterlockedCompareExchangePointer(ptr, NULL, NULL) performs
+ *   an atomic compare-and-swap that never modifies a non-NULL pointer
+ *   (functable members are always non-NULL — initialized to stubs).
+ *   The intrinsic acts as a full compiler barrier, so the subsequent
+ *   member access (which preserves the correct function-pointer type)
+ *   is guaranteed to reload from memory.
+ * Other: plain read (matching the FUNCTABLE_ASSIGN fallback warning). */
+#if defined(__GNUC__) || defined(__clang__)
+#  define FUNCTABLE_READ(FUNC_NAME) \
+       __atomic_load_n(&(functable.FUNC_NAME), __ATOMIC_RELAXED)
+#elif defined(_MSC_VER)
+#  define FUNCTABLE_READ(FUNC_NAME) ( \
+       _InterlockedCompareExchangePointer( \
+           (void * volatile *)&(functable.FUNC_NAME), NULL, NULL), \
+       functable.FUNC_NAME)
+#else
+#  define FUNCTABLE_READ(FUNC_NAME) functable.FUNC_NAME
+#endif
 
 #endif

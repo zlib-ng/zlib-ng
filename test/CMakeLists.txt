@@ -243,7 +243,7 @@ if(WITH_GTEST)
 
         find_package(Threads)
         if(Threads_FOUND AND NOT BASEARCH_WASM32_FOUND)
-            target_sources(gtest_zlib PRIVATE test_deflate_concurrency.cc)
+            target_sources(gtest_zlib PRIVATE test_deflate_concurrency.cc test_functable_thread_safety.cc)
             if(UNIX AND NOT APPLE)
                 # On Linux, use a workaround for https://gcc.gnu.org/bugzilla/show_bug.cgi?id=52590
                 target_link_libraries(gtest_zlib -Wl,--whole-archive -lpthread -Wl,--no-whole-archive)

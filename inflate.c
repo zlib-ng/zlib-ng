@@ -28,11 +28,11 @@ static inline void inf_chksum_cpy(PREFIX3(stream) *strm, uint8_t *dst,
     struct inflate_state *state = (struct inflate_state*)strm->state;
 #ifdef GUNZIP
     if (state->flags) {
-        functable.crc32_fold_copy(&state->crc_fold, dst, src, copy);
+        FUNCTABLE_READ(crc32_fold_copy)(&state->crc_fold, dst, src, copy);
     } else
 #endif
     {
-        strm->adler = state->check = functable.adler32_fold_copy(state->check, dst, src, copy);
+        strm->adler = state->check = FUNCTABLE_READ(adler32_fold_copy)(state->check, dst, src, copy);
     }
 }
 
@@ -40,11 +40,11 @@ static inline void inf_chksum(PREFIX3(stream) *strm, const uint8_t *src, uint32_
     struct inflate_state *state = (struct inflate_state*)strm->state;
 #ifdef GUNZIP
     if (state->flags) {
-        functable.crc32_fold(&state->crc_fold, src, len, 0);
+        FUNCTABLE_READ(crc32_fold)(&state->crc_fold, src, len, 0);
     } else
 #endif
     {
-        strm->adler = state->check = functable.adler32(state->check, src, len);
+        strm->adler = state->check = FUNCTABLE_READ(adler32)(state->check, src, len);
     }
 }
 
@@ -140,7 +140,7 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
     struct inflate_state *state;
 
     /* Initialize functable earlier. */
-    functable.force_init();
+    FUNCTABLE_READ(force_init)();
 
     if (strm == NULL)
         return Z_STREAM_ERROR;
@@ -159,7 +159,7 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateInit2)(PREFIX3(stream) *strm, int32_t windo
     state->strm = strm;
     state->window = NULL;
     state->mode = HEAD;     /* to pass state test in inflateReset2() */
-    state->chunksize = functable.chunksize();
+    state->chunksize = FUNCTABLE_READ(chunksize)();
     ret = PREFIX(inflateReset2)(strm, windowBits);
     if (ret != Z_OK) {
         ZFREE_STATE(strm, state);
@@ -636,7 +636,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             }
             /* compute crc32 checksum if not in raw mode */
             if ((state->wrap & 4) && state->flags)
-                strm->adler = state->check = functable.crc32_fold_reset(&state->crc_fold);
+                strm->adler = state->check = FUNCTABLE_READ(crc32_fold_reset)(&state->crc_fold);
             state->mode = TYPE;
             break;
 #endif
@@ -867,7 +867,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             /* use inflate_fast() if we have enough input and output */
             if (have >= INFLATE_FAST_MIN_HAVE && left >= INFLATE_FAST_MIN_LEFT) {
                 RESTORE();
-                functable.inflate_fast(strm, out);
+                FUNCTABLE_READ(inflate_fast)(strm, out);
                 LOAD();
                 if (state->mode == TYPE)
                     state->back = -1;
@@ -1026,7 +1026,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             } else {
                 copy = MIN(state->length, left);
 
-                put = functable.chunkmemset_safe(put, state->offset, copy, left);
+                put = FUNCTABLE_READ(chunkmemset_safe)(put, state->offset, copy, left);
             }
             left -= copy;
             state->length -= copy;
@@ -1056,7 +1056,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                     }
 #ifdef GUNZIP
                     if (state->flags)
-                        strm->adler = state->check = functable.crc32_fold_final(&state->crc_fold);
+                        strm->adler = state->check = FUNCTABLE_READ(crc32_fold_final)(&state->crc_fold);
 #endif
                 }
                 out = left;
@@ -1190,7 +1190,7 @@ int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8
 
     /* check for correct dictionary identifier */
     if (state->mode == DICT) {
-        dictid = functable.adler32(ADLER32_INITIAL_VALUE, dictionary, dictLength);
+        dictid = FUNCTABLE_READ(adler32)(ADLER32_INITIAL_VALUE, dictionary, dictLength);
         if (dictid != state->check)
             return Z_DATA_ERROR;
     }

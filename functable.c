@@ -297,87 +297,87 @@ static void force_init_stub(void) {
 
 static uint32_t adler32_stub(uint32_t adler, const uint8_t* buf, size_t len) {
     init_functable();
-    return functable.adler32(adler, buf, len);
+    return FUNCTABLE_READ(adler32)(adler, buf, len);
 }
 
 static uint32_t adler32_fold_copy_stub(uint32_t adler, uint8_t* dst, const uint8_t* src, size_t len) {
     init_functable();
-    return functable.adler32_fold_copy(adler, dst, src, len);
+    return FUNCTABLE_READ(adler32_fold_copy)(adler, dst, src, len);
 }
 
 static uint8_t* chunkmemset_safe_stub(uint8_t* out, unsigned dist, unsigned len, unsigned left) {
     init_functable();
-    return functable.chunkmemset_safe(out, dist, len, left);
+    return FUNCTABLE_READ(chunkmemset_safe)(out, dist, len, left);
 }
 
 static uint32_t chunksize_stub(void) {
     init_functable();
-    return functable.chunksize();
+    return FUNCTABLE_READ(chunksize)();
 }
 
 static uint32_t compare256_stub(const uint8_t* src0, const uint8_t* src1) {
     init_functable();
-    return functable.compare256(src0, src1);
+    return FUNCTABLE_READ(compare256)(src0, src1);
 }
 
 static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
     init_functable();
-    return functable.crc32(crc, buf, len);
+    return FUNCTABLE_READ(crc32)(crc, buf, len);
 }
 
 static void crc32_fold_stub(crc32_fold* crc, const uint8_t* src, size_t len, uint32_t init_crc) {
     init_functable();
-    functable.crc32_fold(crc, src, len, init_crc);
+    FUNCTABLE_READ(crc32_fold)(crc, src, len, init_crc);
 }
 
 static void crc32_fold_copy_stub(crc32_fold* crc, uint8_t* dst, const uint8_t* src, size_t len) {
     init_functable();
-    functable.crc32_fold_copy(crc, dst, src, len);
+    FUNCTABLE_READ(crc32_fold_copy)(crc, dst, src, len);
 }
 
 static uint32_t crc32_fold_final_stub(crc32_fold* crc) {
     init_functable();
-    return functable.crc32_fold_final(crc);
+    return FUNCTABLE_READ(crc32_fold_final)(crc);
 }
 
 static uint32_t crc32_fold_reset_stub(crc32_fold* crc) {
     init_functable();
-    return functable.crc32_fold_reset(crc);
+    return FUNCTABLE_READ(crc32_fold_reset)(crc);
 }
 
 static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start) {
     init_functable();
-    functable.inflate_fast(strm, start);
+    FUNCTABLE_READ(inflate_fast)(strm, start);
 }
 
 static void insert_string_stub(deflate_state* const s, uint32_t str, uint32_t count) {
     init_functable();
-    functable.insert_string(s, str, count);
+    FUNCTABLE_READ(insert_string)(s, str, count);
 }
 
 static uint32_t longest_match_stub(deflate_state* const s, Pos cur_match) {
     init_functable();
-    return functable.longest_match(s, cur_match);
+    return FUNCTABLE_READ(longest_match)(s, cur_match);
 }
 
 static uint32_t longest_match_slow_stub(deflate_state* const s, Pos cur_match) {
     init_functable();
-    return functable.longest_match_slow(s, cur_match);
+    return FUNCTABLE_READ(longest_match_slow)(s, cur_match);
 }
 
 static Pos quick_insert_string_stub(deflate_state* const s, const uint32_t str) {
     init_functable();
-    return functable.quick_insert_string(s, str);
+    return FUNCTABLE_READ(quick_insert_string)(s, str);
 }
 
 static void slide_hash_stub(deflate_state* s) {
     init_functable();
-    functable.slide_hash(s);
+    FUNCTABLE_READ(slide_hash)(s);
 }
 
 static uint32_t update_hash_stub(deflate_state* const s, uint32_t h, uint32_t val) {
     init_functable();
-    return functable.update_hash(s, h, val);
+    return FUNCTABLE_READ(update_hash)(s, h, val);
 }
 
 /* functable init */
