@@ -32,16 +32,25 @@
 #if defined(X86_VPCLMULQDQ) && defined(__AVX512F__)
 #  if defined(_MSC_VER) && _MSC_VER < 1920
      /* Use epi32 variants for older MSVC toolchains (v141/v140) to avoid cast warnings */
-#    define z512_xor3_epi64(a, b, c)     _mm512_ternarylogic_epi32(a, b, c, 0x96)
-#    define z512_inserti64x2(a, b, imm)  _mm512_inserti32x4(a, b, imm)
-#    define z512_extracti64x2(a, imm)    _mm512_extracti32x4_epi32(a, imm)
+#    define z512_xor3_epi64(a, b, c)        _mm512_ternarylogic_epi32(a, b, c, 0x96)
+#    define z512_inserti64x2(a, b, imm)     _mm512_inserti32x4(a, b, imm)
+#    define z512_extracti64x2(a, imm)       _mm512_extracti32x4_epi32(a, imm)
 #  else
-#    define z512_xor3_epi64(a, b, c)     _mm512_ternarylogic_epi64(a, b, c, 0x96)
-#    define z512_inserti64x2(a, b, imm)  _mm512_inserti64x2(a, b, imm)
-#    define z512_extracti64x2(a, imm)    _mm512_extracti64x2_epi64(a, imm)
+#    define z512_xor3_epi64(a, b, c)        _mm512_ternarylogic_epi64(a, b, c, 0x96)
+#    if defined(__AVX512DQ__)
+#      if defined(_MSC_VER) && !defined(_MM_K0_REG8)
+#        define z512_inserti64x2(a, b, imm) _mm512_maskz_inserti64x2(UINT8_MAX, a, b, imm)
+#      else
+#        define z512_inserti64x2(a, b, imm) _mm512_inserti64x2(a, b, imm)
+#      endif
+#      define z512_extracti64x2(a, imm)     _mm512_extracti64x2_epi64(a, imm)
+#    else
+#      define z512_inserti64x2(a, b, imm)   _mm512_inserti32x4(a, b, imm)
+#      define z512_extracti64x2(a, imm)     _mm512_extracti32x4_epi32(a, imm)
+#    endif
 #  endif
 #  ifdef __AVX512VL__
-#    define z128_xor3_epi64(a, b, c)  _mm_ternarylogic_epi64(a, b, c, 0x96)
+#    define z128_xor3_epi64(a, b, c)        _mm_ternarylogic_epi64(a, b, c, 0x96)
 #  endif
 #endif
 /* 256-bit VPCLMULQDQ macros (doesn't require AVX-512) */
