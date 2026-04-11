@@ -57,15 +57,11 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
     if (UNLIKELY(best_len >= lookahead))
         return lookahead;
 
-    /* Calculate read offset which should only extend an extra byte
-     * to find the next best match length.
+    /* Calculate read offset which should only extend an extra byte to find the
+     * next best match length. When best_len is shorter than the read width, we
+     * diff the mismatched bytes instead.
      */
-    offset = best_len-1;
-    if (UNLIKELY(best_len >= sizeof(uint32_t))) {
-        offset -= 2;
-        if (best_len >= sizeof(uint64_t))
-            offset -= 4;
-    }
+    offset = best_len >= sizeof(uint64_t) ? best_len - 7 : 0;
 
     scan = window + strstart;
     scan_start = zng_memread_8(scan);
@@ -128,32 +124,36 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
          * that depend on those values. However the length of the match is limited to the
          * lookahead, so the output of deflate is not affected by the uninitialized values.
          */
-        if (best_len < sizeof(uint32_t)) {
-            for (;;) {
-                if (zng_memcmp_2(mbase_end+cur_match, &scan_end) == 0 &&
-                    zng_memcmp_2(mbase_start+cur_match, &scan_start) == 0)
-                    break;
-                GOTO_NEXT_CHAIN;
+        uint32_t len;
+        if (best_len < sizeof(uint64_t)) {
+            uint64_t cand_start = zng_memread_8(mbase_start + cur_match);
+            if (scan_start != cand_start) {
+                uint64_t diff = scan_start ^ cand_start;
+                len = zng_first_diff_byte64(diff);
+                if (len <= best_len) {
+                    GOTO_NEXT_CHAIN;
+                }
+                goto short_match_accept;
             }
-        } else if (best_len >= sizeof(uint64_t)) {
+            /* All 8 bytes match, fallthrough to compare256 for the tail. */
+        } else {
+            /* Pre-filter the candidate on the start and end sentinels before compare256 using
+             * simple 8-byte comparison since best_len >= 8. */
             for (;;) {
+                /* First check the end of the candidate at best_len+1 due to the higher
+                 * likelihood of a mismatch. */
                 if (zng_memcmp_8(mbase_end+cur_match, &scan_end) == 0 &&
                     zng_memcmp_8(mbase_start+cur_match, &scan_start) == 0)
                     break;
                 GOTO_NEXT_CHAIN;
             }
-        } else {
-            for (;;) {
-                if (zng_memcmp_4(mbase_end+cur_match, &scan_end) == 0 &&
-                    zng_memcmp_4(mbase_start+cur_match, &scan_start) == 0)
-                    break;
-                GOTO_NEXT_CHAIN;
-            }
         }
-        uint32_t len = COMPARE256(scan+2, mbase_start+cur_match+2) + 2;
+        len = COMPARE256(scan+2, mbase_start+cur_match+2) + 2;
         Assert(scan+len <= window+(unsigned)(s->window_size-1), "wild scan");
 
-        if (len > best_len) {
+        if (len > best_len)
+short_match_accept:
+        {
             uint32_t match_start = cur_match - match_offset;
             s->match_start = match_start;
 
@@ -167,12 +167,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
 
             best_len = len;
 
-            offset = best_len-1;
-            if (LIKELY(best_len >= sizeof(uint32_t))) {
-                offset -= 2;
-                if (best_len >= sizeof(uint64_t))
-                    offset -= 4;
-            }
+            offset = best_len >= sizeof(uint64_t) ? best_len - 7 : 0;
 
             scan_end = zng_memread_8(scan+offset);
 

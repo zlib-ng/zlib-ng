@@ -6,9 +6,10 @@
 #ifdef POWER9
 
 #include "zbuild.h"
+#include "zendian.h"
 #include "zmemory.h"
 #include "deflate.h"
-#include "zendian.h"
+#include "fallback_builtins.h"
 
 #include <altivec.h>
 
