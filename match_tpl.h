@@ -206,7 +206,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
                  * us include one more byte into hash - the byte which will be checked
                  * in main loop now, and which allows to grow match by 1.
                  */
-                scan_endstr = scan + len - (STD_MIN_MATCH+1);
+                scan_endstr = scan + len - (STD_MIN_MATCH-1);
 
                 // use update_hash_roll for deflate_slow
                 hash = update_hash_roll(0, scan_endstr[0]);
@@ -215,7 +215,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
 
                 pos = head[hash];
                 if (pos < cur_match) {
-                    match_offset = len - (STD_MIN_MATCH+1);
+                    match_offset = len - (STD_MIN_MATCH-1);
                     if (pos <= limit_base + match_offset)
                         goto break_matching;
                     cur_match = pos;
