@@ -4,6 +4,9 @@ jobs:
   configure:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell || 'bash' }}
     strategy:
       fail-fast: false
       matrix:
@@ -227,11 +230,57 @@ jobs:
             cflags: -static
             ldflags: -static
 
+          - name: Windows GCC MinGW32
+            os: windows-latest
+            shell: msys2 {0}
+            compiler: i686-w64-mingw32-gcc
+
+          - name: Windows GCC MinGW32 Compat
+            os: windows-latest
+            shell: msys2 {0}
+            compiler: i686-w64-mingw32-gcc
+            configure-args: --zlib-compat
+
+          - name: Windows GCC MinGW64
+            os: windows-latest
+            shell: msys2 {0}
+            compiler: x86_64-w64-mingw32-gcc
+
+          - name: Windows GCC MinGW64 Compat
+            os: windows-latest
+            shell: msys2 {0}
+            compiler: x86_64-w64-mingw32-gcc
+            configure-args: --zlib-compat
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v6
       with:
         show-progress: 'false'
+
+    - name: Setup MinGW32
+      if: runner.os == 'Windows' && contains(matrix.name, 'MinGW32')
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        msystem: MINGW32
+        install: >-
+          pkg-config
+          make
+          git
+          mingw-w64-i686-toolchain
+
+    - name: Setup MinGW64
+      if: runner.os == 'Windows' && contains(matrix.name, 'MinGW64')
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        msystem: MINGW64
+        install: >-
+          pkg-config
+          make
+          git
+          mingw-w64-x86_64-toolchain
 
     - name: Add ubuntu mirrors
       if: runner.os == 'Linux' && matrix.packages
