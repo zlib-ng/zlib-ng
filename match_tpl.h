@@ -53,8 +53,9 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
     /* The code is optimized for STD_MAX_MATCH-2 multiple of 16. */
     Assert(STD_MAX_MATCH == 258, "Code too clever");
 
-    scan = window + strstart;
     best_len = s->prev_length ? s->prev_length : STD_MIN_MATCH-1;
+    if (best_len >= lookahead)
+        return lookahead;
 
     /* Calculate read offset which should only extend an extra byte
      * to find the next best match length.
@@ -66,6 +67,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
             offset -= 4;
     }
 
+    scan = window + strstart;
     scan_start = zng_memread_8(scan);
     scan_end = zng_memread_8(scan+offset);
     mbase_end  = (mbase_start+offset);
