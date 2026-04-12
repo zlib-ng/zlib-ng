@@ -107,7 +107,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
         /* Update offset-dependent variables */
         limit = limit_base+match_offset;
         if (cur_match <= limit)
-            goto break_matching;
+            return best_len;
         mbase_start -= match_offset;
         mbase_end -= match_offset;
     }
@@ -190,7 +190,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
                     if (pos < next_pos) {
                         /* Hash chain is more distant, use it */
                         if (pos <= limit_base + i)
-                            goto break_matching;
+                            return best_len;
                         next_pos = pos;
                         match_offset = i;
                     }
@@ -214,7 +214,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
                 if (pos < cur_match) {
                     match_offset = len - (STD_MIN_MATCH+1);
                     if (pos <= limit_base + match_offset)
-                        goto break_matching;
+                        return best_len;
                     cur_match = pos;
                 }
 
@@ -238,15 +238,6 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
         GOTO_NEXT_CHAIN;
     }
     return best_len;
-
-#ifdef LONGEST_MATCH_ROLL
-break_matching:
-
-    if (best_len < lookahead)
-        return best_len;
-
-    return lookahead;
-#endif
 }
 
 #undef LONGEST_MATCH_ROLL
