@@ -189,7 +189,7 @@ public:
         if (!load_corpus_file(cf))
             return;
 
-        outbuff_size = PREFIX(deflateBound)(NULL, (z_uintmax_t)cf->size);
+        outbuff_size = PREFIX(deflateBound)(NULL, (unsigned long)cf->size);
         outbuff = (uint8_t *)malloc(outbuff_size);
         if (outbuff == NULL)
             return;
@@ -225,6 +225,9 @@ public:
                 break;
             }
         }
+
+        state.counters["compressed"] = benchmark::Counter(double(strm.total_out));
+        state.counters["ratio"] = benchmark::Counter(double(cf->size) / double(strm.total_out));
     }
 
     void TearDown(const benchmark::State &) override {
@@ -259,7 +262,7 @@ public:
         outbuff = (uint8_t *)malloc(cf->size);
 
         /* Pre-compress the file for inflate benchmarking */
-        z_uintmax_t comp_bound = PREFIX(deflateBound)(NULL, (z_uintmax_t)cf->size);
+        z_uintmax_t comp_bound = PREFIX(deflateBound)(NULL, (unsigned long)cf->size);
         compressed = (uint8_t *)malloc(comp_bound);
 
         if (compressed != NULL) {
@@ -312,6 +315,9 @@ public:
                 break;
             }
         }
+
+        state.counters["compressed"] = benchmark::Counter(double(strm.total_out));
+        state.counters["ratio"] = benchmark::Counter(double(cf->size) / double(strm.total_out));
     }
 
     void TearDown(const benchmark::State &) override {
@@ -330,7 +336,7 @@ static int register_corpora_benchmarks(void) {
     if (!discover_corpora())
         return 0;
 
-    int levels[] = {1, 6, 9};
+    int levels[] = {1, 3, 6, 8, 9};
 
     size_t prefix_len = strlen(CORPORA_DIR) + 1;
 

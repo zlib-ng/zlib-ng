@@ -91,6 +91,9 @@ public:
             state.SkipWithError("deflateEnd did not return Z_OK");
             return;
         }
+
+        state.counters["compressed"] = benchmark::Counter(double(strm.total_out));
+        state.counters["ratio"] = benchmark::Counter(double(size) / double(strm.total_out));
     }
 
     void TearDown(const ::benchmark::State&) {
