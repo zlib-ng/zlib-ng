@@ -20,7 +20,7 @@ uint8_t* chunkmemset_safe_rvv(uint8_t *out, uint8_t *from, size_t len, size_t le
 uint32_t compare256_rvv(const uint8_t *src0, const uint8_t *src1);
 
 uint32_t longest_match_rvv(deflate_state *const s, uint32_t cur_match);
-uint32_t longest_match_slow_rvv(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_roll_rvv(deflate_state *const s, uint32_t cur_match);
 void slide_hash_rvv(deflate_state *s);
 void inflate_fast_rvv(PREFIX3(stream) *strm, uint32_t start);
 #endif
@@ -52,8 +52,8 @@ uint32_t crc32_copy_riscv64_zbc(uint32_t crc, uint8_t *dst, const uint8_t *src, 
 #    define native_inflate_fast inflate_fast_rvv
 #    undef native_longest_match
 #    define native_longest_match longest_match_rvv
-#    undef native_longest_match_slow
-#    define native_longest_match_slow longest_match_slow_rvv
+#    undef native_longest_match_roll
+#    define native_longest_match_roll longest_match_roll_rvv
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_rvv
 #  endif

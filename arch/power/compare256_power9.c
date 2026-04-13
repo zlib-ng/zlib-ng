@@ -59,8 +59,8 @@ Z_INTERNAL uint32_t compare256_power9(const uint8_t *src0, const uint8_t *src1) 
 
 #include "match_tpl.h"
 
-#define LONGEST_MATCH_SLOW
-#define LONGEST_MATCH       longest_match_slow_power9
+#define LONGEST_MATCH_ROLL
+#define LONGEST_MATCH       longest_match_roll_power9
 #define COMPARE256          compare256_power9_static
 
 #include "match_tpl.h"

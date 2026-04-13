@@ -39,8 +39,8 @@ Z_INTERNAL uint32_t compare256_rvv(const uint8_t *src0, const uint8_t *src1) {
 
 #include "match_tpl.h"
 
-#define LONGEST_MATCH_SLOW
-#define LONGEST_MATCH       longest_match_slow_rvv
+#define LONGEST_MATCH_ROLL
+#define LONGEST_MATCH       longest_match_roll_rvv
 #define COMPARE256          compare256_rvv_static
 
 #include "match_tpl.h"

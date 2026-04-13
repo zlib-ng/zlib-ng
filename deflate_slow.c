@@ -23,7 +23,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     int level = s->level;
 
     if (level >= 9) {
-        longest_match = FUNCTABLE_FPTR(longest_match_slow);
+        longest_match = FUNCTABLE_FPTR(longest_match_roll);
         insert_string_func = insert_string_roll;
     } else {
         longest_match = FUNCTABLE_FPTR(longest_match);

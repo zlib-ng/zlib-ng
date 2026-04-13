@@ -24,23 +24,20 @@
  * IN assertions: cur_match is the head of the hash chain for the current
  * string (strstart) and its distance is <= MAX_DIST, and prev_length >=1
  * OUT assertion: the match length is not greater than s->lookahead
- *
- * The LONGEST_MATCH_SLOW variant spends more time to attempt to find longer
- * matches once a match has already been found.
  */
 Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
     const unsigned wmask = W_MASK(s);
     unsigned int strstart = s->strstart;
     const unsigned char *window = s->window;
     const Pos *prev = s->prev;
-#ifdef LONGEST_MATCH_SLOW
+#ifdef LONGEST_MATCH_ROLL
     const Pos *head = s->head;
 #endif
     const unsigned char *scan;
     const unsigned char *mbase_start = window;
     const unsigned char *mbase_end;
     uint32_t limit;
-#ifdef LONGEST_MATCH_SLOW
+#ifdef LONGEST_MATCH_ROLL
     uint32_t limit_base;
 #else
     int32_t early_exit;
@@ -81,7 +78,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
      * we prevent matches with the string of window index 0
      */
     limit = strstart > MAX_DIST(s) ? (strstart - MAX_DIST(s)) : 0;
-#ifdef LONGEST_MATCH_SLOW
+#ifdef LONGEST_MATCH_ROLL
     limit_base = limit;
     if (best_len >= STD_MIN_MATCH) {
         /* We're continuing search (lazy evaluation). */
@@ -177,7 +174,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
 
             scan_end = zng_memread_8(scan+offset);
 
-#ifdef LONGEST_MATCH_SLOW
+#ifdef LONGEST_MATCH_ROLL
             /* Look for a better string offset */
             if (UNLIKELY(len > STD_MIN_MATCH && match_start + len < strstart)) {
                 const unsigned char *scan_endstr;
@@ -230,7 +227,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
 #endif
             mbase_end = (mbase_start+offset);
         }
-#ifndef LONGEST_MATCH_SLOW
+#ifndef LONGEST_MATCH_ROLL
         else if (UNLIKELY(early_exit)) {
             /* The probability of finding a match later if we here is pretty low, so for
              * performance it's best to outright stop here for the lower compression levels
@@ -242,7 +239,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
     }
     return best_len;
 
-#ifdef LONGEST_MATCH_SLOW
+#ifdef LONGEST_MATCH_ROLL
 break_matching:
 
     if (best_len < lookahead)
@@ -252,5 +249,5 @@ break_matching:
 #endif
 }
 
-#undef LONGEST_MATCH_SLOW
+#undef LONGEST_MATCH_ROLL
 #undef LONGEST_MATCH

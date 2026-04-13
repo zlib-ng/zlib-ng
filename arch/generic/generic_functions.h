@@ -44,7 +44,7 @@ void     inflate_fast_c(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifdef COMPARE256_FALLBACK
 uint32_t longest_match_c(deflate_state *const s, uint32_t cur_match);
-uint32_t longest_match_slow_c(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_roll_c(deflate_state *const s, uint32_t cur_match);
 #endif
 #ifdef SLIDE_HASH_FALLBACK
 void     slide_hash_c(deflate_state *s);
@@ -63,7 +63,7 @@ void     slide_hash_c(deflate_state *s);
 #  ifdef COMPARE256_FALLBACK
 #    define native_compare256 compare256_c
 #    define native_longest_match longest_match_c
-#    define native_longest_match_slow longest_match_slow_c
+#    define native_longest_match_roll longest_match_roll_c
 #  endif
 #  ifdef CRC32_CHORBA_FALLBACK
 #    define native_crc32 crc32_chorba

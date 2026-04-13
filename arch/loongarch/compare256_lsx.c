@@ -79,8 +79,8 @@ Z_INTERNAL uint32_t compare256_lsx(const uint8_t *src0, const uint8_t *src1) {
 
 #include "match_tpl.h"
 
-#define LONGEST_MATCH_SLOW
-#define LONGEST_MATCH       longest_match_slow_lsx
+#define LONGEST_MATCH_ROLL
+#define LONGEST_MATCH       longest_match_roll_lsx
 #define COMPARE256          compare256_lsx_static
 
 #include "match_tpl.h"
