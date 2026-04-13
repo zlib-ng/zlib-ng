@@ -8,6 +8,9 @@ jobs:
   cmake:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: ${{ matrix.shell || 'bash' }}
     timeout-minutes: 80
     strategy:
       fail-fast: false
@@ -366,27 +369,6 @@ jobs:
             packages: qemu-user gcc-s390x-linux-gnu g++-s390x-linux-gnu libc-dev-s390x-cross
             # Coverage disabled, causes MSAN errors
 
-          - name: Ubuntu MinGW i686
-            os: ubuntu-22.04
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-i686.cmake
-            packages: wine wine32 gcc-mingw-w64-i686 g++-mingw-w64-i686 libpcre2-8-0=10.39-3ubuntu0.1 libpcre2-8-0:i386=10.39-3ubuntu0.1 libodbc1=2.3.9-5ubuntu0.1 libodbc1:i386=2.3.9-5ubuntu0.1 libodbc2=2.3.9-5ubuntu0.1 libodbc2:i386=2.3.9-5ubuntu0.1 libodbccr2=2.3.9-5ubuntu0.1 libodbccr2:i386=2.3.9-5ubuntu0.1 libwine:i386=6.0.3~repack-1 libgphoto2-6:i386=2.5.27-1build2 libsane:i386=1.1.1-5 libgd3=2.3.0-2ubuntu2 libgd3:i386=2.3.0-2ubuntu2 libgcc-s1:i386 libstdc++6:i386
-            ldflags: -static
-            gcov-exec: i686-w64-mingw32-gcov-posix
-            coverage: ubuntu_gcc_mingw_i686
-            # Limit parallel test jobs to prevent wine errors
-            parallel-jobs: 1
-
-          - name: Ubuntu MinGW x86_64
-            os: ubuntu-latest
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mingw-x86_64.cmake -DWITH_BENCHMARKS=ON
-            packages: wine wine64 gcc-mingw-w64 g++-mingw-w64
-            cxxflags: -Wno-unused-parameter
-            ldflags: -static
-            gcov-exec: x86_64-w64-mingw32-gcov-posix
-            coverage: ubuntu_gcc_mingw_x86_64
-             # Limit parallel test jobs to prevent wine errors
-            parallel-jobs: 1
-
           - name: Ubuntu Clang-15
             os: ubuntu-latest
             compiler: clang-15
@@ -600,6 +582,21 @@ jobs:
             cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF
             coverage: win64_gcc_compat_no_opt
 
+          - name: Windows GCC MinGW32
+            os: windows-latest
+            shell: msys2 {0}
+            compiler: i686-w64-mingw32-gcc
+            cxx-compiler: i686-w64-mingw32-g++
+            coverage: win32_gcc
+
+          - name: Windows GCC MinGW32 Compat
+            os: windows-latest
+            shell: msys2 {0}
+            compiler: i686-w64-mingw32-gcc
+            cxx-compiler: i686-w64-mingw32-g++
+            cmake-args: -DZLIB_COMPAT=ON
+            coverage: win32_gcc_compat
+
           - name: macOS Clang (Intel, Target 10.10)
             os: macos-15-intel
             compiler: clang
@@ -695,18 +692,25 @@ jobs:
 
     - name: Checkout test corpora
       uses: actions/checkout@v6
-      # Don't test against all corpora with MinGW due to Wine being unable to run parallel jobs
-      # without connection timeout. Without parallel jobs test runs using Wine take close to an hour.
-      # Also don't test the extra corpora with Sanitizer builds or RISC-V or e2k, due to their slow testing.
-      if: ${{ !contains(matrix.name, 'MinGW') && !contains(matrix.name, 'RISC-V') && !contains(matrix.name, 'e2k') && !contains(matrix.cmake-args, 'WITH_SANITIZER') }}
+      # Don't test the extra corpora with Sanitizer builds or RISC-V or e2k, due to their slow testing.
+      if: ${{ !contains(matrix.name, 'RISC-V') && !contains(matrix.name, 'e2k') && !contains(matrix.cmake-args, 'WITH_SANITIZER') }}
       with:
         repository: zlib-ng/corpora
         path: test/data/corpora
         show-progress: false
 
-    - name: Add repositories (Wine)
-      if: contains(matrix.packages, 'wine32')
-      run: sudo dpkg --add-architecture i386
+    - name: Setup MinGW32
+      if: runner.os == 'Windows' && contains(matrix.name, 'MinGW32')
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        msystem: MINGW32
+        install: >-
+          pkg-config
+          make
+          git
+          mingw-w64-i686-toolchain
+          mingw-w64-i686-cmake
 
     - name: Add ubuntu mirrors
       if: runner.os == 'Linux' && !contains(matrix.os, 'z15')
@@ -725,6 +729,7 @@ jobs:
 
     - name: Install packages (Windows)
       if: runner.os == 'Windows'
+      shell: pwsh
       run: |
         # strawberryperl installs /c/Strawberry/c/bin/libstdc++-6.dll, which is incompatible with the mingw64 one.
         # zlib-ng does not need perl, so simply remove it.
@@ -733,6 +738,7 @@ jobs:
 
     - name: Install Visual Studio toolset v140 (Windows)
       if: contains(matrix.name, 'v140')
+      shell: pwsh
       run: |
         # Windows 10 SDK (10.0.14393.795)
         # https://developer.microsoft.com/en-us/windows/downloads/sdk-archive/index-legacy
@@ -753,6 +759,7 @@ jobs:
 
     - name: Install Visual Studio toolset v141 (Windows)
       if: contains(matrix.name, 'v141')
+      shell: pwsh
       run: |
         Set-Location "C:\Program Files (x86)\Microsoft Visual Studio\Installer\"
         $InstallPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
@@ -766,6 +773,7 @@ jobs:
         $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
 
     - name: Install Windows 11 SDK (ARM)
+      shell: pwsh
       if: contains(matrix.name, 'MSVC ARM ')
       run: |
         # Windows 11 SDK (10.0.22621.2428)
@@ -818,11 +826,6 @@ jobs:
         chmod +x qemu-e2k-static
         sudo mv qemu-e2k-static /usr/local/bin
 
-    - name: Initialize Wine
-      # Prevent parallel test jobs from initializing Wine at the same time
-      if: contains(matrix.packages, 'wine')
-      run: wineboot --init
-
     - name: Set LLVM_BUILD_DIR for LLVM C++ libraries (MSAN)
       if: contains(matrix.name, 'MSAN') && startsWith(matrix.compiler, 'clang')
       run: |
@@ -873,7 +876,6 @@ jobs:
         CXX: ${{ matrix.cxx-compiler }}
 
     - name: Generate project files
-      shell: bash
       # Shared libraries turned off for qemu ppc* and sparc & reduce code coverage sources
       run: |
         cmake -S . ${{ matrix.cmake-args }} \
@@ -924,7 +926,7 @@ jobs:
       env:
         COVERALLS_REPO_TOKEN: "${{ secrets.COVERALLS_REPO_TOKEN }}"
       if: |
-        matrix.codecov
+        matrix.coverage
         && !contains(matrix.os, 'z15')
         && (env.COVERALLS_REPO_TOKEN != '' || github.repository == 'zlib-ng/zlib-ng')
       with:
