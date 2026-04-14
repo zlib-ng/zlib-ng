@@ -1,0 +1,560 @@
+name: Delta
+on:
+  issue_comment:
+    types: [created]
+
+concurrency:
+  group: delta-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  delta:
+    name: Delta
+    if: >-
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '/delta') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Parse command
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        run: |
+          # Only accept /delta as a standalone slash command at the start of a line.
+          if ! printf '%s\n' "$COMMENT_BODY" | grep -qE '^[[:space:]]*/delta([[:space:]]|$)'; then
+            echo "::error::Comment does not contain a /delta slash command"
+            exit 1
+          fi
+
+          # Parse "/delta [arch] [-N]"
+          ARCH=x86_64
+          OFFSET=0
+          TOKENS=$(printf '%s\n' "$COMMENT_BODY" | grep -oP '^\s*/delta\s+\K\S.*' | head -1 | xargs || true)
+          set -f
+          # shellcheck disable=SC2086
+          set -- $TOKENS
+          set +f
+          if [ "$#" -gt 2 ]; then
+            echo "::error::/delta takes at most two arguments: [arch] [-N]"
+            exit 1
+          fi
+          for tok in "$@"; do
+            case "$tok" in
+              x86_64|amd64|aarch64|arm64|powerpc64le|ppc64le|riscv64|s390x)
+                ARCH="$tok"
+                ;;
+              -[1-9]|-[1-9][0-9]|-[1-9][0-9][0-9])
+                OFFSET="${tok#-}"
+                ;;
+              *)
+                echo "::error::Unknown /delta argument: '$tok'"
+                echo "::error::Expected an architecture (x86_64, aarch64, powerpc64le, riscv64, s390x) or a negative commit offset (e.g. -1)"
+                exit 1
+                ;;
+            esac
+          done
+
+          {
+            echo "ARCH=$ARCH"
+            echo "OFFSET=$OFFSET"
+          } >> "$GITHUB_ENV"
+
+      - name: Acknowledge request
+        run: gh api "${{ github.event.comment.reactions.url }}" -f content='eyes'
+
+      - name: Resolve refs
+        id: refs
+        run: |
+          PR_URL="${{ github.event.issue.pull_request.url }}"
+          pr_json=$(gh api "$PR_URL")
+
+          BASE_REF=$(echo "$pr_json" | jq -r .base.ref)
+          BASE_SHA=$(echo "$pr_json" | jq -r .base.sha)
+          HEAD_BRANCH=$(echo "$pr_json" | jq -r .head.ref)
+          HEAD_SHA=$(echo "$pr_json" | jq -r .head.sha)
+          BASE_REPO_ID=$(echo "$pr_json" | jq -r .base.repo.id)
+          HEAD_REPO_ID=$(echo "$pr_json" | jq -r '.head.repo.id // empty')
+
+          if [ "$HEAD_REPO_ID" != "$BASE_REPO_ID" ]; then
+            echo "::error::/delta is not supported on pull requests from forks"
+            exit 1
+          fi
+
+          if [ "$OFFSET" = "0" ]; then
+            HEAD_REF="$HEAD_SHA"
+            HEAD_LABEL="$HEAD_BRANCH"
+          else
+            commits_json=$(gh api --paginate "$PR_URL/commits")
+            HEAD_REF=$(echo "$commits_json" | jq -r --argjson n "$OFFSET" \
+              '(length - 1 - $n) as $i
+               | if $i < 0 then "" else .[$i].sha end')
+            if [ -z "$HEAD_REF" ]; then
+              COMMIT_COUNT=$(echo "$commits_json" | jq 'length')
+              echo "::error::PR has only $COMMIT_COUNT commits; cannot go back $OFFSET from HEAD"
+              exit 1
+            fi
+            HEAD_LABEL="${HEAD_BRANCH}~${OFFSET}"
+          fi
+
+          # Map architecture to toolchain file (relative to source dir), apt packages,
+          # the matching binutils binaries for size/nm, and the qemu-user binary plus
+          # sysroot needed to run cross-compiled minigzip on the native runner.
+          case "$ARCH" in
+            x86_64|amd64)
+              ARCH=x86_64
+              TOOLCHAIN=""
+              PACKAGES=""
+              LIB_NAME="libz-ng.so"
+              BINUTILS_PREFIX=""
+              QEMU_BIN=""
+              QEMU_SYSROOT=""
+              ;;
+            aarch64|arm64)
+              ARCH=aarch64
+              TOOLCHAIN="cmake/toolchain-aarch64.cmake"
+              PACKAGES="gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross"
+              LIB_NAME="libz-ng.so"
+              BINUTILS_PREFIX="aarch64-linux-gnu-"
+              QEMU_BIN="qemu-aarch64"
+              QEMU_SYSROOT="/usr/aarch64-linux-gnu"
+              ;;
+            powerpc64le|ppc64le)
+              ARCH=powerpc64le
+              TOOLCHAIN="cmake/toolchain-powerpc64le.cmake"
+              PACKAGES="gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc6-dev-ppc64el-cross"
+              LIB_NAME="libz-ng.so"
+              BINUTILS_PREFIX="powerpc64le-linux-gnu-"
+              QEMU_BIN="qemu-ppc64le"
+              QEMU_SYSROOT="/usr/powerpc64le-linux-gnu"
+              ;;
+            riscv64)
+              ARCH=riscv64
+              TOOLCHAIN="cmake/toolchain-riscv.cmake"
+              PACKAGES="gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libc6-dev-riscv64-cross"
+              LIB_NAME="libz-ng.so"
+              BINUTILS_PREFIX="riscv64-linux-gnu-"
+              QEMU_BIN="qemu-riscv64"
+              QEMU_SYSROOT="/usr/riscv64-linux-gnu"
+              ;;
+            s390x)
+              ARCH=s390x
+              TOOLCHAIN="cmake/toolchain-s390x.cmake"
+              PACKAGES="gcc-s390x-linux-gnu g++-s390x-linux-gnu libc6-dev-s390x-cross"
+              LIB_NAME="libz-ng.so"
+              BINUTILS_PREFIX="s390x-linux-gnu-"
+              QEMU_BIN="qemu-s390x"
+              QEMU_SYSROOT="/usr/s390x-linux-gnu"
+              ;;
+          esac
+
+          {
+            echo "head_ref=$HEAD_REF"
+            echo "head_label=$HEAD_LABEL"
+            echo "head_sha=$HEAD_SHA"
+            echo "base_ref=$BASE_REF"
+            echo "base_sha=$BASE_SHA"
+            echo "arch=$ARCH"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "TOOLCHAIN=$TOOLCHAIN"
+            echo "PACKAGES=$PACKAGES"
+            echo "LIB_NAME=$LIB_NAME"
+            echo "SIZE_CMD=${BINUTILS_PREFIX}size"
+            echo "NM_CMD=${BINUTILS_PREFIX}nm"
+            echo "OBJCOPY_CMD=${BINUTILS_PREFIX}objcopy"
+            echo "STRIP_CMD=${BINUTILS_PREFIX}strip"
+            echo "QEMU_BIN=$QEMU_BIN"
+            echo "QEMU_SYSROOT=$QEMU_SYSROOT"
+          } >> "$GITHUB_ENV"
+
+      - name: Checkout head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.refs.outputs.head_ref }}
+          path: build-head
+
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.refs.outputs.base_ref }}
+          path: build-base
+
+      - name: Install packages
+        run: |
+          sudo apt-get -qq update
+          sudo apt-get -qq install -y cmake ninja-build abigail-tools
+          if [ -n "$PACKAGES" ]; then
+            # shellcheck disable=SC2086
+            sudo apt-get -qq install -y $PACKAGES
+          fi
+          if [ -n "$QEMU_BIN" ]; then
+            sudo apt-get -qq install -y qemu-user
+          fi
+
+      - name: Cache bloaty
+        id: cache-bloaty
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/bin/bloaty
+          key: bloaty-${{ runner.os }}-v1
+
+      - name: Checkout bloaty source
+        if: steps.cache-bloaty.outputs.cache-hit != 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: google/bloaty
+          path: bloaty
+          submodules: recursive
+
+      - name: Build bloaty from source
+        if: steps.cache-bloaty.outputs.cache-hit != 'true'
+        run: |
+          cmake -S bloaty -B build-bloaty -G Ninja -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=OFF
+          cmake --build build-bloaty -j"$(nproc)"
+          mkdir -p "$HOME/.local/bin"
+          install -m 755 build-bloaty/bloaty "$HOME/.local/bin/bloaty"
+
+      - name: Add bloaty to PATH
+        run: |
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          "$HOME/.local/bin/bloaty" --version
+
+      - name: Cache silesia-small corpus
+        uses: actions/cache@v4
+        with:
+          path: testdata/silesia-small.tar
+          key: silesia-small-v1
+
+      - name: Cache silesia corpus
+        if: env.QEMU_BIN == ''
+        uses: actions/cache@v4
+        with:
+          path: testdata/silesia.tar
+          key: silesia-v1
+
+      - name: Download silesia corpora
+        run: |
+          mkdir -p testdata
+          if [ ! -f testdata/silesia-small.tar ]; then
+            curl -fSL -o testdata/silesia-small.tar https://mirror.circlestorm.org/silesia-small.tar
+          fi
+          # Skip downloading the full ~202 MiB corpus under qemu-user — we don't
+          # run the large table in that case, so a miss here is harmless.
+          if [ -z "$QEMU_BIN" ] && [ ! -f testdata/silesia.tar ]; then
+            curl -fSL -o testdata/silesia.tar https://mirror.circlestorm.org/silesia.tar
+          fi
+
+      - name: Build base branch
+        run: |
+          # Use -fdebug-prefix-map to rewrite the checkout path in DWARF so base and head share
+          # a common virtual source root, otherwise bloaty sees every compilation unit as NEW.
+          cmake -S build-base -B base-build \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DBUILD_SHARED_LIBS=ON \
+            -DCMAKE_C_FLAGS=-fdebug-prefix-map=${{ github.workspace }}/build-base=/zlib-ng \
+            -DCMAKE_CXX_FLAGS=-fdebug-prefix-map=${{ github.workspace }}/build-base=/zlib-ng \
+            ${{ env.TOOLCHAIN && format('-DCMAKE_TOOLCHAIN_FILE={0}/build-base/{1}', github.workspace, env.TOOLCHAIN) || '' }}
+          cmake --build base-build --config RelWithDebInfo -j"$(nproc)"
+
+      - name: Build head
+        run: |
+          cmake -S build-head -B head-build \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+            -DBUILD_SHARED_LIBS=ON \
+            -DCMAKE_C_FLAGS=-fdebug-prefix-map=${{ github.workspace }}/build-head=/zlib-ng \
+            -DCMAKE_CXX_FLAGS=-fdebug-prefix-map=${{ github.workspace }}/build-head=/zlib-ng \
+            ${{ env.TOOLCHAIN && format('-DCMAKE_TOOLCHAIN_FILE={0}/build-head/{1}', github.workspace, env.TOOLCHAIN) || '' }}
+          cmake --build head-build --config RelWithDebInfo -j"$(nproc)"
+
+      - name: Locate libraries
+        run: |
+          BASE_LIB=$(find base-build -maxdepth 2 -name "${LIB_NAME}*" -type f | sort | head -1)
+          HEAD_LIB=$(find head-build -maxdepth 2 -name "${LIB_NAME}*" -type f | sort | head -1)
+
+          if [ -z "$BASE_LIB" ] || [ -z "$HEAD_LIB" ]; then
+            echo "::error::Could not find ${LIB_NAME} in base or head build"
+            ls -la base-build head-build
+            exit 1
+          fi
+
+          echo "Base library: $BASE_LIB"
+          echo "Head library: $HEAD_LIB"
+          {
+            echo "BASE_LIB=$BASE_LIB"
+            echo "HEAD_LIB=$HEAD_LIB"
+          } >> "$GITHUB_ENV"
+
+      - name: Split debug info
+        run: |
+          # Move DWARF into a sibling .debug file so the stripped .so reflects the
+          # real shipping binary. --add-gnu-debuglink reads the .debug file relative
+          # to CWD, so cd into the lib's directory first.
+          split_debug() {
+            local lib=$1
+            local dir
+            dir=$(dirname "$lib")
+            local base
+            base=$(basename "$lib")
+            (
+              cd "$dir"
+              "$OBJCOPY_CMD" --only-keep-debug "$base" "${base}.debug"
+              "$STRIP_CMD" --strip-debug "$base"
+              "$OBJCOPY_CMD" --add-gnu-debuglink="${base}.debug" "$base"
+            )
+          }
+          split_debug "$BASE_LIB"
+          split_debug "$HEAD_LIB"
+
+      - name: Total file size
+        run: |
+          # text/data/bss per build, plus a delta row (head - base)
+          "$SIZE_CMD" "$BASE_LIB" "$HEAD_LIB" | awk '
+            { print }
+            NR == 2 { bt = $1; bd = $2; bb = $3; bD = $4 }
+            NR == 3 {
+              dt = $1 - bt; dd = $2 - bd; db = $3 - bb; dD = $4 - bD
+              pct = bD == 0 ? "n/a" : sprintf("%+.2f%%", 100.0 * dD / bD)
+              printf "%+7d\t%+7d\t%+7d\t%+7d\t%7s\tΔ %s\n", dt, dd, db, dD, "", pct
+            }
+          ' > total-size.txt
+          cat total-size.txt
+
+      - name: Run bloaty
+        run: |
+          bloaty -d sections -n 30 \
+            --debug-file="${HEAD_LIB}.debug" "$HEAD_LIB" \
+            -- \
+            --debug-file="${BASE_LIB}.debug" "$BASE_LIB" \
+            > sections-diff.txt
+
+          bloaty -d compileunits -n 30 \
+            --debug-file="${HEAD_LIB}.debug" "$HEAD_LIB" \
+            -- \
+            --debug-file="${BASE_LIB}.debug" "$BASE_LIB" \
+            > compileunits-diff.txt
+
+          bloaty -d symbols -n 30 \
+            --debug-file="${HEAD_LIB}.debug" "$HEAD_LIB" \
+            -- \
+            --debug-file="${BASE_LIB}.debug" "$BASE_LIB" \
+            > symbols-diff.txt
+
+          # Strip the /zlib-ng/ virtual prefix we injected via -fdebug-prefix-map
+          # so source paths in the report read as plain relative paths.
+          sed -i 's|/zlib-ng/||g' compileunits-diff.txt symbols-diff.txt
+
+      - name: Exported symbol diff
+        run: |
+          "$NM_CMD" --defined-only --dynamic --extern-only "$BASE_LIB" \
+            | awk '{print $NF}' | sort -u > base-symbols.txt
+          "$NM_CMD" --defined-only --dynamic --extern-only "$HEAD_LIB" \
+            | awk '{print $NF}' | sort -u > head-symbols.txt
+          BASE_COUNT=$(wc -l < base-symbols.txt)
+          HEAD_COUNT=$(wc -l < head-symbols.txt)
+          ADDED_COUNT=$(comm -13 base-symbols.txt head-symbols.txt | wc -l)
+          REMOVED_COUNT=$(comm -23 base-symbols.txt head-symbols.txt | wc -l)
+          {
+            printf 'base:    %d\n' "$BASE_COUNT"
+            printf 'head:    %d\n' "$HEAD_COUNT"
+            printf 'added:   %d\n' "$ADDED_COUNT"
+            printf 'removed: %d\n' "$REMOVED_COUNT"
+            if [ "$ADDED_COUNT" -gt 0 ]; then
+              echo
+              comm -13 base-symbols.txt head-symbols.txt | sed 's/^/+/'
+            fi
+            if [ "$REMOVED_COUNT" -gt 0 ]; then
+              echo
+              comm -23 base-symbols.txt head-symbols.txt | sed 's/^/-/'
+            fi
+          } > exported-symbols-diff.txt
+          cat exported-symbols-diff.txt
+
+      - name: ABI diff
+        id: abidiff
+        run: |
+          ABIDIFF_ARGS=("$BASE_LIB" "$HEAD_LIB")
+          if [ -f build-head/test/abi/ignore ]; then
+            ABIDIFF_ARGS=(--suppressions build-head/test/abi/ignore "${ABIDIFF_ARGS[@]}")
+          fi
+          ABIDIFF_EXIT=0
+          abidiff "${ABIDIFF_ARGS[@]}" > abi-diff.txt 2>&1 || ABIDIFF_EXIT=$?
+          cat abi-diff.txt
+          case "$ABIDIFF_EXIT" in
+            0)
+              echo "has_abi_changes=false" >> "$GITHUB_OUTPUT"
+              ;;
+            4|8|12)
+              echo "has_abi_changes=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "::warning::abidiff failed with exit code $ABIDIFF_EXIT"
+              echo "has_abi_changes=false" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+
+      - name: Compare compression sizes
+        id: compression
+        run: |
+          run_minigzip() {
+            local build_dir=$1
+            local level=$2
+            local input=$3
+            local output=$4
+            if [ -n "$QEMU_BIN" ]; then
+              "$QEMU_BIN" -L "$QEMU_SYSROOT" -E "LD_LIBRARY_PATH=$build_dir" \
+                "$build_dir/minigzip" -c "-$level" "$input" > "$output"
+            else
+              LD_LIBRARY_PATH="$build_dir" \
+                "$build_dir/minigzip" -c "-$level" "$input" > "$output"
+            fi
+          }
+
+          compress_table() {
+            local input=$1
+            local output=$2
+            {
+              printf '%5s  %12s  %12s  %12s  %10s\n' 'Level' 'Base' 'Head' 'Delta' 'Percent'
+              printf '%5s  %12s  %12s  %12s  %10s\n' '-----' '------------' '------------' '------------' '----------'
+              for level in 1 2 3 4 5 6 7 8 9; do
+                run_minigzip base-build "$level" "$input" "compress-tmp/base-${level}.gz"
+                run_minigzip head-build "$level" "$input" "compress-tmp/head-${level}.gz"
+                bs=$(stat -c '%s' "compress-tmp/base-${level}.gz")
+                hs=$(stat -c '%s' "compress-tmp/head-${level}.gz")
+                delta=$((hs - bs))
+                if [ "$bs" -ne 0 ]; then
+                  pct=$(awk -v d="$delta" -v b="$bs" 'BEGIN { printf "%+.4f%%", 100.0 * d / b }')
+                else
+                  pct="n/a"
+                fi
+                printf '%5d  %12d  %12d  %+12d  %10s\n' "$level" "$bs" "$hs" "$delta" "$pct"
+              done
+            } > "$output"
+          }
+
+          mkdir -p compress-tmp
+          compress_table testdata/silesia-small.tar compression-small.txt
+          {
+            echo 'silesia-small.tar (~16 MiB)'
+            cat compression-small.txt
+          } > compression.txt
+
+          # Full silesia corpus only when native — ~200 MiB through qemu-user
+          # for 9 levels across two builds would blow the workflow past 30 min.
+          if [ -z "$QEMU_BIN" ]; then
+            compress_table testdata/silesia.tar compression-large.txt
+            {
+              echo
+              echo 'silesia.tar (~202 MiB)'
+              cat compression-large.txt
+            } >> compression.txt
+          fi
+          cat compression.txt
+          rm -rf compress-tmp
+
+      - name: Post results
+        env:
+          BASE_REF: ${{ steps.refs.outputs.base_ref }}
+          BASE_SHA: ${{ steps.refs.outputs.base_sha }}
+          HEAD_REF: ${{ steps.refs.outputs.head_ref }}
+          HEAD_LABEL: ${{ steps.refs.outputs.head_label }}
+          HEAD_SHA: ${{ steps.refs.outputs.head_sha }}
+          ARCH: ${{ steps.refs.outputs.arch }}
+          HAS_ABI_CHANGES: ${{ steps.abidiff.outputs.has_abi_changes }}
+        run: |
+          body=$(cat <<EOF
+          ## Delta Report
+
+          Head: \`${HEAD_LABEL}\` @ \`${HEAD_REF:0:7}\` (PR head: \`${HEAD_SHA:0:7}\`)
+          Base: \`${BASE_REF}\` @ \`${BASE_SHA:0:7}\`
+          Build: \`${LIB_NAME}\`, ${ARCH}, RelWithDebInfo
+
+          <details open>
+          <summary>Total file size</summary>
+
+          \`\`\`
+          $(cat total-size.txt)
+          \`\`\`
+          </details>
+
+          <details open>
+          <summary>Compression sizes</summary>
+
+          \`\`\`
+          $(cat compression.txt)
+          \`\`\`
+          </details>
+
+          <details>
+          <summary>Symbols (top 30)</summary>
+
+          \`\`\`
+          $(cat symbols-diff.txt)
+          \`\`\`
+          </details>
+
+          <details>
+          <summary>Compilation units (top 30)</summary>
+
+          \`\`\`
+          $(cat compileunits-diff.txt)
+          \`\`\`
+          </details>
+
+          <details>
+          <summary>Sections (top 30)</summary>
+
+          \`\`\`
+          $(cat sections-diff.txt)
+          \`\`\`
+          </details>
+
+          <details>
+          <summary>Exported symbols</summary>
+
+          \`\`\`
+          $(cat exported-symbols-diff.txt)
+          \`\`\`
+          </details>
+          EOF
+          )
+
+          if [ "$HAS_ABI_CHANGES" = "true" ]; then
+            body="$body
+
+          <details>
+          <summary>ABI changes</summary>
+
+          \`\`\`
+          $(cat abi-diff.txt)
+          \`\`\`
+          </details>"
+          fi
+
+          gh api "${{ github.event.issue.comments_url }}" -f body="$body"
+
+      - name: Mark complete
+        if: always()
+        env:
+          REACTIONS_URL: ${{ github.event.comment.reactions.url }}
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          case "$JOB_STATUS" in
+            success)   reaction='+1' ;;
+            cancelled) reaction='confused' ;;
+            *)         reaction='-1' ;;
+          esac
+
+          gh api "$REACTIONS_URL" \
+            --jq '.[] | select(.content=="eyes" and .user.login=="github-actions[bot]") | .id' \
+            | xargs -r -I{} gh api --method DELETE "$REACTIONS_URL/{}"
+          gh api "$REACTIONS_URL" -f content="$reaction"
