@@ -149,6 +149,7 @@ if(WITH_GTEST)
 
     if(TARGET GTest::GTest)
         set(TEST_SRCS
+            test_chunked.cc
             test_compress.cc
             test_compress_bound.cc
             test_cve-2003-0107.cc
@@ -167,9 +168,7 @@ if(WITH_GTEST)
             test_dict.cc
             test_inflate_adler32.cc
             test_inflate_copy.cc
-            test_large_buffers.cc
             test_raw.cc
-            test_small_buffers.cc
             test_small_window.cc
             )
 
