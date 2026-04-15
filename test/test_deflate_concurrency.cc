@@ -55,8 +55,9 @@ private:
                 continue;
             if (m_state == State::STOPPED)
                 break;
-            for (uint8_t & i: buf)
-                i++;
+            for (size_t i = 0; i < sizeof(buf); i++) {
+                buf[i] = (uint8_t)(buf[i] + 1);
+            }
         }
     }
 
