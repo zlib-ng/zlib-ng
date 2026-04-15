@@ -42,7 +42,7 @@ void test_flush(unsigned char *compr, z_size_t *comprLen) {
     err = PREFIX(deflate)(&c_stream, Z_FULL_FLUSH);
     CHECK_ERR(err, "deflate flush 1");
 
-    compr[3]++; /* force an error in first compressed block */
+    compr[3] = (unsigned char)(compr[3] + 1); /* force an error in first compressed block */
     c_stream.avail_in = len - 3;
 
     err = PREFIX(deflate)(&c_stream, Z_FINISH);
