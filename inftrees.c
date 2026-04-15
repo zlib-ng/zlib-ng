@@ -342,7 +342,7 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
         } while (fill != 0);
 
         /* backwards increment the len-bit code huff */
-        rhuff += (0x8000u >> (len - 1));
+        rhuff = (uint16_t)(rhuff + (0x8000u >> (len - 1)));
         huff = zng_bitreverse16(rhuff);
 
         /* go to next symbol, update count, len */
