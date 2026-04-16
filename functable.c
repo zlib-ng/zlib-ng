@@ -331,6 +331,9 @@ static int init_functable(void) {
         ft.adler32 = &adler32_power8;
         ft.adler32_copy = &adler32_copy_power8;
         ft.chunkmemset_safe = &chunkmemset_safe_power8;
+        ft.compare256 = &compare256_power8;
+        ft.longest_match = &longest_match_power8;
+        ft.longest_match_roll = &longest_match_roll_power8;
         ft.inflate_fast = &inflate_fast_power8;
         ft.slide_hash = &slide_hash_power8;
         ft.slide_hash_head = &slide_hash_head_power8;
