@@ -114,10 +114,6 @@ typedef void       *voidp;
 #  define Z_HAVE_UNISTD_H
 #endif
 
-#ifdef NEED_PTRDIFF_T    /* may be set to #if 1 by configure/cmake/etc */
-typedef PTRDIFF_TYPE ptrdiff_t;
-#endif
-
 #include <sys/types.h>      /* for off_t */
 
 #include <stddef.h>         /* for wchar_t and NULL */

@@ -636,32 +636,6 @@ if(HAVE_BUILTIN_ASSUME_ALIGNED)
 endif()
 set(CMAKE_REQUIRED_FLAGS)
 
-#
-# check for ptrdiff_t support
-#
-check_c_source_compiles(
-    "#include <stddef.h>
-     int main() {
-         ptrdiff_t *a;
-         (void)a;
-         return 0;
-    }"
-    HAVE_PTRDIFF_T
-)
-if(NOT HAVE_PTRDIFF_T)
-    set(NEED_PTRDIFF_T 1)
-
-    check_type_size("void *" SIZEOF_DATA_PTR)
-    message(STATUS "sizeof(void *) is ${SIZEOF_DATA_PTR} bytes")
-
-    if(${SIZEOF_DATA_PTR} MATCHES "4")
-        set(PTRDIFF_TYPE "uint32_t")
-    elseif(${SIZEOF_DATA_PTR} MATCHES "8")
-        set(PTRDIFF_TYPE "uint64_t")
-    else()
-        message(FATAL_ERROR "sizeof(void *) is neither 32 nor 64 bit")
-    endif()
-endif()
 
 add_compile_options($<$<CONFIG:Debug>:-DZLIB_DEBUG>)
 
@@ -1163,10 +1137,6 @@ macro(generate_cmakein input output)
     file(STRINGS ${input} _lines)
     foreach(_line IN LISTS _lines)
         string(REGEX REPLACE "#ifdef HAVE_UNISTD_H.*" "@ZCONF_UNISTD_LINE@" _line "${_line}")
-        string(REGEX REPLACE "#ifdef NEED_PTRDIFF_T.*" "@ZCONF_PTRDIFF_LINE@" _line "${_line}")
-        if(NEED_PTRDIFF_T)
-            string(REGEX REPLACE "typedef PTRDIFF_TYPE" "typedef @PTRDIFF_TYPE@" _line "${_line}")
-        endif()
         file(APPEND ${output} "${_line}\n")
     endforeach()
 endmacro(generate_cmakein)
@@ -1444,11 +1414,6 @@ if(HAVE_UNISTD_H)
   SET(ZCONF_UNISTD_LINE "#if 1    /* was set to #if 1 by configure/cmake/etc */")
 else()
   SET(ZCONF_UNISTD_LINE "#if 0    /* was set to #if 0 by configure/cmake/etc */")
-endif()
-if(NEED_PTRDIFF_T)
-    SET(ZCONF_PTRDIFF_LINE "#if 1    /* was set to #if 1 by configure/cmake/etc */")
-else()
-    SET(ZCONF_PTRDIFF_LINE "#ifdef NEED_PTRDIFF_T    /* may be set to #if 1 by configure/cmake/etc */")
 endif()
 
 set(ZLIB_PC ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.pc)
