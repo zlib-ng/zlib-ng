@@ -42,6 +42,14 @@
 #  endif
 #endif
 
+#ifndef Z_HAS_BUILTIN
+#  if defined(__has_builtin)
+#    define Z_HAS_BUILTIN(b) __has_builtin(b)
+#  else
+#    define Z_HAS_BUILTIN(b) 0
+#  endif
+#endif
+
 #ifndef Z_FALLTHROUGH
 #  if Z_HAS_ATTRIBUTE(__fallthrough__) || (defined(__GNUC__) && (__GNUC__ >= 7))
 #    define Z_FALLTHROUGH __attribute__((__fallthrough__))
@@ -156,9 +164,7 @@
 #  define Z_TOUCH(var) (void)(var)
 #endif
 
-#if defined(HAVE_VISIBILITY_INTERNAL)
-#  define Z_INTERNAL __attribute__((visibility ("internal")))
-#elif defined(HAVE_VISIBILITY_HIDDEN)
+#if Z_HAS_ATTRIBUTE(visibility) || defined(__GNUC__)
 #  define Z_INTERNAL __attribute__((visibility ("hidden")))
 #else
 #  define Z_INTERNAL
@@ -255,7 +261,7 @@
 #  define UNLIKELY(x)           x
 #endif /* (un)likely */
 
-#if defined(HAVE_ATTRIBUTE_ALIGNED)
+#if Z_HAS_ATTRIBUTE(aligned) || defined(__GNUC__)
 #  define ALIGNED_(x) __attribute__ ((aligned(x)))
 #elif defined(_MSC_VER)
 #  define ALIGNED_(x) __declspec(align(x))
@@ -264,7 +270,7 @@
 #  define ALIGNED_(x)
 #endif
 
-#ifdef HAVE_BUILTIN_ASSUME_ALIGNED
+#if Z_HAS_BUILTIN(__builtin_assume_aligned) || (defined(__GNUC__) && (__GNUC__ >= 5))
 #  define HINT_ALIGNED(p,n) __builtin_assume_aligned((void *)(p),(n))
 #else
 #  define HINT_ALIGNED(p,n) (p)

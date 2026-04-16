@@ -13,14 +13,6 @@
 #  undef _TIME_BITS
 #endif
 
-#if defined(HAVE_VISIBILITY_INTERNAL)
-#  define Z_INTERNAL __attribute__((visibility ("internal")))
-#elif defined(HAVE_VISIBILITY_HIDDEN)
-#  define Z_INTERNAL __attribute__((visibility ("hidden")))
-#else
-#  define Z_INTERNAL
-#endif
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

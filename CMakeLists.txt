@@ -595,66 +595,6 @@ check_c_compiler_flag(-fno-semantic-interposition HAVE_NO_INTERPOSITION)
 set(CMAKE_REQUIRED_FLAGS)
 
 #
-# Check if we can hide zlib internal symbols that are linked between separate source files using hidden
-#
-check_c_source_compiles(
-    "#define Z_INTERNAL __attribute__((visibility (\"hidden\")))
-    int Z_INTERNAL foo;
-    int main() {
-        return 0;
-    }"
-    HAVE_ATTRIBUTE_VISIBILITY_HIDDEN FAIL_REGEX "visibility")
-if(HAVE_ATTRIBUTE_VISIBILITY_HIDDEN)
-    add_definitions(-DHAVE_VISIBILITY_HIDDEN)
-endif()
-
-#
-# Check if we can hide zlib internal symbols that are linked between separate source files using internal
-#
-check_c_source_compiles(
-    "#define Z_INTERNAL __attribute__((visibility (\"internal\")))
-    int Z_INTERNAL foo;
-    int main() {
-        return 0;
-    }"
-    HAVE_ATTRIBUTE_VISIBILITY_INTERNAL FAIL_REGEX "visibility")
-if(HAVE_ATTRIBUTE_VISIBILITY_INTERNAL)
-    add_definitions(-DHAVE_VISIBILITY_INTERNAL)
-endif()
-
-#
-# Check for __attribute__((aligned(x))) support in the compiler
-#
-check_c_source_compiles(
-    "int main(void) {
-        __attribute__((aligned(8))) int test = 0;
-        (void)test;
-        return 0;
-    }"
-    HAVE_ATTRIBUTE_ALIGNED FAIL_REGEX "aligned")
-if(HAVE_ATTRIBUTE_ALIGNED)
-    add_definitions(-DHAVE_ATTRIBUTE_ALIGNED)
-endif()
-
-#
-# Check for __builtin_assume_aligned(x,n) support in the compiler
-#
-set(CMAKE_REQUIRED_FLAGS ${ZNOLTOFLAG})
-check_c_source_compiles(
-    "char *test(char *buffer) {
-        char *abuffer = __builtin_assume_aligned(buffer,64);
-        return abuffer;
-    }
-    int main() {
-        return 0;
-    }"
-    HAVE_BUILTIN_ASSUME_ALIGNED)
-if(HAVE_BUILTIN_ASSUME_ALIGNED)
-    add_definitions(-DHAVE_BUILTIN_ASSUME_ALIGNED)
-endif()
-set(CMAKE_REQUIRED_FLAGS)
-
-#
 # check for ptrdiff_t support
 #
 check_c_source_compiles(
