@@ -94,14 +94,19 @@ static inline __m512i _mm512_zextsi128_si512(__m128i a) {
 #  define _mm512_extracti32x4_epi32(v1, e1) _mm512_maskz_extracti32x4_epi32(UINT8_MAX, v1, e1)
 #endif
 
-#if defined(_MSC_VER) && !defined(__clang__)
+/* Workaround for MSVC v142 (Visual Studio 2019, and VS 2022 pre-17.11) bug:
+ * v142 miscompiles _mm_set_epi64x(0, a) on 32-bit by routing part of the
+ * synthesis through a GPR, clobbering live register data and causing stack
+ * corruption. _mm_loadl_epi64 compiles to a single MOVQ xmm,m64 that
+ * bypasses the buggy synthesis path. Fixed in VS 2022 17.11 (v143).
+ *
+ * MSVC only defines _mm_cvtsi64_si128 / _mm_cvtsi128_si64 on 64-bit, so the
+ * 32-bit polyfills below are also needed for basic compilation.
+ *
+ * https://developercommunity.visualstudio.com/t/10853479
+ */
+#if defined(_MSC_VER) && !defined(__clang__) && defined(ARCH_32BIT)
 #include <intrin.h>
-/* For whatever reason this intrinsic is 64 bit only with MSVC?
- * While we don't have 64 bit GPRs, it should at least be able to move it to stack
- * or shuffle it over 2 registers */
-#ifdef ARCH_32BIT
-/* So, while we can't move directly to a GPR, hopefully this move to
- * a stack resident variable doesn't equate to something awful */
 static inline int64_t _mm_cvtsi128_si64(__m128i a) {
     union { __m128i v; int64_t i; } u;
     u.v = a;
@@ -109,18 +114,20 @@ static inline int64_t _mm_cvtsi128_si64(__m128i a) {
 }
 
 static inline __m128i _mm_cvtsi64_si128(int64_t a) {
-   return _mm_set_epi64x(0, a);
+    return _mm_loadl_epi64((const __m128i*)&a);
 }
 #endif
-#endif
 
-#if defined(__GNUC__) && defined(ARCH_X86) && defined(ARCH_32BIT) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && defined(ARCH_32BIT)
 static inline int64_t _mm_cvtsi128_si64(__m128i a) {
     union { __m128i v; int64_t i; } u;
     u.v = a;
     return u.i;
 }
-#define _mm_cvtsi64_si128(a) _mm_set_epi64x(0, a)
+
+static inline __m128i _mm_cvtsi64_si128(int64_t a) {
+    return _mm_loadl_epi64((const __m128i*)&a);
+}
 #endif
 
 #endif // include guard X86_INTRINS_H
