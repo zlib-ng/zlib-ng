@@ -491,23 +491,6 @@ if(HAVE_ASM_HWPROBE_H)
 endif()
 
 #
-# Check to see if we have large file support
-#
-set(CMAKE_REQUIRED_DEFINITIONS -D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
-check_type_size(off64_t OFF64_T)
-if(HAVE_OFF64_T)
-    add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
-else()
-    check_type_size(_off64_t _OFF64_T)
-    if(HAVE__OFF64_T)
-        add_definitions(-D_LARGEFILE64_SOURCE=1 -D__USE_LARGEFILE64)
-    else()
-        check_type_size(__off64_t __OFF64_T)
-    endif()
-endif()
-set(CMAKE_REQUIRED_DEFINITIONS) # clear variable
-
-#
 # Check for fseeko and other optional functions
 #
 set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")

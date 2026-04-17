@@ -11,6 +11,9 @@
 #ifdef __OpenBSD__
 #  define _BSD_SOURCE 1
 #endif
+#ifndef _LARGEFILE64_SOURCE
+#  define _LARGEFILE64_SOURCE 1 /* request off64_t, lseek64 on glibc; check _LFS64_LARGEFILE */
+#endif
 
 #include <stddef.h>
 #include <string.h>
