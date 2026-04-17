@@ -5,14 +5,6 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-#ifdef _LARGEFILE64_SOURCE
-#  ifndef _LARGEFILE_SOURCE
-#    define _LARGEFILE_SOURCE 1
-#  endif
-#  undef _FILE_OFFSET_BITS
-#  undef _TIME_BITS
-#endif
-
 #if defined(HAVE_VISIBILITY_INTERNAL)
 #  define Z_INTERNAL __attribute__((visibility ("internal")))
 #elif defined(HAVE_VISIBILITY_HIDDEN)
