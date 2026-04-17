@@ -39,12 +39,6 @@
 #  define snprintf _snprintf
 #endif
 
-#if !defined(Z_HAVE_UNISTD_H) && !defined(_LARGEFILE64_SOURCE)
-#ifndef _WIN32 /* unlink already in stdio.h for Win32 */
-extern int unlink (const char *);
-#endif
-#endif
-
 #ifndef GZ_SUFFIX
 #  define GZ_SUFFIX ".gz"
 #endif
