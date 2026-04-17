@@ -792,23 +792,6 @@ if test $shared -eq 1; then
 fi
 echo >> configure.log
 
-# check for fseeko()
-cat > $test.c <<EOF
-#include <stdio.h>
-int main(void) {
-  fseeko(NULL, 0, 0);
-  return 0;
-}
-EOF
-if try $CC $CFLAGS $ADDITIONAL_CHECK_FLAGS -o $test $test.c $LDSHAREDLIBC; then
-  echo "Checking for fseeko... Yes." | tee -a configure.log
-else
-  CFLAGS="${CFLAGS} -DNO_FSEEKO"
-  SFLAGS="${SFLAGS} -DNO_FSEEKO"
-  echo "Checking for fseeko... No." | tee -a configure.log
-fi
-echo >> configure.log
-
 # check for cpuid support: GNU extensions
 cat > $test.c <<EOF
 #include <cpuid.h>

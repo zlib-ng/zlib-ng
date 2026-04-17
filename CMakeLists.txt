@@ -491,15 +491,8 @@ if(HAVE_ASM_HWPROBE_H)
 endif()
 
 #
-# Check for fseeko and other optional functions
+# Check for strerror
 #
-set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
-check_function_exists(fseeko HAVE_FSEEKO)
-if(NOT HAVE_FSEEKO)
-    add_definitions(-DNO_FSEEKO)
-endif()
-set(CMAKE_REQUIRED_FLAGS)
-
 set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
 check_function_exists(strerror HAVE_STRERROR)
 if(NOT HAVE_STRERROR)
