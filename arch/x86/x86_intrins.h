@@ -100,25 +100,15 @@ static inline __m512i _mm512_zextsi128_si512(__m128i a) {
  * corruption. _mm_loadl_epi64 compiles to a single MOVQ xmm,m64 that
  * bypasses the buggy synthesis path. Fixed in VS 2022 17.11 (v143).
  *
- * MSVC only defines _mm_cvtsi64_si128 / _mm_cvtsi128_si64 on 64-bit, so the
- * 32-bit polyfills below are also needed for basic compilation.
+ * GCC and MSVC only define _mm_cvtsi64_si128 / _mm_cvtsi128_si64 on 64-bit,
+ * so the 32-bit polyfills below are also needed for basic compilation.
  *
  * https://developercommunity.visualstudio.com/t/10853479
  */
-#if defined(_MSC_VER) && !defined(__clang__) && defined(ARCH_32BIT)
+#if !defined(__clang__) && defined(ARCH_32BIT)
+#ifdef _MSC_VER
 #include <intrin.h>
-static inline int64_t _mm_cvtsi128_si64(__m128i a) {
-    union { __m128i v; int64_t i; } u;
-    u.v = a;
-    return u.i;
-}
-
-static inline __m128i _mm_cvtsi64_si128(int64_t a) {
-    return _mm_loadl_epi64((const __m128i*)&a);
-}
 #endif
-
-#if defined(__GNUC__) && !defined(__clang__) && defined(ARCH_32BIT)
 static inline int64_t _mm_cvtsi128_si64(__m128i a) {
     union { __m128i v; int64_t i; } u;
     u.v = a;
