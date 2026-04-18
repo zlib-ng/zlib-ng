@@ -88,7 +88,7 @@ jobs:
             os: ubuntu-latest
             compiler: gcc
             cxx-compiler: g++
-            cmake-args: -DWITH_CHORBA=OFF
+            cmake-args: -DWITH_CRC32_CHORBA=OFF
             coverage: ubuntu_gcc_no_chorba
 
           - name: Ubuntu GCC SSE2 UBSAN
