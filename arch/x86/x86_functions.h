@@ -8,14 +8,6 @@
 
 #include "x86_natives.h"
 
-/* So great news, your compiler is broken and causes stack smashing. Rather than
- * notching out its compilation we'll just remove the assignment in the functable.
- * Further context:
- * https://developercommunity.visualstudio.com/t/Stack-corruption-with-v142-toolchain-whe/10853479 */
-#if defined(_MSC_VER) && defined(ARCH_32BIT) && _MSC_VER >= 1920 && _MSC_VER <= 1929
-#define NO_CHORBA_SSE
-#endif
-
 #ifdef X86_SSE2
 uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, size_t len, size_t left);
 uint32_t compare256_sse2(const uint8_t *src0, const uint8_t *src1);
