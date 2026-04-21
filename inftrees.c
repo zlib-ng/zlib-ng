@@ -25,8 +25,10 @@ const char PREFIX(inflate_copyright)[] = " inflate 1.3.1 Copyright 1995-2024 Mar
   copyright string in the executable of your product.
  */
 
-/* Count number of codes for each code length. */
-static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
+#define CHECK_LEN(len) do { if ((len) > MAX_BITS) return -1; } while (0)
+
+/* Count number of codes for each code length. Return -1 on error */
+static inline int count_lengths(uint16_t *lens, int codes, uint16_t *count) {
     /* IBM...made some weird choices for VSX/VMX. Basically vec_ld has an inherent
      * endianness but we don't want to force VSX to be needed */
     static const ALIGNED_(16) uint8_t one[256] = {
@@ -53,13 +55,16 @@ static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
     vector unsigned char s2 = vec_splat_u8(0);
 
     if (codes & 1) {
+        CHECK_LEN(lens[0]);
         s1 = vec_ld(16 * lens[0], one);
         --codes;
         ++lens;
     }
 
     while (codes) {
+        CHECK_LEN(lens[0]);
         s1 = vec_add(s1, vec_ld(16 * lens[0], one));
+        CHECK_LEN(lens[1]);
         s2 = vec_add(s2, vec_ld(16 * lens[1], one));
         codes -= 2;
         lens += 2;
@@ -77,10 +82,13 @@ static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
     uint8x16_t s2 = vdupq_n_u8(0);
 
     if (codes & 1) {
+        CHECK_LEN(lens[0]);
         s1 = vld1q_u8(&one[16 * lens[0]]);
     }
     for (sym = codes & 1; sym < codes; sym += 2) {
+        CHECK_LEN(lens[sym]);
         s1 = vaddq_u8(s1, vld1q_u8(&one[16 * lens[sym]]));
+        CHECK_LEN(lens[sym+1]);
         s2 = vaddq_u8(s2, vld1q_u8(&one[16 * lens[sym+1]]));
     }
 
@@ -93,10 +101,13 @@ static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
     __m128i s2 = _mm_setzero_si128();
 
     if (codes & 1) {
+        CHECK_LEN(lens[0]);
         s1 = _mm_load_si128((const __m128i*)&one[16 * lens[0]]);
     }
     for (sym = codes & 1; sym < codes; sym += 2) {
+        CHECK_LEN(lens[sym]);
         s1 = _mm_add_epi8(s1, _mm_load_si128((const __m128i*)&one[16 * lens[sym]]));  // vaddq_u8
+        CHECK_LEN(lens[sym+1]);
         s2 = _mm_add_epi8(s2, _mm_load_si128((const __m128i*)&one[16 * lens[sym+1]]));
     }
 
@@ -123,11 +134,16 @@ static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
     int len, sym;
     for (len = 0; len <= MAX_BITS; len++)
         count[len] = 0;
-    for (sym = 0; sym < codes; sym++)
+    for (sym = 0; sym < codes; sym++) {
+        CHECK_LEN(lens[sym]);
         count[lens[sym]]++;
+    }
     Z_UNUSED(one);
 #endif
+    return 0;
 }
+
+#undef CHECK_LEN
 
 /*
    Build a set of tables to decode the provided canonical Huffman code.
@@ -192,10 +208,10 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
        decoding tables are built in the large loop below, the integer codes
        are incremented backwards.
 
-       This routine assumes, but does not check, that all of the entries in
-       lens[] are in the range 0..MAXBITS.  The caller must assure this.
-       1..MAXBITS is interpreted as that code length.  zero means that that
-       symbol does not occur in this code.
+       This routine verifies that all of the entries in lens[] are in the
+       range 0..MAXBITS and returns -1 otherwise. 1..MAXBITS is interpreted
+       as that code length. zero means that that symbol does not occur in
+       this code.
 
        The codes are sorted by computing a count of codes for each length,
        creating from that a table of starting indices for each length in the
@@ -210,8 +226,8 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
        decoding tables.
      */
 
-    /* accumulate lengths for codes (assumes lens[] all in 0..MAXBITS) */
-    count_lengths(lens, codes, count);
+    /* accumulate lengths for codes */
+    if (count_lengths(lens, codes, count)) return -1;
 
     /* bound code lengths, force root to be within code lengths */
     root = *bits;
