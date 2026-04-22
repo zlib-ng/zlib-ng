@@ -106,7 +106,7 @@ if(WITH_BENCHMARK_APPS)
 
     add_executable(benchmark_zlib_apps ${BENCH_APP_SRCS})
 
-    if(DEFINED BUILD_ALT_BENCH)
+    if(BUILD_ALT_BENCH)
         set(ZLIB_ALT_LIB "libz.a" CACHE FILEPATH "Optional alternative zlib implementation (defaults to stock zlib)")
         add_executable(benchmark_zlib_apps_alt ${BENCH_APP_SRCS})
         target_link_libraries(benchmark_zlib_apps_alt ${PNG_STATIC_LIBRARY} ${ZLIB_ALT_LIB} benchmark::benchmark)
