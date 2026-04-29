@@ -8,6 +8,8 @@
 #ifndef CRC32_P_H
 #define CRC32_P_H
 
+#include "zmemory.h"
+
 #define CRC_DO1(c, buf, i) c = crc_table[(c ^ buf[i]) & 0xff] ^ (c >> 8)
 #define CRC_DO2(c, buf, i) {CRC_DO1(c, buf, i); CRC_DO1(c, buf, i+1);}
 #define CRC_DO4(c, buf, i) {CRC_DO2(c, buf, i); CRC_DO2(c, buf, i+2);}
@@ -18,7 +20,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_small(uint32_t crc, uint8_t *dst, const
     if (MAX_LEN >= 8) {
         while (len >= 8) {
             if (COPY) {
-                memcpy(dst, buf, 8);
+                zng_memcpy_8(dst, buf);
                 dst += 8;
             }
             CRC_DO8(crc, buf, 0);
@@ -28,7 +30,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_small(uint32_t crc, uint8_t *dst, const
     }
     if (len & 4) {
         if (COPY) {
-            memcpy(dst, buf, 4);
+            zng_memcpy_4(dst, buf);
             dst += 4;
         }
         CRC_DO4(crc, buf, 0);
@@ -36,7 +38,7 @@ Z_FORCEINLINE static uint32_t crc32_copy_small(uint32_t crc, uint8_t *dst, const
     }
     if (len & 2) {
         if (COPY) {
-            memcpy(dst, buf, 2);
+            zng_memcpy_2(dst, buf);
             dst += 2;
         }
         CRC_DO2(crc, buf, 0);

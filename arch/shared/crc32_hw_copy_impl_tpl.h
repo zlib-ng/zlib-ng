@@ -5,6 +5,7 @@
  */
 
 #include "zbuild.h"
+#include "zmemory.h"
 
 
 Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_copy_impl(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len,
@@ -34,14 +35,14 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_copy_impl(uint32_t crc, uint
         uint64_t d7 = *(const uint64_t *)(src + 56);
 
         if (COPY) {
-            memcpy(dst,      &d0, 8);
-            memcpy(dst + 8,  &d1, 8);
-            memcpy(dst + 16, &d2, 8);
-            memcpy(dst + 24, &d3, 8);
-            memcpy(dst + 32, &d4, 8);
-            memcpy(dst + 40, &d5, 8);
-            memcpy(dst + 48, &d6, 8);
-            memcpy(dst + 56, &d7, 8);
+            zng_memwrite_8(dst,      d0);
+            zng_memwrite_8(dst + 8,  d1);
+            zng_memwrite_8(dst + 16, d2);
+            zng_memwrite_8(dst + 24, d3);
+            zng_memwrite_8(dst + 32, d4);
+            zng_memwrite_8(dst + 40, d5);
+            zng_memwrite_8(dst + 48, d6);
+            zng_memwrite_8(dst + 56, d7);
             dst += 64;
         }
 

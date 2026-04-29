@@ -8,6 +8,8 @@
 #ifndef ADLER32_P_H
 #define ADLER32_P_H
 
+#include "zmemory.h"
+
 #define BASE 65521U     /* largest prime smaller than 65536 */
 #define NMAX 5552
 /* NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 */
@@ -33,7 +35,7 @@ Z_FORCEINLINE static void adler32_copy_align(uint32_t *Z_RESTRICT adler, uint8_t
     }
     if (len & 2) {
         if (COPY) {
-            memcpy(dst, buf, 2);
+            zng_memcpy_2(dst, buf);
             dst += 2;
         }
         ADLER_DO2(*adler, *sum2, buf, 0);
@@ -41,7 +43,7 @@ Z_FORCEINLINE static void adler32_copy_align(uint32_t *Z_RESTRICT adler, uint8_t
     }
     while (len >= 4) {
         if (COPY) {
-            memcpy(dst, buf, 4);
+            zng_memcpy_4(dst, buf);
             dst += 4;
         }
         len -= 4;
@@ -57,7 +59,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_tail(uint32_t adler, uint8_t *dst, co
         if (MAX_LEN >= 32) {
             while (len >= 16) {
                 if (COPY) {
-                    memcpy(dst, buf, 16);
+                    zng_memcpy_16(dst, buf);
                     dst += 16;
                 }
                 len -= 16;
@@ -68,7 +70,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_tail(uint32_t adler, uint8_t *dst, co
         /* DO4 loop avoids GCC x86 register pressure from hoisted DO8/DO16 loads. */
         while (len >= 4) {
             if (COPY) {
-                memcpy(dst, buf, 4);
+                zng_memcpy_4(dst, buf);
                 dst += 4;
             }
             len -= 4;
@@ -77,7 +79,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_tail(uint32_t adler, uint8_t *dst, co
         }
         if (len & 2) {
             if (COPY) {
-                memcpy(dst, buf, 2);
+                zng_memcpy_2(dst, buf);
                 dst += 2;
             }
             ADLER_DO2(adler, sum2, buf, 0);
