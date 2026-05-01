@@ -203,7 +203,7 @@ jobs:
 
       - name: Cache bloaty
         id: cache-bloaty
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.local/bin/bloaty
           key: bloaty-${{ runner.os }}-v1
@@ -230,14 +230,14 @@ jobs:
           "$HOME/.local/bin/bloaty" --version
 
       - name: Cache silesia-small corpus
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: testdata/silesia-small.tar
           key: silesia-small-v1
 
       - name: Cache silesia corpus
         if: env.QEMU_BIN == ''
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: testdata/silesia.tar
           key: silesia-v1
