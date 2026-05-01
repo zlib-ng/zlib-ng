@@ -178,13 +178,13 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: Checkout head
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.refs.outputs.head_ref }}
           path: build-head
 
       - name: Checkout base branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.refs.outputs.base_ref }}
           path: build-base
@@ -210,7 +210,7 @@ jobs:
 
       - name: Checkout bloaty source
         if: steps.cache-bloaty.outputs.cache-hit != 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: google/bloaty
           path: bloaty
