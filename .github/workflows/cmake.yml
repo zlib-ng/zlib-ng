@@ -790,7 +790,7 @@ jobs:
 
     - name: Install Emscripten
       if: contains(matrix.name, 'WASM32')
-      uses: mymindstorm/setup-emsdk@v14
+      uses: mymindstorm/setup-emsdk@v16
 
     # Get MCST LCC from github actions cache or download from dev.mcst.ru and save to cache
     - name: Cache MCST LCC ${{ matrix.toolchain }} (Ubuntu)
