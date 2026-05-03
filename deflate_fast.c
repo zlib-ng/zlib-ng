@@ -49,7 +49,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
             int64_t dist = (int64_t)s->strstart - hash_head;
             lc = (uint8_t)str_val;
 
-            /* Find the longest match, discarding those <= prev_length.
+            /* Find the longest match.
              * At this point we have always match length < WANT_MIN_MATCH
              */
             if (dist <= MAX_DIST(s) && dist > 0 && hash_head != 0) {
