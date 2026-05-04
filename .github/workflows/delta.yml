@@ -81,13 +81,6 @@ jobs:
           BASE_SHA=$(echo "$pr_json" | jq -r .base.sha)
           HEAD_BRANCH=$(echo "$pr_json" | jq -r .head.ref)
           HEAD_SHA=$(echo "$pr_json" | jq -r .head.sha)
-          BASE_REPO_ID=$(echo "$pr_json" | jq -r .base.repo.id)
-          HEAD_REPO_ID=$(echo "$pr_json" | jq -r '.head.repo.id // empty')
-
-          if [ "$HEAD_REPO_ID" != "$BASE_REPO_ID" ]; then
-            echo "::error::/delta is not supported on pull requests from forks"
-            exit 1
-          fi
 
           if [ "$OFFSET" = "0" ]; then
             HEAD_REF="$HEAD_SHA"
