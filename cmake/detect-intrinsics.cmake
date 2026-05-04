@@ -42,7 +42,7 @@ macro(check_armv8_compiler_flag)
     )
     # Check whether compiler supports ARMv8 intrinsics
     check_c_source_compiles(
-        "#if defined(_MSC_VER)
+        "#if defined(_MSC_VER) && !defined(__clang__)
         #include <intrin.h>
         #else
         #include <arm_acle.h>
@@ -73,12 +73,12 @@ macro(check_armv8_pmull_eor3_compiler_flag)
     # Check whether compiler supports ARMv8 PMULL + EOR3 intrinsics
     set(CMAKE_REQUIRED_FLAGS "${PMULLEOR3FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
-        "#if defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+        "#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_ARM64) || defined(_M_ARM64EC))
         #  include <arm64_neon.h>
         #else
         #  include <arm_neon.h>
         #endif
-        #ifdef _MSC_VER
+        #if defined(_MSC_VER) && !defined(__clang__)
         __n128 f(__n64 a, __n64 b) {
         #else
         poly128_t f(poly64_t a, poly64_t b) {
@@ -260,7 +260,7 @@ macro(check_neon_compiler_flag)
     # Check whether compiler supports NEON flag
     set(CMAKE_REQUIRED_FLAGS "${NEONFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
-        "#if defined(_M_ARM64) || defined(_M_ARM64EC)
+        "#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_ARM64) || defined(_M_ARM64EC))
         #  include <arm64_neon.h>
         #else
         #  include <arm_neon.h>
@@ -323,7 +323,7 @@ macro(check_neon_ld4_intrinsics)
     # Check whether compiler supports loading 4 neon vecs into a register range
     set(CMAKE_REQUIRED_FLAGS "${NEONFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
-        "#if defined(_MSC_VER) && (defined(_M_ARM64) || defined(_M_ARM64EC))
+        "#if defined(_MSC_VER) && !defined(__clang__) && (defined(_M_ARM64) || defined(_M_ARM64EC))
         #  include <arm64_neon.h>
         #else
         #  include <arm_neon.h>

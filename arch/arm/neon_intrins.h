@@ -1,7 +1,7 @@
 #ifndef ARM_NEON_INTRINS_H
 #define ARM_NEON_INTRINS_H
 
-#if defined(_MSC_VER) && defined(ARCH_ARM) && defined(ARCH_64BIT)
+#if defined(_MSC_VER) && !defined(__clang__) && defined(ARCH_ARM) && defined(ARCH_64BIT)
 /* arm64_neon.h is MSVC specific */
 #  include <arm64_neon.h>
 #else
@@ -63,12 +63,12 @@ static inline void vst1q_u16_x4(uint16_t *p, uint16x8x4_t a) {
 }
 #  endif // HASLD4 check
 
-#  ifndef _MSC_VER
+#  if !defined(_MSC_VER) || defined(__clang__)
 #    define vld1_u8_ex(p, align) vld1_u8(HINT_ALIGNED((p), (align)/8))
 #    define vld1q_u8_ex(p, align) vld1q_u8(HINT_ALIGNED((p), (align)/8))
 #    define vld1q_u64_ex(p, align) vld1q_u64(HINT_ALIGNED((p), (align)/8))
 #  endif
-#  if !defined(_MSC_VER) || !defined(ARM_NEON_HASLD4)
+#  if !defined(_MSC_VER) || !defined(ARM_NEON_HASLD4) || defined(__clang__)
 #    define vld1q_u8_x4_ex(p, align) vld1q_u8_x4(HINT_ALIGNED((p), (align)/8))
 #    define vld1q_u16_x4_ex(p, align) vld1q_u16_x4(HINT_ALIGNED((p), (align)/8))
 #    define vst1q_u16_x4_ex(p, a, align) vst1q_u16_x4(HINT_ALIGNED((p), (align)/8), a)

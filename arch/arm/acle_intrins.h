@@ -2,7 +2,7 @@
 #define ARM_ACLE_INTRINS_H
 
 #include <stdint.h>
-#ifdef _MSC_VER
+#if defined(_MSC_VER) && !defined(__clang__)
 #  include <intrin.h>
 #elif defined(HAVE_ARM_ACLE_H)
 #  include <arm_acle.h>
