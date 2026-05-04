@@ -587,6 +587,7 @@ jobs:
             shell: msys2 {0}
             compiler: i686-w64-mingw32-gcc
             cxx-compiler: i686-w64-mingw32-g++
+            gcov-exec: D:/a/_temp/msys64/mingw32/bin/gcov
             coverage: win32_gcc
 
           - name: Windows GCC MinGW32 Compat
@@ -595,6 +596,7 @@ jobs:
             compiler: i686-w64-mingw32-gcc
             cxx-compiler: i686-w64-mingw32-g++
             cmake-args: -DZLIB_COMPAT=ON
+            gcov-exec: D:/a/_temp/msys64/mingw32/bin/gcov
             coverage: win32_gcc_compat
 
           - name: macOS Clang (Intel, Target 10.10)
