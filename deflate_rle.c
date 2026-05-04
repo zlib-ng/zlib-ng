@@ -45,7 +45,6 @@ Z_INTERNAL block_state deflate_rle(deflate_state *s, int flush) {
             if (scan[0] == scan[1] && scan[1] == scan[2]) {
                 match_len = compare256_rle(scan, scan+3)+2;
                 match_len = MIN(match_len, s->lookahead);
-                match_len = MIN(match_len, STD_MAX_MATCH);
             }
             Assert(scan+match_len <= s->window + s->window_size - 1, "wild scan");
         }
