@@ -41,7 +41,7 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
         n = NMAX;
 
         do {
-            size_t chunk = MIN(ALIGN_DOWN(n, 8), ADLER32_SWAR_MAX_BYTES);
+            size_t chunk = MIN(ALIGN_DOWN(n, (size_t)8), (size_t)ADLER32_SWAR_MAX_BYTES);
             adler32_swar(&adler, NULL, buf, chunk, &sum2, 0);
             buf += chunk;
             n -= chunk;

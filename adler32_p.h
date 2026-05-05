@@ -136,7 +136,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_tail(uint32_t adler, uint8_t *dst, co
         Z_UNUSED(MAX_LEN);
         /* Process using packed 64-bit arithmetic when source is aligned */
         while (len >= 8 && ((uintptr_t)buf & 7) == 0) {
-            size_t chunk = MIN(ALIGN_DOWN(len, 8), ADLER32_SWAR_MAX_BYTES);
+            size_t chunk = MIN(ALIGN_DOWN(len, (size_t)8), (size_t)ADLER32_SWAR_MAX_BYTES);
             adler32_swar(&adler, dst, buf, chunk, &sum2, COPY);
             buf += chunk;
             if (COPY)
