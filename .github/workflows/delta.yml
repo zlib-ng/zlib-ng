@@ -49,7 +49,7 @@ jobs:
           fi
           for tok in "$@"; do
             case "$tok" in
-              x86_64|amd64|aarch64|arm64|powerpc64le|ppc64le|riscv64|s390x)
+              x86_64|amd64|aarch64|arm64|powerpc64le|ppc64le|riscv64|s390x|loongarch64)
                 ARCH="$tok"
                 ;;
               -[1-9]|-[1-9][0-9]|-[1-9][0-9][0-9])
@@ -57,7 +57,7 @@ jobs:
                 ;;
               *)
                 echo "::error::Unknown /delta argument: '$tok'"
-                echo "::error::Expected an architecture (x86_64, aarch64, powerpc64le, riscv64, s390x) or a negative commit offset (e.g. -1)"
+                echo "::error::Expected an architecture (x86_64, aarch64, powerpc64le, riscv64, s390x, loongarch64) or a negative commit offset (e.g. -1)"
                 exit 1
                 ;;
             esac
@@ -112,47 +112,68 @@ jobs:
             x86_64|amd64)
               ARCH=x86_64
               TOOLCHAIN=""
+              CMAKE_ARGS=""
               PACKAGES=""
               LIB_NAME="libz-ng.so"
               BINUTILS_PREFIX=""
               QEMU_BIN=""
+              QEMU_CPU=""
               QEMU_SYSROOT=""
               ;;
             aarch64|arm64)
               ARCH=aarch64
               TOOLCHAIN="cmake/toolchain-aarch64.cmake"
+              CMAKE_ARGS=""
               PACKAGES="gcc-aarch64-linux-gnu g++-aarch64-linux-gnu libc6-dev-arm64-cross"
               LIB_NAME="libz-ng.so"
               BINUTILS_PREFIX="aarch64-linux-gnu-"
               QEMU_BIN="qemu-aarch64"
+              QEMU_CPU=""
               QEMU_SYSROOT="/usr/aarch64-linux-gnu"
               ;;
             powerpc64le|ppc64le)
               ARCH=powerpc64le
               TOOLCHAIN="cmake/toolchain-powerpc64le.cmake"
+              CMAKE_ARGS=""
               PACKAGES="gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc6-dev-ppc64el-cross"
               LIB_NAME="libz-ng.so"
               BINUTILS_PREFIX="powerpc64le-linux-gnu-"
               QEMU_BIN="qemu-ppc64le"
+              QEMU_CPU=""
               QEMU_SYSROOT="/usr/powerpc64le-linux-gnu"
               ;;
             riscv64)
               ARCH=riscv64
               TOOLCHAIN="cmake/toolchain-riscv.cmake"
+              CMAKE_ARGS=""
               PACKAGES="gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libc6-dev-riscv64-cross"
               LIB_NAME="libz-ng.so"
               BINUTILS_PREFIX="riscv64-linux-gnu-"
               QEMU_BIN="qemu-riscv64"
+              QEMU_CPU=""
               QEMU_SYSROOT="/usr/riscv64-linux-gnu"
               ;;
             s390x)
               ARCH=s390x
               TOOLCHAIN="cmake/toolchain-s390x.cmake"
+              CMAKE_ARGS=""
               PACKAGES="gcc-s390x-linux-gnu g++-s390x-linux-gnu libc6-dev-s390x-cross"
               LIB_NAME="libz-ng.so"
               BINUTILS_PREFIX="s390x-linux-gnu-"
               QEMU_BIN="qemu-s390x"
+              QEMU_CPU=""
               QEMU_SYSROOT="/usr/s390x-linux-gnu"
+              ;;
+            loongarch64)
+              ARCH=loongarch64
+              TOOLCHAIN="cmake/toolchain-loongarch64-gcc.cmake"
+              CMAKE_ARGS="-DCOMPILER_SUFFIX=-14"
+              PACKAGES="gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc6-dev-loong64-cross"
+              LIB_NAME="libz-ng.so"
+              BINUTILS_PREFIX="loongarch64-linux-gnu-"
+              QEMU_BIN="qemu-loongarch64"
+              QEMU_CPU="la464-loongarch-cpu"
+              QEMU_SYSROOT="/usr/loongarch64-linux-gnu"
               ;;
           esac
 
@@ -168,6 +189,7 @@ jobs:
           {
             echo "TOOLCHAIN=$TOOLCHAIN"
             echo "PACKAGES=$PACKAGES"
+            echo "CMAKE_ARGS=$CMAKE_ARGS"
             echo "LIB_NAME=$LIB_NAME"
             echo "SIZE_CMD=${BINUTILS_PREFIX}size"
             echo "NM_CMD=${BINUTILS_PREFIX}nm"
@@ -176,6 +198,12 @@ jobs:
             echo "QEMU_BIN=$QEMU_BIN"
             echo "QEMU_SYSROOT=$QEMU_SYSROOT"
           } >> "$GITHUB_ENV"
+
+          if [ -n "$QEMU_CPU" ]; then
+            {
+              echo "QEMU_CPU=$QEMU_CPU"
+            } >> "$GITHUB_ENV"
+          fi
 
       - name: Checkout head
         uses: actions/checkout@v6
@@ -263,7 +291,8 @@ jobs:
             -DBUILD_SHARED_LIBS=ON \
             -DCMAKE_C_FLAGS=-fdebug-prefix-map=${{ github.workspace }}/build-base=/zlib-ng \
             -DCMAKE_CXX_FLAGS=-fdebug-prefix-map=${{ github.workspace }}/build-base=/zlib-ng \
-            ${{ env.TOOLCHAIN && format('-DCMAKE_TOOLCHAIN_FILE={0}/build-base/{1}', github.workspace, env.TOOLCHAIN) || '' }}
+            ${{ env.TOOLCHAIN && format('-DCMAKE_TOOLCHAIN_FILE={0}/build-base/{1}', github.workspace, env.TOOLCHAIN) || '' }} \
+            ${{ env.CMAKE_ARGS }}
           cmake --build base-build --config RelWithDebInfo -j"$(nproc)"
 
       - name: Build head
@@ -273,7 +302,8 @@ jobs:
             -DBUILD_SHARED_LIBS=ON \
             -DCMAKE_C_FLAGS=-fdebug-prefix-map=${{ github.workspace }}/build-head=/zlib-ng \
             -DCMAKE_CXX_FLAGS=-fdebug-prefix-map=${{ github.workspace }}/build-head=/zlib-ng \
-            ${{ env.TOOLCHAIN && format('-DCMAKE_TOOLCHAIN_FILE={0}/build-head/{1}', github.workspace, env.TOOLCHAIN) || '' }}
+            ${{ env.TOOLCHAIN && format('-DCMAKE_TOOLCHAIN_FILE={0}/build-head/{1}', github.workspace, env.TOOLCHAIN) || '' }} \
+            ${{ env.CMAKE_ARGS }}
           cmake --build head-build --config RelWithDebInfo -j"$(nproc)"
 
       - name: Locate libraries
