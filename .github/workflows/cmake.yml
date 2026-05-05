@@ -63,6 +63,7 @@ jobs:
 
           - name: Ubuntu GCC 32-bit
             os: ubuntu-latest
+            cache-key: multilib
             compiler: gcc
             cxx-compiler: g++
             cmake-args: -DCMAKE_C_FLAGS=-m32 -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_SHARED_LINKER_FLAGS=-m32 -DCMAKE_EXE_LINKER_FLAGS=-m32 -DWITH_BENCHMARKS=ON
@@ -136,6 +137,7 @@ jobs:
 
           - name: Ubuntu GCC ARM SF
             os: ubuntu-24.04-arm
+            cache-key: armel
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake
             packages: qemu-user crossbuild-essential-armel
             gcov-exec: arm-linux-gnueabi-gcov
@@ -143,6 +145,7 @@ jobs:
 
           - name: Ubuntu GCC ARM SF Compat No Opt
             os: ubuntu-24.04-arm
+            cache-key: armel
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm.cmake -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF
             packages: qemu-user crossbuild-essential-armel
             gcov-exec: arm-linux-gnueabi-gcov
@@ -150,6 +153,7 @@ jobs:
 
           - name: Ubuntu GCC ARM HF ASAN
             os: ubuntu-24.04-arm
+            cache-key: armhf
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_BENCHMARKS=ON -DWITH_SANITIZER=Address
             cxxflags: -Wno-psabi -Wno-maybe-uninitialized
             asan-options: detect_leaks=0
@@ -159,6 +163,7 @@ jobs:
 
           - name: Ubuntu GCC ARM HF No Neon No ARMv8 ASAN
             os: ubuntu-24.04-arm
+            cache-key: armhf
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DWITH_NEON=OFF -DWITH_ARMV8=OFF -DWITH_SANITIZER=Address
             asan-options: detect_leaks=0
             packages: qemu-user crossbuild-essential-armhf
@@ -167,6 +172,7 @@ jobs:
 
           - name: Ubuntu GCC ARM HF Compat UBSAN
             os: ubuntu-24.04-arm
+            cache-key: armhf
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf.cmake -DZLIB_COMPAT=ON -DWITH_SANITIZER=Undefined
             packages: qemu-user crossbuild-essential-armhf
             gcov-exec: arm-linux-gnueabihf-gcov
@@ -192,6 +198,7 @@ jobs:
 
           - name: Ubuntu GCC MIPS
             os: ubuntu-latest
+            cache-key: mips
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mips.cmake
             packages: qemu-user crossbuild-essential-mips
             gcov-exec: mips-linux-gnu-gcov
@@ -199,6 +206,7 @@ jobs:
 
           - name: Ubuntu GCC MIPS64
             os: ubuntu-latest
+            cache-key: mips64
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mips64.cmake -DWITH_BENCHMARKS=ON
             packages: qemu-user crossbuild-essential-mips64
             gcov-exec: mips64-linux-gnuabi64-gcov
@@ -206,6 +214,7 @@ jobs:
 
           - name: Ubuntu GCC PPC
             os: ubuntu-latest
+            cache-key: powerpc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake
             packages: qemu-user crossbuild-essential-powerpc
             gcov-exec: powerpc-linux-gnu-gcov
@@ -213,6 +222,7 @@ jobs:
 
           - name: Ubuntu GCC PPC No Power8
             os: ubuntu-latest
+            cache-key: powerpc
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc.cmake -DWITH_POWER8=OFF
             packages: qemu-user crossbuild-essential-powerpc
             gcov-exec: powerpc-linux-gnu-gcov
@@ -220,6 +230,7 @@ jobs:
 
           - name: Ubuntu GCC PPC64
             os: ubuntu-latest
+            cache-key: ppc64
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64.cmake -DWITH_BENCHMARKS=ON
             packages: qemu-user gcc-powerpc64-linux-gnu g++-powerpc64-linux-gnu libc-dev-ppc64-cross
             ldflags: -static
@@ -228,6 +239,7 @@ jobs:
 
           - name: Ubuntu GCC PPC64 Power9
             os: ubuntu-latest
+            cache-key: ppc64
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64-power9.cmake
             packages: qemu-user gcc-powerpc64-linux-gnu g++-powerpc64-linux-gnu libc-dev-ppc64-cross
             ldflags: -static
@@ -236,12 +248,14 @@ jobs:
 
           - name: Ubuntu Clang PPC64 Power9
             os: ubuntu-latest
+            cache-key: ppc64-clang
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64-clang.cmake
             packages: qemu-user clang binutils-powerpc64-linux-gnu libgcc-11-dev-ppc64-cross libc-dev-ppc64-cross libstdc++-11-dev-ppc64-cross
             # Coverage disabled for clang on power9, errors
 
           - name: Ubuntu GCC PPC64LE
             os: ubuntu-latest
+            cache-key: ppc64el
             # gtest illegal instruction (related? https://bugs.launchpad.net/qemu/+bug/1781281)
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake -DWITH_GTEST=OFF
             packages: qemu-user crossbuild-essential-ppc64el
@@ -253,6 +267,7 @@ jobs:
 
           - name: Ubuntu GCC PPC64LE No VSX
             os: ubuntu-latest
+            cache-key: ppc64el
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le-power9.cmake -DWITH_POWER8=OFF -DWITH_POWER9=OFF
             packages: qemu-user crossbuild-essential-ppc64el
             gcov-exec: powerpc64le-linux-gnu-gcov
@@ -260,6 +275,7 @@ jobs:
 
           - name: Ubuntu GCC PPC64LE Power9
             os: ubuntu-latest
+            cache-key: ppc64el
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le-power9.cmake
             packages: qemu-user crossbuild-essential-ppc64el
             gcov-exec: powerpc64le-linux-gnu-gcov
@@ -267,12 +283,14 @@ jobs:
 
           - name: Ubuntu Clang PPC64LE Power9
             os: ubuntu-latest
+            cache-key: ppc64el
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le-clang.cmake
             packages: qemu-user crossbuild-essential-ppc64el
             # Coverage disabled for clang on power9, errors
 
           - name: Ubuntu GCC RISC-V
             os: ubuntu-latest
+            cache-key: riscv64
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv.cmake -DWITH_BENCHMARKS=ON
             packages: qemu-user crossbuild-essential-riscv64
             gcov-exec: riscv64-linux-gnu-gcov
@@ -280,12 +298,14 @@ jobs:
 
           - name: Ubuntu Clang RISC-V
             os: ubuntu-latest
+            cache-key: riscv64
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv-clang.cmake
             packages: qemu-user crossbuild-essential-riscv64
             # Coverage disabled for clang on riscv, errors
 
           - name: Ubuntu GCC 14 LoongArch64
             os: ubuntu-latest
+            cache-key: loong64
             cmake-args: -DCOMPILER_SUFFIX=-14 -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-loongarch64-gcc.cmake -DWITH_BENCHMARKS=ON
             packages: qemu-user gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc-dev-loong64-cross
             ldflags: -static
@@ -294,6 +314,7 @@ jobs:
 
           - name: Ubuntu GCC 14 LoongArch64 No LASX
             os: ubuntu-latest
+            cache-key: loong64
             cmake-args: -DCOMPILER_SUFFIX=-14 -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-loongarch64-gcc.cmake -DWITH_BENCHMARKS=ON -DWITH_LASX=OFF
             packages: qemu-user gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc-dev-loong64-cross
             ldflags: -static
@@ -302,6 +323,7 @@ jobs:
 
           - name: Ubuntu GCC SPARC64
             os: ubuntu-latest
+            cache-key: sparc64
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-sparc64.cmake
             packages: qemu-user gcc-sparc64-linux-gnu g++-sparc64-linux-gnu libc-dev-sparc64-cross
             ldflags: -static
@@ -310,6 +332,7 @@ jobs:
 
           - name: Ubuntu GCC S390x
             os: ubuntu-latest
+            cache-key: s390x
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_BENCHMARKS=ON
             packages: qemu-user crossbuild-essential-s390x
             ldflags: -static
@@ -318,6 +341,7 @@ jobs:
 
           - name: Ubuntu GCC S390X No VX optimizations
             os: ubuntu-latest
+            cache-key: s390x
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-s390x.cmake -DWITH_S390_VX=OFF
             packages: qemu-user crossbuild-essential-s390x
             ldflags: -static
@@ -326,6 +350,7 @@ jobs:
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} GCC S390X DFLTCC Compat
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
+            cache-key: s390x
             compiler: gcc
             cxx-compiler: g++
             cmake-args: >-
@@ -338,6 +363,7 @@ jobs:
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang S390X DFLTCC ASAN' || 'Ubuntu GCC S390X DFLTCC' }}
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
+            cache-key: s390x
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'gcc' }}
             cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'g++' }}
             cmake-args: >-
@@ -350,6 +376,7 @@ jobs:
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang' || 'Ubuntu GCC' }} S390X DFLTCC UBSAN
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
+            cache-key: s390x
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'gcc' }}
             cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'g++' }}
             cmake-args: >-
@@ -361,6 +388,7 @@ jobs:
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang' || 'Ubuntu GCC' }} S390X DFLTCC ${{ (github.repository == 'zlib-ng/zlib-ng' && 'MSAN') || 'Compat' }}
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
+            cache-key: s390x
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'gcc' }}
             cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'g++' }}
             cmake-args: >-
@@ -371,6 +399,7 @@ jobs:
 
           - name: Ubuntu Clang-15
             os: ubuntu-latest
+            cache-key: clang15
             compiler: clang-15
             cxx-compiler: clang++-15
             cmake-args: -DCMAKE_LINKER_TYPE=LLD
@@ -380,6 +409,7 @@ jobs:
 
           - name: Ubuntu Clang C17 MMAP
             os: ubuntu-latest
+            cache-key: clang18
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DCMAKE_LINKER_TYPE=LLD -DCMAKE_C_STANDARD=17
@@ -390,6 +420,7 @@ jobs:
 
           - name: Ubuntu Clang-20 C23
             os: ubuntu-latest
+            cache-key: clang20
             compiler: clang-20
             cxx-compiler: clang++-20
             cmake-args: -DCMAKE_LINKER_TYPE=LLD -DCMAKE_C_STANDARD=23
@@ -399,6 +430,7 @@ jobs:
           # Check for undefined symbols in the version script for the modern api
           - name: Ubuntu Clang-20 Undefined Symbols
             os: ubuntu-latest
+            cache-key: clang20
             compiler: clang-20
             cxx-compiler: clang++-20
             cmake-args: -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld -Wl,--no-undefined-version" -DZLIBNG_ENABLE_TESTS=OFF
@@ -409,6 +441,7 @@ jobs:
           # Check for undefined symbols in the version script for the compat api
           - name: Ubuntu Clang-20 Undefined Symbols Compat
             os: ubuntu-latest
+            cache-key: clang20
             compiler: clang-20
             cxx-compiler: clang++-20
             cmake-args: -DCMAKE_SHARED_LINKER_FLAGS="-fuse-ld=lld -Wl,--no-undefined-version" -DZLIBNG_ENABLE_TESTS=OFF -DZLIB_COMPAT=ON
@@ -418,6 +451,7 @@ jobs:
 
           - name: Ubuntu Clang Inflate Strict REDUCED_MEM
             os: ubuntu-latest
+            cache-key: clang18
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_INFLATE_STRICT=ON -DWITH_REDUCED_MEM=ON
@@ -427,6 +461,7 @@ jobs:
 
           - name: Ubuntu Clang Inflate Allow Invalid Dist
             os: ubuntu-latest
+            cache-key: clang18
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_INFLATE_ALLOW_INVALID_DIST=ON
@@ -436,6 +471,7 @@ jobs:
 
           - name: Ubuntu Clang Compat Debug
             os: ubuntu-latest
+            cache-key: clang18
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DZLIB_COMPAT=ON
@@ -446,6 +482,7 @@ jobs:
 
           - name: Ubuntu Clang-20 MSAN
             os: ubuntu-latest
+            cache-key: clang20
             compiler: clang-20
             cxx-compiler: clang++-20
             cmake-args: -GNinja -DWITH_SANITIZER=Memory
@@ -722,12 +759,49 @@ jobs:
         curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
         sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
+    - name: Get cache key (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
+      id: get-ubuntu-cache-key
+      shell: bash
+      run: |
+        echo "release=$(sed -n 's/UBUNTU_CODENAME=\(.*\)/\1/p' /etc/os-release)" >> $GITHUB_OUTPUT
+        pkg='${{ matrix.packages }}'
+        echo "pkg_sig=$(printf '%s' "$pkg" | sha256sum | cut -c1-12)" >> $GITHUB_OUTPUT
+        echo "key=$(/bin/date -u "+%G%V")" >> $GITHUB_OUTPUT
+
+    - name: Load package cache (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
+      uses: actions/cache@v5
+      with:
+        path: ${{ runner.temp }}/apt-archives/*.deb
+        key: cache-apt-${{ matrix.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}-${{ steps.get-ubuntu-cache-key.outputs.pkg_sig }}-${{ steps.get-ubuntu-cache-key.outputs.key }}
+        restore-keys: |
+          cache-apt-${{ matrix.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}-${{ steps.get-ubuntu-cache-key.outputs.pkg_sig }}
+          cache-apt-${{ matrix.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}
+
+    - name: Restore cached packages (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
+      run: |
+        sudo mkdir -p /var/cache/apt/archives ${{ runner.temp }}/apt-archives
+        if compgen -G "${{ runner.temp }}/apt-archives/*.deb" > /dev/null; then
+          sudo mv -f ${{ runner.temp }}/apt-archives/*.deb /var/cache/apt/archives/
+        fi
+
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && !contains(matrix.os, 'z15')
       run: |
         sudo apt-get update
         sudo apt-get install -y --allow-downgrades --no-install-recommends \
             ${{ matrix.packages || 'libgtest-dev libbenchmark-dev' }}
+
+    - name: Update package cache (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
+      run: |
+        if compgen -G "/var/cache/apt/archives/*.deb" > /dev/null; then
+          sudo apt autoclean
+          sudo apt autoremove
+          sudo cp -f /var/cache/apt/archives/*.deb ${{ runner.temp }}/apt-archives/
+        fi
 
     - name: Install packages (Windows)
       if: runner.os == 'Windows'

@@ -35,6 +35,7 @@ jobs:
 
           - name: Ubuntu GCC ARM SF
             os: ubuntu-24.04-arm
+            cache-key: armel
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn
             chost: arm-linux-gnueabi
@@ -42,6 +43,7 @@ jobs:
 
           - name: Ubuntu GCC ARM SF Compat No Opt No Gzfileops
             os: ubuntu-24.04-arm
+            cache-key: armel
             compiler: arm-linux-gnueabi-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies --without-gzfileops
             chost: arm-linux-gnueabi
@@ -49,6 +51,7 @@ jobs:
 
           - name: Ubuntu GCC ARM HF
             os: ubuntu-24.04-arm
+            cache-key: armhf
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn
             chost: arm-linux-gnueabihf
@@ -56,6 +59,7 @@ jobs:
 
           - name: Ubuntu GCC ARM HF No Neon No ARMv8
             os: ubuntu-24.04-arm
+            cache-key: armhf
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --without-neon --without-armv8
             chost: arm-linux-gnueabihf
@@ -63,6 +67,7 @@ jobs:
 
           - name: Ubuntu GCC ARM HF Compat No Opt
             os: ubuntu-24.04-arm
+            cache-key: armhf
             compiler: arm-linux-gnueabihf-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: arm-linux-gnueabihf
@@ -80,6 +85,7 @@ jobs:
 
           - name: Ubuntu GCC MIPS
             os: ubuntu-latest
+            cache-key: mips
             compiler: mips-linux-gnu-gcc
             configure-args: --warn
             chost: mips-linux-gnu
@@ -87,6 +93,7 @@ jobs:
 
           - name: Ubuntu GCC MIPS64
             os: ubuntu-latest
+            cache-key: mips64
             compiler: mips64-linux-gnuabi64-gcc
             configure-args: --warn
             chost: mips64-linux-gnuabi64
@@ -94,6 +101,7 @@ jobs:
 
           - name: Ubuntu GCC PPC
             os: ubuntu-latest
+            cache-key: powerpc
             compiler: powerpc-linux-gnu-gcc
             configure-args: --warn --static
             chost: powerpc-linux-gnu
@@ -103,6 +111,7 @@ jobs:
 
           - name: Ubuntu GCC PPC No Opt
             os: ubuntu-latest
+            cache-key: powerpc
             compiler: powerpc-linux-gnu-gcc
             configure-args: --warn --without-optimizations
             chost: powerpc-linux-gnu
@@ -110,6 +119,7 @@ jobs:
 
           - name: Ubuntu GCC PPC64
             os: ubuntu-latest
+            cache-key: ppc64
             compiler: powerpc64-linux-gnu-gcc
             configure-args: --warn --static
             chost: powerpc-linux-gnu
@@ -119,6 +129,7 @@ jobs:
 
           - name: Ubuntu GCC PPC64LE
             os: ubuntu-latest
+            cache-key: ppc64el
             compiler: powerpc64le-linux-gnu-gcc
             configure-args: --warn
             chost: powerpc64le-linux-gnu
@@ -126,6 +137,7 @@ jobs:
 
           - name: Ubuntu GCC S390X
             os: ubuntu-latest
+            cache-key: s390x
             compiler: s390x-linux-gnu-gcc
             configure-args: --warn --static
             chost: s390x-linux-gnu
@@ -135,6 +147,7 @@ jobs:
 
           - name: Ubuntu GCC S390X No vectorized CRC32
             os: ubuntu-latest
+            cache-key: s390x
             compiler: s390x-linux-gnu-gcc
             configure-args: --warn --static --without-s390-vx
             chost: s390x-linux-gnu
@@ -144,6 +157,7 @@ jobs:
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} GCC S390X DFLTCC
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
+            cache-key: s390x
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcc' || 's390x-linux-gnu-gcc' }}
             configure-args: --warn --static --with-dfltcc-deflate --with-dfltcc-inflate
             chost: ${{ github.repository != 'zlib-ng/zlib-ng' &&  's390x-linux-gnu' || '' }}
@@ -153,6 +167,7 @@ jobs:
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10' || 'Ubuntu' }} GCC S390X DFLTCC Compat
             os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
+            cache-key: s390x
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'gcc' || 's390x-linux-gnu-gcc' }}
             configure-args: --warn --zlib-compat --static --with-dfltcc-deflate --with-dfltcc-inflate
             chost: ${{ github.repository != 'zlib-ng/zlib-ng' &&  's390x-linux-gnu' || '' }}
@@ -193,6 +208,7 @@ jobs:
 
           - name: Ubuntu GCC RISCV64
             os: ubuntu-latest
+            cache-key: riscv64
             compiler: riscv64-linux-gnu-gcc
             configure-args: --warn
             chost: riscv64-linux-gnu
@@ -200,6 +216,7 @@ jobs:
 
           - name: Ubuntu GCC RISCV64 No RVV No ZBC
             os: ubuntu-latest
+            cache-key: riscv64
             compiler: riscv64-linux-gnu-gcc
             configure-args: --warn --without-rvv --without-zbc
             chost: riscv64-linux-gnu
@@ -207,6 +224,7 @@ jobs:
 
           - name: Ubuntu GCC RISCV64 Compat No Opt
             os: ubuntu-latest
+            cache-key: riscv64
             compiler: riscv64-linux-gnu-gcc
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
             chost: riscv64-linux-gnu
@@ -214,6 +232,7 @@ jobs:
 
           - name: Ubuntu GCC 14 LoongArch64
             os: ubuntu-latest
+            cache-key: loong64
             compiler: loongarch64-linux-gnu-gcc-14
             configure-args: --warn --static
             chost: loongarch64-linux-gnu
@@ -223,6 +242,7 @@ jobs:
 
           - name: Ubuntu GCC 14 LoongArch64 Compat No Opt
             os: ubuntu-latest
+            cache-key: loong64
             compiler: loongarch64-linux-gnu-gcc-14
             configure-args: --warn --static --zlib-compat --without-optimizations --without-new-strategies
             chost: loongarch64-linux-gnu
@@ -290,11 +310,48 @@ jobs:
         curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
         sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
+    - name: Get cache key (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages
+      id: get-ubuntu-cache-key
+      shell: bash
+      run: |
+        echo "release=$(sed -n 's/UBUNTU_CODENAME=\(.*\)/\1/p' /etc/os-release)" >> $GITHUB_OUTPUT
+        pkg='${{ matrix.packages }}'
+        echo "pkg_sig=$(printf '%s' "$pkg" | sha256sum | cut -c1-12)" >> $GITHUB_OUTPUT
+        echo "key=$(/bin/date -u "+%G%V")" >> $GITHUB_OUTPUT
+
+    - name: Load package cache (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages
+      uses: actions/cache@v5
+      with:
+        path: ${{ runner.temp }}/apt-archives/*.deb
+        key: cache-apt-${{ matrix.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}-${{ steps.get-ubuntu-cache-key.outputs.pkg_sig }}-${{ steps.get-ubuntu-cache-key.outputs.key }}
+        restore-keys: |
+          cache-apt-${{ matrix.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}-${{ steps.get-ubuntu-cache-key.outputs.pkg_sig }}
+          cache-apt-${{ matrix.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}
+
+    - name: Restore cached packages (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages
+      run: |
+        sudo mkdir -p /var/cache/apt/archives ${{ runner.temp }}/apt-archives
+        if compgen -G "${{ runner.temp }}/apt-archives/*.deb" > /dev/null; then
+          sudo mv -f ${{ runner.temp }}/apt-archives/*.deb /var/cache/apt/archives/
+        fi
+
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages
       run: |
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.packages }}
+
+    - name: Update package cache (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages
+      run: |
+        if compgen -G "/var/cache/apt/archives/*.deb" > /dev/null; then
+          sudo apt autoclean
+          sudo apt autoremove
+          sudo cp -f /var/cache/apt/archives/*.deb ${{ runner.temp }}/apt-archives/
+        fi
 
     - name: Install packages (macOS)
       if: runner.os == 'macOS'
