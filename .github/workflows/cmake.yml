@@ -786,7 +786,9 @@ jobs:
 
     - name: Install packages (macOS)
       if: runner.os == 'macOS'
-      run: brew install ninja ${{ matrix.packages }}
+      run: |
+        brew update
+        brew install ninja ${{ matrix.packages }}
       env:
         HOMEBREW_NO_INSTALL_CLEANUP: 1
 
