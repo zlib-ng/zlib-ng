@@ -469,37 +469,37 @@ jobs:
             # Coverage disabled for msvc
 
           - name: Windows MSVC 2022 v143 Win32
-            os: windows-latest
+            os: windows-2022
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A Win32 -T v143
             # Coverage disabled for msvc
 
           - name: Windows MSVC 2022 v143 Win64
-            os: windows-latest
+            os: windows-2022
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v143
             # Coverage disabled for msvc
 
           - name: Windows MSVC 2022 v143 Win64 Native Instructions (AVX)
-            os: windows-latest
+            os: windows-2022
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v143 -DWITH_NATIVE_INSTRUCTIONS=ON -DNATIVE_ARCH_OVERRIDE=/arch:AVX
             # Coverage disabled for msvc
 
           - name: Windows MSVC 2022 v143 Win64 C17
-            os: windows-latest
+            os: windows-2022
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v143 -DCMAKE_C_STANDARD=17
             # Coverage disabled for msvc
 
           - name: Windows MSVC 2022 v142 Win32
-            os: windows-latest
+            os: windows-2022
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A Win32 -T v142
             # Coverage disabled for msvc
 
           - name: Windows MSVC 2022 v142 Win64
-            os: windows-latest
+            os: windows-2022
             compiler: cl
             cmake-args: -G "Visual Studio 17 2022" -A x64 -T v142
             # Coverage disabled for msvc
@@ -529,7 +529,7 @@ jobs:
             # Coverage disabled for msvc
 
           - name: Windows MSVC ARM No Test
-            os: windows-latest
+            os: windows-2022
             compiler: cl
             cmake-args: -A ARM,version=10.0.22621.0
             # Coverage disabled for msvc
