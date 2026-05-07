@@ -1,0 +1,14 @@
+name: Update APT cache
+description: Updates list of cached .deb packages for APT
+runs:
+  using: "composite"
+  steps:
+    - name: Update package cache (Ubuntu)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        if compgen -G "/var/cache/apt/archives/*.deb" > /dev/null; then
+          sudo apt autoclean
+          sudo apt autoremove
+          sudo cp -f /var/cache/apt/archives/*.deb ${{ runner.temp }}/apt-archives/
+        fi

@@ -759,33 +759,13 @@ jobs:
         curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
         sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
-    - name: Get cache key (Ubuntu)
-      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
-      id: get-ubuntu-cache-key
-      shell: bash
-      run: |
-        echo "release=$(sed -n 's/UBUNTU_CODENAME=\(.*\)/\1/p' /etc/os-release)" >> $GITHUB_OUTPUT
-        pkg='${{ matrix.packages }}'
-        echo "pkg_sig=$(printf '%s' "$pkg" | sha256sum | cut -c1-12)" >> $GITHUB_OUTPUT
-        echo "key=$(/bin/date -u "+%G%V")" >> $GITHUB_OUTPUT
-
-    - name: Load package cache (Ubuntu)
-      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
-      uses: actions/cache@v5
-      with:
-        path: ${{ runner.temp }}/apt-archives/*.deb
-        key: cache-apt-${{ matrix.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}-${{ steps.get-ubuntu-cache-key.outputs.pkg_sig }}-${{ steps.get-ubuntu-cache-key.outputs.key }}
-        restore-keys: |
-          cache-apt-${{ matrix.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}-${{ steps.get-ubuntu-cache-key.outputs.pkg_sig }}
-          cache-apt-${{ matrix.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}
-
     - name: Restore cached packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
-      run: |
-        sudo mkdir -p /var/cache/apt/archives ${{ runner.temp }}/apt-archives
-        if compgen -G "${{ runner.temp }}/apt-archives/*.deb" > /dev/null; then
-          sudo mv -f ${{ runner.temp }}/apt-archives/*.deb /var/cache/apt/archives/
-        fi
+      id: restore-apt-cache
+      uses: ./.github/actions/restore-apt-cache
+      with:
+        packages: ${{ matrix.packages }}
+        cache-key: ${{ matrix.cache-key }}
 
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && !contains(matrix.os, 'z15')
@@ -795,13 +775,8 @@ jobs:
             ${{ matrix.packages || 'libgtest-dev libbenchmark-dev' }}
 
     - name: Update package cache (Ubuntu)
-      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
-      run: |
-        if compgen -G "/var/cache/apt/archives/*.deb" > /dev/null; then
-          sudo apt autoclean
-          sudo apt autoremove
-          sudo cp -f /var/cache/apt/archives/*.deb ${{ runner.temp }}/apt-archives/
-        fi
+      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15') && steps.restore-apt-cache.outputs.cache-hit != 'true'
+      uses: ./.github/actions/update-apt-cache
 
     - name: Install packages (Windows)
       if: runner.os == 'Windows'

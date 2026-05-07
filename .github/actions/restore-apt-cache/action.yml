@@ -1,0 +1,44 @@
+name: Restore APT cache
+description: Restores cached .deb packages for APT
+inputs:
+  packages:
+    description: Packages to cache
+    required: true
+  cache-key:
+    description: Cache key to use
+    required: true
+outputs:
+  cache-hit:
+    description: A boolean value to indicate an exact match was found for the primary key
+    value: ${{ steps.load-cache.outputs.cache-hit }}
+runs:
+  using: "composite"
+  steps:
+    - name: Get cache key (Ubuntu)
+      if: runner.os == 'Linux'
+      id: get-ubuntu-cache-key
+      shell: bash
+      run: |
+        echo "release=$(sed -n 's/UBUNTU_CODENAME=\(.*\)/\1/p' /etc/os-release)" >> $GITHUB_OUTPUT
+        echo "pkg_sig=$(printf '%s' "${{ inputs.packages }}" | sha256sum | cut -c1-12)" >> $GITHUB_OUTPUT
+        echo "key=$(/bin/date -u "+%G%V")" >> $GITHUB_OUTPUT
+
+    - name: Load package cache (Ubuntu)
+      if: runner.os == 'Linux'
+      id: load-cache
+      uses: actions/cache@v5
+      with:
+        path: ${{ runner.temp }}/apt-archives/*.deb
+        key: cache-apt-${{ inputs.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}-${{ steps.get-ubuntu-cache-key.outputs.pkg_sig }}-${{ steps.get-ubuntu-cache-key.outputs.key }}
+        restore-keys: |
+          cache-apt-${{ inputs.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}-${{ steps.get-ubuntu-cache-key.outputs.pkg_sig }}
+          cache-apt-${{ inputs.cache-key || 'default' }}-${{ runner.arch }}-${{ steps.get-ubuntu-cache-key.outputs.release }}
+
+    - name: Restore cached packages (Ubuntu)
+      if: runner.os == 'Linux'
+      shell: bash
+      run: |
+        sudo mkdir -p /var/cache/apt/archives ${{ runner.temp }}/apt-archives
+        if compgen -G "${{ runner.temp }}/apt-archives/*.deb" > /dev/null; then
+          sudo mv -f ${{ runner.temp }}/apt-archives/*.deb /var/cache/apt/archives/
+        fi
