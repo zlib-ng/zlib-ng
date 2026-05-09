@@ -15,6 +15,7 @@
 #define HASH_CALC_MASK       HASH_MASK
 #define HASH_CALC_VAR        h
 #define HASH_CALC_VAR_INIT   uint32_t h
+#define HASH_CALC_VAR_STORE
 #define HASH_CALC_OFFSET     0
 
 #define UPDATE_HASH          update_hash
@@ -28,8 +29,9 @@
 #define HASH_SLIDE           5
 
 #define HASH_CALC(h, val)    h = ((h << HASH_SLIDE) ^ ((uint8_t)val))
-#define HASH_CALC_VAR        s->ins_h
-#define HASH_CALC_VAR_INIT
+#define HASH_CALC_VAR        h
+#define HASH_CALC_VAR_INIT   uint32_t h = s->ins_h
+#define HASH_CALC_VAR_STORE  s->ins_h = h
 #define HASH_CALC_READ       val = strstart[0]
 #define HASH_CALC_MASK       (32768u - 1u)
 #define HASH_CALC_OFFSET     (STD_MIN_MATCH-1)
