@@ -16,6 +16,7 @@ typedef __m128i halfchunk_t;
 typedef __mmask32 mask_t;
 typedef __mmask16 halfmask_t;
 
+#define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
@@ -32,6 +33,10 @@ static inline halfmask_t gen_half_mask(size_t len) {
 
 static inline mask_t gen_mask(size_t len) {
    return (mask_t)_bzhi_u32(0xFFFFFFFF, (unsigned)len);
+}
+
+static inline void chunkmemset_1(uint8_t *from, chunk_t *chunk) {
+    *chunk = _mm256_set1_epi8(*from);
 }
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {

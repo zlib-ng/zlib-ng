@@ -136,10 +136,13 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
         return out + len;
     }
 
+#ifndef HAVE_CHUNKMEMSET_1
     if (dist == 1) {
         memset(out, *from, len);
         return out + len;
-    } else if (dist >= len || dist >= sizeof(chunk_t)) {
+    } else
+#endif
+    if (dist >= len || dist >= sizeof(chunk_t)) {
         return CHUNKCOPY(out, from, len);
     }
 
@@ -151,7 +154,7 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
      * also can merge an assert and some remainder peeling behavior into the same code blocks,
      * making the code a little smaller.  */
 #ifdef HAVE_HALF_CHUNK
-    if (len <= sizeof(halfchunk_t)) {
+    if (dist > 1 && len <= sizeof(halfchunk_t)) {
         if (dist >= sizeof(halfchunk_t))
             return HALFCHUNKCOPY(out, from, len);
 
@@ -170,6 +173,12 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
     }
 #endif
 
+#ifdef HAVE_CHUNKMEMSET_1
+    /* Broadcast + chunk store beats memset on NEON/AVX2/AVX-512 */
+    if (dist == 1) {
+        chunkmemset_1(from, &chunk_load);
+    } else
+#endif
 #ifdef HAVE_CHUNKMEMSET_2
     if (dist == 2) {
         chunkmemset_2(from, &chunk_load);

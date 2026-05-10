@@ -12,11 +12,15 @@
 
 typedef uint8x16_t chunk_t;
 
+#define HAVE_CHUNKMEMSET_1
 #define HAVE_CHUNKMEMSET_2
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
 #define HAVE_CHUNK_MAG
 
+static inline void chunkmemset_1(uint8_t *from, chunk_t *chunk) {
+    *chunk = vdupq_n_u8(*from);
+}
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
     *chunk = vreinterpretq_u8_u16(vdupq_n_u16(zng_memread_2(from)));
