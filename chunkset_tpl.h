@@ -194,6 +194,11 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
 #endif
     chunk_load = GET_CHUNK_MAG(from, &chunk_mod, dist);
 
+    if (len <= sizeof(chunk_t)) {
+        storechunk(out, &chunk_load);
+        return out + len;
+    }
+
     adv_amount = sizeof(chunk_t) - chunk_mod;
 
     while (len >= (2 * sizeof(chunk_t))) {
