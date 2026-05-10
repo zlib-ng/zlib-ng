@@ -217,8 +217,12 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
 rem_bytes:
 #endif
     if (len) {
-        memcpy(out, &chunk_load, len);
-        out += len;
+        uint8_t *chunk_p = (uint8_t *)&chunk_load;
+        if (len & 16) { memcpy(out, chunk_p, 16); out += 16; chunk_p += 16; }
+        if (len & 8) { memcpy(out, chunk_p, 8); out += 8; chunk_p += 8; }
+        if (len & 4) { memcpy(out, chunk_p, 4); out += 4; chunk_p += 4; }
+        if (len & 2) { memcpy(out, chunk_p, 2); out += 2; chunk_p += 2; }
+        if (len & 1) { *out++ = *chunk_p; }
     }
 
     return out;
