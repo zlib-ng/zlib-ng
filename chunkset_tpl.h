@@ -124,12 +124,10 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
      * dispatching to this function, more */
     if (out < from && dist < len) {
 #ifdef HAVE_MASKED_READWRITE
-        /* We can still handle this case if we can mitigate over writing _and_ we
-         * fit the entirety of the copy length with one load */
         if (len <= sizeof(chunk_t)) {
-            /* Tempting to add a goto to the block below but hopefully most compilers
-             * collapse these identical code segments as one label to jump to */
-            return CHUNKCOPY(out, from, len);
+            loadchunk_masked(from, &chunk_load, len);
+            storechunk_masked(out, &chunk_load, len);
+            return out + len;
         }
 #endif
         /* Here the memmove semantics match perfectly, as when this happens we are
@@ -195,7 +193,11 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
     chunk_load = GET_CHUNK_MAG(from, &chunk_mod, dist);
 
     if (len <= sizeof(chunk_t)) {
+#ifdef HAVE_MASKED_READWRITE
+        storechunk_masked(out, &chunk_load, len);
+#else
         storechunk(out, &chunk_load);
+#endif
         return out + len;
     }
 
@@ -222,12 +224,17 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
 rem_bytes:
 #endif
     if (len) {
+#ifdef HAVE_MASKED_READWRITE
+        storechunk_masked(out, &chunk_load, len);
+        out += len;
+#else
         uint8_t *chunk_p = (uint8_t *)&chunk_load;
         if (len & 16) { memcpy(out, chunk_p, 16); out += 16; chunk_p += 16; }
         if (len & 8) { memcpy(out, chunk_p, 8); out += 8; chunk_p += 8; }
         if (len & 4) { memcpy(out, chunk_p, 4); out += 4; chunk_p += 4; }
         if (len & 2) { memcpy(out, chunk_p, 2); out += 2; chunk_p += 2; }
         if (len & 1) { *out++ = *chunk_p; }
+#endif
     }
 
     return out;

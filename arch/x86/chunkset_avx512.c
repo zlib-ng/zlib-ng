@@ -68,6 +68,14 @@ static inline void storechunk(uint8_t *out, chunk_t *chunk) {
     _mm256_storeu_si256((__m256i *)out, *chunk);
 }
 
+static inline void loadchunk_masked(uint8_t const *s, chunk_t *chunk, size_t len) {
+    *chunk = _mm256_maskz_loadu_epi8(gen_mask(len), s);
+}
+
+static inline void storechunk_masked(uint8_t *out, chunk_t *chunk, size_t len) {
+    _mm256_mask_storeu_epi8(out, gen_mask(len), *chunk);
+}
+
 static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, size_t len) {
     Assert(len > 0, "chunkcopy should never have a length 0");
 
