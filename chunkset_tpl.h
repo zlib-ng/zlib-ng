@@ -141,7 +141,7 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
     if (dist == 1) {
         memset(out, *from, len);
         return out + len;
-    } else if (dist >= sizeof(chunk_t)) {
+    } else if (dist >= len || dist >= sizeof(chunk_t)) {
         return CHUNKCOPY(out, from, len);
     }
 
