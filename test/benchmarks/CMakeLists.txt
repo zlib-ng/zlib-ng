@@ -53,6 +53,7 @@ set(BENCH_PUBLIC_SRCS
 set(BENCH_INTERNAL_SRCS
     benchmark_adler32.cc
     benchmark_adler32_copy.cc
+    benchmark_chunkmemset.cc
     benchmark_compare256.cc
     benchmark_compare256_rle.cc
     benchmark_crc32.cc
