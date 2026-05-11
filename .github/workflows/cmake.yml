@@ -619,6 +619,13 @@ jobs:
             cmake-args: -G Ninja -DZLIB_COMPAT=ON -DWITH_NEW_STRATEGIES=OFF -DWITH_OPTIM=OFF
             coverage: win64_gcc_compat_no_opt
 
+          - name: Windows GCC Cygwin Win64
+            os: windows-latest
+            shell: D:/cygwin/bin/bash.exe -e -o igncr -o pipefail {0}
+            compiler: gcc
+            cxx-compiler: g++
+            coverage: cygwin_gcc
+
           - name: Windows GCC MinGW32
             os: windows-latest
             shell: msys2 {0}
@@ -737,6 +744,37 @@ jobs:
         repository: zlib-ng/corpora
         path: test/data/corpora
         show-progress: false
+
+    - name: Setup Cygwin
+      if: runner.os == 'Windows' && contains(matrix.name, 'Cygwin')
+      uses: cygwin/cygwin-install-action@v6
+      with:
+        packages: >-
+          cmake
+          gcc-core
+          gcc-g++
+          gcovr
+          make
+          libxml2-devel
+          libxslt-devel
+          python39
+          python39-colorlog
+          python39-devel
+          python39-exceptiongroup
+          python39-jinja2
+          python39-lxml
+          python39-markupsafe
+          python39-pygments
+          python39-pip
+          python39-virtualenv
+          zlib-devel
+
+    - name: Restore cached Python packages (Cygwin)
+      if: runner.os == 'Windows' && contains(matrix.name, 'Cygwin')
+      uses: actions/cache@v5
+      with:
+        path: D:\cygwin\home\runneradmin\.cache
+        key: cygwin-pip-cache
 
     - name: Setup MinGW32
       if: runner.os == 'Windows' && contains(matrix.name, 'MinGW32')
@@ -960,13 +998,27 @@ jobs:
         UBSAN_OPTIONS: ${{ matrix.ubsan-options || 'verbosity=0' }}:print_stacktrace=1:abort_on_error=1:halt_on_error=1
 
     - name: Generate coverage report
-      if: matrix.coverage
+      if: matrix.coverage && !contains(matrix.name, 'Cygwin')
       shell: bash
       run: |
         python3 -u -m venv ./venv
         source ./venv/${{ runner.os == 'Windows' && 'Scripts' || 'bin' }}/activate
         python3 -u -m pip install gcovr
         python3 -m gcovr -j 5 --gcov-ignore-parse-errors --verbose \
+          --exclude '(.*/|^)(_deps|benchmarks)/.*' \
+          --exclude-unreachable-branches \
+          --merge-mode-functions separate \
+          --merge-lines \
+          --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
+          --xml --output ${{ matrix.coverage }}.xml
+
+    - name: Generate coverage report (Cygwin)
+      if: matrix.coverage && contains(matrix.name, 'Cygwin')
+      run: |
+        python3.9 -u -m venv --upgrade-deps --system-site-packages ./venv
+        source ./venv/bin/activate
+        python3.9 -u -m pip install gcovr
+        python3.9 -m gcovr -j 5 --gcov-ignore-parse-errors --verbose \
           --exclude '(.*/|^)(_deps|benchmarks)/.*' \
           --exclude-unreachable-branches \
           --merge-mode-functions separate \
