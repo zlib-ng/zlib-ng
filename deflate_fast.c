@@ -98,15 +98,15 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
             s->strstart++;
         }
         if (UNLIKELY(bflush))
-            FLUSH_BLOCK(s, 0);
+            FLUSH_BLOCK(s, window, 0);
     }
     s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
 
     if (UNLIKELY(flush == Z_FINISH)) {
-        FLUSH_BLOCK(s, 1);
+        FLUSH_BLOCK(s, window, 1);
         return finish_done;
     }
     if (UNLIKELY(s->sym_next))
-        FLUSH_BLOCK(s, 0);
+        FLUSH_BLOCK(s, window, 0);
     return block_done;
 }

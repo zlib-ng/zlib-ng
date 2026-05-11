@@ -110,7 +110,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
             s->strstart += mov_fwd + 1;
 
             if (UNLIKELY(bflush))
-                FLUSH_BLOCK(s, 0);
+                FLUSH_BLOCK(s, window, 0);
 
         } else if (s->match_available) {
             /* If there was no match at the previous position, output a
@@ -119,7 +119,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
              */
             bflush = zng_tr_tally_lit(s, window[s->strstart-1]);
             if (UNLIKELY(bflush))
-                FLUSH_BLOCK_ONLY(s, 0);
+                FLUSH_BLOCK_ONLY(s, window, 0);
             s->prev_length = match_len;
             s->strstart++;
             s->lookahead--;
@@ -142,10 +142,10 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     }
     s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
     if (UNLIKELY(flush == Z_FINISH)) {
-        FLUSH_BLOCK(s, 1);
+        FLUSH_BLOCK(s, window, 1);
         return finish_done;
     }
     if (UNLIKELY(s->sym_next))
-        FLUSH_BLOCK(s, 0);
+        FLUSH_BLOCK(s, window, 0);
     return block_done;
 }

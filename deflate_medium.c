@@ -20,7 +20,7 @@ struct match {
     uint16_t orgstart;
 };
 
-static int emit_match(deflate_state *s, struct match match) {
+static int emit_match(deflate_state *s, unsigned char *window, struct match match) {
     int bflush = 0;
     uint32_t match_len = match.match_length;
 
@@ -30,7 +30,7 @@ static int emit_match(deflate_state *s, struct match match) {
     /* matches that are not long enough we need to emit as literals */
     if (match_len < WANT_MIN_MATCH) {
         while (match_len) {
-            bflush += zng_tr_tally_lit(s, s->window[match.strstart]);
+            bflush += zng_tr_tally_lit(s, window[match.strstart]);
             match_len--;
             match.strstart++;
         }
@@ -125,8 +125,7 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
  * - (current->match_length - 1) <= next->match_start
  * - (current->match_length - 1) <= next->strstart
  */
-static void fizzle_matches(deflate_state *s, struct match *current, struct match *next) {
-    unsigned char *window = s->window;
+static void fizzle_matches(deflate_state *s, unsigned char *window, struct match *current, struct match *next) {
     unsigned char *match, *orig;
     struct match c, n;
     int changed = 0;
@@ -180,6 +179,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
     /* Align the first struct to start on a new cacheline, this allows us to fit both structs in one cacheline */
     ALIGNED_(16) struct match current_match = {0};
                  struct match next_match = {0};
+    unsigned char *window = s->window;
 
     /* For levels below 5, don't check the next position for a better match */
     int early_exit = s->level < 5;
@@ -235,7 +235,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
                      && next_match.match_length >= WANT_MIN_MATCH
                      && tmp_cmatch_len_sub <= next_match.match_start
                      && tmp_cmatch_len_sub <= next_match.strstart) {
-                fizzle_matches(s, &current_match, &next_match);
+                fizzle_matches(s, window, &current_match, &next_match);
             }
 
             s->strstart = current_match.strstart;
@@ -244,21 +244,21 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         }
 
         /* now emit the current match */
-        bflush = emit_match(s, current_match);
+        bflush = emit_match(s, window, current_match);
 
         /* move the "cursor" forward */
         s->strstart += current_match.match_length;
 
         if (UNLIKELY(bflush))
-            FLUSH_BLOCK(s, 0);
+            FLUSH_BLOCK(s, window, 0);
     }
     s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
     if (flush == Z_FINISH) {
-        FLUSH_BLOCK(s, 1);
+        FLUSH_BLOCK(s, window, 1);
         return finish_done;
     }
     if (UNLIKELY(s->sym_next))
-        FLUSH_BLOCK(s, 0);
+        FLUSH_BLOCK(s, window, 0);
 
     return block_done;
 }

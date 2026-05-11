@@ -185,19 +185,20 @@ Z_FORCEINLINE static unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf
  * Flush the current block, with given end-of-file flag.
  * IN assertion: strstart is set to the end of the current match.
  */
-#define FLUSH_BLOCK_ONLY(s, last) { \
-    zng_tr_flush_block(s, (s->block_start >= 0 ? \
-                   &s->window[(unsigned)s->block_start] : \
+#define FLUSH_BLOCK_ONLY(s, window, last) { \
+    int block_start = s->block_start; \
+    zng_tr_flush_block(s, (block_start >= 0 ? \
+                   &window[(unsigned)block_start] : \
                    NULL), \
-                   (uint32_t)((int)s->strstart - s->block_start), \
+                   (uint32_t)((int)s->strstart - block_start), \
                    (last)); \
     s->block_start = (int)s->strstart; \
     PREFIX(flush_pending)(s->strm); \
 }
 
 /* Same but force premature exit if necessary. */
-#define FLUSH_BLOCK(s, last) { \
-    FLUSH_BLOCK_ONLY(s, last); \
+#define FLUSH_BLOCK(s, window, last) { \
+    FLUSH_BLOCK_ONLY(s, window, last); \
     if (s->strm->avail_out == 0) return (last) ? finish_started : need_more; \
 }
 

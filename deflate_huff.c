@@ -14,6 +14,7 @@
  * (It will be regenerated if this run of deflate switches away from Huffman.)
  */
 Z_INTERNAL block_state deflate_huff(deflate_state *s, int flush) {
+    unsigned char *window = s->window;
     int bflush = 0;         /* set if current block must be flushed */
 
     for (;;) {
@@ -28,18 +29,18 @@ Z_INTERNAL block_state deflate_huff(deflate_state *s, int flush) {
         }
 
         /* Output a literal byte */
-        bflush = zng_tr_tally_lit(s, s->window[s->strstart]);
+        bflush = zng_tr_tally_lit(s, window[s->strstart]);
         s->lookahead--;
         s->strstart++;
         if (bflush)
-            FLUSH_BLOCK(s, 0);
+            FLUSH_BLOCK(s, window, 0);
     }
     s->insert = 0;
     if (flush == Z_FINISH) {
-        FLUSH_BLOCK(s, 1);
+        FLUSH_BLOCK(s, window, 1);
         return finish_done;
     }
     if (s->sym_next)
-        FLUSH_BLOCK(s, 0);
+        FLUSH_BLOCK(s, window, 0);
     return block_done;
 }

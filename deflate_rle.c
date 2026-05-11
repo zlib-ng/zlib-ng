@@ -22,8 +22,9 @@
  * deflate switches away from Z_RLE.)
  */
 Z_INTERNAL block_state deflate_rle(deflate_state *s, int flush) {
-    int bflush = 0;                 /* set if current block must be flushed */
+    unsigned char *window = s->window;
     unsigned char *scan;            /* scan goes up to strend for length of run */
+    int bflush = 0;                 /* set if current block must be flushed */
     uint32_t match_len = 0;
 
     for (;;) {
@@ -41,12 +42,12 @@ Z_INTERNAL block_state deflate_rle(deflate_state *s, int flush) {
 
         /* See how many times the previous byte repeats */
         if (s->lookahead >= STD_MIN_MATCH && s->strstart > 0) {
-            scan = s->window + s->strstart - 1;
+            scan = window + s->strstart - 1;
             if (scan[0] == scan[1] && scan[1] == scan[2]) {
                 match_len = compare256_rle(scan, scan+3)+2;
                 match_len = MIN(match_len, s->lookahead);
             }
-            Assert(scan+match_len <= s->window + s->window_size - 1, "wild scan");
+            Assert(scan+match_len <= window + s->window_size - 1, "wild scan");
         }
 
         /* Emit match if have run of STD_MIN_MATCH or longer, else emit literal */
@@ -61,19 +62,19 @@ Z_INTERNAL block_state deflate_rle(deflate_state *s, int flush) {
             match_len = 0;
         } else {
             /* No match, output a literal byte */
-            bflush = zng_tr_tally_lit(s, s->window[s->strstart]);
+            bflush = zng_tr_tally_lit(s, window[s->strstart]);
             s->lookahead--;
             s->strstart++;
         }
         if (bflush)
-            FLUSH_BLOCK(s, 0);
+            FLUSH_BLOCK(s, window, 0);
     }
     s->insert = 0;
     if (flush == Z_FINISH) {
-        FLUSH_BLOCK(s, 1);
+        FLUSH_BLOCK(s, window, 1);
         return finish_done;
     }
     if (s->sym_next)
-        FLUSH_BLOCK(s, 0);
+        FLUSH_BLOCK(s, window, 0);
     return block_done;
 }
