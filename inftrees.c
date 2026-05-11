@@ -4,6 +4,7 @@
  */
 
 #include "zbuild.h"
+#include "zmemory.h"
 #include "zutil.h"
 #include "inftrees.h"
 #include "inflate_p.h"
@@ -281,6 +282,9 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
        in the rest of the decoding tables with invalid code markers.
      */
 
+    /* The packed table fill below reads and writes each entry as a single uint32_t. */
+    Assert(sizeof(code) == 4, "code entry must be exactly 4 bytes");
+
     /* set up for code type */
     switch (type) {
     case CODES:
@@ -336,10 +340,25 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
         incr = 1U << (len - drop);
         fill = 1U << curr;
         min = fill;                 /* save offset to next table */
-        do {
-            fill -= incr;
-            next[(huff >> drop) + fill] = here;
-        } while (fill != 0);
+        {
+            /* `here` is a 4-byte struct that the compiler writes one field at a time.
+               Read it as a packed uint32_t so each slot is filled by a single store. */
+            uint32_t here_u32 = zng_memread_4(&here);
+            code *base_ptr = next + (huff >> drop);
+            unsigned step4 = incr << 2;
+            /* Unroll by four so the slot addresses are independent. */
+            while (fill >= step4) {
+                zng_memwrite_4(&base_ptr[fill - 1 * incr], here_u32);
+                zng_memwrite_4(&base_ptr[fill - 2 * incr], here_u32);
+                zng_memwrite_4(&base_ptr[fill - 3 * incr], here_u32);
+                zng_memwrite_4(&base_ptr[fill - 4 * incr], here_u32);
+                fill -= step4;
+            }
+            while (fill != 0) {
+                fill -= incr;
+                zng_memwrite_4(&base_ptr[fill], here_u32);
+            }
+        }
 
         /* backwards increment the len-bit code huff */
         rhuff = (uint16_t)(rhuff + (0x8000u >> (len - 1)));
