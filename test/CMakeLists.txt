@@ -29,7 +29,7 @@ add_executable(infcover infcover.c)
 configure_test_executable(infcover)
 target_link_libraries(infcover zlib-ng)
 if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
-    target_sources(infcover PRIVATE ${PROJECT_SOURCE_DIR}/inftrees.c)
+    target_sources(infcover PRIVATE ${PROJECT_SOURCE_DIR}/inftrees.c ${PROJECT_SOURCE_DIR}/zutil.c)
 endif()
 add_test(NAME infcover COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
 
