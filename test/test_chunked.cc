@@ -14,7 +14,7 @@
 
 #include <gtest/gtest.h>
 
-#include "compressible_data_p.h"
+#include "test_data_p.h"
 
 struct chunked_params {
     size_t compr_size;
@@ -37,7 +37,7 @@ protected:
         decompressed = (uint8_t *)calloc(1, p.uncompr_size);
         ASSERT_NE(decompressed, nullptr);
 
-        uncompr = gen_compressible_data(p.uncompr_size);
+        uncompr = gen_test_data(TEST_DATA_TEXT, p.uncompr_size);
         ASSERT_NE(uncompr, nullptr);
     }
 

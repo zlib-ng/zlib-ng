@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <benchmark/benchmark.h>
 #include "benchmark_png_shared.h"
+#include "test/test_data_p.h"
 
 #define IMWIDTH 1024
 #define IMHEIGHT 1024
@@ -14,13 +15,8 @@ private:
     uint8_t *input_img_buf = NULL;
 
 public:
-    /* Let's make the vanilla version have something extremely compressible */
-    virtual void init_img(png_bytep img_bytes, size_t width, size_t height) {
-        init_compressible(img_bytes, width * height);
-    }
-
     void SetUp(const ::benchmark::State&) {
-        input_img_buf = (uint8_t*)malloc(IMWIDTH * IMHEIGHT * 3);
+        input_img_buf = gen_test_data(TEST_DATA_STRIPED_RGB, IMWIDTH * IMHEIGHT * 3);
         outpng.buf = (uint8_t*)malloc(IMWIDTH * IMHEIGHT * 3);
         /* Using malloc rather than zng_alloc so that we can call realloc.
          * IMWIDTH * IMHEIGHT is likely to be more than enough bytes, though,
@@ -30,7 +26,6 @@ public:
         outpng.buf_rem = IMWIDTH * IMHEIGHT * 3;
         assert(input_img_buf != NULL);
         assert(outpng.buf != NULL);
-        init_img(input_img_buf, IMWIDTH, IMHEIGHT);
     }
 
     /* State in this circumstance will convey the compression level */

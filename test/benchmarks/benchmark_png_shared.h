@@ -45,55 +45,6 @@ static void png_write_cb(png_structp pngp, png_bytep data, png_size_t len) {
     dat->buf_rem -= len;
 }
 
-/* Generate pixel data that resembles a real photograph: smooth gradients with per-pixel
- * noise and occasional edges. Produces many short deflate matches and scattered literals */
-static void init_realistic(png_bytep buf, uint32_t width, uint32_t height) {
-    uint32_t seed = 0x12345678;
-    for (uint32_t y = 0; y < height; y++) {
-        for (uint32_t x = 0; x < width; x++) {
-            size_t idx = ((size_t)y * width + x) * 3;
-            /* Diagonal gradient as base color */
-            uint8_t base_r = (uint8_t)((x + y) * 179 / (width + height));
-            uint8_t base_g = (uint8_t)((x * 2 + y) * 131 / (width + height));
-            uint8_t base_b = (uint8_t)(y * 241 / height);
-            /* Simple xorshift noise, +/- 15 levels */
-            seed ^= seed << 13;
-            seed ^= seed >> 17;
-            seed ^= seed << 5;
-            int noise = (int)(seed & 0x1F) - 15;
-            buf[idx]     = (uint8_t)MIN(MAX(base_r + noise, 0), 0xFF);
-            buf[idx + 1] = (uint8_t)MIN(MAX(base_g + (noise >> 1), 0), 0xFF);
-            buf[idx + 2] = (uint8_t)MIN(MAX(base_b - noise, 0), 0xFF);
-        }
-    }
-}
-
-/* Generate a highly compressible RGB test image with solid R, G, and B stripes. */
-static void init_compressible(png_bytep buf, size_t num_pix) {
-    int32_t i = 0;
-    int32_t red_stop = num_pix / 3;
-    int32_t blue_stop = 2 * num_pix / 3;
-    int32_t green_stop = num_pix;
-
-    for (int32_t x = 0; i < red_stop; x += 3, ++i) {
-       buf[x] = 255;
-       buf[x + 1] = 0;
-       buf[x + 2] = 0;
-    }
-
-    for (int32_t x = 3 * i; i < blue_stop; x+= 3, ++i) {
-       buf[x] = 0;
-       buf[x + 1] = 255;
-       buf[x + 2] = 0;
-    }
-
-    for (int32_t x = 3 * i; i < green_stop; x += 3, ++i) {
-       buf[x] = 0;
-       buf[x + 1] = 0;
-       buf[x + 2] = 255;
-    }
-}
-
 static inline void encode_png(png_bytep buf, png_dat *outpng, int32_t comp_level, uint32_t width, uint32_t height) {
     png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 

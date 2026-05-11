@@ -3,6 +3,7 @@
 #include <benchmark/benchmark.h>
 
 #include "benchmark_png_shared.h"
+#include "test/test_data_p.h"
 
 /* Decode PNGs through libpng at various image widths. libpng calls inflate() with
  * avail_out equal to one row (width * 3 bytes for RGB). Narrow images produce rows
@@ -21,9 +22,8 @@ public:
 
         size_t num_pixels = (size_t)img_width * img_height;
 
-        output_buf = (uint8_t *)malloc(num_pixels * 3);
+        output_buf = gen_test_data(TEST_DATA_REALISTIC_RGB, num_pixels * 3);
         assert(output_buf != NULL);
-        init_realistic(output_buf, img_width, img_height);
 
         encoded = {NULL, 0, 0};
         encode_png(output_buf, &encoded, 9, img_width, img_height);

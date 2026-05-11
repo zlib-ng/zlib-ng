@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <benchmark/benchmark.h>
 #include "benchmark_png_shared.h"
+#include "test/test_data_p.h"
 #include <assert.h>
 
 class png_decode: public benchmark::Fixture {
@@ -11,15 +12,9 @@ protected:
     uint8_t *output_img_buf = NULL;
 
 public:
-    /* Let's make the vanilla version have something extremely compressible */
-    virtual void init_img(png_bytep img_bytes, size_t width, size_t height) {
-        init_compressible(img_bytes, width*height);
-    }
-
     void SetUp(const ::benchmark::State&) {
-        output_img_buf = (uint8_t*)malloc(IMWIDTH * IMHEIGHT * 3);
+        output_img_buf = gen_test_data(TEST_DATA_STRIPED_RGB, IMWIDTH * IMHEIGHT * 3);
         assert(output_img_buf != NULL);
-        init_img(output_img_buf, IMWIDTH, IMHEIGHT);
 
         /* First we need to author the png bytes to be decoded */
         for (int i = 0; i < 10; ++i) {

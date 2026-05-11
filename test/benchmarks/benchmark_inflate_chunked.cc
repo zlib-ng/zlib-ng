@@ -15,7 +15,7 @@ extern "C" {
 #  else
 #    include "zlib-ng.h"
 #  endif
-#  include "test/compressible_data_p.h"
+#  include "test/test_data_p.h"
 }
 
 #define TOTAL_SIZE (256 * 1024)
@@ -36,11 +36,11 @@ public:
             return;
         }
 
-        inbuff = gen_compressible_data(TOTAL_SIZE);
+        inbuff = gen_test_data(TEST_DATA_TEXT, TOTAL_SIZE);
         if (inbuff == NULL) {
             free(outbuff);
             outbuff = NULL;
-            state.SkipWithError("gen_compressible_data() failed");
+            state.SkipWithError("gen_test_data() failed");
             return;
         }
 
