@@ -15,7 +15,7 @@ extern "C" {
 #  else
 #    include "zlib-ng.h"
 #  endif
-#  include "test/compressible_data_p.h"
+#  include "test/test_data_p.h"
 }
 
 #define MAX_SIZE (1024 * 1024)
@@ -28,7 +28,10 @@ private:
     z_uintmax_t outbuff_size = 0;
 
 public:
-    void SetUp(::benchmark::State& state) {
+    /* Real setup runs from Dispatch() so each variant can pass its data type. */
+    void SetUp(::benchmark::State&) {}
+
+    void DoSetUp(::benchmark::State& state, enum test_data_type data_type) {
         outbuff_size = PREFIX(deflateBound)(NULL, MAX_SIZE);
         outbuff = (uint8_t *)malloc(outbuff_size);
         if (outbuff == NULL) {
@@ -36,16 +39,16 @@ public:
             return;
         }
 
-        inbuff = gen_compressible_data(MAX_SIZE);
+        inbuff = gen_test_data(data_type, MAX_SIZE);
         if (inbuff == NULL) {
             free(outbuff);
             outbuff = NULL;
-            state.SkipWithError("gen_compressible_data() failed");
+            state.SkipWithError("gen_test_data() failed");
             return;
         }
     }
 
-    void Bench(benchmark::State& state, int window_bits, int strategy = Z_DEFAULT_STRATEGY) {
+    void Bench(benchmark::State& state, int window_bits, int strategy) {
         int err;
         size_t size = (size_t)state.range(0);
         int level = (int)state.range(1);
@@ -96,55 +99,53 @@ public:
         state.counters["ratio"] = benchmark::Counter(double(size) / double(strm.total_out));
     }
 
+    void Dispatch(benchmark::State& state, enum test_data_type data_type, int window_bits, int strategy) {
+        DoSetUp(state, data_type);
+        if (state.skipped())
+            return;
+        Bench(state, window_bits, strategy);
+    }
+
     void TearDown(const ::benchmark::State&) {
         free(inbuff);
         free(outbuff);
     }
 };
 
-#define BENCHMARK_DEFLATE_ARGS \
+#define DEFLATE_ARGS \
     ->Args({1024, 1})->Args({1024, 3})->Args({1024, 6})->Args({1024, 9}) \
     ->Args({16384, 1})->Args({16384, 3})->Args({16384, 6})->Args({16384, 9}) \
     ->Args({131072, 1})->Args({131072, 3})->Args({131072, 6})->Args({131072, 9}) \
     ->Args({1048576, 1})->Args({1048576, 3})->Args({1048576, 6})->Args({1048576, 9})
 
-/* Parameterized deflate with zlib wrapping (includes adler32 checksum) */
-BENCHMARK_DEFINE_F(deflate_bench, deflate_level)(benchmark::State& state) {
-    Bench(state, MAX_WBITS);
-}
-BENCHMARK_REGISTER_F(deflate_bench, deflate_level) BENCHMARK_DEFLATE_ARGS;
-
-/* Parameterized raw deflate without checksum */
-BENCHMARK_DEFINE_F(deflate_bench, deflate_nocrc)(benchmark::State& state) {
-    Bench(state, -MAX_WBITS);
-}
-BENCHMARK_REGISTER_F(deflate_bench, deflate_nocrc) BENCHMARK_DEFLATE_ARGS;
-
 /* Strategy benchmarks use fewer size/level combos to keep test count reasonable */
-#define BENCHMARK_DEFLATE_STRATEGY_ARGS \
+#define DEFLATE_STRATEGY_ARGS \
     ->Args({1024, 1})->Args({1024, 6})->Args({1024, 9}) \
     ->Args({1048576, 1})->Args({1048576, 6})->Args({1048576, 9})
 
+#define DEFLATE_VARIANT(variant, data, wbits, strategy, dt, args_macro) \
+    BENCHMARK_DEFINE_F(deflate_bench, variant##_##data)(benchmark::State& state) { \
+        Dispatch(state, dt, wbits, strategy); \
+    } \
+    BENCHMARK_REGISTER_F(deflate_bench, variant##_##data) \
+        ->Name("deflate_bench/" #variant "/" #data) args_macro
+
+#define DEFLATE_ALL_DATA(variant, wbits, strategy, args_macro) \
+    DEFLATE_VARIANT(variant, text,          wbits, strategy, TEST_DATA_TEXT,          args_macro); \
+    DEFLATE_VARIANT(variant, short_match,   wbits, strategy, TEST_DATA_SHORT_MATCH,   args_macro); \
+    DEFLATE_VARIANT(variant, random,        wbits, strategy, TEST_DATA_RANDOM,        args_macro); \
+    DEFLATE_VARIANT(variant, realistic_rgb, wbits, strategy, TEST_DATA_REALISTIC_RGB, args_macro); \
+    DEFLATE_VARIANT(variant, striped_rgb,   wbits, strategy, TEST_DATA_STRIPED_RGB,   args_macro)
+
+/* Parameterized deflate with zlib wrapping (includes adler32 checksum) */
+DEFLATE_ALL_DATA(level,    MAX_WBITS,  Z_DEFAULT_STRATEGY, DEFLATE_ARGS);
+/* Parameterized raw deflate without checksum */
+DEFLATE_ALL_DATA(nocrc,    -MAX_WBITS, Z_DEFAULT_STRATEGY, DEFLATE_ARGS);
 /* Parameterized deflate with filtered strategy */
-BENCHMARK_DEFINE_F(deflate_bench, deflate_filtered)(benchmark::State& state) {
-    Bench(state, MAX_WBITS, Z_FILTERED);
-}
-BENCHMARK_REGISTER_F(deflate_bench, deflate_filtered) BENCHMARK_DEFLATE_STRATEGY_ARGS;
-
+DEFLATE_ALL_DATA(filtered, MAX_WBITS,  Z_FILTERED,         DEFLATE_STRATEGY_ARGS);
 /* Parameterized deflate with Huffman-only strategy */
-BENCHMARK_DEFINE_F(deflate_bench, deflate_huffman)(benchmark::State& state) {
-    Bench(state, MAX_WBITS, Z_HUFFMAN_ONLY);
-}
-BENCHMARK_REGISTER_F(deflate_bench, deflate_huffman) BENCHMARK_DEFLATE_STRATEGY_ARGS;
-
+DEFLATE_ALL_DATA(huffman,  MAX_WBITS,  Z_HUFFMAN_ONLY,     DEFLATE_STRATEGY_ARGS);
 /* Parameterized deflate with RLE strategy */
-BENCHMARK_DEFINE_F(deflate_bench, deflate_rle)(benchmark::State& state) {
-    Bench(state, MAX_WBITS, Z_RLE);
-}
-BENCHMARK_REGISTER_F(deflate_bench, deflate_rle) BENCHMARK_DEFLATE_STRATEGY_ARGS;
-
+DEFLATE_ALL_DATA(rle,      MAX_WBITS,  Z_RLE,              DEFLATE_STRATEGY_ARGS);
 /* Parameterized deflate with fixed Huffman codes */
-BENCHMARK_DEFINE_F(deflate_bench, deflate_fixed)(benchmark::State& state) {
-    Bench(state, MAX_WBITS, Z_FIXED);
-}
-BENCHMARK_REGISTER_F(deflate_bench, deflate_fixed) BENCHMARK_DEFLATE_STRATEGY_ARGS;
+DEFLATE_ALL_DATA(fixed,    MAX_WBITS,  Z_FIXED,            DEFLATE_STRATEGY_ARGS);

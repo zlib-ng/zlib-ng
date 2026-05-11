@@ -15,7 +15,7 @@ extern "C" {
 #  else
 #    include "zlib-ng.h"
 #  endif
-#  include "test/compressible_data_p.h"
+#  include "test/test_data_p.h"
 }
 
 #define MAX_SIZE (64 * 1024)
@@ -35,11 +35,11 @@ public:
 
         // Initialize input buffer with highly compressible data, interspersed
         // with small amounts of random data and 3-byte matches.
-        inbuff = gen_compressible_data(MAX_SIZE);
+        inbuff = gen_test_data(TEST_DATA_TEXT, MAX_SIZE);
         if (inbuff == NULL) {
             free(outbuff);
             outbuff = NULL;
-            state.SkipWithError("gen_compressible_data() failed");
+            state.SkipWithError("gen_test_data() failed");
             return;
         }
     }

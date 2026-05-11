@@ -14,7 +14,7 @@
 
 #include <gtest/gtest.h>
 
-#include "compressible_data_p.h"
+#include "test_data_p.h"
 #include "test_shared.h"
 
 #define MAX_SIZE (1024 * 1024)
@@ -22,7 +22,7 @@
 class deflate_variant : public testing::TestWithParam<std::tuple<size_t, int, int, int>> {
 public:
     static void SetUpTestSuite() {
-        inbuf = gen_compressible_data(MAX_SIZE);
+        inbuf = gen_test_data(TEST_DATA_TEXT, MAX_SIZE);
         ASSERT_TRUE(inbuf != NULL);
     }
     static void TearDownTestSuite() {
