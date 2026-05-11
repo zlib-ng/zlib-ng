@@ -60,8 +60,8 @@ Z_FORCEINLINE static uint32_t QUICK_INSERT_VALUE(deflate_state *const s, uint32_
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
  */
-Z_FORCEINLINE static uint32_t QUICK_INSERT_STRING(deflate_state *const s, uint32_t str) {
-    uint8_t *strstart = s->window + str + HASH_CALC_OFFSET;
+Z_FORCEINLINE static uint32_t QUICK_INSERT_STRING(deflate_state *const s, unsigned char *window, uint32_t str) {
+    uint8_t *strstart = window + str + HASH_CALC_OFFSET;
     uint32_t val, hm, head;
 
     HASH_CALC_VAR_INIT;
@@ -86,8 +86,8 @@ Z_FORCEINLINE static uint32_t QUICK_INSERT_STRING(deflate_state *const s, uint32
  *    input characters and the first STD_MIN_MATCH bytes of str are valid
  *    (except for the last STD_MIN_MATCH-1 bytes of the input file).
  */
-Z_FORCEINLINE static void INSERT_STRING(deflate_state *const s, uint32_t str, uint32_t count) {
-    uint8_t *strstart = s->window + str + HASH_CALC_OFFSET;
+Z_FORCEINLINE static void INSERT_STRING(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
+    uint8_t *strstart = window + str + HASH_CALC_OFFSET;
     uint8_t *strend = strstart + count;
 
     /* Local pointers to avoid indirection */

@@ -19,12 +19,13 @@ extern "C" {
 #define MAX_WSIZE 32768
 #define TEST_WINDOW_SIZE (MAX_WSIZE * 2)
 
-typedef uint32_t (* quick_insert_string_cb)(deflate_state *const s, uint32_t str);
+typedef uint32_t (* quick_insert_string_cb)(deflate_state *const s, unsigned char *window, uint32_t str);
 
 // Base class with common setup/teardown for both insert_string benchmarks
 class insert_string_base: public benchmark::Fixture {
 protected:
     deflate_state *s;
+    unsigned char *window;
 
 public:
     void SetUp(const ::benchmark::State&) {
@@ -37,6 +38,7 @@ public:
 
         // Allocate window
         s->window = (uint8_t*)zng_alloc_aligned(TEST_WINDOW_SIZE, 64);
+        window = s->window;
 
         // Allocate hash tables
         s->head = (Pos*)zng_alloc_aligned(HASH_SIZE * sizeof(Pos), 64);
@@ -52,7 +54,7 @@ public:
         // Fill window with deterministic data patterns
         for (size_t i = 0; i < TEST_WINDOW_SIZE; i++) {
             // Create patterns that will exercise the hash function well
-            s->window[i] = (uint8_t)((i * 17 + (i >> 4) * 31 + (i >> 8) * 13) & 0xFF);
+            window[i] = (uint8_t)((i * 17 + (i >> 4) * 31 + (i >> 8) * 13) & 0xFF);
         }
     }
 
@@ -87,7 +89,7 @@ public:
             state.ResumeTiming();
 
             // Benchmark the insert_string function
-            insert_func(s, str_pos, count);
+            insert_func(s, window, str_pos, count);
         }
     }
 };
@@ -140,7 +142,7 @@ public:
 
             // Benchmark quick_insert_string (single insertions)
             for (uint32_t i = 0; i < count; i++) {
-                uint32_t result = quick_insert_func(s, start_pos + i);
+                uint32_t result = quick_insert_func(s, window, start_pos + i);
                 benchmark::DoNotOptimize(result);
             }
         }

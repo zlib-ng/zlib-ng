@@ -120,9 +120,9 @@ typedef uint16_t Pos;
 /* Type definitions for hash callbacks */
 typedef struct internal_state deflate_state;
 
-typedef void     (* insert_string_cb)      (deflate_state *const s, uint32_t str, uint32_t count);
-void     insert_string           (deflate_state *const s, uint32_t str, uint32_t count);
-void     insert_string_roll      (deflate_state *const s, uint32_t str, uint32_t count);
+typedef void    (* insert_string_cb)    (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
+void            insert_string           (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
+void            insert_string_roll      (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
 
 /* Struct for memory allocation handling */
 typedef struct deflate_allocs_s {

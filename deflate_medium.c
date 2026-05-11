@@ -44,7 +44,7 @@ static int emit_match(deflate_state *s, unsigned char *window, struct match matc
 }
 
 /* insert_match assumes: s->lookahead > match.match_length + WANT_MIN_MATCH */
-static void insert_match(deflate_state *s, struct match match) {
+static void insert_match(deflate_state *s, unsigned char *window, struct match match) {
     uint32_t match_len = match.match_length;
     uint32_t strstart = match.strstart;
 
@@ -55,9 +55,9 @@ static void insert_match(deflate_state *s, struct match match) {
         if (UNLIKELY(match_len > 0)) {
             if (strstart >= match.orgstart) {
                 if (strstart + match_len - 1 >= match.orgstart) {
-                    insert_string(s, strstart, match_len);
+                    insert_string(s, window, strstart, match_len);
                 } else {
-                    insert_string(s, strstart, match.orgstart - strstart + 1);
+                    insert_string(s, window, strstart, match.orgstart - strstart + 1);
                 }
             }
         }
@@ -73,16 +73,16 @@ static void insert_match(deflate_state *s, struct match match) {
 
         if (LIKELY(strstart >= match.orgstart)) {
             if (LIKELY(strstart + match_len - 1 >= match.orgstart)) {
-                insert_string(s, strstart, match_len);
+                insert_string(s, window, strstart, match_len);
             } else {
-                insert_string(s, strstart, match.orgstart - strstart + 1);
+                insert_string(s, window, strstart, match.orgstart - strstart + 1);
             }
         } else if (match.orgstart < strstart + match_len) {
-            insert_string(s, match.orgstart, strstart + match_len - match.orgstart);
+            insert_string(s, window, match.orgstart, strstart + match_len - match.orgstart);
         }
     } else {
         strstart += match_len;
-        quick_insert_string(s, strstart + 2 - STD_MIN_MATCH);
+        quick_insert_string(s, window, strstart + 2 - STD_MIN_MATCH);
 
         /* If lookahead < WANT_MIN_MATCH, ins_h is garbage, but it does not
          * matter since it will be recomputed at next deflate call.
@@ -214,19 +214,19 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         } else {
             hash_head = 0;
             if (s->lookahead >= WANT_MIN_MATCH) {
-                hash_head = quick_insert_string(s, s->strstart);
+                hash_head = quick_insert_string(s, window, s->strstart);
             }
 
             current_match = find_best_match(s, hash_head);
         }
 
         if (LIKELY(s->lookahead > (unsigned int)(current_match.match_length + WANT_MIN_MATCH)))
-            insert_match(s, current_match);
+            insert_match(s, window, current_match);
 
         /* now, look ahead one */
         if (LIKELY(!early_exit && s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < (s->window_size - MIN_LOOKAHEAD))) {
             s->strstart = current_match.strstart + current_match.match_length;
-            hash_head = quick_insert_string(s, s->strstart);
+            hash_head = quick_insert_string(s, window, s->strstart);
 
             next_match = find_best_match(s, hash_head);
 

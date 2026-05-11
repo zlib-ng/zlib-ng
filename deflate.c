@@ -452,7 +452,7 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     while (s->lookahead >= STD_MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (STD_MIN_MATCH - 1);
-        insert_string_func(s, str, n);
+        insert_string_func(s, s->window, str, n);
         s->strstart = str + n;
         s->lookahead = STD_MIN_MATCH - 1;
         PREFIX(fill_window)(s);
@@ -1226,14 +1226,14 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             if (UNLIKELY(level >= 9)) {
                 s->ins_h = update_hash_roll(window[str], window[str+1]);
             } else if (str >= 1) {
-                quick_insert_string(s, str + 2 - STD_MIN_MATCH);
+                quick_insert_string(s, window, str + 2 - STD_MIN_MATCH);
             }
             unsigned int count = s->insert;
             if (UNLIKELY(s->lookahead == 1)) {
                 count -= 1;
             }
             if (count > 0) {
-                insert_string_func(s, str, count);
+                insert_string_func(s, window, str, count);
                 s->insert -= count;
             }
         }

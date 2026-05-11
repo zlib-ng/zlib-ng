@@ -52,9 +52,9 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
         uint32_t hash_head = 0;
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
             if (level >= 9)
-                hash_head = quick_insert_string_roll(s, s->strstart);
+                hash_head = quick_insert_string_roll(s, window, s->strstart);
             else
-                hash_head = quick_insert_string(s, s->strstart);
+                hash_head = quick_insert_string(s, window, s->strstart);
         }
 
         /* Find the longest match, discarding those <= prev_length.
@@ -103,7 +103,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
                 unsigned int insert_cnt = mov_fwd;
                 if (UNLIKELY(insert_cnt > max_insert - s->strstart))
                     insert_cnt = max_insert - s->strstart;
-                insert_string_func(s, s->strstart + 1, insert_cnt);
+                insert_string_func(s, window, s->strstart + 1, insert_cnt);
             }
             s->prev_length = 0;
             s->match_available = 0;

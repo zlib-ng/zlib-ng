@@ -80,11 +80,11 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
                 match_len--; /* string at strstart already in table */
                 s->strstart++;
 
-                insert_string_static(s, s->strstart, match_len);
+                insert_string_static(s, window, s->strstart, match_len);
                 s->strstart += match_len;
             } else {
                 s->strstart += match_len;
-                quick_insert_string(s, s->strstart + 2 - STD_MIN_MATCH);
+                quick_insert_string(s, window, s->strstart + 2 - STD_MIN_MATCH);
 
                 /* If lookahead < STD_MIN_MATCH, ins_h is garbage, but it does not
                  * matter since it will be recomputed at next deflate call.
