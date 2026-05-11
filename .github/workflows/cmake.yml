@@ -38,6 +38,13 @@ jobs:
             cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON -DNATIVE_ARCH_OVERRIDE="-mavx -mpclmul"
             coverage: ubuntu_gcc_native_inst_avx
 
+          - name: Ubuntu GCC (Intel SDE, Sapphire Rapids CPU)
+            os: ubuntu-latest
+            compiler: gcc
+            cxx-compiler: g++
+            sde-args: -spr
+            coverage: ubuntu_gcc_intel_sde_spr
+
           - name: Ubuntu GCC Symbol Prefix -O3
             os: ubuntu-latest
             compiler: gcc
@@ -731,8 +738,8 @@ jobs:
 
     - name: Checkout test corpora
       uses: actions/checkout@v6
-      # Don't test the extra corpora with Sanitizer builds or RISC-V or e2k, due to their slow testing.
-      if: ${{ !contains(matrix.name, 'RISC-V') && !contains(matrix.name, 'e2k') && !contains(matrix.cmake-args, 'WITH_SANITIZER') }}
+      # Don't test the extra corpora with Sanitizer builds or RISC-V or e2k or Intel SDE, due to their slow testing.
+      if: ${{ !contains(matrix.name, 'RISC-V') && !contains(matrix.name, 'e2k') && !contains(matrix.cmake-args, 'WITH_SANITIZER') && !contains(matrix.name, 'SDE') }}
       with:
         repository: zlib-ng/corpora
         path: test/data/corpora
@@ -879,6 +886,27 @@ jobs:
         chmod +x qemu-e2k-static
         sudo mv qemu-e2k-static /usr/local/bin
 
+    - name: Cache Intel(R) Software Development Emulator (Ubuntu)
+      if: contains(matrix.name, 'SDE')
+      id: cache-intel-sde
+      uses: actions/cache@v5
+      with:
+        path: /opt/sde-external-10.8.0-2026-03-15-lin
+        key: cache-intel-sde-10.8.0-2026-03-15
+
+    - name: Install Intel(R) Software Development Emulator (Ubuntu)
+      if: contains(matrix.name, 'SDE') && steps.cache-intel-sde.outputs.cache-hit != 'true'
+      run: |
+        curl -JLO "https://downloadmirror.intel.com/915934/sde-external-10.8.0-2026-03-15-lin.tar.xz"
+        sudo tar xf sde-external-10.8.0-2026-03-15-lin.tar.xz -C /opt
+        rm -f sde-external-10.8.0-2026-03-15-lin.tar.xz
+
+    - name: Configure Intel(R) Software Development Emulator (Ubuntu)
+      if: contains(matrix.name, 'SDE')
+      run: |
+        echo /opt/sde-external-10.8.0-2026-03-15-lin >> $GITHUB_PATH
+        sudo sh -c "echo 0 > /proc/sys/kernel/yama/ptrace_scope"
+
     - name: Set LLVM_BUILD_DIR for LLVM C++ libraries (MSAN)
       if: contains(matrix.name, 'MSAN') && startsWith(matrix.compiler, 'clang')
       run: |
@@ -951,7 +979,9 @@ jobs:
     - name: Run test cases
       # Don't run tests on 32-bit Windows ARM
       if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false || runner.arch == 'ARM64'
-      run: ctest --verbose -C ${{ matrix.build-config || 'Release' }} -E benchmark_zlib --output-on-failure --max-width 120 -j ${{ matrix.parallel-jobs || '5' }}
+      run: |
+        ${{ contains(matrix.name, 'SDE') && format('sde {0} -- ctest', matrix.sde-args) || 'ctest' }} \
+          --verbose -C ${{ matrix.build-config || 'Release' }} -E benchmark_zlib --output-on-failure --max-width 120 -j ${{ matrix.parallel-jobs || '5' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
