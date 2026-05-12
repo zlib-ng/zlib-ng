@@ -238,33 +238,7 @@ struct ALIGNED_(64) internal_state {
     int heap_len;               /* number of elements in the heap */
     int heap_max;               /* element of largest frequency */
 
-    int32_t padding1[1];
-
-                /* Cacheline 3 */
-    uint8_t ALIGNED_(16) padding4[68];
-
                 /* used by trees.c: */
-    /* Didn't use ct_data typedef below to suppress compiler warning */
-    struct ct_data_s dyn_ltree[HEAP_SIZE];   /* literal and length tree */
-    struct ct_data_s dyn_dtree[2*D_CODES+1]; /* distance tree */
-    struct ct_data_s bl_tree[2*BL_CODES+1];  /* Huffman tree for bit lengths */
-
-    struct tree_desc_s l_desc;               /* desc. for literal tree */
-    struct tree_desc_s d_desc;               /* desc. for distance tree */
-    struct tree_desc_s bl_desc;              /* desc. for bit length tree */
-
-    uint16_t bl_count[MAX_BITS+1];
-    /* number of codes at each bit length for an optimal tree */
-
-    int heap[2*L_CODES+1];      /* heap used to build the Huffman trees */
-    /* The sons of heap[n] are heap[2*n] and heap[2*n+1]. heap[0] is not used.
-     * The same heap array is used to build all trees.
-     */
-
-    unsigned char depth[2*L_CODES+1];
-    /* Depth of each subtree used as tie breaker for trees of equal frequency
-     */
-
     unsigned int  lit_bufsize;
     /* Size of match buffer for literals/lengths.  There are 4 reasons for
      * limiting lit_bufsize to 64K:
@@ -285,6 +259,8 @@ struct ALIGNED_(64) internal_state {
      *   - I can't count above 4
      */
 
+                /* Cacheline 3 */
+
 #ifdef LIT_MEM
 #   define LIT_BUFS 5
     uint16_t *d_buf;              /* buffer for distances */
@@ -299,6 +275,27 @@ struct ALIGNED_(64) internal_state {
 
     unsigned int opt_len;         /* bit length of current block with optimal trees */
     unsigned int static_len;      /* bit length of current block with static trees */
+
+    struct tree_desc_s l_desc;               /* desc. for literal tree */
+    struct tree_desc_s d_desc;               /* desc. for distance tree */
+    struct tree_desc_s bl_desc;              /* desc. for bit length tree */
+
+    uint16_t bl_count[MAX_BITS+1];
+    /* number of codes at each bit length for an optimal tree */
+
+    int heap[2*L_CODES+1];      /* heap used to build the Huffman trees */
+    /* The sons of heap[n] are heap[2*n] and heap[2*n+1]. heap[0] is not used.
+     * The same heap array is used to build all trees.
+     */
+
+    unsigned char depth[2*L_CODES+1];
+    /* Depth of each subtree used as tie breaker for trees of equal frequency
+     */
+
+    /* Didn't use ct_data typedef below to suppress compiler warning */
+    struct ct_data_s dyn_ltree[HEAP_SIZE];   /* literal and length tree */
+    struct ct_data_s dyn_dtree[2*D_CODES+1]; /* distance tree */
+    struct ct_data_s bl_tree[2*BL_CODES+1];  /* Huffman tree for bit lengths */
 
     deflate_allocs *alloc_bufs;
 

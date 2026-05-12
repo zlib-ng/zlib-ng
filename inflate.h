@@ -137,11 +137,6 @@ struct ALIGNED_(64) inflate_state {
     uint32_t have;              /* number of code lengths in lens[] */
     code *next;                 /* next available space in codes[] */
 
-#ifdef ARCH_32BIT
-    uint32_t padding[1];
-#endif
-    uint8_t ALIGNED_(16) padding4[68];
-
     uint16_t lens[320];         /* temporary storage for code lengths */
     uint16_t work[288];         /* work area for code table building */
     code codes[ENOUGH];         /* space for code tables */
