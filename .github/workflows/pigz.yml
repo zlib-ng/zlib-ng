@@ -21,6 +21,7 @@ jobs:
 
           - name: Ubuntu Clang
             os: ubuntu-latest
+            cache-key: clang15
             compiler: clang
             packages: llvm-15 llvm-15-tools
             gcov-exec: llvm-cov-15 gcov
@@ -28,6 +29,7 @@ jobs:
 
           - name: Ubuntu Clang No Optim
             os: ubuntu-latest
+            cache-key: clang15
             compiler: clang
             packages: llvm-15 llvm-15-tools
             gcov-exec: llvm-cov-15 gcov
@@ -37,6 +39,7 @@ jobs:
             # Use v2.6 due to NOTHREADS bug https://github.com/madler/pigz/issues/97
           - name: Ubuntu Clang No Threads
             os: ubuntu-latest
+            cache-key: clang15
             compiler: clang
             packages: llvm-15 llvm-15-tools
             gcov-exec: llvm-cov-15 gcov
@@ -68,11 +71,23 @@ jobs:
         curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
         sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
+    - name: Restore cached packages (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages
+      id: restore-apt-cache
+      uses: ./.github/actions/restore-apt-cache
+      with:
+        packages: ${{ matrix.packages }}
+        cache-key: ${{ matrix.cache-key }}
+
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages
       run: |
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.packages }}
+
+    - name: Update package cache (Ubuntu)
+      if: runner.os == 'Linux' && matrix.packages && steps.restore-apt-cache.outputs.cache-hit != 'true'
+      uses: ./.github/actions/update-apt-cache
 
     - name: Generate project files
       run: |
