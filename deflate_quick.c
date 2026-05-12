@@ -48,6 +48,8 @@ Z_FORCEINLINE static int quick_end_block(deflate_state *s, int last) {
 Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
     unsigned char *window;
     unsigned last = (flush == Z_FINISH) ? 1 : 0;
+    unsigned int lookahead = s->lookahead;
+    unsigned int strstart = s->strstart;
 
     if (UNLIKELY(last && s->block_open != 2)) {
         /* Emit end of previous block */
@@ -55,7 +57,7 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
             return need_more;
         /* Emit start of last block */
         quick_start_block(s, last);
-    } else if (UNLIKELY(s->block_open == 0 && s->lookahead > 0)) {
+    } else if (UNLIKELY(s->block_open == 0 && lookahead > 0)) {
         /* Start new block only when we have lookahead data, so that if no
            input data is given an empty block will not be written */
         quick_start_block(s, last);
@@ -69,16 +71,21 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
         if (UNLIKELY(s->pending + ((BIT_BUF_SIZE + 7) >> 3) >= s->pending_buf_size)) {
             PREFIX(flush_pending)(s->strm);
             if (s->strm->avail_out == 0) {
+                s->lookahead = lookahead;
+                s->strstart = strstart;
                 return (last && s->strm->avail_in == 0 && s->bi_valid == 0 && s->block_open == 0) ? finish_started : need_more;
             }
         }
 
-        if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD)) {
+        if (UNLIKELY(lookahead < MIN_LOOKAHEAD)) {
+            s->lookahead = lookahead;
+            s->strstart = strstart;
             PREFIX(fill_window)(s);
-            if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH)) {
+            lookahead = s->lookahead;
+            strstart = s->strstart;
+            if (UNLIKELY(lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH))
                 return need_more;
-            }
-            if (UNLIKELY(s->lookahead == 0))
+            if (UNLIKELY(lookahead == 0))
                 break;
 
             if (UNLIKELY(s->block_open == 0)) {
@@ -88,10 +95,10 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
             }
         }
 
-        if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
-            uint32_t str_val = Z_U32_FROM_LE(zng_memread_4(window + s->strstart));
-            uint32_t hash_head = quick_insert_value(s, s->strstart, str_val);
-            int64_t dist = (int64_t)s->strstart - hash_head;
+        if (LIKELY(lookahead >= WANT_MIN_MATCH)) {
+            uint32_t str_val = Z_U32_FROM_LE(zng_memread_4(window + strstart));
+            uint32_t hash_head = quick_insert_value(s, strstart, str_val);
+            int64_t dist = (int64_t)strstart - hash_head;
             lc = (uint8_t)str_val;
 
             if (dist <= MAX_DIST(s) && dist > 0) {
@@ -99,33 +106,35 @@ Z_INTERNAL block_state deflate_quick(deflate_state *s, int flush) {
                 uint32_t match_val = Z_U32_FROM_LE(zng_memread_4(match_start));
 
                 if (str_val == match_val) {
-                    const uint8_t *str_start = window + s->strstart;
+                    const uint8_t *str_start = window + strstart;
                     uint32_t match_len = FUNCTABLE_CALL(compare256)(str_start+2, match_start+2) + 2;
 
                     if (match_len >= WANT_MIN_MATCH) {
-                        if (UNLIKELY(match_len > s->lookahead))
-                            match_len = s->lookahead;
+                        if (UNLIKELY(match_len > lookahead))
+                            match_len = lookahead;
 
                         Assert(match_len <= STD_MAX_MATCH, "match too long");
-                        Assert(s->strstart <= UINT16_MAX, "strstart should fit in uint16_t");
-                        check_match(s, s->strstart, hash_head, match_len);
+                        Assert(strstart <= UINT16_MAX, "strstart should fit in uint16_t");
+                        check_match(s, strstart, hash_head, match_len);
 
                         zng_tr_emit_dist(s, static_ltree, static_dtree, match_len - STD_MIN_MATCH, (uint32_t)dist);
-                        s->lookahead -= match_len;
-                        s->strstart += match_len;
+                        lookahead -= match_len;
+                        strstart += match_len;
                         continue;
                     }
                 }
             }
         } else {
-            lc = window[s->strstart];
+            lc = window[strstart];
         }
         zng_tr_emit_lit(s, static_ltree, lc);
-        s->strstart++;
-        s->lookahead--;
+        strstart++;
+        lookahead--;
     }
 
-    s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
+    s->lookahead = lookahead;
+    s->strstart = strstart;
+    s->insert = strstart < (STD_MIN_MATCH - 1) ? strstart : (STD_MIN_MATCH - 1);
     if (UNLIKELY(last)) {
         if (quick_end_block(s, 1))
             return finish_started;
