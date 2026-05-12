@@ -17,7 +17,6 @@
 #define zng_adler32               @ZLIB_SYMBOL_PREFIX@zng_adler32
 #define zng_adler32_combine       @ZLIB_SYMBOL_PREFIX@zng_adler32_combine
 #define zng_adler32_combine64     @ZLIB_SYMBOL_PREFIX@zng_adler32_combine64
-#define zng_adler32_z             @ZLIB_SYMBOL_PREFIX@zng_adler32_z
 #define zng_compress              @ZLIB_SYMBOL_PREFIX@zng_compress
 #define zng_compress2             @ZLIB_SYMBOL_PREFIX@zng_compress2
 #define zng_compressBound         @ZLIB_SYMBOL_PREFIX@zng_compressBound
@@ -27,7 +26,6 @@
 #define zng_crc32_combine_gen     @ZLIB_SYMBOL_PREFIX@zng_crc32_combine_gen
 #define zng_crc32_combine_gen64   @ZLIB_SYMBOL_PREFIX@zng_crc32_combine_gen64
 #define zng_crc32_combine_op      @ZLIB_SYMBOL_PREFIX@zng_crc32_combine_op
-#define zng_crc32_z               @ZLIB_SYMBOL_PREFIX@zng_crc32_z
 #define zng_deflate               @ZLIB_SYMBOL_PREFIX@zng_deflate
 #define zng_deflateBound          @ZLIB_SYMBOL_PREFIX@zng_deflateBound
 #define zng_deflateCopy           @ZLIB_SYMBOL_PREFIX@zng_deflateCopy

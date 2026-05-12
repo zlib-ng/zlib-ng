@@ -634,22 +634,6 @@ else
   esac
 fi
 
-# Symbol versioning
-case "$uname" in
-  CYGWIN* | Cygwin* | cygwin* | MINGW* | mingw* | MSYS* | msys* | Darwin* | darwin*)
-    echo "Checking for Symbol versioning... No."
-  ;;
-  *)
-    if test $shared -eq 1; then
-      echo "Checking for Symbol versioning... Yes."
-      CFLAGS="${CFLAGS} -DHAVE_SYMVER"
-      SFLAGS="${SFLAGS} -DHAVE_SYMVER"
-    else
-      echo "Checking for Symbol versioning... No."
-    fi
-  ;;
-esac
-
 # Simplify some later conditionals
 LINUX=0
 FREEBSD=0
@@ -784,30 +768,6 @@ if $cc $CFLAGS -Werror=unused-command-line-argument -c $test.c >> configure.log 
 else
   echo "Checking for -Werror=unused-command-line-argument... No." | tee -a configure.log
 fi
-
-# check for version script support
-cat > $test.c <<EOF
-int foo(void) { return 0; }
-EOF
-cat > $test.map <<EOF
-{
-  global:
-    foo;
-  local:
-    *;
-};
-EOF
-if test $shared -eq 1; then
-  sed < $SRCDIR/zlib${SUFFIX}.map.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > zlib${SUFFIX}.map
-  LDVERSIONSCRIPT="-Wl,--version-script,$BUILDDIR/$MAPNAME"
-  if try $CC -c $SFLAGS $test.c && try $LDSHARED $LDVERSIONSCRIPT $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
-    echo "Checking for version script support... $LDVERSIONSCRIPT." | tee -a configure.log
-  else
-    echo "Checking for version script support... No." | tee -a configure.log
-    LDVERSIONSCRIPT=""
-  fi
-fi
-echo >> configure.log
 
 # check for cpuid support: GNU extensions
 cat > $test.c <<EOF
@@ -1099,6 +1059,25 @@ else
     echo "Checking for attribute(aligned) ... No." | tee -a configure.log
 fi
 
+# Check for attribute(symver) support in compiler
+cat > $test.c << EOF
+void foo(void);
+__attribute__((__symver__("foo@VERS_1.0"))) void foo(void) {}
+int main(void) {
+    return 0;
+}
+EOF
+if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
+    echo "Checking for attribute(symver) ... Yes." | tee -a configure.log
+    CFLAGS="$CFLAGS -DHAVE_ATTRIBUTE_SYMVER"
+    SFLAGS="$SFLAGS -DHAVE_ATTRIBUTE_SYMVER"
+    SYMVER_PREFIX=""
+else
+    echo "Checking for attribute(symver) ... No." | tee -a configure.log
+    echo "Warning: Unable to provide support for deprecated functions without '__attribute__((__symver__(x)))'" | tee -a configure.log
+    SYMVER_PREFIX="#"
+fi
+
 # Check for __builtin_assume_aligned(x,n) support in compiler
 cat > $test.c << EOF
 char *test(char *buffer) {
@@ -1116,6 +1095,31 @@ if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
 else
     echo "Checking for __builtin_assume_aligned() ... No." | tee -a configure.log
 fi
+
+# check for version script support
+cat > $test.c <<EOF
+int foo(void) { return 0; }
+EOF
+cat > $test.map <<EOF
+{
+  global:
+    foo;
+  local:
+    *;
+};
+EOF
+if test $shared -eq 1; then
+  sed < $SRCDIR/zlib${SUFFIX}.map.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > zlib${SUFFIX}.map
+  sed < $SRCDIR/zlib${SUFFIX}.map.in "s/@COMMENT_IF_NO_SYMVER@/$SYMVER_PREFIX/g" > zlib${SUFFIX}.map
+  LDVERSIONSCRIPT="-Wl,--version-script,$BUILDDIR/$MAPNAME"
+  if try $CC -c $SFLAGS $test.c && try $LDSHARED $LDVERSIONSCRIPT $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
+    echo "Checking for version script support... $LDVERSIONSCRIPT." | tee -a configure.log
+  else
+    echo "Checking for version script support... No." | tee -a configure.log
+    LDVERSIONSCRIPT=""
+  fi
+fi
+echo >> configure.log
 
 check_avx2_intrinsics() {
     # Check whether compiler supports AVX2 intrinsics

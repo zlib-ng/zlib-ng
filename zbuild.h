@@ -171,15 +171,22 @@
 #  define Z_INTERNAL
 #endif
 
+#define Z_STRING(s) #s
+
 /* Symbol versioning helpers, allowing multiple versions of a function to exist.
  * Functions using this must also be added to zlib-ng.map for each version.
  * Double @@ means this is the default for newly compiled applications to link against.
  * Single @ means this is kept for backwards compatibility.
  * This is only used for Zlib-ng native API, and only on platforms supporting this.
  */
-#if defined(HAVE_SYMVER)
-#  define ZSYMVER(func,alias,ver) __asm__(".symver " func ", " alias "@ZLIB_NG_" ver);
-#  define ZSYMVER_DEF(func,alias,ver) __asm__(".symver " func ", " alias "@@ZLIB_NG_" ver);
+#if defined(HAVE_ATTRIBUTE_SYMVER)
+#  define ZSYMVER(func,alias,ver) __attribute__((__symver__(Z_STRING(alias) "@" ver)))
+#  define ZSYMVER_DEF(func,alias,ver) __attribute__((__symver__(Z_STRING(alias) "@@" ver)))
+#  define HAVE_SYMVER
+#elif defined(HAVE_ASM_SYMVER)
+#  define ZSYMVER(func,alias,ver) __asm__(".symver " func ", " Z_STRING(alias) "@" ver);
+#  define ZSYMVER_DEF(func,alias,ver) __asm__(".symver " func ", " Z_STRING(alias) "@@" ver);
+#  define HAVE_SYMVER
 #else
 #  define ZSYMVER(func,alias,ver)
 #  define ZSYMVER_DEF(func,alias,ver)

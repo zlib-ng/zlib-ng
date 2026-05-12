@@ -622,6 +622,25 @@ if(HAVE_ATTRIBUTE_ALIGNED)
 endif()
 
 #
+# Check for __attribute__((__symver__(x))) support in the compiler
+#
+if (UNIX AND NOT ZLIB_COMPAT AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL AIX)
+    check_c_source_compiles(
+        "
+        void foo(void);
+        __attribute__((__symver__(\"foo@VERS_1.0\"))) void foo(void) {}
+        int main(void) {
+            return 0;
+        }"
+        HAVE_ATTRIBUTE_SYMVER FAIL_REGEX "symver")
+    if(HAVE_ATTRIBUTE_SYMVER)
+        add_definitions(-DHAVE_ATTRIBUTE_SYMVER)
+    else()
+        message(WARNING "Unable to provide support for deprecated functions without '__attribute__((__symver__(x)))'")
+    endif()
+endif()
+
+#
 # Check for __builtin_assume_aligned(x,n) support in the compiler
 #
 set(CMAKE_REQUIRED_FLAGS ${ZNOLTOFLAG})
@@ -646,6 +665,13 @@ if(MSVC)
     set(CMAKE_DEBUG_POSTFIX "d")
     add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
+endif()
+
+# Linker maps need to exclude duplicates if symver is not supported
+if(HAVE_ATTRIBUTE_SYMVER)
+    set(COMMENT_IF_NO_SYMVER "")
+else()
+    set(COMMENT_IF_NO_SYMVER "#")
 endif()
 
 #
@@ -1411,9 +1437,6 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
             set_target_properties(zlib-ng PROPERTIES COMPILE_FLAGS "-fno-semantic-interposition")
         endif()
         if(NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL AIX)
-            if(NOT ZLIB_COMPAT)
-                add_definitions(-DHAVE_SYMVER)
-            endif()
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map.in
                 ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map @ONLY)
             set_target_properties(zlib-ng PROPERTIES LINK_FLAGS

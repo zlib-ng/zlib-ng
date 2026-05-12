@@ -1,6 +1,8 @@
 ZLIB_NG_2.4.0 {
   global:
+    @ZLIB_SYMBOL_PREFIX@zng_adler32;
     @ZLIB_SYMBOL_PREFIX@zng_deflateUsed;
+    @ZLIB_SYMBOL_PREFIX@zng_crc32;
 };
 
 ZLIB_NG_2.1.0 {
@@ -15,13 +17,13 @@ ZLIB_NG_2.1.0 {
 
 ZLIB_NG_2.0.0 {
   global:
-    @ZLIB_SYMBOL_PREFIX@zng_adler32;
+    @COMMENT_IF_NO_SYMVER@@ZLIB_SYMBOL_PREFIX@zng_adler32;
     @ZLIB_SYMBOL_PREFIX@zng_adler32_combine;
     @ZLIB_SYMBOL_PREFIX@zng_adler32_z;
     @ZLIB_SYMBOL_PREFIX@zng_compress;
     @ZLIB_SYMBOL_PREFIX@zng_compress2;
     @ZLIB_SYMBOL_PREFIX@zng_compressBound;
-    @ZLIB_SYMBOL_PREFIX@zng_crc32;
+    @COMMENT_IF_NO_SYMVER@@ZLIB_SYMBOL_PREFIX@zng_crc32;
     @ZLIB_SYMBOL_PREFIX@zng_crc32_combine;
     @ZLIB_SYMBOL_PREFIX@zng_crc32_combine_gen;
     @ZLIB_SYMBOL_PREFIX@zng_crc32_combine_op;
