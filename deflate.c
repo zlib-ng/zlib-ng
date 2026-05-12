@@ -71,6 +71,7 @@ const char PREFIX(deflate_copyright)[] = " deflate 1.3.1 Copyright 1995-2024 Jea
 /* ===========================================================================
  *  Function prototypes.
  */
+static int deflateHeaders(deflate_state *s, PREFIX3(stream) *strm);
 static int deflateStateCheck      (PREFIX3(stream) *strm);
 Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_fast  (deflate_state *s, int flush);
@@ -758,56 +759,10 @@ Z_INTERNAL void PREFIX(flush_pending)(PREFIX3(stream) *strm) {
             strm->adler = crc32_small((uint32_t)strm->adler, s->pending_buf + (beg), s->pending - (beg)); \
     } while (0)
 
-/* ========================================================================= */
-int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
-    int32_t old_flush; /* value of flush param for previous deflate call */
-    deflate_state *s;
-
-    if (deflateStateCheck(strm) || flush > Z_BLOCK || flush < 0)
-        return Z_STREAM_ERROR;
-    s = strm->state;
-
-    if (strm->next_out == NULL || (strm->avail_in != 0 && strm->next_in == NULL)
-        || (s->status == FINISH_STATE && flush != Z_FINISH)) {
-        ERR_RETURN(strm, Z_STREAM_ERROR);
-    }
-    if (strm->avail_out == 0) {
-        ERR_RETURN(strm, Z_BUF_ERROR);
-    }
-
-    old_flush = s->last_flush;
-    s->last_flush = flush;
-
-    /* Flush as much pending output as possible */
-    if (s->pending != 0) {
-        flush_pending_inline(strm);
-        if (strm->avail_out == 0) {
-            /* Since avail_out is 0, deflate will be called again with
-             * more output space, but possibly with both pending and
-             * avail_in equal to zero. There won't be anything to do,
-             * but this is not an error situation so make sure we
-             * return OK instead of BUF_ERROR at next call of deflate:
-             */
-            s->last_flush = -1;
-            return Z_OK;
-        }
-
-        /* Make sure there is something to do and avoid duplicate consecutive
-         * flushes. For repeated and useless calls with Z_FINISH, we keep
-         * returning Z_STREAM_END instead of Z_BUF_ERROR.
-         */
-    } else if (strm->avail_in == 0 && RANK(flush) <= RANK(old_flush) && flush != Z_FINISH) {
-        ERR_RETURN(strm, Z_BUF_ERROR);
-    }
-
-    /* User must not provide more input after the first FINISH: */
-    if (s->status == FINISH_STATE && strm->avail_in != 0)   {
-        ERR_RETURN(strm, Z_BUF_ERROR);
-    }
-
-    /* Write the header */
-    if (s->status == INIT_STATE && s->wrap == 0)
-        s->status = BUSY_STATE;
+/* =========================================================================
+ * Write zlib/gzip header
+ */
+static int deflateHeaders(deflate_state *s, PREFIX3(stream) *strm) {
     if (s->status == INIT_STATE) {
         /* zlib header */
         unsigned int header = (Z_DEFLATED + ((W_BITS(s)-8)<<4)) << 8;
@@ -973,9 +928,69 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
         }
     }
 #endif
+    return -1;
+}
 
-    /* Start a new block or continue the current one.
-     */
+/* ========================================================================= */
+int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
+    int32_t old_flush; /* value of flush param for previous deflate call */
+    deflate_state *s;
+
+    if (deflateStateCheck(strm) || flush > Z_BLOCK || flush < 0)
+        return Z_STREAM_ERROR;
+    s = strm->state;
+
+    if (strm->next_out == NULL || (strm->avail_in != 0 && strm->next_in == NULL)
+        || (s->status == FINISH_STATE && flush != Z_FINISH)) {
+        ERR_RETURN(strm, Z_STREAM_ERROR);
+    }
+    if (strm->avail_out == 0) {
+        ERR_RETURN(strm, Z_BUF_ERROR);
+    }
+
+    old_flush = s->last_flush;
+    s->last_flush = flush;
+
+    /* Flush as much pending output as possible */
+    if (s->pending != 0) {
+        flush_pending_inline(strm);
+        if (strm->avail_out == 0) {
+            /* Since avail_out is 0, deflate will be called again with
+             * more output space, but possibly with both pending and
+             * avail_in equal to zero. There won't be anything to do,
+             * but this is not an error situation so make sure we
+             * return OK instead of BUF_ERROR at next call of deflate:
+             */
+            s->last_flush = -1;
+            return Z_OK;
+        }
+
+        /* Make sure there is something to do and avoid duplicate consecutive
+         * flushes. For repeated and useless calls with Z_FINISH, we keep
+         * returning Z_STREAM_END instead of Z_BUF_ERROR.
+         */
+    } else if (strm->avail_in == 0 && RANK(flush) <= RANK(old_flush) && flush != Z_FINISH) {
+        ERR_RETURN(strm, Z_BUF_ERROR);
+    }
+
+    /* User must not provide more input after the first FINISH: */
+    if (s->status == FINISH_STATE && strm->avail_in != 0)   {
+        ERR_RETURN(strm, Z_BUF_ERROR);
+    }
+
+    /* Skip headers if raw deflate stream was requested */
+    if (s->status == INIT_STATE && s->wrap == 0) {
+        s->status = BUSY_STATE;
+    }
+
+    if (s->status != BUSY_STATE && s->status != FINISH_STATE && s->wrap != 0) {
+        /* Write the header */
+        if (deflateHeaders(s, strm) == Z_OK) {
+            return Z_OK;
+        }
+    }
+
+    /* Start a new block or continue the current one. */
     if (strm->avail_in != 0 || s->lookahead != 0 || (flush != Z_NO_FLUSH && s->status != FINISH_STATE)) {
         block_state bstate;
 
