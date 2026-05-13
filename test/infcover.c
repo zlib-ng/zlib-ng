@@ -5,17 +5,13 @@
 
 /* to use, do: ./configure --cover && make cover */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#undef NDEBUG
-#include <assert.h>
-#include <inttypes.h>
-
 /* get definition of internal structure so we can mess with it (see pull()),
    and so we can call inflate_trees() (see cover5()) */
 #include "zbuild.h"
 #include "zutil.h"
+#undef NDEBUG
+#include <assert.h>
+#include <inttypes.h>
 #include "inftrees.h"
 #include "inflate.h"
 

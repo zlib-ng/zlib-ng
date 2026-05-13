@@ -1,6 +1,5 @@
+#include "zbuild.h"
 #include <assert.h>
-#include <stdio.h>
-#include <string.h>
 #include "zutil.h"
 
 int main(void) {

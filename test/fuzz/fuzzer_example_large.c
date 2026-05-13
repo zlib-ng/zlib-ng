@@ -1,8 +1,6 @@
-#include <stdio.h>
+#include "zbuild.h"
 #include <assert.h>
 #include <inttypes.h>
-
-#include "zbuild.h"
 #ifdef ZLIB_COMPAT
 #  include "zlib.h"
 #else
