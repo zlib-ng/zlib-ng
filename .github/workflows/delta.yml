@@ -345,11 +345,14 @@ jobs:
           {
             "$SIZE_CMD" "$BASE_LIB" "$HEAD_LIB" | awk '
               { print }
-              NR == 2 { bt = $1; bd = $2; bb = $3; bD = $4 }
+              NR == 2 { base_text = $1; base_data = $2; base_bss = $3; base_dec = $4 }
               NR == 3 {
-                dt = $1 - bt; dd = $2 - bd; db = $3 - bb; dD = $4 - bD
-                pct = bD == 0 ? "n/a" : sprintf("%+.2f%%", 100.0 * dD / bD)
-                printf "%+7d\t%+7d\t%+7d\t%+7d\t%7s\tΔ %s\n", dt, dd, db, dD, "", pct
+                d_text = $1 - base_text
+                d_data = $2 - base_data
+                d_bss  = $3 - base_bss
+                d_dec  = $4 - base_dec
+                pct = base_dec == 0 ? "n/a" : sprintf("%+.2f%%", 100.0 * d_dec / base_dec)
+                printf "%+7d\t%+7d\t%+7d\t%+7d\t%7s\tΔ %s\n", d_text, d_data, d_bss, d_dec, "", pct
               }
             '
             fb=$(stat -c %s "$BASE_LIB"); fh=$(stat -c %s "$HEAD_LIB"); fd=$((fh - fb))
