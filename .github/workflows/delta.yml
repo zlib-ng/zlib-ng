@@ -340,16 +340,22 @@ jobs:
 
       - name: Total file size
         run: |
-          # text/data/bss per build, plus a delta row (head - base)
-          "$SIZE_CMD" "$BASE_LIB" "$HEAD_LIB" | awk '
-            { print }
-            NR == 2 { bt = $1; bd = $2; bb = $3; bD = $4 }
-            NR == 3 {
-              dt = $1 - bt; dd = $2 - bd; db = $3 - bb; dD = $4 - bD
-              pct = bD == 0 ? "n/a" : sprintf("%+.2f%%", 100.0 * dD / bD)
-              printf "%+7d\t%+7d\t%+7d\t%+7d\t%7s\tΔ %s\n", dt, dd, db, dD, "", pct
-            }
-          ' > total-size.txt
+          # text/data/bss per build, plus a delta row (head - base), then the
+          # on-disk file size of the stripped .so.
+          {
+            "$SIZE_CMD" "$BASE_LIB" "$HEAD_LIB" | awk '
+              { print }
+              NR == 2 { bt = $1; bd = $2; bb = $3; bD = $4 }
+              NR == 3 {
+                dt = $1 - bt; dd = $2 - bd; db = $3 - bb; dD = $4 - bD
+                pct = bD == 0 ? "n/a" : sprintf("%+.2f%%", 100.0 * dD / bD)
+                printf "%+7d\t%+7d\t%+7d\t%+7d\t%7s\tΔ %s\n", dt, dd, db, dD, "", pct
+              }
+            '
+            fb=$(stat -c %s "$BASE_LIB"); fh=$(stat -c %s "$HEAD_LIB"); fd=$((fh - fb))
+            pct=$(awk -v b="$fb" -v d="$fd" 'BEGIN { if (b == 0) print "n/a"; else printf "%+.2f%%", 100.0 * d / b }')
+            printf '\nfile size on disk: base=%dB head=%dB  Δ %+dB  %s\n' "$fb" "$fh" "$fd" "$pct"
+          } > total-size.txt
           cat total-size.txt
 
       - name: Run bloaty
