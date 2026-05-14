@@ -8,6 +8,8 @@
 #ifndef CRC32_P_H
 #define CRC32_P_H
 
+#include "crc32_braid_tbl.h"
+
 #define CRC_DO1(c, buf, i) c = crc_table[(c ^ buf[i]) & 0xff] ^ (c >> 8)
 #define CRC_DO2(c, buf, i) {CRC_DO1(c, buf, i); CRC_DO1(c, buf, i+1);}
 #define CRC_DO4(c, buf, i) {CRC_DO2(c, buf, i); CRC_DO2(c, buf, i+2);}

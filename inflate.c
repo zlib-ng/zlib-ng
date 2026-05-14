@@ -11,6 +11,7 @@
 #include "inflate_p.h"
 #include "inffixed_tbl.h"
 #include "functable.h"
+#include "arch_functions.h"
 
 /* Avoid conflicts with zlib.h macros */
 #ifdef ZLIB_COMPAT
@@ -624,7 +625,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                         }
                     }
                     if ((state->flags & 0x0200) && (state->wrap & 4)) {
-                        state->check = PREFIX(crc32)(state->check, next, copy);
+                        state->check = crc32_small((uint32_t)state->check, next, copy);
                     }
                     have -= copy;
                     next += copy;
@@ -647,7 +648,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                         state->head->name[state->length++] = (unsigned char)len;
                 } while (len && copy < have);
                 if ((state->flags & 0x0200) && (state->wrap & 4))
-                    state->check = PREFIX(crc32)(state->check, next, copy);
+                    state->check = crc32_small((uint32_t)state->check, next, copy);
                 have -= copy;
                 next += copy;
                 if (len)
@@ -670,7 +671,7 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
                         state->head->comment[state->length++] = (unsigned char)len;
                 } while (len && copy < have);
                 if ((state->flags & 0x0200) && (state->wrap & 4))
-                    state->check = PREFIX(crc32)(state->check, next, copy);
+                    state->check = crc32_small((uint32_t)state->check, next, copy);
                 have -= copy;
                 next += copy;
                 if (len)

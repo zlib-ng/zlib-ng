@@ -9,12 +9,21 @@
 
 #include "zbuild.h"
 #include "functable.h"
-#include "crc32_braid_tbl.h"
+#include "crc32_p.h"
 
 /* ========================================================================= */
 
 const uint32_t * Z_EXPORT PREFIX(get_crc_table)(void) {
     return (const uint32_t *)crc_table;
+}
+
+/* crc32 function meant for short buffers like gzip headers */
+Z_INTERNAL uint32_t crc32_small(uint32_t crc, const uint8_t *buf, size_t len) {
+    if (UNLIKELY(len >= 32)){
+        return FUNCTABLE_CALL(crc32)(crc, buf, len);
+    }
+
+    return ~crc32_copy_small(~crc, NULL, buf, len, 32, 0);
 }
 
 #ifdef ZLIB_COMPAT

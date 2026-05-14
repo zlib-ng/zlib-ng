@@ -9,6 +9,7 @@
 
 #include "zendian.h"
 #include "zmemory.h"
+#include "crc32_braid_tbl.h"
 
 /* Architecture-specific hooks. */
 #ifdef S390_DFLTCC_INFLATE
@@ -47,26 +48,26 @@
  *   Macros shared by inflate() and inflateBack()
  */
 
-/* check function to use adler32() for zlib or crc32() for gzip */
-#ifdef GUNZIP
-#  define UPDATE(check, buf, len) \
-    (state->flags ? PREFIX(crc32)(check, buf, len) : FUNCTABLE_CALL(adler32)(check, buf, len))
-#else
-#  define UPDATE(check, buf, len) FUNCTABLE_CALL(adler32)(check, buf, len)
-#endif
-
 /* check macros for header crc */
 #ifdef GUNZIP
+#  define CRC_DO1_B(c, b)    c = crc_table[(c ^ (b)) & 0xff] ^ (c >> 8)
+
 #  define CRC2(check, word) \
     do { \
-        uint16_t tmp = Z_U16_TO_LE((uint16_t)(word)); \
-        check = PREFIX(crc32)(check, (const unsigned char *)&tmp, 2); \
+        uint32_t crc = ~(uint32_t)(check); \
+        CRC_DO1_B(crc, (word)     ); \
+        CRC_DO1_B(crc, (word) >> 8); \
+        (check) = ~crc; \
     } while (0)
 
 #  define CRC4(check, word) \
     do { \
-        uint32_t tmp = Z_U32_TO_LE((uint32_t)(word)); \
-        check = PREFIX(crc32)(check, (const unsigned char *)&tmp, 4); \
+        uint32_t crc = ~(uint32_t)(check); \
+        CRC_DO1_B(crc, (word)      ); \
+        CRC_DO1_B(crc, (word) >>  8); \
+        CRC_DO1_B(crc, (word) >> 16); \
+        CRC_DO1_B(crc, (word) >> 24); \
+        (check) = ~crc; \
     } while (0)
 #endif
 

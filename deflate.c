@@ -52,6 +52,7 @@
 #include "deflate.h"
 #include "deflate_p.h"
 #include "insert_string_p.h"
+#include "arch_functions.h"
 
 /* Avoid conflicts with zlib.h macros */
 #ifdef ZLIB_COMPAT
@@ -754,7 +755,7 @@ Z_INTERNAL void PREFIX(flush_pending)(PREFIX3(stream) *strm) {
 #define HCRC_UPDATE(beg) \
     do { \
         if (s->gzhead->hcrc && s->pending > (beg)) \
-            strm->adler = PREFIX(crc32)(strm->adler, s->pending_buf + (beg), s->pending - (beg)); \
+            strm->adler = crc32_small((uint32_t)strm->adler, s->pending_buf + (beg), s->pending - (beg)); \
     } while (0)
 
 /* ========================================================================= */
@@ -874,7 +875,7 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
             if (s->gzhead->extra != NULL)
                 put_short(s, (uint16_t)s->gzhead->extra_len);
             if (s->gzhead->hcrc)
-                strm->adler = PREFIX(crc32)(strm->adler, s->pending_buf, s->pending);
+                strm->adler = crc32_small((uint32_t)strm->adler, s->pending_buf, s->pending);
             s->gzindex = 0;
             s->status = EXTRA_STATE;
         }

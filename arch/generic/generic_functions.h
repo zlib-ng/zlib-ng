@@ -12,6 +12,8 @@ typedef uint32_t (*crc32_func)(uint32_t crc, const uint8_t *buf, size_t len);
 typedef uint32_t (*crc32_copy_func)(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 typedef void     (*slide_hash_func)(deflate_state *s);
 
+uint32_t crc32_small(uint32_t crc, const uint8_t *buf, size_t len);
+
 #ifdef ADLER32_FALLBACK
 uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_copy_c(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
