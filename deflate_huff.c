@@ -19,9 +19,9 @@ Z_INTERNAL block_state deflate_huff(deflate_state *s, int flush) {
 
     for (;;) {
         /* Make sure that we have a literal to write. */
-        if (s->lookahead == 0) {
+        if (UNLIKELY(s->lookahead == 0)) {
             PREFIX(fill_window)(s);
-            if (s->lookahead == 0) {
+            if (UNLIKELY(s->lookahead == 0)) {
                 if (flush == Z_NO_FLUSH)
                     return need_more;
                 break;      /* flush the current block */

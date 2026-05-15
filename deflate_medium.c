@@ -193,9 +193,9 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
          * for the next match, plus WANT_MIN_MATCH bytes to insert the
          * string following the next current_match.
          */
-        if (s->lookahead < MIN_LOOKAHEAD) {
+        if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD)) {
             PREFIX(fill_window)(s);
-            if (s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH) {
+            if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH)) {
                 return need_more;
             }
             if (UNLIKELY(s->lookahead == 0))
@@ -213,7 +213,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
             next_match.match_length = 0;
         } else {
             hash_head = 0;
-            if (s->lookahead >= WANT_MIN_MATCH) {
+            if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
                 hash_head = quick_insert_string(s, window, s->strstart);
             }
 

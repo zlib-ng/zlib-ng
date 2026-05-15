@@ -32,16 +32,16 @@ Z_INTERNAL block_state deflate_rle(deflate_state *s, int flush) {
          * at the end of the input file. We need STD_MAX_MATCH bytes
          * for the longest run, plus one for the unrolled loop.
          */
-        if (s->lookahead <= STD_MAX_MATCH) {
+        if (UNLIKELY(s->lookahead <= STD_MAX_MATCH)) {
             PREFIX(fill_window)(s);
-            if (s->lookahead <= STD_MAX_MATCH && flush == Z_NO_FLUSH)
+            if (UNLIKELY(s->lookahead <= STD_MAX_MATCH && flush == Z_NO_FLUSH))
                 return need_more;
-            if (s->lookahead == 0)
+            if (UNLIKELY(s->lookahead == 0))
                 break; /* flush the current block */
         }
 
         /* See how many times the previous byte repeats */
-        if (s->lookahead >= STD_MIN_MATCH && s->strstart > 0) {
+        if (LIKELY(s->lookahead >= STD_MIN_MATCH && s->strstart > 0)) {
             scan = window + s->strstart - 1;
             if (scan[0] == scan[1] && scan[1] == scan[2]) {
                 match_len = compare256_rle(scan, scan+3)+2;

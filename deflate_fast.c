@@ -31,7 +31,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
          * for the next match, plus WANT_MIN_MATCH bytes to insert the
          * string following the next match.
          */
-        if (s->lookahead < MIN_LOOKAHEAD) {
+        if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD)) {
             PREFIX(fill_window)(s);
             if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH)) {
                 return need_more;
@@ -43,7 +43,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
         /* Insert the string window[strstart .. strstart+2] in the
          * dictionary, and set hash_head to the head of the hash chain:
          */
-        if (s->lookahead >= WANT_MIN_MATCH) {
+        if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
             uint32_t str_val = Z_U32_FROM_LE(zng_memread_4(window + s->strstart));
             uint32_t hash_head = quick_insert_value(s, s->strstart, str_val);
             int64_t dist = (int64_t)s->strstart - hash_head;
