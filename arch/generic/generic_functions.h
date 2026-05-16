@@ -53,27 +53,51 @@ void     slide_hash_c(deflate_state *s);
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // Generic fallbacks when no native implementation exists
 #  ifdef ADLER32_FALLBACK
-#    define native_adler32 adler32_c
-#    define native_adler32_copy adler32_copy_c
+#    ifndef native_adler32
+#      define native_adler32 adler32_c
+#    endif
+#    ifndef native_adler32_copy
+#      define native_adler32_copy adler32_copy_c
+#    endif
 #  endif
 #  ifdef CHUNKSET_FALLBACK
-#    define native_chunkmemset_safe chunkmemset_safe_c
-#    define native_inflate_fast inflate_fast_c
+#    ifndef native_chunkmemset_safe
+#      define native_chunkmemset_safe chunkmemset_safe_c
+#    endif
+#    ifndef native_inflate_fast
+#      define native_inflate_fast inflate_fast_c
+#    endif
 #  endif
 #  ifdef COMPARE256_FALLBACK
-#    define native_compare256 compare256_c
-#    define native_longest_match longest_match_c
-#    define native_longest_match_roll longest_match_roll_c
+#    ifndef native_compare256
+#      define native_compare256 compare256_c
+#    endif
+#    ifndef native_longest_match
+#      define native_longest_match longest_match_c
+#    endif
+#    ifndef native_longest_match_roll
+#      define native_longest_match_roll longest_match_roll_c
+#    endif
 #  endif
 #  ifdef CRC32_CHORBA_FALLBACK
-#    define native_crc32 crc32_chorba
-#    define native_crc32_copy crc32_copy_chorba
+#    ifndef native_crc32
+#      define native_crc32 crc32_chorba
+#    endif
+#    ifndef native_crc32_copy
+#      define native_crc32_copy crc32_copy_chorba
+#    endif
 #  elif defined(CRC32_BRAID_FALLBACK)
-#    define native_crc32 crc32_braid
-#    define native_crc32_copy crc32_copy_braid
+#    ifndef native_crc32
+#      define native_crc32 crc32_braid
+#    endif
+#    ifndef native_crc32_copy
+#      define native_crc32_copy crc32_copy_braid
+#    endif
 #  endif
 #  ifdef SLIDE_HASH_FALLBACK
-#    define native_slide_hash slide_hash_c
+#    ifndef native_slide_hash
+#      define native_slide_hash slide_hash_c
+#    endif
 #  endif
 #endif
 
