@@ -280,6 +280,9 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang" 
     # Enable warnings in GCC and Clang
     set(WARNFLAGS -Wall)
     set(WARNFLAGS_MAINTAINER -Wextra)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+        set(WARNFLAGS_MAINTAINER ${WARNFLAGS_MAINTAINER} -Werror)
+    endif()
     set(WARNFLAGS_DISABLE)
     # Check whether -fno-lto is available
     set(CMAKE_REQUIRED_FLAGS "-fno-lto")
