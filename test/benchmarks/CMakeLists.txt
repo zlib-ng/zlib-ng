@@ -37,6 +37,11 @@ if(NOT benchmark_FOUND)
     if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
         target_compile_options(benchmark PRIVATE -Wno-maybe-uninitialized)
     endif()
+
+    # LCC: Suppress warnings in Google Benchmark
+    if(CMAKE_CXX_COMPILER_ID MATCHES "LCC")
+        target_compile_options(benchmark PRIVATE -Wno-invalid-offsetof -Wno-unused-function -Wno-conversion -Wno-error)
+    endif()
 endif()
 
 # Public API benchmarks
