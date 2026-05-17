@@ -82,7 +82,10 @@ int main(int argc, char** argv) {
         }
     }
 
-    ::benchmark::Initialize(&argc, argv);
+    ::benchmark::Initialize(&argc, argv, []() {
+        ::benchmark::PrintDefaultHelp();
+        printf("          [--benchmark_cooldown=<seconds>]\n");
+    });
 
     if (cooldown_secs > 0) {
         benchmark::BenchmarkReporter *display = benchmark::CreateDefaultDisplayReporter();
