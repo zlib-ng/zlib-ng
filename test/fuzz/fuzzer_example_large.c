@@ -14,8 +14,6 @@
     } \
 }
 
-static const uint8_t *data;
-static size_t dataLen;
 static alloc_func zalloc = NULL;
 static free_func zfree = NULL;
 static unsigned int diff;
@@ -109,6 +107,7 @@ void test_large_inflate(unsigned char *compr, size_t comprLen, unsigned char *un
 }
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
+    Z_UNUSED(d);
     size_t comprLen = 100 + 3 * size;
     size_t uncomprLen = comprLen;
     uint8_t *compr, *uncompr;
@@ -119,8 +118,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
     if (size < 1 || size > kMaxSize)
         return 0;
 
-    data = d;
-    dataLen = size;
     compr = (uint8_t *)calloc(1, comprLen);
     uncompr = (uint8_t *)calloc(1, uncomprLen);
 

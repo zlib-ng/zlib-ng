@@ -23,14 +23,12 @@ TEST(gzip, readwrite) {
     fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
     GTEST_SKIP();
 #else
-    uint8_t compr[128], uncompr[128];
-    uint32_t compr_len = sizeof(compr), uncompr_len = sizeof(uncompr);
-    size_t read;
+    uint8_t uncompr[128];
+    uint32_t compr_len, uncompr_len = sizeof(uncompr);
     int64_t pos;
     gzFile file;
     int err;
 
-    Z_UNUSED(compr);
     /* Write gz file with test data */
     file = PREFIX(gzopen)(TESTFILE, "wb");
     ASSERT_TRUE(file != NULL);
@@ -82,7 +80,7 @@ TEST(gzip, readwrite) {
     EXPECT_EQ(PREFIX(gzeof)(file), 0);
     /* Read first hello, hello! string with gzfread */
     strcpy((char*)uncompr, "garbages");
-    read = PREFIX(gzfread)(uncompr, uncompr_len, 1, file);
+    PREFIX(gzfread)(uncompr, uncompr_len, 1, file);
     EXPECT_STREQ((const char *)uncompr, hello);
 
     pos = PREFIX(gzoffset)(file);
@@ -101,6 +99,5 @@ TEST(gzip, readwrite) {
     PREFIX(gzclose)(file);
 
     EXPECT_EQ(PREFIX(gzclose)(NULL), Z_STREAM_ERROR);
-    Z_UNUSED(read);
 #endif
 }
