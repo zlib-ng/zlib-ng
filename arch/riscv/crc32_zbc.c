@@ -35,6 +35,7 @@ Z_FORCEINLINE static uint32_t crc32_clmul_impl(uint64_t crc, const unsigned char
     const uint64_t *buf64 = (const uint64_t *)buf;
     uint64_t low = buf64[0] ^ crc;
     uint64_t high = buf64[1];
+    uint64_t fold_t3, fold_t2, combined, reduced_low, barrett, final;
 
     if (len < 16)
         goto finish_fold;
@@ -61,19 +62,19 @@ Z_FORCEINLINE static uint32_t crc32_clmul_impl(uint64_t crc, const unsigned char
 
 finish_fold:
     // Fold the 128-bit result into 64 bits
-    uint64_t fold_t3 = clmulh(low, CONSTANT_R4);
-    uint64_t fold_t2 = clmul(low, CONSTANT_R4);
+    fold_t3 = clmulh(low, CONSTANT_R4);
+    fold_t2 = clmul(low, CONSTANT_R4);
     low = high ^ fold_t2;
     high = fold_t3;
 
     // Combine the low and high parts and perform polynomial reduction
-    uint64_t combined = (low >> 32) | ((high & MASK32) << 32);
-    uint64_t reduced_low = clmul(low & MASK32, CONSTANT_R5) ^ combined;
+    combined = (low >> 32) | ((high & MASK32) << 32);
+    reduced_low = clmul(low & MASK32, CONSTANT_R5) ^ combined;
 
     // Barrett reduction step
-    uint64_t barrett = clmul(reduced_low & MASK32, CONSTANT_RU) & MASK32;
+    barrett = clmul(reduced_low & MASK32, CONSTANT_RU) & MASK32;
     barrett = clmul(barrett, CRCPOLY_TRUE_LE_FULL);
-    uint64_t final = barrett ^ reduced_low;
+    final = barrett ^ reduced_low;
 
     // Return the high 32 bits as the final CRC
     return (uint32_t)(final >> 32);
