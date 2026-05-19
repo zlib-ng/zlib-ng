@@ -460,12 +460,10 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                 state->offset += BITS(state->extra);
                 DROPBITS(state->extra);
             }
-#ifdef INFLATE_STRICT
             if (state->offset > state->wsize - (state->whave < state->wsize ? left : 0)) {
                 SET_BAD("invalid distance too far back");
                 break;
             }
-#endif
             TRACE_DISTANCE(state->offset);
 
             /* copy match from window to output */
