@@ -315,7 +315,6 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
     s->status = INIT_STATE;     /* to pass state test in deflateReset() */
 
     s->wrap = wrap;
-    s->gzhead = NULL;
     s->w_size = 1 << windowBits;
 
     s->high_water = 0;      /* nothing written to s->window yet */
@@ -530,6 +529,8 @@ int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
 #endif
         strm->adler = ADLER32_INITIAL_VALUE;
     s->last_flush = -2;
+
+    s->gzhead = NULL; /* reset the gzip header */
 
     zng_tr_init(s);
 
