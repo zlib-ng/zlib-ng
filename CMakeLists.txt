@@ -59,7 +59,9 @@ cmake_dependent_option(WITH_BENCHMARKS "Build test/benchmarks" OFF "BUILD_TESTIN
 cmake_dependent_option(WITH_BENCHMARK_APPS "Build application benchmarks" OFF "BUILD_TESTING" OFF)
 
 if(WITH_GTEST OR WITH_FUZZERS OR WITH_BENCHMARKS)
-  enable_language(CXX)
+    enable_language(CXX)
+    include(cmake/check-compiler-flags.cmake)
+    check_machine_flag_symmetry()
 endif()
 
 include(cmake/detect-arch.cmake)
