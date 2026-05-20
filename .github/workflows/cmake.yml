@@ -500,6 +500,14 @@ jobs:
             msan-options: use_sigaltstack=0
             # Coverage disabled for clang-20, errors
 
+          - name: Ubuntu NVC Native
+            os: ubuntu-latest
+            compiler: nvc
+            cxx-compiler: nvc++
+            cmake-args: -G Ninja -DWITH_NATIVE_INSTRUCTIONS=ON
+            packages: ninja-build nvhpc-26-3
+            # Coverage disabled for NVHPC
+
           - name: Ubuntu Emscripten WASM32
             os: ubuntu-latest
             chost: wasm32
@@ -809,8 +817,15 @@ jobs:
         curl http://mirrors.ubuntu.com/mirrors.txt | sudo tee --append /etc/apt/mirrors.txt
         sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
+    - name: Download NVHPC package keys (Ubuntu)
+      if: runner.os == 'Linux' && contains(matrix.name, 'NVC')
+      run: |
+        curl -fsSL https://developer.download.nvidia.com/hpc-sdk/ubuntu/DEB-GPG-KEY-NVIDIA-HPC-SDK | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg
+        echo 'deb [signed-by=/usr/share/keyrings/nvidia-hpcsdk-archive-keyring.gpg] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | sudo tee /etc/apt/sources.list.d/nvhpc.list
+        echo '/opt/nvidia/hpc_sdk/Linux_x86_64/2026/compilers/bin' >> $GITHUB_PATH
+
     - name: Restore cached packages (Ubuntu)
-      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15')
+      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15') && !contains(matrix.name, 'NVC')
       id: restore-apt-cache
       uses: ./.github/actions/restore-apt-cache
       with:
@@ -825,7 +840,7 @@ jobs:
             ${{ matrix.packages || 'libgtest-dev libbenchmark-dev' }}
 
     - name: Update package cache (Ubuntu)
-      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15') && steps.restore-apt-cache.outputs.cache-hit != 'true'
+      if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15') && steps.restore-apt-cache.outputs.cache-hit != 'true' && !contains(matrix.name, 'NVC')
       uses: ./.github/actions/update-apt-cache
 
     - name: Install packages (Windows)

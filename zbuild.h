@@ -149,7 +149,7 @@
 /* Force the compiler to treat variable as modified. Empty asm statement with a "+r" constraint prevents
    the compiler from reordering or eliminating loads into the variable. This can help keep critical latency
    chains in the hot path from being shortened or optimized away. */
-#if (defined(__GNUC__) || defined(__clang__)) && \
+#if (defined(__GNUC__) || defined(__clang__)) && !defined(__NVCOMPILER) && \
         (defined(ARCH_X86) || (defined(ARCH_ARM) && defined(ARCH_64BIT)))
 #  define Z_TOUCH(var) __asm__ ("" : "+r"(var))
 #else
