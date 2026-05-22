@@ -54,6 +54,7 @@ static inline void compare256_match_check(compare256_func compare256) {
     TEST(compare256, name) { \
         if (!(support_flag)) { \
             GTEST_SKIP(); \
+            Z_UNREACHABLE(); \
             return; \
         } \
         compare256_match_check(func); \

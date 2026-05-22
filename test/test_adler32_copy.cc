@@ -34,6 +34,7 @@ INSTANTIATE_TEST_SUITE_P(adler32_copy, adler32_copy_variant, testing::ValuesIn(h
     TEST_P(adler32_copy_variant, name) { \
         if (!(support_flag)) { \
             GTEST_SKIP(); \
+            Z_UNREACHABLE(); \
             return; \
         } \
         adler32_copy_test(copyfunc, GetParam()); \

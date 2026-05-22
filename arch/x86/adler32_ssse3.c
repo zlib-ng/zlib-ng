@@ -57,13 +57,15 @@ Z_INTERNAL uint32_t adler32_ssse3(uint32_t adler, const uint8_t *buf, size_t len
         goto unaligned_jmp;
     }
 
-    size_t align_diff = MIN(ALIGN_DIFF(buf, 16), len);
-    if (align_diff) {
-        adler32_copy_align(&adler, NULL, buf, align_diff, &sum2, 15, 0);
+    {
+        size_t align_diff = MIN(ALIGN_DIFF(buf, 16), len);
+        if (align_diff) {
+            adler32_copy_align(&adler, NULL, buf, align_diff, &sum2, 15, 0);
 
-        buf += align_diff;
-        len -= align_diff;
-        n -= align_diff;
+            buf += align_diff;
+            len -= align_diff;
+            n -= align_diff;
+        }
     }
 
     while (len >= 16) {

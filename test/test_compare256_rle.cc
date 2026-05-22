@@ -45,6 +45,7 @@ static inline void compare256_rle_match_check(compare256_rle_func compare256_rle
     TEST(compare256_rle, name) { \
         if (!(support_flag)) { \
             GTEST_SKIP(); \
+            Z_UNREACHABLE(); \
             return; \
         } \
         compare256_rle_match_check(func); \

@@ -31,6 +31,7 @@ INSTANTIATE_TEST_SUITE_P(adler32, adler32_variant, testing::ValuesIn(hash_tests)
     TEST_P(adler32_variant, name) { \
         if (!(support_flag)) { \
             GTEST_SKIP(); \
+            Z_UNREACHABLE(); \
             return; \
         } \
         hash(GetParam(), func); \

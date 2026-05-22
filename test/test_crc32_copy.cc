@@ -34,6 +34,7 @@ INSTANTIATE_TEST_SUITE_P(crc32_copy, crc32_copy_variant, testing::ValuesIn(hash_
     TEST_P(crc32_copy_variant, name) { \
         if (!(support_flag)) { \
             GTEST_SKIP(); \
+            Z_UNREACHABLE(); \
             return; \
         } \
         crc32_copy_test(copyfunc, GetParam()); \
