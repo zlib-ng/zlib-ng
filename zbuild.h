@@ -21,6 +21,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifdef _AIX
+#  include <sys/stdint.h>
+#endif
+
 #include "zarch.h"
 
 /* Determine compiler version of C Standard */
