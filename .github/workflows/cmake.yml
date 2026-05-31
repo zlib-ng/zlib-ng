@@ -610,6 +610,13 @@ jobs:
             cmake-args: -T ClangCl -A x64 -DWITH_NATIVE_INSTRUCTIONS=ON -DNATIVE_ARCH_OVERRIDE="-mavx -mpclmul"
             # Coverage disabled for clangcl
 
+          - name: Windows GCC ARM64
+            os: windows-11-arm
+            compiler: gcc
+            cxx-compiler: g++
+            cmake-args: -G Ninja
+            coverage: win64_arm64_gcc
+
           - name: Windows GCC
             os: windows-latest
             compiler: gcc
