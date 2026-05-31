@@ -145,6 +145,7 @@ without_optimizations=0
 without_new_strategies=0
 reducedmem=0
 gcc=0
+clang=0
 nvc=0
 warn=0
 debug=0
@@ -310,14 +311,16 @@ fi
 printf "Checking for compiler... " | tee -a configure.log
 case "$cc" in
   *gcc*) gcc=1 ;;
-  *clang*) gcc=1 ;;
+  *clang*) gcc=1
+           clang=1 ;;
   *nvc) gcc=1
         nvc=1 ;;
 esac
 # nvc requires input file for -v and prints warning, use --version instead as it's supported by all
 case $($cc --version 2>&1) in
   *gcc*) gcc=1 ;;
-  *clang*) gcc=1 ;;
+  *clang*) gcc=1
+           clang=1 ;;
   *nvc\ *) gcc=1
            nvc=1 ;;
 esac
@@ -522,7 +525,10 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
   MINGW* | mingw*)
         visibility=0
         ARFLAGS="rcs"
-        CFLAGS="${CFLAGS} -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE=1 -Wno-pedantic-ms-format"
+        CFLAGS="${CFLAGS} -D_POSIX_C_SOURCE=200809L -D_GNU_SOURCE=1"
+        if test $clang -eq 0; then
+          CFLAGS="${CFLAGS} -Wno-pedantic-ms-format"
+        fi
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
         sharedlibdir='${bindir}'

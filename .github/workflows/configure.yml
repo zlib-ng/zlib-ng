@@ -250,6 +250,11 @@ jobs:
             cflags: -static
             ldflags: -static
 
+          - name: Windows Clang ARM64
+            os: windows-11-arm
+            shell: msys2 {0}
+            compiler: aarch64-w64-mingw32-clang
+
           - name: Windows GCC MinGW32
             os: windows-latest
             shell: msys2 {0}
@@ -301,6 +306,18 @@ jobs:
           make
           git
           mingw-w64-x86_64-toolchain
+
+    - name: Setup MinGW64 (ARM64)
+      if: runner.os == 'Windows' && contains(matrix.name, 'ARM64')
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        msystem: CLANGARM64
+        install: >-
+          pkg-config
+          make
+          git
+          mingw-w64-clang-aarch64-clang
 
     - name: Add ubuntu mirrors
       if: runner.os == 'Linux' && matrix.packages
