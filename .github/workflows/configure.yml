@@ -255,6 +255,12 @@ jobs:
             shell: msys2 {0}
             compiler: aarch64-w64-mingw32-clang
 
+          - name: Windows Clang MinGW64
+            os: windows-latest
+            shell: msys2 {0}
+            compiler: clang
+            packages: mingw-w64-x86_64-clang
+
           - name: Windows GCC MinGW32
             os: windows-latest
             shell: msys2 {0}
@@ -305,7 +311,7 @@ jobs:
           pkg-config
           make
           git
-          mingw-w64-x86_64-toolchain
+          ${{ matrix.packages || 'mingw-w64-x86_64-toolchain' }}
 
     - name: Setup MinGW64 (ARM64)
       if: runner.os == 'Windows' && contains(matrix.name, 'ARM64')
