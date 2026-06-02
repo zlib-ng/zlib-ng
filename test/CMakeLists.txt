@@ -168,6 +168,7 @@ if(WITH_GTEST)
             test_dict.cc
             test_inflate_adler32.cc
             test_inflate_back.cc
+            test_inflate_back_window_oob.cc
             test_inflate_copy.cc
             test_raw.cc
             test_small_window.cc

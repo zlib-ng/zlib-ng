@@ -62,6 +62,8 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
     unsigned wsize;             /* window size or zero if not using window */
     unsigned whave;             /* valid bytes in the window */
     unsigned wnext;             /* window write index */
+    unsigned wbufsize;          /* allocated size of the window buffer */
+    int extra_safe;             /* window source has no chunk padding */
 
     /* hold is a local copy of strm->hold. By default, hold satisfies the same
        invariants that strm->hold does, namely that (hold >> bits) == 0. This
@@ -126,6 +128,13 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
     whave = state->whave;
     wnext = state->wnext;
     window = state->window;
+    wbufsize = state->wbufsize;
+    /* The window-source back-reference copy reads a full chunk at a time, which
+       over-reads by < CHUNKSIZE() bytes past the logical end. inflate()'s window is
+       over-allocated with chunk padding to absorb that, but inflateBack() uses an
+       exact-size caller-supplied window (wbufsize == wsize) with no padding. When the
+       window is unpadded, force the byte-wise, source-bounded scalar copy. */
+    extra_safe = safe_mode && (wbufsize < wsize + (unsigned)CHUNKSIZE());
     hold = state->hold;
     bits = (bits_t)state->bits;
     lcode = state->lencode;
@@ -245,6 +254,10 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
                             out = CHUNKCOPY_SAFE(out, from, op, safe);
                             out = CHUNKUNROLL(out, &dist, &len);
                             out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
+                        } else if (UNLIKELY(extra_safe)) {
+                            /* Unpadded window (inflateBack): scalar copy bounds the source read. */
+                            out = chunkcopy_safe(out, from, op, safe);
+                            out = chunkcopy_safe(out, out - dist, len, safe);
                         } else {
 #ifdef HAVE_MASKED_READWRITE
                             out = CHUNKCOPY_SAFE(out, from, op, safe);
@@ -254,6 +267,9 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
                             out = chunkcopy_safe(out, out - dist, len, safe);
 #endif
                         }
+                    } else if (UNLIKELY(extra_safe)) {
+                        /* Unpadded window (inflateBack): scalar copy bounds the source read. */
+                        out = chunkcopy_safe(out, from, len, safe);
                     } else {
 #ifdef HAVE_MASKED_READWRITE
                         out = CHUNKCOPY_SAFE(out, from, len, safe);
@@ -274,6 +290,9 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
                         out = CHUNKCOPY(out, out - dist, len);
                     else
                         out = CHUNKMEMSET(out, out - dist, len);
+                } else if (UNLIKELY(extra_safe)) {
+                    /* Unpadded window (inflateBack): scalar copy bounds the source read. */
+                    out = chunkcopy_safe(out, out - dist, len, safe);
                 } else {
 #ifdef HAVE_MASKED_READWRITE
                     out = CHUNKCOPY_SAFE(out, out - dist, len, safe);

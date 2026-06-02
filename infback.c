@@ -489,7 +489,14 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
         case MATCH:
             /* Copy back-reference that inflate_fast() could not complete due to
                insufficient output space. state->length and state->offset were set
-               by the safe_mode MATCH bailout in inflate_fast(). */
+               by the safe_mode MATCH bailout in inflate_fast(), which stores the
+               distance before it is validated. Reject a distance that is too far
+               back here (mirrors the LEN path check above and inflate.c's MATCH
+               state) so the copy below cannot read before the start of the window. */
+            if (state->offset > state->wsize - (state->whave < state->wsize ? left : 0)) {
+                SET_BAD("invalid distance too far back");
+                break;
+            }
             do {
                 ROOM();
                 copy = state->wsize - state->offset;
@@ -499,8 +506,12 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                     copy = MIN(copy, state->length);
                     put = chunkcopy_safe(put, from, copy, put + left);
                 } else {
+                    /* The window is the caller-supplied, exact-size buffer with no
+                       chunk padding, so use the scalar, source-bounded copy rather
+                       than the SIMD chunkmemset_safe (which over-reads the source on
+                       masked-readwrite builds). put + left == window + wsize bounds it. */
                     copy = MIN(state->length, left);
-                    put = FUNCTABLE_CALL(chunkmemset_safe)(put, put - state->offset, copy, left);
+                    put = chunkcopy_safe(put, put - state->offset, copy, put + left);
                 }
                 state->length -= copy;
                 left -= copy;
