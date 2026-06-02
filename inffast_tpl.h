@@ -240,7 +240,10 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
                         from += wsize - op;
                         if (UNLIKELY(op < len)) {       /* some from end of window */
                             len -= op;
-                            out = CHUNKCOPY_SAFE(out, from, op, safe);
+                            if (UNLIKELY(extra_safe))   /* unpadded window: bound the source read */
+                                out = chunkcopy_safe(out, from, op, safe);
+                            else
+                                out = CHUNKCOPY_SAFE(out, from, op, safe);
                             from = window;              /* more from start of window */
                             op = wnext;
                             /* This (rare) case can create a situation where

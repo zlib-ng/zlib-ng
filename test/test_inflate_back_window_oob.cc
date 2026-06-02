@@ -9,7 +9,7 @@
  *     condition under which the SIMD chunked window-source copy could over-read
  *     past the window's end.
  *   - inflateBack() must decode valid raw-deflate streams correctly, and must
- *     never read past window+ (1<<windowBits), regardless of how back-references
+ *     never read past window + (1<<windowBits), regardless of how back-references
  *     straddle the window boundary, what the match distance is (including 1 and
  *     small powers of two), or how the output/MATCH bailout path is exercised.
  *
@@ -39,7 +39,7 @@
 #include <gtest/gtest.h>
 
 /* ------------------------------------------------------------------ */
-/* inflateBack() in()/out() callback plumbing                          */
+/* inflateBack() in()/out() callback plumbing                         */
 /* ------------------------------------------------------------------ */
 
 struct in_ctx {
@@ -158,7 +158,7 @@ static std::vector<uint8_t> compress_raw(const uint8_t *src, size_t n, int wbits
 }
 
 /* ================================================================== */
-/* A. Happy-path round trips across the full windowBits range          */
+/* A. Happy-path round trips across the full windowBits range         */
 /* ================================================================== */
 
 /* Build data that forces many back-references whose source straddles the
@@ -253,7 +253,7 @@ INSTANTIATE_TEST_SUITE_P(all_window_bits, inflate_back_oob,
                          ::testing::Values(8, 9, 10, 11, 12, 13, 14, 15));
 
 /* ================================================================== */
-/* B. Targeted distance / match-shape edge cases                       */
+/* B. Targeted distance / match-shape edge cases                      */
 /* ================================================================== */
 
 /* Decode `orig` via raw deflate + inflateBack at `wbits`, asserting an exact
@@ -335,7 +335,7 @@ TEST(inflate_back_oob_shapes, long_matches_match_bailout_path) {
 }
 
 /* ================================================================== */
-/* C. Error / abort paths must stay clean (no crash, sane status)      */
+/* C. Error / abort paths must stay clean (no crash, sane status)     */
 /* ================================================================== */
 
 /* out() aborting mid-stream must terminate inflateBack() without over-reading
@@ -385,7 +385,7 @@ TEST(inflate_back_oob_errors, invalid_stream_rejected) {
 }
 
 /* ================================================================== */
-/* D. Direct replay of committed crash reproducers (#2316 corpus)      */
+/* D. Direct replay of committed crash reproducers (#2316 corpus)     */
 /* ================================================================== */
 
 /* The fuzz harness's input protocol:
@@ -405,7 +405,7 @@ static void replay_fuzz_input(const uint8_t *data, size_t size) {
     /* Just decode -- the assertion is "no ASan report / clean return". */
     int err = run_inflate_back(data + 3, size - 3, wbits, chunk,
                                abort_out ? 1 : 0, nullptr, 0, nullptr);
-    (void)err;  /* any status is acceptable; not crashing is the point. */
+    Z_UNUSED(err);  /* any status is acceptable; not crashing is the point. */
 }
 
 /* crash-a7bacb6ace55f9708fc9c22057b348f485eb650a (43 bytes) */
