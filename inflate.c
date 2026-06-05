@@ -98,6 +98,7 @@ int32_t Z_EXPORT PREFIX(inflateReset)(PREFIX3(stream) *strm) {
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
+    state->wbits = state->reqbits;
     state->wsize = 0;
     state->whave = 0;
     state->wnext = 0;
@@ -133,7 +134,7 @@ int32_t Z_EXPORT PREFIX(inflateReset2)(PREFIX3(stream) *strm, int32_t windowBits
 
     /* update state and reset the rest of it */
     state->wrap = wrap;
-    state->wbits = (unsigned)windowBits;
+    state->reqbits = state->wbits = (unsigned)windowBits;
     return PREFIX(inflateReset)(strm);
 }
 

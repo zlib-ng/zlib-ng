@@ -110,7 +110,7 @@ struct ALIGNED_(64) inflate_state {
     int back;                   /* bits back of last unprocessed length/lit */
 
         /* sliding window */
-    unsigned wbits;             /* log base 2 of requested window size */
+    unsigned wbits;             /* current log base 2 of window size */
     uint32_t wsize;             /* window size or zero if not using window */
     uint32_t wbufsize;          /* real size of the allocated window buffer, including padding */
     uint32_t whave;             /* valid bytes in the window */
@@ -142,6 +142,7 @@ struct ALIGNED_(64) inflate_state {
     code codes[ENOUGH];         /* space for code tables */
 
     inflate_allocs *alloc_bufs; /* struct for handling memory allocations */
+    unsigned reqbits;           /* requested log base 2 of window size */
 
 #ifdef INFLATE_STRICT
     unsigned dmax;              /* zlib header max distance (INFLATE_STRICT) */
