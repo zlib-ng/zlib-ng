@@ -81,9 +81,14 @@ int Z_INTERNAL gz_buffer_alloc(gz_state *state) {
     }
 
     /* the total here reaches 3 * want, but gzbuffer only guarantees 2 * want
-       fits in an unsigned, and zng_alloc_aligned takes an unsigned size; bail
-       out rather than truncate the request into an undersized allocation */
-    if (in_size > UINT_MAX - out_size) {
+       fits in an unsigned. zng_alloc_aligned then adds sizeof(void *) + align
+       on top before allocating, and on some platforms (e.g. FreeBSD) malloc is
+       bounded by INT_MAX because the allocator uses a signed type internally.
+       Cap the total against INT_MAX minus that overhead so we reject the
+       request rather than truncate it into an undersized allocation */
+    const size_t aligned_overhead = sizeof(void *) + 64;
+    const size_t max_size = (size_t)INT_MAX - aligned_overhead;
+    if (out_size > max_size || in_size > max_size - out_size) {
         PREFIX(gz_error)(state, Z_MEM_ERROR, "out of memory");
         return -1;
     }
