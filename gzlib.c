@@ -69,8 +69,8 @@ static void gz_reset(gz_state *state) {
 
 /* Allocate in/out buffers for gzFile */
 int Z_INTERNAL gz_buffer_alloc(gz_state *state) {
-    int want = state->want;
-    int in_size = want, out_size = want;
+    size_t want = state->want;
+    size_t in_size = want, out_size = want;
 
     if (state->mode == GZ_WRITE) {
         in_size = want * 2; // double input buffer for compression (ref: gzprintf)
@@ -80,7 +80,15 @@ int Z_INTERNAL gz_buffer_alloc(gz_state *state) {
         out_size = want * 2;  // double output buffer for decompression
     }
 
-    state->buffers = (unsigned char *)zng_alloc_aligned((in_size + out_size), 64);
+    /* the total here reaches 3 * want, but gzbuffer only guarantees 2 * want
+       fits in an unsigned, and zng_alloc_aligned takes an unsigned size; bail
+       out rather than truncate the request into an undersized allocation */
+    if (in_size > UINT_MAX - out_size) {
+        PREFIX(gz_error)(state, Z_MEM_ERROR, "out of memory");
+        return -1;
+    }
+
+    state->buffers = (unsigned char *)zng_alloc_aligned((unsigned)(in_size + out_size), 64);
     state->in = state->buffers;
     if (out_size) {
         state->out = state->buffers + (in_size); // Outbuffer goes after inbuffer
