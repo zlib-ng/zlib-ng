@@ -57,6 +57,28 @@
 #  include <endian.h>
 #endif
 
+#if !defined(BYTE_ORDER) || (!defined(LITTLE_ENDIAN) && !defined(BIG_ENDIAN))
+#  error "Unknown byte order"
+#endif
+
+#if !defined(LITTLE_ENDIAN)
+#  if BIG_ENDIAN == 1234
+#    define LITTLE_ENDIAN 4321
+#  elif BIG_ENDIAN == 4321
+#    define LITTLE_ENDIAN 1234
+#  else
+#    define LITTLE_ENDIAN -1
+#  endif
+#elif !defined(BIG_ENDIAN)
+#  if LITTLE_ENDIAN == 1234
+#    define BIG_ENDIAN 4321
+#  elif LITTLE_ENDIAN == 4321
+#    define BIG_ENDIAN 1234
+#  else
+#    define BIG_ENDIAN -1
+#  endif
+#endif
+
 #if BYTE_ORDER == LITTLE_ENDIAN
 #  define Z_U16_TO_LE(x)    (x)
 #  define Z_U32_TO_LE(x)    (x)
@@ -83,8 +105,6 @@
 #  define Z_U16_FROM_BE(x)  (x)
 #  define Z_U32_FROM_BE(x)  (x)
 #  define Z_U64_FROM_BE(x)  (x)
-#else
-#  error "Unknown byte order"
 #endif
 
 #endif
