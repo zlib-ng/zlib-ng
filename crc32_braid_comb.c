@@ -8,7 +8,6 @@
  */
 
 #include "zutil.h"
-#include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
 #include "crc32_braid_comb_p.h"
 

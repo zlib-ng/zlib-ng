@@ -1,6 +1,8 @@
 #ifndef CRC32_BRAID_TBL_H_
 #define CRC32_BRAID_TBL_H_
 
+#include "crc32_braid_p.h"
+
 /* crc32_braid_tbl.h -- tables for braided CRC calculation
  * Generated automatically by makecrct.c
  */

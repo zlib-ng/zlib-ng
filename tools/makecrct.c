@@ -145,6 +145,7 @@ static void print_crc_table(void) {
 
     printf("#ifndef CRC32_BRAID_TBL_H_\n");
     printf("#define CRC32_BRAID_TBL_H_\n\n");
+    printf("#include \"crc32_braid_p.h\"\n\n");
     printf("/* crc32_braid_tbl.h -- tables for braided CRC calculation\n");
     printf(" * Generated automatically by makecrct.c\n */\n\n");
 

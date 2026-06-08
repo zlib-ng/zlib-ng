@@ -13,7 +13,6 @@
 /* Used by chorba fallback and by arch-specific implementations (s390 vx, risc-v zbc). */
 #ifdef CRC32_BRAID_FALLBACK
 
-#include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
 #include "crc32_p.h"
 

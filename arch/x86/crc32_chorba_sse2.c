@@ -4,7 +4,6 @@
 #if defined(X86_SSE2) && defined(CRC32_CHORBA_SSE_FALLBACK)
 
 #include "crc32_chorba_p.h"
-#include "crc32_braid_p.h"
 #include "crc32_braid_tbl.h"
 #include <emmintrin.h>
 #include "arch/x86/x86_intrins.h"
