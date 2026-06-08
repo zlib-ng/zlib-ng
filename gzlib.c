@@ -245,7 +245,7 @@ static gzFile gz_open(const void *path, int fd, const char *mode) {
     state->fd = fd > -1 ? fd : (
 #if defined(_WIN32)
         fd == -2 ? _wopen((const wchar_t *)path, oflag, 0666) :
-#elif __CYGWIN__
+#elif defined(__CYGWIN__)
         fd == -2 ? open(state->path, oflag, 0666) :
 #endif
         open((const char *)path, oflag, 0666));
