@@ -1,15 +1,15 @@
 macro(configure_util_executable target)
     target_include_directories(${target} PRIVATE ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR})
     set_target_properties(${target} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
-    if(NOT WITH_GZFILEOP)
-        target_compile_definitions(${target} PRIVATE -DWITH_GZFILEOP)
-        target_sources(${target} PRIVATE ${ZLIB_GZFILE_PRIVATE_HDRS} ${ZLIB_GZFILE_SRCS})
-    endif()
 endmacro()
 
 # minigzip
 add_executable(minigzip minigzip.c)
 configure_util_executable(minigzip)
+if(NOT WITH_GZFILEOP)
+    target_compile_definitions(minigzip PRIVATE -DWITH_GZFILEOP)
+    target_sources(minigzip PRIVATE ${ZLIB_GZFILE_PRIVATE_HDRS} ${ZLIB_GZFILE_SRCS})
+endif()
 if(NOT DEFINED BUILD_SHARED_LIBS)
     target_link_libraries(minigzip zlib-ng-static)
 else()
@@ -25,7 +25,11 @@ set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> PA
 # minideflate
 add_executable(minideflate minideflate.c)
 configure_util_executable(minideflate)
-target_link_libraries(minideflate zlib-ng)
+if(NOT DEFINED BUILD_SHARED_LIBS)
+    target_link_libraries(minideflate zlib-ng-static)
+else()
+    target_link_libraries(minideflate zlib-ng)
+endif()
 set(MINIDEFLATE_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minideflate> PARENT_SCOPE)
 
 # makefixed
@@ -45,8 +49,5 @@ set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct> PA
 
 # Install minigzip and minideflate
 if(INSTALL_UTILS)
-    install(TARGETS minigzip minideflate
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+    install(TARGETS minigzip minideflate RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
