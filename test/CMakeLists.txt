@@ -16,32 +16,6 @@ configure_test_executable(example)
 target_link_libraries(example zlib-ng)
 add_test(NAME example COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:example>)
 
-add_executable(minigzip minigzip.c)
-configure_test_executable(minigzip)
-if(NOT DEFINED BUILD_SHARED_LIBS)
-    target_link_libraries(minigzip zlib-ng-static)
-else()
-    target_link_libraries(minigzip zlib-ng)
-endif()
-if(BASEARCH_S360_FOUND)
-    if(WITH_DFLTCC_DEFLATE OR WITH_DFLTCC_INFLATE)
-        set_source_files_properties(minigzip.c PROPERTIES COMPILE_DEFINITIONS BUFLEN=262144)
-    endif()
-endif()
-set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip>)
-
-add_executable(minideflate minideflate.c)
-configure_test_executable(minideflate)
-target_link_libraries(minideflate zlib-ng)
-set(MINIDEFLATE_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minideflate>)
-
-if(INSTALL_UTILS)
-    install(TARGETS minigzip minideflate
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}"
-        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
-endif()
-
 add_executable(switchlevels switchlevels.c)
 configure_test_executable(switchlevels)
 target_link_libraries(switchlevels zlib-ng)
