@@ -29,18 +29,6 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
 endif()
 add_test(NAME infcover COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
 
-add_executable(makefixed ${PROJECT_SOURCE_DIR}/tools/makefixed.c ${PROJECT_SOURCE_DIR}/inftrees.c)
-configure_test_executable(makefixed)
-set(MAKEFIXED_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makefixed>)
-
-add_executable(maketrees ${PROJECT_SOURCE_DIR}/tools/maketrees.c ${PROJECT_SOURCE_DIR}/trees.c ${PROJECT_SOURCE_DIR}/zutil.c)
-configure_test_executable(maketrees)
-set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees>)
-
-add_executable(makecrct ${PROJECT_SOURCE_DIR}/tools/makecrct.c)
-configure_test_executable(makecrct)
-set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct>)
-
 # Emscripten does not support large amounts of data via stdin/out
 # https://github.com/emscripten-core/emscripten/issues/16755#issuecomment-1102732849
 if(NOT BASEARCH_WASM32_FOUND)

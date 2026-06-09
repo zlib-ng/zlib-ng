@@ -7,6 +7,7 @@ macro(configure_util_executable target)
     endif()
 endmacro()
 
+# minigzip
 add_executable(minigzip minigzip.c)
 configure_util_executable(minigzip)
 if(NOT DEFINED BUILD_SHARED_LIBS)
@@ -21,11 +22,28 @@ if(BASEARCH_S360_FOUND)
 endif()
 set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> PARENT_SCOPE)
 
+# minideflate
 add_executable(minideflate minideflate.c)
 configure_util_executable(minideflate)
 target_link_libraries(minideflate zlib-ng)
 set(MINIDEFLATE_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minideflate> PARENT_SCOPE)
 
+# makefixed
+add_executable(makefixed makefixed.c ${PROJECT_SOURCE_DIR}/inftrees.c)
+configure_util_executable(makefixed)
+set(MAKEFIXED_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makefixed> PARENT_SCOPE)
+
+# maketrees
+add_executable(maketrees maketrees.c ${PROJECT_SOURCE_DIR}/trees.c ${PROJECT_SOURCE_DIR}/zutil.c)
+configure_util_executable(maketrees)
+set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees> PARENT_SCOPE)
+
+# makecrct
+add_executable(makecrct makecrct.c)
+configure_util_executable(makecrct)
+set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct> PARENT_SCOPE)
+
+# Install minigzip and minideflate
 if(INSTALL_UTILS)
     install(TARGETS minigzip minideflate
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
