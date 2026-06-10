@@ -54,14 +54,14 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
     Assert(STD_MAX_MATCH == 258, "Code too clever");
 
     best_len = s->prev_length ? s->prev_length : STD_MIN_MATCH-1;
-    if (best_len >= lookahead)
+    if (UNLIKELY(best_len >= lookahead))
         return lookahead;
 
     /* Calculate read offset which should only extend an extra byte
      * to find the next best match length.
      */
     offset = best_len-1;
-    if (best_len >= sizeof(uint32_t)) {
+    if (UNLIKELY(best_len >= sizeof(uint32_t))) {
         offset -= 2;
         if (best_len >= sizeof(uint64_t))
             offset -= 4;
@@ -70,10 +70,10 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
     scan = window + strstart;
     scan_start = zng_memread_8(scan);
     scan_end = zng_memread_8(scan+offset);
-    mbase_end  = (mbase_start+offset);
+    mbase_end = (mbase_start+offset);
 
     /* Do not waste too much time if we already have a good match */
-    if (best_len >= s->good_match)
+    if (UNLIKELY(best_len >= s->good_match))
         chain_length >>= 2;
 
     /* Stop when cur_match becomes <= limit. To simplify the code,
@@ -100,7 +100,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
             hash = update_hash_roll(hash, scan[i]);
             /* If we're starting with best_len >= 3, we can use offset search. */
             pos = head[hash];
-            if (pos < cur_match) {
+            if (UNLIKELY(pos < cur_match)) {
                 match_offset = i - 2;
                 cur_match = pos;
             }
@@ -108,7 +108,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
 
         /* Update offset-dependent variables */
         limit = limit_base+match_offset;
-        if (cur_match <= limit)
+        if (UNLIKELY(cur_match <= limit))
             return best_len;
         mbase_start -= match_offset;
         mbase_end -= match_offset;
@@ -118,7 +118,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
 #endif
     Assert((unsigned long)strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     for (;;) {
-        if (cur_match >= strstart)
+        if (UNLIKELY(cur_match >= strstart))
             break;
 
         /* Skip to next match if the match length cannot increase or if the match length is
@@ -160,15 +160,15 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
             /* Do not look for better matches if the current match reaches
              * or exceeds the end of the input.
              */
-            if (len >= lookahead)
+            if (UNLIKELY(len >= lookahead))
                 return lookahead;
-            if (len >= nice_match)
+            if (UNLIKELY(len >= nice_match))
                 return len;
 
             best_len = len;
 
             offset = best_len-1;
-            if (best_len >= sizeof(uint32_t)) {
+            if (LIKELY(best_len >= sizeof(uint32_t))) {
                 offset -= 2;
                 if (best_len >= sizeof(uint64_t))
                     offset -= 4;
@@ -189,9 +189,9 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
                 next_pos = cur_match;
                 for (uint32_t i = 0; i <= len - STD_MIN_MATCH; i++) {
                     pos = prev[(cur_match + i) & wmask];
-                    if (pos < next_pos) {
+                    if (UNLIKELY(pos < next_pos)) {
                         /* Hash chain is more distant, use it */
-                        if (pos <= limit_base + i)
+                        if (UNLIKELY(pos <= limit_base + i))
                             return best_len;
                         next_pos = pos;
                         match_offset = i;
@@ -207,13 +207,12 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
                  */
                 scan_endstr = scan + len - (STD_MIN_MATCH-1);
 
-                // use update_hash_roll for deflate_slow
                 hash = update_hash_roll(0, scan_endstr[0]);
                 hash = update_hash_roll(hash, scan_endstr[1]);
                 hash = update_hash_roll(hash, scan_endstr[2]);
 
                 pos = head[hash];
-                if (pos < cur_match) {
+                if (UNLIKELY(pos < cur_match)) {
                     match_offset = len - (STD_MIN_MATCH-1);
                     if (pos <= limit_base + match_offset)
                         return best_len;
