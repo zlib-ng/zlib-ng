@@ -28,31 +28,28 @@ Z_FORCEINLINE static uint32_t update_hash_roll(uint32_t h, uint32_t val) {
  * Return the previous length of the hash chain.
  */
 Z_FORCEINLINE static uint32_t quick_insert_value(deflate_state *const s, uint32_t str, uint32_t val) {
-    uint32_t h, hm, head;
+    uint32_t h, head;
 
-    h = ((val * 2654435761U) >> 16);
-    h &= HASH_MASK;
-    hm = h;
+    h = ((val * 2654435761U) >> 16) & HASH_MASK;
 
-    head = s->head[hm];
+    head = s->head[h];
     if (LIKELY(head != str)) {
         s->prev[str & W_MASK(s)] = (Pos)head;
-        s->head[hm] = (Pos)str;
+        s->head[h] = (Pos)str;
     }
     return head;
 }
 
 Z_FORCEINLINE static uint32_t quick_insert_value_roll(deflate_state *const s, uint32_t str, uint32_t val) {
-    uint32_t hm, head;
+    uint32_t h, head;
 
-    s->ins_h = ((s->ins_h << 5) ^ ((uint8_t)val));
-    s->ins_h &= (32768u - 1u);
-    hm = s->ins_h;
+    h = ((s->ins_h << 5) ^ ((uint8_t)val)) & (32768u - 1u);
+    s->ins_h = h;
 
-    head = s->head[hm];
+    head = s->head[h];
     if (LIKELY(head != str)) {
         s->prev[str & W_MASK(s)] = (Pos)head;
-        s->head[hm] = (Pos)str;
+        s->head[h] = (Pos)str;
     }
     return head;
 }
@@ -64,34 +61,31 @@ Z_FORCEINLINE static uint32_t quick_insert_value_roll(deflate_state *const s, ui
  */
 Z_FORCEINLINE static uint32_t quick_insert_string(deflate_state *const s, unsigned char *window, uint32_t str) {
     uint8_t *strstart = window + str;
-    uint32_t val, h, hm, head;
+    uint32_t val, h, head;
 
     val = Z_U32_FROM_LE(zng_memread_4(strstart));
-    h = ((val * 2654435761U) >> 16);
-    h &= HASH_MASK;
-    hm = h;
+    h = ((val * 2654435761U) >> 16) & HASH_MASK;
 
-    head = s->head[hm];
+    head = s->head[h];
     if (LIKELY(head != str)) {
         s->prev[str & W_MASK(s)] = (Pos)head;
-        s->head[hm] = (Pos)str;
+        s->head[h] = (Pos)str;
     }
     return head;
 }
 
 Z_FORCEINLINE static uint32_t quick_insert_string_roll(deflate_state *const s, unsigned char *window, uint32_t str) {
     uint8_t *strstart = window + str + (STD_MIN_MATCH-1);
-    uint32_t val, hm, head;
+    uint32_t val, h, head;
 
     val = strstart[0];
-    s->ins_h = ((s->ins_h << 5) ^ ((uint8_t)val));
-    s->ins_h &= (32768u - 1u);
-    hm = s->ins_h;
+    h = ((s->ins_h << 5) ^ ((uint8_t)val)) & (32768u - 1u);
+    s->ins_h = h;
 
-    head = s->head[hm];
+    head = s->head[h];
     if (LIKELY(head != str)) {
         s->prev[str & W_MASK(s)] = (Pos)head;
-        s->head[hm] = (Pos)str;
+        s->head[h] = (Pos)str;
     }
     return head;
 }
@@ -114,17 +108,15 @@ Z_FORCEINLINE static void insert_string_static(deflate_state *const s, unsigned 
     const unsigned int w_mask = W_MASK(s);
 
     for (uint32_t idx = str; strstart < strend; idx++, strstart++) {
-        uint32_t val, h, hm, head;
+        uint32_t val, h, head;
 
         val = Z_U32_FROM_LE(zng_memread_4(strstart));
-        h = ((val * 2654435761U) >> 16);
-        h &= HASH_MASK;
-        hm = h;
+        h = ((val * 2654435761U) >> 16) & HASH_MASK;
 
-        head = headp[hm];
+        head = headp[h];
         if (LIKELY(head != idx)) {
             prevp[idx & w_mask] = (Pos)head;
-            headp[hm] = (Pos)idx;
+            headp[h] = (Pos)idx;
         }
     }
 }
@@ -136,22 +128,22 @@ Z_FORCEINLINE static void insert_string_roll_static(deflate_state *const s, unsi
     /* Local pointers to avoid indirection */
     Pos *headp = s->head;
     Pos *prevp = s->prev;
+    uint32_t h = s->ins_h;
     const unsigned int w_mask = W_MASK(s);
 
     for (uint32_t idx = str; strstart < strend; idx++, strstart++) {
-        uint32_t val, hm, head;
+        uint32_t val, head;
 
         val = strstart[0];
-        s->ins_h = ((s->ins_h << 5) ^ ((uint8_t)val));
-        s->ins_h &= (32768u - 1u);
-        hm = s->ins_h;
+        h = ((h << 5) ^ ((uint8_t)val)) & (32768u - 1u);
 
-        head = headp[hm];
+        head = headp[h];
         if (LIKELY(head != idx)) {
             prevp[idx & w_mask] = (Pos)head;
-            headp[hm] = (Pos)idx;
+            headp[h] = (Pos)idx;
         }
     }
+    s->ins_h = h;
 }
 
 #endif
