@@ -12,11 +12,6 @@
  *    input characters, so that a running hash key can be computed from the
  *    previous key instead of complete recalculation each time.
  */
-Z_FORCEINLINE static uint32_t update_hash(uint32_t h, uint32_t val) {
-    h = ((val * 2654435761U) >> 16);
-    return h & HASH_MASK;
-}
-
 Z_FORCEINLINE static uint32_t update_hash_roll(uint32_t h, uint32_t val) {
     h = ((h << 5) ^ ((uint8_t)val));
     return h & (32768u - 1u);
@@ -31,20 +26,6 @@ Z_FORCEINLINE static uint32_t quick_insert_value(deflate_state *const s, uint32_
     uint32_t h, head;
 
     h = ((val * 2654435761U) >> 16) & HASH_MASK;
-
-    head = s->head[h];
-    if (LIKELY(head != str)) {
-        s->prev[str & W_MASK(s)] = (Pos)head;
-        s->head[h] = (Pos)str;
-    }
-    return head;
-}
-
-Z_FORCEINLINE static uint32_t quick_insert_value_roll(deflate_state *const s, uint32_t str, uint32_t val) {
-    uint32_t h, head;
-
-    h = ((s->ins_h << 5) ^ ((uint8_t)val)) & (32768u - 1u);
-    s->ins_h = h;
 
     head = s->head[h];
     if (LIKELY(head != str)) {
