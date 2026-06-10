@@ -34,7 +34,14 @@
 }
 
 /* Default read/write i/o buffer size based on GZBUFSIZE */
-#define BUFSIZE 131072
+#ifndef GZBUFSIZE
+#  define GZBUFSIZE 131072
+#endif
+/* CVE2018-* checks fail if buffer is not at least 48K */
+#if GZBUFSIZE < 49152
+#  undef GZBUFSIZE
+#  define GZBUFSIZE 49152
+#endif
 
 /* ===========================================================================
  * deflate() using specialized parameters
@@ -171,7 +178,7 @@ static void inflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t
 
             /* Ignore Z_BUF_ERROR if we are finishing and read buffer size is
              * purposefully limited */
-            if (flush == Z_FINISH && err == Z_BUF_ERROR && read_buf_size != BUFSIZE)
+            if (flush == Z_FINISH && err == Z_BUF_ERROR && read_buf_size != GZBUFSIZE)
                 err = Z_OK;
 
             if (err == Z_STREAM_END) break;
@@ -239,8 +246,8 @@ int main(int argc, char **argv) {
     int32_t window_bits = INT32_MAX;
     int32_t strategy = Z_DEFAULT_STRATEGY;
     int32_t level = Z_DEFAULT_COMPRESSION;
-    int32_t read_buf_size = BUFSIZE;
-    int32_t write_buf_size = BUFSIZE;
+    int32_t read_buf_size = GZBUFSIZE;
+    int32_t write_buf_size = GZBUFSIZE;
     int32_t flush = Z_NO_FLUSH;
     uint8_t copyout = 0;
     uint8_t uncompr = 0;

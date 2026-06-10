@@ -1354,12 +1354,14 @@ Z_EXTERN Z_EXPORT
 int32_t zng_gzbuffer(gzFile file, uint32_t size);
 /*
      Set the internal buffer size used by this library's functions for file to
-   size.  The default buffer size is 8192 bytes.  This function must be called
+   size.  The default buffer size is 128KB.  This function must be called
    after gzopen() or gzdopen(), and before any other calls that read or write
    the file.  The buffer memory allocation is always deferred to the first read
    or write.  Three times that size in buffer space is allocated.  A larger
-   buffer size of, for example, 64K or 128K bytes will noticeably increase the
-   speed of decompression (reading).
+   buffer size can potentially increase the speed of decompression (reading).
+
+   If zlib-ng is compiled with 'WITH_REDUCED_MEM' set, the default buffer size
+   is reduced to 8192 bytes.
 
      The new buffer size also affects the maximum length for gzprintf().
 

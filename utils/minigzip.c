@@ -46,10 +46,15 @@
 #endif
 #define SUFFIX_LEN (sizeof(GZ_SUFFIX)-1)
 
-#ifndef BUFLEN
-#  define BUFLEN     16384       /* read buffer size */
+#ifndef GZBUFSIZE
+#  define GZBUFSIZE 131072
 #endif
-#define BUFLENW     (BUFLEN * 3) /* write buffer size */
+/* CVE2018-* checks fail if buffer is not at least 48K */
+#if GZBUFSIZE < 49152
+#  undef GZBUFSIZE
+#  define GZBUFSIZE 49152
+#endif
+
 #define MAX_NAME_LEN 1024
 
 static char *prog;
@@ -121,14 +126,14 @@ static void gz_compress(FILE *in, gzFile out) {
      */
     if (gz_compress_mmap(in, out) == Z_OK) return;
 #endif
-    buf = (char *)calloc(BUFLEN, 1);
+    buf = (char *)calloc(GZBUFSIZE, 1);
     if (buf == NULL) {
         perror("out of memory");
         exit(1);
     }
 
     for (;;) {
-        len = (int)fread(buf, 1, BUFLEN, in);
+        len = (int)fread(buf, 1, GZBUFSIZE, in);
         if (ferror(in)) {
             free(buf);
             perror("fread");
@@ -147,13 +152,13 @@ static void gz_compress(FILE *in, gzFile out) {
  * Uncompress input to output then close both files.
  */
 static void gz_uncompress(gzFile in, FILE *out) {
-    char *buf = (char *)malloc(BUFLENW);
+    char *buf = (char *)malloc(GZBUFSIZE);
     int len;
 
     if (buf == NULL) error("out of memory");
 
     for (;;) {
-        len = PREFIX(gzread)(in, buf, BUFLENW);
+        len = PREFIX(gzread)(in, buf, GZBUFSIZE);
         if (len < 0) {
             free(buf);
             gz_fatal(in);
