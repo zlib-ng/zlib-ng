@@ -1247,7 +1247,6 @@ set(ZLIB_PRIVATE_HDRS
     inflate_p.h
     inftrees.h
     insert_string_p.h
-    insert_string_tpl.h
     match_tpl.h
     trees.h
     trees_emit.h
