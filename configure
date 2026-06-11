@@ -114,9 +114,9 @@ buildcrc32la=1
 floatabi=
 # For CPUs that can benefit from AVX512, it seems GCC generates suboptimal
 # instruction scheduling unless you specify a reasonable -mtune= target
-avx512flag="-mavx512f -mavx512dq -mavx512bw -mavx512vl -mbmi2"
+avx512flag="-mavx512f -mavx512dq -mavx512bw -mavx512vl -mbmi -mbmi2"
 avx512vnniflag="${avx512flag} -mavx512vnni"
-avx2flag="-mavx2 -mbmi2"
+avx2flag="-mavx2 -mbmi -mbmi2"
 sse2flag="-msse2"
 ssse3flag="-mssse3"
 sse41flag="-msse4.1"
