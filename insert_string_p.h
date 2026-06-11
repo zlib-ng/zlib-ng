@@ -6,6 +6,9 @@
 #ifndef INSERT_STRING_P_H_
 #define INSERT_STRING_P_H_
 
+#define UPDATE_HASH_INT(h,val) h = (((val) * 2654435761U) >> 16) & HASH_MASK
+#define UPDATE_HASH_ROLL(h,val) h = ((h << 5) ^ ((uint8_t)(val))) & (32768u - 1u)
+
 /* ===========================================================================
  * Update a hash value with the given input byte
  * IN  assertion: all calls to UPDATE_HASH are made with consecutive
@@ -25,7 +28,7 @@ Z_FORCEINLINE static uint32_t update_hash_roll(uint32_t h, uint32_t val) {
 Z_FORCEINLINE static uint32_t quick_insert_value(deflate_state *const s, uint32_t str, uint32_t val) {
     uint32_t h, head;
 
-    h = ((val * 2654435761U) >> 16) & HASH_MASK;
+    UPDATE_HASH_INT(h, val);
 
     head = s->head[h];
     if (LIKELY(head != str)) {
@@ -45,7 +48,7 @@ Z_FORCEINLINE static uint32_t quick_insert_string(deflate_state *const s, unsign
     uint32_t val, h, head;
 
     val = Z_U32_FROM_LE(zng_memread_4(strstart));
-    h = ((val * 2654435761U) >> 16) & HASH_MASK;
+    UPDATE_HASH_INT(h, val);
 
     head = s->head[h];
     if (LIKELY(head != str)) {
@@ -57,10 +60,10 @@ Z_FORCEINLINE static uint32_t quick_insert_string(deflate_state *const s, unsign
 
 Z_FORCEINLINE static uint32_t quick_insert_string_roll(deflate_state *const s, unsigned char *window, uint32_t str) {
     uint8_t *strstart = window + str + (STD_MIN_MATCH-1);
-    uint32_t val, h, head;
+    uint32_t h, head;
 
-    val = strstart[0];
-    h = ((s->ins_h << 5) ^ ((uint8_t)val)) & (32768u - 1u);
+    h = s->ins_h;
+    UPDATE_HASH_ROLL(h, strstart[0]);
     s->ins_h = h;
 
     head = s->head[h];
@@ -92,7 +95,7 @@ Z_FORCEINLINE static void insert_string_static(deflate_state *const s, unsigned 
         uint32_t val, h, head;
 
         val = Z_U32_FROM_LE(zng_memread_4(strstart));
-        h = ((val * 2654435761U) >> 16) & HASH_MASK;
+        UPDATE_HASH_INT(h, val);
 
         head = headp[h];
         if (LIKELY(head != idx)) {
@@ -113,10 +116,9 @@ Z_FORCEINLINE static void insert_string_roll_static(deflate_state *const s, unsi
     const unsigned int w_mask = W_MASK(s);
 
     for (uint32_t idx = str; strstart < strend; idx++, strstart++) {
-        uint32_t val, head;
+        uint32_t head;
 
-        val = strstart[0];
-        h = ((h << 5) ^ ((uint8_t)val)) & (32768u - 1u);
+        UPDATE_HASH_ROLL(h, strstart[0]);
 
         head = headp[h];
         if (LIKELY(head != idx)) {
