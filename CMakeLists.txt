@@ -633,8 +633,21 @@ if (UNIX AND NOT ZLIB_COMPAT AND NOT APPLE AND NOT CMAKE_SYSTEM_NAME STREQUAL AI
             return 0;
         }"
         HAVE_ATTRIBUTE_SYMVER FAIL_REGEX "symver")
+
+    check_c_source_compiles(
+        "
+        void foo(void);
+        void foo(void) {}
+        __asm__(\".symver foo, foo@VERS_1.0\");
+        int main(void) {
+            return 0;
+        }"
+        HAVE_ASM_SYMVER FAIL_REGEX "symver")
+
     if(HAVE_ATTRIBUTE_SYMVER)
         add_definitions(-DHAVE_ATTRIBUTE_SYMVER)
+    elseif(HAVE_ASM_SYMVER)
+        add_definitions(-DHAVE_ASM_SYMVER)
     else()
         message(WARNING "Unable to provide support for deprecated functions without '__attribute__((__symver__(x)))'")
     endif()
@@ -668,7 +681,7 @@ if(MSVC)
 endif()
 
 # Linker maps need to exclude duplicates if symver is not supported
-if(HAVE_ATTRIBUTE_SYMVER)
+if(HAVE_ATTRIBUTE_SYMVER OR HAVE_ASM_SYMVER)
     set(COMMENT_IF_NO_SYMVER "")
 else()
     set(COMMENT_IF_NO_SYMVER "#")

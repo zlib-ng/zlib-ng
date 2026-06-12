@@ -184,8 +184,8 @@
 #  define ZSYMVER_DEF(func,alias,ver) __attribute__((__symver__(Z_STRING(alias) "@@" ver)))
 #  define HAVE_SYMVER
 #elif defined(HAVE_ASM_SYMVER)
-#  define ZSYMVER(func,alias,ver) __asm__(".symver " func ", " Z_STRING(alias) "@" ver);
-#  define ZSYMVER_DEF(func,alias,ver) __asm__(".symver " func ", " Z_STRING(alias) "@@" ver);
+#  define ZSYMVER(func,alias,ver) __asm__(".symver " Z_STRING(func) ", " Z_STRING(alias) "@" ver);
+#  define ZSYMVER_DEF(func,alias,ver) __asm__(".symver " Z_STRING(func) ", " Z_STRING(alias) "@@" ver);
 #  define HAVE_SYMVER
 #else
 #  define ZSYMVER(func,alias,ver)

@@ -1059,22 +1059,50 @@ else
     echo "Checking for attribute(aligned) ... No." | tee -a configure.log
 fi
 
-# Check for attribute(symver) support in compiler
-cat > $test.c << EOF
+case "$uname" in
+    CYGWIN* | Cygwin* | cygwin* | MSYS* | msys* | MINGW* | mingw* | Darwin* | darwin* | AIX*)
+        with_symver=0 ;;
+    *)
+        with_symver=1 ;;
+esac
+if test $compat -eq 0 -a $with_symver -eq 1; then
+    # Check for attribute(symver) support in compiler
+    cat > $test.c << EOF
 void foo(void);
 __attribute__((__symver__("foo@VERS_1.0"))) void foo(void) {}
 int main(void) {
     return 0;
 }
 EOF
-if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
-    echo "Checking for attribute(symver) ... Yes." | tee -a configure.log
-    CFLAGS="$CFLAGS -DHAVE_ATTRIBUTE_SYMVER"
-    SFLAGS="$SFLAGS -DHAVE_ATTRIBUTE_SYMVER"
-    SYMVER_PREFIX=""
+    if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
+        echo "Checking for attribute(symver) ... Yes." | tee -a configure.log
+        CFLAGS="$CFLAGS -DHAVE_ATTRIBUTE_SYMVER"
+        SFLAGS="$SFLAGS -DHAVE_ATTRIBUTE_SYMVER"
+        SYMVER_PREFIX=""
+    else
+        echo "Checking for attribute(symver) ... No." | tee -a configure.log
+
+        # Check for asm .symver support in compiler
+        cat > $test.c << EOF
+void foo(void);
+__asm__(".symver foo, foo@VERS_1.0");
+void foo(void) {}
+int main(void) {
+    return 0;
+}
+EOF
+        if try ${CC} ${CFLAGS} $test.c $LDSHAREDLIBC; then
+            echo "Checking for asm .symver ... Yes." | tee -a configure.log
+            CFLAGS="$CFLAGS -DHAVE_ASM_SYMVER"
+            SFLAGS="$SFLAGS -DHAVE_ASM_SYMVER"
+        else
+            echo "Checking for asm .symver ... No." | tee -a configure.log
+
+            echo "Warning: Unable to provide support for deprecated functions without '__attribute__((__symver__(x)))' or '__asm__(".symver foo, foo@VERS_1.0")'" | tee -a configure.log
+            SYMVER_PREFIX="#"
+        fi
+    fi
 else
-    echo "Checking for attribute(symver) ... No." | tee -a configure.log
-    echo "Warning: Unable to provide support for deprecated functions without '__attribute__((__symver__(x)))'" | tee -a configure.log
     SYMVER_PREFIX="#"
 fi
 
@@ -1109,8 +1137,9 @@ cat > $test.map <<EOF
 };
 EOF
 if test $shared -eq 1; then
-  sed < $SRCDIR/zlib${SUFFIX}.map.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > zlib${SUFFIX}.map
-  sed < $SRCDIR/zlib${SUFFIX}.map.in "s/@COMMENT_IF_NO_SYMVER@/$SYMVER_PREFIX/g" > zlib${SUFFIX}.map
+  sed < $SRCDIR/zlib${SUFFIX}.map.in -e "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g"   \
+                                     -e "s/@COMMENT_IF_NO_SYMVER@/$SYMVER_PREFIX/g" \
+      > zlib${SUFFIX}.map
   LDVERSIONSCRIPT="-Wl,--version-script,$BUILDDIR/$MAPNAME"
   if try $CC -c $SFLAGS $test.c && try $LDSHARED $LDVERSIONSCRIPT $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
     echo "Checking for version script support... $LDVERSIONSCRIPT." | tee -a configure.log
