@@ -106,7 +106,7 @@ int Z_INTERNAL gz_buffer_alloc(gz_state *state) {
         return -1;
     }
 
-    state->size = want; // mark state as initialized
+    state->size = (unsigned)want; // mark state as initialized
     return 0;
 }
 
