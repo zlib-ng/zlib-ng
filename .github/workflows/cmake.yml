@@ -910,6 +910,7 @@ jobs:
       run: |
         brew update
         brew install ninja ${{ matrix.packages }}
+        brew trust --formula coverallsapp/coveralls/coveralls
       env:
         HOMEBREW_NO_INSTALL_CLEANUP: 1
 
