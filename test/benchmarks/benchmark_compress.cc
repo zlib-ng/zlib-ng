@@ -49,7 +49,7 @@ public:
 
         for (auto _ : state) {
             z_uintmax_t compressed_size = MAX_SIZE + 16;
-            err = PREFIX(compress)(outbuff, &compressed_size, inbuff, (size_t)state.range(0));
+            err = PREFIX(compress)(outbuff, &compressed_size, inbuff, (z_uintmax_t)state.range(0));
             if (err != Z_OK) {
                 fprintf(stderr, "compress() failed with error %d\n", err);
                 abort();
