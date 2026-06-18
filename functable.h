@@ -34,6 +34,7 @@ struct functable_s {
     uint32_t (* longest_match)      (deflate_state *const s, uint32_t cur_match);
     uint32_t (* longest_match_roll) (deflate_state *const s, uint32_t cur_match);
     void     (* slide_hash)         (deflate_state *s);
+    void     (* slide_hash_head)    (deflate_state *s);
 };
 
 Z_INTERNAL extern struct functable_s functable;

@@ -16,6 +16,7 @@ void inflate_fast_neon(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 uint32_t longest_match_neon(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_neon(deflate_state *const s, uint32_t cur_match);
 void slide_hash_neon(deflate_state *s);
+void slide_hash_head_neon(deflate_state *s);
 #endif
 
 #ifdef ARM_NEON_DOTPROD
@@ -48,6 +49,7 @@ uint32_t crc32_copy_armv8_pmull_eor3(uint32_t crc, uint8_t *dst, const uint8_t *
 
 #ifdef ARM_SIMD
 void slide_hash_armv6(deflate_state *s);
+void slide_hash_head_armv6(deflate_state *s);
 #endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
@@ -55,6 +57,8 @@ void slide_hash_armv6(deflate_state *s);
 #  ifdef ARM_SIMD_NATIVE
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_armv6
+#    undef native_slide_hash_head
+#    define native_slide_hash_head slide_hash_head_armv6
 #  endif
 // ARM - NEON
 #  ifdef ARM_NEON_NATIVE
@@ -74,6 +78,8 @@ void slide_hash_armv6(deflate_state *s);
 #    define native_longest_match_roll longest_match_roll_neon
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_neon
+#    undef native_slide_hash_head
+#    define native_slide_hash_head slide_hash_head_neon
 #  endif
 // ARM - NEON DotProd
 #  ifdef ARM_NEON_DOTPROD_NATIVE

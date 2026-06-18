@@ -424,6 +424,7 @@ static inline void put_uint64(deflate_state *s, uint64_t lld) {
 
 void Z_INTERNAL PREFIX(fill_window)(deflate_state *s);
 void Z_INTERNAL slide_hash_c(deflate_state *s);
+void Z_INTERNAL slide_hash_head_c(deflate_state *s);
 
         /* in trees.c */
 void Z_INTERNAL zng_tr_init(deflate_state *s);

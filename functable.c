@@ -95,6 +95,7 @@ static int init_functable(void) {
 #endif
 #ifdef SLIDE_HASH_FALLBACK
     ft.slide_hash = &slide_hash_c;
+    ft.slide_hash_head = &slide_hash_head_c;
 #endif
 
     // Select arch-optimized functions
@@ -119,6 +120,7 @@ static int init_functable(void) {
         ft.longest_match = &longest_match_sse2;
         ft.longest_match_roll = &longest_match_roll_sse2;
         ft.slide_hash = &slide_hash_sse2;
+        ft.slide_hash_head = &slide_hash_head_sse2;
 #  endif
 #  if defined(CRC32_CHORBA_SSE_FALLBACK) && !defined(X86_SSE41_NATIVE) && !defined(X86_PCLMULQDQ_NATIVE)
         ft.crc32 = &crc32_chorba_sse2;
@@ -193,6 +195,7 @@ static int init_functable(void) {
         ft.longest_match_roll = &longest_match_roll_avx2;
 #  endif
         ft.slide_hash = &slide_hash_avx2;
+        ft.slide_hash_head = &slide_hash_head_avx2;
     }
 #endif
 #ifdef X86_AVX2VNNI
@@ -256,6 +259,7 @@ static int init_functable(void) {
 #  endif
     {
         ft.slide_hash = &slide_hash_armv6;
+        ft.slide_hash_head = &slide_hash_head_armv6;
     }
 #endif
     // ARM - NEON
@@ -272,6 +276,7 @@ static int init_functable(void) {
         ft.longest_match = &longest_match_neon;
         ft.longest_match_roll = &longest_match_roll_neon;
         ft.slide_hash = &slide_hash_neon;
+        ft.slide_hash_head = &slide_hash_head_neon;
     }
 #endif
     // ARM - NEON DotProd
@@ -314,6 +319,7 @@ static int init_functable(void) {
         ft.adler32 = &adler32_vmx;
         ft.adler32_copy = &adler32_copy_vmx;
         ft.slide_hash = &slide_hash_vmx;
+        ft.slide_hash_head = &slide_hash_head_vmx;
     }
 #endif
     // Power8 - VSX
@@ -327,6 +333,7 @@ static int init_functable(void) {
         ft.chunkmemset_safe = &chunkmemset_safe_power8;
         ft.inflate_fast = &inflate_fast_power8;
         ft.slide_hash = &slide_hash_power8;
+        ft.slide_hash_head = &slide_hash_head_power8;
     }
 #endif
 #ifdef POWER8_VSX_CRC32
@@ -365,6 +372,7 @@ static int init_functable(void) {
         ft.longest_match = &longest_match_rvv;
         ft.longest_match_roll = &longest_match_roll_rvv;
         ft.slide_hash = &slide_hash_rvv;
+        ft.slide_hash_head = &slide_hash_head_rvv;
     }
 #endif
 
@@ -388,6 +396,7 @@ static int init_functable(void) {
         ft.crc32 = &crc32_s390_vx;
         ft.crc32_copy = &crc32_copy_s390_vx;
         ft.slide_hash = &slide_hash_vx;
+        ft.slide_hash_head = &slide_hash_head_vx;
     }
 #endif
 
@@ -414,6 +423,7 @@ static int init_functable(void) {
         ft.longest_match = &longest_match_lsx;
         ft.longest_match_roll = &longest_match_roll_lsx;
         ft.slide_hash = &slide_hash_lsx;
+        ft.slide_hash_head = &slide_hash_head_lsx;
     }
 #endif
 #ifdef LOONGARCH_LASX
@@ -429,6 +439,7 @@ static int init_functable(void) {
         ft.longest_match = &longest_match_lasx;
         ft.longest_match_roll = &longest_match_roll_lasx;
         ft.slide_hash = &slide_hash_lasx;
+        ft.slide_hash_head = &slide_hash_head_lasx;
     }
 #endif
 
@@ -446,6 +457,7 @@ static int init_functable(void) {
     FUNCTABLE_VERIFY_ASSIGN(ft, longest_match);
     FUNCTABLE_VERIFY_ASSIGN(ft, longest_match_roll);
     FUNCTABLE_VERIFY_ASSIGN(ft, slide_hash);
+    FUNCTABLE_VERIFY_ASSIGN(ft, slide_hash_head);
 
     // Memory barrier for weak memory order CPUs
     FUNCTABLE_BARRIER();
@@ -514,6 +526,11 @@ static void slide_hash_stub(deflate_state* s) {
     functable.slide_hash(s);
 }
 
+static void slide_hash_head_stub(deflate_state *s) {
+    FUNCTABLE_INIT_ABORT;
+    functable.slide_hash_head(s);
+}
+
 /* functable init */
 Z_INTERNAL struct functable_s functable = {
     force_init_stub,
@@ -527,6 +544,7 @@ Z_INTERNAL struct functable_s functable = {
     longest_match_stub,
     longest_match_roll_stub,
     slide_hash_stub,
+    slide_hash_head_stub,
 };
 
 #endif

@@ -55,4 +55,10 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
     slide_hash_c_chain(s->prev, wsize, wsize);
 }
 
+Z_INTERNAL void slide_hash_head_c(deflate_state *s) {
+    uint16_t wsize = (uint16_t)s->w_size;
+
+    slide_hash_c_chain(s->head, HASH_SIZE, wsize);
+}
+
 #endif /* SLIDE_HASH_FALLBACK */

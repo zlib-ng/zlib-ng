@@ -22,6 +22,7 @@ void inflate_fast_sse2(PREFIX3(stream)* strm, uint32_t start, int safe_mode);
 uint32_t longest_match_sse2(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_sse2(deflate_state *const s, uint32_t cur_match);
 void slide_hash_sse2(deflate_state *s);
+void slide_hash_head_sse2(deflate_state *s);
 
 #  ifdef CRC32_CHORBA_SSE_FALLBACK
     uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t len);
@@ -67,6 +68,7 @@ void inflate_fast_avx2(PREFIX3(stream)* strm, uint32_t start, int safe_mode);
 uint32_t longest_match_avx2(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_avx2(deflate_state *const s, uint32_t cur_match);
 void slide_hash_avx2(deflate_state *s);
+void slide_hash_head_avx2(deflate_state *s);
 #endif
 #ifdef X86_AVX512
 uint32_t adler32_avx512(uint32_t adler, const uint8_t *buf, size_t len);
@@ -121,6 +123,8 @@ uint32_t crc32_copy_vpclmulqdq_avx512(uint32_t crc, uint8_t *dst, const uint8_t 
 #    endif
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_sse2
+#    undef native_slide_hash_head
+#    define native_slide_hash_head slide_hash_head_sse2
 #  endif
 // X86 - SSSE3
 #  ifdef X86_SSSE3_NATIVE
@@ -172,6 +176,8 @@ uint32_t crc32_copy_vpclmulqdq_avx512(uint32_t crc, uint8_t *dst, const uint8_t 
 #    define native_longest_match_roll longest_match_roll_avx2
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_avx2
+#    undef native_slide_hash_head
+#    define native_slide_hash_head slide_hash_head_avx2
 #  endif
 // X86 - AVX2 (VNNI)
 #    if defined(X86_AVX2VNNI) && defined(__AVXVNNI__)

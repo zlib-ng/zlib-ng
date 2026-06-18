@@ -46,4 +46,11 @@ Z_INTERNAL void slide_hash_armv6(deflate_state *s) {
     slide_hash_chain(s->head, HASH_SIZE, wsize);
     slide_hash_chain(s->prev, wsize, wsize);
 }
+
+Z_INTERNAL void slide_hash_head_armv6(deflate_state *s) {
+    Assert(s->w_size <= UINT16_MAX, "w_size should fit in uint16_t");
+    uint16_t wsize = (uint16_t)s->w_size;
+
+    slide_hash_chain(s->head, HASH_SIZE, wsize);
+}
 #endif
