@@ -47,6 +47,21 @@ Z_FORCEINLINE static uint32_t insert_knuth_val(deflate_state *const s, uint32_t 
 }
 
 /* ===========================================================================
+ * Insert string str using a pre-read value, returning the previous head of the
+ * hash chain. The prev link is left untouched since deflate_quick only inspects
+ * the chain head and never walks the chain.
+ */
+Z_FORCEINLINE static uint32_t insert_knuth_val_head(deflate_state *const s, uint32_t str, uint32_t val) {
+    uint32_t h, head;
+
+    UPDATE_HASH_KNUTH(h, val);
+
+    head = s->head[h];
+    s->head[h] = (Pos)str;
+    return head;
+}
+
+/* ===========================================================================
  * Insert string str in the dictionary and set match_head to the previous head
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
@@ -63,6 +78,23 @@ Z_FORCEINLINE static uint32_t insert_knuth(deflate_state *const s, unsigned char
         s->prev[str & W_MASK(s)] = (Pos)head;
         s->head[h] = (Pos)str;
     }
+    return head;
+}
+
+/* ===========================================================================
+ * Insert string str read from the window, returning the previous head of the
+ * hash chain. Like insert_knuth but leaves the prev link untouched for
+ * deflate_quick, which only inspects the chain head.
+ */
+Z_FORCEINLINE static uint32_t insert_knuth_head(deflate_state *const s, unsigned char *window, uint32_t str) {
+    uint8_t *strstart = window + str;
+    uint32_t val, h, head;
+
+    val = Z_U32_FROM_LE(zng_memread_4(strstart));
+    UPDATE_HASH_KNUTH(h, val);
+
+    head = s->head[h];
+    s->head[h] = (Pos)str;
     return head;
 }
 
@@ -110,6 +142,25 @@ Z_FORCEINLINE static void insert_knuth_batch_static(deflate_state *const s, unsi
             prevp[idx & w_mask] = (Pos)head;
             headp[h] = (Pos)idx;
         }
+    }
+}
+
+/* ===========================================================================
+ * Insert count strings read from the window, leaving the prev links untouched.
+ * Used by fill_window during deflate_quick, which only inspects the chain head.
+ */
+Z_FORCEINLINE static void insert_knuth_batch_head_static(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
+    uint8_t *strstart = window + str;
+    uint8_t *strend = strstart + count;
+    Pos *headp = s->head;
+
+    for (uint32_t idx = str; strstart < strend; idx++, strstart++) {
+        uint32_t val, h;
+
+        val = Z_U32_FROM_LE(zng_memread_4(strstart));
+        UPDATE_HASH_KNUTH(h, val);
+
+        headp[h] = (Pos)idx;
     }
 }
 
