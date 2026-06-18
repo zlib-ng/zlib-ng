@@ -95,7 +95,7 @@ Z_FORCEINLINE static block_state deflate_quick_impl(deflate_state *s, int flush,
         uint32_t str_val = Z_U32_FROM_LE(zng_memread_4(window + strstart));
 
         if (LIKELY(lookahead >= WANT_MIN_MATCH)) {
-            uint32_t hash_head = quick_insert_value(s, strstart, str_val);
+            uint32_t hash_head = insert_knuth_val(s, strstart, str_val);
             int64_t dist = (int64_t)strstart - hash_head;
 
             if (dist <= MAX_DIST(s) && dist > 0) {

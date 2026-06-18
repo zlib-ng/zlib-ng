@@ -409,7 +409,7 @@ static int deflateStateCheck(PREFIX3(stream) *strm) {
 /* ========================================================================= */
 int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8_t *dictionary, uint32_t dictLength) {
     deflate_state *s;
-    insert_string_cb insert_string_func;
+    insert_batch_func insert_batch;
     unsigned int str, n;
     int wrap;
     uint32_t avail;
@@ -423,9 +423,9 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
         return Z_STREAM_ERROR;
 
     if (s->level >= 9)
-        insert_string_func = insert_string_roll;
+        insert_batch = insert_roll_batch;
     else
-        insert_string_func = insert_string;
+        insert_batch = insert_knuth_batch;
 
     /* when using zlib wrappers, compute Adler-32 for provided dictionary */
     if (wrap == 1)
@@ -454,7 +454,7 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     while (s->lookahead >= STD_MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (STD_MIN_MATCH - 1);
-        insert_string_func(s, s->window, str, n);
+        insert_batch(s, s->window, str, n);
         s->strstart = str + n;
         s->lookahead = STD_MIN_MATCH - 1;
         PREFIX(fill_window)(s);
@@ -1184,7 +1184,7 @@ static void lm_init(deflate_state *s) {
 
 void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
     PREFIX3(stream) *strm = s->strm;
-    insert_string_cb insert_string_func;
+    insert_batch_func insert_batch;
     unsigned char *window = s->window;
     unsigned n;
     unsigned int more;    /* Amount of free space at the end of the window. */
@@ -1194,9 +1194,9 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
 
     if (level >= 9)
-        insert_string_func = insert_string_roll;
+        insert_batch = insert_roll_batch;
     else
-        insert_string_func = insert_string;
+        insert_batch = insert_knuth_batch;
 
     do {
         more = s->window_size - s->lookahead - s->strstart;
@@ -1244,14 +1244,14 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             if (UNLIKELY(level >= 9)) {
                 s->ins_h = update_hash_roll(window[str], window[str+1]);
             } else if (str >= 1) {
-                quick_insert_string(s, window, str + 2 - STD_MIN_MATCH);
+                insert_knuth(s, window, str + 2 - STD_MIN_MATCH);
             }
             unsigned int count = s->insert;
             if (UNLIKELY(s->lookahead == 1)) {
                 count -= 1;
             }
             if (count > 0) {
-                insert_string_func(s, window, str, count);
+                insert_batch(s, window, str, count);
                 s->insert -= count;
             }
         }
