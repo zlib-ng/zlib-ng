@@ -143,9 +143,10 @@ typedef uint16_t Pos;
 /* Type definitions for hash callbacks */
 typedef struct internal_state deflate_state;
 
-typedef void (* insert_batch_func) (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
-void         insert_knuth_batch    (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
-void         insert_roll_batch     (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
+typedef void (* insert_batch_func)   (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
+void         insert_knuth_batch      (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
+void         insert_roll_batch       (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
+void         insert_knuth_batch_head (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
 
 /* Struct for memory allocation handling */
 typedef struct deflate_allocs_s {

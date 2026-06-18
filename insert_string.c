@@ -16,3 +16,7 @@ Z_INTERNAL void insert_knuth_batch(deflate_state *const s, unsigned char *window
 Z_INTERNAL void insert_roll_batch(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
     insert_roll_batch_static(s, window, str, count);
 }
+
+Z_INTERNAL void insert_knuth_batch_head(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
+    insert_knuth_batch_head_static(s, window, str, count);
+}

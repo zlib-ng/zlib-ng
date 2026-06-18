@@ -135,6 +135,15 @@ static const config configuration_table[10] = {
  * meaning.
  */
 
+/* Level 1 uses deflate_quick, which only reads the hash chain head, so it can
+ * skip prev maintenance. When quick is compiled out level 1 falls back to
+ * deflate_fast, which walks the chains like every other level. */
+#ifdef NO_QUICK_STRATEGY
+#  define HAVE_QUICK_STRATEGY 0
+#else
+#  define HAVE_QUICK_STRATEGY 1
+#endif
+
 /* rank Z_BLOCK between Z_NO_FLUSH and Z_PARTIAL_FLUSH */
 #define RANK(f) (((f) * 2) - ((f) > 4 ? 9 : 0))
 
@@ -623,9 +632,10 @@ int32_t Z_EXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int
     int hashless = level == 0 || strategy == Z_HUFFMAN_ONLY || strategy == Z_RLE;
     int was_hashless = s->level == 0 || s->strategy == Z_HUFFMAN_ONLY || s->strategy == Z_RLE;
 
-    /* Stale if the hash usage flipped (to/from huffman/rle/stored) or the hash
-     * function changed at level 9. */
-    int stale_chain = (hashless != was_hashless) || (level >= 9) != (s->level >= 9);
+    /* Stale if the hash usage flipped (to/from huffman/rle/stored), the hash
+     * function changed at level 9, or quick at level 1 left prev unmaintained. */
+    int stale_chain = (hashless != was_hashless) || (level >= 9) != (s->level >= 9) ||
+                      (HAVE_QUICK_STRATEGY && s->level == 1 && level != 1);
 
     /* Rebuild the hash chains when fill_window is called. */
     if (stale_chain && !hashless) {
@@ -1200,6 +1210,8 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
 
     if (level >= 9)
         insert_batch = insert_roll_batch;
+    else if (HAVE_QUICK_STRATEGY && level == 1)
+        insert_batch = insert_knuth_batch_head;
     else
         insert_batch = insert_knuth_batch;
 
@@ -1249,7 +1261,10 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             if (UNLIKELY(level >= 9)) {
                 s->ins_h = update_hash_roll(window[str], window[str+1]);
             } else if (str >= 1) {
-                insert_knuth(s, window, str + 2 - STD_MIN_MATCH);
+                if (HAVE_QUICK_STRATEGY && level == 1)
+                    insert_knuth_head(s, window, str + 2 - STD_MIN_MATCH);
+                else
+                    insert_knuth(s, window, str + 2 - STD_MIN_MATCH);
             }
             unsigned int count = s->insert;
             if (UNLIKELY(s->lookahead == 1)) {
