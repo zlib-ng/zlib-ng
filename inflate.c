@@ -101,7 +101,7 @@ int32_t Z_EXPORT PREFIX(inflateReset)(PREFIX3(stream) *strm) {
     state->wsize = 0;
     state->whave = 0;
     state->wnext = 0;
-    return PREFIX(inflateResetKeep)(strm);
+    Z_MUSTTAIL return PREFIX(inflateResetKeep)(strm);
 }
 
 int32_t Z_EXPORT PREFIX(inflateReset2)(PREFIX3(stream) *strm, int32_t windowBits) {

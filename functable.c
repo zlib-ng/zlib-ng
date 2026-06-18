@@ -478,32 +478,32 @@ static int force_init_stub(void) {
 
 static uint32_t adler32_stub(uint32_t adler, const uint8_t* buf, size_t len) {
     FUNCTABLE_INIT_ABORT;
-    return functable.adler32(adler, buf, len);
+    Z_MUSTTAIL_FT return functable.adler32(adler, buf, len);
 }
 
 static uint32_t adler32_copy_stub(uint32_t adler, uint8_t* dst, const uint8_t* src, size_t len) {
     FUNCTABLE_INIT_ABORT;
-    return functable.adler32_copy(adler, dst, src, len);
+    Z_MUSTTAIL_FT return functable.adler32_copy(adler, dst, src, len);
 }
 
 static uint8_t* chunkmemset_safe_stub(uint8_t* out, uint8_t *from, size_t len, size_t left) {
     FUNCTABLE_INIT_ABORT;
-    return functable.chunkmemset_safe(out, from, len, left);
+    Z_MUSTTAIL_FT return functable.chunkmemset_safe(out, from, len, left);
 }
 
 static uint32_t compare256_stub(const uint8_t* src0, const uint8_t* src1) {
     FUNCTABLE_INIT_ABORT;
-    return functable.compare256(src0, src1);
+    Z_MUSTTAIL_FT return functable.compare256(src0, src1);
 }
 
 static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
     FUNCTABLE_INIT_ABORT;
-    return functable.crc32(crc, buf, len);
+    Z_MUSTTAIL_FT return functable.crc32(crc, buf, len);
 }
 
 static uint32_t crc32_copy_stub(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
     FUNCTABLE_INIT_ABORT;
-    return functable.crc32_copy(crc, dst, src, len);
+    Z_MUSTTAIL_FT return functable.crc32_copy(crc, dst, src, len);
 }
 
 static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start, int safe_mode) {
@@ -513,12 +513,12 @@ static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start, int safe_mo
 
 static uint32_t longest_match_stub(deflate_state* const s, uint32_t cur_match) {
     FUNCTABLE_INIT_ABORT;
-    return functable.longest_match(s, cur_match);
+    Z_MUSTTAIL_FT return functable.longest_match(s, cur_match);
 }
 
 static uint32_t longest_match_roll_stub(deflate_state* const s, uint32_t cur_match) {
     FUNCTABLE_INIT_ABORT;
-    return functable.longest_match_roll(s, cur_match);
+    Z_MUSTTAIL_FT return functable.longest_match_roll(s, cur_match);
 }
 
 static void slide_hash_stub(deflate_state* s) {
