@@ -330,7 +330,7 @@ z_int32_t Z_EXPORT PREFIX(gzclose)(gzFile file) {
 
     return state->mode == GZ_READ ? PREFIX(gzclose_r)(file) : PREFIX(gzclose_w)(file);
 #else
-    return PREFIX(gzclose_r)(file);
+    Z_MUSTTAIL return PREFIX(gzclose_r)(file);
 #endif
 }
 
