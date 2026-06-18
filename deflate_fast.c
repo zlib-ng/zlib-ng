@@ -45,7 +45,7 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
          */
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
             uint32_t str_val = Z_U32_FROM_LE(zng_memread_4(window + s->strstart));
-            uint32_t hash_head = quick_insert_value(s, s->strstart, str_val);
+            uint32_t hash_head = insert_knuth_val(s, s->strstart, str_val);
             int64_t dist = (int64_t)s->strstart - hash_head;
             lc = (uint8_t)str_val;
 
@@ -80,11 +80,11 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
                 match_len--; /* string at strstart already in table */
                 s->strstart++;
 
-                insert_string_static(s, window, s->strstart, match_len);
+                insert_knuth_batch_static(s, window, s->strstart, match_len);
                 s->strstart += match_len;
             } else {
                 s->strstart += match_len;
-                quick_insert_string(s, window, s->strstart + 2 - STD_MIN_MATCH);
+                insert_knuth(s, window, s->strstart + 2 - STD_MIN_MATCH);
 
                 /* If lookahead < STD_MIN_MATCH, ins_h is garbage, but it does not
                  * matter since it will be recomputed at next deflate call.

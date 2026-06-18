@@ -1,4 +1,4 @@
-/* insert_string_p.h -- static insert_string and insert_string_roll functions
+/* insert_string_p.h -- static single and batch hash insert functions
  *
  * Copyright (C) 1995-2024 Jean-loup Gailly and Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
@@ -6,7 +6,7 @@
 #ifndef INSERT_STRING_P_H_
 #define INSERT_STRING_P_H_
 
-#define UPDATE_HASH_INT(h,val) h = (((val) * 2654435761U) >> 16) & HASH_MASK
+#define UPDATE_HASH_KNUTH(h,val) h = (((val) * 2654435761U) >> 16) & HASH_MASK
 #define UPDATE_HASH_ROLL(h,val) h = ((h << 5) ^ ((uint8_t)(val))) & (32768u - 1u)
 
 /* ===========================================================================
@@ -21,14 +21,14 @@ Z_FORCEINLINE static uint32_t update_hash_roll(uint32_t h, uint32_t val) {
 }
 
 /* ===========================================================================
- * Quick insert string str in the dictionary using a pre-read value and set match_head
+ * Insert string str in the dictionary using a pre-read value and set match_head
  * to the previous head of the hash chain (the most recent string with same hash key).
  * Return the previous length of the hash chain.
  */
-Z_FORCEINLINE static uint32_t quick_insert_value(deflate_state *const s, uint32_t str, uint32_t val) {
+Z_FORCEINLINE static uint32_t insert_knuth_val(deflate_state *const s, uint32_t str, uint32_t val) {
     uint32_t h, head;
 
-    UPDATE_HASH_INT(h, val);
+    UPDATE_HASH_KNUTH(h, val);
 
     head = s->head[h];
     if (LIKELY(head != str)) {
@@ -39,16 +39,16 @@ Z_FORCEINLINE static uint32_t quick_insert_value(deflate_state *const s, uint32_
 }
 
 /* ===========================================================================
- * Quick insert string str in the dictionary and set match_head to the previous head
+ * Insert string str in the dictionary and set match_head to the previous head
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
  */
-Z_FORCEINLINE static uint32_t quick_insert_string(deflate_state *const s, unsigned char *window, uint32_t str) {
+Z_FORCEINLINE static uint32_t insert_knuth(deflate_state *const s, unsigned char *window, uint32_t str) {
     uint8_t *strstart = window + str;
     uint32_t val, h, head;
 
     val = Z_U32_FROM_LE(zng_memread_4(strstart));
-    UPDATE_HASH_INT(h, val);
+    UPDATE_HASH_KNUTH(h, val);
 
     head = s->head[h];
     if (LIKELY(head != str)) {
@@ -58,7 +58,7 @@ Z_FORCEINLINE static uint32_t quick_insert_string(deflate_state *const s, unsign
     return head;
 }
 
-Z_FORCEINLINE static uint32_t quick_insert_string_roll(deflate_state *const s, unsigned char *window, uint32_t str) {
+Z_FORCEINLINE static uint32_t insert_roll(deflate_state *const s, unsigned char *window, uint32_t str) {
     uint8_t *strstart = window + str + (STD_MIN_MATCH-1);
     uint32_t h, head;
 
@@ -78,11 +78,11 @@ Z_FORCEINLINE static uint32_t quick_insert_string_roll(deflate_state *const s, u
  * Insert string str in the dictionary and set match_head to the previous head
  * of the hash chain (the most recent string with same hash key). Return
  * the previous length of the hash chain.
- * IN  assertion: all calls to INSERT_STRING are made with consecutive
+ * IN  assertion: all calls to insert_knuth_batch are made with consecutive
  *    input characters and the first STD_MIN_MATCH bytes of str are valid
  *    (except for the last STD_MIN_MATCH-1 bytes of the input file).
  */
-Z_FORCEINLINE static void insert_string_static(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
+Z_FORCEINLINE static void insert_knuth_batch_static(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
     uint8_t *strstart = window + str;
     uint8_t *strend = strstart + count;
 
@@ -95,7 +95,7 @@ Z_FORCEINLINE static void insert_string_static(deflate_state *const s, unsigned 
         uint32_t val, h, head;
 
         val = Z_U32_FROM_LE(zng_memread_4(strstart));
-        UPDATE_HASH_INT(h, val);
+        UPDATE_HASH_KNUTH(h, val);
 
         head = headp[h];
         if (LIKELY(head != idx)) {
@@ -105,7 +105,7 @@ Z_FORCEINLINE static void insert_string_static(deflate_state *const s, unsigned 
     }
 }
 
-Z_FORCEINLINE static void insert_string_roll_static(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
+Z_FORCEINLINE static void insert_roll_batch_static(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
     uint8_t *strstart = window + str + (STD_MIN_MATCH-1);
     uint8_t *strend = strstart + count;
 

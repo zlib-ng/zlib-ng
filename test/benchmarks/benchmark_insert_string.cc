@@ -19,7 +19,7 @@ extern "C" {
 #define MAX_WSIZE 32768
 #define TEST_WINDOW_SIZE (MAX_WSIZE * 2)
 
-typedef uint32_t (* quick_insert_string_cb)(deflate_state *const s, unsigned char *window, uint32_t str);
+typedef uint32_t (* insert_single_func)(deflate_state *const s, unsigned char *window, uint32_t str);
 
 // Base class with common setup/teardown for both insert_string benchmarks
 class insert_string_base: public benchmark::Fixture {
@@ -66,9 +66,9 @@ public:
     }
 };
 
-class insert_string_bench: public insert_string_base {
+class insert_batch_bench: public insert_string_base {
 public:
-    void Bench(benchmark::State& state, insert_string_cb insert_func) {
+    void Bench(benchmark::State& state, insert_batch_func insert_batch) {
         uint32_t str_pos = (uint32_t)state.range(0);  // Starting position
         uint32_t count = (uint32_t)state.range(1);    // Number of strings to insert
 
@@ -88,21 +88,21 @@ public:
 
             state.ResumeTiming();
 
-            // Benchmark the insert_string function
-            insert_func(s, window, str_pos, count);
+            // Benchmark the batch insert function
+            insert_batch(s, window, str_pos, count);
         }
     }
 };
 
-#define BENCHMARK_INSERT_STRING(name, fptr, support_flag) \
-    BENCHMARK_DEFINE_F(insert_string_bench, name)(benchmark::State& state) { \
+#define BENCHMARK_INSERT_BATCH(name, fptr, support_flag) \
+    BENCHMARK_DEFINE_F(insert_batch_bench, name)(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("Function " #name " not supported"); \
             return; \
         } \
         Bench(state, fptr); \
     } \
-    BENCHMARK_REGISTER_F(insert_string_bench, name) \
+    BENCHMARK_REGISTER_F(insert_batch_bench, name) \
         ->Args({100, 3})        /* Most common case */ \
         ->Args({100, 4})        \
         ->Args({100, 5})        \
@@ -113,16 +113,16 @@ public:
         ->Args({100, 255})      /* Near maximum observed values */ \
         ->Unit(benchmark::kNanosecond);
 
-// Benchmark the standard integer hash variant
-BENCHMARK_INSERT_STRING(integer_hash, ::insert_string, 1);
+// Benchmark the Knuth multiplicative hash variant
+BENCHMARK_INSERT_BATCH(knuth_hash, ::insert_knuth_batch, 1);
 
 // Benchmark the rolling hash variant
-BENCHMARK_INSERT_STRING(rolling_hash, ::insert_string_roll, 1);
+BENCHMARK_INSERT_BATCH(roll_hash, ::insert_roll_batch, 1);
 
-// Additional benchmark class for quick_insert_string functions
-class quick_insert_string_bench: public insert_string_base {
+// Additional benchmark class for single insert functions
+class insert_single_bench: public insert_string_base {
 public:
-    void Bench(benchmark::State& state, quick_insert_string_cb quick_insert_func) {
+    void Bench(benchmark::State& state, insert_single_func insert_single) {
         uint32_t start_pos = (uint32_t)state.range(0);  // Starting position
         uint32_t count = (uint32_t)state.range(1);      // Number of insertions
 
@@ -141,28 +141,28 @@ public:
 
             state.ResumeTiming();
 
-            // Benchmark quick_insert_string (single insertions)
+            // Benchmark single insertions
             for (uint32_t i = 0; i < count; i++) {
-                uint32_t result = quick_insert_func(s, window, start_pos + i);
+                uint32_t result = insert_single(s, window, start_pos + i);
                 benchmark::DoNotOptimize(result);
             }
         }
     }
 };
 
-#define BENCHMARK_QUICK_INSERT_STRING(name, fptr, support_flag) \
-    BENCHMARK_DEFINE_F(quick_insert_string_bench, name)(benchmark::State& state) { \
+#define BENCHMARK_INSERT_SINGLE(name, fptr, support_flag) \
+    BENCHMARK_DEFINE_F(insert_single_bench, name)(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("Function " #name " not supported"); \
             return; \
         } \
         Bench(state, fptr); \
     } \
-    BENCHMARK_REGISTER_F(quick_insert_string_bench, name) \
+    BENCHMARK_REGISTER_F(insert_single_bench, name) \
         ->Args({100, 1})        /* Single insertion (baseline) */ \
         ->Args({100, 100})      /* 100 insertions (measure amortized cost) */ \
         ->Args({16000, 100})    /* 100 insertions at mid window (different hash distribution) */ \
         ->Unit(benchmark::kNanosecond);
 
-BENCHMARK_QUICK_INSERT_STRING(quick_integer_hash, ::quick_insert_string, 1);
-BENCHMARK_QUICK_INSERT_STRING(quick_rolling_hash, ::quick_insert_string_roll, 1);
+BENCHMARK_INSERT_SINGLE(knuth_hash, ::insert_knuth, 1);
+BENCHMARK_INSERT_SINGLE(roll_hash, ::insert_roll, 1);

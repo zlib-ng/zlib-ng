@@ -9,10 +9,10 @@
 #include "deflate.h"
 #include "insert_string_p.h"
 
-Z_INTERNAL void insert_string(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
-    insert_string_static(s, window, str, count);
+Z_INTERNAL void insert_knuth_batch(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
+    insert_knuth_batch_static(s, window, str, count);
 }
 
-Z_INTERNAL void insert_string_roll(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
-    insert_string_roll_static(s, window, str, count);
+Z_INTERNAL void insert_roll_batch(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count) {
+    insert_roll_batch_static(s, window, str, count);
 }
