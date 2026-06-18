@@ -520,6 +520,12 @@ jobs:
             cmake-args: -G "Visual Studio 18 2026" -A x64 -T v145 -DCMAKE_C_STANDARD=23 -DWITH_BENCHMARKS=ON
             # Coverage disabled for msvc
 
+          - name: Windows MSVC 2026 v145 Win64 C23 Compat
+            os: windows-2025-vs2026
+            compiler: cl
+            cmake-args: -G "Visual Studio 18 2026" -A x64 -T v145 -DCMAKE_C_STANDARD=23 -DWITH_BENCHMARKS=ON -DZLIB_COMPAT=ON
+            # Coverage disabled for msvc
+
           - name: Windows MSVC 2022 v143 Win32
             os: windows-2022
             compiler: cl
