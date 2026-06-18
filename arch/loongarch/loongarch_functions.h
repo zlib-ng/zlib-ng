@@ -28,6 +28,7 @@ void inflate_fast_lsx(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 uint32_t longest_match_lsx(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_lsx(deflate_state *const s, uint32_t cur_match);
 void slide_hash_lsx(deflate_state *s);
+void slide_hash_head_lsx(deflate_state *s);
 #endif
 
 #ifndef LOONGARCH_LSX_NATIVE
@@ -46,6 +47,7 @@ void inflate_fast_lasx(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 uint32_t longest_match_lasx(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_lasx(deflate_state *const s, uint32_t cur_match);
 void slide_hash_lasx(deflate_state *s);
+void slide_hash_head_lasx(deflate_state *s);
 #endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
@@ -73,6 +75,8 @@ void slide_hash_lasx(deflate_state *s);
 #    define native_longest_match_roll longest_match_roll_lsx
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_lsx
+#    undef native_slide_hash_head
+#    define native_slide_hash_head slide_hash_head_lsx
 #  endif
 #  ifdef LOONGARCH_LASX_NATIVE
 #    undef native_adler32
@@ -91,6 +95,8 @@ void slide_hash_lasx(deflate_state *s);
 #    define native_longest_match_roll longest_match_roll_lasx
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_lasx
+#    undef native_slide_hash_head
+#    define native_slide_hash_head slide_hash_head_lasx
 #  endif
 #endif
 

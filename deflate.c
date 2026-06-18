@@ -1233,7 +1233,14 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             s->block_start -= (int)wsize;
             if (s->insert > s->strstart)
                 s->insert = s->strstart;
-            FUNCTABLE_CALL(slide_hash)(s);
+            if (s->strategy != Z_HUFFMAN_ONLY && s->strategy != Z_RLE) {
+                /* Z_HUFFMAN_ONLY and Z_RLE never read the hash chain. deflate_quick
+                 * reads the chain head but never walks prev, so it slides head only. */
+                if (HAVE_QUICK_STRATEGY && level == 1)
+                    FUNCTABLE_CALL(slide_hash_head)(s);
+                else
+                    FUNCTABLE_CALL(slide_hash)(s);
+            }
             more += wsize;
         }
         if (strm->avail_in == 0)

@@ -46,4 +46,12 @@ Z_INTERNAL void slide_hash_lasx(deflate_state *s) {
     slide_hash_chain(s->prev, wsize, ymm_wsize);
 }
 
+Z_INTERNAL void slide_hash_head_lasx(deflate_state *s) {
+    Assert(s->w_size <= UINT16_MAX, "w_size should fit in uint16_t");
+    uint16_t wsize = (uint16_t)s->w_size;
+    const __m256i ymm_wsize = __lasx_xvreplgr2vr_h((short)wsize);
+
+    slide_hash_chain(s->head, HASH_SIZE, ymm_wsize);
+}
+
 #endif

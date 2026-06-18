@@ -51,4 +51,13 @@ Z_INTERNAL void slide_hash_lsx(deflate_state *s) {
     slide_hash_chain(s->prev, wsize, xmm_wsize);
 }
 
+Z_INTERNAL void slide_hash_head_lsx(deflate_state *s) {
+    Assert(s->w_size <= UINT16_MAX, "w_size should fit in uint16_t");
+    uint16_t wsize = (uint16_t)s->w_size;
+    const __m128i xmm_wsize = __lsx_vreplgr2vr_h((short)wsize);
+
+    assert(((uintptr_t)s->head & 15) == 0);
+    slide_hash_chain(s->head, HASH_SIZE, xmm_wsize);
+}
+
 #endif

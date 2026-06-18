@@ -50,6 +50,7 @@ uint32_t longest_match_roll_c(deflate_state *const s, uint32_t cur_match);
 #endif
 #ifdef SLIDE_HASH_FALLBACK
 void     slide_hash_c(deflate_state *s);
+void     slide_hash_head_c(deflate_state *s);
 #endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
@@ -99,6 +100,9 @@ void     slide_hash_c(deflate_state *s);
 #  ifdef SLIDE_HASH_FALLBACK
 #    ifndef native_slide_hash
 #      define native_slide_hash slide_hash_c
+#    endif
+#    ifndef native_slide_hash_head
+#      define native_slide_hash_head slide_hash_head_c
 #    endif
 #  endif
 #endif

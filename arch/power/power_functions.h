@@ -13,6 +13,7 @@
 uint32_t adler32_vmx(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_copy_vmx(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 void slide_hash_vmx(deflate_state *s);
+void slide_hash_head_vmx(deflate_state *s);
 #endif
 
 #ifdef POWER8_VSX
@@ -22,6 +23,7 @@ uint8_t* chunkmemset_safe_power8(uint8_t *out, uint8_t *from, size_t len, size_t
 uint32_t crc32_power8(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_power8(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 void slide_hash_power8(deflate_state *s);
+void slide_hash_head_power8(deflate_state *s);
 void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 #endif
 
@@ -56,6 +58,8 @@ uint32_t longest_match_roll_power9(deflate_state *const s, uint32_t cur_match);
 #    define native_adler32_copy adler32_copy_vmx
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_vmx
+#    undef native_slide_hash_head
+#    define native_slide_hash_head slide_hash_head_vmx
 #  endif
 // Power8 - VSX
 #  ifdef POWER8_VSX_NATIVE
@@ -69,6 +73,8 @@ uint32_t longest_match_roll_power9(deflate_state *const s, uint32_t cur_match);
 #    define native_inflate_fast inflate_fast_power8
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_power8
+#    undef native_slide_hash_head
+#    define native_slide_hash_head slide_hash_head_power8
 #  endif
 #  ifdef POWER8_VSX_CRC32_NATIVE
 #    undef native_crc32

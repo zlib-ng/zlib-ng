@@ -20,6 +20,7 @@
 uint32_t crc32_s390_vx(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_s390_vx(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 void slide_hash_vx(deflate_state *s);
+void slide_hash_head_vx(deflate_state *s);
 
 #ifdef __clang__
 #  if ((__clang_major__ == 18) || (__clang_major__ == 19 && (__clang_minor__ < 1 || (__clang_minor__ == 1 && __clang_patchlevel__ < 2))))
@@ -38,6 +39,8 @@ void slide_hash_vx(deflate_state *s);
 #    define native_crc32_copy crc32_copy_s390_vx
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_vx
+#    undef native_slide_hash_head
+#    define native_slide_hash_head slide_hash_head_vx
 #  endif
 #endif
 
