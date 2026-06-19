@@ -7,7 +7,7 @@
 #endif
 
 static const uint8_t *data;
-static size_t dataLen;
+static z_uintmax_t dataLen;
 
 static void check_compress_level(uint8_t *compr, z_uintmax_t comprLen,
                                  uint8_t *uncompr, z_uintmax_t uncomprLen,
@@ -50,8 +50,8 @@ static void check_decompress(uint8_t *compr, z_uintmax_t comprLen) {
 
 int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
     /* compressBound does not provide enough space for low compression levels. */
-    z_size_t comprLen = 100 + 2 * PREFIX(compressBound)(size);
-    z_size_t uncomprLen = (z_size_t)size;
+    z_uintmax_t comprLen = 100 + 2 * PREFIX(compressBound)((z_uintmax_t)size);
+    z_uintmax_t uncomprLen = (z_uintmax_t)size;
     uint8_t *compr, *uncompr;
 
     /* Discard inputs larger than 1Mb. */
@@ -61,7 +61,7 @@ int LLVMFuzzerTestOneInput(const uint8_t *d, size_t size) {
         return 0;
 
     data = d;
-    dataLen = size;
+    dataLen = (z_uintmax_t)size;
     compr = (uint8_t *)calloc(1, comprLen);
     uncompr = (uint8_t *)calloc(1, uncomprLen);
 
