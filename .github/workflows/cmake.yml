@@ -196,6 +196,15 @@ jobs:
             cmake-args: -DZLIB_COMPAT=ON -DWITH_SANITIZER=Undefined
             coverage: ubuntu_gcc_aarch64_compat_ubsan
 
+          - name: Ubuntu Clang ARMv7-A
+            os: ubuntu-24.04-arm
+            cache-key: armhf
+            compiler: clang
+            cxx-compiler: clang++
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armv7a-clang.cmake -DWITH_ARMV8=OFF
+            packages: qemu-user crossbuild-essential-armhf
+            # Coverage disabled for Clang
+
           - name: Ubuntu Clang AARCH64 MSAN
             os: ubuntu-24.04-arm
             compiler: clang
