@@ -158,6 +158,11 @@ jobs:
             gcov-exec: arm-linux-gnueabi-gcov
             coverage: ubuntu_gcc_armsf_compat_no_opt
 
+          - name: Ubuntu Clang ARM SF
+            os: ubuntu-latest
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-clang.cmake
+            packages: qemu-user clang binutils-arm-linux-gnueabi libgcc-11-dev-armel-cross libc-dev-armel-cross libstdc++-11-dev-armel-cross
+
           - name: Ubuntu GCC ARM HF ASAN
             os: ubuntu-24.04-arm
             cache-key: armhf
@@ -185,6 +190,11 @@ jobs:
             gcov-exec: arm-linux-gnueabihf-gcov
             coverage: ubuntu_gcc_armhf_compat_ubsan
 
+          - name: Ubuntu Clang ARM HF
+            os: ubuntu-latest
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-armhf-clang.cmake
+            packages: qemu-user clang binutils-arm-linux-gnueabihf libgcc-11-dev-armhf-cross libc-dev-armhf-cross libstdc++-11-dev-armhf-cross
+
           - name: Ubuntu GCC AARCH64 ASAN
             os: ubuntu-24.04-arm
             cmake-args: -DWITH_BENCHMARKS=ON -DWITH_SANITIZER=Address
@@ -202,6 +212,11 @@ jobs:
             cxx-compiler: clang++
             cmake-args: -DWITH_SANITIZER=Memory
             # Coverage disabled, causes MSAN errors
+
+          - name: Ubuntu Clang AARCH64
+            os: ubuntu-latest
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-aarch64-clang.cmake
+            packages: qemu-user clang binutils-aarch64-linux-gnu libgcc-11-dev-arm64-cross libc-dev-arm64-cross libstdc++-11-dev-arm64-cross
 
           - name: Ubuntu GCC MIPS
             os: ubuntu-latest
