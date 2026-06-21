@@ -62,6 +62,7 @@ public:
     BENCHMARK_DEFINE_F(crc32_copy, name)(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
+            return; \
         } \
         Bench(state, copyfunc, 0); \
     } \
@@ -73,6 +74,7 @@ public:
     BENCHMARK_DEFINE_F(crc32_copy, ALIGNED_NAME(name))(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
+            return; \
         } \
         Bench(state, copyfunc, 1); \
     } \
@@ -85,6 +87,7 @@ public:
     BENCHMARK_DEFINE_F(crc32_copy, MEMCPY_NAME(name))(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
+            return; \
         } \
 	Bench(state, [](uint32_t init_sum, unsigned char *dst, \
                         const uint8_t *buf, size_t len) -> uint32_t { \
@@ -99,6 +102,7 @@ public:
     BENCHMARK_DEFINE_F(crc32_copy, MEMCPY_ALIGNED_NAME(name))(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
+            return; \
         } \
 	Bench(state, [](uint32_t init_sum, unsigned char *dst, \
                         const uint8_t *buf, size_t len) -> uint32_t { \

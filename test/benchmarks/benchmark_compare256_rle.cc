@@ -63,6 +63,7 @@ public:
     BENCHMARK_DEFINE_F(compare256_rle, name)(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
+            return; \
         } \
         Bench(state, comparefunc); \
     } \

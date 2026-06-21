@@ -109,6 +109,7 @@ public:
     void Bench(benchmark::State &state) {
         if (!test_files_found) {
             state.SkipWithError("Test imagery in test_pngs not found");
+            return;
         }
 
         png_decode::Bench(state);

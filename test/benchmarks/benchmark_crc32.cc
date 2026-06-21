@@ -56,6 +56,7 @@ public:
     BENCHMARK_DEFINE_F(crc32, name)(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
+            return; \
         } \
         Bench(state, hashfunc, 0); \
     } \
@@ -67,6 +68,7 @@ public:
     BENCHMARK_DEFINE_F(crc32, ALIGNED_NAME(name))(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
+            return; \
         } \
         Bench(state, hashfunc, 1); \
     } \

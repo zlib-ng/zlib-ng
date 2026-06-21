@@ -72,6 +72,7 @@ public:
     BENCHMARK_DEFINE_F(slide_hash, name)(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("CPU does not support " #name); \
+            return; \
         } \
         Bench(state, fptr); \
     } \

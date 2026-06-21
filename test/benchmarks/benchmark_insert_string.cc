@@ -98,6 +98,7 @@ public:
     BENCHMARK_DEFINE_F(insert_string_bench, name)(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("Function " #name " not supported"); \
+            return; \
         } \
         Bench(state, fptr); \
     } \
@@ -153,6 +154,7 @@ public:
     BENCHMARK_DEFINE_F(quick_insert_string_bench, name)(benchmark::State& state) { \
         if (!(support_flag)) { \
             state.SkipWithError("Function " #name " not supported"); \
+            return; \
         } \
         Bench(state, fptr); \
     } \
