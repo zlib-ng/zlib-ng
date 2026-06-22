@@ -104,7 +104,6 @@ static inline int zng_tr_tally_dist(deflate_state* s, uint32_t dist, uint32_t le
 #  endif
     s->sym_next = sym_next + 3;
 #endif
-    s->matches++;
     dist--;
     Assert(dist < MAX_DIST(s) && (uint16_t)d_code(dist) < (uint16_t)D_CODES,
         "zng_tr_tally: bad match");

@@ -117,7 +117,7 @@ static void init_block(deflate_state *s) {
 
     s->dyn_ltree[END_BLOCK].Freq = 1;
     s->opt_len = s->static_len = 0;
-    s->sym_next = s->matches = 0;
+    s->sym_next = 0;
 }
 
 #define SMALLEST 1
