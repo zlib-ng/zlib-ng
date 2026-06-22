@@ -24,6 +24,8 @@ CC=mips-linux-gnu-gcc CHOST=mips-linux-gnu test/abicheck.sh --refresh-if || exit
 CC=mips-linux-gnu-gcc CHOST=mips-linux-gnu test/abicheck.sh --zlib-compat --refresh-if || exit
 CC=mips64-linux-gnuabi64-gcc CHOST=mips64-linux-gnuabi64 test/abicheck.sh --refresh-if || exit
 CC=mips64-linux-gnuabi64-gcc CHOST=mips64-linux-gnuabi64 test/abicheck.sh --zlib-compat --refresh-if || exit
+CC=mipsisa64r6-linux-gnuabi64-gcc-14 CHOST=mipsisa64r6-linux-gnuabi64 test/abicheck.sh --refresh-if || exit
+CC=mipsisa64r6-linux-gnuabi64-gcc-14 CHOST=mipsisa64r6-linux-gnuabi64 test/abicheck.sh --zlib-compat --refresh-if || exit
 CC=powerpc-linux-gnu-gcc CHOST=powerpc-linux-gnu test/abicheck.sh --refresh-if || exit
 CC=powerpc-linux-gnu-gcc CHOST=powerpc-linux-gnu test/abicheck.sh --zlib-compat --refresh-if || exit
 CC=powerpc64-linux-gnu-gcc CHOST=powerpc64-linux-gnu test/abicheck.sh --refresh-if || exit

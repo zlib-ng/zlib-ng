@@ -94,6 +94,10 @@ BENCHMARK_ADLER32(neon, adler32_neon, test_cpu_features.arm.has_neon);
 BENCHMARK_ADLER32(neon_dotprod, adler32_neon_dotprod, test_cpu_features.arm.has_neon && test_cpu_features.arm.has_dotprod);
 #endif
 
+#ifdef MIPS_MSA
+BENCHMARK_ADLER32(msa, adler32_msa, test_cpu_features.mips.has_msa);
+#endif
+
 #ifdef PPC_VMX
 BENCHMARK_ADLER32(vmx, adler32_vmx, test_cpu_features.power.has_altivec);
 #endif

@@ -13,6 +13,8 @@ Z_INTERNAL void cpu_check_features(struct cpu_features *features) {
     x86_check_features(&features->x86);
 #elif defined(ARM_FEATURES)
     arm_check_features(&features->arm);
+#elif defined(MIPS_FEATURES)
+    mips_check_features(&features->mips);
 #elif defined(PPC_FEATURES) || defined(POWER_FEATURES)
     power_check_features(&features->power);
 #elif defined(S390_FEATURES)

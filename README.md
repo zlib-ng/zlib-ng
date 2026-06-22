@@ -20,9 +20,9 @@ Features
 * Modern C11 syntax and a clean code layout
 * Deflate medium and quick algorithms based on Intel’s zlib fork
 * Support for CPU intrinsics when available
-  * Adler32 implementation using SSSE3, SSE4.2, AVX2, AVX512, AVX512-VNNI, Neon, Neon(DotProd), VMX & VSX, LSX, LASX, RVV
+  * Adler32 implementation using SSSE3, SSE4.2, AVX2, AVX512, AVX512-VNNI, Neon, Neon(DotProd), MSA, VMX & VSX, LSX, LASX, RVV
   * CRC32-B implementation using SSE2, SSE4.1, (V)PCLMULQDQ, ARMv8, ARMv8.2 PMULL+EOR3, Power8, IBM Z, LoongArch, ZBC
-  * Slide hash implementations using SSE2, AVX2, ARMv6, Neon, Power8, VMX & VSX, LSX, LASX
+  * Slide hash implementations using SSE2, AVX2, ARMv6, Neon, MSA, Power8, VMX & VSX, LSX, LASX
   * Compare256 implementations using SSE2, AVX2, AVX512, Neon, Power9, LSX, LASX, RVV
   * Inflate chunk copying using SSE2, SSSE3, AVX2, AVX512, Neon, Power8, VSX, LSX, LASX, RVV
   * Support for hardware-accelerated deflate using IBM Z DFLTCC
@@ -209,6 +209,7 @@ Advanced Build Options
 | WITH_ARMV6                      | --without-armv6       | arm: Build with ARMv6 intrinsics                                                    | ON       |
 | WITH_ARMV8                      | --without-armv8       | arm: Build with ARMv8 intrinsics                                                    | ON       |
 | WITH_NEON                       | --without-neon        | arm: Build with NEON intrinsics                                                     | ON       |
+| WITH_MSA                        | --without-msa         | mips: Build with MSA intrinsics                                                     | ON       |
 | WITH_ALTIVEC                    | --without-altivec     | ppc: Build with AltiVec (VMX) intrinsics                                            | ON       |
 | WITH_POWER8                     | --without-power8      | ppc: Build with POWER8 intrinsics                                                   | ON       |
 | WITH_POWER9                     | --without-power9      | ppc: Build with POWER9 intrinsics                                                   | ON       |
