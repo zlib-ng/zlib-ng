@@ -462,6 +462,27 @@ macro(check_vpclmulqdq_intrinsics)
     endif()
 endmacro()
 
+macro(check_msa_intrinsics)
+    # Check if compiler supports MSA
+    set(CMAKE_REQUIRED_FLAGS "-mmsa -mhard-float -mfp64 -mnan=2008")
+    check_c_source_compiles(
+        "#include <msa.h>
+         int main(void)
+         {
+             v16i8 a = __msa_fill_b(0);
+             v16i8 b = __msa_fill_b(0);
+             a = __msa_add_a_b(a, b);
+             return 0;
+         }"
+         HAVE_MSA_INTRIN
+         )
+    set(CMAKE_REQUIRED_FLAGS)
+
+    if(HAVE_MSA_INTRIN)
+        set(MSAFLAGS "-mmsa -mhard-float -mfp64 -mnan=2008")
+    endif()
+endmacro()
+
 macro(check_ppc_intrinsics)
     # Check if compiler supports AltiVec
     set(CMAKE_REQUIRED_FLAGS "-maltivec ${ZNOLTOFLAG}")

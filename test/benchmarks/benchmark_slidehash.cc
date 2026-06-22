@@ -92,6 +92,9 @@ BENCHMARK_SLIDEHASH(armv6, slide_hash_armv6, test_cpu_features.arm.has_simd);
 #ifdef ARM_NEON
 BENCHMARK_SLIDEHASH(neon, slide_hash_neon, test_cpu_features.arm.has_neon);
 #endif
+#ifdef MIPS_MSA
+BENCHMARK_SLIDEHASH(msa, slide_hash_msa, test_cpu_features.mips.has_msa);
+#endif
 #ifdef POWER8_VSX
 BENCHMARK_SLIDEHASH(power8, slide_hash_power8, test_cpu_features.power.has_arch_2_07);
 #endif

@@ -111,6 +111,7 @@ builddfltccdeflate=0
 builddfltccinflate=0
 builds390vx=1
 buildcrc32la=1
+buildmsa=1
 floatabi=
 # For CPUs that can benefit from AVX512, it seems GCC generates suboptimal
 # instruction scheduling unless you specify a reasonable -mtune= target
@@ -142,6 +143,7 @@ armv6flag=
 noltoflag=
 vmxflag="-maltivec"
 s390vxflag="-march=z13"
+msaflag="-mmsa -mhard-float -mfp64 -mnan=2008"
 symbol_prefix=""
 without_optimizations=0
 without_new_strategies=0
@@ -203,6 +205,7 @@ case "$1" in
       echo '    [--with-dfltcc-inflate]     Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z' | tee -a configure.log
       echo '    [--without-s390-vx]         Build without S390 VX optimizations on IBM Z' | tee -a configure.log
       echo '    [--without-crc32-la]        Build without vectorized CRC32 on Loongarch' | tee -a configure.log
+      echo '    [--without-msa]             Build without MIPS MSA optimizations' | tee -a configure.log
       echo '    [--with-reduced-mem]        Reduced memory usage for special cases (reduces performance)' | tee -a configure.log
         exit 0 ;;
     -p*=* | --prefix=*) prefix=$(echo $1 | sed 's/.*=//'); shift ;;
@@ -243,6 +246,7 @@ case "$1" in
     --without-crc32-vx) builds390vx=0; shift ;;
     --without-s390-vx) builds390vx=0; shift ;;
     --without-crc32-la) buildcrc32la=0; shift ;;
+    --without-msa) buildmsa=0; shift ;;
     --with-reduced-mem) reducedmem=1; shift ;;
     -a*=* | --archs=*) ARCHS=$(echo $1 | sed 's/.*=//'); shift ;;
     --sysconfdir=*) echo "ignored option: --sysconfdir" | tee -a configure.log; shift ;;
@@ -419,7 +423,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
     mips | mipsel)
       ARCH=mips
       ARCH_32BIT=1 ;;
-    mips64 | mips64el)
+    mips64 | mips64el | mipsisa64r6)
       ARCH=mips64
       ARCH_64BIT=1 ;;
     powerpc | ppc)
@@ -1855,6 +1859,26 @@ EOF
     fi
 }
 
+check_msa_intrinsics() {
+  # Check if compiler supports MIPS MSA intrinsics
+    cat > $test.c << EOF
+#include <msa.h>
+v16i8 f(v16i8 a, v16i8 b) {
+  v16i8 ret = __msa_add_a_b(a, b);
+  return ret;
+}
+
+int main(void) { return 0; }
+EOF
+    if try ${CC} ${CFLAGS} ${msaflag} $test.c; then
+        echo "Checking for MSA intrinsics ... Yes." | tee -a configure.log
+        HAVE_MSA_INTRIN=1
+    else
+        echo "Checking for MSA intrinsics ... No." | tee -a configure.log
+        HAVE_MSA_INTRIN=0
+    fi
+}
+
 # Check whether to disable deflate_medium and deflate_quick
 if test $without_new_strategies -eq 1; then
     CFLAGS="${CFLAGS} -DNO_QUICK_STRATEGY -DNO_MEDIUM_STRATEGY"
@@ -2147,6 +2171,37 @@ EOF
             fi
         fi
     ;;
+    mips*)
+        case "${ARCH}" in
+            mips)
+                [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=mips
+            ;;
+            mipsel)
+                [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=mipsel
+            ;;
+            mips64)
+                [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=mips64
+            ;;
+            mips64el)
+                [ ! -z $CROSS_PREFIX ] && QEMU_ARCH=mips64el
+            ;;
+        esac
+
+        ARCHDIR=arch/mips
+
+        if test $without_optimizations -eq 0; then
+
+            check_msa_intrinsics
+
+            if test $HAVE_MSA_INTRIN -eq 1 && test $buildmsa -eq 1; then
+                CFLAGS="${CFLAGS} -DMIPS_FEATURES -DMIPS_MSA"
+                SFLAGS="${SFLAGS} -DMIPS_FEATURES -DMIPS_MSA"
+
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} mips_features.o adler32_msa.o slide_hash_msa.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} mips_features.lo adler32_msa.lo slide_hash_msa.lo"
+            fi
+        fi
+    ;;
     powerpc*)
         case "${ARCH}" in
             powerpc)
@@ -2409,6 +2464,7 @@ echo neondotprodflag = $neondotprodflag >> configure.log
 echo armv6flag = $armv6flag >> configure.log
 echo lsxflag = $lsxflag >> configure.log
 echo lasxflag = $lasxflag >> configure.log
+echo msaflag = $msaflag >> configure.log
 echo ARCHDIR = ${ARCHDIR} >> configure.log
 echo ARCH_STATIC_OBJS = ${ARCH_STATIC_OBJS} >> configure.log
 echo ARCH_SHARED_OBJS = ${ARCH_SHARED_OBJS} >> configure.log
@@ -2563,6 +2619,7 @@ sed < $SRCDIR/$ARCHDIR/Makefile.in "
 /^ZBCFLAG *=/s#=.*#=$zbcflag#
 /^LSXFLAG *=/s#=.*#=$lsxflag#
 /^LASXFLAG *=/s#=.*#=$lasxflag#
+/^MSAFLAG *=/s#=.*#=$msaflag#
 " > $ARCHDIR/Makefile
 
 # Append header files dependencies.
