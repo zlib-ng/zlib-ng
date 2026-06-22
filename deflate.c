@@ -619,18 +619,23 @@ int32_t Z_EXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int
         if (strm->avail_in || ((int)s->strstart - s->block_start) + s->lookahead || !DEFLATE_DONE(strm, flush))
             return Z_BUF_ERROR;
     }
-    if (s->level != level) {
-        if (s->level == 0 && s->matches != 0) {
-            if (s->matches == 1) {
-                FUNCTABLE_CALL(slide_hash)(s);
-            } else {
-                CLEAR_HASH(s);
-            }
-            s->matches = 0;
-        }
 
-        lm_set_level(s, level);
+    int hashless = level == 0 || strategy == Z_HUFFMAN_ONLY || strategy == Z_RLE;
+    int was_hashless = s->level == 0 || s->strategy == Z_HUFFMAN_ONLY || s->strategy == Z_RLE;
+
+    /* Stale if the hash usage flipped (to/from huffman/rle/stored) or the hash
+     * function changed at level 9. */
+    int stale_chain = (hashless != was_hashless) || (level >= 9) != (s->level >= 9);
+
+    /* Rebuild the hash chains when fill_window is called. */
+    if (stale_chain && !hashless) {
+        CLEAR_HASH(s);
+        s->ins_h = 0;
+        s->insert = MIN(s->strstart, s->w_size);
     }
+
+    if (s->level != level)
+        lm_set_level(s, level);
     s->strategy = strategy;
     return Z_OK;
 }

@@ -13,13 +13,6 @@
  * Copy without compression as much as possible from the input stream, return
  * the current block state.
  *
- * In case deflateParams() is used to later switch to a non-zero compression
- * level, s->matches (otherwise unused when storing) keeps track of the number
- * of hash table slides to perform. If s->matches is 1, then one hash table
- * slide will be done when switching. If s->matches is 2, the maximum value
- * allowed here, then the hash table will be cleared, since two or more slides
- * is the same as a clear.
- *
  * deflate_stored() is written to minimize the number of times an input byte is
  * copied. It is most efficient with large input and output buffers, which
  * maximizes the opportunities to have a single copy from next_in to next_out.
@@ -115,7 +108,6 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
          * therefore s->block_start == s->strstart.
          */
         if (used >= w_size) {    /* supplant the previous history */
-            s->matches = 2;         /* clear hash */
             memcpy(window, s->strm->next_in - w_size, w_size);
             s->strstart = w_size;
             s->insert = s->strstart;
@@ -124,8 +116,6 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
                 /* Slide the window down. */
                 s->strstart -= w_size;
                 memcpy(window, window + w_size, s->strstart);
-                if (s->matches < 2)
-                    s->matches++;   /* add a pending slide_hash() */
                 s->insert = MIN(s->insert, s->strstart);
             }
             memcpy(window + s->strstart, s->strm->next_in - used, used);
@@ -151,8 +141,6 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
         s->block_start -= (int)w_size;
         s->strstart -= w_size;
         memcpy(window, window + w_size, s->strstart);
-        if (s->matches < 2)
-            s->matches++;           /* add a pending slide_hash() */
         have += w_size;          /* more space now */
         s->insert = MIN(s->insert, s->strstart);
     }
