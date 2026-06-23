@@ -1361,6 +1361,10 @@ int32_t zng_gzbuffer(gzFile file, uint32_t size);
    buffer size of, for example, 64K or 128K bytes will noticeably increase the
    speed of decompression (reading).
 
+     The requested size is limited to 1 GiB, which is far larger than is useful
+   in practice.  zng_gzbuffer() returns -1 when a larger size is requested,
+   while the zlib-compatible gzbuffer() silently clamps it to 1 GiB.
+
      The new buffer size also affects the maximum length for gzprintf().
 
      gzbuffer() returns 0 on success, or -1 on failure, such as being called
