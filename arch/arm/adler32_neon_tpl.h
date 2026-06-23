@@ -27,7 +27,11 @@ static const uint16_t ALIGNED_(64) taps[64] = {
     16, 15, 14, 13, 12, 11, 10, 9,
     8, 7, 6, 5, 4, 3, 2, 1 };
 
+#ifdef USE_DOTPROD
+Z_FORCEINLINE static Z_TARGET_DOTPROD uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
+#else
 Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
+#endif
     /* split Adler-32 into component sums */
     uint32_t sum2 = (adler >> 16) & 0xffff;
     adler &= 0xffff;

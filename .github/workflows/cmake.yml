@@ -729,7 +729,7 @@ jobs:
             coverage: macos_clang_arm64_ubsan
 
           - name: macOS Clang (ARM64) Native Instructions
-            os: macos-latest
+            os: macos-26
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON

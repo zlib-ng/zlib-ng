@@ -28,7 +28,10 @@ macro(check_armv8_compiler_flag)
     # Check whether compiler supports ARMv8 inline asm
     set(CMAKE_REQUIRED_FLAGS "${ARMV8FLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
-        "unsigned int f(unsigned int a, unsigned int b) {
+        "#ifdef __clang__
+        __attribute__((target(\"crc\")))
+        #endif
+        unsigned int f(unsigned int a, unsigned int b) {
             unsigned int c;
         #ifdef __aarch64__
             __asm__( \"crc32w %w0, %w1, %w2\" : \"=r\" (c) : \"r\" (a), \"r\" (b));
@@ -46,6 +49,9 @@ macro(check_armv8_compiler_flag)
         #include <intrin.h>
         #else
         #include <arm_acle.h>
+        #endif
+        #ifdef __clang__
+        __attribute__((target(\"crc\")))
         #endif
         unsigned int f(unsigned int a, unsigned int b) {
             return __crc32w(a, b);
@@ -81,10 +87,16 @@ macro(check_armv8_pmull_eor3_compiler_flag)
         #if defined(_MSC_VER) && !defined(__clang__)
         __n128 f(__n64 a, __n64 b) {
         #else
+        #ifdef __clang__
+        __attribute__((target(\"aes\")))
+        #endif
         poly128_t f(poly64_t a, poly64_t b) {
         #endif
             return vmull_p64(a, b);
         }
+        #ifdef __clang__
+        __attribute__((target(\"sha3\")))
+        #endif
         uint64x2_t g(uint64x2_t a, uint64x2_t b, uint64x2_t c) {
             return veor3q_u64(a, b, c);
         }
@@ -346,6 +358,9 @@ macro(check_neon_dotprod_compiler_flag)
         #  include <arm64_neon.h>
         #else
         #  include <arm_neon.h>
+        #endif
+        #ifdef __clang__
+        __attribute__((target(\"dotprod\")))
         #endif
         int main(void) {
             uint8x16_t a = vdupq_n_u8(1);

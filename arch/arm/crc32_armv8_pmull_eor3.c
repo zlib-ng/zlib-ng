@@ -16,7 +16,7 @@
 #include "crc32_armv8_p.h"
 
 /* Carryless multiply low 64 bits: a[0] * b[0] */
-static inline uint64x2_t clmul_lo(uint64x2_t a, uint64x2_t b) {
+static Z_TARGET_PMULL_EOR3 inline uint64x2_t clmul_lo(uint64x2_t a, uint64x2_t b) {
 #if defined(_MSC_VER) && !defined(__clang__)
     return vreinterpretq_u64_p128(vmull_p64(
         vget_low_p64(vreinterpret_p64_u64(a)),
@@ -29,12 +29,12 @@ static inline uint64x2_t clmul_lo(uint64x2_t a, uint64x2_t b) {
 }
 
 /* Carryless multiply high 64 bits: a[1] * b[1] */
-static inline uint64x2_t clmul_hi(uint64x2_t a, uint64x2_t b) {
+static Z_TARGET_PMULL_EOR3 inline uint64x2_t clmul_hi(uint64x2_t a, uint64x2_t b) {
     return vreinterpretq_u64_p128(vmull_high_p64(vreinterpretq_p64_u64(a), vreinterpretq_p64_u64(b)));
 }
 
 /* Carryless multiply of two 32-bit scalars: a * b (returns 64-bit result in 128-bit vector) */
-static inline uint64x2_t clmul_scalar(uint32_t a, uint32_t b) {
+static Z_TARGET_PMULL_EOR3 inline uint64x2_t clmul_scalar(uint32_t a, uint32_t b) {
 #if defined(_MSC_VER) && !defined(__clang__)
     return vreinterpretq_u64_p128(vmull_p64(vdup_n_p64((poly64_t)a), vdup_n_p64((poly64_t)b)));
 #else
@@ -43,7 +43,7 @@ static inline uint64x2_t clmul_scalar(uint32_t a, uint32_t b) {
 }
 
 /* Compute x^n mod P (CRC-32 polynomial) in log(n) time, where P = 0x104c11db7 */
-static uint32_t xnmodp(uint64_t n) {
+static Z_TARGET_CRC uint32_t xnmodp(uint64_t n) {
   uint64_t stack = ~(uint64_t)1;
   uint32_t acc, low;
   for (; n > 191; n = (n >> 1) - 16) {
@@ -63,7 +63,7 @@ static uint32_t xnmodp(uint64_t n) {
 }
 
 /* Shift CRC forward by nbytes: equivalent to appending nbytes of zeros to the data stream */
-static inline uint64x2_t crc_shift(uint32_t crc, size_t nbytes) {
+static Z_TARGET_PMULL_EOR3 inline uint64x2_t crc_shift(uint32_t crc, size_t nbytes) {
   Assert(nbytes >= 5, "crc_shift requires nbytes >= 5");
   return clmul_scalar(crc, xnmodp(nbytes * 8 - 33));
 }

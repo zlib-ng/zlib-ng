@@ -8,6 +8,12 @@
 #  include <arm_neon.h>
 #endif
 
+#ifdef ARM_NEON_DOTPROD
+#  define Z_TARGET_DOTPROD Z_TARGET("+dotprod")
+#else
+#  define Z_TARGET_DOTPROD
+#endif
+
 #if defined(ARM_NEON) && defined(ARCH_ARM) && defined(ARCH_32BIT)
 /* Compatibility shim for the _high family of functions */
 #define vmull_high_u8(a, b) vmull_u8(vget_high_u8(a), vget_high_u8(b))
