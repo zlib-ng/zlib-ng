@@ -80,15 +80,8 @@ int Z_INTERNAL gz_buffer_alloc(gz_state *state) {
         out_size = want * 2;  // double output buffer for decompression
     }
 
-    /* the total reaches 3 * want but gzbuffer only guards 2 * want; cap against
-       INT_MAX (minus zng_alloc_aligned's overhead) and reject rather than wrap */
-    const size_t aligned_overhead = sizeof(void *) + 64;
-    const size_t max_size = (size_t)INT_MAX - aligned_overhead;
-    if (out_size > max_size || in_size > max_size - out_size) {
-        PREFIX(gz_error)(state, Z_MEM_ERROR, "out of memory");
-        return -1;
-    }
-
+    /* gzbuffer caps want at GZBUFSIZE_MAX, so the total here stays inside the
+       unsigned that zng_alloc_aligned takes */
     state->buffers = (unsigned char *)zng_alloc_aligned((unsigned)(in_size + out_size), 64);
     state->in = state->buffers;
     if (out_size) {
@@ -341,8 +334,13 @@ z_int32_t Z_EXPORT PREFIX(gzbuffer)(gzFile file, z_uint32_t size) {
         return -1;
 
     /* check and set requested size */
-    if ((size << 1) < size)
-        return -1;              /* need to be able to double it */
+    if (size > GZBUFSIZE_MAX) {
+#ifdef ZLIB_COMPAT
+        size = GZBUFSIZE_MAX;   /* silently clamp to stay compatible with zlib */
+#else
+        return -1;              /* too large */
+#endif
+    }
     if (size < 8)
         size = 8;               /* needed to behave well with flushing */
     state->want = size;

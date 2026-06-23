@@ -78,6 +78,13 @@
 #  define GZBUFSIZE 131072
 #endif
 
+/* upper limit on the requested buffer size; the allocation is three times this,
+   so the cap keeps that total well inside an unsigned and far above any size
+   that is useful in practice */
+#ifndef GZBUFSIZE_MAX
+#  define GZBUFSIZE_MAX (1u << 30) /* 1 GiB */
+#endif
+
 /* gzip modes, also provide a little integrity check on the passed structure */
 #define GZ_NONE 0
 #define GZ_READ 7247
