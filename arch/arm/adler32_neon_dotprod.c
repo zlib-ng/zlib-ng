@@ -13,11 +13,11 @@
 #define USE_DOTPROD
 #include "adler32_neon_tpl.h"
 
-Z_INTERNAL uint32_t adler32_neon_dotprod(uint32_t adler, const uint8_t *src, size_t len) {
+Z_INTERNAL uint32_t Z_TARGET_DOTPROD adler32_neon_dotprod(uint32_t adler, const uint8_t *src, size_t len) {
     return adler32_copy_impl(adler, NULL, src, len, 0);
 }
 
-Z_INTERNAL uint32_t adler32_copy_neon_dotprod(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
+Z_INTERNAL uint32_t Z_TARGET_DOTPROD adler32_copy_neon_dotprod(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
 #if OPTIMAL_CMP >= 32
     return adler32_copy_impl(adler, dst, src, len, 1);
 #else
