@@ -77,12 +77,12 @@ jobs:
             packages: qemu-user gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libc6-dev-riscv64-cross
 
           - name: macOS Clang
-            os: macOS-latest
+            os: macos-15
             compiler: clang
             cxx-compiler: clang++
 
           - name: macOS Clang Symbol Prefix
-            os: macOS-latest
+            os: macos-15
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_
