@@ -69,8 +69,8 @@ static void gz_reset(gz_state *state) {
 
 /* Allocate in/out buffers for gzFile */
 int Z_INTERNAL gz_buffer_alloc(gz_state *state) {
-    size_t want = state->want;
-    size_t in_size = want, out_size = want;
+    unsigned want = state->want;
+    unsigned in_size = want, out_size = want;
 
     if (state->mode == GZ_WRITE) {
         in_size = want * 2; // double input buffer for compression (ref: gzprintf)
@@ -80,9 +80,7 @@ int Z_INTERNAL gz_buffer_alloc(gz_state *state) {
         out_size = want * 2;  // double output buffer for decompression
     }
 
-    /* gzbuffer caps want at GZBUFSIZE_MAX, so the total here stays inside the
-       unsigned that zng_alloc_aligned takes */
-    state->buffers = (unsigned char *)zng_alloc_aligned((unsigned)(in_size + out_size), 64);
+    state->buffers = (unsigned char *)zng_alloc_aligned((in_size + out_size), 64);
     state->in = state->buffers;
     if (out_size) {
         state->out = state->buffers + (in_size); // Outbuffer goes after inbuffer
@@ -95,7 +93,7 @@ int Z_INTERNAL gz_buffer_alloc(gz_state *state) {
         return -1;
     }
 
-    state->size = (unsigned)want; // mark state as initialized
+    state->size = want; // mark state as initialized
     return 0;
 }
 
@@ -338,6 +336,7 @@ z_int32_t Z_EXPORT PREFIX(gzbuffer)(gzFile file, z_uint32_t size) {
 #ifdef ZLIB_COMPAT
         size = GZBUFSIZE_MAX;   /* silently clamp to stay compatible with zlib */
 #else
+        PREFIX(gz_error)(state, Z_MEM_ERROR, "out of memory");
         return -1;              /* too large */
 #endif
     }
