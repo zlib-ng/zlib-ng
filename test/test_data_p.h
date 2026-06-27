@@ -131,6 +131,22 @@ static inline uint8_t *gen_short_match_data(size_t bufsize) {
     return buf;
 }
 
+/* Random bytes over a 4-symbol (DNA base) alphabet. Nearly every 3-byte prefix
+   collides, so hash chains grow very long while matches stay short. Stresses the
+   longest_match short-match path with deep chain walks. */
+static inline uint8_t *gen_dna_data(size_t bufsize) {
+    static const uint8_t bases[4] = { 'A', 'C', 'G', 'T' };
+    uint8_t *buf = (uint8_t *)malloc(bufsize);
+    if (buf == NULL)
+        return NULL;
+    uint32_t rng = 0x01234567;
+    for (size_t i = 0; i < bufsize; i++) {
+        rng = rng * 1103515245u + 12345u;
+        buf[i] = bases[(rng >> 24) & 3];
+    }
+    return buf;
+}
+
 static inline uint8_t clamp_uint8_t(int v) {
     return (uint8_t)(v < 0 ? 0 : (v > 0xFF ? 0xFF : v));
 }
@@ -218,6 +234,7 @@ static inline uint8_t *gen_striped_rgb_data(size_t bufsize) {
 enum test_data_type {
     TEST_DATA_TEXT = 0,         /* mixed literals + short/medium matches */
     TEST_DATA_SHORT_MATCH,      /* many short back-references */
+    TEST_DATA_DNA,              /* 4-symbol alphabet, dense chains + short matches */
     TEST_DATA_RANDOM,           /* incompressible, deflate uses stored blocks */
     TEST_DATA_REALISTIC_RGB,    /* RGB photo, short matches at dist=3 */
     TEST_DATA_STRIPED_RGB,      /* solid R/G/B stripes, long dist=3 matches */
@@ -227,6 +244,7 @@ static inline uint8_t *gen_test_data(enum test_data_type data_type, size_t bufsi
     switch (data_type) {
         case TEST_DATA_TEXT:           return gen_text_data(bufsize);
         case TEST_DATA_SHORT_MATCH:    return gen_short_match_data(bufsize);
+        case TEST_DATA_DNA:            return gen_dna_data(bufsize);
         case TEST_DATA_RANDOM:         return gen_random_data(bufsize);
         case TEST_DATA_REALISTIC_RGB:  return gen_realistic_rgb_data(bufsize);
         case TEST_DATA_STRIPED_RGB:    return gen_striped_rgb_data(bufsize);
