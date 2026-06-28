@@ -130,6 +130,14 @@ Z_FORCEINLINE static uint32_t zng_clz64(uint64_t value) {
 #  define zng_first_diff_byte64(diff) (zng_ctz64(diff) / 8)
 #endif
 
+/* Builds a mask of the first n bytes (1..8) so an XOR diff can be tested for
+ * a leading n-byte match with a single AND. */
+#if BYTE_ORDER == BIG_ENDIAN
+#  define zng_first_bytes_mask64(n) (UINT64_MAX << ((8 - (n)) * 8))
+#else
+#  define zng_first_bytes_mask64(n) (UINT64_MAX >> ((8 - (n)) * 8))
+#endif
+
 Z_FORCEINLINE static uint16_t zng_bitreverse16(uint16_t value) {
 #if __has_builtin(__builtin_bitreverse16)
     return (uint16_t)__builtin_bitreverse16(value);

@@ -131,10 +131,14 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
                 /* Peel the first candidate out of the loop. A full 8-byte match falls straight
                  * through to compare256, and single-candidate chains (barely-compressible data)
                  * run with no loop overhead. */
+                uint64_t first_mask = zng_first_bytes_mask64(best_len + 1);
                 uint64_t diff = scan_start ^ cand_start;
-                len = zng_first_diff_byte64(diff);
-                if (len > best_len)
+                /* A candidate beats best_len only when its first best_len+1 bytes match, i.e.
+                 * those bytes of the XOR are zero. The masked test rejects without running ctz. */
+                if (UNLIKELY((diff & first_mask) == 0)) {
+                    len = zng_first_diff_byte64(diff);
                     goto short_match_accept;
+                }
                 if (--chain_length == 0 || (cur_match = prev[cur_match & wmask]) <= limit)
                     return best_len;
                 cand_start = zng_memread_8(mbase_start + cur_match);
@@ -142,9 +146,10 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
                     /* Walk the remaining candidates with the chain advance kept inline. */
                     for (;;) {
                         diff = scan_start ^ cand_start;
-                        len = zng_first_diff_byte64(diff);
-                        if (len > best_len)
+                        if (UNLIKELY((diff & first_mask) == 0)) {
+                            len = zng_first_diff_byte64(diff);
                             goto short_match_accept;
+                        }
                         if (--chain_length == 0 || (cur_match = prev[cur_match & wmask]) <= limit)
                             return best_len;
                         cand_start = zng_memread_8(mbase_start + cur_match);
