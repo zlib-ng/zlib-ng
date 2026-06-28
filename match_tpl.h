@@ -128,12 +128,30 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
         if (best_len < sizeof(uint64_t)) {
             uint64_t cand_start = zng_memread_8(mbase_start + cur_match);
             if (scan_start != cand_start) {
+                /* Peel the first candidate out of the loop. A full 8-byte match falls straight
+                 * through to compare256, and single-candidate chains (barely-compressible data)
+                 * run with no loop overhead. */
                 uint64_t diff = scan_start ^ cand_start;
                 len = zng_first_diff_byte64(diff);
-                if (len <= best_len) {
-                    GOTO_NEXT_CHAIN;
+                if (len > best_len)
+                    goto short_match_accept;
+                if (--chain_length == 0 || (cur_match = prev[cur_match & wmask]) <= limit)
+                    return best_len;
+                cand_start = zng_memread_8(mbase_start + cur_match);
+                if (scan_start != cand_start) {
+                    /* Walk the remaining candidates with the chain advance kept inline. */
+                    for (;;) {
+                        diff = scan_start ^ cand_start;
+                        len = zng_first_diff_byte64(diff);
+                        if (len > best_len)
+                            goto short_match_accept;
+                        if (--chain_length == 0 || (cur_match = prev[cur_match & wmask]) <= limit)
+                            return best_len;
+                        cand_start = zng_memread_8(mbase_start + cur_match);
+                        if (scan_start == cand_start)
+                            break;
+                    }
                 }
-                goto short_match_accept;
             }
             /* All 8 bytes match, fallthrough to compare256 for the tail. */
         } else {
