@@ -17,13 +17,17 @@ To filter out which benchmarks are performed use:
 --benchmark_filter="adler32*"
 ```
 
-*Cooldown*
+*Custom arguments*
 
-To insert a cooldown sleep between benchmark families to mitigate thermal throttling:
+In addition to the standard Google Benchmark flags, the suite adds the following arguments.
+The CPU scheduling controls are only available on Windows and are ignored elsewhere.
 
-```sh
---benchmark_cooldown=3
-```
+| Argument | Platform | Description |
+|----------|----------|-------------|
+| `--benchmark_cooldown=<seconds>` | All | Sleep between benchmark families to mitigate thermal throttling. Not applied between repetitions of the same benchmark. |
+| `--benchmark_cpu_affinity=<cpulist>` | Windows | Pin the process to the listed CPUs, `taskset`-style (`3`, `0,2,4`, or `0-3`). |
+| `--benchmark_no_power_throttling` | Windows | Opt out of EcoQoS so the process runs at full clock on performance cores. |
+| `--benchmark_priority=<normal\|high\|realtime>` | Windows | Set the process priority class for more deterministic scheduling. |
 
 There are two different benchmarks, micro and macro.
 
