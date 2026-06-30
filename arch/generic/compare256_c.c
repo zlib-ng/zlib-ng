@@ -13,7 +13,7 @@
 #include "fallback_builtins.h"
 
 /* 8-bit integer comparison for hardware without unaligned loads */
-static inline uint32_t compare256_8_static(const uint8_t *src0, const uint8_t *src1) {
+Z_FORCEINLINE static uint32_t compare256_8_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {
@@ -40,7 +40,7 @@ static inline uint32_t compare256_8_static(const uint8_t *src0, const uint8_t *s
 }
 
 /* 64-bit integer comparison for hardware with unaligned loads */
-static inline uint32_t compare256_64_static(const uint8_t *src0, const uint8_t *src1) {
+Z_FORCEINLINE static uint32_t compare256_64_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {

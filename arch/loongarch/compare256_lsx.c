@@ -15,7 +15,7 @@
 #include <lsxintrin.h>
 #include "lsxintrin_ext.h"
 
-static inline uint32_t compare256_lsx_static(const uint8_t *src0, const uint8_t *src1) {
+Z_FORCEINLINE static uint32_t compare256_lsx_static(const uint8_t *src0, const uint8_t *src1) {
     __m128i xmm_src0, xmm_src1, xmm_cmp;
 
     /* Do the first load unaligned, than all subsequent ones we have at least
