@@ -17,7 +17,7 @@
 #  include <nmmintrin.h>
 #endif
 
-static inline uint32_t compare256_avx512_static(const uint8_t *src0, const uint8_t *src1) {
+Z_FORCEINLINE static uint32_t compare256_avx512_static(const uint8_t *src0, const uint8_t *src1) {
     __m512i zmm_src0_4, zmm_src1_4;
     __m512i zmm_src0_3, zmm_src1_3;
     __m512i zmm_src0_2, zmm_src1_2;

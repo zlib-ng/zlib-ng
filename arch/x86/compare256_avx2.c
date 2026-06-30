@@ -16,7 +16,7 @@
 #  include <nmmintrin.h>
 #endif
 
-static inline uint32_t compare256_avx2_static(const uint8_t *src0, const uint8_t *src1) {
+Z_FORCEINLINE static uint32_t compare256_avx2_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {

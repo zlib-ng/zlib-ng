@@ -11,7 +11,7 @@
 typedef uint32_t (*compare256_rle_func)(const uint8_t* src0, const uint8_t* src1);
 
 /* 8-bit RLE comparison for hardware without unaligned loads */
-static inline uint32_t compare256_rle_8(const uint8_t *src0, const uint8_t *src1) {
+Z_FORCEINLINE static uint32_t compare256_rle_8(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
     uint8_t val = *src0;
 
@@ -39,7 +39,7 @@ static inline uint32_t compare256_rle_8(const uint8_t *src0, const uint8_t *src1
 }
 
 /* 64-bit RLE comparison for hardware with unaligned loads */
-static inline uint32_t compare256_rle_64(const uint8_t *src0, const uint8_t *src1) {
+Z_FORCEINLINE static uint32_t compare256_rle_64(const uint8_t *src0, const uint8_t *src1) {
     uint32_t src0_cmp32, len = 0;
     uint16_t src0_cmp;
     uint64_t sv, mv, diff;

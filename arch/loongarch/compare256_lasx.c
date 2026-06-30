@@ -15,7 +15,7 @@
 #include <lasxintrin.h>
 #include "lasxintrin_ext.h"
 
-static inline uint32_t compare256_lasx_static(const uint8_t *src0, const uint8_t *src1) {
+Z_FORCEINLINE static uint32_t compare256_lasx_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {
