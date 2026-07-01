@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository (zlib-ng)
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         show-progress: 'false'
 
@@ -26,7 +26,7 @@ jobs:
       run: cmake --build . -j5 --config Release
 
     - name: Checkout repository (libpng)
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         repository: glennrp/libpng
         path: libpng

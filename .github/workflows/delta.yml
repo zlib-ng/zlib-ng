@@ -199,13 +199,13 @@ jobs:
           fi
 
       - name: Checkout head
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ steps.refs.outputs.head_ref }}
           path: build-head
 
       - name: Checkout base branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ steps.refs.outputs.base_ref }}
           path: build-base
@@ -231,7 +231,7 @@ jobs:
 
       - name: Checkout bloaty source
         if: steps.cache-bloaty.outputs.cache-hit != 'true'
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: google/bloaty
           path: bloaty

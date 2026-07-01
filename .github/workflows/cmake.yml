@@ -774,12 +774,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         show-progress: false
 
     - name: Checkout test corpora
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       # Don't test the extra corpora with Sanitizer builds or RISC-V or e2k or Intel SDE, due to their slow testing.
       if: ${{ !contains(matrix.name, 'RISC-V') && !contains(matrix.name, 'e2k') && !contains(matrix.cmake-args, 'WITH_SANITIZER') && !contains(matrix.name, 'SDE') }}
       with:

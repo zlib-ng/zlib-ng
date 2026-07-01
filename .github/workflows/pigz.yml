@@ -52,12 +52,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         show-progress: 'false'
 
     - name: Checkout test corpora
-      uses: actions/checkout@v6
+      uses: actions/checkout@v7
       with:
         repository: zlib-ng/corpora
         path: test/data/corpora
