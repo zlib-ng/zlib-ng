@@ -813,7 +813,7 @@ jobs:
 
     - name: Restore cached Python packages (Cygwin)
       if: runner.os == 'Windows' && contains(matrix.name, 'Cygwin')
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: D:\cygwin\home\runneradmin\.cache
         key: cygwin-pip-cache
@@ -937,7 +937,7 @@ jobs:
     - name: Cache MCST LCC ${{ matrix.toolchain }} (Ubuntu)
       if: contains(matrix.name, 'e2k')
       id: cache-lcc
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: /opt/mcst
         key: cache-lcc-${{ matrix.toolchain }}
@@ -954,7 +954,7 @@ jobs:
     - name: Cache MCST QEMU (Ubuntu)
       if: contains(matrix.name, 'e2k')
       id: cache-qemu-e2k-static
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: /usr/local/bin/qemu-e2k-static
         key: cache-qemu-e2k-static-2026-02-24
@@ -970,7 +970,7 @@ jobs:
     - name: Cache Intel(R) Software Development Emulator (Ubuntu)
       if: contains(matrix.name, 'SDE')
       id: cache-intel-sde
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: /opt/sde-external-10.8.0-2026-03-15-lin
         key: cache-intel-sde-10.8.0-2026-03-15
@@ -1007,7 +1007,7 @@ jobs:
     - name: Cache LLVM C++ libraries (MSAN)
       if: contains(matrix.name, 'MSAN') && startsWith(matrix.compiler, 'clang')
       id: cache-llvm
-      uses: actions/cache@v5
+      uses: actions/cache@v6
       with:
         path: |
           ${{ env.LLVM_BUILD_DIR }}/lib
