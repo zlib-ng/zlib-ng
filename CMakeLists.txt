@@ -1466,31 +1466,49 @@ if(NOT SKIP_INSTALL_HEADERS AND NOT SKIP_INSTALL_ALL)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/zconf${SUFFIX}.h
         DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" RENAME zconf${SUFFIX}.h)
 endif()
+if (ZLIB_COMPAT)
+    set(PACKAGE_CONFIGNAME zlib)
+    set(PACKAGE_VERSION ${ZLIB_HEADER_VERSION})
+else()
+    set(PACKAGE_CONFIGNAME zlib-ng)
+    set(PACKAGE_VERSION ${ZLIBNG_HEADER_VERSION})
+endif()
+
+# Export targets and a package config into the build tree for find_package-based superbuilds.
+export(TARGETS ${ZLIB_INSTALL_LIBRARIES}
+    NAMESPACE ${EXPORT_NAME}::
+    FILE ${CMAKE_CURRENT_BINARY_DIR}/${EXPORT_NAME}-targets.cmake)
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-config-version.cmake
+    VERSION ${PACKAGE_VERSION}
+    COMPATIBILITY AnyNewerVersion)
+# Build-tree config, with paths pointing at this build directory.
+set(INCLUDE_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR})
+set(LIB_INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR})
+configure_package_config_file(${PACKAGE_CONFIGNAME}-config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-config.cmake
+    INSTALL_DESTINATION ${CMAKE_CURRENT_BINARY_DIR}
+    INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR}
+    PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR)
+
 if(NOT SKIP_INSTALL_FILES AND NOT SKIP_INSTALL_ALL)
     install(FILES ${ZLIB_PC} DESTINATION "${PKGCONFIG_INSTALL_DIR}")
     install(EXPORT ${EXPORT_NAME}-targets
         DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}"
         NAMESPACE ${EXPORT_NAME}::)
-    # Use GNU-style variable names
+    # Package config for the install tree, with GNU-style paths relative to the
+    # install prefix. Staged under a distinct name to avoid clashing with the
+    # build-tree config, then renamed on install.
     set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR})
     set(LIB_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR})
-    if (ZLIB_COMPAT)
-       set(PACKAGE_CONFIGNAME zlib)
-       set(PACKAGE_VERSION ${ZLIB_HEADER_VERSION})
-    else()
-       set(PACKAGE_CONFIGNAME zlib-ng)
-       set(PACKAGE_VERSION ${ZLIBNG_HEADER_VERSION})
-    endif()
     configure_package_config_file(${PACKAGE_CONFIGNAME}-config.cmake.in
-        ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-config.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-install-config.cmake
         INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}
         PATH_VARS INCLUDE_INSTALL_DIR LIB_INSTALL_DIR)
-    write_basic_package_version_file(
-        ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-config-version.cmake
-        VERSION ${PACKAGE_VERSION}
-        COMPATIBILITY AnyNewerVersion)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-config.cmake
-                  ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-config-version.cmake
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-install-config.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME}
+        RENAME ${PACKAGE_CONFIGNAME}-config.cmake)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${PACKAGE_CONFIGNAME}-config-version.cmake
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${EXPORT_NAME})
 endif()
 
