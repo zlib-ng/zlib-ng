@@ -192,7 +192,13 @@ typedef unsigned bits_t;
 #define TRACE_END_OF_BLOCK() \
     Tracevv((stderr, "inflate:         end of block\n"))
 
-#define INFLATE_FAST_MIN_HAVE 15   /* max input bits per length/distance pair */
+/* inflate_fast() executes at most two 8-byte refill reads per iteration: the
+   first at the input position validated by the loop bound (advancing at most
+   7 bytes), the second therefore ending at most 15 bytes past that position.
+   The refill before the loop reads at the entry position and advances exactly
+   7 bytes (entry guarantees bits < 8), so the first iteration stays within
+   the same bound. */
+#define INFLATE_FAST_MIN_HAVE 15
 #define INFLATE_FAST_MIN_LEFT 260  /* max output per token (258) + 2 */
 #define INFLATE_FAST_MIN_SAFE 3    /* max unchecked literal writes per iteration */
 
