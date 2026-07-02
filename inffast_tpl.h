@@ -133,12 +133,26 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
     lmask = (1U << state->lenbits) - 1;
     dmask = (1U << state->distbits) - 1;
 
+    /* Ensure enough bits for the first length table lookup. Every refill after
+       this one is issued behind a table lookup that only needs bits already in
+       hold, so the refill's load latency overlaps with the table load instead
+       of feeding it. */
+    REFILL();
+
     /* decode literals and length/distances until end-of-block or not enough
        input data or output space */
     do {
-        REFILL();
+        /* This lookup needs bits >= MAX_LEN_ROOT_BITS, which every path here
+           guarantees: each refill leaves bits >= 56, the literal-only paths
+           loop after consuming at most 35 bits, and the distance path refills
+           to at least MAX_BITS + MAX_DIST_EXTRA_BITS + MAX_LEN_ROOT_BITS
+           before consuming at most MAX_BITS + MAX_DIST_EXTRA_BITS. */
         here = lcode[hold & lmask];
         Z_TOUCH(here);
+        /* No-op on the first iteration: the pre-loop refill already filled hold
+           and the lookup above consumes nothing, so bits is still >= 56. Tops
+           hold back up on every later iteration. */
+        REFILL();
         old = hold;
         DROPBITS(here.bits);
         if (LIKELY(here.op == 0)) {
@@ -169,7 +183,10 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
             TRACE_LENGTH(len);
             here = dcode[hold & dmask];
             Z_TOUCH(here);
-            if (UNLIKELY(bits < MAX_BITS + MAX_DIST_EXTRA_BITS)) {
+            /* Reserve bits for the distance code and its extra bits, plus the
+               next iteration's length table lookup, which happens before the
+               next refill. */
+            if (UNLIKELY(bits < MAX_BITS + MAX_DIST_EXTRA_BITS + MAX_LEN_ROOT_BITS)) {
                 REFILL();
             }
           dodist:

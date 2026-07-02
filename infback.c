@@ -337,11 +337,13 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             }
 
             /* build code tables -- note: do not change the lenbits or distbits
-               values here (10 and 9) without reading the comments in inftrees.h
-               concerning the ENOUGH constants, which depend on those values */
+               values here (MAX_LEN_ROOT_BITS and 9) without reading the comments
+               in inftrees.h concerning the ENOUGH constants, which depend on
+               those values, and the refill comments in inffast_tpl.h, which
+               depend on lenbits never exceeding MAX_LEN_ROOT_BITS */
             state->next = state->codes;
             state->lencode = (const code *)(state->next);
-            state->lenbits = 10;
+            state->lenbits = MAX_LEN_ROOT_BITS;
             ret = zng_inflate_table(LENS, state->lens, state->nlen, &(state->next), &(state->lenbits), state->work);
             if (ret) {
                 SET_BAD("invalid literal/lengths set");
