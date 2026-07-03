@@ -35,75 +35,94 @@ rem_peel:
                                           56, 57, 58, 59, 60, 61, 62, 63, 64);
 
     const __m512i zero = _mm512_setzero_si512();
-    __m512i vs1, vs2;
+    __m512i vs1, vs2_0;
 
     while (len >= 64) {
         vs1 = _mm512_zextsi128_si512(_mm_cvtsi32_si128(adler0));
-        vs2 = _mm512_zextsi128_si512(_mm_cvtsi32_si128(adler1));
+        vs2_0 = _mm512_zextsi128_si512(_mm_cvtsi32_si128(adler1));
         size_t k = ALIGN_DOWN(MIN(len, NMAX), 64);
         len -= k;
         __m512i vs1_0 = vs1;
         __m512i vs3 = _mm512_setzero_si512();
-        /* We might get a tad bit more ILP here if we sum to a second register in the loop */
+
         __m512i vs2_1 = _mm512_setzero_si512();
-        __m512i vbuf0, vbuf1;
+        __m512i vs2_2 = _mm512_setzero_si512();
+        __m512i vs2_3 = _mm512_setzero_si512();
 
-        /* Remainder peeling */
-        if (k % 128) {
-            vbuf1 = _mm512_loadu_si512((__m512i*)src);
+        __m512i vbuf0, vbuf1, vbuf2, vbuf3;
 
+        /* Remainder peeling for 256-byte alignment boundaries */
+        while (k % 256) {
+            vbuf0 = _mm512_loadu_si512((__m512i*)src);
             src += 64;
             k -= 64;
-
-            __m512i vs1_sad = _mm512_sad_epu8(vbuf1, zero);
-            vs1 = _mm512_add_epi32(vs1, vs1_sad);
-            vs3 = _mm512_add_epi32(vs3, vs1_0);
-            vs2 = _mm512_dpbusd_epi32(vs2, vbuf1, dot2v);
-            vs1_0 = vs1;
-        }
-
-        /* Manually unrolled this loop by 2 for an decent amount of ILP */
-        while (k >= 128) {
-            /*
-               vs1 = adler + sum(c[i])
-               vs2 = sum2 + 64 vs1 + sum( (64-i+1) c[i] )
-            */
-            vbuf0 = _mm512_loadu_si512((__m512i*)src);
-            vbuf1 = _mm512_loadu_si512((__m512i*)(src + 64));
-            src += 128;
-            k -= 128;
 
             __m512i vs1_sad = _mm512_sad_epu8(vbuf0, zero);
             vs1 = _mm512_add_epi32(vs1, vs1_sad);
             vs3 = _mm512_add_epi32(vs3, vs1_0);
-            /* multiply-add, resulting in 16 ints. Fuse with sum stage from prior versions, as we now have the dp
-             * instructions to eliminate them */
-            vs2 = _mm512_dpbusd_epi32(vs2, vbuf0, dot2v);
-
-            vs3 = _mm512_add_epi32(vs3, vs1);
-            vs1_sad = _mm512_sad_epu8(vbuf1, zero);
-            vs1 = _mm512_add_epi32(vs1, vs1_sad);
-            vs2_1 = _mm512_dpbusd_epi32(vs2_1, vbuf1, dot2v);
+            vs2_0 = _mm512_dpbusd_epi32(vs2_0, vbuf0, dot2v);
             vs1_0 = vs1;
         }
 
+        /* Manually unrolled by 4 to maximize ILP with separate accumulators */
+        while (k >= 256) {
+            vbuf0 = _mm512_loadu_si512((__m512i*)src);
+            vbuf1 = _mm512_loadu_si512((__m512i*)(src + 64));
+            vbuf2 = _mm512_loadu_si512((__m512i*)(src + 128));
+            vbuf3 = _mm512_loadu_si512((__m512i*)(src + 192));
+            src += 256;
+            k -= 256;
+
+            // Chunk 0
+            __m512i vs1_sad0 = _mm512_sad_epu8(vbuf0, zero);
+            vs1 = _mm512_add_epi32(vs1, vs1_sad0);
+            vs3 = _mm512_add_epi32(vs3, vs1_0);
+            vs2_0 = _mm512_dpbusd_epi32(vs2_0, vbuf0, dot2v);
+
+            // Chunk 1
+            vs3 = _mm512_add_epi32(vs3, vs1);
+            __m512i vs1_sad1 = _mm512_sad_epu8(vbuf1, zero);
+            vs1 = _mm512_add_epi32(vs1, vs1_sad1);
+            vs2_1 = _mm512_dpbusd_epi32(vs2_1, vbuf1, dot2v);
+
+            // Chunk 2
+            vs3 = _mm512_add_epi32(vs3, vs1);
+            __m512i vs1_sad2 = _mm512_sad_epu8(vbuf2, zero);
+            vs1 = _mm512_add_epi32(vs1, vs1_sad2);
+            vs2_2 = _mm512_dpbusd_epi32(vs2_2, vbuf2, dot2v);
+
+            // Chunk 3
+            vs3 = _mm512_add_epi32(vs3, vs1);
+            __m512i vs1_sad3 = _mm512_sad_epu8(vbuf3, zero);
+            vs1 = _mm512_add_epi32(vs1, vs1_sad3);
+            vs2_3 = _mm512_dpbusd_epi32(vs2_3, vbuf3, dot2v);
+
+            vs1_0 = vs1;
+        }
+
+        /* Scale baseline accumulators by 64 bytes. 128 rolls over the sign bit
+         * and the dot product instruction forces the multiplicand to be interpreted
+         * as signed prior to the accumulation */
         vs3 = _mm512_slli_epi32(vs3, 6);
-        vs2 = _mm512_add_epi32(vs2, vs3);
-        vs2 = _mm512_add_epi32(vs2, vs2_1);
+        vs2_0 = _mm512_add_epi32(vs2_0, vs3);
+
+        vs2_0 = _mm512_add_epi32(vs2_0, vs2_1);
+        vs2_2 = _mm512_add_epi32(vs2_2, vs2_3);
+        vs2_0 = _mm512_add_epi32(vs2_0, vs2_2);
 
         adler0 = partial_hsum(vs1) % BASE;
-        adler1 = _mm512_reduce_add_epu32(vs2) % BASE;
+        adler1 = _mm512_reduce_add_epu32(vs2_0) % BASE;
     }
 
     adler = adler0 | (adler1 << 16);
 
-    /* Process tail (len < 64). */
     if (len) {
         goto rem_peel;
     }
 
     return adler;
 }
+
 
 /* Use 256-bit vectors when copying because 512-bit variant is slower. */
 Z_INTERNAL uint32_t adler32_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
