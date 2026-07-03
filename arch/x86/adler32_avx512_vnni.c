@@ -116,6 +116,7 @@ rem_peel:
 
     adler = adler0 | (adler1 << 16);
 
+    /* Process tail (len < 64). */
     if (len) {
         goto rem_peel;
     }
@@ -123,8 +124,7 @@ rem_peel:
     return adler;
 }
 
-
-/* Use 256-bit vectors when copying because 512-bit variant is slower. */
+/* Use 256-bit vectors when copying because 512-bit variant is slower for numerous architectural reasons */
 Z_INTERNAL uint32_t adler32_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len) {
     uint32_t adler0, adler1;
     adler1 = (adler >> 16) & 0xffff;
@@ -132,8 +132,7 @@ Z_INTERNAL uint32_t adler32_copy_avx512_vnni(uint32_t adler, uint8_t *dst, const
 
 rem_peel_copy:
     if (len < 32) {
-        /* This handles the remaining copies, just call normal adler checksum after this */
-        __mmask32 storemask = (0xFFFFFFFFUL >> (32 - len));
+       __mmask32 storemask = _bzhi_u32(0xFFFFFFFF, (unsigned)len);
         __m256i copy_vec = _mm256_maskz_loadu_epi8(storemask, src);
         _mm256_mask_storeu_epi8(dst, storemask, copy_vec);
 
@@ -144,76 +143,90 @@ rem_peel_copy:
                                           20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32);
 
     const __m256i zero = _mm256_setzero_si256();
-    __m256i vs1, vs2;
+    __m256i vs1, vs2_0;
 
     while (len >= 32) {
         vs1 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(adler0));
-        vs2 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(adler1));
+        vs2_0 = _mm256_zextsi128_si256(_mm_cvtsi32_si128(adler1));
 
         size_t k = ALIGN_DOWN(MIN(len, NMAX), 32);
         len -= k;
 
         __m256i vs1_0 = vs1;
         __m256i vs3 = _mm256_setzero_si256();
-        /* We might get a tad bit more ILP here if we sum to a second register in the loop */
+
         __m256i vs2_1 = _mm256_setzero_si256();
-        __m256i vbuf0, vbuf1;
+        __m256i vs2_2 = _mm256_setzero_si256();
+        __m256i vs2_3 = _mm256_setzero_si256();
 
-        /* Remainder peeling */
-        if (k % 64) {
-            vbuf1 = _mm256_loadu_si256((__m256i*)src);
-            _mm256_storeu_si256((__m256i*)dst, vbuf1);
+        __m256i vbuf0, vbuf1, vbuf2, vbuf3;
+
+        while (k % 128) {
+            vbuf0 = _mm256_loadu_si256((__m256i*)src);
+            _mm256_storeu_si256((__m256i*)dst, vbuf0);
             dst += 32;
-
             src += 32;
             k -= 32;
-
-            __m256i vs1_sad = _mm256_sad_epu8(vbuf1, zero);
-            vs1 = _mm256_add_epi32(vs1, vs1_sad);
-            vs3 = _mm256_add_epi32(vs3, vs1_0);
-            vs2 = _mm256_dpbusd_epi32(vs2, vbuf1, dot2v);
-            vs1_0 = vs1;
-        }
-
-        /* Manually unrolled this loop by 2 for an decent amount of ILP */
-        while (k >= 64) {
-            /*
-               vs1 = adler + sum(c[i])
-               vs2 = sum2 + 64 vs1 + sum( (64-i+1) c[i] )
-            */
-            vbuf0 = _mm256_loadu_si256((__m256i*)src);
-            vbuf1 = _mm256_loadu_si256((__m256i*)(src + 32));
-            _mm256_storeu_si256((__m256i*)dst, vbuf0);
-            _mm256_storeu_si256((__m256i*)(dst + 32), vbuf1);
-            dst += 64;
-            src += 64;
-            k -= 64;
 
             __m256i vs1_sad = _mm256_sad_epu8(vbuf0, zero);
             vs1 = _mm256_add_epi32(vs1, vs1_sad);
             vs3 = _mm256_add_epi32(vs3, vs1_0);
-            /* multiply-add, resulting in 16 ints. Fuse with sum stage from prior versions, as we now have the dp
-             * instructions to eliminate them */
-            vs2 = _mm256_dpbusd_epi32(vs2, vbuf0, dot2v);
+            vs2_0 = _mm256_dpbusd_epi32(vs2_0, vbuf0, dot2v);
+            vs1_0 = vs1;
+        }
+
+        /* Manually unrolled by 4 blocks (128 bytes total per iteration) */
+        while (k >= 128) {
+            vbuf0 = _mm256_loadu_si256((__m256i*)src);
+            vbuf1 = _mm256_loadu_si256((__m256i*)(src + 32));
+            vbuf2 = _mm256_loadu_si256((__m256i*)(src + 64));
+            vbuf3 = _mm256_loadu_si256((__m256i*)(src + 96));
+            src += 128;
+            k -= 128;
+
+            _mm256_storeu_si256((__m256i*)dst, vbuf0);
+            _mm256_storeu_si256((__m256i*)(dst + 32), vbuf1);
+            _mm256_storeu_si256((__m256i*)(dst + 64), vbuf2);
+            _mm256_storeu_si256((__m256i*)(dst + 96), vbuf3);
+            dst += 128;
+
+            __m256i vs1_sad0 = _mm256_sad_epu8(vbuf0, zero);
+            vs1 = _mm256_add_epi32(vs1, vs1_sad0);
+            vs3 = _mm256_add_epi32(vs3, vs1_0);
+            vs2_0 = _mm256_dpbusd_epi32(vs2_0, vbuf0, dot2v);
 
             vs3 = _mm256_add_epi32(vs3, vs1);
-            vs1_sad = _mm256_sad_epu8(vbuf1, zero);
-            vs1 = _mm256_add_epi32(vs1, vs1_sad);
+            __m256i vs1_sad1 = _mm256_sad_epu8(vbuf1, zero);
+            vs1 = _mm256_add_epi32(vs1, vs1_sad1);
             vs2_1 = _mm256_dpbusd_epi32(vs2_1, vbuf1, dot2v);
+
+            vs3 = _mm256_add_epi32(vs3, vs1);
+            __m256i vs1_sad2 = _mm256_sad_epu8(vbuf2, zero);
+            vs1 = _mm256_add_epi32(vs1, vs1_sad2);
+            vs2_2 = _mm256_dpbusd_epi32(vs2_2, vbuf2, dot2v);
+
+            vs3 = _mm256_add_epi32(vs3, vs1);
+            __m256i vs1_sad3 = _mm256_sad_epu8(vbuf3, zero);
+            vs1 = _mm256_add_epi32(vs1, vs1_sad3);
+            vs2_3 = _mm256_dpbusd_epi32(vs2_3, vbuf3, dot2v);
+
             vs1_0 = vs1;
         }
 
         vs3 = _mm256_slli_epi32(vs3, 5);
-        vs2 = _mm256_add_epi32(vs2, vs3);
-        vs2 = _mm256_add_epi32(vs2, vs2_1);
+        vs2_0 = _mm256_add_epi32(vs2_0, vs3);
+
+        vs2_0 = _mm256_add_epi32(vs2_0, vs2_1);
+        vs2_2 = _mm256_add_epi32(vs2_2, vs2_3);
+        vs2_0 = _mm256_add_epi32(vs2_0, vs2_2);
 
         adler0 = partial_hsum256(vs1) % BASE;
-        adler1 = hsum256(vs2) % BASE;
+        adler1 = hsum256(vs2_0) % BASE;
     }
 
     adler = adler0 | (adler1 << 16);
 
-    /* Process tail (len < 64). */
+    /* Process tail (len < 32). */
     if (len) {
         goto rem_peel_copy;
     }
