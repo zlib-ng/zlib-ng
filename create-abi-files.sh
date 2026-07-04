@@ -18,6 +18,8 @@ CC=arm-linux-gnueabi-gcc CHOST=arm-linux-gnueabi test/abicheck.sh --refresh-if |
 CC=arm-linux-gnueabi-gcc CHOST=arm-linux-gnueabi test/abicheck.sh --zlib-compat --refresh-if || exit
 CC=arm-linux-gnueabihf-gcc CHOST=arm-linux-gnueabihf test/abicheck.sh --refresh-if || exit
 CC=arm-linux-gnueabihf-gcc CHOST=arm-linux-gnueabihf test/abicheck.sh --zlib-compat --refresh-if || exit
+CC=loongarch64-linux-gnu-gcc-14 CHOST=loongarch64-linux-gnu test/abicheck.sh --refresh-if || exit
+CC=loongarch64-linux-gnu-gcc-14 CHOST=loongarch64-linux-gnu test/abicheck.sh --zlib-compat --refresh-if || exit
 CC=mips-linux-gnu-gcc CHOST=mips-linux-gnu test/abicheck.sh --refresh-if || exit
 CC=mips-linux-gnu-gcc CHOST=mips-linux-gnu test/abicheck.sh --zlib-compat --refresh-if || exit
 CC=mips64-linux-gnuabi64-gcc CHOST=mips64-linux-gnuabi64 test/abicheck.sh --refresh-if || exit

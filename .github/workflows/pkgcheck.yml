@@ -76,6 +76,14 @@ jobs:
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv.cmake
             packages: qemu-user gcc-riscv64-linux-gnu g++-riscv64-linux-gnu libc6-dev-riscv64-cross
 
+          - name: Ubuntu GCC 14 LoongArch64
+            os: ubuntu-24.04
+            chost: loongarch64-linux-gnu
+            compiler: loongarch64-linux-gnu-gcc-14
+            cxx-compiler: loongarch64-linux-gnu-g++-14
+            cmake-args: -DCOMPILER_SUFFIX=-14 -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-loongarch64-gcc.cmake
+            packages: qemu-user gcc-14-loongarch64-linux-gnu g++-14-loongarch64-linux-gnu libc-dev-loong64-cross
+
           - name: macOS Clang
             os: macOS-26
             compiler: clang
