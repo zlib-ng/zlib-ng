@@ -30,11 +30,11 @@ static inline void inf_chksum_cpy(PREFIX3(stream) *strm, uint8_t *dst,
     struct inflate_state *state = (struct inflate_state*)strm->state;
 #ifdef GUNZIP
     if (state->flags) {
-        strm->adler = state->check = FUNCTABLE_CALL(crc32_copy)(state->check, dst, src, copy);
+        strm->adler = state->check = FUNCTABLE_CALL(crc32_copy_inf)(state->check, dst, src, copy);
     } else
 #endif
     {
-        strm->adler = state->check = FUNCTABLE_CALL(adler32_copy)(state->check, dst, src, copy);
+        strm->adler = state->check = FUNCTABLE_CALL(adler32_copy_inf)(state->check, dst, src, copy);
     }
 }
 

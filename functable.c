@@ -78,7 +78,8 @@ static int init_functable(void) {
     // Only use necessary generic functions when no suitable simd versions are available.
 #ifdef ADLER32_FALLBACK
     ft.adler32 = &adler32_c;
-    ft.adler32_copy = &adler32_copy_c;
+    ft.adler32_copy_inf = &adler32_copy_c;
+    ft.adler32_copy_def = &adler32_copy_c;
 #endif
 #ifdef CHUNKSET_FALLBACK
     ft.chunkmemset_safe = &chunkmemset_safe_c;
@@ -91,7 +92,8 @@ static int init_functable(void) {
 #endif
 #ifdef CRC32_BRAID_FALLBACK
     ft.crc32 = &crc32_braid;
-    ft.crc32_copy = &crc32_copy_braid;
+    ft.crc32_copy_inf = &crc32_copy_braid;
+    ft.crc32_copy_def = &crc32_copy_braid;
 #endif
 #ifdef SLIDE_HASH_FALLBACK
     ft.slide_hash = &slide_hash_c;
@@ -103,7 +105,8 @@ static int init_functable(void) {
     // Chorba generic C fallback
 #ifdef CRC32_CHORBA_FALLBACK
     ft.crc32 = &crc32_chorba;
-    ft.crc32_copy = &crc32_copy_chorba;
+    ft.crc32_copy_inf = &crc32_copy_chorba;
+    ft.crc32_copy_def = &crc32_copy_chorba;
 #endif
 
     // X86 - SSE2
@@ -122,7 +125,8 @@ static int init_functable(void) {
 #  endif
 #  if defined(CRC32_CHORBA_SSE_FALLBACK) && !defined(X86_SSE41_NATIVE) && !defined(X86_PCLMULQDQ_NATIVE)
         ft.crc32 = &crc32_chorba_sse2;
-        ft.crc32_copy = &crc32_copy_chorba_sse2;
+        ft.crc32_copy_inf = &crc32_copy_chorba_sse2;
+        ft.crc32_copy_def = &crc32_copy_chorba_sse2;
 #  endif
     }
 #endif
@@ -133,7 +137,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_ssse3;
-        ft.adler32_copy = &adler32_copy_ssse3;
+        ft.adler32_copy_inf = &adler32_copy_ssse3;
+        ft.adler32_copy_def = &adler32_copy_ssse3;
 #  ifndef X86_AVX2_NATIVE
         ft.chunkmemset_safe = &chunkmemset_safe_ssse3;
         ft.inflate_fast = &inflate_fast_ssse3;
@@ -149,7 +154,8 @@ static int init_functable(void) {
     {
 #  ifdef CRC32_CHORBA_SSE_FALLBACK
         ft.crc32 = &crc32_chorba_sse41;
-        ft.crc32_copy = &crc32_copy_chorba_sse41;
+        ft.crc32_copy_inf = &crc32_copy_chorba_sse41;
+        ft.crc32_copy_def = &crc32_copy_chorba_sse41;
 #  endif
     }
 #endif
@@ -160,7 +166,8 @@ static int init_functable(void) {
     if (cf.x86.has_sse42)
 #  endif
     {
-        ft.adler32_copy = &adler32_copy_sse42;
+        ft.adler32_copy_inf = &adler32_copy_sse42;
+        ft.adler32_copy_def = &adler32_copy_sse42;
     }
 #endif
     // X86 - PCLMUL
@@ -170,7 +177,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.crc32 = &crc32_pclmulqdq;
-        ft.crc32_copy = &crc32_copy_pclmulqdq;
+        ft.crc32_copy_inf = &crc32_copy_pclmulqdq;
+        ft.crc32_copy_def = &crc32_copy_pclmulqdq;
     }
 #endif
     // X86 - AVX2
@@ -185,7 +193,8 @@ static int init_functable(void) {
     {
 #  ifndef X86_AVX512_NATIVE
         ft.adler32 = &adler32_avx2;
-        ft.adler32_copy = &adler32_copy_avx2;
+        ft.adler32_copy_inf = &adler32_copy_avx2;
+        ft.adler32_copy_def = &adler32_copy_avx2;
         ft.chunkmemset_safe = &chunkmemset_safe_avx2;
         ft.compare256 = &compare256_avx2;
         ft.inflate_fast = &inflate_fast_avx2;
@@ -203,7 +212,8 @@ static int init_functable(void) {
     {
 #  ifndef X86_AVX512VNNI_NATIVE
         ft.adler32 = &adler32_avx512;
-        ft.adler32_copy = &adler32_copy_avx512;
+        ft.adler32_copy_inf = &adler32_copy_avx512;
+        ft.adler32_copy_def = &adler32_copy_avx512;
 #  endif
         ft.chunkmemset_safe = &chunkmemset_safe_avx512;
         ft.compare256 = &compare256_avx512;
@@ -218,7 +228,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_avx512_vnni;
-        ft.adler32_copy = &adler32_copy_avx512_vnni;
+        ft.adler32_copy_inf = &adler32_copy_avx512_vnni;
+        ft.adler32_copy_def = &adler32_copy_avx512_vnni;
     }
 #endif
     // X86 - VPCLMULQDQ (AVX2)
@@ -228,7 +239,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.crc32 = &crc32_vpclmulqdq_avx2;
-        ft.crc32_copy = &crc32_copy_vpclmulqdq_avx2;
+        ft.crc32_copy_inf = &crc32_copy_vpclmulqdq_avx2;
+        ft.crc32_copy_def = &crc32_copy_vpclmulqdq_avx2;
     }
 #endif
     // X86 - VPCLMULQDQ (AVX-512)
@@ -238,7 +250,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.crc32 = &crc32_vpclmulqdq_avx512;
-        ft.crc32_copy = &crc32_copy_vpclmulqdq_avx512;
+        ft.crc32_copy_inf = &crc32_copy_vpclmulqdq_avx512;
+        ft.crc32_copy_def = &crc32_copy_vpclmulqdq_avx512;
     }
 #endif
 
@@ -259,7 +272,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_neon;
-        ft.adler32_copy = &adler32_copy_neon;
+        ft.adler32_copy_inf = &adler32_copy_neon;
+        ft.adler32_copy_def = &adler32_copy_neon;
         ft.chunkmemset_safe = &chunkmemset_safe_neon;
         ft.compare256 = &compare256_neon;
         ft.inflate_fast = &inflate_fast_neon;
@@ -275,7 +289,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_neon_dotprod;
-        ft.adler32_copy = &adler32_copy_neon_dotprod;
+        ft.adler32_copy_inf = &adler32_copy_neon_dotprod;
+        ft.adler32_copy_def = &adler32_copy_neon_dotprod;
     }
 #endif
     // ARM - CRC32
@@ -285,7 +300,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.crc32 = &crc32_armv8;
-        ft.crc32_copy = &crc32_copy_armv8;
+        ft.crc32_copy_inf = &crc32_copy_armv8;
+        ft.crc32_copy_def = &crc32_copy_armv8;
     }
 #endif
     // ARM - PMULL EOR3
@@ -295,7 +311,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.crc32 = &crc32_armv8_pmull_eor3;
-        ft.crc32_copy = &crc32_copy_armv8_pmull_eor3;
+        ft.crc32_copy_inf = &crc32_copy_armv8_pmull_eor3;
+        ft.crc32_copy_def = &crc32_copy_armv8_pmull_eor3;
     }
 #endif
 
@@ -306,7 +323,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_vmx;
-        ft.adler32_copy = &adler32_copy_vmx;
+        ft.adler32_copy_inf = &adler32_copy_vmx;
+        ft.adler32_copy_def = &adler32_copy_vmx;
         ft.slide_hash = &slide_hash_vmx;
     }
 #endif
@@ -317,7 +335,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_power8;
-        ft.adler32_copy = &adler32_copy_power8;
+        ft.adler32_copy_inf = &adler32_copy_power8;
+        ft.adler32_copy_def = &adler32_copy_power8;
         ft.chunkmemset_safe = &chunkmemset_safe_power8;
         ft.inflate_fast = &inflate_fast_power8;
         ft.slide_hash = &slide_hash_power8;
@@ -329,7 +348,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.crc32 = &crc32_power8;
-        ft.crc32_copy = &crc32_copy_power8;
+        ft.crc32_copy_inf = &crc32_copy_power8;
+        ft.crc32_copy_def = &crc32_copy_power8;
     }
 #endif
     // Power9
@@ -352,7 +372,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_rvv;
-        ft.adler32_copy = &adler32_copy_rvv;
+        ft.adler32_copy_inf = &adler32_copy_rvv;
+        ft.adler32_copy_def = &adler32_copy_rvv;
         ft.chunkmemset_safe = &chunkmemset_safe_rvv;
         ft.compare256 = &compare256_rvv;
         ft.inflate_fast = &inflate_fast_rvv;
@@ -369,7 +390,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.crc32 = &crc32_riscv64_zbc;
-        ft.crc32_copy = &crc32_copy_riscv64_zbc;
+        ft.crc32_copy_inf = &crc32_copy_riscv64_zbc;
+        ft.crc32_copy_def = &crc32_copy_riscv64_zbc;
     }
 #endif
 
@@ -380,7 +402,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.crc32 = &crc32_s390_vx;
-        ft.crc32_copy = &crc32_copy_s390_vx;
+        ft.crc32_copy_inf = &crc32_copy_s390_vx;
+        ft.crc32_copy_def = &crc32_copy_s390_vx;
         ft.slide_hash = &slide_hash_vx;
     }
 #endif
@@ -392,7 +415,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.crc32 = &crc32_loongarch64;
-        ft.crc32_copy = &crc32_copy_loongarch64;
+        ft.crc32_copy_inf = &crc32_copy_loongarch64;
+        ft.crc32_copy_def = &crc32_copy_loongarch64;
     }
 #endif
 #if defined(LOONGARCH_LSX) && !defined(LOONGARCH_LASX_NATIVE)
@@ -401,7 +425,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_lsx;
-        ft.adler32_copy = &adler32_copy_lsx;
+        ft.adler32_copy_inf = &adler32_copy_lsx;
+        ft.adler32_copy_def = &adler32_copy_lsx;
         ft.chunkmemset_safe = &chunkmemset_safe_lsx;
         ft.compare256 = &compare256_lsx;
         ft.inflate_fast = &inflate_fast_lsx;
@@ -416,7 +441,8 @@ static int init_functable(void) {
 #  endif
     {
         ft.adler32 = &adler32_lasx;
-        ft.adler32_copy = &adler32_copy_lasx;
+        ft.adler32_copy_inf = &adler32_copy_lasx;
+        ft.adler32_copy_def = &adler32_copy_lasx;
         ft.chunkmemset_safe = &chunkmemset_safe_lasx;
         ft.compare256 = &compare256_lasx;
         ft.inflate_fast = &inflate_fast_lasx;
@@ -431,11 +457,13 @@ static int init_functable(void) {
     // Assign function pointers individually for atomic operation
     FUNCTABLE_ASSIGN(ft, force_init);
     FUNCTABLE_VERIFY_ASSIGN(ft, adler32);
-    FUNCTABLE_VERIFY_ASSIGN(ft, adler32_copy);
+    FUNCTABLE_VERIFY_ASSIGN(ft, adler32_copy_inf);
+    FUNCTABLE_VERIFY_ASSIGN(ft, adler32_copy_def);
     FUNCTABLE_VERIFY_ASSIGN(ft, chunkmemset_safe);
     FUNCTABLE_VERIFY_ASSIGN(ft, compare256);
     FUNCTABLE_VERIFY_ASSIGN(ft, crc32);
-    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_copy);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_copy_inf);
+    FUNCTABLE_VERIFY_ASSIGN(ft, crc32_copy_def);
     FUNCTABLE_VERIFY_ASSIGN(ft, inflate_fast);
     FUNCTABLE_VERIFY_ASSIGN(ft, longest_match);
     FUNCTABLE_VERIFY_ASSIGN(ft, longest_match_roll);
@@ -465,7 +493,8 @@ static uint32_t adler32_stub(uint32_t adler, const uint8_t* buf, size_t len) {
 
 static uint32_t adler32_copy_stub(uint32_t adler, uint8_t* dst, const uint8_t* src, size_t len) {
     FUNCTABLE_INIT_ABORT;
-    return functable.adler32_copy(adler, dst, src, len);
+    // Use safe inflate-variant for stub fallback
+    return functable.adler32_copy_inf(adler, dst, src, len);
 }
 
 static uint8_t* chunkmemset_safe_stub(uint8_t* out, uint8_t *from, size_t len, size_t left) {
@@ -485,7 +514,8 @@ static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
 
 static uint32_t crc32_copy_stub(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len) {
     FUNCTABLE_INIT_ABORT;
-    return functable.crc32_copy(crc, dst, src, len);
+    // Use safe inflate-variant for stub fallback
+    return functable.crc32_copy_inf(crc, dst, src, len);
 }
 
 static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start, int safe_mode) {
@@ -513,9 +543,11 @@ Z_INTERNAL struct functable_s functable = {
     force_init_stub,
     adler32_stub,
     adler32_copy_stub,
+    adler32_copy_stub,
     chunkmemset_safe_stub,
     compare256_stub,
     crc32_stub,
+    crc32_copy_stub,
     crc32_copy_stub,
     inflate_fast_stub,
     longest_match_stub,
