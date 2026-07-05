@@ -212,8 +212,8 @@ static int init_functable(void) {
     {
 #  ifndef X86_AVX512VNNI_NATIVE
         ft.adler32 = &adler32_avx512;
-        ft.adler32_copy_inf = &adler32_copy_avx512;
-        ft.adler32_copy_def = &adler32_copy_avx512;
+        ft.adler32_copy_inf = &adler32_copy_avx512_inf;
+        ft.adler32_copy_def = &adler32_copy_avx512_def;
 #  endif
         ft.chunkmemset_safe = &chunkmemset_safe_avx512;
         ft.compare256 = &compare256_avx512;
