@@ -372,4 +372,10 @@ static const hash_test hash_tests[] = {
   {615336, big_test, 0x0, 0xe3274b6f, 0x0, 0x27b91614},
 };
 
+// Tests specifically for adler32_copy/crc32_copy using window-sized tests
+static const hash_test copy_tests[] = {
+  {32768, big_test, 0x0, 0xbfcdc3b1, 0x0, 0x217726b2},
+  {16384, big_test, 0x0, 0x186ae1d1, 0x0, 0xe81722f0},
+};
+
 #endif  /* HASH_TEST_STRINGS_P_H */

@@ -12,23 +12,42 @@ extern "C" {
 #  include "hash_test_strings_p.h"
 }
 
+#define BUFSIZE 64 * 1024
+
 class adler32_copy_variant : public ::testing::TestWithParam<hash_test> {
 protected:
-    uint8_t dstbuf[HASH_TEST_MAX_LENGTH];
+    static uint8_t *testdata;
+    static uint8_t *dstbuf;
+
+    static void SetUpTestSuite() {
+        testdata = (uint8_t *)zng_alloc_aligned(BUFSIZE, 64);
+        dstbuf = (uint8_t *)zng_alloc_aligned(BUFSIZE, 64);
+    }
+
+    static void TearDownTestSuite() {
+        zng_free_aligned(testdata);
+        zng_free_aligned(dstbuf);
+    }
 
 public:
     /* Ensure that adler32 copy functions returns the correct adler and copies the data */
     void adler32_copy_test(adler32_copy_func copyfunc, hash_test params) {
-        ASSERT_LE(params.len, HASH_TEST_MAX_LENGTH);
+        ASSERT_LE(params.len, BUFSIZE);
 
-        uint32_t adler = copyfunc(params.initial_adler, dstbuf, params.buf, params.len);
+        // Copy testdata to aligned buffer
+        memcpy(testdata, params.buf, params.len);
+
+        uint32_t adler = copyfunc(params.initial_adler, dstbuf, testdata, params.len);
 
         EXPECT_EQ(adler, params.expect_adler);
-        EXPECT_EQ(0, memcmp(params.buf, dstbuf, params.len));
+        EXPECT_EQ(0, memcmp(testdata, dstbuf, params.len));
     }
 };
 
-INSTANTIATE_TEST_SUITE_P(adler32_copy, adler32_copy_variant, testing::ValuesIn(hash_tests));
+uint8_t* adler32_copy_variant::testdata = nullptr;
+uint8_t* adler32_copy_variant::dstbuf = nullptr;
+
+INSTANTIATE_TEST_SUITE_P(adler32_copy, adler32_copy_variant, testing::ValuesIn(copy_tests));
 
 #define TEST_ADLER32_COPY(name, copyfunc, support_flag) \
     TEST_P(adler32_copy_variant, name) { \
