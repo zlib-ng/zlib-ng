@@ -11,6 +11,9 @@ extern "C" {
 #  include <png.h>
 }
 
+#define MAX(a, b) std::max(a, b)
+#define MIN(a, b) std::min(a, b)
+
 typedef struct _png_dat {
     uint8_t *buf;
     int64_t len;
