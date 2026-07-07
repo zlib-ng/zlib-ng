@@ -48,6 +48,7 @@ endif()
 set(BENCH_PUBLIC_SRCS
     benchmark_compress.cc
     benchmark_corpora.cc
+    benchmark_data_types.cc
     benchmark_inflate.cc
     benchmark_inflate_chunked.cc
     benchmark_uncompress.cc
@@ -112,6 +113,7 @@ if(WITH_BENCHMARK_APPS)
     endif()
 
     set(BENCH_APP_SRCS
+        benchmark_data_types.cc
         benchmark_png_encode.cc
         benchmark_png_decode.cc
         benchmark_png_decode_small.cc
