@@ -329,7 +329,22 @@ enum test_data_type {
     TEST_DATA_MIXED,            /* binary-like literal runs + medium matches */
     TEST_DATA_REALISTIC_RGB,    /* RGB photo, short matches at dist=3 */
     TEST_DATA_STRIPED_RGB,      /* solid R/G/B stripes, long dist=3 matches */
+    TEST_DATA_COUNT
 };
+
+static inline const char *test_data_type_name(int data_type) {
+    switch (data_type) {
+        case TEST_DATA_TEXT:           return "text";
+        case TEST_DATA_SHORT_MATCH:    return "short_match";
+        case TEST_DATA_DNA:            return "dna";
+        case TEST_DATA_RANDOM:         return "random";
+        case TEST_DATA_LITERALS:       return "literals";
+        case TEST_DATA_MIXED:          return "mixed";
+        case TEST_DATA_REALISTIC_RGB:  return "realistic_rgb";
+        case TEST_DATA_STRIPED_RGB:    return "striped_rgb";
+    }
+    return NULL;
+}
 
 static inline uint8_t *gen_test_data(enum test_data_type data_type, size_t bufsize) {
     switch (data_type) {
@@ -341,6 +356,7 @@ static inline uint8_t *gen_test_data(enum test_data_type data_type, size_t bufsi
         case TEST_DATA_MIXED:          return gen_mixed_data(bufsize);
         case TEST_DATA_REALISTIC_RGB:  return gen_realistic_rgb_data(bufsize);
         case TEST_DATA_STRIPED_RGB:    return gen_striped_rgb_data(bufsize);
+        case TEST_DATA_COUNT:          break;
     }
     return NULL;
 }

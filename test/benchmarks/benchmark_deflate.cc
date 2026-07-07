@@ -18,6 +18,8 @@ extern "C" {
 #  include "test/test_data_p.h"
 }
 
+#include "benchmark_data_types.h"
+
 #define MAX_SIZE (1024 * 1024)
 
 /* Parameterized deflate benchmark: Args(size, level) */
@@ -123,32 +125,64 @@ public:
     ->Args({1024, 1})->Args({1024, 6})->Args({1024, 9}) \
     ->Args({1048576, 1})->Args({1048576, 6})->Args({1048576, 9})
 
-#define DEFLATE_VARIANT(variant, data, wbits, strategy, dt, args_macro) \
+/* Non-text data types use a reduced size/level ladder to keep the benchmark
+   count down; the text variants keep the full ladders. */
+#define DEFLATE_DATA_ARGS \
+    ->Args({131072, 3})->Args({131072, 6})->Args({131072, 9}) \
+    ->Args({1048576, 3})->Args({1048576, 6})->Args({1048576, 9})
+
+#define DEFLATE_VARIANT(variant, data, wbits, strategy, dt) \
     BENCHMARK_DEFINE_F(deflate_bench, variant##_##data)(benchmark::State& state) { \
         Dispatch(state, dt, wbits, strategy); \
-    } \
-    BENCHMARK_REGISTER_F(deflate_bench, variant##_##data) \
-        ->Name("deflate_bench/" #variant "/" #data) args_macro
+    }
 
-#define DEFLATE_ALL_DATA(variant, wbits, strategy, args_macro) \
-    DEFLATE_VARIANT(variant, text,          wbits, strategy, TEST_DATA_TEXT,          args_macro); \
-    DEFLATE_VARIANT(variant, short_match,   wbits, strategy, TEST_DATA_SHORT_MATCH,   args_macro); \
-    DEFLATE_VARIANT(variant, dna,           wbits, strategy, TEST_DATA_DNA,           args_macro); \
-    DEFLATE_VARIANT(variant, random,        wbits, strategy, TEST_DATA_RANDOM,        args_macro); \
-    DEFLATE_VARIANT(variant, literals,      wbits, strategy, TEST_DATA_LITERALS,      args_macro); \
-    DEFLATE_VARIANT(variant, mixed,         wbits, strategy, TEST_DATA_MIXED,         args_macro); \
-    DEFLATE_VARIANT(variant, realistic_rgb, wbits, strategy, TEST_DATA_REALISTIC_RGB, args_macro); \
-    DEFLATE_VARIANT(variant, striped_rgb,   wbits, strategy, TEST_DATA_STRIPED_RGB,   args_macro)
+#define DEFLATE_ALL_DATA(variant, wbits, strategy) \
+    DEFLATE_VARIANT(variant, text,          wbits, strategy, TEST_DATA_TEXT); \
+    DEFLATE_VARIANT(variant, short_match,   wbits, strategy, TEST_DATA_SHORT_MATCH); \
+    DEFLATE_VARIANT(variant, dna,           wbits, strategy, TEST_DATA_DNA); \
+    DEFLATE_VARIANT(variant, random,        wbits, strategy, TEST_DATA_RANDOM); \
+    DEFLATE_VARIANT(variant, literals,      wbits, strategy, TEST_DATA_LITERALS); \
+    DEFLATE_VARIANT(variant, mixed,         wbits, strategy, TEST_DATA_MIXED); \
+    DEFLATE_VARIANT(variant, realistic_rgb, wbits, strategy, TEST_DATA_REALISTIC_RGB); \
+    DEFLATE_VARIANT(variant, striped_rgb,   wbits, strategy, TEST_DATA_STRIPED_RGB)
 
 /* Parameterized deflate with zlib wrapping (includes adler32 checksum) */
-DEFLATE_ALL_DATA(level,    MAX_WBITS,  Z_DEFAULT_STRATEGY, DEFLATE_ARGS);
+DEFLATE_ALL_DATA(level,    MAX_WBITS,  Z_DEFAULT_STRATEGY);
 /* Parameterized raw deflate without checksum */
-DEFLATE_ALL_DATA(nocrc,    -MAX_WBITS, Z_DEFAULT_STRATEGY, DEFLATE_ARGS);
+DEFLATE_ALL_DATA(nocrc,    -MAX_WBITS, Z_DEFAULT_STRATEGY);
 /* Parameterized deflate with filtered strategy */
-DEFLATE_ALL_DATA(filtered, MAX_WBITS,  Z_FILTERED,         DEFLATE_STRATEGY_ARGS);
+DEFLATE_ALL_DATA(filtered, MAX_WBITS,  Z_FILTERED);
 /* Parameterized deflate with Huffman-only strategy */
-DEFLATE_ALL_DATA(huffman,  MAX_WBITS,  Z_HUFFMAN_ONLY,     DEFLATE_STRATEGY_ARGS);
+DEFLATE_ALL_DATA(huffman,  MAX_WBITS,  Z_HUFFMAN_ONLY);
 /* Parameterized deflate with RLE strategy */
-DEFLATE_ALL_DATA(rle,      MAX_WBITS,  Z_RLE,              DEFLATE_STRATEGY_ARGS);
+DEFLATE_ALL_DATA(rle,      MAX_WBITS,  Z_RLE);
 /* Parameterized deflate with fixed Huffman codes */
-DEFLATE_ALL_DATA(fixed,    MAX_WBITS,  Z_FIXED,            DEFLATE_STRATEGY_ARGS);
+DEFLATE_ALL_DATA(fixed,    MAX_WBITS,  Z_FIXED);
+
+/* Registered at runtime for the data types selected by --benchmark_data_types */
+#define DEFLATE_REGISTER(variant, data, dt, args_macro) \
+    if (mask & (1u << (dt))) \
+        ::benchmark::internal::RegisterBenchmarkInternal( \
+            ::benchmark::internal::make_unique<deflate_bench_##variant##_##data##_Benchmark>()) \
+            ->Name("deflate_bench/" #variant "/" #data) args_macro
+
+#define DEFLATE_REGISTER_ALL_DATA(variant, text_args_macro) \
+    DEFLATE_REGISTER(variant, text,          TEST_DATA_TEXT,          text_args_macro); \
+    DEFLATE_REGISTER(variant, short_match,   TEST_DATA_SHORT_MATCH,   DEFLATE_DATA_ARGS); \
+    DEFLATE_REGISTER(variant, dna,           TEST_DATA_DNA,           DEFLATE_DATA_ARGS); \
+    DEFLATE_REGISTER(variant, random,        TEST_DATA_RANDOM,        DEFLATE_DATA_ARGS); \
+    DEFLATE_REGISTER(variant, literals,      TEST_DATA_LITERALS,      DEFLATE_DATA_ARGS); \
+    DEFLATE_REGISTER(variant, mixed,         TEST_DATA_MIXED,         DEFLATE_DATA_ARGS); \
+    DEFLATE_REGISTER(variant, realistic_rgb, TEST_DATA_REALISTIC_RGB, DEFLATE_DATA_ARGS); \
+    DEFLATE_REGISTER(variant, striped_rgb,   TEST_DATA_STRIPED_RGB,   DEFLATE_DATA_ARGS)
+
+static void deflate_register_data_types(uint32_t mask) {
+    DEFLATE_REGISTER_ALL_DATA(level,    DEFLATE_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(nocrc,    DEFLATE_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(filtered, DEFLATE_STRATEGY_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(huffman,  DEFLATE_STRATEGY_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(rle,      DEFLATE_STRATEGY_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(fixed,    DEFLATE_STRATEGY_ARGS);
+}
+
+static int deflate_data_types = benchmark_data_types_hook(deflate_register_data_types);

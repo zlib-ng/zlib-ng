@@ -26,6 +26,7 @@ The CPU scheduling controls are only available on Windows and are ignored elsewh
 |----------|----------|-------------|
 | `--benchmark_cooldown=<seconds>` | All | Sleep between benchmark families to mitigate thermal throttling. Not applied between repetitions of the same benchmark. |
 | `--benchmark_cpu_affinity=<cpulist>` | Windows | Pin the process to the listed CPUs, `taskset`-style (`3`, `0,2,4`, or `0-3`). |
+| `--benchmark_data_types=<type,...\|all>` | All | Register deflate/inflate variants for the given input data types: `text` (default), `short_match`, `dna`, `random`, `literals`, `mixed`, `realistic_rgb`, `striped_rgb`. Non-`text` types use reduced size/level ladders. |
 | `--benchmark_no_power_throttling` | Windows | Opt out of EcoQoS so the process runs at full clock on performance cores. |
 | `--benchmark_priority=<normal\|high\|realtime>` | Windows | Set the process priority class for more deterministic scheduling. |
 

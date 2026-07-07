@@ -18,6 +18,8 @@
 
 #include <benchmark/benchmark.h>
 
+#include "benchmark_data_types.h"
+
 #ifndef BUILD_ALT
 extern "C" {
 #  include "zbuild.h"
@@ -114,9 +116,13 @@ int main(int argc, char** argv) {
 #  endif
 #endif
 
+    const char *data_types = nullptr;
+
     for (int i = 1; i < argc; i++) {
         if (strncmp(argv[i], "--benchmark_cooldown=", 21) == 0) {
             cooldown_secs = strtoul(argv[i] + 21, nullptr, 10);
+        } else if (strncmp(argv[i], "--benchmark_data_types=", 23) == 0) {
+            data_types = argv[i] + 23;
         }
 #ifdef _WIN32
         else if (strncmp(argv[i], "--benchmark_cpu_affinity=", 25) == 0) {
@@ -129,9 +135,15 @@ int main(int argc, char** argv) {
 #endif
     }
 
+    uint32_t data_type_mask = benchmark_data_types_parse(data_types);
+    if (data_type_mask == 0)
+        return EXIT_FAILURE;
+    benchmark_data_types_register(data_type_mask);
+
     ::benchmark::Initialize(&argc, argv, []() {
         ::benchmark::PrintDefaultHelp();
         printf("          [--benchmark_cooldown=<seconds>]\n");
+        printf("          [--benchmark_data_types=<type,...|all>]\n");
 #ifdef _WIN32
         printf("          [--benchmark_cpu_affinity=<cpulist>]\n");
         printf("          [--benchmark_no_power_throttling]\n");

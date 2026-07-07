@@ -18,6 +18,8 @@ extern "C" {
 #  include "test/test_data_p.h"
 }
 
+#include "benchmark_data_types.h"
+
 #define MAX_SIZE (1024 * 1024)
 class inflate_bench: public benchmark::Fixture {
 private:
@@ -156,12 +158,15 @@ public:
     }
 };
 
+/* The text variant keeps the full size ladder for size-scaling studies; the
+   other data types use a reduced ladder to keep the benchmark count down. */
 #define INFLATE_SIZES_ARGS \
     ->Arg(1)->Arg(64)->Arg(1024)->Arg(16<<10)->Arg(128<<10)->Arg(1024<<10)
+#define INFLATE_SIZES_DATA_ARGS \
+    ->Arg(16<<10)->Arg(128<<10)->Arg(1024<<10)
 
 #define INFLATE_VARIANT(name, dt) \
-    BENCHMARK_DEFINE_F(inflate_bench, name)(benchmark::State& state) { Dispatch(state, dt); } \
-    BENCHMARK_REGISTER_F(inflate_bench, name)->Name("inflate_bench/nocrc/" #name) INFLATE_SIZES_ARGS
+    BENCHMARK_DEFINE_F(inflate_bench, name)(benchmark::State& state) { Dispatch(state, dt); }
 
 INFLATE_VARIANT(text,           TEST_DATA_TEXT);
 INFLATE_VARIANT(short_match,    TEST_DATA_SHORT_MATCH);
@@ -171,3 +176,23 @@ INFLATE_VARIANT(literals,       TEST_DATA_LITERALS);
 INFLATE_VARIANT(mixed,          TEST_DATA_MIXED);
 INFLATE_VARIANT(realistic_rgb,  TEST_DATA_REALISTIC_RGB);
 INFLATE_VARIANT(striped_rgb,    TEST_DATA_STRIPED_RGB);
+
+/* Registered at runtime for the data types selected by --benchmark_data_types */
+#define INFLATE_REGISTER(name, dt, args_macro) \
+    if (mask & (1u << (dt))) \
+        ::benchmark::internal::RegisterBenchmarkInternal( \
+            ::benchmark::internal::make_unique<inflate_bench_##name##_Benchmark>()) \
+            ->Name("inflate_bench/nocrc/" #name) args_macro
+
+static void inflate_register_data_types(uint32_t mask) {
+    INFLATE_REGISTER(text,           TEST_DATA_TEXT,          INFLATE_SIZES_ARGS);
+    INFLATE_REGISTER(short_match,    TEST_DATA_SHORT_MATCH,   INFLATE_SIZES_DATA_ARGS);
+    INFLATE_REGISTER(dna,            TEST_DATA_DNA,           INFLATE_SIZES_DATA_ARGS);
+    INFLATE_REGISTER(random,         TEST_DATA_RANDOM,        INFLATE_SIZES_DATA_ARGS);
+    INFLATE_REGISTER(literals,       TEST_DATA_LITERALS,      INFLATE_SIZES_DATA_ARGS);
+    INFLATE_REGISTER(mixed,          TEST_DATA_MIXED,         INFLATE_SIZES_DATA_ARGS);
+    INFLATE_REGISTER(realistic_rgb,  TEST_DATA_REALISTIC_RGB, INFLATE_SIZES_DATA_ARGS);
+    INFLATE_REGISTER(striped_rgb,    TEST_DATA_STRIPED_RGB,   INFLATE_SIZES_DATA_ARGS);
+}
+
+static int inflate_data_types = benchmark_data_types_hook(inflate_register_data_types);
