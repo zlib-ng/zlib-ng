@@ -136,6 +136,7 @@ public:
     DEFLATE_VARIANT(variant, dna,           wbits, strategy, TEST_DATA_DNA,           args_macro); \
     DEFLATE_VARIANT(variant, random,        wbits, strategy, TEST_DATA_RANDOM,        args_macro); \
     DEFLATE_VARIANT(variant, literals,      wbits, strategy, TEST_DATA_LITERALS,      args_macro); \
+    DEFLATE_VARIANT(variant, mixed,         wbits, strategy, TEST_DATA_MIXED,         args_macro); \
     DEFLATE_VARIANT(variant, realistic_rgb, wbits, strategy, TEST_DATA_REALISTIC_RGB, args_macro); \
     DEFLATE_VARIANT(variant, striped_rgb,   wbits, strategy, TEST_DATA_STRIPED_RGB,   args_macro)
 

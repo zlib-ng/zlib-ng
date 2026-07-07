@@ -183,6 +183,77 @@ static inline uint8_t *gen_literals_data(size_t bufsize) {
     return buf;
 }
 
+/* Object-archive-like binary interleaving machine-code-like flat literals,
+   24-byte records that match at stride distances, and zero padding. Deflate emits
+   coded blocks at ratio ~2.7 where ~80% of the symbols are literals. */
+static inline uint8_t *gen_mixed_data(size_t bufsize) {
+    uint8_t *buf = (uint8_t *)malloc(bufsize);
+    if (buf == NULL)
+        return NULL;
+    uint32_t rng = 0xb1a5b1a5;
+    size_t pos = 0;
+    uint8_t rec[24];
+    for (int i = 0; i < 24; i++) {
+        rng = rng * 1103515245u + 12345u;
+        rec[i] = (uint8_t)(rng >> 16);
+    }
+    while (pos < bufsize) {
+        rng = rng * 1103515245u + 12345u;
+        uint32_t kind = (rng >> 16) % 100;
+        if (kind < 86) {
+            /* Code-like: flat literal run, then sometimes a short self-copy.
+               Run lengths roughly follow the run histogram of real machine
+               code (head at 1-2 plus a 17-64 tail, mean ~6). */
+            rng = rng * 1103515245u + 12345u;
+            uint32_t r = (rng >> 16) & 15;
+            size_t run = r < 4 ? 1 + ((rng >> 20) & 1)
+                       : r < 8 ? 3 + ((rng >> 20) & 1)
+                       : r < 12 ? 5 + ((rng >> 20) & 3)
+                       : r < 14 ? 9 + ((rng >> 20) & 7)
+                       : 17 + ((rng >> 20) % 48);
+            for (size_t j = 0; j < run && pos < bufsize; j++) {
+                rng = rng * 1103515245u + 12345u;
+                uint8_t a = (uint8_t)(rng >> 16);
+                rng = rng * 1103515245u + 12345u;
+                buf[pos++] = (uint8_t)(a & (rng >> 16));
+            }
+            rng = rng * 1103515245u + 12345u;
+            if (pos < 16 || pos >= bufsize || ((rng >> 16) & 1))
+                continue;
+            rng = rng * 1103515245u + 12345u;
+            size_t length = 4 + ((rng >> 16) % 14);
+            rng = rng * 1103515245u + 12345u;
+            size_t maxd = pos < 4096 ? pos : 4096;
+            size_t dist = maxd > 8 ? 8 + ((rng >> 16) % (maxd - 7)) : pos;
+            size_t start = pos - dist;
+            for (size_t i = 0; i < length && pos < bufsize; i++, pos++)
+                buf[pos] = buf[start + i];
+        } else if (kind < 96) {
+            /* Symbol-table-like: 24-byte records, a few varying bytes each */
+            rng = rng * 1103515245u + 12345u;
+            size_t nrec = 2 + ((rng >> 16) % 4);
+            for (size_t r2 = 0; r2 < nrec && pos + 24 <= bufsize; r2++) {
+                memcpy(buf + pos, rec, 24);
+                rng = rng * 1103515245u + 12345u;
+                size_t nvary = 3 + ((rng >> 16) & 1);
+                for (size_t k = 0; k < nvary; k++) {
+                    rng = rng * 1103515245u + 12345u;
+                    buf[pos + ((rng >> 16) % 24)] = (uint8_t)(rng >> 8);
+                }
+                pos += 24;
+            }
+        } else {
+            /* Zero padding, long dist-1 runs */
+            rng = rng * 1103515245u + 12345u;
+            size_t z = 64 + ((rng >> 16) % 384);
+            if (z > bufsize - pos) z = bufsize - pos;
+            memset(buf + pos, 0, z);
+            pos += z;
+        }
+    }
+    return buf;
+}
+
 /* RGB photo-like pixels at a fixed row width: smooth gradients with per-pixel
    noise. Yields short matches at dist=3 (RGB stride) and longer inter-row matches;
    deflate emits scattered literals between them. */
@@ -255,6 +326,7 @@ enum test_data_type {
     TEST_DATA_DNA,              /* 4-symbol alphabet, dense chains + short matches */
     TEST_DATA_RANDOM,           /* incompressible, deflate uses stored blocks */
     TEST_DATA_LITERALS,         /* high-entropy literals, coded blocks, few matches */
+    TEST_DATA_MIXED,            /* binary-like literal runs + medium matches */
     TEST_DATA_REALISTIC_RGB,    /* RGB photo, short matches at dist=3 */
     TEST_DATA_STRIPED_RGB,      /* solid R/G/B stripes, long dist=3 matches */
 };
@@ -266,6 +338,7 @@ static inline uint8_t *gen_test_data(enum test_data_type data_type, size_t bufsi
         case TEST_DATA_DNA:            return gen_dna_data(bufsize);
         case TEST_DATA_RANDOM:         return gen_random_data(bufsize);
         case TEST_DATA_LITERALS:       return gen_literals_data(bufsize);
+        case TEST_DATA_MIXED:          return gen_mixed_data(bufsize);
         case TEST_DATA_REALISTIC_RGB:  return gen_realistic_rgb_data(bufsize);
         case TEST_DATA_STRIPED_RGB:    return gen_striped_rgb_data(bufsize);
     }
