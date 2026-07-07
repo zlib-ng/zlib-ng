@@ -165,6 +165,24 @@ static inline uint8_t *gen_random_data(size_t bufsize) {
     return buf;
 }
 
+/* High-entropy literals from mostly the AND of two uniform bytes (~6.5 bits per
+   byte). Deflate emits coded blocks (ratio ~1.1) with few matches. */
+static inline uint8_t *gen_literals_data(size_t bufsize) {
+    uint8_t *buf = (uint8_t *)malloc(bufsize);
+    if (buf == NULL)
+        return NULL;
+    uint32_t rng = 0x600dd1ce;
+    for (size_t i = 0; i < bufsize; i++) {
+        rng = rng * 1103515245u + 12345u;
+        uint8_t a = (uint8_t)(rng >> 24);
+        rng = rng * 1103515245u + 12345u;
+        /* 1/4 of bytes stay fully random to break up 3-byte repeats that
+           deflate would otherwise turn into incidental matches at level 9 */
+        buf[i] = ((rng >> 8) & 3) ? (uint8_t)(a & (rng >> 24)) : a;
+    }
+    return buf;
+}
+
 /* RGB photo-like pixels at a fixed row width: smooth gradients with per-pixel
    noise. Yields short matches at dist=3 (RGB stride) and longer inter-row matches;
    deflate emits scattered literals between them. */
@@ -236,6 +254,7 @@ enum test_data_type {
     TEST_DATA_SHORT_MATCH,      /* many short back-references */
     TEST_DATA_DNA,              /* 4-symbol alphabet, dense chains + short matches */
     TEST_DATA_RANDOM,           /* incompressible, deflate uses stored blocks */
+    TEST_DATA_LITERALS,         /* high-entropy literals, coded blocks, few matches */
     TEST_DATA_REALISTIC_RGB,    /* RGB photo, short matches at dist=3 */
     TEST_DATA_STRIPED_RGB,      /* solid R/G/B stripes, long dist=3 matches */
 };
@@ -246,6 +265,7 @@ static inline uint8_t *gen_test_data(enum test_data_type data_type, size_t bufsi
         case TEST_DATA_SHORT_MATCH:    return gen_short_match_data(bufsize);
         case TEST_DATA_DNA:            return gen_dna_data(bufsize);
         case TEST_DATA_RANDOM:         return gen_random_data(bufsize);
+        case TEST_DATA_LITERALS:       return gen_literals_data(bufsize);
         case TEST_DATA_REALISTIC_RGB:  return gen_realistic_rgb_data(bufsize);
         case TEST_DATA_STRIPED_RGB:    return gen_striped_rgb_data(bufsize);
     }
