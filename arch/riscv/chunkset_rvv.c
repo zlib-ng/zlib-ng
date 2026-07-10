@@ -7,6 +7,7 @@
 #ifdef RISCV_RVV
 
 #include "zbuild.h"
+#include "zmemory.h"
 
 #include <riscv_vector.h>
 
@@ -18,10 +19,10 @@
 #define HAVE_CHUNKMEMSET_4
 #define HAVE_CHUNKMEMSET_8
 
-#define CHUNK_MEMSET_RVV_IMPL(from, chunk, elen)                        \
+#define CHUNK_MEMSET_RVV_IMPL(v, chunk, elen)                           \
 do {                                                                    \
     size_t vl, len = sizeof(*chunk) / sizeof(uint##elen##_t);           \
-    uint##elen##_t val = *(uint##elen##_t*)from;                        \
+    uint##elen##_t val = (v);                                           \
     uint##elen##_t* chunk_p = (uint##elen##_t*)chunk;                   \
     do {                                                                \
         vl = __riscv_vsetvl_e##elen##m4(len);                           \
@@ -37,15 +38,15 @@ typedef struct chunk_s {
 } chunk_t;
 
 static inline void chunkmemset_2(uint8_t *from, chunk_t *chunk) {
-    CHUNK_MEMSET_RVV_IMPL(from, chunk, 16);
+    CHUNK_MEMSET_RVV_IMPL(zng_memread_2(from), chunk, 16);
 }
 
 static inline void chunkmemset_4(uint8_t *from, chunk_t *chunk) {
-    CHUNK_MEMSET_RVV_IMPL(from, chunk, 32);
+    CHUNK_MEMSET_RVV_IMPL(zng_memread_4(from), chunk, 32);
 }
 
 static inline void chunkmemset_8(uint8_t *from, chunk_t *chunk) {
-    CHUNK_MEMSET_RVV_IMPL(from, chunk, 64);
+    CHUNK_MEMSET_RVV_IMPL(zng_memread_8(from), chunk, 64);
 }
 
 static inline void loadchunk(uint8_t const *s, chunk_t *chunk) {
