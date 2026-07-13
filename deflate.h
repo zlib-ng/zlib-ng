@@ -80,10 +80,33 @@
 #endif
 /* Stream status */
 
-#define HASH_BITS    16u           /* log2(HASH_SIZE) */
 #ifndef HASH_SIZE
 #  define HASH_SIZE 65536u         /* number of elements in hash table */
+#  define HASH_BITS    16u         /* log2(HASH_SIZE) */
+#else
+#  if ((HASH_SIZE) & ((HASH_SIZE) - 1)) != 0
+#    error HASH_SIZE must be a perfect power of 2!
+#  endif
+#  if (HASH_SIZE) < 64u || (HASH_SIZE) > 524288u
+#    error HASH_SIZE must be within 64-524288. Note that non-default sizes are not supported, and might not work correctly.
+#  endif
+#  define HASH_BITS ( \
+     (HASH_SIZE) == 64u ? 6u : \
+     (HASH_SIZE) == 128u ? 7u : \
+     (HASH_SIZE) == 256u ? 8u : \
+     (HASH_SIZE) == 512u ? 9u : \
+     (HASH_SIZE) == 1024u ? 10u : \
+     (HASH_SIZE) == 2048u ? 11u : \
+     (HASH_SIZE) == 4096u ? 12u : \
+     (HASH_SIZE) == 8192u ? 13u : \
+     (HASH_SIZE) == 16384u ? 14u : \
+     (HASH_SIZE) == 32768u ? 15u : \
+     (HASH_SIZE) == 65536u ? 16u : \
+     (HASH_SIZE) == 131072u ? 17u : \
+     (HASH_SIZE) == 262144u ? 18u : \
+     (HASH_SIZE) == 524288u ? 19u : 0u)
 #endif
+
 #define HASH_MASK (HASH_SIZE - 1u) /* HASH_SIZE-1 */
 
 
