@@ -6,7 +6,8 @@
 #ifndef INSERT_STRING_P_H_
 #define INSERT_STRING_P_H_
 
-#define UPDATE_HASH_KNUTH(h,val) h = (((val) * 2654435761U) >> 16) & HASH_MASK
+#define KNUTH_SHIFT (32 - HASH_BITS)
+#define UPDATE_HASH_KNUTH(h,val) h = (((val) * 2654435761U) >> KNUTH_SHIFT)
 #define UPDATE_HASH_ROLL(h,val) h = ((h << 5) ^ ((uint8_t)(val))) & (32768u - 1u)
 
 /* ===========================================================================
