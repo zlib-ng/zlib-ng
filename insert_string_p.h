@@ -17,8 +17,8 @@
  *    previous key instead of complete recalculation each time.
  */
 Z_FORCEINLINE static uint32_t update_hash_roll(uint32_t h, uint32_t val) {
-    h = ((h << 5) ^ ((uint8_t)val));
-    return h & (32768u - 1u);
+    UPDATE_HASH_ROLL(h, val);
+    return h;
 }
 
 /* ===========================================================================
