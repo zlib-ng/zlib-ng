@@ -8,7 +8,14 @@
 
 #define KNUTH_SHIFT (32 - HASH_BITS)
 #define UPDATE_HASH_KNUTH(h,val) h = (((val) * 2654435761U) >> KNUTH_SHIFT)
-#define UPDATE_HASH_ROLL(h,val) h = ((h << 5) ^ ((uint8_t)(val))) & (32768u - 1u)
+
+#if (HASH_SIZE) > 65536u
+#  define ROLL_HASH_SIZE 65536
+#else
+#  define ROLL_HASH_SIZE HASH_SIZE
+#endif
+#define ROLL_MASK ((HASH_SIZE / 2) - 1u))
+#define UPDATE_HASH_ROLL(h,val) h = (((h << 5) ^ ((uint8_t)(val))) & ROLL_MASK
 
 /* ===========================================================================
  * Update a hash value with the given input byte
