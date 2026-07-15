@@ -120,34 +120,44 @@ static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, con
     uint64_t match_bits;
     uint32_t match_bits_len;
 
-    /* Send the length code, len is the match length - STD_MIN_MATCH */
+    /* 1. Process Length Code */
     code = zng_length_code[lc];
-    c = code+LITERALS+1;
+    c = code + LITERALS + 1;
     Assert(c < L_CODES, "bad l_code");
     send_code_trace(s, c);
 
+    /*    Send length code, len is the match length - STD_MIN_MATCH */
     match_bits = ltree[c].Code;
     match_bits_len = ltree[c].Len;
-    /* Get extra bits count and subtract base length from match length */
+
+    /* 2. Get extra bits count and subtract base length */
     lext = lbase_extra[code];
     extra = lext >> 8;
     lc -= lext & 0xff;
-    match_bits |= ((uint64_t)(lc & ((1U << extra) - 1)) << match_bits_len);
+
+    /*    Send length extra bits */
+    uint32_t l_mask = (1U << extra) - 1;
+    match_bits |= (uint64_t)(lc & l_mask) << match_bits_len;
     match_bits_len += extra;
 
+    /* 3. Process Distance Code */
     dist--; /* dist is now the match distance - 1 */
     code = d_code(dist);
     Assert(code < D_CODES, "bad d_code");
     send_code_trace(s, code);
 
-    /* Send the distance code */
+    /*    Send distance code */
     match_bits |= ((uint64_t)dtree[code].Code << match_bits_len);
     match_bits_len += dtree[code].Len;
-    /* Get extra bits count and subtract base distance */
+
+    /* 4. Get extra bits count and subtract base distance */
     lext = dbase_extra[code];
     extra = lext >> 16;
     dist -= lext & 0xffff;
-    match_bits |= ((uint64_t)(dist & ((1U << extra) - 1)) << match_bits_len);
+
+    /*    Send dist extra bits */
+    uint32_t d_mask = (1U << extra) - 1;
+    match_bits |= ((uint64_t)(dist & d_mask) << match_bits_len);
     match_bits_len += extra;
 
     send_bits(s, match_bits, match_bits_len, *bi_buf, *bi_valid);
