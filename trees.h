@@ -33,6 +33,15 @@ static const unsigned char bl_order[BL_CODES]
   * probability, to avoid transmitting the lengths for unused bit length codes.
   */
 
+typedef struct {
+    uint8_t     mask;
+    uint8_t     extra;
+} lmask_extra_s;
+
+typedef struct {
+    uint16_t     mask;
+    uint16_t     extra;
+} dmask_extra_s;
 
 /* Function definitions */
 void gen_codes        (ct_data *tree, int max_code, uint16_t *bl_count);
