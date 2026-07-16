@@ -17,9 +17,9 @@ extern Z_INTERNAL const ct_data static_dtree[D_CODES];
 extern const unsigned char Z_INTERNAL zng_dist_code[DIST_CODE_LEN];
 extern const unsigned char Z_INTERNAL zng_length_code[STD_MAX_MATCH-STD_MIN_MATCH+1];
 
-/* Combined base + extra_bits tables for single-lookup optimization */
-extern Z_INTERNAL const uint16_t lbase_extra[LENGTH_CODES];
-extern Z_INTERNAL const uint32_t dbase_extra[D_CODES];
+/* Combined mask + extra_bits tables for single-lookup optimization */
+extern Z_INTERNAL const uint16_t lmask_extra[LENGTH_CODES];
+extern Z_INTERNAL const uint32_t dmask_extra[D_CODES];
 
 /* Bit buffer and deflate code stderr tracing */
 #ifdef ZLIB_DEBUG
@@ -115,10 +115,10 @@ static inline void zng_emit_lit(deflate_state *s, const ct_data *ltree, unsigned
  */
 static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree,
                                      uint32_t lc, uint32_t dist, uint64_t *bi_buf, uint32_t *bi_valid) {
-    uint32_t c, extra, lext;
-    uint8_t code;
     uint64_t match_bits;
     uint32_t match_bits_len;
+    uint32_t c, extra, lext, mask;
+    uint8_t code;
 
     /* 1. Process Length Code */
     code = zng_length_code[lc];
@@ -130,14 +130,13 @@ static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, con
     match_bits = ltree[c].Code;
     match_bits_len = ltree[c].Len;
 
-    /* 2. Get extra bits count and subtract base length */
-    lext = lbase_extra[code];
+    /* 2. Get extra bits count and mask */
+    lext = lmask_extra[code];
     extra = lext >> 8;
-    lc -= lext & 0xff;
+    mask = lext & 0xff;
 
     /*    Send length extra bits */
-    uint32_t l_mask = (1U << extra) - 1;
-    match_bits |= (uint64_t)(lc & l_mask) << match_bits_len;
+    match_bits |= (uint64_t)(lc & mask) << match_bits_len;
     match_bits_len += extra;
 
     /* 3. Process Distance Code */
@@ -150,14 +149,13 @@ static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, con
     match_bits |= ((uint64_t)dtree[code].Code << match_bits_len);
     match_bits_len += dtree[code].Len;
 
-    /* 4. Get extra bits count and subtract base distance */
-    lext = dbase_extra[code];
+    /* 4. Get extra bits count and mask */
+    lext = dmask_extra[code];
     extra = lext >> 16;
-    dist -= lext & 0xffff;
+    mask = lext & 0xffff;
 
     /*    Send dist extra bits */
-    uint32_t d_mask = (1U << extra) - 1;
-    match_bits |= ((uint64_t)(dist & d_mask) << match_bits_len);
+    match_bits |= ((uint64_t)(dist & mask) << match_bits_len);
     match_bits_len += extra;
 
     send_bits(s, match_bits, match_bits_len, *bi_buf, *bi_valid);

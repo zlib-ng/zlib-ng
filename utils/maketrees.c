@@ -126,21 +126,23 @@ static void gen_trees_header(void) {
         printf("%2u%s", length_code[i], SEPARATOR(i, STD_MAX_MATCH-STD_MIN_MATCH, 20));
     }
 
-    printf("/* Combined base + extra_bits tables for single-lookup optimization.\n");
-    printf(" * Length table: bits 0-7 = base_length, bits 8-11 = extra_lbits\n");
-    printf(" * Distance table: bits 0-15 = base_dist, bits 16-19 = extra_dbits\n");
+    printf("/* Combined mask + extra_bits tables for single-lookup optimization.\n");
+    printf(" * Length table: bits 0-7 = mask, bits 8-11 = extra_lbits\n");
+    printf(" * Distance table: bits 0-15 = mask, bits 16-19 = extra_dbits\n");
     printf(" */\n");
-    printf("#define LBASE_EXTRA(base, extra) ((extra) << 8 | (base))\n");
-    printf("#define DBASE_EXTRA(base, extra) ((extra) << 16 | (base))\n\n");
+    printf("#define LMASK_EXTRA(mask, extra) ((extra) << 8 | (mask))\n");
+    printf("#define DMASK_EXTRA(mask, extra) ((extra) << 16 | (mask))\n\n");
 
-    printf("Z_INTERNAL const uint16_t lbase_extra[LENGTH_CODES] = {\n");
+    printf("Z_INTERNAL const uint16_t lmask_extra[LENGTH_CODES] = {\n");
     for (i = 0; i < LENGTH_CODES; i++) {
-        printf("LBASE_EXTRA(%3d, %d)%s", base_length[i], extra_lbits[i], SEPARATOR(i, LENGTH_CODES-1, 4));
+        uint8_t mask = (1U << extra_lbits[i]) - 1;
+        printf("LMASK_EXTRA(%3u, %u)%s", mask, extra_lbits[i], SEPARATOR(i, LENGTH_CODES-1, 4));
     }
 
-    printf("Z_INTERNAL const uint32_t dbase_extra[D_CODES] = {\n");
+    printf("Z_INTERNAL const uint32_t dmask_extra[D_CODES] = {\n");
     for (i = 0; i < D_CODES; i++) {
-        printf("DBASE_EXTRA(%5d, %2d)%s", base_dist[i], extra_dbits[i], SEPARATOR(i, D_CODES-1, 4));
+        uint16_t mask = (1U << extra_dbits[i]) - 1;
+        printf("DMASK_EXTRA(%5u, %2u)%s", mask, extra_dbits[i], SEPARATOR(i, D_CODES-1, 4));
     }
 
     printf("#endif /* TREES_TBL_H_ */\n");
