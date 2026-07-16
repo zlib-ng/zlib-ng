@@ -14,8 +14,8 @@
 extern Z_INTERNAL const ct_data static_ltree[L_CODES+2];
 extern Z_INTERNAL const ct_data static_dtree[D_CODES];
 
-extern const unsigned char Z_INTERNAL zng_dist_code[DIST_CODE_LEN];
-extern const unsigned char Z_INTERNAL zng_length_code[STD_MAX_MATCH-STD_MIN_MATCH+1];
+extern Z_INTERNAL const unsigned char zng_dist_code[DIST_CODE_LEN];
+extern Z_INTERNAL const unsigned char zng_length_code[STD_MAX_MATCH-STD_MIN_MATCH+1];
 
 /* Combined mask + extra_bits tables for single-lookup optimization */
 extern Z_INTERNAL const uint16_t lmask_extra[LENGTH_CODES];
