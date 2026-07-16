@@ -39,31 +39,29 @@ extern Z_INTERNAL const uint32_t dmask_extra[D_CODES];
 /* If not enough room in bi_buf, use (valid) bits from bi_buf and
  * (64 - bi_valid) bits from value, leaving (width - (64-bi_valid))
  * unused bits in value.
- *
- * NOTE: Static analyzers can't evaluate value of total_bits, so we
- *       also need to make sure bi_valid is within acceptable range,
- *       otherwise the shifts will overflow.
  */
-#define send_bits(s, t_val, t_len, bi_buf, bi_valid) {\
+#define send_bits(s, t_val, t_len, bi_buf, bi_valid) do {\
+    Assert(bi_valid <= 64, "Too many bits in bi_valid");\
     uint64_t val = (uint64_t)t_val;\
     uint32_t len = (uint32_t)t_len;\
     uint32_t total_bits = bi_valid + len;\
     send_bits_trace(s, val, len);\
     sent_bits_add(s, len);\
-    if (total_bits < BIT_BUF_SIZE && bi_valid < BIT_BUF_SIZE) {\
-        bi_buf |= val << bi_valid;\
-        bi_valid = total_bits;\
-    } else if (bi_valid >= BIT_BUF_SIZE) {\
+    \
+    /* Unconditionally shift and merge values into the buffer */\
+    bi_buf |= val << bi_valid;\
+    \
+    /* Check if the 64-bit boundary was crossed */\
+    if (total_bits >= 64) {\
+        total_bits -= 64;\
         put_uint64(s, bi_buf);\
-        bi_buf = val;\
-        bi_valid = len;\
-    } else {\
-        bi_buf |= val << bi_valid;\
-        put_uint64(s, bi_buf);\
-        bi_buf = val >> (BIT_BUF_SIZE - bi_valid);\
-        bi_valid = total_bits - BIT_BUF_SIZE;\
+        \
+        /* Secure shift: prevent Undefined Behavior when bi_valid is 0 */\
+        /* If bi_valid is 0, we shift by 0 (via the mask) and overwrite bi_buf completely */\
+        bi_buf = (val >> 1) >> (~bi_valid & 63);\
     }\
-}
+    bi_valid = total_bits;\
+} while (0)
 
 /* Send a code of the given tree. c and tree must not have side effects */
 #ifdef ZLIB_DEBUG
@@ -104,7 +102,7 @@ static inline void bi_windup(deflate_state *s) {
 /* ===========================================================================
  * Emit literal code
  */
-static inline void zng_emit_lit(deflate_state *s, const ct_data *ltree, unsigned c,
+Z_FORCEINLINE static void zng_emit_lit(deflate_state *s, const ct_data *ltree, unsigned c,
                                 uint64_t *bi_buf, uint32_t *bi_valid) {
     send_code(s, c, ltree, *bi_buf, *bi_valid);
     Tracecv(isgraph(c & 0xff), (stderr, " '%c' ", c));
