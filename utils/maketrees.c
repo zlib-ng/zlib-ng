@@ -116,12 +116,12 @@ static void gen_trees_header(void) {
         printf("{{%2u},{%u}}%s", static_dtree[i].Code, static_dtree[i].Len, SEPARATOR(i, D_CODES-1, 5));
     }
 
-    printf("const unsigned char Z_INTERNAL zng_dist_code[DIST_CODE_LEN] = {\n");
+    printf("Z_INTERNAL const unsigned char zng_dist_code[DIST_CODE_LEN] = {\n");
     for (i = 0; i < DIST_CODE_LEN; i++) {
         printf("%2u%s", dist_code[i], SEPARATOR(i, DIST_CODE_LEN-1, 20));
     }
 
-    printf("const unsigned char Z_INTERNAL zng_length_code[STD_MAX_MATCH-STD_MIN_MATCH+1] = {\n");
+    printf("Z_INTERNAL const unsigned char zng_length_code[STD_MAX_MATCH-STD_MIN_MATCH+1] = {\n");
     for (i = 0; i < STD_MAX_MATCH-STD_MIN_MATCH+1; i++) {
         printf("%2u%s", length_code[i], SEPARATOR(i, STD_MAX_MATCH-STD_MIN_MATCH, 20));
     }
