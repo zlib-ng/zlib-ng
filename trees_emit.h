@@ -117,7 +117,9 @@ static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, con
                                      uint32_t lc, uint32_t dist, uint64_t *bi_buf, uint32_t *bi_valid) {
     uint64_t match_bits;
     uint32_t match_bits_len;
-    uint32_t c, extra, lext, mask;
+    uint32_t mask_ext;  // Contains both mask and extra, can safely be used directly as mask
+                        // due to extra bits being outside the range of lc and dist data.
+    uint32_t c, extra;
     uint8_t code;
 
     /* 1. Process Length Code */
@@ -131,12 +133,11 @@ static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, con
     match_bits_len = ltree[c].Len;
 
     /* 2. Get extra bits count and mask */
-    lext = lmask_extra[code];
-    extra = lext >> 8;
-    mask = lext & 0xff;
+    mask_ext = lmask_extra[code];
+    extra = mask_ext >> 8;
 
     /*    Send length extra bits */
-    match_bits |= (uint64_t)(lc & mask) << match_bits_len;
+    match_bits |= (uint64_t)(lc & mask_ext) << match_bits_len;
     match_bits_len += extra;
 
     /* 3. Process Distance Code */
@@ -150,12 +151,11 @@ static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, con
     match_bits_len += dtree[code].Len;
 
     /* 4. Get extra bits count and mask */
-    lext = dmask_extra[code];
-    extra = lext >> 16;
-    mask = lext & 0xffff;
+    mask_ext = dmask_extra[code];
+    extra = mask_ext >> 16;
 
     /*    Send dist extra bits */
-    match_bits |= ((uint64_t)(dist & mask) << match_bits_len);
+    match_bits |= ((uint64_t)(dist & mask_ext) << match_bits_len);
     match_bits_len += extra;
 
     send_bits(s, match_bits, match_bits_len, *bi_buf, *bi_valid);
