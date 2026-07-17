@@ -708,6 +708,19 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, unsigned char *buf, uint32_
 /* ===========================================================================
  * Send the block data compressed using the given Huffman trees
  */
+#if !defined(LIT_MEM) && OPTIMAL_CMP >= 64
+/* One 64-bit little-endian load at sx spans the next three symbols' dist fields
+ * (bits 0..15, 24..39, 48..63) and two of their literals (bits 16..23, 40..47). */
+#define LIT3_DIST_MASK 0xFFFF00FFFF00FFFFULL
+
+/* Prepend one literal below whatever tail already holds, so entering the switch at case k
+ * emits exactly the first k symbols in order. */
+Z_FORCEINLINE static void lit_prepend(const ct_data *ltree, unsigned lc, uint64_t *tail, uint32_t *tbits) {
+    *tail = (uint64_t)ltree[lc].Code | (*tail << ltree[lc].Len);
+    *tbits += ltree[lc].Len;
+}
+#endif
+
 static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
     /* ltree: literal tree */
     /* dtree: distance tree */
@@ -735,9 +748,9 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
             lc = l_buf[sx++];
 #else
 #  if OPTIMAL_CMP >= 32
-            uint32_t val = Z_U32_FROM_LE(zng_memread_4(&sym_buf[sx]));
-            dist = val & 0xffff;
-            lc = (val >> 16) & 0xff;
+            uint32_t dist_lc = Z_U32_FROM_LE(zng_memread_4(&sym_buf[sx]));
+            dist = dist_lc & 0xffff;
+            lc = (dist_lc >> 16) & 0xff;
 #  else
             dist = sym_buf[sx] + ((unsigned)sym_buf[sx + 1] << 8);
             lc = sym_buf[sx + 2];
@@ -745,7 +758,42 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
             sx += 3;
 #endif
             if (dist == 0) {
+#if !defined(LIT_MEM) && OPTIMAL_CMP >= 64
+                /* Pack up to 4 consecutive literals into a single send_bits. Their codes are
+                 * at most 15 bits each, so 4 fit inside the 64-bit bit buffer. */
+                uint64_t bits = ltree[lc].Code;
+                uint32_t nbits = ltree[lc].Len;
+
+                if (sx + 9 <= sym_next) {
+                    uint64_t v = Z_U64_FROM_LE(zng_memread_8(&sym_buf[sx]));
+                    /* The lowest set bit says which dist field broke the run, so ctz/24 counts
+                     * the literals that follow. No bits set at all means all three are literals. */
+                    uint64_t t = v & LIT3_DIST_MASK;
+                    unsigned n = t ? (unsigned)(zng_ctz64(t) / 24) : 3;
+                    uint64_t tail = 0;
+                    uint32_t tbits = 0;
+
+                    switch (n) {
+                    case 3:
+                        lit_prepend(ltree, sym_buf[sx + 8], &tail, &tbits);
+                        Z_FALLTHROUGH;
+                    case 2:
+                        lit_prepend(ltree, (v >> 40) & 0xff, &tail, &tbits);
+                        Z_FALLTHROUGH;
+                    case 1:
+                        lit_prepend(ltree, (v >> 16) & 0xff, &tail, &tbits);
+                        Z_FALLTHROUGH;
+                    case 0:
+                        break;
+                    }
+                    bits |= tail << nbits;
+                    nbits += tbits;
+                    sx += 3 * n;
+                }
+                send_bits(s, bits, nbits, bi_buf, bi_valid);
+#else
                 zng_emit_lit(s, ltree, lc, &bi_buf, &bi_valid);
+#endif
             } else {
                 zng_emit_dist(s, ltree, dtree, lc, dist, &bi_buf, &bi_valid);
             } /* literal or match pair ? */
