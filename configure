@@ -317,6 +317,8 @@ case "$cc" in
            clang=1 ;;
   *nvc) gcc=1
         nvc=1 ;;
+  *icx) gcc=1
+        clang=1 ;;
 esac
 # nvc requires input file for -v and prints warning, use --version instead as it's supported by all
 case $($cc --version 2>&1) in
@@ -325,6 +327,8 @@ case $($cc --version 2>&1) in
            clang=1 ;;
   *nvc\ *) gcc=1
            nvc=1 ;;
+  *DPC\+\+*) gcc=1
+             clang=1 ;;
 esac
 
 if test $build32 -eq 1; then
