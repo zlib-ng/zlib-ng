@@ -489,9 +489,13 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             break;
 
         case MATCH:
-            /* Copy back-reference that inflate_fast() could not complete due to
-               insufficient output space. state->length and state->offset were set
-               by the safe_mode MATCH bailout in inflate_fast(). */
+            /* Reject too-far-back distances stored by inflate_fast()'s MATCH
+               bailout before validation, so the copy can't read before the
+               window (mirrors the LEN path and inflate.c's MATCH state). */
+            if (state->offset > state->wsize - (state->whave < state->wsize ? left : 0)) {
+                SET_BAD("invalid distance too far back");
+                break;
+            }
             do {
                 ROOM();
                 copy = state->wsize - state->offset;
