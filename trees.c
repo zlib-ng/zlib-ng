@@ -713,6 +713,10 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, unsigned char *buf, uint32_
  * (bits 0..15, 24..39, 48..63) and two of their literals (bits 16..23, 40..47). */
 #define LIT3_DIST_MASK 0xFFFF00FFFF00FFFFULL
 
+/* The second symbol's dist field alone, which separates a one-literal run from a two-literal
+ * one once the all-three case has been ruled out. */
+#define LIT3_DIST1_MASK 0x000000FFFF000000ULL
+
 /* Prepend one literal below whatever tail already holds, so entering the switch at case k
  * emits exactly the first k symbols in order. */
 Z_FORCEINLINE static void lit_prepend(const ct_data *ltree, unsigned lc, uint64_t *tail, uint32_t *tbits) {
@@ -766,29 +770,30 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
 
                 if (sx + 9 <= sym_next) {
                     uint64_t v = Z_U64_FROM_LE(zng_memread_8(&sym_buf[sx]));
-                    /* The lowest set bit says which dist field broke the run, so ctz/24 counts
-                     * the literals that follow. No bits set at all means all three are literals. */
-                    uint64_t t = v & LIT3_DIST_MASK;
-                    unsigned n = t ? (unsigned)(zng_ctz64(t) / 24) : 3;
-                    uint64_t tail = 0;
-                    uint32_t tbits = 0;
+                    uint64_t dist_bits = v & LIT3_DIST_MASK;
 
-                    switch (n) {
-                    case 3:
-                        lit_prepend(ltree, sym_buf[sx + 8], &tail, &tbits);
-                        Z_FALLTHROUGH;
-                    case 2:
-                        lit_prepend(ltree, (v >> 40) & 0xff, &tail, &tbits);
-                        Z_FALLTHROUGH;
-                    case 1:
-                        lit_prepend(ltree, (v >> 16) & 0xff, &tail, &tbits);
-                        Z_FALLTHROUGH;
-                    case 0:
-                        break;
+                    /* A dist field is zero exactly when that symbol is a literal, so the first
+                     * nonzero one ends the run. There are only three fields, so three tests
+                     * locate it and no bit scan is needed. */
+                    if (dist_bits == 0 || (uint16_t)v == 0) {
+                        unsigned nextra = dist_bits == 0 ? 3 : (v & LIT3_DIST1_MASK) ? 1 : 2;
+                        uint64_t tail = 0;
+                        uint32_t tbits = 0;
+
+                        switch (nextra) {
+                        case 3:
+                            lit_prepend(ltree, sym_buf[sx + 8], &tail, &tbits);
+                            Z_FALLTHROUGH;
+                        case 2:
+                            lit_prepend(ltree, (v >> 40) & 0xff, &tail, &tbits);
+                            Z_FALLTHROUGH;
+                        default:
+                            lit_prepend(ltree, (v >> 16) & 0xff, &tail, &tbits);
+                        }
+                        bits |= tail << nbits;
+                        nbits += tbits;
+                        sx += 3 * nextra;
                     }
-                    bits |= tail << nbits;
-                    nbits += tbits;
-                    sx += 3 * n;
                 }
                 send_bits(s, bits, nbits, bi_buf, bi_valid);
 #else
