@@ -42,7 +42,8 @@ uint32_t crc32_copy_braid(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t
   uint32_t crc32_copy_chorba(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 #ifdef CHUNKSET_FALLBACK
-void     inflate_fast_c(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
+void     inflate_fast_c(PREFIX3(stream) *strm, uint32_t start);
+void     inflate_fast_safe_c(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifdef COMPARE256_FALLBACK
 uint32_t longest_match_c(deflate_state *const s, uint32_t cur_match);
@@ -69,6 +70,9 @@ void     slide_hash_head_c(deflate_state *s);
 #    endif
 #    ifndef native_inflate_fast
 #      define native_inflate_fast inflate_fast_c
+#    endif
+#    ifndef native_inflate_fast_safe
+#      define native_inflate_fast_safe inflate_fast_safe_c
 #    endif
 #  endif
 #  ifdef COMPARE256_FALLBACK

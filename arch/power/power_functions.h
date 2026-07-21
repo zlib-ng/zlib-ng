@@ -24,7 +24,8 @@ uint32_t crc32_power8(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_power8(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 void slide_hash_power8(deflate_state *s);
 void slide_hash_head_power8(deflate_state *s);
-void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
+void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start);
+void inflate_fast_safe_power8(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
 #if !defined(PPC_VMX_NATIVE) && !defined(POWER8_VSX_NATIVE)
@@ -71,6 +72,8 @@ uint32_t longest_match_roll_power9(deflate_state *const s, uint32_t cur_match);
 #    define native_chunkmemset_safe chunkmemset_safe_power8
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_power8
+#    undef native_inflate_fast_safe
+#    define native_inflate_fast_safe inflate_fast_safe_power8
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_power8
 #    undef native_slide_hash_head
