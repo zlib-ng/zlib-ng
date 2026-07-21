@@ -931,7 +931,10 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             /* use inflate_fast() if we have enough input and output */
             if (have >= INFLATE_FAST_MIN_HAVE && left >= INFLATE_FAST_MIN_SAFE) {
                 RESTORE();
-                FUNCTABLE_CALL(inflate_fast)(strm, out, left < INFLATE_FAST_MIN_LEFT);
+                if (LIKELY(left >= INFLATE_FAST_MIN_LEFT))
+                    FUNCTABLE_CALL(inflate_fast)(strm, out);
+                else
+                    FUNCTABLE_CALL(inflate_fast_safe)(strm, out);
                 LOAD();
                 if (state->mode == TYPE)
                     state->back = -1;
