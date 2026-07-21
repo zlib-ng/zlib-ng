@@ -18,7 +18,6 @@
 #endif
 
 #define ISA_V_HWCAP (1 << ('v' - 'a'))
-#define ISA_ZBC_HWCAP (1 << 29)
 
 static int riscv_check_features_runtime_hwprobe(struct riscv_cpu_features *features) {
 #if defined(__NR_riscv_hwprobe) && defined(RISCV_HWPROBE_KEY_IMA_EXT_0)
@@ -58,8 +57,10 @@ static int riscv_check_features_runtime_hwcap(struct riscv_cpu_features *feature
 #if defined(__linux__) && defined(HAVE_SYS_AUXV_H)
     unsigned long hw_cap = getauxval(AT_HWCAP);
 
+    /* AT_HWCAP only encodes single-letter ISA extensions, so Zbc cannot be
+     * detected here and has_zbc keeps its default of 0. Multi-letter
+     * extensions are only detectable via hwprobe (Linux 6.8+ for Zbc). */
     features->has_rvv = hw_cap & ISA_V_HWCAP;
-    features->has_zbc = hw_cap & ISA_ZBC_HWCAP;
 
     return 1;
 #else
