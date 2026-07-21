@@ -49,7 +49,7 @@
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
-void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mode) {
+void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
     z_const unsigned char *in;  /* local strm->next_in */
@@ -121,7 +121,11 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
     out = strm->next_out;
     beg = out - (start - strm->avail_out);
     safe = out + strm->avail_out;
-    end = safe - (safe_mode ? INFLATE_FAST_MIN_SAFE : INFLATE_FAST_MIN_LEFT) + 1;
+#ifdef USE_SAFE_MODE
+    end = safe - INFLATE_FAST_MIN_SAFE + 1;
+#else
+    end = safe - INFLATE_FAST_MIN_LEFT + 1;
+#endif
     wsize = state->wsize;
     whave = state->whave;
     wnext = state->wnext;
@@ -203,14 +207,16 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
 #endif
                 TRACE_DISTANCE(dist);
 
-                /* In safe mode, if there isn't enough output space for the full copy,
-                   bail to the slow path's MATCH state which handles partial copies. */
-                if (UNLIKELY(safe_mode && len > (unsigned)(safe - out))) {
+#ifdef USE_SAFE_MODE
+                /* If there isn't enough output space for the full copy, bail to the
+                   slow path's MATCH state which handles partial copies. */
+                if (UNLIKELY(len > (unsigned)(safe - out))) {
                     state->mode = MATCH;
                     state->length = len;
                     state->offset = dist;
                     break;
                 }
+#endif
 
                 op = (unsigned)(out - beg);     /* max distance in output */
                 if (UNLIKELY(dist > op)) {      /* see if copy from window */
@@ -258,30 +264,26 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
                     }
                     if (UNLIKELY(op < len)) {           /* still need some from output */
                         len -= op;
-                        if (LIKELY(!safe_mode)) {
-                            out = CHUNKCOPY_SAFE(out, from, op, safe);
-                            out = CHUNKUNROLL(out, &dist, &len);
-                            out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
-                        } else {
-#ifdef HAVE_MASKED_READWRITE
-                            out = CHUNKCOPY_SAFE(out, from, op, safe);
-                            out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
+#ifndef USE_SAFE_MODE
+                        out = CHUNKCOPY_SAFE(out, from, op, safe);
+                        out = CHUNKUNROLL(out, &dist, &len);
+                        out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
+#elif defined(HAVE_MASKED_READWRITE)
+                        out = CHUNKCOPY_SAFE(out, from, op, safe);
+                        out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
 #else
-                            out = chunkcopy_safe(out, from, op, safe);
-                            out = chunkcopy_safe(out, out - dist, len, safe);
+                        out = chunkcopy_safe(out, from, op, safe);
+                        out = chunkcopy_safe(out, out - dist, len, safe);
 #endif
-                        }
                     } else {
-#ifdef HAVE_MASKED_READWRITE
+#if !defined(USE_SAFE_MODE) || defined(HAVE_MASKED_READWRITE)
                         out = CHUNKCOPY_SAFE(out, from, len, safe);
 #else
-                        if (LIKELY(!safe_mode))
-                            out = CHUNKCOPY_SAFE(out, from, len, safe);
-                        else
-                            out = chunkcopy_safe(out, from, len, safe);
+                        out = chunkcopy_safe(out, from, len, safe);
 #endif
                     }
-                } else if (LIKELY(!safe_mode)) {
+                } else {
+#ifndef USE_SAFE_MODE
                     /* Whole reference is in range of current output.  No range checks are
                        necessary because we start with room for at least 258 bytes of output,
                        so unroll and roundoff operations can write beyond `out+len` so long
@@ -291,8 +293,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
                         out = CHUNKCOPY(out, out - dist, len);
                     else
                         out = CHUNKMEMSET(out, out - dist, len);
-                } else {
-#ifdef HAVE_MASKED_READWRITE
+#elif defined(HAVE_MASKED_READWRITE)
                     out = CHUNKCOPY_SAFE(out, out - dist, len, safe);
 #else
                     out = chunkcopy_safe(out, out - dist, len, safe);
@@ -354,18 +355,24 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
  */
 
  // Cleanup
-#undef CHUNKCOPY
-#undef CHUNKMEMSET
-#undef CHUNKMEMSET_SAFE
-#undef CHUNKSIZE
-#undef CHUNKUNROLL
-#undef HAVE_CHUNKCOPY
-#undef HAVE_CHUNKMEMSET_2
-#undef HAVE_CHUNKMEMSET_4
-#undef HAVE_CHUNKMEMSET_8
-#undef HAVE_CHUNKMEMSET_16
-#undef HAVE_CHUNK_MAG
-#undef HAVE_HALFCHUNKCOPY
-#undef HAVE_HALF_CHUNK
-#undef HAVE_MASKED_READWRITE
 #undef INFLATE_FAST
+
+/* The chunkset macros are shared by both instantiations, so they can only be
+   released once the safe one has been emitted. */
+#ifdef USE_SAFE_MODE
+#  undef CHUNKCOPY
+#  undef CHUNKMEMSET
+#  undef CHUNKMEMSET_SAFE
+#  undef CHUNKSIZE
+#  undef CHUNKUNROLL
+#  undef HAVE_CHUNKCOPY
+#  undef HAVE_CHUNKMEMSET_2
+#  undef HAVE_CHUNKMEMSET_4
+#  undef HAVE_CHUNKMEMSET_8
+#  undef HAVE_CHUNKMEMSET_16
+#  undef HAVE_CHUNK_MAG
+#  undef HAVE_HALFCHUNKCOPY
+#  undef HAVE_HALF_CHUNK
+#  undef HAVE_MASKED_READWRITE
+#  undef USE_SAFE_MODE
+#endif

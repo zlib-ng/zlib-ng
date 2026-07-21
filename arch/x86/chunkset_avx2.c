@@ -131,4 +131,9 @@ static inline halfchunk_t GET_HALFCHUNK_MAG(uint8_t *buf, size_t *chunk_rem, siz
 
 #include "inffast_tpl.h"
 
+#define INFLATE_FAST     inflate_fast_safe_avx2
+#define USE_SAFE_MODE
+
+#include "inffast_tpl.h"
+
 #endif
