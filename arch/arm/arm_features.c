@@ -288,10 +288,11 @@ static inline int arm_has_simd(void) {
 #define ARM_PART_CORTEX_X925 0xd85
 
 /* Neoverse V/N2 series - Multiple PMULL lanes */
-#define ARM_PART_NEOVERSE_N2 0xd49
-#define ARM_PART_NEOVERSE_V1 0xd40
-#define ARM_PART_NEOVERSE_V2 0xd4f
-#define ARM_PART_NEOVERSE_V3 0xd8e
+#define ARM_PART_NEOVERSE_N2   0xd49
+#define ARM_PART_NEOVERSE_V1   0xd40
+#define ARM_PART_NEOVERSE_V2   0xd4f
+#define ARM_PART_NEOVERSE_V3AE 0xd83
+#define ARM_PART_NEOVERSE_V3   0xd84
 
 /* Snapdragon X Elite/Plus - Custom core */
 #define QUALCOMM_PART_ORYON 0x001
@@ -347,6 +348,7 @@ static inline int arm_cpu_has_fast_pmull(void) {
             case ARM_PART_NEOVERSE_N2:
             case ARM_PART_NEOVERSE_V1:
             case ARM_PART_NEOVERSE_V2:
+            case ARM_PART_NEOVERSE_V3AE:
             case ARM_PART_NEOVERSE_V3:
                 has_fast_pmull = 1;
         }
