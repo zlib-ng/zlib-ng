@@ -946,7 +946,7 @@ jobs:
       if: contains(matrix.name, 'e2k') && steps.cache-lcc.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        wget -q https://dev.mcst.ru/downloads/2026-03-13/cross-sp-public-osl-${{ matrix.toolchain }}_64.tgz
+        wget --no-check-certificate -q https://dev.mcst.ru/downloads/2026-03-13/cross-sp-public-osl-${{ matrix.toolchain }}_64.tgz
         sudo tar -xzf cross-sp-public-osl-${{ matrix.toolchain }}_64.tgz -C /
         rm -f cross-sp-public-osl-${{ matrix.toolchain }}_64.tgz
 
@@ -963,7 +963,7 @@ jobs:
       if: contains(matrix.name, 'e2k') && steps.cache-qemu-e2k-static.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        wget -q https://dev.mcst.ru/downloads/2026-02-24/qemu-e2k-static
+        wget --no-check-certificate -q https://dev.mcst.ru/downloads/2026-02-24/qemu-e2k-static
         chmod +x qemu-e2k-static
         sudo mv qemu-e2k-static /usr/local/bin
 
