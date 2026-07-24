@@ -208,8 +208,17 @@ static inline uint64_t load_64_bits(const unsigned char *in, unsigned bits) {
     return Z_U64_FROM_LE(chunk) << bits;
 }
 
+/* Inlining chunkcopy_safe into inflate_fast's safe variant helps small output buffers,
+   but only clang on 64-bit ARM needs the hint. GCC already inlines it, and on x86-64
+   inlining nearly doubles the safe variant for no gain. */
+#if defined(__clang__) && defined(ARCH_ARM) && defined(ARCH_64BIT)
+#  define Z_CHUNKCOPY_SAFE_INLINE Z_FORCEINLINE
+#else
+#  define Z_CHUNKCOPY_SAFE_INLINE inline
+#endif
+
 /* Behave like chunkcopy, but avoid writing beyond of legal output. */
-static inline uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, size_t len, uint8_t *safe) {
+static Z_CHUNKCOPY_SAFE_INLINE uint8_t* chunkcopy_safe(uint8_t *out, uint8_t *from, size_t len, uint8_t *safe) {
     size_t safelen = safe - out;
     len = MIN(len, safelen);
     int32_t olap_src = from >= out && from < out + len;
