@@ -12,23 +12,31 @@
 
 #include <altivec.h>
 
+#if BYTE_ORDER == LITTLE_ENDIAN
+#  define DIFF_DWORD_FIRST      1
+#  define DIFF_DWORD_SECOND     0
+#else
+#  define DIFF_DWORD_FIRST      0
+#  define DIFF_DWORD_SECOND     1
+#endif
+
 static inline uint32_t compare256_power8_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 
     do {
-        vector unsigned char vsrc0, vsrc1, diff;
+        vector unsigned long long vsrc0, vsrc1, diff;
         uint64_t lane;
 
-        vsrc0 = vec_xl(0, src0);
-        vsrc1 = vec_xl(0, src1);
+        vsrc0 = vec_xl_be(0, (const unsigned long long *)src0);
+        vsrc1 = vec_xl_be(0, (const unsigned long long *)src1);
 
         if (!vec_all_eq(vsrc0, vsrc1)) {
             diff = vec_xor(vsrc0, vsrc1);
 
-            lane = vec_extract((vector unsigned long long)diff, 0);
+            lane = vec_extract(diff, DIFF_DWORD_FIRST);
             if (lane)
                 return len + zng_first_diff_byte64(lane);
-            lane = vec_extract((vector unsigned long long)diff, 1);
+            lane = vec_extract(diff, DIFF_DWORD_SECOND);
             return len + 8 + zng_first_diff_byte64(lane);
         }
 
