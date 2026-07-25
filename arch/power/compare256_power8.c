@@ -22,19 +22,17 @@ static inline uint32_t compare256_power8_static(const uint8_t *src0, const uint8
         vsrc0 = vec_xl(0, src0);
         vsrc1 = vec_xl(0, src1);
 
-        diff = vec_xor(vsrc0, vsrc1);
+        if (!vec_all_eq(vsrc0, vsrc1)) {
+            diff = vec_xor(vsrc0, vsrc1);
 
-        lane = vec_extract((vector unsigned long long)diff, 0);
-        if (lane)
-            return len + zng_first_diff_byte64(lane);
-        len += 8;
-        lane = vec_extract((vector unsigned long long)diff, 1);
-        if (lane)
-            return len + zng_first_diff_byte64(lane);
-        len += 8;
+            lane = vec_extract((vector unsigned long long)diff, 0);
+            if (lane)
+                return len + zng_first_diff_byte64(lane);
+            lane = vec_extract((vector unsigned long long)diff, 1);
+            return len + 8 + zng_first_diff_byte64(lane);
+        }
 
-        src0 += 16;
-        src1 += 16;
+        src0 += 16, src1 += 16, len += 16;
     } while (len < 256);
 
     return 256;
