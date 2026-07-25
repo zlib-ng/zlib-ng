@@ -20,15 +20,29 @@
 #  define DIFF_DWORD_SECOND     1
 #endif
 
+static inline vector unsigned long long load16_power8(const uint8_t *src) {
+    return vec_xl_be(0, (const unsigned long long *)src);
+}
+
 static inline uint32_t compare256_power8_static(const uint8_t *src0, const uint8_t *src1) {
-    uint32_t len = 0;
+    vector unsigned long long vsrc0, vsrc1, diff;
+    uint32_t len = 16;
+    uint64_t lane;
+
+    diff = vec_xor(load16_power8(src0), load16_power8(src1));
+
+    lane = vec_extract(diff, DIFF_DWORD_FIRST);
+    if (lane)
+        return zng_first_diff_byte64(lane);
+    lane = vec_extract(diff, DIFF_DWORD_SECOND);
+    if (lane)
+        return 8 + zng_first_diff_byte64(lane);
 
     do {
-        vector unsigned long long vsrc0, vsrc1, diff;
-        uint64_t lane;
+        src0 += 16, src1 += 16;
 
-        vsrc0 = vec_xl_be(0, (const unsigned long long *)src0);
-        vsrc1 = vec_xl_be(0, (const unsigned long long *)src1);
+        vsrc0 = load16_power8(src0);
+        vsrc1 = load16_power8(src1);
 
         if (!vec_all_eq(vsrc0, vsrc1)) {
             diff = vec_xor(vsrc0, vsrc1);
@@ -40,7 +54,7 @@ static inline uint32_t compare256_power8_static(const uint8_t *src0, const uint8
             return len + 8 + zng_first_diff_byte64(lane);
         }
 
-        src0 += 16, src1 += 16, len += 16;
+        len += 16;
     } while (len < 256);
 
     return 256;
