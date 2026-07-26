@@ -24,38 +24,44 @@ static inline vector unsigned long long load16_power8(const uint8_t *src) {
     return vec_xl_be(0, (const unsigned long long *)src);
 }
 
+static inline uint32_t first_diff16_power8(vector unsigned long long diff) {
+    uint64_t lane = vec_extract(diff, DIFF_DWORD_FIRST);
+    if (lane)
+        return zng_first_diff_byte64(lane);
+    return 8 + zng_first_diff_byte64(vec_extract(diff, DIFF_DWORD_SECOND));
+}
+
 static inline uint32_t compare256_power8_static(const uint8_t *src0, const uint8_t *src1) {
-    vector unsigned long long vsrc0, vsrc1, diff;
+    const vector unsigned long long vzero = { 0, 0 };
+    vector unsigned long long diff0, diff1;
     uint32_t len = 16;
     uint64_t lane;
 
-    diff = vec_xor(load16_power8(src0), load16_power8(src1));
+    diff0 = vec_xor(load16_power8(src0), load16_power8(src1));
 
-    lane = vec_extract(diff, DIFF_DWORD_FIRST);
+    lane = vec_extract(diff0, DIFF_DWORD_FIRST);
     if (lane)
         return zng_first_diff_byte64(lane);
-    lane = vec_extract(diff, DIFF_DWORD_SECOND);
+    lane = vec_extract(diff0, DIFF_DWORD_SECOND);
     if (lane)
         return 8 + zng_first_diff_byte64(lane);
 
     do {
-        src0 += 16, src1 += 16;
+        diff0 = vec_xor(load16_power8(src0 + len), load16_power8(src1 + len));
+        diff1 = vec_xor(load16_power8(src0 + len + 16), load16_power8(src1 + len + 16));
 
-        vsrc0 = load16_power8(src0);
-        vsrc1 = load16_power8(src1);
-
-        if (!vec_all_eq(vsrc0, vsrc1)) {
-            diff = vec_xor(vsrc0, vsrc1);
-
-            lane = vec_extract(diff, DIFF_DWORD_FIRST);
-            if (lane)
-                return len + zng_first_diff_byte64(lane);
-            lane = vec_extract(diff, DIFF_DWORD_SECOND);
-            return len + 8 + zng_first_diff_byte64(lane);
+        if (!vec_all_eq(vec_or(diff0, diff1), vzero)) {
+            if (!vec_all_eq(diff0, vzero))
+                return len + first_diff16_power8(diff0);
+            return len + 16 + first_diff16_power8(diff1);
         }
 
-        len += 16;
-    } while (len < 256);
+        len += 32;
+    } while (len < 240);
+
+    diff0 = vec_xor(load16_power8(src0 + 240), load16_power8(src1 + 240));
+    if (!vec_all_eq(diff0, vzero))
+        return 240 + first_diff16_power8(diff0);
 
     return 256;
 }
