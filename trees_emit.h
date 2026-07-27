@@ -23,17 +23,17 @@ extern Z_INTERNAL const uint32_t dmask_extra[D_CODES];
 
 /* Bit buffer and deflate code stderr tracing */
 #ifdef ZLIB_DEBUG
-#  define send_bits_trace(s, value, length) { \
+#  define trace_bits(s, value, length) { \
         Tracevv((stderr, " l %2d v %4llx ", (int)(length), (long long)(value))); \
         Assert(length > 0 && length <= BIT_BUF_SIZE, "invalid length"); \
     }
-#  define send_code_trace(s, c) \
+#  define trace_code(s, c) \
     if (z_verbose > 2) { \
         fprintf(stderr, "\ncd %3d ", (c)); \
     }
 #else
-#  define send_bits_trace(s, value, length)
-#  define send_code_trace(s, c)
+#  define trace_bits(s, value, length)
+#  define trace_code(s, c)
 #endif
 
 /* If not enough room in bi_buf, use (valid) bits from bi_buf and
@@ -45,7 +45,7 @@ extern Z_INTERNAL const uint32_t dmask_extra[D_CODES];
     uint64_t val = (uint64_t)t_val;\
     uint32_t len = (uint32_t)t_len;\
     uint32_t total_bits = bi_valid + len;\
-    send_bits_trace(s, val, len);\
+    trace_bits(s, val, len);\
     sent_bits_add(s, len);\
     \
     /* Unconditionally shift and merge values into the buffer */\
@@ -66,7 +66,7 @@ extern Z_INTERNAL const uint32_t dmask_extra[D_CODES];
 /* Send a code of the given tree. c and tree must not have side effects */
 #ifdef ZLIB_DEBUG
 #  define send_code(s, c, tree, bi_buf, bi_valid) { \
-    send_code_trace(s, c); \
+    trace_code(s, c); \
     send_bits(s, tree[c].Code, tree[c].Len, bi_buf, bi_valid); \
 }
 #else
@@ -124,7 +124,7 @@ static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, con
     code = zng_length_code[lc];
     c = code + LITERALS + 1;
     Assert(c < L_CODES, "bad l_code");
-    send_code_trace(s, c);
+    trace_code(s, c);
 
     /*    Send length code, len is the match length - STD_MIN_MATCH */
     match_bits = ltree[c].Code;
@@ -142,7 +142,7 @@ static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, con
     dist--; /* dist is now the match distance - 1 */
     code = d_code(dist);
     Assert(code < D_CODES, "bad d_code");
-    send_code_trace(s, code);
+    trace_code(s, code);
 
     /*    Send distance code */
     match_bits |= ((uint64_t)dtree[code].Code << match_bits_len);
