@@ -1403,7 +1403,11 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
         copy->lencode = copy->codes + (state->lencode - state->codes);
         copy->distcode = copy->codes + (state->distcode - state->codes);
     }
-    copy->next = copy->codes + (state->next - state->codes);
+    if (state->next >= state->codes && state->next <= state->codes + ENOUGH) {
+        copy->next = copy->codes + (state->next - state->codes);
+    } else {
+        copy->next = copy->codes;
+    }
     copy->window = alloc_bufs->window;
     copy->alloc_bufs = alloc_bufs;
 
