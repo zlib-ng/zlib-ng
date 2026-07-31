@@ -7,7 +7,6 @@
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
-#include "functable.h"
 #include "insert_string_p.h"
 
 /* ===========================================================================
@@ -16,19 +15,11 @@
  * no better match at the next window position.
  */
 Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
-    match_func longest_match;
-    insert_batch_func insert_batch;
+    longest_match_func longest_match = s->longest_match;
+    insert_batch_func insert_batch = s->insert_batch;
     unsigned char *window = s->window;
     int bflush;              /* set if current block must be flushed */
     int level = s->level;
-
-    if (level >= 9) {
-        longest_match = FUNCTABLE_FPTR(longest_match_slow_roll);
-        insert_batch = insert_roll_batch;
-    } else {
-        longest_match = FUNCTABLE_FPTR(longest_match_slow_knuth);
-        insert_batch = insert_knuth_batch;
-    }
 
     /* Process the input block. */
     for (;;) {
