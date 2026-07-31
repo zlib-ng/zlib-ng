@@ -148,6 +148,9 @@ void         insert_knuth_batch      (deflate_state *const s, unsigned char *win
 void         insert_roll_batch       (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
 void         insert_knuth_batch_head (deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count);
 
+/* Match function. Returns the longest match. */
+typedef uint32_t (* longest_match_func) (deflate_state *const s, uint32_t cur_match);
+
 /* Struct for memory allocation handling */
 typedef struct deflate_allocs_s {
     char            *buf_start;
@@ -332,6 +335,10 @@ struct ALIGNED_(64) internal_state {
     unsigned long compressed_len; /* total bit length of compressed file mod 2^32 */
     unsigned long bits_sent;      /* bit length of compressed data sent mod 2^32 */
 #endif
+
+    /* Level-selected function variants, set by lm_set_level() */
+    longest_match_func longest_match;
+    insert_batch_func insert_batch;
 
     /* Reserved for future use and alignment purposes */
     int32_t reserved[19];

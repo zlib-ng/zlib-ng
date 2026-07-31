@@ -434,10 +434,7 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     if (wrap == 2 || (wrap == 1 && s->status != INIT_STATE) || s->lookahead)
         return Z_STREAM_ERROR;
 
-    if (s->level >= 9)
-        insert_batch = insert_roll_batch;
-    else
-        insert_batch = insert_knuth_batch;
+    insert_batch = s->insert_batch;
 
     /* when using zlib wrappers, compute Adler-32 for provided dictionary */
     if (wrap == 1)
@@ -1183,6 +1180,16 @@ static void lm_set_level(deflate_state *s, int level) {
     s->good_match       = configuration_table[level].good_length;
     s->nice_match       = configuration_table[level].nice_length;
     s->max_chain_length = configuration_table[level].max_chain;
+    if (level >= 9) {
+        s->longest_match = FUNCTABLE_FPTR(longest_match_slow_roll);
+        s->insert_batch  = insert_roll_batch;
+    } else {
+        s->longest_match = FUNCTABLE_FPTR(longest_match_slow_knuth);
+        if (HAVE_QUICK_STRATEGY && level == 1)
+            s->insert_batch = insert_knuth_batch_head;
+        else
+            s->insert_batch = insert_knuth_batch;
+    }
     s->level = level;
 }
 
@@ -1221,7 +1228,7 @@ static void lm_init(deflate_state *s) {
 
 void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
     PREFIX3(stream) *strm = s->strm;
-    insert_batch_func insert_batch;
+    insert_batch_func insert_batch = s->insert_batch;
     unsigned char *window = s->window;
     unsigned n;
     unsigned int more;    /* Amount of free space at the end of the window. */
@@ -1229,13 +1236,6 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
     int level = s->level;
 
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
-
-    if (level >= 9)
-        insert_batch = insert_roll_batch;
-    else if (HAVE_QUICK_STRATEGY && level == 1)
-        insert_batch = insert_knuth_batch_head;
-    else
-        insert_batch = insert_knuth_batch;
 
     do {
         more = s->window_size - s->lookahead - s->strstart;
