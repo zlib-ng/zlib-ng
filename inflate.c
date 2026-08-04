@@ -1406,7 +1406,8 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     if (state->next >= state->codes && state->next <= state->codes + ENOUGH - 1) {
         copy->next = copy->codes + (state->next - state->codes);
     } else {
-        copy->next = copy->codes;
+        alloc_bufs->zfree(dest->opaque, alloc_bufs->buf_start);
+        return Z_STREAM_ERROR;
     }
     copy->window = alloc_bufs->window;
     copy->alloc_bufs = alloc_bufs;
