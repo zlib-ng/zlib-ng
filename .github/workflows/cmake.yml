@@ -957,13 +957,13 @@ jobs:
       uses: actions/cache@v6
       with:
         path: /usr/local/bin/qemu-e2k-static
-        key: cache-qemu-e2k-static-2026-02-24
+        key: cache-qemu-e2k-static-2026-06-17
 
     - name: Install MCST QEMU (Ubuntu)
       if: contains(matrix.name, 'e2k') && steps.cache-qemu-e2k-static.outputs.cache-hit != 'true'
       shell: bash
       run: |
-        wget --no-check-certificate -q https://dev.mcst.ru/downloads/2026-02-24/qemu-e2k-static
+        wget --no-check-certificate -q https://dev.mcst.ru/downloads/2026-06-17/qemu-e2k-static
         chmod +x qemu-e2k-static
         sudo mv qemu-e2k-static /usr/local/bin
 
