@@ -41,7 +41,7 @@ TEST(inflate, copy_and_decompress) {
     memset(&c_stream, 0, sizeof(c_stream));
     err = PREFIX(deflateInit)(&c_stream, Z_DEFAULT_COMPRESSION);
     ASSERT_EQ(err, Z_OK);
-    c_stream.next_in = (const unsigned char *)test_data;
+    c_stream.next_in = (z_const unsigned char *)test_data;
     c_stream.avail_in = (unsigned int)strlen(test_data);
     c_stream.next_out = compr;
     c_stream.avail_out = sizeof(compr);
