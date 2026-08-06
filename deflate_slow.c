@@ -22,6 +22,12 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
     int bflush;              /* set if current block must be flushed */
     int level = s->level;
 
+    /* Matches this long or shorter are discarded. Z_FILTERED ignores lengths up to 5, other
+     * strategies only ignore lengths below STD_MIN_MATCH. */
+    const uint32_t match_discard = (s->strategy == Z_FILTERED) ? 5 : STD_MIN_MATCH - 1;
+    /* Same floor for longest_match, kept below good_match. */
+    const uint32_t match_floor = MIN(match_discard, s->good_match - 1);
+
     if (level >= 9) {
         longest_match = FUNCTABLE_FPTR(longest_match_roll);
         insert_batch = insert_roll_batch;
@@ -60,21 +66,26 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
         /* Find the longest match, discarding those <= prev_length.
          */
         s->prev_match = s->match_start;
+        uint32_t prev_length = s->prev_length;
         uint32_t match_len = STD_MIN_MATCH - 1;
         int64_t dist = (int64_t)s->strstart - hash_head;
 
-        if (dist <= MAX_DIST(s) && dist > 0 && s->prev_length < s->max_lazy_match && hash_head != 0) {
+        if (dist <= MAX_DIST(s) && dist > 0 && prev_length < s->max_lazy_match && hash_head != 0) {
             /* To simplify the code, we prevent matches with the string
              * of window index 0 (in particular we have to avoid a match
              * of the string with itself at the start of the input file).
              */
+
+            /* longest_match only looks for matches longer than s->prev_length. */
+            s->prev_length = MAX(prev_length, match_floor);
             match_len = longest_match(s, hash_head);
+            /* Restore the real previous length, the lazy evaluation below relies on it. */
+            s->prev_length = prev_length;
             /* longest_match() sets match_start */
 
-            if (match_len <= 5 && (s->strategy == Z_FILTERED)) {
-                /* If prev_match is also WANT_MIN_MATCH, match_start is garbage
-                 * but we will ignore the current match anyway.
-                 */
+            if (match_len <= match_discard) {
+                /* Match not long enough, treat it as no match found, which makes a garbage
+                 * match_start that is harmless. */
                 match_len = STD_MIN_MATCH - 1;
             }
         }
