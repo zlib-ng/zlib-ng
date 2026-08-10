@@ -259,7 +259,6 @@ struct ALIGNED_(64) internal_state {
     int32_t bi_valid;           /* Number of valid bits in bi_buf.
                                  * All bits above the last valid bit are always zero. */
 
-    int heap_len;               /* number of elements in the heap */
     int heap_max;               /* element of largest frequency */
 
                 /* used by trees.c: */
@@ -307,13 +306,9 @@ struct ALIGNED_(64) internal_state {
     uint16_t bl_count[MAX_BITS+1];
     /* number of codes at each bit length for an optimal tree */
 
-    int heap[2*L_CODES+1];      /* heap used to build the Huffman trees */
-    /* The sons of heap[n] are heap[2*n] and heap[2*n+1]. heap[0] is not used.
-     * The same heap array is used to build all trees.
-     */
-
-    unsigned char depth[2*L_CODES+1];
-    /* Depth of each subtree used as tie breaker for trees of equal frequency
+    int heap[2*L_CODES+1];      /* tree nodes sorted by increasing frequency */
+    /* Filled by build_tree() and consumed by gen_bitlen(). The same array is
+     * used for all trees.
      */
 
     /* Didn't use ct_data typedef below to suppress compiler warning */
