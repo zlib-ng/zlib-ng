@@ -67,7 +67,7 @@ static const static_tree_desc  static_bl_desc =
  */
 
 static void init_block       (deflate_state *s);
-static inline void pqdownheap       (unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k);
+static inline void pqdownheap       (uint64_t *pq, const int heap_len, int k);
 static void build_tree       (deflate_state *s, tree_desc *desc);
 static void gen_bitlen       (deflate_state *s, tree_desc *desc);
 static void scan_tree        (deflate_state *s, ct_data *tree, int max_code);
@@ -124,24 +124,16 @@ static void init_block(deflate_state *s) {
 #define SMALLEST 1
 /* Index within the heap array of least frequent node in the Huffman tree */
 
-
-/* ===========================================================================
- * Compares to subtrees, using the tree depth as tie breaker when
- * the subtrees have equal frequency. This minimizes the worst case length.
- */
-#define smaller(tree, n, m, depth) \
-    (tree[n].Freq < tree[m].Freq || \
-    (tree[n].Freq == tree[m].Freq && depth[n] <= depth[m]))
-
-/* ===========================================================================
- * Remove the smallest element from the heap and recreate the heap with
- * one less element. Updates heap and heap_len. Used by build_tree().
- */
-#define pqremove(s, depth, heap, tree, top) { \
-    top = heap[SMALLEST]; \
-    heap[SMALLEST] = heap[s->heap_len--]; \
-    pqdownheap(depth, heap, s->heap_len, tree, SMALLEST); \
-}
+/* Heap entries pack (freq << 8 | depth) above the node index, so a single 64-bit compare orders
+ * nodes by frequency, breaking ties by subtree depth to minimize the worst-case code length.
+ * Freq and depth of a node never change while it is in the heap, so packed entries stay valid. */
+#define PQ_NODE_BITS 10
+#define pq_pack(freq, depth, node) \
+    (((uint64_t)(freq) << (PQ_NODE_BITS + 8)) | ((uint64_t)(depth) << PQ_NODE_BITS) | (unsigned)(node))
+#define pq_key(e)   ((e) >> PQ_NODE_BITS)
+#define pq_node(e)  ((int)((e) & (((uint64_t)1 << PQ_NODE_BITS) - 1)))
+#define pq_freq(e)  ((uint32_t)((e) >> (PQ_NODE_BITS + 8)))
+#define pq_depth(e) ((uint32_t)(((e) >> PQ_NODE_BITS) & 0xFF))
 
 /* ===========================================================================
  * Restore the heap property by moving down the tree starting at node k,
@@ -149,29 +141,29 @@ static void init_block(deflate_state *s) {
  * when the heap property is re-established (each father smaller than its
  * two sons). Used by build_tree().
  */
-static inline void pqdownheap(unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k) {
-    /* tree: the tree to restore */
+static inline void pqdownheap(uint64_t *pq, const int heap_len, int k) {
     /* k: node to move down */
     int j = k << 1;  /* left son of k */
-    const int v = heap[k];
+    const uint64_t v = pq[k];
+    const uint64_t vk = pq_key(v);
 
     while (j <= heap_len) {
         /* Set j to the smallest of the two sons: */
-        if (j < heap_len && smaller(tree, heap[j+1], heap[j], depth)) {
+        if (j < heap_len && pq_key(pq[j+1]) <= pq_key(pq[j])) {
             j++;
         }
         /* Exit if v is smaller than both sons */
-        if (smaller(tree, v, heap[j], depth))
+        if (vk <= pq_key(pq[j]))
             break;
 
         /* Exchange v with the smallest son */
-        heap[k] = heap[j];
+        pq[k] = pq[j];
         k = j;
 
         /* And continue down the tree, setting j to the left son of k */
         j <<= 1;
     }
-    heap[k] = v;
+    pq[k] = v;
 }
 
 /* ===========================================================================
@@ -184,26 +176,24 @@ static inline void pqdownheap(unsigned char *depth, int *heap, const int heap_le
  */
 static void build_tree(deflate_state *s, tree_desc *desc) {
     /* desc: the tree descriptor */
-    unsigned char *depth  = s->depth;
-    int *heap             = s->heap;
     ct_data *tree         = desc->dyn_tree;
     const ct_data *stree  = desc->stat_desc->static_tree;
     int elems             = desc->stat_desc->elems;
     int n, m;          /* iterate over heap elements */
     int max_code = -1; /* largest code with non zero frequency */
     int node;          /* new node being created */
+    int heap_len = 0;
+    int heap_max = HEAP_SIZE;
+    uint64_t pq[L_CODES + 1]; /* packed priority queue, entries 1..heap_len */
 
     /* Construct the initial heap, with least frequent element in
-     * heap[SMALLEST]. The sons of heap[n] are heap[2*n] and heap[2*n+1].
-     * heap[0] is not used.
+     * pq[SMALLEST]. The sons of pq[n] are pq[2*n] and pq[2*n+1].
+     * pq[0] is not used.
      */
-    s->heap_len = 0;
-    s->heap_max = HEAP_SIZE;
-
     for (n = 0; n < elems; n++) {
         if (tree[n].Freq != 0) {
-            heap[++(s->heap_len)] = max_code = n;
-            depth[n] = 0;
+            pq[++heap_len] = pq_pack(tree[n].Freq, 0, n);
+            max_code = n;
         } else {
             tree[n].Len = 0;
         }
@@ -214,10 +204,10 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
      * possible code. So to avoid special checks later on we force at least
      * two codes of non zero frequency.
      */
-    while (s->heap_len < 2) {
-        node = heap[++(s->heap_len)] = (max_code < 2 ? ++max_code : 0);
+    while (heap_len < 2) {
+        node = (max_code < 2 ? ++max_code : 0);
+        pq[++heap_len] = pq_pack(1, 0, node);
         tree[node].Freq = 1;
-        depth[node] = 0;
         s->opt_len--;
         if (stree)
             s->static_len -= stree[node].Len;
@@ -225,27 +215,34 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
     }
     desc->max_code = max_code;
 
-    /* The elements heap[heap_len/2+1 .. heap_len] are leaves of the tree,
+    /* The elements pq[heap_len/2+1 .. heap_len] are leaves of the tree,
      * establish sub-heaps of increasing lengths:
      */
-    for (n = s->heap_len/2; n >= 1; n--)
-        pqdownheap(depth, heap, s->heap_len, tree, n);
+    for (n = heap_len/2; n >= 1; n--)
+        pqdownheap(pq, heap_len, n);
 
     /* Construct the Huffman tree by repeatedly combining the least two
      * frequent nodes.
      */
     node = elems;              /* next internal node of the tree */
     do {
-        pqremove(s, depth, heap, tree, n);  /* n = node of least frequency */
-        m = heap[SMALLEST]; /* m = node of next least frequency */
+        /* n = node of least frequency, m = node of next least frequency */
+        const uint64_t en = pq[SMALLEST];
+        pq[SMALLEST] = pq[heap_len--];
+        pqdownheap(pq, heap_len, SMALLEST);
+        const uint64_t em = pq[SMALLEST];
+        n = pq_node(en);
+        m = pq_node(em);
 
-        heap[--(s->heap_max)] = n; /* keep the nodes sorted by frequency */
-        heap[--(s->heap_max)] = m;
+        s->heap[--heap_max] = n; /* keep the nodes sorted by frequency */
+        s->heap[--heap_max] = m;
 
-        /* Create a new node father of n and m */
-        tree[node].Freq = tree[n].Freq + tree[m].Freq;
-        depth[node] = (unsigned char)((depth[n] >= depth[m] ?
-                                          depth[n] : depth[m]) + 1);
+        /* Create a new node father of n and m. Freq and depth wrap the same way the uint16_t
+         * and unsigned char state fields did. */
+        const uint16_t f = (uint16_t)(pq_freq(en) + pq_freq(em));
+        const unsigned char d = (unsigned char)((pq_depth(en) >= pq_depth(em) ?
+                                          pq_depth(en) : pq_depth(em)) + 1);
+        tree[node].Freq = f;
         tree[n].Dad = tree[m].Dad = (uint16_t)node;
 #ifdef DUMP_BL_TREE
         if (tree == s->bl_tree) {
@@ -254,11 +251,13 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
         }
 #endif
         /* and insert the new node in the heap */
-        heap[SMALLEST] = node++;
-        pqdownheap(depth, heap, s->heap_len, tree, SMALLEST);
-    } while (s->heap_len >= 2);
+        pq[SMALLEST] = pq_pack(f, d, node);
+        node++;
+        pqdownheap(pq, heap_len, SMALLEST);
+    } while (heap_len >= 2);
 
-    heap[--(s->heap_max)] = heap[SMALLEST];
+    s->heap[--heap_max] = pq_node(pq[SMALLEST]);
+    s->heap_max = heap_max;
 
     /* At this point, the fields freq and dad are set. We can now
      * generate the bit lengths.
