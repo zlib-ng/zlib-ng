@@ -259,8 +259,6 @@ struct ALIGNED_(64) internal_state {
     int32_t bi_valid;           /* Number of valid bits in bi_buf.
                                  * All bits above the last valid bit are always zero. */
 
-    int heap_max;               /* element of largest frequency */
-
                 /* used by trees.c: */
     unsigned int  lit_bufsize;
     /* Size of match buffer for literals/lengths.  There are 4 reasons for
@@ -305,11 +303,6 @@ struct ALIGNED_(64) internal_state {
 
     uint16_t bl_count[MAX_BITS+1];
     /* number of codes at each bit length for an optimal tree */
-
-    int heap[2*L_CODES+1];      /* tree nodes sorted by increasing frequency */
-    /* Filled by build_tree() and consumed by gen_bitlen(). The same array is
-     * used for all trees.
-     */
 
     /* Didn't use ct_data typedef below to suppress compiler warning */
     struct ct_data_s dyn_ltree[HEAP_SIZE];   /* literal and length tree */

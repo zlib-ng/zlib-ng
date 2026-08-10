@@ -69,7 +69,7 @@ static const static_tree_desc  static_bl_desc =
 static void init_block       (deflate_state *s);
 static void pq_radix_pass    (const uint32_t *src, uint32_t *dst, int n, int shift);
 static void build_tree       (deflate_state *s, tree_desc *desc);
-static void gen_bitlen       (deflate_state *s, tree_desc *desc);
+static void gen_bitlen       (deflate_state *s, tree_desc *desc, const int *order, int order_max);
 static void scan_tree        (deflate_state *s, ct_data *tree, int max_code);
 static void send_tree        (deflate_state *s, ct_data *tree, int max_code);
 static int  build_bl_tree    (deflate_state *s);
@@ -174,12 +174,13 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
     int max_code = -1; /* largest code with non zero frequency */
     int node;          /* new node being created */
     int nleaves = 0;
-    int heap_max = HEAP_SIZE;
+    int order_max = HEAP_SIZE;
     int li = 0, ihead = 0, itail = 0;  /* queue positions for leaves and internal nodes */
     int merges;
     uint32_t leaves[L_CODES + 1];  /* packed leaf entries, sorted by frequency */
     uint32_t scratch[L_CODES + 1]; /* radix buffer, then FIFO of created internal nodes */
     uint32_t *internals = scratch;
+    int order[HEAP_SIZE];          /* tree nodes in merge order, filled from the top down */
 
     for (n = 0; n < elems; n++) {
         if (tree[n].Freq != 0) {
@@ -232,8 +233,8 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
         n = pq_node(en);
         m = pq_node(em);
 
-        s->heap[--heap_max] = n; /* keep the nodes sorted by frequency */
-        s->heap[--heap_max] = m;
+        order[--order_max] = n; /* keep the nodes sorted by frequency */
+        order[--order_max] = m;
 
         /* Create a new node father of n and m. Freq wraps the same way the uint16_t
          * state field did. */
@@ -251,13 +252,12 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
         node++;
     }
 
-    s->heap[--heap_max] = node - 1; /* the last created node is the root */
-    s->heap_max = heap_max;
+    order[--order_max] = node - 1; /* the last created node is the root */
 
     /* At this point, the fields freq and dad are set. We can now
      * generate the bit lengths.
      */
-    gen_bitlen(s, (tree_desc *)desc);
+    gen_bitlen(s, (tree_desc *)desc, order, order_max);
 
     /* The field len is now set, we can generate the bit codes */
     gen_codes((ct_data *)tree, max_code, s->bl_count);
@@ -266,14 +266,14 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
 /* ===========================================================================
  * Compute the optimal bit lengths for a tree and update the total bit length
  * for the current block.
- * IN assertion: the fields freq and dad are set, heap[heap_max] and
+ * IN assertion: the fields freq and dad are set, order[order_max] and
  *    above are the tree nodes sorted by increasing frequency.
  * OUT assertions: the field len is set to the optimal bit length, the
  *     array bl_count contains the frequencies for each bit length.
  *     The length opt_len is updated; static_len is also updated if stree is
  *     not null. Used by build_tree().
  */
-static void gen_bitlen(deflate_state *s, tree_desc *desc) {
+static void gen_bitlen(deflate_state *s, tree_desc *desc, const int *order, int order_max) {
     /* desc: the tree descriptor */
     ct_data *tree           = desc->dyn_tree;
     int max_code            = desc->max_code;
@@ -294,10 +294,10 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
     /* In a first pass, compute the optimal bit lengths (which may
      * overflow in the case of the bit length tree).
      */
-    tree[s->heap[s->heap_max]].Len = 0; /* root of the heap */
+    tree[order[order_max]].Len = 0; /* root of the tree */
 
-    for (h = s->heap_max + 1; h < HEAP_SIZE; h++) {
-        n = s->heap[h];
+    for (h = order_max + 1; h < HEAP_SIZE; h++) {
+        n = order[h];
         bits = tree[tree[n].Dad].Len + 1u;
         if (bits > max_length){
             bits = max_length;
@@ -346,7 +346,7 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
     for (bits = max_length; bits != 0; bits--) {
         n = s->bl_count[bits];
         while (n != 0) {
-            m = s->heap[--h];
+            m = order[--h];
             if (m > max_code)
                 continue;
             if (tree[m].Len != bits) {
