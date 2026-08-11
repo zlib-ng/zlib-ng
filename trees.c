@@ -176,6 +176,7 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
     int merges;
     uint32_t leaves[L_CODES + 1];  /* packed leaf entries, sorted by frequency */
     uint32_t scratch[L_CODES + 1]; /* radix buffer, then FIFO of created internal nodes */
+    uint32_t *sorted = leaves;
     uint32_t *internals = scratch;
     int order[HEAP_SIZE];          /* tree nodes in merge order, filled from the top down */
     uint16_t count_lo[257];        /* histogram of the low frequency byte, at offset +1 */
@@ -221,6 +222,13 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
             leaves[0] = leaves[1];
             leaves[1] = t;
         }
+    } else if ((int)count_hi[1] == nleaves) {
+        /* Every frequency fits in one byte, so the first pass already produces the final
+         * order. The sorted entries then live in scratch, so the internal-node FIFO takes
+         * over the leaves buffer instead. */
+        pq_radix_pass(leaves, scratch, nleaves, PQ_NODE_BITS, count_lo);
+        sorted = scratch;
+        internals = leaves;
     } else {
         pq_radix_pass(leaves, scratch, nleaves, PQ_NODE_BITS, count_lo);
         pq_radix_pass(scratch, leaves, nleaves, PQ_NODE_BITS + 8, count_hi);
@@ -233,8 +241,8 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
     node = elems;              /* next internal node of the tree */
     for (merges = nleaves - 1; merges > 0; merges--) {
         /* en = entry of least frequency, em = entry of next least frequency */
-        const uint32_t en = pq_take(leaves, &li, nleaves, internals, &ihead, itail);
-        const uint32_t em = pq_take(leaves, &li, nleaves, internals, &ihead, itail);
+        const uint32_t en = pq_take(sorted, &li, nleaves, internals, &ihead, itail);
+        const uint32_t em = pq_take(sorted, &li, nleaves, internals, &ihead, itail);
         n = pq_node(en);
         m = pq_node(em);
 
