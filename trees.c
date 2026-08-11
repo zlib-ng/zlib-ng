@@ -67,7 +67,7 @@ static const static_tree_desc  static_bl_desc =
  */
 
 static void init_block       (deflate_state *s);
-static void pq_radix_pass    (const uint32_t *src, uint32_t *dst, int n, int shift);
+static void pq_radix_pass    (const uint32_t *src, uint32_t *dst, int n, int shift, uint16_t *count);
 static void build_tree       (deflate_state *s, tree_desc *desc);
 static void gen_bitlen       (deflate_state *s, tree_desc *desc, const int *order, int order_max);
 static void scan_tree        (deflate_state *s, ct_data *tree, int max_code);
@@ -131,15 +131,12 @@ static void init_block(deflate_state *s) {
 
 /* ===========================================================================
  * One stable counting-sort pass over an 8-bit digit of the packed entries.
- * Used by build_tree().
+ * count holds the digit histogram at offset +1, accumulated during the leaf
+ * scan, and is turned into running start positions here. Used by build_tree().
  */
-static void pq_radix_pass(const uint32_t *src, uint32_t *dst, int n, int shift) {
-    uint16_t count[257];
+static void pq_radix_pass(const uint32_t *src, uint32_t *dst, int n, int shift, uint16_t *count) {
     int i;
 
-    memset(count, 0, sizeof(count));
-    for (i = 0; i < n; i++)
-        count[((src[i] >> shift) & 0xFF) + 1]++;
     for (i = 1; i <= 256; i++)
         count[i] = (uint16_t)(count[i] + count[i-1]);
     for (i = 0; i < n; i++)
@@ -181,10 +178,17 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
     uint32_t scratch[L_CODES + 1]; /* radix buffer, then FIFO of created internal nodes */
     uint32_t *internals = scratch;
     int order[HEAP_SIZE];          /* tree nodes in merge order, filled from the top down */
+    uint16_t count_lo[257];        /* histogram of the low frequency byte, at offset +1 */
+    uint16_t count_hi[257];        /* histogram of the high frequency byte, at offset +1 */
 
+    memset(count_lo, 0, sizeof(count_lo));
+    memset(count_hi, 0, sizeof(count_hi));
     for (n = 0; n < elems; n++) {
-        if (tree[n].Freq != 0) {
-            leaves[nleaves++] = pq_pack(tree[n].Freq, n);
+        const uint16_t freq = tree[n].Freq;
+        if (freq != 0) {
+            leaves[nleaves++] = pq_pack(freq, n);
+            count_lo[(freq & 0xFF) + 1]++;
+            count_hi[(freq >> 8) + 1]++;
             max_code = n;
         } else {
             tree[n].Len = 0;
@@ -209,7 +213,8 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
 
     /* Sort the leaves by packed entry. The scan above appended them in node order, which is
      * ascending in the node bits, so two stable passes over the freq bytes finish the sort.
-     * A forced node can arrive out of node order, but then there are exactly two leaves. */
+     * A forced node can arrive out of node order, but then there are exactly two leaves,
+     * so the radix path only ever sorts entries the histograms counted. */
     if (nleaves == 2) {
         if (leaves[0] > leaves[1]) {
             const uint32_t t = leaves[0];
@@ -217,8 +222,8 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
             leaves[1] = t;
         }
     } else {
-        pq_radix_pass(leaves, scratch, nleaves, PQ_NODE_BITS);
-        pq_radix_pass(scratch, leaves, nleaves, PQ_NODE_BITS + 8);
+        pq_radix_pass(leaves, scratch, nleaves, PQ_NODE_BITS, count_lo);
+        pq_radix_pass(scratch, leaves, nleaves, PQ_NODE_BITS + 8, count_hi);
     }
 
     /* Construct the Huffman tree by repeatedly combining the least two frequent nodes.
