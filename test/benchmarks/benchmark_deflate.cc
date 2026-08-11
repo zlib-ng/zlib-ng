@@ -34,7 +34,9 @@ public:
     void SetUp(::benchmark::State&) {}
 
     void DoSetUp(::benchmark::State& state, enum test_data_type data_type) {
-        outbuff_size = PREFIX(deflateBound)(NULL, MAX_SIZE);
+        /* deflateBound does not cover the empty stored blocks that sync flushing emits,
+         * so reserve room for one marker per smallest chunk. */
+        outbuff_size = PREFIX(deflateBound)(NULL, MAX_SIZE) + (MAX_SIZE / 1024 + 1) * 16;
         outbuff = (uint8_t *)malloc(outbuff_size);
         if (outbuff == NULL) {
             state.SkipWithError("malloc failed");
@@ -50,10 +52,20 @@ public:
         }
     }
 
-    void Bench(benchmark::State& state, int window_bits, int strategy) {
+    void Bench(benchmark::State& state, int window_bits, int strategy, int sync) {
         int err;
-        size_t size = (size_t)state.range(0);
+        size_t size, chunk;
         int level = (int)state.range(1);
+
+        /* Sync variants compress MAX_SIZE in Args(chunk)-sized pieces with Z_SYNC_FLUSH
+         * between them. Whole-buffer variants are the degenerate case of one chunk. */
+        if (sync) {
+            size = MAX_SIZE;
+            chunk = (size_t)state.range(0);
+        } else {
+            size = (size_t)state.range(0);
+            chunk = size;
+        }
 
         PREFIX3(stream) strm;
         strm.zalloc = NULL;
@@ -78,12 +90,23 @@ public:
                 return;
             }
 
-            strm.avail_in = (uint32_t)size;
-            strm.next_in = (z_const uint8_t *)inbuff;
             strm.next_out = outbuff;
             strm.avail_out = (uint32_t)outbuff_size;
 
-            err = PREFIX(deflate)(&strm, Z_FINISH);
+            size_t offset = 0;
+            while (offset < size) {
+                size_t len = size - offset < chunk ? size - offset : chunk;
+                strm.next_in = (z_const uint8_t *)inbuff + offset;
+                strm.avail_in = (uint32_t)len;
+                offset += len;
+
+                err = PREFIX(deflate)(&strm, offset < size ? Z_SYNC_FLUSH : Z_FINISH);
+                if (err != Z_OK && err != Z_STREAM_END) {
+                    state.SkipWithError("deflate did not return Z_OK");
+                    PREFIX(deflateEnd)(&strm);
+                    return;
+                }
+            }
             if (err != Z_STREAM_END) {
                 state.SkipWithError("deflate did not return Z_STREAM_END");
                 PREFIX(deflateEnd)(&strm);
@@ -101,11 +124,11 @@ public:
         state.counters["ratio"] = benchmark::Counter(double(size) / double(strm.total_out));
     }
 
-    void Dispatch(benchmark::State& state, enum test_data_type data_type, int window_bits, int strategy) {
+    void Dispatch(benchmark::State& state, enum test_data_type data_type, int window_bits, int strategy, int sync) {
         DoSetUp(state, data_type);
         if (state.skipped())
             return;
-        Bench(state, window_bits, strategy);
+        Bench(state, window_bits, strategy, sync);
     }
 
     void TearDown(const ::benchmark::State&) {
@@ -131,33 +154,40 @@ public:
     ->Args({131072, 3})->Args({131072, 6})->Args({131072, 9}) \
     ->Args({1048576, 3})->Args({1048576, 6})->Args({1048576, 9})
 
-#define DEFLATE_VARIANT(variant, data, wbits, strategy, dt) \
+/* Sync-flush variants use Args(chunk, level), two cadences at the default level */
+#define DEFLATE_SYNC_ARGS \
+    ->Args({1024, 6})->Args({4096, 6})
+
+#define DEFLATE_VARIANT(variant, data, wbits, strategy, sync, dt) \
     BENCHMARK_DEFINE_F(deflate_bench, variant##_##data)(benchmark::State& state) { \
-        Dispatch(state, dt, wbits, strategy); \
+        Dispatch(state, dt, wbits, strategy, sync); \
     }
 
-#define DEFLATE_ALL_DATA(variant, wbits, strategy) \
-    DEFLATE_VARIANT(variant, text,          wbits, strategy, TEST_DATA_TEXT); \
-    DEFLATE_VARIANT(variant, short_match,   wbits, strategy, TEST_DATA_SHORT_MATCH); \
-    DEFLATE_VARIANT(variant, dna,           wbits, strategy, TEST_DATA_DNA); \
-    DEFLATE_VARIANT(variant, random,        wbits, strategy, TEST_DATA_RANDOM); \
-    DEFLATE_VARIANT(variant, literals,      wbits, strategy, TEST_DATA_LITERALS); \
-    DEFLATE_VARIANT(variant, mixed,         wbits, strategy, TEST_DATA_MIXED); \
-    DEFLATE_VARIANT(variant, realistic_rgb, wbits, strategy, TEST_DATA_REALISTIC_RGB); \
-    DEFLATE_VARIANT(variant, striped_rgb,   wbits, strategy, TEST_DATA_STRIPED_RGB)
+#define DEFLATE_ALL_DATA(variant, wbits, strategy, sync) \
+    DEFLATE_VARIANT(variant, text,          wbits, strategy, sync, TEST_DATA_TEXT); \
+    DEFLATE_VARIANT(variant, short_match,   wbits, strategy, sync, TEST_DATA_SHORT_MATCH); \
+    DEFLATE_VARIANT(variant, dna,           wbits, strategy, sync, TEST_DATA_DNA); \
+    DEFLATE_VARIANT(variant, random,        wbits, strategy, sync, TEST_DATA_RANDOM); \
+    DEFLATE_VARIANT(variant, literals,      wbits, strategy, sync, TEST_DATA_LITERALS); \
+    DEFLATE_VARIANT(variant, mixed,         wbits, strategy, sync, TEST_DATA_MIXED); \
+    DEFLATE_VARIANT(variant, realistic_rgb, wbits, strategy, sync, TEST_DATA_REALISTIC_RGB); \
+    DEFLATE_VARIANT(variant, striped_rgb,   wbits, strategy, sync, TEST_DATA_STRIPED_RGB)
 
 /* Parameterized deflate with zlib wrapping (includes adler32 checksum) */
-DEFLATE_ALL_DATA(level,    MAX_WBITS,  Z_DEFAULT_STRATEGY);
+DEFLATE_ALL_DATA(level,      MAX_WBITS,  Z_DEFAULT_STRATEGY, 0);
 /* Parameterized raw deflate without checksum */
-DEFLATE_ALL_DATA(nocrc,    -MAX_WBITS, Z_DEFAULT_STRATEGY);
+DEFLATE_ALL_DATA(nocrc,      -MAX_WBITS, Z_DEFAULT_STRATEGY, 0);
 /* Parameterized deflate with filtered strategy */
-DEFLATE_ALL_DATA(filtered, MAX_WBITS,  Z_FILTERED);
+DEFLATE_ALL_DATA(filtered,   MAX_WBITS,  Z_FILTERED, 0);
 /* Parameterized deflate with Huffman-only strategy */
-DEFLATE_ALL_DATA(huffman,  MAX_WBITS,  Z_HUFFMAN_ONLY);
+DEFLATE_ALL_DATA(huffman,    MAX_WBITS,  Z_HUFFMAN_ONLY, 0);
 /* Parameterized deflate with RLE strategy */
-DEFLATE_ALL_DATA(rle,      MAX_WBITS,  Z_RLE);
+DEFLATE_ALL_DATA(rle,        MAX_WBITS,  Z_RLE, 0);
 /* Parameterized deflate with fixed Huffman codes */
-DEFLATE_ALL_DATA(fixed,    MAX_WBITS,  Z_FIXED);
+DEFLATE_ALL_DATA(fixed,      MAX_WBITS,  Z_FIXED, 0);
+/* Parameterized deflate with periodic Z_SYNC_FLUSH, cutting many small blocks so
+   tree construction is a much larger share of the work than whole-buffer runs show */
+DEFLATE_ALL_DATA(sync_flush, MAX_WBITS,  Z_DEFAULT_STRATEGY, 1);
 
 /* Registered at runtime for the data types selected by --benchmark_data_types */
 #define DEFLATE_REGISTER(variant, data, dt, args_macro) \
@@ -166,23 +196,24 @@ DEFLATE_ALL_DATA(fixed,    MAX_WBITS,  Z_FIXED);
             ::benchmark::internal::make_unique<deflate_bench_##variant##_##data##_Benchmark>()) \
             ->Name("deflate_bench/" #variant "/" #data) args_macro
 
-#define DEFLATE_REGISTER_ALL_DATA(variant, text_args_macro) \
+#define DEFLATE_REGISTER_ALL_DATA(variant, text_args_macro, data_args_macro) \
     DEFLATE_REGISTER(variant, text,          TEST_DATA_TEXT,          text_args_macro); \
-    DEFLATE_REGISTER(variant, short_match,   TEST_DATA_SHORT_MATCH,   DEFLATE_DATA_ARGS); \
-    DEFLATE_REGISTER(variant, dna,           TEST_DATA_DNA,           DEFLATE_DATA_ARGS); \
-    DEFLATE_REGISTER(variant, random,        TEST_DATA_RANDOM,        DEFLATE_DATA_ARGS); \
-    DEFLATE_REGISTER(variant, literals,      TEST_DATA_LITERALS,      DEFLATE_DATA_ARGS); \
-    DEFLATE_REGISTER(variant, mixed,         TEST_DATA_MIXED,         DEFLATE_DATA_ARGS); \
-    DEFLATE_REGISTER(variant, realistic_rgb, TEST_DATA_REALISTIC_RGB, DEFLATE_DATA_ARGS); \
-    DEFLATE_REGISTER(variant, striped_rgb,   TEST_DATA_STRIPED_RGB,   DEFLATE_DATA_ARGS)
+    DEFLATE_REGISTER(variant, short_match,   TEST_DATA_SHORT_MATCH,   data_args_macro); \
+    DEFLATE_REGISTER(variant, dna,           TEST_DATA_DNA,           data_args_macro); \
+    DEFLATE_REGISTER(variant, random,        TEST_DATA_RANDOM,        data_args_macro); \
+    DEFLATE_REGISTER(variant, literals,      TEST_DATA_LITERALS,      data_args_macro); \
+    DEFLATE_REGISTER(variant, mixed,         TEST_DATA_MIXED,         data_args_macro); \
+    DEFLATE_REGISTER(variant, realistic_rgb, TEST_DATA_REALISTIC_RGB, data_args_macro); \
+    DEFLATE_REGISTER(variant, striped_rgb,   TEST_DATA_STRIPED_RGB,   data_args_macro)
 
 static void deflate_register_data_types(uint32_t mask) {
-    DEFLATE_REGISTER_ALL_DATA(level,    DEFLATE_ARGS);
-    DEFLATE_REGISTER_ALL_DATA(nocrc,    DEFLATE_ARGS);
-    DEFLATE_REGISTER_ALL_DATA(filtered, DEFLATE_STRATEGY_ARGS);
-    DEFLATE_REGISTER_ALL_DATA(huffman,  DEFLATE_STRATEGY_ARGS);
-    DEFLATE_REGISTER_ALL_DATA(rle,      DEFLATE_STRATEGY_ARGS);
-    DEFLATE_REGISTER_ALL_DATA(fixed,    DEFLATE_STRATEGY_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(level,      DEFLATE_ARGS,          DEFLATE_DATA_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(nocrc,      DEFLATE_ARGS,          DEFLATE_DATA_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(filtered,   DEFLATE_STRATEGY_ARGS, DEFLATE_DATA_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(huffman,    DEFLATE_STRATEGY_ARGS, DEFLATE_DATA_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(rle,        DEFLATE_STRATEGY_ARGS, DEFLATE_DATA_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(fixed,      DEFLATE_STRATEGY_ARGS, DEFLATE_DATA_ARGS);
+    DEFLATE_REGISTER_ALL_DATA(sync_flush, DEFLATE_SYNC_ARGS,     DEFLATE_SYNC_ARGS);
 }
 
 static int deflate_data_types = benchmark_data_types_hook(deflate_register_data_types);
