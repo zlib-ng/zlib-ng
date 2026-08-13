@@ -74,6 +74,11 @@ add_executable(benchmark_zlib ${BENCH_PUBLIC_SRCS})
 target_compile_definitions(benchmark_zlib PRIVATE
     -DBENCHMARK_STATIC_DEFINE
     -DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/test/data")
+
+if(MINGW)
+    target_compile_definitions(benchmark_zlib PRIVATE -D_WIN32_WINNT=_WIN32_WINNT_WIN10)
+endif()
+
 target_include_directories(benchmark_zlib PRIVATE
     ${PROJECT_SOURCE_DIR}
     ${PROJECT_BINARY_DIR}
