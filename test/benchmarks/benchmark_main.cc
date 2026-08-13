@@ -10,7 +10,9 @@
 #include <limits.h>
 
 #ifdef _WIN32
-#  define NOMINMAX
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
 #  include <windows.h>
 #else
 #  include <unistd.h>
@@ -163,7 +165,7 @@ int main(int argc, char** argv) {
     }
 
     if (no_power_throttling) {
-#  ifdef PROCESS_POWER_THROTTLING_CURRENT_VERSION
+#  if _WIN32_WINNT >= _WIN32_WINNT_WIN10
         /* Clear the execution-speed bit to opt out of EcoQoS so the process runs at full
            clock on performance cores. */
         PROCESS_POWER_THROTTLING_STATE state;
@@ -174,7 +176,7 @@ int main(int argc, char** argv) {
         if (!SetProcessInformation(GetCurrentProcess(), ProcessPowerThrottling, &state, sizeof(state)))
             fprintf(stderr, "warning: failed to disable power throttling (error %lu)\n", GetLastError());
 #  else
-        fprintf(stderr, "warning: --benchmark_no_power_throttling requires a Windows 10 SDK\n");
+        fprintf(stderr, "warning: --benchmark_no_power_throttling requires targeting Windows 10 or later\n");
 #  endif
     }
 
