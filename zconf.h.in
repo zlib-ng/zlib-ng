@@ -19,6 +19,7 @@
 #  define __has_declspec_attribute(x) 0
 #endif
 
+/* Only for use on API-visible variables. */
 #ifndef z_const
 #  ifdef ZLIB_CONST
 #    define z_const const
