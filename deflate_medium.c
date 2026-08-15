@@ -67,7 +67,7 @@ static void insert_match(deflate_state *s, unsigned char *window, struct match m
     /* Insert new strings in the hash table only if the match length
      * is not too large. This saves time but degrades compression.
      */
-    if (match_len <= max_len && s->lookahead >= WANT_MIN_MATCH) {
+    if (match_len <= max_len) {
         match_len--; /* string at strstart already in table */
         strstart++;
 
@@ -83,10 +83,6 @@ static void insert_match(deflate_state *s, unsigned char *window, struct match m
     } else {
         strstart += match_len;
         insert_knuth(s, window, strstart + 2 - STD_MIN_MATCH);
-
-        /* If lookahead < WANT_MIN_MATCH, ins_h is garbage, but it does not
-         * matter since it will be recomputed at next deflate call.
-         */
     }
 }
 
