@@ -44,7 +44,7 @@ static int emit_match(deflate_state *s, unsigned char *window, struct match matc
 }
 
 /* insert_match assumes: s->lookahead > match.match_length + WANT_MIN_MATCH */
-static void insert_match(deflate_state *s, unsigned char *window, struct match match) {
+static void insert_match(deflate_state *s, unsigned char *window, struct match match, const uint32_t max_len) {
     uint32_t match_len = match.match_length;
     uint32_t strstart = match.strstart;
 
@@ -67,7 +67,7 @@ static void insert_match(deflate_state *s, unsigned char *window, struct match m
     /* Insert new strings in the hash table only if the match length
      * is not too large. This saves time but degrades compression.
      */
-    if (match_len <= 16 * s->max_insert_length && s->lookahead >= WANT_MIN_MATCH) {
+    if (match_len <= max_len && s->lookahead >= WANT_MIN_MATCH) {
         match_len--; /* string at strstart already in table */
         strstart++;
 
@@ -180,6 +180,8 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
     ALIGNED_(16) struct match current_match = {0};
                  struct match next_match = {0};
     unsigned char *window = s->window;
+    uint32_t window_end = s->window_size - MIN_LOOKAHEAD;
+    uint32_t max_len = 16 * s->max_insert_length;
 
     /* For levels below 5, don't check the next position for a better match */
     int early_exit = s->level < 5;
@@ -221,10 +223,10 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         }
 
         if (LIKELY(s->lookahead > (unsigned int)(current_match.match_length + WANT_MIN_MATCH)))
-            insert_match(s, window, current_match);
+            insert_match(s, window, current_match, max_len);
 
         /* now, look ahead one */
-        if (LIKELY(!early_exit && s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < (s->window_size - MIN_LOOKAHEAD))) {
+        if (LIKELY(!early_exit && s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < window_end)) {
             s->strstart = current_match.strstart + current_match.match_length;
             hash_head = insert_knuth(s, window, s->strstart);
 
