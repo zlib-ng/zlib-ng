@@ -92,13 +92,13 @@ static void insert_match(deflate_state *s, unsigned char *window, struct match m
 
 Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t hash_head) {
     struct match m;
-    int64_t dist;
+    int32_t dist;
 
     m.strstart = (uint16_t)s->strstart;
     m.orgstart = m.strstart;
 
-    dist = (int64_t)s->strstart - hash_head;
-    if (dist <= MAX_DIST(s) && dist > 0 && hash_head != 0) {
+    dist = (int32_t)s->strstart - (int32_t)hash_head;
+    if (dist <= (int32_t)MAX_DIST(s) && dist > 0 && hash_head != 0) {
         /* To simplify the code, we prevent matches with the string
          * of window index 0 (in particular we have to avoid a match
          * of the string with itself at the start of the input file).
