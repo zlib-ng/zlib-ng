@@ -19,7 +19,8 @@
 #  define __has_declspec_attribute(x) 0
 #endif
 
-/* Always define z_const as const */
+/* Always define z_const as const.
+ * Only for use on API-visible variables. */
 #define z_const const
 
 /* Maximum value for memLevel in deflateInit2 */
