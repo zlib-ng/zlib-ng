@@ -187,7 +187,6 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
     int early_exit = s->level < 5;
 
     for (;;) {
-        uint32_t hash_head = 0;    /* head of the hash chain */
         int bflush = 0;       /* set if current block must be flushed */
 
         /* Make sure that we always have enough lookahead, except
@@ -214,7 +213,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
             current_match = next_match;
             next_match.match_length = 0;
         } else {
-            hash_head = 0;
+            uint32_t hash_head = 0;   /* head of the hash chain */
             if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
                 hash_head = insert_knuth(s, window, s->strstart);
             }
@@ -228,7 +227,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         /* now, look ahead one */
         if (LIKELY(!early_exit && s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < window_end)) {
             s->strstart = current_match.strstart + current_match.match_length;
-            hash_head = insert_knuth(s, window, s->strstart);
+            uint32_t hash_head = insert_knuth(s, window, s->strstart);
 
             next_match = find_best_match(s, hash_head);
 
