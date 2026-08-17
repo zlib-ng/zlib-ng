@@ -80,10 +80,20 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
     return m;
 }
 
-/* fizzle_matches assumes:
- * - current->match_length > 1
- * - (current->match_length - 1) <= next->match_start
- * - (current->match_length - 1) <= next->strstart
+/* fizzle_matches investigates whether next_match (which starts after current_match) can grow backwards
+ * to absorb current_match entirely, or reduce it to a single literal.
+ * This occurs because next_match points to a different historical dictionary position, allowing it to discover
+ * a better matching alignment that current_match bypassed due to the medium-strategy skipping positions.
+ *
+ * fizzle_matches assumes:
+ * - current_match.match_length > 1
+ * - current_match.match_length - 1 <= next->match_start
+ * - current_match.match_length - 1 <= next->strstart
+ * - next_match.match_length >= WANT_MIN_MATCH
+ *
+ * fuzzle_matches returns:
+ * - If successful, current and next are returned modified.
+ *   - current_match.match_length is then either 0, 1
  */
 static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, struct match *Z_RESTRICT current, struct match *Z_RESTRICT next) {
     unsigned char *match, *orig;
@@ -91,8 +101,8 @@ static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, s
     int changed = 0;
     Pos limit;
 
-    match = window - current->match_length + 1 + next->match_start;
-    orig  = window - current->match_length + 1 + next->strstart;
+    match = window + next->match_start + 1 - current->match_length;
+    orig  = window + next->strstart + 1 - current->match_length;
 
     /* quick exit check.. if this fails then don't bother with anything else */
     if (LIKELY(*match != *orig))
@@ -126,7 +136,7 @@ static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, s
         changed++;
     }
 
-    if (changed && c.match_length <= 1 && n.match_length != 2) {
+    if (changed && c.match_length <= 1) {
         n.orgstart++;
         *current = c;
         *next = n;
