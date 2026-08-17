@@ -184,6 +184,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
 
     for (;;) {
         int bflush = 0;       /* set if current block must be flushed */
+        uint32_t curr_match_len;
 
         /* Make sure that we always have enough lookahead, except
          * at the end of the input file. We need STD_MAX_MATCH bytes
@@ -216,26 +217,32 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
 
             current_match = find_best_match(s, hash_head);
         }
+        curr_match_len = current_match.match_length;
 
-        if (LIKELY(s->lookahead > (unsigned int)(current_match.match_length + WANT_MIN_MATCH)))
+        if (LIKELY(s->lookahead > (unsigned int)(curr_match_len + WANT_MIN_MATCH)))
             insert_match(s, window, current_match, max_len);
 
         /* now, look ahead one */
-        if (LIKELY(!early_exit && s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + current_match.match_length) < window_end)) {
-            s->strstart = current_match.strstart + current_match.match_length;
+        if (LIKELY(!early_exit && s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + curr_match_len) < window_end)) {
+            s->strstart = current_match.strstart + curr_match_len;
             uint32_t hash_head = insert_knuth(s, window, s->strstart);
 
             next_match = find_best_match(s, hash_head);
 
-            uint32_t tmp_cmatch_len_sub = current_match.match_length - 1;
+            uint32_t tmp_cmatch_len_sub = curr_match_len - 1;
             if (tmp_cmatch_len_sub
                      && next_match.match_length >= WANT_MIN_MATCH
                      && tmp_cmatch_len_sub <= next_match.match_start
                      && tmp_cmatch_len_sub <= next_match.strstart) {
                 fizzle_matches(s, window, &current_match, &next_match);
+                curr_match_len = current_match.match_length;
             }
 
             s->strstart = current_match.strstart;
+            if (curr_match_len == 0) {
+                /* If current match fizzled out, jump to next loop iteration */
+                continue;
+            }
         } else {
             next_match.match_length = 0;
         }
@@ -244,7 +251,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         bflush = emit_match(s, window, current_match);
 
         /* move the "cursor" forward */
-        s->strstart += current_match.match_length;
+        s->strstart += curr_match_len;
 
         if (UNLIKELY(bflush))
             FLUSH_BLOCK(s, window, 0);
