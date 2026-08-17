@@ -98,7 +98,6 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
 static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, struct match *Z_RESTRICT current, struct match *Z_RESTRICT next) {
     unsigned char *match, *orig;
     struct match c, n;
-    int changed = 0;
     Pos limit;
 
     match = window + next->match_start + 1 - current->match_length;
@@ -112,7 +111,7 @@ static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, s
     n = *next;
 
     /* step one: try to move the "next" match to the left as much as possible */
-    limit = next->strstart > MAX_DIST(s) ? next->strstart - (Pos)MAX_DIST(s) : 0;
+    limit = n.strstart > MAX_DIST(s) ? n.strstart - (Pos)MAX_DIST(s) : 0;
 
     match = window + n.match_start - 1;
     orig = window + n.strstart - 1;
@@ -133,15 +132,12 @@ static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, s
         c.match_length--;
         match--;
         orig--;
-        changed++;
     }
 
-    if (changed && c.match_length <= 1) {
+    if (c.match_length <= 1) {
         n.orgstart++;
         *current = c;
         *next = n;
-    } else {
-        return;
     }
 }
 
