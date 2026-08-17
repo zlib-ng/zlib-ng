@@ -61,8 +61,14 @@ static int arm_has_crc32(void) {
 #elif defined(__APPLE__)
     int has_feat = 0;
     size_t size = sizeof(has_feat);
-    has_crc32 = sysctlbyname("hw.optional.armv8_crc32", &has_feat, &size, NULL, 0) == 0
+    has_crc32 = sysctlbyname("hw.optional.arm.FEAT_CRC32", &has_feat, &size, NULL, 0) == 0
         && has_feat == 1;
+    /* Fallback to legacy name for older macOS versions */
+    if (!has_crc32) {
+        size = sizeof(has_feat);
+        has_crc32 = sysctlbyname("hw.optional.armv8_crc32", &has_feat, &size, NULL, 0) == 0
+            && has_feat == 1;
+    }
 #elif defined(_WIN32)
     has_crc32 = IsProcessorFeaturePresent(PF_ARM_V8_CRC32_INSTRUCTIONS_AVAILABLE);
 #endif
