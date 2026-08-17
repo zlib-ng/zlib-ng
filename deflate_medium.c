@@ -20,29 +20,6 @@ struct match {
     uint16_t orgstart;
 };
 
-static int emit_match(deflate_state *s, unsigned char *window, struct match match) {
-    int bflush = 0;
-    uint32_t match_len = match.match_length;
-
-    /* None of the below functions care about s->lookahead, so decrement it early */
-    s->lookahead -= match_len;
-
-    /* matches that are not long enough we need to emit as literals */
-    if (match_len < WANT_MIN_MATCH) {
-        while (match_len) {
-            bflush += zng_tr_tally_lit(s, window[match.strstart]);
-            match_len--;
-            match.strstart++;
-        }
-        return bflush;
-    }
-
-    check_match(s, match.strstart, match.match_start, match_len);
-
-    bflush += zng_tr_tally_dist(s, match.strstart - match.match_start, match_len - STD_MIN_MATCH);
-    return bflush;
-}
-
 /* insert_match assumes: s->lookahead > match.match_length + WANT_MIN_MATCH */
 static void insert_match(deflate_state *s, unsigned char *window, struct match match, const uint32_t max_len) {
     uint32_t match_len = match.match_length;
@@ -248,7 +225,14 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         }
 
         /* now emit the current match */
-        bflush = emit_match(s, window, current_match);
+        s->lookahead -= curr_match_len;
+        if (LIKELY(curr_match_len == 1)) {
+            /* matches shorter than WANT_MIN_MATCH are set to 1, we need to emit these as literals */
+            bflush = zng_tr_tally_lit(s, window[current_match.strstart]);
+        } else {
+            check_match(s, current_match.strstart, current_match.match_start, curr_match_len);
+            bflush = zng_tr_tally_dist(s, current_match.strstart - current_match.match_start, curr_match_len - STD_MIN_MATCH);
+        }
 
         /* move the "cursor" forward */
         s->strstart += curr_match_len;
