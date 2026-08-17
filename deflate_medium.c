@@ -20,26 +20,13 @@ struct match {
     uint16_t orgstart;
 };
 
-/* insert_match assumes: s->lookahead > match.match_length + WANT_MIN_MATCH */
+/* insert_match assumes:
+ * - s->lookahead > match.match_length + WANT_MIN_MATCH
+ * - match_len >= WANT_MIN_MATCH
+ */
 static void insert_match(deflate_state *s, unsigned char *Z_RESTRICT window, struct match match, const uint32_t max_len) {
     uint32_t match_len = match.match_length;
     uint32_t strstart = match.strstart;
-
-    /* matches that are not long enough we need to emit as literals */
-    if (LIKELY(match_len < WANT_MIN_MATCH)) {
-        strstart++;
-        match_len--;
-        if (UNLIKELY(match_len > 0)) {
-            if (strstart >= match.orgstart) {
-                if (strstart + match_len - 1 >= match.orgstart) {
-                    insert_knuth_batch(s, window, strstart, match_len);
-                } else {
-                    insert_knuth_batch(s, window, strstart, match.orgstart - strstart + 1);
-                }
-            }
-        }
-        return;
-    }
 
     /* Insert new strings in the hash table only if the match length
      * is not too large. This saves time but degrades compression.
@@ -196,8 +183,9 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
         }
         curr_match_len = current_match.match_length;
 
-        if (LIKELY(s->lookahead > (unsigned int)(curr_match_len + WANT_MIN_MATCH)))
+        if (curr_match_len >= WANT_MIN_MATCH && s->lookahead > (unsigned int)(curr_match_len + WANT_MIN_MATCH )) {
             insert_match(s, window, current_match, max_len);
+        }
 
         /* now, look ahead one */
         if (LIKELY(!early_exit && s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + curr_match_len) < window_end)) {
