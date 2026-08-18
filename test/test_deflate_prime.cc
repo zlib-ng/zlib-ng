@@ -60,7 +60,7 @@ TEST(deflate, prime) {
     EXPECT_EQ(err, Z_STREAM_END);
 
     /* Gzip uncompressed data crc32 */
-    crc = PREFIX(crc32)(0, (const uint8_t *)hello, (uint32_t)hello_len);
+    crc = PREFIX(crc32_z)(0, (const uint8_t *)hello, (uint32_t)hello_len);
     err = deflate_prime_32(&c_stream, crc);
     EXPECT_EQ(err, Z_OK);
     /* Gzip uncompressed data length */

@@ -91,6 +91,15 @@
 #  define Z_EXPORTVA
 #endif
 
+/* API deprecated warning support */
+#if defined(__clang__) || (defined(__GNUC__) && (__GNUC__ >= 4))
+    #define Z_DEPRECATED(msg) __attribute__((deprecated(msg)))
+#elif defined(_MSC_VER) && (_MSC_VER >= 1400)
+    #define Z_DEPRECATED(msg) __declspec(deprecated(msg))
+#else
+    #define Z_DEPRECATED(msg)
+#endif
+
 /* Conditional exports */
 #define ZNG_CONDEXPORT Z_EXPORT
 

@@ -7,10 +7,10 @@
 #endif
 
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataLen) {
-    uint32_t crc0 = PREFIX(crc32)(0L, NULL, 0);
+    uint32_t crc0 = PREFIX(crc32_z)(0L, NULL, 0);
     uint32_t crc1 = crc0;
     uint32_t crc2 = crc0;
-    uint32_t adler0 = PREFIX(adler32)(0L, NULL, 0);
+    uint32_t adler0 = PREFIX(adler32_z)(0L, NULL, 0);
     uint32_t adler1 = adler0;
     uint32_t adler2 = adler0;
     uint32_t combine1, combine2;
