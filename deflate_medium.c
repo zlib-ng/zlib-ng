@@ -98,7 +98,6 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
 static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, struct match *Z_RESTRICT current, struct match *Z_RESTRICT next) {
     unsigned char *match, *orig;
     struct match c, n;
-    Pos limit;
 
     match = window + next->match_start + 1 - current->match_length;
     orig  = window + next->strstart + 1 - current->match_length;
@@ -110,20 +109,34 @@ static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, s
     c = *current;
     n = *next;
 
-    /* step one: try to move the "next" match to the left as much as possible */
-    limit = n.strstart > MAX_DIST(s) ? n.strstart - (Pos)MAX_DIST(s) : 0;
+    int32_t limit = (int32_t)n.strstart > (int32_t)MAX_DIST(s) ? (int32_t)n.strstart - (int32_t)MAX_DIST(s) : 0;
+
+    // Steps needed to successfully fizzle match
+    uint16_t need = c.match_length - 1;
+
+    // Protect next->strstart from moving past maximum distance
+    int32_t max_steps_to_limit = (int32_t)n.strstart - limit;
+
+    // Protect next->match_length from exceeding 256
+    int32_t max_growth_allowed = 256 - (int32_t)n.match_length;
+
+    // Protect next->match_start from going too far back
+    int32_t max_steps_to_history = (int32_t)n.match_start - 1;
+
+    // steps is the max number of backward steps allowed for each limitation
+    int32_t steps1 = MIN((int32_t)c.match_length, max_steps_to_limit);
+    int32_t steps2 = MIN(max_growth_allowed, max_steps_to_history);
+    int32_t steps = MIN(steps1, steps2);
+
+    // If we can't possibly fizzle the current match out, return early
+    if (steps < need)
+        return;
 
     match = window + n.match_start - 1;
     orig = window + n.strstart - 1;
 
-    while (*match == *orig) {
-        if (UNLIKELY(c.match_length < 1))
-            break;
-        if (UNLIKELY(n.strstart <= limit))
-            break;
-        if (UNLIKELY(n.match_length >= 256))
-            break;
-        if (UNLIKELY(n.match_start <= 1))
+    for (int32_t i = 0; i < steps; i++) {
+        if (UNLIKELY(*match != *orig))
             break;
 
         n.strstart--;
