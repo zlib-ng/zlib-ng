@@ -96,35 +96,29 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
  *   - current_match.match_length is then either 0, 1
  */
 static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, struct match *Z_RESTRICT current, struct match *Z_RESTRICT next) {
-    unsigned char *match, *orig;
-    struct match c, n;
-
-    match = window + next->match_start + 1 - current->match_length;
-    orig  = window + next->strstart + 1 - current->match_length;
+    unsigned char *match = window + next->match_start + 1 - current->match_length;
+    unsigned char *orig  = window + next->strstart + 1 - current->match_length;
 
     /* quick exit check.. if this fails then don't bother with anything else */
     if (LIKELY(*match != *orig))
         return;
 
-    c = *current;
-    n = *next;
-
-    int32_t limit = (int32_t)n.strstart > (int32_t)MAX_DIST(s) ? (int32_t)n.strstart - (int32_t)MAX_DIST(s) : 0;
+    int32_t limit = (int32_t)next->strstart > (int32_t)MAX_DIST(s) ? (int32_t)next->strstart - (int32_t)MAX_DIST(s) : 0;
 
     // Steps needed to successfully fizzle match
-    uint16_t need = c.match_length - 1;
+    uint16_t need = current->match_length - 1;
 
     // Protect next->strstart from moving past maximum distance
-    int32_t max_steps_to_limit = (int32_t)n.strstart - limit;
+    int32_t max_steps_to_limit = (int32_t)next->strstart - limit;
 
     // Protect next->match_length from exceeding 256
-    int32_t max_growth_allowed = 256 - (int32_t)n.match_length;
+    int32_t max_growth_allowed = 256 - (int32_t)next->match_length;
 
     // Protect next->match_start from going too far back
-    int32_t max_steps_to_history = (int32_t)n.match_start - 1;
+    int32_t max_steps_to_history = (int32_t)next->match_start - 1;
 
     // steps is the max number of backward steps allowed for each limitation
-    int32_t steps1 = MIN((int32_t)c.match_length, max_steps_to_limit);
+    int32_t steps1 = MIN((int32_t)current->match_length, max_steps_to_limit);
     int32_t steps2 = MIN(max_growth_allowed, max_steps_to_history);
     int32_t steps = MIN(steps1, steps2);
 
@@ -139,31 +133,28 @@ static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, s
 
     // Check whether the final extra backward byte is also possible.
     // This decides whether the current match becomes length 1 or 0.
-    int extra_byte_ok = (steps == (int32_t)c.match_length);
+    int extra_byte_ok = (steps == (int32_t)current->match_length);
 
-    // Update variables, reduces c.match_length to 1.
-    n.match_start  = n.match_start - need;
-    n.strstart     = n.strstart - need;
-    n.match_length = n.match_length + need;
-    c.match_length = 1;
+    // Update variables, reduces current->match_length to 1.
+    next->match_start  = next->match_start - need;
+    next->strstart     = next->strstart - need;
+    next->match_length = next->match_length + need;
+    next->orgstart++;
+    current->match_length = 1;
 
     // If every constraint allowed one more backward byte, test it.
     // If it matches, the current match is fully absorbed and becomes length 0.
     if (extra_byte_ok) {
-        match = window + n.match_start - 1;
-        orig  = window + n.strstart - 1;
+        match = window + next->match_start - 1;
+        orig  = window + next->strstart - 1;
 
         if (*match == *orig) {
-            n.match_start--;
-            n.strstart--;
-            n.match_length++;
-            c.match_length = 0;
+            next->match_start--;
+            next->strstart--;
+            next->match_length++;
+            current->match_length = 0;
         }
     }
-
-    n.orgstart++;
-    *current = c;
-    *next = n;
 }
 
 Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
