@@ -129,29 +129,41 @@ static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, s
     int32_t steps = MIN(steps1, steps2);
 
     // If we can't possibly fizzle the current match out, return early
-    if (steps < need)
+    if (LIKELY(steps < (int32_t)need))
         return;
 
-    match = window + n.match_start - 1;
-    orig = window + n.strstart - 1;
+    // The quick exit above already checked the first byte of that range.
+    // Compare the whole range here.
+    if (LIKELY(memcmp(match, orig, (size_t)need) != 0))
+        return;
 
-    for (int32_t i = 0; i < steps; i++) {
-        if (UNLIKELY(*match != *orig))
-            break;
+    // Check whether the final extra backward byte is also possible.
+    // This decides whether the current match becomes length 1 or 0.
+    int extra_byte_ok = (steps == (int32_t)c.match_length);
 
-        n.strstart--;
-        n.match_start--;
-        n.match_length++;
-        c.match_length--;
-        match--;
-        orig--;
+    // Update variables, reduces c.match_length to 1.
+    n.match_start  = n.match_start - need;
+    n.strstart     = n.strstart - need;
+    n.match_length = n.match_length + need;
+    c.match_length = 1;
+
+    // If every constraint allowed one more backward byte, test it.
+    // If it matches, the current match is fully absorbed and becomes length 0.
+    if (extra_byte_ok) {
+        match = window + n.match_start - 1;
+        orig  = window + n.strstart - 1;
+
+        if (*match == *orig) {
+            n.match_start--;
+            n.strstart--;
+            n.match_length++;
+            c.match_length = 0;
+        }
     }
 
-    if (c.match_length <= 1) {
-        n.orgstart++;
-        *current = c;
-        *next = n;
-    }
+    n.orgstart++;
+    *current = c;
+    *next = n;
 }
 
 Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
