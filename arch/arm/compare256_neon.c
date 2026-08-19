@@ -15,29 +15,36 @@
 #  define COMPARE256_NEON_POSTINDEX
 #endif
 
+/* Force post-indexed loads; the inlined longest_match loop otherwise emits a
+ * separate add per iteration. */
+#ifdef COMPARE256_NEON_POSTINDEX
+#  define LOAD_16B_PAIR(a, b, s0, s1, off) \
+    __asm__("ldr %q0, [%2, %3]\n\t" \
+            "ldr %q1, [%2], #16" \
+            : "=w"(a), "=w"(b), "+r"(s1) : "r"(off) : "memory")
+#else
+#  define LOAD_16B_PAIR(a, b, s0, s1, off) do { \
+    Z_UNUSED(off); \
+    (a) = vld1q_u8(s0); \
+    (b) = vld1q_u8(s1); \
+    (s0) += 16; \
+    (s1) += 16; \
+} while (0)
+#endif
+
 Z_FORCEINLINE static uint32_t compare256_neon_static(const uint8_t *src0, const uint8_t *src1) {
     uint32_t len = 0;
 #ifdef COMPARE256_NEON_POSTINDEX
     intptr_t offset = (intptr_t)src0 - (intptr_t)src1;
+#else
+    intptr_t offset = 0;
 #endif
 
     do {
         uint8x16_t a, b, cmp;
         uint64_t lane;
 
-        /* Force post-indexed loads; the inlined longest_match loop otherwise emits a
-         * separate add per iteration. */
-#ifdef COMPARE256_NEON_POSTINDEX
-        __asm__("ldr %q0, [%2, %3]\n\t"
-                "ldr %q1, [%2], #16"
-                : "=w"(a), "=w"(b), "+r"(src1)
-                : "r"(offset)
-                : "memory");
-#else
-        a = vld1q_u8(src0);
-        b = vld1q_u8(src1);
-        src0 += 16, src1 += 16;
-#endif
+        LOAD_16B_PAIR(a, b, src0, src1, offset);
 
         cmp = veorq_u8(a, b);
 
@@ -54,6 +61,7 @@ Z_FORCEINLINE static uint32_t compare256_neon_static(const uint8_t *src0, const 
     return 256;
 }
 
+#undef LOAD_16B_PAIR
 #undef COMPARE256_NEON_POSTINDEX
 
 Z_INTERNAL uint32_t compare256_neon(const uint8_t *src0, const uint8_t *src1) {
