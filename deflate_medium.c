@@ -219,8 +219,7 @@ Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush) {
             uint32_t tmp_cmatch_len_sub = curr_match_len - 1;
             if (tmp_cmatch_len_sub
                      && next_match.match_length >= WANT_MIN_MATCH
-                     && tmp_cmatch_len_sub <= next_match.match_start
-                     && tmp_cmatch_len_sub <= next_match.strstart) {
+                     && tmp_cmatch_len_sub <= next_match.match_start) {
                 fizzle_matches(s, window, &current_match, &next_match);
                 curr_match_len = current_match.match_length;
             }
