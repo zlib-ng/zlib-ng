@@ -77,7 +77,8 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_fast  (deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_quick (deflate_state *s, int flush);
 #ifndef NO_MEDIUM_STRATEGY
-Z_INTERNAL block_state deflate_medium(deflate_state *s, int flush);
+Z_INTERNAL block_state deflate_medium       (deflate_state *s, int flush);
+Z_INTERNAL block_state deflate_medium_fizzle(deflate_state *s, int flush);
 #endif
 Z_INTERNAL block_state deflate_slow  (deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_rle   (deflate_state *s, int flush);
@@ -122,8 +123,8 @@ static const config configuration_table[10] = {
 #else
 /* 3 */ {4,    6, 16,    6, deflate_medium},
 /* 4 */ {4,   12, 32,   24, deflate_medium},  /* lazy matches */
-/* 5 */ {8,   16, 32,   32, deflate_medium},
-/* 6 */ {8,   16, 128, 128, deflate_medium},
+/* 5 */ {8,   16, 32,   32, deflate_medium_fizzle},
+/* 6 */ {8,   16, 128, 128, deflate_medium_fizzle},
 #endif
 
 /* 7 */ {8,   32, 128,  256, deflate_slow},

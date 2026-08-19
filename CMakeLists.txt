@@ -1230,6 +1230,7 @@ set(ZLIB_PRIVATE_HDRS
     crc32_braid_tbl.h
     crc32_chorba_p.h
     deflate.h
+    deflate_medium_tpl.h
     deflate_p.h
     fallback_builtins.h
     functable.h
