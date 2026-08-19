@@ -32,31 +32,96 @@
 } while (0)
 #endif
 
+Z_FORCEINLINE static uint32_t compare_diff_lane(uint8x16_t cmp) {
+    uint64_t lane0 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp), 0);
+    if (lane0)
+        return zng_first_diff_byte64(lane0);
+    uint64_t lane1 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp), 1);
+    return 8 + zng_first_diff_byte64(lane1);
+}
+
 Z_FORCEINLINE static uint32_t compare256_neon_static(const uint8_t *src0, const uint8_t *src1) {
-    uint32_t len = 0;
 #ifdef COMPARE256_NEON_POSTINDEX
     intptr_t offset = (intptr_t)src0 - (intptr_t)src1;
 #else
     intptr_t offset = 0;
 #endif
+    uint8x16_t a0, b0, a1, b1, cmp0, cmp1;
+    uint64_t lane0, lane1;
 
+    /* Check first 16 bytes using scalar extraction to avoid horizontal reduction latency */
+    LOAD_16B_PAIR(a0, b0, src0, src1, offset);
+    cmp0 = veorq_u8(a0, b0);
+    lane0 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp0), 0);
+    if (UNLIKELY(lane0))
+        return zng_first_diff_byte64(lane0);
+    lane1 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp0), 1);
+    if (UNLIKELY(lane1))
+        return 8 + zng_first_diff_byte64(lane1);
+
+    /* Check next 32 bytes in 16-byte steps with early exit */
+    uint32_t len = 16;
+    LOAD_16B_PAIR(a0, b0, src0, src1, offset);
+    cmp0 = veorq_u8(a0, b0);
+#if defined(ARCH_ARM) && defined(ARCH_64BIT)
+    if (UNLIKELY(vmaxvq_u8(cmp0)))
+        return len + compare_diff_lane(cmp0);
+#else
+    lane0 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp0), 0);
+    if (lane0) return len + zng_first_diff_byte64(lane0);
+    lane1 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp0), 1);
+    if (lane1) return len + 8 + zng_first_diff_byte64(lane1);
+#endif
+    len += 16;
+
+    LOAD_16B_PAIR(a0, b0, src0, src1, offset);
+    cmp0 = veorq_u8(a0, b0);
+#if defined(ARCH_ARM) && defined(ARCH_64BIT)
+    if (UNLIKELY(vmaxvq_u8(cmp0)))
+        return len + compare_diff_lane(cmp0);
+#else
+    lane0 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp0), 0);
+    if (lane0) return len + zng_first_diff_byte64(lane0);
+    lane1 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp0), 1);
+    if (lane1) return len + 8 + zng_first_diff_byte64(lane1);
+#endif
+    len += 16;
+
+    /* 2x unrolled loop (32 bytes per iteration) */
     do {
-        uint8x16_t a, b, cmp;
-        uint64_t lane;
+        LOAD_16B_PAIR(a0, b0, src0, src1, offset);
+        LOAD_16B_PAIR(a1, b1, src0, src1, offset);
 
-        LOAD_16B_PAIR(a, b, src0, src1, offset);
+        cmp0 = veorq_u8(a0, b0);
+        cmp1 = veorq_u8(a1, b1);
+#if defined(ARCH_ARM) && defined(ARCH_64BIT)
+        uint8x16_t any_diff = vorrq_u8(cmp0, cmp1);
+        if (LIKELY(vmaxvq_u8(any_diff) == 0)) {
+            len += 32;
+            continue;
+        }
+#endif
+        lane0 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp0), 0);
+        if (lane0) return len + zng_first_diff_byte64(lane0);
+        lane1 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp0), 1);
+        if (lane1) return len + 8 + zng_first_diff_byte64(lane1);
+        lane0 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp1), 0);
+        if (lane0) return len + 16 + zng_first_diff_byte64(lane0);
+        lane1 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp1), 1);
+        if (lane1) return len + 24 + zng_first_diff_byte64(lane1);
 
-        cmp = veorq_u8(a, b);
+        len += 32;
+    } while (len < 240);
 
-        lane = vgetq_lane_u64(vreinterpretq_u64_u8(cmp), 0);
-        if (lane)
-            return len + zng_first_diff_byte64(lane);
-        len += 8;
-        lane = vgetq_lane_u64(vreinterpretq_u64_u8(cmp), 1);
-        if (lane)
-            return len + zng_first_diff_byte64(lane);
-        len += 8;
-    } while (len < 256);
+    /* Check remaining 16 bytes */
+    LOAD_16B_PAIR(a0, b0, src0, src1, offset);
+    cmp0 = veorq_u8(a0, b0);
+    lane0 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp0), 0);
+    if (lane0)
+        return len + zng_first_diff_byte64(lane0);
+    lane1 = vgetq_lane_u64(vreinterpretq_u64_u8(cmp0), 1);
+    if (lane1)
+        return len + 8 + zng_first_diff_byte64(lane1);
 
     return 256;
 }
