@@ -37,7 +37,7 @@ static void SUFFIX(insert_match)(deflate_state *s, unsigned char *Z_RESTRICT win
     insert_knuth_batch(s, window, start, end - start);
 }
 
-Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint32_t hash_head) {
+Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint32_t hash_head, int32_t max_dist) {
     struct match m;
     int32_t dist;
 
@@ -49,7 +49,7 @@ Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint
 #endif
 
     dist = (int32_t)s->strstart - (int32_t)hash_head;
-    if (dist <= (int32_t)MAX_DIST(s) && dist > 0 && hash_head != 0) {
+    if (dist <= max_dist && dist > 0 && hash_head != 0) {
         /* To simplify the code, we prevent matches with the string
          * of window index 0 (in particular we have to avoid a match
          * of the string with itself at the start of the input file).
@@ -87,7 +87,8 @@ Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint
  *   - current_match.match_length is then either 0, 1
  */
 #ifdef USE_FIZZLE
-static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, struct match *Z_RESTRICT current, struct match *Z_RESTRICT next) {
+static void fizzle_matches(unsigned char *Z_RESTRICT window, struct match *Z_RESTRICT current,
+                           struct match *Z_RESTRICT next, int32_t max_dist) {
     unsigned char *match = window + next->match_start + 1 - current->match_length;
     unsigned char *orig  = window + next->strstart + 1 - current->match_length;
 
@@ -95,7 +96,7 @@ static void fizzle_matches(deflate_state *s, unsigned char *Z_RESTRICT window, s
     if (LIKELY(*match != *orig))
         return;
 
-    int32_t limit = (int32_t)next->strstart > (int32_t)MAX_DIST(s) ? (int32_t)next->strstart - (int32_t)MAX_DIST(s) : 0;
+    int32_t limit = (int32_t)next->strstart > max_dist ? (int32_t)next->strstart - max_dist : 0;
 
     // Steps needed to successfully fizzle match
     uint16_t need = current->match_length - 1;
@@ -159,6 +160,7 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
 #endif
     uint32_t max_len = (16 * s->max_insert_length);
     unsigned char *window = s->window;
+    int32_t max_dist = MAX_DIST(s);
 
     for (;;) {
         int bflush = 0;       /* set if current block must be flushed */
@@ -196,7 +198,7 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
                 hash_head = insert_knuth(s, window, s->strstart);
             }
 
-            current_match = SUFFIX(find_best_match)(s, hash_head);
+            current_match = SUFFIX(find_best_match)(s, hash_head, max_dist);
         }
         curr_match_len = current_match.match_length;
 
@@ -209,13 +211,13 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
             s->strstart = current_match.strstart + curr_match_len;
             uint32_t hash_head = insert_knuth(s, window, s->strstart);
 
-            next_match = SUFFIX(find_best_match)(s, hash_head);
+            next_match = SUFFIX(find_best_match)(s, hash_head, max_dist);
 
             uint32_t tmp_cmatch_len_sub = curr_match_len - 1;
             if (tmp_cmatch_len_sub
                      && next_match.match_length >= WANT_MIN_MATCH
                      && tmp_cmatch_len_sub <= next_match.match_start) {
-                fizzle_matches(s, window, &current_match, &next_match);
+                fizzle_matches(window, &current_match, &next_match, max_dist);
                 curr_match_len = current_match.match_length;
             }
 
@@ -234,7 +236,7 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
             hash_head = insert_knuth(s, window, s->strstart);
         }
 
-        current_match = SUFFIX(find_best_match)(s, hash_head);
+        current_match = SUFFIX(find_best_match)(s, hash_head, max_dist);
         curr_match_len = current_match.match_length;
 
         if (curr_match_len >= WANT_MIN_MATCH && s->lookahead > (unsigned int)(curr_match_len + WANT_MIN_MATCH )) {
