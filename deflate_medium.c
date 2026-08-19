@@ -25,29 +25,25 @@ struct match {
  * - match_len >= WANT_MIN_MATCH
  */
 static void insert_match(deflate_state *s, unsigned char *Z_RESTRICT window, struct match match, const uint32_t max_len) {
+    uint32_t start;
     uint32_t match_len = match.match_length;
-    uint32_t strstart = match.strstart;
+    uint32_t strstart = match.strstart + 1; // string at strstart already in table
+    uint32_t end = strstart + match_len - 1;
 
     /* Insert new strings in the hash table only if the match length
      * is not too large. This saves time but degrades compression.
      */
-    if (match_len <= max_len) {
-        match_len--; /* string at strstart already in table */
-        strstart++;
-
-        if (LIKELY(strstart >= match.orgstart)) {
-            if (LIKELY(strstart + match_len - 1 >= match.orgstart)) {
-                insert_knuth_batch(s, window, strstart, match_len);
-            } else {
-                insert_knuth_batch(s, window, strstart, match.orgstart - strstart + 1);
-            }
-        } else if (match.orgstart < strstart + match_len) {
-            insert_knuth_batch(s, window, match.orgstart, strstart + match_len - match.orgstart);
-        }
+    if (UNLIKELY(match_len > max_len)) {
+        // For too long matches, insert only the tail position.
+        start = end - 1;
     } else {
-        strstart += match_len;
-        insert_knuth(s, window, strstart + 2 - STD_MIN_MATCH);
+        start = strstart;
     }
+
+    if (UNLIKELY(start < (uint32_t)match.orgstart))
+        start = match.orgstart;
+
+    insert_knuth_batch(s, window, start, end - start);
 }
 
 Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t hash_head) {
