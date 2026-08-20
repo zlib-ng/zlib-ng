@@ -30,6 +30,20 @@ The CPU scheduling controls are only available on Windows and are ignored elsewh
 | `--benchmark_no_power_throttling` | Windows | Opt out of EcoQoS so the process runs at full clock on performance cores. |
 | `--benchmark_priority=<normal\|high\|realtime>` | Windows | Set the process priority class for more deterministic scheduling. |
 
+*Reproducibility*
+
+Google Benchmark's own advice for run to run variance is environmental. Pin the CPU governor to
+performance, disable boost, pin the process to a core, and raise its scheduling priority. Passing
+`--benchmark_enable_random_interleaving=true` interleaves repetitions of different benchmarks, which
+lowers variance further.
+
+Code layout is a separate source of noise. Function entries land wherever the linker puts them, so
+adding or removing unrelated code shifts a hot loop within its cache line and changes its speed with
+no source change at all. Configuring with `-DWITH_BENCHMARK_STABLE_LAYOUT=ON` aligns every function
+entry to 64 bytes and disables Clang's machine outliner, so a function's internal layout no longer
+depends on what precedes it. These flags change the code being measured, so enable them on both
+sides of a comparison or on neither.
+
 There are two different benchmarks, micro and macro.
 
 ### Benchmark benchmark_zlib

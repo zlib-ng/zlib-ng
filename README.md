@@ -222,6 +222,7 @@ Advanced Build Options
 | WITH_INFLATE_STRICT             |                       | Build with strict inflate distance checking                                         | OFF      |
 | WITH_INFLATE_ALLOW_INVALID_DIST |                       | Build with zero fill for inflate invalid distances                                  | OFF      |
 | WITH_BENCHMARK_APPS             |                       | Build benchmark apps (currently libpng)                                             | OFF      |
+| WITH_BENCHMARK_STABLE_LAYOUT    |                       | Build with a stable code layout for benchmarking                                    | OFF      |
 | WITH_ALL_FALLBACKS              |                       | Build with all c-fallbacks (useful for Gbench comparisons)                          | OFF      |
 | WITH_MAINTAINER_WARNINGS        |                       | Build with project maintainer warnings                                              | OFF      |
 | WITH_SANITIZER                  |                       | Build with sanitizer (memory, address, undefined)                                   | OFF      |
