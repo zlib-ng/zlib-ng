@@ -105,6 +105,10 @@ static bool parse_cpu_mask(const char *list, DWORD_PTR *mask_out) {
 #endif
 
 int main(int argc, char** argv) {
+    /* Re-execute with ASLR disabled so heap and mmap addresses repeat from run to run.
+       Only does anything on Linux, elsewhere it returns immediately. */
+    ::benchmark::MaybeReenterWithoutASLR(argc, argv);
+
     uint32_t cooldown_secs = 0;
 #ifdef _WIN32
     const char *cpu_affinity = nullptr;

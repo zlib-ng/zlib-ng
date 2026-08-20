@@ -35,7 +35,8 @@ The CPU scheduling controls are only available on Windows and are ignored elsewh
 Google Benchmark's own advice for run to run variance is environmental. Pin the CPU governor to
 performance, disable boost, pin the process to a core, and raise its scheduling priority. Passing
 `--benchmark_enable_random_interleaving=true` interleaves repetitions of different benchmarks, which
-lowers variance further.
+lowers variance further. On Linux the suite re-executes itself with ASLR disabled at startup, so
+allocation addresses repeat from run to run.
 
 Code layout is a separate source of noise. Function entries land wherever the linker puts them, so
 adding or removing unrelated code shifts a hot loop within its cache line and changes its speed with
