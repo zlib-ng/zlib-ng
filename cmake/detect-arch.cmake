@@ -6,6 +6,12 @@ set(ARCHDETECT_FOUND TRUE)
 if(CMAKE_OSX_ARCHITECTURES)
     # If multiple architectures are requested (universal build), pick only the first
     list(GET CMAKE_OSX_ARCHITECTURES 0 ARCH)
+    # Apple spells the AArch64 architecture "arm64"/"arm64e" (the latter with
+    # pointer authentication), but downstream checks (e.g. check_neon_compiler_flag)
+    # match on "aarch64" like the MSVC branch below does - normalize here too.
+    if(ARCH STREQUAL "arm64" OR ARCH STREQUAL "arm64e")
+        set(ARCH "aarch64")
+    endif()
 elseif(MSVC)
     if("${MSVC_C_ARCHITECTURE_ID}" STREQUAL "X86")
         set(ARCH "i686")
