@@ -799,6 +799,7 @@ jobs:
           make
           libxml2-devel
           libxslt-devel
+          python-pip-wheel=26.0.1-1
           python39
           python39-colorlog
           python39-devel
@@ -807,7 +808,7 @@ jobs:
           python39-lxml
           python39-markupsafe
           python39-pygments
-          python39-pip
+          python39-pip=26.0.1-1
           python39-virtualenv
           zlib-devel
 
