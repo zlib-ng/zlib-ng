@@ -10,10 +10,10 @@
 #include "insert_string_p.h"
 
 struct match {
-    uint16_t match_start;
-    uint16_t match_length;
-    uint16_t strstart;
-    uint16_t orgstart;
+    uint32_t match_start;
+    uint32_t match_length;
+    uint32_t strstart;
+    uint32_t orgstart;
 };
 
 // Make sure USE_FIZZLE is not defined from outside
