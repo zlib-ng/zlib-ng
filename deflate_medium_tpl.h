@@ -30,7 +30,7 @@ static void SUFFIX(insert_match)(deflate_state *s, unsigned char *Z_RESTRICT win
     }
 
 #ifdef USE_FIZZLE
-    if (UNLIKELY(start < (uint32_t)match.orgstart))
+    if (UNLIKELY(start < match.orgstart))
         start = match.orgstart;
 #endif
 
@@ -41,7 +41,7 @@ Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint
     struct match m;
     int32_t dist;
 
-    m.strstart = (uint16_t)s->strstart;
+    m.strstart = s->strstart;
 #ifdef USE_FIZZLE
     m.orgstart = m.strstart;
 #else
@@ -54,8 +54,8 @@ Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint
          * of window index 0 (in particular we have to avoid a match
          * of the string with itself at the start of the input file).
          */
-        m.match_length = (uint16_t)FUNCTABLE_CALL(longest_match)(s, hash_head);
-        m.match_start = (uint16_t)s->match_start;
+        m.match_length = FUNCTABLE_CALL(longest_match)(s, hash_head);
+        m.match_start = s->match_start;
         if (UNLIKELY(m.match_length < WANT_MIN_MATCH))
             m.match_length = 1;
         if (UNLIKELY(m.match_start >= m.strstart)) {
@@ -99,7 +99,7 @@ static void fizzle_matches(unsigned char *Z_RESTRICT window, struct match *Z_RES
     int32_t limit = (int32_t)next->strstart > max_dist ? (int32_t)next->strstart - max_dist : 0;
 
     // Steps needed to successfully fizzle match
-    uint16_t need = current->match_length - 1;
+    uint32_t need = current->match_length - 1;
 
     // Protect next->strstart from moving past maximum distance
     int32_t max_steps_to_limit = (int32_t)next->strstart - limit;
@@ -152,7 +152,6 @@ static void fizzle_matches(unsigned char *Z_RESTRICT window, struct match *Z_RES
 #endif
 
 Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
-    /* Align the first struct to start on a new cacheline, this allows us to fit both structs in one cacheline */
     ALIGNED_(16) struct match current_match = {0};
 #ifdef USE_FIZZLE
                  struct match next_match = {0};
@@ -207,7 +206,7 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
         }
 
         /* now, look ahead one */
-        if (LIKELY(s->lookahead > MIN_LOOKAHEAD && (uint32_t)(current_match.strstart + curr_match_len) < window_end)) {
+        if (LIKELY(s->lookahead > MIN_LOOKAHEAD && (current_match.strstart + curr_match_len) < window_end)) {
             s->strstart = current_match.strstart + curr_match_len;
             uint32_t hash_head = insert_knuth(s, window, s->strstart);
 
