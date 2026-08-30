@@ -1367,6 +1367,9 @@ if(WIN32)
     # Shared library
     if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
         set_target_properties(zlib-ng PROPERTIES OUTPUT_NAME zlib${SUFFIX})
+        if(NOT MSVC)
+            set_target_properties(zlib-ng PROPERTIES ARCHIVE_OUTPUT_NAME z${SUFFIX})
+        endif()
     endif()
     # Static library
     if(NOT DEFINED BUILD_SHARED_LIBS)
