@@ -296,6 +296,14 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang" 
     if(FNO_LTO_AVAILABLE)
         set(ZNOLTOFLAG "-fno-lto")
     endif()
+    if(CMAKE_C_COMPILER_ID STREQUAL "AppleClang")
+        # Apple clang runs the machine outliner by default, adding call overhead in hot loops.
+        # Disabling it is faster for every deflate strategy.
+        check_c_compiler_flag(-mno-outline HAVE_NO_OUTLINE)
+        if(HAVE_NO_OUTLINE)
+            add_compile_options($<$<COMPILE_LANGUAGE:C>:-mno-outline>)
+        endif()
+    endif()
     if(NOT WITH_NATIVE_INSTRUCTIONS)
         if(BASEARCH_ARM_FOUND)
             if(ARCH_32BIT AND NOT CMAKE_C_FLAGS MATCHES "-mfloat-abi")
