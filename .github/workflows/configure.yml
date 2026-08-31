@@ -185,12 +185,12 @@ jobs:
             emu-run: node
 
           - name: macOS Clang (Intel)
-            os: macos-15-intel
+            os: macos-26-intel
             compiler: clang
             configure-args: --warn
 
           - name: macOS Clang (Intel) Compat No Opt
-            os: macos-15-intel
+            os: macos-26-intel
             compiler: clang
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
 

@@ -686,33 +686,29 @@ jobs:
             coverage: win32_gcc_compat
 
           - name: macOS Clang (Intel, Target 10.10)
-            os: macos-15-intel
+            os: macos-26-intel
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DCMAKE_OSX_DEPLOYMENT_TARGET=10.10 -DWITH_BENCHMARKS=ON
             ldflags: -ld_classic
-            coverage: macos_clang_intel
 
           - name: macOS Clang (Intel) ASAN
-            os: macos-15-intel
+            os: macos-26-intel
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_SANITIZER=Address
-            coverage: macos_clang_intel_asan
 
           - name: macOS Clang (Intel) UBSAN
-            os: macos-15-intel
+            os: macos-26-intel
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_SANITIZER=Undefined
-            coverage: macos_clang_intel_ubsan
 
           - name: macOS Clang (Intel) Native Instructions
-            os: macos-15-intel
+            os: macos-26-intel
             compiler: clang
             cxx-compiler: clang++
             cmake-args: -DWITH_NATIVE_INSTRUCTIONS=ON
-            coverage: macos_clang_native_intel
 
           - name: macOS Clang (ARM64) ASAN
             os: macos-latest
