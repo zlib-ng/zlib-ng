@@ -1045,6 +1045,21 @@ EOF
   fi
 fi
 
+# Apple clang runs the machine outliner by default, adding call overhead in hot loops.
+# Disabling it is faster for every deflate strategy.
+if test $gcc -eq 1 && $cc --version 2>&1 | grep -i apple > /dev/null; then
+  cat > $test.c <<EOF
+int main() { return 0; }
+EOF
+  if $cc $CFLAGS -Werror -mno-outline -c $test.c >> configure.log 2>&1; then
+    echo "Checking for -mno-outline... Yes." | tee -a configure.log
+    CFLAGS="${CFLAGS} -mno-outline"
+    SFLAGS="${SFLAGS} -mno-outline"
+  else
+    echo "Checking for -mno-outline... No." | tee -a configure.log
+  fi
+fi
+
 # see if we can hide zlib internal symbols that are linked between separate source files using hidden
 if test "$gcc" -eq 1 && test "$visibility" -eq 1; then
   echo >> configure.log
