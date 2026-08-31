@@ -295,6 +295,10 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang" 
     set(CMAKE_REQUIRED_FLAGS)
     if(FNO_LTO_AVAILABLE)
         set(ZNOLTOFLAG "-fno-lto")
+        # Arch-specific sources opt out of LTO unless the whole build is native
+        if(NOT WITH_NATIVE_INSTRUCTIONS)
+            set(NOLTOFLAG ${ZNOLTOFLAG})
+        endif()
     endif()
     if(NOT WITH_NATIVE_INSTRUCTIONS)
         if(BASEARCH_ARM_FOUND)
@@ -331,10 +335,6 @@ elseif(CMAKE_C_COMPILER_ID MATCHES "GNU" OR CMAKE_C_COMPILER_ID MATCHES "Clang" 
         elseif(BASEARCH_X86_FOUND AND CMAKE_C_COMPILER_ID MATCHES "NVHPC")
             # nVidia compiler defaults to native build, so set target to any x86-64 processor
             add_compile_options(-tp px)
-        endif()
-        # Disable LTO unless Native Instructions are enabled
-        if(FNO_LTO_AVAILABLE)
-            set(NOLTOFLAG ${ZNOLTOFLAG})
         endif()
     endif()
     if(MINGW)
