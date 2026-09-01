@@ -120,7 +120,13 @@ static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, size_t len) 
 
 #include "chunkset_tpl.h"
 
+#define INFLATE_FAST     inflate_fast_narrow_rvv
+#define USE_NARROW_COPY
+
+#include "inffast_tpl.h"
+
 #define INFLATE_FAST     inflate_fast_rvv
+#define DISPATCH_NARROW  inflate_fast_narrow_rvv
 
 #include "inffast_tpl.h"
 
