@@ -102,6 +102,64 @@ add_test(NAME benchmark_zlib
 if(WITH_BENCHMARK_APPS)
     option(BUILD_ALT_BENCH "Link against alternative zlib implementation" OFF)
 
+    # Search for libdeflate package
+    find_package(libdeflate 1.19 QUIET)
+    if(NOT libdeflate_FOUND)
+        # Allow specifying alternative libdeflate repository
+        if(NOT DEFINED LIBDEFLATE_REPOSITORY)
+            set(LIBDEFLATE_REPOSITORY https://github.com/ebiggers/libdeflate.git)
+        endif()
+        if(NOT DEFINED LIBDEFLATE_TAG)
+            set(LIBDEFLATE_TAG v1.26)
+        endif()
+
+        set(LIBDEFLATE_BUILD_SHARED_LIB OFF)
+        set(LIBDEFLATE_BUILD_GZIP OFF)
+        set(LIBDEFLATE_BUILD_TESTS OFF)
+
+        FetchContent_Declare(libdeflate
+            GIT_REPOSITORY ${LIBDEFLATE_REPOSITORY}
+            GIT_TAG ${LIBDEFLATE_TAG}
+            ${ZNG_FetchContent_Declare_EXCLUDE_FROM_ALL})
+
+        ZNG_FetchContent_MakeAvailable(libdeflate)
+
+        # Third-party sources are not held to the maintainer warning set
+        if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang|LCC")
+            target_compile_options(libdeflate_static PRIVATE -w)
+        endif()
+    endif()
+
+    # Same sources built once per codec backend so both executables register
+    # identical benchmark names, ready for comparison with compare_runs.py
+    set(BENCH_CODEC_SRCS
+        benchmark_codec.cc
+        benchmark_data_types.cc
+        benchmark_main.cc
+        )
+
+    add_executable(benchmark_zlib_codec ${BENCH_CODEC_SRCS})
+    add_executable(benchmark_libdeflate_codec ${BENCH_CODEC_SRCS})
+    target_compile_definitions(benchmark_libdeflate_codec PRIVATE BENCH_LIBDEFLATE=1)
+    target_link_libraries(benchmark_libdeflate_codec libdeflate::libdeflate_static)
+
+    foreach(codec_target benchmark_zlib_codec benchmark_libdeflate_codec)
+        target_compile_definitions(${codec_target} PRIVATE
+            -DBENCHMARK_STATIC_DEFINE
+            -DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/test/data")
+        if(MINGW)
+            target_compile_definitions(${codec_target} PRIVATE -D_WIN32_WINNT=_WIN32_WINNT_WIN10)
+        endif()
+        target_include_directories(${codec_target} PRIVATE
+            ${PROJECT_SOURCE_DIR}
+            ${PROJECT_BINARY_DIR}
+            ${benchmark_SOURCE_DIR}/benchmark/include)
+        target_link_libraries(${codec_target} zlib-ng-static benchmark::benchmark)
+        if(WIN32)
+            target_link_libraries(${codec_target} shlwapi)
+        endif()
+    endforeach()
+
     # Search for libpng package
     find_package(PNG QUIET)
 

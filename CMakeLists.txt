@@ -1552,7 +1552,7 @@ add_feature_info(WITH_SANITIZER WITH_SANITIZER "Enable sanitizer testing support
 add_feature_info(WITH_GTEST WITH_GTEST "Build tests using Gtest framework")
 add_feature_info(WITH_FUZZERS WITH_FUZZERS "Build test/fuzz")
 add_feature_info(WITH_BENCHMARKS WITH_BENCHMARKS "Build benchmarks using Google Benchmark framework")
-add_feature_info(WITH_BENCHMARK_APPS WITH_BENCHMARK_APPS "Build application benchmarks (currently libpng)")
+add_feature_info(WITH_BENCHMARK_APPS WITH_BENCHMARK_APPS "Build application benchmarks (libpng, libdeflate)")
 add_feature_info(WITH_ALL_FALLBACKS WITH_ALL_FALLBACKS "Build all generic fallback functions")
 add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
 add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
