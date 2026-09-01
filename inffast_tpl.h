@@ -289,8 +289,8 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                        so unroll and roundoff operations can write beyond `out+len` so long
                        as they stay within 258 bytes of `out`.
                     */
-                    if (LIKELY(dist >= len || dist >= CHUNKSIZE()))
-                        out = CHUNKCOPY(out, out - dist, len);
+                    if (LIKELY(dist >= len || dist >= 2 * CHUNKSIZE()))
+                        out = DOUBLECHUNKCOPY(out, out - dist, len);
                     else
                         out = CHUNKMEMSET(out, out - dist, len);
 #elif defined(HAVE_MASKED_READWRITE)
