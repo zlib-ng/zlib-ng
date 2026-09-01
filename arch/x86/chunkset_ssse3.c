@@ -66,6 +66,7 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, size_t *chunk_rem, size_t dist
 #include "chunkset_tpl.h"
 
 #define INFLATE_FAST     inflate_fast_ssse3
+#define USE_WIDE_COPY
 
 #include "inffast_tpl.h"
 

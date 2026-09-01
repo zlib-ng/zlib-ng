@@ -290,8 +290,13 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                        so unroll and roundoff operations can write beyond `out+len` so long
                        as they stay within 258 bytes of `out`.
                     */
+#ifdef USE_WIDE_COPY
+                    if (LIKELY(dist >= len || dist >= 2 * CHUNKSIZE()))
+                        out = DOUBLECHUNKCOPY(out, out - dist, len);
+#else
                     if (LIKELY(dist >= len || dist > CHUNKSIZE()))
                         out = CHUNKCOPY(out, out - dist, len);
+#endif
                     else
                         out = CHUNKMEMSET(out, out - dist, len);
 #elif defined(HAVE_MASKED_READWRITE)
@@ -357,6 +362,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
 
  // Cleanup
 #undef INFLATE_FAST
+#undef USE_WIDE_COPY
 
 /* The chunkset macros are shared by both instantiations, so they can only be
    released once the safe one has been emitted. */
