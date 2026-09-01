@@ -49,7 +49,19 @@
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
+#ifdef USE_NARROW_COPY
+static void INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
+#else
 void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
+#endif
+#ifdef DISPATCH_NARROW
+    /* Blocks whose length codes cap matches at 34 bytes run the narrow-copy
+       instantiation, chosen once per call so the hot loop stays branch-free. */
+    if (UNLIKELY(((struct inflate_state *)strm->state)->narrow_len)) {
+        DISPATCH_NARROW(strm, start);
+        return;
+    }
+#endif
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
     z_const unsigned char *in;  /* local strm->next_in */
@@ -289,8 +301,13 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                        so unroll and roundoff operations can write beyond `out+len` so long
                        as they stay within 258 bytes of `out`.
                     */
+#ifdef USE_NARROW_COPY
+                    if (LIKELY(dist >= len || dist >= CHUNKSIZE()))
+                        out = CHUNKCOPY(out, out - dist, len);
+#else
                     if (LIKELY(dist >= len || dist >= 2 * CHUNKSIZE()))
                         out = DOUBLECHUNKCOPY(out, out - dist, len);
+#endif
                     else
                         out = CHUNKMEMSET(out, out - dist, len);
 #elif defined(HAVE_MASKED_READWRITE)
@@ -356,9 +373,11 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
 
  // Cleanup
 #undef INFLATE_FAST
+#undef DISPATCH_NARROW
+#undef USE_NARROW_COPY
 
-/* The chunkset macros are shared by both instantiations, so they can only be
-   released once the safe one has been emitted. */
+/* The chunkset macros are shared by every instantiation, so they can only be
+   released once the safe one, which is emitted last, has been emitted. */
 #ifdef USE_SAFE_MODE
 #  undef CHUNKCOPY
 #  undef CHUNKMEMSET
