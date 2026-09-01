@@ -49,7 +49,19 @@
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
+#ifdef USE_NARROW_COPY
+static void INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mode) {
+#else
 void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mode) {
+#endif
+#ifdef DISPATCH_NARROW
+    /* Blocks whose length codes cap matches at 34 bytes run the narrow-copy
+       instantiation, chosen once per call so the hot loop stays branch-free. */
+    if (UNLIKELY(((struct inflate_state *)strm->state)->narrow_len)) {
+        DISPATCH_NARROW(strm, start, safe_mode);
+        return;
+    }
+#endif
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
     z_const unsigned char *in;  /* local strm->next_in */
@@ -287,8 +299,13 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
                        so unroll and roundoff operations can write beyond `out+len` so long
                        as they stay within 258 bytes of `out`.
                     */
+#ifdef USE_NARROW_COPY
+                    if (LIKELY(dist >= len || dist >= CHUNKSIZE()))
+                        out = CHUNKCOPY(out, out - dist, len);
+#else
                     if (LIKELY(dist >= len || dist >= 2 * CHUNKSIZE()))
                         out = DOUBLECHUNKCOPY(out, out - dist, len);
+#endif
                     else
                         out = CHUNKMEMSET(out, out - dist, len);
                 } else {
@@ -354,18 +371,28 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start, int safe_mod
  */
 
  // Cleanup
-#undef CHUNKCOPY
-#undef CHUNKMEMSET
-#undef CHUNKMEMSET_SAFE
-#undef CHUNKSIZE
-#undef CHUNKUNROLL
-#undef HAVE_CHUNKCOPY
-#undef HAVE_CHUNKMEMSET_2
-#undef HAVE_CHUNKMEMSET_4
-#undef HAVE_CHUNKMEMSET_8
-#undef HAVE_CHUNKMEMSET_16
-#undef HAVE_CHUNK_MAG
-#undef HAVE_HALFCHUNKCOPY
-#undef HAVE_HALF_CHUNK
-#undef HAVE_MASKED_READWRITE
 #undef INFLATE_FAST
+#ifdef DISPATCH_NARROW
+#  undef DISPATCH_NARROW
+#endif
+
+/* The chunkset macros are shared with the narrow instantiation, which is
+   emitted first, so they are only released after the dispatching one. */
+#ifdef USE_NARROW_COPY
+#  undef USE_NARROW_COPY
+#else
+#  undef CHUNKCOPY
+#  undef CHUNKMEMSET
+#  undef CHUNKMEMSET_SAFE
+#  undef CHUNKSIZE
+#  undef CHUNKUNROLL
+#  undef HAVE_CHUNKCOPY
+#  undef HAVE_CHUNKMEMSET_2
+#  undef HAVE_CHUNKMEMSET_4
+#  undef HAVE_CHUNKMEMSET_8
+#  undef HAVE_CHUNKMEMSET_16
+#  undef HAVE_CHUNK_MAG
+#  undef HAVE_HALFCHUNKCOPY
+#  undef HAVE_HALF_CHUNK
+#  undef HAVE_MASKED_READWRITE
+#endif

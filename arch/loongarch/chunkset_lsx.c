@@ -67,7 +67,13 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, size_t *chunk_rem, size_t dist
 
 #include "chunkset_tpl.h"
 
+#define INFLATE_FAST     inflate_fast_narrow_lsx
+#define USE_NARROW_COPY
+
+#include "inffast_tpl.h"
+
 #define INFLATE_FAST     inflate_fast_lsx
+#define DISPATCH_NARROW  inflate_fast_narrow_lsx
 
 #include "inffast_tpl.h"
 

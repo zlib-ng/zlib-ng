@@ -17,16 +17,9 @@
 
 class inflate_overlap : public ::testing::TestWithParam<unsigned> {};
 
-TEST_P(inflate_overlap, roundtrip) {
-    unsigned period = GetParam();
+/* Compress uncompr at level 9, decompress it, and compare; frees uncompr */
+static void roundtrip_verify(uint8_t *uncompr) {
     int err;
-
-    uint8_t *uncompr = (uint8_t *)malloc(UNCOMPR_SIZE);
-    ASSERT_NE(uncompr, nullptr);
-    for (unsigned i = 0; i < period; i++)
-        uncompr[i] = (uint8_t)(i * 37 + 11);
-    for (unsigned i = period; i < UNCOMPR_SIZE; i++)
-        uncompr[i] = uncompr[i - period];
 
     size_t compr_size = UNCOMPR_SIZE + 1024;
     uint8_t *compr = (uint8_t *)malloc(compr_size);
@@ -70,5 +63,34 @@ TEST_P(inflate_overlap, roundtrip) {
     free(decompr);
 }
 
+TEST_P(inflate_overlap, roundtrip) {
+    unsigned period = GetParam();
+
+    uint8_t *uncompr = (uint8_t *)malloc(UNCOMPR_SIZE);
+    ASSERT_NE(uncompr, nullptr);
+    for (unsigned i = 0; i < period; i++)
+        uncompr[i] = (uint8_t)(i * 37 + 11);
+    for (unsigned i = period; i < UNCOMPR_SIZE; i++)
+        uncompr[i] = uncompr[i - period];
+
+    roundtrip_verify(uncompr);
+}
+
 /* Cover every distance around the 16, 32, and 64 byte chunk sizes and their doubles */
 INSTANTIATE_TEST_SUITE_P(periods, inflate_overlap, ::testing::Range(1u, 131u));
+
+/* Repeating 16-byte runs broken up by unique bytes keep every match under 35
+   bytes, so all blocks decode through the narrow-copy fast loop variant */
+TEST(inflate_overlap_narrow, roundtrip) {
+    uint8_t *uncompr = (uint8_t *)malloc(UNCOMPR_SIZE);
+    ASSERT_NE(uncompr, nullptr);
+    for (unsigned i = 0; i < UNCOMPR_SIZE; i++) {
+        unsigned pos = i % 24;
+        if (pos < 16)
+            uncompr[i] = (uint8_t)(pos * 29 + 3);
+        else
+            uncompr[i] = (uint8_t)((i * 2654435761u) >> 24);
+    }
+
+    roundtrip_verify(uncompr);
+}

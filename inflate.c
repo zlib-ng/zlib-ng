@@ -81,6 +81,7 @@ int32_t Z_EXPORT PREFIX(inflateResetKeep)(PREFIX3(stream) *strm) {
     state->bits = 0;
     state->lencode = state->distcode = state->next = state->codes;
     state->back = -1;
+    state->narrow_len = 0;
 #ifdef INFLATE_STRICT
     state->dmax = 32768U;
 #endif
@@ -304,6 +305,7 @@ int32_t Z_EXPORT PREFIX(inflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32
  */
 
 void Z_INTERNAL PREFIX(fixedtables)(struct inflate_state *state) {
+    state->narrow_len = 0;
     state->lencode = lenfix;
     state->lenbits = 9;
     state->distcode = distfix;
@@ -908,6 +910,15 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             if (ret) {
                 SET_BAD("invalid literal/lengths set");
                 break;
+            }
+            /* Without a code for any length symbol above 272, no match in this
+               block exceeds 34 bytes and the fast loop can use the narrow copy. */
+            state->narrow_len = 1;
+            for (unsigned sym = 273; sym < state->nlen; sym++) {
+                if (state->lens[sym] != 0) {
+                    state->narrow_len = 0;
+                    break;
+                }
             }
             state->distcode = (const code *)(state->next);
             state->distbits = 9;
