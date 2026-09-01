@@ -310,6 +310,20 @@ static int init_functable(void) {
     }
 #endif
 
+
+    // MIPS - MSA
+#ifdef MIPS_MSA
+#  ifndef MIPS_MSA_NATIVE
+    if (cf.mips.has_msa)
+#  endif
+    {
+        ft.adler32 = &adler32_msa;
+        ft.adler32_copy = &adler32_copy_msa;
+        ft.slide_hash = &slide_hash_msa;
+    }
+#endif
+
+
     // Power - VMX
 #ifdef PPC_VMX
 #  ifndef PPC_VMX_NATIVE

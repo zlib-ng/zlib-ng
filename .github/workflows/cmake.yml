@@ -228,6 +228,14 @@ jobs:
             gcov-exec: mips64-linux-gnuabi64-gcov
             coverage: ubuntu_gcc_mips64
 
+          - name: Ubuntu GCC MIPS64 (ISA R6)
+            os: ubuntu-24.04
+            cache-key: mips64r6
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-mipsisa64r6.cmake
+            packages: qemu-user crossbuild-essential-mips64r6
+            gcov-exec: mipsisa64r6-linux-gnuabi64-gcov
+            coverage: ubuntu_gcc_mips64r6
+
           - name: Ubuntu GCC PPC
             os: ubuntu-latest
             cache-key: powerpc

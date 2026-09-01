@@ -147,6 +147,10 @@ BENCHMARK_ADLER32_COPY(neon, adler32_neon, adler32_copy_neon, test_cpu_features.
 BENCHMARK_ADLER32_COPY(neon_dotprod, adler32_neon_dotprod, adler32_copy_neon_dotprod, test_cpu_features.arm.has_neon && test_cpu_features.arm.has_dotprod);
 #endif
 
+#ifdef MIPS_MSA
+BENCHMARK_ADLER32_COPY(msa, adler32_msa, adler32_copy_msa, test_cpu_features.mips.has_msa);
+#endif
+
 #ifdef PPC_VMX
 BENCHMARK_ADLER32_COPY(vmx, adler32_vmx, adler32_copy_vmx, test_cpu_features.power.has_altivec);
 #endif
