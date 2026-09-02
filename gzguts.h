@@ -1,7 +1,7 @@
 #ifndef GZGUTS_H_
 #define GZGUTS_H_
 /* gzguts.h -- zlib internal header definitions for gz* operations
- * Copyright (C) 2004-2024 Mark Adler
+ * Copyright (C) 2004-2026 Mark Adler
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -52,12 +52,6 @@
 #  endif
 #endif
 
-#ifdef WINAPI_FAMILY
-#  define open _open
-#  define read _read
-#  define write _write
-#  define close _close
-#endif
 
 /* In Win32, vsnprintf is available as the "non-ANSI" _vsnprintf. */
 #if !defined(STDC99) && !defined(__CYGWIN__) && !defined(__MINGW__) && defined(_WIN32)
