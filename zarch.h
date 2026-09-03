@@ -196,6 +196,24 @@
 #  define ARCH_NAME "e2k"
 #  define ARCH_VERSION_STR ZARCH_STRINGIZE(__iset__)
 
+/* AVR */
+#elif defined(__AVR__) || defined(AVR)
+#  define ARCH_AVR
+#  define ARCH_32BIT
+#  define ARCH_NAME "avr"
+
+/* XTENSA */
+#elif defined(__XTENSA__) || defined(__xtensa__)
+#  define ARCH_XTENSA
+#  define ARCH_32BIT
+#  define ARCH_NAME "xtensa"
+
+/* PIC32 / Microchip */
+#elif defined(__PIC32__) || defined(__XC32__) || defined(__pic32__)
+#  define ARCH_MIPS
+#  define ARCH_32BIT
+#  define ARCH_NAME "mips"
+
 /* Unrecognized architecture */
 #else
 #  if defined(__LP64__) || defined(_LP64) || defined(_WIN64)
