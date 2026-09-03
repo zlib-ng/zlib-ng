@@ -20,11 +20,14 @@ void slide_hash_head_vmx(deflate_state *s);
 uint32_t adler32_power8(uint32_t adler, const uint8_t *buf, size_t len);
 uint32_t adler32_copy_power8(uint32_t adler, uint8_t *dst, const uint8_t *buf, size_t len);
 uint8_t* chunkmemset_safe_power8(uint8_t *out, uint8_t *from, size_t len, size_t left);
+uint32_t compare256_power8(const uint8_t *src0, const uint8_t *src1);
 uint32_t crc32_power8(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_power8(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
+void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
+uint32_t longest_match_power8(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_roll_power8(deflate_state *const s, uint32_t cur_match);
 void slide_hash_power8(deflate_state *s);
 void slide_hash_head_power8(deflate_state *s);
-void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 #endif
 
 #if !defined(PPC_VMX_NATIVE) && !defined(POWER8_VSX_NATIVE)
@@ -34,6 +37,7 @@ void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 
 #ifndef POWER8_VSX_NATIVE
 #  define CHUNKSET_FALLBACK
+#  define COMPARE256_FALLBACK
 #endif
 #ifndef POWER8_VSX_CRC32_NATIVE
 #  define CRC32_BRAID_FALLBACK
@@ -43,10 +47,6 @@ void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 uint32_t compare256_power9(const uint8_t *src0, const uint8_t *src1);
 uint32_t longest_match_power9(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_power9(deflate_state *const s, uint32_t cur_match);
-#endif
-
-#ifndef POWER9_NATIVE
-#  define COMPARE256_FALLBACK
 #endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
@@ -69,8 +69,14 @@ uint32_t longest_match_roll_power9(deflate_state *const s, uint32_t cur_match);
 #    define native_adler32_copy adler32_copy_power8
 #    undef native_chunkmemset_safe
 #    define native_chunkmemset_safe chunkmemset_safe_power8
+#    undef native_compare256
+#    define native_compare256 compare256_power8
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_power8
+#    undef native_longest_match
+#    define native_longest_match longest_match_power8
+#    undef native_longest_match_roll
+#    define native_longest_match_roll longest_match_roll_power8
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_power8
 #    undef native_slide_hash_head
