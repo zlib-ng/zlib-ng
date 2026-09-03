@@ -26,6 +26,10 @@ const char PREFIX(inflate_copyright)[] = " inflate 1.3.1 Copyright 1995-2024 Mar
   copyright string in the executable of your product.
  */
 
+/* Share of the 2^MAX_BITS code space that must sit above MAX_LEN_ROOT_BITS-1 bits before the
+   larger literal/length root table is worth building. */
+#define ROOT_GROW_MIN_SPACE ((1U << MAX_BITS) / 256)
+
 /* Count number of codes for each code length. */
 static inline void count_lengths(uint16_t *lens, int codes, uint16_t *count) {
     /* IBM...made some weird choices for VSX/VMX. Basically vec_ld has an inherent
@@ -231,6 +235,17 @@ int Z_INTERNAL zng_inflate_table(codetype type, uint16_t *lens, unsigned codes,
     for (min = 1; min < max; min++)
         if (count[min] != 0) break;
     root = MAX(root, min);
+
+    /* Growing root doubles the table build and its footprint, a cost paid once per block, but it
+       only pays off on the symbols that exceed the smaller root. Weighting count[] by the code
+       space each length occupies estimates how often that happens, without decoding the block. */
+    if (type == LENS && root == MAX_LEN_ROOT_BITS) {
+        unsigned space = 0;
+        for (len = root; len <= MAX_BITS; len++)
+            space += (unsigned)count[len] << (MAX_BITS - len);
+        if (space < ROOT_GROW_MIN_SPACE)
+            root--;
+    }
 
     /* check for an over-subscribed or incomplete set of lengths */
     left = 1;
