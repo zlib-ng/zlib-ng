@@ -17,7 +17,7 @@ unsigned long Z_EXPORT PREFIX(adler32_z)(unsigned long adler, const unsigned cha
 uint32_t Z_EXPORT PREFIX(adler32_z)(uint32_t adler, const unsigned char *buf, size_t len) {
     if (buf == NULL)
         return ADLER32_INITIAL_VALUE;
-    return FUNCTABLE_CALL(adler32)(adler, buf, len);
+    Z_MUSTTAIL_FT return FUNCTABLE_CALL(adler32)(adler, buf, len);
 }
 #endif
 

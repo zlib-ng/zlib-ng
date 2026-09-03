@@ -36,7 +36,7 @@ unsigned long Z_EXPORT PREFIX(crc32_z)(unsigned long crc, const unsigned char *b
 uint32_t Z_EXPORT PREFIX(crc32_z)(uint32_t crc, const unsigned char *buf, size_t len) {
     if (buf == NULL)
         return CRC32_INITIAL_VALUE;
-    return FUNCTABLE_CALL(crc32)(crc, buf, len);
+    Z_MUSTTAIL_FT return FUNCTABLE_CALL(crc32)(crc, buf, len);
 }
 #endif
 

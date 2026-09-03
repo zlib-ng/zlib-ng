@@ -449,7 +449,7 @@ z_int32_t Z_EXPORT PREFIX(gzgetc)(gzFile file) {
 
 #ifdef ZLIB_COMPAT
 int Z_EXPORT PREFIX(gzgetc_)(gzFile file) {
-    return PREFIX(gzgetc)(file);
+    Z_MUSTTAIL return PREFIX(gzgetc)(file);
 }
 #endif
 

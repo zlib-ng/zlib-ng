@@ -72,6 +72,34 @@
 #  endif
 #endif
 
+#ifndef Z_MUSTTAIL
+#  if defined(__clang__) && __clang_major__ >= 17 && !defined(ARCH_WASM)
+#    define Z_MUSTTAIL [[clang::musttail]]
+#    define Z_MUSTTAIL2 [[clang::musttail]]
+#    if defined(ARCH_POWER) && !defined(DISABLE_RUNTIME_CPU_DETECTION)
+#      define Z_MUSTTAIL_FT
+#    else
+#      define Z_MUSTTAIL_FT [[clang::musttail]]
+#    endif
+#  elif defined(__GNUC__) && __GNUC__ >= 15
+#    define Z_MUSTTAIL [[gnu::musttail]]
+#    define Z_MUSTTAIL2 [[gnu::musttail]]
+#    if defined(ARCH_POWER) && !defined(DISABLE_RUNTIME_CPU_DETECTION)
+#      define Z_MUSTTAIL_FT
+#    else
+#      define Z_MUSTTAIL_FT [[gnu::musttail]]
+#    endif
+#  elif defined(_MSC_VER) && _MSC_VER >= 1950 && defined(NDEBUG)
+#    define Z_MUSTTAIL [[msvc::musttail]]
+#    define Z_MUSTTAIL2
+#    define Z_MUSTTAIL_FT [[msvc::musttail]]
+#  else
+#    define Z_MUSTTAIL
+#    define Z_MUSTTAIL2
+#    define Z_MUSTTAIL_FT
+#  endif
+#endif
+
 #ifndef Z_TARGET
 #  if Z_HAS_ATTRIBUTE(__target__)
 #    define Z_TARGET(x) __attribute__((__target__(x)))
