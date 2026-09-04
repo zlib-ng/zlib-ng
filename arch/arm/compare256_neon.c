@@ -65,8 +65,15 @@ Z_INTERNAL uint32_t compare256_neon(const uint8_t *src0, const uint8_t *src1) {
 
 #include "match_tpl.h"
 
-#define LONGEST_MATCH_ROLL
-#define LONGEST_MATCH       longest_match_roll_neon
+#define LONGEST_MATCH_SLOW
+#define LONGEST_MATCH       longest_match_slow_knuth_neon
+#define COMPARE256          compare256_neon_static
+
+#include "match_tpl.h"
+
+#define LONGEST_MATCH_SLOW
+#define LONGEST_MATCH_SLOW_ROLL
+#define LONGEST_MATCH       longest_match_slow_roll_neon
 #define COMPARE256          compare256_neon_static
 
 #include "match_tpl.h"

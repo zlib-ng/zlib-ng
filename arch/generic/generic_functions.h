@@ -46,7 +46,8 @@ void     inflate_fast_c(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 #endif
 #ifdef COMPARE256_FALLBACK
 uint32_t longest_match_c(deflate_state *const s, uint32_t cur_match);
-uint32_t longest_match_roll_c(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_knuth_c(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_roll_c(deflate_state *const s, uint32_t cur_match);
 #endif
 #ifdef SLIDE_HASH_FALLBACK
 void     slide_hash_c(deflate_state *s);
@@ -78,8 +79,11 @@ void     slide_hash_head_c(deflate_state *s);
 #    ifndef native_longest_match
 #      define native_longest_match longest_match_c
 #    endif
-#    ifndef native_longest_match_roll
-#      define native_longest_match_roll longest_match_roll_c
+#    ifndef native_longest_match_slow_knuth
+#      define native_longest_match_slow_knuth longest_match_slow_knuth_c
+#    endif
+#    ifndef native_longest_match_slow_roll
+#      define native_longest_match_slow_roll longest_match_slow_roll_c
 #    endif
 #  endif
 #  ifdef CRC32_CHORBA_FALLBACK

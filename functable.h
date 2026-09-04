@@ -23,18 +23,19 @@
 #else
 
 struct functable_s {
-    int      (* force_init)         (void);
-    uint32_t (* adler32)            (uint32_t adler, const uint8_t *buf, size_t len);
-    uint32_t (* adler32_copy)       (uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
-    uint8_t* (* chunkmemset_safe)   (uint8_t *out, uint8_t *from, size_t len, size_t left);
-    uint32_t (* compare256)         (const uint8_t *src0, const uint8_t *src1);
-    uint32_t (* crc32)              (uint32_t crc, const uint8_t *buf, size_t len);
-    uint32_t (* crc32_copy)         (uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
-    void     (* inflate_fast)       (PREFIX3(stream) *strm, uint32_t start, int safe_mode);
-    uint32_t (* longest_match)      (deflate_state *const s, uint32_t cur_match);
-    uint32_t (* longest_match_roll) (deflate_state *const s, uint32_t cur_match);
-    void     (* slide_hash)         (deflate_state *s);
-    void     (* slide_hash_head)    (deflate_state *s);
+    int      (* force_init)               (void);
+    uint32_t (* adler32)                  (uint32_t adler, const uint8_t *buf, size_t len);
+    uint32_t (* adler32_copy)             (uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
+    uint8_t* (* chunkmemset_safe)         (uint8_t *out, uint8_t *from, size_t len, size_t left);
+    uint32_t (* compare256)               (const uint8_t *src0, const uint8_t *src1);
+    uint32_t (* crc32)                    (uint32_t crc, const uint8_t *buf, size_t len);
+    uint32_t (* crc32_copy)               (uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
+    void     (* inflate_fast)             (PREFIX3(stream) *strm, uint32_t start, int safe_mode);
+    uint32_t (* longest_match)            (deflate_state *const s, uint32_t cur_match);
+    uint32_t (* longest_match_slow_knuth) (deflate_state *const s, uint32_t cur_match);
+    uint32_t (* longest_match_slow_roll)  (deflate_state *const s, uint32_t cur_match);
+    void     (* slide_hash)               (deflate_state *s);
+    void     (* slide_hash_head)          (deflate_state *s);
 };
 
 Z_INTERNAL extern struct functable_s functable;

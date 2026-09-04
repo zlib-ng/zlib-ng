@@ -26,7 +26,8 @@ uint8_t* chunkmemset_safe_lsx(uint8_t *out, uint8_t *from, size_t len, size_t le
 uint32_t compare256_lsx(const uint8_t *src0, const uint8_t *src1);
 void inflate_fast_lsx(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 uint32_t longest_match_lsx(deflate_state *const s, uint32_t cur_match);
-uint32_t longest_match_roll_lsx(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_knuth_lsx(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_roll_lsx(deflate_state *const s, uint32_t cur_match);
 void slide_hash_lsx(deflate_state *s);
 void slide_hash_head_lsx(deflate_state *s);
 #endif
@@ -45,7 +46,8 @@ uint8_t* chunkmemset_safe_lasx(uint8_t *out, uint8_t *from, size_t len, size_t l
 uint32_t compare256_lasx(const uint8_t *src0, const uint8_t *src1);
 void inflate_fast_lasx(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 uint32_t longest_match_lasx(deflate_state *const s, uint32_t cur_match);
-uint32_t longest_match_roll_lasx(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_knuth_lasx(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_roll_lasx(deflate_state *const s, uint32_t cur_match);
 void slide_hash_lasx(deflate_state *s);
 void slide_hash_head_lasx(deflate_state *s);
 #endif
@@ -71,8 +73,10 @@ void slide_hash_head_lasx(deflate_state *s);
 #    define native_inflate_fast inflate_fast_lsx
 #    undef native_longest_match
 #    define native_longest_match longest_match_lsx
-#    undef native_longest_match_roll
-#    define native_longest_match_roll longest_match_roll_lsx
+#    undef native_longest_match_slow_knuth
+#    define native_longest_match_slow_knuth longest_match_slow_knuth_lsx
+#    undef native_longest_match_slow_roll
+#    define native_longest_match_slow_roll longest_match_slow_roll_lsx
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_lsx
 #    undef native_slide_hash_head
@@ -91,8 +95,10 @@ void slide_hash_head_lasx(deflate_state *s);
 #    define native_inflate_fast inflate_fast_lasx
 #    undef native_longest_match
 #    define native_longest_match longest_match_lasx
-#    undef native_longest_match_roll
-#    define native_longest_match_roll longest_match_roll_lasx
+#    undef native_longest_match_slow_knuth
+#    define native_longest_match_slow_knuth longest_match_slow_knuth_lasx
+#    undef native_longest_match_slow_roll
+#    define native_longest_match_slow_roll longest_match_slow_roll_lasx
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_lasx
 #    undef native_slide_hash_head
