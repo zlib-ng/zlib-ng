@@ -63,6 +63,27 @@ extern Z_INTERNAL const uint32_t dmask_extra[D_CODES];
     bi_valid = total_bits;\
 } while (0)
 
+/* Merge bits into the bit buffer without flushing. The caller must guarantee room,
+ * i.e. bi_valid + len <= 64. Pair with send_bits_flush, which leaves at most 7 bits. */
+#define send_bits_merge(s, t_val, t_len, bi_buf, bi_valid) do {\
+    Assert((bi_valid) + (uint32_t)(t_len) <= 64, "bit buffer overflow");\
+    trace_bits(s, (uint64_t)(t_val), (uint32_t)(t_len));\
+    sent_bits_add(s, t_len);\
+    bi_buf |= (uint64_t)(t_val) << (bi_valid);\
+    bi_valid += (uint32_t)(t_len);\
+} while (0)
+
+/* Store the bit buffer unconditionally and consume its complete bytes, leaving at most
+ * 7 valid bits. The unconditional 8-byte store reaches up to 7 bytes past the logical
+ * output position, which the pending buffer layout must reserve room for
+ * (see PENDING_BUF_PAD in deflate.c). */
+#define send_bits_flush(s, bi_buf, bi_valid, pending) do {\
+    zng_memwrite_8((s)->pending_buf + (pending), Z_U64_TO_LE(bi_buf));\
+    pending += (bi_valid) >> 3;\
+    bi_buf >>= ((bi_valid) & ~7U);\
+    bi_valid &= 7;\
+} while (0)
+
 /* Send a code of the given tree. c and tree must not have side effects */
 #ifdef ZLIB_DEBUG
 #  define send_code(s, c, tree, bi_buf, bi_valid) { \
@@ -72,6 +93,17 @@ extern Z_INTERNAL const uint32_t dmask_extra[D_CODES];
 #else
 #  define send_code(s, c, tree, bi_buf, bi_valid) \
     send_bits(s, tree[c].Code, tree[c].Len, bi_buf, bi_valid)
+#endif
+
+/* Merge a code of the given tree without flushing. c and tree must not have side effects */
+#ifdef ZLIB_DEBUG
+#  define send_code_merge(s, c, tree, bi_buf, bi_valid) { \
+    trace_code(s, c); \
+    send_bits_merge(s, tree[c].Code, tree[c].Len, bi_buf, bi_valid); \
+}
+#else
+#  define send_code_merge(s, c, tree, bi_buf, bi_valid) \
+    send_bits_merge(s, tree[c].Code, tree[c].Len, bi_buf, bi_valid)
 #endif
 
 /* ===========================================================================
