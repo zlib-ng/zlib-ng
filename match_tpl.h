@@ -30,14 +30,14 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
     unsigned int strstart = s->strstart;
     const unsigned char *window = s->window;
     const Pos *prev = s->prev;
-#ifdef LONGEST_MATCH_SLOW_ROLL
+#ifdef LONGEST_MATCH_SLOW
     const Pos *head = s->head;
 #endif
     const unsigned char *scan;
     const unsigned char *mbase_start = window;
     const unsigned char *mbase_end;
     uint32_t limit;
-#ifdef LONGEST_MATCH_SLOW_ROLL
+#ifdef LONGEST_MATCH_SLOW
     uint32_t limit_base;
 #endif
 #ifndef LONGEST_MATCH_SLOW
@@ -57,6 +57,19 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
     best_len = s->prev_length ? s->prev_length : STD_MIN_MATCH-1;
     if (UNLIKELY(best_len >= lookahead))
         return lookahead;
+#ifdef LONGEST_MATCH_SLOW
+#  ifdef LONGEST_MATCH_SLOW_ROLL
+    /* Rolling-hash variant always runs the post-match offset search; the
+     * compiler folds the constant away below.
+     */
+    const int offset_search = 1;
+#  else
+    /* The post-match offset search only pays off when we entered with a
+     * prior best_len from lazy evaluation, so gate on it at function entry.
+     */
+    const int offset_search = (best_len >= STD_MIN_MATCH);
+#  endif
+#endif
 
     /* Calculate read offset which should only extend an extra byte to find the
      * next best match length. When best_len is shorter than the read width, we
@@ -80,31 +93,41 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
 #ifndef LONGEST_MATCH_SLOW
     early_exit = s->level < EARLY_EXIT_TRIGGER_LEVEL;
 #endif
-#ifdef LONGEST_MATCH_SLOW_ROLL
+#ifdef LONGEST_MATCH_SLOW
     limit_base = limit;
     if (best_len >= STD_MIN_MATCH) {
-        /* We're continuing search (lazy evaluation). */
+        /* We're continuing search (lazy evaluation). Find a most distant
+         * chain by hashing substrings within the match area. We cannot use
+         * s->prev[strstart+1,...] immediately because those strings are not
+         * yet inserted into the hash table.
+         */
+#  ifdef LONGEST_MATCH_SLOW_ROLL
         uint32_t hash;
         uint32_t pos;
 
-        /* Find a most distant chain starting from scan with index=1 (index=0 corresponds
-         * to cur_match). We cannot use s->prev[strstart+1,...] immediately, because
-         * these strings are not yet inserted into the hash table.
-         */
-        // use update_hash_roll for deflate_slow
         hash = update_hash_roll(0, scan[1]);
         hash = update_hash_roll(hash, scan[2]);
 
         for (uint32_t i = 3; i <= best_len; i++) {
-            // use update_hash_roll for deflate_slow
             hash = update_hash_roll(hash, scan[i]);
-            /* If we're starting with best_len >= 3, we can use offset search. */
             pos = head[hash];
             if (UNLIKELY(pos < cur_match)) {
                 match_offset = i - 2;
                 cur_match = pos;
             }
         }
+#  else /* 4-byte Knuth hash, fresh lookup per offset */
+        for (uint32_t i = 1; i + (WANT_MIN_MATCH - 1) <= best_len; i++) {
+            uint32_t val = Z_U32_FROM_LE(zng_memread_4(scan + i));
+            uint32_t hash;
+            UPDATE_HASH_KNUTH(hash, val);
+            uint32_t pos = head[hash];
+            if (pos < cur_match) {
+                match_offset = i;
+                cur_match = pos;
+            }
+        }
+#  endif
 
         /* Update offset-dependent variables */
         limit = limit_base+match_offset;
@@ -196,9 +219,9 @@ short_match_accept:
 
             scan_end = zng_memread_8(scan+offset);
 
-#ifdef LONGEST_MATCH_SLOW_ROLL
+#ifdef LONGEST_MATCH_SLOW
             /* Look for a better string offset */
-            if (UNLIKELY(len > STD_MIN_MATCH && match_start + len < strstart)) {
+            if (UNLIKELY(offset_search && len > STD_MIN_MATCH && match_start + len < strstart)) {
                 const unsigned char *scan_endstr;
                 uint32_t hash;
                 uint32_t pos, next_pos;
@@ -207,7 +230,16 @@ short_match_accept:
                 cur_match -= match_offset;
                 match_offset = 0;
                 next_pos = cur_match;
+
+                /* Walk prev[] for positions inside the match. The bound keeps
+                 * the hash window within the match, so we follow chains that
+                 * share bytes with the current match, not data past its end.
+                 */
+#  ifdef LONGEST_MATCH_SLOW_ROLL
                 for (uint32_t i = 0; i <= len - STD_MIN_MATCH; i++) {
+#  else /* 4-byte Knuth hash needs len - 4 bound */
+                for (uint32_t i = 0; i <= len - WANT_MIN_MATCH; i++) {
+#  endif
                     pos = prev[(cur_match + i) & wmask];
                     if (UNLIKELY(pos < next_pos)) {
                         /* Hash chain is more distant, use it */
@@ -220,11 +252,11 @@ short_match_accept:
                 /* Switch cur_match to next_pos chain */
                 cur_match = next_pos;
 
-                /* Try hash head at len-(STD_MIN_MATCH-1) position to see if we could get
-                 * a better cur_match at the end of string. Using (STD_MIN_MATCH-1) lets
-                 * us include one more byte into hash - the byte which will be checked
-                 * in main loop now, and which allows to grow match by 1.
+                /* Try hash head at a window covering the tail of the current
+                 * match to find chains that extend farther back. The window
+                 * width differs per variant: 3 bytes for rolling, 4 for Knuth.
                  */
+#  ifdef LONGEST_MATCH_SLOW_ROLL
                 scan_endstr = scan + len - (STD_MIN_MATCH-1);
 
                 hash = update_hash_roll(0, scan_endstr[0]);
@@ -238,6 +270,19 @@ short_match_accept:
                         return best_len;
                     cur_match = pos;
                 }
+#  else
+                scan_endstr = scan + len - WANT_MIN_MATCH;
+                uint32_t val = Z_U32_FROM_LE(zng_memread_4(scan_endstr));
+                UPDATE_HASH_KNUTH(hash, val);
+
+                pos = head[hash];
+                if (pos < cur_match) {
+                    match_offset = len - WANT_MIN_MATCH;
+                    if (pos <= limit_base + match_offset)
+                        return best_len;
+                    cur_match = pos;
+                }
+#  endif
 
                 /* Update offset-dependent variables */
                 limit = limit_base+match_offset;
