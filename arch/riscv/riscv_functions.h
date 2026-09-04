@@ -23,7 +23,8 @@ uint32_t longest_match_rvv(deflate_state *const s, uint32_t cur_match);
 uint32_t longest_match_roll_rvv(deflate_state *const s, uint32_t cur_match);
 void slide_hash_rvv(deflate_state *s);
 void slide_hash_head_rvv(deflate_state *s);
-void inflate_fast_rvv(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
+void inflate_fast_rvv(PREFIX3(stream) *strm, uint32_t start);
+void inflate_fast_safe_rvv(PREFIX3(stream) *strm, uint32_t start);
 #endif
 
 #ifndef RISCV_RVV_NATIVE
@@ -51,6 +52,8 @@ uint32_t crc32_copy_riscv64_zbc(uint32_t crc, uint8_t *dst, const uint8_t *src, 
 #    define native_compare256 compare256_rvv
 #    undef native_inflate_fast
 #    define native_inflate_fast inflate_fast_rvv
+#    undef native_inflate_fast_safe
+#    define native_inflate_fast_safe inflate_fast_safe_rvv
 #    undef native_longest_match
 #    define native_longest_match longest_match_rvv
 #    undef native_longest_match_roll

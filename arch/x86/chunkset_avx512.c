@@ -197,4 +197,9 @@ static inline uint8_t* HALFCHUNKCOPY(uint8_t *out, uint8_t const *from, size_t l
 
 #include "inffast_tpl.h"
 
+#define INFLATE_FAST     inflate_fast_safe_avx512
+#define USE_SAFE_MODE
+
+#include "inffast_tpl.h"
+
 #endif

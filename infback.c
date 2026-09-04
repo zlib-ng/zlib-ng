@@ -368,9 +368,9 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
                 if (state->whave < state->wsize)
                     state->whave = state->wsize - left;
                 /* inflateBack() writes directly into the window, so out and window
-                   always overlap. Pass safe_mode=1 to use safe chunk copy functions
-                   that prevent overwriting window data needed by future back-references. */
-                FUNCTABLE_CALL(inflate_fast)(strm, state->wsize, 1);
+                   always overlap. Use the safe variant, whose chunk copy functions
+                   never overwrite window data needed by future back-references. */
+                FUNCTABLE_CALL(inflate_fast_safe)(strm, state->wsize);
                 LOAD();
                 break;
             }

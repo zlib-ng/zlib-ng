@@ -83,6 +83,7 @@ static int init_functable(void) {
 #ifdef CHUNKSET_FALLBACK
     ft.chunkmemset_safe = &chunkmemset_safe_c;
     ft.inflate_fast = &inflate_fast_c;
+    ft.inflate_fast_safe = &inflate_fast_safe_c;
 #endif
 #ifdef COMPARE256_FALLBACK
     ft.compare256 = &compare256_c;
@@ -117,6 +118,7 @@ static int init_functable(void) {
         ft.chunkmemset_safe = &chunkmemset_safe_sse2;
         ft.compare256 = &compare256_sse2;
         ft.inflate_fast = &inflate_fast_sse2;
+        ft.inflate_fast_safe = &inflate_fast_safe_sse2;
         ft.longest_match = &longest_match_sse2;
         ft.longest_match_roll = &longest_match_roll_sse2;
         ft.slide_hash = &slide_hash_sse2;
@@ -139,6 +141,7 @@ static int init_functable(void) {
 #  ifndef X86_AVX2_NATIVE
         ft.chunkmemset_safe = &chunkmemset_safe_ssse3;
         ft.inflate_fast = &inflate_fast_ssse3;
+        ft.inflate_fast_safe = &inflate_fast_safe_ssse3;
 #  endif
     }
 #endif
@@ -191,6 +194,7 @@ static int init_functable(void) {
         ft.chunkmemset_safe = &chunkmemset_safe_avx2;
         ft.compare256 = &compare256_avx2;
         ft.inflate_fast = &inflate_fast_avx2;
+        ft.inflate_fast_safe = &inflate_fast_safe_avx2;
         ft.longest_match = &longest_match_avx2;
         ft.longest_match_roll = &longest_match_roll_avx2;
 #  endif
@@ -217,6 +221,7 @@ static int init_functable(void) {
         ft.chunkmemset_safe = &chunkmemset_safe_avx512;
         ft.compare256 = &compare256_avx512;
         ft.inflate_fast = &inflate_fast_avx512;
+        ft.inflate_fast_safe = &inflate_fast_safe_avx512;
         ft.longest_match = &longest_match_avx512;
         ft.longest_match_roll = &longest_match_roll_avx512;
     }
@@ -273,6 +278,7 @@ static int init_functable(void) {
         ft.chunkmemset_safe = &chunkmemset_safe_neon;
         ft.compare256 = &compare256_neon;
         ft.inflate_fast = &inflate_fast_neon;
+        ft.inflate_fast_safe = &inflate_fast_safe_neon;
         ft.longest_match = &longest_match_neon;
         ft.longest_match_roll = &longest_match_roll_neon;
         ft.slide_hash = &slide_hash_neon;
@@ -332,6 +338,7 @@ static int init_functable(void) {
         ft.adler32_copy = &adler32_copy_power8;
         ft.chunkmemset_safe = &chunkmemset_safe_power8;
         ft.inflate_fast = &inflate_fast_power8;
+        ft.inflate_fast_safe = &inflate_fast_safe_power8;
         ft.slide_hash = &slide_hash_power8;
         ft.slide_hash_head = &slide_hash_head_power8;
     }
@@ -369,6 +376,7 @@ static int init_functable(void) {
         ft.chunkmemset_safe = &chunkmemset_safe_rvv;
         ft.compare256 = &compare256_rvv;
         ft.inflate_fast = &inflate_fast_rvv;
+        ft.inflate_fast_safe = &inflate_fast_safe_rvv;
         ft.longest_match = &longest_match_rvv;
         ft.longest_match_roll = &longest_match_roll_rvv;
         ft.slide_hash = &slide_hash_rvv;
@@ -420,6 +428,7 @@ static int init_functable(void) {
         ft.chunkmemset_safe = &chunkmemset_safe_lsx;
         ft.compare256 = &compare256_lsx;
         ft.inflate_fast = &inflate_fast_lsx;
+        ft.inflate_fast_safe = &inflate_fast_safe_lsx;
         ft.longest_match = &longest_match_lsx;
         ft.longest_match_roll = &longest_match_roll_lsx;
         ft.slide_hash = &slide_hash_lsx;
@@ -436,6 +445,7 @@ static int init_functable(void) {
         ft.chunkmemset_safe = &chunkmemset_safe_lasx;
         ft.compare256 = &compare256_lasx;
         ft.inflate_fast = &inflate_fast_lasx;
+        ft.inflate_fast_safe = &inflate_fast_safe_lasx;
         ft.longest_match = &longest_match_lasx;
         ft.longest_match_roll = &longest_match_roll_lasx;
         ft.slide_hash = &slide_hash_lasx;
@@ -454,6 +464,7 @@ static int init_functable(void) {
     FUNCTABLE_VERIFY_ASSIGN(ft, crc32);
     FUNCTABLE_VERIFY_ASSIGN(ft, crc32_copy);
     FUNCTABLE_VERIFY_ASSIGN(ft, inflate_fast);
+    FUNCTABLE_VERIFY_ASSIGN(ft, inflate_fast_safe);
     FUNCTABLE_VERIFY_ASSIGN(ft, longest_match);
     FUNCTABLE_VERIFY_ASSIGN(ft, longest_match_roll);
     FUNCTABLE_VERIFY_ASSIGN(ft, slide_hash);
@@ -506,9 +517,14 @@ static uint32_t crc32_copy_stub(uint32_t crc, uint8_t *dst, const uint8_t *src, 
     return functable.crc32_copy(crc, dst, src, len);
 }
 
-static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start, int safe_mode) {
+static void inflate_fast_stub(PREFIX3(stream) *strm, uint32_t start) {
     FUNCTABLE_INIT_ABORT;
-    functable.inflate_fast(strm, start, safe_mode);
+    functable.inflate_fast(strm, start);
+}
+
+static void inflate_fast_safe_stub(PREFIX3(stream) *strm, uint32_t start) {
+    FUNCTABLE_INIT_ABORT;
+    functable.inflate_fast_safe(strm, start);
 }
 
 static uint32_t longest_match_stub(deflate_state* const s, uint32_t cur_match) {
@@ -541,6 +557,7 @@ Z_INTERNAL struct functable_s functable = {
     crc32_stub,
     crc32_copy_stub,
     inflate_fast_stub,
+    inflate_fast_safe_stub,
     longest_match_stub,
     longest_match_roll_stub,
     slide_hash_stub,

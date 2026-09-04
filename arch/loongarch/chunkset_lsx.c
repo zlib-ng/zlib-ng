@@ -71,4 +71,9 @@ static inline chunk_t GET_CHUNK_MAG(uint8_t *buf, size_t *chunk_rem, size_t dist
 
 #include "inffast_tpl.h"
 
+#define INFLATE_FAST     inflate_fast_safe_lsx
+#define USE_SAFE_MODE
+
+#include "inffast_tpl.h"
+
 #endif
