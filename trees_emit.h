@@ -110,10 +110,11 @@ Z_FORCEINLINE static void zng_emit_lit(deflate_state *s, const ct_data *ltree, u
 }
 
 /* ===========================================================================
- * Emit match distance/length code
+ * Assemble a match's length code + extra bits + distance code + extra bits into
+ * a single bit string, at most 48 bits. Returns the bits, length via *bits_len.
  */
-static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree,
-                                     uint32_t lc, uint32_t dist, uint64_t *bi_buf, uint32_t *bi_valid) {
+Z_FORCEINLINE static uint64_t zng_assemble_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree,
+                                                uint32_t lc, uint32_t dist, uint32_t *bits_len) {
     uint64_t match_bits;
     uint32_t match_bits_len;
     uint32_t mask_ext;  // Contains both mask and extra, can safely be used directly as mask
@@ -156,6 +157,19 @@ static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, con
     /*    Send dist extra bits */
     match_bits |= ((uint64_t)(dist & mask_ext) << match_bits_len);
     match_bits_len += extra;
+
+    Z_UNUSED(s);
+    *bits_len = match_bits_len;
+    return match_bits;
+}
+
+/* ===========================================================================
+ * Emit match distance/length code
+ */
+static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree,
+                                     uint32_t lc, uint32_t dist, uint64_t *bi_buf, uint32_t *bi_valid) {
+    uint32_t match_bits_len;
+    uint64_t match_bits = zng_assemble_dist(s, ltree, dtree, lc, dist, &match_bits_len);
 
     send_bits(s, match_bits, match_bits_len, *bi_buf, *bi_valid);
 
