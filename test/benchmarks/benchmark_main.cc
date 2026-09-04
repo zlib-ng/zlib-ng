@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <limits.h>
+#include <vector>
 
 #ifdef _WIN32
 #  ifndef NOMINMAX
@@ -16,6 +17,15 @@
 #  include <windows.h>
 #else
 #  include <unistd.h>
+#endif
+
+#ifdef __APPLE__
+#  include <spawn.h>
+#  include <mach-o/dyld.h>
+extern char **environ;
+#  ifndef _POSIX_SPAWN_DISABLE_ASLR
+#    define _POSIX_SPAWN_DISABLE_ASLR 0x0100
+#  endif
 #endif
 
 #include <benchmark/benchmark.h>
@@ -71,6 +81,39 @@ private:
     bool first_report_;
 };
 
+#ifdef __APPLE__
+/* Re-execs the process image in place (same pid, execve semantics) with ASLR disabled so code
+   and stack get identical addresses every launch. A zero main-image slide means ASLR is already
+   off, which also terminates the re-exec after one round. Returns false when ASLR could not be
+   disabled. */
+static bool reenter_without_aslr(char **argv) {
+    /* A zero main-image slide means ASLR is already off, nothing to do. */
+    if (_dyld_get_image_vmaddr_slide(0) == 0)
+        return true;
+
+    /* A nonzero slide after the re-exec means the kernel ignored the spawn flag. */
+    if (getenv("BENCHMARK_REENTERED_NO_ASLR") != nullptr)
+        return false;
+    setenv("BENCHMARK_REENTERED_NO_ASLR", "1", 1);
+
+    uint32_t size = 0;
+    _NSGetExecutablePath(nullptr, &size);
+    std::vector<char> exe_path(size);
+    if (_NSGetExecutablePath(exe_path.data(), &size) != 0)
+        return false;
+
+    posix_spawnattr_t attr;
+    if (posix_spawnattr_init(&attr) != 0)
+        return false;
+    if (posix_spawnattr_setflags(&attr, POSIX_SPAWN_SETEXEC | _POSIX_SPAWN_DISABLE_ASLR) == 0)
+        posix_spawn(nullptr, exe_path.data(), nullptr, &attr, argv, environ);
+
+    /* Only reached when the exec failed */
+    posix_spawnattr_destroy(&attr);
+    return false;
+}
+#endif
+
 #ifdef _WIN32
 /* Parses a taskset-style CPU list ("3", "0,2,4", "0-3") into an affinity mask. Returns false on
    malformed input. CPUs beyond the mask width are ignored since a mask covers one processor group. */
@@ -119,12 +162,15 @@ int main(int argc, char** argv) {
 #endif
 
     const char *data_types = nullptr;
+    bool no_aslr = false;
 
     for (int i = 1; i < argc; i++) {
         if (strncmp(argv[i], "--benchmark_cooldown=", 21) == 0) {
             cooldown_secs = strtoul(argv[i] + 21, nullptr, 10);
         } else if (strncmp(argv[i], "--benchmark_data_types=", 23) == 0) {
             data_types = argv[i] + 23;
+        } else if (strcmp(argv[i], "--benchmark_no_aslr") == 0) {
+            no_aslr = true;
         }
 #ifdef _WIN32
         else if (strncmp(argv[i], "--benchmark_cpu_affinity=", 25) == 0) {
@@ -137,6 +183,21 @@ int main(int argc, char** argv) {
 #endif
     }
 
+    /* Disabling ASLR fixes code and stack addresses across launches, removing the
+       run-to-run layout luck that shifts branch-predictor and cache behavior. It
+       re-execs in place, preserving the pid so a parent waiting on the process is
+       unaffected. */
+    if (no_aslr) {
+#if defined(__APPLE__)
+        if (!reenter_without_aslr(argv))
+            fprintf(stderr, "warning: --benchmark_no_aslr could not disable ASLR, continuing with it enabled\n");
+#elif defined(__linux__)
+        ::benchmark::MaybeReenterWithoutASLR(argc, argv);
+#else
+        fprintf(stderr, "warning: --benchmark_no_aslr is not supported on this platform\n");
+#endif
+    }
+
     uint32_t data_type_mask = benchmark_data_types_parse(data_types);
     if (data_type_mask == 0)
         return EXIT_FAILURE;
@@ -146,6 +207,7 @@ int main(int argc, char** argv) {
         ::benchmark::PrintDefaultHelp();
         printf("          [--benchmark_cooldown=<seconds>]\n");
         printf("          [--benchmark_data_types=<type,...|all>]\n");
+        printf("          [--benchmark_no_aslr]\n");
 #ifdef _WIN32
         printf("          [--benchmark_cpu_affinity=<cpulist>]\n");
         printf("          [--benchmark_no_power_throttling]\n");
