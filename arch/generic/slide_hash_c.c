@@ -26,16 +26,16 @@ static inline void slide_hash_c_chain(Pos *table, uint32_t entries, Pos wsize) {
 }
 
 Z_INTERNAL void slide_hash_c(deflate_state *s) {
-    Pos wsize = (Pos)s->w_size;
+    Pos slide = (Pos)s->slide_len;
 
-    slide_hash_c_chain(s->head, HASH_SIZE, wsize);
-    slide_hash_c_chain(s->prev, wsize, wsize);
+    slide_hash_c_chain(s->head, HASH_SIZE, slide);
+    slide_hash_c_chain(s->prev, s->w_size, slide);
 }
 
 Z_INTERNAL void slide_hash_head_c(deflate_state *s) {
-    uint16_t wsize = (uint16_t)s->w_size;
+    uint16_t slide = (uint16_t)s->slide_len;
 
-    slide_hash_c_chain(s->head, HASH_SIZE, wsize);
+    slide_hash_c_chain(s->head, HASH_SIZE, slide);
 }
 
 #endif /* SLIDE_HASH_FALLBACK */

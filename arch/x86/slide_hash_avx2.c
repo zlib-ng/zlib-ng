@@ -37,20 +37,20 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, const __m256i 
 }
 
 Z_INTERNAL void slide_hash_avx2(deflate_state *s) {
-    Assert(s->w_size <= UINT16_MAX, "w_size should fit in uint16_t");
-    uint16_t wsize = (uint16_t)s->w_size;
-    const __m256i ymm_wsize = _mm256_set1_epi16((short)wsize);
+    Assert(s->slide_len <= UINT16_MAX, "slide_len should fit in uint16_t");
+    uint16_t slide = (uint16_t)s->slide_len;
+    const __m256i ymm_slide = _mm256_set1_epi16((short)slide);
 
-    slide_hash_chain(s->head, HASH_SIZE, ymm_wsize);
-    slide_hash_chain(s->prev, wsize, ymm_wsize);
+    slide_hash_chain(s->head, HASH_SIZE, ymm_slide);
+    slide_hash_chain(s->prev, s->w_size, ymm_slide);
 }
 
 Z_INTERNAL void slide_hash_head_avx2(deflate_state *s) {
-    Assert(s->w_size <= UINT16_MAX, "w_size should fit in uint16_t");
-    uint16_t wsize = (uint16_t)s->w_size;
-    const __m256i ymm_wsize = _mm256_set1_epi16((short)wsize);
+    Assert(s->slide_len <= UINT16_MAX, "slide_len should fit in uint16_t");
+    uint16_t slide = (uint16_t)s->slide_len;
+    const __m256i ymm_slide = _mm256_set1_epi16((short)slide);
 
-    slide_hash_chain(s->head, HASH_SIZE, ymm_wsize);
+    slide_hash_chain(s->head, HASH_SIZE, ymm_slide);
 }
 
 #endif
