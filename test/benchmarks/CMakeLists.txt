@@ -13,7 +13,7 @@ if(NOT DEFINED CMAKE_CXX_EXTENSIONS)
 endif()
 
 # Search for Google benchmark package
-find_package(benchmark 1.9.2 QUIET)
+find_package(benchmark 1.9.4 QUIET)
 if(NOT benchmark_FOUND)
     # Fetch google benchmark source code from official repository
     set(BENCHMARK_ENABLE_TESTING OFF)
