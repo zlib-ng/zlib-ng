@@ -42,7 +42,8 @@ void inflate_fast_power8(PREFIX3(stream) *strm, uint32_t start, int safe_mode);
 #ifdef POWER9
 uint32_t compare256_power9(const uint8_t *src0, const uint8_t *src1);
 uint32_t longest_match_power9(deflate_state *const s, uint32_t cur_match);
-uint32_t longest_match_roll_power9(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_knuth_power9(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_roll_power9(deflate_state *const s, uint32_t cur_match);
 #endif
 
 #ifndef POWER9_NATIVE
@@ -88,8 +89,10 @@ uint32_t longest_match_roll_power9(deflate_state *const s, uint32_t cur_match);
 #    define native_compare256 compare256_power9
 #    undef native_longest_match
 #    define native_longest_match longest_match_power9
-#    undef native_longest_match_roll
-#    define native_longest_match_roll longest_match_roll_power9
+#    undef native_longest_match_slow_knuth
+#    define native_longest_match_slow_knuth longest_match_slow_knuth_power9
+#    undef native_longest_match_slow_roll
+#    define native_longest_match_slow_roll longest_match_slow_roll_power9
 #  endif
 #endif
 

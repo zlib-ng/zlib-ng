@@ -80,13 +80,16 @@ Z_INTERNAL uint32_t compare256_c(const uint8_t *src0, const uint8_t *src1) {
     return COMPARE256(src0, src1);
 }
 
-// Generate longest_match_c
 #define LONGEST_MATCH       longest_match_c
 #include "match_tpl.h"
 
-// Generate longest_match_roll_c
-#define LONGEST_MATCH_ROLL
-#define LONGEST_MATCH       longest_match_roll_c
+#define LONGEST_MATCH_SLOW
+#define LONGEST_MATCH       longest_match_slow_knuth_c
+#include "match_tpl.h"
+
+#define LONGEST_MATCH_SLOW
+#define LONGEST_MATCH_SLOW_ROLL
+#define LONGEST_MATCH       longest_match_slow_roll_c
 #include "match_tpl.h"
 
 #endif /* COMPARE256_FALLBACK */

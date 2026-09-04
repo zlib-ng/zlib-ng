@@ -30,16 +30,17 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
     unsigned int strstart = s->strstart;
     const unsigned char *window = s->window;
     const Pos *prev = s->prev;
-#ifdef LONGEST_MATCH_ROLL
+#ifdef LONGEST_MATCH_SLOW_ROLL
     const Pos *head = s->head;
 #endif
     const unsigned char *scan;
     const unsigned char *mbase_start = window;
     const unsigned char *mbase_end;
     uint32_t limit;
-#ifdef LONGEST_MATCH_ROLL
+#ifdef LONGEST_MATCH_SLOW_ROLL
     uint32_t limit_base;
-#else
+#endif
+#ifndef LONGEST_MATCH_SLOW
     int32_t early_exit;
 #endif
     uint32_t chain_length = s->max_chain_length;
@@ -76,7 +77,10 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
      * we prevent matches with the string of window index 0
      */
     limit = strstart > MAX_DIST(s) ? (strstart - MAX_DIST(s)) : 0;
-#ifdef LONGEST_MATCH_ROLL
+#ifndef LONGEST_MATCH_SLOW
+    early_exit = s->level < EARLY_EXIT_TRIGGER_LEVEL;
+#endif
+#ifdef LONGEST_MATCH_SLOW_ROLL
     limit_base = limit;
     if (best_len >= STD_MIN_MATCH) {
         /* We're continuing search (lazy evaluation). */
@@ -109,8 +113,6 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
         mbase_start -= match_offset;
         mbase_end -= match_offset;
     }
-#else
-    early_exit = s->level < EARLY_EXIT_TRIGGER_LEVEL;
 #endif
     Assert((unsigned long)strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
     for (;;) {
@@ -194,7 +196,7 @@ short_match_accept:
 
             scan_end = zng_memread_8(scan+offset);
 
-#ifdef LONGEST_MATCH_ROLL
+#ifdef LONGEST_MATCH_SLOW_ROLL
             /* Look for a better string offset */
             if (UNLIKELY(len > STD_MIN_MATCH && match_start + len < strstart)) {
                 const unsigned char *scan_endstr;
@@ -246,7 +248,7 @@ short_match_accept:
 #endif
             mbase_end = (mbase_start+offset);
         }
-#ifndef LONGEST_MATCH_ROLL
+#ifndef LONGEST_MATCH_SLOW
         else if (UNLIKELY(early_exit)) {
             /* The probability of finding a match later if we here is pretty low, so for
              * performance it's best to outright stop here for the lower compression levels
@@ -259,5 +261,6 @@ short_match_accept:
     return best_len;
 }
 
-#undef LONGEST_MATCH_ROLL
+#undef LONGEST_MATCH_SLOW
+#undef LONGEST_MATCH_SLOW_ROLL
 #undef LONGEST_MATCH

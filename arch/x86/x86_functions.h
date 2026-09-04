@@ -20,7 +20,8 @@ uint8_t* chunkmemset_safe_sse2(uint8_t *out, uint8_t *from, size_t len, size_t l
 uint32_t compare256_sse2(const uint8_t *src0, const uint8_t *src1);
 void inflate_fast_sse2(PREFIX3(stream)* strm, uint32_t start, int safe_mode);
 uint32_t longest_match_sse2(deflate_state *const s, uint32_t cur_match);
-uint32_t longest_match_roll_sse2(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_knuth_sse2(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_roll_sse2(deflate_state *const s, uint32_t cur_match);
 void slide_hash_sse2(deflate_state *s);
 void slide_hash_head_sse2(deflate_state *s);
 
@@ -66,7 +67,8 @@ uint8_t* chunkmemset_safe_avx2(uint8_t *out, uint8_t *from, size_t len, size_t l
 uint32_t compare256_avx2(const uint8_t *src0, const uint8_t *src1);
 void inflate_fast_avx2(PREFIX3(stream)* strm, uint32_t start, int safe_mode);
 uint32_t longest_match_avx2(deflate_state *const s, uint32_t cur_match);
-uint32_t longest_match_roll_avx2(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_knuth_avx2(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_roll_avx2(deflate_state *const s, uint32_t cur_match);
 void slide_hash_avx2(deflate_state *s);
 void slide_hash_head_avx2(deflate_state *s);
 #endif
@@ -77,7 +79,8 @@ uint8_t* chunkmemset_safe_avx512(uint8_t *out, uint8_t *from, size_t len, size_t
 uint32_t compare256_avx512(const uint8_t *src0, const uint8_t *src1);
 void inflate_fast_avx512(PREFIX3(stream)* strm, uint32_t start, int safe_mode);
 uint32_t longest_match_avx512(deflate_state *const s, uint32_t cur_match);
-uint32_t longest_match_roll_avx512(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_knuth_avx512(deflate_state *const s, uint32_t cur_match);
+uint32_t longest_match_slow_roll_avx512(deflate_state *const s, uint32_t cur_match);
 #endif
 #ifdef X86_AVX512VNNI
 uint32_t adler32_avx512_vnni(uint32_t adler, const uint8_t *buf, size_t len);
@@ -113,8 +116,10 @@ uint32_t crc32_copy_vpclmulqdq_avx512(uint32_t crc, uint8_t *dst, const uint8_t 
 #    define native_inflate_fast inflate_fast_sse2
 #    undef native_longest_match
 #    define native_longest_match longest_match_sse2
-#    undef native_longest_match_roll
-#    define native_longest_match_roll longest_match_roll_sse2
+#    undef native_longest_match_slow_knuth
+#    define native_longest_match_slow_knuth longest_match_slow_knuth_sse2
+#    undef native_longest_match_slow_roll
+#    define native_longest_match_slow_roll longest_match_slow_roll_sse2
 #    ifdef CRC32_CHORBA_SSE_FALLBACK
 #      undef native_crc32
 #      define native_crc32 crc32_chorba_sse2
@@ -172,8 +177,10 @@ uint32_t crc32_copy_vpclmulqdq_avx512(uint32_t crc, uint8_t *dst, const uint8_t 
 #    define native_inflate_fast inflate_fast_avx2
 #    undef native_longest_match
 #    define native_longest_match longest_match_avx2
-#    undef native_longest_match_roll
-#    define native_longest_match_roll longest_match_roll_avx2
+#    undef native_longest_match_slow_knuth
+#    define native_longest_match_slow_knuth longest_match_slow_knuth_avx2
+#    undef native_longest_match_slow_roll
+#    define native_longest_match_slow_roll longest_match_slow_roll_avx2
 #    undef native_slide_hash
 #    define native_slide_hash slide_hash_avx2
 #    undef native_slide_hash_head
@@ -200,8 +207,10 @@ uint32_t crc32_copy_vpclmulqdq_avx512(uint32_t crc, uint8_t *dst, const uint8_t 
 #    define native_inflate_fast inflate_fast_avx512
 #    undef native_longest_match
 #    define native_longest_match longest_match_avx512
-#    undef native_longest_match_roll
-#    define native_longest_match_roll longest_match_roll_avx512
+#    undef native_longest_match_slow_knuth
+#    define native_longest_match_slow_knuth longest_match_slow_knuth_avx512
+#    undef native_longest_match_slow_roll
+#    define native_longest_match_slow_roll longest_match_slow_roll_avx512
 // X86 - AVX512 (VNNI)
 #    ifdef X86_AVX512VNNI_NATIVE
 #      undef native_adler32

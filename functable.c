@@ -87,7 +87,8 @@ static int init_functable(void) {
 #ifdef COMPARE256_FALLBACK
     ft.compare256 = &compare256_c;
     ft.longest_match = &longest_match_c;
-    ft.longest_match_roll = &longest_match_roll_c;
+    ft.longest_match_slow_knuth = &longest_match_slow_knuth_c;
+    ft.longest_match_slow_roll = &longest_match_slow_roll_c;
 #endif
 #ifdef CRC32_BRAID_FALLBACK
     ft.crc32 = &crc32_braid;
@@ -118,7 +119,8 @@ static int init_functable(void) {
         ft.compare256 = &compare256_sse2;
         ft.inflate_fast = &inflate_fast_sse2;
         ft.longest_match = &longest_match_sse2;
-        ft.longest_match_roll = &longest_match_roll_sse2;
+        ft.longest_match_slow_knuth = &longest_match_slow_knuth_sse2;
+        ft.longest_match_slow_roll = &longest_match_slow_roll_sse2;
         ft.slide_hash = &slide_hash_sse2;
         ft.slide_hash_head = &slide_hash_head_sse2;
 #  endif
@@ -192,7 +194,8 @@ static int init_functable(void) {
         ft.compare256 = &compare256_avx2;
         ft.inflate_fast = &inflate_fast_avx2;
         ft.longest_match = &longest_match_avx2;
-        ft.longest_match_roll = &longest_match_roll_avx2;
+        ft.longest_match_slow_knuth = &longest_match_slow_knuth_avx2;
+        ft.longest_match_slow_roll = &longest_match_slow_roll_avx2;
 #  endif
         ft.slide_hash = &slide_hash_avx2;
         ft.slide_hash_head = &slide_hash_head_avx2;
@@ -218,7 +221,8 @@ static int init_functable(void) {
         ft.compare256 = &compare256_avx512;
         ft.inflate_fast = &inflate_fast_avx512;
         ft.longest_match = &longest_match_avx512;
-        ft.longest_match_roll = &longest_match_roll_avx512;
+        ft.longest_match_slow_knuth = &longest_match_slow_knuth_avx512;
+        ft.longest_match_slow_roll = &longest_match_slow_roll_avx512;
     }
 #endif
 #ifdef X86_AVX512VNNI
@@ -274,7 +278,8 @@ static int init_functable(void) {
         ft.compare256 = &compare256_neon;
         ft.inflate_fast = &inflate_fast_neon;
         ft.longest_match = &longest_match_neon;
-        ft.longest_match_roll = &longest_match_roll_neon;
+        ft.longest_match_slow_knuth = &longest_match_slow_knuth_neon;
+        ft.longest_match_slow_roll = &longest_match_slow_roll_neon;
         ft.slide_hash = &slide_hash_neon;
         ft.slide_hash_head = &slide_hash_head_neon;
     }
@@ -353,7 +358,8 @@ static int init_functable(void) {
     {
         ft.compare256 = &compare256_power9;
         ft.longest_match = &longest_match_power9;
-        ft.longest_match_roll = &longest_match_roll_power9;
+        ft.longest_match_slow_knuth = &longest_match_slow_knuth_power9;
+        ft.longest_match_slow_roll = &longest_match_slow_roll_power9;
     }
 #endif
 
@@ -370,7 +376,8 @@ static int init_functable(void) {
         ft.compare256 = &compare256_rvv;
         ft.inflate_fast = &inflate_fast_rvv;
         ft.longest_match = &longest_match_rvv;
-        ft.longest_match_roll = &longest_match_roll_rvv;
+        ft.longest_match_slow_knuth = &longest_match_slow_knuth_rvv;
+        ft.longest_match_slow_roll = &longest_match_slow_roll_rvv;
         ft.slide_hash = &slide_hash_rvv;
         ft.slide_hash_head = &slide_hash_head_rvv;
     }
@@ -421,7 +428,8 @@ static int init_functable(void) {
         ft.compare256 = &compare256_lsx;
         ft.inflate_fast = &inflate_fast_lsx;
         ft.longest_match = &longest_match_lsx;
-        ft.longest_match_roll = &longest_match_roll_lsx;
+        ft.longest_match_slow_knuth = &longest_match_slow_knuth_lsx;
+        ft.longest_match_slow_roll = &longest_match_slow_roll_lsx;
         ft.slide_hash = &slide_hash_lsx;
         ft.slide_hash_head = &slide_hash_head_lsx;
     }
@@ -437,7 +445,8 @@ static int init_functable(void) {
         ft.compare256 = &compare256_lasx;
         ft.inflate_fast = &inflate_fast_lasx;
         ft.longest_match = &longest_match_lasx;
-        ft.longest_match_roll = &longest_match_roll_lasx;
+        ft.longest_match_slow_knuth = &longest_match_slow_knuth_lasx;
+        ft.longest_match_slow_roll = &longest_match_slow_roll_lasx;
         ft.slide_hash = &slide_hash_lasx;
         ft.slide_hash_head = &slide_hash_head_lasx;
     }
@@ -455,7 +464,8 @@ static int init_functable(void) {
     FUNCTABLE_VERIFY_ASSIGN(ft, crc32_copy);
     FUNCTABLE_VERIFY_ASSIGN(ft, inflate_fast);
     FUNCTABLE_VERIFY_ASSIGN(ft, longest_match);
-    FUNCTABLE_VERIFY_ASSIGN(ft, longest_match_roll);
+    FUNCTABLE_VERIFY_ASSIGN(ft, longest_match_slow_knuth);
+    FUNCTABLE_VERIFY_ASSIGN(ft, longest_match_slow_roll);
     FUNCTABLE_VERIFY_ASSIGN(ft, slide_hash);
     FUNCTABLE_VERIFY_ASSIGN(ft, slide_hash_head);
 
@@ -516,9 +526,14 @@ static uint32_t longest_match_stub(deflate_state* const s, uint32_t cur_match) {
     return functable.longest_match(s, cur_match);
 }
 
-static uint32_t longest_match_roll_stub(deflate_state* const s, uint32_t cur_match) {
+static uint32_t longest_match_slow_knuth_stub(deflate_state* const s, uint32_t cur_match) {
     FUNCTABLE_INIT_ABORT;
-    return functable.longest_match_roll(s, cur_match);
+    return functable.longest_match_slow_knuth(s, cur_match);
+}
+
+static uint32_t longest_match_slow_roll_stub(deflate_state* const s, uint32_t cur_match) {
+    FUNCTABLE_INIT_ABORT;
+    return functable.longest_match_slow_roll(s, cur_match);
 }
 
 static void slide_hash_stub(deflate_state* s) {
@@ -542,7 +557,8 @@ Z_INTERNAL struct functable_s functable = {
     crc32_copy_stub,
     inflate_fast_stub,
     longest_match_stub,
-    longest_match_roll_stub,
+    longest_match_slow_knuth_stub,
+    longest_match_slow_roll_stub,
     slide_hash_stub,
     slide_hash_head_stub,
 };
