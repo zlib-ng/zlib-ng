@@ -54,6 +54,7 @@ public:
 
     void Bench(benchmark::State& state, slide_hash_func slide_hash) {
         s_g->w_size = (uint32_t)state.range(0);
+        s_g->slide_len = s_g->w_size;
 
         for (auto _ : state) {
             slide_hash(s_g);

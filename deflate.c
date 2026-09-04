@@ -178,7 +178,7 @@ Z_INTERNAL deflate_allocs* alloc_deflate(PREFIX3(stream) *strm, int windowBits, 
     int curr_size = 0;
 
     /* Define sizes */
-    int window_size = DEFLATE_ADJUST_WINDOW_SIZE((1 << windowBits) * 2);
+    int window_size = DEFLATE_ADJUST_WINDOW_SIZE(WINDOW_BUF_SIZE(1 << windowBits));
     int prev_size = (1 << windowBits) * (int)sizeof(Pos);
     int head_size = HASH_SIZE * sizeof(Pos);
     int pending_size = (lit_bufsize * LIT_BUFS) + 1;
@@ -1155,7 +1155,7 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
         return Z_MEM_ERROR;
     }
 
-    memcpy(ds->window, ss->window, DEFLATE_ADJUST_WINDOW_SIZE(ds->w_size * 2 * sizeof(unsigned char)));
+    memcpy(ds->window, ss->window, DEFLATE_ADJUST_WINDOW_SIZE(WINDOW_BUF_SIZE(ds->w_size) * sizeof(unsigned char)));
     memcpy(ds->prev, ss->prev, ds->w_size * sizeof(Pos));
     memcpy(ds->head, ss->head, HASH_SIZE * sizeof(Pos));
     memcpy(ds->pending_buf, ss->pending_buf, ds->lit_bufsize * LIT_BUFS);
@@ -1190,7 +1190,8 @@ static void lm_set_level(deflate_state *s, int level) {
  * Initialize the "longest match" routines for a new zlib stream
  */
 static void lm_init(deflate_state *s) {
-    s->window_size = 2 * s->w_size;
+    s->window_size = WINDOW_BUF_SIZE(s->w_size);
+    s->slide_len = 0;
 
     CLEAR_HASH(s);
 
@@ -1225,7 +1226,6 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
     unsigned char *window = s->window;
     unsigned n;
     unsigned int more;    /* Amount of free space at the end of the window. */
-    unsigned int wsize = s->w_size;
     int level = s->level;
 
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
@@ -1240,44 +1240,46 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
     do {
         more = s->window_size - s->lookahead - s->strstart;
 
-        /* If the window is almost full and there is insufficient lookahead,
-         * move the upper half to the lower one to make room in the upper half.
+        /* If the window buffer is almost full and there is insufficient lookahead,
+         * move the live data down to make room at the end of the buffer.
          */
-        if (s->strstart >= wsize+MAX_DIST(s)) {
-            memcpy(window, window + wsize, (unsigned)wsize);
-            if (s->match_start >= wsize) {
-                s->match_start -= wsize;
+        if (s->strstart >= s->window_size - MIN_LOOKAHEAD) {
+            /* Slide as far as possible while keeping MAX_DIST bytes of history.
+             * The slide is a multiple of w_size so prev slots keep their positions. */
+            unsigned int slide = (s->strstart - MAX_DIST(s)) & ~W_MASK(s);
+            memcpy(window, window + slide, s->strstart + s->lookahead - slide);
+            if (s->match_start >= slide) {
+                s->match_start -= slide;
             } else {
                 s->match_start = 0;
                 s->prev_length = 0;
             }
-            s->strstart    -= wsize; /* we now have strstart >= MAX_DIST */
-            s->block_start -= (int)wsize;
+            s->strstart    -= slide; /* we now have strstart >= MAX_DIST */
+            s->block_start -= (int)slide;
             if (s->insert > s->strstart)
                 s->insert = s->strstart;
             if (s->strategy != Z_HUFFMAN_ONLY && s->strategy != Z_RLE) {
                 /* Z_HUFFMAN_ONLY and Z_RLE never read the hash chain. deflate_quick
                  * reads the chain head but never walks prev, so it slides head only. */
+                s->slide_len = slide;
                 if (HAVE_QUICK_STRATEGY && level == 1)
                     FUNCTABLE_CALL(slide_hash_head)(s);
                 else
                     FUNCTABLE_CALL(slide_hash)(s);
             }
-            more += wsize;
+            more += slide;
         }
         if (strm->avail_in == 0)
             break;
 
         /* If there was no sliding:
-         *    strstart <= WSIZE+MAX_DIST-1 && lookahead <= MIN_LOOKAHEAD - 1 &&
+         *    strstart <= window_size - MIN_LOOKAHEAD - 1 &&
+         *    lookahead <= MIN_LOOKAHEAD - 1 &&
          *    more == window_size - lookahead - strstart
-         * => more >= window_size - (MIN_LOOKAHEAD-1 + WSIZE + MAX_DIST-1)
-         * => more >= window_size - 2*WSIZE + 2
-         * In the BIG_MEM or MMAP case (not yet supported),
-         *   window_size == input_size + MIN_LOOKAHEAD  &&
-         *   strstart + s->lookahead <= input_size => more >= MIN_LOOKAHEAD.
-         * Otherwise, window_size == 2*WSIZE so more >= 2.
-         * If there was sliding, more >= WSIZE. So in all cases, more >= 2.
+         * => more >= window_size - (MIN_LOOKAHEAD - 1) - (window_size - MIN_LOOKAHEAD - 1)
+         * => more >= 2
+         * If there was sliding, more increased by at least w_size.
+         * So in all cases, more >= 2.
          */
         Assert(more >= 2, "more < 2");
 
