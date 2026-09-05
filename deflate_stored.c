@@ -101,10 +101,11 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
      * data, or append all of the copied data to the existing window if less
      * than s->w_size bytes were copied. Also update the number of bytes to
      * insert in the hash tables, in the event that deflateParams() switches to
-     * a non-zero compression level.
+     * a non-zero compression level. Skip the update when the last block was
+     * written, since the window is never read after the stream is finished.
      */
     used -= s->strm->avail_in;      /* number of input bytes directly copied */
-    if (used) {
+    if (used && !last) {
         /* If any input was used, then no unused input remains in the window,
          * therefore s->block_start == s->strstart.
          */
