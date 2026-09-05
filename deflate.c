@@ -170,6 +170,15 @@ static const config configuration_table[10] = {
 #  define LOGSZPL(name,size,loc,pad)
 #endif
 
+/* Extra bytes reserved between the pending buffer and the symbol buffers, and at
+ * the end of the pending allocation. send_bits_flush stores 8 bytes unconditionally but
+ * only advances past the complete ones, so its stores reach up to 7 bytes beyond the
+ * logical output position, which may otherwise clobber unread symbols as the output
+ * chases the symbol buffer, or run past the allocation. */
+#define PENDING_BUF_PAD 8
+
+#define PENDING_BUF_SIZE(lit_bufsize) (((lit_bufsize) * LIT_BUFS) + 1 + PENDING_BUF_PAD)
+
 /* ===========================================================================
  * Allocate a big buffer and divide it up into the various buffers deflate needs.
  * Handles alignment of allocated buffer and alignment of individual buffers.
@@ -181,7 +190,7 @@ Z_INTERNAL deflate_allocs* alloc_deflate(PREFIX3(stream) *strm, int windowBits, 
     int window_size = DEFLATE_ADJUST_WINDOW_SIZE((1 << windowBits) * 2);
     int prev_size = (1 << windowBits) * (int)sizeof(Pos);
     int head_size = HASH_SIZE * sizeof(Pos);
-    int pending_size = (lit_bufsize * LIT_BUFS) + 1;
+    int pending_size = PENDING_BUF_SIZE(lit_bufsize);
     int state_size = sizeof(deflate_state);
     int alloc_size = sizeof(deflate_allocs);
 
@@ -364,11 +373,11 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
     s->pending_buf_size = s->lit_bufsize * 4;
 
 #ifdef LIT_MEM
-    s->d_buf = (uint16_t *)(s->pending_buf + (s->lit_bufsize << 1));
-    s->l_buf = s->pending_buf + (s->lit_bufsize << 2);
+    s->d_buf = (uint16_t *)(s->pending_buf + (s->lit_bufsize << 1) + PENDING_BUF_PAD);
+    s->l_buf = s->pending_buf + (s->lit_bufsize << 2) + PENDING_BUF_PAD;
     s->sym_end = s->lit_bufsize - 1;
 #else
-    s->sym_buf = s->pending_buf + s->lit_bufsize;
+    s->sym_buf = s->pending_buf + s->lit_bufsize + PENDING_BUF_PAD;
     s->sym_end = (s->lit_bufsize - 1) * 3;
 #endif
     /* We avoid equality with lit_bufsize*3 because of wraparound at 64K
@@ -1155,14 +1164,14 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     memcpy(ds->window, ss->window, DEFLATE_ADJUST_WINDOW_SIZE(ds->w_size * 2 * sizeof(unsigned char)));
     memcpy(ds->prev, ss->prev, ds->w_size * sizeof(Pos));
     memcpy(ds->head, ss->head, HASH_SIZE * sizeof(Pos));
-    memcpy(ds->pending_buf, ss->pending_buf, ds->lit_bufsize * LIT_BUFS);
+    memcpy(ds->pending_buf, ss->pending_buf, PENDING_BUF_SIZE(ds->lit_bufsize));
 
     ds->pending_out = ds->pending_buf + (ss->pending_out - ss->pending_buf);
 #ifdef LIT_MEM
-    ds->d_buf = (uint16_t *)(ds->pending_buf + (ds->lit_bufsize << 1));
-    ds->l_buf = ds->pending_buf + (ds->lit_bufsize << 2);
+    ds->d_buf = (uint16_t *)(ds->pending_buf + (ds->lit_bufsize << 1) + PENDING_BUF_PAD);
+    ds->l_buf = ds->pending_buf + (ds->lit_bufsize << 2) + PENDING_BUF_PAD;
 #else
-    ds->sym_buf = ds->pending_buf + ds->lit_bufsize;
+    ds->sym_buf = ds->pending_buf + ds->lit_bufsize + PENDING_BUF_PAD;
 #endif
 
     ds->l_desc.dyn_tree = ds->dyn_ltree;
