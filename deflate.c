@@ -48,6 +48,7 @@
  */
 
 #include "zbuild.h"
+#include "zsanitizer.h"
 #include "functable.h"
 #include "deflate.h"
 #include "deflate_p.h"
@@ -1192,7 +1193,20 @@ static void lm_set_level(deflate_state *s, int level) {
 static void lm_init(deflate_state *s) {
     s->window_size = 2 * s->w_size;
 
-    CLEAR_HASH(s);
+    /* Hashless configurations never read the hash table. When deflateParams
+     * switches to a configuration that does, it clears the table itself.
+     */
+    if (s->level != 0 && s->strategy != Z_HUFFMAN_ONLY && s->strategy != Z_RLE) {
+        CLEAR_HASH(s);
+    }
+#ifdef Z_MEMORY_SANITIZER
+    else {
+        /* fill_window() still chains inserts through the table, so tell MSan
+         * the garbage reads are intentional.
+         */
+        __msan_unpoison(s->head, HASH_SIZE * sizeof(*s->head));
+    }
+#endif
 
     /* Set the default configuration parameters:
      */
