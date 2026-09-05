@@ -135,6 +135,7 @@ if(WITH_GTEST)
             test_inflate_adler32.cc
             test_inflate_back.cc
             test_inflate_copy.cc
+            test_inflate_overlap.cc
             test_raw.cc
             test_small_window.cc
             )
