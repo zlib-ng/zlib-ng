@@ -442,6 +442,34 @@ else()
     add_compile_options(${WARNFLAGS} ${WARNFLAGS_DISABLE})
 endif()
 
+#
+# Intel JCC Erratum mitigation alignment for x86 architectures
+# see: https://www.intel.com/content/www/us/en/developer/articles/technical/software-security-guidance/best-practices/mitigation-strategies-jcc-microcode.html
+#
+if(BASEARCH_X86_FOUND)
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang" OR CMAKE_C_COMPILER_ID MATCHES "IntelLLVM")
+        check_c_compiler_flag(-mbranches-within-32B-boundaries HAVE_BRANCHES_WITHIN32)
+        if(HAVE_BRANCHES_WITHIN32)
+            add_compile_options("-mbranches-within-32B-boundaries")
+        endif()
+    elseif(CMAKE_C_COMPILER_ID MATCHES "GNU")
+        check_c_compiler_flag(-Wa,-mbranches-within-32B-boundaries HAVE_BRANCHES_WITHIN32)
+        if(HAVE_BRANCHES_WITHIN32)
+            add_compile_options("-Wa,-mbranches-within-32B-boundaries")
+        endif()
+    elseif(CMAKE_C_COMPILER_ID MATCHES "NVC" OR CMAKE_C_COMPILER_ID MATCHES "NVHPC")
+        check_c_compiler_flag(-Wa,-mbranches-within-32B-boundaries HAVE_BRANCHES_WITHIN32)
+        if(HAVE_BRANCHES_WITHIN32)
+            add_compile_options("-Wa,-mbranches-within-32B-boundaries")
+        endif()
+    elseif (MSVC)
+        check_c_compiler_flag(/QIntel-jcc-erratum HAVE_BRANCHES_WITHIN32)
+        if(HAVE_BRANCHES_WITHIN32)
+            add_compile_options("/QIntel-jcc-erratum")
+        endif()
+    endif()
+endif()
+
 # Set code coverage compiler flags
 if(WITH_CODE_COVERAGE)
     add_code_coverage()

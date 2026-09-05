@@ -160,6 +160,10 @@ OBJC='$(OBJZ)'
 PIC_OBJC='$(PIC_OBJZ)'
 INSTALLTARGETS="install-shared install-static"
 UNINSTALLTARGETS="uninstall-shared uninstall-static"
+branch_within32_clang="-mbranches-within-32B-boundaries"
+branch_within32_gcc="-Wa,-mbranches-within-32B-boundaries"
+# Need this set to something that will initially fail the compiler check test
+branch_within32_flag="UNSUPPORTED"
 
 TEST="teststatic"
 
@@ -1367,6 +1371,31 @@ EOF
     fi
 }
 
+check_branch_within32_compiler_flag() {
+    # Check whether the JCC mitigation workaround is supported
+    if test $clang -eq 1; then
+        branch_within32_flag="$branch_within32_clang"
+    elif test $gcc -eq 1; then
+        branch_within32_flag="$branch_within32_gcc"
+    elif test $nvc -eq 1; then
+        branch_within32_flag="$branch_within32_gcc"
+    else
+        BRANCH_WITHIN32_SUPPORTED=0
+    fi
+
+    cat > $test.c << EOF
+int main(void) { return 0; }
+EOF
+    if try $CC -c $CFLAGS $branch_within32_flag $test.c; then
+        BRANCH_WITHIN32_SUPPORTED=1
+        echo "Check whether $branch_within32_flag is available ... Yes." | tee -a configure.log
+    else
+        BRANCH_WITHIN32_SUPPORTED=0
+        branch_within32_flag=
+        echo "Check whether $branch_within32_flag is available ... No." | tee -a configure.log
+    fi
+}
+
 check_neon_compiler_flag() {
     if test "$ARCH" = "aarch64"; then
         neonflag="-march=armv8-a+simd"
@@ -1987,6 +2016,13 @@ case "${ARCH}" in
 
             if test ${MTUNE_RAPTORLAKE_AVAILABLE} -eq 1; then
                 avx2vnniflag="${avx2vnniflag} -mtune=raptorlake"
+            fi
+
+            check_branch_within32_compiler_flag
+
+            if test ${BRANCH_WITHIN32_SUPPORTED} -eq 1; then
+                CFLAGS="${CFLAGS} ${branch_within32_flag}"
+                SFLAGS="${SFLAGS} ${branch_within32_flag}"
             fi
 
             check_avx512_intrinsics
