@@ -114,9 +114,10 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
             s->insert = s->strstart;
         } else {
             if (s->window_size - s->strstart <= used) {
-                /* Slide the window down. */
-                s->strstart -= w_size;
-                memcpy(window, window + w_size, s->strstart);
+                /* Slide the window down, keeping w_size bytes of history. */
+                unsigned int slide = s->strstart - w_size;
+                s->strstart = w_size;
+                memmove(window, window + slide, s->strstart);
                 s->insert = MIN(s->insert, s->strstart);
             }
             memcpy(window + s->strstart, s->strm->next_in - used, used);
@@ -140,11 +141,13 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
     /* Fill the window with any remaining input. */
     have = s->window_size - s->strstart;
     if (s->strm->avail_in > have && s->block_start >= (int)w_size) {
-        /* Slide the window down. */
-        s->block_start -= (int)w_size;
-        s->strstart -= w_size;
-        memcpy(window, window + w_size, s->strstart);
-        have += w_size;          /* more space now */
+        /* Slide the window down as far as the unflushed block data and w_size
+         * bytes of history allow. */
+        unsigned int slide = MIN((unsigned int)s->block_start, s->strstart - w_size);
+        s->block_start -= (int)slide;
+        s->strstart -= slide;
+        memmove(window, window + slide, s->strstart);
+        have += slide;           /* more space now */
         s->insert = MIN(s->insert, s->strstart);
     }
 
