@@ -1108,11 +1108,17 @@ int32_t zng_inflateBackInit(zng_stream *strm, int32_t windowBits, uint8_t *windo
    allocated.
 */
 
-typedef uint32_t (*in_func) (void *, const uint8_t * *);
-typedef int32_t  (*out_func) (void *, uint8_t *, uint32_t);
+typedef uint32_t (*zng_in_func) (void *, const uint8_t * *);
+typedef int32_t  (*zng_out_func) (void *, uint8_t *, uint32_t);
+
+/* Deprecated names. Skipped when stock zlib.h already defines them. */
+#ifndef ZLIB_H
+typedef Z_DEPRECATED("in_func is deprecated, use zng_in_func instead.") zng_in_func in_func;
+typedef Z_DEPRECATED("out_func is deprecated, use zng_out_func instead.") zng_out_func out_func;
+#endif
 
 Z_EXTERN Z_EXPORT
-int32_t zng_inflateBack(zng_stream *strm, in_func in, void *in_desc, out_func out, void *out_desc);
+int32_t zng_inflateBack(zng_stream *strm, zng_in_func in, void *in_desc, zng_out_func out, void *out_desc);
 /*
      inflateBack() does a raw inflate with a single call using a call-back
    interface for input and output.  This is potentially more efficient than
@@ -1140,12 +1146,13 @@ int32_t zng_inflateBack(zng_stream *strm, in_func in, void *in_desc, out_func ou
    called by inflateBack() for input and output.  inflateBack() calls those
    routines until it reads a complete deflate stream and writes out all of the
    uncompressed data, or until it encounters an error.  The function's
-   parameters and return types are defined above in the in_func and out_func
-   typedefs.  inflateBack() will call in(in_desc, &buf) which should return the
-   number of bytes of provided input, and a pointer to that input in buf.  If
-   there is no input available, in() must return zero -- buf is ignored in that
-   case -- and inflateBack() will return a buffer error.  inflateBack() will
-   call out(out_desc, buf, len) to write the uncompressed data buf[0..len-1].
+   parameters and return types are defined above in the zng_in_func and
+   zng_out_func typedefs.  inflateBack() will call in(in_desc, &buf) which
+   should return the number of bytes of provided input, and a pointer to that
+   input in buf.  If there is no input available, in() must return zero -- buf
+   is ignored in that case -- and inflateBack() will return a buffer error.
+   inflateBack() will call out(out_desc, buf, len) to write the uncompressed
+   data buf[0..len-1].
    out() should return zero on success, or non-zero on failure.  If out()
    returns non-zero, inflateBack() will return with an error.  Neither in() nor
    out() are permitted to change the contents of the window provided to

@@ -139,9 +139,9 @@
 #endif
 #define gz_header             @ZLIB_SYMBOL_PREFIX@gz_header
 #define gz_headerp            @ZLIB_SYMBOL_PREFIX@gz_headerp
-#define in_func               @ZLIB_SYMBOL_PREFIX@in_func
+#define zng_in_func           @ZLIB_SYMBOL_PREFIX@zng_in_func
 #define intf                  @ZLIB_SYMBOL_PREFIX@intf
-#define out_func              @ZLIB_SYMBOL_PREFIX@out_func
+#define zng_out_func          @ZLIB_SYMBOL_PREFIX@zng_out_func
 #define uInt                  @ZLIB_SYMBOL_PREFIX@uInt
 #define uIntf                 @ZLIB_SYMBOL_PREFIX@uIntf
 #define uLong                 @ZLIB_SYMBOL_PREFIX@uLong
