@@ -81,6 +81,9 @@ TEST_COMPARE256(avx512, compare256_avx512, test_cpu_features.x86.has_avx512_comm
 #ifdef ARM_NEON
 TEST_COMPARE256(neon, compare256_neon, test_cpu_features.arm.has_neon)
 #endif
+#ifdef POWER8_VSX
+TEST_COMPARE256(power8, compare256_power8, test_cpu_features.power.has_arch_2_07)
+#endif
 #ifdef POWER9
 TEST_COMPARE256(power9, compare256_power9, test_cpu_features.power.has_arch_3_00)
 #endif

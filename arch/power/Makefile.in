@@ -26,6 +26,8 @@ all: power_features.o \
      adler32_vmx.lo \
      chunkset_power8.o \
      chunkset_power8.lo \
+     compare256_power8.o \
+     compare256_power8.lo \
      compare256_power9.o \
      compare256_power9.lo \
      crc32_power8.o \
@@ -58,6 +60,12 @@ chunkset_power8.o:
 
 chunkset_power8.lo:
 	$(CC) $(SFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/chunkset_power8.c
+
+compare256_power8.o:
+	$(CC) $(CFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_power8.c
+
+compare256_power8.lo:
+	$(CC) $(SFLAGS) $(P8FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_power8.c
 
 compare256_power9.o:
 	$(CC) $(CFLAGS) $(P9FLAGS) $(NOLTOFLAG) $(INCLUDES) -c -o $@ $(SRCDIR)/compare256_power9.c
