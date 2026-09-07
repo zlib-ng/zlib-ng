@@ -109,6 +109,16 @@
 
 #define HASH_MASK (HASH_SIZE - 1u) /* HASH_SIZE-1 */
 
+#define MIN_ROLL_LEVEL 9
+/* Levels at and above this use the rolling three-byte hash, which can find
+ * minimum-length matches the four-byte Knuth hash cannot index.
+ *
+ * Every level at and above this must map to deflate_slow in configuration_table
+ * to prevent the hash chains from mixing Knuth and rolling hashes.
+ */
+#if MIN_ROLL_LEVEL < 7
+#  error MIN_ROLL_LEVEL must only reach levels that map to deflate_slow
+#endif
 
 /* Data structure describing a single value and its code string. */
 typedef struct ct_data_s {

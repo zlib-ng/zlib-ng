@@ -42,7 +42,7 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
          */
         uint32_t hash_head = 0;
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
-            if (level >= 9)
+            if (level >= MIN_ROLL_LEVEL)
                 hash_head = insert_roll(s, window, s->strstart);
             else
                 hash_head = insert_knuth(s, window, s->strstart);
