@@ -643,8 +643,9 @@ int32_t Z_EXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int
     int was_hashless = s->level == 0 || s->strategy == Z_HUFFMAN_ONLY || s->strategy == Z_RLE;
 
     /* Stale if the hash usage flipped (to/from huffman/rle/stored), the hash
-     * function changed at level 9, or quick at level 1 left prev unmaintained. */
-    int stale_chain = (hashless != was_hashless) || (level >= 9) != (s->level >= 9) ||
+     * function changed at MIN_ROLL_LEVEL, or quick at level 1 left prev unmaintained. */
+    int stale_chain = (hashless != was_hashless) ||
+                      (level >= MIN_ROLL_LEVEL) != (s->level >= MIN_ROLL_LEVEL) ||
                       (HAVE_QUICK_STRATEGY && s->level == 1 && level != 1);
 
     /* Rebuild the hash chains when fill_window is called. */
@@ -1181,7 +1182,7 @@ static void lm_set_level(deflate_state *s, int level) {
     s->good_match       = configuration_table[level].good_length;
     s->nice_match       = configuration_table[level].nice_length;
     s->max_chain_length = configuration_table[level].max_chain;
-    if (level >= 9) {
+    if (level >= MIN_ROLL_LEVEL) {
         s->longest_match = FUNCTABLE_FPTR(longest_match_slow_roll);
         s->insert_batch  = insert_roll_batch;
     } else {
@@ -1288,7 +1289,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
         /* Initialize the hash value now that we have some input: */
         if (s->lookahead + s->insert >= STD_MIN_MATCH) {
             unsigned int str = s->strstart - s->insert;
-            if (UNLIKELY(level >= 9)) {
+            if (UNLIKELY(level >= MIN_ROLL_LEVEL)) {
                 s->ins_h = update_hash_roll(window[str], window[str+1]);
             } else if (str >= 1) {
                 if (HAVE_QUICK_STRATEGY && level == 1)
