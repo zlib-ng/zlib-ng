@@ -158,6 +158,12 @@ static const config configuration_table[10] = {
     memset((unsigned char *)s->head, 0, HASH_SIZE * sizeof(*s->head)); \
   } while (0)
 
+/* Configurations that never read the hash table. When deflateParams() switches
+ * to a configuration that does read it, it rebuilds the table from the window.
+ */
+#define HASHLESS(level, strategy) \
+    ((level) == 0 || (strategy) == Z_HUFFMAN_ONLY || (strategy) == Z_RLE)
+
 
 #ifdef DEF_ALLOC_DEBUG
 #  include <stdio.h>
@@ -441,6 +447,8 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     DEFLATE_SET_DICTIONARY_HOOK(strm, dictionary, dictLength);  /* hook for IBM Z DFLTCC */
     s->wrap = 0;                    /* avoid computing Adler-32 in read_buf */
 
+    int hashless = HASHLESS(s->level, s->strategy);
+
     /* if dictionary would fill window, just replace the history */
     if (dictLength >= s->w_size) {
         if (wrap == 0) {            /* already empty otherwise */
@@ -462,7 +470,8 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     while (s->lookahead >= STD_MIN_MATCH) {
         str = s->strstart;
         n = s->lookahead - (STD_MIN_MATCH - 1);
-        insert_batch(s, s->window, str, n);
+        if (!hashless)
+            insert_batch(s, s->window, str, n);
         s->strstart = str + n;
         s->lookahead = STD_MIN_MATCH - 1;
         PREFIX(fill_window)(s);
@@ -639,8 +648,8 @@ int32_t Z_EXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int
             return Z_BUF_ERROR;
     }
 
-    int hashless = level == 0 || strategy == Z_HUFFMAN_ONLY || strategy == Z_RLE;
-    int was_hashless = s->level == 0 || s->strategy == Z_HUFFMAN_ONLY || s->strategy == Z_RLE;
+    int hashless = HASHLESS(level, strategy);
+    int was_hashless = HASHLESS(s->level, s->strategy);
 
     /* Stale if the hash usage flipped (to/from huffman/rle/stored), the hash
      * function changed at MIN_ROLL_LEVEL, or quick at level 1 left prev unmaintained. */
@@ -1257,9 +1266,9 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             s->block_start -= (int)wsize;
             if (s->insert > s->strstart)
                 s->insert = s->strstart;
-            if (s->strategy != Z_HUFFMAN_ONLY && s->strategy != Z_RLE) {
-                /* Z_HUFFMAN_ONLY and Z_RLE never read the hash chain. deflate_quick
-                 * reads the chain head but never walks prev, so it slides head only. */
+            if (!HASHLESS(level, s->strategy)) {
+                /* deflate_quick reads the chain head but never walks prev, so it
+                 * slides head only. */
                 if (HAVE_QUICK_STRATEGY && level == 1)
                     FUNCTABLE_CALL(slide_hash_head)(s);
                 else
@@ -1287,7 +1296,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
         s->lookahead += n;
 
         /* Initialize the hash value now that we have some input: */
-        if (s->lookahead + s->insert >= STD_MIN_MATCH) {
+        if (!HASHLESS(level, s->strategy) && s->lookahead + s->insert >= STD_MIN_MATCH) {
             unsigned int str = s->strstart - s->insert;
             if (UNLIKELY(level >= MIN_ROLL_LEVEL)) {
                 s->ins_h = update_hash_roll(window[str], window[str+1]);
