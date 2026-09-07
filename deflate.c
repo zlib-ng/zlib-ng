@@ -452,7 +452,8 @@ int32_t Z_EXPORT PREFIX(deflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     /* if dictionary would fill window, just replace the history */
     if (dictLength >= s->w_size) {
         if (wrap == 0) {            /* already empty otherwise */
-            CLEAR_HASH(s);
+            if (!hashless)
+                CLEAR_HASH(s);
             s->strstart = 0;
             s->block_start = 0;
             s->insert = 0;
@@ -1210,7 +1211,9 @@ static void lm_set_level(deflate_state *s, int level) {
 static void lm_init(deflate_state *s) {
     s->window_size = 2 * s->w_size;
 
-    CLEAR_HASH(s);
+    if (!HASHLESS(s->level, s->strategy)) {
+        CLEAR_HASH(s);
+    }
 
     /* Set the default configuration parameters:
      */
