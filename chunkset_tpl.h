@@ -142,7 +142,10 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
         return out + len;
     } else
 #endif
-    if (dist >= len || dist >= sizeof(chunk_t)) {
+    /* A distance equal to sizeof(chunk_t) falls through to the broadcast path below instead
+     * of going to CHUNKCOPY. CHUNKCOPY would read its source one chunk behind the store it
+     * just issued, so every iteration waits on store to load forwarding. */
+    if (dist >= len || dist > sizeof(chunk_t)) {
         return CHUNKCOPY(out, from, len);
     }
 
@@ -201,7 +204,10 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
         chunkmemset_16(from, &chunk_load);
     } else
 #endif
-    {
+    /* A period of exactly one chunk needs no replication, so a plain load fills the magazine */
+    if (dist == sizeof(chunk_t)) {
+        loadchunk(from, &chunk_load);
+    } else {
         /* The permute tables only cover distances below the chunk width */
         Assert(dist < sizeof(chunk_t), "chunk magazine distance out of range");
         chunk_load = GET_CHUNK_MAG(from, &chunk_mod, dist);
