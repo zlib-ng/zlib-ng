@@ -159,6 +159,8 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
             return HALFCHUNKCOPY(out, from, len);
 
         if ((dist % 2) != 0 || dist == 6) {
+            /* The permute tables only cover distances below the half chunk width */
+            Assert(dist < sizeof(halfchunk_t), "half chunk magazine distance out of range");
             halfchunk_t halfchunk_load = GET_HALFCHUNK_MAG(from, &chunk_mod, dist);
 
             if (len == sizeof(halfchunk_t)) {
@@ -199,7 +201,11 @@ static inline uint8_t* CHUNKMEMSET(uint8_t *out, uint8_t *from, size_t len) {
         chunkmemset_16(from, &chunk_load);
     } else
 #endif
-    chunk_load = GET_CHUNK_MAG(from, &chunk_mod, dist);
+    {
+        /* The permute tables only cover distances below the chunk width */
+        Assert(dist < sizeof(chunk_t), "chunk magazine distance out of range");
+        chunk_load = GET_CHUNK_MAG(from, &chunk_mod, dist);
+    }
 
     if (len <= sizeof(chunk_t)) {
 #ifdef HAVE_MASKED_READWRITE
