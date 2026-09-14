@@ -27,13 +27,13 @@ extern Z_INTERNAL const uint32_t dmask_extra[D_CODES];
         Tracevv((stderr, " l %2d v %4llx ", (int)(length), (long long)(value))); \
         Assert(length > 0 && length <= BIT_BUF_SIZE, "invalid length"); \
     }
-#  define trace_code(s, c) \
+#  define trace_code(c) \
     if (z_verbose > 2) { \
         fprintf(stderr, "\ncd %3d ", (c)); \
     }
 #else
 #  define trace_bits(s, value, length)
-#  define trace_code(s, c)
+#  define trace_code(c)
 #endif
 
 /* If not enough room in bi_buf, use (valid) bits from bi_buf and
@@ -65,29 +65,29 @@ extern Z_INTERNAL const uint32_t dmask_extra[D_CODES];
 
 /* Merge bits into the bit buffer without flushing. The caller must guarantee room,
  * i.e. bi_valid + len <= 64. Pair with send_bits_flush, which leaves at most 7 bits. */
-#define send_bits_merge(s, t_val, t_len, bi_buf, bi_valid) do {\
-    Assert((bi_valid) + (uint32_t)(t_len) <= 64, "bit buffer overflow");\
-    trace_bits(s, (uint64_t)(t_val), (uint32_t)(t_len));\
-    sent_bits_add(s, t_len);\
-    bi_buf |= (uint64_t)(t_val) << (bi_valid);\
-    bi_valid += (uint32_t)(t_len);\
+#define send_bits_merge(s, t_val, t_len, bi_buf, bi_valid) do { \
+    Assert((bi_valid) + (uint32_t)(t_len) <= 64, "bit buffer overflow"); \
+    trace_bits(s, (uint64_t)(t_val), (uint32_t)(t_len)); \
+    sent_bits_add(s, t_len); \
+    bi_buf |= (uint64_t)(t_val) << (bi_valid); \
+    bi_valid += (uint32_t)(t_len); \
 } while (0)
 
 /* Store the bit buffer unconditionally and consume its complete bytes, leaving at most
  * 7 valid bits. The unconditional 8-byte store reaches up to 7 bytes past the logical
  * output position, which the pending buffer layout must reserve room for
  * (see PENDING_BUF_PAD in deflate.c). */
-#define send_bits_flush(s, bi_buf, bi_valid, pending) do {\
-    zng_memwrite_8((s)->pending_buf + (pending), Z_U64_TO_LE(bi_buf));\
-    pending += (bi_valid) >> 3;\
-    bi_buf >>= ((bi_valid) & ~7U);\
-    bi_valid &= 7;\
+#define send_bits_flush(s, bi_buf, bi_valid, pending) do { \
+    zng_memwrite_8((s)->pending_buf + (pending), Z_U64_TO_LE(bi_buf)); \
+    pending += (bi_valid) >> 3; \
+    bi_buf >>= ((bi_valid) & ~7U); \
+    bi_valid &= 7; \
 } while (0)
 
 /* Send a code of the given tree. c and tree must not have side effects */
 #ifdef ZLIB_DEBUG
 #  define send_code(s, c, tree, bi_buf, bi_valid) { \
-    trace_code(s, c); \
+    trace_code(c); \
     send_bits(s, tree[c].Code, tree[c].Len, bi_buf, bi_valid); \
 }
 #else
@@ -98,7 +98,7 @@ extern Z_INTERNAL const uint32_t dmask_extra[D_CODES];
 /* Merge a code of the given tree without flushing. c and tree must not have side effects */
 #ifdef ZLIB_DEBUG
 #  define send_code_merge(s, c, tree, bi_buf, bi_valid) { \
-    trace_code(s, c); \
+    trace_code(c); \
     send_bits_merge(s, tree[c].Code, tree[c].Len, bi_buf, bi_valid); \
 }
 #else
@@ -145,8 +145,7 @@ Z_FORCEINLINE static void zng_emit_lit(deflate_state *s, const ct_data *ltree, u
  * Assemble a match's length code + extra bits + distance code + extra bits into
  * a single bit string, at most 48 bits. Returns the bits, length via *bits_len.
  */
-Z_FORCEINLINE static uint64_t zng_assemble_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree,
-                                                uint32_t lc, uint32_t dist, uint32_t *bits_len) {
+Z_FORCEINLINE static uint64_t zng_assemble_dist(const ct_data *ltree, const ct_data *dtree, uint32_t lc, uint32_t dist, uint32_t *bits_len) {
     uint64_t match_bits;
     uint32_t match_bits_len;
     uint32_t mask_ext;  // Contains both mask and extra, can safely be used directly as mask
@@ -158,7 +157,7 @@ Z_FORCEINLINE static uint64_t zng_assemble_dist(deflate_state *s, const ct_data 
     code = zng_length_code[lc];
     c = code + LITERALS + 1;
     Assert(c < L_CODES, "bad l_code");
-    trace_code(s, c);
+    trace_code(c);
 
     /*    Send length code, len is the match length - STD_MIN_MATCH */
     match_bits = ltree[c].Code;
@@ -176,7 +175,7 @@ Z_FORCEINLINE static uint64_t zng_assemble_dist(deflate_state *s, const ct_data 
     dist--; /* dist is now the match distance - 1 */
     code = d_code(dist);
     Assert(code < D_CODES, "bad d_code");
-    trace_code(s, code);
+    trace_code(code);
 
     /*    Send distance code */
     match_bits |= ((uint64_t)dtree[code].Code << match_bits_len);
@@ -190,7 +189,6 @@ Z_FORCEINLINE static uint64_t zng_assemble_dist(deflate_state *s, const ct_data 
     match_bits |= ((uint64_t)(dist & mask_ext) << match_bits_len);
     match_bits_len += extra;
 
-    Z_UNUSED(s);
     *bits_len = match_bits_len;
     return match_bits;
 }
@@ -201,7 +199,7 @@ Z_FORCEINLINE static uint64_t zng_assemble_dist(deflate_state *s, const ct_data 
 static inline uint32_t zng_emit_dist(deflate_state *s, const ct_data *ltree, const ct_data *dtree,
                                      uint32_t lc, uint32_t dist, uint64_t *bi_buf, uint32_t *bi_valid) {
     uint32_t match_bits_len;
-    uint64_t match_bits = zng_assemble_dist(s, ltree, dtree, lc, dist, &match_bits_len);
+    uint64_t match_bits = zng_assemble_dist(ltree, dtree, lc, dist, &match_bits_len);
 
     send_bits(s, match_bits, match_bits_len, *bi_buf, *bi_valid);
 
