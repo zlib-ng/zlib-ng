@@ -62,7 +62,7 @@
 # undef deflateInit2
 #endif
 
-const char PREFIX(deflate_copyright)[] = " deflate 1.3.1 Copyright 1995-2024 Jean-loup Gailly and Mark Adler ";
+Z_INTERNAL const char PREFIX(deflate_copyright)[] = " deflate 1.3.1 Copyright 1995-2024 Jean-loup Gailly and Mark Adler ";
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
