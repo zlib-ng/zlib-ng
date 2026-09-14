@@ -35,7 +35,7 @@ static Z_FORCEINLINE void msa_accum32(uint32_t *s, const unsigned char *buf, siz
     s[1] = (uint32_t) ((__msa_copy_u_d((v2i64) s2acc2, 0) + __msa_copy_u_d((v2i64) s2acc2, 1)) % BASE); /* Horizontal add and modulo */
 }
 
-uint32_t adler32_msa(uint32_t adler, const unsigned char *buf, size_t len) {
+Z_INTERNAL uint32_t adler32_msa(uint32_t adler, const unsigned char *buf, size_t len) {
     uint32_t sum2;
     uint32_t pair[2];
     /* Split Adler-32 into component sums, it can be supplied by
