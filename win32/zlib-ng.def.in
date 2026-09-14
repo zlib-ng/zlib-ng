@@ -51,6 +51,8 @@ EXPORTS
     @ZLIB_SYMBOL_PREFIX@zng_crc32_z
     @ZLIB_SYMBOL_PREFIX@zng_adler32_combine
     @ZLIB_SYMBOL_PREFIX@zng_crc32_combine
+    @ZLIB_SYMBOL_PREFIX@zng_crc32_combine_gen
+    @ZLIB_SYMBOL_PREFIX@zng_crc32_combine_op
 ; various hacks, don't look :)
     @ZLIB_SYMBOL_PREFIX@zng_zError
     @ZLIB_SYMBOL_PREFIX@zng_inflateSyncPoint
