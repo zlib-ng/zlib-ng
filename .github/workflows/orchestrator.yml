@@ -40,6 +40,12 @@ jobs:
     uses: ./.github/workflows/configure.yml
     secrets: inherit
 
+  exportcheck:
+    name: Export Check
+    needs: osb
+    uses: ./.github/workflows/exportcheck.yml
+    secrets: inherit
+
   libpng:
     name: Libpng
     needs: osb
