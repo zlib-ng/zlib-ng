@@ -132,6 +132,7 @@ if(WITH_GTEST)
             test_deflate_quick_block_open.cc
             test_deflate_tune.cc
             test_dict.cc
+            test_dict_params.cc
             test_inflate_adler32.cc
             test_inflate_back.cc
             test_inflate_copy.cc
