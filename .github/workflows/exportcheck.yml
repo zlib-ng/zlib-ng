@@ -1,0 +1,68 @@
+name: Export Check
+on: [workflow_call, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  exportcheck:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Ubuntu GCC
+            os: ubuntu-latest
+
+          - name: Ubuntu GCC AARCH64
+            os: ubuntu-24.04-arm
+
+          - name: Ubuntu GCC Symbol Prefix
+            os: ubuntu-latest
+            symbol-prefix: zTest_
+
+          - name: macOS Clang
+            os: macos-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+      with:
+        show-progress: 'false'
+
+    - name: Generate project files (native)
+      run: |
+        cmake -S . -B native \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DBUILD_TESTING=OFF \
+          -DZLIB_SYMBOL_PREFIX=${{ matrix.symbol-prefix }}
+
+    - name: Compile source code (native)
+      run: cmake --build native -j5
+
+    - name: Check exports (native)
+      run: |
+        sh test/exportcheck.sh \
+          --symbol-prefix=${{ matrix.symbol-prefix }} \
+          native/libz-ng.a
+
+    - name: Generate project files (compat)
+      run: |
+        cmake -S . -B compat \
+          -DZLIB_COMPAT=ON \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DBUILD_TESTING=OFF \
+          -DZLIB_SYMBOL_PREFIX=${{ matrix.symbol-prefix }}
+
+    - name: Compile source code (compat)
+      run: cmake --build compat -j5
+
+    - name: Check exports (compat)
+      # The version string is exported by compat builds but only listed in the native map
+      run: |
+        sh test/exportcheck.sh \
+          --zlib-compat \
+          --symbol-prefix=${{ matrix.symbol-prefix }} \
+          --allow=${{ matrix.symbol-prefix }}z_vstring \
+          compat/libz.a
