@@ -784,7 +784,7 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
                 bi_valid += nbits;
             } else {
                 uint32_t match_bits_len;
-                uint64_t match_bits = zng_assemble_dist(s, ltree, dtree, lc, dist, &match_bits_len);
+                uint64_t match_bits = zng_assemble_dist(ltree, dtree, lc, dist, &match_bits_len);
 
                 send_bits_merge(s, match_bits, match_bits_len, bi_buf, bi_valid);
             } /* literal or match pair ? */
