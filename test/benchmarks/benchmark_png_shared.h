@@ -48,7 +48,8 @@ static void png_write_cb(png_structp pngp, png_bytep data, png_size_t len) {
     dat->buf_rem -= len;
 }
 
-static inline void encode_png(png_bytep buf, png_dat *outpng, int32_t comp_level, uint32_t width, uint32_t height) {
+static inline void encode_png(png_bytep buf, png_dat *outpng, int32_t comp_level, int32_t filters,
+                              uint32_t width, uint32_t height) {
     png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
     /* Most of this error handling is _likely_ not necessary. Likewise it's likely
@@ -69,7 +70,8 @@ static inline void encode_png(png_bytep buf, png_dat *outpng, int32_t comp_level
                  PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
                  PNG_FILTER_TYPE_DEFAULT);
     png_set_compression_level(png, comp_level);
-    png_set_filter(png, 0, PNG_FILTER_NONE);
+    /* libpng selects Z_FILTERED when any row filter is enabled, Z_DEFAULT_STRATEGY otherwise. */
+    png_set_filter(png, 0, filters);
 
     png_write_info(png, info);
     png_write_image(png, (png_bytepp)png_row_ptrs);

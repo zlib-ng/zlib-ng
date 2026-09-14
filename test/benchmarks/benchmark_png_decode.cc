@@ -19,7 +19,7 @@ public:
         /* First we need to author the png bytes to be decoded */
         for (int i = 0; i < 10; ++i) {
             inpng[i] = {NULL, 0, 0};
-            encode_png(output_img_buf, &inpng[i], i, IMWIDTH, IMHEIGHT);
+            encode_png(output_img_buf, &inpng[i], i, PNG_FILTER_NONE, IMWIDTH, IMHEIGHT);
         }
     }
 
