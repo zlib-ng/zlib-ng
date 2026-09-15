@@ -119,7 +119,13 @@ static inline halfchunk_t GET_HALFCHUNK_MAG(uint8_t *buf, size_t *chunk_rem, siz
 
 #include "chunkset_tpl.h"
 
+#define INFLATE_FAST     inflate_fast_narrow_lasx
+#define USE_NARROW_COPY
+
+#include "inffast_tpl.h"
+
 #define INFLATE_FAST     inflate_fast_lasx
+#define DISPATCH_NARROW  inflate_fast_narrow_lasx
 
 #include "inffast_tpl.h"
 

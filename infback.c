@@ -54,6 +54,7 @@ int32_t ZNG_CONDEXPORT PREFIX(inflateBackInit)(PREFIX3(stream) *strm, int32_t wi
 
     strm->state = (struct internal_state *)state;
     state->wbits = (unsigned int)windowBits;
+    state->narrow_len = 0;
     state->wsize = 1U << windowBits;
     state->wbufsize = 1U << windowBits;
     state->window = window;
@@ -348,6 +349,15 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, in_func in, void *in
             if (ret) {
                 SET_BAD("invalid literal/lengths set");
                 break;
+            }
+            /* Without a code for any length symbol above 272, no match in this
+               block exceeds 34 bytes and the fast loop can use the narrow copy. */
+            state->narrow_len = 1;
+            for (unsigned sym = 273; sym < state->nlen; sym++) {
+                if (state->lens[sym] != 0) {
+                    state->narrow_len = 0;
+                    break;
+                }
             }
             state->distcode = (const code *)(state->next);
             state->distbits = 9;
