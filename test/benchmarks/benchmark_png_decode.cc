@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string>
 #include <benchmark/benchmark.h>
 #include "benchmark_png_shared.h"
 #include "test/test_data_p.h"
@@ -19,7 +20,7 @@ public:
         /* First we need to author the png bytes to be decoded */
         for (int i = 0; i < 10; ++i) {
             inpng[i] = {NULL, 0, 0};
-            encode_png(output_img_buf, &inpng[i], i, IMWIDTH, IMHEIGHT);
+            encode_png(output_img_buf, &inpng[i], i, PNG_FILTER_NONE, IMWIDTH, IMHEIGHT);
         }
     }
 
@@ -50,15 +51,14 @@ public:
         output_img_buf = NULL;
         output_img_buf = (uint8_t*)malloc(IMWIDTH * IMHEIGHT * 3);
         /* Let's take all the images at different compression levels and jam their bytes into buffers */
-        char test_fname[25];
         FILE *files[10];
 
         /* Set all to NULL */
         memset(files, 0, sizeof(FILE*));
 
         for (size_t i = 0; i < 10; ++i) {
-            sprintf(test_fname, "test_pngs/%1lu.png", i);
-            FILE *in_img = fopen(test_fname, "r");
+            std::string test_fname = "test_pngs/" + std::to_string(i) + ".png";
+            FILE *in_img = fopen(test_fname.c_str(), "r");
             if (in_img == NULL) {
                 for (size_t j = 0; j < i; ++j) {
                     if (files[j])

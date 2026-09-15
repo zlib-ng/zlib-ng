@@ -26,7 +26,7 @@ public:
         assert(output_buf != NULL);
 
         encoded = {NULL, 0, 0};
-        encode_png(output_buf, &encoded, 9, img_width, img_height);
+        encode_png(output_buf, &encoded, 9, PNG_FILTER_NONE, img_width, img_height);
     }
 
     void Bench(benchmark::State &state) {
