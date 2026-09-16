@@ -78,6 +78,7 @@ fi
 LDCONFIG=${LDCONFIG-"ldconfig"}
 DEFFILE=
 RC=
+RCFILE=
 RCFLAGS=
 RCOBJS=
 STRIP=
@@ -504,6 +505,11 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
           DEFFILE='win32/${LIBNAME2}.def'
         fi
         RC="${CROSS_PREFIX}windres"
+        if test $compat -eq 0; then
+          RCFILE='win32/zlib-ng2.rc'
+        else
+          RCFILE='win32/zlib1.rc'
+        fi
         RCFLAGS="-I ${BUILDDIR}"
         RCOBJS='zlibrc.o'
         STRIP="${CROSS_PREFIX}strip"
@@ -530,6 +536,11 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
           DEFFILE='win32/${LIBNAME2}.def'
         fi
         RC="${CROSS_PREFIX}windres"
+        if test $compat -eq 0; then
+          RCFILE='win32/zlib-ng2.rc'
+        else
+          RCFILE='win32/zlib1.rc'
+        fi
         RCFLAGS="-I ${BUILDDIR}"
         RCOBJS='zlibrc.o'
         STRIP="${CROSS_PREFIX}strip"
@@ -544,7 +555,7 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         SFLAGS="${CFLAGS}"
         shared_ext='.dll'
         sharedlibdir='${bindir}'
-        SHAREDLIB=${LIBNAME}-$VER1$shared_ext
+        SHAREDLIB=${LIBNAME2}$VER1$shared_ext
         SHAREDLIBM=''
         SHAREDLIBV=''
         SHAREDTARGET=$SHAREDLIB
@@ -556,6 +567,11 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
           DEFFILE='win32/${LIBNAME2}.def'
         fi
         RC="${CROSS_PREFIX}windres"
+        if test $compat -eq 0; then
+          RCFILE='win32/zlib-ng2.rc'
+        else
+          RCFILE='win32/zlib1.rc'
+        fi
         RCFLAGS="-I ${BUILDDIR}"
         if [ "$CC" = "mingw32-gcc" ]; then
           case $ARCH in
@@ -2439,6 +2455,7 @@ echo LDSHAREDFLAGS = $LDSHAREDFLAGS >> configure.log
 echo LDSHAREDLIBC = $LDSHAREDLIBC >> configure.log
 echo DEFFILE = $DEFFILE >> configure.log
 echo RC = $RC >> configure.log
+echo RCFILE = $RCFILE >> configure.log
 echo RCFLAGS = $RCFLAGS >> configure.log
 echo RCOBJS = $RCOBJS >> configure.log
 echo STRIP = $STRIP >> configure.log
@@ -2530,6 +2547,7 @@ sed < $SRCDIR/Makefile.in "
 /^LDSHAREDLIBC *=/s#=.*#=$LDSHAREDLIBC#
 /^DEFFILE *=/s#=.*#=$DEFFILE#
 /^RC *=/s#=.*#=$RC#
+/^RCFILE *=/s#=.*#=$RCFILE#
 /^RCFLAGS *=/s#=.*#=$RCFLAGS#
 /^RCOBJS *=/s#=.*#=$RCOBJS#
 /^STRIP *=/s#=.*#=$STRIP#
