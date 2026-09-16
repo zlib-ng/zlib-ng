@@ -355,8 +355,13 @@ struct ALIGNED_(64) internal_state {
      * multiple of w_size so prev slots keep their positions.
      */
 
+    uint32_t fill_end;
+    /* Where a 2 * w_size buffer would end its data, minus MIN_LOOKAHEAD. Reads stop there so
+     * refills happen at the same positions as with a 2 * w_size buffer.
+     */
+
     /* Reserved for future use and alignment purposes */
-    int32_t reserved[18];
+    int32_t reserved[17];
 };
 
 typedef enum {

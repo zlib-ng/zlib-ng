@@ -1211,6 +1211,7 @@ static void lm_set_level(deflate_state *s, int level) {
 static void lm_init(deflate_state *s) {
     s->window_size = W_BUF_SIZE(s->w_size);
     s->slide_len = 0;
+    s->fill_end = 2 * s->w_size - MIN_LOOKAHEAD;
 
     if (!HASHLESS(s->level, s->strategy)) {
         CLEAR_HASH(s);
@@ -1252,12 +1253,15 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
     Assert(s->lookahead < MIN_LOOKAHEAD, "already enough lookahead");
 
     do {
-        more = s->window_size - s->lookahead - s->strstart;
 
         /* If the window buffer is almost full and there is insufficient lookahead,
          * move the live data down to make room at the end of the buffer.
          */
-        if (s->strstart >= s->window_size - MIN_LOOKAHEAD) {
+        /* Advance the data end the way a 2 * w_size buffer slides, so refills land on the same
+         * positions. */
+        if (s->strstart >= s->fill_end)
+            s->fill_end += s->w_size;
+        if (s->fill_end > s->window_size - MIN_LOOKAHEAD) {
             /* Slide as far as possible while keeping MAX_DIST bytes of history.
              * The slide is a multiple of w_size so prev slots keep their positions. */
             uint32_t slide_len = (s->strstart - MAX_DIST(s)) & ~W_MASK(s);
@@ -1270,6 +1274,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             }
             s->strstart    -= slide_len; /* we now have strstart >= MAX_DIST */
             s->block_start -= (int)slide_len;
+            s->fill_end    -= slide_len;
             if (s->insert > s->strstart)
                 s->insert = s->strstart;
             if (!HASHLESS(level, s->strategy)) {
@@ -1281,20 +1286,16 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
                 else
                     FUNCTABLE_CALL(slide_hash)(s);
             }
-            more += slide_len;
         }
         if (strm->avail_in == 0)
             break;
 
-        /* If there was no sliding:
-         *    strstart <= window_size - MIN_LOOKAHEAD - 1 &&
-         *    lookahead <= MIN_LOOKAHEAD - 1 &&
-         *    more == window_size - lookahead - strstart
-         * => more >= window_size - (MIN_LOOKAHEAD - 1) - (window_size - MIN_LOOKAHEAD - 1)
+        /* Reads stop where a 2 * w_size buffer would end its data:
+         *    strstart <= fill_end - 1 && lookahead <= MIN_LOOKAHEAD - 1 &&
+         *    more == fill_end + MIN_LOOKAHEAD - lookahead - strstart
          * => more >= 2
-         * If there was sliding, more increased by at least w_size.
-         * So in all cases, more >= 2.
          */
+        more = s->fill_end + MIN_LOOKAHEAD - s->lookahead - s->strstart;
         Assert(more >= 2, "more < 2");
 
         n = read_buf(strm, window + s->strstart + s->lookahead, more);
@@ -1358,8 +1359,7 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
         }
     }
 
-    Assert((unsigned long)s->strstart <= s->window_size - MIN_LOOKAHEAD,
-           "not enough room for search");
+    Assert(s->strstart <= s->fill_end, "not enough room for search");
 }
 
 #ifndef ZLIB_COMPAT
