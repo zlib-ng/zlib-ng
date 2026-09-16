@@ -47,6 +47,7 @@ AR=ar
 ARFLAGS=rc
 DEFFILE=
 RC=
+RCFILE=
 RCFLAGS=
 RCOBJS=
 STRIP=
@@ -218,8 +219,8 @@ maketrees.o:
 makecrct.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/utils/makecrct.c
 
-zlibrc.o: $(SRCDIR)/win32/zlib$(SUFFIX)1.rc
-	$(RC) $(RCFLAGS) -o $@ $(SRCDIR)/win32/zlib$(SUFFIX)1.rc
+zlibrc.o: $(SRCDIR)/$(RCFILE)
+	$(RC) $(RCFLAGS) -o $@ $(SRCDIR)/$(RCFILE)
 
 .SUFFIXES: .lo
 
