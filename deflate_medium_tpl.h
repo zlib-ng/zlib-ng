@@ -155,7 +155,6 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
     ALIGNED_(16) struct match current_match = {0};
 #ifdef USE_FIZZLE
                  struct match next_match = {0};
-    uint32_t window_end = s->window_size - MIN_LOOKAHEAD;
 #endif
     uint32_t max_len = (16 * s->max_insert_length);
     unsigned char *window = s->window;
@@ -206,7 +205,10 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
         }
 
         /* now, look ahead one */
-        if (LIKELY(s->lookahead > MIN_LOOKAHEAD && (current_match.strstart + curr_match_len) < window_end)) {
+        /* Spelled without short-circuit so both loads issue before the compare, which keeps
+         * the two tests fused into one branch. */
+        if (LIKELY((s->lookahead > MIN_LOOKAHEAD) &
+                   ((current_match.strstart + curr_match_len) < s->fill_end))) {
             s->strstart = current_match.strstart + curr_match_len;
             uint32_t hash_head = insert_knuth(s, window, s->strstart);
 
