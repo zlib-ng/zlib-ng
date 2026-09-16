@@ -147,6 +147,7 @@ vmxflag="-maltivec"
 s390vxflag="-march=z13"
 msaflag="-mmsa -mhard-float -mfp64 -mnan=2008"
 symbol_prefix=""
+wide="#"
 without_optimizations=0
 without_new_strategies=0
 reducedmem=0
@@ -507,7 +508,8 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         RCFLAGS="-I ${BUILDDIR}"
         RCOBJS='zlibrc.o'
         STRIP="${CROSS_PREFIX}strip"
-        EXE='.exe' ;;
+        EXE='.exe'
+        wide='' ;;
   MSYS* | msys*)
         visibility=0
         ARFLAGS="rcs"
@@ -533,7 +535,8 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         RCFLAGS="-I ${BUILDDIR}"
         RCOBJS='zlibrc.o'
         STRIP="${CROSS_PREFIX}strip"
-        EXE='.exe' ;;
+        EXE='.exe'
+        wide='' ;;
   MINGW* | mingw*)
         visibility=0
         ARFLAGS="rcs"
@@ -564,7 +567,8 @@ if test "$gcc" -eq 1 && ($cc $CFLAGS -c $test.c) >> configure.log 2>&1; then
         fi
         RCOBJS='zlibrc.o'
         STRIP="${CROSS_PREFIX}strip"
-        EXE='.exe' ;;
+        EXE='.exe'
+        wide='' ;;
   QNX*)  # This is for QNX6. I suppose that the QNX rule below is for QNX2,QNX4
          # (alain.bonnefoy@icbt.com)
                  LDSHARED=${LDSHARED-"$cc"}
@@ -802,7 +806,7 @@ cat > $test.map <<EOF
 };
 EOF
 if test $shared -eq 1; then
-  sed < $SRCDIR/zlib${SUFFIX}.map.in "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" > zlib${SUFFIX}.map
+  sed < $SRCDIR/zlib${SUFFIX}.map.in -e "s/@ZLIB_SYMBOL_PREFIX@/$symbol_prefix/g" -e "s/@WIDE@/$wide/g" > zlib${SUFFIX}.map
   LDVERSIONSCRIPT="-Wl,--version-script,$BUILDDIR/$MAPNAME"
   if try $CC -c $SFLAGS $test.c && try $LDSHARED $LDVERSIONSCRIPT $LDSHAREDFLAGS $LDFLAGS -o $test$shared_ext $test.o $LDSHAREDLIBC; then
     echo "Checking for version script support... $LDVERSIONSCRIPT." | tee -a configure.log

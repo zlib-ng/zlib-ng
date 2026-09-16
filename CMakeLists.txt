@@ -1472,11 +1472,20 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
             if(NOT ZLIB_COMPAT)
                 add_definitions(-DHAVE_SYMVER)
             endif()
+            if (NOT CYGWIN)
+                set(WIDE "#")
+            endif()
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map.in
                 ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map @ONLY)
             set_target_properties(zlib-ng PROPERTIES LINK_FLAGS
                 "-Wl,--version-script,\"${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map\"")
         endif()
+    endif()
+    if(MINGW OR MSYS)
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map.in
+            ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map @ONLY)
+        set_target_properties(zlib-ng PROPERTIES LINK_FLAGS
+            "-Wl,--version-script,\"${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map\"")
     endif()
     if(MSYS)
         # Suppress version number from shared library name

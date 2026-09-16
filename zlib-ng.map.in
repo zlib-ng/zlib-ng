@@ -102,6 +102,7 @@ ZLIB_NG_GZ_2.0.0 {
     @ZLIB_SYMBOL_PREFIX@zng_gzgets;
     @ZLIB_SYMBOL_PREFIX@zng_gzoffset;
     @ZLIB_SYMBOL_PREFIX@zng_gzopen;
+    @WIDE@@ZLIB_SYMBOL_PREFIX@zng_gzopen_w;
     @ZLIB_SYMBOL_PREFIX@zng_gzprintf;
     @ZLIB_SYMBOL_PREFIX@zng_gzputc;
     @ZLIB_SYMBOL_PREFIX@zng_gzputs;
