@@ -10,8 +10,8 @@ esac
 #
 test/abicheck.sh --refresh-if || exit
 test/abicheck.sh --zlib-compat --refresh-if || exit
-CFLAGS=-m32 LDFLAGS=-m32 test/abicheck.sh --refresh-if || exit
-CFLAGS=-m32 LDFLAGS=-m32 test/abicheck.sh --zlib-compat --refresh-if || exit
+CC=i686-linux-gnu-gcc CHOST=i686-linux-gnu test/abicheck.sh --refresh-if || exit
+CC=i686-linux-gnu-gcc CHOST=i686-linux-gnu test/abicheck.sh --zlib-compat --refresh-if || exit
 CC=aarch64-linux-gnu-gcc CHOST=aarch64-linux-gnu test/abicheck.sh --refresh-if || exit
 CC=aarch64-linux-gnu-gcc CHOST=aarch64-linux-gnu test/abicheck.sh --zlib-compat --refresh-if || exit
 CC=arm-linux-gnueabi-gcc CHOST=arm-linux-gnueabi test/abicheck.sh --refresh-if || exit
