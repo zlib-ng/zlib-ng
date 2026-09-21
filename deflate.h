@@ -305,6 +305,7 @@ struct ALIGNED_(64) internal_state {
 #else
 #   define LIT_BUFS 4
     unsigned char *sym_buf;       /* buffer for distances and literals/lengths */
+    void *lit_mem_pad;            /* unused, pads this branch out to the LIT_MEM one */
 #endif
 
     unsigned int sym_next;        /* running index in symbol buffer */
