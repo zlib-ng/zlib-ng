@@ -655,6 +655,14 @@ jobs:
             cmake-args: -G Ninja
             coverage: win64_gcc
 
+          - name: Windows GCC Debug
+            os: windows-latest
+            compiler: gcc
+            cxx-compiler: g++
+            cmake-args: -G Ninja
+            build-config: Debug
+            # Coverage disabled due to gcov bug
+
           - name: Windows GCC Native Instructions (AVX)
             os: windows-2022
             compiler: gcc
