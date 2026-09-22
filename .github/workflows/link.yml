@@ -69,3 +69,48 @@ jobs:
           **/CMakeFiles/CMakeOutput.log
           **/CMakeFiles/CMakeError.log
         retention-days: 30
+
+  find-package:
+    name: Find package (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: native
+            cmake-args: -DZLIB_COMPAT=OFF
+
+          - name: compat
+            cmake-args: -DZLIB_COMPAT=ON
+            consumer-args: -DCONSUMER_ZLIB_COMPAT=ON
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v7
+      with:
+        show-progress: 'false'
+
+    - name: Generate project files (zlib-ng)
+      run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF ${{ matrix.cmake-args }}
+
+    - name: Compile source code (zlib-ng)
+      run: cmake --build build --config Release --target zlib-ng
+
+    - name: Generate project files (consumer)
+      run: cmake -S test/find-package-project -B consumer -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$PWD/build ${{ matrix.consumer-args }}
+
+    - name: Compile source code (consumer)
+      run: cmake --build consumer --config Release
+
+    - name: Run consumer
+      run: ./consumer/app
+
+    - name: Upload build errors
+      uses: actions/upload-artifact@v7
+      if: failure()
+      with:
+        name: Find package ${{ matrix.name }} (CMake Logs)
+        path: |
+          **/CMakeFiles/CMakeOutput.log
+          **/CMakeFiles/CMakeError.log
+        retention-days: 30
