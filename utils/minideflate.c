@@ -302,7 +302,7 @@ int main(int argc, char **argv) {
     SET_BINARY_MODE(stdout);
 
     if (i != argc) {
-        fin = fopen(argv[i], "rb+");
+        fin = fopen(argv[i], "rb");
         if (fin == NULL) {
             fprintf(stderr, "Failed to open file: %s\n", argv[i]);
             exit(1);
