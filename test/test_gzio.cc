@@ -101,3 +101,26 @@ TEST(gzip, readwrite) {
     EXPECT_EQ(PREFIX(gzclose)(NULL), Z_STREAM_ERROR);
 #endif
 }
+
+TEST(gzip, setparams_invalid_parameters) {
+#ifdef NO_GZCOMPRESS
+    fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
+    GTEST_SKIP();
+#else
+    gzFile file = PREFIX(gzopen)(TESTFILE, "wb");
+    ASSERT_TRUE(file != NULL);
+    EXPECT_EQ(PREFIX(gzsetparams)(file, Z_BEST_COMPRESSION + 1, Z_DEFAULT_STRATEGY), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+
+    file = PREFIX(gzopen)(TESTFILE, "wb");
+    ASSERT_TRUE(file != NULL);
+    EXPECT_EQ(PREFIX(gzsetparams)(file, Z_DEFAULT_COMPRESSION, Z_FIXED + 1), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+
+    file = PREFIX(gzopen)(TESTFILE, "wb");
+    ASSERT_TRUE(file != NULL);
+    EXPECT_EQ(PREFIX(gzwrite)(file, "x", 1), 1);
+    EXPECT_EQ(PREFIX(gzsetparams)(file, Z_BEST_COMPRESSION + 1, Z_DEFAULT_STRATEGY), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+#endif
+}
