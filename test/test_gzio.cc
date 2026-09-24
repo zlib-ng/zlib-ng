@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <vector>
 
 #include <gtest/gtest.h>
 
@@ -121,6 +122,35 @@ TEST(gzip, setparams_invalid_parameters) {
     ASSERT_TRUE(file != NULL);
     EXPECT_EQ(PREFIX(gzwrite)(file, "x", 1), 1);
     EXPECT_EQ(PREFIX(gzsetparams)(file, Z_BEST_COMPRESSION + 1, Z_DEFAULT_STRATEGY), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+#endif
+}
+
+TEST(gzip, setparams_small_output_buffer) {
+#ifdef NO_GZCOMPRESS
+    fprintf(stderr, "NO_GZCOMPRESS -- gz* functions cannot compress\n");
+    GTEST_SKIP();
+#else
+    std::vector<uint8_t> input(100000);
+    std::vector<uint8_t> output(input.size());
+    uint32_t random = 1;
+
+    for (uint8_t &byte : input) {
+        random = random * 1664525U + 1013904223U;
+        byte = (uint8_t)(random >> 24);
+    }
+
+    gzFile file = PREFIX(gzopen)(TESTFILE, "wb1");
+    ASSERT_TRUE(file != NULL);
+    ASSERT_EQ(PREFIX(gzbuffer)(file, 9), 0);
+    ASSERT_EQ(PREFIX(gzwrite)(file, input.data(), (unsigned)input.size()), (int)input.size());
+    EXPECT_EQ(PREFIX(gzsetparams)(file, 9, Z_DEFAULT_STRATEGY), Z_OK);
+    ASSERT_EQ(PREFIX(gzclose)(file), Z_OK);
+
+    file = PREFIX(gzopen)(TESTFILE, "rb");
+    ASSERT_TRUE(file != NULL);
+    EXPECT_EQ(PREFIX(gzread)(file, output.data(), (unsigned)output.size()), (int)output.size());
+    EXPECT_EQ(output, input);
     EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
 #endif
 }
