@@ -208,13 +208,13 @@ struct ALIGNED_(64) internal_state {
      */
 
     unsigned int window_size;
-    /* Actual size of window: 2*wSize, except when the user input buffer
-     * is directly used as sliding window.
+    /* Actual size of the window buffer: W_BUF_SIZE, except when the user
+     * input buffer is directly used as sliding window.
      */
 
     unsigned char *window;
-    /* Sliding window. Input bytes are read into the second half of the window,
-     * and move to the first half later to keep a dictionary of at least wSize
+    /* Sliding window. Input bytes are read into the free space at the end of
+     * the buffer, and move down later to keep a dictionary of at least wSize
      * bytes. With this organization, matches are limited to a distance of
      * wSize-STD_MAX_MATCH bytes, but this ensures that IO is always
      * performed with a length multiple of the block size. Also, it limits
@@ -305,6 +305,7 @@ struct ALIGNED_(64) internal_state {
 #else
 #   define LIT_BUFS 4
     unsigned char *sym_buf;       /* buffer for distances and literals/lengths */
+    void *lit_mem_pad;            /* unused, pads this branch out to the LIT_MEM one */
 #endif
 
     unsigned int sym_next;        /* running index in symbol buffer */
@@ -350,8 +351,18 @@ struct ALIGNED_(64) internal_state {
     longest_match_func longest_match;
     insert_batch_func insert_batch;
 
+    uint32_t slide_len;
+    /* Number of bytes the window was moved down by the last slide. Always a
+     * multiple of w_size so prev slots keep their positions.
+     */
+
+    uint32_t fill_end;
+    /* Where a 2 * w_size buffer would end its data, minus MIN_LOOKAHEAD. Reads stop there so
+     * refills happen at the same positions as with a 2 * w_size buffer.
+     */
+
     /* Reserved for future use and alignment purposes */
-    int32_t reserved[19];
+    int32_t reserved[17];
 };
 
 typedef enum {
@@ -430,6 +441,12 @@ static inline void put_uint64(deflate_state *s, uint64_t lld) {
 
 #define W_MASK(s)  ((s)->w_size - 1)
 /* Window mask: w_size is always a power of 2, so w_mask = w_size - 1 */
+
+#define W_BUF_SIZE(wsize) MAX(2 * (wsize), 32768)
+/* Size of the physical window buffer. At least 32K, so small compression
+ * windows slide rarely instead of every w_size bytes. 16-bit head and prev
+ * entries cap the buffer at 64K.
+ */
 
 #define W_BITS(s)  zng_ctz32((s)->w_size)
 /* Window bits: log2(w_size), computed from w_size since w_size is a power of 2 */
