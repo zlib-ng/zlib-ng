@@ -67,9 +67,9 @@ static const static_tree_desc  static_bl_desc =
  */
 
 static void init_block       (deflate_state *s);
-static inline void pqdownheap       (unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k);
+static void pq_radix_pass    (const uint32_t *src, uint32_t *dst, int n, int shift, uint16_t *count);
 static void build_tree       (deflate_state *s, tree_desc *desc);
-static void gen_bitlen       (deflate_state *s, tree_desc *desc);
+static void gen_bitlen       (deflate_state *s, tree_desc *desc, const int *order, int order_max);
 static void scan_tree        (deflate_state *s, ct_data *tree, int max_code);
 static void send_tree        (deflate_state *s, ct_data *tree, int max_code);
 static int  build_bl_tree    (deflate_state *s);
@@ -121,57 +121,37 @@ static void init_block(deflate_state *s) {
     s->sym_next = 0;
 }
 
-#define SMALLEST 1
-/* Index within the heap array of least frequent node in the Huffman tree */
-
-
-/* ===========================================================================
- * Compares to subtrees, using the tree depth as tie breaker when
- * the subtrees have equal frequency. This minimizes the worst case length.
- */
-#define smaller(tree, n, m, depth) \
-    (tree[n].Freq < tree[m].Freq || \
-    (tree[n].Freq == tree[m].Freq && depth[n] <= depth[m]))
+/* Queue entries pack freq above the node index, so a single 32-bit compare orders nodes by
+ * frequency, breaking ties by node index: leaves first, then internal nodes in creation order,
+ * which keeps the worst-case code length small. */
+#define PQ_NODE_BITS 10
+#define pq_pack(freq, node) (((uint32_t)(freq) << PQ_NODE_BITS) | (unsigned)(node))
+#define pq_node(e)  ((int)((e) & ((1u << PQ_NODE_BITS) - 1)))
+#define pq_freq(e)  ((e) >> PQ_NODE_BITS)
 
 /* ===========================================================================
- * Remove the smallest element from the heap and recreate the heap with
- * one less element. Updates heap and heap_len. Used by build_tree().
+ * One stable counting-sort pass over an 8-bit digit of the packed entries.
+ * count holds the digit histogram at offset +1, accumulated during the leaf
+ * scan, and is turned into running start positions here. Used by build_tree().
  */
-#define pqremove(s, depth, heap, tree, top) { \
-    top = heap[SMALLEST]; \
-    heap[SMALLEST] = heap[s->heap_len--]; \
-    pqdownheap(depth, heap, s->heap_len, tree, SMALLEST); \
+static void pq_radix_pass(const uint32_t *src, uint32_t *dst, int n, int shift, uint16_t *count) {
+    int i;
+
+    for (i = 1; i <= 256; i++)
+        count[i] = (uint16_t)(count[i] + count[i-1]);
+    for (i = 0; i < n; i++)
+        dst[count[(src[i] >> shift) & 0xFF]++] = src[i];
 }
 
 /* ===========================================================================
- * Restore the heap property by moving down the tree starting at node k,
- * exchanging a node with the smallest of its two sons if necessary, stopping
- * when the heap property is re-established (each father smaller than its
- * two sons). Used by build_tree().
+ * Take the smaller of the two queue heads: the next unused leaf, or the next
+ * created internal node. Used by build_tree().
  */
-static inline void pqdownheap(unsigned char *depth, int *heap, const int heap_len, ct_data *tree, int k) {
-    /* tree: the tree to restore */
-    /* k: node to move down */
-    int j = k << 1;  /* left son of k */
-    const int v = heap[k];
-
-    while (j <= heap_len) {
-        /* Set j to the smallest of the two sons: */
-        if (j < heap_len && smaller(tree, heap[j+1], heap[j], depth)) {
-            j++;
-        }
-        /* Exit if v is smaller than both sons */
-        if (smaller(tree, v, heap[j], depth))
-            break;
-
-        /* Exchange v with the smallest son */
-        heap[k] = heap[j];
-        k = j;
-
-        /* And continue down the tree, setting j to the left son of k */
-        j <<= 1;
-    }
-    heap[k] = v;
+static inline uint32_t pq_take(const uint32_t *leaves, int *li, int nleaves,
+                               const uint32_t *internals, int *ihead, int itail) {
+    if (*li < nleaves && (*ihead == itail || leaves[*li] < internals[*ihead]))
+        return leaves[(*li)++];
+    return internals[(*ihead)++];
 }
 
 /* ===========================================================================
@@ -184,26 +164,33 @@ static inline void pqdownheap(unsigned char *depth, int *heap, const int heap_le
  */
 static void build_tree(deflate_state *s, tree_desc *desc) {
     /* desc: the tree descriptor */
-    unsigned char *depth  = s->depth;
-    int *heap             = s->heap;
     ct_data *tree         = desc->dyn_tree;
     const ct_data *stree  = desc->stat_desc->static_tree;
     int elems             = desc->stat_desc->elems;
     int n, m;          /* iterate over heap elements */
     int max_code = -1; /* largest code with non zero frequency */
     int node;          /* new node being created */
+    int nleaves = 0;
+    int order_max = HEAP_SIZE;
+    int li = 0, ihead = 0, itail = 0;  /* queue positions for leaves and internal nodes */
+    int merges;
+    uint32_t leaves[L_CODES + 1];  /* packed leaf entries, sorted by frequency */
+    uint32_t scratch[L_CODES + 1]; /* radix buffer, then FIFO of created internal nodes */
+    uint32_t *sorted = leaves;
+    uint32_t *internals = scratch;
+    int order[HEAP_SIZE];          /* tree nodes in merge order, filled from the top down */
+    uint16_t count_lo[257];        /* histogram of the low frequency byte, at offset +1 */
+    uint16_t count_hi[257];        /* histogram of the high frequency byte, at offset +1 */
 
-    /* Construct the initial heap, with least frequent element in
-     * heap[SMALLEST]. The sons of heap[n] are heap[2*n] and heap[2*n+1].
-     * heap[0] is not used.
-     */
-    s->heap_len = 0;
-    s->heap_max = HEAP_SIZE;
-
+    memset(count_lo, 0, sizeof(count_lo));
+    memset(count_hi, 0, sizeof(count_hi));
     for (n = 0; n < elems; n++) {
-        if (tree[n].Freq != 0) {
-            heap[++(s->heap_len)] = max_code = n;
-            depth[n] = 0;
+        const uint16_t freq = tree[n].Freq;
+        if (freq != 0) {
+            leaves[nleaves++] = pq_pack(freq, n);
+            count_lo[(freq & 0xFF) + 1]++;
+            count_hi[(freq >> 8) + 1]++;
+            max_code = n;
         } else {
             tree[n].Len = 0;
         }
@@ -214,10 +201,10 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
      * possible code. So to avoid special checks later on we force at least
      * two codes of non zero frequency.
      */
-    while (s->heap_len < 2) {
-        node = heap[++(s->heap_len)] = (max_code < 2 ? ++max_code : 0);
+    while (nleaves < 2) {
+        node = (max_code < 2 ? ++max_code : 0);
+        leaves[nleaves++] = pq_pack(1, node);
         tree[node].Freq = 1;
-        depth[node] = 0;
         s->opt_len--;
         if (stree)
             s->static_len -= stree[node].Len;
@@ -225,27 +212,47 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
     }
     desc->max_code = max_code;
 
-    /* The elements heap[heap_len/2+1 .. heap_len] are leaves of the tree,
-     * establish sub-heaps of increasing lengths:
-     */
-    for (n = s->heap_len/2; n >= 1; n--)
-        pqdownheap(depth, heap, s->heap_len, tree, n);
+    /* Sort the leaves by packed entry. The scan above appended them in node order, which is
+     * ascending in the node bits, so two stable passes over the freq bytes finish the sort.
+     * A forced node can arrive out of node order, but then there are exactly two leaves,
+     * so the radix path only ever sorts entries the histograms counted. */
+    if (nleaves == 2) {
+        if (leaves[0] > leaves[1]) {
+            const uint32_t t = leaves[0];
+            leaves[0] = leaves[1];
+            leaves[1] = t;
+        }
+    } else if ((int)count_hi[1] == nleaves) {
+        /* Every frequency fits in one byte, so the first pass already produces the final
+         * order. The sorted entries then live in scratch, so the internal-node FIFO takes
+         * over the leaves buffer instead. */
+        pq_radix_pass(leaves, scratch, nleaves, PQ_NODE_BITS, count_lo);
+        sorted = scratch;
+        internals = leaves;
+    } else {
+        pq_radix_pass(leaves, scratch, nleaves, PQ_NODE_BITS, count_lo);
+        pq_radix_pass(scratch, leaves, nleaves, PQ_NODE_BITS + 8, count_hi);
+    }
 
-    /* Construct the Huffman tree by repeatedly combining the least two
-     * frequent nodes.
+    /* Construct the Huffman tree by repeatedly combining the least two frequent nodes.
+     * Sorted leaves and the FIFO of created nodes are each ascending, because merge sums
+     * never decrease, so the two smallest nodes are always at the queue heads.
      */
     node = elems;              /* next internal node of the tree */
-    do {
-        pqremove(s, depth, heap, tree, n);  /* n = node of least frequency */
-        m = heap[SMALLEST]; /* m = node of next least frequency */
+    for (merges = nleaves - 1; merges > 0; merges--) {
+        /* en = entry of least frequency, em = entry of next least frequency */
+        const uint32_t en = pq_take(sorted, &li, nleaves, internals, &ihead, itail);
+        const uint32_t em = pq_take(sorted, &li, nleaves, internals, &ihead, itail);
+        n = pq_node(en);
+        m = pq_node(em);
 
-        heap[--(s->heap_max)] = n; /* keep the nodes sorted by frequency */
-        heap[--(s->heap_max)] = m;
+        order[--order_max] = n; /* keep the nodes sorted by frequency */
+        order[--order_max] = m;
 
-        /* Create a new node father of n and m */
-        tree[node].Freq = tree[n].Freq + tree[m].Freq;
-        depth[node] = (unsigned char)((depth[n] >= depth[m] ?
-                                          depth[n] : depth[m]) + 1);
+        /* Create a new node father of n and m. Freq wraps the same way the uint16_t
+         * state field did. */
+        const uint16_t f = (uint16_t)(pq_freq(en) + pq_freq(em));
+        tree[node].Freq = f;
         tree[n].Dad = tree[m].Dad = (uint16_t)node;
 #ifdef DUMP_BL_TREE
         if (tree == s->bl_tree) {
@@ -253,17 +260,17 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
                     node, tree[node].Freq, n, tree[n].Freq, m, tree[m].Freq);
         }
 #endif
-        /* and insert the new node in the heap */
-        heap[SMALLEST] = node++;
-        pqdownheap(depth, heap, s->heap_len, tree, SMALLEST);
-    } while (s->heap_len >= 2);
+        /* and append the new node to the internal queue */
+        internals[itail++] = pq_pack(f, node);
+        node++;
+    }
 
-    heap[--(s->heap_max)] = heap[SMALLEST];
+    order[--order_max] = node - 1; /* the last created node is the root */
 
     /* At this point, the fields freq and dad are set. We can now
      * generate the bit lengths.
      */
-    gen_bitlen(s, (tree_desc *)desc);
+    gen_bitlen(s, (tree_desc *)desc, order, order_max);
 
     /* The field len is now set, we can generate the bit codes */
     gen_codes((ct_data *)tree, max_code, s->bl_count);
@@ -272,14 +279,14 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
 /* ===========================================================================
  * Compute the optimal bit lengths for a tree and update the total bit length
  * for the current block.
- * IN assertion: the fields freq and dad are set, heap[heap_max] and
+ * IN assertion: the fields freq and dad are set, order[order_max] and
  *    above are the tree nodes sorted by increasing frequency.
  * OUT assertions: the field len is set to the optimal bit length, the
  *     array bl_count contains the frequencies for each bit length.
  *     The length opt_len is updated; static_len is also updated if stree is
  *     not null. Used by build_tree().
  */
-static void gen_bitlen(deflate_state *s, tree_desc *desc) {
+static void gen_bitlen(deflate_state *s, tree_desc *desc, const int *order, int order_max) {
     /* desc: the tree descriptor */
     ct_data *tree           = desc->dyn_tree;
     int max_code            = desc->max_code;
@@ -300,10 +307,10 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
     /* In a first pass, compute the optimal bit lengths (which may
      * overflow in the case of the bit length tree).
      */
-    tree[s->heap[s->heap_max]].Len = 0; /* root of the heap */
+    tree[order[order_max]].Len = 0; /* root of the tree */
 
-    for (h = s->heap_max + 1; h < HEAP_SIZE; h++) {
-        n = s->heap[h];
+    for (h = order_max + 1; h < HEAP_SIZE; h++) {
+        n = order[h];
         bits = tree[tree[n].Dad].Len + 1u;
         if (bits > max_length){
             bits = max_length;
@@ -352,7 +359,7 @@ static void gen_bitlen(deflate_state *s, tree_desc *desc) {
     for (bits = max_length; bits != 0; bits--) {
         n = s->bl_count[bits];
         while (n != 0) {
-            m = s->heap[--h];
+            m = order[--h];
             if (m > max_code)
                 continue;
             if (tree[m].Len != bits) {
