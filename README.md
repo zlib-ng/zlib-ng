@@ -107,7 +107,7 @@ Build Options
 | WITH_REDUCED_MEM           | --with-reduced-mem       | Reduce zlib-ng memory usage, affects performance and compression ratio              | OFF     |
 | WITH_GTEST                 |                          | Build tests using GTest framework                                                   | ON      |
 | WITH_BENCHMARKS            |                          | Build benchmarks using Google Benchmark framework                                   | OFF     |
-| INSTALL_UTILS              |                          | Copy minigzip and minideflate during install                                        | OFF     |
+| INSTALL_UTILS              |                          | Copy minigzip, minideflate and zran during install                                  | OFF     |
 | BUILD_TESTING              |                          | Build test binaries                                                                 | ON      |
 
 
