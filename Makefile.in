@@ -156,7 +156,7 @@ PIC_OBJS = $(PIC_OBJC)
 
 all: static shared
 
-static: example$(EXE) minigzip$(EXE) makefixed$(EXE) maketrees$(EXE) makecrct$(EXE)
+static: example$(EXE) minigzip$(EXE) makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) zran$(EXE)
 
 shared: examplesh$(EXE) minigzipsh$(EXE)
 
@@ -217,6 +217,9 @@ maketrees.o:
 
 makecrct.o:
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/utils/makecrct.c
+
+zran.o: $(SRCDIR)/utils/zran.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/utils/zran.c
 
 zlibrc.o: $(SRCDIR)/win32/zlib$(SUFFIX)1.rc
 	$(RC) $(RCFLAGS) -o $@ $(SRCDIR)/win32/zlib$(SUFFIX)1.rc
@@ -303,6 +306,12 @@ ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
 
+zran$(EXE): zran.o $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ zran.o $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
 install-shared: $(SHAREDTARGET)
 ifneq ($(SHAREDTARGET),)
 	-@if [ ! -d $(DESTDIR)$(sharedlibdir) ]; then mkdir -p $(DESTDIR)$(sharedlibdir); fi
@@ -367,7 +376,7 @@ clean:
 	@if [ -f test/Makefile ]; then $(MAKE) -C test clean; fi
 	rm -f *.o *.lo *~ \
 	   example$(EXE) minigzip$(EXE) minigzipsh$(EXE) \
-	   infcover makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) \
+	   infcover makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) zran$(EXE) \
 	   $(STATICLIB) $(IMPORTLIB) $(SHAREDLIB) $(SHAREDLIBV) $(SHAREDLIBM) \
 	   foo.gz so_locations \
 	   _match.s maketree
