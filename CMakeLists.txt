@@ -188,7 +188,7 @@ elseif(BASEARCH_X86_FOUND)
     cmake_dependent_option(WITH_VPCLMULQDQ "Build with VPCLMULQDQ" ON "WITH_PCLMULQDQ;WITH_AVX2" OFF)
 endif()
 
-option(INSTALL_UTILS "Copy minigzip and minideflate during install" OFF)
+option(INSTALL_UTILS "Copy minigzip, minideflate and zran during install" OFF)
 
 mark_as_advanced(FORCE
     ZLIB_SYMBOL_PREFIX
@@ -1698,7 +1698,7 @@ elseif(BASEARCH_X86_FOUND OR BASEARCH_E2K_FOUND)
     add_feature_info(WITH_VPCLMULQDQ WITH_VPCLMULQDQ "Build with VPCLMULQDQ")
 endif()
 
-add_feature_info(INSTALL_UTILS INSTALL_UTILS "Copy minigzip and minideflate during install")
+add_feature_info(INSTALL_UTILS INSTALL_UTILS "Copy minigzip, minideflate and zran during install")
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES)
 
