@@ -203,19 +203,19 @@ $(STATICLIB): $(OBJS)
 	$(AR) $(ARFLAGS) $@ $(OBJS)
 	-@ ($(RANLIB) $@ || true) >/dev/null 2>&1
 
-example.o:
+example.o: $(SRCDIR)/test/example.c
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
 
-minigzip.o:
+minigzip.o: $(SRCDIR)/utils/minigzip.c
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/utils/minigzip.c
 
-makefixed.o:
+makefixed.o: $(SRCDIR)/utils/makefixed.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/utils/makefixed.c
 
-maketrees.o:
+maketrees.o: $(SRCDIR)/utils/maketrees.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/utils/maketrees.c
 
-makecrct.o:
+makecrct.o: $(SRCDIR)/utils/makecrct.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/utils/makecrct.c
 
 zlibrc.o: $(SRCDIR)/win32/zlib$(SUFFIX)1.rc
