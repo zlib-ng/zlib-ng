@@ -104,8 +104,8 @@ static void fizzle_matches(unsigned char *Z_RESTRICT window, struct match *Z_RES
     // Protect next->strstart from moving past maximum distance
     int32_t max_steps_to_limit = (int32_t)next->strstart - limit;
 
-    // Protect next->match_length from exceeding 256
-    int32_t max_growth_allowed = 256 - (int32_t)next->match_length;
+    // Protect next->match_length from exceeding STD_MAX_MATCH
+    int32_t max_growth_allowed = STD_MAX_MATCH - (int32_t)next->match_length;
 
     // Protect next->match_start from going too far back
     int32_t max_steps_to_history = (int32_t)next->match_start - 1;
