@@ -173,12 +173,12 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
     int nleaves = 0;
     int li = 0, ihead = 0, itail = 0;  /* queue positions for leaves and internal nodes */
     int merges;
-    uint32_t leaves[L_CODES + 1];  /* packed leaf entries, sorted by frequency */
-    uint32_t scratch[L_CODES + 1]; /* radix buffer, then FIFO of created internal nodes */
-    uint32_t *sorted = leaves;     /* sorted leaves, in scratch after a single pass */
-    uint32_t *internals = scratch; /* internal node FIFO, in whichever buffer is free */
-    uint16_t count_lo[257];        /* histogram of the low frequency byte, at offset +1 */
-    uint16_t count_hi[257];        /* histogram of the high frequency byte, at offset +1 */
+    uint32_t *leaves = s->pq_leaves;   /* packed leaf entries, sorted by frequency */
+    uint32_t *scratch = s->pq_scratch; /* radix buffer, then FIFO of created internal nodes */
+    uint32_t *sorted = leaves;         /* sorted leaves, in scratch after a single pass */
+    uint32_t *internals = scratch;     /* internal node FIFO, in whichever buffer is free */
+    uint16_t count_lo[257];            /* histogram of the low frequency byte, at offset +1 */
+    uint16_t count_hi[257];            /* histogram of the high frequency byte, at offset +1 */
 
     memset(count_lo, 0, sizeof(count_lo));
     memset(count_hi, 0, sizeof(count_hi));

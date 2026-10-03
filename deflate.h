@@ -317,6 +317,9 @@ struct ALIGNED_(64) internal_state {
     uint16_t bl_count[MAX_BITS+1];
     /* number of codes at each bit length for an optimal tree */
 
+    uint32_t pq_leaves[L_CODES+1];  /* build_tree() packed leaf entries */
+    uint32_t pq_scratch[L_CODES+1]; /* build_tree() radix buffer and internal node FIFO */
+
     /* Didn't use ct_data typedef below to suppress compiler warning */
     struct ct_data_s dyn_ltree[HEAP_SIZE];   /* literal and length tree */
     struct ct_data_s dyn_dtree[2*D_CODES+1]; /* distance tree */
