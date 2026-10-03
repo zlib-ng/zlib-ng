@@ -272,6 +272,8 @@ struct ALIGNED_(64) internal_state {
     int32_t bi_valid;           /* Number of valid bits in bi_buf.
                                  * All bits above the last valid bit are always zero. */
 
+    int32_t padding[2];         /* Keeps Cacheline 3 aligned */
+
                 /* used by trees.c: */
     unsigned int  lit_bufsize;
     /* Size of match buffer for literals/lengths.  There are 4 reasons for
@@ -342,7 +344,7 @@ struct ALIGNED_(64) internal_state {
     insert_batch_func insert_batch;
 
     /* Reserved for future use and alignment purposes */
-    int32_t reserved[19];
+    int32_t reserved[20];
 };
 
 typedef enum {
