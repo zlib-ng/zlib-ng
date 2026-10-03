@@ -176,8 +176,8 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
     int merges;
     uint32_t leaves[L_CODES + 1];  /* packed leaf entries, sorted by frequency */
     uint32_t scratch[L_CODES + 1]; /* radix buffer, then FIFO of created internal nodes */
-    uint32_t *sorted = leaves;
-    uint32_t *internals = scratch;
+    uint32_t *sorted = leaves;     /* sorted leaves, in scratch after a single pass */
+    uint32_t *internals = scratch; /* internal node FIFO, in whichever buffer is free */
     int order[HEAP_SIZE];          /* tree nodes in merge order, filled from the top down */
     uint16_t count_lo[257];        /* histogram of the low frequency byte, at offset +1 */
     uint16_t count_hi[257];        /* histogram of the high frequency byte, at offset +1 */
@@ -230,6 +230,7 @@ static void build_tree(deflate_state *s, tree_desc *desc) {
         sorted = scratch;
         internals = leaves;
     } else {
+        /* Sort by the low then high frequency byte, ending back in leaves. */
         pq_radix_pass(leaves, scratch, nleaves, PQ_NODE_BITS, count_lo);
         pq_radix_pass(scratch, leaves, nleaves, PQ_NODE_BITS + 8, count_hi);
     }
