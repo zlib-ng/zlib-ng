@@ -122,6 +122,8 @@ if(WITH_GTEST)
             test_deflate_bound.cc
             test_deflate_copy.cc
             test_deflate_dict.cc
+            test_deflate_gh_361.cc
+            test_deflate_gh_364.cc
             test_deflate_hash_head_0.cc
             test_deflate_header.cc
             test_deflate.cc
@@ -130,6 +132,7 @@ if(WITH_GTEST)
             test_deflate_prime.cc
             test_deflate_quick_bi_valid.cc
             test_deflate_quick_block_open.cc
+            test_deflate_quick_gh_382.cc
             test_deflate_tune.cc
             test_dict.cc
             test_dict_params.cc
@@ -137,6 +140,7 @@ if(WITH_GTEST)
             test_inflate_back.cc
             test_inflate_copy.cc
             test_inflate_cve.cc
+            test_inflate_gh_1600.cc
             test_raw.cc
             test_small_window.cc
             )
