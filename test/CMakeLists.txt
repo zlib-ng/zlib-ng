@@ -153,6 +153,7 @@ if(WITH_GTEST)
                 test_crc32.cc                 # crc32_armv8(), etc
                 test_crc32_copy.cc            # crc32_copy implementations
                 test_deflate_deterministic.cc # deterministic output after deflateReset
+                test_inflate_long_codes.cc    # MAX_LEN_ROOT_BITS, etc
                 test_inflate_sync.cc          # expects a certain compressed block layout
                 test_main.cc                  # cpu_check_features()
                 test_version.cc               # expects a fixed version string
