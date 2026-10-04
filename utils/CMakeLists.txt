@@ -49,7 +49,17 @@ add_executable(makecrct makecrct.c)
 configure_util_executable(makecrct)
 set(MAKECRCT_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makecrct> PARENT_SCOPE)
 
-# Install minigzip and minideflate
+# zran
+add_executable(zran zran.c)
+configure_util_executable(zran)
+if(NOT DEFINED BUILD_SHARED_LIBS)
+    target_link_libraries(zran zlib-ng-static)
+else()
+    target_link_libraries(zran zlib-ng)
+endif()
+set(ZRAN_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:zran> PARENT_SCOPE)
+
+# Install minigzip, minideflate and zran
 if(INSTALL_UTILS)
-    install(TARGETS minigzip minideflate RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
+    install(TARGETS minigzip minideflate zran RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}")
 endif()
