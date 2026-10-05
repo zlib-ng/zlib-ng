@@ -146,6 +146,53 @@ Z_FORCEINLINE static void insert_knuth_batch_static(deflate_state *const s, unsi
 }
 
 /* ===========================================================================
+ * Like insert_knuth_batch_static(), except this spreads out max_inserts hashes over
+ * the length of count. Also ensures that both the first and last entry gets hashed.
+ * This assumes both count and max_inserts are 258 or less.
+ */
+Z_FORCEINLINE static void insert_knuth_stepped_static(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count, uint32_t max_inserts) {
+    Assert(count >= 3, "Insert count too low");
+    Assert(max_inserts >= 2, "max_inserts too low");
+
+    /* Local pointers to avoid indirection */
+    Pos *headp = s->head;
+    Pos *prevp = s->prev;
+    const unsigned int w_mask = W_MASK(s);
+
+    uint32_t inserts = (count < max_inserts) ? count : max_inserts;
+    uint32_t intervals = inserts - 1;
+
+    /*
+     * Calculate a 32-bit Fixed-Point Scale with a 16-bit fraction.
+     * Safe from overflow since (count - 1) <= 257, meaning ((257 << 16) + 256) fits easily in 32 bits.
+     * The rounding bias guarantees hitting the exact tail end ('str + count - 1') smoothly.
+     */
+    uint32_t inc_fp = (((count - 1) << 16) + (intervals - 1)) / intervals;
+
+    /* Initialize the fixed-point index tracking register */
+    uint32_t idx_fp = str << 16;
+
+    for (uint32_t i = 0; i < inserts; i++) {
+        uint32_t val, h, head, idx;
+
+        /* Extract the real window index by shifting out the fractional bits */
+        idx = idx_fp >> 16;
+
+        /* Increment offset for next iteration */
+        idx_fp += inc_fp;
+
+        val = Z_U32_FROM_LE(zng_memread_4(window + idx));
+        UPDATE_HASH_KNUTH(h, val);
+
+        head = headp[h];
+        if (LIKELY(head != idx)) {
+            prevp[idx & w_mask] = (Pos)head;
+            headp[h] = (Pos)idx;
+        }
+    }
+}
+
+/* ===========================================================================
  * Insert count strings read from the window, leaving the prev links untouched.
  * Used by fill_window during deflate_quick, which only inspects the chain head.
  */
