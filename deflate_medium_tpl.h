@@ -13,28 +13,27 @@
  * - s->lookahead > match.match_length + WANT_MIN_MATCH
  * - match_len >= WANT_MIN_MATCH
  */
-static void SUFFIX(insert_match)(deflate_state *s, unsigned char *Z_RESTRICT window, struct match match, const uint32_t max_len) {
-    uint32_t start;
-    uint32_t match_len = match.match_length;
-    uint32_t strstart = match.strstart + 1; // string at strstart already in table
-    uint32_t end = strstart + match_len - 1;
-
-    /* Insert new strings in the hash table only if the match length
-     * is not too large. This saves time but degrades compression.
-     */
-    if (UNLIKELY(match_len > max_len)) {
-        // For too long matches, insert only the tail position.
-        start = end - 1;
-    } else {
-        start = strstart;
-    }
+static void SUFFIX(insert_match)(deflate_state *s, unsigned char *Z_RESTRICT window, struct match match, uint32_t max_insert_count) {
+    uint32_t strstart = match.strstart + 1;        // string at strstart already in table
+    uint32_t match_len = match.match_length - 1;
+    uint32_t max_len = 2 * max_insert_count;       // Normally 32, 56, 96 and 112 for levels 3-6
 
 #ifdef USE_FIZZLE
-    if (UNLIKELY(start < match.orgstart))
-        start = match.orgstart;
+    /* Don't re-hash positions hashed as literals via fizzle_matches(). */
+    if (UNLIKELY(strstart < match.orgstart)) {
+        uint32_t end = strstart + match_len;
+
+        strstart = match.orgstart;
+        match_len = end - strstart;
+    }
 #endif
 
-    insert_knuth_batch(s, window, start, end - start);
+    /* Shorter matches insert every position, which needs no step and no division. */
+    if (LIKELY(match_len <= max_len)) {
+        insert_knuth_batch(s, window, strstart, match_len);
+        return;
+    }
+    insert_knuth_stepped(s, window, strstart, match_len, max_insert_count);
 }
 
 Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint32_t hash_head, int32_t max_dist) {
@@ -156,8 +155,8 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
                  struct match next_match = {0};
     uint32_t window_end = s->window_size - MIN_LOOKAHEAD;
 #endif
-    uint32_t max_len = (16 * s->max_insert_length);
     unsigned char *window = s->window;
+    uint32_t max_insert_count = s->max_insert_count;
     int32_t max_dist = MAX_DIST(s);
 
     for (;;) {
@@ -201,7 +200,7 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
         curr_match_len = current_match.match_length;
 
         if (curr_match_len >= WANT_MIN_MATCH && s->lookahead > (unsigned int)(curr_match_len + WANT_MIN_MATCH )) {
-            SUFFIX(insert_match)(s, window, current_match, max_len);
+            SUFFIX(insert_match)(s, window, current_match, max_insert_count);
         }
 
         /* now, look ahead one */
@@ -238,7 +237,7 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
         curr_match_len = current_match.match_length;
 
         if (curr_match_len >= WANT_MIN_MATCH && s->lookahead > (unsigned int)(curr_match_len + WANT_MIN_MATCH )) {
-            SUFFIX(insert_match)(s, window, current_match, max_len);
+            SUFFIX(insert_match)(s, window, current_match, max_insert_count);
         }
 #endif
 
