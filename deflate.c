@@ -100,7 +100,7 @@ static void lm_init              (deflate_state *s);
 typedef struct config_s {
     uint16_t good_length; /* reduce lazy search above this match length */
     uint16_t max_lazy;    /* deflate_slow: do not perform lazy search above this match length
-                           * deflate_medium: tunes hash insertion count/selection */
+                           * deflate_fast/medium: tunes hash insertion count/selection */
     uint16_t nice_length; /* quit search above this match length */
     uint16_t max_chain;
     compress_func func;
@@ -108,14 +108,14 @@ typedef struct config_s {
 
 static const config configuration_table[10] = {
 /*      good lazy nice chain */
-/* 0 */ {0,    0,  0,    0, deflate_stored},  /* store only */
+/* 0 */ {0,    0,   0,    0, deflate_stored},  /* store only */
 
 #ifdef NO_QUICK_STRATEGY
-/* 1 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
-/* 2 */ {4,    5, 16,    8, deflate_fast},
+/* 1 */ {4,    2,   8,    4, deflate_fast}, /* max speed, no lazy matches */
+/* 2 */ {4,    3,  16,    8, deflate_fast},
 #else
-/* 1 */ {0,    0,  0,    0, deflate_quick},
-/* 2 */ {4,    4,  8,    4, deflate_fast}, /* max speed, no lazy matches */
+/* 1 */ {0,    0,   0,    0, deflate_quick},
+/* 2 */ {4,    3,   8,    4, deflate_fast}, /* max speed, no lazy matches */
 #endif
 
 #ifdef NO_MEDIUM_STRATEGY
