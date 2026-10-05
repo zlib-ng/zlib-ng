@@ -18,15 +18,19 @@ static void SUFFIX(insert_match)(deflate_state *s, unsigned char *Z_RESTRICT win
     uint32_t match_len = match.match_length - 1;
     uint32_t max_len = 2 * max_insert_count;       // Normally 32, 56, 96 and 112 for levels 3-6
 
-#ifdef USE_FIZZLE
-    /* Don't re-hash positions hashed as literals via fizzle_matches(). */
+    /* Don't re-hash positions hashed as literals (see fizzle_matches).
+     * Also don't hash overlapping positions (see find_best_match). */
     if (UNLIKELY(strstart < match.orgstart)) {
         uint32_t end = strstart + match_len;
 
         strstart = match.orgstart;
         match_len = end - strstart;
+        if (match_len == 0) {
+            /* Hash only the tail position */
+            insert_knuth(s, window, end - 1);
+            return;
+        }
     }
-#endif
 
     /* Shorter matches insert every position, which needs no step and no division. */
     if (LIKELY(match_len <= max_len)) {
@@ -44,11 +48,7 @@ Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint
     m.match_start = 0;
     m.match_length = 1;
     m.strstart = s->strstart;
-#ifdef USE_FIZZLE
     m.orgstart = m.strstart;
-#else
-    m.orgstart = 0; // For sanitizer
-#endif
 
     dist = (int32_t)s->strstart - (int32_t)hash_head;
     if (dist <= (int32_t)max_dist && dist > 0 && hash_head != 0) {
@@ -65,6 +65,18 @@ Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint
             return m;
         }
         m.match_length = match_len;
+
+        /* We want to skip hashing overlapping positions when dist < match_length,
+         * encode this into orgstart, fizzle_matches might re-introduce some
+         * overlapping positions, but the simplification is worth it.
+         *
+         * If dist < match_length, the first (match_length - dist) positions
+         * are byte-identical to data `dist` bytes earlier (already in table).
+         */
+        uint32_t match_dist = m.strstart - m.match_start;
+        if (match_dist < match_len) {
+            m.orgstart += match_len - match_dist;
+        }
     }
     return m;
 }
