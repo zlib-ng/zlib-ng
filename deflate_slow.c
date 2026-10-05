@@ -92,7 +92,6 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
             unsigned int mov_fwd = s->prev_length - 1;
             if (max_insert > s->strstart) {
                 unsigned int insert_cnt = mov_fwd;
-                unsigned int insert_from = s->strstart + 1;
                 if (UNLIKELY(insert_cnt > max_insert - s->strstart))
                     insert_cnt = max_insert - s->strstart;
                 /* A match longer than its distance repeats a pattern, so its
@@ -103,22 +102,12 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
                 uint32_t match_dist = s->strstart - 1 - s->prev_match;
                 /* A tail of 64 strings keeps matches that begin near the end of the pattern. */
                 uint32_t tail_cnt = MAX(match_dist + 2, 64);
-                if (UNLIKELY(tail_cnt < insert_cnt)) {
-                    uint32_t skip_cnt = insert_cnt - tail_cnt;
-                    uint32_t skip_idx = insert_from & W_MASK(s);
-                    /* The skipped range wraps around the end of prev at most once. */
-                    uint32_t skip_first = MIN(skip_cnt, s->w_size - skip_idx);
-                    /* longest_match reads prev for every position inside a candidate match,
-                     * so each skipped string is marked as the end of its chain. */
-                    memset(&s->prev[skip_idx], 0, skip_first * sizeof(Pos));
-                    memset(s->prev, 0, (skip_cnt - skip_first) * sizeof(Pos));
-                    insert_from += skip_cnt;
-                    insert_cnt = tail_cnt;
-                    /* Seed the rolling hash with two bytes, the insert feeds the third. */
-                    if (level >= MIN_ROLL_LEVEL)
-                        s->ins_h = update_hash_roll(window[insert_from], window[insert_from + 1]);
-                }
-                insert_batch(s, window, insert_from, insert_cnt);
+                if (LIKELY(tail_cnt >= insert_cnt))
+                    insert_batch(s, window, s->strstart + 1, insert_cnt);
+                else if (level >= MIN_ROLL_LEVEL)
+                    insert_roll_batch_tail_static(s, window, s->strstart + 1, insert_cnt, tail_cnt);
+                else
+                    insert_knuth_batch_tail_static(s, window, s->strstart + 1, insert_cnt, tail_cnt);
             }
             s->prev_length = 0;
             s->match_available = 0;

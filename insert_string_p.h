@@ -188,4 +188,41 @@ Z_FORCEINLINE static void insert_roll_batch_static(deflate_state *const s, unsig
     s->ins_h = h;
 }
 
+/* ===========================================================================
+ * Mark count strings as the end of their hash chain without inserting them.
+ * longest_match reads prev for every position inside a candidate match, so a
+ * skipped string must not keep a link from earlier input.
+ */
+Z_FORCEINLINE static void insert_skip(deflate_state *const s, uint32_t str, uint32_t count) {
+    uint32_t idx = str & W_MASK(s);
+    /* The range wraps around the end of prev at most once. */
+    uint32_t first = MIN(count, s->w_size - idx);
+
+    memset(&s->prev[idx], 0, first * sizeof(Pos));
+    memset(s->prev, 0, (count - first) * sizeof(Pos));
+}
+
+/* ===========================================================================
+ * Insert only the last tail strings of a batch and end the chains of the rest.
+ * IN  assertion: tail < count.
+ */
+Z_FORCEINLINE static void insert_knuth_batch_tail_static(deflate_state *const s, unsigned char *window, uint32_t str,
+                                                         uint32_t count, uint32_t tail) {
+    uint32_t skip = count - tail;
+
+    insert_skip(s, str, skip);
+    insert_knuth_batch_static(s, window, str + skip, tail);
+}
+
+Z_FORCEINLINE static void insert_roll_batch_tail_static(deflate_state *const s, unsigned char *window, uint32_t str,
+                                                        uint32_t count, uint32_t tail) {
+    uint32_t skip = count - tail;
+
+    insert_skip(s, str, skip);
+    str += skip;
+    /* Seed the rolling hash with two bytes, the insert feeds the third. */
+    s->ins_h = update_hash_roll(window[str], window[str + 1]);
+    insert_roll_batch_static(s, window, str, tail);
+}
+
 #endif
