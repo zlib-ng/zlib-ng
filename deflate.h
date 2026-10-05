@@ -255,7 +255,6 @@ struct ALIGNED_(64) internal_state {
     /* Attempt to find a better match only when the current match is strictly smaller
      * than this value. This mechanism is used only for compression levels >= 4.
      */
-#   define max_insert_length max_lazy_match /* deflate_fast */
 #   define max_insert_count  max_lazy_match
     /* Limit number of hash inserts, saving time but sacrificing compression.
      * Used by deflate_fast and deflate_medium.
