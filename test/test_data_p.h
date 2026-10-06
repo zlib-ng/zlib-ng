@@ -6,6 +6,12 @@
 #ifndef TEST_DATA_P_H
 #define TEST_DATA_P_H
 
+#if defined(_MSC_VER) && !defined(ftello)
+    // MSVC specific 64-bit file offsets
+    #define ftello _ftelli64
+    #define fseeko _fseeki64
+#endif
+
 static inline size_t append_raw(uint8_t *dest, size_t size, const void *src, size_t len) {
     if (len > size) len = size;
     if (len == 0)
@@ -18,6 +24,65 @@ static inline size_t append_str(uint8_t *dest, size_t size, const char *src) {
 }
 static inline size_t append_uint8_t(uint8_t *dest, size_t size, uint8_t src) {
     return append_raw(dest, size, &src, 1);
+}
+
+/* Utility function to load file data from files in /test/data/
+ * and loop the data over a bufsize buffer */
+static inline uint8_t *get_data_file(const char* filename, size_t bufsize) {
+    size_t src_len = 0;
+    char path[4096];
+    FILE *fp;
+
+    /* Open file */
+    if (snprintf(path, sizeof(path), "%s/%s", TEST_DATA_DIR, filename) >= (int)sizeof(path)) {
+        return NULL;
+    }
+    fp = fopen(path, "rb");
+    if (fp == NULL) {
+        return NULL;
+    }
+
+    /* Get file length */
+    fseeko(fp, 0, SEEK_END);
+    uint64_t file_len = ftello(fp);
+    fseeko(fp, 0, SEEK_SET);
+    if (file_len <= 0) {
+        fclose(fp);
+        return NULL;
+    }
+
+    /* Buffer alloc */
+    uint8_t *src = (uint8_t *)malloc((size_t)file_len);
+    if (src == NULL) {
+        fclose(fp);
+        return NULL;
+    }
+    uint8_t *buf = (uint8_t *)malloc(bufsize);
+    if (buf == NULL) {
+        free(src);
+        fclose(fp);
+        return NULL;
+    }
+
+    /* Read file */
+    if (fread(src, 1, (size_t)file_len, fp) == (size_t)file_len) {
+        src_len = (size_t)file_len;
+    } else {
+        free(src);
+        free(buf);
+        fclose(fp);
+        return NULL;
+    }
+    fclose(fp);
+
+    /* Loop until the buffer is filled */
+    size_t total = 0;
+    while (total < bufsize) {
+        size_t remaining_space = bufsize - total;
+        total += append_raw(buf + total, remaining_space, src, src_len);
+    }
+    free(src);
+    return buf;
 }
 
 /* English-like text: words drawn Zipf-style from a small vocabulary, with
@@ -319,6 +384,11 @@ static inline uint8_t *gen_striped_rgb_data(size_t bufsize) {
     return buf;
 }
 
+/* Generate logfile test data by looping dnf5.log over the buffer. */
+static inline uint8_t *get_logfile_data(size_t bufsize) {
+    return get_data_file("dnf5.log", bufsize);
+}
+
 /* Each variant targets a distinct shape of deflate stream. */
 enum test_data_type {
     TEST_DATA_TEXT = 0,         /* mixed literals + short/medium matches */
@@ -329,6 +399,7 @@ enum test_data_type {
     TEST_DATA_MIXED,            /* binary-like literal runs + medium matches */
     TEST_DATA_REALISTIC_RGB,    /* RGB photo, short matches at dist=3 */
     TEST_DATA_STRIPED_RGB,      /* solid R/G/B stripes, long dist=3 matches */
+    TEST_DATA_LOGFILE,          /* Real logfile: dnf5.log */
     TEST_DATA_COUNT
 };
 
@@ -342,6 +413,7 @@ static inline const char *test_data_type_name(int data_type) {
         case TEST_DATA_MIXED:          return "mixed";
         case TEST_DATA_REALISTIC_RGB:  return "realistic_rgb";
         case TEST_DATA_STRIPED_RGB:    return "striped_rgb";
+        case TEST_DATA_LOGFILE:        return "logfile";
     }
     return NULL;
 }
@@ -356,6 +428,7 @@ static inline uint8_t *gen_test_data(enum test_data_type data_type, size_t bufsi
         case TEST_DATA_MIXED:          return gen_mixed_data(bufsize);
         case TEST_DATA_REALISTIC_RGB:  return gen_realistic_rgb_data(bufsize);
         case TEST_DATA_STRIPED_RGB:    return gen_striped_rgb_data(bufsize);
+        case TEST_DATA_LOGFILE:        return get_logfile_data(bufsize);
         case TEST_DATA_COUNT:          break;
     }
     return NULL;

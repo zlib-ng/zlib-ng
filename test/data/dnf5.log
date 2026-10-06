@@ -1,0 +1,614 @@
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.upjs.sk/pub/mirrors/rpmfusion.org/free/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Metalink parsed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing internal mirrorlist
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing mirrors reported via LRI_MIRRORS
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Downloading/Locating yum repo
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local: Locating repo..
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Found local metalink: /var/cache/libdnf5/rpmfusion-free-updates-880b8bb66393fb1c/metalink.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Parsing repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Repomd revision: 1790936472
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local: Repository was successfully located
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/rpmfusion-free-updates-880b8bb66393fb1c/repodata/5a17d225ddb72809e540a2677a5a6edf6c3881324b6089547d11939210fa59ca-comps-f44.xml.xz (expected: 5a17d225ddb72809e540a2677a5a6edf6c3881324b6089547d11939210fa59ca [sha256])
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using mtime cached in xattr: [user.librepo.checksum.mtime] 1791079503693997926
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using checksum cached in xattr: [user.librepo.checksum.sha256] 5a17d225ddb72809e540a2677a5a6edf6c3881324b6089547d11939210fa59ca
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/rpmfusion-free-updates-880b8bb66393fb1c/repodata/db1c4bcebfd092c03e131b9686317dd1d60eda47e0d0d30bd8daf8d57b7cc589-primary.xml.gz (expected: db1c4bcebfd092c03e131b9686317dd1d60eda47e0d0d30bd8daf8d57b7cc589 [sha256])
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using mtime cached in xattr: [user.librepo.checksum.mtime] 1791079503731811422
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using checksum cached in xattr: [user.librepo.checksum.sha256] db1c4bcebfd092c03e131b9686317dd1d60eda47e0d0d30bd8daf8d57b7cc589
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Restoring an old SIGINT handler
+2026-10-05T09:47:01+0000 [227629] DEBUG Using cache for repo "rpmfusion-free-updates"
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Using dir: /var/cache/libdnf5/rpmfusion-nonfree-c89ee2f7518d5de2
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Using own SIGINT handler
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Preparing internal mirrorlist
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Local metalink.xml found at /var/cache/libdnf5/rpmfusion-nonfree-c89ee2f7518d5de2/metalink.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Parsing metalink.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Mirrors from metalink:
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://download1.rpmfusion.org/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://download1.rpmfusion.org/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://download1.rpmfusion.org/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://rpmfusion.ip-connect.vn.ua/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://rpmfusion.ip-connect.vn.ua/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.icm.edu.pl/pub/Linux/dist/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ftp.icm.edu.pl/pub/Linux/dist/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://ftp.icm.edu.pl/pub/Linux/dist/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fr2.rpmfind.net/linux/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://fr2.rpmfind.net/linux/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fedora.tu-chemnitz.de/pub/linux/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   ftp://mirrors.netix.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirrors.netix.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirrors.netix.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirrors.netix.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ftp.fi.muni.cz/pub/linux/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://ftp.fi.muni.cz/pub/linux/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.fi.muni.cz/pub/linux/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.netsite.dk/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.netsite.dk/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.netsite.dk/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://www.mirrorservice.org/sites/download1.rpmfusion.org/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://rsync.mirrorservice.org/download1.rpmfusion.org/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirrors.neterra.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirrors.neterra.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirrors.neterra.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   ftp://mirrors.neterra.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://rpmfusion.ip-connect.info/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://rpmfusion.ip-connect.info/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://rpmfusion.ip-connect.info/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.de.leaseweb.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mir01.syntis.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.nluug.nl/os/Linux/distr/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp-stud.hs-esslingen.de/pub/Mirrors/rpmfusion.org/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror1.hs-esslingen.de/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ftp-stud.hs-esslingen.de/pub/Mirrors/rpmfusion.org/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.cc.uoc.gr/mirrors/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://ftp.cc.uoc.gr/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ftp.cc.uoc.gr/mirrors/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.nl.leaseweb.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.yandex.ru/fedora/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.yandex.ru/fedora/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://www.fedora.is/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://rsync.fedora.is/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirrors.coreix.net/rpmfusion/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.upjs.sk/pub/mirrors/rpmfusion.org/nonfree/fedora/releases/44/Everything/x86_64/os/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Metalink parsed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing internal mirrorlist
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing mirrors reported via LRI_MIRRORS
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Downloading/Locating yum repo
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local: Locating repo..
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Found local metalink: /var/cache/libdnf5/rpmfusion-nonfree-c89ee2f7518d5de2/metalink.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Parsing repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Repomd revision: 1777020918
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local: Repository was successfully located
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/rpmfusion-nonfree-c89ee2f7518d5de2/repodata/a45ceef360d90d5180c2ec6418e2e7075c3243c01c74e3371337425d6f0be95c-comps-f44.xml.xz (expected: a45ceef360d90d5180c2ec6418e2e7075c3243c01c74e3371337425d6f0be95c [sha256])
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using mtime cached in xattr: [user.librepo.checksum.mtime] 1780913567805037310
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using checksum cached in xattr: [user.librepo.checksum.sha256] a45ceef360d90d5180c2ec6418e2e7075c3243c01c74e3371337425d6f0be95c
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/rpmfusion-nonfree-c89ee2f7518d5de2/repodata/f6ebd645820f549152adf8064db0dd21ffa89e4475a37adfbc39e81885c8c641-primary.xml.gz (expected: f6ebd645820f549152adf8064db0dd21ffa89e4475a37adfbc39e81885c8c641 [sha256])
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using mtime cached in xattr: [user.librepo.checksum.mtime] 1790685962459505756
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using checksum cached in xattr: [user.librepo.checksum.sha256] f6ebd645820f549152adf8064db0dd21ffa89e4475a37adfbc39e81885c8c641
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Restoring an old SIGINT handler
+2026-10-05T09:47:01+0000 [227629] DEBUG Using cache for repo "rpmfusion-nonfree"
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Using dir: /var/cache/libdnf5/rpmfusion-nonfree-updates-e28ad54a83372d6b
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Using own SIGINT handler
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Preparing internal mirrorlist
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Local metalink.xml found at /var/cache/libdnf5/rpmfusion-nonfree-updates-e28ad54a83372d6b/metalink.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Parsing metalink.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Mirrors from metalink:
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp-stud.hs-esslingen.de/pub/Mirrors/rpmfusion.org/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror1.hs-esslingen.de/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ftp-stud.hs-esslingen.de/pub/Mirrors/rpmfusion.org/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   ftp://mirrors.netix.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirrors.netix.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirrors.netix.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirrors.netix.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.nluug.nl/os/Linux/distr/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.netsite.dk/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.netsite.dk/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.netsite.dk/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://rpmfusion.ip-connect.vn.ua/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://rpmfusion.ip-connect.vn.ua/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fedora.tu-chemnitz.de/pub/linux/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://rpmfusion.ip-connect.info/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://rpmfusion.ip-connect.info/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://rpmfusion.ip-connect.info/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.netone.nl/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirrors.neterra.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirrors.neterra.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirrors.neterra.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   ftp://mirrors.neterra.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ftp.fi.muni.cz/pub/linux/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://ftp.fi.muni.cz/pub/linux/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.fi.muni.cz/pub/linux/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://www.mirrorservice.org/sites/download1.rpmfusion.org/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://rsync.mirrorservice.org/download1.rpmfusion.org/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.de.leaseweb.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirrors.coreix.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.icm.edu.pl/pub/Linux/dist/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ftp.icm.edu.pl/pub/Linux/dist/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://ftp.icm.edu.pl/pub/Linux/dist/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.nl.leaseweb.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mir01.syntis.net/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://download1.rpmfusion.org/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://download1.rpmfusion.org/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://download1.rpmfusion.org/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://www.fedora.is/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://rsync.fedora.is/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fr2.rpmfind.net/linux/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://fr2.rpmfind.net/linux/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.cc.uoc.gr/mirrors/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://ftp.cc.uoc.gr/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ftp.cc.uoc.gr/mirrors/rpmfusion/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.upjs.sk/pub/mirrors/rpmfusion.org/nonfree/fedora/updates/44/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Metalink parsed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing internal mirrorlist
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing mirrors reported via LRI_MIRRORS
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Downloading/Locating yum repo
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local: Locating repo..
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Found local metalink: /var/cache/libdnf5/rpmfusion-nonfree-updates-e28ad54a83372d6b/metalink.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Parsing repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Repomd revision: 1790939106
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local: Repository was successfully located
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/rpmfusion-nonfree-updates-e28ad54a83372d6b/repodata/a45ceef360d90d5180c2ec6418e2e7075c3243c01c74e3371337425d6f0be95c-comps-f44.xml.xz (expected: a45ceef360d90d5180c2ec6418e2e7075c3243c01c74e3371337425d6f0be95c [sha256])
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using mtime cached in xattr: [user.librepo.checksum.mtime] 1791079503687811191
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using checksum cached in xattr: [user.librepo.checksum.sha256] a45ceef360d90d5180c2ec6418e2e7075c3243c01c74e3371337425d6f0be95c
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/rpmfusion-nonfree-updates-e28ad54a83372d6b/repodata/7bfbb9e7db1427fbb782a9144646760e8d2e282280f684accc2f9ed4202e2922-primary.xml.gz (expected: 7bfbb9e7db1427fbb782a9144646760e8d2e282280f684accc2f9ed4202e2922 [sha256])
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using mtime cached in xattr: [user.librepo.checksum.mtime] 1791079503712811322
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using checksum cached in xattr: [user.librepo.checksum.sha256] 7bfbb9e7db1427fbb782a9144646760e8d2e282280f684accc2f9ed4202e2922
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Restoring an old SIGINT handler
+2026-10-05T09:47:01+0000 [227629] DEBUG Using cache for repo "rpmfusion-nonfree-updates"
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Using dir: /var/cache/libdnf5/updates-3cc07c89a20302f2
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Using own SIGINT handler
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Preparing internal mirrorlist
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Local metalink.xml found at /var/cache/libdnf5/updates-3cc07c89a20302f2/metalink.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Parsing metalink.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Mirrors from metalink:
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fedora.mirror.wearetriple.com/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://fedora.mirror.wearetriple.com/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.dogado.de/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.dogado.de/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.dogado.de/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.fau.de/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ftp.fau.de/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://ftp.fau.de/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirrors.xtom.ee/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirrors.xtom.ee/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirrors.xtom.ee/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://fedora.ip-connect.vn.ua/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://fedora.ip-connect.vn.ua/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fedora.ip-connect.vn.ua/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://ftp.uni-stuttgart.de/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ftp.uni-stuttgart.de/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.uni-stuttgart.de/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://fedora.mirrorservice.org/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fedora.mirrorservice.org/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://rsync.mirrorservice.org/dl.fedoraproject.org/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fedora.ip-connect.info/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://fedora.ip-connect.info/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://fedora.ip-connect.info/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.zyner.org/fedora/enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.zyner.org/fedora/enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.zyner.org/fedora/enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.init7.net/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.init7.net/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ftp-stud.hs-esslingen.de/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://ftp-stud.hs-esslingen.de/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp-stud.hs-esslingen.de/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://eu.edge.kernel.org/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fedora.mirror.liteserver.nl/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.liteserver.nl/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://fedora.mirror.liteserver.nl/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.cov.ukservers.com/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.cov.ukservers.com/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ask4.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ask4.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://ask4.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirrors.xtom.de/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirrors.xtom.de/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirrors.xtom.de/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.uni-bayreuth.de/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://rsync.uni-bayreuth.de/fedora-enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://rsync.nic.funet.fi/ftp/pub/mirrors/fedora.redhat.com/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://www.nic.funet.fi/pub/mirrors/fedora.redhat.com/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.imt-systems.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.imt-systems.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.imt-systems.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirrors.nxthost.com/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirrors.nxthost.com/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirrors.nxthost.com/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.karneval.cz/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.karneval.cz/pub/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.i3d.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.in2p3.fr/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.in2p3.fr/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.in2p3.fr/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirrors.n-ix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirrors.n-ix.net/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirrors.n-ix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.bahnhof.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.bahnhof.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fedora.mirror.garr.it/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://fedora.mirror.garr.it/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.plusline.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.plusline.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.plusline.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.netsite.dk/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.netsite.dk/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.netsite.dk/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://fedora.tu-chemnitz.de/ftp/pub/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fedora.tu-chemnitz.de/pub/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.accum.se/mirror/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.accum.se/mirror/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.accum.se/mirror/fedora/enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://www.fedora.is/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://www.fedora.is/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://www.fedora.is/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.netzwerge.de/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.netzwerge.de/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror.netzwerge.de/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://divergentnetworks.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://divergentnetworks.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://divergentnetworks.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://b4sh.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://b4sh.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://b4sh.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://ipng.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://ipng.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ipng.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://mirror.ufdroht.net/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirror.ufdroht.net/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://mirrors.chroot.ro/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://fedora.mirror-services.net/pub/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   rsync://mirror-services.net/fedora/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://fedora.mirror-services.net/pub/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   https://repo.hyron.dev/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo]   http://ftp.otenet.gr/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Metalink parsed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing internal mirrorlist
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing mirrors reported via LRI_MIRRORS
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Downloading/Locating yum repo
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local: Locating repo..
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Found local metalink: /var/cache/libdnf5/updates-3cc07c89a20302f2/metalink.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Parsing repomd.xml
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Repomd revision: 1791073554
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] Found primary_zck so using instead of primary
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] Found updateinfo_zck so using instead of updateinfo
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_use_local: Repository was successfully located
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/updates-3cc07c89a20302f2/repodata/899e0ae192e44ca276ef39e9ab70d7b68fe70e2b230df3126380dc38a877d6d1-primary.xml.zck (expected: 3a40e0ce842ddc4825d0a2ea3eb3cef2958ba7db6162e7d8aef47aadce75443d [sha256])
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/updates-3cc07c89a20302f2/repodata/e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53-comps-Everything.x86_64.xml.zst (expected: e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53 [sha256])
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using mtime cached in xattr: [user.librepo.checksum.mtime] 1791165722428030262
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using checksum cached in xattr: [user.librepo.checksum.sha256] e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/updates-3cc07c89a20302f2/repodata/34824e487b7e687446e060b83017957b89f33567de24126e26676e310b1d5204-updateinfo.xml.zck (expected: 061b4b603133bafb7e56cef45d8383fd87a3fc923a379f738421b477473aab7e [sha256])
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_handle_perform: Restoring an old SIGINT handler
+2026-10-05T09:47:01+0000 [227629] TRACE countme: no event for repo "updates": budget to spend: 2
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_download: Target: https://mirrors.fedoraproject.org/metalink?repo=updates-released-f44&arch=x86_64 (-)
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] Selecting mirror for: https://mirrors.fedoraproject.org/metalink?repo=updates-released-f44&arch=x86_64
+2026-10-05T09:47:01+0000 [227629] INFO [librepo] Downloading: https://mirrors.fedoraproject.org/metalink?repo=updates-released-f44&arch=x86_64
+2026-10-05T09:47:01+0000 [227629] DEBUG [librepo] lr_download: Downloading started
+2026-10-05T09:47:01+0000 [227629] DEBUG No updateinfo metadata available for repo "fedora"
+2026-10-05T09:47:01+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/fedora-cff72538bc9825a4/solv/fedora-group.solvx"
+2026-10-05T09:47:01+0000 [227629] DEBUG No modules metadata available for repo fedora
+2026-10-05T09:47:01+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/fedora-cisco-openh264-d770e872c130a03f/solv/fedora-cisco-openh264.solv"
+2026-10-05T09:47:01+0000 [227629] DEBUG No updateinfo metadata available for repo "fedora-cisco-openh264"
+2026-10-05T09:47:01+0000 [227629] DEBUG No group metadata available for repo "fedora-cisco-openh264"
+2026-10-05T09:47:01+0000 [227629] DEBUG No modules metadata available for repo fedora-cisco-openh264
+2026-10-05T09:47:01+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/rpmfusion-free-5d98f8cc0b647275/solv/rpmfusion-free.solv"
+2026-10-05T09:47:01+0000 [227629] DEBUG No updateinfo metadata available for repo "rpmfusion-free"
+2026-10-05T09:47:01+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/rpmfusion-free-5d98f8cc0b647275/solv/rpmfusion-free-group.solvx"
+2026-10-05T09:47:01+0000 [227629] DEBUG No modules metadata available for repo rpmfusion-free
+2026-10-05T09:47:01+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/rpmfusion-free-updates-880b8bb66393fb1c/solv/rpmfusion-free-updates.solv"
+2026-10-05T09:47:01+0000 [227629] DEBUG No updateinfo metadata available for repo "rpmfusion-free-updates"
+2026-10-05T09:47:01+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/rpmfusion-free-updates-880b8bb66393fb1c/solv/rpmfusion-free-updates-group.solvx"
+2026-10-05T09:47:01+0000 [227629] DEBUG No modules metadata available for repo rpmfusion-free-updates
+2026-10-05T09:47:01+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/rpmfusion-nonfree-c89ee2f7518d5de2/solv/rpmfusion-nonfree.solv"
+2026-10-05T09:47:01+0000 [227629] DEBUG No updateinfo metadata available for repo "rpmfusion-nonfree"
+2026-10-05T09:47:01+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/rpmfusion-nonfree-c89ee2f7518d5de2/solv/rpmfusion-nonfree-group.solvx"
+2026-10-05T09:47:01+0000 [227629] DEBUG No modules metadata available for repo rpmfusion-nonfree
+2026-10-05T09:47:01+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/rpmfusion-nonfree-updates-e28ad54a83372d6b/solv/rpmfusion-nonfree-updates.solv"
+2026-10-05T09:47:01+0000 [227629] DEBUG No updateinfo metadata available for repo "rpmfusion-nonfree-updates"
+2026-10-05T09:47:01+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/rpmfusion-nonfree-updates-e28ad54a83372d6b/solv/rpmfusion-nonfree-updates-group.solvx"
+2026-10-05T09:47:01+0000 [227629] DEBUG No modules metadata available for repo rpmfusion-nonfree-updates
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Transfer finished: https://mirrors.fedoraproject.org/metalink?repo=updates-released-f44&arch=x86_64 (Effective url: https://mirrors.fedoraproject.org/metalink?repo=updates-released-f44&arch=x86_64)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Preparing internal mirrorlist
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Parsing metalink.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Mirrors from metalink:
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://mirrors.chroot.ro/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://ask4.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://ask4.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://ask4.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://ipng.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://ipng.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://ipng.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://mirror.i3d.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://b4sh.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://b4sh.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://b4sh.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Metalink parsed
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing internal mirrorlist
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Sorting internal mirrorlist by connection speed
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_detailed: Fastest mirror determination in progress...
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirrorcache_load: Loaded: 351 records
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirrorcache_load: Removing too old record from cache: http://mirror.cpsc.ucalgary.ca (ts: 1775634176)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirrorcache_load: Removing too old record from cache: https://mirror.cpsc.ucalgary.ca (ts: 1775634176)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirrorcache_load: Removing too old record from cache: rsync://mirror.cpsc.ucalgary.ca (ts: 1775634176)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: https://distrohub.kyiv.ua (0.060905)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: rsync://fedora.ipacct.com (-1.000000)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: https://mirror.i3d.net (0.016743)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: https://ipng.mm.fcix.net (0.041465)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: http://mirror.yandex.ru (0.048980)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: https://b4sh.mm.fcix.net (0.026487)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: https://fr2.rpmfind.net (0.041895)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: http://fr2.rpmfind.net (0.040988)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: rsync://distrohub.kyiv.ua (-1.000000)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: https://mirror.yandex.ru (0.050237)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: http://ask4.mm.fcix.net (0.031023)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: http://mirror.slu.cz (0.036862)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: rsync://ask4.mm.fcix.net (-1.000000)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: http://mirrors.chroot.ro (0.051395)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: rsync://mirror.23m.com (-1.000000)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: rsync://mirror.slu.cz (-1.000000)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: https://ask4.mm.fcix.net (0.030646)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: rsync://mirror.i3d.net (-1.000000)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: http://ipng.mm.fcix.net (0.044458)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: rsync://fr2.rpmfind.net (-1.000000)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: http://b4sh.mm.fcix.net (0.029545)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: http://mirror.23m.com (0.028908)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: rsync://ipng.mm.fcix.net (-1.000000)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: rsync://b4sh.mm.fcix.net (-1.000000)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: http://fedora.ipacct.com (0.043735)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: https://mirror.23m.com (0.025642)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: http://mirror.i3d.net (0.019734)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: https://fedora.ipacct.com (0.042423)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: https://mirror.slu.cz (0.036830)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: http://distrohub.kyiv.ua (0.060589)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_prepare: Using cached connect time for: rsync://mirror.yandex.ru (-1.000000)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.016743 : https://mirror.i3d.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.019734 : http://mirror.i3d.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.025642 : https://mirror.23m.com
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.026487 : https://b4sh.mm.fcix.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.028908 : http://mirror.23m.com
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.029545 : http://b4sh.mm.fcix.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.030646 : https://ask4.mm.fcix.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.031023 : http://ask4.mm.fcix.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.036830 : https://mirror.slu.cz
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.036862 : http://mirror.slu.cz
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.040988 : http://fr2.rpmfind.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.041465 : https://ipng.mm.fcix.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.041895 : https://fr2.rpmfind.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.042423 : https://fedora.ipacct.com
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.043735 : http://fedora.ipacct.com
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.044458 : http://ipng.mm.fcix.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.048980 : http://mirror.yandex.ru
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.050237 : https://mirror.yandex.ru
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.051395 : http://mirrors.chroot.ro
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.060589 : http://distrohub.kyiv.ua
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: 0.060905 : https://distrohub.kyiv.ua
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: -1.000000 : rsync://fedora.ipacct.com
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: -1.000000 : rsync://distrohub.kyiv.ua
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: -1.000000 : rsync://ask4.mm.fcix.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: -1.000000 : rsync://mirror.23m.com
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: -1.000000 : rsync://mirror.slu.cz
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: -1.000000 : rsync://mirror.i3d.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: -1.000000 : rsync://fr2.rpmfind.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: -1.000000 : rsync://ipng.mm.fcix.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: -1.000000 : rsync://b4sh.mm.fcix.net
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror: -1.000000 : rsync://mirror.yandex.ru
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_fastestmirror_sort_internalmirrorlists: Duration: 0.001209
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing mirrors reported via LRI_MIRRORS
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_download: No targets
+2026-10-05T09:47:02+0000 [227629] TRACE Sync check: failed for repo "updates", sha256 checksum mismatch
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_download: No targets
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_get_best_checksum: Expected checksum for repomd.xml: (sha512) 226d6db88eb1ac71d905a83dc71e0939bf637125274cf4e492b84996aa380c936419ac0d340cbf4fb6d6cb9ff27295bfc23955f16e5dad8857137465ab183747
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_get_best_checksum: Expected alternate checksum for repomd.xml: (sha512) b30fef6a940fe91379b932c6bdb9b60b9d5e5bb33f05d70071c81aa74518a5e2fb8242996f76457fd9f59ed01458f15cc6b708316db752887dd1c8ed6d77b4ee
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_get_best_checksum: Expected alternate checksum for repomd.xml: (sha512) 4129a74a7aae621d3d7a4b5fd636adf4cbe0bbf1efedae2c0cf151d6854a22766555b6a570a07fc3f7b2e47fb6d93f1a50f73ca9db2529d1b571cc605e9a8e77
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_get_best_checksum: Expected alternate checksum for repomd.xml: (sha512) 82b3dfae95b653fa6c9b3eab05579d14b6858de5d54ec79e37d80832d15f9cb8eb22e14a7141ccd2aeb6a710114447710509989fcf9c6a5225fe8d16b5ee5beb
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_download: Target: repodata/repomd.xml (-)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Preparing internal mirror list for handle id: 0x5609ec456680
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://ask4.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://b4sh.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://b4sh.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://ask4.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://ipng.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://ipng.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://mirrors.chroot.ro/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://ask4.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://mirror.i3d.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://ipng.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://b4sh.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Selecting mirror for: repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] INFO [librepo] Downloading: http://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_download: Downloading started
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Transfer finished: repodata/repomd.xml (Effective url: http://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] check_finished_transfer_checksum: Checksum (sha512) b30fef6a940fe91379b932c6bdb9b60b9d5e5bb33f05d70071c81aa74518a5e2fb8242996f76457fd9f59ed01458f15cc6b708316db752887dd1c8ed6d77b4ee is OK
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Found primary_zck so using instead of primary
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Found updateinfo_zck so using instead of updateinfo
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_download: Target: repodata/899e0ae192e44ca276ef39e9ab70d7b68fe70e2b230df3126380dc38a877d6d1-primary.xml.zck (-)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Preparing internal mirror list for handle id: 0x5609ec456680
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://ask4.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://b4sh.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://b4sh.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://ask4.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://ipng.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://ipng.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://mirrors.chroot.ro/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: http://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: https://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://ask4.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://mirror.i3d.net/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://ipng.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://b4sh.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_prepare_lrmirrors: Mirror: rsync://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_download: Target: repodata/e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53-comps-Everything.x86_64.xml.zst (-)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_download: Target: repodata/34824e487b7e687446e060b83017957b89f33567de24126e26676e310b1d5204-updateinfo.xml.zck (-)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Selecting mirror for: repodata/899e0ae192e44ca276ef39e9ab70d7b68fe70e2b230df3126380dc38a877d6d1-primary.xml.zck
+2026-10-05T09:47:02+0000 [227629] INFO [librepo] Downloading: http://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/899e0ae192e44ca276ef39e9ab70d7b68fe70e2b230df3126380dc38a877d6d1-primary.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] check_zck: Unable to read zchunk header: repodata/899e0ae192e44ca276ef39e9ab70d7b68fe70e2b230df3126380dc38a877d6d1-primary.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] find_local_zck_header: Cache directory: /var/cache/libdnf5
+
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] find_local_zck_header: Found file with same header at /var/cache/libdnf5/updates-3cc07c89a20302f2/repodata/899e0ae192e44ca276ef39e9ab70d7b68fe70e2b230df3126380dc38a877d6d1-primary.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Checking checksum: 4: 3a40e0ce842ddc4825d0a2ea3eb3cef2958ba7db6162e7d8aef47aadce75443d
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_zck_init_read: Found matching header in /var/cache/libdnf5/updates-3cc07c89a20302f2/repodata/899e0ae192e44ca276ef39e9ab70d7b68fe70e2b230df3126380dc38a877d6d1-primary.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] check_zck: Checking zchunk data checksum: repodata/899e0ae192e44ca276ef39e9ab70d7b68fe70e2b230df3126380dc38a877d6d1-primary.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] check_zck: File is complete
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] prepare_next_transfer: Target already fully downloaded: repodata/899e0ae192e44ca276ef39e9ab70d7b68fe70e2b230df3126380dc38a877d6d1-primary.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Selecting mirror for: repodata/e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53-comps-Everything.x86_64.xml.zst
+2026-10-05T09:47:02+0000 [227629] INFO [librepo] Downloading: http://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53-comps-Everything.x86_64.xml.zst
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Selecting mirror for: repodata/34824e487b7e687446e060b83017957b89f33567de24126e26676e310b1d5204-updateinfo.xml.zck
+2026-10-05T09:47:02+0000 [227629] INFO [librepo] Downloading: http://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/34824e487b7e687446e060b83017957b89f33567de24126e26676e310b1d5204-updateinfo.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] check_zck: Unable to read zchunk header: repodata/34824e487b7e687446e060b83017957b89f33567de24126e26676e310b1d5204-updateinfo.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] find_local_zck_header: Cache directory: /var/cache/libdnf5
+
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] find_local_zck_header: Found file with same header at /var/cache/libdnf5/updates-3cc07c89a20302f2/repodata/34824e487b7e687446e060b83017957b89f33567de24126e26676e310b1d5204-updateinfo.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Checking checksum: 4: 061b4b603133bafb7e56cef45d8383fd87a3fc923a379f738421b477473aab7e
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_zck_init_read: Found matching header in /var/cache/libdnf5/updates-3cc07c89a20302f2/repodata/34824e487b7e687446e060b83017957b89f33567de24126e26676e310b1d5204-updateinfo.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] check_zck: Checking zchunk data checksum: repodata/34824e487b7e687446e060b83017957b89f33567de24126e26676e310b1d5204-updateinfo.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] check_zck: File is complete
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] prepare_next_transfer: Target already fully downloaded: repodata/34824e487b7e687446e060b83017957b89f33567de24126e26676e310b1d5204-updateinfo.xml.zck
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_download: Downloading started
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Transfer finished: repodata/e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53-comps-Everything.x86_64.xml.zst (Effective url: http://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53-comps-Everything.x86_64.xml.zst)
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] check_finished_transfer_checksum: Checksum (sha256) e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53 is OK
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_perform: Using dir: /var/cache/libdnf5/updates-3cc07c89a20302f2
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_perform: Using own SIGINT handler
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Preparing internal mirrorlist
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Local metalink.xml found at /var/cache/libdnf5/updates-3cc07c89a20302f2/metalink.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Parsing metalink.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Mirrors from metalink:
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://mirror.slu.cz/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://mirrors.chroot.ro/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://ask4.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://ask4.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://ask4.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://mirror.23m.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://fr2.rpmfind.net/linux/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://mirror.yandex.ru/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://fedora.ipacct.com/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://ipng.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://ipng.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://ipng.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://mirror.i3d.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://mirror.i3d.net/pub/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://distrohub.kyiv.ua/fedora/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   https://b4sh.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   http://b4sh.mm.fcix.net/fedora/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo]   rsync://b4sh.mm.fcix.net/fedora-enchilada/linux/updates/44/Everything/x86_64/repodata/repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_metalink: Metalink parsed
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing internal mirrorlist
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_prepare_internal_mirrorlist: Finalizing mirrors reported via LRI_MIRRORS
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_perform: Downloading/Locating yum repo
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_yum_use_local: Locating repo..
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Found local metalink: /var/cache/libdnf5/updates-3cc07c89a20302f2/metalink.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Parsing repomd.xml
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_yum_use_local_load_base: Repomd revision: 1791073554
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Found primary_zck so using instead of primary
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] Found updateinfo_zck so using instead of updateinfo
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_yum_use_local: Repository was successfully located
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/updates-3cc07c89a20302f2/repodata/899e0ae192e44ca276ef39e9ab70d7b68fe70e2b230df3126380dc38a877d6d1-primary.xml.zck (expected: 3a40e0ce842ddc4825d0a2ea3eb3cef2958ba7db6162e7d8aef47aadce75443d [sha256])
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/updates-3cc07c89a20302f2/repodata/e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53-comps-Everything.x86_64.xml.zst (expected: e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53 [sha256])
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using mtime cached in xattr: [user.librepo.checksum.mtime] 1791193622608709538
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_checksum_fd_compare: Using checksum cached in xattr: [user.librepo.checksum.sha256] e43af6c409ab4a1552a595ffae9bd8cd72cf4b059180da53b2e1a440d694db53
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checking checksum of /var/cache/libdnf5/updates-3cc07c89a20302f2/repodata/34824e487b7e687446e060b83017957b89f33567de24126e26676e310b1d5204-updateinfo.xml.zck (expected: 061b4b603133bafb7e56cef45d8383fd87a3fc923a379f738421b477473aab7e [sha256])
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_yum_check_checksum_of_md_record: Checksum check - Passed
+2026-10-05T09:47:02+0000 [227629] DEBUG [librepo] lr_handle_perform: Restoring an old SIGINT handler
+2026-10-05T09:47:02+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/updates-3cc07c89a20302f2/solv/updates.solv"
+2026-10-05T09:47:02+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/updates-3cc07c89a20302f2/solv/updates-updateinfo.solvx"
+2026-10-05T09:47:02+0000 [227629] DEBUG Loading solv cache file: "/var/cache/libdnf5/updates-3cc07c89a20302f2/solv/updates-group.solvx"
+2026-10-05T09:47:02+0000 [227629] DEBUG No modules metadata available for repo updates
+2026-10-05T09:47:02+0000 [227629] INFO DNF5 finished
+2026-10-05T13:35:01+0000 [257587] INFO --- DNF5 launched with arguments: "/usr/bin/dnf5 makecache" ---

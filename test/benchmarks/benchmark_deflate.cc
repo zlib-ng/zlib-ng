@@ -171,7 +171,8 @@ public:
     DEFLATE_VARIANT(variant, literals,      wbits, strategy, sync, TEST_DATA_LITERALS); \
     DEFLATE_VARIANT(variant, mixed,         wbits, strategy, sync, TEST_DATA_MIXED); \
     DEFLATE_VARIANT(variant, realistic_rgb, wbits, strategy, sync, TEST_DATA_REALISTIC_RGB); \
-    DEFLATE_VARIANT(variant, striped_rgb,   wbits, strategy, sync, TEST_DATA_STRIPED_RGB)
+    DEFLATE_VARIANT(variant, striped_rgb,   wbits, strategy, sync, TEST_DATA_STRIPED_RGB); \
+    DEFLATE_VARIANT(variant, logfile,       wbits, strategy, sync, TEST_DATA_LOGFILE)
 
 /* Parameterized deflate with zlib wrapping (includes adler32 checksum) */
 DEFLATE_ALL_DATA(level,      MAX_WBITS,  Z_DEFAULT_STRATEGY, 0);
@@ -204,7 +205,8 @@ DEFLATE_ALL_DATA(sync_flush, MAX_WBITS,  Z_DEFAULT_STRATEGY, 1);
     DEFLATE_REGISTER(variant, literals,      TEST_DATA_LITERALS,      data_args_macro); \
     DEFLATE_REGISTER(variant, mixed,         TEST_DATA_MIXED,         data_args_macro); \
     DEFLATE_REGISTER(variant, realistic_rgb, TEST_DATA_REALISTIC_RGB, data_args_macro); \
-    DEFLATE_REGISTER(variant, striped_rgb,   TEST_DATA_STRIPED_RGB,   data_args_macro)
+    DEFLATE_REGISTER(variant, striped_rgb,   TEST_DATA_STRIPED_RGB,   data_args_macro); \
+    DEFLATE_REGISTER(variant, logfile,       TEST_DATA_LOGFILE,       data_args_macro)
 
 static void deflate_register_data_types(uint32_t mask) {
     DEFLATE_REGISTER_ALL_DATA(level,      DEFLATE_ARGS,          DEFLATE_DATA_ARGS);
