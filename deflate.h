@@ -442,10 +442,15 @@ static inline void put_uint64(deflate_state *s, uint64_t lld) {
 #define W_MASK(s)  ((s)->w_size - 1)
 /* Window mask: w_size is always a power of 2, so w_mask = w_size - 1 */
 
-#define W_BUF_SIZE(wsize) MAX(2 * (wsize), 32768)
-/* Size of the physical window buffer. At least 32K, so small compression
- * windows slide rarely instead of every w_size bytes. 16-bit head and prev
- * entries cap the buffer at 64K.
+#ifndef W_BUF_MIN
+#  define W_BUF_MIN 32768
+#endif
+/* Smallest physical window buffer. WITH_REDUCED_MEM lowers it to 8K. */
+
+#define W_BUF_SIZE(wsize) MAX(2 * (wsize), W_BUF_MIN)
+/* Size of the physical window buffer. By default, it is at least 32K so small
+ * compression windows slide rarely instead of every w_size bytes. 16-bit head
+ * and prev entries cap the buffer at 64K.
  */
 
 #define W_BITS(s)  zng_ctz32((s)->w_size)
