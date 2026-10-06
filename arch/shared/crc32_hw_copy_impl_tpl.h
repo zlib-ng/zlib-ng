@@ -18,20 +18,22 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_copy_impl(uint32_t crc, uint
         return ~c;
     }
 
+#if !CRC32_HW_UNALIGNED
     /* Align to 8-byte boundary for tail processing */
     uintptr_t align_diff = ALIGN_DIFF(src, 8);
     if (align_diff)
         c = crc32_hw_align(c, &dst, &src, &len, align_diff, COPY);
+#endif
 
     while (len >= 64) {
-        uint64_t d0 = *(const uint64_t *)src;
-        uint64_t d1 = *(const uint64_t *)(src + 8);
-        uint64_t d2 = *(const uint64_t *)(src + 16);
-        uint64_t d3 = *(const uint64_t *)(src + 24);
-        uint64_t d4 = *(const uint64_t *)(src + 32);
-        uint64_t d5 = *(const uint64_t *)(src + 40);
-        uint64_t d6 = *(const uint64_t *)(src + 48);
-        uint64_t d7 = *(const uint64_t *)(src + 56);
+        uint64_t d0 = CRC32_HW_LOAD64(src);
+        uint64_t d1 = CRC32_HW_LOAD64(src + 8);
+        uint64_t d2 = CRC32_HW_LOAD64(src + 16);
+        uint64_t d3 = CRC32_HW_LOAD64(src + 24);
+        uint64_t d4 = CRC32_HW_LOAD64(src + 32);
+        uint64_t d5 = CRC32_HW_LOAD64(src + 40);
+        uint64_t d6 = CRC32_HW_LOAD64(src + 48);
+        uint64_t d7 = CRC32_HW_LOAD64(src + 56);
 
         if (COPY) {
             memcpy(dst,      &d0, 8);
