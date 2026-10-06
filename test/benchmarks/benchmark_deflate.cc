@@ -138,10 +138,10 @@ public:
 };
 
 #define DEFLATE_ARGS \
-    ->Args({1024, 1})->Args({1024, 3})->Args({1024, 6})->Args({1024, 9}) \
-    ->Args({16384, 1})->Args({16384, 3})->Args({16384, 6})->Args({16384, 9}) \
-    ->Args({131072, 1})->Args({131072, 3})->Args({131072, 6})->Args({131072, 9}) \
-    ->Args({1048576, 1})->Args({1048576, 3})->Args({1048576, 6})->Args({1048576, 9})
+    ->Args({1024, 1})->Args({1024, 2})->Args({1024, 3})->Args({1024, 6})->Args({1024, 9}) \
+    ->Args({16384, 1})->Args({16384, 2})->Args({16384, 3})->Args({16384, 6})->Args({16384, 9}) \
+    ->Args({131072, 1})->Args({131072, 2})->Args({131072, 3})->Args({131072, 6})->Args({131072, 9}) \
+    ->Args({1048576, 1})->Args({1048576, 2})->Args({1048576, 3})->Args({1048576, 6})->Args({1048576, 9})
 
 /* Strategy benchmarks use fewer size/level combos to keep test count reasonable */
 #define DEFLATE_STRATEGY_ARGS \
@@ -151,8 +151,8 @@ public:
 /* Non-text data types use a reduced size/level ladder to keep the benchmark
    count down; the text variants keep the full ladders. */
 #define DEFLATE_DATA_ARGS \
-    ->Args({131072, 3})->Args({131072, 6})->Args({131072, 9}) \
-    ->Args({1048576, 3})->Args({1048576, 6})->Args({1048576, 9})
+    ->Args({131072, 2})->Args({131072, 3})->Args({131072, 6})->Args({131072, 9}) \
+    ->Args({1048576, 2})->Args({1048576, 3})->Args({1048576, 6})->Args({1048576, 9})
 
 /* Sync-flush variants use Args(chunk, level), two cadences at the default level */
 #define DEFLATE_SYNC_ARGS \
