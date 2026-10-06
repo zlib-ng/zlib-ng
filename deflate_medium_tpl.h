@@ -41,6 +41,9 @@ Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint
     struct match m;
     int32_t dist;
 
+    /* Initialize the match to be a 1 byte literal */
+    m.match_start = 0;
+    m.match_length = 1;
     m.strstart = s->strstart;
 #ifdef USE_FIZZLE
     m.orgstart = m.strstart;
@@ -49,25 +52,21 @@ Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint
 #endif
 
     dist = (int32_t)s->strstart - (int32_t)hash_head;
-    if (dist <= max_dist && dist > 0 && hash_head != 0) {
+    if (dist <= (int32_t)max_dist && dist > 0 && hash_head != 0) {
         /* To simplify the code, we prevent matches with the string
          * of window index 0 (in particular we have to avoid a match
          * of the string with itself at the start of the input file).
          */
-        m.match_length = FUNCTABLE_CALL(longest_match)(s, hash_head);
+        uint32_t match_len = FUNCTABLE_CALL(longest_match)(s, hash_head);
         m.match_start = s->match_start;
-        if (UNLIKELY(m.match_length < WANT_MIN_MATCH))
-            m.match_length = 1;
+        if (UNLIKELY(match_len < WANT_MIN_MATCH))
+            return m;
         if (UNLIKELY(m.match_start >= m.strstart)) {
             /* this can happen due to some restarts */
-            m.match_length = 1;
+            return m;
         }
-    } else {
-        /* Set up the match to be a 1 byte literal */
-        m.match_start = 0;
-        m.match_length = 1;
+        m.match_length = match_len;
     }
-
     return m;
 }
 
