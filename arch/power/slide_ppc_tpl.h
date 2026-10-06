@@ -36,15 +36,15 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize
 }
 
 void Z_INTERNAL SLIDE_PPC(deflate_state *s) {
-    Assert(s->w_size <= UINT16_MAX, "w_size should fit in uint16_t");
-    uint16_t wsize = (uint16_t)s->w_size;
+    Assert(s->slide_len <= UINT16_MAX, "slide_len should fit in uint16_t");
+    uint16_t slide = (uint16_t)s->slide_len;
 
-    slide_hash_chain(s->head, HASH_SIZE, wsize);
-    slide_hash_chain(s->prev, wsize, wsize);
+    slide_hash_chain(s->head, HASH_SIZE, slide);
+    slide_hash_chain(s->prev, s->w_size, slide);
 }
 
 void Z_INTERNAL SLIDE_PPC_HEAD(deflate_state *s) {
-    Assert(s->w_size <= UINT16_MAX, "w_size should fit in uint16_t");
-    uint16_t wsize = (uint16_t)s->w_size;
-    slide_hash_chain(s->head, HASH_SIZE, wsize);
+    Assert(s->slide_len <= UINT16_MAX, "slide_len should fit in uint16_t");
+    uint16_t slide = (uint16_t)s->slide_len;
+    slide_hash_chain(s->head, HASH_SIZE, slide);
 }

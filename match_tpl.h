@@ -137,7 +137,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
         mbase_end -= match_offset;
     }
 #endif
-    Assert((unsigned long)strstart <= s->window_size - MIN_LOOKAHEAD, "need lookahead");
+    Assert(strstart <= s->fill_end, "need lookahead");
     for (;;) {
         if (UNLIKELY(cur_match >= strstart))
             break;
