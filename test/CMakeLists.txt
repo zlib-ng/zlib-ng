@@ -58,6 +58,10 @@ if(WITH_BENCHMARKS)
 endif()
 
 if(WITH_GTEST)
+    if(BUILD_SHARED_LIBS)
+        message(WARNING "Only shared libraries are enabled: gtest will test only exported functions and host processor specific optimizations.")
+    endif()
+
     # Google test requires at least C++11
     if(NOT DEFINED CMAKE_CXX_STANDARD)
         # Use older version of Google test to support older versions of GCC
@@ -115,6 +119,7 @@ if(WITH_GTEST)
 
     if(TARGET GTest::GTest)
         set(TEST_SRCS
+            test_main.cc
             test_chunked.cc
             test_compress.cc
             test_compress_bound.cc
@@ -150,16 +155,20 @@ if(WITH_GTEST)
         endif()
 
         if(NOT TEST_STOCK_ZLIB)
+            if(NOT BUILD_SHARED_LIBS)
+                list(APPEND TEST_SRCS
+                    test_adler32.cc           # adler32_neon(), etc
+                    test_adler32_copy.cc      # adler32_copy implementations
+                    test_compare256.cc        # compare256_neon(), etc
+                    test_compare256_rle.cc    # compare256_rle(), etc
+                    test_crc32.cc             # crc32_armv8(), etc
+                    test_crc32_copy.cc        # crc32_copy implementations
+                    )
+            endif()
+
             list(APPEND TEST_SRCS
-                test_adler32.cc               # adler32_neon(), etc
-                test_adler32_copy.cc          # adler32_copy implementations
-                test_compare256.cc            # compare256_neon(), etc
-                test_compare256_rle.cc        # compare256_rle(), etc
-                test_crc32.cc                 # crc32_armv8(), etc
-                test_crc32_copy.cc            # crc32_copy implementations
                 test_deflate_deterministic.cc # deterministic output after deflateReset
                 test_inflate_sync.cc          # expects a certain compressed block layout
-                test_main.cc                  # cpu_check_features()
                 test_version.cc               # expects a fixed version string
                 )
         endif()
@@ -212,7 +221,7 @@ if(WITH_GTEST)
         endif()
 
         if(BUILD_SHARED_LIBS)
-            target_link_libraries(gtest_zlib GTest::Main)
+            target_compile_definitions(gtest_zlib PUBLIC GTEST_SHARED_ZLIB)
         endif()
         target_link_libraries(gtest_zlib GTest::GTest)
 
