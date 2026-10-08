@@ -10,8 +10,6 @@
 
 #include "insert_string_p.h"
 
-#define EARLY_EXIT_TRIGGER_LEVEL 5
-
 #define GOTO_NEXT_CHAIN \
     if (--chain_length && (cur_match = prev[cur_match & wmask]) > limit) \
         continue; \
@@ -40,9 +38,6 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
 #ifdef LONGEST_MATCH_SLOW
     uint32_t limit_base;
 #endif
-#ifndef LONGEST_MATCH_SLOW
-    int32_t early_exit;
-#endif
     uint32_t chain_length = s->max_chain_length;
     uint32_t nice_match = (uint32_t)s->nice_match;
     uint32_t best_len, offset;
@@ -54,9 +49,14 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
     /* The code is optimized for STD_MAX_MATCH-2 multiple of 16. */
     Assert(STD_MAX_MATCH == 258, "Code too clever");
 
+#ifdef LONGEST_MATCH_SLOW
     best_len = s->prev_length ? s->prev_length : STD_MIN_MATCH-1;
     if (UNLIKELY(best_len >= lookahead))
         return lookahead;
+#else
+    best_len = STD_MIN_MATCH-1;
+#endif
+
 #ifdef LONGEST_MATCH_SLOW
 #  ifdef LONGEST_MATCH_SLOW_ROLL
     /* Rolling-hash variant always runs the post-match offset search; the
@@ -90,9 +90,6 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
      * we prevent matches with the string of window index 0
      */
     limit = strstart > MAX_DIST(s) ? (strstart - MAX_DIST(s)) : 0;
-#ifndef LONGEST_MATCH_SLOW
-    early_exit = s->level < EARLY_EXIT_TRIGGER_LEVEL;
-#endif
 #ifdef LONGEST_MATCH_SLOW
     limit_base = limit;
     if (best_len >= STD_MIN_MATCH) {
@@ -196,6 +193,7 @@ Z_INTERNAL uint32_t LONGEST_MATCH(deflate_state *const s, uint32_t cur_match) {
                 GOTO_NEXT_CHAIN;
             }
         }
+
         len = COMPARE256(scan+2, mbase_start+cur_match+2) + 2;
         Assert(scan+len <= window+(unsigned)(s->window_size-1), "wild scan");
 
@@ -293,14 +291,6 @@ short_match_accept:
 #endif
             mbase_end = (mbase_start+offset);
         }
-#ifndef LONGEST_MATCH_SLOW
-        else if (UNLIKELY(early_exit)) {
-            /* The probability of finding a match later if we here is pretty low, so for
-             * performance it's best to outright stop here for the lower compression levels
-             */
-            break;
-        }
-#endif
         GOTO_NEXT_CHAIN;
     }
     return best_len;
