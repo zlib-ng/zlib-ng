@@ -68,7 +68,7 @@ public:
         } \
         Bench(state, comparefunc); \
     } \
-    BENCHMARK_REGISTER_F(compare256, name)->Arg(1)->Arg(10)->Arg(40)->Arg(80)->Arg(100)->Arg(175)->Arg(256);
+    BENCHMARK_REGISTER_F(compare256, name)->Arg(1)->Arg(10)->Arg(16)->Arg(24)->Arg(32)->Arg(40)->Arg(48)->Arg(56)->Arg(64)->Arg(80)->Arg(100)->Arg(175)->Arg(256);
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 BENCHMARK_COMPARE256(native, native_compare256, 1);
