@@ -66,6 +66,7 @@ set(BENCH_INTERNAL_SRCS
     benchmark_crc32_copy.cc
     benchmark_deflate.cc
     benchmark_insert_string.cc
+    benchmark_longest_match.cc
     benchmark_slidehash.cc
     )
 
