@@ -41,11 +41,13 @@ static int arm_has_crc32(void) {
 #elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_CRC32
     unsigned long hwcap = 0;
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    if (elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap)) != 0)
+        hwcap = 0;
     has_crc32 = (hwcap & HWCAP_CRC32) != 0;
 #  elif defined(HWCAP2_CRC32)
     unsigned long hwcap2 = 0;
-    elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
+    if (elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2)) != 0)
+        hwcap2 = 0;
     has_crc32 = (hwcap2 & HWCAP2_CRC32) != 0;
 #  endif
 #elif defined(__FreeBSD__) && defined(ARCH_64BIT)
@@ -90,12 +92,14 @@ static int arm_has_pmull(void) {
 #elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_PMULL
     unsigned long hwcap = 0;
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    if (elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap)) != 0)
+        hwcap = 0;
     has_pmull = (hwcap & HWCAP_PMULL) != 0;
 #  elif defined(HWCAP_AES)
     /* PMULL is part of crypto extension, check for AES as proxy */
     unsigned long hwcap = 0;
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    if (elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap)) != 0)
+        hwcap = 0;
     has_pmull = (hwcap & HWCAP_AES) != 0;
 #  endif
 #elif defined(__FreeBSD__) && defined(ARCH_64BIT)
@@ -138,11 +142,13 @@ static int arm_has_eor3(void) {
 #elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP2_SHA3
     unsigned long hwcap2 = 0;
-    elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
+    if (elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2)) != 0)
+        hwcap2 = 0;
     has_eor3 = (hwcap2 & HWCAP2_SHA3) != 0;
 #  elif defined(HWCAP_SHA3)
     unsigned long hwcap = 0;
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    if (elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap)) != 0)
+        hwcap = 0;
     has_eor3 = (hwcap & HWCAP_SHA3) != 0;
 #  endif
 #elif defined(__FreeBSD__) && defined(ARCH_64BIT)
@@ -192,7 +198,8 @@ static int arm_has_dotprod(void) {
 #elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_ASIMDDP
     unsigned long hwcap = 0;
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    if (elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap)) != 0)
+        hwcap = 0;
     has_dotprod = (hwcap & HWCAP_ASIMDDP) != 0;
 #  endif
 #elif defined(__FreeBSD__) && defined(ARCH_64BIT)
@@ -238,7 +245,8 @@ static inline int arm_has_neon(void) {
 #elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_NEON
     unsigned long hwcap = 0;
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    if (elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap)) != 0)
+        hwcap = 0;
     has_neon = (hwcap & HWCAP_NEON) != 0;
 #  endif
 #elif defined(__APPLE__)
@@ -313,7 +321,8 @@ static inline int arm_has_cpuid(void) {
 #elif (defined(__FreeBSD__) || defined(__OpenBSD__)) && defined(HAVE_SYS_AUXV_H)
 #  ifdef HWCAP_CPUID
     unsigned long hwcap = 0;
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    if (elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap)) != 0)
+        hwcap = 0;
     has_cpuid = (hwcap & HWCAP_CPUID) != 0;
 #  endif
 #endif
