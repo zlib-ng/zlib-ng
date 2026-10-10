@@ -129,10 +129,16 @@ static void fizzle_matches(unsigned char *Z_RESTRICT window, struct match *Z_RES
     if (LIKELY(steps < (int32_t)need))
         return;
 
-    // The quick exit above already checked the first byte of that range.
-    // Compare the whole range here.
-    if (LIKELY(memcmp(match, orig, (size_t)need) != 0))
-        return;
+    // The quick exit above already checked the first byte of the range.
+    // Compare the whole range here; small ranges inline as a single masked
+    // 8-byte XOR to avoid the memcmp call.
+    if (LIKELY(need <= sizeof(uint64_t))) {
+        uint64_t diff = zng_memread_8(match) ^ zng_memread_8(orig);
+        if (LIKELY(diff & zng_first_bytes_mask64(need)))
+            return;
+    } else if (LIKELY(memcmp(match, orig, (size_t)need) != 0)) {
+         return;
+    }
 
     // Check whether the final extra backward byte is also possible.
     // This decides whether the current match becomes length 1 or 0.
