@@ -29,16 +29,18 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
 
     /* Align source to 8 bytes so SWAR loads are naturally aligned */
     size_t align_diff = ALIGN_DIFF(buf, 8);
+    size_t nmax = NMAX_ALIGNED8;
     if (align_diff) {
         adler32_copy_align(&adler, NULL, buf, align_diff, &sum2, 7, 0);
         buf += align_diff;
         len -= align_diff;
+        nmax = ALIGN_DOWN(nmax - align_diff, (size_t)8);
     }
 
     /* do length NMAX blocks -- requires just one modulo operation */
-    while (len >= NMAX) {
-        len -= NMAX;
-        n = NMAX;
+    while (len >= nmax) {
+        len -= nmax;
+        n = nmax;
 
         do {
             size_t chunk = MIN(ALIGN_DOWN(n, (size_t)8), (size_t)ADLER32_SWAR_MAX_BYTES);
@@ -49,6 +51,7 @@ Z_INTERNAL uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len) {
 
         adler %= BASE;
         sum2 %= BASE;
+        nmax = NMAX_ALIGNED8;
     }
 
     /* do remaining bytes (less than NMAX, still just one modulo) */
