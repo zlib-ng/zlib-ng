@@ -15,6 +15,8 @@ if(TEST_STOCK_ZLIB)
     add_definitions(-DTEST_STOCK_ZLIB)
 endif()
 
+add_definitions(-DTEST_DATA_DIR="${PROJECT_SOURCE_DIR}/test/data")
+
 add_executable(example example.c)
 configure_test_executable(example)
 target_link_libraries(example zlib-ng)

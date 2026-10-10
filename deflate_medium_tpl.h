@@ -13,61 +13,71 @@
  * - s->lookahead > match.match_length + WANT_MIN_MATCH
  * - match_len >= WANT_MIN_MATCH
  */
-static void SUFFIX(insert_match)(deflate_state *s, unsigned char *Z_RESTRICT window, struct match match, const uint32_t max_len) {
-    uint32_t start;
-    uint32_t match_len = match.match_length;
-    uint32_t strstart = match.strstart + 1; // string at strstart already in table
-    uint32_t end = strstart + match_len - 1;
+static void SUFFIX(insert_match)(deflate_state *s, unsigned char *Z_RESTRICT window, struct match match, uint32_t max_insert_count) {
+    uint32_t strstart = match.strstart + 1;        // string at strstart already in table
+    uint32_t match_len = match.match_length - 1;
+    uint32_t max_len = 2 * max_insert_count;       // Normally 32, 56, 96 and 112 for levels 3-6
 
-    /* Insert new strings in the hash table only if the match length
-     * is not too large. This saves time but degrades compression.
-     */
-    if (UNLIKELY(match_len > max_len)) {
-        // For too long matches, insert only the tail position.
-        start = end - 1;
-    } else {
-        start = strstart;
+    /* Don't re-hash positions hashed as literals (see fizzle_matches).
+     * Also don't hash overlapping positions (see find_best_match). */
+    if (UNLIKELY(strstart < match.orgstart)) {
+        uint32_t end = strstart + match_len;
+
+        strstart = match.orgstart;
+        match_len = end - strstart;
+        if (match_len == 0) {
+            /* Hash only the tail position */
+            insert_knuth(s, window, end - 1);
+            return;
+        }
     }
 
-#ifdef USE_FIZZLE
-    if (UNLIKELY(start < match.orgstart))
-        start = match.orgstart;
-#endif
-
-    insert_knuth_batch(s, window, start, end - start);
+    /* Shorter matches insert every position, which needs no step and no division. */
+    if (LIKELY(match_len <= max_len)) {
+        insert_knuth_batch(s, window, strstart, match_len);
+        return;
+    }
+    insert_knuth_stepped(s, window, strstart, match_len, max_insert_count);
 }
 
 Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint32_t hash_head, int32_t max_dist) {
     struct match m;
     int32_t dist;
 
+    /* Initialize the match to be a 1 byte literal */
+    m.match_start = 0;
+    m.match_length = 1;
     m.strstart = s->strstart;
-#ifdef USE_FIZZLE
     m.orgstart = m.strstart;
-#else
-    m.orgstart = 0; // For sanitizer
-#endif
 
     dist = (int32_t)s->strstart - (int32_t)hash_head;
-    if (dist <= max_dist && dist > 0 && hash_head != 0) {
+    if (dist <= (int32_t)max_dist && dist > 0 && hash_head != 0) {
         /* To simplify the code, we prevent matches with the string
          * of window index 0 (in particular we have to avoid a match
          * of the string with itself at the start of the input file).
          */
-        m.match_length = FUNCTABLE_CALL(longest_match)(s, hash_head);
+        uint32_t match_len = FUNCTABLE_CALL(longest_match)(s, hash_head);
         m.match_start = s->match_start;
-        if (UNLIKELY(m.match_length < WANT_MIN_MATCH))
-            m.match_length = 1;
+        if (UNLIKELY(match_len < WANT_MIN_MATCH))
+            return m;
         if (UNLIKELY(m.match_start >= m.strstart)) {
             /* this can happen due to some restarts */
-            m.match_length = 1;
+            return m;
         }
-    } else {
-        /* Set up the match to be a 1 byte literal */
-        m.match_start = 0;
-        m.match_length = 1;
-    }
+        m.match_length = match_len;
 
+        /* We want to skip hashing overlapping positions when dist < match_length,
+         * encode this into orgstart, fizzle_matches might re-introduce some
+         * overlapping positions, but the simplification is worth it.
+         *
+         * If dist < match_length, the first (match_length - dist) positions
+         * are byte-identical to data `dist` bytes earlier (already in table).
+         */
+        uint32_t match_dist = m.strstart - m.match_start;
+        if (match_dist < match_len) {
+            m.orgstart += match_len - match_dist;
+        }
+    }
     return m;
 }
 
@@ -104,8 +114,8 @@ static void fizzle_matches(unsigned char *Z_RESTRICT window, struct match *Z_RES
     // Protect next->strstart from moving past maximum distance
     int32_t max_steps_to_limit = (int32_t)next->strstart - limit;
 
-    // Protect next->match_length from exceeding 256
-    int32_t max_growth_allowed = 256 - (int32_t)next->match_length;
+    // Protect next->match_length from exceeding STD_MAX_MATCH
+    int32_t max_growth_allowed = STD_MAX_MATCH - (int32_t)next->match_length;
 
     // Protect next->match_start from going too far back
     int32_t max_steps_to_history = (int32_t)next->match_start - 1;
@@ -157,8 +167,8 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
                  struct match next_match = {0};
     uint32_t window_end = s->window_size - MIN_LOOKAHEAD;
 #endif
-    uint32_t max_len = (16 * s->max_insert_length);
     unsigned char *window = s->window;
+    uint32_t max_insert_count = s->max_insert_count;
     int32_t max_dist = MAX_DIST(s);
 
     for (;;) {
@@ -202,7 +212,7 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
         curr_match_len = current_match.match_length;
 
         if (curr_match_len >= WANT_MIN_MATCH && s->lookahead > (unsigned int)(curr_match_len + WANT_MIN_MATCH )) {
-            SUFFIX(insert_match)(s, window, current_match, max_len);
+            SUFFIX(insert_match)(s, window, current_match, max_insert_count);
         }
 
         /* now, look ahead one */
@@ -239,7 +249,7 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
         curr_match_len = current_match.match_length;
 
         if (curr_match_len >= WANT_MIN_MATCH && s->lookahead > (unsigned int)(curr_match_len + WANT_MIN_MATCH )) {
-            SUFFIX(insert_match)(s, window, current_match, max_len);
+            SUFFIX(insert_match)(s, window, current_match, max_insert_count);
         }
 #endif
 

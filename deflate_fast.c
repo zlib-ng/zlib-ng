@@ -20,6 +20,7 @@
  */
 Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
     unsigned char *window = s->window;
+    uint32_t max_inserts = s->max_insert_count;
     int bflush = 0;       /* set if current block must be flushed */
     uint32_t match_len = 0;
 
@@ -76,17 +77,17 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
             /* Insert new strings in the hash table only if the match length
              * is not too large. This saves time but degrades compression.
              */
-            if (match_len <= s->max_insert_length && s->lookahead >= WANT_MIN_MATCH) {
+            if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
                 match_len--; /* string at strstart already in table */
                 s->strstart++;
 
-                insert_knuth_batch_static(s, window, s->strstart, match_len);
+                insert_knuth_stepped_static(s, window, s->strstart, match_len, max_inserts);
                 s->strstart += match_len;
             } else {
                 s->strstart += match_len;
                 insert_knuth(s, window, s->strstart + 2 - STD_MIN_MATCH);
 
-                /* If lookahead < STD_MIN_MATCH, ins_h is garbage, but it does not
+                /* If lookahead < WANT_MIN_MATCH, ins_h is garbage, but it does not
                  * matter since it will be recomputed at next deflate call.
                  */
             }
