@@ -138,10 +138,10 @@ public:
 };
 
 #define DEFLATE_ARGS \
-    ->Args({1024, 1})->Args({1024, 3})->Args({1024, 6})->Args({1024, 9}) \
-    ->Args({16384, 1})->Args({16384, 3})->Args({16384, 6})->Args({16384, 9}) \
-    ->Args({131072, 1})->Args({131072, 3})->Args({131072, 6})->Args({131072, 9}) \
-    ->Args({1048576, 1})->Args({1048576, 3})->Args({1048576, 6})->Args({1048576, 9})
+    ->Args({1024, 1})->Args({1024, 2})->Args({1024, 3})->Args({1024, 6})->Args({1024, 9}) \
+    ->Args({16384, 1})->Args({16384, 2})->Args({16384, 3})->Args({16384, 6})->Args({16384, 9}) \
+    ->Args({131072, 1})->Args({131072, 2})->Args({131072, 3})->Args({131072, 6})->Args({131072, 9}) \
+    ->Args({1048576, 1})->Args({1048576, 2})->Args({1048576, 3})->Args({1048576, 6})->Args({1048576, 9})
 
 /* Strategy benchmarks use fewer size/level combos to keep test count reasonable */
 #define DEFLATE_STRATEGY_ARGS \
@@ -151,8 +151,8 @@ public:
 /* Non-text data types use a reduced size/level ladder to keep the benchmark
    count down; the text variants keep the full ladders. */
 #define DEFLATE_DATA_ARGS \
-    ->Args({131072, 3})->Args({131072, 6})->Args({131072, 9}) \
-    ->Args({1048576, 3})->Args({1048576, 6})->Args({1048576, 9})
+    ->Args({131072, 2})->Args({131072, 3})->Args({131072, 6})->Args({131072, 9}) \
+    ->Args({1048576, 2})->Args({1048576, 3})->Args({1048576, 6})->Args({1048576, 9})
 
 /* Sync-flush variants use Args(chunk, level), two cadences at the default level */
 #define DEFLATE_SYNC_ARGS \
@@ -171,7 +171,8 @@ public:
     DEFLATE_VARIANT(variant, literals,      wbits, strategy, sync, TEST_DATA_LITERALS); \
     DEFLATE_VARIANT(variant, mixed,         wbits, strategy, sync, TEST_DATA_MIXED); \
     DEFLATE_VARIANT(variant, realistic_rgb, wbits, strategy, sync, TEST_DATA_REALISTIC_RGB); \
-    DEFLATE_VARIANT(variant, striped_rgb,   wbits, strategy, sync, TEST_DATA_STRIPED_RGB)
+    DEFLATE_VARIANT(variant, striped_rgb,   wbits, strategy, sync, TEST_DATA_STRIPED_RGB); \
+    DEFLATE_VARIANT(variant, logfile,       wbits, strategy, sync, TEST_DATA_LOGFILE)
 
 /* Parameterized deflate with zlib wrapping (includes adler32 checksum) */
 DEFLATE_ALL_DATA(level,      MAX_WBITS,  Z_DEFAULT_STRATEGY, 0);
@@ -204,7 +205,8 @@ DEFLATE_ALL_DATA(sync_flush, MAX_WBITS,  Z_DEFAULT_STRATEGY, 1);
     DEFLATE_REGISTER(variant, literals,      TEST_DATA_LITERALS,      data_args_macro); \
     DEFLATE_REGISTER(variant, mixed,         TEST_DATA_MIXED,         data_args_macro); \
     DEFLATE_REGISTER(variant, realistic_rgb, TEST_DATA_REALISTIC_RGB, data_args_macro); \
-    DEFLATE_REGISTER(variant, striped_rgb,   TEST_DATA_STRIPED_RGB,   data_args_macro)
+    DEFLATE_REGISTER(variant, striped_rgb,   TEST_DATA_STRIPED_RGB,   data_args_macro); \
+    DEFLATE_REGISTER(variant, logfile,       TEST_DATA_LOGFILE,       data_args_macro)
 
 static void deflate_register_data_types(uint32_t mask) {
     DEFLATE_REGISTER_ALL_DATA(level,      DEFLATE_ARGS,          DEFLATE_DATA_ARGS);
