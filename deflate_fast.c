@@ -74,14 +74,12 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
 
             s->lookahead -= match_len;
 
-            /* Insert new strings in the hash table only if the match length
-             * is not too large. This saves time but degrades compression.
-             */
+            /* Insert new strings in the hash table using a stepped hashing function, saving time */
             if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
                 match_len--; /* string at strstart already in table */
                 s->strstart++;
 
-                insert_knuth_stepped_static(s, window, s->strstart, match_len, max_inserts);
+                insert_knuth_spread_static(s, window, s->strstart, match_len, max_inserts);
                 s->strstart += match_len;
             } else {
                 s->strstart += match_len;

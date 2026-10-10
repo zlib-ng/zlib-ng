@@ -98,6 +98,22 @@ Z_FORCEINLINE static uint32_t insert_knuth_head(deflate_state *const s, unsigned
     return head;
 }
 
+/* ===========================================================================
+ * Insert a single position into the dictionary using passed table pointers.
+ */
+Z_FORCEINLINE static void insert_knuth_one(Pos *headp, Pos *prevp, const unsigned int w_mask, const unsigned char *window, uint32_t idx) {
+    uint32_t val, h, head;
+
+    val = Z_U32_FROM_LE(zng_memread_4(window + idx));
+    UPDATE_HASH_KNUTH(h, val);
+
+    head = headp[h];
+    if (LIKELY(head != idx)) {
+        prevp[idx & w_mask] = (Pos)head;
+        headp[h] = (Pos)idx;
+    }
+}
+
 Z_FORCEINLINE static uint32_t insert_roll(deflate_state *const s, unsigned char *window, uint32_t str) {
     uint8_t *strstart = window + str + (STD_MIN_MATCH-1);
     uint32_t h, head;
@@ -190,6 +206,33 @@ Z_FORCEINLINE static void insert_knuth_stepped_static(deflate_state *const s, un
             headp[h] = (Pos)idx;
         }
     }
+}
+
+/* ===========================================================================
+ * Like insert_knuth_stepped_static(), except optimized for small max_inserts (deflate_fast levels)
+ * The first and last position are always hashed, and an approximate middle position as well.
+ * Larger max_inserts fall back to insert_knuth_stepped_static().
+ */
+Z_FORCEINLINE static void insert_knuth_spread_static(deflate_state *const s, unsigned char *window, uint32_t str, uint32_t count, uint32_t max_inserts) {
+    Assert(count >= 3, "Insert count too low");
+    Assert(max_inserts >= 2, "max_inserts too low");
+
+    if (UNLIKELY(max_inserts > 3)) {
+        /* In case count is bigger than 3: tuned deflate_fast level params, or NO_MEDIUM_STRATEGY */
+        insert_knuth_stepped(s, window, str, count, max_inserts);
+        return;
+    }
+
+    /* Local pointers to avoid indirection */
+    Pos *headp = s->head;
+    Pos *prevp = s->prev;
+    const unsigned int w_mask = W_MASK(s);
+
+    /* Insert head and tail, and middle if needed */
+    insert_knuth_one(headp, prevp, w_mask, window, str);
+    if (max_inserts == 3)
+        insert_knuth_one(headp, prevp, w_mask, window, str + ((count - 1) >> 1));
+    insert_knuth_one(headp, prevp, w_mask, window, str + count - 1);
 }
 
 /* ===========================================================================
