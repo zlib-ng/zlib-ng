@@ -9,12 +9,12 @@ jobs:
       matrix:
         include:
           - name: Ubuntu GCC
-            os: ubuntu-latest
+            os: ubuntu-24.04
             compiler: gcc
             cxx-compiler: g++
 
           - name: Ubuntu GCC (i686)
-            os: ubuntu-latest
+            os: ubuntu-24.04
             compiler: i686-linux-gnu-gcc
             cxx-compiler: i686-linux-gnu-g++
             packages: gcc-i686-linux-gnu g++-i686-linux-gnu libc6-dev-i386-cross
@@ -34,7 +34,7 @@ jobs:
             cxx-compiler: g++
 
           - name: Ubuntu GCC MIPS
-            os: ubuntu-latest
+            os: ubuntu-24.04
             chost: mips-linux-gnu
             compiler: mips-linux-gnu-gcc
             cxx-compiler: mips-linux-gnu-g++
@@ -42,7 +42,7 @@ jobs:
             packages: qemu-user gcc-mips-linux-gnu g++-mips-linux-gnu libc6-dev-mips-cross
 
           - name: Ubuntu GCC MIPS64
-            os: ubuntu-latest
+            os: ubuntu-24.04
             chost: mips64-linux-gnuabi64
             compiler: mips64-linux-gnuabi64-gcc
             cxx-compiler: mips64-linux-gnuabi64-g++
@@ -50,7 +50,7 @@ jobs:
             packages: qemu-user gcc-mips64-linux-gnuabi64 g++-mips64-linux-gnuabi64 libc6-dev-mips64-cross
 
           - name: Ubuntu GCC MIPS64 (ISA R6)
-            os: ubuntu-latest
+            os: ubuntu-24.04
             chost: mipsisa64r6-linux-gnuabi64
             compiler: mipsisa64r6-linux-gnuabi64-gcc
             cxx-compiler: mipsisa64r6-linux-gnuabi64-g++
@@ -58,7 +58,7 @@ jobs:
             packages: qemu-user gcc-mipsisa64r6-linux-gnuabi64 g++-mipsisa64r6-linux-gnuabi64 libc6-dev-mips64r6-cross
 
           - name: Ubuntu GCC PPC
-            os: ubuntu-latest
+            os: ubuntu-24.04
             chost: powerpc-linux-gnu
             compiler: powerpc-linux-gnu-gcc
             cxx-compiler: powerpc-linux-gnu-g++
@@ -66,7 +66,7 @@ jobs:
             packages: qemu-user gcc-powerpc-linux-gnu g++-powerpc-linux-gnu libc6-dev-powerpc-cross
 
           - name: Ubuntu GCC PPC64LE
-            os: ubuntu-latest
+            os: ubuntu-24.04
             chost: powerpc64le-linux-gnu
             compiler: powerpc64le-linux-gnu-gcc
             cxx-compiler: powerpc64le-linux-gnu-g++
@@ -74,7 +74,7 @@ jobs:
             packages: qemu-user gcc-powerpc64le-linux-gnu g++-powerpc64le-linux-gnu libc6-dev-ppc64el-cross
 
           - name: Ubuntu GCC RISC-V
-            os: ubuntu-latest
+            os: ubuntu-24.04
             chost: riscv64-linux-gnu
             compiler: riscv64-linux-gnu-gcc
             cxx-compiler: riscv64-linux-gnu-g++
