@@ -213,6 +213,7 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
                 if (UNLIKELY(len > (unsigned)(safe - out))) {
                     state->mode = MATCH;
                     state->length = len;
+                    state->was = len;
                     state->offset = dist;
                     break;
                 }
