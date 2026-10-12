@@ -184,6 +184,21 @@ Z_FORCEINLINE static unsigned read_buf(PREFIX3(stream) *strm, unsigned char *buf
 }
 
 /* ===========================================================================
+ * Check whether a max-length match just emitted continues at s->strstart.
+ * Minimum length 8 is chosen to avoid compression losses from skipping the search for a better match elsewhere.
+ * The caller must ensure s->lookahead >= MIN_LOOKAHEAD and that s->strstart + STD_MAX_MATCH fits in the window.
+ * Returns 0 for no match, or a match length between 8-258.
+ */
+Z_FORCEINLINE static uint32_t max_match_continues(const unsigned char *window, unsigned int strstart, uint32_t dist) {
+    const uint8_t *scan = (const uint8_t *)window + strstart;
+
+    if (LIKELY(zng_memread_8(scan) != zng_memread_8(scan - dist)))
+        return 0;
+
+    return FUNCTABLE_CALL(compare256)(scan + 2, scan - dist + 2) + 2;
+}
+
+/* ===========================================================================
  * Flush the current block, with given end-of-file flag.
  * IN assertion: strstart is set to the end of the current match.
  */

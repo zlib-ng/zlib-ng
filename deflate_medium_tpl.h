@@ -221,8 +221,12 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
             SUFFIX(insert_match)(s, window, current_match, max_insert_count);
         }
 
-        /* now, look ahead one */
-        if (LIKELY(s->lookahead > MIN_LOOKAHEAD && (current_match.strstart + curr_match_len) < window_end)) {
+        if (UNLIKELY(curr_match_len == STD_MAX_MATCH)) {
+            /* A max-length match cannot be extended by fizzle without truncating it,
+             * skip fizzle and instead check for continuation after emitting current match. */
+            next_match.match_length = 0;
+        } else if (LIKELY(s->lookahead > MIN_LOOKAHEAD && (current_match.strstart + curr_match_len) < window_end)) {
+            /* now, look ahead one */
             s->strstart = current_match.strstart + curr_match_len;
             uint32_t hash_head = insert_knuth(s, window, s->strstart);
 
@@ -271,6 +275,47 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
 
         /* move the "cursor" forward */
         s->strstart += curr_match_len;
+
+        /* A max-length match might continue: keep emitting continuations at the same
+         * distance without a full search as long as possible. */
+        if (UNLIKELY(curr_match_len == STD_MAX_MATCH && s->lookahead >= MIN_LOOKAHEAD)) {
+            uint32_t cont_dist = current_match.strstart - current_match.match_start;
+            for (;;) {
+                struct match cont_match;
+
+                // Check for continuing match
+                uint32_t cont_len = max_match_continues(window, s->strstart, cont_dist);
+                if (UNLIKELY(cont_len < 8))
+                    break;
+
+                // Set up continuation match
+                cont_match.match_start  = s->strstart - cont_dist;
+                cont_match.match_length = cont_len;
+                cont_match.strstart     = s->strstart;
+
+                check_match(s, cont_match.strstart, cont_match.match_start, cont_len);
+
+                // Skip hashing positions that overlap the match (see find_best_match).
+                cont_match.orgstart = (cont_dist < cont_len) ? cont_match.strstart + cont_len - cont_dist : cont_match.strstart;
+
+                // Insert match
+                insert_knuth(s, window, s->strstart);
+                SUFFIX(insert_match)(s, window, cont_match, max_insert_count);
+
+                // Emit match
+                s->lookahead -= cont_len;
+                bflush |= zng_tr_tally_dist(s, cont_dist, cont_len - STD_MIN_MATCH);
+                s->strstart += cont_len;
+
+                if (UNLIKELY(bflush)) {
+                    FLUSH_BLOCK(s, window, 0);
+                    bflush = 0;
+                }
+                if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD)) {
+                    break; /* not enough lookahead, return to the main loop */
+                }
+            }
+        }
 
         if (UNLIKELY(bflush))
             FLUSH_BLOCK(s, window, 0);
