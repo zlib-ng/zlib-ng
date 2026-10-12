@@ -161,6 +161,11 @@ Z_FORCEINLINE static uint32_t lit_cost(const deflate_state *s, uint32_t c) {
     return s->ext_ll_len[c];
 }
 
+/* Number of positions ahead of the cursor searched as candidate match start
+ * points (the candidate at the cursor itself is always included). Each extra
+ * position costs one full chain search per iteration. */
+#define EXTREME_PROBE_DEPTH 2
+
 /* Upper bound on the imputed bit value of one input byte left to be encoded
  * by later decisions. A candidate sequence is credited with min(this, mode
  * literal cost - 1) bits per advanced byte, so a good match beats "emit
@@ -185,8 +190,15 @@ Z_FORCEINLINE static uint32_t roll_lookup(const unsigned char *window, uint32_t 
 /* Search the hash chain headed by hash_head for the best match at s->strstart.
  * Returns a candidate with match_length == 1 when no usable match is found.
  * Callers searching ahead must set s->strstart to the probe position first,
- * since longest_match derives its bounds from it. */
-Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t hash_head, int32_t max_dist) {
+ * since longest_match derives its bounds from it.
+ *
+ * The chain search returns the longest match. Extreme additionally re-checks
+ * the closest same-key candidate (hash_head itself, the LIFO chain head) when
+ * the longest sits far away: distance extra bits dominate token cost, so a
+ * shorter but much closer match can score better under the same tail-credit
+ * rule the outer DP uses. */
+Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t hash_head, int32_t max_dist,
+                                                  uint32_t tail_credit) {
     struct match res;
     int32_t dist;
 
@@ -215,6 +227,39 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
             return res;
         }
         res.match_length = match_len;
+
+        /* A far longest match pays 5-13 distance extra bits; the closest
+         * same-key occurrence may score better once its shorter length is
+         * credited. Only worth measuring when the winner is far. The read is
+         * bounded by the same window padding guarantee longest_match relies
+         * on, and the result is clamped like its EOF guard. */
+        const uint32_t far_dist = res.strstart - res.match_start;
+        if (LIKELY(far_dist > 32)) {
+            /* The rolling key is only 15 bits, so hash_head may be a pure
+             * collision: verify the prefix exactly like longest_match does.
+             * A full 8-byte match extends through compare256; otherwise the
+             * common prefix length (if >= STD_MIN_MATCH) is the match. */
+            const uint64_t scan_start = zng_memread_8(s->window + s->strstart);
+            const uint64_t diff = scan_start ^ zng_memread_8(s->window + hash_head);
+            uint32_t near_len;
+            if (diff == 0) {
+                near_len = FUNCTABLE_CALL(compare256)(s->window + s->strstart + 2, s->window + hash_head + 2) + 2;
+            } else {
+                near_len = zng_first_diff_byte64(diff);
+            }
+            if (UNLIKELY(near_len > s->lookahead))
+                near_len = s->lookahead;
+            if (near_len >= STD_MIN_MATCH) {
+                const int64_t far_score = (int64_t)match_cost(s, res.match_length, far_dist)
+                                        - (int64_t)tail_credit * (int64_t)res.match_length;
+                const int64_t near_score = (int64_t)match_cost(s, near_len, (uint32_t)dist)
+                                          - (int64_t)tail_credit * (int64_t)near_len;
+                if (near_score < far_score) {
+                    res.match_start = hash_head;
+                    res.match_length = near_len;
+                }
+            }
+        }
     }
     return res;
 }
@@ -292,24 +337,29 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
         if (LIKELY(s->lookahead >= WANT_MIN_MATCH))
             hash_head = insert_roll(s, window, pos);
 
-        /* Candidate at pos. */
-        struct match cand[3];
-        int ncand;
-        cand[0] = find_best_match(s, hash_head, max_dist);
-        ncand = 1;
+        /* Imputed bit value of one byte left to later decisions. A candidate
+         * is credited with min(TAIL_BITS_PER_BYTE, mode literal cost - 1)
+         * bits per advanced byte; the cap keeps deep probes from winning on
+         * credit alone when literals are cheap (RLE-able data). */
+        const uint32_t tail_credit = s->ext_mode_lit_cost > 1u
+            ? MIN(TAIL_BITS_PER_BYTE, s->ext_mode_lit_cost - 1u)
+            : 0u;
 
-        /* Candidates one and two positions ahead, looked up without inserting
-         * so the rolling hash state stays sequential. find_best_match wants the
-         * chain head position, so resolve the probe key through s->head. */
-        if (LIKELY(s->lookahead >= WANT_MIN_MATCH + 1)) {
-            s->strstart = pos + 1;
-            cand[1] = find_best_match(s, s->head[roll_lookup(window, pos + 1)], max_dist);
-            ncand = 2;
-        }
-        if (LIKELY(s->lookahead >= WANT_MIN_MATCH + 2)) {
-            s->strstart = pos + 2;
-            cand[2] = find_best_match(s, s->head[roll_lookup(window, pos + 2)], max_dist);
-            ncand = 3;
+        /* Candidate at pos. */
+        struct match cand[EXTREME_PROBE_DEPTH + 1];
+        int ncand = 1;
+        cand[0] = find_best_match(s, hash_head, max_dist, tail_credit);
+
+        /* Candidates one..EXTREME_PROBE_DEPTH positions ahead, looked up
+         * without inserting so the rolling hash state stays sequential.
+         * find_best_match wants the chain head position, so resolve each probe
+         * key through s->head. */
+        for (int k = 1; k <= EXTREME_PROBE_DEPTH; k++) {
+            if (UNLIKELY(s->lookahead < WANT_MIN_MATCH + (uint32_t)k))
+                break;
+            s->strstart = pos + (uint32_t)k;
+            cand[k] = find_best_match(s, s->head[roll_lookup(window, pos + (uint32_t)k)], max_dist, tail_credit);
+            ncand++;
         }
         s->strstart = pos;
 
@@ -329,15 +379,8 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
         }
 
         /* Lazy decision: emit the minimum-score sequence, where score is the
-         * explicit token bits minus a tail credit per advanced byte. The
-         * credit values the bytes that later decisions will encode; it must
-         * never exceed what encoding such a byte as a literal costs (minus
-         * one bit), or deep probes win on credit alone whenever literals get
-         * cheap -- which turns RLE-able data into literal runs. Ties go to
-         * the longest advance. */
-        const uint32_t tail_credit = s->ext_mode_lit_cost > 1u
-            ? (TAIL_BITS_PER_BYTE < s->ext_mode_lit_cost - 1u ? TAIL_BITS_PER_BYTE : s->ext_mode_lit_cost - 1u)
-            : 0u;
+         * explicit token bits minus the tail credit per advanced byte (see
+         * above). Ties go to the longest advance. */
         int64_t best_score = INT64_MAX;
         uint32_t best_advance = 0;
         int best_k = 0;
