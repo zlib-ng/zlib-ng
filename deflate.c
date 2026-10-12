@@ -82,6 +82,7 @@ Z_INTERNAL block_state deflate_quick (deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_medium       (deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_medium_fizzle(deflate_state *s, int flush);
 #endif
+Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_slow  (deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_rle   (deflate_state *s, int flush);
 Z_INTERNAL block_state deflate_huff  (deflate_state *s, int flush);
@@ -92,8 +93,12 @@ static void lm_init              (deflate_state *s);
  * Local data
  */
 
+/* Highest compression level supported by this build; an extension beyond
+ * Z_BEST_COMPRESSION (9). */
+#define MAX_LEVEL 10
+
 /* Values for max_lazy_match, good_match and max_chain_length, depending on
- * the desired pack level (0..9). The values given below have been tuned to
+ * the desired pack level (0..MAX_LEVEL). The values given below have been tuned to
  * exclude worst case performance for pathological files. Better values may be
  * found for specific files.
  */
@@ -106,7 +111,7 @@ typedef struct config_s {
     compress_func func;
 } config;
 
-static const config configuration_table[10] = {
+static const config configuration_table[MAX_LEVEL + 1] = {
 /*      good lazy nice chain */
 /* 0 */ {0,    0,   0,    0, deflate_stored},  /* store only */
 
@@ -132,7 +137,8 @@ static const config configuration_table[10] = {
 
 /* 7 */ {8,   32, 128,  256, deflate_slow},
 /* 8 */ {32, 128, 258, 1024, deflate_slow},
-/* 9 */ {32, 258, 258, 4096, deflate_slow}}; /* max compression */
+/* 9 */ {32, 258, 258, 4096, deflate_slow},
+/* 10 */ {258, 258, 258, 32768, deflate_extreme}}; /* extreme compression */
 
 /* Note: the deflate() code requires max_lazy >= STD_MIN_MATCH and max_chain >= 4
  * For deflate_fast() (levels <= 3) good is ignored and lazy has a different
@@ -306,7 +312,7 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
 #endif
     }
     if (memLevel < 1 || memLevel > MAX_MEM_LEVEL || method != Z_DEFLATED || windowBits < MIN_WBITS ||
-        windowBits > MAX_WBITS || level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED ||
+        windowBits > MAX_WBITS || level < 0 || level > MAX_LEVEL || strategy < 0 || strategy > Z_FIXED ||
         (windowBits == 8 && wrap != 1)) {
         return Z_STREAM_ERROR;
     }
@@ -643,7 +649,7 @@ int32_t Z_EXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int
 
     if (level == Z_DEFAULT_COMPRESSION)
         level = 6;
-    if (level < 0 || level > 9 || strategy < 0 || strategy > Z_FIXED)
+    if (level < 0 || level > MAX_LEVEL || strategy < 0 || strategy > Z_FIXED)
         return Z_STREAM_ERROR;
     DEFLATE_PARAMS_HOOK(strm, level, strategy, &hook_flush);  /* hook for IBM Z DFLTCC */
     func = configuration_table[s->level].func;
