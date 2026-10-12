@@ -117,6 +117,33 @@ Z_FORCEINLINE static block_state deflate_quick_impl(deflate_state *s, int flush,
                         zng_tr_emit_dist(s, static_ltree, static_dtree, match_len - STD_MIN_MATCH, (uint32_t)dist);
                         lookahead -= match_len;
                         strstart += match_len;
+
+                        /* A max-length match might continue: keep emitting continuations at the
+                         * same distance without a hash lookup as long as possible. */
+                        if (UNLIKELY(match_len == STD_MAX_MATCH && lookahead >= MIN_LOOKAHEAD)) {
+                            const uint32_t cont_dist = (uint32_t)dist;
+                            for (;;) {
+                                if (UNLIKELY(s->pending + ((BIT_BUF_SIZE + 7) >> 3) >= s->pending_buf_size)) {
+                                    break; /* pending is full, let the main loop handle it */
+                                }
+
+                                // Check for continuing match
+                                uint32_t cont_len = max_match_continues(window, strstart, cont_dist);
+                                if (UNLIKELY(cont_len < 8))
+                                    break;
+
+                                check_match(s, strstart, strstart - cont_dist, cont_len);
+
+                                // Emit match
+                                zng_tr_emit_dist(s, static_ltree, static_dtree, cont_len - STD_MIN_MATCH, cont_dist);
+                                lookahead -= cont_len;
+                                strstart += cont_len;
+
+                                if (UNLIKELY(lookahead < MIN_LOOKAHEAD))
+                                    break; /* not enough lookahead, return to the main loop */
+                            }
+                        }
+
                         continue;
                     }
                 }
