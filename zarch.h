@@ -17,6 +17,18 @@
 #  define ARCH_64BIT
 #  define ARCH_NAME "aarch64"
 
+/* ARC 32-bit */
+#elif defined(__arc__)
+#  define ARCH_ARC
+#  define ARCH_32BIT
+#  define ARCH_NAME "arc"
+
+/* ARC 64-bit */
+#elif defined(__ARC64__)
+#  define ARCH_ARC
+#  define ARCH_64BIT
+#  define ARCH_NAME "arc64"
+
 /* ARM 32-bit */
 #elif defined(__arm__) || defined(__arm) || defined(_M_ARM) || defined(__TARGET_ARCH_ARM)
 #  define ARCH_ARM
