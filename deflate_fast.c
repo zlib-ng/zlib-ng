@@ -20,6 +20,7 @@
  */
 Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
     unsigned char *window = s->window;
+    uint32_t max_inserts = s->max_insert_count;
     int bflush = 0;       /* set if current block must be flushed */
     uint32_t match_len = 0;
 
@@ -69,28 +70,52 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
             Assert(s->match_start <= UINT16_MAX, "match_start should fit in uint16_t");
             check_match(s, s->strstart, s->match_start, match_len);
 
-            bflush = zng_tr_tally_dist(s, s->strstart - s->match_start, match_len - STD_MIN_MATCH);
+            const uint32_t cont_dist = s->strstart - s->match_start;
+            bflush = zng_tr_tally_dist(s, cont_dist, match_len - STD_MIN_MATCH);
 
             s->lookahead -= match_len;
 
-            /* Insert new strings in the hash table only if the match length
-             * is not too large. This saves time but degrades compression.
-             */
-            if (match_len <= s->max_insert_length && s->lookahead >= WANT_MIN_MATCH) {
-                match_len--; /* string at strstart already in table */
-                s->strstart++;
-
-                insert_knuth_batch_static(s, window, s->strstart, match_len);
-                s->strstart += match_len;
+            /* Insert new strings in the hash table using a stepped hashing function, saving time */
+            if (LIKELY(s->lookahead >= WANT_MIN_MATCH)) {
+                insert_knuth_spread_static(s, window, s->strstart + 1, match_len - 1 , max_inserts);
             } else {
-                s->strstart += match_len;
-                insert_knuth(s, window, s->strstart + 2 - STD_MIN_MATCH);
-
-                /* If lookahead < STD_MIN_MATCH, ins_h is garbage, but it does not
+                insert_knuth(s, window, s->strstart + 2 - STD_MIN_MATCH + match_len);
+                /* If lookahead < WANT_MIN_MATCH, ins_h is garbage, but it does not
                  * matter since it will be recomputed at next deflate call.
                  */
             }
+            s->strstart += match_len;
+
+            /* A max-length match might continue: keep emitting continuations at the same
+             * distance without a full search as long as possible. */
+            if (UNLIKELY(match_len == STD_MAX_MATCH && s->lookahead >= MIN_LOOKAHEAD)) {
+                for (;;) {
+                    // Check for continuing match
+                    uint32_t cont_len = max_match_continues(window, s->strstart, cont_dist);
+                    if (UNLIKELY(cont_len < 8))
+                        break;
+
+                    check_match(s, s->strstart, s->strstart - cont_dist, cont_len);
+
+                    // Insert match
+                    insert_knuth_spread_static(s, window, s->strstart, cont_len, max_inserts);
+                    s->strstart += cont_len;
+                    s->lookahead -= cont_len;
+
+                    // Emit match
+                    bflush |= zng_tr_tally_dist(s, cont_dist, cont_len - STD_MIN_MATCH);
+
+                    if (UNLIKELY(bflush)) {
+                        FLUSH_BLOCK(s, window, 0);
+                        bflush = 0;
+                    }
+                    if (UNLIKELY(s->lookahead < MIN_LOOKAHEAD)) {
+                        break; /* not enough lookahead, return to the main loop */
+                    }
+                }
+            }
             match_len = 0;
+
         } else {
             /* No match, output a literal byte */
             bflush = zng_tr_tally_lit(s, lc);
