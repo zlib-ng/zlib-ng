@@ -20,9 +20,7 @@ struct match {
     uint32_t strstart;
 };
 
-/* Fixed-Huffman extra-bit tables, mirroring trees.h (RFC1951 C.4). Length
- * symbols 257-285 carry 7 bits up to symbol 279 and 8 bits above; all
- * distance codes carry 5 bits. */
+/* Extra-bit tables, mirroring trees.h (RFC1951 C.4). */
 static const uint32_t xtra_len[29] = {
     0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0
 };
@@ -30,25 +28,147 @@ static const uint32_t xtra_dist[30] = {
     0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13
 };
 
-/* Bit cost of a match token with the given length (>= STD_MIN_MATCH) and
- * distance (>= 1) under the fixed Huffman code. */
-Z_FORCEINLINE static uint32_t match_cost(uint32_t len, uint32_t dist) {
+/* Push node onto a min-heap ordered by weight[]. */
+Z_FORCEINLINE static void heap_push(const uint32_t *weight, int node, int *heap, int *heap_sz) {
+    heap[*heap_sz] = node;
+    int child = (*heap_sz)++;
+    /* Sift up until the parent's weight is no larger. */
+    while (child > 0) {
+        const int parent = (child - 1) / 2;
+        if (weight[heap[parent]] <= weight[heap[child]])
+            return;
+        const int tmp = heap[parent];
+        heap[parent] = heap[child];
+        heap[child] = tmp;
+        child = parent;
+    }
+}
+
+/* Pop the minimum-weight node off the heap. */
+Z_FORCEINLINE static int heap_pop(const uint32_t *weight, int *heap, int *heap_sz) {
+    const int root = heap[0];
+    heap[0] = heap[--(*heap_sz)];
+    int child = 0;
+    /* Sift down until the node is no heavier than both children. */
+    for (;;) {
+        const int left = 2 * child + 1;
+        const int right = left + 1;
+        int lowest = child;
+        if (left < *heap_sz && weight[heap[left]] < weight[heap[lowest]])
+            lowest = left;
+        if (right < *heap_sz && weight[heap[right]] < weight[heap[lowest]])
+            lowest = right;
+        if (lowest == child)
+            return root;
+        const int tmp = heap[lowest];
+        heap[lowest] = heap[child];
+        heap[child] = tmp;
+        child = lowest;
+    }
+}
+
+/* Compute Huffman code lengths for nsym symbols from freq[] into out_len[].
+ * Symbols with zero frequency get length 0. With a single distinct symbol the
+ * tree degenerates and it gets length 1 (deflate needs at least one bit).
+ * Depths above the deflate maximum of 15 are clamped, as the real builder does; beyond that the plain merge only
+ * approximates build_tree's length-limited tree. */
+static void huff_lengths(const uint32_t *freq, int nsym, uint8_t *out_len) {
+    int nleaf = 0;
+    /* Count the distinct (nonzero-frequency) symbols. */
+    for (int i = 0; i < nsym; i++)
+        if (freq[i] > 0)
+            nleaf++;
+    if (nleaf == 0)
+        return; /* keep the previous lengths */
+
+    /* Clear the previous lengths. */
+    for (int i = 0; i < nsym; i++)
+        out_len[i] = 0;
+    if (nleaf == 1) {
+        /* The single distinct symbol takes a 1-bit code. */
+        for (int i = 0; i < nsym; i++)
+            if (freq[i] > 0)
+                out_len[i] = 1;
+        return;
+    }
+
+    /* Nodes 0..nleaf-1 are the leaves (in symbol order), the rest internal.
+     * nsym <= 286, so total <= 571. */
+    const int total = 2 * nleaf - 1;
+    uint32_t weight[571];
+    int ch_a[571], ch_b[571];
+    int leaf_sym[286];
+    int heap[571];
+    int heap_sz = 0;
+
+    /* Push the leaves (nonzero-frequency symbols) in symbol order. */
+    for (int i = 0, nseen = 0; i < nsym; i++) {
+        if (freq[i] == 0)
+            continue;
+        const int node = nseen++;
+        weight[node] = freq[i];
+        leaf_sym[node] = i;
+        ch_a[node] = -1;
+        heap_push(weight, node, heap, &heap_sz);
+    }
+
+    /* Merge the two lightest nodes until one root remains. */
+    for (int node = nleaf; node < total; node++) {
+        const int a = heap_pop(weight, heap, &heap_sz);
+        const int b = heap_pop(weight, heap, &heap_sz);
+        weight[node] = weight[a] + weight[b];
+        ch_a[node] = a;
+        ch_b[node] = b;
+        heap_push(weight, node, heap, &heap_sz);
+    }
+
+    /* Walk the root iteratively and record each leaf's depth. */
+    int stack_node[571], stack_depth[571];
+    int nstack = 0;
+    stack_node[nstack] = heap[0];
+    stack_depth[nstack] = 0;
+    nstack++;
+    while (nstack > 0) {
+        nstack--;
+        const int node = stack_node[nstack];
+        const int depth = stack_depth[nstack];
+        if (ch_a[node] < 0) {
+            out_len[leaf_sym[node]] = (uint8_t)(depth > 15 ? 15 : depth);
+        } else {
+            stack_node[nstack] = ch_a[node];
+            stack_depth[nstack] = depth + 1;
+            nstack++;
+            stack_node[nstack] = ch_b[node];
+            stack_depth[nstack] = depth + 1;
+            nstack++;
+        }
+    }
+}
+
+/* Estimated bit cost of a match token with the given length (>= STD_MIN_MATCH)
+ * and distance (>= 1), using the running Huffman length estimates. Layout
+ * mirrors trees.c: length code lc lives at LITERALS+1+lc of the lit/length
+ * tree, distance code dc at index dc of the distance tree. */
+Z_FORCEINLINE static uint32_t match_cost(const deflate_state *s, uint32_t len, uint32_t dist) {
     const uint32_t lcode = zng_length_code[len - STD_MIN_MATCH];
-    return (lcode >= 23 ? 8u : 7u) + xtra_len[lcode] + 5u + xtra_dist[d_code(dist - 1)];
+    const uint32_t dcode = d_code(dist - 1);
+    return s->ext_ll_len[LITERALS + 1 + lcode] + xtra_len[lcode]
+         + s->ext_d_len[dcode] + xtra_dist[dcode];
 }
 
-/* Bit cost of a literal byte under the fixed Huffman code. */
-Z_FORCEINLINE static uint32_t lit_cost(uint32_t c) {
-    return c < 144 ? 8u : 9u;
+/* Estimated bit cost of a literal byte. */
+Z_FORCEINLINE static uint32_t lit_cost(const deflate_state *s, uint32_t c) {
+    return s->ext_ll_len[c];
 }
 
-/* Imputed bit cost of one input byte left to be encoded by later decisions.
- * Used to compare candidate sequences of different advance: a sequence that
- * advances farther is credited with this many bits per skipped byte, so a
- * good match beats "emit literals and re-decide inside the match region"
- * (which would otherwise win on explicit bit cost alone), while a
- * long-distance 3-byte match (~25 bits) still loses to its three literals. */
-#define TAIL_BITS_PER_BYTE 5u
+/* Upper bound on the imputed bit value of one input byte left to be encoded
+ * by later decisions. A candidate sequence is credited with min(this, mode
+ * literal cost - 1) bits per advanced byte, so a good match beats "emit
+ * literals and re-decide inside the match region" (which would otherwise win
+ * on explicit bit cost alone), while a long-distance 3-byte match still loses
+ * to its three literals. Capping at the mode literal cost keeps deep probes
+ * from winning on credit alone when literals are cheap (RLE-able data). */
+#define TAIL_BITS_PER_BYTE 3u
 
 /* Compute the rolling hash key of window[p..p+2] directly, without touching
  * s->ins_h. Valid because UPDATE_HASH_ROLL shifts a 15-bit state by 5 each
@@ -101,9 +221,9 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
 
 /* deflate_extreme compresses with a lazy two-position lookahead: at each step
  * it searches for matches at the cursor and one/two positions ahead, then
- * emits the minimum fixed-Huffman bit-cost sequence among {C0}, {lit, C1},
- * {lit, lit, C2}. All hash inserts are strictly sequential (the rolling hash
- * state only advances forward), so ahead searches use direct key lookups.
+ * emits the minimum-cost sequence among {C0}, {lit, C1}, {lit, lit, C2}, priced with the running
+ * dynamic-Huffman cost model. All hash inserts are strictly sequential (the rolling hash state only
+ * advances forward), so ahead searches use direct key lookups.
  */
 Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
     unsigned char *window = s->window;
@@ -116,6 +236,31 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
      * into this one. */
     s->match_available = 0;
     s->prev_length = 0;
+
+    /* First entry for this stream: seed the cost model with the fixed
+     * Huffman lengths (RFC1951 C.4); running statistics replace them as
+     * tokens are tallied. A fresh stream (no input consumed yet) also resets
+     * any counts a previous file on this state left behind. */
+    if (UNLIKELY(s->strm->total_in == 0)) {
+        for (int i = 0; i < 316; i++)
+            s->ext_freq[i] = 0;
+        s->ext_since_build = 0;
+        s->ext_mode_lit_cost = 8;
+    }
+    if (UNLIKELY(s->reserved[19] == 0)) {
+        for (int i = 0; i < 144; i++)
+            s->ext_ll_len[i] = 8;
+        for (int i = 144; i < LITERALS; i++)
+            s->ext_ll_len[i] = 9;
+        for (int i = 0; i < 23; i++)
+            s->ext_ll_len[LITERALS + 1 + i] = 7;
+        for (int i = 23; i < 29; i++)
+            s->ext_ll_len[LITERALS + 1 + i] = 8;
+        for (int i = 0; i < 30; i++)
+            s->ext_d_len[i] = 5;
+        s->ext_mode_lit_cost = 8; /* fixed-table literal cost until measured */
+        s->reserved[19] = 1;
+    }
 
     for (;;) {
         int bflush = 0;       /* set if current block must be flushed */
@@ -184,24 +329,31 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
         }
 
         /* Lazy decision: emit the minimum-score sequence, where score is the
-         * explicit token bits minus TAIL_BITS_PER_BYTE per advanced byte.
-         * Ties go to the longest advance. */
+         * explicit token bits minus a tail credit per advanced byte. The
+         * credit values the bytes that later decisions will encode; it must
+         * never exceed what encoding such a byte as a literal costs (minus
+         * one bit), or deep probes win on credit alone whenever literals get
+         * cheap -- which turns RLE-able data into literal runs. Ties go to
+         * the longest advance. */
+        const uint32_t tail_credit = s->ext_mode_lit_cost > 1u
+            ? (TAIL_BITS_PER_BYTE < s->ext_mode_lit_cost - 1u ? TAIL_BITS_PER_BYTE : s->ext_mode_lit_cost - 1u)
+            : 0u;
         int64_t best_score = INT64_MAX;
         uint32_t best_advance = 0;
         int best_k = 0;
         for (int k = 0; k < ncand; k++) {
             uint32_t cost = 0;
             for (int i = 0; i < k; i++)
-                cost += lit_cost(window[pos + (uint32_t)i]);
+                cost += lit_cost(s, window[pos + (uint32_t)i]);
             uint32_t advance;
             if (cand[k].match_length == 1) {
-                cost += lit_cost(window[pos + (uint32_t)k]);
+                cost += lit_cost(s, window[pos + (uint32_t)k]);
                 advance = (uint32_t)k + 1u;
             } else {
-                cost += match_cost(cand[k].match_length, cand[k].strstart - cand[k].match_start);
+                cost += match_cost(s, cand[k].match_length, cand[k].strstart - cand[k].match_start);
                 advance = (uint32_t)k + cand[k].match_length;
             }
-            const int64_t score = (int64_t)cost - (int64_t)TAIL_BITS_PER_BYTE * (int64_t)advance;
+            const int64_t score = (int64_t)cost - (int64_t)tail_credit * (int64_t)advance;
             if (score < best_score || (score == best_score && advance > best_advance)) {
                 best_score = score;
                 best_advance = advance;
@@ -223,15 +375,39 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
             FLUSH_BLOCK(s, window, 0);
         }
 
-        /* Commit the chosen sequence. */
-        for (int i = 0; i < best_k; i++)
+        /* Commit the chosen sequence, mirroring every tally into the cost
+         * model's running symbol counts (same layout trees.c uses). */
+        for (int i = 0; i < best_k; i++) {
             bflush |= zng_tr_tally_lit(s, window[pos + (uint32_t)i]);
+            s->ext_freq[window[pos + (uint32_t)i]]++;
+        }
         if (cand[best_k].match_length == 1) {
             bflush |= zng_tr_tally_lit(s, window[pos + (uint32_t)best_k]);
+            s->ext_freq[window[pos + (uint32_t)best_k]]++;
         } else {
-            check_match(s, cand[best_k].strstart, cand[best_k].match_start, cand[best_k].match_length);
-            bflush |= zng_tr_tally_dist(s, cand[best_k].strstart - cand[best_k].match_start,
-                                        cand[best_k].match_length - STD_MIN_MATCH);
+            const uint32_t mlen = cand[best_k].match_length;
+            const uint32_t mdist = cand[best_k].strstart - cand[best_k].match_start;
+            check_match(s, cand[best_k].strstart, cand[best_k].match_start, mlen);
+            bflush |= zng_tr_tally_dist(s, mdist, mlen - STD_MIN_MATCH);
+            s->ext_freq[LITERALS + 1 + zng_length_code[mlen - STD_MIN_MATCH]]++;
+            s->ext_freq[LITERALS + 29 + 1 + d_code(mdist - 1)]++;
+        }
+
+        /* Refresh the estimated code lengths periodically so the model tracks
+         * the per-block trees trees.c actually builds. */
+        if (UNLIKELY(++s->ext_since_build >= 2048)) {
+            s->ext_since_build = 0;
+            huff_lengths(s->ext_freq, LITERALS + 1 + 29, s->ext_ll_len);
+            huff_lengths(s->ext_freq + LITERALS + 1 + 29, 30, s->ext_d_len);
+            /* Cost of the most frequent literal: bounds the tail credit (see
+             * the decision loop above). */
+            uint32_t best_freq = 0;
+            for (int i = 0; i < LITERALS; i++) {
+                if (s->ext_freq[i] > best_freq) {
+                    best_freq = s->ext_freq[i];
+                    s->ext_mode_lit_cost = s->ext_ll_len[i];
+                }
+            }
         }
 
         /* Insert in the hash table all strings up to the end of the emitted

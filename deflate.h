@@ -343,7 +343,20 @@ struct ALIGNED_(64) internal_state {
     longest_match_func longest_match;
     insert_batch_func insert_batch;
 
-    /* Reserved for future use and alignment purposes */
+    /* deflate_extreme cost model: running symbol counts and the Huffman code
+     * lengths derived from them, so level 10 can price tokens with the actual
+     * dynamic-Huffman costs instead of a fixed-Huffman proxy. Layout mirrors
+     * trees.c: lit/length alphabet = 256 literals, end-of-block at 256,
+     * length code lc at 257+lc; distance code dc at index dc of the second
+     * tree. reserved[19] marks a not-yet-initialized model. */
+    uint32_t ext_freq[316];
+    uint8_t  ext_ll_len[286];
+    uint8_t  ext_d_len[30];
+    uint16_t ext_since_build; /* tokens tallied since the last length rebuild */
+    uint8_t  ext_mode_lit_cost; /* est. cost of the most frequent literal (0 = unknown) */
+
+    /* Reserved for future use and alignment purposes. reserved[19] doubles
+     * as the "extreme cost model initialized" flag (see deflate_extreme). */
     int32_t reserved[20];
 };
 
