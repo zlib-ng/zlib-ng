@@ -142,7 +142,7 @@ static std::string deflate_test_name(const testing::TestParamInfo<deflate_varian
 INSTANTIATE_TEST_SUITE_P(deflate, deflate_variant,
     testing::Combine(
         testing::Values(1024, 16384, 131072, 1048576),          /* size */
-        testing::Values(1, 3, 6, 9),                            /* level */
+        testing::Values(1, 3, 6, 9, 10),                        /* level */
         testing::Values(MAX_WBITS, -MAX_WBITS),                 /* window_bits */
         testing::Values(Z_DEFAULT_STRATEGY, Z_FILTERED,
                         Z_HUFFMAN_ONLY, Z_RLE, Z_FIXED)         /* strategy */

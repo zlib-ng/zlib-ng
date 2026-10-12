@@ -1297,6 +1297,7 @@ set(ZLIB_SRCS
     crc32.c
     crc32_braid_comb.c
     deflate.c
+    deflate_extreme.c
     deflate_fast.c
     deflate_huff.c
     deflate_medium.c
