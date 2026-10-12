@@ -798,8 +798,8 @@ jobs:
 
     - name: Checkout test corpora
       uses: actions/checkout@v7
-      # Don't test the extra corpora with Sanitizer builds or RISC-V or e2k or Intel SDE, due to their slow testing.
-      if: ${{ !contains(matrix.name, 'RISC-V') && !contains(matrix.name, 'e2k') && !contains(matrix.cmake-args, 'WITH_SANITIZER') && !contains(matrix.name, 'SDE') }}
+      # Don't test the extra corpora with Sanitizer builds or Cygwin or RISC-V or e2k or Intel SDE, due to their slow testing.
+      if: ${{ !contains(matrix.name, 'Cygwin') && !contains(matrix.name, 'RISC-V') && !contains(matrix.name, 'e2k') && !contains(matrix.cmake-args, 'WITH_SANITIZER') && !contains(matrix.name, 'SDE') }}
       with:
         repository: zlib-ng/corpora
         path: test/data/corpora
