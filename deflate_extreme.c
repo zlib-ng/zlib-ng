@@ -205,6 +205,12 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
     struct match res;
     int32_t dist;
 
+    /* The caller may raise s->prev_length to a discard floor (deflate_slow
+     * does this for Z_FILTERED); longest_match then returns that floor with a
+     * garbage start when nothing longer exists, so treat any result at or
+     * below it as no match. */
+    const uint32_t match_floor = s->prev_length;
+
     /* Initialize the result to be a 1 byte literal */
     res.match_start = 0;
     res.match_length = 1;
@@ -227,7 +233,7 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
             }
             if (UNLIKELY(len0 > s->lookahead))
                 len0 = s->lookahead;
-            if (len0 >= STD_MIN_MATCH) {
+            if (len0 >= STD_MIN_MATCH && len0 > match_floor) {
                 res.match_start = 0;
                 res.match_length = len0;
             }
@@ -246,7 +252,7 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
          * under a foreign key. */
         uint32_t match_len = FUNCTABLE_CALL(longest_match_slow_roll)(s, hash_head);
         res.match_start = s->match_start;
-        if (UNLIKELY(match_len < STD_MIN_MATCH))
+        if (UNLIKELY(match_len <= match_floor || match_len < STD_MIN_MATCH))
             return res;
         if (UNLIKELY(res.match_start >= res.strstart)) {
             /* this can happen due to some restarts */
@@ -275,7 +281,9 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
             }
             if (UNLIKELY(near_len > s->lookahead))
                 near_len = s->lookahead;
-            if (near_len >= STD_MIN_MATCH) {
+            /* Respect the discard floor: deflate_slow would never emit a
+             * match this short under Z_FILTERED. */
+            if (near_len >= STD_MIN_MATCH && near_len > match_floor) {
                 const int64_t far_score = (int64_t)match_cost(s, res.match_length, far_dist)
                                         - (int64_t)tail_credit * (int64_t)res.match_length;
                 const int64_t near_score = (int64_t)match_cost(s, near_len, (uint32_t)dist)
@@ -299,6 +307,12 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
 Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
     unsigned char *window = s->window;
     int32_t max_dist = MAX_DIST(s);
+
+    /* Matches this long or shorter are discarded, mirroring deflate_slow:
+     * Z_FILTERED ignores lengths up to 5. Raised as the search floor via
+     * s->prev_length around every candidate lookup in the loop below. */
+    const uint32_t match_discard = (s->strategy == Z_FILTERED) ? 5 : 0;
+    const uint32_t match_floor = MIN(match_discard, s->good_match - 1);
 
     /* Extreme holds no lazy state between iterations (the decision commits
      * immediately), so clear anything a previous strategy left behind. In
@@ -372,9 +386,12 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
             ? MIN(TAIL_BITS_PER_BYTE, s->ext_mode_lit_cost - 1u)
             : 0u;
 
-        /* Candidate at pos. */
+        /* Candidate at pos. The discard floor is carried in s->prev_length
+         * for the duration of all three lookups (longest_match uses it as its
+         * search floor) and restored afterwards. */
         struct match cand[EXTREME_PROBE_DEPTH + 1];
         int ncand = 1;
+        s->prev_length = match_floor;
         cand[0] = find_best_match(s, hash_head, max_dist, tail_credit);
 
         /* Candidates one..EXTREME_PROBE_DEPTH positions ahead, looked up
@@ -388,6 +405,7 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
             cand[k] = find_best_match(s, s->head[roll_lookup(window, pos + (uint32_t)k)], max_dist, tail_credit);
             ncand++;
         }
+        s->prev_length = 0;
         s->strstart = pos;
 
         /* longest_match clamps lengths against s->lookahead measured from the
