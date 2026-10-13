@@ -356,7 +356,9 @@ struct ALIGNED_(64) internal_state {
     uint8_t  ext_mode_lit_cost; /* est. cost of the most frequent literal (0 = unknown) */
 
     /* Reserved for future use and alignment purposes. reserved[19] doubles
-     * as the "extreme cost model initialized" flag (see deflate_extreme). */
+     * as the "extreme cost model initialized" flag: lm_set_level() clears it
+     * on every level change, and deflate_extreme re-seeds the model when it
+     * finds it clear (zcalloc does not zero state in zlib-ng). */
     int32_t reserved[20];
 };
 

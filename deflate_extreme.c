@@ -282,17 +282,19 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
     s->match_available = 0;
     s->prev_length = 0;
 
-    /* First entry for this stream: seed the cost model with the fixed
-     * Huffman lengths (RFC1951 C.4); running statistics replace them as
-     * tokens are tallied. A fresh stream (no input consumed yet) also resets
-     * any counts a previous file on this state left behind. */
-    if (UNLIKELY(s->strm->total_in == 0)) {
+    /* Initialize the cost model on a fresh stream (total_in == 0, which
+     * deflateReset guarantees before any input is read) or on the first entry
+     * into this strategy after a level switch. Every field must be set
+     * explicitly: unlike classic zlib, zlib-ng's zcalloc does not zero the
+     * state, so a reused allocation can carry another stream's model (or
+     * garbage in the reserved[19] flag itself). */
+    if (UNLIKELY(s->strm->total_in == 0 || s->reserved[19] == 0)) {
         for (int i = 0; i < 316; i++)
             s->ext_freq[i] = 0;
         s->ext_since_build = 0;
-        s->ext_mode_lit_cost = 8;
-    }
-    if (UNLIKELY(s->reserved[19] == 0)) {
+        s->ext_mode_lit_cost = 8; /* fixed-table literal cost until measured */
+        /* Fixed-Huffman lengths (RFC1951 C.4); running statistics replace
+         * them as tokens are tallied. */
         for (int i = 0; i < 144; i++)
             s->ext_ll_len[i] = 8;
         for (int i = 144; i < LITERALS; i++)
@@ -303,7 +305,6 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
             s->ext_ll_len[LITERALS + 1 + i] = 8;
         for (int i = 0; i < 30; i++)
             s->ext_d_len[i] = 5;
-        s->ext_mode_lit_cost = 8; /* fixed-table literal cost until measured */
         s->reserved[19] = 1;
     }
 
