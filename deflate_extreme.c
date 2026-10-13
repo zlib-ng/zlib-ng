@@ -424,6 +424,10 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
         int64_t best_score = INT64_MAX;
         uint32_t best_advance = 0;
         int best_k = 0;
+        /* Positions after pos already inserted into the hash table by the
+         * cut-and-rematch pre-insert below; the commit-time batch insert must
+         * not re-insert them (the rolling hash state is sequential). */
+        uint32_t preinserted = 0;
 #if LIT_GATE > 0
         /* Regime gate: when the most frequent literal needs more than
          * LIT_GATE bits, literals are expensive and a found C0 match almost
@@ -472,6 +476,97 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
             /* The DP loop set the advance for its own winner; recompute it
              * for the re-phased one (always a strong match here). */
             best_advance = (uint32_t)best_k + cand[best_k].match_length;
+        }
+
+        /* Cut-and-rematch (backward re-phase): M(L) followed by two literals
+         * can lose to M(L-1) plus a match starting at q = pos+L-1, the byte
+         * the cut frees. Three preconditions:
+         *
+         *  - Cutting must not cross into a length code with more extra bits.
+         *    Length 258 is the only top-of-table no-extra-bits case (code 28,
+         *    extra 0); cutting it to 257 pays ~5 bits per token, which on
+         *    long-match data dwarfs any literal savings. The explicit scores
+         *    below price the rest of the boundary cases.
+         *  - Both bytes after the match must really be literals in the
+         *    un-cut parse, so probe N1 = pos+L and N2 = pos+L+1 exactly as
+         *    the next round's C0 search would. That requires the pending
+         *    match's covered region to be visible in the hash table first,
+         *    so insert [pos+1 .. pos+L-2] now (the gate lookahead >= L+2
+         *    keeps every key within valid data).
+         *  - q itself is held back from insertion until after the decision:
+         *    on a cut, the next iteration's top-of-loop insert_roll(q) is the
+         *    sequential continuation; on a keep, insert q here so the next
+         *    round's insert_roll(N1) stays sequential.
+         *
+         * Scoring uses explicit token bits only, no tail credit: the gate
+         * makes the keep side exact (b1, b2 are literals), and M' at q is
+         * re-found by the next round with the same visible sources, so both
+         * sides price what will actually be emitted. A credit term would
+         * double-count M''s bytes -- credited here and again when the next
+         * round finds them as C0 -- biasing the decision toward cutting. */
+        if (best_k == 0 && cand[0].match_length >= STD_MIN_MATCH + 1u
+            && s->lookahead >= cand[0].match_length + 2u) {
+            const uint32_t cut_len = cand[0].match_length;
+            const uint32_t len_code_full = zng_length_code[cut_len - STD_MIN_MATCH];
+            const uint32_t len_code_cut  = zng_length_code[cut_len - 1u - STD_MIN_MATCH];
+            if (xtra_len[len_code_cut] <= xtra_len[len_code_full] && cut_len - 1u > match_floor) {
+                insert_roll_batch(s, window, pos + 1, cut_len - 2u);
+
+                /* Probe N1/N2 as the next round would: full chain search with
+                 * the discard floor, clamped to the bytes available from each
+                 * probe position (lookahead is measured from pos). */
+                struct match n1_cand, n2_cand;
+                s->prev_length = match_floor;
+                s->strstart = pos + cut_len;
+                n1_cand = find_best_match(s, s->head[roll_lookup(window, pos + cut_len)], max_dist, tail_credit);
+                const uint32_t n1_avail = s->lookahead - cut_len;
+                if (UNLIKELY(n1_cand.match_length > n1_avail))
+                    n1_cand.match_length = n1_avail >= STD_MIN_MATCH ? n1_avail : 1u;
+                s->strstart = pos + cut_len + 1u;
+                n2_cand = find_best_match(s, s->head[roll_lookup(window, pos + cut_len + 1u)], max_dist, tail_credit);
+                const uint32_t n2_avail = s->lookahead - cut_len - 1u;
+                if (UNLIKELY(n2_cand.match_length > n2_avail))
+                    n2_cand.match_length = n2_avail >= STD_MIN_MATCH ? n2_avail : 1u;
+                s->strstart = pos;
+                s->prev_length = 0;
+
+                const uint32_t cut_pos = pos + cut_len - 1u;
+                int do_cut = 0;
+                if (n1_cand.match_length == 1 && n2_cand.match_length == 1) {
+                    /* Both literals: probe q for the freed-byte match. Every
+                     * source <= pos+L-2 is inserted, exactly the state the
+                     * next round will have when it searches q. */
+                    struct match cut_cand;
+                    s->prev_length = match_floor;
+                    s->strstart = cut_pos;
+                    cut_cand = find_best_match(s, s->head[roll_lookup(window, cut_pos)], max_dist, tail_credit);
+                    const uint32_t q_avail = s->lookahead - cut_len + 1u;
+                    if (UNLIKELY(cut_cand.match_length > q_avail))
+                        cut_cand.match_length = q_avail >= STD_MIN_MATCH ? q_avail : 1u;
+                    s->strstart = pos;
+                    s->prev_length = 0;
+
+                    if (cut_cand.match_length >= STD_MIN_MATCH && cut_cand.match_length > match_floor) {
+                        const uint32_t cand0_dist = pos - cand[0].match_start;
+                        const int64_t score_keep = (int64_t)match_cost(s, cut_len, cand0_dist)
+                            + lit_cost(s, window[pos + cut_len]) + lit_cost(s, window[pos + cut_len + 1u]);
+                        const int64_t score_cut = (int64_t)match_cost(s, cut_len - 1u, cand0_dist)
+                            + match_cost(s, cut_cand.match_length, cut_pos - cut_cand.match_start);
+                        do_cut = (score_cut < score_keep);
+                    }
+                }
+                if (do_cut) {
+                    cand[0].match_length = cut_len - 1u;
+                    best_advance = cut_len - 1u;
+                    preinserted = cut_len - 2u;
+                } else
+                    insert_roll(s, window, cut_pos);
+
+                /* In the keep paths q was inserted as well; only the cut path
+                 * leaves it pending for the next iteration. */
+                if (preinserted == 0)
+                    preinserted = cut_len - 1u;
+            }
         }
 
         /* The commit tallies best_k+1 tokens and bflush is only checked after
@@ -532,9 +627,14 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
             const uint32_t max_insert = pos + s->lookahead - STD_MIN_MATCH;
             if (max_insert > pos) {
                 uint32_t insert_cnt = best_advance - 1u;
+                if (UNLIKELY(insert_cnt <= preinserted))
+                    insert_cnt = 0;
+                else
+                    insert_cnt -= preinserted;
                 if (UNLIKELY(insert_cnt > max_insert - pos))
                     insert_cnt = max_insert - pos;
-                insert_roll_batch(s, window, pos + 1, insert_cnt);
+                if (insert_cnt)
+                    insert_roll_batch(s, window, pos + 1u + preinserted, insert_cnt);
             }
         }
 
