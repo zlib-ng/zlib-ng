@@ -61,18 +61,25 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
         uint32_t match_len = STD_MIN_MATCH - 1;
         int64_t dist = (int64_t)s->strstart - hash_head;
 
-        if (dist <= MAX_DIST(s) && dist > 0 && prev_length < s->max_lazy_match && hash_head != 0) {
-            /* To simplify the code, we prevent matches with the string
-             * of window index 0 (in particular we have to avoid a match
-             * of the string with itself at the start of the input file).
-             */
+        if (dist <= MAX_DIST(s) && dist > 0 && prev_length < s->max_lazy_match) {
+            if (UNLIKELY(hash_head == 0)) {
+                /* An empty head can still hide a match to window index 0: the
+                 * NIL sentinel reads as an empty chain. Compare it directly.
+                 * (dist is strstart here, so the outer guard already bounds it.) */
+                match_len = match_window_zero(s, s->strstart, MAX_DIST(s));
+            } else {
+                /* To simplify the code, we prevent matches with the string
+                 * of window index 0 (in particular we have to avoid a match
+                 * of the string with itself at the start of the input file).
+                 */
 
-            /* longest_match only looks for matches longer than s->prev_length. */
-            s->prev_length = MAX(prev_length, match_floor);
-            match_len = longest_match(s, hash_head);
-            /* Restore the real previous length, the lazy evaluation below relies on it. */
-            s->prev_length = prev_length;
-            /* longest_match() sets match_start */
+                /* longest_match only looks for matches longer than s->prev_length. */
+                s->prev_length = MAX(prev_length, match_floor);
+                match_len = longest_match(s, hash_head);
+                /* Restore the real previous length, the lazy evaluation below relies on it. */
+                s->prev_length = prev_length;
+                /* longest_match() sets match_start */
+            }
 
             if (match_len <= match_discard) {
                 /* Match not long enough, treat it as no match found, which makes a garbage
