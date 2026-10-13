@@ -178,6 +178,12 @@ Z_FORCEINLINE static uint32_t lit_cost(const deflate_state *s, uint32_t c) {
 /* Regime gate threshold; see the decision loop below. */
 #define LIT_GATE 6
 
+/* Re-phase short C0 matches like deflate_slow's lazy truncation: a strictly
+ * longer match one or two positions ahead is taken with literal gap-fill.
+ * Only applied while the current match is this short, so long-match data
+ * keeps the fully priced DP. */
+#define REPHASE_MAX_LEN 8
+
 /* Compute the rolling hash key of window[p..p+2] directly, without touching
  * s->ins_h. Valid because UPDATE_HASH_ROLL shifts a 15-bit state by 5 each
  * step: after three folds the seed has shifted out entirely, so the key of
@@ -458,6 +464,25 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
                 best_advance = advance;
                 best_k = k;
             }
+        }
+
+        /* Re-phase: if a strictly longer, closer match sits one/two
+         * positions ahead of a short C0, take it with literal gap-fill,
+         * mirroring deflate_slow's unconditional truncation on a strictly
+         * longer next-position match. */
+        if (best_k == 0 && cand[0].match_length >= STD_MIN_MATCH
+            && cand[0].match_length <= REPHASE_MAX_LEN) {
+            for (int k = 1; k < ncand; k++) {
+                if (cand[k].match_length <= cand[best_k].match_length)
+                    continue;
+                const uint32_t dist_k = cand[k].strstart - cand[k].match_start;
+                const uint32_t dist_b = cand[best_k].strstart - cand[best_k].match_start;
+                if (dist_k < dist_b)
+                    best_k = k;
+            }
+            /* The DP loop set the advance for its own winner; recompute it
+             * for the re-phased one (always a strong match here). */
+            best_advance = (uint32_t)best_k + cand[best_k].match_length;
         }
 
         /* The commit tallies best_k+1 tokens and bflush is only checked after
