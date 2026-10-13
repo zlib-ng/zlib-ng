@@ -71,9 +71,9 @@ then
   ABI_GIT_REPO=https://github.com/madler/zlib.git
   ABI_GIT_COMMIT=da607da739fa6047df13e66a2af6b8bec7c2a498
 else
-  # Reference is most recent zlib-ng develop with zlib 1.2.12 compatible api.
+  # Reference is zlib-ng 2.1.2
   ABI_GIT_REPO=https://github.com/zlib-ng/zlib-ng.git
-  ABI_GIT_COMMIT=e4614ebcb9b3e5b108dc983c155e4baf80882311
+  ABI_GIT_COMMIT=f75c6856c32a0ade1f33e266fb370bac92d15fac
 fi
 
 # Test compat build for ABI compatibility with zlib
@@ -107,6 +107,18 @@ ABIFILE="test/abi/zlib$suffix-$ABI_GIT_COMMIT-$CHOST$M32.abi"
 if ! $refresh && $refresh_if && ! test -f "$ABIFILE"
 then
   refresh=true
+fi
+# Make sure cached ABI file is same version as abigail
+if $refresh_if && test -f "$ABIFILE"
+then
+  if ! abilint "$ABIFILE" > "$ABIFILE.tmp"; then
+    echo "Corrupt ABI file, recreating..."
+    rm -f "$ABIFILE"
+  else
+    abidiff "$ABIFILE" "$ABIFILE.tmp" || (echo "Upgrading $ABIFILE ..." && rm -rf "$ABIFILE")
+  fi
+  test -f "$ABIFILE" || refresh=true
+  rm -f "$ABIFILE.tmp"
 fi
 abidw --version
 
