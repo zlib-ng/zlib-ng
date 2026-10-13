@@ -227,22 +227,11 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
         /* The NIL sentinel hides matches to window index 0: a chain whose
          * first insert was position 0 reads as empty, so longest_match is
          * never reached for them. Compare source 0 directly when it is
-         * within reach; the prefix check below rejects non-matches cheaply. */
-        if (s->strstart > 0 && s->strstart <= (uint32_t)max_dist) {
-            const uint64_t scan_start = zng_memread_8(s->window + s->strstart);
-            const uint64_t diff = scan_start ^ zng_memread_8(s->window);
-            uint32_t len0;
-            if (diff == 0) {
-                len0 = FUNCTABLE_CALL(compare256)(s->window + s->strstart + 2, s->window + 2) + 2;
-            } else {
-                len0 = zng_first_diff_byte64(diff);
-            }
-            if (UNLIKELY(len0 > s->lookahead))
-                len0 = s->lookahead;
-            if (len0 >= STD_MIN_MATCH && len0 > match_floor) {
-                res.match_start = 0;
-                res.match_length = len0;
-            }
+         * within reach; the helper rejects non-matches cheaply. */
+        const uint32_t len0 = match_window_zero(s, s->strstart, max_dist);
+        if (len0 >= STD_MIN_MATCH && len0 > match_floor) {
+            res.match_start = 0;
+            res.match_length = len0;
         }
         return res;
     }

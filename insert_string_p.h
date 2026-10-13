@@ -6,6 +6,9 @@
 #ifndef INSERT_STRING_P_H_
 #define INSERT_STRING_P_H_
 
+#include "functable.h"
+#include "fallback_builtins.h"
+
 #define KNUTH_SHIFT (32 - HASH_BITS)
 #define UPDATE_HASH_KNUTH(h,val) h = (((val) * 2654435761U) >> KNUTH_SHIFT)
 
@@ -276,6 +279,44 @@ Z_FORCEINLINE static void insert_roll_batch_static(deflate_state *const s, unsig
         }
     }
     s->ins_h = h;
+}
+
+/* ===========================================================================
+ * Compare window[strstart..] directly against window index 0 and report the
+ * common prefix length.
+ *
+ * The NIL sentinel hides matches to window index 0: a chain whose newest
+ * insert is position 0 reads as empty (head == 0), so strategies that skip
+ * the search on an empty head never reach it. Callers invoke this when their
+ * chain lookup returned an empty head and slot 0 is still within match
+ * distance (they already hold that condition via dist = strstart - 0).
+ *
+ * Returns the common prefix length (>= STD_MIN_MATCH, clamped to
+ * s->lookahead like longest_match) and sets s->match_start to 0; returns 0
+ * when no usable match exists, leaving s->match_start untouched. Callers
+ * apply their own discard floor / minimum-length gate to the result exactly
+ * as for a longest_match() return value.
+ */
+Z_FORCEINLINE static uint32_t match_window_zero(deflate_state *const s, uint32_t strstart, int32_t max_dist) {
+    /* strstart == 0 would be the string matching itself at stream start. */
+    if (UNLIKELY(strstart == 0 || strstart > (uint32_t)max_dist))
+        return 0;
+
+    const uint64_t diff = zng_memread_8(s->window + strstart) ^ zng_memread_8(s->window);
+    uint32_t match_len;
+    if (diff == 0)
+        match_len = FUNCTABLE_CALL(compare256)(s->window + strstart + 2, s->window + 2) + 2;
+    else
+        match_len = zng_first_diff_byte64(diff);
+
+    if (UNLIKELY(match_len > s->lookahead))
+        match_len = s->lookahead;
+
+    if (match_len < STD_MIN_MATCH)
+        return 0;
+
+    s->match_start = 0;
+    return match_len;
 }
 
 #endif

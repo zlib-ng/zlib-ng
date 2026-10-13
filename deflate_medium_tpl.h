@@ -51,13 +51,21 @@ Z_FORCEINLINE static struct match SUFFIX(find_best_match)(deflate_state *s, uint
     m.orgstart = m.strstart;
 
     dist = (int32_t)s->strstart - (int32_t)hash_head;
-    if (dist <= (int32_t)max_dist && dist > 0 && hash_head != 0) {
-        /* To simplify the code, we prevent matches with the string
-         * of window index 0 (in particular we have to avoid a match
-         * of the string with itself at the start of the input file).
-         */
-        uint32_t match_len = FUNCTABLE_CALL(longest_match)(s, hash_head);
-        m.match_start = s->match_start;
+    if (dist <= (int32_t)max_dist && dist > 0) {
+        uint32_t match_len;
+        if (UNLIKELY(hash_head == 0)) {
+            /* An empty head can still hide a match to window index 0: the
+             * NIL sentinel reads as an empty chain. Compare it directly.
+             * (dist is strstart here, so the outer guard already bounds it.) */
+            match_len = match_window_zero(s, s->strstart, max_dist);
+        } else {
+            /* To simplify the code, we prevent matches with the string
+             * of window index 0 (in particular we have to avoid a match
+             * of the string with itself at the start of the input file).
+             */
+            match_len = FUNCTABLE_CALL(longest_match)(s, hash_head);
+            m.match_start = s->match_start;
+        }
         if (UNLIKELY(match_len < WANT_MIN_MATCH))
             return m;
         if (UNLIKELY(m.match_start >= m.strstart)) {

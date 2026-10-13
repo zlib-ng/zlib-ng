@@ -53,13 +53,21 @@ Z_INTERNAL block_state deflate_fast(deflate_state *s, int flush) {
             /* Find the longest match.
              * At this point we have always match length < WANT_MIN_MATCH
              */
-            if (dist <= MAX_DIST(s) && dist > 0 && hash_head != 0) {
-                /* To simplify the code, we prevent matches with the string
-                 * of window index 0 (in particular we have to avoid a match
-                 * of the string with itself at the start of the input file).
-                 */
-                match_len = FUNCTABLE_CALL(longest_match)(s, (uint32_t)hash_head);
-                /* longest_match() sets match_start */
+            if (dist <= MAX_DIST(s) && dist > 0) {
+                if (UNLIKELY(hash_head == 0)) {
+                    /* An empty head can still hide a match to window index 0:
+                     * the NIL sentinel reads as an empty chain. Compare it
+                     * directly. (dist is strstart here, so the outer guard
+                     * already bounds it.) */
+                    match_len = match_window_zero(s, s->strstart, MAX_DIST(s));
+                } else {
+                    /* To simplify the code, we prevent matches with the string
+                     * of window index 0 (in particular we have to avoid a match
+                     * of the string with itself at the start of the input file).
+                     */
+                    match_len = FUNCTABLE_CALL(longest_match)(s, (uint32_t)hash_head);
+                    /* longest_match() sets match_start */
+                }
             }
         } else {
             lc = window[s->strstart];
