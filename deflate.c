@@ -1204,6 +1204,10 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
  * Set longest match variables based on level configuration
  */
 static void lm_set_level(deflate_state *s, int level) {
+    /* The extreme cost model (deflate_extreme) must be re-seeded whenever the
+     * level changes: its state is not zeroed by zcalloc and may hold another
+     * stream's or strategy's data. */
+    s->reserved[19] = 0;
     s->max_lazy_match   = configuration_table[level].max_lazy;
     s->good_match       = configuration_table[level].good_length;
     s->nice_match       = configuration_table[level].nice_length;
