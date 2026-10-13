@@ -356,4 +356,15 @@
 #  define OPTIMAL_CMP 16
 #endif
 
+/* Allow the developer to specify a power of two sized alignment for a given
+ * code segment. This mitigates some bad DSB2MITE penalties on several Intel
+ * CPUs */
+#if defined(__GNUC__) || defined(__clang__)
+#   define ALIGN_TO_STR_(x) #x
+#   define ALIGN_TO_STR(x) ALIGN_TO_STR_(x)
+#   define P2ALIGN(power) __asm__ volatile (".p2align " ALIGN_TO_STR(power))
+#else
+#   define P2ALIGN(power)
+#endif
+
 #endif
