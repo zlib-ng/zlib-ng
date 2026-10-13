@@ -175,6 +175,9 @@ Z_FORCEINLINE static uint32_t lit_cost(const deflate_state *s, uint32_t c) {
  * from winning on credit alone when literals are cheap (RLE-able data). */
 #define TAIL_BITS_PER_BYTE 3u
 
+/* Regime gate threshold; see the decision loop below. */
+#define LIT_GATE 6
+
 /* Compute the rolling hash key of window[p..p+2] directly, without touching
  * s->ins_h. Valid because UPDATE_HASH_ROLL shifts a 15-bit state by 5 each
  * step: after three folds the seed has shifted out entirely, so the key of
@@ -408,6 +411,17 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
         int64_t best_score = INT64_MAX;
         uint32_t best_advance = 0;
         int best_k = 0;
+#if LIT_GATE > 0
+        /* Regime gate: when the most frequent literal needs more than
+         * LIT_GATE bits, literals are expensive and a found C0 match almost
+         * always beats the DP alternatives, so commit it directly. On data
+         * dominated by one cheap literal (filter bytes, constant stretches)
+         * keep the full two-ply DP, which pays off there. */
+        if (cand[0].match_length >= STD_MIN_MATCH && s->ext_mode_lit_cost > LIT_GATE) {
+            best_k = 0;
+            best_advance = cand[0].match_length;
+        } else
+#endif
         for (int k = 0; k < ncand; k++) {
             uint32_t cost = 0;
             for (int i = 0; i < k; i++)
