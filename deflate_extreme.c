@@ -323,6 +323,84 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
     return res;
 }
 
+/* Boolean chain probe for the cut gate: answers whether a usable match
+ * exists at some position without measuring its length or distance. It runs
+ * the same candidate walk longest_match would (same limit, same chain cap,
+ * same entry offset re-seed under a discard floor) but exits on the first
+ * candidate reaching the acceptance threshold -- typically after one or two
+ * comparisons instead of a full 32k-link walk. The verdict stays in lockstep
+ * with find_best_match: usable iff some candidate's common prefix exceeds
+ * max(match_floor, STD_MIN_MATCH - 1), and only while enough bytes are
+ * actually available (the gate clamps longer results to literals). The
+ * threshold is at most 6 here (floors are 0 or 5), so one masked 8-byte read
+ * decides every candidate. */
+Z_FORCEINLINE static unsigned match_exists_at(deflate_state *s, const unsigned char *window, uint32_t probe_pos,
+        int32_t max_dist, uint32_t match_floor, uint32_t avail_bytes) {
+    const Pos *prev = s->prev;
+    const uint32_t hash_head = s->head[roll_lookup(window, probe_pos)];
+
+    if (UNLIKELY(hash_head == 0)) {
+        /* The NIL sentinel hides matches to window index 0; compare source 0
+         * directly exactly like find_best_match does. */
+        const uint32_t len0 = match_window_zero(s, probe_pos, max_dist);
+        return (len0 > match_floor && len0 >= STD_MIN_MATCH && avail_bytes >= STD_MIN_MATCH) ? 1u : 0u;
+    }
+
+    const int32_t dist = (int32_t)probe_pos - (int32_t)hash_head;
+    if (dist <= max_dist && dist > 0) {
+        uint32_t cur_match = hash_head;
+        uint32_t limit = probe_pos > MAX_DIST(s) ? probe_pos - MAX_DIST(s) : 0u;
+        uint32_t chain_length = s->max_chain_length;
+
+        /* Acceptance threshold: one past the entry best_len longest_match
+         * would start from (the discard floor, or 2 below it). */
+        const uint32_t entry_floor = match_floor > STD_MIN_MATCH - 1u ? match_floor : STD_MIN_MATCH - 1u;
+        const uint64_t hit_mask = zng_first_bytes_mask64(entry_floor + 1u);
+
+        if (avail_bytes < entry_floor + 1u)
+            return 0u; /* the clamp would demote any hit to a literal */
+
+        /* Do not waste too much time if we already have a good match, like
+         * longest_match's entry check. */
+        if (UNLIKELY(entry_floor >= s->good_match))
+            chain_length >>= 2;
+
+        /* Entry offset re-seed, replicated from longest_match: under a
+         * discard floor it starts from the most distant same-substring chain
+         * and shifts the limit by the same offset. */
+        uint32_t match_offset = 0u;
+        if (UNLIKELY(entry_floor >= STD_MIN_MATCH)) {
+            const unsigned char *scan = window + probe_pos;
+            uint32_t hash = update_hash_roll(0, scan[1]);
+            hash = update_hash_roll(hash, scan[2]);
+            for (uint32_t sub_len = 3u; sub_len <= entry_floor; sub_len++) {
+                hash = update_hash_roll(hash, scan[sub_len]);
+                const uint32_t pos = s->head[hash];
+                if (UNLIKELY(pos < cur_match)) {
+                    match_offset = sub_len - 2u;
+                    cur_match = pos;
+                }
+            }
+            limit += match_offset;
+            if (cur_match <= limit)
+                return 0u; /* longest_match would return the floor here */
+        }
+
+        const uint64_t scan_start = zng_memread_8(window + probe_pos);
+        /* Walk the chain until a prefix hit, the limit, or the budget runs out. */
+        for (;;) {
+            if (UNLIKELY(cur_match >= probe_pos))
+                return 0u; /* at/after the probe position: not usable source */
+            const uint64_t cand_start = zng_memread_8(window + cur_match - match_offset);
+            if (UNLIKELY((scan_start ^ cand_start) & hit_mask) == 0)
+                return 1u;
+            if (--chain_length == 0 || (cur_match = prev[cur_match & W_MASK(s)]) <= limit)
+                return 0u;
+        }
+    }
+    return 0u;
+}
+
 /* deflate_extreme compresses with a lazy two-position lookahead: at each step
  * it searches for matches at the cursor and one/two positions ahead, then
  * emits the minimum-cost sequence among {C0}, {lit, C1}, {lit, lit, C2}, priced with the running
@@ -527,27 +605,18 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
             if (xtra_len[len_code_cut] <= xtra_len[len_code_full] && cut_len - 1u > match_floor) {
                 insert_roll_batch(s, window, pos + 1, cut_len - 2u);
 
-                /* Probe N1/N2 as the next round would: full chain search with
-                 * the discard floor, clamped to the bytes available from each
-                 * probe position (lookahead is measured from pos). */
-                struct match n1_cand, n2_cand;
-                s->prev_length = match_floor;
-                s->strstart = pos + cut_len;
-                n1_cand = find_best_match(s, s->head[roll_lookup(window, pos + cut_len)], max_dist, tail_credit);
-                const uint32_t n1_avail = s->lookahead - cut_len;
-                if (UNLIKELY(n1_cand.match_length > n1_avail))
-                    n1_cand.match_length = n1_avail >= STD_MIN_MATCH ? n1_avail : 1u;
-                s->strstart = pos + cut_len + 1u;
-                n2_cand = find_best_match(s, s->head[roll_lookup(window, pos + cut_len + 1u)], max_dist, tail_credit);
-                const uint32_t n2_avail = s->lookahead - cut_len - 1u;
-                if (UNLIKELY(n2_cand.match_length > n2_avail))
-                    n2_cand.match_length = n2_avail >= STD_MIN_MATCH ? n2_avail : 1u;
-                s->strstart = pos;
-                s->prev_length = 0;
+                /* Probe N1/N2 as the next round would: a usable match at
+                 * either one keeps the full match. The boolean probe exits on
+                 * the first hit, so gate failures -- the common case -- cost
+                 * one or two comparisons instead of a full chain walk. */
+                const unsigned n1_match = match_exists_at(s, window, pos + cut_len, max_dist,
+                    match_floor, s->lookahead - cut_len);
+                const unsigned n2_match = match_exists_at(s, window, pos + cut_len + 1u, max_dist,
+                    match_floor, s->lookahead - cut_len - 1u);
 
                 const uint32_t cut_pos = pos + cut_len - 1u;
                 int do_cut = 0;
-                if (n1_cand.match_length == 1 && n2_cand.match_length == 1) {
+                if (!n1_match && !n2_match) {
                     /* Both literals: probe q for the freed-byte match. Every
                      * source <= pos+L-2 is inserted, exactly the state the
                      * next round will have when it searches q. */
