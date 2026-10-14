@@ -18,6 +18,11 @@ struct match {
     uint32_t match_start;
     uint32_t match_length;
     uint32_t strstart;
+    /* The other same-key candidate measured by the near re-check (0 = none):
+     * offered to the decision loop as an explicit alternative alongside the
+     * primary, which keeps the cut gate's view of cand[0] unchanged. */
+    uint32_t alt_len;
+    uint32_t alt_dist;
 };
 
 /* Extra-bit tables, mirroring trees.h (RFC1951 C.4). */
@@ -192,6 +197,17 @@ Z_FORCEINLINE static uint32_t lit_cost(const deflate_state *s, uint32_t c) {
 /* Regime gate threshold; see the decision loop below. */
 #define LIT_GATE 6
 
+/* Maximum source distance for a shortened C0 frontier option. A shorter
+ * match from far away only adds a token and dilutes every block's Huffman
+ * tree (measured: +38KB on DNA-like data), while short close matches save
+ * distance extra bits without meaningful token overhead. The longest-match
+ * option itself is unaffected by the cap. */
+#define EXTREME_FRONTIER_MAX_DIST 72u
+/* Under a discard floor (Z_FILTERED) the walk is re-seeded from more distant
+ * chains, so recorded frontier distances run farther; on text the 65-72 band
+ * then regresses (+4.5KB on big_text), so the tighter cap applies there. */
+#define EXTREME_FRONTIER_MAX_DIST_FLOORED 64u
+
 /* Re-phase short C0 matches like deflate_slow's lazy truncation: a strictly
  * longer match one or two positions ahead is taken with literal gap-fill.
  * Only applied while the current match is this short, so long-match data
@@ -240,6 +256,9 @@ Z_FORCEINLINE static void extreme_model_reset(deflate_state *s) {
         s->ext_d_len[i] = 5;
 }
 
+Z_FORCEINLINE static uint32_t longest_match_extreme(deflate_state *const s, uint32_t cur_match,
+                                                    uint16_t *sublen);
+
 /* Search the hash chain headed by hash_head for the best match at s->strstart.
  * Returns a candidate with match_length == 1 when no usable match is found.
  * Callers searching ahead must set s->strstart to the probe position first,
@@ -249,11 +268,17 @@ Z_FORCEINLINE static void extreme_model_reset(deflate_state *s) {
  * the closest same-key candidate (hash_head itself, the LIFO chain head) when
  * the longest sits far away: distance extra bits dominate token cost, so a
  * shorter but much closer match can score better under the same tail-credit
- * rule the outer DP uses. */
+ * rule the outer DP uses. The cheaper of the pair stays the primary; the other is kept in alt_len/alt_dist so the
+ * decision loop can still pick it.
+ *
+ * sublen_out receives the length->distance frontier recorded during the walk
+ * (NULL when the caller does not need it; a local scratch is used instead). */
 Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t hash_head, int32_t max_dist,
-                                                  uint32_t tail_credit) {
+                                                  uint32_t tail_credit, uint16_t *sublen_out) {
     struct match res;
     int32_t dist;
+    uint16_t sublen_scratch[STD_MAX_MATCH + 1];
+    uint16_t *const sublen = (sublen_out != NULL) ? sublen_out : sublen_scratch;
 
     /* The caller may raise s->prev_length to a discard floor (deflate_slow
      * does this for Z_FILTERED); longest_match then returns that floor with a
@@ -265,6 +290,8 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
     res.match_start = 0;
     res.match_length = 1;
     res.strstart = s->strstart;
+    res.alt_len = 0;
+    res.alt_dist = 0;
 
     dist = (int32_t)s->strstart - (int32_t)hash_head;
     if (UNLIKELY(hash_head == 0)) {
@@ -276,6 +303,8 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
         if (len0 >= STD_MIN_MATCH && len0 > match_floor) {
             res.match_start = 0;
             res.match_length = len0;
+            for (uint32_t j = match_floor + 1; j <= len0; j++)
+                sublen[j] = (uint16_t)s->strstart;
         }
         return res;
     }
@@ -288,8 +317,9 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
          * of longest_match may search it: its offset re-seeds hash scan
          * substrings with the same 3-byte rolling key. The base and knuth
          * variants would either miss those candidates or look up chains
-         * under a foreign key. */
-        uint32_t match_len = FUNCTABLE_CALL(longest_match_slow_roll)(s, hash_head);
+         * under a foreign key. longest_match_extreme replicates that walk and
+         * additionally records the length->distance frontier in sublen. */
+        uint32_t match_len = longest_match_extreme(s, hash_head, sublen);
         res.match_start = s->match_start;
         if (UNLIKELY(match_len <= match_floor || match_len < STD_MIN_MATCH))
             return res;
@@ -327,14 +357,219 @@ Z_FORCEINLINE static struct match find_best_match(deflate_state *s, uint32_t has
                                         - (int64_t)tail_credit * (int64_t)res.match_length;
                 const int64_t near_score = (int64_t)match_cost(s, near_len, (uint32_t)dist)
                                           - (int64_t)tail_credit * (int64_t)near_len;
+                /* Keep the cheaper one as the primary (the cut gate and the
+                 * best_k == 0 advance see exactly what they always did) but
+                 * remember the other: dropping it here truncated every
+                 * frontier option longer than a swapped-in near match. */
                 if (near_score < far_score) {
+                    res.alt_len = res.match_length;
+                    res.alt_dist = far_dist;
                     res.match_start = hash_head;
                     res.match_length = near_len;
+                } else {
+                    res.alt_len = near_len;
+                    res.alt_dist = (uint32_t)dist;
                 }
             }
         }
     }
     return res;
+}
+
+/* Re-run extreme's candidate walk to build a length->distance frontier.
+ *
+ * Walks the same chain as the roll variant of longest_match (same limit,
+ * chain cap, entry offset re-seed, post-match offset search) and records
+ * for every length k that a new record reaches the distance of the
+ * candidate that first reached it: sublen[k] is the closest-walk-order
+ * source matching at least k bytes. The decision loop offers these as
+ * alternative (length, distance) options at the cursor -- short close
+ * matches and long far matches instead of only the single longest one,
+ * which is what photo-optimized parsers emit.
+ *
+ * The walk is a faithful replication of the roll variant of
+ * longest_match, so it replaces that search entirely; the only addition is
+ * the frontier recording (every recorded pair came from a measured LCP at a
+ * valid source). Returns the longest length found, like longest_match. */
+Z_FORCEINLINE static uint32_t longest_match_extreme(deflate_state *const s, uint32_t cur_match,
+                                                    uint16_t *sublen) {
+    const Pos *const prev = s->prev;
+    const Pos *const head = s->head;
+    const unsigned char *const window = s->window;
+    const unsigned wmask = W_MASK(s);
+    const unsigned int strstart = s->strstart;
+    uint32_t chain_length = s->max_chain_length;
+    const uint32_t nice_match = (uint32_t)s->nice_match;
+    uint32_t best_len, offset;
+    const uint32_t lookahead = s->lookahead;
+    uint32_t match_offset = 0;
+    const unsigned char *scan;
+    const unsigned char *mbase_start;
+    const unsigned char *mbase_end;
+    uint64_t scan_start;
+    uint64_t scan_end;
+    uint32_t limit, limit_base;
+
+    memset(sublen, 0, (STD_MAX_MATCH + 1) * sizeof(uint16_t));
+
+    best_len = s->prev_length ? s->prev_length : STD_MIN_MATCH - 1;
+    if (UNLIKELY(best_len >= lookahead))
+        return lookahead;
+
+    offset = best_len >= sizeof(uint64_t) ? best_len - 7 : 0;
+
+    scan = window + strstart;
+    scan_start = zng_memread_8(scan);
+    scan_end = zng_memread_8(scan + offset);
+    mbase_start = window;
+    mbase_end = mbase_start + offset;
+
+    if (UNLIKELY(best_len >= s->good_match))
+        chain_length >>= 2;
+
+    limit = strstart > MAX_DIST(s) ? strstart - MAX_DIST(s) : 0;
+    limit_base = limit;
+    if (best_len >= STD_MIN_MATCH) {
+        /* Entry offset re-seed, replicated from the template: under a
+         * discard floor start from the most distant same-substring chain. */
+        uint32_t hash;
+        uint32_t pos;
+
+        hash = update_hash_roll(0, scan[1]);
+        hash = update_hash_roll(hash, scan[2]);
+        for (uint32_t i = 3; i <= best_len; i++) {
+            hash = update_hash_roll(hash, scan[i]);
+            pos = head[hash];
+            if (UNLIKELY(pos < cur_match)) {
+                match_offset = i - 2;
+                cur_match = pos;
+            }
+        }
+        limit = limit_base + match_offset;
+        if (UNLIKELY(cur_match <= limit))
+            return best_len;
+        mbase_start -= match_offset;
+        mbase_end -= match_offset;
+    }
+
+    /* Walk the chain newest-first until the limit or budget runs out. */
+    for (;;) {
+        if (UNLIKELY(cur_match >= strstart))
+            break; /* at/after the cursor: not usable source */
+
+        uint32_t len;
+        if (best_len < sizeof(uint64_t)) {
+            uint64_t cand_start = zng_memread_8(mbase_start + cur_match);
+            if (scan_start != cand_start) {
+                uint64_t first_mask = zng_first_bytes_mask64(best_len + 1);
+                uint64_t diff = scan_start ^ cand_start;
+                /* A candidate beats best_len only when its first best_len+1
+                 * bytes match; the masked test rejects without running ctz. */
+                if (UNLIKELY((diff & first_mask) == 0)) {
+                    len = zng_first_diff_byte64(diff);
+                    goto short_match_accept;
+                }
+                if (--chain_length == 0 || (cur_match = prev[cur_match & wmask]) <= limit)
+                    return best_len;
+                cand_start = zng_memread_8(mbase_start + cur_match);
+                if (scan_start != cand_start) {
+                    for (;;) {
+                        diff = scan_start ^ cand_start;
+                        if (UNLIKELY((diff & first_mask) == 0)) {
+                            len = zng_first_diff_byte64(diff);
+                            goto short_match_accept;
+                        }
+                        if (--chain_length == 0 || (cur_match = prev[cur_match & wmask]) <= limit)
+                            return best_len;
+                        cand_start = zng_memread_8(mbase_start + cur_match);
+                        if (scan_start == cand_start)
+                            break;
+                    }
+                }
+            }
+            /* All 8 bytes match, fallthrough to compare256 for the tail. */
+        } else {
+            /* Pre-filter on start and end sentinels before compare256. */
+            for (;;) {
+                if (zng_memcmp_8(mbase_end + cur_match, &scan_end) == 0 &&
+                    zng_memcmp_8(mbase_start + cur_match, &scan_start) == 0) {
+                    break;
+                }
+                if (--chain_length && (cur_match = prev[cur_match & wmask]) > limit)
+                    continue;
+                return best_len;
+            }
+        }
+
+        len = FUNCTABLE_CALL(compare256)(scan + 2, mbase_start + cur_match + 2) + 2;
+
+        if (len > best_len)
+short_match_accept:
+        {
+            const uint32_t match_start = cur_match - match_offset;
+            s->match_start = match_start;
+
+            /* Record the frontier before any early return below. */
+            for (uint32_t j = best_len + 1; j <= len && j <= STD_MAX_MATCH; j++)
+                sublen[j] = (uint16_t)(strstart - match_start);
+
+            if (UNLIKELY(len >= lookahead))
+                return lookahead;
+            if (UNLIKELY(len >= nice_match))
+                return len;
+
+            best_len = len;
+            offset = best_len >= sizeof(uint64_t) ? best_len - 7 : 0;
+            scan_end = zng_memread_8(scan + offset);
+
+            /* Look for a better string offset, replicated from the template:
+             * re-seed the walk at a more distant chain inside the match so
+             * candidates aligned to an internal position can extend it. */
+            if (UNLIKELY(len > STD_MIN_MATCH && match_start + len < strstart)) {
+                const unsigned char *scan_endstr;
+                uint32_t hash;
+                uint32_t pos, next_pos;
+
+                /* Go back to offset 0 */
+                cur_match -= match_offset;
+                match_offset = 0;
+                next_pos = cur_match;
+
+                for (uint32_t i = 0; i <= len - STD_MIN_MATCH; i++) {
+                    pos = prev[(cur_match + i) & wmask];
+                    if (UNLIKELY(pos < next_pos)) {
+                        if (UNLIKELY(pos <= limit_base + i))
+                            return best_len;
+                        next_pos = pos;
+                        match_offset = i;
+                    }
+                }
+                cur_match = next_pos;
+
+                scan_endstr = scan + len - (STD_MIN_MATCH - 1);
+                hash = update_hash_roll(0, scan_endstr[0]);
+                hash = update_hash_roll(hash, scan_endstr[1]);
+                hash = update_hash_roll(hash, scan_endstr[2]);
+                pos = head[hash];
+                if (UNLIKELY(pos < cur_match)) {
+                    match_offset = len - (STD_MIN_MATCH - 1);
+                    if (pos <= limit_base + match_offset)
+                        return best_len;
+                    cur_match = pos;
+                }
+
+                limit = limit_base + match_offset;
+                mbase_start = window - match_offset;
+                mbase_end = mbase_start + offset;
+                continue;
+            }
+            mbase_end = mbase_start + offset;
+        }
+        if (--chain_length && (cur_match = prev[cur_match & wmask]) > limit)
+            continue;
+        return best_len;
+    }
+    return best_len;
 }
 
 /* Boolean chain probe for the cut gate: answers whether a usable match
@@ -493,8 +728,13 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
          * search floor) and restored afterwards. */
         struct match cand[EXTREME_PROBE_DEPTH + 1];
         int ncand = 1;
+        /* Length->distance frontier for the cursor position, recorded by the
+         * C0 search itself: per length, the distance of the candidate that
+         * first reached it (advisory -- find_best_match's primary stays the
+         * authoritative one). */
+        uint16_t sublen[STD_MAX_MATCH + 1];
         s->prev_length = match_floor;
-        cand[0] = find_best_match(s, hash_head, max_dist, tail_credit);
+        cand[0] = find_best_match(s, hash_head, max_dist, tail_credit, sublen);
 
         /* Candidates one..EXTREME_PROBE_DEPTH positions ahead, looked up
          * without inserting so the rolling hash state stays sequential.
@@ -504,7 +744,7 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
             if (UNLIKELY(s->lookahead < WANT_MIN_MATCH + (uint32_t)k))
                 break;
             s->strstart = pos + (uint32_t)k;
-            cand[k] = find_best_match(s, s->head[roll_lookup(window, pos + (uint32_t)k)], max_dist, tail_credit);
+            cand[k] = find_best_match(s, s->head[roll_lookup(window, pos + (uint32_t)k)], max_dist, tail_credit, NULL);
             ncand++;
         }
         s->prev_length = 0;
@@ -525,46 +765,122 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
             }
         }
 
+        /* Unified candidate list: the C0 frontier options at position 0 (or
+         * a plain literal when C0 has no match), then the ahead probes. */
+        struct seq { uint32_t pos_off, match_len, match_dist; };
+        struct seq seqs[32 + EXTREME_PROBE_DEPTH];
+        int nseq = 0;
+        int nopt = 0;
+
+        /* Alternative (length, distance) options at the cursor from the frontier walk: the individual 3-10 symbols,
+         * every zlib-ng length-class edge up to 258 (the edges where the extra-bit count changes), and the longest
+         * match itself. Within a class the price is flat in length, so only class edges matter; every option stays
+         * legal because a match may always be emitted shorter than its measured maximum. */
+        {
+            /* The true longest of the two same-key candidates: frontier
+             * class points must not be truncated by a swapped-in near match,
+             * so filter against the longer of the pair. */
+            const uint32_t c0_longest = MAX(cand[0].match_length, cand[0].alt_len);
+            if (c0_longest >= STD_MIN_MATCH) {
+                static const uint32_t opt_points[] = { 3, 4, 5, 6, 7, 8, 9, 10, 11, 13, 15, 17, 19, 23,
+                                                            27, 31, 35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195,
+                                                            227, 258 };
+                const uint32_t max_frontier_dist = (match_floor > 0)
+                    ? EXTREME_FRONTIER_MAX_DIST_FLOORED : EXTREME_FRONTIER_MAX_DIST;
+                for (unsigned p = 0; p < sizeof(opt_points) / sizeof(opt_points[0]); p++) {
+                    const uint32_t k = opt_points[p];
+                    if (k > match_floor && k < c0_longest && sublen[k] != 0
+                        && sublen[k] <= max_frontier_dist) {
+                        seqs[nseq].pos_off = 0;
+                        seqs[nseq].match_len = k;
+                        seqs[nseq].match_dist = sublen[k];
+                        nseq++;
+                        nopt++;
+                    }
+                }
+                /* The primary keeps the template's authoritative distance;
+                 * the other candidate is offered explicitly so its exact
+                 * length (possibly between class points) survives. */
+                seqs[nseq].pos_off = 0;
+                seqs[nseq].match_len = cand[0].match_length;
+                seqs[nseq].match_dist = cand[0].strstart - cand[0].match_start;
+                nseq++;
+                nopt++;
+                if (cand[0].alt_len != 0 && cand[0].alt_len < c0_longest) {
+                    seqs[nseq].pos_off = 0;
+                    seqs[nseq].match_len = cand[0].alt_len;
+                    seqs[nseq].match_dist = cand[0].alt_dist;
+                    nseq++;
+                    nopt++;
+                }
+            }
+        }
+
+        if (nopt == 0) {
+            seqs[nseq].pos_off = 0;
+            seqs[nseq].match_len = 1;
+            seqs[nseq].match_dist = 0;
+            nseq++;
+        }
+        for (int k = 1; k < ncand; k++) {
+            seqs[nseq].pos_off = (uint32_t)k;
+            seqs[nseq].match_len = cand[k].match_length;
+            seqs[nseq].match_dist = cand[k].strstart - cand[k].match_start;
+            nseq++;
+        }
+        Assert(nseq <= 32 + EXTREME_PROBE_DEPTH, "seqs overflow");
+
         /* Lazy decision: emit the minimum-score sequence, where score is the
          * explicit token bits minus the tail credit per advanced byte (see
          * above). Ties go to the longest advance. */
         int64_t best_score = INT64_MAX;
         uint32_t best_advance = 0;
-        int best_k = 0;
+        int best_seq = 0;
         /* Positions after pos already inserted into the hash table by the
          * cut-and-rematch pre-insert below; the commit-time batch insert must
          * not re-insert them (the rolling hash state is sequential). */
         uint32_t preinserted = 0;
 #if LIT_GATE > 0
         /* Regime gate: when the most frequent literal needs more than
-         * LIT_GATE bits, literals are expensive and a found C0 match almost
-         * always beats the DP alternatives, so commit it directly. On data
+         * LIT_GATE bits, literals are expensive and a found C0 option almost
+         * always beats the DP alternatives, so the decision keeps only the C0 options. On data
          * dominated by one cheap literal (filter bytes, constant stretches)
          * keep the full two-ply DP, which pays off there. */
-        if (cand[0].match_length >= STD_MIN_MATCH && s->ext_mode_lit_cost > LIT_GATE) {
-            best_k = 0;
-            best_advance = cand[0].match_length;
-        } else
+        const int nseq_limit = (nopt > 0 && s->ext_mode_lit_cost > LIT_GATE) ? nopt : nseq;
+#else
+        const int nseq_limit = nseq;
 #endif
-        for (int k = 0; k < ncand; k++) {
+        for (int q = 0; q < nseq_limit; q++) {
             uint32_t cost = 0;
-            for (int i = 0; i < k; i++)
+            /* Literal gap bytes before the candidate match. */
+            for (int i = 0; i < (int)seqs[q].pos_off; i++)
                 cost += lit_cost(s, window[pos + (uint32_t)i]);
             uint32_t advance;
-            if (cand[k].match_length == 1) {
-                cost += lit_cost(s, window[pos + (uint32_t)k]);
-                advance = (uint32_t)k + 1u;
+            if (seqs[q].match_len == 1) {
+                cost += lit_cost(s, window[pos + seqs[q].pos_off]);
+                advance = seqs[q].pos_off + 1u;
             } else {
-                cost += match_cost(s, cand[k].match_length, cand[k].strstart - cand[k].match_start);
-                advance = (uint32_t)k + cand[k].match_length;
+                cost += match_cost(s, seqs[q].match_len, seqs[q].match_dist);
+                advance = seqs[q].pos_off + seqs[q].match_len;
             }
             const int64_t score = (int64_t)cost - (int64_t)tail_credit * (int64_t)advance;
             if (score < best_score || (score == best_score && advance > best_advance)) {
                 best_score = score;
                 best_advance = advance;
-                best_k = k;
+                best_seq = q;
             }
         }
+
+        /* Map the winner back onto the candidate array: a position-0 win
+         * stores its (length, distance) option in cand[0] so the rephase,
+         * cut and commit blocks below see the committed match unchanged. */
+        int best_k;
+        if (nopt > 0 && seqs[best_seq].pos_off == 0) {
+            cand[0].match_length = seqs[best_seq].match_len;
+            cand[0].match_start = pos - seqs[best_seq].match_dist;
+            best_k = 0;
+        } else
+            best_k = (int)seqs[best_seq].pos_off;
 
         /* Re-phase: if a strictly longer, closer match sits one/two
          * positions ahead of a short C0, take it with literal gap-fill,
@@ -637,7 +953,7 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
                     struct match cut_cand;
                     s->prev_length = match_floor;
                     s->strstart = cut_pos;
-                    cut_cand = find_best_match(s, s->head[roll_lookup(window, cut_pos)], max_dist, tail_credit);
+                    cut_cand = find_best_match(s, s->head[roll_lookup(window, cut_pos)], max_dist, tail_credit, NULL);
                     const uint32_t q_avail = s->lookahead - cut_len + 1u;
                     if (UNLIKELY(cut_cand.match_length > q_avail))
                         cut_cand.match_length = q_avail >= STD_MIN_MATCH ? q_avail : 1u;
