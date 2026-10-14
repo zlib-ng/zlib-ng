@@ -68,8 +68,9 @@ Z_FORCEINLINE static int heap_pop(const uint32_t *weight, int *heap, int *heap_s
 }
 
 /* Compute Huffman code lengths for nsym symbols from freq[] into out_len[].
- * Symbols with zero frequency get length 0. With a single distinct symbol the
- * tree degenerates and it gets length 1 (deflate needs at least one bit).
+ * Zero-frequency symbols are priced one past the deepest fitted code, so a
+ * never-seen token only wins when every seen alternative costs more. With a
+ * single distinct symbol the tree degenerates and it gets length 1 (deflate needs at least one bit).
  * Depths above the deflate maximum of 15 are clamped, as the real builder does; beyond that the plain merge only
  * approximates build_tree's length-limited tree. */
 static void huff_lengths(const uint32_t *freq, int nsym, uint8_t *out_len) {
@@ -89,60 +90,73 @@ static void huff_lengths(const uint32_t *freq, int nsym, uint8_t *out_len) {
         for (int i = 0; i < nsym; i++)
             if (freq[i] > 0)
                 out_len[i] = 1;
-        return;
-    }
+    } else {
+        /* Nodes 0..nleaf-1 are the leaves (in symbol order), the rest internal.
+         * nsym <= 286, so total <= 571. */
+        const int total = 2 * nleaf - 1;
+        uint32_t weight[571];
+        int ch_a[571], ch_b[571];
+        int leaf_sym[286];
+        int heap[571];
+        int heap_sz = 0;
 
-    /* Nodes 0..nleaf-1 are the leaves (in symbol order), the rest internal.
-     * nsym <= 286, so total <= 571. */
-    const int total = 2 * nleaf - 1;
-    uint32_t weight[571];
-    int ch_a[571], ch_b[571];
-    int leaf_sym[286];
-    int heap[571];
-    int heap_sz = 0;
+        /* Push the leaves (nonzero-frequency symbols) in symbol order. */
+        for (int i = 0, nseen = 0; i < nsym; i++) {
+            if (freq[i] == 0)
+                continue;
+            const int node = nseen++;
+            weight[node] = freq[i];
+            leaf_sym[node] = i;
+            ch_a[node] = -1;
+            heap_push(weight, node, heap, &heap_sz);
+        }
 
-    /* Push the leaves (nonzero-frequency symbols) in symbol order. */
-    for (int i = 0, nseen = 0; i < nsym; i++) {
-        if (freq[i] == 0)
-            continue;
-        const int node = nseen++;
-        weight[node] = freq[i];
-        leaf_sym[node] = i;
-        ch_a[node] = -1;
-        heap_push(weight, node, heap, &heap_sz);
-    }
+        /* Merge the two lightest nodes until one root remains. */
+        for (int node = nleaf; node < total; node++) {
+            const int a = heap_pop(weight, heap, &heap_sz);
+            const int b = heap_pop(weight, heap, &heap_sz);
+            weight[node] = weight[a] + weight[b];
+            ch_a[node] = a;
+            ch_b[node] = b;
+            heap_push(weight, node, heap, &heap_sz);
+        }
 
-    /* Merge the two lightest nodes until one root remains. */
-    for (int node = nleaf; node < total; node++) {
-        const int a = heap_pop(weight, heap, &heap_sz);
-        const int b = heap_pop(weight, heap, &heap_sz);
-        weight[node] = weight[a] + weight[b];
-        ch_a[node] = a;
-        ch_b[node] = b;
-        heap_push(weight, node, heap, &heap_sz);
-    }
-
-    /* Walk the root iteratively and record each leaf's depth. */
-    int stack_node[571], stack_depth[571];
-    int nstack = 0;
-    stack_node[nstack] = heap[0];
-    stack_depth[nstack] = 0;
-    nstack++;
-    while (nstack > 0) {
-        nstack--;
-        const int node = stack_node[nstack];
-        const int depth = stack_depth[nstack];
-        if (ch_a[node] < 0) {
-            out_len[leaf_sym[node]] = (uint8_t)(depth > 15 ? 15 : depth);
-        } else {
-            stack_node[nstack] = ch_a[node];
-            stack_depth[nstack] = depth + 1;
-            nstack++;
-            stack_node[nstack] = ch_b[node];
-            stack_depth[nstack] = depth + 1;
-            nstack++;
+        /* Walk the root iteratively and record each leaf's depth. */
+        int stack_node[571], stack_depth[571];
+        int nstack = 0;
+        stack_node[nstack] = heap[0];
+        stack_depth[nstack] = 0;
+        nstack++;
+        while (nstack > 0) {
+            nstack--;
+            const int node = stack_node[nstack];
+            const int depth = stack_depth[nstack];
+            if (ch_a[node] < 0) {
+                out_len[leaf_sym[node]] = (uint8_t)(depth > 15 ? 15 : depth);
+            } else {
+                stack_node[nstack] = ch_a[node];
+                stack_depth[nstack] = depth + 1;
+                nstack++;
+                stack_node[nstack] = ch_b[node];
+                stack_depth[nstack] = depth + 1;
+                nstack++;
+            }
         }
     }
+
+    /* Unseen symbols are not free: price them one past the deepest fitted
+     * code so a never-seen token only wins when every seen alternative is
+     * even more expensive. */
+    /* Find the deepest fitted code. */
+    int max_len = 0;
+    for (int i = 0; i < nsym; i++)
+        if (out_len[i] > max_len)
+            max_len = out_len[i];
+    const uint8_t unseen_len = (uint8_t)(max_len + 1 > 15 ? 15 : max_len + 1);
+    /* Price each unseen symbol one past that depth. */
+    for (int i = 0; i < nsym; i++)
+        if (freq[i] == 0)
+            out_len[i] = unseen_len;
 }
 
 /* Estimated bit cost of a match token with the given length (>= STD_MIN_MATCH)
