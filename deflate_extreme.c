@@ -184,6 +184,13 @@ Z_FORCEINLINE static uint32_t lit_cost(const deflate_state *s, uint32_t c) {
  * keeps the fully priced DP. */
 #define REPHASE_MAX_LEN 8
 
+/* Tokens between cost-model rebuilds, and between halvings of the running
+ * symbol counts: the decay keeps the sample large (low-variance tree) while
+ * letting recent content dominate, so the estimator tracks drift without
+ * the oscillation a per-block reset would cause. */
+#define EXTREME_REBUILD_EVERY 1024u
+#define EXTREME_DECAY_EVERY 262144u
+
 /* Compute the rolling hash key of window[p..p+2] directly, without touching
  * s->ins_h. Valid because UPDATE_HASH_ROLL shifts a 15-bit state by 5 each
  * step: after three folds the seed has shifted out entirely, so the key of
@@ -194,6 +201,29 @@ Z_FORCEINLINE static uint32_t roll_lookup(const unsigned char *window, uint32_t 
     UPDATE_HASH_ROLL(h, window[p + 1]);
     UPDATE_HASH_ROLL(h, window[p + 2]);
     return h;
+}
+
+/* Reset the running cost model to fixed-Huffman priors. Called on a fresh
+ * stream (or after a level switch) when no statistics exist yet. */
+Z_FORCEINLINE static void extreme_model_reset(deflate_state *s) {
+    /* Zero the running symbol counts and rebuild counters. */
+    for (int i = 0; i < 316; i++)
+        s->ext_freq[i] = 0;
+    s->ext_since_build = 0;
+    s->ext_rebuilds = 0;
+    s->ext_mode_lit_cost = 8; /* fixed-table literal cost until measured */
+    /* Fixed-Huffman lengths (RFC1951 C.4); running statistics replace
+     * them as tokens are tallied. */
+    for (int i = 0; i < 144; i++)
+        s->ext_ll_len[i] = 8;
+    for (int i = 144; i < LITERALS; i++)
+        s->ext_ll_len[i] = 9;
+    for (int i = 0; i < 23; i++)
+        s->ext_ll_len[LITERALS + 1 + i] = 7;
+    for (int i = 23; i < 29; i++)
+        s->ext_ll_len[LITERALS + 1 + i] = 8;
+    for (int i = 0; i < 30; i++)
+        s->ext_d_len[i] = 5;
 }
 
 /* Search the hash chain headed by hash_head for the best match at s->strstart.
@@ -324,22 +354,7 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
      * state, so a reused allocation can carry another stream's model (or
      * garbage in the reserved[19] flag itself). */
     if (UNLIKELY(s->strm->total_in == 0 || s->reserved[19] == 0)) {
-        for (int i = 0; i < 316; i++)
-            s->ext_freq[i] = 0;
-        s->ext_since_build = 0;
-        s->ext_mode_lit_cost = 8; /* fixed-table literal cost until measured */
-        /* Fixed-Huffman lengths (RFC1951 C.4); running statistics replace
-         * them as tokens are tallied. */
-        for (int i = 0; i < 144; i++)
-            s->ext_ll_len[i] = 8;
-        for (int i = 144; i < LITERALS; i++)
-            s->ext_ll_len[i] = 9;
-        for (int i = 0; i < 23; i++)
-            s->ext_ll_len[LITERALS + 1 + i] = 7;
-        for (int i = 23; i < 29; i++)
-            s->ext_ll_len[LITERALS + 1 + i] = 8;
-        for (int i = 0; i < 30; i++)
-            s->ext_d_len[i] = 5;
+        extreme_model_reset(s);
         s->reserved[19] = 1;
     }
 
@@ -603,12 +618,10 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
 
         /* Refresh the estimated code lengths periodically so the model tracks
          * the per-block trees trees.c actually builds. */
-        if (UNLIKELY(++s->ext_since_build >= 2048)) {
+        if (UNLIKELY(++s->ext_since_build >= EXTREME_REBUILD_EVERY)) {
             s->ext_since_build = 0;
-            huff_lengths(s->ext_freq, LITERALS + 1 + 29, s->ext_ll_len);
-            huff_lengths(s->ext_freq + LITERALS + 1 + 29, 30, s->ext_d_len);
             /* Cost of the most frequent literal: bounds the tail credit (see
-             * the decision loop above). */
+             * the decision loop above) and gates the count decay below. */
             uint32_t best_freq = 0;
             for (int i = 0; i < LITERALS; i++) {
                 if (s->ext_freq[i] > best_freq) {
@@ -616,6 +629,19 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
                     s->ext_mode_lit_cost = s->ext_ll_len[i];
                 }
             }
+
+            /* Halve the running counts on schedule so recent content dominates
+             * the tree; skip while the sample is too small to halve. Uniform
+             * scaling leaves the tree shape unchanged, so skipping on flat
+             * data costs nothing. */
+            if ((s->ext_rebuilds & (EXTREME_DECAY_EVERY / EXTREME_REBUILD_EVERY - 1u)) == 0u && best_freq >= 1024) {
+                for (int i = 0; i < 316; i++)
+                    s->ext_freq[i] >>= 1;
+            }
+
+            huff_lengths(s->ext_freq, LITERALS + 1 + 29, s->ext_ll_len);
+            huff_lengths(s->ext_freq + LITERALS + 1 + 29, 30, s->ext_d_len);
+            s->ext_rebuilds++;
         }
 
         /* Insert in the hash table all strings up to the end of the emitted
