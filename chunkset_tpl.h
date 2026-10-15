@@ -238,11 +238,23 @@ rem_bytes:
         out += len;
 #else
         uint8_t *chunk_p = (uint8_t *)&chunk_load;
-        if (len & 16) { memcpy(out, chunk_p, 16); out += 16; chunk_p += 16; }
-        if (len & 8) { memcpy(out, chunk_p, 8); out += 8; chunk_p += 8; }
-        if (len & 4) { memcpy(out, chunk_p, 4); out += 4; chunk_p += 4; }
-        if (len & 2) { memcpy(out, chunk_p, 2); out += 2; chunk_p += 2; }
-        if (len & 1) { *out++ = *chunk_p; }
+        /* Two overlapping copies cover every length in a size class */
+        if (len >= 16) {
+            memcpy(out, chunk_p, 16);
+            memcpy(out + len - 16, chunk_p + len - 16, 16);
+        } else if (len >= 8) {
+            memcpy(out, chunk_p, 8);
+            memcpy(out + len - 8, chunk_p + len - 8, 8);
+        } else if (len >= 4) {
+            memcpy(out, chunk_p, 4);
+            memcpy(out + len - 4, chunk_p + len - 4, 4);
+        } else if (len >= 2) {
+            memcpy(out, chunk_p, 2);
+            memcpy(out + len - 2, chunk_p + len - 2, 2);
+        } else {
+            *out = *chunk_p;
+        }
+        out += len;
 #endif
     }
 
