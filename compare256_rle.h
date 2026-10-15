@@ -3,6 +3,9 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
+#ifndef COMPARE256_RLE_H
+#define COMPARE256_RLE_H
+
 #include "zbuild.h"
 #include "zendian.h"
 #include "zmemory.h"
@@ -59,3 +62,5 @@ Z_FORCEINLINE static uint32_t compare256_rle_64(const uint8_t *src0, const uint8
 
     return 256;
 }
+
+#endif

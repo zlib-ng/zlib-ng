@@ -625,37 +625,40 @@ if(HAVE_ATTRIBUTE_VISIBILITY_INTERNAL)
     add_definitions(-DHAVE_VISIBILITY_INTERNAL)
 endif()
 
-#
-# Check for __attribute__((aligned(x))) support in the compiler
-#
-check_c_source_compiles(
-    "int main(void) {
-        __attribute__((aligned(8))) int test = 0;
-        (void)test;
-        return 0;
-    }"
-    HAVE_ATTRIBUTE_ALIGNED FAIL_REGEX "aligned")
-if(HAVE_ATTRIBUTE_ALIGNED)
-    add_definitions(-DHAVE_ATTRIBUTE_ALIGNED)
-endif()
+# Skip on MSVC, where these probes always fail and CodeQL reports their TryCompile sources.
+if(NOT CMAKE_C_COMPILER_ID STREQUAL "MSVC")
+    #
+    # Check for __attribute__((aligned(x))) support in the compiler
+    #
+    check_c_source_compiles(
+        "int main(void) {
+            __attribute__((aligned(8))) int test = 0;
+            (void)test;
+            return 0;
+        }"
+        HAVE_ATTRIBUTE_ALIGNED FAIL_REGEX "aligned")
+    if(HAVE_ATTRIBUTE_ALIGNED)
+        add_definitions(-DHAVE_ATTRIBUTE_ALIGNED)
+    endif()
 
-#
-# Check for __builtin_assume_aligned(x,n) support in the compiler
-#
-set(CMAKE_REQUIRED_FLAGS ${ZNOLTOFLAG})
-check_c_source_compiles(
-    "char *test(char *buffer) {
-        char *abuffer = __builtin_assume_aligned(buffer,64);
-        return abuffer;
-    }
-    int main() {
-        return 0;
-    }"
-    HAVE_BUILTIN_ASSUME_ALIGNED)
-if(HAVE_BUILTIN_ASSUME_ALIGNED)
-    add_definitions(-DHAVE_BUILTIN_ASSUME_ALIGNED)
+    #
+    # Check for __builtin_assume_aligned(x,n) support in the compiler
+    #
+    set(CMAKE_REQUIRED_FLAGS ${ZNOLTOFLAG})
+    check_c_source_compiles(
+        "char *test(char *buffer) {
+            char *abuffer = __builtin_assume_aligned(buffer,64);
+            return abuffer;
+        }
+        int main() {
+            return 0;
+        }"
+        HAVE_BUILTIN_ASSUME_ALIGNED)
+    if(HAVE_BUILTIN_ASSUME_ALIGNED)
+        add_definitions(-DHAVE_BUILTIN_ASSUME_ALIGNED)
+    endif()
+    set(CMAKE_REQUIRED_FLAGS)
 endif()
-set(CMAKE_REQUIRED_FLAGS)
 
 
 add_compile_options($<$<CONFIG:Debug>:-DZLIB_DEBUG>)

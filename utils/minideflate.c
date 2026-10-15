@@ -348,13 +348,6 @@ int main(int argc, char **argv) {
             window_bits += 32;
     }
 
-    if (window_bits == INT32_MAX) {
-        window_bits = MAX_WBITS;
-        /* Auto-detect wrapper for inflateInit */
-        if (uncompr)
-            window_bits += 32;
-    }
-
     if (uncompr) {
         inflate_params(fin, fout, read_buf_size, write_buf_size, window_bits, flush);
     } else {
