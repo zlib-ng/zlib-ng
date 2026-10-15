@@ -1617,11 +1617,6 @@ if(BUILD_TESTING)
     enable_testing()
 
     if(BUILD_SHARED_LIBS)
-        if(WITH_GTEST)
-            message(STATUS "Disabling gtest because only shared libraries are enabled")
-            set(WITH_GTEST OFF)
-        endif()
-
         if(WITH_BENCHMARKS OR WITH_BENCHMARK_APPS)
             message(STATUS "Disabling google benchmarks because only shared libraries are enabled")
             set(WITH_BENCHMARKS OFF)
