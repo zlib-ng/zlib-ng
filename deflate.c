@@ -538,6 +538,14 @@ int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
     s = (deflate_state *)strm->state;
     s->pending = 0;
     s->pending_out = s->pending_buf;
+    /* zng_tr_init (below) discards the open block's tokens (sym_next = 0),
+     * so the split bookkeeping that indexes into them must go with it; a
+     * deferral in flight is void because its compaction target is gone. */
+    s->blk_tokens = 0;
+    s->blk_bytes = 0;
+    s->blk_next_snap = SPLIT_SLOT_TOKENS;
+    s->blk_slots = 0;
+    s->blk_deferred_tok = 0;
 
     if (s->wrap < 0)
         s->wrap = -s->wrap; /* was made negative by deflate(..., Z_FINISH); */
@@ -1034,6 +1042,19 @@ int32_t Z_EXPORT PREFIX(deflate)(PREFIX3(stream) *strm, int32_t flush) {
     } else if (strm->avail_in == 0 && RANK(flush) <= RANK(old_flush) && flush != Z_FINISH) {
         ERR_RETURN(strm, Z_BUF_ERROR);
     }
+
+#ifndef LIT_MEM
+    /* Finish a split whose sym_buf compaction blk_do_split deferred because
+     * undrained output overlapped the shared pending/sym region (see there).
+     * pending is guaranteed 0 here, so moving the right half down cannot
+     * clobber live output; doing it before any compressor runs keeps the
+     * symbol buffers consistent even if a level switch changed strategy. */
+    if (s->blk_deferred_tok != 0) {
+        memmove(s->sym_buf, s->sym_buf + 3u * s->blk_deferred_tok, 3u * s->blk_tokens);
+        s->sym_next = 3u * s->blk_tokens;
+        s->blk_deferred_tok = 0;
+    }
+#endif
 
     /* User must not provide more input after the first FINISH: */
     if (s->status == FINISH_STATE && strm->avail_in != 0)   {

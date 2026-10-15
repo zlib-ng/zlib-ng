@@ -10,6 +10,7 @@
 #include "deflate_p.h"
 #include "functable.h"
 #include "insert_string_p.h"
+#include "trees.h"
 
 /* A match candidate: either a single literal (match_length == 1) or a match of
  * length >= STD_MIN_MATCH starting at strstart that matches history data at
@@ -207,6 +208,22 @@ Z_FORCEINLINE static uint32_t lit_cost(const deflate_state *s, uint32_t c) {
  * chains, so recorded frontier distances run farther; on text the 65-72 band
  * then regresses (+4.5KB on big_text), so the tighter cap applies there. */
 #define EXTREME_FRONTIER_MAX_DIST_FLOORED 64u
+
+/* Priced block splitting: snapshot the open block's symbol frequencies every
+ * SPLIT_SLOT_TOKENS committed sequences and, at flush time, re-fit the
+ * Huffman trees for each candidate half; when splitting the block at a
+ * snapshot point encodes it cheaper than keeping it whole (the second block
+ * header included), emit the left half as its own block. The right half stays
+ * open and is re-evaluated on later flushes, so deeper splits emerge over
+ * successive blocks like zopfli's recursive splitter. SPLIT_SLOT_TOKENS
+ * lives in deflate.h because deflateResetKeep re-arms the first snapshot.
+ */
+/* Minimum tokens per side of a split: below this the tree refit cannot pay
+ * for the second block header (measured ~600-780 bits on this suite). */
+#define SPLIT_MIN_SIDE_TOKENS 1024u
+/* Required savings for a split to fire: the cost model is an estimate, so a
+ * marginal split can lose by a few bytes; only take clear wins. */
+#define SPLIT_MARGIN_BITS 64u
 
 /* Re-phase short C0 matches like deflate_slow's lazy truncation: a strictly
  * longer match one or two positions ahead is taken with literal gap-fill.
@@ -650,6 +667,363 @@ Z_FORCEINLINE static unsigned match_exists_at(deflate_state *s, const unsigned c
     return 0u;
 }
 
+/* ===========================================================================
+ * Priced adaptive block splitting.
+ *
+ * The open block's symbol frequencies are snapshotted every
+ * SPLIT_SLOT_TOKENS committed sequences. At flush time each snapshot point is
+ * priced as a split: both halves are costed with freshly fitted trees (dynamic,
+ * fixed and stored all considered, exactly like zng_tr_flush_block) plus the
+ * dynamic header bits counted with send_tree's run rules. The cheapest split
+ * wins; the left half is flushed as its own block and the right half stays
+ * open, to be re-evaluated on later flushes.
+ */
+
+/* Count the code-length symbols a fitted tree needs in the block header:
+ * replicates send_tree's run state machine (including its adaptive repeat
+ * thresholds) without emitting bits. len[] must be zero past max_code. */
+static void count_tree_runs(const uint8_t *len, int max_code, uint32_t *cl_count, uint32_t *run_bits) {
+    int prevlen = -1;
+    int nextlen = len[0];
+    int count = 0;
+    int max_count = 7;
+    int min_count = 4;
+
+    if (nextlen == 0)
+        max_count = 138, min_count = 3;
+
+    for (int n = 0; n <= max_code; n++) {
+        const int curlen = nextlen;
+
+        nextlen = n + 1 <= max_code ? len[n + 1] : 0;
+        if (++count < max_count && curlen == nextlen)
+            continue;
+        else if (count < min_count) {
+            cl_count[curlen] += (uint32_t)count;
+        }
+        else if (curlen != 0) {
+            if (curlen != prevlen) {
+                cl_count[curlen]++;
+                count--;
+            }
+            cl_count[16]++;              /* REP_3_6 */
+            *run_bits += 2u;
+        }
+        else if (count <= 10) {
+            cl_count[17]++;              /* REPZ_3_10 */
+            *run_bits += 3u;
+        }
+        else {
+            cl_count[18]++;              /* REPZ_11_138 */
+            *run_bits += 7u;
+        }
+
+        count = 0;
+        prevlen = curlen;
+        if (nextlen == 0)
+            max_count = 138, min_count = 3;
+        else if (curlen == nextlen)
+            max_count = 6, min_count = 3;
+        else
+            max_count = 7, min_count = 4;
+    }
+}
+
+/* Bits to encode lit_freq/dist_freq as one dynamic block: fitted data bits plus the exact
+ * tree-description bits (same trimming and run rules the emitter uses). */
+static uint32_t split_dyn_bits(const uint16_t *lit_freq, const uint16_t *dist_freq) {
+    uint32_t freq_l[L_CODES];
+    uint32_t freq_d[D_CODES];
+    uint8_t ll_len[L_CODES];
+    uint8_t dd_len[D_CODES];
+    int max_l = 0;
+    int max_d = 0;
+
+    for (int i = 0; i < L_CODES; i++) {
+        freq_l[i] = lit_freq[i];
+        if (lit_freq[i])
+            max_l = i;
+    }
+    for (int i = 0; i < D_CODES; i++) {
+        freq_d[i] = dist_freq[i];
+        if (dist_freq[i])
+            max_d = i;
+    }
+
+    huff_lengths(freq_l, L_CODES, ll_len);
+    huff_lengths(freq_d, D_CODES, dd_len);
+
+    uint32_t bits = 0;
+    for (int i = 0; i <= max_l; i++)
+        bits += freq_l[i] * (uint32_t)ll_len[i];
+    for (int i = 0; i <= max_d; i++)
+        bits += freq_d[i] * (uint32_t)dd_len[i];
+
+    /* Tree description: header fields, code-length symbol counts over both
+     * trimmed trees, then the fitted meta-tree. */
+    uint32_t cl_count[BL_CODES] = { 0 };
+    uint32_t run_bits = 0;
+    count_tree_runs(ll_len, max_l, cl_count, &run_bits);
+    count_tree_runs(dd_len, max_d, cl_count, &run_bits);
+
+    int max_blindex = -1;
+    for (int rank = 0; rank < BL_CODES; rank++)
+        if (cl_count[bl_order[rank]])
+            max_blindex = rank;
+
+    uint8_t bl_len[BL_CODES];
+    huff_lengths(cl_count, BL_CODES, bl_len);
+
+    bits += 5u + 5u + 4u + (uint32_t)(max_blindex + 1) * 3u + run_bits;
+    for (int rank = 0; rank <= max_blindex; rank++)
+        bits += cl_count[bl_order[rank]] * (uint32_t)bl_len[bl_order[rank]];
+
+    return bits;
+}
+
+/* Bit cost of encoding the given per-symbol frequencies as one fixed-Huffman block, header included.
+ * The fixed lengths are RFC1951's: literals 0-143 at 8 bits, 144-255 at 9, length codes 7/8, distances 5. */
+static uint32_t split_fixed_bits(const uint16_t *lit_freq, const uint16_t *dist_freq) {
+    uint32_t bits = 3u;   /* bfinal + btype */
+
+    /* Literal symbols: RFC fixed lengths, 8 bits below 144, 9 above. */
+    for (int i = 0; i < 144; i++)
+        bits += (uint32_t)lit_freq[i] * 8u;
+    for (int i = 144; i < LITERALS; i++)
+        bits += (uint32_t)lit_freq[i] * 9u;
+    /* Length codes: 7 or 8 bits each. */
+    for (int i = LITERALS; i < L_CODES; i++)
+        bits += (uint32_t)lit_freq[i] * (i <= LITERALS + 23 ? 7u : 8u);
+    /* Distance codes: 5-bit fixed symbol. */
+    for (int i = 0; i < D_CODES; i++)
+        bits += (uint32_t)dist_freq[i] * 5u;
+
+    return bits;
+}
+
+/* Cheapest single-block encoding of this half: dynamic, fixed or stored,
+ * mirroring zng_tr_flush_block's selection (stored is bytes*8 + 4 header
+ * bytes, as that function compares it). */
+static uint32_t split_half_bits(const uint16_t *lit_freq, const uint16_t *dist_freq, uint32_t bytes) {
+    uint32_t bits = split_dyn_bits(lit_freq, dist_freq);
+
+    const uint32_t fixed = split_fixed_bits(lit_freq, dist_freq);
+    if (fixed < bits)
+        bits = fixed;
+    const uint32_t stored = bytes * 8u + 32u;
+    if (stored < bits)
+        bits = stored;
+
+    return bits;
+}
+
+/* Drop the open-block bookkeeping after a full flush. */
+static void blk_reset(deflate_state *s) {
+    s->blk_tokens = 0;
+    s->blk_bytes = 0;
+    s->blk_next_snap = SPLIT_SLOT_TOKENS;
+    s->blk_slots = 0;
+    s->blk_deferred_tok = 0;
+}
+
+/* A snapshot slot is a split candidate when both halves hold at least
+ * SPLIT_MIN_SIDE_TOKENS tokens (below that the refit cannot pay for the
+ * second block header) and neither half would need a stored fallback wider
+ * than MAX_STORED. */
+static int blk_slot_viable(const deflate_state *s, uint8_t slot) {
+    const uint32_t tok = s->blk_snap_tok[slot];
+    if (tok < SPLIT_MIN_SIDE_TOKENS || s->blk_tokens - tok < SPLIT_MIN_SIDE_TOKENS)
+        return 0;
+    const uint32_t right_bytes = s->blk_bytes - s->blk_snap_bytes[slot];
+    if (s->blk_snap_bytes[slot] > MAX_STORED || right_bytes > MAX_STORED)
+        return 0;
+    return 1;
+}
+
+/* Token count at which the open block should be split, or 0 when no split
+ * beats encoding the whole block as one. */
+static uint32_t blk_find_split(deflate_state *s) {
+    /* Self-heal stale bookkeeping: any flush that bypassed the split sites
+     * (e.g. FLUSH_BLOCK returning need_more with an empty output buffer)
+     * already consumed the open block, so the snapshot chain no longer maps
+     * onto sym_buf and must be dropped. */
+#ifdef LIT_MEM
+    if (UNLIKELY(s->sym_next != s->blk_tokens)) {
+        blk_reset(s);
+        return 0;
+    }
+#else
+    if (UNLIKELY(s->sym_next != 3u * s->blk_tokens)) {
+        blk_reset(s);
+        return 0;
+    }
+#endif
+    if (s->blk_slots == 0 || s->blk_tokens < SPLIT_MIN_SIDE_TOKENS * 2)
+        return 0;
+
+    /* The open block's running frequencies (END symbol included). */
+    uint16_t tot_lit[L_CODES];
+    uint16_t tot_dist[D_CODES];
+    for (int i = 0; i < L_CODES; i++)
+        tot_lit[i] = s->dyn_ltree[i].Freq;
+    for (int i = 0; i < D_CODES; i++)
+        tot_dist[i] = s->dyn_dtree[i].Freq;
+
+    /* Pre-scan for a viable slot before paying for the baseline tree build:
+     * a flush with none skips the exact pricing entirely. */
+    {
+        int viable = 0;
+        for (uint8_t slot = 0; slot < s->blk_slots; slot++)
+            if (blk_slot_viable(s, slot)) {
+                viable = 1;
+                break;
+            }
+        if (!viable)
+            return 0;
+    }
+
+    uint32_t best_bits = split_half_bits(tot_lit, tot_dist, s->blk_bytes);
+    uint32_t best_tok = 0;
+
+    for (uint8_t slot = 0; slot < s->blk_slots; slot++) {
+        if (!blk_slot_viable(s, slot))
+            continue;
+        const uint32_t tok = s->blk_snap_tok[slot];
+
+        /* Right half = totals minus this snapshot, plus its own END symbol. */
+        uint16_t right_lit[L_CODES];
+        uint16_t right_dist[D_CODES];
+        for (int i = 0; i < L_CODES; i++)
+            right_lit[i] = (uint16_t)(tot_lit[i] - s->blk_snap_l[slot][i]);
+        for (int i = 0; i < D_CODES; i++)
+            right_dist[i] = (uint16_t)(tot_dist[i] - s->blk_snap_d[slot][i]);
+        right_lit[END_BLOCK] = 1;
+
+        const uint32_t bits = split_half_bits(s->blk_snap_l[slot], s->blk_snap_d[slot], s->blk_snap_bytes[slot])
+                             + split_half_bits(right_lit, right_dist, s->blk_bytes - s->blk_snap_bytes[slot]);
+        if (bits + SPLIT_MARGIN_BITS < best_bits) {
+            best_bits = bits;
+            best_tok = tok;
+        }
+    }
+
+    return best_tok;
+}
+
+/* The slot holding a snapshot token count (snapshots are strictly
+ * increasing, so the first match is the only one). Callers pass a token
+ * count blk_find_split read from this array, so a miss is impossible; the
+ * bound turns any future invariant break into an assert instead of a
+ * runaway scan. */
+static uint8_t blk_slot_of(const deflate_state *s, uint32_t tok) {
+    for (uint8_t slot = 0; slot < s->blk_slots; slot++)
+        if (s->blk_snap_tok[slot] == tok)
+            return slot;
+    Assert(0, "blk_slot_of: token not found in snapshots");
+    return 0;
+}
+
+/* Flush the open block's first tok sequences as their own block and re-seed
+ * all state for the remainder, which stays open. */
+static void blk_do_split(deflate_state *s, unsigned char *window, uint32_t tok) {
+    /* The token count came from a snapshot; find its slot. */
+    const uint8_t slot = blk_slot_of(s, tok);
+    const uint32_t left_bytes = s->blk_snap_bytes[slot];
+
+    /* Defensive: the invariant in blk_find_split guarantees tok covers real
+     * tokens; refuse rather than memmove past the buffer if it ever fails. */
+#ifdef LIT_MEM
+    if (UNLIKELY(tok > s->sym_next))
+        return;
+#else
+    if (UNLIKELY(3u * (unsigned int)tok > s->sym_next))
+        return;
+#endif
+
+    /* Swap in the left half's frequencies and flush it as a full block. */
+    uint16_t tot_lit[L_CODES];
+    uint16_t tot_dist[D_CODES];
+    for (int i = 0; i < L_CODES; i++) {
+        tot_lit[i] = s->dyn_ltree[i].Freq;
+        s->dyn_ltree[i].Freq = s->blk_snap_l[slot][i];
+    }
+    for (int i = 0; i < D_CODES; i++) {
+        tot_dist[i] = s->dyn_dtree[i].Freq;
+        s->dyn_dtree[i].Freq = s->blk_snap_d[slot][i];
+    }
+    const unsigned int old_next = s->sym_next;
+#ifdef LIT_MEM
+    s->sym_next = (unsigned int)tok;
+#else
+    s->sym_next = 3u * (unsigned int)tok;
+#endif
+    /* Mirror FLUSH_BLOCK_ONLY: a slid-out block start has no window bytes. */
+    zng_tr_flush_block(s, (s->block_start >= 0 ? &window[(unsigned)s->block_start] : NULL), left_bytes, 0);
+    PREFIX(flush_pending)(s->strm);
+
+    /* Shift the remaining tokens to the front of the symbol buffers. */
+#ifdef LIT_MEM
+    memmove(s->d_buf, s->d_buf + tok, (old_next - tok) * sizeof(uint16_t));
+    memmove(s->l_buf, s->l_buf + tok, old_next - tok);
+    s->sym_next = old_next - tok;
+#else
+    {
+        const unsigned int keep = old_next - 3u * (unsigned int)tok;
+        /* sym_buf shares the pending_buf allocation (it starts lit_bufsize +
+         * PENDING_BUF_PAD bytes in). If the flush above drained only part of
+         * the block because the output buffer is small, undrained output still
+         * occupies [pending_out .. pending_out+pending) in that shared region,
+         * and moving the right half down would clobber it. Defer the physical
+         * move until zng_deflate re-enters with pending drained: record the
+         * split point and restore the full extent so the open block keeps its
+         * true size in the meantime. */
+        const uint32_t live_off = (uint32_t)(s->pending_out - s->pending_buf);
+        if (live_off + s->pending <= (uint32_t)(s->sym_buf - s->pending_buf)
+            || live_off >= (uint32_t)(s->sym_buf - s->pending_buf) + keep) {
+            memmove(s->sym_buf, s->sym_buf + 3u * (unsigned int)tok, keep);
+            s->sym_next = keep;
+            s->blk_deferred_tok = 0;
+        } else {
+            s->sym_next = old_next;
+            s->blk_deferred_tok = (uint32_t)tok;
+        }
+    }
+#endif
+
+    /* Re-seed the right half's frequencies (it gets a fresh END symbol). */
+    for (int i = 0; i < L_CODES; i++)
+        s->dyn_ltree[i].Freq = (uint16_t)(tot_lit[i] - s->blk_snap_l[slot][i]);
+    for (int i = 0; i < D_CODES; i++)
+        s->dyn_dtree[i].Freq = (uint16_t)(tot_dist[i] - s->blk_snap_d[slot][i]);
+    s->dyn_ltree[END_BLOCK].Freq = 1;
+
+    /* Advance the open-block bookkeeping and re-base the later snapshots. */
+    s->block_start += (int)left_bytes;
+    s->blk_tokens -= tok;
+    s->blk_bytes -= left_bytes;
+    s->blk_next_snap -= tok;
+    /* Slots below the split point describe tokens that were just flushed and
+     * must be dropped: shift the rebased later snapshots down to slot 0 so
+     * every surviving snapshot stays on the right half's baseline. */
+    for (uint8_t k = slot + 1; k < s->blk_slots; k++) {
+        const uint8_t dst = (uint8_t)(k - slot - 1u);
+        for (int i = 0; i < L_CODES; i++)
+            s->blk_snap_l[dst][i] = (uint16_t)(s->blk_snap_l[k][i] - s->blk_snap_l[slot][i]);
+        for (int i = 0; i < D_CODES; i++)
+            s->blk_snap_d[dst][i] = (uint16_t)(s->blk_snap_d[k][i] - s->blk_snap_d[slot][i]);
+        /* Every snapshot keeps its own END symbol (init_block's count). */
+        s->blk_snap_l[dst][END_BLOCK] = 1;
+        s->blk_snap_tok[dst] = s->blk_snap_tok[k] - tok;
+        s->blk_snap_bytes[dst] = s->blk_snap_bytes[k] - left_bytes;
+    }
+    s->blk_slots = (uint8_t)(s->blk_slots - slot - 1u);
+    /* If the slot cap stalled snapshotting, the rebased threshold can lag far
+     * behind the current token count and re-firing would take one snapshot per
+     * commit until it catches up; push it a full interval ahead instead. */
+    if (UNLIKELY(s->blk_next_snap < s->blk_tokens))
+        s->blk_next_snap = s->blk_tokens + SPLIT_SLOT_TOKENS;
+}
+
 /* deflate_extreme compresses with a lazy two-position lookahead: at each step
  * it searches for matches at the cursor and one/two positions ahead, then
  * emits the minimum-cost sequence among {C0}, {lit, C1}, {lit, lit, C2}, priced with the running
@@ -682,6 +1056,27 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
      * garbage in the reserved[19] flag itself). */
     if (UNLIKELY(s->strm->total_in == 0 || s->reserved[19] == 0)) {
         extreme_model_reset(s);
+        blk_reset(s);
+        /* An open block inherited from another level adopts its span so a
+         * split can price the inherited prefix against the new suffix. */
+        if (UNLIKELY(s->sym_next != 0)) {
+#ifdef LIT_MEM
+            s->blk_tokens = s->sym_next;
+#else
+            s->blk_tokens = s->sym_next / 3u;
+#endif
+            s->blk_bytes = (uint32_t)(s->strstart - s->block_start);
+        }
+        s->blk_next_snap = s->blk_tokens + SPLIT_SLOT_TOKENS;
+        if (s->blk_tokens >= SPLIT_MIN_SIDE_TOKENS) {
+            for (int i = 0; i < L_CODES; i++)
+                s->blk_snap_l[0][i] = s->dyn_ltree[i].Freq;
+            for (int i = 0; i < D_CODES; i++)
+                s->blk_snap_d[0][i] = s->dyn_dtree[i].Freq;
+            s->blk_snap_tok[0] = s->blk_tokens;
+            s->blk_snap_bytes[0] = s->blk_bytes;
+            s->blk_slots = 1;
+        }
         s->reserved[19] = 1;
     }
 
@@ -1015,6 +1410,21 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
             s->ext_freq[LITERALS + 29 + 1 + d_code(mdist - 1)]++;
         }
 
+        /* Open-block bookkeeping for priced splitting: one snapshot of the
+         * symbol frequencies every SPLIT_SLOT_TOKENS committed tokens. */
+        s->blk_tokens += (uint32_t)(best_k + 1);
+        s->blk_bytes += best_advance;
+        if (UNLIKELY(s->blk_tokens >= s->blk_next_snap && s->blk_slots < SPLIT_SLOTS)) {
+            for (int i = 0; i < L_CODES; i++)
+                s->blk_snap_l[s->blk_slots][i] = s->dyn_ltree[i].Freq;
+            for (int i = 0; i < D_CODES; i++)
+                s->blk_snap_d[s->blk_slots][i] = s->dyn_dtree[i].Freq;
+            s->blk_snap_tok[s->blk_slots] = s->blk_tokens;
+            s->blk_snap_bytes[s->blk_slots] = s->blk_bytes;
+            s->blk_slots++;
+            s->blk_next_snap += SPLIT_SLOT_TOKENS;
+        }
+
         /* Refresh the estimated code lengths periodically so the model tracks
          * the per-block trees trees.c actually builds. */
         if (UNLIKELY(++s->ext_since_build >= EXTREME_REBUILD_EVERY)) {
@@ -1066,18 +1476,66 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
         s->lookahead -= best_advance;
         s->strstart += best_advance;
 
-        if (UNLIKELY(bflush))
+        if (UNLIKELY(bflush)) {
+            const uint32_t split_tok = blk_find_split(s);
+            if (UNLIKELY(split_tok != 0)) {
+                blk_do_split(s, window, split_tok);
+                /* The left half may not have fully drained: pending_out has
+                 * advanced and compressing another block now would write over
+                 * undrained output. Defer; the next call drains pending at
+                 * entry before resuming compression. */
+                if (UNLIKELY(s->pending != 0))
+                    return need_more;
+            }
             FLUSH_BLOCK(s, window, 0);
+            blk_reset(s);
+        }
     }
 
     /* Positions still to insert into the hash table when input resumes. */
     s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
     if (UNLIKELY(flush == Z_FINISH)) {
+        const uint32_t split_tok = blk_find_split(s);
+        if (UNLIKELY(split_tok != 0)) {
+            /* The final flush cannot defer: once this call returns with
+             * finish_started the stream is closed out and no further
+             * compression call resumes the right half (zng_deflate skips the
+             * compressor when status is FINISH_STATE, avail_in is 0 and the
+             * lookahead is empty). Only split when the output buffer can hold
+             * the left half's worst case (a stored block) so do_split's flush
+             * drains pending fully and both halves emit within this call. A
+             * too-tight buffer falls through to a whole-block final flush,
+             * whose own finish_started is safe: everything is already in
+             * pending with bi_valid at zero. */
+            /* The token count came from a snapshot; find its slot. */
+            uint8_t slot = 0;
+            while (s->blk_snap_tok[slot] != split_tok)
+                slot++;
+            if (s->strm->avail_out >= s->blk_snap_bytes[slot] + 5u) {
+                blk_do_split(s, window, split_tok);
+                Assert(s->pending == 0, "zfin split undrained");
+            }
+        }
         FLUSH_BLOCK(s, window, 1);
         return finish_done;
     }
-    if (UNLIKELY(s->sym_next))
-        FLUSH_BLOCK(s, window, 0);
+    /* Final partial block, mirroring deflate_slow's tail: try a priced split, re-optimize when no split wins, then flush. */
+    if (UNLIKELY(s->sym_next)) {
+        const uint32_t split_tok = blk_find_split(s);
+        if (UNLIKELY(split_tok != 0)) {
+            blk_do_split(s, window, split_tok);
+            if (UNLIKELY(s->pending != 0))
+                return need_more;
+        }
+        /* Reset the split bookkeeping before any early return: FLUSH_BLOCK's
+         * partial-drain exit would otherwise leave stale tokens that the next
+         * entry accumulates on (blk_find_split self-heals, but the first new
+         * block loses its split opportunities). */
+        FLUSH_BLOCK_ONLY(s, window, 0);
+        blk_reset(s);
+        if (UNLIKELY(s->strm->avail_out == 0))
+            return need_more;
+    }
 
     return block_done;
 }
