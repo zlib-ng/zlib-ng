@@ -58,6 +58,22 @@
         out3 = _mm_xor_si128(in[4], xor3); \
     } while (0)
 
+/* Stores into a lane that hasn't been written yet, the last vector carries into the next round */
+#define STORE_LANE(carry, out) \
+    do { \
+        __m128i first = _mm_xor_si128(carry, in_1); \
+        STORE4(first, in23, in45, in67, out); \
+        carry = in8_; \
+    } while (0)
+
+/* Same, but XORs into what earlier rounds already stored in the lane */
+#define STORE_LANE_XOR(carry, out) \
+    do { \
+        __m128i first = _mm_xor_si128(carry, in_1), x1, x2, x3; \
+        READ4_WITHXOR(x1, x2, x3, carry, in23, in45, in67, in8_, out); \
+        STORE4(first, x1, x2, x3, out); \
+    } while (0)
+
 Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t crc, const uint8_t *buf, size_t len) {
     /* The calling function ensured that this is aligned correctly */
     const uint64_t* input = (const uint64_t*)buf;
@@ -119,19 +135,9 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
         REALIGN_CHORBA(in12, in34, in56, in78,
                        in_1, in23, in45, in67, in8_, 8);
 
-        __m128i a = _mm_xor_si128(buf144, in_1);
-
-        STORE4(a, in23, in45, in67, bitbuf144);
-        buf144 = in8_;
-
-        __m128i e = _mm_xor_si128(buf182, in_1);
-        STORE4(e, in23, in45, in67, bitbuf182);
-        buf182 = in8_;
-
-        __m128i m = _mm_xor_si128(buf210, in_1);
-        STORE4(m, in23, in45, in67, bitbuf210);
-        buf210 = in8_;
-
+        STORE_LANE(buf144, bitbuf144);
+        STORE_LANE(buf182, bitbuf182);
+        STORE_LANE(buf210, bitbuf210);
         STORE4(in12, in34, in56, in78, bitbuf300);
     }
 
@@ -143,20 +149,9 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
         REALIGN_CHORBA(in12, in34, in56, in78,
                        in_1, in23, in45, in67, in8_, 8);
 
-        __m128i a = _mm_xor_si128(buf144, in_1);
-
-        STORE4(a, in23, in45, in67, bitbuf144);
-        buf144 = in8_;
-
-        __m128i e, f, g, h;
-        e = _mm_xor_si128(buf182, in_1);
-        READ4_WITHXOR(f, g, h, buf182, in23, in45, in67, in8_, bitbuf182);
-        STORE4(e, f, g, h, bitbuf182);
-
-        __m128i m = _mm_xor_si128(buf210, in_1);
-        STORE4(m, in23, in45, in67, bitbuf210);
-        buf210 = in8_;
-
+        STORE_LANE(buf144, bitbuf144);
+        STORE_LANE_XOR(buf182, bitbuf182);
+        STORE_LANE(buf210, bitbuf210);
         STORE4(in12, in34, in56, in78, bitbuf300);
     }
 
@@ -168,20 +163,9 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
         REALIGN_CHORBA(in12, in34, in56, in78,
                        in_1, in23, in45, in67, in8_, 8);
 
-        __m128i a, b, c, d;
-        a = _mm_xor_si128(buf144, in_1);
-        READ4_WITHXOR(b, c, d, buf144, in23, in45, in67, in8_, bitbuf144);
-        STORE4(a, b, c, d, bitbuf144);
-
-        __m128i e, f, g, h;
-        e = _mm_xor_si128(buf182, in_1);
-        READ4_WITHXOR(f, g, h, buf182, in23, in45, in67, in8_, bitbuf182);
-        STORE4(e, f, g, h, bitbuf182);
-
-        __m128i m = _mm_xor_si128(buf210, in_1);
-        STORE4(m, in23, in45, in67, bitbuf210);
-        buf210 = in8_;
-
+        STORE_LANE_XOR(buf144, bitbuf144);
+        STORE_LANE_XOR(buf182, bitbuf182);
+        STORE_LANE(buf210, bitbuf210);
         STORE4(in12, in34, in56, in78, bitbuf300);
     }
 
@@ -204,15 +188,8 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
         REALIGN_CHORBA(in12, in34, in56, in78,
                        in_1, in23, in45, in67, in8_, 8);
 
-        __m128i a, b, c, d;
-        a = _mm_xor_si128(buf144, in_1);
-        READ4_WITHXOR(b, c, d, buf144, in23, in45, in67, in8_, bitbuf144);
-        STORE4(a, b, c, d, bitbuf144);
-
-        __m128i e, f, g, h;
-        e = _mm_xor_si128(buf182, in_1);
-        READ4_WITHXOR(f, g, h, buf182, in23, in45, in67, in8_, bitbuf182);
-        STORE4(e, f, g, h, bitbuf182);
+        STORE_LANE_XOR(buf144, bitbuf144);
+        STORE_LANE_XOR(buf182, bitbuf182);
 
         __m128i n, o, p;
         __m128i m = _mm_xor_si128(buf210, in_1);
