@@ -679,108 +679,6 @@ Z_FORCEINLINE static unsigned match_exists_at(deflate_state *s, const unsigned c
  * open, to be re-evaluated on later flushes.
  */
 
-/* Count the code-length symbols a fitted tree needs in the block header:
- * replicates send_tree's run state machine (including its adaptive repeat
- * thresholds) without emitting bits. len[] must be zero past max_code. */
-static void count_tree_runs(const uint8_t *len, int max_code, uint32_t *cl_count, uint32_t *run_bits) {
-    int prevlen = -1;
-    int nextlen = len[0];
-    int count = 0;
-    int max_count = 7;
-    int min_count = 4;
-
-    if (nextlen == 0)
-        max_count = 138, min_count = 3;
-
-    for (int n = 0; n <= max_code; n++) {
-        const int curlen = nextlen;
-
-        nextlen = n + 1 <= max_code ? len[n + 1] : 0;
-        if (++count < max_count && curlen == nextlen)
-            continue;
-        else if (count < min_count) {
-            cl_count[curlen] += (uint32_t)count;
-        }
-        else if (curlen != 0) {
-            if (curlen != prevlen) {
-                cl_count[curlen]++;
-                count--;
-            }
-            cl_count[16]++;              /* REP_3_6 */
-            *run_bits += 2u;
-        }
-        else if (count <= 10) {
-            cl_count[17]++;              /* REPZ_3_10 */
-            *run_bits += 3u;
-        }
-        else {
-            cl_count[18]++;              /* REPZ_11_138 */
-            *run_bits += 7u;
-        }
-
-        count = 0;
-        prevlen = curlen;
-        if (nextlen == 0)
-            max_count = 138, min_count = 3;
-        else if (curlen == nextlen)
-            max_count = 6, min_count = 3;
-        else
-            max_count = 7, min_count = 4;
-    }
-}
-
-/* Bits to encode lit_freq/dist_freq as one dynamic block: fitted data bits plus the exact
- * tree-description bits (same trimming and run rules the emitter uses). */
-static uint32_t split_dyn_bits(const uint16_t *lit_freq, const uint16_t *dist_freq) {
-    uint32_t freq_l[L_CODES];
-    uint32_t freq_d[D_CODES];
-    uint8_t ll_len[L_CODES];
-    uint8_t dd_len[D_CODES];
-    int max_l = 0;
-    int max_d = 0;
-
-    for (int i = 0; i < L_CODES; i++) {
-        freq_l[i] = lit_freq[i];
-        if (lit_freq[i])
-            max_l = i;
-    }
-    for (int i = 0; i < D_CODES; i++) {
-        freq_d[i] = dist_freq[i];
-        if (dist_freq[i])
-            max_d = i;
-    }
-
-    huff_lengths(freq_l, L_CODES, ll_len);
-    huff_lengths(freq_d, D_CODES, dd_len);
-
-    uint32_t bits = 0;
-    for (int i = 0; i <= max_l; i++)
-        bits += freq_l[i] * (uint32_t)ll_len[i];
-    for (int i = 0; i <= max_d; i++)
-        bits += freq_d[i] * (uint32_t)dd_len[i];
-
-    /* Tree description: header fields, code-length symbol counts over both
-     * trimmed trees, then the fitted meta-tree. */
-    uint32_t cl_count[BL_CODES] = { 0 };
-    uint32_t run_bits = 0;
-    count_tree_runs(ll_len, max_l, cl_count, &run_bits);
-    count_tree_runs(dd_len, max_d, cl_count, &run_bits);
-
-    int max_blindex = -1;
-    for (int rank = 0; rank < BL_CODES; rank++)
-        if (cl_count[bl_order[rank]])
-            max_blindex = rank;
-
-    uint8_t bl_len[BL_CODES];
-    huff_lengths(cl_count, BL_CODES, bl_len);
-
-    bits += 5u + 5u + 4u + (uint32_t)(max_blindex + 1) * 3u + run_bits;
-    for (int rank = 0; rank <= max_blindex; rank++)
-        bits += cl_count[bl_order[rank]] * (uint32_t)bl_len[bl_order[rank]];
-
-    return bits;
-}
-
 /* Bit cost of encoding the given per-symbol frequencies as one fixed-Huffman block, header included.
  * The fixed lengths are RFC1951's: literals 0-143 at 8 bits, 144-255 at 9, length codes 7/8, distances 5. */
 static uint32_t split_fixed_bits(const uint16_t *lit_freq, const uint16_t *dist_freq) {
@@ -791,12 +689,18 @@ static uint32_t split_fixed_bits(const uint16_t *lit_freq, const uint16_t *dist_
         bits += (uint32_t)lit_freq[i] * 8u;
     for (int i = 144; i < LITERALS; i++)
         bits += (uint32_t)lit_freq[i] * 9u;
-    /* Length codes: 7 or 8 bits each. */
-    for (int i = LITERALS; i < L_CODES; i++)
-        bits += (uint32_t)lit_freq[i] * (i <= LITERALS + 23 ? 7u : 8u);
-    /* Distance codes: 5-bit fixed symbol. */
+    /* End-of-block symbol (freq slot LITERALS): 7-bit fixed code; derived
+     * snapshots of a flushed left half carry exactly one. */
+    bits += (uint32_t)lit_freq[LITERALS] * 7u;
+    /* Length codes: lc 0-22 at 7 bits, lc 23-28 at 8 (per static_ltree), plus
+     * xtra_len extra bits. */
+    for (int i = LITERALS + 1; i < L_CODES; i++) {
+        const int len_code = i - LITERALS - 1;
+        bits += (uint32_t)lit_freq[i] * ((len_code <= 22 ? 7u : 8u) + xtra_len[len_code]);
+    }
+    /* Distance codes: 5-bit fixed symbol plus extra bits. */
     for (int i = 0; i < D_CODES; i++)
-        bits += (uint32_t)dist_freq[i] * 5u;
+        bits += (uint32_t)dist_freq[i] * (5u + xtra_dist[i]);
 
     return bits;
 }
@@ -804,8 +708,11 @@ static uint32_t split_fixed_bits(const uint16_t *lit_freq, const uint16_t *dist_
 /* Cheapest single-block encoding of this half: dynamic, fixed or stored,
  * mirroring zng_tr_flush_block's selection (stored is bytes*8 + 4 header
  * bytes, as that function compares it). */
-static uint32_t split_half_bits(const uint16_t *lit_freq, const uint16_t *dist_freq, uint32_t bytes) {
-    uint32_t bits = split_dyn_bits(lit_freq, dist_freq);
+static uint32_t split_half_bits(deflate_state *s, const uint16_t *lit_freq,
+                                const uint16_t *dist_freq, uint32_t bytes) {
+    /* Exact dynamic cost via the real tree builders (same merge order and
+     * forced dummy leaves as the emitted block), against fixed and stored. */
+    uint32_t bits = zng_tr_exact_block_bits(s, lit_freq, dist_freq);
 
     const uint32_t fixed = split_fixed_bits(lit_freq, dist_freq);
     if (fixed < bits)
@@ -882,7 +789,7 @@ static uint32_t blk_find_split(deflate_state *s) {
             return 0;
     }
 
-    uint32_t best_bits = split_half_bits(tot_lit, tot_dist, s->blk_bytes);
+    uint32_t best_bits = split_half_bits(s, tot_lit, tot_dist, s->blk_bytes);
     uint32_t best_tok = 0;
 
     for (uint8_t slot = 0; slot < s->blk_slots; slot++) {
@@ -899,8 +806,8 @@ static uint32_t blk_find_split(deflate_state *s) {
             right_dist[i] = (uint16_t)(tot_dist[i] - s->blk_snap_d[slot][i]);
         right_lit[END_BLOCK] = 1;
 
-        const uint32_t bits = split_half_bits(s->blk_snap_l[slot], s->blk_snap_d[slot], s->blk_snap_bytes[slot])
-                             + split_half_bits(right_lit, right_dist, s->blk_bytes - s->blk_snap_bytes[slot]);
+        const uint32_t bits = split_half_bits(s, s->blk_snap_l[slot], s->blk_snap_d[slot], s->blk_snap_bytes[slot])
+                             + split_half_bits(s, right_lit, right_dist, s->blk_bytes - s->blk_snap_bytes[slot]);
         if (bits + SPLIT_MARGIN_BITS < best_bits) {
             best_bits = bits;
             best_tok = tok;
@@ -1022,6 +929,422 @@ static void blk_do_split(deflate_state *s, unsigned char *window, uint32_t tok) 
      * commit until it catches up; push it a full interval ahead instead. */
     if (UNLIKELY(s->blk_next_snap < s->blk_tokens))
         s->blk_next_snap = s->blk_tokens + SPLIT_SLOT_TOKENS;
+}
+
+/* ===========================================================================
+ * Region re-optimization (zopfli GetBestLengths, streaming-scoped).
+ *
+ * Right before an open block is flushed, re-parse its whole byte span with a
+ * full shortest-path DP under one or two pricing models and splice the result
+ * in when it beats the pass-1 tokens on exact emitted size. Matches are
+ * re-probed against the live hash table, which by then also contains the
+ * region's own positions: candidates at or after the probe position were
+ * inserted after that position was parsed (they did not exist in its pass-1
+ * view) and are skipped, leaving exactly the candidate set pass 1 saw.
+ */
+#define REOPT_MIN_BYTES   2048u
+/* Scratch cap; larger open blocks are left to the priced splitter. */
+#define REOPT_MAX_BYTES   40960u
+/* Required exact-size win over the pass-1 tokens before splicing. */
+#define REOPT_MARGIN_BITS 8u
+
+/* Token cost under an explicit length table: the running model passes
+ * s->ext_ll_len/s->ext_d_len, the local model passes freshly fitted lengths. */
+Z_FORCEINLINE static uint32_t reopt_match_cost(const uint8_t *ll, const uint8_t *dd,
+                                               uint32_t len, uint32_t dist) {
+    const uint32_t lcode = zng_length_code[len - STD_MIN_MATCH];
+    const uint32_t dcode = d_code(dist - 1);
+    return (uint32_t)ll[LITERALS + 1 + lcode] + xtra_len[lcode]
+         + (uint32_t)dd[dcode] + xtra_dist[dcode];
+}
+
+Z_FORCEINLINE static uint32_t reopt_lit_cost(const uint8_t *ll, uint32_t c) {
+    return ll[c];
+}
+
+/* Bounded match length between two window positions, never reading past
+ * max_len bytes (unlike compare256, which always reads STD_MAX_MATCH). */
+static Z_FORCEINLINE uint32_t region_cmp(const unsigned char *a, const unsigned char *b,
+                                         uint32_t max_len) {
+    uint32_t len = 0;
+    while (len < max_len && a[len] == b[len])
+        len++;
+    return len;
+}
+
+/* Best match at an already-parsed region position: a simplified slow_roll walk over candidates strictly before probe_pos,
+ * recording the closest distance that reached each length in sublen[] like longest_match_extreme. It omits the entry
+ * offset re-seed (there is no discard floor here) and compares byte-wise up to max_len instead of via compare256.
+ * Returns the best length (0 when none) and sets *out_dist to its distance. */
+static uint32_t region_probe(const deflate_state *s, const unsigned char *window,
+                             uint32_t probe_pos, uint32_t max_len,
+                             uint16_t *sublen, uint32_t *out_dist) {
+    if (UNLIKELY(max_len < STD_MIN_MATCH))
+        return 0;
+
+    const Pos *const prev = s->prev;
+    const Pos *const head = s->head;
+    const unsigned wmask = W_MASK(s);
+    uint32_t chain_length = s->max_chain_length;
+    uint32_t best_len = STD_MIN_MATCH - 1u; /* no discard floor for region probes */
+    uint32_t best_dist = 0;
+    const unsigned char *const scan = window + probe_pos;
+    const uint32_t limit = probe_pos > MAX_DIST(s) ? probe_pos - MAX_DIST(s) : 0u;
+
+    memset(sublen, 0, (STD_MAX_MATCH + 1) * sizeof(uint16_t));
+
+    uint32_t cur_match = head[roll_lookup(window, probe_pos)];
+    const uint64_t scan_start = max_len >= sizeof(uint64_t) ? zng_memread_8(scan) : 0;
+    /* A candidate must beat best_len on its first best_len+1 bytes. */
+    const uint64_t hit_mask = zng_first_bytes_mask64(best_len + 1u);
+
+    while (chain_length > 0u) {
+        /* Future positions share this key but did not exist when probe_pos
+         * was parsed; skip them without breaking (older valid entries sit
+         * further down the chain). Skips consume budget to bound the walk. */
+        if (UNLIKELY(cur_match >= probe_pos)) {
+            chain_length--;
+            cur_match = prev[cur_match & wmask];
+            continue;
+        }
+        if (cur_match <= limit)
+            break;
+        chain_length--;
+
+        uint32_t len = 0;
+        if (max_len >= sizeof(uint64_t)) {
+            const uint64_t diff = scan_start ^ zng_memread_8(window + cur_match);
+            if ((diff & hit_mask) == 0u)
+                len = region_cmp(scan, window + cur_match, max_len);
+        } else {
+            len = region_cmp(scan, window + cur_match, max_len);
+        }
+
+        if (len > best_len) {
+            /* Record the closest source that reached each newly covered length. */
+            for (uint32_t j = best_len + 1u; j <= len; j++)
+                sublen[j] = (uint16_t)(probe_pos - cur_match);
+            best_len = len;
+            best_dist = probe_pos - cur_match;
+            /* region_cmp is capped at max_len, so once the whole span is
+             * covered no later candidate can change sublen[] or the result:
+             * stop walking. */
+            if (best_len >= max_len)
+                break;
+        }
+
+        cur_match = prev[cur_match & wmask];
+    }
+
+    if (best_len < STD_MIN_MATCH)
+        return 0;
+    *out_dist = best_dist;
+    return best_len;
+}
+
+/* Shortest-path DP over region bytes [start, end) under one length model.
+ * Writes the winning per-position token into link_len/link_dist (indexed by destination position; len 0 marks a literal whose byte is in
+ * link_dist) and returns 1 when the span is fully coverable (always, via literals). */
+static int region_dp(const deflate_state *s, const unsigned char *window, uint32_t start,
+                     uint32_t end, const uint8_t *ll, const uint8_t *dd,
+                     uint32_t *best, uint16_t *link_len, uint16_t *link_dist) {
+    const uint32_t nbytes = end - start;
+    static const uint32_t classes[] = { 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 13u, 15u, 17u, 19u, 23u,
+                                         27u, 31u, 35u, 43u, 51u, 59u, 67u, 83u, 99u, 115u, 131u, 163u, 195u,
+                                         227u, 258u };
+    const uint32_t inf = UINT32_MAX / 4u;
+
+    /* Every position unreachable except the span start. */
+    for (uint32_t i = 1; i <= nbytes; i++)
+        best[i] = inf;
+    best[0] = 0;
+
+    /* Edges out of each reachable source position. */
+    for (uint32_t q = 0; q < nbytes; q++) {
+        const uint32_t base = best[q];
+        if (UNLIKELY(base == inf))
+            continue;
+        const uint32_t abs_pos = start + q;
+
+        /* Literal edge. */
+        const uint32_t lit = base + reopt_lit_cost(ll, window[abs_pos]);
+        if (lit < best[q + 1u]) {
+            best[q + 1u] = lit;
+            link_len[q + 1u] = 0;
+            link_dist[q + 1u] = (uint16_t)window[abs_pos];
+        }
+
+        /* Match edges: every class length the frontier reached, plus the
+         * uncapped longest match. The span end is the binding limit: bytes
+         * past it belong to later blocks and cannot be covered here. */
+        uint32_t max_len = end - abs_pos;
+        if (max_len > STD_MAX_MATCH)
+            max_len = STD_MAX_MATCH;
+        if (UNLIKELY(max_len < STD_MIN_MATCH))
+            continue;
+
+        uint16_t sublen[STD_MAX_MATCH + 1];
+        uint32_t bdist = 0;
+        const uint32_t blen = region_probe(s, window, abs_pos, max_len, sublen, &bdist);
+        for (uint32_t class_i = 0; class_i < sizeof(classes) / sizeof(classes[0]); class_i++) {
+            const uint32_t k = classes[class_i];
+            if (k > max_len)
+                break; /* classes are sorted ascending */
+            if (sublen[k] == 0)
+                continue;
+            const uint32_t cost = base + reopt_match_cost(ll, dd, k, sublen[k]);
+            if (cost < best[q + k]) {
+                best[q + k] = cost;
+                link_len[q + k] = (uint16_t)k;
+                link_dist[q + k] = sublen[k];
+            }
+        }
+        if (blen > 10u && blen <= max_len) {
+            const uint32_t cost = base + reopt_match_cost(ll, dd, blen, bdist);
+            if (cost < best[q + blen]) {
+                best[q + blen] = cost;
+                link_len[q + blen] = (uint16_t)blen;
+                link_dist[q + blen] = (uint16_t)bdist;
+            }
+        }
+    }
+
+    return best[nbytes] != inf;
+}
+
+/* Grow the re-optimization scratch to cover a region of this many bytes, freeing any smaller previous block.
+ * Returns 0 (leaving s->re_scratch unchanged) when the allocation fails. */
+static int reopt_ensure_scratch(deflate_state *s, uint32_t n) {
+    if (n <= s->re_cap)
+        return 1;
+    const uint32_t cap = n > REOPT_MAX_BYTES ? REOPT_MAX_BYTES : n;
+    /* Layout: best (cap+1) u32, then four link arrays of cap+1 u16 each: the
+     * DP writes links indexed by destination position, which reaches n. */
+    uint32_t *blk = (uint32_t *)s->strm->zalloc(s->strm->opaque, 1u,
+                                                (cap + 1u) * sizeof(uint32_t) + (cap + 1u) * 4u * sizeof(uint16_t));
+    if (blk == NULL)
+        return 0;
+    if (s->re_scratch != NULL)
+        s->strm->zfree(s->strm->opaque, s->re_scratch);
+    s->re_scratch = blk;
+    s->re_cap = cap;
+    return 1;
+}
+
+/* Tally one DP path's tokens into a fresh histogram: len 0 is a literal at
+ * link_dist[p], otherwise a match of length len from that distance. The arrays
+ * are zeroed first (END_BLOCK stays the caller's to set). */
+static void reopt_tally_path(const uint16_t *link_len, const uint16_t *link_dist,
+                             uint32_t nbytes, uint16_t *freq_lit, uint16_t *freq_dist) {
+    for (int i = 0; i < L_CODES; i++)
+        freq_lit[i] = 0;
+    for (int i = 0; i < D_CODES; i++)
+        freq_dist[i] = 0;
+    /* Walk the path newest first, exactly as region_dp wrote it. */
+    for (uint32_t p = nbytes; p > 0u;) {
+        const uint32_t len = link_len[p];
+        if (len == 0) {
+            freq_lit[link_dist[p]]++;
+            p--;
+        } else {
+            freq_lit[LITERALS + 1 + zng_length_code[len - STD_MIN_MATCH]]++;
+            freq_dist[d_code(link_dist[p] - 1u)]++;
+            p -= len;
+        }
+    }
+}
+
+/* Subtract one pass-1 token from the running model, saturating at zero (a
+ * decay since commit may have halved the contribution away). Advances *off by
+ * the token's covered bytes. */
+static void reopt_subtract_token(deflate_state *s, uint32_t odist, uint32_t len_field, uint32_t *off) {
+    if (odist == 0) {
+        if (s->ext_freq[len_field] > 0)
+            s->ext_freq[len_field]--;
+        (*off)++;
+    } else {
+        const uint32_t full_len = len_field + STD_MIN_MATCH;
+        const uint32_t len_slot = LITERALS + 1 + zng_length_code[full_len - STD_MIN_MATCH];
+        const uint32_t dist_slot = LITERALS + 29 + 1 + d_code(odist - 1u);
+        if (s->ext_freq[len_slot] > 0)
+            s->ext_freq[len_slot]--;
+        if (s->ext_freq[dist_slot] > 0)
+            s->ext_freq[dist_slot]--;
+        *off += full_len;
+    }
+}
+
+/* Re-parse the open block with full-block DPs and splice in the winner when
+ * it beats the pass-1 tokens on exact emitted size. No-op outside the size
+ * window or when no candidate wins by REOPT_MARGIN_BITS. */
+static void region_reoptimize(deflate_state *s, unsigned char *window) {
+    if (UNLIKELY(s->block_start < 0))
+        return; /* the window slid past the block start: bytes are gone */
+    const uint32_t start = (uint32_t)s->block_start;
+    const uint32_t end = (uint32_t)s->strstart;
+    const uint32_t nbytes = end - start;
+    if (UNLIKELY(nbytes < REOPT_MIN_BYTES || nbytes > REOPT_MAX_BYTES))
+        return;
+    if (UNLIKELY(!reopt_ensure_scratch(s, nbytes)))
+        return;
+
+    uint32_t *best = s->re_scratch;
+    uint16_t *linkA_len = (uint16_t *)(s->re_scratch + (s->re_cap + 1u));
+    uint16_t *linkA_dist = linkA_len + (s->re_cap + 1u);
+    uint16_t *linkB_len = linkA_dist + (s->re_cap + 1u);
+    uint16_t *linkB_dist = linkB_len + (s->re_cap + 1u);
+
+    /* Baseline: exact size of the pass-1 tokens (END symbol included, as in
+     * init_block). */
+    uint16_t tot_lit[L_CODES];
+    uint16_t tot_dist[D_CODES];
+    for (int i = 0; i < L_CODES; i++)
+        tot_lit[i] = s->dyn_ltree[i].Freq;
+    for (int i = 0; i < D_CODES; i++)
+        tot_dist[i] = s->dyn_dtree[i].Freq;
+    const uint32_t base_bits = split_half_bits(s, tot_lit, tot_dist, nbytes);
+
+    /* Pass A: price with the running model. */
+    memset(linkA_len, 0, nbytes * sizeof(uint16_t));
+    if (UNLIKELY(!region_dp(s, window, start, end, s->ext_ll_len, s->ext_d_len,
+                             best, linkA_len, linkA_dist))) {
+        return;
+    }
+
+    /* Pass B: price with a model fitted to this block's own frequencies. */
+    uint32_t freq_fit_l[L_CODES];
+    uint32_t freq_fit_d[D_CODES];
+    uint8_t ll_local[L_CODES];
+    uint8_t dd_local[D_CODES];
+    /* Contiguous copies: huff_lengths wants packed frequencies, not ct_data. */
+    for (int i = 0; i < L_CODES; i++)
+        freq_fit_l[i] = tot_lit[i];
+    for (int i = 0; i < D_CODES; i++)
+        freq_fit_d[i] = tot_dist[i];
+    huff_lengths(freq_fit_l, L_CODES, ll_local);
+    huff_lengths(freq_fit_d, D_CODES, dd_local);
+    memset(linkB_len, 0, nbytes * sizeof(uint16_t));
+    if (UNLIKELY(!region_dp(s, window, start, end, ll_local, dd_local,
+                             best, linkB_len, linkB_dist))) {
+        return;
+    }
+
+    /* Tally each candidate's histogram and price it exactly. */
+    uint16_t freqA_lit[L_CODES];
+    uint16_t freqA_dist[D_CODES];
+    uint16_t freqB_lit[L_CODES];
+    uint16_t freqB_dist[D_CODES];
+    reopt_tally_path(linkA_len, linkA_dist, nbytes, freqA_lit, freqA_dist);
+    reopt_tally_path(linkB_len, linkB_dist, nbytes, freqB_lit, freqB_dist);
+
+    freqA_lit[END_BLOCK] = 1;
+    freqB_lit[END_BLOCK] = 1;
+    const uint32_t bitsA = split_half_bits(s, freqA_lit, freqA_dist, nbytes);
+    const uint32_t bitsB = split_half_bits(s, freqB_lit, freqB_dist, nbytes);
+    /* Pick the winner: pass-1 tokens stay unless a candidate wins clearly. */
+    int win = 0;
+    uint32_t win_bits = base_bits;
+    if (bitsA + REOPT_MARGIN_BITS < base_bits) {
+        win = 1;
+        win_bits = bitsA;
+    }
+    if (bitsB + REOPT_MARGIN_BITS < base_bits && bitsB < win_bits)
+        win = 2;
+    if (win == 0)
+        return;
+    const uint16_t *link_len = win == 1 ? linkA_len : linkB_len;
+    const uint16_t *link_dist = win == 1 ? linkA_dist : linkB_dist;
+
+    /* Reconstruct the winning path; best[] is free now that both DPs are
+     * done, so it doubles as the token store (len | dist << 16). */
+    uint32_t *path = best;
+    uint32_t ntok = 0;
+    for (uint32_t p = nbytes; p > 0u;) {
+        const uint32_t len = link_len[p];
+        path[ntok++] = len | ((uint32_t)link_dist[p] << 16);
+        p -= len == 0 ? 1u : len;
+    }
+
+    /* The re-tally below rewrites sym_buf from zero; a winner with more
+     * tokens than the pass-1 parse holds would run past sym_end and into the
+     * state struct that follows pending_buf. Skip such splices. */
+#ifdef LIT_MEM
+    if (UNLIKELY(ntok > s->sym_end))
+        return;
+#else
+    if (UNLIKELY(3u * ntok > s->sym_end))
+        return;
+#endif
+
+    /* Subtract the pass-1 tokens from the running model. Saturated: a decay
+     * since commit may have halved an old token's contribution away. */
+#ifdef LIT_MEM
+    for (uint32_t tok_i = 0, off = 0u; off < nbytes;) {
+        reopt_subtract_token(s, s->d_buf[tok_i], s->l_buf[tok_i], &off);
+        tok_i++;
+    }
+#else
+    for (uint32_t tok_i = 0, off = 0u; off < nbytes;) {
+        /* Byte-wise like compress_block: a u32 read would pull the next
+         * token's low distance byte into the length field. */
+        const uint32_t odist = s->sym_buf[3u * tok_i] + ((uint32_t)s->sym_buf[3u * tok_i + 1u] << 8);
+        const uint32_t len_field = s->sym_buf[3u * tok_i + 2u];
+        reopt_subtract_token(s, odist, len_field, &off);
+        tok_i++;
+    }
+#endif
+
+    /* Reset the block state like init_block and re-tally the winner tokens (newest first, so each tally lands where pass 1
+     * put it), which also rewrites sym_buf in place. */
+    for (int i = 0; i < L_CODES; i++)
+        s->dyn_ltree[i].Freq = 0;
+    for (int i = 0; i < D_CODES; i++)
+        s->dyn_dtree[i].Freq = 0;
+    for (int i = 0; i < BL_CODES; i++)
+        s->bl_tree[i].Freq = 0;
+    s->dyn_ltree[END_BLOCK].Freq = 1;
+    s->opt_len = s->static_len = 0;
+    s->sym_next = 0;
+
+    for (uint32_t i = 0; i < ntok; i++) {
+        const uint32_t tok = path[ntok - 1u - i];
+        const uint32_t len = tok & 0xffffu;
+        const uint32_t dist = tok >> 16;
+        if (len == 0) {
+            zng_tr_tally_lit(s, (unsigned char)dist);
+            s->ext_freq[dist]++;
+        } else {
+            zng_tr_tally_dist(s, dist, len - STD_MIN_MATCH);
+            s->ext_freq[LITERALS + 1 + zng_length_code[len - STD_MIN_MATCH]]++;
+            s->ext_freq[LITERALS + 29 + 1 + d_code(dist - 1u)]++;
+        }
+    }
+
+#ifdef ZLIB_DEBUG
+# ifdef LIT_MEM
+    Assert(s->sym_next == ntok, "reopt splice token count");
+# else
+    Assert(s->sym_next == 3u * ntok, "reopt splice token count");
+# endif
+#endif
+}
+
+/* Flush the open block as a full non-final block, trying a priced split
+ * first and re-optimizing when no split wins. Returns 1 when the caller must
+ * return need_more (pending output undrained or the output buffer is full),
+ * 0 when the flush completed and the block state was reset. */
+static int extreme_flush_open_block(deflate_state *s, unsigned char *window) {
+    const uint32_t split_tok = blk_find_split(s);
+    if (UNLIKELY(split_tok != 0)) {
+        blk_do_split(s, window, split_tok);
+        if (UNLIKELY(s->pending != 0))
+            return 1;
+    } else {
+        region_reoptimize(s, window);
+    }
+    FLUSH_BLOCK_ONLY(s, window, 0);
+    blk_reset(s);
+    return (s->strm->avail_out == 0) ? 1 : 0;
 }
 
 /* deflate_extreme compresses with a lazy two-position lookahead: at each step
@@ -1382,14 +1705,16 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
          * the whole commit, so a multi-token commit starting within that many
          * tokens of sym_end would write past it. Flush the open block first
          * when they would not fit; a single token always fits (sym_next is a
-         * multiple of 3 and at most sym_end - 3 here). */
+         * multiple of 3 and at most sym_end - 3 here), and the flushed block
+         * just ends up to 2 tokens shorter than before. */
 #ifdef LIT_MEM
         const uint32_t commit_need = (uint32_t)(best_k + 1);
 #else
         const uint32_t commit_need = 3u * (uint32_t)(best_k + 1);
 #endif
         if (UNLIKELY(best_k > 0 && s->sym_next + commit_need > s->sym_end)) {
-            FLUSH_BLOCK(s, window, 0);
+            if (UNLIKELY(extreme_flush_open_block(s, window)))
+                return need_more;
         }
 
         /* Commit the chosen sequence, mirroring every tally into the cost
@@ -1477,18 +1802,8 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
         s->strstart += best_advance;
 
         if (UNLIKELY(bflush)) {
-            const uint32_t split_tok = blk_find_split(s);
-            if (UNLIKELY(split_tok != 0)) {
-                blk_do_split(s, window, split_tok);
-                /* The left half may not have fully drained: pending_out has
-                 * advanced and compressing another block now would write over
-                 * undrained output. Defer; the next call drains pending at
-                 * entry before resuming compression. */
-                if (UNLIKELY(s->pending != 0))
-                    return need_more;
-            }
-            FLUSH_BLOCK(s, window, 0);
-            blk_reset(s);
+            if (UNLIKELY(extreme_flush_open_block(s, window)))
+                return need_more;
         }
     }
 
@@ -1496,6 +1811,7 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
     s->insert = s->strstart < (STD_MIN_MATCH - 1) ? s->strstart : (STD_MIN_MATCH - 1);
     if (UNLIKELY(flush == Z_FINISH)) {
         const uint32_t split_tok = blk_find_split(s);
+        int split_done = 0;
         if (UNLIKELY(split_tok != 0)) {
             /* The final flush cannot defer: once this call returns with
              * finish_started the stream is closed out and no further
@@ -1507,15 +1823,15 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
              * too-tight buffer falls through to a whole-block final flush,
              * whose own finish_started is safe: everything is already in
              * pending with bi_valid at zero. */
-            /* The token count came from a snapshot; find its slot. */
-            uint8_t slot = 0;
-            while (s->blk_snap_tok[slot] != split_tok)
-                slot++;
+            const uint8_t slot = blk_slot_of(s, split_tok);
             if (s->strm->avail_out >= s->blk_snap_bytes[slot] + 5u) {
                 blk_do_split(s, window, split_tok);
                 Assert(s->pending == 0, "zfin split undrained");
+                split_done = 1;
             }
         }
+        if (!split_done)
+            region_reoptimize(s, window);
         FLUSH_BLOCK(s, window, 1);
         return finish_done;
     }
@@ -1526,6 +1842,8 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
             blk_do_split(s, window, split_tok);
             if (UNLIKELY(s->pending != 0))
                 return need_more;
+        } else {
+            region_reoptimize(s, window);
         }
         /* Reset the split bookkeeping before any early return: FLUSH_BLOCK's
          * partial-drain exit would otherwise leave stale tokens that the next

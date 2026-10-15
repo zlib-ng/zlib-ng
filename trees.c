@@ -561,6 +561,52 @@ static int build_bl_tree(deflate_state *s) {
 }
 
 /* ===========================================================================
+ * Exact bit cost of encoding the given histograms as one dynamic Huffman
+ * block (3-bit header included), computed by dry-running the real tree
+ * builders on saved and restored state. Unlike an entropy estimate, this
+ * matches what zng_tr_flush_block would actually emit: same merge order,
+ * same forced dummy leaves, same bit-length tree.
+ */
+uint32_t Z_INTERNAL zng_tr_exact_block_bits(deflate_state *s, const uint16_t *litf,
+                                            const uint16_t *distf) {
+    ct_data save_l[HEAP_SIZE], save_d[2*D_CODES+1], save_b[2*BL_CODES+1];
+    unsigned int save_opt = s->opt_len;
+    unsigned int save_stat = s->static_len;
+    int save_lm = s->l_desc.max_code, save_dm = s->d_desc.max_code, save_bm = s->bl_desc.max_code;
+
+    memcpy(save_l, s->dyn_ltree, sizeof(save_l));
+    memcpy(save_d, s->dyn_dtree, sizeof(save_d));
+    memcpy(save_b, s->bl_tree, sizeof(save_b));
+
+    /* ct_data is two packed u16 unions, so zeroing the whole struct covers
+     * Freq/Len/Dad. */
+    memset(s->dyn_ltree, 0, sizeof(ct_data) * HEAP_SIZE);
+    memset(s->dyn_dtree, 0, sizeof(ct_data) * (2*D_CODES+1));
+    memset(s->bl_tree, 0, sizeof(ct_data) * (2*BL_CODES+1));
+    for (int i = 0; i < L_CODES; i++)
+        s->dyn_ltree[i].Freq = litf[i];
+    for (int i = 0; i < D_CODES; i++)
+        s->dyn_dtree[i].Freq = distf[i];
+
+    s->opt_len = s->static_len = 0;
+    build_tree(s, (tree_desc *)(&(s->l_desc)));
+    build_tree(s, (tree_desc *)(&(s->d_desc)));
+    build_bl_tree(s);
+    const uint32_t bits = s->opt_len + 3u; /* bfinal + btype */
+
+    memcpy(s->dyn_ltree, save_l, sizeof(save_l));
+    memcpy(s->dyn_dtree, save_d, sizeof(save_d));
+    memcpy(s->bl_tree, save_b, sizeof(save_b));
+    s->opt_len = save_opt;
+    s->static_len = save_stat;
+    s->l_desc.max_code = save_lm;
+    s->d_desc.max_code = save_dm;
+    s->bl_desc.max_code = save_bm;
+
+    return bits;
+}
+
+/* ===========================================================================
  * Send the header for a block using dynamic Huffman trees: the counts, the
  * lengths of the bit length codes, the literal tree and the distance tree.
  * IN assertion: lcodes >= 257, dcodes >= 1, blcodes >= 4.
