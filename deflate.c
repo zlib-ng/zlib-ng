@@ -255,6 +255,11 @@ Z_INTERNAL deflate_allocs* alloc_deflate(PREFIX3(stream) *strm, int windowBits, 
     alloc_bufs->pending_buf = (unsigned char *)HINT_ALIGNED_64(buff + pending_pos);
     alloc_bufs->state = (deflate_state *)HINT_ALIGNED_16(buff + state_pos);
 
+    /* zcalloc does not reliably zero the state region; free_deflate must not
+     * see a garbage re_scratch pointer on streams that never reach level 10. */
+    alloc_bufs->state->re_scratch = NULL;
+    alloc_bufs->state->re_cap = 0;
+
     memset(alloc_bufs->prev, 0, prev_size);
 
     return alloc_bufs;
@@ -266,6 +271,10 @@ Z_INTERNAL deflate_allocs* alloc_deflate(PREFIX3(stream) *strm, int windowBits, 
 static inline void free_deflate(PREFIX3(stream) *strm) {
     deflate_state *state = (deflate_state *)strm->state;
 
+    if (state->re_scratch != NULL) {
+        strm->zfree(strm->opaque, state->re_scratch);
+        state->re_scratch = NULL;
+    }
     if (state->alloc_bufs != NULL) {
         deflate_allocs *alloc_bufs = state->alloc_bufs;
         alloc_bufs->zfree(strm->opaque, alloc_bufs->buf_start);
@@ -1217,6 +1226,11 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     ds->l_desc.dyn_tree = ds->dyn_ltree;
     ds->d_desc.dyn_tree = ds->dyn_dtree;
     ds->bl_desc.dyn_tree = ds->bl_tree;
+
+    /* The state memcpy above copied the source's re-optimization scratch
+     * pointer; the copy must not free it. It regrows on demand. */
+    ds->re_scratch = NULL;
+    ds->re_cap = 0;
 
     return Z_OK;
 }

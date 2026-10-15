@@ -378,6 +378,12 @@ struct ALIGNED_(64) internal_state {
      * holds the split point in tokens (see blk_do_split / zng_deflate). */
     uint32_t blk_deferred_tok;
 
+    /* Region re-optimization scratch (one ZALLOC block, grown on demand up to
+     * REOPT_MAX_BYTES): shared DP cost array plus two per-position link sets,
+     * one per pricing model. NULL until the first re-optimization fires. */
+    uint32_t *re_scratch;
+    uint32_t  re_cap;
+
     /* Reserved for future use and alignment purposes. reserved[19] doubles
      * as the "extreme cost model initialized" flag: lm_set_level() clears it
      * on every level change, and deflate_extreme re-seeds the model when it
@@ -476,6 +482,8 @@ void Z_INTERNAL slide_hash_head_c(deflate_state *s);
 
         /* in trees.c */
 void Z_INTERNAL zng_tr_init(deflate_state *s);
+uint32_t Z_INTERNAL zng_tr_exact_block_bits(deflate_state *s, const uint16_t *litf,
+                                            const uint16_t *distf);
 void Z_INTERNAL zng_tr_flush_block(deflate_state *s, unsigned char *buf, uint32_t stored_len, int last);
 void Z_INTERNAL zng_tr_flush_bits(deflate_state *s);
 void Z_INTERNAL zng_tr_align(deflate_state *s);
