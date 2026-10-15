@@ -63,6 +63,12 @@
 #define END_BLOCK 256
 /* end of block literal code */
 
+#define SPLIT_SLOTS 32
+/* priced-splitting snapshots kept per open block; lit_bufsize holds at most
+ * (1 << (MAX_MEM_LEVEL + 6)) tokens, so 32 covers every memLevel at the
+ * 512-token snapshot cadence */
+#define SPLIT_SLOT_TOKENS 512u
+
 #define INIT_STATE      1    /* zlib header -> BUSY_STATE */
 #ifdef GZIP
 #  define GZIP_STATE    4    /* gzip header -> BUSY_STATE | EXTRA_STATE */
@@ -355,6 +361,22 @@ struct ALIGNED_(64) internal_state {
     uint16_t ext_since_build; /* tokens tallied since the last length rebuild */
     uint16_t ext_rebuilds;    /* length rebuilds so far (drives the decay schedule) */
     uint8_t  ext_mode_lit_cost; /* est. cost of the most frequent literal (0 = unknown) */
+
+    /* Priced block splitting: cumulative snapshots of the open block's
+     * symbol frequencies (same layout as dyn_ltree/dyn_dtree Freq), taken
+     * every SPLIT_SLOT_TOKENS committed sequences so a full block can be
+     * re-partitioned into cheaper sub-blocks at flush time. */
+    uint16_t blk_snap_l[SPLIT_SLOTS][L_CODES];
+    uint16_t blk_snap_d[SPLIT_SLOTS][D_CODES];
+    uint32_t blk_snap_tok[SPLIT_SLOTS];
+    uint32_t blk_snap_bytes[SPLIT_SLOTS];
+    uint32_t blk_tokens;    /* committed tokens in the open block */
+    uint32_t blk_bytes;     /* input bytes covered by the open block */
+    uint32_t blk_next_snap; /* token count at which the next snapshot is due */
+    uint8_t  blk_slots;     /* snapshots taken for the open block */
+    /* Nonzero while a split's sym_buf compaction waits for pending to drain:
+     * holds the split point in tokens (see blk_do_split / zng_deflate). */
+    uint32_t blk_deferred_tok;
 
     /* Reserved for future use and alignment purposes. reserved[19] doubles
      * as the "extreme cost model initialized" flag: lm_set_level() clears it
