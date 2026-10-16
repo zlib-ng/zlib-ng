@@ -363,6 +363,7 @@ struct ALIGNED_(64) internal_state {
     uint16_t ext_since_build; /* tokens tallied since the last length rebuild */
     uint16_t ext_rebuilds;    /* length rebuilds so far (drives the decay schedule) */
     uint8_t  ext_mode_lit_cost; /* est. cost of the most frequent literal (0 = unknown) */
+    uint32_t ext_distinct_lit;  /* distinct literals seen since last rebuild (cold-model gate) */
 
     /* Priced block splitting: cumulative snapshots of the open block's
      * symbol frequencies (same layout as dyn_ltree/dyn_dtree Freq), taken

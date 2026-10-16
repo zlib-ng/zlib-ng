@@ -266,6 +266,7 @@ Z_FORCEINLINE static void extreme_model_reset(deflate_state *s) {
     for (int i = 0; i < 316; i++)
         s->ext_freq[i] = 0;
     s->ext_since_build = 0;
+    s->ext_distinct_lit = 0;
     s->ext_rebuilds = 0;
     s->ext_mode_lit_cost = 8; /* fixed-table literal cost until measured */
     /* Fixed-Huffman lengths (RFC1951 C.4); running statistics replace
@@ -1813,18 +1814,26 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
         }
 
         /* Refresh the estimated code lengths periodically so the model tracks
-         * the per-block trees trees.c actually builds. */
-        if (UNLIKELY(++s->ext_since_build >= EXTREME_REBUILD_EVERY)) {
+         * the per-block trees trees.c actually builds. While the model is cold
+         * and the sample spans a wide alphabet (real text, not DNA-like data
+         * with five symbols), rebuild faster: noisy small-sample trees hurt
+         * narrow-alphabet data but help tracking on broad ones. */
+        const uint32_t rebuild_every = (s->ext_rebuilds < 8u && s->ext_distinct_lit >= 32u) ? 128u : EXTREME_REBUILD_EVERY;
+        if (UNLIKELY(++s->ext_since_build >= rebuild_every)) {
             s->ext_since_build = 0;
             /* Cost of the most frequent literal: bounds the tail credit (see
              * the decision loop above) and gates the count decay below. */
             uint32_t best_freq = 0;
+            uint32_t distinct = 0;
             for (int i = 0; i < LITERALS; i++) {
+                if (s->ext_freq[i] != 0)
+                    distinct++;
                 if (s->ext_freq[i] > best_freq) {
                     best_freq = s->ext_freq[i];
                     s->ext_mode_lit_cost = s->ext_ll_len[i];
                 }
             }
+            s->ext_distinct_lit = distinct;
 
             /* Halve the running counts on schedule so recent content dominates
              * the tree; skip while the sample is too small to halve. Uniform
