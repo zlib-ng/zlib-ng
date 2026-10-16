@@ -1051,82 +1051,127 @@ static uint32_t region_probe(const deflate_state *s, const unsigned char *window
     return best_len;
 }
 
-/* Shortest-path DP over region bytes [start, end) under one length model.
- * Writes the winning per-position token into link_len/link_dist (indexed by destination position; len 0 marks a literal whose byte is in
- * link_dist) and returns 1 when the span is fully coverable (always, via literals). */
-static int region_dp(const deflate_state *s, const unsigned char *window, uint32_t start,
-                     uint32_t end, const uint8_t *ll, const uint8_t *dd,
-                     uint32_t *best, uint16_t *link_len, uint16_t *link_dist) {
+/* Shortest-path DP over region bytes [start, end) under two length models at once,
+ * sharing one probe per position (the probes depend only on window/chain state,
+ * not on the pricing model). Writes each model's winning per-position token into
+ * its link pair (len 0 marks a literal whose byte is in dist) and returns 1 when
+ * both spans are fully coverable (always, via literals). */
+static int region_dp_both(const deflate_state *s, const unsigned char *window, uint32_t start,
+                          uint32_t end, const uint8_t *llA, const uint8_t *ddA,
+                          const uint8_t *llB, const uint8_t *ddB,
+                          uint32_t *bestA, uint32_t *bestB,
+                          uint16_t *linkA_len, uint16_t *linkA_dist,
+                          uint16_t *linkB_len, uint16_t *linkB_dist) {
     const uint32_t nbytes = end - start;
     static const uint32_t classes[] = { 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 13u, 15u, 17u, 19u, 23u,
                                          27u, 31u, 35u, 43u, 51u, 59u, 67u, 83u, 99u, 115u, 131u, 163u, 195u,
                                          227u, 258u };
     const uint32_t inf = UINT32_MAX / 4u;
 
-    /* Compose per-code match token costs once: code length + extra bits. */
-    uint8_t ml[29];
-    uint8_t md[30];
-    for (int i = 0; i < 29; i++)
-        ml[i] = (uint8_t)(ll[LITERALS + 1 + i] + xtra_len[i]);
-    for (int i = 0; i < 30; i++)
-        md[i] = (uint8_t)(dd[i] + xtra_dist[i]);
+    /* Compose per-code match token costs once per model: code length + extra bits. */
+    uint8_t mlA[29];
+    uint8_t mdA[30];
+    uint8_t mlB[29];
+    uint8_t mdB[30];
+    for (int i = 0; i < 29; i++) {
+        mlA[i] = (uint8_t)(llA[LITERALS + 1 + i] + xtra_len[i]);
+        mlB[i] = (uint8_t)(llB[LITERALS + 1 + i] + xtra_len[i]);
+    }
+    for (int i = 0; i < 30; i++) {
+        mdA[i] = (uint8_t)(ddA[i] + xtra_dist[i]);
+        mdB[i] = (uint8_t)(ddB[i] + xtra_dist[i]);
+    }
 
     /* Every position unreachable except the span start. */
-    for (uint32_t i = 1; i <= nbytes; i++)
-        best[i] = inf;
-    best[0] = 0;
+    for (uint32_t i = 1; i <= nbytes; i++) {
+        bestA[i] = inf;
+        bestB[i] = inf;
+    }
+    bestA[0] = 0;
+    bestB[0] = 0;
 
-    /* Edges out of each reachable source position. */
+    /* Edges out of each reachable source position, for both models. */
     for (uint32_t q = 0; q < nbytes; q++) {
-        const uint32_t base = best[q];
-        if (UNLIKELY(base == inf))
+        const uint32_t baseA = bestA[q];
+        const uint32_t baseB = bestB[q];
+        if (UNLIKELY(baseA == inf && baseB == inf))
             continue;
         const uint32_t abs_pos = start + q;
 
-        /* Literal edge. */
-        const uint32_t lit = base + reopt_lit_cost(ll, window[abs_pos]);
-        if (lit < best[q + 1u]) {
-            best[q + 1u] = lit;
-            link_len[q + 1u] = 0;
-            link_dist[q + 1u] = (uint16_t)window[abs_pos];
-        }
-
-        /* Match edges: every class length the frontier reached, plus the
-         * uncapped longest match. The span end is the binding limit: bytes
-         * past it belong to later blocks and cannot be covered here. */
+        /* The span end is the binding limit: bytes past it belong to later
+         * blocks and cannot be covered here. Probe once, price twice. */
         uint32_t max_len = end - abs_pos;
         if (max_len > STD_MAX_MATCH)
             max_len = STD_MAX_MATCH;
-        if (UNLIKELY(max_len < STD_MIN_MATCH))
-            continue;
 
         uint16_t sublen[STD_MAX_MATCH + 1];
         uint32_t bdist = 0;
-        const uint32_t blen = region_probe(s, window, abs_pos, max_len, sublen, &bdist);
-        for (uint32_t class_i = 0; class_i < sizeof(classes) / sizeof(classes[0]); class_i++) {
-            const uint32_t k = classes[class_i];
-            if (k > max_len)
-                break; /* classes are sorted ascending */
-            if (sublen[k] == 0)
-                continue;
-            const uint32_t cost = base + reopt_match_cost(ml, md, k, sublen[k]);
-            if (cost < best[q + k]) {
-                best[q + k] = cost;
-                link_len[q + k] = (uint16_t)k;
-                link_dist[q + k] = sublen[k];
+        const uint32_t blen = (max_len >= STD_MIN_MATCH)
+                                  ? region_probe(s, window, abs_pos, max_len, sublen, &bdist)
+                                  : 0u;
+
+        if (baseA != inf) {
+            const uint32_t lit = baseA + reopt_lit_cost(llA, window[abs_pos]);
+            if (lit < bestA[q + 1u]) {
+                bestA[q + 1u] = lit;
+                linkA_len[q + 1u] = 0;
+                linkA_dist[q + 1u] = (uint16_t)window[abs_pos];
+            }
+            for (uint32_t class_i = 0; class_i < sizeof(classes) / sizeof(classes[0]); class_i++) {
+                const uint32_t k = classes[class_i];
+                if (k > max_len)
+                    break; /* classes are sorted ascending */
+                if (sublen[k] == 0)
+                    continue;
+                const uint32_t cost = baseA + reopt_match_cost(mlA, mdA, k, sublen[k]);
+                if (cost < bestA[q + k]) {
+                    bestA[q + k] = cost;
+                    linkA_len[q + k] = (uint16_t)k;
+                    linkA_dist[q + k] = sublen[k];
+                }
+            }
+            if (blen > 10u && blen <= max_len) {
+                const uint32_t cost = baseA + reopt_match_cost(mlA, mdA, blen, bdist);
+                if (cost < bestA[q + blen]) {
+                    bestA[q + blen] = cost;
+                    linkA_len[q + blen] = (uint16_t)blen;
+                    linkA_dist[q + blen] = (uint16_t)bdist;
+                }
             }
         }
-        if (blen > 10u && blen <= max_len) {
-            const uint32_t cost = base + reopt_match_cost(ml, md, blen, bdist);
-            if (cost < best[q + blen]) {
-                best[q + blen] = cost;
-                link_len[q + blen] = (uint16_t)blen;
-                link_dist[q + blen] = (uint16_t)bdist;
+
+        if (baseB != inf) {
+            const uint32_t lit = baseB + reopt_lit_cost(llB, window[abs_pos]);
+            if (lit < bestB[q + 1u]) {
+                bestB[q + 1u] = lit;
+                linkB_len[q + 1u] = 0;
+                linkB_dist[q + 1u] = (uint16_t)window[abs_pos];
+            }
+            for (uint32_t class_i = 0; class_i < sizeof(classes) / sizeof(classes[0]); class_i++) {
+                const uint32_t k = classes[class_i];
+                if (k > max_len)
+                    break; /* classes are sorted ascending */
+                if (sublen[k] == 0)
+                    continue;
+                const uint32_t cost = baseB + reopt_match_cost(mlB, mdB, k, sublen[k]);
+                if (cost < bestB[q + k]) {
+                    bestB[q + k] = cost;
+                    linkB_len[q + k] = (uint16_t)k;
+                    linkB_dist[q + k] = sublen[k];
+                }
+            }
+            if (blen > 10u && blen <= max_len) {
+                const uint32_t cost = baseB + reopt_match_cost(mlB, mdB, blen, bdist);
+                if (cost < bestB[q + blen]) {
+                    bestB[q + blen] = cost;
+                    linkB_len[q + blen] = (uint16_t)blen;
+                    linkB_dist[q + blen] = (uint16_t)bdist;
+                }
             }
         }
     }
 
-    return best[nbytes] != inf;
+    return bestA[nbytes] != inf && bestB[nbytes] != inf;
 }
 
 /* Grow the re-optimization scratch to cover a region of this many bytes, freeing any smaller previous block.
@@ -1135,10 +1180,11 @@ static int reopt_ensure_scratch(deflate_state *s, uint32_t n) {
     if (n <= s->re_cap)
         return 1;
     const uint32_t cap = n > REOPT_MAX_BYTES ? REOPT_MAX_BYTES : n;
-    /* Layout: best (cap+1) u32, then four link arrays of cap+1 u16 each: the
-     * DP writes links indexed by destination position, which reaches n. */
+    /* Layout: two best arrays (cap+1 u32 each), then four link arrays of cap+1
+     * u16 each: the DP writes links indexed by destination position, which
+     * reaches n. */
     uint32_t *blk = (uint32_t *)s->strm->zalloc(s->strm->opaque, 1u,
-                                                (cap + 1u) * sizeof(uint32_t) + (cap + 1u) * 4u * sizeof(uint16_t));
+                                                2u * (cap + 1u) * sizeof(uint32_t) + (cap + 1u) * 4u * sizeof(uint16_t));
     if (blk == NULL)
         return 0;
     if (s->re_scratch != NULL)
@@ -1205,8 +1251,9 @@ static void region_reoptimize(deflate_state *s, unsigned char *window) {
     if (UNLIKELY(!reopt_ensure_scratch(s, nbytes)))
         return;
 
-    uint32_t *best = s->re_scratch;
-    uint16_t *linkA_len = (uint16_t *)(s->re_scratch + (s->re_cap + 1u));
+    uint32_t *bestA = s->re_scratch;
+    uint32_t *bestB = bestA + (s->re_cap + 1u);
+    uint16_t *linkA_len = (uint16_t *)(bestB + (s->re_cap + 1u));
     uint16_t *linkA_dist = linkA_len + (s->re_cap + 1u);
     uint16_t *linkB_len = linkA_dist + (s->re_cap + 1u);
     uint16_t *linkB_dist = linkB_len + (s->re_cap + 1u);
@@ -1221,14 +1268,7 @@ static void region_reoptimize(deflate_state *s, unsigned char *window) {
         tot_dist[i] = s->dyn_dtree[i].Freq;
     const uint32_t base_bits = split_half_bits(s, tot_lit, tot_dist, nbytes);
 
-    /* Pass A: price with the running model. */
-    memset(linkA_len, 0, nbytes * sizeof(uint16_t));
-    if (UNLIKELY(!region_dp(s, window, start, end, s->ext_ll_len, s->ext_d_len,
-                             best, linkA_len, linkA_dist))) {
-        return;
-    }
-
-    /* Pass B: price with a model fitted to this block's own frequencies. */
+    /* Pass B's model: a fit to this block's own frequencies. */
     uint32_t freq_fit_l[L_CODES];
     uint32_t freq_fit_d[D_CODES];
     uint8_t ll_local[L_CODES];
@@ -1240,9 +1280,14 @@ static void region_reoptimize(deflate_state *s, unsigned char *window) {
         freq_fit_d[i] = tot_dist[i];
     huff_lengths(freq_fit_l, L_CODES, ll_local);
     huff_lengths(freq_fit_d, D_CODES, dd_local);
+
+    /* Passes A and B share one probe per position: price with the running
+     * model and the local fit in a single interleaved DP. */
+    memset(linkA_len, 0, nbytes * sizeof(uint16_t));
     memset(linkB_len, 0, nbytes * sizeof(uint16_t));
-    if (UNLIKELY(!region_dp(s, window, start, end, ll_local, dd_local,
-                             best, linkB_len, linkB_dist))) {
+    if (UNLIKELY(!region_dp_both(s, window, start, end, s->ext_ll_len, s->ext_d_len,
+                                  ll_local, dd_local, bestA, bestB,
+                                  linkA_len, linkA_dist, linkB_len, linkB_dist))) {
         return;
     }
 
@@ -1272,9 +1317,9 @@ static void region_reoptimize(deflate_state *s, unsigned char *window) {
     const uint16_t *link_len = win == 1 ? linkA_len : linkB_len;
     const uint16_t *link_dist = win == 1 ? linkA_dist : linkB_dist;
 
-    /* Reconstruct the winning path; best[] is free now that both DPs are
+    /* Reconstruct the winning path; bestA[] is free now that both DPs are
      * done, so it doubles as the token store (len | dist << 16). */
-    uint32_t *path = best;
+    uint32_t *path = bestA;
     uint32_t ntok = 0;
     for (uint32_t p = nbytes; p > 0u;) {
         const uint32_t len = link_len[p];
