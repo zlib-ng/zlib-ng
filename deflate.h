@@ -358,6 +358,8 @@ struct ALIGNED_(64) internal_state {
     uint32_t ext_freq[316];
     uint8_t  ext_ll_len[286];
     uint8_t  ext_d_len[30];
+    uint8_t  ext_ml_len[29]; /* length code + extra bits, per length code */
+    uint8_t  ext_md_len[30]; /* distance code + extra bits, per distance code */
     uint16_t ext_since_build; /* tokens tallied since the last length rebuild */
     uint16_t ext_rebuilds;    /* length rebuilds so far (drives the decay schedule) */
     uint8_t  ext_mode_lit_cost; /* est. cost of the most frequent literal (0 = unknown) */

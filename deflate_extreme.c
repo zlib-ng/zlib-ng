@@ -172,8 +172,7 @@ static void huff_lengths(const uint32_t *freq, int nsym, uint8_t *out_len) {
 Z_FORCEINLINE static uint32_t match_cost(const deflate_state *s, uint32_t len, uint32_t dist) {
     const uint32_t lcode = zng_length_code[len - STD_MIN_MATCH];
     const uint32_t dcode = d_code(dist - 1);
-    return s->ext_ll_len[LITERALS + 1 + lcode] + xtra_len[lcode]
-         + s->ext_d_len[dcode] + xtra_dist[dcode];
+    return s->ext_ml_len[lcode] + s->ext_md_len[dcode];
 }
 
 /* Estimated bit cost of a literal byte. */
@@ -250,6 +249,16 @@ Z_FORCEINLINE static uint32_t roll_lookup(const unsigned char *window, uint32_t 
     return h;
 }
 
+/* Compose the per-code match token costs (symbol length + extra bits, one
+ * entry per length/distance code) from the current fitted lengths, so
+ * match_cost needs two table loads and one add. */
+Z_FORCEINLINE static void extreme_model_compose(deflate_state *s) {
+    for (int i = 0; i < 29; i++)
+        s->ext_ml_len[i] = (uint8_t)(s->ext_ll_len[LITERALS + 1 + i] + xtra_len[i]);
+    for (int i = 0; i < 30; i++)
+        s->ext_md_len[i] = (uint8_t)(s->ext_d_len[i] + xtra_dist[i]);
+}
+
 /* Reset the running cost model to fixed-Huffman priors. Called on a fresh
  * stream (or after a level switch) when no statistics exist yet. */
 Z_FORCEINLINE static void extreme_model_reset(deflate_state *s) {
@@ -271,6 +280,7 @@ Z_FORCEINLINE static void extreme_model_reset(deflate_state *s) {
         s->ext_ll_len[LITERALS + 1 + i] = 8;
     for (int i = 0; i < 30; i++)
         s->ext_d_len[i] = 5;
+    extreme_model_compose(s);
 }
 
 Z_FORCEINLINE static uint32_t longest_match_extreme(deflate_state *const s, uint32_t cur_match,
@@ -948,14 +958,13 @@ static void blk_do_split(deflate_state *s, unsigned char *window, uint32_t tok) 
 /* Required exact-size win over the pass-1 tokens before splicing. */
 #define REOPT_MARGIN_BITS 8u
 
-/* Token cost under an explicit length table: the running model passes
- * s->ext_ll_len/s->ext_d_len, the local model passes freshly fitted lengths. */
-Z_FORCEINLINE static uint32_t reopt_match_cost(const uint8_t *ll, const uint8_t *dd,
+/* Token cost under explicit composed per-code tables (symbol length plus
+ * extra bits, one entry per length/distance code). */
+Z_FORCEINLINE static uint32_t reopt_match_cost(const uint8_t *ml, const uint8_t *md,
                                                uint32_t len, uint32_t dist) {
     const uint32_t lcode = zng_length_code[len - STD_MIN_MATCH];
     const uint32_t dcode = d_code(dist - 1);
-    return (uint32_t)ll[LITERALS + 1 + lcode] + xtra_len[lcode]
-         + (uint32_t)dd[dcode] + xtra_dist[dcode];
+    return ml[lcode] + md[dcode];
 }
 
 Z_FORCEINLINE static uint32_t reopt_lit_cost(const uint8_t *ll, uint32_t c) {
@@ -1054,6 +1063,14 @@ static int region_dp(const deflate_state *s, const unsigned char *window, uint32
                                          227u, 258u };
     const uint32_t inf = UINT32_MAX / 4u;
 
+    /* Compose per-code match token costs once: code length + extra bits. */
+    uint8_t ml[29];
+    uint8_t md[30];
+    for (int i = 0; i < 29; i++)
+        ml[i] = (uint8_t)(ll[LITERALS + 1 + i] + xtra_len[i]);
+    for (int i = 0; i < 30; i++)
+        md[i] = (uint8_t)(dd[i] + xtra_dist[i]);
+
     /* Every position unreachable except the span start. */
     for (uint32_t i = 1; i <= nbytes; i++)
         best[i] = inf;
@@ -1092,7 +1109,7 @@ static int region_dp(const deflate_state *s, const unsigned char *window, uint32
                 break; /* classes are sorted ascending */
             if (sublen[k] == 0)
                 continue;
-            const uint32_t cost = base + reopt_match_cost(ll, dd, k, sublen[k]);
+            const uint32_t cost = base + reopt_match_cost(ml, md, k, sublen[k]);
             if (cost < best[q + k]) {
                 best[q + k] = cost;
                 link_len[q + k] = (uint16_t)k;
@@ -1100,7 +1117,7 @@ static int region_dp(const deflate_state *s, const unsigned char *window, uint32
             }
         }
         if (blen > 10u && blen <= max_len) {
-            const uint32_t cost = base + reopt_match_cost(ll, dd, blen, bdist);
+            const uint32_t cost = base + reopt_match_cost(ml, md, blen, bdist);
             if (cost < best[q + blen]) {
                 best[q + blen] = cost;
                 link_len[q + blen] = (uint16_t)blen;
@@ -1775,6 +1792,7 @@ Z_INTERNAL block_state deflate_extreme(deflate_state *s, int flush) {
 
             huff_lengths(s->ext_freq, LITERALS + 1 + 29, s->ext_ll_len);
             huff_lengths(s->ext_freq + LITERALS + 1 + 29, 30, s->ext_d_len);
+            extreme_model_compose(s);
             s->ext_rebuilds++;
         }
 
