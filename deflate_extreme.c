@@ -268,6 +268,14 @@ Z_FORCEINLINE static void extreme_model_reset(deflate_state *s) {
     s->ext_since_build = 0;
     s->ext_distinct_lit = 0;
     s->ext_rebuilds = 0;
+    s->ext_tree_pending = 0;
+    /* The state is not zeroed by zcalloc: a reused allocation can carry
+     * mask bits that would make apply_tree adopt unfitted (or zero) code
+     * lengths into the model on the first flush. */
+    for (int i = 0; i < L_CODES; i++)
+        s->ext_seen_mask_l[i] = 0;
+    for (int i = 0; i < D_CODES; i++)
+        s->ext_seen_mask_d[i] = 0;
     s->ext_mode_lit_cost = 8; /* fixed-table literal cost until measured */
     /* Fixed-Huffman lengths (RFC1951 C.4); running statistics replace
      * them as tokens are tallied. */
@@ -736,12 +744,15 @@ static uint32_t split_half_bits(deflate_state *s, const uint16_t *lit_freq,
 }
 
 /* Drop the open-block bookkeeping after a full flush. */
+static void extreme_model_apply_tree(deflate_state *s);
+
 static void blk_reset(deflate_state *s) {
     s->blk_tokens = 0;
     s->blk_bytes = 0;
     s->blk_next_snap = SPLIT_SLOT_TOKENS;
     s->blk_slots = 0;
     s->blk_deferred_tok = 0;
+    extreme_model_apply_tree(s);
 }
 
 /* A snapshot slot is a split candidate when both halves hold at least
@@ -1392,6 +1403,59 @@ static void region_reoptimize(deflate_state *s, unsigned char *window) {
 #endif
 }
 
+/* Warm the running cost model with the tree the flush just built: for every
+ * symbol present in the flushed block, adopt its fitted code length from
+ * dyn_ltree/dyn_dtree (set by build_tree before init_block zeroes the
+ * frequencies). Unseen symbols keep their previous lengths. The next periodic
+ * rebuild overwrites these as fresh tokens accumulate, so this only tightens
+ * pricing for the first rebuild interval of the new block. */
+static void extreme_model_adopt_tree(deflate_state *s) {
+    uint8_t seen[316];
+    int i;
+
+    if (UNLIKELY(s->sym_next == 0))
+        return; /* empty flush built no tree */
+    for (i = 0; i < L_CODES; i++)
+        seen[i] = (s->dyn_ltree[i].Freq != 0);
+    for (i = 0; i < D_CODES; i++)
+        seen[L_CODES + i] = (s->dyn_dtree[i].Freq != 0);
+
+    /* The caller flushes next; build_tree fills .Len, init_block then zeroes
+     * Freq, so the mask captured above is the only record of membership. */
+    s->ext_tree_pending = 1;
+    for (i = 0; i < L_CODES; i++)
+        if (seen[i])
+            s->ext_seen_mask_l[i] = 1;
+    for (i = 0; i < D_CODES; i++)
+        s->ext_seen_mask_d[i] = seen[L_CODES + i];
+}
+
+/* Apply the tree captured by extreme_model_adopt_tree after the flush has
+ * built it. Called from blk_reset, which every flush site reaches. */
+static void extreme_model_apply_tree(deflate_state *s) {
+    int i;
+
+    if (UNLIKELY(!s->ext_tree_pending))
+        return;
+    s->ext_tree_pending = 0;
+    /* Binary data is non-stationary between blocks: the previous block's
+     * fitted tree misprices the next one there, so only text adopts. The
+     * flush that just ran has set data_type if it was still unknown. */
+    if (s->strm->data_type == Z_BINARY)
+        return;
+    for (i = 0; i < L_CODES; i++) {
+        if (s->ext_seen_mask_l[i])
+            s->ext_ll_len[i] = s->dyn_ltree[i].Len;
+        s->ext_seen_mask_l[i] = 0;
+    }
+    for (i = 0; i < D_CODES; i++) {
+        if (s->ext_seen_mask_d[i])
+            s->ext_d_len[i] = s->dyn_dtree[i].Len;
+        s->ext_seen_mask_d[i] = 0;
+    }
+    extreme_model_compose(s);
+}
+
 /* Flush the open block as a full non-final block, trying a priced split
  * first and re-optimizing when no split wins. Returns 1 when the caller must
  * return need_more (pending output undrained or the output buffer is full),
@@ -1405,7 +1469,14 @@ static int extreme_flush_open_block(deflate_state *s, unsigned char *window) {
     } else {
         region_reoptimize(s, window);
     }
+    extreme_model_adopt_tree(s);
     FLUSH_BLOCK_ONLY(s, window, 0);
+    /* Force a model rebuild on the new block's first commit: the adopted
+     * tree (above) prices that first decision, then the decayed running
+     * frequencies -- which span more history than one block -- take over.
+     * Aligning the rebuild with the block boundary also advances the decay
+     * schedule per block instead of per token count. */
+    s->ext_since_build = 0xFFFFu;
     blk_reset(s);
     return (s->strm->avail_out == 0) ? 1 : 0;
 }

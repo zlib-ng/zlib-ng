@@ -365,6 +365,15 @@ struct ALIGNED_(64) internal_state {
     uint8_t  ext_mode_lit_cost; /* est. cost of the most frequent literal (0 = unknown) */
     uint32_t ext_distinct_lit;  /* distinct literals seen since last rebuild (cold-model gate) */
 
+    /* Tree adoption: after each flush the block's fitted tree lengths are
+     * copied into the running model (extreme_model_adopt_tree/apply_tree).
+     * The masks record which symbols were in the flushed block so unseen
+     * symbols keep their previous lengths; pending marks a captured mask
+     * waiting for the flush that fills dyn_ltree[].Len. */
+    uint8_t ext_tree_pending;
+    uint8_t ext_seen_mask_l[L_CODES];
+    uint8_t ext_seen_mask_d[D_CODES];
+
     /* Priced block splitting: cumulative snapshots of the open block's
      * symbol frequencies (same layout as dyn_ltree/dyn_dtree Freq), taken
      * every SPLIT_SLOT_TOKENS committed sequences so a full block can be
