@@ -142,6 +142,7 @@ if(WITH_GTEST)
             test_inflate_back.cc
             test_inflate_copy.cc
             test_inflate_cve.cc
+            test_inflate_far_distance.cc
             test_inflate_gh_1600.cc
             test_inflate_mark.cc
             test_raw.cc
