@@ -54,7 +54,7 @@ jobs:
       run: cmake --build . -j5 --config Release > /dev/null
 
   Clang:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     steps:
     - name: Checkout repository
       uses: actions/checkout@v7
