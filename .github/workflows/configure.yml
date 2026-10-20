@@ -84,7 +84,7 @@ jobs:
             configure-args: --warn --zlib-compat --without-optimizations --without-new-strategies
 
           - name: Ubuntu GCC MIPS
-            os: ubuntu-latest
+            os: ubuntu-24.04
             cache-key: mips
             compiler: mips-linux-gnu-gcc
             configure-args: --warn
@@ -92,7 +92,7 @@ jobs:
             packages: qemu-user gcc-mips-linux-gnu libc-dev-mips-cross
 
           - name: Ubuntu GCC MIPS64
-            os: ubuntu-latest
+            os: ubuntu-24.04
             cache-key: mips64
             compiler: mips64-linux-gnuabi64-gcc
             configure-args: --warn
