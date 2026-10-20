@@ -332,6 +332,10 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
 
     s->wrap = wrap;
     s->w_size = 1 << windowBits;
+    if (W_BUF_SIZE(s->w_size) >= 2 * s->w_size + MIN_LOOKAHEAD)
+        s->max_dist = s->w_size - 1;
+    else
+        s->max_dist = s->w_size - MIN_LOOKAHEAD;
 
     s->high_water = 0;      /* nothing written to s->window yet */
 
@@ -1275,7 +1279,8 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             /* Slide as far as possible while keeping MAX_DIST bytes of history.
              * The slide is a multiple of w_size so prev slots keep their positions. */
             uint32_t slide_len = (s->strstart - MAX_DIST(s)) & ~W_MASK(s);
-            memcpy(window, window + slide_len, s->strstart + s->lookahead - slide_len);
+            /* Keeping a whole window can leave the live data longer than the slide */
+            memmove(window, window + slide_len, s->strstart + s->lookahead - slide_len);
             if (s->match_start >= slide_len) {
                 s->match_start -= slide_len;
             } else {
