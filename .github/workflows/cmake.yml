@@ -940,7 +940,7 @@ jobs:
         Start-Process -Wait sdksetup.exe -ArgumentList "/q", "/norestart", "/ceip off"
 
     - name: Install packages (macOS)
-      if: runner.os == 'macOS'
+      if: runner.os == 'macOS' && !contains(matrix.name, 'Intel')
       run: |
         brew update
         brew install ninja ${{ matrix.packages }}
