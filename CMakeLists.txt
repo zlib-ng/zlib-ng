@@ -964,9 +964,12 @@ if(WITH_OPTIM)
             list(APPEND ZLIB_ARCH_SRCS ${ARCHDIR}/dfltcc_common.c)
             # glibc requires _GNU_SOURCE; musl exposes it without but ignores the macro harmlessly
             set(CMAKE_REQUIRED_DEFINITIONS_SAVE ${CMAKE_REQUIRED_DEFINITIONS})
+            set(CMAKE_REQUIRED_FLAGS_SAVE ${CMAKE_REQUIRED_FLAGS})
             list(APPEND CMAKE_REQUIRED_DEFINITIONS -D_GNU_SOURCE)
+            string(APPEND CMAKE_REQUIRED_FLAGS " -Werror=implicit-function-declaration")
             check_symbol_exists(secure_getenv "stdlib.h" HAVE_SECURE_GETENV)
             set(CMAKE_REQUIRED_DEFINITIONS ${CMAKE_REQUIRED_DEFINITIONS_SAVE})
+            set(CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS_SAVE})
             if(HAVE_SECURE_GETENV)
                 set_property(SOURCE ${ARCHDIR}/dfltcc_common.c APPEND
                              PROPERTY COMPILE_DEFINITIONS _GNU_SOURCE HAVE_SECURE_GETENV)

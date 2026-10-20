@@ -1743,10 +1743,10 @@ check_secure_getenv() {
 int main(void) { return secure_getenv("TEST") == 0; }
 EOF
     printf "Checking for secure_getenv... " | tee -a configure.log
-    if try $CC -c $CFLAGS $test.c; then
+    if try $CC $CFLAGS -Werror=implicit-function-declaration -o $test $test.c $LDSHAREDLIBC; then
         HAVE_SECURE_GETENV=1
         echo "Yes." | tee -a configure.log
-    elif try $CC -c $CFLAGS -D_GNU_SOURCE $test.c; then
+    elif try $CC $CFLAGS -D_GNU_SOURCE -Werror=implicit-function-declaration -o $test $test.c $LDSHAREDLIBC; then
         HAVE_SECURE_GETENV=1
         SECURE_GETENV_NEEDS_GNU_SOURCE=1
         echo "Yes (with _GNU_SOURCE)." | tee -a configure.log
