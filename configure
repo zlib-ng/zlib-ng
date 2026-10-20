@@ -1737,6 +1737,25 @@ EOF
     fi
 }
 
+check_secure_getenv() {
+    cat > $test.c << EOF
+#include <stdlib.h>
+int main(void) { return secure_getenv("TEST") == 0; }
+EOF
+    printf "Checking for secure_getenv... " | tee -a configure.log
+    if try $CC -c $CFLAGS $test.c; then
+        HAVE_SECURE_GETENV=1
+        echo "Yes." | tee -a configure.log
+    elif try $CC -c $CFLAGS -D_GNU_SOURCE $test.c; then
+        HAVE_SECURE_GETENV=1
+        SECURE_GETENV_NEEDS_GNU_SOURCE=1
+        echo "Yes (with _GNU_SOURCE)." | tee -a configure.log
+    else
+        HAVE_SECURE_GETENV=0
+        echo "No." | tee -a configure.log
+    fi
+}
+
 check_s390_vx_intrinsics() {
     # Check whether S390 VX intrinsics are available
     printf "Checking for -mzarch (VX)... " | tee -a configure.log
@@ -2377,6 +2396,20 @@ EOF
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_inflate.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_inflate.lo"
                 ARCH="${ARCH}+dfltcc-inflate"
+            fi
+
+            if test $builddfltccinflate -eq 1 -o $builddfltccdeflate -eq 1; then
+                ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_common.o"
+                ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_common.lo"
+                check_secure_getenv
+                if test $HAVE_SECURE_GETENV -eq 1; then
+                    CFLAGS="${CFLAGS} -DHAVE_SECURE_GETENV"
+                    SFLAGS="${SFLAGS} -DHAVE_SECURE_GETENV"
+                    if test "${SECURE_GETENV_NEEDS_GNU_SOURCE}" = "1"; then
+                        CFLAGS="${CFLAGS} -D_GNU_SOURCE"
+                        SFLAGS="${SFLAGS} -D_GNU_SOURCE"
+                    fi
+                fi
             fi
 
             if test $builds390vx -eq 1; then

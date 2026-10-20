@@ -4,6 +4,20 @@
 #include "zutil.h"
 
 /*
+  control usage of DFLTCC
+
+  env variable: DFLTCC
+  unset or unreadable: use default (DFLTCC_ENABLED)
+  0: disable DFLTCC
+  1 or any other value: enable DFLTCC
+ */
+extern int Z_INTERNAL PREFIX(dfltcc_enabled);
+#define DFLTCC_ENABLED 1
+
+/* Runtime DFLTCC switch, initialized by the functable constructor. */
+void Z_INTERNAL PREFIX(dfltcc_init_env)(void);
+
+/*
    Parameter Block for Query Available Functions.
  */
 struct dfltcc_qaf_param {

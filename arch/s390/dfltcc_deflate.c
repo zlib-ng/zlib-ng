@@ -62,6 +62,9 @@ static inline int dfltcc_can_deflate_with_params(PREFIX3(streamp) strm, int leve
 int Z_INTERNAL PREFIX(dfltcc_can_deflate)(PREFIX3(streamp) strm) {
     deflate_state *state = (deflate_state *)strm->state;
 
+    if (!PREFIX(dfltcc_enabled))
+        return 0;
+
     return dfltcc_can_deflate_with_params(strm, state->level, W_BITS(state), state->strategy, state->reproducible);
 }
 
