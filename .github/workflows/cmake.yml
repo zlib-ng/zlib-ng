@@ -422,7 +422,7 @@ jobs:
             # Coverage disabled, causes MSAN errors
 
           - name: Ubuntu Clang-15
-            os: ubuntu-latest
+            os: ubuntu-24.04
             cache-key: clang15
             compiler: clang-15
             cxx-compiler: clang++-15
