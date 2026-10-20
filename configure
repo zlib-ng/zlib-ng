@@ -112,6 +112,7 @@ buildrvv=1
 buildzbc=1
 builddfltccdeflate=0
 builddfltccinflate=0
+builddfltccenv=0
 builds390vx=1
 buildcrc32la=1
 buildmsa=1
@@ -207,6 +208,7 @@ case "$1" in
       echo '    [--without-power9]          Compiles without Power9 instruction set' | tee -a configure.log
       echo '    [--with-dfltcc-deflate]     Use DEFLATE CONVERSION CALL instruction for compression on IBM Z' | tee -a configure.log
       echo '    [--with-dfltcc-inflate]     Use DEFLATE CONVERSION CALL instruction for decompression on IBM Z' | tee -a configure.log
+      echo '    [--with-dfltcc-env]         Enable runtime DFLTCC enable/disable via the DFLTCC environment variable' | tee -a configure.log
       echo '    [--without-s390-vx]         Build without S390 VX optimizations on IBM Z' | tee -a configure.log
       echo '    [--without-crc32-la]        Build without vectorized CRC32 on Loongarch' | tee -a configure.log
       echo '    [--without-msa]             Build without MIPS MSA optimizations' | tee -a configure.log
@@ -246,6 +248,7 @@ case "$1" in
     --without-power9) buildpower9=0 ; shift ;;
     --with-dfltcc-deflate) builddfltccdeflate=1; shift ;;
     --with-dfltcc-inflate) builddfltccinflate=1; shift ;;
+    --with-dfltcc-env) builddfltccenv=1; shift ;;
     # Provided for backward compatibility
     --without-crc32-vx) builds390vx=0; shift ;;
     --without-s390-vx) builds390vx=0; shift ;;
@@ -1748,7 +1751,6 @@ EOF
         echo "Yes." | tee -a configure.log
     elif try $CC $CFLAGS -D_GNU_SOURCE -Werror=implicit-function-declaration -o $test $test.c $LDSHAREDLIBC; then
         HAVE_SECURE_GETENV=1
-        SECURE_GETENV_NEEDS_GNU_SOURCE=1
         echo "Yes (with _GNU_SOURCE)." | tee -a configure.log
     else
         HAVE_SECURE_GETENV=0
@@ -2401,13 +2403,13 @@ EOF
             if test $builddfltccinflate -eq 1 -o $builddfltccdeflate -eq 1; then
                 ARCH_STATIC_OBJS="${ARCH_STATIC_OBJS} dfltcc_common.o"
                 ARCH_SHARED_OBJS="${ARCH_SHARED_OBJS} dfltcc_common.lo"
-                check_secure_getenv
-                if test $HAVE_SECURE_GETENV -eq 1; then
-                    CFLAGS="${CFLAGS} -DHAVE_SECURE_GETENV"
-                    SFLAGS="${SFLAGS} -DHAVE_SECURE_GETENV"
-                    if test "${SECURE_GETENV_NEEDS_GNU_SOURCE}" = "1"; then
-                        CFLAGS="${CFLAGS} -D_GNU_SOURCE"
-                        SFLAGS="${SFLAGS} -D_GNU_SOURCE"
+                if test $builddfltccenv -eq 1; then
+                    CFLAGS="${CFLAGS} -DDFLTCC_ENV"
+                    SFLAGS="${SFLAGS} -DDFLTCC_ENV"
+                    check_secure_getenv
+                    if test $HAVE_SECURE_GETENV -eq 1; then
+                        CFLAGS="${CFLAGS} -DHAVE_SECURE_GETENV"
+                        SFLAGS="${SFLAGS} -DHAVE_SECURE_GETENV"
                     fi
                 fi
             fi

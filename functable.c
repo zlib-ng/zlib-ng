@@ -432,7 +432,7 @@ static int init_functable(void) {
     }
 #endif
 
-#if defined(S390_DFLTCC_DEFLATE) || defined(S390_DFLTCC_INFLATE)
+#if (defined(S390_DFLTCC_DEFLATE) || defined(S390_DFLTCC_INFLATE)) && defined(DFLTCC_ENV)
     PREFIX(dfltcc_init_env)();
 #endif
 
