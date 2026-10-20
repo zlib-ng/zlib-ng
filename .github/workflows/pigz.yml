@@ -21,30 +21,29 @@ jobs:
 
           - name: Ubuntu Clang
             os: ubuntu-latest
-            cache-key: clang15
-            compiler: clang
-            packages: llvm-15 llvm-15-tools
-            gcov-exec: llvm-cov-15 gcov
+            cache-key: clang17
+            compiler: clang-17
+            packages: clang-17 llvm-17 llvm-17-tools
+            gcov-exec: llvm-cov-17 gcov
             coverage: ubuntu_clang_pigz
 
           - name: Ubuntu Clang No Optim
             os: ubuntu-latest
-            cache-key: clang15
-            compiler: clang
-            packages: llvm-15 llvm-15-tools
-            gcov-exec: llvm-cov-15 gcov
+            cache-key: clang17
+            compiler: clang-17
+            packages: clang-17 llvm-17 llvm-17-tools
+            gcov-exec: llvm-cov-17 gcov
             coverage: ubuntu_clang_pigz_no_optim
             cmake-args: -DWITH_OPTIM=OFF
 
-            # Use v2.6 due to NOTHREADS bug https://github.com/madler/pigz/issues/97
           - name: Ubuntu Clang No Threads
             os: ubuntu-latest
-            cache-key: clang15
-            compiler: clang
-            packages: llvm-15 llvm-15-tools
-            gcov-exec: llvm-cov-15 gcov
+            cache-key: clang17
+            compiler: clang-17
+            packages: clang-17 llvm-17 llvm-17-tools
+            gcov-exec: llvm-cov-17 gcov
             coverage: ubuntu_clang_pigz_no_threads
-            cmake-args: -DWITH_THREADS=OFF -DPIGZ_VERSION=v2.6
+            cmake-args: -DWITH_THREADS=OFF -DPIGZ_VERSION=v2.8
 
           - name: Ubuntu GCC AARCH64
             os: ubuntu-24.04-arm
