@@ -133,6 +133,7 @@ static void gz_compress(FILE *in, gzFile out) {
     }
 
     for (;;) {
+        if (feof(in)) break;
         len = (int)fread(buf, 1, GZBUFSIZE, in);
         if (ferror(in)) {
             free(buf);

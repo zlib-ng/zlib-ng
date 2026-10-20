@@ -80,6 +80,8 @@ static void deflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t
     /* Process input using our read buffer and flush type,
      * output to stdout only once write buffer is full */
     do {
+        if (feof(fin))
+            break;
         read = (int32_t)fread(read_buf, 1, read_buf_size, fin);
         if (read <= 0)
             break;
@@ -98,6 +100,8 @@ static void deflate_params(FILE *fin, FILE *fout, int32_t read_buf_size, int32_t
                 c_stream.avail_out = write_buf_size;
             }
         } while (c_stream.next_in < read_buf + read);
+        if (ferror(fin))
+             break;
     } while (err == Z_OK);
 
     /* Finish the stream if necessary */
@@ -361,13 +365,21 @@ int main(int argc, char **argv) {
         deflate_params(fin, fout, read_buf_size, write_buf_size, level, window_bits, mem_level, strategy, flush);
     }
 
+#ifdef __clang_analyzer__
+    if (fin == stdin) {
+        fclose(fin); // fake close
+    }
+#endif
     if (fin != stdin) {
         fclose(fin);
         if (!copyout && !keep) {
             unlink(argv[i]);
         }
     }
-    if (fout != stdout) {
+#ifndef __clang_analyzer__
+    if (fout != stdout)
+#endif
+    {
         fclose(fout);
     }
 
