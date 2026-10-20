@@ -1483,6 +1483,14 @@ int32_t Z_EXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value 
         int ret = PREFIX(deflateParams)(strm, new_level == NULL ? s->level : *(int *)new_level->buf,
                                         new_strategy == NULL ? s->strategy : *(int *)new_strategy->buf);
         if (ret != Z_OK) {
+            /* A level or strategy change first flushes the open block with
+             * Z_BLOCK. If the output buffer cannot hold that flush, nothing
+             * is applied and deflateParams reports Z_BUF_ERROR - a retryable
+             * condition (drain more output, then call again), not a stream
+             * error, so propagate it as-is to match classic zlib's
+             * deflateSetParams. */
+            if (ret == Z_BUF_ERROR)
+                return Z_BUF_ERROR;
             if (new_level != NULL)
                 new_level->status = Z_STREAM_ERROR;
             if (new_strategy != NULL)
