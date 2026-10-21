@@ -14,8 +14,8 @@
 
 int Z_INTERNAL PREFIX(dfltcc_enabled) = DFLTCC_ENABLED;
 
-void Z_INTERNAL PREFIX(dfltcc_init_env)(void) {
 #ifdef DFLTCC_ENV
+static void __attribute__((constructor)) dfltcc_init_env(void) {
     const char *value;
 
 #  ifdef HAVE_SECURE_GETENV
@@ -28,5 +28,5 @@ void Z_INTERNAL PREFIX(dfltcc_init_env)(void) {
         PREFIX(dfltcc_enabled) = DFLTCC_ENABLED;
     else
         PREFIX(dfltcc_enabled) = strcmp(value, "0") != 0;
-#endif
 }
+#endif

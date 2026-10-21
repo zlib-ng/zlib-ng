@@ -2406,6 +2406,7 @@ EOF
                 if test $builddfltccenv -eq 1; then
                     CFLAGS="${CFLAGS} -DDFLTCC_ENV"
                     SFLAGS="${SFLAGS} -DDFLTCC_ENV"
+                    ARCH="${ARCH}+dfltcc-env"
                     check_secure_getenv
                     if test $HAVE_SECURE_GETENV -eq 1; then
                         CFLAGS="${CFLAGS} -DHAVE_SECURE_GETENV"

@@ -13,9 +13,6 @@
 #include "functable.h"
 #include "cpu_features.h"
 #include "arch_functions.h"
-#if defined(S390_DFLTCC_DEFLATE) || defined(S390_DFLTCC_INFLATE)
-#  include "arch/s390/dfltcc_common.h"
-#endif
 
 /* Platform has pointer size atomic store */
 #if defined(__GNUC__) || defined(__clang__)
@@ -430,10 +427,6 @@ static int init_functable(void) {
         ft.slide_hash = &slide_hash_vx;
         ft.slide_hash_head = &slide_hash_head_vx;
     }
-#endif
-
-#if (defined(S390_DFLTCC_DEFLATE) || defined(S390_DFLTCC_INFLATE)) && defined(DFLTCC_ENV)
-    PREFIX(dfltcc_init_env)();
 #endif
 
     // LOONGARCH
