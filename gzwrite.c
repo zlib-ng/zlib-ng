@@ -426,6 +426,7 @@ z_int32_t Z_EXPORT PREFIX(gzflush)(gzFile file, z_int32_t flush) {
 z_int32_t Z_EXPORT PREFIX(gzsetparams)(gzFile file, z_int32_t level, z_int32_t strategy) {
     gz_state *state;
     PREFIX3(stream) *strm;
+    z_int32_t ret;
 
     /* get internal structure */
     if (file == NULL)
@@ -435,6 +436,11 @@ z_int32_t Z_EXPORT PREFIX(gzsetparams)(gzFile file, z_int32_t level, z_int32_t s
 
     /* check that we're writing and that there's no error */
     if (state->mode != GZ_WRITE || state->err != Z_OK || state->direct)
+        return Z_STREAM_ERROR;
+
+    /* check compression parameters */
+    if ((level < Z_NO_COMPRESSION && level != Z_DEFAULT_COMPRESSION) || level > Z_BEST_COMPRESSION ||
+        strategy < Z_DEFAULT_STRATEGY || strategy > Z_FIXED)
         return Z_STREAM_ERROR;
 
     /* if no change is requested, then do nothing */
@@ -448,9 +454,20 @@ z_int32_t Z_EXPORT PREFIX(gzsetparams)(gzFile file, z_int32_t level, z_int32_t s
     /* change compression parameters for subsequent input */
     if (state->size) {
         /* flush previous input with previous parameters before changing */
-        if (strm->avail_in && gz_comp(state, Z_BLOCK) == -1)
+        if (gz_comp(state, Z_BLOCK) == -1)
             return state->err;
-        PREFIX(deflateParams)(strm, level, strategy);
+        do {
+            ret = PREFIX(deflateParams)(strm, level, strategy);
+            /* A hook may require a stronger flush that needs more output
+               space. Retry only if the last call filled the output buffer,
+               which guarantees progress. */
+            if (ret != Z_BUF_ERROR || strm->avail_out != 0)
+                break;
+            if (gz_comp(state, Z_BLOCK) == -1)
+                return state->err;
+        } while (ret == Z_BUF_ERROR);
+        if (ret != Z_OK)
+            return ret;
     }
     state->level = level;
     state->strategy = strategy;
