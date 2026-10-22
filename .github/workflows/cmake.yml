@@ -313,17 +313,17 @@ jobs:
             # Coverage disabled for clang on power9, errors
 
           - name: Ubuntu GCC RISC-V
-            os: ubuntu-latest
+            os: ubuntu-26.04
             cache-key: riscv64
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv.cmake -DWITH_BENCHMARKS=ON
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv-kunminghu.cmake -DWITH_BENCHMARKS=ON
             packages: qemu-user crossbuild-essential-riscv64
             gcov-exec: riscv64-linux-gnu-gcov
             coverage: ubuntu_gcc_riscv64
 
           - name: Ubuntu Clang RISC-V
-            os: ubuntu-latest
+            os: ubuntu-26.04
             cache-key: riscv64
-            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv-clang.cmake
+            cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-riscv-clang-kunminghu.cmake
             packages: qemu-user crossbuild-essential-riscv64
             # Coverage disabled for clang on riscv, errors
 
