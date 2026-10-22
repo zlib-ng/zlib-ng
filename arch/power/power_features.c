@@ -21,9 +21,10 @@
 
 void Z_INTERNAL power_check_features(struct power_cpu_features *features) {
 #ifdef PPC_FEATURES
-    unsigned long hwcap;
+    unsigned long hwcap = 0;
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
-    elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap));
+    if (elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap)) != 0)
+        hwcap = 0;
 #else
     hwcap = getauxval(AT_HWCAP);
 #endif
@@ -33,9 +34,10 @@ void Z_INTERNAL power_check_features(struct power_cpu_features *features) {
 #endif
 
 #ifdef POWER_FEATURES
-    unsigned long hwcap2;
+    unsigned long hwcap2 = 0;
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
-    elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2));
+    if (elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2)) != 0)
+        hwcap2 = 0;
 #else
     hwcap2 = getauxval(AT_HWCAP2);
 #endif
