@@ -171,7 +171,6 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
     ALIGNED_(16) struct match current_match = {0};
 #ifdef USE_FIZZLE
                  struct match next_match = {0};
-    uint32_t window_end = s->window_size - MIN_LOOKAHEAD;
 #endif
     unsigned char *window = s->window;
     uint32_t max_insert_count = s->max_insert_count;
@@ -225,8 +224,11 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
             /* A max-length match cannot be extended by fizzle without truncating it,
              * skip fizzle and instead check for continuation after emitting current match. */
             next_match.match_length = 0;
-        } else if (LIKELY(s->lookahead > MIN_LOOKAHEAD && (current_match.strstart + curr_match_len) < window_end)) {
+        } else if (LIKELY((s->lookahead > MIN_LOOKAHEAD) &
+                          ((current_match.strstart + curr_match_len) < s->fill_end))) {
             /* now, look ahead one */
+            /* Spelled without short-circuit so both loads issue before the compare, which keeps
+             * the two tests fused into one branch. */
             s->strstart = current_match.strstart + curr_match_len;
             uint32_t hash_head = insert_knuth(s, window, s->strstart);
 
