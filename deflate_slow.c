@@ -105,7 +105,20 @@ Z_INTERNAL block_state deflate_slow(deflate_state *s, int flush) {
                 unsigned int insert_cnt = mov_fwd;
                 if (UNLIKELY(insert_cnt > max_insert - s->strstart))
                     insert_cnt = max_insert - s->strstart;
-                insert_batch(s, window, s->strstart + 1, insert_cnt);
+                /* A match longer than its distance repeats a pattern, so its
+                 * interior strings duplicate ones one period earlier in the same
+                 * hash chains. Insert only the tail, which spans at least one
+                 * period so every phase of the pattern keeps a recent entry.
+                 */
+                uint32_t match_dist = s->strstart - 1 - s->prev_match;
+                /* A tail of 64 strings keeps matches that begin near the end of the pattern. */
+                uint32_t tail_cnt = MAX(match_dist + 2, 64);
+                if (LIKELY(tail_cnt >= insert_cnt))
+                    insert_batch(s, window, s->strstart + 1, insert_cnt);
+                else if (level >= MIN_ROLL_LEVEL)
+                    insert_roll_batch_tail_static(s, window, s->strstart + 1, insert_cnt, tail_cnt);
+                else
+                    insert_knuth_batch_tail_static(s, window, s->strstart + 1, insert_cnt, tail_cnt);
             }
             s->prev_length = 0;
             s->match_available = 0;
