@@ -177,7 +177,7 @@ int deflate_index_build(FILE *in, z_off64_t span, struct deflate_index **built) 
     do {
         // Assure available input, at least until reaching EOF.
         if (index->strm.avail_in == 0) {
-            index->strm.avail_in = (uint32_t)fread(buf, 1, CHUNK, in);
+            index->strm.avail_in = feof(in) ? 0 : (uint32_t)fread(buf, 1, CHUNK, in);
             totin += index->strm.avail_in;
             index->strm.next_in = buf;
             if (index->strm.avail_in < CHUNK && ferror(in)) {
@@ -237,7 +237,8 @@ int deflate_index_build(FILE *in, z_off64_t span, struct deflate_index **built) 
         }
 
         if (ret == Z_STREAM_END && mode == GZIP) {
-            if (index->strm.avail_in || ungetc(getc(in), in) != EOF) {
+            int c;
+            if (index->strm.avail_in || (!feof(in) && (c = getc(in)) != EOF && ungetc(c, in) != EOF)) {
                 // There is more input after the end of a gzip member. Reset the
                 // inflate state to read another gzip member. On success, this will
                 // set ret to Z_OK to continue decompressing.
@@ -346,7 +347,7 @@ ptrdiff_t deflate_index_extract(FILE *in, struct deflate_index *index,
         // Uncompress, setting got to the number of bytes uncompressed.
         if (index->strm.avail_in == 0) {
             // Assure available input.
-            index->strm.avail_in = (uint32_t)fread(input, 1, CHUNK, in);
+            index->strm.avail_in = feof(in) ? 0 : (uint32_t)fread(input, 1, CHUNK, in);
             if (index->strm.avail_in < CHUNK && ferror(in)) {
                 ret = Z_ERRNO;
                 break;
@@ -381,7 +382,7 @@ ptrdiff_t deflate_index_extract(FILE *in, struct deflate_index *index,
                 drop -= index->strm.avail_in;
                 index->strm.avail_in = 0;
                 do {
-                    if (getc(in) == EOF) {
+                    if (feof(in) || getc(in) == EOF) {
                         // The input does not have a complete trailer.
                         free(discard);
                         free(input);
