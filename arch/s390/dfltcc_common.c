@@ -1,4 +1,6 @@
-/* dfltcc_common.c - Runtime control for IBM Z DFLTCC acceleration. */
+/* dfltcc_common.c - Runtime control for IBM Z DFLTCC acceleration.
+ * For conditions of distribution and use, see copyright notice in zlib.h
+ */
 
 #ifdef HAVE_SECURE_GETENV
 #  ifndef _GNU_SOURCE

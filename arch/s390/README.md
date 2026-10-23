@@ -19,7 +19,9 @@ in hardware. In order to enable hardware compression for levels 1-6
 
 At runtime, set `DFLTCC=0` to disable DFLTCC for both compression and
 decompression. If `DFLTCC` is unset or has any other value, DFLTCC remains
-enabled wherever the hardware and stream settings support it.
+enabled wherever the hardware and stream settings support it. Note that
+this environment variable has no effect unless zlib-ng was built with
+`-DWITH_DFLTCC_ENV=1`.
 
 SystemZ deflate hardware acceleration is available on [IBM z15](
 https://www.ibm.com/products/z15) and newer machines under the name [
