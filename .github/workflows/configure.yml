@@ -259,7 +259,6 @@ jobs:
             os: windows-latest
             shell: msys2 {0}
             compiler: clang
-            packages: mingw-w64-x86_64-clang
 
           - name: Windows GCC MinGW32
             os: windows-latest
@@ -301,17 +300,29 @@ jobs:
           git
           mingw-w64-i686-toolchain
 
-    - name: Setup MinGW64
-      if: runner.os == 'Windows' && contains(matrix.name, 'MinGW64')
+    - name: Setup MinGW64 (CLANG64)
+      if: runner.os == 'Windows' && contains(matrix.name, 'Clang MinGW64')
       uses: msys2/setup-msys2@v2
       with:
         update: true
-        msystem: MINGW64
+        msystem: CLANG64
         install: >-
           pkg-config
           make
           git
-          ${{ matrix.packages || 'mingw-w64-x86_64-toolchain' }}
+          ${{ matrix.packages || 'mingw-w64-clang-x86_64-clang' }}
+
+    - name: Setup MinGW64 (UCRT64)
+      if: runner.os == 'Windows' && contains(matrix.name, 'GCC MinGW64')
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        msystem: UCRT64
+        install: >-
+          pkg-config
+          make
+          git
+          ${{ matrix.packages || 'mingw-w64-ucrt-x86_64-toolchain' }}
 
     - name: Setup MinGW64 (ARM64)
       if: runner.os == 'Windows' && contains(matrix.name, 'ARM64')
