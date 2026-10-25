@@ -30,7 +30,7 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
      * possible. If flushing, copy the remaining available input to next_out as
      * stored blocks, if there is enough space.
      */
-    int last = 0;
+    int last = 0, all;
     unsigned len, left, have;
     unsigned used = s->strm->avail_in;
     do {
@@ -45,22 +45,25 @@ Z_INTERNAL block_state deflate_stored(deflate_state *s, int flush) {
             /* maximum stored block length that will fit in avail_out: */
         have = s->strm->avail_out - have;
         left = (int)s->strstart - s->block_start;    /* bytes left in window */
-        if (len > (unsigned long)left + s->strm->avail_in)
+        if (left < len && s->strm->avail_in < len - left)
             len = left + s->strm->avail_in;     /* limit len to the input */
         len = MIN(len, have);                   /* limit len to the output */
+
+        /* all is true if len is all of the available input */
+        all = len >= left && len - left == s->strm->avail_in;
 
         /* If the stored block would be less than min_block in length, or if
          * unable to copy all of the available input when flushing, then try
          * copying to the window and the pending buffer instead. Also don't
          * write an empty block when flushing -- deflate() does that.
          */
-        if (len < min_block && ((len == 0 && flush != Z_FINISH) || flush == Z_NO_FLUSH || len != left + s->strm->avail_in))
+        if (len < min_block && ((len == 0 && flush != Z_FINISH) || flush == Z_NO_FLUSH || !all))
             break;
 
         /* Make a dummy stored block in pending to get the header bytes,
          * including any pending bits. This also updates the debugging counts.
          */
-        last = flush == Z_FINISH && len == left + s->strm->avail_in ? 1 : 0;
+        last = flush == Z_FINISH && all ? 1 : 0;
         zng_tr_stored_block(s, NULL, 0L, last);
 
         /* Replace the lengths in the dummy stored block with len. */
