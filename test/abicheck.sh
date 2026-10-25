@@ -166,11 +166,18 @@ dylib2=$(find btmp2 -type f -name '*.dylib*' -print -o -type f -name '*.so.*' -p
 abidw $dylib2 > btmp2/zlib${suffix}-built.abi
 
 # Compare it to the reference
+# Don't try to edit the cached file especially if we are not refreshing
+cp "$ABIFILE" "${ABIFILE}.tmp"
+# Normalize architecture signature for RISC-V (Fixes issue with 2.2 vs. 2.4 mismatch)
+sed -i 's/elf-unknown-arch-value-243/elf-riscv/g' "${ABIFILE}.tmp"
+sed -i 's/elf-unknown-arch-value-243/elf-riscv/g' btmp2/zlib${suffix}-built.abi
 # FIXME: use --no-added-syms for now, but we probably want to be more strict.
-if abidiff --no-added-syms --suppressions test/abi/ignore "$ABIFILE" btmp2/zlib${suffix}-built.abi
+if abidiff --no-added-syms --suppressions test/abi/ignore "${ABIFILE}.tmp" btmp2/zlib${suffix}-built.abi
 then
   echo "abicheck: PASS"
+  rm -f "${ABIFILE}.tmp"
 else
   echo "abicheck: FAIL"
+  rm -f "${ABIFILE}.tmp"
   exit 1
 fi
