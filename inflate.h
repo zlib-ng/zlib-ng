@@ -144,6 +144,7 @@ struct ALIGNED_(64) inflate_state {
 
     inflate_allocs *alloc_bufs; /* struct for handling memory allocations */
     unsigned reqbits;           /* requested log base 2 of window size */
+    int reqwrap;                /* requested wrap */
 
 #ifdef INFLATE_STRICT
     unsigned dmax;              /* zlib header max distance (INFLATE_STRICT) */
