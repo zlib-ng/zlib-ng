@@ -215,6 +215,7 @@ static size_t gz_write(gz_state *state, void const *buf, size_t len) {
             }
             len -= n;
         } while (len);
+        state->strm.next_in = state->in;
     }
 
     /* input was all buffered or compressed */
