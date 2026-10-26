@@ -1360,6 +1360,9 @@ int32_t Z_EXPORT PREFIX(inflateSync)(PREFIX3(stream) *strm) {
     strm->total_in = (z_uintmax_t)in; /* Can't use z_size_t here as it will overflow on 64-bit Windows */
     strm->total_out = (z_uintmax_t)out;
     state->flags = flags;
+    /* we never got to see a header for the window size -- set to max */
+    if (state->wbits == 0)
+        state->wbits = MAX_WBITS;
     state->mode = TYPE;
     return Z_OK;
 }
