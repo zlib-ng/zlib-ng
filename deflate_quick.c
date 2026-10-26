@@ -28,12 +28,6 @@
 extern const ct_data static_ltree[L_CODES+2];
 extern const ct_data static_dtree[D_CODES];
 
-Z_FORCEINLINE static void quick_start_block(deflate_state *s, uint32_t strstart, int last) {
-    zng_tr_emit_tree(s, STATIC_TREES, last);
-    s->block_open = 1 + last;
-    s->block_start = (int)strstart;
-}
-
 Z_FORCEINLINE static int quick_end_block(deflate_state *s, uint32_t strstart, int last) {
     if (s->block_open) {
         zng_tr_emit_end_block(s, static_ltree, last);
@@ -43,6 +37,12 @@ Z_FORCEINLINE static int quick_end_block(deflate_state *s, uint32_t strstart, in
         return (s->strm->avail_out == 0);
     }
     return 0;
+}
+
+Z_FORCEINLINE static void quick_start_block(deflate_state *s, uint32_t strstart, int last) {
+    zng_tr_emit_tree(s, STATIC_TREES, last);
+    s->block_open = 1 + last;
+    s->block_start = (int)strstart;
 }
 
 Z_FORCEINLINE static block_state deflate_quick_impl(deflate_state *s, int flush,
