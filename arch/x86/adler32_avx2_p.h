@@ -8,6 +8,14 @@
 
 #if defined(X86_AVX2) || defined(X86_AVX512VNNI)
 
+/* MSVC has no AVX-VNNI arch flag, so its _mm256_dpbusd_epi32 is always the EVEX AVX512-VNNI
+ * form. The VEX form has its own name and is only wanted when AVX512VL is not already enabled. */
+#if defined(_MSC_VER) && !defined(__clang__) && !defined(__AVX512VL__)
+#  define z256_dpbusd_epi32(a, b, c)    _mm256_dpbusd_avx_epi32(a, b, c)
+#else
+#  define z256_dpbusd_epi32(a, b, c)    _mm256_dpbusd_epi32(a, b, c)
+#endif
+
 /* 32 bit horizontal sum, adapted from Agner Fog's vector library. */
 static inline uint32_t hsum256(__m256i x) {
     __m128i sum1  = _mm_add_epi32(_mm256_extracti128_si256(x, 1),
