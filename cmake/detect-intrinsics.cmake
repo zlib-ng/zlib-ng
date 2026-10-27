@@ -209,11 +209,8 @@ macro(check_avx2vnni_intrinsics)
                 endif()
                 unset(HAVE_RAPTOR_LAKE)
             endif()
-        # When AVX2VNNI support is fully baked into MSVC we should uncomment this
-        # See: https://developercommunity.visualstudio.com/t/MSVC-emits-AVX512-code-for-AVX-VNNI-inst/10804143
         elseif(MSVC)
-            set(AVX2VNNIFLAG "")
-        #    set(AVX2VNNIFLAG "/arch:AVX2")
+            set(AVX2VNNIFLAG "/arch:AVX2")
         endif()
     endif()
     # MSVC names the VEX AVX-VNNI intrinsic _mm256_dpbusd_avx_epi32, toolsets without it get no AVX2VNNI
