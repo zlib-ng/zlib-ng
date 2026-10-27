@@ -216,19 +216,26 @@ macro(check_avx2vnni_intrinsics)
         #    set(AVX2VNNIFLAG "/arch:AVX2")
         endif()
     endif()
+    # MSVC names the VEX AVX-VNNI intrinsic _mm256_dpbusd_avx_epi32, toolsets without it get no AVX2VNNI
+    if(MSVC AND NOT CMAKE_C_COMPILER_ID MATCHES "Clang")
+        set(AVX2VNNI_INTRIN "_mm256_dpbusd_avx_epi32")
+    else()
+        set(AVX2VNNI_INTRIN "_mm256_dpbusd_epi32")
+    endif()
     # Check whether compiler supports AVX2vnni intrinsics
     set(CMAKE_REQUIRED_FLAGS "${AVX2VNNIFLAG} ${NATIVEFLAG} ${ZNOLTOFLAG}")
     check_c_source_compiles(
         "#include <immintrin.h>
         int main(void) {
             const __m256i z256 = _mm256_setzero_si256();
-            volatile __m256i r256 = _mm256_dpbusd_epi32(z256, z256, z256);
+            volatile __m256i r256 = ${AVX2VNNI_INTRIN}(z256, z256, z256);
             (void)r256;
             return 0;
         }"
         HAVE_AVX2VNNI_INTRIN
     )
     set(CMAKE_REQUIRED_FLAGS)
+    unset(AVX2VNNI_INTRIN)
 endmacro()
 
 macro(check_avx512vnni_intrinsics)

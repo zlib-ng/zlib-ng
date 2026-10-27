@@ -81,8 +81,8 @@ rempeel:
             vs3 = _mm256_add_epi32(vs3, vs1_0a);
             vs3b = _mm256_add_epi32(vs3b, vs1_0b);
 
-            vs2a = _mm256_dpbusd_epi32(vs2a, vbuf0, dot2v);
-            vs2b = _mm256_dpbusd_epi32(vs2b, vbuf1, dot2v_0);
+            vs2a = z256_dpbusd_epi32(vs2a, vbuf0, dot2v);
+            vs2b = z256_dpbusd_epi32(vs2b, vbuf1, dot2v_0);
 
             vs3 = _mm256_add_epi32(vs3, vs1a);
             vs3b = _mm256_add_epi32(vs3b, vs1b);
@@ -93,8 +93,8 @@ rempeel:
             vs1a = _mm256_add_epi32(vs1a, vs1_sada);
             vs1b = _mm256_add_epi32(vs1b, vs1_sadb);
 
-            vs2_0a = _mm256_dpbusd_epi32(vs2_0a, vbuf2, dot2v);
-            vs2_0b = _mm256_dpbusd_epi32(vs2_0b, vbuf3, dot2v_0);
+            vs2_0a = z256_dpbusd_epi32(vs2_0a, vbuf2, dot2v);
+            vs2_0b = z256_dpbusd_epi32(vs2_0b, vbuf3, dot2v_0);
 
             vs1_0a = vs1a;
             vs1_0b = vs1b;
@@ -121,7 +121,7 @@ rempeel:
 
             vs1a = _mm256_add_epi32(vs1a, vs1_sad);
             vs3 = _mm256_add_epi32(vs3, vs1_0a);
-            vs2a = _mm256_dpbusd_epi32(vs2a, vbuf, dot2v_0);
+            vs2a = z256_dpbusd_epi32(vs2a, vbuf, dot2v_0);
             vs1_0a = vs1a;
         }
 
@@ -202,8 +202,8 @@ rem_peel_copy:
 
             /* multiply-add, resulting in 16 ints. Fuse with sum stage from prior versions, as we now have the dp
              * instructions to eliminate them */
-            vs2 = _mm256_dpbusd_epi32(vs2, vbuf0, dot2v);
-            vs2_0 = _mm256_dpbusd_epi32(vs2_0, vbuf1, dot2v_0);
+            vs2 = z256_dpbusd_epi32(vs2, vbuf0, dot2v);
+            vs2_0 = z256_dpbusd_epi32(vs2_0, vbuf1, dot2v_0);
 
             vs1_0 = _mm256_add_epi32(vs1_0, vs1_sad);
             vs1_1 = _mm256_add_epi32(vs1_1, vs1_sad2);
@@ -230,7 +230,7 @@ rem_peel_copy:
 
             vs1 = _mm256_add_epi32(vs1, vs1_sad);
             vs3 = _mm256_add_epi32(vs3, vs1_0);
-            vs2 = _mm256_dpbusd_epi32(vs2, vbuf, dot2v_0);
+            vs2 = z256_dpbusd_epi32(vs2, vbuf, dot2v_0);
             vs1_0 = vs1;
         }
 
