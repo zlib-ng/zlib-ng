@@ -278,7 +278,7 @@ jobs:
             # Coverage disabled for clang on power9, errors
 
           - name: Ubuntu GCC PPC64LE
-            os: ubuntu-latest
+            os: ubuntu-24.04
             cache-key: ppc64el
             # gtest illegal instruction (related? https://bugs.launchpad.net/qemu/+bug/1781281)
             cmake-args: -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-powerpc64le.cmake -DWITH_GTEST=OFF
