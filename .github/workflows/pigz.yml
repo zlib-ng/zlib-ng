@@ -14,8 +14,10 @@ jobs:
             coverage: ubuntu_gcc_pigz
 
           - name: Ubuntu GCC Symbol Prefix
-            os: ubuntu-latest
-            compiler: gcc
+            os: ubuntu-24.04
+            compiler: gcc-16
+            gcov-exec: gcov-16
+            packages: gcc-16
             coverage: ubuntu_gcc_pigz_prefix
             cmake-args: -DZLIB_SYMBOL_PREFIX=zTest_
 
@@ -81,6 +83,7 @@ jobs:
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages
       run: |
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.packages }}
 
@@ -95,7 +98,8 @@ jobs:
           -DBUILD_SHARED_LIBS=OFF \
           -DZLIB_ROOT=../.. \
           -DWITH_CODE_COVERAGE=ON \
-          -DWITH_MAINTAINER_WARNINGS=ON
+          -DWITH_MAINTAINER_WARNINGS=ON \
+          .
       working-directory: test/pigz
       env:
         CC: ${{ matrix.compiler }}
