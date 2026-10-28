@@ -40,24 +40,24 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, const __m128i 
 }
 
 Z_INTERNAL void slide_hash_lsx(deflate_state *s) {
-    Assert(s->w_size <= UINT16_MAX, "w_size should fit in uint16_t");
-    uint16_t wsize = (uint16_t)s->w_size;
-    const __m128i xmm_wsize = __lsx_vreplgr2vr_h((short)wsize);
+    Assert(s->slide_len <= UINT16_MAX, "slide_len should fit in uint16_t");
+    uint16_t slide = (uint16_t)s->slide_len;
+    const __m128i xmm_slide = __lsx_vreplgr2vr_h((short)slide);
 
     assert(((uintptr_t)s->head & 15) == 0);
     assert(((uintptr_t)s->prev & 15) == 0);
 
-    slide_hash_chain(s->head, HASH_SIZE, xmm_wsize);
-    slide_hash_chain(s->prev, wsize, xmm_wsize);
+    slide_hash_chain(s->head, HASH_SIZE, xmm_slide);
+    slide_hash_chain(s->prev, s->w_size, xmm_slide);
 }
 
 Z_INTERNAL void slide_hash_head_lsx(deflate_state *s) {
-    Assert(s->w_size <= UINT16_MAX, "w_size should fit in uint16_t");
-    uint16_t wsize = (uint16_t)s->w_size;
-    const __m128i xmm_wsize = __lsx_vreplgr2vr_h((short)wsize);
+    Assert(s->slide_len <= UINT16_MAX, "slide_len should fit in uint16_t");
+    uint16_t slide = (uint16_t)s->slide_len;
+    const __m128i xmm_slide = __lsx_vreplgr2vr_h((short)slide);
 
     assert(((uintptr_t)s->head & 15) == 0);
-    slide_hash_chain(s->head, HASH_SIZE, xmm_wsize);
+    slide_hash_chain(s->head, HASH_SIZE, xmm_slide);
 }
 
 #endif
