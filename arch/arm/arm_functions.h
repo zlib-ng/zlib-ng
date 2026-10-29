@@ -47,6 +47,9 @@ uint32_t crc32_copy_armv8_pmull_eor3(uint32_t crc, uint8_t *dst, const uint8_t *
 
 #if !defined(ARM_CRC32_NATIVE) && !defined(ARM_PMULL_EOR3_NATIVE)
 #  define CRC32_BRAID_FALLBACK
+#  ifndef WITHOUT_CHORBA
+#    define CRC32_CHORBA_FALLBACK
+#  endif
 #endif
 
 #ifdef ARM_SIMD

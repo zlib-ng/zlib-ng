@@ -12,6 +12,9 @@
 #include "riscv_natives.h"
 
 #define CRC32_BRAID_FALLBACK  /* used by crc32_zbc */
+#ifndef WITHOUT_CHORBA
+#  define CRC32_CHORBA_FALLBACK
+#endif
 
 #ifdef RISCV_RVV
 uint32_t adler32_rvv(uint32_t adler, const uint8_t *buf, size_t len);
