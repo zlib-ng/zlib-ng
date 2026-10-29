@@ -11,6 +11,9 @@
 #define CHUNKSET_FALLBACK
 #define COMPARE256_FALLBACK
 #define CRC32_BRAID_FALLBACK  /* used by crc32_s390_vx */
+#ifndef WITHOUT_CHORBA
+#  define CRC32_CHORBA_FALLBACK
+#endif
 
 #ifndef S390_VX_NATIVE
 #  define SLIDE_HASH_FALLBACK
