@@ -4,7 +4,7 @@
 #if defined(X86_SSE2) && defined(CRC32_CHORBA_SSE_FALLBACK)
 
 #include "crc32_chorba_p.h"
-#include "crc32_braid_tbl.h"
+#include "crc32_p.h"
 #include <emmintrin.h>
 #include "arch/x86/x86_intrins.h"
 
@@ -305,25 +305,19 @@ Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint8_t
     final[3] ^= next4;
     final[4] ^= next5;
 
-    /* We perform the same loop that braid_internal is doing but we'll skip
-     * the function call for this tiny tail */
-    uint8_t *final_bytes = (uint8_t*)final;
-    size_t rem = len - i;
-
-    while (rem--) {
-        crc = crc_table[(crc ^ *final_bytes++) & 0xff] ^ (crc >> 8);
-    }
-
-    return ~crc;
+    /* At most 72 bytes */
+    return ~crc32_copy_small(crc, NULL, (uint8_t*)final, len - i, 72, 0);
 }
 
 Z_INTERNAL uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t len) {
     uintptr_t align_diff = ALIGN_DIFF(buf, 16);
+    /* At most 87 bytes */
     if (len <= align_diff + CHORBA_SMALL_THRESHOLD_64BIT)
-        return crc32_braid(crc, buf, len);
+        return ~crc32_copy_small(~crc, NULL, buf, len, 15 + CHORBA_SMALL_THRESHOLD_64BIT, 0);
 
     if (align_diff) {
-        crc = crc32_braid(crc, buf, align_diff);
+        /* At most 15 bytes */
+        crc = ~crc32_copy_small(~crc, NULL, buf, align_diff, 15, 0);
         len -= align_diff;
         buf += align_diff;
     }

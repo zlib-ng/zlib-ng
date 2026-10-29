@@ -4,7 +4,7 @@
 #if defined(X86_SSE41) && defined(CRC32_CHORBA_SSE_FALLBACK)
 
 #include "crc32_chorba_p.h"
-#include "crc32_braid_tbl.h"
+#include "crc32_p.h"
 #include <emmintrin.h>
 #include <smmintrin.h>
 #include "arch/x86/x86_intrins.h"
@@ -79,7 +79,6 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
     const uint64_t* input = (const uint64_t*)buf;
     ALIGNED_(16) uint64_t bitbuffer[32768 / sizeof(uint64_t)];
     __m128i *bitbuffer_v = (__m128i*)bitbuffer;
-    const uint8_t *bitbuffer_bytes = (const uint8_t*)bitbuffer;
     __m128i z = _mm_setzero_si128();
 
     __m128i *bitbuf128 = &bitbuffer_v[64];
@@ -280,21 +279,24 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
     ++final128;
     _mm_store_si128(final128, _mm_xor_si128(_mm_load_si128(final128), next56));
 
-    uint8_t *final_bytes = (uint8_t*)final;
-
-    for (size_t j = 0; j < (len-i); j++) {
-        crc = crc_table[(crc ^ final_bytes[j] ^ bitbuffer_bytes[(j+i)]) & 0xff] ^ (crc >> 8);
+    /* The buffer still owes the last words */
+    for (size_t j = 0; j < (len - i + sizeof(uint64_t) - 1) / sizeof(uint64_t); j++) {
+        final[j] ^= bitbuffer[i / sizeof(uint64_t) + j];
     }
-    return ~crc;
+
+    /* At most 72 bytes */
+    return ~crc32_copy_small(crc, NULL, (uint8_t*)final, len-i, 72, 0);
 }
 
 Z_INTERNAL uint32_t crc32_chorba_sse41(uint32_t crc, const uint8_t *buf, size_t len) {
     uintptr_t align_diff = ALIGN_DIFF(buf, 16);
+    /* At most 87 bytes */
     if (len <= align_diff + CHORBA_SMALL_THRESHOLD_64BIT)
-        return crc32_braid(crc, buf, len);
+        return ~crc32_copy_small(~crc, NULL, buf, len, 15 + CHORBA_SMALL_THRESHOLD_64BIT, 0);
 
     if (align_diff) {
-        crc = crc32_braid(crc, buf, align_diff);
+        /* At most 15 bytes */
+        crc = ~crc32_copy_small(~crc, NULL, buf, align_diff, 15, 0);
         len -= align_diff;
         buf += align_diff;
     }
