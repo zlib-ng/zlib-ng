@@ -8,7 +8,7 @@
 #endif
 #include "zmemory.h"
 #include "crc32_chorba_p.h"
-#include "crc32_braid_tbl.h"
+#include "crc32_p.h"
 
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
 #define bitbuffer_size_bytes (16 * 1024 * sizeof(chorba_word_t))
@@ -170,7 +170,6 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
 #else
     ALIGNED_(16) chorba_worda_t bitbuffer[bitbuffer_size_zwords];
 #endif
-    const uint8_t *bitbuffer_bytes = (const uint8_t*)bitbuffer;
     uint64a_t *bitbuffer_qwords = (uint64a_t*)bitbuffer;
     /* The calling function ensured that this is aligned correctly */
     const chorba_worda_t* input = (const chorba_worda_t*)buf;
@@ -292,11 +291,13 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
     final[3] ^= Z_U64_TO_LE(next4_64);
     final[4] ^= Z_U64_TO_LE(next5_64);
 
-    uint8_t *final_bytes = (uint8_t*)final;
-
-    for (size_t j = 0; j < (len-i); j++) {
-        crc = crc_table[(crc ^ final_bytes[j] ^ bitbuffer_bytes[(j+i) % bitbuffer_size_bytes]) & 0xff] ^ (crc >> 8);
+    /* The ring still owes the last words */
+    for (size_t j = 0; j < (len - i + sizeof(uint64_t) - 1) / sizeof(uint64_t); j++) {
+        final[j] ^= bitbuffer_qwords[(i / sizeof(uint64_t) + j) % bitbuffer_size_qwords];
     }
+
+    /* At most 72 bytes */
+    crc = crc32_copy_small(crc, NULL, (uint8_t*)final, len-i, 72, 0);
 
 #if defined(__EMSCRIPTEN__)
     zng_free(bitbuffer);
@@ -310,7 +311,6 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_
     /* The calling function ensured that this is aligned correctly */
     const uint64_t* input = (const uint64_t*)buf;
     uint64_t bitbuffer[32768 / sizeof(uint64_t)];
-    const uint8_t *bitbuffer_bytes = (const uint8_t*)bitbuffer;
     memset(bitbuffer, 0, 32768);
     bitbuffer[0] = Z_U64_TO_LE(~crc);
 
@@ -418,13 +418,13 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_
     final[3] ^= Z_U64_TO_LE(next4_64);
     final[4] ^= Z_U64_TO_LE(next5_64);
 
-    uint8_t *final_bytes = (uint8_t*)final;
-
-    for (size_t j = 0; j < (len-i); j++) {
-        crc = crc_table[(crc ^ final_bytes[j] ^ bitbuffer_bytes[(j+i)]) & 0xff] ^ (crc >> 8);
+    /* The buffer still owes the last words */
+    for (size_t j = 0; j < (len - i + sizeof(uint64_t) - 1) / sizeof(uint64_t); j++) {
+        final[j] ^= bitbuffer[i / sizeof(uint64_t) + j];
     }
 
-    return ~crc;
+    /* At most 72 bytes */
+    return ~crc32_copy_small(crc, NULL, (uint8_t*)final, len-i, 72, 0);
 }
 
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
@@ -653,7 +653,8 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
     final[3] ^= Z_U64_TO_LE(next4);
     final[4] ^= Z_U64_TO_LE(next5);
 
-    return crc32_braid(~crc, (uint8_t*)final, len-i);
+    /* At most 72 bytes */
+    return ~crc32_copy_small(crc, NULL, (uint8_t*)final, len-i, 72, 0);
 }
 
 #else // CHORBA_W == 8
@@ -829,17 +830,20 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit(uint32_t crc, const 
     final[8] ^= Z_U32_TO_LE(next9);
     final[9] ^= Z_U32_TO_LE(next10);
 
-    return crc32_braid(~crc, (uint8_t*)final, len-i);
+    /* At most 80 bytes */
+    return ~crc32_copy_small(crc, NULL, (uint8_t*)final, len-i, 80, 0);
 }
 #endif // CHORBA_W == 8
 
 Z_INTERNAL uint32_t crc32_chorba(uint32_t crc, const uint8_t *buf, size_t len) {
     uintptr_t align_diff = ALIGN_DIFF(buf, 8);
+    /* At most 79 bytes on 64-bit builds and 87 on 32-bit ones */
     if (len <= align_diff + CHORBA_SMALL_THRESHOLD)
-        return crc32_braid(crc, buf, len);
+        return ~crc32_copy_small(~crc, NULL, buf, len, 7 + CHORBA_SMALL_THRESHOLD, 0);
 
     if (align_diff) {
-        crc = crc32_braid(crc, buf, align_diff);
+        /* At most 7 bytes */
+        crc = ~crc32_copy_small(~crc, NULL, buf, align_diff, 7, 0);
         len -= align_diff;
         buf += align_diff;
     }
