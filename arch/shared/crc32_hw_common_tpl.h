@@ -3,7 +3,23 @@
  */
 
 #include "zbuild.h"
+#include "zmemory.h"
 
+/* With unaligned access the source is read as given and never aligned. */
+#if OPTIMAL_CMP >= 32
+#  define CRC32_HW_UNALIGNED 1
+#  define CRC32_HW_LOAD64(p) zng_memread_8(p)
+#  define CRC32_HW_LOAD32(p) zng_memread_4(p)
+#  define CRC32_HW_LOAD16(p) zng_memread_2(p)
+#else
+#  define CRC32_HW_UNALIGNED 0
+#  define CRC32_HW_LOAD64(p) zng_memread_8(HINT_ALIGNED((p), 8))
+#  define CRC32_HW_LOAD32(p) zng_memread_4(HINT_ALIGNED((p), 4))
+#  define CRC32_HW_LOAD16(p) zng_memread_2(HINT_ALIGNED((p), 2))
+#endif
+
+/* CRC32D(CRC32_HW_FINAL, val) == ~CRC32D(0, val), so this seed applies the final complement. */
+#define CRC32_HW_FINAL 0xefe4d0afu
 
 Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_align(uint32_t crc, uint8_t **dst, const uint8_t **buf,
                                                           size_t *len, uintptr_t align_diff, const int COPY) {
@@ -19,7 +35,7 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_align(uint32_t crc, uint8_t 
     }
 
     if (*len >= 2 && (align_diff & 2)) {
-        uint16_t val = *((uint16_t*)*buf);
+        uint16_t val = CRC32_HW_LOAD16(*buf);
         if (COPY) {
             memcpy(*dst, &val, 2);
             *dst += 2;
@@ -30,7 +46,7 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_align(uint32_t crc, uint8_t 
     }
 
     if (*len >= 4 && (align_diff & 4)) {
-        uint32_t val = *((uint32_t*)*buf);
+        uint32_t val = CRC32_HW_LOAD32(*buf);
         if (COPY) {
             memcpy(*dst, &val, 4);
             *dst += 4;
@@ -41,7 +57,7 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_align(uint32_t crc, uint8_t 
     }
 
     if (*len >= 8 && (align_diff & 8)) {
-        uint64_t val = *((uint64_t*)*buf);
+        uint64_t val = CRC32_HW_LOAD64(*buf);
         if (COPY) {
             memcpy(*dst, &val, 8);
             *dst += 8;
@@ -54,10 +70,26 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_align(uint32_t crc, uint8_t 
     return crc;
 }
 
+/* Finish with the 1 to 7 bytes after the last full word, given the last 8 bytes of the buffer.
+ * The bytes still to do are the top n bytes of that word. Their CRC and the crc carried past them
+ * are computed separately, so only a shift, one CRC32D and one xor follow the running crc.
+ * Returns the final, complemented crc. */
+Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_tail_bytes(uint32_t crc, uint64_t last, uint32_t n) {
+    uint32_t shift = 64 - n * 8;
+    /* The n bytes on their own, with the final complement. */
+    uint32_t bytes = CRC32D(CRC32_HW_FINAL, (last >> shift) << shift);
+    /* The part of the crc that n bytes do not reach only shifts down. */
+    uint32_t rest = bytes ^ (uint32_t)((uint64_t)crc >> (n * 8));
+    /* The part they do reach goes through n bytes of zeros. */
+    return CRC32D(0, (uint64_t)crc << shift) ^ rest;
+}
+
 Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_tail(uint32_t crc, uint8_t *dst, const uint8_t *buf,
                                                          size_t len, const int COPY) {
+    const uint8_t *start = buf;
+
     while (len >= 8) {
-        uint64_t val = *((uint64_t*)buf);
+        uint64_t val = CRC32_HW_LOAD64(buf);
         if (COPY) {
             memcpy(dst, &val, 8);
             dst += 8;
@@ -67,8 +99,16 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_tail(uint32_t crc, uint8_t *
         len -= 8;
     }
 
+    /* After a full word, the bytes left are the top of the buffer's last 8 bytes. */
+    if (len && buf != start) {
+        uint64_t last = zng_memread_8(buf + len - 8);
+        if (COPY)
+            memcpy(dst + len - 8, &last, 8);
+        return crc32_hw_tail_bytes(crc, last, (uint32_t)len);
+    }
+
     if (len & 4) {
-        uint32_t val = *((uint32_t*)buf);
+        uint32_t val = CRC32_HW_LOAD32(buf);
         if (COPY) {
             memcpy(dst, &val, 4);
             dst += 4;
@@ -78,7 +118,7 @@ Z_FORCEINLINE static Z_TARGET_CRC uint32_t crc32_hw_tail(uint32_t crc, uint8_t *
     }
 
     if (len & 2) {
-        uint16_t val = *((uint16_t*)buf);
+        uint16_t val = CRC32_HW_LOAD16(buf);
         if (COPY) {
             memcpy(dst, &val, 2);
             dst += 2;

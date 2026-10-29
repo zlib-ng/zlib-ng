@@ -15,6 +15,13 @@
 #include "neon_intrins.h"
 #include "crc32_armv8_p.h"
 
+/* The source is only on a 16-byte boundary when crc32_hw_align put it there. */
+#if CRC32_HW_UNALIGNED
+#  define CRC32_LD1Q(p) vreinterpretq_u64_u8(vld1q_u8(p))
+#else
+#  define CRC32_LD1Q(p) vld1q_u64_ex((const uint64_t*)(p), 128)
+#endif
+
 /* Carryless multiply low 64 bits: a[0] * b[0] */
 static Z_TARGET_PMULL_EOR3 inline uint64x2_t clmul_lo(uint64x2_t a, uint64x2_t b) {
 #if defined(_MSC_VER) && !defined(__clang__)
@@ -79,10 +86,20 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
         return ~crc0;
     }
 
+#if CRC32_HW_UNALIGNED
+    /* Unaligned loads cost nothing, but unaligned stores slow a copy of more than 4 KB, so a
+     * large copy aligns its destination. */
+    if (COPY && len > 4096) {
+        uintptr_t align_diff = ALIGN_DIFF(dst, 16);
+        if (align_diff)
+            crc0 = crc32_hw_align(crc0, &dst, &src, &len, align_diff, COPY);
+    }
+#else
     /* Align to 16-byte boundary for vector path */
     uintptr_t align_diff = ALIGN_DIFF(src, 16);
     if (align_diff)
         crc0 = crc32_hw_align(crc0, &dst, &src, &len, align_diff, COPY);
+#endif
 
     /* 3-way scalar CRC + 9-way PMULL folding (192 bytes/iter) */
     if (len >= 192) {
@@ -98,15 +115,15 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
         uint64_t vc;
 
         /* Load first 9 vector chunks (144 bytes) */
-        uint64x2_t x0 = vld1q_u64_ex((const uint64_t*)srcv, 128), y0;
-        uint64x2_t x1 = vld1q_u64_ex((const uint64_t*)(srcv + 16), 128), y1;
-        uint64x2_t x2 = vld1q_u64_ex((const uint64_t*)(srcv + 32), 128), y2;
-        uint64x2_t x3 = vld1q_u64_ex((const uint64_t*)(srcv + 48), 128), y3;
-        uint64x2_t x4 = vld1q_u64_ex((const uint64_t*)(srcv + 64), 128), y4;
-        uint64x2_t x5 = vld1q_u64_ex((const uint64_t*)(srcv + 80), 128), y5;
-        uint64x2_t x6 = vld1q_u64_ex((const uint64_t*)(srcv + 96), 128), y6;
-        uint64x2_t x7 = vld1q_u64_ex((const uint64_t*)(srcv + 112), 128), y7;
-        uint64x2_t x8 = vld1q_u64_ex((const uint64_t*)(srcv + 128), 128), y8;
+        uint64x2_t x0 = CRC32_LD1Q(srcv), y0;
+        uint64x2_t x1 = CRC32_LD1Q(srcv + 16), y1;
+        uint64x2_t x2 = CRC32_LD1Q(srcv + 32), y2;
+        uint64x2_t x3 = CRC32_LD1Q(srcv + 48), y3;
+        uint64x2_t x4 = CRC32_LD1Q(srcv + 64), y4;
+        uint64x2_t x5 = CRC32_LD1Q(srcv + 80), y5;
+        uint64x2_t x6 = CRC32_LD1Q(srcv + 96), y6;
+        uint64x2_t x7 = CRC32_LD1Q(srcv + 112), y7;
+        uint64x2_t x8 = CRC32_LD1Q(srcv + 128), y8;
         uint64x2_t k;
         /* k = {x^144 mod P, x^144+64 mod P} for 144-byte fold */
         { static const uint64_t ALIGNED_(16) k_[] = {0x26b70c3d, 0x3f41287a}; k = vld1q_u64_ex(k_, 128); }
@@ -152,15 +169,15 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
 
                 /* EOR3: combine hi*k, lo*k, and new data in one instruction */
                 {
-                    uint64x2_t d0 = vld1q_u64_ex((const uint64_t*)srcv, 128);
-                    uint64x2_t d1 = vld1q_u64_ex((const uint64_t*)(srcv + 16), 128);
-                    uint64x2_t d2 = vld1q_u64_ex((const uint64_t*)(srcv + 32), 128);
-                    uint64x2_t d3 = vld1q_u64_ex((const uint64_t*)(srcv + 48), 128);
-                    uint64x2_t d4 = vld1q_u64_ex((const uint64_t*)(srcv + 64), 128);
-                    uint64x2_t d5 = vld1q_u64_ex((const uint64_t*)(srcv + 80), 128);
-                    uint64x2_t d6 = vld1q_u64_ex((const uint64_t*)(srcv + 96), 128);
-                    uint64x2_t d7 = vld1q_u64_ex((const uint64_t*)(srcv + 112), 128);
-                    uint64x2_t d8 = vld1q_u64_ex((const uint64_t*)(srcv + 128), 128);
+                    uint64x2_t d0 = CRC32_LD1Q(srcv);
+                    uint64x2_t d1 = CRC32_LD1Q(srcv + 16);
+                    uint64x2_t d2 = CRC32_LD1Q(srcv + 32);
+                    uint64x2_t d3 = CRC32_LD1Q(srcv + 48);
+                    uint64x2_t d4 = CRC32_LD1Q(srcv + 64);
+                    uint64x2_t d5 = CRC32_LD1Q(srcv + 80);
+                    uint64x2_t d6 = CRC32_LD1Q(srcv + 96);
+                    uint64x2_t d7 = CRC32_LD1Q(srcv + 112);
+                    uint64x2_t d8 = CRC32_LD1Q(srcv + 128);
                     if (COPY) {
                         vst1q_u8(dst_v, vreinterpretq_u8_u64(d0));
                         vst1q_u8(dst_v + 16, vreinterpretq_u8_u64(d1));
@@ -186,12 +203,12 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
 
                 /* 3-way parallel scalar CRC (16 bytes each) */
                 {
-                    uint64_t s0a = *(const uint64_t*)src0;
-                    uint64_t s0b = *(const uint64_t*)(src0 + 8);
-                    uint64_t s1a = *(const uint64_t*)src1;
-                    uint64_t s1b = *(const uint64_t*)(src1 + 8);
-                    uint64_t s2a = *(const uint64_t*)src2;
-                    uint64_t s2b = *(const uint64_t*)(src2 + 8);
+                    uint64_t s0a = CRC32_HW_LOAD64(src0);
+                    uint64_t s0b = CRC32_HW_LOAD64(src0 + 8);
+                    uint64_t s1a = CRC32_HW_LOAD64(src1);
+                    uint64_t s1b = CRC32_HW_LOAD64(src1 + 8);
+                    uint64_t s2a = CRC32_HW_LOAD64(src2);
+                    uint64_t s2b = CRC32_HW_LOAD64(src2 + 8);
                     if (COPY) {
                         memcpy(dst0, &s0a, 8);
                         memcpy(dst0 + 8, &s0b, 8);
@@ -248,12 +265,12 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
 
         /* Process final scalar chunk */
         {
-            uint64_t s0a = *(const uint64_t*)src0;
-            uint64_t s0b = *(const uint64_t*)(src0 + 8);
-            uint64_t s1a = *(const uint64_t*)src1;
-            uint64_t s1b = *(const uint64_t*)(src1 + 8);
-            uint64_t s2a = *(const uint64_t*)src2;
-            uint64_t s2b = *(const uint64_t*)(src2 + 8);
+            uint64_t s0a = CRC32_HW_LOAD64(src0);
+            uint64_t s0b = CRC32_HW_LOAD64(src0 + 8);
+            uint64_t s1a = CRC32_HW_LOAD64(src1);
+            uint64_t s1b = CRC32_HW_LOAD64(src1 + 8);
+            uint64_t s2a = CRC32_HW_LOAD64(src2);
+            uint64_t s2b = CRC32_HW_LOAD64(src2 + 8);
             if (COPY) {
                 memcpy(dst0, &s0a, 8);
                 memcpy(dst0 + 8, &s0b, 8);
@@ -306,9 +323,9 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
 
         /* 3-way parallel scalar CRC */
         do {
-            uint64_t v0 = *(const uint64_t*)buf0;
-            uint64_t v1 = *(const uint64_t*)buf1;
-            uint64_t v2 = *(const uint64_t*)buf2;
+            uint64_t v0 = CRC32_HW_LOAD64(buf0);
+            uint64_t v1 = CRC32_HW_LOAD64(buf1);
+            uint64_t v2 = CRC32_HW_LOAD64(buf2);
             if (COPY) {
                 memcpy(dst0, &v0, 8);
                 dst0 += 8;
@@ -334,7 +351,7 @@ Z_FORCEINLINE static Z_TARGET_PMULL_EOR3 uint32_t crc32_copy_impl(uint32_t crc, 
         /* Process final 8 bytes with combined CRC */
         crc0 = crc2;
         {
-            uint64_t vf = *(const uint64_t*)buf2;
+            uint64_t vf = CRC32_HW_LOAD64(buf2);
             if (COPY)
                 memcpy(dst2, &vf, 8);
             crc0 = __crc32d(crc0, vf ^ vc);
