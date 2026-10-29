@@ -1,7 +1,7 @@
 #include "zbuild.h"
 #include "arch_functions.h"
 
-#ifdef CRC32_CHORBA_FALLBACK
+#if defined(CRC32_CHORBA_FALLBACK) || defined(CRC32_CHORBA_SSE_FALLBACK)
 
 #if defined(__EMSCRIPTEN__)
 #  include "zutil_p.h"
@@ -13,14 +13,11 @@
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
 #define bitbuffer_size_bytes (16 * 1024 * sizeof(chorba_word_t))
 #define bitbuffer_size_zwords (bitbuffer_size_bytes / sizeof(chorba_word_t))
-#define bitbuffer_size_qwords (bitbuffer_size_bytes / sizeof(uint64_t))
 
 #if defined(HAVE_MAY_ALIAS)
     typedef chorba_word_t __attribute__ ((__may_alias__)) chorba_worda_t;
-    typedef uint64_t __attribute__ ((__may_alias__)) uint64a_t;
 #else
     typedef chorba_word_t chorba_worda_t;
-    typedef uint64_t uint64a_t;
 #endif
 
 #define NEXT_ROUND(invec, a, b, c, d) \
@@ -148,6 +145,136 @@
         bitbuffer[out_offset2 + 21] = in32; \
     } while (0)
 
+/* Word k of the stream at byte i, with whatever the buffer still owes it folded in */
+#define CHORBA_TAIL_WORD(k) \
+    CHORBA_WORD_FROM_LE(input[i / sizeof(chorba_word_t) + (k)] ^ pending[(i / sizeof(chorba_word_t) + (k)) & mask])
+
+/* Folds the stream from byte i down to its carry words and finishes it with the byte table.
+ * pending holds what a buffered variant still owes its input, read at word & mask, or is NULL.
+ * The first carry seeds the register, so any remaining length is exact. Never inlined, since its
+ * loops would cost a caller's main loop its vectorization or registers. */
+#if CHORBA_W == 8
+Z_INTERNAL Z_NOINLINE uint32_t chorba_small_tail(const uint8_t *buf, size_t i, size_t len, const chorba_word_t *pending_buf,
+                                                 size_t mask, const chorba_word_t carry[CHORBA_CARRY_WORDS]) {
+    /* The calling function ensured that this is aligned correctly */
+    const chorba_worda_t *input = (const chorba_worda_t*)buf;
+    const chorba_worda_t *pending = (const chorba_worda_t*)pending_buf;
+    static const chorba_word_t nothing_owed = 0;
+    uint64_t next1 = carry[0], next2 = carry[1], next3 = carry[2], next4 = carry[3], next5 = carry[4];
+    uint64_t final[6] = {0};
+
+    if (pending == NULL) {
+        pending = &nothing_owed;
+        mask = 0;
+    }
+
+    /* Four-word rounds while more than 72 bytes remain, then one word at a time while more than the
+     * five carry words would remain, so the serial finish is 40 to 47 bytes */
+    for (; i + 72 < len; i += 32) {
+        uint64_t in1, in2, in3, in4;
+        uint64_t a1, a2, a3, a4;
+        uint64_t b1, b2, b3, b4;
+        uint64_t c1, c2, c3, c4;
+        uint64_t d1, d2, d3, d4;
+
+        in1 = CHORBA_TAIL_WORD(0) ^ next1;
+        in2 = CHORBA_TAIL_WORD(1) ^ next2;
+        NEXT_ROUND(in1, a1, a2, a3, a4);
+        NEXT_ROUND(in2, b1, b2, b3, b4);
+        in3 = CHORBA_TAIL_WORD(2) ^ next3 ^ a1;
+        in4 = CHORBA_TAIL_WORD(3) ^ next4 ^ a2 ^ b1;
+        NEXT_ROUND(in3, c1, c2, c3, c4);
+        NEXT_ROUND(in4, d1, d2, d3, d4);
+        ACCUM_ROUND(next1, next2, next3, next4, next5);
+    }
+    for (; i + 48 <= len; i += 8) {
+        uint64_t in1 = CHORBA_TAIL_WORD(0) ^ next1;
+        uint64_t a1, a2, a3, a4;
+        NEXT_ROUND(in1, a1, a2, a3, a4);
+        next1 = next2;
+        next2 = next3 ^ a1;
+        next3 = next4 ^ a2;
+        next4 = next5 ^ a3;
+        next5 = a4;
+    }
+
+    memcpy(final, input + (i / sizeof(uint64_t)), len - i);
+    /* The buffer still owes the last words */
+    for (size_t j = 0; j < (len - i + sizeof(uint64_t) - 1) / sizeof(uint64_t); j++)
+        final[j] ^= pending[(i / sizeof(uint64_t) + j) & mask];
+    /* The low half of the first carry rides in the register */
+    final[0] ^= Z_U64_TO_LE(next1 & ~(uint64_t)UINT32_MAX);
+    final[1] ^= Z_U64_TO_LE(next2);
+    final[2] ^= Z_U64_TO_LE(next3);
+    final[3] ^= Z_U64_TO_LE(next4);
+    final[4] ^= Z_U64_TO_LE(next5);
+
+    /* At most 47 bytes */
+    return ~crc32_copy_small((uint32_t)next1, NULL, (uint8_t*)final, len - i, 47, 0);
+}
+#else
+Z_INTERNAL Z_NOINLINE uint32_t chorba_small_tail(const uint8_t *buf, size_t i, size_t len, const chorba_word_t *pending_buf,
+                                                 size_t mask, const chorba_word_t carry[CHORBA_CARRY_WORDS]) {
+    /* The calling function ensured that this is aligned correctly */
+    const chorba_worda_t *input = (const chorba_worda_t*)buf;
+    const chorba_worda_t *pending = (const chorba_worda_t*)pending_buf;
+    static const chorba_word_t nothing_owed = 0;
+    uint32_t next1 = carry[0], next2 = carry[1], next3 = carry[2], next4 = carry[3], next5 = carry[4];
+    uint32_t next6 = carry[5], next7 = carry[6], next8 = carry[7], next9 = carry[8], next10 = carry[9];
+    uint32_t final[11] = {0};
+
+    if (pending == NULL) {
+        pending = &nothing_owed;
+        mask = 0;
+    }
+
+    /* One word at a time while more than the ten carry words would remain, so the serial finish is
+     * 40 to 43 bytes */
+    for (; i + 44 <= len; i += 4) {
+        uint32_t in1 = CHORBA_TAIL_WORD(0) ^ next1;
+        uint32_t x1 = (in1 << 17);
+        uint32_t x2 = (in1 >> 15) ^ (in1 << 23);
+        uint32_t x3 = (in1 >> 9) ^ (in1 << 19);
+        uint32_t x4 = (in1 >> 13);
+        uint32_t x6 = (in1 << 12);
+        uint32_t x7 = (in1 >> 20);
+
+        next1 = next2;
+        next2 = next3;
+        next3 = next4;
+        next4 = next5 ^ x1;
+        next5 = next6 ^ x2;
+        next6 = next7 ^ x3;
+        next7 = next8 ^ x4;
+        next8 = next9;
+        next9 = next10 ^ x6;
+        next10 = x7;
+    }
+
+    memcpy(final, input + (i / sizeof(uint32_t)), len - i);
+    /* The buffer still owes the last words */
+    for (size_t j = 0; j < (len - i + sizeof(uint32_t) - 1) / sizeof(uint32_t); j++)
+        final[j] ^= pending[(i / sizeof(uint32_t) + j) & mask];
+    /* The first carry rides in the register */
+    final[1] ^= Z_U32_TO_LE(next2);
+    final[2] ^= Z_U32_TO_LE(next3);
+    final[3] ^= Z_U32_TO_LE(next4);
+    final[4] ^= Z_U32_TO_LE(next5);
+    final[5] ^= Z_U32_TO_LE(next6);
+    final[6] ^= Z_U32_TO_LE(next7);
+    final[7] ^= Z_U32_TO_LE(next8);
+    final[8] ^= Z_U32_TO_LE(next9);
+    final[9] ^= Z_U32_TO_LE(next10);
+
+    /* At most 43 bytes */
+    return ~crc32_copy_small(next1, NULL, (uint8_t*)final, len - i, 43, 0);
+}
+#endif /* CHORBA_W == 8 */
+
+#endif /* CRC32_CHORBA_FALLBACK || CRC32_CHORBA_SSE_FALLBACK */
+
+#ifdef CRC32_CHORBA_FALLBACK
+
 /**
  * Implements the Chorba algorithm for CRC32 computation (https://arxiv.org/abs/2412.16398).
  *
@@ -170,10 +297,8 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
 #else
     ALIGNED_(16) chorba_worda_t bitbuffer[bitbuffer_size_zwords];
 #endif
-    uint64a_t *bitbuffer_qwords = (uint64a_t*)bitbuffer;
     /* The calling function ensured that this is aligned correctly */
     const chorba_worda_t* input = (const chorba_worda_t*)buf;
-    const uint64a_t* input_qwords = (const uint64a_t*)buf;
 
     size_t i = 0;
 
@@ -200,7 +325,6 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
     chorba_word_t next20 = 0;
     chorba_word_t next21 = 0;
     chorba_word_t next22 = 0;
-    crc = 0;
 
     // do a first pass to zero out bitbuffer
     for (; i < (14848 * sizeof(chorba_word_t)); i += (32 * sizeof(chorba_word_t))) {
@@ -245,64 +369,13 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
         bitbuffer[(j + (i / sizeof(chorba_word_t))) % bitbuffer_size_zwords] = 0;
     }
 
-    uint64_t next1_64 = 0;
-    uint64_t next2_64 = 0;
-    uint64_t next3_64 = 0;
-    uint64_t next4_64 = 0;
-    uint64_t next5_64 = 0;
-    uint64_t final[9] = {0};
-
-    for (; (i + 72 < len); i += 32) {
-        uint64_t in1;
-        uint64_t in2;
-        uint64_t in3;
-        uint64_t in4;
-        uint64_t a1, a2, a3, a4;
-        uint64_t b1, b2, b3, b4;
-        uint64_t c1, c2, c3, c4;
-        uint64_t d1, d2, d3, d4;
-
-
-        in1 = input_qwords[i / sizeof(uint64_t)] ^ bitbuffer_qwords[(i / sizeof(uint64_t)) % bitbuffer_size_qwords];
-        in2 = input_qwords[i / sizeof(uint64_t) + 1] ^ bitbuffer_qwords[(i / sizeof(uint64_t) + 1) % bitbuffer_size_qwords];
-        in1 = Z_U64_FROM_LE(in1) ^ next1_64;
-        in2 = Z_U64_FROM_LE(in2) ^ next2_64;
-
-        NEXT_ROUND(in1, a1, a2, a3, a4);
-
-        NEXT_ROUND(in2, b1, b2, b3, b4);
-
-        in3 = input_qwords[i / sizeof(uint64_t) + 2] ^ bitbuffer_qwords[(i / sizeof(uint64_t) + 2) % bitbuffer_size_qwords];
-        in4 = input_qwords[i / sizeof(uint64_t) + 3] ^ bitbuffer_qwords[(i / sizeof(uint64_t) + 3) % bitbuffer_size_qwords];
-        in3 = Z_U64_FROM_LE(in3) ^ next3_64 ^ a1;
-        in4 = Z_U64_FROM_LE(in4) ^ next4_64 ^ a2 ^ b1;
-
-        NEXT_ROUND(in3, c1, c2, c3, c4);
-
-        NEXT_ROUND(in4, d1, d2, d3, d4);
-
-        ACCUM_ROUND(next1_64, next2_64, next3_64, next4_64, next5_64);
-    }
-
-    memcpy(final, input_qwords + (i / sizeof(uint64_t)), len-i);
-    final[0] ^= Z_U64_TO_LE(next1_64);
-    final[1] ^= Z_U64_TO_LE(next2_64);
-    final[2] ^= Z_U64_TO_LE(next3_64);
-    final[3] ^= Z_U64_TO_LE(next4_64);
-    final[4] ^= Z_U64_TO_LE(next5_64);
-
-    /* The ring still owes the last words */
-    for (size_t j = 0; j < (len - i + sizeof(uint64_t) - 1) / sizeof(uint64_t); j++) {
-        final[j] ^= bitbuffer_qwords[(i / sizeof(uint64_t) + j) % bitbuffer_size_qwords];
-    }
-
-    /* At most 72 bytes */
-    crc = crc32_copy_small(crc, NULL, (uint8_t*)final, len-i, 72, 0);
+    static const chorba_word_t no_carry[CHORBA_CARRY_WORDS] = {0};
+    crc = chorba_small_tail(buf, i, len, (const chorba_word_t*)bitbuffer, bitbuffer_size_zwords - 1, no_carry);
 
 #if defined(__EMSCRIPTEN__)
     zng_free(bitbuffer);
 #endif
-    return ~crc;
+    return crc;
 }
 
 #  if CHORBA_W == 8
@@ -313,8 +386,6 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_
     uint64_t bitbuffer[32768 / sizeof(uint64_t)];
     memset(bitbuffer, 0, 32768);
     bitbuffer[0] = Z_U64_TO_LE(~crc);
-
-    crc = 0;
 
     size_t i = 0;
 
@@ -371,69 +442,15 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_
         bitbuffer[(i/8 + 7 + 300)] = in8;
     }
 
-    uint64_t next1_64 = 0;
-    uint64_t next2_64 = 0;
-    uint64_t next3_64 = 0;
-    uint64_t next4_64 = 0;
-    uint64_t next5_64 = 0;
-    uint64_t final[9] = {0};
-
-    for (; (i + 72 < len); i += 32) {
-        uint64_t in1;
-        uint64_t in2;
-        uint64_t in3;
-        uint64_t in4;
-        uint64_t a1, a2, a3, a4;
-        uint64_t b1, b2, b3, b4;
-        uint64_t c1, c2, c3, c4;
-        uint64_t d1, d2, d3, d4;
-
-
-        in1 = input[i / sizeof(uint64_t)] ^ bitbuffer[(i / sizeof(uint64_t))];
-        in2 = input[(i + 8) / sizeof(uint64_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 1)];
-        in1 = Z_U64_FROM_LE(in1) ^ next1_64;
-        in2 = Z_U64_FROM_LE(in2) ^ next2_64;
-
-        NEXT_ROUND(in1, a1, a2, a3, a4);
-
-        NEXT_ROUND(in2, b1, b2, b3, b4);
-
-        in3 = input[(i + 16) / sizeof(uint64_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 2)];
-        in4 = input[(i + 24) / sizeof(uint64_t)] ^ bitbuffer[(i / sizeof(uint64_t) + 3)];
-        in3 = Z_U64_FROM_LE(in3) ^ next3_64 ^ a1;
-        in4 = Z_U64_FROM_LE(in4) ^ next4_64 ^ a2 ^ b1;
-
-        NEXT_ROUND(in3, c1, c2, c3, c4);
-
-        NEXT_ROUND(in4, d1, d2, d3, d4);
-
-        ACCUM_ROUND(next1_64, next2_64, next3_64, next4_64, next5_64);
-
-    }
-
-    memcpy(final, input+(i / sizeof(uint64_t)), len-i);
-    final[0] ^= Z_U64_TO_LE(next1_64);
-    final[1] ^= Z_U64_TO_LE(next2_64);
-    final[2] ^= Z_U64_TO_LE(next3_64);
-    final[3] ^= Z_U64_TO_LE(next4_64);
-    final[4] ^= Z_U64_TO_LE(next5_64);
-
-    /* The buffer still owes the last words */
-    for (size_t j = 0; j < (len - i + sizeof(uint64_t) - 1) / sizeof(uint64_t); j++) {
-        final[j] ^= bitbuffer[i / sizeof(uint64_t) + j];
-    }
-
-    /* At most 72 bytes */
-    return ~crc32_copy_small(crc, NULL, (uint8_t*)final, len-i, 72, 0);
+    static const uint64_t no_carry[5] = {0};
+    return chorba_small_tail(buf, i, len, bitbuffer, SIZE_MAX, no_carry);
 }
 
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
 Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_t *buf, size_t len) {
     /* The calling function ensured that this is aligned correctly */
     const uint64_t* input = (const uint64_t*)buf;
-    uint64_t final[9] = {0};
     uint64_t next1 = ~crc;
-    crc = 0;
     uint64_t next2 = 0;
     uint64_t next3 = 0;
     uint64_t next4 = 0;
@@ -618,43 +635,13 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
         ACCUM_ROUND(next1, next2, next3, next4, next5);
     }
 
-    for (; (i + 40 + 32) < len; i += 32) {
-        uint64_t in1;
-        uint64_t in2;
-        uint64_t in3;
-        uint64_t in4;
-        uint64_t a1, a2, a3, a4;
-        uint64_t b1, b2, b3, b4;
-        uint64_t c1, c2, c3, c4;
-        uint64_t d1, d2, d3, d4;
-
-
-        in1 = Z_U64_FROM_LE(input[i / sizeof(uint64_t)]) ^ next1;
-        in2 = Z_U64_FROM_LE(input[i / sizeof(uint64_t) + 1]) ^ next2;
-
-        NEXT_ROUND(in1, a1, a2, a3, a4);
-
-        NEXT_ROUND(in2, b1, b2, b3, b4);
-
-        in3 = Z_U64_FROM_LE(input[i / sizeof(uint64_t) + 2]) ^ next3 ^ a1;
-        in4 = Z_U64_FROM_LE(input[i / sizeof(uint64_t) + 3]) ^ next4 ^ a2 ^ b1;
-
-        NEXT_ROUND(in3, c1, c2, c3, c4);
-
-        NEXT_ROUND(in4, d1, d2, d3, d4);
-
-        ACCUM_ROUND(next1, next2, next3, next4, next5);
-    }
-
-    memcpy(final, input+(i / sizeof(uint64_t)), len-i);
-    final[0] ^= Z_U64_TO_LE(next1);
-    final[1] ^= Z_U64_TO_LE(next2);
-    final[2] ^= Z_U64_TO_LE(next3);
-    final[3] ^= Z_U64_TO_LE(next4);
-    final[4] ^= Z_U64_TO_LE(next5);
-
-    /* At most 72 bytes */
-    return ~crc32_copy_small(crc, NULL, (uint8_t*)final, len-i, 72, 0);
+    uint64_t carry[5];
+    carry[0] = next1;
+    carry[1] = next2;
+    carry[2] = next3;
+    carry[3] = next4;
+    carry[4] = next5;
+    return chorba_small_tail(buf, i, len, NULL, 0, carry);
 }
 
 #else // CHORBA_W == 8
@@ -662,10 +649,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
 Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit(uint32_t crc, const uint8_t *buf, size_t len) {
     /* The calling function ensured that this is aligned correctly */
     const uint32_t* input = (const uint32_t*)buf;
-    uint32_t final[20] = {0};
-
     uint32_t next1 = ~crc;
-    crc = 0;
     uint32_t next2 = 0;
     uint32_t next3 = 0;
     uint32_t next4 = 0;
@@ -818,20 +802,18 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit(uint32_t crc, const 
 
     }
 
-    memcpy(final, input+(i/sizeof(uint32_t)), len-i);
-    final[0] ^= Z_U32_TO_LE(next1);
-    final[1] ^= Z_U32_TO_LE(next2);
-    final[2] ^= Z_U32_TO_LE(next3);
-    final[3] ^= Z_U32_TO_LE(next4);
-    final[4] ^= Z_U32_TO_LE(next5);
-    final[5] ^= Z_U32_TO_LE(next6);
-    final[6] ^= Z_U32_TO_LE(next7);
-    final[7] ^= Z_U32_TO_LE(next8);
-    final[8] ^= Z_U32_TO_LE(next9);
-    final[9] ^= Z_U32_TO_LE(next10);
-
-    /* At most 80 bytes */
-    return ~crc32_copy_small(crc, NULL, (uint8_t*)final, len-i, 80, 0);
+    uint32_t carry[10];
+    carry[0] = next1;
+    carry[1] = next2;
+    carry[2] = next3;
+    carry[3] = next4;
+    carry[4] = next5;
+    carry[5] = next6;
+    carry[6] = next7;
+    carry[7] = next8;
+    carry[8] = next9;
+    carry[9] = next10;
+    return chorba_small_tail(buf, i, len, NULL, 0, carry);
 }
 #endif // CHORBA_W == 8
 

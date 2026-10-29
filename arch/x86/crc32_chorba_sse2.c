@@ -42,10 +42,7 @@
 Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint8_t *buf, size_t len) {
     /* The calling function ensured that this is aligned correctly */
     const uint64_t* input = (const uint64_t*)buf;
-    ALIGNED_(16) uint64_t final[9] = {0};
     uint64_t next1 = ~crc;
-    crc = 0;
-    uint64_t next2, next3, next4, next5;
 
     __m128i next12 = _mm_cvtsi64_si128(next1);
     __m128i next34 = _mm_setzero_si128();
@@ -270,43 +267,12 @@ Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint8_t
         ACCUM_ROUND();
     }
 
-    next1 = _mm_cvtsi128_si64(next12);
-    next2 = _mm_cvtsi128_si64(_mm_unpackhi_epi64(next12, next12));
-    next3 = _mm_cvtsi128_si64(next34);
-    next4 = _mm_cvtsi128_si64(_mm_unpackhi_epi64(next34, next34));
-    next5 = _mm_cvtsi128_si64(next56);
-
-    /* Skip the call to memcpy */
-    size_t copy_len = len - i;
-    __m128i *final128 = (__m128i*)final;
-    __m128i *input128 = (__m128i*)(input + (i / sizeof(uint64_t)));
-    while (copy_len >= 64) {
-        _mm_store_si128(final128++, _mm_load_si128(input128++));
-        _mm_store_si128(final128++, _mm_load_si128(input128++));
-        _mm_store_si128(final128++, _mm_load_si128(input128++));
-        _mm_store_si128(final128++, _mm_load_si128(input128++));
-        copy_len -= 64;
-    }
-
-    while (copy_len >= 16) {
-        _mm_store_si128(final128++, _mm_load_si128(input128++));
-        copy_len -= 16;
-    }
-
-    uint8_t *src_bytes = (uint8_t*)input128;
-    uint8_t *dst_bytes = (uint8_t*)final128;
-    while (copy_len--) {
-       *dst_bytes++ = *src_bytes++;
-    }
-
-    final[0] ^= next1;
-    final[1] ^= next2;
-    final[2] ^= next3;
-    final[3] ^= next4;
-    final[4] ^= next5;
-
-    /* At most 72 bytes */
-    return ~crc32_copy_small(crc, NULL, (uint8_t*)final, len - i, 72, 0);
+    /* The carry lanes in memory are the words the tail takes, on either word width */
+    ALIGNED_(16) chorba_word_t carry[48 / sizeof(chorba_word_t)];
+    _mm_store_si128((__m128i*)carry, next12);
+    _mm_store_si128((__m128i*)carry + 1, next34);
+    _mm_store_si128((__m128i*)carry + 2, next56);
+    return chorba_small_tail(buf, i, len, NULL, 0, carry);
 }
 
 Z_INTERNAL uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t len) {
