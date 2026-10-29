@@ -819,7 +819,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit(uint32_t crc, const 
 
 Z_INTERNAL uint32_t crc32_chorba(uint32_t crc, const uint8_t *buf, size_t len) {
     uintptr_t align_diff = ALIGN_DIFF(buf, 8);
-    /* At most 79 bytes on 64-bit builds and 87 on 32-bit ones */
+    /* At most 54 bytes on 64-bit builds and 50 on 32-bit ones, the tail folds anything longer */
     if (len <= align_diff + CHORBA_SMALL_THRESHOLD)
         return ~crc32_copy_small(~crc, NULL, buf, len, 7 + CHORBA_SMALL_THRESHOLD, 0);
 

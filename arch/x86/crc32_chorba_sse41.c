@@ -237,7 +237,7 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
 
 Z_INTERNAL uint32_t crc32_chorba_sse41(uint32_t crc, const uint8_t *buf, size_t len) {
     uintptr_t align_diff = ALIGN_DIFF(buf, 16);
-    /* At most 87 bytes */
+    /* At most 62 bytes, the tail folds anything longer */
     if (len <= align_diff + CHORBA_SMALL_THRESHOLD_64BIT)
         return ~crc32_copy_small(~crc, NULL, buf, len, 15 + CHORBA_SMALL_THRESHOLD_64BIT, 0);
 
