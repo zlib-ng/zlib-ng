@@ -37,6 +37,17 @@
         n5 = d4; \
     } while (0)
 
+/* The 32-bit kernel's shifted copies of a word, NEXT_ROUND in the 32-bit word */
+#define NEXT_ROUND_32(invec, x1, x2, x3, x4, x6, x7) \
+    do { \
+        x1 = ((invec) << 17); \
+        x2 = ((invec) >> 15) ^ ((invec) << 23); \
+        x3 = ((invec) >> 9) ^ ((invec) << 19); \
+        x4 = ((invec) >> 13); \
+        x6 = ((invec) << 12); \
+        x7 = ((invec) >> 20); \
+    } while (0)
+
 /* Input word k of the current round */
 #define CHORBA_IN(k) input[i / sizeof(chorba_word_t) + (k)]
 
@@ -162,12 +173,8 @@
     } while (0)
 #else
 #  define CHORBA_TAIL_FOLD(in1) do { \
-        uint32_t x1 = (in1 << 17); \
-        uint32_t x2 = (in1 >> 15) ^ (in1 << 23); \
-        uint32_t x3 = (in1 >> 9) ^ (in1 << 19); \
-        uint32_t x4 = (in1 >> 13); \
-        uint32_t x6 = (in1 << 12); \
-        uint32_t x7 = (in1 >> 20); \
+        uint32_t x1, x2, x3, x4, x6, x7; \
+        NEXT_ROUND_32(in1, x1, x2, x3, x4, x6, x7); \
         next1 = next2; \
         next2 = next3; \
         next3 = next4; \
@@ -664,83 +671,33 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit(uint32_t crc, const 
         in3 = Z_U32_FROM_LE(input[i/sizeof(uint32_t) + 2]) ^ next3;
         in4 = Z_U32_FROM_LE(input[i/sizeof(uint32_t) + 3]) ^ next4;
 
-        a1 = (in1 << 17);
-        a2 = (in1 >> 15) ^ (in1 << 23);
-        a3 = (in1 >> 9) ^ (in1 << 19);
-        a4 = (in1 >> 13);
-        a6 = (in1 << 12);
-        a7 = (in1 >> 20);
+        NEXT_ROUND_32(in1, a1, a2, a3, a4, a6, a7);
 
-        b1 = (in2 << 17);
-        b2 = (in2 >> 15) ^ (in2 << 23);
-        b3 = (in2 >> 9) ^ (in2 << 19);
-        b4 = (in2 >> 13);
-        b6 = (in2 << 12);
-        b7 = (in2 >> 20);
+        NEXT_ROUND_32(in2, b1, b2, b3, b4, b6, b7);
 
-        c1 = (in3 << 17);
-        c2 = (in3 >> 15) ^ (in3 << 23);
-        c3 = (in3 >> 9) ^ (in3 << 19);
-        c4 = (in3 >> 13);
-        c6 = (in3 << 12);
-        c7 = (in3 >> 20);
+        NEXT_ROUND_32(in3, c1, c2, c3, c4, c6, c7);
 
-        d1 = (in4 << 17);
-        d2 = (in4 >> 15) ^ (in4 << 23);
-        d3 = (in4 >> 9) ^ (in4 << 19);
-        d4 = (in4 >> 13);
-        d6 = (in4 << 12);
-        d7 = (in4 >> 20);
+        NEXT_ROUND_32(in4, d1, d2, d3, d4, d6, d7);
 
         in5 = Z_U32_FROM_LE(input[i/sizeof(uint32_t) + 4]) ^ next5 ^ a1;
         in6 = Z_U32_FROM_LE(input[i/sizeof(uint32_t) + 5]) ^ next6 ^ a2 ^ b1;
         in7 = Z_U32_FROM_LE(input[i/sizeof(uint32_t) + 6]) ^ next7 ^ a3 ^ b2 ^ c1;
         in8 = Z_U32_FROM_LE(input[i/sizeof(uint32_t) + 7]) ^ next8 ^ a4 ^ b3 ^ c2 ^ d1;
 
-        e1 = (in5 << 17);
-        e2 = (in5 >> 15) ^ (in5 << 23);
-        e3 = (in5 >> 9) ^ (in5 << 19);
-        e4 = (in5 >> 13);
-        e6 = (in5 << 12);
-        e7 = (in5 >> 20);
+        NEXT_ROUND_32(in5, e1, e2, e3, e4, e6, e7);
 
-        f1 = (in6 << 17);
-        f2 = (in6 >> 15) ^ (in6 << 23);
-        f3 = (in6 >> 9) ^ (in6 << 19);
-        f4 = (in6 >> 13);
-        f6 = (in6 << 12);
-        f7 = (in6 >> 20);
+        NEXT_ROUND_32(in6, f1, f2, f3, f4, f6, f7);
 
-        g1 = (in7 << 17);
-        g2 = (in7 >> 15) ^ (in7 << 23);
-        g3 = (in7 >> 9) ^ (in7 << 19);
-        g4 = (in7 >> 13);
-        g6 = (in7 << 12);
-        g7 = (in7 >> 20);
+        NEXT_ROUND_32(in7, g1, g2, g3, g4, g6, g7);
 
-        h1 = (in8 << 17);
-        h2 = (in8 >> 15) ^ (in8 << 23);
-        h3 = (in8 >> 9) ^ (in8 << 19);
-        h4 = (in8 >> 13);
-        h6 = (in8 << 12);
-        h7 = (in8 >> 20);
+        NEXT_ROUND_32(in8, h1, h2, h3, h4, h6, h7);
 
         in9 = Z_U32_FROM_LE(input[i/sizeof(uint32_t) + 8]) ^ next9 ^ b4 ^ c3 ^ d2 ^ e1;
         in10 = Z_U32_FROM_LE(input[i/sizeof(uint32_t) + 9]) ^ next10 ^ a6 ^ c4 ^ d3 ^ e2 ^ f1;
 
-        i1 = (in9 << 17);
-        i2 = (in9 >> 15) ^ (in9 << 23);
-        i3 = (in9 >> 9) ^ (in9 << 19);
-        i4 = (in9 >> 13);
-        i6 = (in9 << 12);
-        i7 = (in9 >> 20);
+        NEXT_ROUND_32(in9, i1, i2, i3, i4, i6, i7);
 
-        j1 = (in10 << 17);
-        j2 = (in10 >> 15) ^ (in10 << 23);
-        j3 = (in10 >> 9) ^ (in10 << 19);
-        j4 = (in10 >> 13);
-        j6 = (in10 << 12);
-        j7 = (in10 >> 20);
+        NEXT_ROUND_32(in10, j1, j2, j3, j4, j6, j7);
 
         out1 = a7 ^ b6 ^ d4 ^ e3 ^ f2 ^ g1;
         out2 = b7 ^ c6 ^ e4 ^ f3 ^ g2 ^ h1;
