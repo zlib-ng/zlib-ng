@@ -17,19 +17,23 @@
 #ifdef ARCH_64BIT
 #  define CHORBA_SMALL_THRESHOLD 47
 #  define CHORBA_W 8
+#  define CHORBA_CARRY_WORDS 5
 #  define CHORBA_CARRY_PARAMS chorba_word_t next1, chorba_word_t next2, chorba_word_t next3, chorba_word_t next4, chorba_word_t next5
 #  define CHORBA_NO_CARRY 0, 0, 0, 0, 0
 #  define CHORBA_CARRY_FROM(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4]
 #  define CHORBA_WORD_FROM_LE(word) Z_U64_FROM_LE(word)
+#  define CHORBA_WORD_TO_LE(word) Z_U64_TO_LE(word)
     typedef uint64_t chorba_word_t;
 #else
 #  define CHORBA_SMALL_THRESHOLD 43
 #  define CHORBA_W 4
+#  define CHORBA_CARRY_WORDS 10
 #  define CHORBA_CARRY_PARAMS chorba_word_t next1, chorba_word_t next2, chorba_word_t next3, chorba_word_t next4, chorba_word_t next5, \
                               chorba_word_t next6, chorba_word_t next7, chorba_word_t next8, chorba_word_t next9, chorba_word_t next10
 #  define CHORBA_NO_CARRY 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 #  define CHORBA_CARRY_FROM(a) (a)[0], (a)[1], (a)[2], (a)[3], (a)[4], (a)[5], (a)[6], (a)[7], (a)[8], (a)[9]
 #  define CHORBA_WORD_FROM_LE(word) Z_U32_FROM_LE(word)
+#  define CHORBA_WORD_TO_LE(word) Z_U32_TO_LE(word)
     typedef uint32_t chorba_word_t;
 #endif
 
