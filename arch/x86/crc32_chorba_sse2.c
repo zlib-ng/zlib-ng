@@ -272,7 +272,7 @@ Z_INTERNAL uint32_t chorba_small_nondestructive_sse2(uint32_t crc, const uint8_t
     _mm_store_si128((__m128i*)carry, next12);
     _mm_store_si128((__m128i*)carry + 1, next34);
     _mm_store_si128((__m128i*)carry + 2, next56);
-    return chorba_small_tail(buf, i, len, NULL, 0, carry);
+    return chorba_small_tail(buf, i, len, NULL, 0, CHORBA_CARRY_FROM(carry));
 }
 
 Z_INTERNAL uint32_t crc32_chorba_sse2(uint32_t crc, const uint8_t *buf, size_t len) {

@@ -231,8 +231,7 @@ Z_FORCEINLINE static uint32_t crc32_chorba_32768_nondestructive_sse41(uint32_t c
        *tail_bytes++ = 0;
     }
 
-    static const chorba_word_t no_carry[CHORBA_CARRY_WORDS] = {0};
-    return chorba_small_tail(buf, i, len, (const chorba_word_t*)bitbuffer, SIZE_MAX, no_carry);
+    return chorba_small_tail(buf, i, len, (const chorba_word_t*)bitbuffer, SIZE_MAX, CHORBA_NO_CARRY);
 }
 
 Z_INTERNAL uint32_t crc32_chorba_sse41(uint32_t crc, const uint8_t *buf, size_t len) {

@@ -155,12 +155,11 @@
  * loops would cost a caller's main loop its vectorization or registers. */
 #if CHORBA_W == 8
 Z_INTERNAL Z_NOINLINE uint32_t chorba_small_tail(const uint8_t *buf, size_t i, size_t len, const chorba_word_t *pending_buf,
-                                                 size_t mask, const chorba_word_t carry[CHORBA_CARRY_WORDS]) {
+                                                 size_t mask, CHORBA_CARRY_PARAMS) {
     /* The calling function ensured that this is aligned correctly */
     const chorba_worda_t *input = (const chorba_worda_t*)buf;
     const chorba_worda_t *pending = (const chorba_worda_t*)pending_buf;
     static const chorba_word_t nothing_owed = 0;
-    uint64_t next1 = carry[0], next2 = carry[1], next3 = carry[2], next4 = carry[3], next5 = carry[4];
     uint64_t final[6] = {0};
 
     if (pending == NULL) {
@@ -214,13 +213,11 @@ Z_INTERNAL Z_NOINLINE uint32_t chorba_small_tail(const uint8_t *buf, size_t i, s
 }
 #else
 Z_INTERNAL Z_NOINLINE uint32_t chorba_small_tail(const uint8_t *buf, size_t i, size_t len, const chorba_word_t *pending_buf,
-                                                 size_t mask, const chorba_word_t carry[CHORBA_CARRY_WORDS]) {
+                                                 size_t mask, CHORBA_CARRY_PARAMS) {
     /* The calling function ensured that this is aligned correctly */
     const chorba_worda_t *input = (const chorba_worda_t*)buf;
     const chorba_worda_t *pending = (const chorba_worda_t*)pending_buf;
     static const chorba_word_t nothing_owed = 0;
-    uint32_t next1 = carry[0], next2 = carry[1], next3 = carry[2], next4 = carry[3], next5 = carry[4];
-    uint32_t next6 = carry[5], next7 = carry[6], next8 = carry[7], next9 = carry[8], next10 = carry[9];
     uint32_t final[11] = {0};
 
     if (pending == NULL) {
@@ -369,8 +366,7 @@ Z_INTERNAL uint32_t crc32_chorba_118960_nondestructive(uint32_t crc, const uint8
         bitbuffer[(j + (i / sizeof(chorba_word_t))) % bitbuffer_size_zwords] = 0;
     }
 
-    static const chorba_word_t no_carry[CHORBA_CARRY_WORDS] = {0};
-    crc = chorba_small_tail(buf, i, len, (const chorba_word_t*)bitbuffer, bitbuffer_size_zwords - 1, no_carry);
+    crc = chorba_small_tail(buf, i, len, (const chorba_word_t*)bitbuffer, bitbuffer_size_zwords - 1, CHORBA_NO_CARRY);
 
 #if defined(__EMSCRIPTEN__)
     zng_free(bitbuffer);
@@ -442,8 +438,7 @@ Z_INTERNAL uint32_t crc32_chorba_32768_nondestructive(uint32_t crc, const uint8_
         bitbuffer[(i/8 + 7 + 300)] = in8;
     }
 
-    static const uint64_t no_carry[5] = {0};
-    return chorba_small_tail(buf, i, len, bitbuffer, SIZE_MAX, no_carry);
+    return chorba_small_tail(buf, i, len, bitbuffer, SIZE_MAX, CHORBA_NO_CARRY);
 }
 
 /* Implement Chorba algorithm from https://arxiv.org/abs/2412.16398 */
@@ -635,13 +630,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive(uint32_t crc, const uint8_
         ACCUM_ROUND(next1, next2, next3, next4, next5);
     }
 
-    uint64_t carry[5];
-    carry[0] = next1;
-    carry[1] = next2;
-    carry[2] = next3;
-    carry[3] = next4;
-    carry[4] = next5;
-    return chorba_small_tail(buf, i, len, NULL, 0, carry);
+    return chorba_small_tail(buf, i, len, NULL, 0, next1, next2, next3, next4, next5);
 }
 
 #else // CHORBA_W == 8
@@ -802,18 +791,7 @@ Z_INTERNAL uint32_t crc32_chorba_small_nondestructive_32bit(uint32_t crc, const 
 
     }
 
-    uint32_t carry[10];
-    carry[0] = next1;
-    carry[1] = next2;
-    carry[2] = next3;
-    carry[3] = next4;
-    carry[4] = next5;
-    carry[5] = next6;
-    carry[6] = next7;
-    carry[7] = next8;
-    carry[8] = next9;
-    carry[9] = next10;
-    return chorba_small_tail(buf, i, len, NULL, 0, carry);
+    return chorba_small_tail(buf, i, len, NULL, 0, next1, next2, next3, next4, next5, next6, next7, next8, next9, next10);
 }
 #endif // CHORBA_W == 8
 
