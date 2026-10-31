@@ -38,6 +38,9 @@ void inflate_fast_safe_power8(PREFIX3(stream) *strm, uint32_t start);
 #endif
 #ifndef POWER8_VSX_CRC32_NATIVE
 #  define CRC32_BRAID_FALLBACK
+#  ifndef WITHOUT_CHORBA
+#    define CRC32_CHORBA_FALLBACK
+#  endif
 #endif
 
 #ifdef POWER9
