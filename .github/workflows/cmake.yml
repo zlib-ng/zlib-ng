@@ -399,7 +399,7 @@ jobs:
             coverage: ${{ github.repository == 'zlib-ng/zlib-ng' && 'el10_clang_s390x_dfltcc_asan' || 'ubuntu_gcc_s390x_dfltcc' }}
 
           - name: ${{ github.repository == 'zlib-ng/zlib-ng' && 'EL10 Clang' || 'Ubuntu GCC' }} S390X DFLTCC UBSAN
-            os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-latest' }}
+            os: ${{ github.repository == 'zlib-ng/zlib-ng' && 'z15' || 'ubuntu-24.04' }}
             cache-key: s390x
             compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang' || 'gcc' }}
             cxx-compiler: ${{ github.repository == 'zlib-ng/zlib-ng' && 'clang++' || 'g++' }}
@@ -655,13 +655,14 @@ jobs:
             cmake-args: -G Ninja
             coverage: win64_gcc
 
-          - name: Windows GCC Debug
+          - name: Windows GCC MinGW64 Debug
             os: windows-latest
-            compiler: gcc
-            cxx-compiler: g++
+            shell: msys2 {0}
+            compiler: x86_64-w64-mingw32-gcc
+            cxx-compiler: x86_64-w64-mingw32-g++
             cmake-args: -G Ninja
             build-config: Debug
-            # Coverage disabled due to gcov bug
+            coverage: win64_gcc_debug
 
           - name: Windows GCC Native Instructions (AVX)
             os: windows-2022
@@ -849,6 +850,27 @@ jobs:
           mingw-w64-i686-toolchain
           mingw-w64-i686-cmake
 
+    - name: Setup MinGW64 (UCRT64)
+      if: runner.os == 'Windows' && contains(matrix.name, 'GCC MinGW64')
+      uses: msys2/setup-msys2@v2
+      with:
+        update: true
+        msystem: UCRT64
+        install: >-
+          mingw-w64-ucrt-x86_64-toolchain
+          mingw-w64-ucrt-x86_64-cmake
+          mingw-w64-ucrt-x86_64-gcovr
+          mingw-w64-ucrt-x86_64-git
+          mingw-w64-ucrt-x86_64-libxml2
+          mingw-w64-ucrt-x86_64-libxslt
+          mingw-w64-ucrt-x86_64-make
+          mingw-w64-ucrt-x86_64-pkgconf
+          mingw-w64-ucrt-x86_64-python-colorlog
+          mingw-w64-ucrt-x86_64-python-jinja
+          mingw-w64-ucrt-x86_64-python-lxml
+          mingw-w64-ucrt-x86_64-python-markupsafe
+          mingw-w64-ucrt-x86_64-python-pygments
+
     - name: Add ubuntu mirrors
       if: runner.os == 'Linux' && !contains(matrix.os, 'z15')
       # Github Actions caching proxy is at times unreliable
@@ -890,7 +912,7 @@ jobs:
         # strawberryperl installs /c/Strawberry/c/bin/libstdc++-6.dll, which is incompatible with the mingw64 one.
         # zlib-ng does not need perl, so simply remove it.
         choco uninstall --no-progress strawberryperl
-        choco install --no-progress ninja ${{ matrix.packages }}
+        choco upgrade --no-progress ninja ${{ matrix.packages }}
 
     - name: Install Visual Studio toolset v140 (Windows)
       if: contains(matrix.name, 'v140')
@@ -1089,7 +1111,7 @@ jobs:
         UBSAN_OPTIONS: ${{ matrix.ubsan-options || 'verbosity=0' }}:print_stacktrace=1:abort_on_error=1:halt_on_error=1
 
     - name: Generate coverage report
-      if: matrix.coverage && !contains(matrix.name, 'Cygwin')
+      if: matrix.coverage && !contains(matrix.name, 'Cygwin') && !contains(matrix.name, 'MinGW64')
       shell: bash
       run: |
         python3 -u -m venv ./venv
@@ -1112,6 +1134,22 @@ jobs:
         source ./venv/bin/activate
         python3.12 -u -m pip install gcovr
         python3.12 -m gcovr -j 5 --gcov-ignore-parse-errors --verbose \
+          --exclude '(.*/|^)(_deps|benchmarks)/.*' \
+          --exclude-branches-by-pattern '.*CHECK_.*' \
+          --exclude-branches-by-pattern '.*EXPECT_.*' \
+          --exclude-unreachable-branches \
+          --merge-mode-functions separate \
+          --merge-lines \
+          --gcov-executable "${{ matrix.gcov-exec || 'gcov' }}" \
+          --xml --output ${{ matrix.coverage }}.xml
+
+    - name: Generate coverage report (MinGW64)
+      if: matrix.coverage && contains(matrix.name, 'MinGW64')
+      run: |
+        python3 -u -m venv --upgrade-deps --system-site-packages ./venv
+        source ./venv/bin/activate
+        python3 -u -m pip install gcovr
+        python3 -m gcovr -j 5 --gcov-ignore-parse-errors --verbose \
           --exclude '(.*/|^)(_deps|benchmarks)/.*' \
           --exclude-branches-by-pattern '.*CHECK_.*' \
           --exclude-branches-by-pattern '.*EXPECT_.*' \

@@ -9,7 +9,7 @@
 #  define HAVE_MAY_ALIAS
 #endif
 
-static inline uint16_t zng_memread_2(const void *ptr) {
+Z_FORCEINLINE static uint16_t zng_memread_2(const void *ptr) {
 #if defined(HAVE_MAY_ALIAS)
     typedef struct { uint16_t val; } __attribute__ ((__packed__, __may_alias__)) unaligned_uint16_t;
     return ((const unaligned_uint16_t *)ptr)->val;
@@ -20,7 +20,7 @@ static inline uint16_t zng_memread_2(const void *ptr) {
 #endif
 }
 
-static inline uint32_t zng_memread_4(const void *ptr) {
+Z_FORCEINLINE static uint32_t zng_memread_4(const void *ptr) {
 #if defined(HAVE_MAY_ALIAS)
     typedef struct { uint32_t val; } __attribute__ ((__packed__, __may_alias__)) unaligned_uint32_t;
     return ((const unaligned_uint32_t *)ptr)->val;
@@ -31,7 +31,7 @@ static inline uint32_t zng_memread_4(const void *ptr) {
 #endif
 }
 
-static inline uint64_t zng_memread_8(const void *ptr) {
+Z_FORCEINLINE static uint64_t zng_memread_8(const void *ptr) {
 #if defined(HAVE_MAY_ALIAS)
     typedef struct { uint64_t val; } __attribute__ ((__packed__, __may_alias__)) unaligned_uint64_t;
     return ((const unaligned_uint64_t *)ptr)->val;
@@ -42,7 +42,7 @@ static inline uint64_t zng_memread_8(const void *ptr) {
 #endif
 }
 
-static inline void zng_memwrite_2(void *ptr, uint16_t val) {
+Z_FORCEINLINE static void zng_memwrite_2(void *ptr, uint16_t val) {
 #if defined(HAVE_MAY_ALIAS)
     typedef struct { uint16_t val; } __attribute__ ((__packed__, __may_alias__)) unaligned_uint16_t;
     ((unaligned_uint16_t *)ptr)->val = val;
@@ -51,7 +51,7 @@ static inline void zng_memwrite_2(void *ptr, uint16_t val) {
 #endif
 }
 
-static inline void zng_memwrite_4(void *ptr, uint32_t val) {
+Z_FORCEINLINE static void zng_memwrite_4(void *ptr, uint32_t val) {
 #if defined(HAVE_MAY_ALIAS)
     typedef struct { uint32_t val; } __attribute__ ((__packed__, __may_alias__)) unaligned_uint32_t;
     ((unaligned_uint32_t *)ptr)->val = val;
@@ -60,7 +60,7 @@ static inline void zng_memwrite_4(void *ptr, uint32_t val) {
 #endif
 }
 
-static inline void zng_memwrite_8(void *ptr, uint64_t val) {
+Z_FORCEINLINE static void zng_memwrite_8(void *ptr, uint64_t val) {
 #if defined(HAVE_MAY_ALIAS)
     typedef struct { uint64_t val; } __attribute__ ((__packed__, __may_alias__)) unaligned_uint64_t;
     ((unaligned_uint64_t *)ptr)->val = val;
@@ -72,7 +72,7 @@ static inline void zng_memwrite_8(void *ptr, uint64_t val) {
 /* Use zng_memread_* instead of memcmp to avoid older compilers not converting memcmp
    calls to unaligned comparisons when unaligned access is supported. Use memcmp only when
    unaligned support is not available to avoid an extra call to memcpy. */
-static inline int32_t zng_memcmp_2(const void * Z_RESTRICT src0, const void * Z_RESTRICT src1) {
+Z_FORCEINLINE static int32_t zng_memcmp_2(const void * Z_RESTRICT src0, const void * Z_RESTRICT src1) {
 #if defined(HAVE_MAY_ALIAS) || defined(_MSC_VER)
     return zng_memread_2(src0) != zng_memread_2(src1);
 #else
@@ -80,7 +80,7 @@ static inline int32_t zng_memcmp_2(const void * Z_RESTRICT src0, const void * Z_
 #endif
 }
 
-static inline int32_t zng_memcmp_4(const void * Z_RESTRICT src0, const void * Z_RESTRICT src1) {
+Z_FORCEINLINE static int32_t zng_memcmp_4(const void * Z_RESTRICT src0, const void * Z_RESTRICT src1) {
 #if defined(HAVE_MAY_ALIAS) || defined(_MSC_VER)
     return zng_memread_4(src0) != zng_memread_4(src1);
 #else
@@ -88,7 +88,7 @@ static inline int32_t zng_memcmp_4(const void * Z_RESTRICT src0, const void * Z_
 #endif
 }
 
-static inline int32_t zng_memcmp_8(const void * Z_RESTRICT src0, const void * Z_RESTRICT src1) {
+Z_FORCEINLINE static int32_t zng_memcmp_8(const void * Z_RESTRICT src0, const void * Z_RESTRICT src1) {
 #if defined(HAVE_MAY_ALIAS) || defined(_MSC_VER)
     return zng_memread_8(src0) != zng_memread_8(src1);
 #else
