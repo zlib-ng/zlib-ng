@@ -807,7 +807,7 @@ jobs:
 
     - name: Setup Cygwin
       if: runner.os == 'Windows' && contains(matrix.name, 'Cygwin')
-      uses: cygwin/cygwin-install-action@v6
+      uses: cygwin/cygwin-install-action@v7
       with:
         packages: >-
           cmake
