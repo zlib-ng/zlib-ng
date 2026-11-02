@@ -17,6 +17,9 @@ void slide_hash_msa(deflate_state *s);
 #define CHUNKSET_FALLBACK
 #define COMPARE256_FALLBACK
 #define CRC32_BRAID_FALLBACK
+#ifndef WITHOUT_CHORBA
+#  define CRC32_CHORBA_FALLBACK
+#endif
 
 #if !defined(MIPS_MSA_NATIVE)
 #  define ADLER32_FALLBACK

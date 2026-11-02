@@ -16,6 +16,7 @@
 
 #include "zbuild.h"
 #include "arch_functions.h"
+#include "crc32_p.h"
 
 #include "vx_intrins.h"
 
@@ -199,13 +200,15 @@ static uint32_t crc32_le_vgfm_16(uint32_t crc, const uint8_t *buf, size_t len) {
 uint32_t Z_INTERNAL crc32_s390_vx(uint32_t crc, const unsigned char *buf, size_t len) {
     size_t prealign, aligned, remaining;
 
+    /* At most 78 bytes */
     if (len < VX_MIN_LEN + VX_ALIGN_MASK)
-        return crc32_braid(crc, buf, len);
+        return ~crc32_copy_small(~crc, NULL, buf, len, VX_MIN_LEN + VX_ALIGN_MASK - 1, 0);
 
     if ((uintptr_t)buf & VX_ALIGN_MASK) {
         prealign = (size_t)ALIGN_DIFF(buf, VX_ALIGNMENT);
         len -= prealign;
-        crc = crc32_braid(crc, buf, prealign);
+        /* At most 15 bytes */
+        crc = ~crc32_copy_small(~crc, NULL, buf, prealign, VX_ALIGN_MASK, 0);
         buf += prealign;
     }
     aligned = ALIGN_DOWN(len, VX_ALIGNMENT);
@@ -213,8 +216,9 @@ uint32_t Z_INTERNAL crc32_s390_vx(uint32_t crc, const unsigned char *buf, size_t
 
     crc = ~crc32_le_vgfm_16(~crc, buf, aligned);
 
+    /* At most 15 bytes */
     if (remaining)
-        crc = crc32_braid(crc, buf + aligned, remaining);
+        crc = ~crc32_copy_small(~crc, NULL, buf + aligned, remaining, VX_ALIGN_MASK, 0);
 
     return crc;
 }

@@ -8,6 +8,7 @@
 
 #include "zbuild.h"
 #include "arch_functions.h"
+#include "crc32_p.h"
 
 #define CLMUL_MIN_LEN 16   // Minimum size of buffer for _crc32_clmul
 #define CLMUL_CHUNK_LEN 16 // Length of chunk for clmul
@@ -81,13 +82,15 @@ finish_fold:
 }
 
 Z_INTERNAL uint32_t crc32_riscv64_zbc(uint32_t crc, const uint8_t *buf, size_t len) {
+    /* At most 15 bytes */
     if (len < CLMUL_MIN_LEN) {
-        return crc32_braid(crc, buf, len);
+        return ~crc32_copy_small(~crc, NULL, buf, len, CLMUL_MIN_LEN - 1, 0);
     }
 
     uint64_t unaligned_length = len % CLMUL_CHUNK_LEN;
     if (unaligned_length) {
-        crc = crc32_braid(crc, buf, unaligned_length);
+        /* At most 15 bytes */
+        crc = ~crc32_copy_small(~crc, NULL, buf, unaligned_length, CLMUL_CHUNK_LEN - 1, 0);
         buf += unaligned_length;
         len -= unaligned_length;
     }

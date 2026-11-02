@@ -32,11 +32,6 @@ uint32_t crc32_braid(uint32_t crc, const uint8_t *buf, size_t len);
 uint32_t crc32_copy_braid(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
 #endif
 
-/* Chorba is available whenever braid is needed as a fallback and hasn't been disabled. */
-#if defined(CRC32_BRAID_FALLBACK) && !defined(WITHOUT_CHORBA)
-#  define CRC32_CHORBA_FALLBACK
-#endif
-
 #ifdef CRC32_CHORBA_FALLBACK
   uint32_t crc32_chorba(uint32_t crc, const uint8_t *buf, size_t len);
   uint32_t crc32_copy_chorba(uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);

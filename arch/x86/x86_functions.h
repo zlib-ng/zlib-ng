@@ -10,6 +10,9 @@
 
 #if !defined(X86_PCLMULQDQ_NATIVE) && !defined(X86_VPCLMULQDQ_NATIVE)
 #  define CRC32_BRAID_FALLBACK
+#  ifndef WITHOUT_CHORBA
+#    define CRC32_CHORBA_FALLBACK
+#  endif
 #  ifndef WITHOUT_CHORBA_SSE
 #    define CRC32_CHORBA_SSE_FALLBACK
 #  endif

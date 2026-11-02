@@ -45,10 +45,10 @@ crc32_braid_c.o: $(SRCDIR)/crc32_braid_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/crc32_b
 crc32_braid_c.lo: $(SRCDIR)/crc32_braid_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/crc32_braid_p.h $(SRCTOP)/crc32_braid_tbl.h
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_braid_c.c
 
-crc32_chorba_c.o: $(SRCDIR)/crc32_chorba_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/crc32_braid_p.h $(SRCTOP)/crc32_braid_tbl.h
+crc32_chorba_c.o: $(SRCDIR)/crc32_chorba_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/crc32_chorba_p.h $(SRCTOP)/crc32_p.h $(SRCTOP)/crc32_braid_tbl.h
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_chorba_c.c
 
-crc32_chorba_c.lo: $(SRCDIR)/crc32_chorba_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/crc32_braid_p.h $(SRCTOP)/crc32_braid_tbl.h
+crc32_chorba_c.lo: $(SRCDIR)/crc32_chorba_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/crc32_chorba_p.h $(SRCTOP)/crc32_p.h $(SRCTOP)/crc32_braid_tbl.h
 	$(CC) $(SFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/crc32_chorba_c.c
 
 slide_hash_c.o: $(SRCDIR)/slide_hash_c.c  $(SRCTOP)/zbuild.h $(SRCTOP)/deflate.h

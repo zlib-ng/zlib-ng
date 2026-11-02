@@ -17,6 +17,9 @@ uint32_t crc32_copy_loongarch64(uint32_t crc, uint8_t *dst, const uint8_t *src, 
 
 #ifndef LOONGARCH_CRC_NATIVE
 #  define CRC32_BRAID_FALLBACK
+#  ifndef WITHOUT_CHORBA
+#    define CRC32_CHORBA_FALLBACK
+#  endif
 #endif
 
 #ifdef LOONGARCH_LSX
