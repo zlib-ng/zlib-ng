@@ -548,6 +548,12 @@ int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
 
     zng_tr_init(s);
 
+    /* Keep the window and the hash, but drop what was left unfinished */
+    s->block_start = (int)s->strstart;
+    s->lookahead = 0;
+    s->prev_length = 0;
+    s->match_available = 0;
+
     DEFLATE_RESET_KEEP_HOOK(strm);  /* hook for IBM Z DFLTCC */
 
     return Z_OK;
