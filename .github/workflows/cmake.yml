@@ -807,7 +807,7 @@ jobs:
 
     - name: Setup Cygwin
       if: runner.os == 'Windows' && contains(matrix.name, 'Cygwin')
-      uses: cygwin/cygwin-install-action@v7
+      uses: mtl1979/cygwin-install-action@c6312947185c9c939a2ebca6723236c7cd6b9145
       with:
         packages: >-
           cmake
@@ -817,17 +817,16 @@ jobs:
           make
           libxml2-devel
           libxslt-devel
-          python-pip-wheel=26.0.1-1
-          python39
-          python39-colorlog
-          python39-devel
-          python39-exceptiongroup
-          python39-jinja2
-          python39-lxml
-          python39-markupsafe
-          python39-pygments
-          python39-pip=26.0.1-1
-          python39-virtualenv
+          python-pip-wheel
+          python312
+          python312-colorlog
+          python312-devel
+          python312-jinja2
+          python312-lxml
+          python312-markupsafe
+          python312-pygments
+          python312-pip
+          python312-virtualenv
           zlib-devel
 
     - name: Restore cached Python packages (Cygwin)
@@ -835,7 +834,7 @@ jobs:
       uses: actions/cache@v6
       with:
         path: D:\cygwin\home\runneradmin\.cache
-        key: cygwin-pip-cache
+        key: cygwin-pip-cache-2
 
     - name: Setup MinGW32
       if: runner.os == 'Windows' && contains(matrix.name, 'MinGW32')
@@ -1109,10 +1108,10 @@ jobs:
     - name: Generate coverage report (Cygwin)
       if: matrix.coverage && contains(matrix.name, 'Cygwin')
       run: |
-        python3.9 -u -m venv --upgrade-deps --system-site-packages ./venv
+        python3.12 -u -m venv --upgrade-deps ./venv
         source ./venv/bin/activate
-        python3.9 -u -m pip install gcovr
-        python3.9 -m gcovr -j 5 --gcov-ignore-parse-errors --verbose \
+        python3.12 -u -m pip install gcovr
+        python3.12 -m gcovr -j 5 --gcov-ignore-parse-errors --verbose \
           --exclude '(.*/|^)(_deps|benchmarks)/.*' \
           --exclude-branches-by-pattern '.*CHECK_.*' \
           --exclude-branches-by-pattern '.*EXPECT_.*' \
