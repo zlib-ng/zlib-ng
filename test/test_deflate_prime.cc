@@ -89,3 +89,74 @@ TEST(deflate, prime) {
 
     EXPECT_STREQ((char *)uncompr, hello);
 }
+
+/* Finish a raw deflate stream of hello after the primed bits. The primed bytes must
+   come out first, followed by an intact deflate stream. */
+static void deflate_after_prime(PREFIX3(stream) *c_stream, const uint8_t *primed, uint32_t primed_len) {
+    PREFIX3(stream) d_stream;
+    uint8_t compr[2048], uncompr[128];
+    uint32_t i;
+    int err;
+
+    c_stream->next_in = (z_const unsigned char *)hello;
+    c_stream->avail_in = (uint32_t)hello_len;
+    c_stream->next_out = compr;
+    c_stream->avail_out = (uint32_t)sizeof(compr);
+    err = PREFIX(deflate)(c_stream, Z_FINISH);
+    EXPECT_EQ(err, Z_STREAM_END);
+    err = PREFIX(deflateEnd)(c_stream);
+    EXPECT_EQ(err, Z_OK);
+
+    ASSERT_GT(c_stream->total_out, primed_len);
+    for (i = 0; i < primed_len && compr[i] == primed[i]; i++)
+        ;
+    EXPECT_EQ(i, primed_len) << "primed byte differs";
+
+    memset(&d_stream, 0, sizeof(d_stream));
+    err = PREFIX(inflateInit2)(&d_stream, -MAX_WBITS);
+    ASSERT_EQ(err, Z_OK);
+
+    d_stream.next_in = compr + primed_len;
+    d_stream.avail_in = (uint32_t)c_stream->total_out - primed_len;
+    d_stream.next_out = uncompr;
+    d_stream.avail_out = (uint32_t)sizeof(uncompr);
+    err = PREFIX(inflate)(&d_stream, Z_FINISH);
+    EXPECT_EQ(err, Z_STREAM_END);
+
+    err = PREFIX(inflateEnd)(&d_stream);
+    EXPECT_EQ(err, Z_OK);
+
+    EXPECT_STREQ((char *)uncompr, hello);
+}
+
+/* Repeated calls with no deflate() in between must stop with Z_BUF_ERROR once the
+   pending buffer is full instead of writing past it */
+TEST(deflate, prime_pending_full) {
+    PREFIX3(stream) c_stream;
+    uint8_t primed[1024];
+    uint32_t pending = 0;
+    int32_t bits = 0;
+    int calls, err;
+
+    memset(&c_stream, 0, sizeof(c_stream));
+    /* memLevel 1 gives the smallest pending buffer */
+    err = PREFIX(deflateInit2)(&c_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, 1, Z_DEFAULT_STRATEGY);
+    ASSERT_EQ(err, Z_OK);
+
+    for (calls = 0; calls < (int)sizeof(primed) / 2; calls++) {
+        err = PREFIX(deflatePrime)(&c_stream, 16, calls);
+        if (err != Z_OK)
+            break;
+        primed[calls * 2] = (uint8_t)calls;
+        primed[calls * 2 + 1] = (uint8_t)(calls >> 8);
+    }
+    ASSERT_EQ(err, Z_BUF_ERROR) << "after " << calls << " calls";
+
+    /* The call that did not fit inserted nothing */
+    err = PREFIX(deflatePending)(&c_stream, &pending, &bits);
+    ASSERT_EQ(err, Z_OK);
+    EXPECT_EQ(pending, (uint32_t)calls * 2);
+    EXPECT_EQ(bits, 0);
+
+    deflate_after_prime(&c_stream, primed, pending);
+}
