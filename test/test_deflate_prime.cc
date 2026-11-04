@@ -160,3 +160,62 @@ TEST(deflate, prime_pending_full) {
 
     deflate_after_prime(&c_stream, primed, pending);
 }
+
+/* Only the requested low bits of value are inserted, also into an empty bit buffer */
+TEST(deflate, prime_value_bits) {
+    static const uint8_t primed[] = { 0x05, 0xff };
+    PREFIX3(stream) c_stream;
+    int err;
+
+    memset(&c_stream, 0, sizeof(c_stream));
+    err = PREFIX(deflateInit2)(&c_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY);
+    ASSERT_EQ(err, Z_OK);
+
+    /* Zero bits insert nothing */
+    err = PREFIX(deflatePrime)(&c_stream, 0, 0x7d);
+    EXPECT_EQ(err, Z_OK);
+    /* 101 and 00000 make the byte 0x05 */
+    err = PREFIX(deflatePrime)(&c_stream, 3, 0x7d);
+    EXPECT_EQ(err, Z_OK);
+    err = PREFIX(deflatePrime)(&c_stream, 5, 0x60);
+    EXPECT_EQ(err, Z_OK);
+    /* A full byte from a negative value */
+    err = PREFIX(deflatePrime)(&c_stream, 8, -1);
+    EXPECT_EQ(err, Z_OK);
+
+    deflate_after_prime(&c_stream, primed, sizeof(primed));
+}
+
+#ifndef TEST_STOCK_ZLIB
+/* Up to BIT_BUF_SIZE bits can be inserted in one call, with the bit buffer empty or not */
+TEST(deflate, prime_64) {
+    static const uint8_t primed[] = {
+        /* 64 bits of 0x12345678 */
+        0x78, 0x56, 0x34, 0x12, 0x00, 0x00, 0x00, 0x00,
+        /* 5 bits of 0x15, 64 bits of -2, 33 bits of -1 and 2 zero bits */
+        0xd5, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x3f
+    };
+    PREFIX3(stream) c_stream;
+    int err;
+
+    memset(&c_stream, 0, sizeof(c_stream));
+    err = PREFIX(deflateInit2)(&c_stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY);
+    ASSERT_EQ(err, Z_OK);
+
+    err = PREFIX(deflatePrime)(&c_stream, 65, 0);
+    EXPECT_EQ(err, Z_BUF_ERROR);
+
+    err = PREFIX(deflatePrime)(&c_stream, 64, 0x12345678);
+    EXPECT_EQ(err, Z_OK);
+    err = PREFIX(deflatePrime)(&c_stream, 5, 0x15);
+    EXPECT_EQ(err, Z_OK);
+    err = PREFIX(deflatePrime)(&c_stream, 64, -2);
+    EXPECT_EQ(err, Z_OK);
+    err = PREFIX(deflatePrime)(&c_stream, 33, -1);
+    EXPECT_EQ(err, Z_OK);
+    err = PREFIX(deflatePrime)(&c_stream, 2, 0);
+    EXPECT_EQ(err, Z_OK);
+
+    deflate_after_prime(&c_stream, primed, sizeof(primed));
+}
+#endif
