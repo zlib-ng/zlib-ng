@@ -195,7 +195,7 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
             free(compressed);
             free(dst);
             free(src);
-            ASSERT_LE(produced, n);
+            FAIL() << "inflate wrote " << produced << " bytes into " << n;
         }
     } while (err == Z_OK);
 
