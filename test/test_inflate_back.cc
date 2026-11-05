@@ -195,3 +195,128 @@ TEST_F(inflate_back, match_state_invalid_distance) {
     PREFIX(inflateBackEnd)(&d_strm);
     free(small_window);
 }
+
+namespace {
+
+/* Raw deflate: a stored 0xA5, then a final fixed block that copies 3 bytes. */
+class raw_bits {
+public:
+    void put(uint32_t val, unsigned n) {
+        for (unsigned i = 0; i < n; i++) {
+            if (val & 1)
+                data[nbit >> 3] |= (uint8_t)(1u << (nbit & 7));
+            val >>= 1;
+            nbit++;
+        }
+    }
+
+    /* Huffman codes are packed most-significant bit first. */
+    void huff(uint32_t code, unsigned n) {
+        for (int i = (int)n - 1; i >= 0; i--)
+            put((code >> i) & 1, 1);
+    }
+
+    unsigned size() const {
+        return (nbit + 7) >> 3;
+    }
+
+    uint8_t data[32] = {};
+    unsigned nbit = 0;
+};
+
+static unsigned craft_stored_then_match(uint8_t *out, unsigned dist) {
+    raw_bits b;
+
+    b.put(0, 1);             /* BFINAL */
+    b.put(0, 2);             /* stored */
+    while (b.nbit & 7)
+        b.put(0, 1);
+    b.put(1, 16);            /* LEN */
+    b.put(0xffffu ^ 1u, 16); /* NLEN */
+    b.put(0xa5, 8);
+
+    b.put(1, 1);             /* final */
+    b.put(1, 2);             /* fixed */
+    b.huff(1, 7);            /* length symbol 257: 3 bytes, code 0000001 */
+    b.huff(dist - 1, 5);     /* distance symbol, no extra bits for 1 or 2 */
+    b.huff(0, 7);            /* end of block */
+
+    unsigned n = b.size();
+    memcpy(out, b.data, n);
+    return n;
+}
+
+static int inflate_back_raw(const uint8_t *raw, unsigned n, unsigned pad, uint8_t *decoded, unsigned *produced) {
+    const int wbits = 15;
+    uint8_t *window = (uint8_t *)malloc(1u << wbits);
+    uint8_t input[96];
+    PREFIX3(stream) strm;
+    struct output_state out;
+    int err;
+
+    if (window == NULL)
+        return Z_MEM_ERROR;
+    memset(window, 0x5a, 1u << wbits);
+    memcpy(input, raw, n);
+    if (pad)
+        memset(input + n, 0, pad);
+
+    memset(&strm, 0, sizeof(strm));
+    err = PREFIX(inflateBackInit)(&strm, wbits, window);
+    if (err != Z_OK) {
+        free(window);
+        return err;
+    }
+    strm.next_in = input;
+    strm.avail_in = n + pad;
+    out.buf = decoded;
+    out.size = 64;
+    out.pos = 0;
+
+    err = PREFIX(inflateBack)(&strm, pull_all, &strm, push_all, &out);
+    PREFIX(inflateBackEnd)(&strm);
+    free(window);
+    *produced = (unsigned)out.pos;
+    return err;
+}
+
+}  // namespace
+
+/* One byte exists. A distance of 2 starts before that byte. Enough trailing
+ * input is left that inflateBack() takes inflate_fast(), which used to treat
+ * the byte already written in this window as history before the window. */
+TEST(inflate_back_distance, too_far_before_fast_path) {
+    uint8_t raw[32];
+    uint8_t decoded[64];
+    unsigned n = craft_stored_then_match(raw, 2);
+    unsigned produced = 0;
+
+    EXPECT_EQ(inflate_back_raw(raw, n, 32, decoded, &produced), Z_DATA_ERROR);
+}
+
+/* Same stream with too little input for inflate_fast(). 2.3.x only checked
+ * this when INFLATE_STRICT was enabled; develop already checks it. */
+TEST(inflate_back_distance, too_far_on_slow_path) {
+    uint8_t raw[32];
+    uint8_t decoded[64];
+    unsigned n = craft_stored_then_match(raw, 2);
+    unsigned produced = 0;
+
+    ASSERT_LT(n, 15u);
+    EXPECT_EQ(inflate_back_raw(raw, n, 0, decoded, &produced), Z_DATA_ERROR);
+}
+
+/* A distance that stays inside the bytes just written is valid on either path. */
+TEST(inflate_back_distance, match_inside_output) {
+    uint8_t raw[32];
+    uint8_t decoded[64];
+    unsigned n = craft_stored_then_match(raw, 1);
+    unsigned produced = 0;
+
+    EXPECT_EQ(inflate_back_raw(raw, n, 32, decoded, &produced), Z_STREAM_END);
+    ASSERT_EQ(produced, 4u);
+    EXPECT_EQ(decoded[0], 0xa5);
+    EXPECT_EQ(decoded[1], 0xa5);
+    EXPECT_EQ(decoded[2], 0xa5);
+    EXPECT_EQ(decoded[3], 0xa5);
+}
