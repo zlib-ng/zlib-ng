@@ -119,6 +119,7 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
 
     src = (uint8_t *)calloc(1, n);
     dst = (uint8_t *)malloc(n);
+    compressed = nullptr;
     /* scan-build treats ASSERT_* as a return, so free before leaving. */
     if (src == nullptr || dst == nullptr) {
         free(src);
@@ -127,7 +128,12 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
     }
 
     memset(&comp, 0, sizeof(comp));
-    ASSERT_EQ(PREFIX(deflateInit)(&comp, 1), Z_OK);
+    err = PREFIX(deflateInit)(&comp, 1);
+    if (err != Z_OK) {
+        free(dst);
+        free(src);
+        ASSERT_EQ(err, Z_OK);
+    }
     bound = PREFIX(deflateBound)(&comp, (unsigned long)n);
     compressed = (uint8_t *)malloc(bound);
     if (compressed == nullptr) {
@@ -140,12 +146,24 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
     comp.avail_in = (uint32_t)n;
     comp.next_out = compressed;
     comp.avail_out = (uint32_t)bound;
-    ASSERT_EQ(PREFIX(deflate)(&comp, Z_FINISH), Z_STREAM_END);
+    err = PREFIX(deflate)(&comp, Z_FINISH);
     bound = (unsigned long)comp.total_out;
     PREFIX(deflateEnd)(&comp);
+    if (err != Z_STREAM_END) {
+        free(compressed);
+        free(dst);
+        free(src);
+        ASSERT_EQ(err, Z_STREAM_END);
+    }
 
     memset(&strm, 0, sizeof(strm));
-    ASSERT_EQ(PREFIX(inflateInit2)(&strm, 0), Z_OK);
+    err = PREFIX(inflateInit2)(&strm, 0);
+    if (err != Z_OK) {
+        free(compressed);
+        free(dst);
+        free(src);
+        ASSERT_EQ(err, Z_OK);
+    }
 
     /* CMF CINFO 15, CM 8. 0xF800 is divisible by 31, so FLG is 0. */
     hdr[0] = 0xf8;
@@ -156,16 +174,30 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
     strm.avail_out = 64;
     EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
 
-    ASSERT_EQ(PREFIX(inflateReset)(&strm), Z_OK);
+    err = PREFIX(inflateReset)(&strm);
+    if (err != Z_OK) {
+        PREFIX(inflateEnd)(&strm);
+        free(compressed);
+        free(dst);
+        free(src);
+        ASSERT_EQ(err, Z_OK);
+    }
     strm.next_in = compressed;
     strm.avail_in = (uint32_t)bound;
     produced = 0;
     do {
+        size_t left = n - produced;
         strm.next_out = dst + produced;
-        strm.avail_out = 64 * 1024;
+        strm.avail_out = (uint32_t)(left < 64 * 1024 ? left : 64 * 1024);
         err = PREFIX(inflate)(&strm, Z_NO_FLUSH);
         produced = (size_t)strm.total_out;
-        ASSERT_LE(produced, n);
+        if (produced > n) {
+            PREFIX(inflateEnd)(&strm);
+            free(compressed);
+            free(dst);
+            free(src);
+            ASSERT_LE(produced, n);
+        }
     } while (err == Z_OK);
 
     EXPECT_EQ(err, Z_STREAM_END);
