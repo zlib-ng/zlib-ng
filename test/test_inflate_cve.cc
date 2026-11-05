@@ -111,6 +111,11 @@ TEST(inflate, cve_2005_2096) {
 }
 
 #ifndef _WIN32
+/* macOS provides MAP_ANON and does not define MAP_ANONYMOUS. */
+#  if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
+#    define MAP_ANONYMOUS MAP_ANON
+#  endif
+
 /* The inflate window is a fixed 32K allocation. A write past it has to fault
  * here, including when the test is not built with a sanitizer. */
 struct guard_pool {
@@ -173,14 +178,23 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
 
     src = (uint8_t *)calloc(1, n);
     dst = (uint8_t *)malloc(n);
-    ASSERT_NE(src, nullptr);
-    ASSERT_NE(dst, nullptr);
+    /* scan-build treats ASSERT_* as a return, so free before leaving. */
+    if (src == nullptr || dst == nullptr) {
+        free(src);
+        free(dst);
+        FAIL() << "out of memory";
+    }
 
     memset(&comp, 0, sizeof(comp));
     ASSERT_EQ(PREFIX(deflateInit)(&comp, 1), Z_OK);
     bound = PREFIX(deflateBound)(&comp, (unsigned long)n);
     compressed = (uint8_t *)malloc(bound);
-    ASSERT_NE(compressed, nullptr);
+    if (compressed == nullptr) {
+        PREFIX(deflateEnd)(&comp);
+        free(dst);
+        free(src);
+        FAIL() << "out of memory";
+    }
     comp.next_in = src;
     comp.avail_in = (uint32_t)n;
     comp.next_out = compressed;
