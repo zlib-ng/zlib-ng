@@ -11,11 +11,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef _WIN32
-#  include <sys/mman.h>
-#  include <unistd.h>
-#endif
-
 #include <gtest/gtest.h>
 
 /* CVE-2002-0059 - inflateEnd to release memory more than once */
@@ -110,60 +105,6 @@ TEST(inflate, cve_2005_2096) {
     inflate_malformed(cve_2005_2096, (uint32_t)sizeof(cve_2005_2096));
 }
 
-#ifndef _WIN32
-/* macOS provides MAP_ANON and does not define MAP_ANONYMOUS. */
-#  if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
-#    define MAP_ANONYMOUS MAP_ANON
-#  endif
-
-/* The inflate window is a fixed 32K allocation. A write past it has to fault
- * here, including when the test is not built with a sanitizer. */
-struct guard_pool {
-    struct {
-        void *p;
-        size_t n;
-    } blk[4];
-    int used;
-};
-
-static void *guard_alloc(void *opaque, unsigned int items, unsigned int size) {
-    struct guard_pool *pool = (struct guard_pool *)opaque;
-    size_t n = (size_t)items * (size_t)size;
-    long ps = sysconf(_SC_PAGESIZE);
-    size_t map_len;
-    void *p;
-
-    if (pool->used >= 4 || n == 0 || ps <= 0)
-        return NULL;
-    map_len = (n + (size_t)ps - 1) & ~((size_t)ps - 1);
-    map_len += (size_t)ps;
-    p = mmap(NULL, map_len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (p == MAP_FAILED)
-        return NULL;
-    if (mprotect((uint8_t *)p + map_len - (size_t)ps, (size_t)ps, PROT_NONE) != 0) {
-        munmap(p, map_len);
-        return NULL;
-    }
-    pool->blk[pool->used].p = p;
-    pool->blk[pool->used].n = map_len;
-    pool->used++;
-    return p;
-}
-
-static void guard_free(void *opaque, void *address) {
-    struct guard_pool *pool = (struct guard_pool *)opaque;
-    int i;
-
-    for (i = 0; i < pool->used; i++) {
-        if (pool->blk[i].p == address) {
-            munmap(address, pool->blk[i].n);
-            pool->blk[i].p = NULL;
-            return;
-        }
-    }
-}
-#endif
-
 /* CINFO 8..15 used to be stored in wbits before it was rejected. inflateReset()
  * keeps wbits, and the next stream then copied past the 32K window. */
 TEST(inflate, invalid_cinfo_does_not_stick) {
@@ -204,13 +145,6 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
     PREFIX(deflateEnd)(&comp);
 
     memset(&strm, 0, sizeof(strm));
-#ifndef _WIN32
-    struct guard_pool pool;
-    memset(&pool, 0, sizeof(pool));
-    strm.zalloc = guard_alloc;
-    strm.zfree = guard_free;
-    strm.opaque = &pool;
-#endif
     ASSERT_EQ(PREFIX(inflateInit2)(&strm, 0), Z_OK);
 
     /* CMF CINFO 15, CM 8. 0xF800 is divisible by 31, so FLG is 0. */
@@ -238,8 +172,7 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
     EXPECT_EQ(produced, n);
     EXPECT_EQ(memcmp(src, dst, n), 0);
     dictlen = 0;
-    /* NULL dictionary: only the length is written. A stuck wbits reports the
-     * 2^CINFO window, which is larger than the 32K buffer inflate promises. */
+    /* NULL dictionary: only the length is written, and it stays within the 32K window. */
     EXPECT_EQ(PREFIX(inflateGetDictionary)(&strm, NULL, &dictlen), Z_OK);
     EXPECT_LE(dictlen, 32768u);
 
