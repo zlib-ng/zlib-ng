@@ -186,9 +186,8 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
     strm.avail_in = (uint32_t)bound;
     produced = 0;
     do {
-        size_t left = n - produced;
         strm.next_out = dst + produced;
-        strm.avail_out = (uint32_t)(left < 64 * 1024 ? left : 64 * 1024);
+        strm.avail_out = (uint32_t)MIN(n - produced, (size_t)64 * 1024);
         err = PREFIX(inflate)(&strm, Z_NO_FLUSH);
         produced = (size_t)strm.total_out;
         if (produced > n) {
