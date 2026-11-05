@@ -8,7 +8,13 @@
 #endif
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
+
+#ifndef _WIN32
+#  include <sys/mman.h>
+#  include <unistd.h>
+#endif
 
 #include <gtest/gtest.h>
 
@@ -102,4 +108,186 @@ TEST(inflate, cve_2005_1849) {
 
 TEST(inflate, cve_2005_2096) {
     inflate_malformed(cve_2005_2096, (uint32_t)sizeof(cve_2005_2096));
+}
+
+#ifndef _WIN32
+/* The inflate window is a fixed 32K allocation. A write past it has to fault
+ * here, including when the test is not built with a sanitizer. */
+struct guard_pool {
+    struct {
+        void *p;
+        size_t n;
+    } blk[4];
+    int used;
+};
+
+static void *guard_alloc(void *opaque, unsigned int items, unsigned int size) {
+    struct guard_pool *pool = (struct guard_pool *)opaque;
+    size_t n = (size_t)items * (size_t)size;
+    long ps = sysconf(_SC_PAGESIZE);
+    size_t map_len;
+    void *p;
+
+    if (pool->used >= 4 || n == 0 || ps <= 0)
+        return NULL;
+    map_len = (n + (size_t)ps - 1) & ~((size_t)ps - 1);
+    map_len += (size_t)ps;
+    p = mmap(NULL, map_len, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (p == MAP_FAILED)
+        return NULL;
+    if (mprotect((uint8_t *)p + map_len - (size_t)ps, (size_t)ps, PROT_NONE) != 0) {
+        munmap(p, map_len);
+        return NULL;
+    }
+    pool->blk[pool->used].p = p;
+    pool->blk[pool->used].n = map_len;
+    pool->used++;
+    return p;
+}
+
+static void guard_free(void *opaque, void *address) {
+    struct guard_pool *pool = (struct guard_pool *)opaque;
+    int i;
+
+    for (i = 0; i < pool->used; i++) {
+        if (pool->blk[i].p == address) {
+            munmap(address, pool->blk[i].n);
+            pool->blk[i].p = NULL;
+            return;
+        }
+    }
+}
+#endif
+
+/* CINFO 8..15 used to be stored in wbits before it was rejected. inflateReset()
+ * keeps wbits, and the next stream then copied past the 32K window. */
+TEST(inflate, invalid_cinfo_does_not_stick) {
+    const size_t n = 128 * 1024;
+    PREFIX3(stream) strm, comp;
+    uint8_t hdr[2];
+    uint8_t *src, *dst, *compressed;
+    uint32_t dictlen;
+    unsigned long bound;
+    size_t produced;
+    int err;
+
+    src = (uint8_t *)calloc(1, n);
+    dst = (uint8_t *)malloc(n);
+    ASSERT_NE(src, nullptr);
+    ASSERT_NE(dst, nullptr);
+
+    memset(&comp, 0, sizeof(comp));
+    ASSERT_EQ(PREFIX(deflateInit)(&comp, 1), Z_OK);
+    bound = PREFIX(deflateBound)(&comp, (unsigned long)n);
+    compressed = (uint8_t *)malloc(bound);
+    ASSERT_NE(compressed, nullptr);
+    comp.next_in = src;
+    comp.avail_in = (uint32_t)n;
+    comp.next_out = compressed;
+    comp.avail_out = (uint32_t)bound;
+    ASSERT_EQ(PREFIX(deflate)(&comp, Z_FINISH), Z_STREAM_END);
+    bound = (unsigned long)comp.total_out;
+    PREFIX(deflateEnd)(&comp);
+
+    memset(&strm, 0, sizeof(strm));
+#ifndef _WIN32
+    struct guard_pool pool;
+    memset(&pool, 0, sizeof(pool));
+    strm.zalloc = guard_alloc;
+    strm.zfree = guard_free;
+    strm.opaque = &pool;
+#endif
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, 0), Z_OK);
+
+    /* CMF CINFO 15, CM 8. 0xF800 is divisible by 31, so FLG is 0. */
+    hdr[0] = 0xf8;
+    hdr[1] = 0x00;
+    strm.next_in = hdr;
+    strm.avail_in = sizeof(hdr);
+    strm.next_out = dst;
+    strm.avail_out = 64;
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+
+    ASSERT_EQ(PREFIX(inflateReset)(&strm), Z_OK);
+    strm.next_in = compressed;
+    strm.avail_in = (uint32_t)bound;
+    produced = 0;
+    do {
+        strm.next_out = dst + produced;
+        strm.avail_out = 64 * 1024;
+        err = PREFIX(inflate)(&strm, Z_NO_FLUSH);
+        produced = (size_t)strm.total_out;
+        ASSERT_LE(produced, n);
+    } while (err == Z_OK);
+
+    EXPECT_EQ(err, Z_STREAM_END);
+    EXPECT_EQ(produced, n);
+    EXPECT_EQ(memcmp(src, dst, n), 0);
+    dictlen = 0;
+    /* NULL dictionary: only the length is written. A stuck wbits reports the
+     * 2^CINFO window, which is larger than the 32K buffer inflate promises. */
+    EXPECT_EQ(PREFIX(inflateGetDictionary)(&strm, NULL, &dictlen), Z_OK);
+    EXPECT_LE(dictlen, 32768u);
+
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    free(compressed);
+    free(dst);
+    free(src);
+}
+
+/* windowBits 0 still takes a valid size from the zlib header. */
+TEST(inflate, window_size_from_header) {
+    PREFIX3(stream) strm, comp;
+    uint8_t src[64], dst[64], compressed[128];
+    unsigned long bound;
+    int i;
+
+    for (i = 0; i < (int)sizeof(src); i++)
+        src[i] = (uint8_t)(i * 3 + 1);
+
+    memset(&comp, 0, sizeof(comp));
+    ASSERT_EQ(PREFIX(deflateInit)(&comp, Z_DEFAULT_COMPRESSION), Z_OK);
+    comp.next_in = src;
+    comp.avail_in = sizeof(src);
+    comp.next_out = compressed;
+    comp.avail_out = sizeof(compressed);
+    ASSERT_EQ(PREFIX(deflate)(&comp, Z_FINISH), Z_STREAM_END);
+    bound = (unsigned long)comp.total_out;
+    PREFIX(deflateEnd)(&comp);
+
+    memset(&strm, 0, sizeof(strm));
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, 0), Z_OK);
+    strm.next_in = compressed;
+    strm.avail_in = (uint32_t)bound;
+    strm.next_out = dst;
+    strm.avail_out = sizeof(dst);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_STREAM_END);
+    EXPECT_EQ(memcmp(src, dst, sizeof(src)), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* A header window larger than the one the caller asked for stays an error. */
+TEST(inflate, header_window_exceeds_request) {
+    PREFIX3(stream) strm, comp;
+    uint8_t src[32], dst[32], compressed[64];
+
+    memset(src, 0x11, sizeof(src));
+    memset(&comp, 0, sizeof(comp));
+    ASSERT_EQ(PREFIX(deflateInit)(&comp, Z_DEFAULT_COMPRESSION), Z_OK);
+    comp.next_in = src;
+    comp.avail_in = sizeof(src);
+    comp.next_out = compressed;
+    comp.avail_out = sizeof(compressed);
+    ASSERT_EQ(PREFIX(deflate)(&comp, Z_FINISH), Z_STREAM_END);
+    unsigned long bound = (unsigned long)comp.total_out;
+    PREFIX(deflateEnd)(&comp);
+
+    memset(&strm, 0, sizeof(strm));
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, 10), Z_OK);
+    strm.next_in = compressed;
+    strm.avail_in = (uint32_t)bound;
+    strm.next_out = dst;
+    strm.avail_out = sizeof(dst);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
 }

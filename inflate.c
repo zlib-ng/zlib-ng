@@ -538,12 +538,15 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             }
             DROPBITS(4);
             len = BITS(4) + 8;
-            if (state->wbits == 0)
-                state->wbits = len;
-            if (len > MAX_WBITS || len > state->wbits) {
+            /* Reject before storing. An invalid CINFO (len > MAX_WBITS) used
+               to stick in wbits, and inflateReset kept it. The window buffer
+               is fixed at 32K, so a later inflate copied past it. */
+            if (len > MAX_WBITS || (state->wbits != 0 && len > state->wbits)) {
                 SET_BAD("invalid window size");
                 break;
             }
+            if (state->wbits == 0)
+                state->wbits = len;
 #ifdef INFLATE_STRICT
             state->dmax = 1U << len;
 #endif
