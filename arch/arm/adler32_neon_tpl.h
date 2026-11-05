@@ -28,6 +28,34 @@ static const uint16_t ALIGNED_(64) taps[64] = {
     8, 7, 6, 5, 4, 3, 2, 1 };
 
 #ifdef USE_DOTPROD
+/* Buffers shorter than this are not aligned, the head would cost more than unaligned loads. */
+#  define ADLER32_ALIGN_MIN 1024
+#  define ADLER32_LD1Q(p) vld1q_u8(p)
+#  define ADLER32_LD1Q_X4(p) vld1q_u8_x4(p)
+
+/* Loaded at offset k, keeps the last k bytes of a vector. */
+static const uint8_t ALIGNED_(16) tail_mask[32] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255 };
+
+/* Loaded at offset k, table indices that move the first k bytes of a vector to its end. */
+static const uint8_t ALIGNED_(16) head_shift[32] = {
+    255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
+
+/* One step over a vector whose last k bytes are data and the rest zero. The standard taps
+ * already give those bytes the weights k down to 1. */
+#  define ADLER32_PARTIAL_STEP(adacc, s2acc, d, k) do { \
+    s2acc = vmlaq_n_u32(s2acc, adacc, (uint32_t)(k)); \
+    adacc = vdotq_u32(adacc, d, ones); \
+    s2acc = vdotq_u32(s2acc, d, t3); \
+} while (0)
+#else
+#  define ADLER32_LD1Q(p) vld1q_u8_ex(p, 128)
+#  define ADLER32_LD1Q_X4(p) vld1q_u8_x4_ex(p, 256)
+#endif
+
+#ifdef USE_DOTPROD
 Z_FORCEINLINE static Z_TARGET_DOTPROD uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
 #else
 Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len, const int COPY) {
@@ -65,6 +93,48 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
      * alignment, but it's unclear which other SIPs will benefit from it.
      * In the copying variant we use fallback to 4x loads and 4x stores,
      * as ld1x4 seems to block ILP when stores are in the mix */
+#ifdef USE_DOTPROD
+    if (len < 48) {
+        /* Short buffers take unaligned vector steps for everything. */
+        uint8x16_t ones = vdupq_n_u8(1);
+        uint8x16_t t3 = vld1q_u8(taps + 48);
+        uint32x4_t adacc = vsetq_lane_u32(pair[0], vdupq_n_u32(0), 0);
+        uint32x4_t s2acc = vsetq_lane_u32(pair[1], vdupq_n_u32(0), 0);
+        size_t full = len >> 4;
+        size_t tail = len & 15;
+
+        do {
+            uint8x16_t d0 = vld1q_u8(src);
+            if (COPY) {
+                vst1q_u8(dst, d0);
+                dst += 16;
+            }
+            ADLER32_PARTIAL_STEP(adacc, s2acc, d0, 16);
+            src += 16;
+        } while (--full);
+
+        if (tail) {
+            /* Reload the last 16 bytes and drop the ones already summed. */
+            uint8x16_t d0 = vld1q_u8(src + tail - 16);
+            if (COPY)
+                vst1q_u8(dst + tail - 16, d0);
+            d0 = vandq_u8(d0, vld1q_u8(tail_mask + tail));
+            ADLER32_PARTIAL_STEP(adacc, s2acc, d0, tail);
+        }
+
+        pair[0] = vaddvq_u32(adacc) % BASE;
+        pair[1] = vaddvq_u32(s2acc) % BASE;
+        return pair[0] | (pair[1] << 16);
+    }
+
+    /* With dotprod the bytes before the 32-byte boundary are summed as vectors inside the first
+     * block below, not as scalar sums. */
+    size_t align_diff = len >= ADLER32_ALIGN_MIN ? ALIGN_DIFF(src, 32) : 0;
+    size_t head = align_diff;
+    size_t n = NMAX_ALIGNED32;
+    if (align_diff)
+        n = ALIGN_DOWN(n - align_diff, 32);
+#else
     size_t align_diff = MIN(ALIGN_DIFF(src, 32), len);
     size_t n = NMAX_ALIGNED32;
     if (align_diff) {
@@ -76,9 +146,13 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
         len -= align_diff;
         n = ALIGN_DOWN(n - align_diff, 32);
     }
+#endif
 
     while (len >= 16) {
+        size_t tail = 0;
+#ifndef USE_DOTPROD
         n = MIN(len, n);
+#endif
 
 #ifdef USE_DOTPROD
         /* Use 4 independent accumulator sets to break dependency chains
@@ -107,6 +181,33 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
 
         /* Vector of ones for s1 accumulation */
         uint8x16_t ones = vdupq_n_u8(1);
+
+        if (head) {
+            size_t part = head & 15;
+            if (part) {
+                uint8x16_t d0 = vld1q_u8(src);
+                if (COPY) {
+                    /* Bytes past the head are stored again by the steps that follow. */
+                    vst1q_u8(dst, d0);
+                    dst += part;
+                }
+                d0 = vqtbl1q_u8(d0, vld1q_u8(head_shift + part));
+                ADLER32_PARTIAL_STEP(adacc_a, s2acc_a, d0, part);
+                src += part;
+            }
+            if (head & 16) {
+                uint8x16_t d0 = vld1q_u8(src);
+                if (COPY) {
+                    vst1q_u8(dst, d0);
+                    dst += 16;
+                }
+                ADLER32_PARTIAL_STEP(adacc_a, s2acc_a, d0, 16);
+                src += 16;
+            }
+            len -= head;
+            head = 0;
+        }
+        n = MIN(len, n);
 #else
         uint32x4_t adacc = vdupq_n_u32(0);
         uint32x4_t s2acc = vdupq_n_u32(0);
@@ -137,10 +238,10 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
             /* In the copying variant we use 4x loads and 4x stores,
              * as ld1x4 seems to block ILP when stores are in the mix */
             if (COPY) {
-                d0 = vld1q_u8_ex(src, 128);
-                d1 = vld1q_u8_ex(src + 16, 128);
-                d2 = vld1q_u8_ex(src + 32, 128);
-                d3 = vld1q_u8_ex(src + 48, 128);
+                d0 = ADLER32_LD1Q(src);
+                d1 = ADLER32_LD1Q(src + 16);
+                d2 = ADLER32_LD1Q(src + 32);
+                d3 = ADLER32_LD1Q(src + 48);
 
                 vst1q_u8(dst, d0);
                 vst1q_u8(dst + 16, d1);
@@ -148,7 +249,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
                 vst1q_u8(dst + 48, d3);
                 dst += 64;
             } else {
-                uint8x16x4_t d0_d3 = vld1q_u8_x4_ex(src, 256);
+                uint8x16x4_t d0_d3 = ADLER32_LD1Q_X4(src);
                 d0 = d0_d3.val[0];
                 d1 = d0_d3.val[1];
                 d2 = d0_d3.val[2];
@@ -225,7 +326,7 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
         if (rem) {
             uint32x4_t s3acc_0 = vdupq_n_u32(0);
             while (rem--) {
-                uint8x16_t d0 = vld1q_u8_ex(src, 128);
+                uint8x16_t d0 = ADLER32_LD1Q(src);
                 if (COPY) {
                     vst1q_u8(dst, d0);
                     dst += 16;
@@ -253,6 +354,20 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
         }
 
 #ifdef USE_DOTPROD
+        /* The last block takes the bytes left after its 16-byte chunks as one masked vector. */
+        if (n == len)
+            tail = len & 15;
+        if (tail) {
+            uint8x16_t d0 = vld1q_u8(src + tail - 16);
+            if (COPY) {
+                vst1q_u8(dst + tail - 16, d0);
+                dst += tail;
+            }
+            d0 = vandq_u8(d0, vld1q_u8(tail_mask + tail));
+            ADLER32_PARTIAL_STEP(adacc, s2acc, d0, tail);
+            src += tail;
+        }
+
         /* Dotprod computes weighted sums inline, so final reduction is simple */
         s2acc = vaddq_u32(s2acc, s3acc);
         pair[0] = vaddvq_u32(adacc);
@@ -293,10 +408,15 @@ Z_FORCEINLINE static uint32_t adler32_copy_impl(uint32_t adler, uint8_t *dst, co
         pair[0] %= BASE;
         pair[1] %= BASE;
 
-        len -= (n >> 4) << 4;
+        len -= ((n >> 4) << 4) + tail;
         n = NMAX_ALIGNED32;
     }
 
     /* Process tail (len < 16).  */
+#ifdef USE_DOTPROD
+    /* Only a buffer that ends less than 16 bytes past a full NMAX block reaches the scalar tail. */
+    return adler32_copy_tail(pair[0], dst, src, len, pair[1], len != 0, 15, COPY);
+#else
     return adler32_copy_tail(pair[0], dst, src, len, pair[1], len != 0 || align_diff, 15, COPY);
+#endif
 }
