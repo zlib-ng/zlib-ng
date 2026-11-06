@@ -594,9 +594,11 @@ endif()
 #
 # Check whether compiler supports -fno-semantic-interposition parameter
 #
-set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
-check_c_compiler_flag(-fno-semantic-interposition HAVE_NO_INTERPOSITION)
-set(CMAKE_REQUIRED_FLAGS)
+if((NOT MINGW AND NOT MSYS) OR (NOT CMAKE_LINKER MATCHES "lld"))
+    set(CMAKE_REQUIRED_FLAGS "${ADDITIONAL_CHECK_FLAGS}")
+    check_c_compiler_flag(-fno-semantic-interposition HAVE_NO_INTERPOSITION)
+    set(CMAKE_REQUIRED_FLAGS)
+endif()
 
 #
 # Check if we can hide zlib internal symbols that are linked between separate source files using hidden
@@ -1511,15 +1513,19 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
             endif()
             configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map.in
                 ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map @ONLY)
-            set_target_properties(zlib-ng PROPERTIES LINK_FLAGS
-                "-Wl,--version-script,\"${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map\"")
+            if((NOT MINGW AND NOT MSYS) OR NOT CMAKE_LINKER MATCHES "lld")
+                set_target_properties(zlib-ng PROPERTIES LINK_FLAGS
+                    "-Wl,--version-script,\"${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map\"")
+            endif()
         endif()
     endif()
     if(MINGW OR MSYS)
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/zlib${SUFFIX}.map.in
             ${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map @ONLY)
-        set_target_properties(zlib-ng PROPERTIES LINK_FLAGS
-            "-Wl,--version-script,\"${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map\"")
+        if (NOT CMAKE_LINKER MATCHES "lld")
+            set_target_properties(zlib-ng PROPERTIES LINK_FLAGS
+                "-Wl,--version-script,\"${CMAKE_CURRENT_BINARY_DIR}/zlib${SUFFIX}.map\"")
+        endif()
     endif()
     if(MSYS)
         # Suppress version number from shared library name
