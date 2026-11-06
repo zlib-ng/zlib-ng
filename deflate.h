@@ -27,14 +27,6 @@
 #  define GZIP
 #endif
 
-/* LIT_MEM uses separate distance/length buffers instead of the overlaid sym_buf.
-   This uses ~20% more memory but is 1-2% faster on platforms without fast unaligned
-   access. By default, LIT_MEM is only enabled when OPTIMAL_CMP < 32. Define LIT_MEM
-   to force separate buffers, or NO_LIT_MEM to force sym_buf usage. */
-#if !defined(LIT_MEM) && !defined(NO_LIT_MEM) && (OPTIMAL_CMP < 32)
-#  define LIT_MEM
-#endif
-
 /* ===========================================================================
  * Internal compression state.
  */
@@ -297,16 +289,7 @@ struct ALIGNED_(64) internal_state {
 
                 /* Cacheline 3 */
 
-#ifdef LIT_MEM
-#   define LIT_BUFS 5
-    uint16_t *d_buf;              /* buffer for distances */
-    unsigned char *l_buf;         /* buffer for literals/lengths */
-#else
-#   define LIT_BUFS 4
     unsigned char *sym_buf;       /* buffer for distances and literals/lengths */
-    void *lit_mem_pad;            /* unused, pads this branch out to the LIT_MEM one */
-#endif
-
     unsigned int sym_next;        /* running index in symbol buffer */
     unsigned int sym_end;         /* symbol table full when sym_next reaches this */
 
