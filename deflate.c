@@ -1386,6 +1386,9 @@ int32_t Z_EXPORT zng_deflateSetParams(zng_stream *strm, zng_deflate_param_value 
     int buf_error = 0;
     int stream_error = 0;
 
+    if (count > 0 && params == NULL)
+        return Z_BUF_ERROR;
+
     /* Initialize the statuses. */
     for (i = 0; i < count; i++)
         params[i].status = Z_OK;
@@ -1454,6 +1457,9 @@ int32_t Z_EXPORT zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value 
     size_t i;
     int32_t buf_error = 0;
     int32_t version_error = 0;
+
+    if (count > 0 && params == NULL)
+        return Z_BUF_ERROR;
 
     /* Initialize the statuses. */
     for (i = 0; i < count; i++)

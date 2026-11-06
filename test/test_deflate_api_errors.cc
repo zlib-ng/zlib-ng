@@ -375,6 +375,20 @@ TEST(deflate_api_errors, deflate_get_params_uninitialized_stream) {
     EXPECT_EQ(zng_deflateGetParams(&strm, params, 1), Z_STREAM_ERROR);
 }
 
+/* zng_deflateGetParams with a NULL params array but count > 0:
+ * - rejected with Z_BUF_ERROR (the documented buffer-problem code) instead
+ *   of dereferencing the NULL array;
+ * - a NULL array is accepted when the count is zero (Z_OK);
+ * - the stream remains usable and ends cleanly. */
+TEST(deflate_api_errors, deflate_get_params_null_params) {
+    PREFIX3(stream) strm;
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    EXPECT_EQ(zng_deflateGetParams(&strm, NULL, 1), Z_BUF_ERROR);
+    /* A NULL array is fine when there are no parameters to process. */
+    EXPECT_EQ(zng_deflateGetParams(&strm, NULL, 0), Z_OK);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
+
 /* zng_deflateGetParams with a value buffer too small for the parameter:
  * - the call reports Z_BUF_ERROR;
  * - the per-parameter status carries Z_BUF_ERROR as well. */
@@ -772,6 +786,20 @@ TEST(deflate_api_errors, deflate_set_params_uninitialized_stream) {
     params[0].buf = &value;
     params[0].size = sizeof(value);
     EXPECT_EQ(zng_deflateSetParams(&strm, params, 1), Z_STREAM_ERROR);
+}
+
+/* zng_deflateSetParams with a NULL params array but count > 0:
+ * - rejected with Z_BUF_ERROR (the documented buffer-problem code) instead
+ *   of dereferencing the NULL array;
+ * - a NULL array is accepted when the count is zero (Z_OK);
+ * - the stream remains usable and ends cleanly. */
+TEST(deflate_api_errors, deflate_set_params_null_params) {
+    PREFIX3(stream) strm;
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    EXPECT_EQ(zng_deflateSetParams(&strm, NULL, 1), Z_BUF_ERROR);
+    /* A NULL array is fine when there are no parameters to process. */
+    EXPECT_EQ(zng_deflateSetParams(&strm, NULL, 0), Z_OK);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
 }
 
 /* zng_deflateSetParams with a value buffer too small for the parameter:
