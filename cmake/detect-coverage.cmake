@@ -5,6 +5,7 @@
 macro(add_code_coverage)
     # Check for --coverage flag support
     set(CMAKE_REQUIRED_LINK_OPTIONS -coverage)
+    check_c_compiler_flag("--coverage -fprofile-update=atomic -Werror" HAVE_COVERAGE_ATOMIC)
     check_c_compiler_flag("--coverage" HAVE_COVERAGE)
     set(CMAKE_REQUIRED_LINK_OPTIONS)
     if(HAVE_COVERAGE)
@@ -24,6 +25,11 @@ macro(add_code_coverage)
             add_link_options(-coverage -fcondition-coverage)
             add_compile_options(--coverage -fcondition-coverage -Wno-coverage-too-many-conditions)
             message(STATUS "Code coverage enabled using: --coverage -fcondition-coverage")
+        elseif(HAVE_COVERAGE_ATOMIC)
+            # Both --coverage and -fprofile-update=atomic supported
+            add_link_options(-coverage)
+            add_compile_options(--coverage -fprofile-update=atomic)
+            message(STATUS "Code coverage enabled using: --coverage -fprofile-update=atomic")
         else()
             # Only --coverage supported.
             add_link_options(-coverage)
