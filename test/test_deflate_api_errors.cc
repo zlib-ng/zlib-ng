@@ -8,6 +8,7 @@
 #endif
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <gtest/gtest.h>
@@ -906,4 +907,145 @@ TEST(deflate_api_errors, deflate_used_null_out_param) {
     EXPECT_EQ(PREFIX(deflateUsed)(&strm, NULL), Z_OK);
     EXPECT_EQ(PREFIX(deflateUsed)(&strm, &bits), Z_OK);
     EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
+
+/* ========================================================================== */
+/* Induced allocation failures (after test/infcover.c)                        */
+/* ========================================================================== */
+
+/* A memory zone that counts allocations and can be told to fail after a
+ * number of successful ones. Allocations are filled with 0xa5 so the code is
+ * not allowed to rely on zeroed memory, as in infcover. */
+struct mem_zone {
+    int allocs;      /* successful allocations so far */
+    int frees;       /* frees so far */
+    int fail_after;  /* fail once this many allocations have succeeded */
+};
+
+static void *zone_alloc(void *opaque, unsigned int count, unsigned int size) {
+    mem_zone *zone = (mem_zone *)opaque;
+    if (zone == NULL || zone->allocs >= zone->fail_after)
+        return NULL;
+    void *ptr = malloc((size_t)count * size);
+    if (ptr == NULL)
+        return NULL;
+    memset(ptr, 0xa5, (size_t)count * size);
+    zone->allocs++;
+    return ptr;
+}
+
+static void zone_free(void *opaque, void *ptr) {
+    mem_zone *zone = (mem_zone *)opaque;
+    if (zone == NULL)
+        return;
+    /* Count real frees only; free(NULL) is a no-op. */
+    zone->frees += (ptr != NULL);
+    free(ptr);
+}
+
+/* Point the stream's allocator at the zone. */
+static void install_zone(PREFIX3(stream) *strm, mem_zone *zone) {
+    strm->zalloc = zone_alloc;
+    strm->zfree = zone_free;
+    strm->opaque = zone;
+}
+
+/* zng_deflateInit when the very first allocation fails:
+ * - Z_MEM_ERROR is returned;
+ * - nothing was allocated, so nothing can leak (0 allocs, 0 frees);
+ * - no partial state exists (the stream's state pointer stays NULL). */
+TEST(deflate_api_errors, deflate_init_alloc_failure) {
+    PREFIX3(stream) strm;
+    mem_zone zone;
+    memset(&strm, 0, sizeof(strm));
+    memset(&zone, 0, sizeof(zone));
+    zone.fail_after = 0; /* fail the very first allocation */
+    install_zone(&strm, &zone);
+
+    EXPECT_EQ(PREFIX(deflateInit)(&strm, Z_DEFAULT_COMPRESSION), Z_MEM_ERROR);
+    /* Nothing was allocated, so nothing may be leaked, and no state exists. */
+    EXPECT_EQ(zone.allocs, 0);
+    EXPECT_EQ(zone.frees, 0);
+    EXPECT_TRUE(strm.state == nullptr);
+}
+
+/* zng_deflateInit after a failed initialization:
+ * - the first init fails with Z_MEM_ERROR;
+ * - the same stream and allocator initialize fine once allocation succeeds,
+ *   using exactly one allocation;
+ * - deflateEnd releases that single allocation. */
+TEST(deflate_api_errors, deflate_init_recover_after_alloc_failure) {
+    PREFIX3(stream) strm;
+    mem_zone zone;
+    memset(&strm, 0, sizeof(strm));
+    memset(&zone, 0, sizeof(zone));
+    zone.fail_after = 0;
+    install_zone(&strm, &zone);
+
+    ASSERT_EQ(PREFIX(deflateInit)(&strm, Z_DEFAULT_COMPRESSION), Z_MEM_ERROR);
+
+    /* The same stream and allocator work once the allocation succeeds. */
+    zone.fail_after = 16;
+    ASSERT_EQ(PREFIX(deflateInit)(&strm, Z_DEFAULT_COMPRESSION), Z_OK);
+    EXPECT_EQ(zone.allocs, 1);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+    EXPECT_EQ(zone.frees, 1);
+}
+
+/* zng_deflateCopy when the copy's allocation fails:
+ * - Z_MEM_ERROR is returned and no extra allocation leaks (the source's
+ *   init allocation is the only one);
+ * - as in upstream zlib, the destination is clobbered by the failed attempt
+ *   (its state aliases the source's) and must not be used;
+ * - the source stream is unaffected: it still compresses, ends with
+ *   Z_DATA_ERROR (mid-stream), and releases exactly one allocation. */
+TEST(deflate_api_errors, deflate_copy_alloc_failure) {
+    PREFIX3(stream) source;
+    PREFIX3(stream) dest;
+    mem_zone zone;
+    memset(&source, 0, sizeof(source));
+    memset(&dest, 0, sizeof(dest));
+    memset(&zone, 0, sizeof(zone));
+    zone.fail_after = 1; /* the init allocation succeeds, the copy's fails */
+    install_zone(&source, &zone);
+
+    ASSERT_EQ(PREFIX(deflateInit2)(&source, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS, MAX_MEM_LEVEL,
+                                   Z_DEFAULT_STRATEGY),
+              Z_OK);
+    EXPECT_EQ(PREFIX(deflateCopy)(&dest, &source), Z_MEM_ERROR);
+    /* The failed copy must not leak: only the one init allocation exists. */
+    EXPECT_EQ(zone.allocs, 1);
+    EXPECT_EQ(zone.frees, 0);
+    /* As in upstream zlib, dest is clobbered by the copy attempt (its state
+     * now aliases source's); it must simply not be used afterwards. The
+     * source stream is unaffected and still works. */
+    ASSERT_EQ(start_compression(&source), Z_OK);
+    EXPECT_EQ(PREFIX(deflateEnd)(&source), Z_DATA_ERROR);
+    EXPECT_EQ(zone.frees, 1);
+}
+
+/* Every deflate entry point on a stream whose initialization failed:
+ * - zng_deflate, zng_deflateParams, zng_deflateReset and zng_deflateEnd all
+ *   reject it with Z_STREAM_ERROR;
+ * - zng_deflateBound falls back to the conservative value instead of
+ *   crashing. */
+TEST(deflate_api_errors, deflate_after_failed_init) {
+    PREFIX3(stream) strm;
+    mem_zone zone;
+    uint8_t output[64];
+    memset(&strm, 0, sizeof(strm));
+    memset(&zone, 0, sizeof(zone));
+    zone.fail_after = 0;
+    install_zone(&strm, &zone);
+
+    ASSERT_EQ(PREFIX(deflateInit)(&strm, Z_DEFAULT_COMPRESSION), Z_MEM_ERROR);
+
+    strm.next_out = output;
+    strm.avail_out = sizeof(output);
+    EXPECT_EQ(PREFIX(deflate)(&strm, Z_NO_FLUSH), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(deflateParams)(&strm, Z_DEFAULT_COMPRESSION, Z_DEFAULT_STRATEGY), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(deflateReset)(&strm), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_STREAM_ERROR);
+    /* The bound falls back to the conservative value instead of crashing. */
+    EXPECT_GE(PREFIX(deflateBound)(&strm, 1024), 1024UL);
 }
