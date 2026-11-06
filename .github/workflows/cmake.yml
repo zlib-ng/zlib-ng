@@ -807,7 +807,7 @@ jobs:
 
     - name: Setup Cygwin
       if: runner.os == 'Windows' && contains(matrix.name, 'Cygwin')
-      uses: mtl1979/cygwin-install-action@c6312947185c9c939a2ebca6723236c7cd6b9145
+      uses: cygwin/cygwin-install-action@v7
       with:
         packages: >-
           cmake
@@ -822,7 +822,7 @@ jobs:
           python312-colorlog
           python312-devel
           python312-jinja2
-          python312-lxml
+          python312-lxml=6.1.3-1
           python312-markupsafe
           python312-pygments
           python312-pip
@@ -1108,7 +1108,7 @@ jobs:
     - name: Generate coverage report (Cygwin)
       if: matrix.coverage && contains(matrix.name, 'Cygwin')
       run: |
-        python3.12 -u -m venv --upgrade-deps ./venv
+        python3.12 -u -m venv --upgrade-deps --system-site-packages ./venv
         source ./venv/bin/activate
         python3.12 -u -m pip install gcovr
         python3.12 -m gcovr -j 5 --gcov-ignore-parse-errors --verbose \
