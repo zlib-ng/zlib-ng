@@ -148,6 +148,18 @@ TEST(deflate_api_errors, compress2_small_output) {
     EXPECT_EQ(PREFIX(compress2)(output, &output_length, input, sizeof(input), Z_DEFAULT_COMPRESSION), Z_BUF_ERROR);
 }
 
+/* zng_compress2 with an empty source: even an empty stream must emit its
+ * wrapper header, block, and checksum, so the buffer must hold that framing:
+ * - a 4-byte buffer is too small -> Z_BUF_ERROR;
+ * - a compressBound(0)-sized buffer is always sufficient -> Z_OK. */
+TEST(deflate_api_errors, compress2_empty_source_small_output) {
+    uint8_t output[64];
+    z_uintmax_t output_length = 4; /* too small for the empty stream's framing */
+    EXPECT_EQ(PREFIX(compress2)(output, &output_length, (const uint8_t *)"", 0, Z_DEFAULT_COMPRESSION), Z_BUF_ERROR);
+    output_length = PREFIX(compressBound)(0);
+    EXPECT_EQ(PREFIX(compress2)(output, &output_length, (const uint8_t *)"", 0, Z_DEFAULT_COMPRESSION), Z_OK);
+}
+
 /* ========================================================================== */
 /* zng_compressBound                                                          */
 /* ========================================================================== */
