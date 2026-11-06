@@ -200,10 +200,12 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
     EXPECT_LE(dictlen, 32768u);
 
 done:
-    if (strm_open)
+    if (strm_open) {
         EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
-    if (comp_open)
+    }
+    if (comp_open) {
         PREFIX(deflateEnd)(&comp);
+    }
     free(compressed);
     free(dst);
     free(src);
