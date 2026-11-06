@@ -113,34 +113,34 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
     uint8_t hdr[2];
     uint8_t *src, *dst, *compressed;
     uint32_t dictlen;
-    unsigned long bound;
-    size_t produced;
-    int err;
+    unsigned long bound = 0;
+    size_t produced = 0;
+    int err = Z_OK;
+    int comp_open = 0;
+    int strm_open = 0;
 
     src = (uint8_t *)calloc(1, n);
     dst = (uint8_t *)malloc(n);
     compressed = nullptr;
-    /* scan-build treats ASSERT_* as a return, so free before leaving. */
+    /* One release point. scan-build treats ASSERT/FAIL as a return and
+     * also as a fall-through, so freeing on both paths is a double free. */
     if (src == nullptr || dst == nullptr) {
-        free(src);
-        free(dst);
-        FAIL() << "out of memory";
+        ADD_FAILURE() << "out of memory";
+        goto done;
     }
 
     memset(&comp, 0, sizeof(comp));
     err = PREFIX(deflateInit)(&comp, 1);
     if (err != Z_OK) {
-        free(dst);
-        free(src);
-        ASSERT_EQ(err, Z_OK);
+        ADD_FAILURE() << "deflateInit returned " << err;
+        goto done;
     }
+    comp_open = 1;
     bound = PREFIX(deflateBound)(&comp, (unsigned long)n);
     compressed = (uint8_t *)malloc(bound);
     if (compressed == nullptr) {
-        PREFIX(deflateEnd)(&comp);
-        free(dst);
-        free(src);
-        FAIL() << "out of memory";
+        ADD_FAILURE() << "out of memory";
+        goto done;
     }
     comp.next_in = src;
     comp.avail_in = (uint32_t)n;
@@ -149,21 +149,19 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
     err = PREFIX(deflate)(&comp, Z_FINISH);
     bound = (unsigned long)comp.total_out;
     PREFIX(deflateEnd)(&comp);
+    comp_open = 0;
     if (err != Z_STREAM_END) {
-        free(compressed);
-        free(dst);
-        free(src);
-        ASSERT_EQ(err, Z_STREAM_END);
+        ADD_FAILURE() << "deflate returned " << err;
+        goto done;
     }
 
     memset(&strm, 0, sizeof(strm));
     err = PREFIX(inflateInit2)(&strm, 0);
     if (err != Z_OK) {
-        free(compressed);
-        free(dst);
-        free(src);
-        ASSERT_EQ(err, Z_OK);
+        ADD_FAILURE() << "inflateInit2 returned " << err;
+        goto done;
     }
+    strm_open = 1;
 
     /* CMF CINFO 15, CM 8. 0xF800 is divisible by 31, so FLG is 0. */
     hdr[0] = 0xf8;
@@ -176,11 +174,8 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
 
     err = PREFIX(inflateReset)(&strm);
     if (err != Z_OK) {
-        PREFIX(inflateEnd)(&strm);
-        free(compressed);
-        free(dst);
-        free(src);
-        ASSERT_EQ(err, Z_OK);
+        ADD_FAILURE() << "inflateReset returned " << err;
+        goto done;
     }
     strm.next_in = compressed;
     strm.avail_in = (uint32_t)bound;
@@ -191,11 +186,8 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
         err = PREFIX(inflate)(&strm, Z_NO_FLUSH);
         produced = (size_t)strm.total_out;
         if (produced > n) {
-            PREFIX(inflateEnd)(&strm);
-            free(compressed);
-            free(dst);
-            free(src);
-            FAIL() << "inflate wrote " << produced << " bytes into " << n;
+            ADD_FAILURE() << "inflate wrote " << produced << " bytes into " << n;
+            goto done;
         }
     } while (err == Z_OK);
 
@@ -207,7 +199,11 @@ TEST(inflate, invalid_cinfo_does_not_stick) {
     EXPECT_EQ(PREFIX(inflateGetDictionary)(&strm, NULL, &dictlen), Z_OK);
     EXPECT_LE(dictlen, 32768u);
 
-    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+done:
+    if (strm_open)
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    if (comp_open)
+        PREFIX(deflateEnd)(&comp);
     free(compressed);
     free(dst);
     free(src);
