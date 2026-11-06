@@ -35,6 +35,20 @@ if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
 endif()
 add_test(NAME infcover COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover>)
 
+# Compile infcover as a test of zlib-ng-compat.h as well. Symbol-prefixed builds are
+# not supported by the header: the generated zlib_name_mangling-ng.h macro-renames every
+# public name, which redefinition-clashes with its aliases.
+if(WITH_COMPAT_HEADER AND ZLIB_SYMBOL_PREFIX STREQUAL "")
+    add_executable(infcover_zlib_api infcover.c)
+    configure_test_executable(infcover_zlib_api)
+    target_compile_definitions(infcover_zlib_api PRIVATE -DTEST_ZLIB_NG_COMPAT)
+    target_link_libraries(infcover_zlib_api zlib-ng)
+    if(NOT DEFINED BUILD_SHARED_LIBS OR BUILD_SHARED_LIBS)
+        target_sources(infcover_zlib_api PRIVATE ${PROJECT_SOURCE_DIR}/inftrees.c ${PROJECT_SOURCE_DIR}/zutil.c)
+    endif()
+    add_test(NAME infcover_zlib_api COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:infcover_zlib_api>)
+endif()
+
 # Emscripten does not support large amounts of data via stdin/out
 # https://github.com/emscripten-core/emscripten/issues/16755#issuecomment-1102732849
 if(NOT BASEARCH_WASM32_FOUND)

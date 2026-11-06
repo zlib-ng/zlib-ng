@@ -15,6 +15,21 @@
 #include "inftrees.h"
 #include "inflate.h"
 
+#ifdef TEST_ZLIB_NG_COMPAT
+/* Build this coverage test against "zlib-ng-compat.h". Requires some hackery
+ * since infcover is normally built as an integral part of zlib-ng. */
+#  undef z_size_t
+#  include "zlib-ng-compat.h"
+#  undef PREFIX
+#  undef PREFIX2
+#  undef PREFIX3
+#  undef PREFIX4
+#  define PREFIX(x) x
+#  define PREFIX2(x) ZLIB_ ## x
+#  define PREFIX3(x) z_ ## x
+#  define PREFIX4(x) x ## 64
+#endif
+
 /* -- memory tracking routines -- */
 
 /*

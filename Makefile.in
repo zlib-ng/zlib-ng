@@ -354,6 +354,12 @@ install: install-libs
 	cp zconf$(SUFFIX).h $(DESTDIR)$(includedir)/zconf$(SUFFIX).h
 	cp zlib_name_mangling$(SUFFIX).h $(DESTDIR)$(includedir)/zlib_name_mangling$(SUFFIX).h
 	chmod 644 $(DESTDIR)$(includedir)/zlib$(SUFFIX).h $(DESTDIR)$(includedir)/zconf$(SUFFIX).h $(DESTDIR)$(includedir)/zlib_name_mangling$(SUFFIX).h
+# zlib-ng-compat.h is not generated from a *.h.in, install the source file as it is
+ifneq ($(SUFFIX),)
+	rm -f $(DESTDIR)$(includedir)/zlib-ng-compat.h
+	cp $(SRCDIR)/zlib-ng-compat.h $(DESTDIR)$(includedir)/zlib-ng-compat.h
+	chmod 644 $(DESTDIR)$(includedir)/zlib-ng-compat.h
+endif
 
 uninstall-static:
 	cd $(DESTDIR)$(libdir) && rm -f $(STATICLIB)
@@ -367,7 +373,7 @@ ifneq ($(IMPORTLIB),)
 endif
 
 uninstall: uninstall-static uninstall-shared
-	cd $(DESTDIR)$(includedir) && rm -f zlib$(SUFFIX).h zconf$(SUFFIX).h zlib_name_mangling$(SUFFIX).h
+	cd $(DESTDIR)$(includedir) && rm -f zlib$(SUFFIX).h zconf$(SUFFIX).h zlib_name_mangling$(SUFFIX).h zlib-ng-compat.h
 	cd $(DESTDIR)$(pkgconfigdir) && rm -f $(PKGFILE)
 
 mostlyclean: clean
