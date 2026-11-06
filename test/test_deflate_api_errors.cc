@@ -13,6 +13,8 @@
 
 #include <gtest/gtest.h>
 
+#include "test_data_p.h"
+
 /* A zeroed stream stands in for an uninitialized (or already ended) stream. */
 static PREFIX3(stream) zeroed_stream(void) {
     PREFIX3(stream) strm;
@@ -1048,4 +1050,81 @@ TEST(deflate_api_errors, deflate_after_failed_init) {
     EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_STREAM_ERROR);
     /* The bound falls back to the conservative value instead of crashing. */
     EXPECT_GE(PREFIX(deflateBound)(&strm, 1024), 1024UL);
+}
+
+/* ========================================================================== */
+/* Stream state machine errors                                                */
+/* ========================================================================== */
+
+/* Repeating a flush without new input:
+ * - the first Z_PARTIAL_FLUSH on an empty stream succeeds;
+ * - repeating it with no new input is rejected with Z_BUF_ERROR;
+ * - the half-flushed stream ends with Z_DATA_ERROR, as it never finished. */
+TEST(deflate_api_errors, deflate_duplicate_flush_without_input) {
+    PREFIX3(stream) strm;
+    uint8_t output[256];
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    strm.next_out = output;
+    strm.avail_out = sizeof(output);
+    ASSERT_EQ(PREFIX(deflate)(&strm, Z_PARTIAL_FLUSH), Z_OK);
+    EXPECT_EQ(PREFIX(deflate)(&strm, Z_PARTIAL_FLUSH), Z_BUF_ERROR);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_DATA_ERROR);
+}
+
+/* Stream state machine rules after the stream has been finished:
+ * - the initial Z_FINISH completes the 128-byte input (Z_STREAM_END);
+ * - any other flush is rejected with Z_STREAM_ERROR;
+ * - supplying new input is rejected with Z_BUF_ERROR;
+ * - repeated Z_FINISH calls keep returning Z_STREAM_END;
+ * - the finished stream can still be ended normally. */
+TEST(deflate_api_errors, deflate_finish_state_rules) {
+    PREFIX3(stream) strm;
+    uint8_t input[128];
+    uint8_t output[512];
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    memset(input, 'a', sizeof(input));
+    strm.next_in = input;
+    strm.avail_in = sizeof(input);
+    strm.next_out = output;
+    strm.avail_out = sizeof(output);
+    ASSERT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+
+    EXPECT_EQ(PREFIX(deflate)(&strm, Z_NO_FLUSH), Z_STREAM_ERROR);
+    strm.avail_in = sizeof(input);
+    EXPECT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_BUF_ERROR);
+    strm.avail_in = 0;
+    EXPECT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
+
+/* zng_deflateParams when the mandatory block flush cannot complete: 64 KiB
+ * of incompressible data are fed through a 32-byte output buffer, so the
+ * pending block cannot drain:
+ * - the initial Z_NO_FLUSH consumes the input and returns Z_OK;
+ * - the parameter change (strategy default -> filtered) is rejected with
+ *   Z_BUF_ERROR; a strategy change forces the flush in every build
+ *   configuration, unlike a level change whose compression function may not
+ *   change (e.g. WITH_NEW_STRATEGIES=OFF);
+ * - the stream is not corrupted: finishing with a big buffer succeeds
+ *   (Z_STREAM_END) and the stream ends cleanly. */
+TEST(deflate_api_errors, deflate_params_pending_data) {
+    PREFIX3(stream) strm;
+    uint8_t output[65536 + 4096];
+    uint8_t *input = gen_test_data(TEST_DATA_RANDOM, 65536);
+    ASSERT_NE(input, nullptr);
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    strm.next_in = input;
+    strm.avail_in = 65536;
+    strm.next_out = output;
+    strm.avail_out = 32; /* too small to drain the pending block */
+    ASSERT_EQ(PREFIX(deflate)(&strm, Z_NO_FLUSH), Z_OK);
+
+    EXPECT_EQ(PREFIX(deflateParams)(&strm, Z_DEFAULT_COMPRESSION, Z_FILTERED), Z_BUF_ERROR);
+
+    if (strm.avail_out == 0)
+        strm.next_out = output + strm.total_out;
+    strm.avail_out = (uint32_t)(sizeof(output) - strm.total_out);
+    EXPECT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+    free(input);
 }
