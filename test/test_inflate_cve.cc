@@ -8,6 +8,7 @@
 #endif
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <gtest/gtest.h>
@@ -102,4 +103,167 @@ TEST(inflate, cve_2005_1849) {
 
 TEST(inflate, cve_2005_2096) {
     inflate_malformed(cve_2005_2096, (uint32_t)sizeof(cve_2005_2096));
+}
+
+/* CINFO 8..15 used to be stored in wbits before it was rejected. inflateReset()
+ * keeps wbits, and the next stream then copied past the 32K window. */
+TEST(inflate, invalid_cinfo_does_not_stick) {
+    const size_t n = 128 * 1024;
+    PREFIX3(stream) strm, comp;
+    uint8_t hdr[2];
+    uint8_t *src, *dst, *compressed;
+    uint32_t dictlen;
+    unsigned long bound = 0;
+    size_t produced = 0;
+    int err = Z_OK;
+    int comp_open = 0;
+    int strm_open = 0;
+
+    src = (uint8_t *)calloc(1, n);
+    dst = (uint8_t *)malloc(n);
+    compressed = nullptr;
+    /* One release point. scan-build treats ASSERT/FAIL as a return and
+     * also as a fall-through, so freeing on both paths is a double free. */
+    if (src == nullptr || dst == nullptr) {
+        ADD_FAILURE() << "out of memory";
+        goto done;
+    }
+
+    memset(&comp, 0, sizeof(comp));
+    err = PREFIX(deflateInit)(&comp, 1);
+    if (err != Z_OK) {
+        ADD_FAILURE() << "deflateInit returned " << err;
+        goto done;
+    }
+    comp_open = 1;
+    bound = PREFIX(deflateBound)(&comp, (unsigned long)n);
+    compressed = (uint8_t *)malloc(bound);
+    if (compressed == nullptr) {
+        ADD_FAILURE() << "out of memory";
+        goto done;
+    }
+    comp.next_in = src;
+    comp.avail_in = (uint32_t)n;
+    comp.next_out = compressed;
+    comp.avail_out = (uint32_t)bound;
+    err = PREFIX(deflate)(&comp, Z_FINISH);
+    bound = (unsigned long)comp.total_out;
+    PREFIX(deflateEnd)(&comp);
+    comp_open = 0;
+    if (err != Z_STREAM_END) {
+        ADD_FAILURE() << "deflate returned " << err;
+        goto done;
+    }
+
+    memset(&strm, 0, sizeof(strm));
+    err = PREFIX(inflateInit2)(&strm, 0);
+    if (err != Z_OK) {
+        ADD_FAILURE() << "inflateInit2 returned " << err;
+        goto done;
+    }
+    strm_open = 1;
+
+    /* CMF CINFO 15, CM 8. 0xF800 is divisible by 31, so FLG is 0. */
+    hdr[0] = 0xf8;
+    hdr[1] = 0x00;
+    strm.next_in = hdr;
+    strm.avail_in = sizeof(hdr);
+    strm.next_out = dst;
+    strm.avail_out = 64;
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+
+    err = PREFIX(inflateReset)(&strm);
+    if (err != Z_OK) {
+        ADD_FAILURE() << "inflateReset returned " << err;
+        goto done;
+    }
+    strm.next_in = compressed;
+    strm.avail_in = (uint32_t)bound;
+    produced = 0;
+    do {
+        strm.next_out = dst + produced;
+        strm.avail_out = (uint32_t)MIN(n - produced, (size_t)64 * 1024);
+        err = PREFIX(inflate)(&strm, Z_NO_FLUSH);
+        produced = (size_t)strm.total_out;
+        if (produced > n) {
+            ADD_FAILURE() << "inflate wrote " << produced << " bytes into " << n;
+            goto done;
+        }
+    } while (err == Z_OK);
+
+    EXPECT_EQ(err, Z_STREAM_END);
+    EXPECT_EQ(produced, n);
+    EXPECT_EQ(memcmp(src, dst, n), 0);
+    dictlen = 0;
+    /* NULL dictionary: only the length is written, and it stays within the 32K window. */
+    EXPECT_EQ(PREFIX(inflateGetDictionary)(&strm, NULL, &dictlen), Z_OK);
+    EXPECT_LE(dictlen, 32768u);
+
+done:
+    if (strm_open) {
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    }
+    if (comp_open) {
+        PREFIX(deflateEnd)(&comp);
+    }
+    free(compressed);
+    free(dst);
+    free(src);
+}
+
+/* windowBits 0 still takes a valid size from the zlib header. */
+TEST(inflate, window_size_from_header) {
+    PREFIX3(stream) strm, comp;
+    uint8_t src[64], dst[64], compressed[128];
+    unsigned long bound;
+    int i;
+
+    for (i = 0; i < (int)sizeof(src); i++)
+        src[i] = (uint8_t)(i * 3 + 1);
+
+    memset(&comp, 0, sizeof(comp));
+    ASSERT_EQ(PREFIX(deflateInit)(&comp, Z_DEFAULT_COMPRESSION), Z_OK);
+    comp.next_in = src;
+    comp.avail_in = sizeof(src);
+    comp.next_out = compressed;
+    comp.avail_out = sizeof(compressed);
+    ASSERT_EQ(PREFIX(deflate)(&comp, Z_FINISH), Z_STREAM_END);
+    bound = (unsigned long)comp.total_out;
+    PREFIX(deflateEnd)(&comp);
+
+    memset(&strm, 0, sizeof(strm));
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, 0), Z_OK);
+    strm.next_in = compressed;
+    strm.avail_in = (uint32_t)bound;
+    strm.next_out = dst;
+    strm.avail_out = sizeof(dst);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_STREAM_END);
+    EXPECT_EQ(memcmp(src, dst, sizeof(src)), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* A header window larger than the one the caller asked for stays an error. */
+TEST(inflate, header_window_exceeds_request) {
+    PREFIX3(stream) strm, comp;
+    uint8_t src[32], dst[32], compressed[64];
+
+    memset(src, 0x11, sizeof(src));
+    memset(&comp, 0, sizeof(comp));
+    ASSERT_EQ(PREFIX(deflateInit)(&comp, Z_DEFAULT_COMPRESSION), Z_OK);
+    comp.next_in = src;
+    comp.avail_in = sizeof(src);
+    comp.next_out = compressed;
+    comp.avail_out = sizeof(compressed);
+    ASSERT_EQ(PREFIX(deflate)(&comp, Z_FINISH), Z_STREAM_END);
+    unsigned long bound = (unsigned long)comp.total_out;
+    PREFIX(deflateEnd)(&comp);
+
+    memset(&strm, 0, sizeof(strm));
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, 10), Z_OK);
+    strm.next_in = compressed;
+    strm.avail_in = (uint32_t)bound;
+    strm.next_out = dst;
+    strm.avail_out = sizeof(dst);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
 }
