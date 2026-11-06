@@ -605,13 +605,14 @@ int32_t Z_EXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32
         return Z_STREAM_ERROR;
     s = strm->state;
 
+    /* zng_tr_flush_bits() writes the complete bytes at pending_buf + pending, keep them below the symbol buffer */
 #ifdef LIT_MEM
     if (bits < 0 || bits > BIT_BUF_SIZE ||
-        (unsigned char *)s->d_buf < s->pending_out + ((BIT_BUF_SIZE + 7) >> 3))
+        (unsigned char *)s->d_buf < s->pending_buf + s->pending + ((s->bi_valid + bits) >> 3))
         return Z_BUF_ERROR;
 #else
-    if (bits < 0 || bits > BIT_BUF_SIZE || bits > (int32_t)(sizeof(value) << 3) ||
-        s->sym_buf < s->pending_out + ((BIT_BUF_SIZE + 7) >> 3))
+    if (bits < 0 || bits > BIT_BUF_SIZE ||
+        s->sym_buf < s->pending_buf + s->pending + ((s->bi_valid + bits) >> 3))
         return Z_BUF_ERROR;
 #endif
 
@@ -619,13 +620,16 @@ int32_t Z_EXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32
         put = BIT_BUF_SIZE - s->bi_valid;
         put = MIN(put, bits);
 
-        if (s->bi_valid == 0)
+        if (put == BIT_BUF_SIZE) {
+            /* The bit buffer is empty and takes all of value, shifting by BIT_BUF_SIZE is undefined */
             s->bi_buf = value64;
-        else
+            value64 = 0;
+        } else {
             s->bi_buf |= (value64 & ((UINT64_C(1) << put) - 1)) << s->bi_valid;
+            value64 >>= put;
+        }
         s->bi_valid += put;
         zng_tr_flush_bits(s);
-        value64 >>= put;
         bits -= put;
     } while (bits);
     return Z_OK;
