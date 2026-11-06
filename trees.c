@@ -712,16 +712,14 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, unsigned char *buf, uint32_
     Tracev((stderr, "\ncomprlen %lu(%lu) ", s->compressed_len>>3, s->compressed_len-7*last));
 }
 
-/* ===========================================================================
- * Send the block data compressed using the given Huffman trees
- */
-#if !defined(LIT_MEM) && OPTIMAL_CMP >= 64
 /* One 64-bit little-endian load at sx spans the next two symbols' dist fields
  * (bits 0..15, 24..39) and literals (bits 16..23, 40..47). The second symbol's dist
  * field alone separates a one-literal run from a two-literal one. */
 #define LIT3_DIST1_MASK 0x000000FFFF000000ULL
-#endif
 
+/* ===========================================================================
+ * Send the block data compressed using the given Huffman trees
+ */
 static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
     /* ltree: literal tree */
     /* dtree: distance tree */
@@ -731,12 +729,7 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
 
     /* Local pointers to avoid indirection */
     const unsigned int sym_next = s->sym_next;
-#ifdef LIT_MEM
-    uint16_t *d_buf = s->d_buf;
-    unsigned char *l_buf = s->l_buf;
-#else
     unsigned char *sym_buf = s->sym_buf;
-#endif
 
     /* Keep the bit writer state in registers across the entire loop */
     uint64_t bi_buf = s->bi_buf;
@@ -746,26 +739,21 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
     if (sym_next != 0) {
         do {
             send_bits_flush(s, bi_buf, bi_valid, pending);
-#ifdef LIT_MEM
-            dist = d_buf[sx];
-            lc = l_buf[sx++];
-#else
-#  if OPTIMAL_CMP >= 32
+#if OPTIMAL_CMP >= 32
             uint32_t dist_lc = Z_U32_FROM_LE(zng_memread_4(&sym_buf[sx]));
             dist = dist_lc & 0xffff;
             lc = (dist_lc >> 16) & 0xff;
-#  else
+#else
             dist = sym_buf[sx] + ((unsigned)sym_buf[sx + 1] << 8);
             lc = sym_buf[sx + 2];
-#  endif
-            sx += 3;
 #endif
+            sx += 3;
             if (dist == 0) {
                 uint64_t bits = 0;
                 uint32_t nbits = 0;
 
                 send_code_merge(s, lc, ltree, bits, nbits);
-#if !defined(LIT_MEM) && OPTIMAL_CMP >= 64
+#if OPTIMAL_CMP >= 64
                 /* Accumulate up to 2 more consecutive literals into the same merge. Their
                  * codes are at most 15 bits each, so all three fit alongside the at most
                  * 7 bits the flush above leaves behind. */
@@ -796,11 +784,7 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
             } /* literal or match pair ? */
 
             /* Check for no overlay of pending_buf on needed symbols */
-#ifdef LIT_MEM
-            Assert(pending < 2 * (s->lit_bufsize + sx), "pending_buf overflow");
-#else
             Assert(pending < s->lit_bufsize + sx, "pending_buf overflow");
-#endif
         } while (sx < sym_next);
     }
 
