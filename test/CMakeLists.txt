@@ -150,6 +150,7 @@ if(WITH_GTEST)
             test_inflate_far_distance.cc
             test_inflate_gh_1600.cc
             test_inflate_mark.cc
+            test_inflate_overlap.cc
             test_raw.cc
             test_small_window.cc
             )
