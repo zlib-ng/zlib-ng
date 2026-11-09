@@ -767,3 +767,239 @@ TEST(gzfile_api_errors, direct_modes) {
     remove("gzapi_err_direct_plain.gz");
     remove("gzapi_err_direct_gz.gz");
 }
+
+/* ========================================================================== */
+/* gzwrite / gzfwrite                                                         */
+/* ========================================================================== */
+
+/* gzwrite() with a NULL descriptor:
+ * - the call returns 0. */
+TEST(gzfile_api_errors, write_null) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    EXPECT_EQ(PREFIX(gzwrite)(NULL, data, (unsigned)sizeof(data)), 0);
+}
+
+/* gzwrite() on a read-mode descriptor:
+ * - the call returns 0. */
+TEST(gzfile_api_errors, write_read_file) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_write.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_write.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzwrite)(file, data, (unsigned)sizeof(data)), 0);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_write.gz");
+}
+
+/* gzwrite() with a length that does not fit in an int:
+ * - the call returns 0 and records Z_DATA_ERROR. */
+TEST(gzfile_api_errors, write_len_overflow) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_write.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_write.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzwrite)(file, data, 0xFFFFFFFFu), 0);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_DATA_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_write.gz");
+}
+
+/* gzfwrite() with a zero item size:
+ * - the call returns 0 without touching the descriptor;
+ * - on a valid write stream the guard still applies: the call returns 0
+ *   and the stream position is unchanged (without the guard this would
+ *   divide by zero). */
+TEST(gzfile_api_errors, fwrite_zero_size) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    EXPECT_EQ(PREFIX(gzfwrite)(data, 0, 1, NULL), 0u);
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_fwrite_zero.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gztell)(file), 0);
+    EXPECT_EQ(PREFIX(gzfwrite)(data, 0, 1, file), 0u);
+    EXPECT_EQ(PREFIX(gztell)(file), 0);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_fwrite_zero.gz");
+}
+
+/* gzfwrite() with a NULL descriptor:
+ * - the call returns 0. */
+TEST(gzfile_api_errors, fwrite_null_file) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    EXPECT_EQ(PREFIX(gzfwrite)(data, 1, 5, NULL), 0u);
+}
+
+/* gzfwrite() with size * nitems overflowing size_t:
+ * - the call is rejected with 0 and Z_STREAM_ERROR. */
+TEST(gzfile_api_errors, fwrite_overflow) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_write.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_write.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzfwrite)(data, SIZE_MAX / 2 + 1, 3, file), 0u);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_write.gz");
+}
+
+/* ========================================================================== */
+/* gzputc / gzputs                                                            */
+/* ========================================================================== */
+
+/* gzputc() with a NULL descriptor:
+ * - the call is rejected with -1. */
+TEST(gzfile_api_errors, putc_null) {
+    EXPECT_EQ(PREFIX(gzputc)(NULL, 'a'), -1);
+}
+
+/* gzputc() on a read-mode descriptor:
+ * - the call is rejected with -1. */
+TEST(gzfile_api_errors, putc_read_file) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_putc.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_putc.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzputc)(file, 'a'), -1);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_putc.gz");
+}
+
+/* gzputs() with a NULL descriptor:
+ * - the call is rejected with -1. */
+TEST(gzfile_api_errors, puts_null_file) {
+    EXPECT_EQ(PREFIX(gzputs)(NULL, "hello"), -1);
+}
+
+/* gzputs() on a read-mode descriptor:
+ * - the call is rejected with -1 before the string is examined. */
+TEST(gzfile_api_errors, puts_read_file) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_puts.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_puts.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzputs)(file, "hello"), -1);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_puts.gz");
+}
+
+/* ========================================================================== */
+/* gzprintf                                                                   */
+/* ========================================================================== */
+
+/* gzprintf() with a NULL descriptor:
+ * - the call is rejected with Z_STREAM_ERROR. */
+TEST(gzfile_api_errors, printf_null_file) {
+    EXPECT_EQ(PREFIX(gzprintf)(NULL, "hello %d", 42), Z_STREAM_ERROR);
+}
+
+/* gzprintf() on a read-mode descriptor:
+ * - the call is rejected with Z_STREAM_ERROR. */
+TEST(gzfile_api_errors, printf_read_file) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_printf.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_printf.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzprintf)(file, "hello %d", 42), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_printf.gz");
+}
+
+/* gzprintf() with output that does not fit in the buffer:
+ * - with an 8-byte buffer (via gzbuffer) a 20-character result is refused;
+ * - the call returns 0 and records no error, leaving the stream usable. */
+TEST(gzfile_api_errors, printf_output_too_large) {
+    ASSERT_TRUE(write_gzip_file("gzapi_err_printf.gz", (const uint8_t *)"x", 1));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_printf.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzbuffer)(file, 8), 0);
+    EXPECT_EQ(PREFIX(gzprintf)(file, "%.*s", 20, "aaaaaaaaaaaaaaaaaaaa"), 0);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_OK);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_printf.gz");
+}
+
+/* ========================================================================== */
+/* gzflush / gzsetparams                                                      */
+/* ========================================================================== */
+
+/* gzflush() with a NULL descriptor:
+ * - the call is rejected with Z_STREAM_ERROR. */
+TEST(gzfile_api_errors, flush_null) {
+    EXPECT_EQ(PREFIX(gzflush)(NULL, Z_FINISH), Z_STREAM_ERROR);
+}
+
+/* gzflush() on a read-mode descriptor:
+ * - the call is rejected with Z_STREAM_ERROR. */
+TEST(gzfile_api_errors, flush_read_file) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_flush.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_flush.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzflush)(file, Z_FINISH), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_flush.gz");
+}
+
+/* gzflush() with an out-of-range flush value:
+ * - values below 0 and above Z_FINISH are rejected with Z_STREAM_ERROR. */
+TEST(gzfile_api_errors, flush_invalid_value) {
+    ASSERT_TRUE(write_gzip_file("gzapi_err_flush.gz", (const uint8_t *)"x", 1));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_flush.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzflush)(file, -1), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzflush)(file, Z_FINISH + 1), Z_STREAM_ERROR);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_OK);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_flush.gz");
+}
+
+/* gzsetparams() with a NULL descriptor:
+ * - the call is rejected with Z_STREAM_ERROR. */
+TEST(gzfile_api_errors, setparams_null) {
+    EXPECT_EQ(PREFIX(gzsetparams)(NULL, Z_BEST_COMPRESSION, Z_DEFAULT_STRATEGY), Z_STREAM_ERROR);
+}
+
+/* gzsetparams() on a read-mode descriptor:
+ * - the call is rejected with Z_STREAM_ERROR. */
+TEST(gzfile_api_errors, setparams_read_file) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_setparams.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_setparams.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzsetparams)(file, Z_BEST_COMPRESSION, Z_DEFAULT_STRATEGY), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_setparams.gz");
+}
+
+/* gzsetparams() on a transparent ("wT") write descriptor:
+ * - there is no deflate state to retune, so the call is rejected. */
+TEST(gzfile_api_errors, setparams_direct_write) {
+    ASSERT_TRUE(write_gzip_file("gzapi_err_setparams.gz", (const uint8_t *)"x", 1));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_setparams.gz", "wT");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzsetparams)(file, Z_BEST_COMPRESSION, Z_DEFAULT_STRATEGY), Z_STREAM_ERROR);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_OK);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_setparams.gz");
+}
