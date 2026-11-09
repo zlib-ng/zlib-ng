@@ -25,11 +25,17 @@
 /* Helpers                                                                    */
 /* ========================================================================== */
 
-/* Write raw bytes to a file, bypassing the library under test. */
+/* Write raw bytes to a file, bypassing the library under test.
+ * The file is created with owner-only permissions. */
 static bool write_raw_file(const char *path, const uint8_t *data, size_t len) {
-    FILE *fp = fopen(path, "wb");
-    if (fp == NULL)
+    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    if (fd < 0)
         return false;
+    FILE *fp = fdopen(fd, "w");
+    if (fp == NULL) {
+        close(fd);
+        return false;
+    }
     size_t written = fwrite(data, 1, len, fp);
     int closed = fclose(fp);
     return written == len && closed == 0;
@@ -369,4 +375,395 @@ TEST(gzfile_api_errors, buffer_after_io) {
     EXPECT_EQ(PREFIX(gzbuffer)(file, 8192), -1);
     EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
     remove("gzapi_err_buffer.gz");
+}
+
+/* ========================================================================== */
+/* gzread / gzfread                                                           */
+/* ========================================================================== */
+
+/* A minimal gzip member for "hello" whose CRC32 trailer is deliberately
+   wrong (0xDEADBEEF), so the checksum verification in inflate fails. */
+static bool write_corrupt_crc_file(const char *path) {
+    const uint8_t bytes[] = {
+        31, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, /* gzip header */
+        0x01, 0x05, 0x00, 0xfa, 0xff,                              /* final stored block, len=5 */
+        'h', 'e', 'l', 'l', 'o',                                   /* payload */
+        0xde, 0xad, 0xbe, 0xef,                                    /* wrong CRC32 */
+        0x05, 0x00, 0x00, 0x00                                     /* ISIZE = 5 */
+    };
+    return write_raw_file(path, bytes, sizeof(bytes));
+}
+
+/* A gzip member whose stored block claims 100 payload bytes but the file
+   ends after 3 of them, so inflate runs out of input mid-block. */
+static bool write_truncated_file(const char *path) {
+    const uint8_t bytes[] = {
+        31, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, /* gzip header */
+        0x00,                                                     /* stored block, not final */
+        0x64, 0x00,                                               /* LEN = 100 */
+        0x9b, 0xff,                                               /* NLEN = ~100 */
+        'a', 'b', 'c'                                             /* only 3 of 100 bytes */
+    };
+    return write_raw_file(path, bytes, sizeof(bytes));
+}
+
+/* gzread() with a NULL descriptor:
+ * - the call is rejected with -1. */
+TEST(gzfile_api_errors, read_null) {
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzread)(NULL, buf, (unsigned)sizeof(buf)), -1);
+}
+
+/* gzread() on a write-mode descriptor:
+ * - the call is rejected with -1. */
+TEST(gzfile_api_errors, read_write_file) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_read.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_read.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzread)(file, buf, (unsigned)sizeof(buf)), -1);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_read.gz");
+}
+
+/* gzread() with a length that does not fit in an int:
+ * - the call is rejected with -1 and Z_STREAM_ERROR. */
+TEST(gzfile_api_errors, read_len_overflow) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_read.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_read.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzread)(file, buf, 0xFFFFFFFFu), -1);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_read.gz");
+}
+
+/* gzfread() with a zero item size:
+ * - the call returns 0 without touching the descriptor. */
+TEST(gzfile_api_errors, fread_zero_size) {
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzfread)(buf, 0, 1, NULL), 0u);
+}
+
+/* gzfread() with a NULL descriptor:
+ * - the call returns 0. */
+TEST(gzfile_api_errors, fread_null_file) {
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzfread)(buf, 1, 16, NULL), 0u);
+}
+
+/* gzfread() with size * nitems overflowing size_t:
+ * - the call is rejected with 0 and Z_STREAM_ERROR. */
+TEST(gzfile_api_errors, fread_overflow) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_read.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_read.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzfread)(buf, SIZE_MAX / 2 + 1, 3, file), 0u);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_read.gz");
+}
+
+/* gzread() on a file with a corrupted CRC32 trailer:
+ * - the read fails with -1;
+ * - the error code is Z_DATA_ERROR;
+ * - the error message names the file and reports the checksum mismatch,
+ *   proving that validation reached the CRC trailer (a wrong NLEN would
+ *   fail earlier with "invalid stored block lengths"). */
+TEST(gzfile_api_errors, read_corrupt_crc) {
+    ASSERT_TRUE(write_corrupt_crc_file("gzapi_err_crc.gz"));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_crc.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzread)(file, buf, (unsigned)sizeof(buf)), -1);
+    int errnum = Z_OK;
+    const char *msg = PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_DATA_ERROR);
+    ASSERT_NE(msg, (const char *)NULL);
+    EXPECT_NE(strstr(msg, "gzapi_err_crc.gz"), (char *)NULL);
+    EXPECT_NE(strstr(msg, "incorrect data check"), (char *)NULL);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_crc.gz");
+}
+
+/* gzread() on a stream truncated mid-block:
+ * - the first read returns the 3 payload bytes that precede the truncation;
+ * - the error code is Z_BUF_ERROR with an "unexpected end of file" message;
+ * - further reads return 0 (end-of-file) while the error is retained;
+ * - gzclearerr() resets the state to Z_OK and an empty message. */
+TEST(gzfile_api_errors, read_truncated_stream) {
+    ASSERT_TRUE(write_truncated_file("gzapi_err_trunc.gz"));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_trunc.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzread)(file, buf, (unsigned)sizeof(buf)), 3);
+    EXPECT_EQ(buf[0], 'a');
+    EXPECT_EQ(buf[1], 'b');
+    EXPECT_EQ(buf[2], 'c');
+    int errnum = Z_OK;
+    const char *msg = PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_BUF_ERROR);
+    ASSERT_NE(msg, (const char *)NULL);
+    EXPECT_NE(strstr(msg, "unexpected end of file"), (char *)NULL);
+    EXPECT_EQ(PREFIX(gzread)(file, buf, (unsigned)sizeof(buf)), 0);
+
+    PREFIX(gzclearerr)(file);
+    msg = PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_OK);
+    EXPECT_STREQ(msg, "");
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_trunc.gz");
+}
+
+/* gzread() after a fatal error has been set:
+ * - further reads are rejected with -1 without consuming input. */
+TEST(gzfile_api_errors, read_after_fatal_error) {
+    ASSERT_TRUE(write_corrupt_crc_file("gzapi_err_crc.gz"));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_crc.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzread)(file, buf, (unsigned)sizeof(buf)), -1);
+    EXPECT_EQ(PREFIX(gzread)(file, buf, (unsigned)sizeof(buf)), -1);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_DATA_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_crc.gz");
+}
+
+/* gzread() on an empty file:
+ * - the read returns 0 with no error;
+ * - gzeof() reports end-of-file. */
+TEST(gzfile_api_errors, read_empty_file) {
+    uint8_t none = 0;
+    ASSERT_TRUE(write_raw_file("gzapi_err_empty.gz", &none, 0));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_empty.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzread)(file, buf, (unsigned)sizeof(buf)), 0);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_OK);
+    EXPECT_EQ(PREFIX(gzeof)(file), 1);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_empty.gz");
+}
+
+/* ========================================================================== */
+/* gzgetc / gzungetc                                                          */
+/* ========================================================================== */
+
+#ifdef ZLIB_COMPAT
+/* gzgetc_() (the compat-mode entry point to the checked gzgetc()
+ * implementation) with a NULL descriptor:
+ * - the call is rejected with -1.
+ * The plain gzgetc() entry point is a speed macro that does not check for a
+ * NULL descriptor (by design, matching upstream zlib), so the NULL case can
+ * only be exercised through gzgetc_(). */
+TEST(gzfile_api_errors, getc_null) {
+    EXPECT_EQ(PREFIX(gzgetc_)(NULL), -1);
+}
+#endif /* ZLIB_COMPAT */
+
+/* gzgetc() on a write-mode descriptor:
+ * - the call is rejected with -1. */
+TEST(gzfile_api_errors, getc_write_file) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_getc.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_getc.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzgetc)(file), -1);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_getc.gz");
+}
+
+/* gzgetc() at end-of-file:
+ * - the call returns -1;
+ * - no error is recorded and gzeof() reports end-of-file. */
+TEST(gzfile_api_errors, getc_eof) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_getc.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_getc.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    uint8_t buf[16];
+    ASSERT_EQ(PREFIX(gzread)(file, buf, (unsigned)sizeof(buf)), 5);
+    EXPECT_EQ(PREFIX(gzgetc)(file), -1);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_OK);
+    EXPECT_EQ(PREFIX(gzeof)(file), 1);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_getc.gz");
+}
+
+/* gzungetc() with a NULL descriptor:
+ * - the call is rejected with -1. */
+TEST(gzfile_api_errors, ungetc_null_file) {
+    EXPECT_EQ(PREFIX(gzungetc)(0, NULL), -1);
+}
+
+/* gzungetc() with a negative character:
+ * - EOF cannot be pushed back and the call is rejected with -1. */
+TEST(gzfile_api_errors, ungetc_negative_c) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_ungetc.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_ungetc.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzungetc)(-1, file), -1);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_ungetc.gz");
+}
+
+/* gzungetc() on a write-mode descriptor:
+ * - the call is rejected with -1. */
+TEST(gzfile_api_errors, ungetc_write_file) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_ungetc.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_ungetc.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzungetc)(0, file), -1);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_ungetc.gz");
+}
+
+/* gzungetc() past the push-back buffer capacity:
+ * - with an 8-byte buffer (via gzbuffer) the output buffer holds 16 pushed
+ *   characters, so the first 16 pushes succeed and the 17th is rejected;
+ * - the rejection records Z_DATA_ERROR. */
+TEST(gzfile_api_errors, ungetc_overflow) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_ungetc.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_ungetc.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzbuffer)(file, 8), 0);
+
+    for (int i = 0; i < 16; i++)
+        EXPECT_EQ(PREFIX(gzungetc)(0x41 + i, file), 0x41 + i);
+    EXPECT_EQ(PREFIX(gzungetc)(0xff, file), -1);
+    int errnum = Z_OK;
+    const char *msg = PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_DATA_ERROR);
+    ASSERT_NE(msg, (const char *)NULL);
+    EXPECT_NE(strstr(msg, "out of room to push characters"), (char *)NULL);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_ungetc.gz");
+}
+
+/* ========================================================================== */
+/* gzgets / gzdirect                                                          */
+/* ========================================================================== */
+
+/* gzgets() with a NULL descriptor:
+ * - the call returns NULL. */
+TEST(gzfile_api_errors, gets_null_file) {
+    char buf[16];
+    EXPECT_EQ(PREFIX(gzgets)(NULL, buf, (int)sizeof(buf)), (char *)NULL);
+}
+
+/* gzgets() with a NULL destination buffer:
+ * - the call returns NULL. */
+TEST(gzfile_api_errors, gets_null_buf) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_gets.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_gets.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzgets)(file, NULL, 16), (char *)NULL);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_gets.gz");
+}
+
+/* gzgets() with a length below 1:
+ * - the call returns NULL. */
+TEST(gzfile_api_errors, gets_zero_len) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_gets.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_gets.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    char buf[16];
+    EXPECT_EQ(PREFIX(gzgets)(file, buf, 0), (char *)NULL);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_gets.gz");
+}
+
+/* gzgets() on a write-mode descriptor:
+ * - the call returns NULL. */
+TEST(gzfile_api_errors, gets_write_file) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_gets.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_gets.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    char buf[16];
+    EXPECT_EQ(PREFIX(gzgets)(file, buf, (int)sizeof(buf)), (char *)NULL);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_gets.gz");
+}
+
+/* gzgets() at end-of-file with nothing buffered:
+ * - the call returns NULL and records no error. */
+TEST(gzfile_api_errors, gets_eof) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_gets.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_gets.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    uint8_t buf[16];
+    ASSERT_EQ(PREFIX(gzread)(file, buf, (unsigned)sizeof(buf)), 5);
+    char line[16];
+    EXPECT_EQ(PREFIX(gzgets)(file, line, (int)sizeof(line)), (char *)NULL);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_OK);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_gets.gz");
+}
+
+/* gzdirect() with a NULL descriptor:
+ * - the call returns 0. */
+TEST(gzfile_api_errors, direct_null) {
+    EXPECT_EQ(PREFIX(gzdirect)(NULL), 0);
+}
+
+/* gzdirect() on transparent and gzip inputs:
+ * - a plain (non-gzip) file is read transparently and reports 1;
+ * - a gzip file is decompressed and reports 0. */
+TEST(gzfile_api_errors, direct_modes) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_raw_file("gzapi_err_direct_plain.gz", data, sizeof(data)));
+    ASSERT_TRUE(write_gzip_file("gzapi_err_direct_gz.gz", data, sizeof(data)));
+
+    gzFile plain = PREFIX(gzopen)("gzapi_err_direct_plain.gz", "rb");
+    ASSERT_NE(plain, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzdirect)(plain), 1);
+    EXPECT_EQ(PREFIX(gzclose)(plain), Z_OK);
+
+    gzFile gzip = PREFIX(gzopen)("gzapi_err_direct_gz.gz", "rb");
+    ASSERT_NE(gzip, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzdirect)(gzip), 0);
+    EXPECT_EQ(PREFIX(gzclose)(gzip), Z_OK);
+    remove("gzapi_err_direct_plain.gz");
+    remove("gzapi_err_direct_gz.gz");
 }
