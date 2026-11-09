@@ -1,5 +1,4 @@
 /* test_slide_hash.cc - slide_hash unit tests
- * Copyright (C) 2026 Google LLC
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -74,20 +73,33 @@ static void slide_hash_check(slide_hash_func func, slide_hash_func head_func) {
     }
 
 #ifdef SLIDE_HASH_FALLBACK
+static void slide_hash_edge_cases(slide_hash_func func, slide_hash_func head_func) {
+    static const Pos slides[] = {0, 1, 511, 28672, 32767, 32768, 32769, 49152, 65535};
+    for (size_t k = 0; k < sizeof(slides) / sizeof(slides[0]); k++) {
+        slide_hash_run(func, 71u, slides[k], 0, false);
+        slide_hash_run(head_func, 71u, slides[k], 0, true);
+    }
+    for (uint32_t offset = 1; offset < 4; offset++) {
+        slide_hash_run(func, 65u, 511, offset, false);
+        slide_hash_run(func, 65u, 32768, offset, false);
+        slide_hash_run(func, 65u, 49152, offset, false);
+    }
+    slide_hash_run(func, 0u, 32768, 0, false);
+}
+#endif
+
+#ifdef SLIDE_HASH_FALLBACK
 TEST_SLIDE_HASH(c, slide_hash_c, slide_hash_head_c, 1)
 
 TEST(slide_hash, c_edge_cases) {
-    static const Pos slides[] = {0, 1, 511, 28672, 32767, 32768, 32769, 49152, 65535};
-    for (size_t k = 0; k < sizeof(slides) / sizeof(slides[0]); k++) {
-        slide_hash_run(slide_hash_c, 71u, slides[k], 0, false);
-        slide_hash_run(slide_hash_head_c, 71u, slides[k], 0, true);
-    }
-    for (uint32_t offset = 1; offset < 4; offset++) {
-        slide_hash_run(slide_hash_c, 65u, 511, offset, false);
-        slide_hash_run(slide_hash_c, 65u, 32768, offset, false);
-        slide_hash_run(slide_hash_c, 65u, 49152, offset, false);
-    }
-    slide_hash_run(slide_hash_c, 0u, 32768, 0, false);
+    slide_hash_edge_cases(slide_hash_c, slide_hash_head_c);
+}
+#endif
+#ifdef SLIDE_HASH_SWAR_FALLBACK
+TEST_SLIDE_HASH(swar, slide_hash_swar, slide_hash_head_swar, 1)
+
+TEST(slide_hash, swar_edge_cases) {
+    slide_hash_edge_cases(slide_hash_swar, slide_hash_head_swar);
 }
 #endif
 

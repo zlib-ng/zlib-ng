@@ -103,6 +103,7 @@ option(WITH_ALL_FALLBACKS "Build all generic fallback functions (Useful for Gben
 option(WITH_REDUCED_MEM "Reduced memory usage for special cases (reduces performance)" OFF)
 option(WITH_NEW_STRATEGIES "Use new strategies" ON)
 option(WITH_CRC32_CHORBA "Enable optimized CRC32 algorithm Chorba" ON)
+option(WITH_SLIDE_HASH_SWAR "Enable SWAR slide_hash generic fallback" ON)
 option(WITH_NATIVE_INSTRUCTIONS
     "Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native)" OFF)
 option(WITH_RUNTIME_CPU_DETECTION "Build with runtime detection of CPU architecture" ON)
@@ -195,6 +196,7 @@ mark_as_advanced(FORCE
     ZLIB_SYMBOL_PREFIX
     WITH_REDUCED_MEM
     WITH_CRC32_CHORBA
+    WITH_SLIDE_HASH_SWAR
     WITH_ALL_FALLBACKS
     WITH_ARMV8 WITH_NEON
     WITH_ARMV6
@@ -235,6 +237,10 @@ endif()
 
 if(NOT WITH_CRC32_CHORBA)
     add_definitions(-DWITHOUT_CHORBA)
+endif()
+
+if(NOT WITH_SLIDE_HASH_SWAR)
+    add_definitions(-DWITHOUT_SLIDE_HASH_SWAR)
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^Intel")
@@ -1342,6 +1348,7 @@ set(ZLIB_GENERIC_SRCS
     arch/generic/crc32_braid_c.c
     arch/generic/crc32_chorba_c.c
     arch/generic/slide_hash_c.c
+    arch/generic/slide_hash_swar.c
 )
 
 if(WITH_ALL_FALLBACKS)
@@ -1671,6 +1678,7 @@ add_feature_info(WITH_ALL_FALLBACKS WITH_ALL_FALLBACKS "Build all generic fallba
 add_feature_info(WITH_OPTIM WITH_OPTIM "Build with optimisation")
 add_feature_info(WITH_NEW_STRATEGIES WITH_NEW_STRATEGIES "Use new strategies")
 add_feature_info(WITH_CRC32_CHORBA WITH_CRC32_CHORBA "Use optimized CRC32 algorithm Chorba")
+add_feature_info(WITH_SLIDE_HASH_SWAR WITH_SLIDE_HASH_SWAR "Build SWAR slide_hash generic fallback")
 add_feature_info(WITH_NATIVE_INSTRUCTIONS WITH_NATIVE_INSTRUCTIONS
     "Instruct the compiler to use the full instruction set on this host (gcc/clang -march=native)")
 add_feature_info(WITH_RUNTIME_CPU_DETECTION WITH_RUNTIME_CPU_DETECTION "Build with runtime CPU detection")
