@@ -156,6 +156,7 @@ if(WITH_GTEST)
 
         if(WITH_GZFILEOP)
             list(APPEND TEST_SRCS test_gzio.cc)
+            list(APPEND TEST_SRCS test_gzfile_api_errors.cc)
         endif()
 
         if(NOT TEST_STOCK_ZLIB)
