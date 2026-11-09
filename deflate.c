@@ -184,6 +184,7 @@ static const config configuration_table[10] = {
  * chases the symbol buffer, or run past the allocation. */
 #define PENDING_BUF_PAD 8
 
+#define LIT_BUFS 4
 #define PENDING_BUF_SIZE(lit_bufsize) (((lit_bufsize) * LIT_BUFS) + 1 + PENDING_BUF_PAD)
 
 /* ===========================================================================
@@ -377,15 +378,8 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
      */
 
     s->pending_buf_size = s->lit_bufsize * 4;
-
-#ifdef LIT_MEM
-    s->d_buf = (uint16_t *)(s->pending_buf + (s->lit_bufsize << 1) + PENDING_BUF_PAD);
-    s->l_buf = s->pending_buf + (s->lit_bufsize << 2) + PENDING_BUF_PAD;
-    s->sym_end = s->lit_bufsize - 1;
-#else
     s->sym_buf = s->pending_buf + s->lit_bufsize + PENDING_BUF_PAD;
     s->sym_end = (s->lit_bufsize - 1) * 3;
-#endif
     /* We avoid equality with lit_bufsize*3 because of wraparound at 64K
      * on 16 bit machines and because stored blocks are restricted to
      * 64K-1 bytes.
@@ -606,15 +600,9 @@ int32_t Z_EXPORT PREFIX(deflatePrime)(PREFIX3(stream) *strm, int32_t bits, int32
     s = strm->state;
 
     /* zng_tr_flush_bits() writes the complete bytes at pending_buf + pending, keep them below the symbol buffer */
-#ifdef LIT_MEM
-    if (bits < 0 || bits > BIT_BUF_SIZE ||
-        (unsigned char *)s->d_buf < s->pending_buf + s->pending + ((s->bi_valid + bits) >> 3))
-        return Z_BUF_ERROR;
-#else
     if (bits < 0 || bits > BIT_BUF_SIZE ||
         s->sym_buf < s->pending_buf + s->pending + ((s->bi_valid + bits) >> 3))
         return Z_BUF_ERROR;
-#endif
 
     do {
         put = BIT_BUF_SIZE - s->bi_valid;
@@ -1184,12 +1172,7 @@ int32_t Z_EXPORT PREFIX(deflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     memcpy(ds->pending_buf, ss->pending_buf, PENDING_BUF_SIZE(ds->lit_bufsize));
 
     ds->pending_out = ds->pending_buf + (ss->pending_out - ss->pending_buf);
-#ifdef LIT_MEM
-    ds->d_buf = (uint16_t *)(ds->pending_buf + (ds->lit_bufsize << 1) + PENDING_BUF_PAD);
-    ds->l_buf = ds->pending_buf + (ds->lit_bufsize << 2) + PENDING_BUF_PAD;
-#else
     ds->sym_buf = ds->pending_buf + ds->lit_bufsize + PENDING_BUF_PAD;
-#endif
 
     ds->l_desc.dyn_tree = ds->dyn_ltree;
     ds->d_desc.dyn_tree = ds->dyn_dtree;

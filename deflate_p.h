@@ -64,20 +64,14 @@ extern Z_INTERNAL const unsigned char zng_dist_code[];
 static inline int zng_tr_tally_lit(deflate_state *s, unsigned char c) {
     /* c is the unmatched char */
     unsigned int sym_next = s->sym_next;
-#ifdef LIT_MEM
-    s->d_buf[sym_next] = 0;
-    s->l_buf[sym_next] = c;
-    s->sym_next = sym_next + 1;
-#else
-#  if OPTIMAL_CMP >= 32
+#if OPTIMAL_CMP >= 32
     zng_memwrite_4(&s->sym_buf[sym_next], Z_U32_TO_LE((uint32_t)c << 16));
-#  else
+#else
     s->sym_buf[sym_next] = 0;
     s->sym_buf[sym_next+1] = 0;
     s->sym_buf[sym_next+2] = c;
-#  endif
-    s->sym_next = sym_next + 3;
 #endif
+    s->sym_next = sym_next + 3;
     s->dyn_ltree[c].Freq++;
     Tracevv((stderr, "%c", c));
 #ifdef ZLIB_DEBUG
@@ -91,22 +85,14 @@ static inline int zng_tr_tally_dist(deflate_state* s, uint32_t dist, uint32_t le
     /* dist: distance of matched string */
     /* len: match length-STD_MIN_MATCH */
     unsigned int sym_next = s->sym_next;
-#ifdef LIT_MEM
-    Assert(dist <= UINT16_MAX, "dist should fit in uint16_t");
-    Assert(len <= UINT8_MAX, "len should fit in uint8_t");
-    s->d_buf[sym_next] = (uint16_t)dist;
-    s->l_buf[sym_next] = (uint8_t)len;
-    s->sym_next = sym_next + 1;
-#else
-#  if OPTIMAL_CMP >= 32
+#if OPTIMAL_CMP >= 32
     zng_memwrite_4(&s->sym_buf[sym_next], Z_U32_TO_LE(dist | ((uint32_t)len << 16)));
-#  else
+#else
     s->sym_buf[sym_next] = (uint8_t)(dist);
     s->sym_buf[sym_next+1] = (uint8_t)(dist >> 8);
     s->sym_buf[sym_next+2] = (uint8_t)len;
-#  endif
-    s->sym_next = sym_next + 3;
 #endif
+    s->sym_next = sym_next + 3;
     dist--;
     Assert(dist < MAX_DIST(s) && (uint16_t)d_code(dist) < (uint16_t)D_CODES,
         "zng_tr_tally: bad match");
