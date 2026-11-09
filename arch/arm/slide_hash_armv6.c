@@ -19,7 +19,7 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, uint16_t wsize
     Assert((size % (sizeof(uint16x2_t) * 4) == 0), "hash table size err");
 
     Assert(sizeof(Pos) == 2, "Wrong Pos size");
-    v = wsize | (wsize << 16);
+    v = (uint32_t)wsize | ((uint32_t)wsize << 16);
 
     n = size / (sizeof(uint16x2_t) * 4);
     do {
