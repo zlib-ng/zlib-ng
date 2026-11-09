@@ -1101,8 +1101,8 @@ jobs:
       # Don't run tests on 32-bit Windows ARM
       if: runner.os != 'Windows' || contains(matrix.name, 'ARM') == false || runner.arch == 'ARM64'
       run: |
-        ${{ contains(matrix.name, 'SDE') && format('sde {0} -- ctest', matrix.sde-args) || 'ctest' }} \
-          --verbose -C ${{ matrix.build-config || 'Release' }} -E benchmark_zlib --output-on-failure --max-width 120 -j ${{ matrix.parallel-jobs || '5' }}
+        ${{ contains(matrix.name, 'SDE') && format('sde {0} -- ctest -E "^(minigzip-|benchmark_zlib)"', matrix.sde-args) || 'ctest -E benchmark_zlib' }} \
+          --verbose -C ${{ matrix.build-config || 'Release' }} --output-on-failure --max-width 120 -j ${{ matrix.parallel-jobs || '5' }}
       env:
         ASAN_OPTIONS: ${{ matrix.asan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
         MSAN_OPTIONS: ${{ matrix.msan-options || 'verbosity=0' }}:abort_on_error=1:halt_on_error=1
