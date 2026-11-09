@@ -365,8 +365,6 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, PREFIX(in_func) in, 
             /* use inflate_fast() if we have enough input and output */
             if (have >= INFLATE_FAST_MIN_HAVE && left >= INFLATE_FAST_MIN_SAFE) {
                 RESTORE();
-                if (state->whave < state->wsize)
-                    state->whave = state->wsize - left;
                 /* inflateBack() writes directly into the window, so out and window
                    always overlap. Use the safe variant, whose chunk copy functions
                    never overwrite window data needed by future back-references. */
