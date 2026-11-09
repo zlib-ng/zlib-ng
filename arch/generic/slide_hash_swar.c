@@ -38,18 +38,17 @@ Z_FORCEINLINE static uint64_t slide_swar_lt32k(uint64_t v, uint64_t sw) {
     return t & ((ge - (ge >> 15)) | (v & SLIDE_SWAR_MSB));
 }
 
-/* Subtract wsize > 32768 with unsigned saturation across four 16-bit lanes.
- * Surviving entries have bit 15 set in both v and t and produce results < 32768. */
-Z_FORCEINLINE static uint64_t slide_swar_gt32k(uint64_t v, uint64_t sw_lo) {
-    uint64_t t = (v | SLIDE_SWAR_MSB) - sw_lo;
-    uint64_t ge = v & t & SLIDE_SWAR_MSB;
-    return t & (ge - (ge >> 15));
-}
-
 /* Slide the hash table when sliding the window down, four entries at a time
  * when the table is 8-byte aligned, as guaranteed by alloc_deflate.
+ *
+ * fill_window slides by W_BUF_SIZE(w_size) - w_size, which never exceeds
+ * 32768, so larger values are only reachable from tests and simply take the
+ * plain loop below.
+ *
+ * Not inlined, otherwise Clang duplicates and unrolls the loops at each of the
+ * three call sites and roughly doubles the code size.
  */
-static inline void slide_hash_swar_chain(Pos *table, uint32_t entries, Pos wsize) {
+Z_NOINLINE static void slide_hash_swar_chain(Pos *table, uint32_t entries, Pos wsize) {
     if (((uintptr_t)table & 7) == 0) {
         Pos *q = (Pos *)HINT_ALIGNED(table, 8);
         if (wsize == 32768) {
@@ -68,16 +67,6 @@ static inline void slide_hash_swar_chain(Pos *table, uint32_t entries, Pos wsize
                 uint64_t v1 = slide_load64(q + 4);
                 slide_store64(q, slide_swar_lt32k(v0, sw));
                 slide_store64(q + 4, slide_swar_lt32k(v1, sw));
-                q += 8;
-                entries -= 8;
-            }
-        } else {
-            uint64_t sw_lo = ((uint64_t)(wsize & 0x7FFFU)) * SLIDE_SWAR_REP;
-            while (entries >= 8) {
-                uint64_t v0 = slide_load64(q);
-                uint64_t v1 = slide_load64(q + 4);
-                slide_store64(q, slide_swar_gt32k(v0, sw_lo));
-                slide_store64(q + 4, slide_swar_gt32k(v1, sw_lo));
                 q += 8;
                 entries -= 8;
             }
