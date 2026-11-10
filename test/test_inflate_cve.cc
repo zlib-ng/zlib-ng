@@ -267,3 +267,112 @@ TEST(inflate, header_window_exceeds_request) {
     EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
     EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
 }
+
+/* inflateSync() before any header leaves no window size. Decoding must use the largest window, not
+ * a one-byte window that rejects distances reaching into earlier inflate() output. */
+TEST(inflate, sync_without_header_uses_max_window) {
+    static uint8_t src[64 * 1024], dst[64 * 1024], compressed[96 * 1024];
+    const size_t split = 16 * 1024;
+    /* CMF CINFO 7, CM 8, with a wrong FCHECK. */
+    uint8_t hdr[2] = {0x78, 0x00};
+    PREFIX3(stream) strm, comp;
+    uint32_t seed = 12345;
+    size_t produced = 0;
+    int err;
+
+    for (size_t i = 0; i < sizeof(src); i++) {
+        seed = seed * 1103515245u + 12345u;
+        src[i] = (uint8_t)('a' + (seed >> 16) % 10);
+    }
+
+    /* Full flush after split bytes leaves a 00 00 FF FF marker for inflateSync(). */
+    memset(&comp, 0, sizeof(comp));
+    ASSERT_EQ(PREFIX(deflateInit)(&comp, Z_DEFAULT_COMPRESSION), Z_OK);
+    comp.next_in = src;
+    comp.avail_in = (uint32_t)split;
+    comp.next_out = compressed;
+    comp.avail_out = sizeof(compressed);
+    ASSERT_EQ(PREFIX(deflate)(&comp, Z_FULL_FLUSH), Z_OK);
+    comp.avail_in = (uint32_t)(sizeof(src) - split);
+    ASSERT_EQ(PREFIX(deflate)(&comp, Z_FINISH), Z_STREAM_END);
+    unsigned long comp_len = (unsigned long)comp.total_out;
+    PREFIX(deflateEnd)(&comp);
+
+    memset(&strm, 0, sizeof(strm));
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, 0), Z_OK);
+    strm.next_in = hdr;
+    strm.avail_in = sizeof(hdr);
+    strm.next_out = dst;
+    strm.avail_out = sizeof(dst);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+
+    strm.next_in = compressed;
+    strm.avail_in = (uint32_t)comp_len;
+    EXPECT_EQ(PREFIX(inflateSync)(&strm), Z_OK);
+
+    /* Small output pieces make later matches reach into output from earlier calls. */
+    do {
+        strm.next_out = dst + produced;
+        strm.avail_out = (uint32_t)MIN(sizeof(dst) - produced, (size_t)4096);
+        err = PREFIX(inflate)(&strm, Z_NO_FLUSH);
+        produced = (size_t)(strm.next_out - dst);
+    } while (err == Z_OK && produced < sizeof(dst));
+
+    EXPECT_EQ(err, Z_STREAM_END) << (strm.msg ? strm.msg : "");
+    EXPECT_EQ(produced, sizeof(src) - split);
+    EXPECT_EQ(memcmp(dst, src + split, sizeof(src) - split), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+static unsigned long compress_window(const uint8_t *src, size_t len, int window_bits, uint8_t *out,
+                                     size_t out_size) {
+    PREFIX3(stream) comp;
+    memset(&comp, 0, sizeof(comp));
+    if (PREFIX(deflateInit2)(&comp, Z_DEFAULT_COMPRESSION, Z_DEFLATED, window_bits, 8,
+                             Z_DEFAULT_STRATEGY) != Z_OK)
+        return 0;
+    comp.next_in = (z_const unsigned char *)src;
+    comp.avail_in = (uint32_t)len;
+    comp.next_out = out;
+    comp.avail_out = (uint32_t)out_size;
+    int err = PREFIX(deflate)(&comp, Z_FINISH);
+    unsigned long comp_len = (unsigned long)comp.total_out;
+    PREFIX(deflateEnd)(&comp);
+    return err == Z_STREAM_END ? comp_len : 0;
+}
+
+/* inflateReset() restores a requested windowBits of 0, so a reused stream takes the window size
+ * from each header instead of keeping the first one. */
+TEST(inflate, reset_restores_requested_window) {
+    PREFIX3(stream) strm;
+    uint8_t src[64], dst[64], small_window[128], max_window[128];
+    unsigned long small_len, max_len;
+
+    for (size_t i = 0; i < sizeof(src); i++)
+        src[i] = (uint8_t)(i * 7 + 3);
+    small_len = compress_window(src, sizeof(src), 9, small_window, sizeof(small_window));
+    max_len = compress_window(src, sizeof(src), MAX_WBITS, max_window, sizeof(max_window));
+    ASSERT_NE(small_len, 0u);
+    ASSERT_NE(max_len, 0u);
+    /* CINFO is the high nibble of CMF. */
+    ASSERT_LT(small_window[0] >> 4, max_window[0] >> 4);
+
+    memset(&strm, 0, sizeof(strm));
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, 0), Z_OK);
+    strm.next_in = small_window;
+    strm.avail_in = (uint32_t)small_len;
+    strm.next_out = dst;
+    strm.avail_out = sizeof(dst);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_STREAM_END);
+    EXPECT_EQ(memcmp(src, dst, sizeof(src)), 0);
+
+    EXPECT_EQ(PREFIX(inflateReset)(&strm), Z_OK);
+    memset(dst, 0, sizeof(dst));
+    strm.next_in = max_window;
+    strm.avail_in = (uint32_t)max_len;
+    strm.next_out = dst;
+    strm.avail_out = sizeof(dst);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_STREAM_END) << (strm.msg ? strm.msg : "");
+    EXPECT_EQ(memcmp(src, dst, sizeof(src)), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
