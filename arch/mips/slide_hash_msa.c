@@ -37,11 +37,11 @@ static inline void slide_hash_chain(Pos *table, uint32_t entries, v8u16 msa_wsiz
 }
 
 void Z_INTERNAL slide_hash_msa(deflate_state *s) {
-    Assert(s->w_size <= UINT16_MAX, "w_size should fit in uint16_t");
-    uint16_t wsize = (uint16_t) s->w_size;
-    v8u16 msa_wsize = (v8u16) __msa_fill_h(wsize);
+    Assert(s->slide_len <= UINT16_MAX, "slide_len should fit in uint16_t");
+    uint16_t slide = (uint16_t)s->slide_len;
+    v8u16 msa_slide = (v8u16)__msa_fill_h(slide);
 
-    slide_hash_chain(s->head, HASH_SIZE, msa_wsize);
-    slide_hash_chain(s->prev, wsize, msa_wsize);
+    slide_hash_chain(s->head, HASH_SIZE, msa_slide);
+    slide_hash_chain(s->prev, s->w_size, msa_slide);
 }
 #endif /* MIPS_MSA */
