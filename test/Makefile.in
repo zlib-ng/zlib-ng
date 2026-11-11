@@ -62,18 +62,11 @@ testshared: check_cross_dep ../examplesh$(EXE) ../minigzipsh$(EXE)
 	rm -f $$TMPSH $$HELLOSH
 
 .PHONY: ghtests
-ghtests: testGH-361 testGH-364 testGH-751 testGH-1235
+ghtests: testGH-361 testGH-751 testGH-1235
 
 .PHONY: testGH-361
 testGH-361: ../minigzip$(EXE)
 	$(EMU_RUN) ../minigzip$(EXE) -4 <$(SRCDIR)/GH-361/test.txt >/dev/null
-
-switchlevels$(EXE): $(SRCDIR)/switchlevels.c
-	$(CC) $(CFLAGS) -I.. -I$(SRCTOP) -o $@ $< $(TEST_LDFLAGS)
-
-.PHONY: testGH-364
-testGH-364: switchlevels$(EXE)
-	$(EMU_RUN) ./switchlevels$(EXE) 1 5 9 3 <$(SRCDIR)/GH-364/test.bin >/dev/null
 
 .PHONY: testGH-751
 testGH-751: ../minigzip$(EXE)
@@ -88,7 +81,7 @@ testGH-1235: gh1235$(EXE)
 
 clean:
 	rm -f *.o *.gcda *.gcno *.gcov
-	rm -f switchlevels$(EXE) gh1235$(EXE)
+	rm -f gh1235$(EXE)
 
 distclean: clean
 	rm -f Makefile

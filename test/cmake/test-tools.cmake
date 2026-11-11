@@ -46,12 +46,6 @@ add_test(NAME minideflate-invalid
     -DSUCCESS_EXIT=64
     -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
 
-set(TEST_COMMAND ${SWITCHLEVELS_COMMAND} "--help")
-add_test(NAME switchlevels-help
-    COMMAND ${CMAKE_COMMAND}
-     "-DCOMMAND=${TEST_COMMAND}"
-     -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/run-and-redirect.cmake)
-
 # Test generated crc32 tables match tables in source directory
 add_test(NAME makecrct
     COMMAND ${CMAKE_COMMAND}

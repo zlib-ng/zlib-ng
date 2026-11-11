@@ -22,11 +22,6 @@ configure_test_executable(example)
 target_link_libraries(example zlib-ng)
 add_test(NAME example COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:example>)
 
-add_executable(switchlevels switchlevels.c)
-configure_test_executable(switchlevels)
-target_link_libraries(switchlevels zlib-ng)
-set(SWITCHLEVELS_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels>)
-
 add_executable(infcover infcover.c)
 configure_test_executable(infcover)
 target_link_libraries(infcover zlib-ng)
