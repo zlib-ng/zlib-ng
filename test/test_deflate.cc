@@ -148,3 +148,13 @@ INSTANTIATE_TEST_SUITE_P(deflate, deflate_variant,
                         Z_HUFFMAN_ONLY, Z_RLE, Z_FIXED)         /* strategy */
     ),
     deflate_test_name);
+
+/* Windows below 32K slide the window buffer by more than w_size. */
+INSTANTIATE_TEST_SUITE_P(deflate_small_window, deflate_variant,
+    testing::Combine(
+        testing::Values(131072, 1048576),                       /* size */
+        testing::Values(1, 3, 6, 9),                            /* level */
+        testing::Values(-9),                                    /* window_bits */
+        testing::Values(Z_DEFAULT_STRATEGY)                     /* strategy */
+    ),
+    deflate_test_name);
