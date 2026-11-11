@@ -46,7 +46,7 @@ public:
         ASSERT_TRUE(uncompressed != NULL);
         memset(uncompressed, 'a', MAX_LENGTH);
 
-        for (int32_t i = 0; i < MAX_LENGTH; i++) {
+        for (int32_t i = 0; i <= MAX_LENGTH; i++) {
             memset(&c_stream, 0, sizeof(c_stream));
 
             c_stream.avail_in = i;
