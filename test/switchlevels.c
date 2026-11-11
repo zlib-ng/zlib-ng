@@ -12,13 +12,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-#  include <fcntl.h>
-#  include <io.h>
-#  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
-#else
-#  define SET_BINARY_MODE(file)
-#endif
+#include "utils/util_shared.h"
 
 static int read_all(unsigned char *buf, size_t size) {
     size_t total_read = 0;

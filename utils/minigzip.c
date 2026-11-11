@@ -29,13 +29,7 @@
 #  include <sys/stat.h>
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__)
-#  include <fcntl.h>
-#  include <io.h>
-#  define SET_BINARY_MODE(file) setmode(fileno(file), O_BINARY)
-#else
-#  define SET_BINARY_MODE(file)
-#endif
+#include "util_shared.h"
 
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #  define snprintf _snprintf
@@ -45,15 +39,6 @@
 #  define GZ_SUFFIX ".gz"
 #endif
 #define SUFFIX_LEN (sizeof(GZ_SUFFIX)-1)
-
-#ifndef GZBUFSIZE
-#  define GZBUFSIZE 131072
-#endif
-/* CVE2018-* checks fail if buffer is not at least 48K */
-#if GZBUFSIZE < 49152
-#  undef GZBUFSIZE
-#  define GZBUFSIZE 49152
-#endif
 
 #define MAX_NAME_LEN 1024
 
