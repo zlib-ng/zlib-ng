@@ -19,6 +19,14 @@
 #  define SET_BINARY_MODE(file)
 #endif
 
+#if defined(_WIN32)
+#  if !defined(MAXPATHLEN)
+#    define MAXPATHLEN _MAX_PATH
+#  endif
+#else
+#  include <sys/param.h>
+#endif
+
 #ifdef _MSC_VER
 #  include <string.h>
 #  define strcasecmp _stricmp
@@ -244,6 +252,16 @@ static void show_help(void) {
            "  -0 to -9 : compression level\n\n");
 }
 
+char *sanitize_path(const char *in, char *out) {
+    if (strlen(in) > MAXPATHLEN)
+        return NULL;
+#ifdef _WIN32
+    return _fullpath(out, in, MAXPATHLEN);
+#else
+    return realpath(in, out); /* flawfinder: ignore */
+#endif
+}
+
 int main(int argc, char **argv) {
     int32_t i;
     int32_t mem_level = DEF_MEM_LEVEL;
@@ -306,18 +324,24 @@ int main(int argc, char **argv) {
     SET_BINARY_MODE(stdout);
 
     if (i != argc) {
-        fin = fopen(argv[i], "rb");
+        char input_file[MAXPATHLEN + 1];
+        if (sanitize_path(argv[i], input_file) == NULL) { /* flawfinder: ignore */
+            fprintf(stderr, "Invalid input path: %s\n", argv[i]);
+            return 1;
+        }
+
+        fin = fopen(input_file, "rb");
         if (fin == NULL) {
             fprintf(stderr, "Failed to open file: %s\n", argv[i]);
             exit(1);
         }
         if (!copyout) {
-            char *out_file = (char *)calloc(1, strlen(argv[i]) + 6);
+            char *out_file = (char *)calloc(1, strlen(input_file) + 6);
             if (out_file == NULL) {
                 fprintf(stderr, "Not enough memory\n");
                 exit(1);
             }
-            strcat(out_file, argv[i]);
+            strcat(out_file, input_file);
             if (!uncompr) {
                 if (window_bits < 0) {
                     strcat(out_file, ".zraw");
@@ -328,6 +352,11 @@ int main(int argc, char **argv) {
                 }
             } else {
                 char *out_ext = strrchr(out_file, '.');
+                char *out_sep = strrchr(out_file, '/');
+                if (out_sep == NULL)
+                    out_sep = strrchr(out_file, '\\');
+                if ((uintptr_t)out_sep > (uintptr_t)out_ext) // directory name has a dot
+                    out_ext = NULL;
                 if (out_ext != NULL) {
                     if (strcasecmp(out_ext, ".zraw") == 0 && window_bits == INT32_MAX) {
                         fprintf(stderr, "Must specify window bits for raw deflate stream\n");
@@ -336,9 +365,21 @@ int main(int argc, char **argv) {
                     *out_ext = 0;
                 }
             }
-            fout = fopen(out_file, "wb");
+            char output_file[MAXPATHLEN + 1];
+            if (strlen(out_file) > MAXPATHLEN) {
+                fprintf(stderr, "Output path is too long\n");
+                exit(1);
+            }
+            if (sanitize_path(out_file, output_file) == NULL) { /* flawfinder: ignore */
+                strcpy(output_file, out_file);
+            }
+            if (strcmp(input_file, output_file) == 0) {
+                fprintf(stderr, "Must specify -c when input file has no extension\n");
+                exit(1);
+            }
+            fout = fopen(output_file, "wb");
             if (fout == NULL) {
-                fprintf(stderr, "Failed to open file: %s\n", out_file);
+                fprintf(stderr, "Failed to open file: %s\n", output_file);
                 exit(1);
             }
             free(out_file);
