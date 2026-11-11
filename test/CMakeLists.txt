@@ -158,6 +158,11 @@ if(WITH_GTEST)
             list(APPEND TEST_SRCS test_gzio.cc)
         endif()
 
+        # Emscripten cannot read files from the source directory
+        if(NOT BASEARCH_WASM32_FOUND)
+            list(APPEND TEST_SRCS test_deflate_gh_536.cc) # reads test/data/lcet10.txt
+        endif()
+
         if(NOT TEST_STOCK_ZLIB)
             if(NOT BUILD_SHARED_LIBS)
                 list(APPEND TEST_SRCS
