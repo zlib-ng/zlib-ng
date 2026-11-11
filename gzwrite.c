@@ -129,6 +129,11 @@ static int gz_zero(gz_state *state) {
     unsigned n;
     PREFIX3(stream) *strm = &(state->strm);
 
+    /* allocate memory if this is the first time through -- the input buffer
+       must exist before it is zeroed below */
+    if (state->size == 0 && gz_write_init(state) == -1)
+        return -1;
+
     /* consume whatever's left in the input buffer */
     if (strm->avail_in && gz_comp(state, Z_NO_FLUSH) == -1)
         return -1;
