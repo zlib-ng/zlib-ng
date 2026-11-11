@@ -39,9 +39,6 @@ if(NOT BASEARCH_WASM32_FOUND)
     # Run tests with data files
     include(cmake/test-data.cmake)
 
-    # Run tests targeting GitHub issues
-    include(cmake/test-issues.cmake)
-
     # Run tests targeting tools
     include(cmake/test-tools.cmake)
 endif()
@@ -144,6 +141,7 @@ if(WITH_GTEST)
             test_inflate_cve.cc
             test_inflate_far_distance.cc
             test_inflate_gh_1600.cc
+            test_inflate_gh_751.cc
             test_inflate_mark.cc
             test_raw.cc
             test_small_window.cc

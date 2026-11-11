@@ -62,15 +62,11 @@ testshared: check_cross_dep ../examplesh$(EXE) ../minigzipsh$(EXE)
 	rm -f $$TMPSH $$HELLOSH
 
 .PHONY: ghtests
-ghtests: testGH-361 testGH-751
+ghtests: testGH-361
 
 .PHONY: testGH-361
 testGH-361: ../minigzip$(EXE)
 	$(EMU_RUN) ../minigzip$(EXE) -4 <$(SRCDIR)/GH-361/test.txt >/dev/null
-
-.PHONY: testGH-751
-testGH-751: ../minigzip$(EXE)
-	$(EMU_RUN) ../minigzip$(EXE) <$(SRCDIR)/GH-751/test.txt | $(EMU_RUN) ../minigzip$(EXE) -d >/dev/null
 
 clean:
 	rm -f *.o *.gcda *.gcno *.gcov
