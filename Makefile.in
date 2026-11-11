@@ -157,9 +157,9 @@ PIC_OBJS = $(PIC_OBJC)
 
 all: static shared
 
-static: example$(EXE) minigzip$(EXE) makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) zran$(EXE)
+static: example$(EXE) minideflate$(EXE) minigzip$(EXE) makefixed$(EXE) maketrees$(EXE) makecrct$(EXE) zran$(EXE)
 
-shared: examplesh$(EXE) minigzipsh$(EXE)
+shared: examplesh$(EXE) minideflatesh$(EXE) minigzipsh$(EXE)
 
 check: test
 
@@ -206,6 +206,9 @@ $(STATICLIB): $(OBJS)
 
 example.o: $(SRCDIR)/test/example.c
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
+
+minideflate.o: $(SRCDIR)/utils/minideflate.c
+	$(CC) $(CFLAGS) -D_GNU_SOURCE $(INCLUDES) -c -o $@ $(SRCDIR)/utils/minideflate.c
 
 minigzip.o: $(SRCDIR)/utils/minigzip.c
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP -D_GNU_SOURCE $(INCLUDES) -c -o $@ $(SRCDIR)/utils/minigzip.c
@@ -266,6 +269,18 @@ endif
 
 example$(EXE): example.o $(TESTOBJG) $(STATICLIB)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ example.o $(TESTOBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+minideflate$(EXE): minideflate.o $(TESTOBJC) $(STATICLIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minideflate.o $(TESTOBJG) $(TEST_LIBS) $(LDSHAREDLIBC)
+ifneq ($(STRIP),)
+	$(STRIP) $@
+endif
+
+minideflatesh$(EXE): minideflate.o $(PIC_TESTOBJC) $(SHAREDTARGET)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ minideflate.o $(PIC_TESTOBJG) $(SHAREDLIB) $(LDSHAREDLIBC)
 ifneq ($(STRIP),)
 	$(STRIP) $@
 endif
