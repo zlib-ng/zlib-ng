@@ -159,6 +159,7 @@ if(WITH_GTEST)
             test_dict.cc
             test_dict_params.cc
             test_inflate_adler32.cc
+            test_inflate_api_errors.cc
             test_inflate_back.cc
             test_inflate_copy.cc
             test_inflate_cve.cc
