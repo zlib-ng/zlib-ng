@@ -326,3 +326,275 @@ TEST(inflate_api_errors, inflate_end_null_and_double) {
     EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
     EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_STREAM_ERROR);
 }
+
+/* ========================================================================== */
+/* zng_inflateSync                                                            */
+/* ========================================================================== */
+
+/* Compress kMessage as a raw (unwrapped) deflate stream; returns the number
+ * of compressed bytes written, or 0 if compression fails. */
+static size_t compress_raw(uint8_t *buffer, size_t buffer_size) {
+    PREFIX3(stream) strm = zeroed_stream();
+    if (PREFIX(deflateInit2)(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, -MAX_WBITS,
+                             MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY) != Z_OK)
+        return 0;
+    strm.next_in = (z_const unsigned char *)kMessage;
+    strm.avail_in = (unsigned int)strlen(kMessage);
+    strm.next_out = buffer;
+    strm.avail_out = (unsigned int)buffer_size;
+    int32_t ret = PREFIX(deflate)(&strm, Z_FINISH);
+    PREFIX(deflateEnd)(&strm);
+    return (ret == Z_STREAM_END) ? (size_t)strm.total_out : 0;
+}
+
+/* inflateSync() with a NULL stream:
+ * - rejected with Z_STREAM_ERROR. */
+TEST(inflate_api_errors, sync_null_stream) {
+    EXPECT_EQ(PREFIX(inflateSync)(NULL), Z_STREAM_ERROR);
+}
+
+/* inflateSync() on a fresh stream with no input and an empty bit buffer:
+ * - there is nothing to search, so Z_BUF_ERROR is returned. */
+TEST(inflate_api_errors, sync_no_input) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+
+    uint8_t output[16];
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    EXPECT_EQ(PREFIX(inflateSync)(&strm), Z_BUF_ERROR);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflateSync() on input that does not contain the 00 00 ff ff marker:
+ * - Z_DATA_ERROR is returned and the searched input is consumed. */
+TEST(inflate_api_errors, sync_no_marker) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+
+    uint8_t junk[] = {1, 2, 3, 4, 5, 6, 7, 8};
+    uint8_t output[16];
+    strm.next_in = junk;
+    strm.avail_in = (unsigned int)sizeof(junk);
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    EXPECT_EQ(PREFIX(inflateSync)(&strm), Z_DATA_ERROR);
+    EXPECT_EQ(strm.total_in, sizeof(junk));
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflateSync() on garbage followed by the sync marker and a valid raw
+ * deflate stream:
+ * - the marker is found and Z_OK is returned;
+ * - inflate() then resumes at the block after the marker and decodes the
+ *   original message with Z_STREAM_END. */
+TEST(inflate_api_errors, sync_resync_after_garbage) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+
+    uint8_t raw[128];
+    size_t raw_len = compress_raw(raw, sizeof(raw));
+    ASSERT_GT(raw_len, 0u);
+
+    uint8_t feed[256];
+    size_t n = 0;
+    const uint8_t garbage[] = {0x5a, 0xa5, 0x13};
+    memcpy(feed + n, garbage, sizeof(garbage));
+    n += sizeof(garbage);
+    const uint8_t marker[] = {0x00, 0x00, 0xff, 0xff};
+    memcpy(feed + n, marker, sizeof(marker));
+    n += sizeof(marker);
+    memcpy(feed + n, raw, raw_len);
+    n += raw_len;
+
+    uint8_t output[64];
+    strm.next_in = feed;
+    strm.avail_in = (unsigned int)n;
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    ASSERT_EQ(PREFIX(inflateSync)(&strm), Z_OK);
+
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_STREAM_END);
+    EXPECT_EQ(strm.total_out, (uint32_t)strlen(kMessage));
+    EXPECT_EQ(memcmp(output, kMessage, strlen(kMessage)), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* ========================================================================== */
+/* zng_inflateSyncPoint                                                       */
+/* ========================================================================== */
+
+/* inflateSyncPoint() with a NULL stream and on a fresh stream:
+ * - the NULL call is rejected with Z_STREAM_ERROR;
+ * - a fresh stream is not at a stored-block boundary, so 0 is returned. */
+TEST(inflate_api_errors, sync_point) {
+    EXPECT_EQ(PREFIX(inflateSyncPoint)(NULL), Z_STREAM_ERROR);
+
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+    EXPECT_EQ(PREFIX(inflateSyncPoint)(&strm), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* ========================================================================== */
+/* zng_inflateSetDictionary / zng_inflateGetDictionary                        */
+/* ========================================================================== */
+
+/* A preset dictionary for the FDICT stream tests. */
+static const char *const kDictionary = "hello";
+
+/* Compress kMessage with the preset dictionary; returns the number of
+ * compressed bytes written, or 0 on failure, and stores the dictionary
+ * identifier (adler32 of the dictionary) in *dict_id. */
+static size_t compress_with_dictionary(uint8_t *buffer, size_t buffer_size,
+                                       unsigned int *dict_id) {
+    PREFIX3(stream) strm = zeroed_stream();
+    if (PREFIX(deflateInit)(&strm, Z_DEFAULT_COMPRESSION) != Z_OK)
+        return 0;
+    if (PREFIX(deflateSetDictionary)(&strm, (const uint8_t *)kDictionary,
+                                     (int)strlen(kDictionary)) != Z_OK) {
+        PREFIX(deflateEnd)(&strm);
+        return 0;
+    }
+    *dict_id = (unsigned int)strm.adler;
+    strm.next_in = (z_const unsigned char *)kMessage;
+    strm.avail_in = (unsigned int)strlen(kMessage);
+    strm.next_out = buffer;
+    strm.avail_out = (unsigned int)buffer_size;
+    int32_t ret = PREFIX(deflate)(&strm, Z_FINISH);
+    PREFIX(deflateEnd)(&strm);
+    return (ret == Z_STREAM_END) ? (size_t)strm.total_out : 0;
+}
+
+/* inflateSetDictionary() on a fresh zlib-wrapped stream that has not reached
+ * the dictionary state:
+ * - rejected with Z_STREAM_ERROR. */
+TEST(inflate_api_errors, set_dictionary_wrong_state) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+
+    EXPECT_EQ(PREFIX(inflateSetDictionary)(&strm, (const uint8_t *)kDictionary,
+                                           (uint32_t)strlen(kDictionary)), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflateSetDictionary() with a wrong dictionary in the DICT state:
+ * - the adler32 of the supplied dictionary does not match the one stored in
+ *   the stream header, so Z_DATA_ERROR is returned;
+ * - the correct dictionary is then accepted and the stream decodes to the
+ *   original message. */
+TEST(inflate_api_errors, set_dictionary_adler_mismatch) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+
+    uint8_t compressed[128];
+    unsigned int dict_id = 0;
+    size_t compressed_len = compress_with_dictionary(compressed, sizeof(compressed), &dict_id);
+    ASSERT_GT(compressed_len, 0u);
+
+    uint8_t output[64];
+    strm.next_in = compressed;
+    strm.avail_in = (unsigned int)compressed_len;
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    ASSERT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_NEED_DICT);
+
+    const uint8_t wrong[] = "world";
+    EXPECT_EQ(PREFIX(inflateSetDictionary)(&strm, wrong, (uint32_t)sizeof(wrong) - 1), Z_DATA_ERROR);
+
+    EXPECT_EQ(PREFIX(inflateSetDictionary)(&strm, (const uint8_t *)kDictionary,
+                                           (uint32_t)strlen(kDictionary)), Z_OK);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_STREAM_END);
+    EXPECT_EQ(strm.total_out, (uint32_t)strlen(kMessage));
+    EXPECT_EQ(memcmp(output, kMessage, strlen(kMessage)), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflateSetDictionary() on a raw stream and inflateGetDictionary() reading
+ * it back:
+ * - the dictionary is accepted in any state when no wrapper is expected;
+ * - getDictionary reports its length and returns the bytes as stored. */
+TEST(inflate_api_errors, set_get_dictionary_raw_roundtrip) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+
+    EXPECT_EQ(PREFIX(inflateSetDictionary)(&strm, (const uint8_t *)kDictionary,
+                                           (uint32_t)strlen(kDictionary)), Z_OK);
+
+    uint8_t readback[16];
+    uint32_t readback_len = 0;
+    ASSERT_EQ(PREFIX(inflateGetDictionary)(&strm, readback, &readback_len), Z_OK);
+    EXPECT_EQ(readback_len, (uint32_t)strlen(kDictionary));
+    EXPECT_EQ(memcmp(readback, kDictionary, strlen(kDictionary)), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflateGetDictionary() on a fresh stream with no dictionary yet:
+ * - Z_OK is returned and the reported length is zero;
+ * - a NULL dictionary buffer is accepted when nothing is copied. */
+TEST(inflate_api_errors, get_dictionary_fresh) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+
+    uint32_t dict_len = 0xdeadbeefu;
+    EXPECT_EQ(PREFIX(inflateGetDictionary)(&strm, NULL, &dict_len), Z_OK);
+    EXPECT_EQ(dict_len, 0u);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* ========================================================================== */
+/* zng_inflateMark                                                            */
+/* ========================================================================== */
+
+/* inflateMark() with a NULL stream and on a fresh stream:
+ * - the NULL call returns the -65536 sentinel;
+ * - a fresh stream has back == -1 (before the start of the window), so the
+ *   same sentinel value is returned. */
+TEST(inflate_api_errors, mark_null_and_fresh) {
+    EXPECT_EQ(PREFIX(inflateMark)(NULL), -65536L);
+
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+    EXPECT_EQ(PREFIX(inflateMark)(&strm), -65536L);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* ========================================================================== */
+/* zng_inflatePrime                                                           */
+/* ========================================================================== */
+
+/* inflatePrime() with a NULL stream:
+ * - rejected with Z_STREAM_ERROR. */
+TEST(inflate_api_errors, prime_null_stream) {
+    EXPECT_EQ(PREFIX(inflatePrime)(NULL, 8, 0), Z_STREAM_ERROR);
+}
+
+/* inflatePrime() bit-count rules on a fresh stream:
+ * - zero bits is a no-op returning Z_OK;
+ * - more than 16 bits in a single call is rejected with Z_STREAM_ERROR;
+ * - filling the 32-bit accumulator (16 + 16) succeeds, and one more bit is
+ *   rejected because it would exceed 32 bits. */
+TEST(inflate_api_errors, prime_bit_count_rules) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+
+    EXPECT_EQ(PREFIX(inflatePrime)(&strm, 0, 0), Z_OK);
+    EXPECT_EQ(PREFIX(inflatePrime)(&strm, 17, 1), Z_STREAM_ERROR);
+    ASSERT_EQ(PREFIX(inflatePrime)(&strm, 16, 0x1234), Z_OK);
+    ASSERT_EQ(PREFIX(inflatePrime)(&strm, 16, 0xabcd), Z_OK);
+    EXPECT_EQ(PREFIX(inflatePrime)(&strm, 1, 1), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflatePrime() with a negative bit count:
+ * - the bit accumulator is cleared and Z_OK is returned;
+ * - subsequent primes are accepted again. */
+TEST(inflate_api_errors, prime_negative_clears) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+
+    ASSERT_EQ(PREFIX(inflatePrime)(&strm, 16, 0x1234), Z_OK);
+    EXPECT_EQ(PREFIX(inflatePrime)(&strm, -1, 0), Z_OK);
+    EXPECT_EQ(PREFIX(inflatePrime)(&strm, 16, 0xabcd), Z_OK);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
