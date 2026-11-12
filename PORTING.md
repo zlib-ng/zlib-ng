@@ -104,6 +104,56 @@ in its API, intended to make life easier for application developers.
   *zlib-ng2.dll* on Windows
 - Type `z_size_t` is *size_t*
 
+zlib-ng-compat.h alias header
+-----------------------------
+Zlib-ng native mode also installs a header named *zlib-ng-compat.h*, which
+aliases the zlib API onto the prefixed zlib-ng functions. It is the middle
+ground between zlib-compat mode and porting an application to the `zng_`
+prefixed API: the library keeps the zlib-ng names, so nothing can conflict with
+a system-installed zlib, while the application code keeps using the zlib names.
+
+Moving an application from zlib to zlib-ng takes two changes:
+- include *zlib-ng-compat.h* instead of *zlib.h*,
+- link the zlib-ng library instead of zlib.
+
+Calls, structs, constants and field names then stay exactly as they were
+written for zlib, so the porting work can be done later, one file at a time,
+or be skipped entirely; the header can be dropped whenever the application uses
+the zlib-ng API directly. Including this header on one side of an `#ifdef` and
+*zlib-ng.h* on the other lets one application support the zlib API and the
+zlib-ng API with compile-time selection.
+
+**Advantages:**
+- Only the included header name and the library linked change, application
+  sources stay mostly untouched, which makes it easy to test zlib-ng early.
+- No conflict with a system zlib, unlike zlib-compat mode, since nothing in
+  the library or the installed names collides.
+- An application can move to zlib-ng now and modernize the code later, or
+  support both APIs side by side.
+
+**Disadvantages:**
+- It is a best effort aid, not a compatibility guarantee: it does not handle
+  type differences, so expect conversion warnings.
+- ZLIB_VERSION holds the zlib-ng version string, matching what the version
+  function returns, while the numeric macros keep zlib-style values (currently
+  ZLIB_VERNUM 0x132f) so version gates behave as they do in zlib-compat mode.
+
+**Build Considerations:**
+- Compile against *zlib-ng-compat.h*, installed along with *zlib-ng.h* unless
+  zlib-ng is configured with -DWITH_COMPAT_HEADER=OFF. It is not installed by
+  zlib-compat mode, which installs the real *zlib.h*.
+- Everything else in native mode applies: configuration header is *zconf-ng.h*,
+  static library is *libz-ng.a* on Unix and macOS, shared library is *libz-ng.so*
+  on Unix, *libz-ng.dylib* on macOS, or *zlib-ng2.dll* on Windows.
+- Include this header instead of *zlib.h*, never both; it can be included
+  together with *zlib-ng.h* in the same file, which is handy while porting
+  one file at a time.
+- The gzip file functions follow the WITH_GZFILEOP option of the build, the
+  header enables their declarations, but a zlib-ng configured
+  -DWITH_GZFILEOP=OFF does not contain them, which then fails at link time.
+- Type `z_size_t` is *size_t*, as in native mode, and type `z_uintmax_t` is
+  *size_t*, not *unsigned long* as in zlib-compat mode.
+
 zlib-ng compile-time detection
 ------------------------------
 
