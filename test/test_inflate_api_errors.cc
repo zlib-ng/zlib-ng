@@ -1001,3 +1001,62 @@ TEST(inflate_api_errors, get_header_wrong_stream) {
     }
 }
 
+/* ========================================================================== */
+/* Gzip wrapper header errors                                                 */
+/* ========================================================================== */
+
+/* inflate() on a gzip stream whose compression method byte is not deflate:
+ * - Z_DATA_ERROR is returned with the "unknown compression method" message. */
+TEST(inflate_api_errors, gzip_unknown_method) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS + 16), Z_OK);
+
+    uint8_t in[] = {0x1f, 0x8b, 0x00, 0x00};
+    uint8_t out[16];
+    strm.next_in = in;
+    strm.avail_in = sizeof(in);
+    strm.next_out = out;
+    strm.avail_out = sizeof(out);
+
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+    EXPECT_STREQ(strm.msg, "unknown compression method");
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflate() on a gzip stream with reserved header flag bits set:
+ * - Z_DATA_ERROR is returned with the "unknown header flags set" message. */
+TEST(inflate_api_errors, gzip_reserved_flags) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS + 16), Z_OK);
+
+    uint8_t in[] = {0x1f, 0x8b, 0x08, 0x80};
+    uint8_t out[16];
+    strm.next_in = in;
+    strm.avail_in = sizeof(in);
+    strm.next_out = out;
+    strm.avail_out = sizeof(out);
+
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+    EXPECT_STREQ(strm.msg, "unknown header flags set");
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflate() on a gzip stream with FHCRC set and a wrong header CRC:
+ * - Z_DATA_ERROR is returned with the "header crc mismatch" message. */
+TEST(inflate_api_errors, gzip_header_crc_mismatch) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS + 16), Z_OK);
+
+    /* magic, CM=8, FLG=FHCRC, mtime=0, XFL=0, OS=255, bogus header CRC */
+    uint8_t in[] = {0x1f, 0x8b, 0x08, 0x02, 0, 0, 0, 0, 0, 0xff, 0x34, 0x12};
+    uint8_t out[16];
+    strm.next_in = in;
+    strm.avail_in = sizeof(in);
+    strm.next_out = out;
+    strm.avail_out = sizeof(out);
+
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+    EXPECT_STREQ(strm.msg, "header crc mismatch");
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
