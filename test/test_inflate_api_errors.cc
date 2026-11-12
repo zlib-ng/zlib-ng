@@ -830,6 +830,22 @@ TEST(inflate_api_errors, back_null_stream) {
     EXPECT_EQ(PREFIX(inflateBack)(NULL, back_in, &in, back_out, &out), Z_STREAM_ERROR);
 }
 
+/* inflateBack() with a NULL input or output callback:
+ * - rejected with Z_STREAM_ERROR instead of calling through the NULL
+ *   function pointer once input runs out or the window fills;
+ * - the stream remains usable afterwards. */
+TEST(inflate_api_errors, back_null_callbacks) {
+    PREFIX3(stream) strm = zeroed_stream();
+    uint8_t window[1 << 9];
+    ASSERT_EQ(PREFIX(inflateBackInit)(&strm, 9, window), Z_OK);
+
+    struct back_input in = {};
+    struct back_output out = {};
+    EXPECT_EQ(PREFIX(inflateBack)(&strm, NULL, &in, back_out, &out), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateBack)(&strm, back_in, &in, NULL, &out), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateBackEnd)(&strm), Z_OK);
+}
+
 /* inflateBack() when the input callback reports no data:
  * - Z_BUF_ERROR is returned. */
 TEST(inflate_api_errors, back_input_exhausted) {
