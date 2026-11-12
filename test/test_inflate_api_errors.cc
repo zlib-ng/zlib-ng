@@ -598,3 +598,132 @@ TEST(inflate_api_errors, prime_negative_clears) {
     EXPECT_EQ(PREFIX(inflatePrime)(&strm, 16, 0xabcd), Z_OK);
     EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
 }
+
+/* ========================================================================== */
+/* zng_uncompress / zng_uncompress2                                           */
+/* ========================================================================== */
+
+/* uncompress2() with a NULL destLen pointer:
+ * - in native mode the call is rejected with Z_STREAM_ERROR;
+ * - in compat mode a NULL destLen is treated as a zero-byte buffer, so the
+ *   stream is decoded into a one-byte probe buffer and the truncated result
+ *   is reported as Z_DATA_ERROR. */
+TEST(inflate_api_errors, uncompress2_null_dest_len) {
+    uint8_t compressed[128];
+    size_t compressed_len = compress_message(compressed, sizeof(compressed));
+    ASSERT_GT(compressed_len, 0u);
+
+    z_uintmax_t source_len = (z_uintmax_t)compressed_len;
+#ifdef ZLIB_COMPAT
+    EXPECT_EQ(PREFIX(uncompress2)(NULL, NULL, compressed, &source_len), Z_DATA_ERROR);
+#else
+    EXPECT_EQ(PREFIX(uncompress2)(NULL, NULL, compressed, &source_len), Z_STREAM_ERROR);
+#endif
+}
+
+/* uncompress2() with a NULL sourceLen pointer:
+ * - in native mode the call is rejected with Z_STREAM_ERROR;
+ * - in compat mode a NULL sourceLen is treated as an empty input, so the
+ *   call fails with Z_DATA_ERROR. */
+TEST(inflate_api_errors, uncompress2_null_source_len) {
+    uint8_t compressed[128];
+    size_t compressed_len = compress_message(compressed, sizeof(compressed));
+    ASSERT_GT(compressed_len, 0u);
+
+    uint8_t output[64];
+#ifdef ZLIB_COMPAT
+    EXPECT_EQ(PREFIX(uncompress2)(output, NULL, compressed, NULL), Z_DATA_ERROR);
+#else
+    EXPECT_EQ(PREFIX(uncompress2)(output, NULL, compressed, NULL), Z_STREAM_ERROR);
+#endif
+}
+
+/* uncompress2() with a NULL source and a non-zero source length:
+ * - rejected with Z_STREAM_ERROR in both native and compat mode. */
+TEST(inflate_api_errors, uncompress_null_source_with_length) {
+    uint8_t output[64];
+    z_uintmax_t output_len = sizeof(output);
+    z_uintmax_t source_len = 5;
+
+    EXPECT_EQ(PREFIX(uncompress2)(output, &output_len, NULL, &source_len), Z_STREAM_ERROR);
+    EXPECT_EQ(output_len, sizeof(output));
+}
+
+/* uncompress2() with a NULL output buffer and a non-zero destLen:
+ * - rejected with Z_STREAM_ERROR in both native and compat mode. */
+TEST(inflate_api_errors, uncompress_null_dest_with_length) {
+    z_uintmax_t output_len = 64;
+    z_uintmax_t source_len = (z_uintmax_t)strlen(kMessage);
+
+    EXPECT_EQ(PREFIX(uncompress2)(NULL, &output_len, (const uint8_t *)kMessage, &source_len), Z_STREAM_ERROR);
+    EXPECT_EQ(output_len, 64u);
+}
+
+/* uncompress2() with an empty source:
+ * - there is no stream to decode, so Z_DATA_ERROR is returned in both modes;
+ * - the reported output length is zero. */
+TEST(inflate_api_errors, uncompress_empty_source) {
+    uint8_t output[64];
+    z_uintmax_t output_len = sizeof(output);
+    z_uintmax_t source_len = 0;
+
+    EXPECT_EQ(PREFIX(uncompress2)(output, &output_len, NULL, &source_len), Z_DATA_ERROR);
+    EXPECT_EQ(output_len, 0u);
+}
+
+/* uncompress2() with an output buffer smaller than the decompressed data:
+ * - Z_BUF_ERROR is returned;
+ * - destLen reports how much was written before the buffer filled up. */
+TEST(inflate_api_errors, uncompress_undersized_output) {
+    uint8_t compressed[128];
+    size_t compressed_len = compress_message(compressed, sizeof(compressed));
+    ASSERT_GT(compressed_len, 0u);
+
+    uint8_t output[64];
+    z_uintmax_t output_len = (z_uintmax_t)(strlen(kMessage) - 3); /* leave room for the last bytes */
+    z_uintmax_t source_len = (z_uintmax_t)compressed_len;
+    EXPECT_EQ(PREFIX(uncompress2)(output, &output_len, compressed, &source_len), Z_BUF_ERROR);
+    EXPECT_EQ(output_len, (z_uintmax_t)(strlen(kMessage) - 3));
+}
+
+/* uncompress() with an exactly sized output buffer:
+ * - Z_OK is returned;
+ * - destLen reports the full decompressed length and the data matches. */
+TEST(inflate_api_errors, uncompress_exact_output) {
+    uint8_t compressed[128];
+    size_t compressed_len = compress_message(compressed, sizeof(compressed));
+    ASSERT_GT(compressed_len, 0u);
+
+    uint8_t output[64];
+    z_uintmax_t output_len = sizeof(output);
+    EXPECT_EQ(PREFIX(uncompress)(output, &output_len, compressed, (z_uintmax_t)compressed_len), Z_OK);
+    EXPECT_EQ(output_len, (z_uintmax_t)strlen(kMessage));
+    EXPECT_EQ(memcmp(output, kMessage, strlen(kMessage)), 0);
+}
+
+/* uncompress2() fed only the first bytes of a valid zlib stream:
+ * - the incomplete stream is rejected with Z_DATA_ERROR. */
+TEST(inflate_api_errors, uncompress_truncated_source) {
+    uint8_t compressed[128];
+    size_t compressed_len = compress_message(compressed, sizeof(compressed));
+    ASSERT_GT(compressed_len, 0u);
+
+    uint8_t output[64];
+    z_uintmax_t output_len = sizeof(output);
+    z_uintmax_t source_len = 3;
+    EXPECT_EQ(PREFIX(uncompress2)(output, &output_len, compressed, &source_len), Z_DATA_ERROR);
+}
+
+/* uncompress2() on a stream with a corrupted payload byte:
+ * - rejected with Z_DATA_ERROR. */
+TEST(inflate_api_errors, uncompress_corrupt_data) {
+    uint8_t compressed[128];
+    size_t compressed_len = compress_message(compressed, sizeof(compressed));
+    ASSERT_GT(compressed_len, 0u);
+    compressed[compressed_len / 2] ^= 0xff;
+
+    uint8_t output[64];
+    z_uintmax_t output_len = sizeof(output);
+    z_uintmax_t source_len = (z_uintmax_t)compressed_len;
+    EXPECT_EQ(PREFIX(uncompress2)(output, &output_len, compressed, &source_len), Z_DATA_ERROR);
+}
