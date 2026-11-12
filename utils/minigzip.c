@@ -37,6 +37,14 @@
 #  define SET_BINARY_MODE(file)
 #endif
 
+#if defined(_WIN32)
+#  if !defined(MAXPATHLEN)
+#    define MAXPATHLEN _MAX_PATH
+#  endif
+#else
+#  include <sys/param.h>
+#endif
+
 #if defined(_MSC_VER) && _MSC_VER < 1900
 #  define snprintf _snprintf
 #endif
@@ -55,9 +63,20 @@
 #  define GZBUFSIZE 49152
 #endif
 
-#define MAX_NAME_LEN 1024
-
 static char *prog;
+
+/* ===========================================================================
+ * Sanitize file path or return NULL on error
+ */
+char *sanitize_path(const char *in, char *out) {
+    if (strlen(in) > MAXPATHLEN)
+        return NULL;
+#ifdef _WIN32
+    return _fullpath(out, in, MAXPATHLEN);
+#else
+    return realpath(in, out); /* flawfinder: ignore */
+#endif
+}
 
 /* ===========================================================================
  * Display error message and exit
@@ -183,20 +202,28 @@ static void gz_uncompress(gzFile in, FILE *out) {
  * original.
  */
 static void file_compress(char *file, char *mode, int keep) {
-    char outfile[MAX_NAME_LEN];
+    char outfile[MAXPATHLEN + 1];
     FILE *in;
     gzFile out;
 
-    if (strlen(file) + strlen(GZ_SUFFIX) >= sizeof(outfile)) {
+    char infile[MAXPATHLEN + 1];
+    if (sanitize_path(file, infile) == NULL) {
+        fprintf(stderr, "%s: invalid path %s\n", prog, file);
+        exit(1);
+    }
+
+    size_t len = strlen(infile);
+    if (len + SUFFIX_LEN >= sizeof(outfile)) {
         fprintf(stderr, "%s: filename too long\n", prog);
         exit(1);
     }
 
-    snprintf(outfile, sizeof(outfile), "%s%s", file, GZ_SUFFIX);
+    snprintf(outfile, sizeof(outfile), "%s", infile);
+    snprintf(outfile + len, sizeof(outfile) - len, "%s", GZ_SUFFIX);
 
-    in = fopen(file, "rb");
+    in = fopen(infile, "rb");
     if (in == NULL) {
-        perror(file);
+        perror(infile);
         exit(1);
     }
     out = PREFIX(gzopen)(outfile, mode);
@@ -207,7 +234,7 @@ static void file_compress(char *file, char *mode, int keep) {
     gz_compress(in, out);
 
     if (!keep)
-        unlink(file);
+        unlink(infile);
 }
 
 
@@ -215,27 +242,54 @@ static void file_compress(char *file, char *mode, int keep) {
  * Uncompress the given file and remove the original.
  */
 static void file_uncompress(char *file, int keep) {
-    char buf[MAX_NAME_LEN];
-    char *infile, *outfile;
+    char infile[MAXPATHLEN + 1], outfile[MAXPATHLEN + 1];
     FILE *out;
     gzFile in;
-    size_t len = strlen(file);
+    size_t len;
 
-    if (len + strlen(GZ_SUFFIX) >= sizeof(buf)) {
-        fprintf(stderr, "%s: filename too long\n", prog);
-        exit(1);
+    if (sanitize_path(file, infile) == NULL) {
+        // File name isn't valid, check if it ends with GZ_SUFFIX. If not, append and try again.
+        len = strlen(file);
+        if (len > SUFFIX_LEN && strcmp(file+len-SUFFIX_LEN, GZ_SUFFIX) == 0) {
+            fprintf(stderr, "%s: invalid path %s\n", prog, file);
+            exit(1);
+        }
+        if (len + SUFFIX_LEN > MAXPATHLEN) {
+            fprintf(stderr, "%s: filename too long\n", prog);
+            exit(1);
+        }
+        char buf[MAXPATHLEN + 1];
+        snprintf(buf, sizeof(buf), "%s", file);
+        snprintf(buf + len, sizeof(buf) - len, "%s", GZ_SUFFIX);
+        if (sanitize_path(buf, infile) == NULL) {
+            fprintf(stderr, "%s: invalid path %s\n", prog, file);
+            exit(1);
+        }
     }
 
-    snprintf(buf, sizeof(buf), "%s", file);
-
-    if (len > SUFFIX_LEN && strcmp(file+len-SUFFIX_LEN, GZ_SUFFIX) == 0) {
-        infile = file;
-        outfile = buf;
+    len = strlen(infile);
+    if (len > SUFFIX_LEN && strcmp(infile+len-SUFFIX_LEN, GZ_SUFFIX) == 0) {
+        snprintf(outfile, sizeof(outfile), "%s", infile);
         outfile[len-3] = '\0';
     } else {
-        outfile = file;
-        infile = buf;
+        if (len + SUFFIX_LEN > MAXPATHLEN) {
+            fprintf(stderr, "%s: filename too long\n", prog);
+            exit(1);
+        }
+        char buf[MAXPATHLEN + 1];
+        snprintf(outfile, sizeof(outfile), "%s", infile);
+        snprintf(buf, sizeof(buf), "%s", infile);
         snprintf(buf + len, sizeof(buf) - len, "%s", GZ_SUFFIX);
+        if (sanitize_path(buf, infile) == NULL) {
+            fprintf(stderr, "%s: invalid path %s\n", prog, file);
+            exit(1);
+        }
+    }
+    // Make sure outfile doesn't resolve back to infile
+    char out_real[MAXPATHLEN + 1];
+    if (sanitize_path(outfile, out_real) != NULL && strcmp(infile, out_real) == 0) {
+        fprintf(stderr, "%s: input and output paths are the same\n", prog);
+        exit(1);
     }
     in = PREFIX(gzopen)(infile, "rb");
     if (in == NULL) {
@@ -337,9 +391,14 @@ int main(int argc, char *argv[]) {
         do {
             if (uncompr) {
                 if (copyout) {
-                    file = PREFIX(gzopen)(argv[i], "rb");
+                    char input_file[MAXPATHLEN + 1];
+                    if (sanitize_path(argv[i], input_file) == NULL) {
+                        fprintf(stderr, "%s: invalid path %s\n", prog, argv[i]);
+                        return 1;
+                    }
+                    file = PREFIX(gzopen)(input_file, "rb");
                     if (file == NULL)
-                        fprintf(stderr, "%s: can't gzopen %s\n", prog, argv[i]);
+                        fprintf(stderr, "%s: can't gzopen %s\n", prog, input_file);
                     else
                         gz_uncompress(file, stdout);
                 } else {
@@ -347,10 +406,15 @@ int main(int argc, char *argv[]) {
                 }
             } else {
                 if (copyout) {
-                    FILE * in = fopen(argv[i], "rb");
+                    char input_file[MAXPATHLEN + 1];
+                    if (sanitize_path(argv[i], input_file) == NULL) {
+                        fprintf(stderr, "%s: invalid path %s\n", prog, argv[i]);
+                        return 1;
+                    }
+                    FILE * in = fopen(input_file, "rb");
 
                     if (in == NULL) {
-                        perror(argv[i]);
+                        perror(input_file);
                     } else {
                         file = PREFIX(gzdopen)(fileno(stdout), outmode);
                         if (file == NULL) error("can't gzdopen stdout");

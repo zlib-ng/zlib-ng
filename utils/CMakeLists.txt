@@ -6,6 +6,7 @@ endmacro()
 # minigzip
 add_executable(minigzip minigzip.c)
 configure_util_executable(minigzip)
+target_compile_definitions(minigzip PRIVATE _GNU_SOURCE)
 if(NOT WITH_GZFILEOP)
     set(GZFILE_PRIVATE_HDRS ${ZLIB_GZFILE_PRIVATE_HDRS})
     set(GZFILE_SRCS ${ZLIB_GZFILE_SRCS})
