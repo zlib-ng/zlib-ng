@@ -27,6 +27,7 @@ set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> PA
 # minideflate
 add_executable(minideflate minideflate.c)
 configure_util_executable(minideflate)
+target_compile_definitions(minideflate PRIVATE _GNU_SOURCE)
 if(NOT DEFINED BUILD_SHARED_LIBS)
     target_link_libraries(minideflate zlib-ng-static)
 else()
