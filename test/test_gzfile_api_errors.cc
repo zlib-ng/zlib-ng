@@ -924,6 +924,21 @@ TEST(gzfile_api_errors, puts_read_file) {
     remove("gzapi_err_puts.gz");
 }
 
+/* gzputs() with a NULL string:
+ * - the call is rejected with -1 instead of passing NULL to strlen();
+ * - the descriptor remains usable for subsequent writes. */
+TEST(gzfile_api_errors, puts_null_string) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_puts.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_puts.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzputs)(file, NULL), -1);
+    EXPECT_EQ(PREFIX(gzputs)(file, "hello"), 5);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_puts.gz");
+}
+
 /* ========================================================================== */
 /* gzprintf                                                                   */
 /* ========================================================================== */

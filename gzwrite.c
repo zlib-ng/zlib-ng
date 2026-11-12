@@ -317,7 +317,7 @@ z_int32_t Z_EXPORT PREFIX(gzputs)(gzFile file, const char *s) {
     gz_state *state;
 
     /* get internal structure */
-    if (file == NULL)
+    if (file == NULL || s == NULL)
         return -1;
     state = (gz_state *)file;
 
