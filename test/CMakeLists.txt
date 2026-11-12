@@ -140,6 +140,7 @@ if(WITH_GTEST)
             test_compress.cc
             test_compress_bound.cc
             test_cve-2003-0107.cc
+            test_deflate_api_errors.cc
             test_deflate_bound.cc
             test_deflate_copy.cc
             test_deflate_dict.cc
