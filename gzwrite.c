@@ -220,6 +220,9 @@ z_int32_t Z_EXPORT PREFIX(gzwrite)(gzFile file, void const *buf, z_uint32_t len)
     /* get internal structure */
     if (file == NULL)
         return 0;
+    /* reject a NULL buffer with nonzero length before it is read from */
+    if (buf == NULL && len != 0)
+        return 0;
     state = (gz_state *)file;
 
     /* check that we're writing and that there's no error */

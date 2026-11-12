@@ -824,6 +824,23 @@ TEST(gzfile_api_errors, write_len_overflow) {
     remove("gzapi_err_write.gz");
 }
 
+/* gzwrite() with a NULL buffer and nonzero length:
+ * - the call is rejected with 0 instead of reading through the NULL pointer;
+ * - a NULL buffer with zero length is accepted (nothing is read from it);
+ * - the descriptor remains usable for subsequent writes. */
+TEST(gzfile_api_errors, write_null_buf) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_write.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_write.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzwrite)(file, NULL, 10), 0);
+    EXPECT_EQ(PREFIX(gzwrite)(file, NULL, 0), 0);
+    EXPECT_EQ(PREFIX(gzwrite)(file, data, sizeof(data)), 5);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_write.gz");
+}
+
 /* gzfwrite() with a zero item size:
  * - the call returns 0 without touching the descriptor;
  * - on a valid write stream the guard still applies: the call returns 0
