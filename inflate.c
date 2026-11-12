@@ -1277,6 +1277,11 @@ int32_t Z_EXPORT PREFIX(inflateGetHeader)(PREFIX3(stream) *strm, PREFIX(gz_heade
     if ((state->wrap & 2) == 0)
         return Z_STREAM_ERROR;
 
+    /* Reject a NULL head before it is stored, so the caller cannot crash on
+       the first header field write. */
+    if (head == NULL)
+        return Z_STREAM_ERROR;
+
     /* save header structure */
     state->head = head;
     head->done = 0;

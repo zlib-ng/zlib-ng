@@ -1001,6 +1001,17 @@ TEST(inflate_api_errors, get_header_wrong_stream) {
     }
 }
 
+/* inflateGetHeader() with a NULL gz_header on a gzip-wrapped stream:
+ * - rejected with Z_STREAM_ERROR instead of dereferencing the NULL head;
+ * - the stream remains usable afterwards. */
+TEST(inflate_api_errors, get_header_null_head) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS + 16), Z_OK);
+
+    EXPECT_EQ(PREFIX(inflateGetHeader)(&strm, NULL), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
 /* ========================================================================== */
 /* Gzip wrapper header errors                                                 */
 /* ========================================================================== */
