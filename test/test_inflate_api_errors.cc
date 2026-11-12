@@ -910,3 +910,94 @@ TEST(inflate_api_errors, back_end_null_and_double) {
     EXPECT_EQ(PREFIX(inflateBackEnd)(&strm), Z_OK);
     EXPECT_EQ(PREFIX(inflateBackEnd)(&strm), Z_STREAM_ERROR);
 }
+/* ========================================================================== */
+/* zng_inflateReset / zng_inflateReset2                                       */
+/* ========================================================================== */
+
+/* inflateReset() and inflateReset2() with a NULL stream:
+ * - both are rejected with Z_STREAM_ERROR. */
+TEST(inflate_api_errors, reset_null_stream) {
+    EXPECT_EQ(PREFIX(inflateReset)(NULL), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateReset2)(NULL, MAX_WBITS), Z_STREAM_ERROR);
+}
+
+/* inflateReset2() with windowBits outside the documented ranges:
+ * - magnitudes 1..MIN_WBITS-1 are rejected with Z_STREAM_ERROR;
+ * - raw windows below MIN_WBITS (windowBits < -MAX_WBITS) are rejected;
+ * - values above the gzip range (>= 48) are rejected;
+ * - each rejection leaves the stream usable. */
+TEST(inflate_api_errors, reset2_window_bits_rejected) {
+    for (int32_t wb = 1; wb < MIN_WBITS; wb++) {
+        PREFIX3(stream) strm = zeroed_stream();
+        ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+        EXPECT_EQ(PREFIX(inflateReset2)(&strm, wb), Z_STREAM_ERROR);
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    }
+
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+    EXPECT_EQ(PREFIX(inflateReset2)(&strm, -(MAX_WBITS + 1)), Z_STREAM_ERROR);
+    for (int32_t wb = 48; wb <= 63; wb++)
+        EXPECT_EQ(PREFIX(inflateReset2)(&strm, wb), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* ========================================================================== */
+/* zng_inflateCopy                                                            */
+/* ========================================================================== */
+
+/* inflateCopy() with NULL arguments:
+ * - a NULL destination, a NULL source, and both are all rejected with
+ *   Z_STREAM_ERROR. */
+TEST(inflate_api_errors, copy_null_arguments) {
+    PREFIX3(stream) dest = zeroed_stream();
+    EXPECT_EQ(PREFIX(inflateCopy)(NULL, &dest), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateCopy)(&dest, NULL), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateCopy)(NULL, NULL), Z_STREAM_ERROR);
+}
+
+/* inflateCopy() when the copy's allocation fails:
+ * - Z_MEM_ERROR is returned with no allocation performed;
+ * - the source stream remains fully usable afterwards.
+ *
+ * Note that inflateCopy() memcpys the whole source stream (allocators
+ * included) before allocating, so the failing zone must be installed on the
+ * source to take effect for the copy. */
+TEST(inflate_api_errors, copy_alloc_failure) {
+    PREFIX3(stream) source = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&source, MAX_WBITS), Z_OK);
+
+    /* install a zone that fails every allocation on the source stream */
+    mem_zone zone;
+    memset(&zone, 0, sizeof(zone));
+    zone.fail_after = 0; /* fail the very first allocation */
+    install_zone(&source, &zone);
+
+    PREFIX3(stream) dest = zeroed_stream();
+    EXPECT_EQ(PREFIX(inflateCopy)(&dest, &source), Z_MEM_ERROR);
+    EXPECT_EQ(zone.allocs, 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&source), Z_OK);
+}
+
+/* ========================================================================== */
+/* zng_inflateGetHeader                                                       */
+/* ========================================================================== */
+
+/* inflateGetHeader() with a NULL stream and on non-gzip streams:
+ * - the NULL call is rejected with Z_STREAM_ERROR;
+ * - header collection is only supported for gzip-wrapped streams, so zlib-
+ *   and raw-wrapped streams are rejected with Z_STREAM_ERROR. */
+TEST(inflate_api_errors, get_header_wrong_stream) {
+    PREFIX(gz_header) head;
+    memset(&head, 0, sizeof(head));
+    EXPECT_EQ(PREFIX(inflateGetHeader)(NULL, &head), Z_STREAM_ERROR);
+
+    const int32_t non_gzip[] = {MAX_WBITS, -MAX_WBITS};
+    for (size_t i = 0; i < sizeof(non_gzip) / sizeof(non_gzip[0]); i++) {
+        PREFIX3(stream) strm = zeroed_stream();
+        ASSERT_EQ(PREFIX(inflateInit2)(&strm, non_gzip[i]), Z_OK);
+        EXPECT_EQ(PREFIX(inflateGetHeader)(&strm, &head), Z_STREAM_ERROR);
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    }
+}
+
