@@ -1246,6 +1246,11 @@ int32_t Z_EXPORT PREFIX(inflateSetDictionary)(PREFIX3(stream) *strm, const uint8
     if (inflateStateCheck(strm))
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
+    /* Reject any NULL dictionary, symmetric with deflateSetDictionary(): even
+       a zero-length one would reach updatewindow() and the DFLTCC hook as a
+       NULL pointer. */
+    if (dictionary == NULL)
+        return Z_STREAM_ERROR;
     if (state->wrap != 0 && state->mode != DICT)
         return Z_STREAM_ERROR;
 

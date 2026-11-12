@@ -478,6 +478,22 @@ TEST(inflate_api_errors, set_dictionary_wrong_state) {
     EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
 }
 
+/* inflateSetDictionary() with a NULL dictionary:
+ * - rejected with Z_STREAM_ERROR for any length instead of reading from the
+ *   NULL buffer (symmetric with deflateSetDictionary());
+ * - the stream remains usable afterwards.
+ *
+ * The raw window bits are used so the call reaches the dictionary handling
+ * instead of being rejected by the state check. */
+TEST(inflate_api_errors, set_dictionary_null_buffer) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+
+    EXPECT_EQ(PREFIX(inflateSetDictionary)(&strm, NULL, 5), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateSetDictionary)(&strm, NULL, 0), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
 /* inflateSetDictionary() with a wrong dictionary in the DICT state:
  * - the adler32 of the supplied dictionary does not match the one stored in
  *   the stream header, so Z_DATA_ERROR is returned;
