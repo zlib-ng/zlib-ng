@@ -101,6 +101,7 @@ Build Options
 | ZLIB_COMPAT                | --zlib-compat            | Compile with zlib compatible API                                                    | OFF     |
 | ZLIB_ALIASES               |                          | Provide zlib compatible CMake targets                                               | ON      |
 | WITH_COMPAT_HEADER         |                          | Install zlib-ng-compat.h that aliases the zlib API onto zlib-ng, native mode only   | ON      |
+| WITH_PIC                   |                          | Compile static library with position independent code                               | OFF     |
 | WITH_GZFILEOP              | --without-gzfileops      | Compile with support for gzFile related functions                                   | ON      |
 | WITH_OPTIM                 | --without-optimizations  | Build with optimisations                                                            | ON      |
 | WITH_NEW_STRATEGIES        | --without-new-strategies | Use new strategies                                                                  | ON      |
