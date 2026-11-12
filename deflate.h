@@ -337,8 +337,11 @@ struct ALIGNED_(64) internal_state {
      * refills happen at the same positions as with a 2 * w_size buffer.
      */
 
+    uint32_t max_dist;
+    /* Longest match distance, set by deflateInit2() from the window buffer size */
+
     /* Reserved for future use and alignment purposes */
-    int32_t reserved[18];
+    int32_t reserved[17];
 };
 
 typedef enum {
@@ -410,7 +413,7 @@ static inline void put_uint64(deflate_state *s, uint64_t lld) {
  * See deflate.c for comments about the STD_MIN_MATCH+1.
  */
 
-#define MAX_DIST(s)  ((s)->w_size - MIN_LOOKAHEAD)
+#define MAX_DIST(s)  ((s)->max_dist)
 /* In order to simplify the code, particularly on 16 bit machines, match
  * distances are limited to MAX_DIST instead of WSIZE.
  */
