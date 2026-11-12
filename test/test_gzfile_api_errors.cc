@@ -947,6 +947,22 @@ TEST(gzfile_api_errors, printf_read_file) {
     remove("gzapi_err_printf.gz");
 }
 
+/* gzprintf() with a NULL format string:
+ * - the call is rejected with Z_STREAM_ERROR instead of passing the NULL
+ *   format to vsnprintf();
+ * - the descriptor remains usable for subsequent writes. */
+TEST(gzfile_api_errors, printf_null_format) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_printf.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_printf.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzprintf)(file, NULL), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzputs)(file, "hello"), 5);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_printf.gz");
+}
+
 /* gzprintf() with output that does not fit in the buffer:
  * - with an 8-byte buffer (via gzbuffer) a 20-character result is refused;
  * - the call returns 0 and records no error, leaving the stream usable. */

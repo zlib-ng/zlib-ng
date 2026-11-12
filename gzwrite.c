@@ -346,6 +346,9 @@ z_int32_t Z_EXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list 
     /* get internal structure */
     if (file == NULL)
         return Z_STREAM_ERROR;
+    /* reject a NULL format before it is passed to vsnprintf() */
+    if (format == NULL)
+        return Z_STREAM_ERROR;
     state = (gz_state *)file;
     strm = &(state->strm);
 
