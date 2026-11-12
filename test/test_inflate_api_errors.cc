@@ -1060,3 +1060,34 @@ TEST(inflate_api_errors, gzip_header_crc_mismatch) {
     EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
 }
 
+#ifdef ZLIB_COMPAT
+/* ========================================================================== */
+/* Version validation (compat mode only: the underscore init variants are     */
+/* only declared by the compat header)                                        */
+/* ========================================================================== */
+
+/* inflateInit_() with a wrong version string, a NULL version, or a wrong
+ * stream size:
+ * - all three mismatches are rejected with Z_VERSION_ERROR;
+ * - the correct pair initializes successfully. */
+TEST(inflate_api_errors, init_version_validation) {
+    PREFIX3(stream) strm = zeroed_stream();
+    EXPECT_EQ(PREFIX(inflateInit_)(&strm, "0", (int)sizeof(strm)), Z_VERSION_ERROR);
+    EXPECT_EQ(PREFIX(inflateInit_)(&strm, NULL, (int)sizeof(strm)), Z_VERSION_ERROR);
+    EXPECT_EQ(PREFIX(inflateInit_)(&strm, PREFIX2(VERSION), (int)sizeof(strm) - 1), Z_VERSION_ERROR);
+    ASSERT_EQ(PREFIX(inflateInit_)(&strm, PREFIX2(VERSION), (int)sizeof(strm)), Z_OK);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflateBackInit_() with a wrong version string:
+ * - rejected with Z_VERSION_ERROR before any allocation;
+ * - the correct pair initializes successfully. */
+TEST(inflate_api_errors, back_init_version_validation) {
+    PREFIX3(stream) strm = zeroed_stream();
+    uint8_t window[1 << MAX_WBITS];
+    EXPECT_EQ(PREFIX(inflateBackInit_)(&strm, MAX_WBITS, window, "0", 0), Z_VERSION_ERROR);
+    ASSERT_EQ(PREFIX(inflateBackInit_)(&strm, MAX_WBITS, window, PREFIX2(VERSION),
+                                      (int)sizeof(strm)), Z_OK);
+    EXPECT_EQ(PREFIX(inflateBackEnd)(&strm), Z_OK);
+}
+#endif
