@@ -219,3 +219,66 @@ TEST(deflate, params_history_rle) {
 TEST(deflate, params_history_huffman) {
     deflate_params_history(6, Z_HUFFMAN_ONLY, 6, Z_DEFAULT_STRATEGY);
 }
+
+/* Level 0 fills the window buffer, which is larger than 2 * w_size for small windows. The next
+ * matching level must refill from that position without reading past the buffer. */
+static void deflate_params_from_stored(int window_bits, int to_level) {
+    const uint32_t len = 128 * 1024;
+    const uint32_t compr_size = 2 * len;
+
+    uint8_t *uncompr = (uint8_t *)calloc(1, len);
+    uint8_t *compr = (uint8_t *)calloc(1, compr_size);
+    uint8_t *check = (uint8_t *)calloc(1, len);
+    ASSERT_TRUE(uncompr != NULL && compr != NULL && check != NULL);
+
+    fill_random(uncompr, len);
+
+    PREFIX3(stream) c_stream;
+    memset(&c_stream, 0, sizeof(c_stream));
+    EXPECT_EQ(PREFIX(deflateInit2)(&c_stream, 0, Z_DEFLATED, window_bits, 8, Z_DEFAULT_STRATEGY), Z_OK);
+
+    /* A small output buffer keeps level 0 from copying straight through, so input fills the
+     * window */
+    c_stream.next_out = compr;
+    c_stream.avail_out = 16;
+    c_stream.next_in = uncompr;
+    c_stream.avail_in = len;
+    EXPECT_EQ(PREFIX(deflate)(&c_stream, Z_NO_FLUSH), Z_OK);
+
+    /* Hold back the rest so the switch leaves level 0's data in the window */
+    uint32_t remaining = c_stream.avail_in;
+    c_stream.avail_in = 0;
+    c_stream.avail_out = compr_size - (uint32_t)(c_stream.next_out - compr);
+    EXPECT_EQ(PREFIX(deflateParams)(&c_stream, to_level, Z_DEFAULT_STRATEGY), Z_OK);
+
+    c_stream.avail_in = remaining;
+    EXPECT_EQ(PREFIX(deflate)(&c_stream, Z_FINISH), Z_STREAM_END);
+
+    uint32_t compr_len = (uint32_t)(c_stream.next_out - compr);
+    EXPECT_EQ(PREFIX(deflateEnd)(&c_stream), Z_OK);
+
+    PREFIX3(stream) d_stream;
+    memset(&d_stream, 0, sizeof(d_stream));
+    EXPECT_EQ(PREFIX(inflateInit2)(&d_stream, window_bits), Z_OK);
+    d_stream.next_in = compr;
+    d_stream.avail_in = compr_len;
+    d_stream.next_out = check;
+    d_stream.avail_out = len;
+    EXPECT_EQ(PREFIX(inflate)(&d_stream, Z_FINISH), Z_STREAM_END);
+    EXPECT_EQ(d_stream.total_out, len);
+    EXPECT_EQ(memcmp(uncompr, check, len), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&d_stream), Z_OK);
+
+    free(uncompr);
+    free(compr);
+    free(check);
+}
+
+TEST(deflate, params_from_stored) {
+    for (int window_bits = 9; window_bits <= 15; window_bits++) {
+        for (int level : {1, 2, 6, 9}) {
+            SCOPED_TRACE(testing::Message() << "window bits " << window_bits << ", level " << level);
+            deflate_params_from_stored(window_bits, level);
+        }
+    }
+}
