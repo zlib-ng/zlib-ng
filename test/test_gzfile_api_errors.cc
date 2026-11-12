@@ -445,6 +445,22 @@ TEST(gzfile_api_errors, read_len_overflow) {
     remove("gzapi_err_read.gz");
 }
 
+/* gzread() with a NULL buffer and nonzero length:
+ * - the call is rejected with -1 instead of writing through the NULL pointer;
+ * - the descriptor remains usable for subsequent reads. */
+TEST(gzfile_api_errors, read_null_buf) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_read.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_read.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzread)(file, NULL, 10), -1);
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzread)(file, buf, (unsigned)sizeof(buf)), 5);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_read.gz");
+}
+
 /* gzfread() with a zero item size:
  * - the call returns 0 without touching the descriptor. */
 TEST(gzfile_api_errors, fread_zero_size) {

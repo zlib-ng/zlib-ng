@@ -367,6 +367,9 @@ z_int32_t Z_EXPORT PREFIX(gzread)(gzFile file, void *buf, z_uint32_t len) {
     /* get internal structure */
     if (file == NULL)
         return -1;
+    /* reject a NULL buffer with nonzero length before it is written to */
+    if (buf == NULL && len != 0)
+        return -1;
     state = (gz_state *)file;
 
     /* check that we're reading and that there's no (serious) error */
