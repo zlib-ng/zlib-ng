@@ -727,3 +727,186 @@ TEST(inflate_api_errors, uncompress_corrupt_data) {
     z_uintmax_t source_len = (z_uintmax_t)compressed_len;
     EXPECT_EQ(PREFIX(uncompress2)(output, &output_len, compressed, &source_len), Z_DATA_ERROR);
 }
+
+/* ========================================================================== */
+/* zng_inflateBackInit / zng_inflateBack / zng_inflateBackEnd                 */
+/* ========================================================================== */
+
+/* Input callback state for inflateBack() tests. */
+struct back_input {
+    uint8_t *data;
+    size_t len;
+    size_t pos;
+    int fail; /* if set, in() reports no input */
+};
+
+/* Output callback state for inflateBack() tests. */
+struct back_output {
+    uint8_t *data;
+    size_t size;
+    size_t used;
+    int fail; /* if set, out() reports a write failure */
+};
+
+/* Provide the remaining input in one piece, or nothing when fail is set.
+ * The z_const-qualified buffer pointer matches both the native (const)
+ * and compat (non-const) in_func signatures. */
+static z_uint32_t back_in(void *descriptor, z_const unsigned char **buffer) {
+    struct back_input *in = (struct back_input *)descriptor;
+    if (in->fail || in->pos >= in->len)
+        return 0;
+    *buffer = in->data + in->pos;
+    uint32_t available = (uint32_t)(in->len - in->pos);
+    in->pos = in->len;
+    return available;
+}
+
+/* Append the output chunk, failing when told to or when the buffer is full. */
+static int32_t back_out(void *descriptor, uint8_t *buffer, uint32_t length) {
+    struct back_output *out = (struct back_output *)descriptor;
+    if (out->fail || out->used + length > out->size)
+        return 1;
+    memcpy(out->data + out->used, buffer, length);
+    out->used += length;
+    return 0;
+}
+
+/* inflateBackInit() with a NULL stream or a NULL window:
+ * - both are rejected with Z_STREAM_ERROR. */
+TEST(inflate_api_errors, back_init_null_arguments) {
+    PREFIX3(stream) strm = zeroed_stream();
+    uint8_t window[1 << 9];
+
+    EXPECT_EQ(PREFIX(inflateBackInit)(NULL, 9, window), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateBackInit)(&strm, 9, NULL), Z_STREAM_ERROR);
+}
+
+/* inflateBackInit() with windowBits outside the 8..15 range:
+ * - both a too-small and a too-large value are rejected with Z_STREAM_ERROR. */
+TEST(inflate_api_errors, back_init_window_bits_out_of_range) {
+    PREFIX3(stream) strm = zeroed_stream();
+    uint8_t window[1 << 9];
+
+    EXPECT_EQ(PREFIX(inflateBackInit)(&strm, MIN_WBITS - 1, window), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateBackInit)(&strm, MAX_WBITS + 1, window), Z_STREAM_ERROR);
+}
+
+/* inflateBackInit() when the first allocation fails:
+ * - Z_MEM_ERROR is returned and no state exists. */
+TEST(inflate_api_errors, back_init_alloc_failure) {
+    PREFIX3(stream) strm = zeroed_stream();
+    mem_zone zone;
+    memset(&zone, 0, sizeof(zone));
+    zone.fail_after = 0; /* fail the very first allocation */
+    install_zone(&strm, &zone);
+    uint8_t window[1 << 9];
+
+    EXPECT_EQ(PREFIX(inflateBackInit)(&strm, 9, window), Z_MEM_ERROR);
+    EXPECT_EQ(zone.allocs, 0);
+    EXPECT_TRUE(strm.state == nullptr);
+}
+
+/* inflateBack() with a NULL stream:
+ * - rejected with Z_STREAM_ERROR. */
+TEST(inflate_api_errors, back_null_stream) {
+    struct back_input in = {};
+    struct back_output out = {};
+    EXPECT_EQ(PREFIX(inflateBack)(NULL, back_in, &in, back_out, &out), Z_STREAM_ERROR);
+}
+
+/* inflateBack() when the input callback reports no data:
+ * - Z_BUF_ERROR is returned. */
+TEST(inflate_api_errors, back_input_exhausted) {
+    PREFIX3(stream) strm = zeroed_stream();
+    uint8_t window[1 << 9];
+    ASSERT_EQ(PREFIX(inflateBackInit)(&strm, 9, window), Z_OK);
+
+    struct back_input in = {};
+    in.fail = 1;
+    struct back_output out = {};
+    EXPECT_EQ(PREFIX(inflateBack)(&strm, back_in, &in, back_out, &out), Z_BUF_ERROR);
+    EXPECT_EQ(PREFIX(inflateBackEnd)(&strm), Z_OK);
+}
+
+/* inflateBack() when the output callback reports a write failure:
+ * - Z_BUF_ERROR is returned. */
+TEST(inflate_api_errors, back_output_failure) {
+    PREFIX3(stream) strm = zeroed_stream();
+    uint8_t window[1 << 9];
+    ASSERT_EQ(PREFIX(inflateBackInit)(&strm, 9, window), Z_OK);
+
+    uint8_t raw[128];
+    size_t raw_len = compress_raw(raw, sizeof(raw));
+    ASSERT_GT(raw_len, 0u);
+
+    struct back_input in = {};
+    in.data = raw;
+    in.len = raw_len;
+    struct back_output out = {};
+    out.fail = 1;
+    EXPECT_EQ(PREFIX(inflateBack)(&strm, back_in, &in, back_out, &out), Z_BUF_ERROR);
+    EXPECT_EQ(PREFIX(inflateBackEnd)(&strm), Z_OK);
+}
+
+/* inflateBack() on a valid raw deflate stream:
+ * - Z_STREAM_END is returned;
+ * - the decompressed data matches the original message and all input was
+ *   consumed. */
+TEST(inflate_api_errors, back_valid_raw_stream) {
+    PREFIX3(stream) strm = zeroed_stream();
+    uint8_t window[1 << 9];
+    ASSERT_EQ(PREFIX(inflateBackInit)(&strm, 9, window), Z_OK);
+
+    uint8_t raw[128];
+    size_t raw_len = compress_raw(raw, sizeof(raw));
+    ASSERT_GT(raw_len, 0u);
+
+    struct back_input in = {};
+    in.data = raw;
+    in.len = raw_len;
+    uint8_t output[64];
+    struct back_output out = {};
+    out.data = output;
+    out.size = sizeof(output);
+
+    EXPECT_EQ(PREFIX(inflateBack)(&strm, back_in, &in, back_out, &out), Z_STREAM_END);
+    EXPECT_EQ(out.used, strlen(kMessage));
+    EXPECT_EQ(memcmp(output, kMessage, strlen(kMessage)), 0);
+    EXPECT_EQ(in.pos, raw_len);
+    EXPECT_EQ(PREFIX(inflateBackEnd)(&strm), Z_OK);
+}
+
+/* inflateBack() on a stored block whose LEN and NLEN fields disagree:
+ * - rejected with Z_DATA_ERROR. The stream is BFINAL=1, BTYPE=00 (stored),
+ *   LEN = 5, NLEN = 0. */
+TEST(inflate_api_errors, back_corrupt_stored_block) {
+    PREFIX3(stream) strm = zeroed_stream();
+    uint8_t window[1 << 9];
+    ASSERT_EQ(PREFIX(inflateBackInit)(&strm, 9, window), Z_OK);
+
+    uint8_t bad[] = {0x01, 0x00, 0x05, 0x00, 0x00, 0x00};
+    struct back_input in = {};
+    in.data = bad;
+    in.len = sizeof(bad);
+    uint8_t output[64];
+    struct back_output out = {};
+    out.data = output;
+    out.size = sizeof(output);
+
+    EXPECT_EQ(PREFIX(inflateBack)(&strm, back_in, &in, back_out, &out), Z_DATA_ERROR);
+    EXPECT_EQ(PREFIX(inflateBackEnd)(&strm), Z_OK);
+}
+
+/* inflateBackEnd() with a NULL stream and on an already ended stream:
+ * - the NULL call is rejected with Z_STREAM_ERROR;
+ * - the first end of a live stream returns Z_OK;
+ * - the second end is rejected with Z_STREAM_ERROR. */
+TEST(inflate_api_errors, back_end_null_and_double) {
+    EXPECT_EQ(PREFIX(inflateBackEnd)(NULL), Z_STREAM_ERROR);
+
+    PREFIX3(stream) strm = zeroed_stream();
+    uint8_t window[1 << 9];
+    ASSERT_EQ(PREFIX(inflateBackInit)(&strm, 9, window), Z_OK);
+    EXPECT_EQ(PREFIX(inflateBackEnd)(&strm), Z_OK);
+    EXPECT_EQ(PREFIX(inflateBackEnd)(&strm), Z_STREAM_ERROR);
+}
