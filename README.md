@@ -104,7 +104,6 @@ Build Options
 | WITH_OPTIM                 | --without-optimizations  | Build with optimisations                                                            | ON      |
 | WITH_NEW_STRATEGIES        | --without-new-strategies | Use new strategies                                                                  | ON      |
 | WITH_CRC32_CHORBA          |                          | Build with Chorba optimized CRC32                                                   | ON      |
-| WITH_SLIDE_HASH_SWAR       |                          | Build with the SWAR slide_hash generic fallback                                     | ON      |
 | WITH_REDUCED_MEM           | --with-reduced-mem       | Reduce zlib-ng memory usage, affects performance and compression ratio              | OFF     |
 | WITH_GTEST                 |                          | Build tests using GTest framework                                                   | ON      |
 | WITH_BENCHMARKS            |                          | Build benchmarks using Google Benchmark framework                                   | OFF     |
