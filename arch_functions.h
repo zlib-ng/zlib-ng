@@ -54,7 +54,7 @@
 #endif
 
 /* The SWAR slide_hash is always built with the generic one so it can be tested anywhere. */
-#if defined(SLIDE_HASH_FALLBACK) && !defined(WITHOUT_SLIDE_HASH_SWAR)
+#if defined(SLIDE_HASH_FALLBACK) && !defined(SLIDE_HASH_SWAR_FALLBACK) && !defined(WITHOUT_SLIDE_HASH_SWAR)
 #  define SLIDE_HASH_SWAR_FALLBACK
 #endif
 

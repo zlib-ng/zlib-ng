@@ -72,7 +72,7 @@ static void slide_hash_check(slide_hash_func func, slide_hash_func head_func) {
         slide_hash_check(func, head_func); \
     }
 
-#ifdef SLIDE_HASH_FALLBACK
+#if defined(SLIDE_HASH_FALLBACK) || defined(SLIDE_HASH_SWAR_FALLBACK)
 static void slide_hash_edge_cases(slide_hash_func func, slide_hash_func head_func) {
     static const Pos slides[] = {0, 1, 511, 28672, 32767, 32768, 32769, 49152, 65535};
     for (size_t k = 0; k < sizeof(slides) / sizeof(slides[0]); k++) {
