@@ -225,6 +225,9 @@ z_int32_t Z_EXPORT PREFIX(gzwrite)(gzFile file, void const *buf, z_uint32_t len)
     /* get internal structure */
     if (file == NULL)
         return 0;
+    /* reject a NULL buffer with nonzero length before it is read from */
+    if (buf == NULL && len != 0)
+        return 0;
     state = (gz_state *)file;
 
     /* check that we're writing and that there's no error */
@@ -319,7 +322,7 @@ z_int32_t Z_EXPORT PREFIX(gzputs)(gzFile file, const char *s) {
     gz_state *state;
 
     /* get internal structure */
-    if (file == NULL)
+    if (file == NULL || s == NULL)
         return -1;
     state = (gz_state *)file;
 
@@ -347,6 +350,9 @@ z_int32_t Z_EXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list 
 
     /* get internal structure */
     if (file == NULL)
+        return Z_STREAM_ERROR;
+    /* reject a NULL format before it is passed to vsnprintf() */
+    if (format == NULL)
         return Z_STREAM_ERROR;
     state = (gz_state *)file;
     strm = &(state->strm);

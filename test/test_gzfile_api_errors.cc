@@ -445,6 +445,22 @@ TEST(gzfile_api_errors, read_len_overflow) {
     remove("gzapi_err_read.gz");
 }
 
+/* gzread() with a NULL buffer and nonzero length:
+ * - the call is rejected with -1 instead of writing through the NULL pointer;
+ * - the descriptor remains usable for subsequent reads. */
+TEST(gzfile_api_errors, read_null_buf) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_read.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_read.gz", "rb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzread)(file, NULL, 10), -1);
+    uint8_t buf[16];
+    EXPECT_EQ(PREFIX(gzread)(file, buf, (unsigned)sizeof(buf)), 5);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_read.gz");
+}
+
 /* gzfread() with a zero item size:
  * - the call returns 0 without touching the descriptor. */
 TEST(gzfile_api_errors, fread_zero_size) {
@@ -808,6 +824,23 @@ TEST(gzfile_api_errors, write_len_overflow) {
     remove("gzapi_err_write.gz");
 }
 
+/* gzwrite() with a NULL buffer and nonzero length:
+ * - the call is rejected with 0 instead of reading through the NULL pointer;
+ * - a NULL buffer with zero length is accepted (nothing is read from it);
+ * - the descriptor remains usable for subsequent writes. */
+TEST(gzfile_api_errors, write_null_buf) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_write.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_write.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzwrite)(file, NULL, 10), 0);
+    EXPECT_EQ(PREFIX(gzwrite)(file, NULL, 0), 0);
+    EXPECT_EQ(PREFIX(gzwrite)(file, data, sizeof(data)), 5);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_write.gz");
+}
+
 /* gzfwrite() with a zero item size:
  * - the call returns 0 without touching the descriptor;
  * - on a valid write stream the guard still applies: the call returns 0
@@ -891,6 +924,21 @@ TEST(gzfile_api_errors, puts_read_file) {
     remove("gzapi_err_puts.gz");
 }
 
+/* gzputs() with a NULL string:
+ * - the call is rejected with -1 instead of passing NULL to strlen();
+ * - the descriptor remains usable for subsequent writes. */
+TEST(gzfile_api_errors, puts_null_string) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_puts.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_puts.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzputs)(file, NULL), -1);
+    EXPECT_EQ(PREFIX(gzputs)(file, "hello"), 5);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_puts.gz");
+}
+
 /* ========================================================================== */
 /* gzprintf                                                                   */
 /* ========================================================================== */
@@ -910,6 +958,22 @@ TEST(gzfile_api_errors, printf_read_file) {
     gzFile file = PREFIX(gzopen)("gzapi_err_printf.gz", "rb");
     ASSERT_NE(file, (gzFile)NULL);
     EXPECT_EQ(PREFIX(gzprintf)(file, "hello %d", 42), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("gzapi_err_printf.gz");
+}
+
+/* gzprintf() with a NULL format string:
+ * - the call is rejected with Z_STREAM_ERROR instead of passing the NULL
+ *   format to vsnprintf();
+ * - the descriptor remains usable for subsequent writes. */
+TEST(gzfile_api_errors, printf_null_format) {
+    const uint8_t data[5] = {'h', 'e', 'l', 'l', 'o'};
+    ASSERT_TRUE(write_gzip_file("gzapi_err_printf.gz", data, sizeof(data)));
+
+    gzFile file = PREFIX(gzopen)("gzapi_err_printf.gz", "wb");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzprintf)(file, NULL), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(gzputs)(file, "hello"), 5);
     EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
     remove("gzapi_err_printf.gz");
 }
