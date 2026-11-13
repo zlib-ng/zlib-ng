@@ -1255,8 +1255,9 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
          * move the live data down to make room at the end of the buffer.
          */
         /* Advance the data end the way a 2 * w_size buffer slides, so refills land on the same
-         * positions. */
-        if (s->strstart >= s->fill_end)
+         * positions. Level 0 does not track fill_end, so after a switch from it strstart can be
+         * several windows ahead. */
+        while (s->strstart >= s->fill_end)
             s->fill_end += s->w_size;
         if (s->fill_end > s->window_size - MIN_LOOKAHEAD) {
             /* Slide as far as possible while keeping MAX_DIST bytes of history.
