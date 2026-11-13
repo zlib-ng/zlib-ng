@@ -54,27 +54,6 @@ void     slide_hash_swar(deflate_state *s);
 void     slide_hash_head_swar(deflate_state *s);
 #endif
 
-/* SLIDE_HASH_SWAR selects the 64-bit SWAR version of the slide loop. It only
- * pays off when the compiler cannot see a vector unit. With one available, the
- * compiler vectorizes the plain loop into 16-bit saturating subtracts, whereas
- * the SWAR loop only vectorizes into 64-bit lanes that still carry the lane
- * masking and runs slower. x86-64 and AArch64 always have SSE2 and NEON even
- * when the compiler does not advertise them. Define SLIDE_HASH_SWAR to 0 or 1
- * to override the detection.
- */
-#if !defined(SLIDE_HASH_SWAR)
-#  if defined(__SSE2__) || (defined(ARCH_X86) && defined(ARCH_64BIT)) || \
-      defined(__ARM_NEON) || defined(__ARM_NEON__) || (defined(ARCH_ARM) && defined(ARCH_64BIT)) || \
-      defined(__ALTIVEC__) || defined(__VSX__) || defined(__wasm_simd128__) || \
-      defined(__riscv_vector) || defined(__riscv_v) || \
-      defined(__loongarch_sx) || defined(__loongarch_asx) || defined(__mips_msa) || \
-      (defined(__s390x__) && defined(__VX__))
-#    define SLIDE_HASH_SWAR 0
-#  else
-#    define SLIDE_HASH_SWAR 1
-#  endif
-#endif
-
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // Generic fallbacks when no native implementation exists
 #  ifdef ADLER32_FALLBACK
@@ -125,7 +104,7 @@ void     slide_hash_head_swar(deflate_state *s);
 #      define native_crc32_copy crc32_copy_braid
 #    endif
 #  endif
-#  if defined(SLIDE_HASH_SWAR_FALLBACK) && SLIDE_HASH_SWAR
+#  if defined(WITH_OPTIM) && defined(SLIDE_HASH_SWAR_FALLBACK) && !defined(__wasm_simd128__)
 #    ifndef native_slide_hash
 #      define native_slide_hash slide_hash_swar
 #    endif
