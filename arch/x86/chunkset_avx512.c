@@ -193,8 +193,13 @@ static inline uint8_t* HALFCHUNKCOPY(uint8_t *out, uint8_t const *from, size_t l
 
 #include "chunkset_tpl.h"
 
-#define INFLATE_FAST     inflate_fast_avx512
+#define INFLATE_FAST     inflate_fast_wide_avx512
 #define USE_WIDE_COPY
+
+#include "inffast_tpl.h"
+
+#define INFLATE_FAST     inflate_fast_avx512
+#define DISPATCH_WIDE    inflate_fast_wide_avx512
 
 #include "inffast_tpl.h"
 

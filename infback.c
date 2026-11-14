@@ -349,6 +349,15 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, PREFIX(in_func) in, 
                 SET_BAD("invalid literal/lengths set");
                 break;
             }
+            /* A code for any length symbol above 272 allows matches over 34 bytes,
+               which the fast loop copies with the wide copy. */
+            state->wide_len = 0;
+            for (unsigned sym = 273; sym < state->nlen; sym++) {
+                if (state->lens[sym] != 0) {
+                    state->wide_len = 1;
+                    break;
+                }
+            }
             state->distcode = (const code *)(state->next);
             state->distbits = 9;
             ret = zng_inflate_table(DISTS, state->lens + state->nlen, state->ndist,
