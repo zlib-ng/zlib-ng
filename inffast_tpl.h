@@ -49,7 +49,19 @@
       requires strm->avail_out >= 258 for each loop to avoid checking for
       output space.
  */
+#ifdef USE_WIDE_COPY
+static void INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
+#else
 void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
+#endif
+#ifdef DISPATCH_WIDE
+    /* Blocks whose length codes allow matches over 34 bytes run the wide-copy
+       instantiation, chosen once per call so the hot loop stays branch-free. */
+    if (((struct inflate_state *)strm->state)->wide_len) {
+        DISPATCH_WIDE(strm, start);
+        return;
+    }
+#endif
     /* start: inflate()'s starting value for strm->avail_out */
     struct inflate_state *state;
     z_const unsigned char *in;  /* local strm->next_in */
@@ -362,10 +374,11 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
 
  // Cleanup
 #undef INFLATE_FAST
+#undef DISPATCH_WIDE
 #undef USE_WIDE_COPY
 
-/* The chunkset macros are shared by both instantiations, so they can only be
-   released once the safe one has been emitted. */
+/* The chunkset macros are shared by every instantiation, so they can only be
+   released once the safe one, which is emitted last, has been emitted. */
 #ifdef USE_SAFE_MODE
 #  undef CHUNKCOPY
 #  undef CHUNKMEMSET
