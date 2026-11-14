@@ -208,7 +208,7 @@ example.o: $(SRCDIR)/test/example.c
 	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/test/example.c
 
 minigzip.o: $(SRCDIR)/utils/minigzip.c
-	$(CC) $(CFLAGS) -DWITH_GZFILEOP $(INCLUDES) -c -o $@ $(SRCDIR)/utils/minigzip.c
+	$(CC) $(CFLAGS) -DWITH_GZFILEOP -D_GNU_SOURCE $(INCLUDES) -c -o $@ $(SRCDIR)/utils/minigzip.c
 
 makefixed.o: $(SRCDIR)/utils/makefixed.c
 	$(CC) $(CFLAGS) $(INCLUDES) -c -o $@ $(SRCDIR)/utils/makefixed.c
