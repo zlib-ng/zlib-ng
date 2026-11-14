@@ -22,11 +22,6 @@ configure_test_executable(example)
 target_link_libraries(example zlib-ng)
 add_test(NAME example COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:example>)
 
-add_executable(switchlevels switchlevels.c)
-configure_test_executable(switchlevels)
-target_link_libraries(switchlevels zlib-ng)
-set(SWITCHLEVELS_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels>)
-
 add_executable(infcover infcover.c)
 configure_test_executable(infcover)
 target_link_libraries(infcover zlib-ng)
@@ -57,9 +52,6 @@ if(NOT BASEARCH_WASM32_FOUND)
 
     # Run tests with data files
     include(cmake/test-data.cmake)
-
-    # Run tests targeting GitHub issues
-    include(cmake/test-issues.cmake)
 
     # Run tests targeting tools
     include(cmake/test-tools.cmake)
@@ -164,6 +156,7 @@ if(WITH_GTEST)
             test_inflate_cve.cc
             test_inflate_far_distance.cc
             test_inflate_gh_1600.cc
+            test_inflate_gh_751.cc
             test_inflate_mark.cc
             test_raw.cc
             test_small_window.cc
@@ -173,6 +166,11 @@ if(WITH_GTEST)
             list(APPEND TEST_SRCS test_gzio.cc)
             list(APPEND TEST_SRCS test_gzfile_api_errors.cc)
             list(APPEND TEST_SRCS test_gzseek.cc)
+        endif()
+
+        # Emscripten cannot read files from the source directory
+        if(NOT BASEARCH_WASM32_FOUND)
+            list(APPEND TEST_SRCS test_deflate_gh_536.cc) # reads test/data/lcet10.txt
         endif()
 
         if(NOT TEST_STOCK_ZLIB)
