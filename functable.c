@@ -109,6 +109,12 @@ static int init_functable(void) {
     ft.crc32_copy = &crc32_copy_chorba;
 #endif
 
+    // SWAR slide_hash generic C fallback, skipped when WebAssembly SIMD128 vectorizes slide_hash_c
+#if defined(SLIDE_HASH_SWAR_FALLBACK) && !defined(__wasm_simd128__)
+    ft.slide_hash = &slide_hash_swar;
+    ft.slide_hash_head = &slide_hash_head_swar;
+#endif
+
     // X86 - SSE2
 #ifdef X86_SSE2
 #  ifndef X86_SSE2_NATIVE

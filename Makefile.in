@@ -82,6 +82,7 @@ OBJZ = \
 	arch/generic/crc32_braid_c.o \
 	arch/generic/crc32_chorba_c.o \
 	arch/generic/slide_hash_c.o \
+	arch/generic/slide_hash_swar.o \
 	adler32.o \
 	compress.o \
 	crc32.o \
@@ -120,6 +121,7 @@ PIC_OBJZ = \
 	arch/generic/crc32_braid_c.lo \
 	arch/generic/crc32_chorba_c.lo \
 	arch/generic/slide_hash_c.lo \
+	arch/generic/slide_hash_swar.lo \
 	adler32.lo \
 	compress.lo \
 	crc32.lo \

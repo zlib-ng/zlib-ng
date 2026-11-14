@@ -82,6 +82,9 @@ public:
 #ifdef SLIDE_HASH_FALLBACK
 BENCHMARK_SLIDEHASH(c, slide_hash_c, 1);
 #endif
+#ifdef SLIDE_HASH_SWAR_FALLBACK
+BENCHMARK_SLIDEHASH(swar, slide_hash_swar, 1);
+#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 BENCHMARK_SLIDEHASH(native, native_slide_hash, 1);

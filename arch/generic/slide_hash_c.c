@@ -26,6 +26,7 @@ static inline void slide_hash_c_chain(Pos *table, uint32_t entries, Pos wsize) {
 }
 
 Z_INTERNAL void slide_hash_c(deflate_state *s) {
+    Assert(s->slide_len <= UINT16_MAX, "slide_len should fit in uint16_t");
     Pos slide = (Pos)s->slide_len;
 
     slide_hash_c_chain(s->head, HASH_SIZE, slide);
@@ -33,7 +34,8 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
 }
 
 Z_INTERNAL void slide_hash_head_c(deflate_state *s) {
-    uint16_t slide = (uint16_t)s->slide_len;
+    Assert(s->slide_len <= UINT16_MAX, "slide_len should fit in uint16_t");
+    Pos slide = (Pos)s->slide_len;
 
     slide_hash_c_chain(s->head, HASH_SIZE, slide);
 }

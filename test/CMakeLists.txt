@@ -184,6 +184,7 @@ if(WITH_GTEST)
                     test_compare256_rle.cc    # compare256_rle(), etc
                     test_crc32.cc             # crc32_armv8(), etc
                     test_crc32_copy.cc        # crc32_copy implementations
+                    test_slide_hash.cc        # slide_hash implementations
                     )
             endif()
 
