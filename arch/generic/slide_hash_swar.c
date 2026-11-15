@@ -9,37 +9,46 @@
 
 #include "deflate.h"
 
-#define SLIDE_SWAR_MSB 0x8000800080008000ULL
-#define SLIDE_SWAR_REP 0x0001000100010001ULL
+/* WebAssembly has native 64-bit integer ops even on wasm32. */
+#if defined(ARCH_64BIT) || defined(__wasm__)
+#  define SLIDE_SWAR_MSB 0x8000800080008000ULL
+#  define SLIDE_SWAR_REP 0x0001000100010001ULL
+    typedef uint64_t slide_word_t;
+#else
+#  define SLIDE_SWAR_MSB 0x80008000U
+#  define SLIDE_SWAR_REP 0x00010001U
+    typedef uint32_t slide_word_t;
+#endif
+#define SLIDE_SWAR_LANES (sizeof(slide_word_t) / sizeof(Pos))
 
-Z_FORCEINLINE static uint64_t slide_load64(Pos *p) {
-    uint64_t v;
-    memcpy(&v, HINT_ALIGNED(p, 8), sizeof(v));
+Z_FORCEINLINE static slide_word_t slide_load(Pos *p) {
+    slide_word_t v;
+    memcpy(&v, HINT_ALIGNED(p, sizeof(slide_word_t)), sizeof(v));
     return v;
 }
 
-Z_FORCEINLINE static void slide_store64(Pos *p, uint64_t v) {
-    memcpy(HINT_ALIGNED(p, 8), &v, sizeof(v));
+Z_FORCEINLINE static void slide_store(Pos *p, slide_word_t v) {
+    memcpy(HINT_ALIGNED(p, sizeof(slide_word_t)), &v, sizeof(v));
 }
 
-/* Subtract 32768 with unsigned saturation across four 16-bit lanes.
+/* Subtract 32768 with unsigned saturation across all 16-bit lanes of a word.
  * Entries below 32768 become 0 and entries at or above 32768 clear bit 15. */
-Z_FORCEINLINE static uint64_t slide_swar_32k(uint64_t v) {
-    uint64_t m = v & SLIDE_SWAR_MSB;
+Z_FORCEINLINE static slide_word_t slide_swar_32k(slide_word_t v) {
+    slide_word_t m = v & SLIDE_SWAR_MSB;
     return v & (m - (m >> 15));
 }
 
-/* Subtract wsize < 32768 with unsigned saturation across four 16-bit lanes.
+/* Subtract wsize < 32768 with unsigned saturation across all 16-bit lanes of a word.
  * Setting bit 15 before subtracting prevents borrows between adjacent lanes
  * and leaves bit 15 of t set iff the low 15 bits of the lane are >= wsize. */
-Z_FORCEINLINE static uint64_t slide_swar_lt32k(uint64_t v, uint64_t sw) {
-    uint64_t t = (v | SLIDE_SWAR_MSB) - sw;
-    uint64_t ge = (v | t) & SLIDE_SWAR_MSB;
+Z_FORCEINLINE static slide_word_t slide_swar_lt32k(slide_word_t v, slide_word_t sw) {
+    slide_word_t t = (v | SLIDE_SWAR_MSB) - sw;
+    slide_word_t ge = (v | t) & SLIDE_SWAR_MSB;
     return t & ((ge - (ge >> 15)) | (v & SLIDE_SWAR_MSB));
 }
 
-/* Slide the hash table when sliding the window down, four entries at a time
- * when the table is 8-byte aligned, as guaranteed by alloc_deflate.
+/* Slide the hash table when sliding the window down, two words at a time
+ * when the table is word aligned, as guaranteed by alloc_deflate.
  *
  * fill_window slides by W_BUF_SIZE(w_size) - w_size, which never exceeds
  * 32768, so larger values are only reachable from tests and simply take the
@@ -49,26 +58,26 @@ Z_FORCEINLINE static uint64_t slide_swar_lt32k(uint64_t v, uint64_t sw) {
  * three call sites and roughly doubles the code size.
  */
 Z_NOINLINE static void slide_hash_swar_chain(Pos *table, uint32_t entries, Pos wsize) {
-    if (((uintptr_t)table & 7) == 0) {
-        Pos *q = (Pos *)HINT_ALIGNED(table, 8);
+    if (((uintptr_t)table & (sizeof(slide_word_t) - 1)) == 0) {
+        Pos *q = (Pos *)HINT_ALIGNED(table, sizeof(slide_word_t));
         if (wsize == 32768) {
-            while (entries >= 8) {
-                uint64_t v0 = slide_load64(q);
-                uint64_t v1 = slide_load64(q + 4);
-                slide_store64(q, slide_swar_32k(v0));
-                slide_store64(q + 4, slide_swar_32k(v1));
-                q += 8;
-                entries -= 8;
+            while (entries >= 2 * SLIDE_SWAR_LANES) {
+                slide_word_t v0 = slide_load(q);
+                slide_word_t v1 = slide_load(q + SLIDE_SWAR_LANES);
+                slide_store(q, slide_swar_32k(v0));
+                slide_store(q + SLIDE_SWAR_LANES, slide_swar_32k(v1));
+                q += 2 * SLIDE_SWAR_LANES;
+                entries -= 2 * SLIDE_SWAR_LANES;
             }
         } else if (wsize < 32768) {
-            uint64_t sw = (uint64_t)wsize * SLIDE_SWAR_REP;
-            while (entries >= 8) {
-                uint64_t v0 = slide_load64(q);
-                uint64_t v1 = slide_load64(q + 4);
-                slide_store64(q, slide_swar_lt32k(v0, sw));
-                slide_store64(q + 4, slide_swar_lt32k(v1, sw));
-                q += 8;
-                entries -= 8;
+            slide_word_t sw = (slide_word_t)wsize * SLIDE_SWAR_REP;
+            while (entries >= 2 * SLIDE_SWAR_LANES) {
+                slide_word_t v0 = slide_load(q);
+                slide_word_t v1 = slide_load(q + SLIDE_SWAR_LANES);
+                slide_store(q, slide_swar_lt32k(v0, sw));
+                slide_store(q + SLIDE_SWAR_LANES, slide_swar_lt32k(v1, sw));
+                q += 2 * SLIDE_SWAR_LANES;
+                entries -= 2 * SLIDE_SWAR_LANES;
             }
         }
         table = q;
