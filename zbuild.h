@@ -194,7 +194,7 @@
 #if defined(_MSC_VER)
 #  define Z_RESTRICT __restrict
 #elif defined(__cplusplus)
-# define Z_RESTRICT __restrict__
+#  define Z_RESTRICT __restrict__
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 #  define Z_RESTRICT restrict
 #else
