@@ -52,9 +52,6 @@ endif()
 # Emscripten does not support large amounts of data via stdin/out
 # https://github.com/emscripten-core/emscripten/issues/16755#issuecomment-1102732849
 if(NOT BASEARCH_WASM32_FOUND)
-    # Runs tests targeting CVEs
-    include(cmake/test-cves.cmake)
-
     # Run tests with data files
     include(cmake/test-data.cmake)
 
@@ -173,6 +170,11 @@ if(WITH_GTEST)
             list(APPEND TEST_SRCS test_gzio.cc)
             list(APPEND TEST_SRCS test_gzfile_api_errors.cc)
             list(APPEND TEST_SRCS test_gzseek.cc)
+        endif()
+
+        # Emscripten's in-memory filesystem cannot read the sample inputs from the source tree
+        if(NOT BASEARCH_WASM32_FOUND)
+            list(APPEND TEST_SRCS test_deflate_cve.cc)
         endif()
 
         if(NOT TEST_STOCK_ZLIB)
