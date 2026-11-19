@@ -11,10 +11,71 @@
 
 #include "deflate.h"
 
-/* ===========================================================================
- * Slide the hash table when sliding the window down
- */
-static inline void slide_hash_c_chain(Pos *table, uint32_t entries, Pos wsize) {
+/* WebAssembly has native 64-bit integer ops even on wasm32. */
+#if defined(ARCH_64BIT) || defined(__wasm__)
+#  define SLIDE_SWAR_MSB 0x8000800080008000ULL
+#  define SLIDE_SWAR_REP 0x0001000100010001ULL
+    typedef uint64_t slide_word_t;
+#else
+#  define SLIDE_SWAR_MSB 0x80008000U
+#  define SLIDE_SWAR_REP 0x00010001U
+    typedef uint32_t slide_word_t;
+#endif
+#define SLIDE_SWAR_LANES ((uint32_t)(sizeof(slide_word_t) / sizeof(Pos)))
+
+Z_FORCEINLINE static slide_word_t slide_load(Pos *p) {
+    slide_word_t v;
+    memcpy(&v, HINT_ALIGNED(p, sizeof(slide_word_t)), sizeof(v));
+    return v;
+}
+
+Z_FORCEINLINE static void slide_store(Pos *p, slide_word_t v) {
+    memcpy(HINT_ALIGNED(p, sizeof(slide_word_t)), &v, sizeof(v));
+}
+
+/* Subtract 32768 with unsigned saturation across all 16-bit lanes of a word. */
+Z_FORCEINLINE static slide_word_t slide_swar_32k(slide_word_t v) {
+    slide_word_t m = v & SLIDE_SWAR_MSB;
+    return v & (m - (m >> 15));
+}
+
+/* Subtract wsize < 32768 with unsigned saturation across all 16-bit lanes of a word.
+ * Setting bit 15 prevents cross-lane borrows and leaves bit 15 of t set iff (v & 0x7FFF) >= wsize. */
+Z_FORCEINLINE static slide_word_t slide_swar_lt32k(slide_word_t v, slide_word_t sw) {
+    slide_word_t t = (v | SLIDE_SWAR_MSB) - sw;
+    slide_word_t ge = (v | t) & SLIDE_SWAR_MSB;
+    return t & ((ge - (ge >> 15)) | (v & SLIDE_SWAR_MSB));
+}
+
+/* Slide the hash table when sliding the window down.
+ * fill_window slides by at most 32768, so larger test values fall through to the scalar loop.
+ * Kept out of line so Clang does not duplicate the loops at all three call sites. */
+Z_NOINLINE static void slide_hash_c_chain(Pos *table, uint32_t entries, Pos wsize) {
+    if (((uintptr_t)table & (sizeof(slide_word_t) - 1)) == 0) {
+        Pos *q = (Pos *)HINT_ALIGNED(table, sizeof(slide_word_t));
+        if (wsize == 32768) {
+            while (entries >= 2 * SLIDE_SWAR_LANES) {
+                slide_word_t v0 = slide_load(q);
+                slide_word_t v1 = slide_load(q + SLIDE_SWAR_LANES);
+                slide_store(q, slide_swar_32k(v0));
+                slide_store(q + SLIDE_SWAR_LANES, slide_swar_32k(v1));
+                q += 2 * SLIDE_SWAR_LANES;
+                entries -= 2 * SLIDE_SWAR_LANES;
+            }
+        } else if (wsize < 32768) {
+            slide_word_t sw = (slide_word_t)wsize * SLIDE_SWAR_REP;
+            while (entries >= 2 * SLIDE_SWAR_LANES) {
+                slide_word_t v0 = slide_load(q);
+                slide_word_t v1 = slide_load(q + SLIDE_SWAR_LANES);
+                slide_store(q, slide_swar_lt32k(v0, sw));
+                slide_store(q + SLIDE_SWAR_LANES, slide_swar_lt32k(v1, sw));
+                q += 2 * SLIDE_SWAR_LANES;
+                entries -= 2 * SLIDE_SWAR_LANES;
+            }
+        }
+        table = q;
+    }
+
     Pos *q = table;
     for (uint32_t i = 0; i < entries; i++) {
         Pos m = *q;

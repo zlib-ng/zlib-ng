@@ -49,10 +49,6 @@ uint32_t longest_match_slow_roll_c(deflate_state *const s, uint32_t cur_match);
 void     slide_hash_c(deflate_state *s);
 void     slide_hash_head_c(deflate_state *s);
 #endif
-#ifdef SLIDE_HASH_SWAR_FALLBACK
-void     slide_hash_swar(deflate_state *s);
-void     slide_hash_head_swar(deflate_state *s);
-#endif
 
 #ifdef DISABLE_RUNTIME_CPU_DETECTION
 // Generic fallbacks when no native implementation exists
@@ -104,14 +100,7 @@ void     slide_hash_head_swar(deflate_state *s);
 #      define native_crc32_copy crc32_copy_braid
 #    endif
 #  endif
-#  if defined(WITH_OPTIM) && defined(SLIDE_HASH_SWAR_FALLBACK) && !defined(__wasm_simd128__)
-#    ifndef native_slide_hash
-#      define native_slide_hash slide_hash_swar
-#    endif
-#    ifndef native_slide_hash_head
-#      define native_slide_hash_head slide_hash_head_swar
-#    endif
-#  elif defined(SLIDE_HASH_FALLBACK)
+#  ifdef SLIDE_HASH_FALLBACK
 #    ifndef native_slide_hash
 #      define native_slide_hash slide_hash_c
 #    endif

@@ -1342,7 +1342,6 @@ set(ZLIB_GENERIC_SRCS
     arch/generic/crc32_braid_c.c
     arch/generic/crc32_chorba_c.c
     arch/generic/slide_hash_c.c
-    arch/generic/slide_hash_swar.c
 )
 
 if(WITH_ALL_FALLBACKS)
