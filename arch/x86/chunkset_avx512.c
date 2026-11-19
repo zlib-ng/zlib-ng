@@ -89,6 +89,7 @@ static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, size_t len) 
     size_t rem = len % sizeof(chunk_t);
 
     if (len < sizeof(chunk_t)) {
+        P2ALIGN(5);
         mask_t rem_mask = gen_mask(rem);
         chunk = _mm256_maskz_loadu_epi8(rem_mask, from);
         _mm256_mask_storeu_epi8(out, rem_mask, chunk);
