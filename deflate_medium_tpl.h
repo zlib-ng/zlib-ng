@@ -173,7 +173,7 @@ Z_INTERNAL block_state SUFFIX(deflate_medium)(deflate_state *s, int flush) {
                  struct match next_match = {0};
 #endif
     unsigned char *window = s->window;
-    uint32_t max_insert_count = MAX(2, s->max_insert_count); // stepped insert requires min 2
+    uint32_t max_insert_count = MIN(MAX(2, s->max_insert_count), STD_MAX_MATCH); // stepped insert requires 2..258
     int32_t max_dist = MAX_DIST(s);
 
     for (;;) {
