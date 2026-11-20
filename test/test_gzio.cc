@@ -12,6 +12,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <vector>
+#ifdef __linux__
+#  include <fcntl.h>
+#  include <unistd.h>
+#endif
 
 #include <gtest/gtest.h>
 
@@ -155,3 +159,107 @@ TEST(gzip, setparams_small_output_buffer) {
     EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
 #endif
 }
+
+#if defined(__linux__) && !defined(NO_GZCOMPRESS) && !defined(TEST_STOCK_ZLIB) && defined(F_SETPIPE_SZ)
+/* gzprintf() rounds whose writes fail, with gzclearerr() between them: a
+ * failed write leaves input in the buffer behind the place gzprintf() formats
+ * at, and the gzip stream written in the end must still be valid. The
+ * descriptor is a non-blocking pipe of 1 MiB whose room is set before each
+ * call (by filling it with whole pages and reading them back), so that each
+ * write() either completes or fails with EAGAIN without writing anything. */
+struct printf_pipe {
+    int rfd, wfd;
+    size_t junk;                    /* fill bytes at the head of the pipe */
+    std::vector<uint8_t> got;       /* the gzip stream read back */
+
+    void drain(long limit) {        /* read up to limit bytes, all if < 0 */
+        uint8_t b[4096];
+        while (limit != 0) {
+            size_t want = limit < 0 || limit > (long)sizeof(b) ? sizeof(b) : (size_t)limit;
+            ssize_t r = read(rfd, b, want);
+            if (r <= 0)
+                return;
+            for (ssize_t i = 0; i < r; i++) {
+                if (junk > 0)
+                    junk--;
+                else
+                    got.push_back(b[i]);
+            }
+            if (limit > 0)
+                limit -= r;
+        }
+    }
+    bool fill() {                   /* leave no room */
+        uint8_t b[4096];
+        memset(b, 'j', sizeof(b));
+        for (;;) {
+            ssize_t r = write(wfd, b, sizeof(b));
+            if (r < 0)
+                return true;
+            junk += (size_t)r;
+            if (r < (ssize_t)sizeof(b))
+                return false;
+        }
+    }
+};
+
+static int printf_and_clear(gzFile file, std::vector<char> &text, size_t len) {
+    memset(text.data(), 'a' + (int)(len % 26), len);
+    text[len] = 0;
+    int ret = PREFIX(gzprintf)(file, "%s", text.data());
+    PREFIX(gzclearerr)(file);
+    return ret;
+}
+
+TEST(gzip, printf_after_failed_writes) {
+    printf_pipe p;
+    int fds[2];
+    ASSERT_EQ(pipe(fds), 0);
+    p.rfd = fds[0];
+    p.wfd = fds[1];
+    p.junk = 0;
+    if (fcntl(p.wfd, F_SETPIPE_SZ, 1 << 20) < (1 << 20)) {
+        close(p.rfd);
+        close(p.wfd);
+        GTEST_SKIP() << "cannot set the pipe size to 1 MiB";
+    }
+    ASSERT_EQ(fcntl(p.wfd, F_SETFL, fcntl(p.wfd, F_GETFL) | O_NONBLOCK), 0);
+    ASSERT_EQ(fcntl(p.rfd, F_SETFL, fcntl(p.rfd, F_GETFL) | O_NONBLOCK), 0);
+
+    std::vector<char> text(262144);
+    gzFile file = PREFIX(gzdopen)(p.wfd, "wb0");
+    ASSERT_TRUE(file != NULL);
+    ASSERT_EQ(PREFIX(gzbuffer)(file, 262144), 0);
+    printf_and_clear(file, text, 75605);
+    ASSERT_EQ(PREFIX(gzflush)(file, Z_SYNC_FLUSH), Z_OK);
+    p.drain(-1);
+    printf_and_clear(file, text, 188859);
+    ASSERT_TRUE(p.fill());                  /* the next write fails */
+    printf_and_clear(file, text, 102132);
+    p.drain(46 * 4096);                     /* room for one write */
+    printf_and_clear(file, text, 233532);
+    printf_and_clear(file, text, 176283);
+    printf_and_clear(file, text, 200000);
+    p.drain(-1);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    p.drain(-1);
+    close(p.rfd);
+
+    /* the stream inflates completely, with a valid trailer */
+    PREFIX3(stream) strm;
+    memset(&strm, 0, sizeof(strm));
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, 31), Z_OK);
+    std::vector<uint8_t> out(1 << 20);
+    strm.next_in = p.got.data();
+    strm.avail_in = (uint32_t)p.got.size();
+    int ret;
+    do {
+        strm.next_out = out.data();
+        strm.avail_out = (uint32_t)out.size();
+        ret = PREFIX(inflate)(&strm, Z_NO_FLUSH);
+    } while (ret == Z_OK && strm.avail_in > 0);
+    EXPECT_EQ(ret, Z_STREAM_END);
+    EXPECT_EQ(strm.avail_in, 0U);
+    PREFIX(inflateEnd)(&strm);
+}
+#endif
