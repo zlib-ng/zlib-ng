@@ -108,6 +108,7 @@ struct ALIGNED_(64) inflate_state {
     unsigned long total;        /* protected copy of output count */
     PREFIX(gz_headerp) head;    /* where to save gzip header information */
     int back;                   /* bits back of last unprocessed length/lit */
+    int wide_len;               /* length codes allow matches over 34 bytes */
 
         /* sliding window */
     unsigned wbits;             /* current log base 2 of window size */

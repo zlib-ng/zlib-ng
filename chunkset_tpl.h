@@ -41,6 +41,33 @@ static inline uint8_t* CHUNKCOPY(uint8_t *out, uint8_t const *from, size_t len) 
 }
 #endif
 
+/* Behave like CHUNKCOPY, but copy two chunks at a time with the loads issued
+   ahead of the stores so they can pair into wider memory operations. Requires
+   that `from` lags `out` by at least 2*sizeof(chunk_t) bytes, or that the
+   regions don't overlap at all. May write up to 2*sizeof(chunk_t) bytes. */
+static inline uint8_t* DOUBLECHUNKCOPY(uint8_t *out, uint8_t const *from, size_t len) {
+    Assert(len > 0, "chunkcopy should never have a length 0");
+    chunk_t chunk0, chunk1;
+    size_t align = ((len - 1) % (2 * sizeof(chunk_t))) + 1;
+    loadchunk(from, &chunk0);
+    loadchunk(from + sizeof(chunk_t), &chunk1);
+    storechunk(out, &chunk0);
+    storechunk(out + sizeof(chunk_t), &chunk1);
+    out += align;
+    from += align;
+    len -= align;
+    while (len > 0) {
+        loadchunk(from, &chunk0);
+        loadchunk(from + sizeof(chunk_t), &chunk1);
+        storechunk(out, &chunk0);
+        storechunk(out + sizeof(chunk_t), &chunk1);
+        out += 2 * sizeof(chunk_t);
+        from += 2 * sizeof(chunk_t);
+        len -= 2 * sizeof(chunk_t);
+    }
+    return out;
+}
+
 /* Perform short copies until distance can be rewritten as being at least
    sizeof chunk_t.
 
