@@ -151,6 +151,8 @@ Z_FORCEINLINE static block_state deflate_quick_impl(deflate_state *s, int flush,
             PREFIX(fill_window)(s);
             lookahead = s->lookahead;
             strstart = s->strstart;
+            if (static_emit)
+                s->block_start = (int)strstart;
             if (UNLIKELY(lookahead < MIN_LOOKAHEAD && flush == Z_NO_FLUSH))
                 return need_more;
             if (UNLIKELY(lookahead == 0))

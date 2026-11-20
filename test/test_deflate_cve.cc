@@ -99,3 +99,42 @@ INSTANTIATE_TEST_SUITE_P(deflate, cve_2018_25032, testing::ValuesIn(cve_2018_250
     [](const ::testing::TestParamInfo<cve_2018_25032_param> &info) {
         return std::string(info.param.name);
     });
+
+#ifndef TEST_STOCK_ZLIB
+/* At level 1 with Z_FIXED, deflate_quick() keeps one static block open across window slides.
+ * Feeding 4 GiB of zeros runs in under a second while exercising both the 2 GiB signed underflow
+ * of block_start in fill_window() and the 4 GiB wraparound where deflateParams() saw
+ * (int)strstart - block_start + lookahead == 0 and switched levels mid-block. */
+TEST(deflate_quick, fixed_block_across_large_input) {
+    static uint8_t input[1 << 20], output[1 << 20];
+    memset(input, 0, sizeof(input));
+
+    PREFIX3(stream) stream = {};
+    ASSERT_EQ(PREFIX(deflateInit2)(&stream, 1, Z_DEFLATED, MAX_WBITS, 8, Z_FIXED), Z_OK);
+    for (unsigned chunk = 0; chunk < 4096; chunk++) {
+        stream.next_in = input;
+        stream.avail_in = sizeof(input);
+        do {
+            stream.next_out = output;
+            stream.avail_out = sizeof(output);
+            ASSERT_EQ(PREFIX(deflate)(&stream, Z_NO_FLUSH), Z_OK);
+        } while (stream.avail_in);
+    }
+
+    /* With no output space to flush the open static block, deflateParams() must return Z_BUF_ERROR. */
+    stream.next_in = NULL;
+    stream.avail_in = 0;
+    stream.next_out = output;
+    stream.avail_out = 0;
+    EXPECT_EQ(PREFIX(deflateParams)(&stream, 6, Z_DEFAULT_STRATEGY), Z_BUF_ERROR);
+
+    int ret;
+    do {
+        stream.next_out = output;
+        stream.avail_out = sizeof(output);
+        ret = PREFIX(deflate)(&stream, Z_FINISH);
+    } while (ret == Z_OK);
+    EXPECT_EQ(ret, Z_STREAM_END);
+    EXPECT_EQ(PREFIX(deflateEnd)(&stream), Z_OK);
+}
+#endif

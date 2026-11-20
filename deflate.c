@@ -647,7 +647,7 @@ int32_t Z_EXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int
         int err = PREFIX(deflate)(strm, flush);
         if (err == Z_STREAM_ERROR)
             return err;
-        if (strm->avail_in || ((int)s->strstart - s->block_start) + s->lookahead || !DEFLATE_DONE(strm, flush))
+        if (strm->avail_in || s->block_open || ((int)s->strstart - s->block_start) + s->lookahead || !DEFLATE_DONE(strm, flush))
             return Z_BUF_ERROR;
     }
 
