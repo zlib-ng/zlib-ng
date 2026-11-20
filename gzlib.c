@@ -408,11 +408,16 @@ z_off64_t Z_EXPORT PREFIX4(gzseek)(gzFile file, z_off64_t offset, int whence) {
     /* compute the absolute position */
     pos = whence == SEEK_SET ? 0 :
           state->x.pos + (state->past ? 0 : state->skip);
-    if (offset > GZ_OFF_MAX - pos)
+    if (pos > 0 && offset > GZ_OFF_MAX - pos)
         return -1;                          /* would overflow z_off64_t */
     if (offset < -pos)
         return -1;                          /* before start of file */
     pos += offset;
+
+    /* the position is negative after gzungetc() at the start: refuse a seek
+       whose distance from it would overflow z_off64_t */
+    if (state->x.pos < 0 && pos > GZ_OFF_MAX + state->x.pos)
+        return -1;
 
     /* if within raw area while reading, just go there */
     if (state->mode == GZ_READ && state->how == COPY) {
