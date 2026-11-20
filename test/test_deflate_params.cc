@@ -18,6 +18,7 @@
 #include <gtest/gtest.h>
 
 #include "test_shared.h"
+#include "test_data_p.h"
 
 #define COMPR_BUFFER_SIZE (48 * 1024)
 #define UNCOMPR_BUFFER_SIZE (64 * 1024)
@@ -280,5 +281,89 @@ TEST(deflate, params_from_stored) {
             SCOPED_TRACE(testing::Message() << "window bits " << window_bits << ", level " << level);
             deflate_params_from_stored(window_bits, level);
         }
+    }
+}
+
+/* Switching from a faster strategy to deflate_slow after deflateReset() must
+ * rebuild prev[] so longest_match_slow() does not follow stale links left by
+ * the earlier stream. */
+static void deflate_params_to_slow_after_reset(int from_level, int to_level) {
+    const uint32_t total = 64 * 1024;
+    const uint32_t split = 16 * 1024;
+    const uint32_t out_size = 2 * total;
+
+    uint8_t *input = gen_text_data(total);
+    uint8_t *fresh_out = (uint8_t *)malloc(out_size);
+    uint8_t *reused_out = (uint8_t *)malloc(out_size);
+    uint8_t *decoded = (uint8_t *)malloc(total);
+    ASSERT_TRUE(input != NULL && fresh_out != NULL && reused_out != NULL && decoded != NULL);
+
+    auto compress_switch = [&](PREFIX3(stream) *strm, uint8_t *out, uint32_t *out_len) {
+        strm->next_in = input;
+        strm->avail_in = split;
+        strm->next_out = out;
+        strm->avail_out = out_size;
+        EXPECT_EQ(PREFIX(deflate)(strm, Z_NO_FLUSH), Z_OK);
+        EXPECT_EQ(strm->avail_in, 0u);
+
+        EXPECT_EQ(PREFIX(deflateParams)(strm, to_level, Z_DEFAULT_STRATEGY), Z_OK);
+
+        strm->next_in = input + split;
+        strm->avail_in = total - split;
+        EXPECT_EQ(PREFIX(deflate)(strm, Z_FINISH), Z_STREAM_END);
+        *out_len = (uint32_t)(strm->next_out - out);
+    };
+
+    PREFIX3(stream) fresh;
+    memset(&fresh, 0, sizeof(fresh));
+    ASSERT_EQ(PREFIX(deflateInit2)(&fresh, from_level, Z_DEFLATED, MAX_WBITS, 8,
+                                   Z_DEFAULT_STRATEGY), Z_OK);
+    uint32_t fresh_len = 0;
+    compress_switch(&fresh, fresh_out, &fresh_len);
+    EXPECT_EQ(PREFIX(deflateEnd)(&fresh), Z_OK);
+
+    PREFIX3(stream) reused;
+    memset(&reused, 0, sizeof(reused));
+    ASSERT_EQ(PREFIX(deflateInit2)(&reused, from_level, Z_DEFLATED, MAX_WBITS, 8,
+                                   Z_DEFAULT_STRATEGY), Z_OK);
+    reused.next_in = input;
+    reused.avail_in = total;
+    reused.next_out = reused_out;
+    reused.avail_out = out_size;
+    EXPECT_EQ(PREFIX(deflate)(&reused, Z_FINISH), Z_STREAM_END);
+
+    EXPECT_EQ(PREFIX(deflateReset)(&reused), Z_OK);
+    uint32_t reused_len = 0;
+    compress_switch(&reused, reused_out, &reused_len);
+    EXPECT_EQ(PREFIX(deflateEnd)(&reused), Z_OK);
+
+    EXPECT_EQ(reused_len, fresh_len);
+    if (reused_len == fresh_len) {
+        EXPECT_EQ(memcmp(reused_out, fresh_out, fresh_len), 0);
+    }
+
+    PREFIX3(stream) decoder;
+    memset(&decoder, 0, sizeof(decoder));
+    ASSERT_EQ(PREFIX(inflateInit)(&decoder), Z_OK);
+    decoder.next_in = reused_out;
+    decoder.avail_in = reused_len;
+    decoder.next_out = decoded;
+    decoder.avail_out = total;
+    EXPECT_EQ(PREFIX(inflate)(&decoder, Z_FINISH), Z_STREAM_END);
+    EXPECT_EQ(decoder.total_out, total);
+    EXPECT_EQ(memcmp(decoded, input, total), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&decoder), Z_OK);
+
+    free(input);
+    free(fresh_out);
+    free(reused_out);
+    free(decoded);
+}
+
+TEST(deflate, params_to_slow_after_reset) {
+    /* Level 2 is the source level where the reused stream differs without the rebuild. */
+    for (int to_level : {7, 8}) {
+        SCOPED_TRACE(testing::Message() << "to level " << to_level);
+        deflate_params_to_slow_after_reset(2, to_level);
     }
 }
