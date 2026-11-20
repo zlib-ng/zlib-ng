@@ -110,3 +110,7 @@ RelWithDebInfo
 # Test datasets
 test/data/corpora/
 test/data/local/
+
+# Local agent instructions
+AGENTS.local.md
+AGENTS.override.md
