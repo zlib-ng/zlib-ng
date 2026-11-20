@@ -161,3 +161,45 @@ TEST(gzip, seek_failure_keeps_position) {
     remove("seek_fail.gz");
 #endif
 }
+
+TEST(gzip, seek_from_negative_position) {
+    const seek_off_t off_max = SEEK_OFF_MAX;
+
+    /* transparent read: one byte read, two pushed back (position -1) */
+    seek_write_raw("seek_neg.txt", "ab");
+    gzFile file = PREFIX(gzopen)("seek_neg.txt", "rb");
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(PREFIX(gzgetc)(file), 'a');
+    EXPECT_EQ(PREFIX(gzungetc)('a', file), 'a');
+    EXPECT_EQ(PREFIX(gzungetc)('x', file), 'x');
+    EXPECT_EQ(SEEK_GZTELL(file), -1);
+    if (seek_uses_off64()) {
+        EXPECT_EQ(SEEK_GZSEEK(file, off_max, SEEK_SET), -1);
+    }
+    EXPECT_EQ(SEEK_GZSEEK(file, 0, SEEK_CUR), -1);
+    EXPECT_EQ(SEEK_GZTELL(file), -1);
+    EXPECT_EQ(SEEK_GZSEEK(file, 2, SEEK_CUR), 1);
+    EXPECT_EQ(PREFIX(gzgetc)(file), 'b');
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("seek_neg.txt");
+
+#ifndef NO_GZCOMPRESS
+    /* gzip read: one byte pushed back at the start (position -1) */
+    file = PREFIX(gzopen)("seek_neg.gz", "wb");
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(PREFIX(gzwrite)(file, "ab", 2), 2);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+
+    file = PREFIX(gzopen)("seek_neg.gz", "rb");
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(PREFIX(gzungetc)('x', file), 'x');
+    if (seek_uses_off64()) {
+        EXPECT_EQ(SEEK_GZSEEK(file, off_max, SEEK_SET), -1);
+    }
+    EXPECT_EQ(SEEK_GZTELL(file), -1);
+    EXPECT_EQ(SEEK_GZSEEK(file, 1, SEEK_CUR), 0);
+    EXPECT_EQ(PREFIX(gzgetc)(file), 'a');
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("seek_neg.gz");
+#endif
+}
