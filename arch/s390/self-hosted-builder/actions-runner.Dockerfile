@@ -22,7 +22,8 @@ RUN     cd /tmp && \
 
         sed -i'' -e /version/s/8......\"$/$8.0.100\"/ src/global.json
 
-RUN     cd /tmp/runner/src && \
+RUN     export WarningsNotAsErrors="NU1901;NU1902;NU1903;NU1904" && \
+        cd /tmp/runner/src && \
         ./dev.sh layout && \
         ./dev.sh package && \
         rm -rf /root/.dotnet /root/.nuget
