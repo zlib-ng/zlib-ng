@@ -376,3 +376,59 @@ TEST(inflate, reset_restores_requested_window) {
     EXPECT_EQ(memcmp(src, dst, sizeof(src)), 0);
     EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
 }
+
+/* inflateSync() drops check value verification, or the header entirely if none was seen, for the
+ * rest of the stream. inflateReset() must restore the requested wrap, so a reused stream verifies
+ * the trailer of the next zlib stream and still accepts its header. */
+TEST(inflate, reset_restores_requested_wrap) {
+    PREFIX3(stream) strm;
+    uint8_t src[64], dst[64], compressed[128];
+    /* Full flush marker followed by an empty final fixed block. */
+    uint8_t synced[] = {0x00, 0x00, 0xff, 0xff, 0x03, 0x00};
+    uint8_t hdr[2] = {0x78, 0x9c};
+    unsigned long comp_len;
+
+    for (size_t i = 0; i < sizeof(src); i++)
+        src[i] = (uint8_t)(i * 7 + 3);
+    comp_len = compress_window(src, sizeof(src), MAX_WBITS, compressed, sizeof(compressed));
+    ASSERT_GT(comp_len, 4u);
+    /* Corrupt the Adler-32 trailer. */
+    compressed[comp_len - 1] ^= 1;
+
+    /* Sync after the zlib header was read, which turns off check value verification. */
+    memset(&strm, 0, sizeof(strm));
+    ASSERT_EQ(PREFIX(inflateInit)(&strm), Z_OK);
+    strm.next_in = hdr;
+    strm.avail_in = sizeof(hdr);
+    strm.next_out = dst;
+    strm.avail_out = sizeof(dst);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_OK);
+    strm.next_in = synced;
+    strm.avail_in = sizeof(synced);
+    EXPECT_EQ(PREFIX(inflateSync)(&strm), Z_OK);
+
+    EXPECT_EQ(PREFIX(inflateReset)(&strm), Z_OK);
+    strm.next_in = compressed;
+    strm.avail_in = (uint32_t)comp_len;
+    strm.next_out = dst;
+    strm.avail_out = sizeof(dst);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_DATA_ERROR);
+    EXPECT_STREQ(strm.msg, "incorrect data check");
+
+    /* Sync before any header was read, which treats the rest of the stream as raw. */
+    compressed[comp_len - 1] ^= 1;
+    EXPECT_EQ(PREFIX(inflateReset)(&strm), Z_OK);
+    strm.next_in = synced;
+    strm.avail_in = sizeof(synced);
+    EXPECT_EQ(PREFIX(inflateSync)(&strm), Z_OK);
+
+    EXPECT_EQ(PREFIX(inflateReset)(&strm), Z_OK);
+    memset(dst, 0, sizeof(dst));
+    strm.next_in = compressed;
+    strm.avail_in = (uint32_t)comp_len;
+    strm.next_out = dst;
+    strm.avail_out = sizeof(dst);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_STREAM_END) << (strm.msg ? strm.msg : "");
+    EXPECT_EQ(memcmp(src, dst, sizeof(src)), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
