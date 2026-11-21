@@ -23,6 +23,8 @@ static uint32_t crc32_combine_gen_(z_off64_t len2) {
     return x2nmodp(len2, 3);
 }
 static uint32_t crc32_combine_op_(uint32_t crc1, uint32_t crc2, const uint32_t op) {
+    if (op == 0)
+        return 0;
     return multmodp(op, crc1) ^ crc2;
 }
 
