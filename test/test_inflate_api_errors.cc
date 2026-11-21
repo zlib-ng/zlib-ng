@@ -1011,6 +1011,174 @@ TEST(inflate_api_errors, reset2_window_bits_rejected) {
 }
 
 /* ========================================================================== */
+/* zng_inflateResetKeep / zng_inflateValidate / zng_inflateUndermine          */
+/* ========================================================================== */
+
+/* Defined below with the corrupted-data tests; reused here for the gzip case. */
+static size_t compress_gzip(uint8_t *buffer, size_t buffer_size);
+
+/* inflateResetKeep() parameter and effect checks:
+ * - a NULL stream is rejected with Z_STREAM_ERROR;
+ * - on a live stream it returns Z_OK and clears msg, data_type and the byte
+ *   counters, leaving the stream ready to decode a fresh stream. */
+TEST(inflate_api_errors, reset_keep_null_and_basic) {
+    EXPECT_EQ(PREFIX(inflateResetKeep)(NULL), Z_STREAM_ERROR);
+
+    uint8_t raw[64];
+    size_t raw_len = compress_raw(raw, sizeof(raw));
+    ASSERT_GT(raw_len, 0u);
+
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+
+    uint8_t output[64];
+    strm.next_in = raw;
+    strm.avail_in = (unsigned int)raw_len;
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    ASSERT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_STREAM_END);
+    ASSERT_GT(strm.total_out, 0u);
+
+    EXPECT_EQ(PREFIX(inflateResetKeep)(&strm), Z_OK);
+    EXPECT_EQ(strm.msg, (char *)NULL);
+    EXPECT_EQ(strm.data_type, 0);
+    EXPECT_EQ(strm.total_in, 0u);
+    EXPECT_EQ(strm.total_out, 0u);
+
+    /* Reusable for a new stream after the reset. */
+    strm.next_in = raw;
+    strm.avail_in = (unsigned int)raw_len;
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_STREAM_END);
+    EXPECT_EQ(strm.total_out, (uint32_t)strlen(kMessage));
+    EXPECT_EQ(memcmp(output, kMessage, strlen(kMessage)), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflateValidate() parameter and effect checks:
+ * - a NULL stream is rejected with Z_STREAM_ERROR for either argument;
+ * - by default a broken Adler-32 trailer in a zlib stream is rejected with
+ *   Z_DATA_ERROR and "incorrect data check";
+ * - inflateValidate(strm, 0) clears the validation bit, so the very same bytes
+ *   decode to Z_STREAM_END; this covers the zlib (Adler-32) path;
+ * - re-enabling with inflateValidate(strm, 1) makes it fail again;
+ * - the same holds for the gzip CRC-32 path, which uses a different comparison
+ *   in the CHECK state;
+ * - on a raw stream there is no checksum to validate, yet both calls are
+ *   accepted with Z_OK. */
+TEST(inflate_api_errors, validate_null_and_disables_checksum_enforcement) {
+    EXPECT_EQ(PREFIX(inflateValidate)(NULL, 0), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateValidate)(NULL, 1), Z_STREAM_ERROR);
+
+    uint8_t compressed[64];
+    size_t compressed_len = compress_message(compressed, sizeof(compressed));
+    ASSERT_GT(compressed_len, 4u);
+    compressed[compressed_len - 1] ^= 0xff; /* break the Adler-32 trailer */
+
+    /* Default: enforced. */
+    {
+        PREFIX3(stream) strm = zeroed_stream();
+        ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+        uint8_t output[64];
+        strm.next_in = compressed;
+        strm.avail_in = (unsigned int)compressed_len;
+        strm.next_out = output;
+        strm.avail_out = (unsigned int)sizeof(output);
+        EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_DATA_ERROR);
+        EXPECT_NE(strstr(strm.msg ? strm.msg : "", "incorrect data check"), (char *)NULL);
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    }
+
+    /* Validation off: the corrupt trailer is ignored and the payload decodes. */
+    {
+        PREFIX3(stream) strm = zeroed_stream();
+        ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+        EXPECT_EQ(PREFIX(inflateValidate)(&strm, 0), Z_OK);
+        uint8_t output[64];
+        strm.next_in = compressed;
+        strm.avail_in = (unsigned int)compressed_len;
+        strm.next_out = output;
+        strm.avail_out = (unsigned int)sizeof(output);
+        EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_STREAM_END);
+        EXPECT_EQ(strm.total_out, (uint32_t)strlen(kMessage));
+        EXPECT_EQ(memcmp(output, kMessage, strlen(kMessage)), 0);
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    }
+
+    /* Validation turned back on. */
+    {
+        PREFIX3(stream) strm = zeroed_stream();
+        ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+        EXPECT_EQ(PREFIX(inflateValidate)(&strm, 0), Z_OK);
+        EXPECT_EQ(PREFIX(inflateValidate)(&strm, 1), Z_OK);
+        uint8_t output[64];
+        strm.next_in = compressed;
+        strm.avail_in = (unsigned int)compressed_len;
+        strm.next_out = output;
+        strm.avail_out = (unsigned int)sizeof(output);
+        EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_DATA_ERROR);
+        EXPECT_NE(strstr(strm.msg ? strm.msg : "", "incorrect data check"), (char *)NULL);
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    }
+
+    /* Gzip CRC-32 path, validation off. */
+    {
+        uint8_t gzip_data[128];
+        size_t gzip_len = compress_gzip(gzip_data, sizeof(gzip_data));
+        ASSERT_GT(gzip_len, 8u);
+        gzip_data[gzip_len - 8] ^= 0xff; /* break the CRC-32 trailer */
+
+        PREFIX3(stream) strm = zeroed_stream();
+        ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS + 16), Z_OK);
+        EXPECT_EQ(PREFIX(inflateValidate)(&strm, 0), Z_OK);
+        uint8_t output[64];
+        strm.next_in = gzip_data;
+        strm.avail_in = (unsigned int)gzip_len;
+        strm.next_out = output;
+        strm.avail_out = (unsigned int)sizeof(output);
+        EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_STREAM_END);
+        EXPECT_EQ(strm.total_out, (uint32_t)strlen(kMessage));
+        EXPECT_EQ(memcmp(output, kMessage, strlen(kMessage)), 0);
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    }
+
+    /* Raw streams have no checksum; the calls are still accepted. */
+    {
+        PREFIX3(stream) strm = zeroed_stream();
+        ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+        EXPECT_EQ(PREFIX(inflateValidate)(&strm, 1), Z_OK);
+        EXPECT_EQ(PREFIX(inflateValidate)(&strm, 0), Z_OK);
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    }
+}
+
+/* inflateUndermine() returns an error unless the build allows invalid distances:
+ * - with INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR defined it accepts a live
+ *   stream with Z_OK for both directions of the flag, and rejects a NULL stream
+ *   with Z_STREAM_ERROR;
+ * - without that macro the function is a stub that ignores both arguments, so
+ *   it reports Z_DATA_ERROR even for a NULL stream; asserting Z_STREAM_ERROR
+ *   there would be wrong. */
+TEST(inflate_api_errors, undermine_returns_error_when_disabled) {
+#ifdef INFLATE_ALLOW_INVALID_DISTANCE_TOOFAR_ARRR
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+    EXPECT_EQ(PREFIX(inflateUndermine)(NULL, 1), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateUndermine)(&strm, 1), Z_OK);
+    EXPECT_EQ(PREFIX(inflateUndermine)(&strm, 0), Z_OK);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+#else
+    EXPECT_EQ(PREFIX(inflateUndermine)(NULL, 1), Z_DATA_ERROR);
+
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+    EXPECT_EQ(PREFIX(inflateUndermine)(&strm, 1), Z_DATA_ERROR);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+#endif
+}
+
+/* ========================================================================== */
 /* zng_inflateCopy                                                            */
 /* ========================================================================== */
 
