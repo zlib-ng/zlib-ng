@@ -158,3 +158,43 @@ INSTANTIATE_TEST_SUITE_P(deflate_small_window, deflate_variant,
         testing::Values(Z_DEFAULT_STRATEGY)                     /* strategy */
     ),
     deflate_test_name);
+
+/* deflateResetKeep() in the middle of a stream drops the input that was buffered but not yet
+ * compressed, so none of it ends up in the next stream. */
+TEST(deflate, reset_keep_drops_buffered_input) {
+    static uint8_t first[5000], second[3000], out[8192], decoded[8192];
+    /* No byte of the second input occurs in the first, so no match reaches back into it. */
+    memset(first, 0, sizeof(first));
+    for (size_t i = 0; i < sizeof(second); i++)
+        second[i] = (uint8_t)(1 + i % 255);
+
+    for (int level = 0; level <= 9; level++) {
+        PREFIX3(stream) c_strm, d_strm;
+        memset(&c_strm, 0, sizeof(c_strm));
+        ASSERT_EQ(PREFIX(deflateInit2)(&c_strm, level, Z_DEFLATED, -MAX_WBITS, 8, Z_DEFAULT_STRATEGY), Z_OK);
+        c_strm.next_in = first;
+        c_strm.avail_in = sizeof(first);
+        c_strm.next_out = out;
+        c_strm.avail_out = sizeof(out);
+        ASSERT_EQ(PREFIX(deflate)(&c_strm, Z_NO_FLUSH), Z_OK);
+        ASSERT_EQ(PREFIX(deflateResetKeep)(&c_strm), Z_OK);
+        c_strm.next_in = second;
+        c_strm.avail_in = sizeof(second);
+        c_strm.next_out = out;
+        c_strm.avail_out = sizeof(out);
+        ASSERT_EQ(PREFIX(deflate)(&c_strm, Z_FINISH), Z_STREAM_END);
+        uint32_t comp_len = (uint32_t)c_strm.total_out;
+        EXPECT_EQ(PREFIX(deflateEnd)(&c_strm), Z_OK);
+
+        memset(&d_strm, 0, sizeof(d_strm));
+        ASSERT_EQ(PREFIX(inflateInit2)(&d_strm, -MAX_WBITS), Z_OK);
+        d_strm.next_in = out;
+        d_strm.avail_in = comp_len;
+        d_strm.next_out = decoded;
+        d_strm.avail_out = sizeof(decoded);
+        EXPECT_EQ(PREFIX(inflate)(&d_strm, Z_FINISH), Z_STREAM_END) << "level " << level;
+        EXPECT_EQ(d_strm.total_out, sizeof(second)) << "level " << level;
+        EXPECT_EQ(memcmp(decoded, second, sizeof(second)), 0) << "level " << level;
+        EXPECT_EQ(PREFIX(inflateEnd)(&d_strm), Z_OK);
+    }
+}
