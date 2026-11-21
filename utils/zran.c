@@ -56,10 +56,6 @@
 
 #include "util_shared.h"
 
-#if !defined(_WIN32)
-#  include <sys/param.h>
-#endif
-
 #define WINSIZE 32768U      // sliding window size
 #define CHUNK 16384         // file input buffer size
 
@@ -440,11 +436,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "usage: zran file.raw offset length\n");
         return 1;
     }
-#ifdef _WIN32
-    if (_fullpath(archive, argv[1], _MAX_PATH) == NULL) {
-#else
-    if (strlen(argv[1]) > MAXPATHLEN || realpath(argv[1], archive) == NULL) { /* flawfinder: ignore */
-#endif
+    if (sanitize_path(argv[1], archive) == NULL) {
         fprintf(stderr, "zran: invalid path\n");
         return 1;
     }

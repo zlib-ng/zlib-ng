@@ -6,6 +6,7 @@ endmacro()
 # minigzip
 add_executable(minigzip minigzip.c)
 configure_util_executable(minigzip)
+target_compile_definitions(minigzip PRIVATE _GNU_SOURCE)
 if(NOT WITH_GZFILEOP)
     set(GZFILE_PRIVATE_HDRS ${ZLIB_GZFILE_PRIVATE_HDRS})
     set(GZFILE_SRCS ${ZLIB_GZFILE_SRCS})
@@ -27,6 +28,7 @@ set(MINIGZIP_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:minigzip> PA
 # minideflate
 add_executable(minideflate minideflate.c)
 configure_util_executable(minideflate)
+target_compile_definitions(minideflate PRIVATE _GNU_SOURCE)
 if(NOT DEFINED BUILD_SHARED_LIBS)
     target_link_libraries(minideflate zlib-ng-static)
 else()

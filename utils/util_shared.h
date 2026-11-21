@@ -23,4 +23,25 @@
 #  define GZBUFSIZE 49152
 #endif
 
+#if defined(_WIN32)
+#  if !defined(MAXPATHLEN)
+#    define MAXPATHLEN _MAX_PATH
+#  endif
+#else
+#  include <sys/param.h>
+#endif
+
+/* ===========================================================================
+ * Sanitize file path or return NULL on error
+ */
+static inline char *sanitize_path(const char *in, char *out) {
+    if (strlen(in) > MAXPATHLEN)
+        return NULL;
+#ifdef _WIN32
+    return _fullpath(out, in, MAXPATHLEN);
+#else
+    return realpath(in, out); /* flawfinder: ignore */
+#endif
+}
+
 #endif

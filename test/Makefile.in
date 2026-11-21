@@ -69,7 +69,7 @@ testGH-361: ../minigzip$(EXE)
 	$(EMU_RUN) ../minigzip$(EXE) -4 <$(SRCDIR)/GH-361/test.txt >/dev/null
 
 switchlevels$(EXE): $(SRCDIR)/switchlevels.c
-	$(CC) $(CFLAGS) -I.. -I$(SRCTOP) -o $@ $< $(TEST_LDFLAGS)
+	$(CC) $(CFLAGS) -D_GNU_SOURCE -I.. -I$(SRCTOP) -o $@ $< $(TEST_LDFLAGS)
 
 .PHONY: testGH-364
 testGH-364: switchlevels$(EXE)

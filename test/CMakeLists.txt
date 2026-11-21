@@ -24,6 +24,7 @@ add_test(NAME example COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:exa
 
 add_executable(switchlevels switchlevels.c)
 configure_test_executable(switchlevels)
+target_compile_definitions(switchlevels PRIVATE _GNU_SOURCE)
 target_link_libraries(switchlevels zlib-ng)
 set(SWITCHLEVELS_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:switchlevels>)
 
