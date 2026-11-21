@@ -2615,7 +2615,7 @@ sed < $SRCDIR/Makefile.in "
 " > Makefile
 
 # Append header files dependencies.
-for file in $SRCDIR/*.c $SRCDIR/test/*.c $SRCDIR/test/fuzz/*.c $SRCDIR/$ARCHDIR/*.c $SRCDIR/tools/*.c; do
+for file in $SRCDIR/*.c $SRCDIR/test/*.c $SRCDIR/test/fuzz/*.c $SRCDIR/$ARCHDIR/*.c $SRCDIR/tools/*.c $SRCDIR/utils/*.c; do
     if test ! -f $file; then
         continue
     fi
@@ -2631,6 +2631,10 @@ for file in $SRCDIR/*.c $SRCDIR/test/*.c $SRCDIR/test/fuzz/*.c $SRCDIR/$ARCHDIR/
                    # We also need to check whether the include file is in the ARCHDIR.
                    if test -e $SRCDIR/$ARCHDIR/$i; then
                        printf " \$(SRCDIR)/$ARCHDIR/$i"
+                   fi
+                   # We also need to check if the include file is in utils.
+                   if test -e $SRCDIR/utils/$i; then
+                       printf " \$(SRCDIR)/utils/$i"
                    fi
                done)
     obj=$(basename $(echo $file | sed -e 's/\.c/\.o/g' -e 's#^\./##g'))
