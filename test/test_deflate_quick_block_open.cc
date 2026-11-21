@@ -8,6 +8,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -91,4 +92,42 @@ TEST(deflate_quick, block_open) {
     EXPECT_EQ(err, Z_OK);
 
     EXPECT_TRUE(memcmp(uncompressed, next_in, sizeof(uncompressed)) == 0);
+}
+
+/* deflateReset() while a static block of deflate_quick() is open must not continue
+ * that block in the new stream. */
+TEST(deflate_quick, reset_clears_block_open) {
+    static uint8_t in[3000], out[20000], decoded[sizeof(in)];
+    for (size_t i = 0; i < sizeof(in); i++)
+        in[i] = (uint8_t)i;
+
+    PREFIX3(stream) c_strm;
+    memset(&c_strm, 0, sizeof(c_strm));
+    ASSERT_EQ(PREFIX(deflateInit2)(&c_strm, 1, Z_DEFLATED, MAX_WBITS, 8, Z_FIXED), Z_OK);
+    c_strm.next_in = in;
+    c_strm.avail_in = sizeof(in);
+    c_strm.next_out = out;
+    c_strm.avail_out = sizeof(out);
+    ASSERT_EQ(PREFIX(deflate)(&c_strm, Z_NO_FLUSH), Z_OK);
+
+    ASSERT_EQ(PREFIX(deflateReset)(&c_strm), Z_OK);
+    c_strm.next_in = in;
+    c_strm.avail_in = 1000;
+    c_strm.next_out = out;
+    c_strm.avail_out = sizeof(out);
+    ASSERT_EQ(PREFIX(deflate)(&c_strm, Z_FINISH), Z_STREAM_END);
+    uint32_t comp_len = (uint32_t)c_strm.total_out;
+    EXPECT_EQ(PREFIX(deflateEnd)(&c_strm), Z_OK);
+
+    PREFIX3(stream) d_strm;
+    memset(&d_strm, 0, sizeof(d_strm));
+    ASSERT_EQ(PREFIX(inflateInit)(&d_strm), Z_OK);
+    d_strm.next_in = out;
+    d_strm.avail_in = comp_len;
+    d_strm.next_out = decoded;
+    d_strm.avail_out = sizeof(decoded);
+    EXPECT_EQ(PREFIX(inflate)(&d_strm, Z_FINISH), Z_STREAM_END);
+    EXPECT_EQ(d_strm.total_out, 1000U);
+    EXPECT_EQ(memcmp(decoded, in, 1000), 0);
+    EXPECT_EQ(PREFIX(inflateEnd)(&d_strm), Z_OK);
 }
