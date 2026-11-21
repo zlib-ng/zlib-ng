@@ -153,6 +153,7 @@ if(WITH_GTEST)
             test_deflate_quick_bi_valid.cc
             test_deflate_quick_block_open.cc
             test_deflate_quick_gh_382.cc
+            test_deflate_stored.cc
             test_deflate_tune.cc
             test_dict.cc
             test_dict_params.cc
