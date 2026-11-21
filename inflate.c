@@ -99,6 +99,7 @@ int32_t Z_EXPORT PREFIX(inflateReset)(PREFIX3(stream) *strm) {
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
     state->wbits = state->reqbits;
+    state->wrap = state->reqwrap;
     state->wsize = 0;
     state->whave = 0;
     state->wnext = 0;
@@ -133,7 +134,7 @@ int32_t Z_EXPORT PREFIX(inflateReset2)(PREFIX3(stream) *strm, int32_t windowBits
         return Z_STREAM_ERROR;
 
     /* update state and reset the rest of it */
-    state->wrap = wrap;
+    state->reqwrap = state->wrap = wrap;
     state->reqbits = state->wbits = (unsigned)windowBits;
     return PREFIX(inflateReset)(strm);
 }
@@ -1360,10 +1361,6 @@ int32_t Z_EXPORT PREFIX(inflateSync)(PREFIX3(stream) *strm) {
     /* return no joy or set up to restart inflate() on a new block */
     if (state->have != 4)
         return Z_DATA_ERROR;
-    if (state->flags == -1)
-        state->wrap = 0;    /* if no header yet, treat as raw */
-    else
-        state->wrap &= ~4;  /* no point in computing a check value now */
     flags = state->flags;
     in = strm->total_in;
     out = strm->total_out;
@@ -1371,6 +1368,10 @@ int32_t Z_EXPORT PREFIX(inflateSync)(PREFIX3(stream) *strm) {
     strm->total_in = (z_uintmax_t)in; /* Can't use z_size_t here as it will overflow on 64-bit Windows */
     strm->total_out = (z_uintmax_t)out;
     state->flags = flags;
+    if (flags == -1)
+        state->wrap = 0;    /* if no header yet, treat as raw */
+    else
+        state->wrap &= ~4;  /* no point in computing a check value now */
     /* we never got to see a header for the window size -- set to max */
     if (state->wbits == 0)
         state->wbits = MAX_WBITS;
@@ -1458,6 +1459,10 @@ int32_t Z_EXPORT PREFIX(inflateValidate)(PREFIX3(stream) *strm, int32_t check) {
         state->wrap |= 4;
     else
         state->wrap &= ~4;
+    if (check && state->reqwrap)
+        state->reqwrap |= 4;
+    else
+        state->reqwrap &= ~4;
     return Z_OK;
 }
 
