@@ -860,6 +860,22 @@ TEST(inflate_api_errors, back_null_stream) {
     EXPECT_EQ(PREFIX(inflateBack)(NULL, back_in, &in, back_out, &out), Z_STREAM_ERROR);
 }
 
+/* inflateBack() with a NULL input or output callback:
+ * - rejected with Z_STREAM_ERROR instead of calling through the NULL
+ *   function pointer once input runs out or the window fills;
+ * - the stream remains usable afterwards. */
+TEST(inflate_api_errors, back_null_callbacks) {
+    PREFIX3(stream) strm = zeroed_stream();
+    uint8_t window[1 << 9];
+    ASSERT_EQ(PREFIX(inflateBackInit)(&strm, 9, window), Z_OK);
+
+    struct back_input in = {};
+    struct back_output out = {};
+    EXPECT_EQ(PREFIX(inflateBack)(&strm, NULL, &in, back_out, &out), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateBack)(&strm, back_in, &in, NULL, &out), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateBackEnd)(&strm), Z_OK);
+}
+
 /* inflateBack() when the input callback reports no data:
  * - Z_BUF_ERROR is returned. */
 TEST(inflate_api_errors, back_input_exhausted) {
@@ -1061,6 +1077,140 @@ TEST(inflate_api_errors, get_header_null_head) {
     ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS + 16), Z_OK);
 
     EXPECT_EQ(PREFIX(inflateGetHeader)(&strm, NULL), Z_STREAM_ERROR);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* ========================================================================== */
+/* Corrupted stream data: checksums and unwrapped streams                     */
+/* ========================================================================== */
+
+/* Compress kMessage as a gzip-wrapped stream; returns the number of compressed
+ * bytes written, or 0 if compression fails. */
+static size_t compress_gzip(uint8_t *buffer, size_t buffer_size) {
+    PREFIX3(stream) strm = zeroed_stream();
+    if (PREFIX(deflateInit2)(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS + 16,
+                             MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY) != Z_OK)
+        return 0;
+    strm.next_in = (z_const unsigned char *)kMessage;
+    strm.avail_in = (unsigned int)strlen(kMessage);
+    strm.next_out = buffer;
+    strm.avail_out = (unsigned int)buffer_size;
+    int32_t ret = PREFIX(deflate)(&strm, Z_FINISH);
+    PREFIX(deflateEnd)(&strm);
+    return (ret == Z_STREAM_END) ? (size_t)strm.total_out : 0;
+}
+
+/* inflate() on a zlib stream whose Adler-32 trailer does not match the data:
+ * - rejected with Z_DATA_ERROR and the "incorrect data check" message;
+ * - the whole message was still decoded before the trailer was examined, so
+ *   total_out reports the full length (a checksum failure is not a decode
+ *   failure);
+ * - only the Adler-32 value is wrong, so the compressed payload itself stays
+ *   valid and the stream reaches CHECK before failing. */
+TEST(inflate_api_errors, inflate_adler32_mismatch) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS), Z_OK);
+
+    uint8_t compressed[64];
+    size_t compressed_len = compress_message(compressed, sizeof(compressed));
+    ASSERT_GT(compressed_len, 4u);
+    /* Corrupt one byte of the big-endian Adler-32 trailer. */
+    compressed[compressed_len - 1] ^= 0xff;
+
+    uint8_t output[64];
+    strm.next_in = compressed;
+    strm.avail_in = (unsigned int)compressed_len;
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+    EXPECT_NE(strstr(strm.msg ? strm.msg : "", "incorrect data check"), (char *)NULL);
+    EXPECT_EQ(strm.total_out, (uint32_t)strlen(kMessage));
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflate() on a gzip stream whose CRC-32 trailer does not match the data:
+ * - rejected with Z_DATA_ERROR and the same "incorrect data check" message
+ *   used for Adler-32, since only the accumulator differs;
+ * - the full message is decoded before the trailer check fails. */
+TEST(inflate_api_errors, inflate_crc32_mismatch) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS + 16), Z_OK);
+
+    uint8_t compressed[128];
+    size_t compressed_len = compress_gzip(compressed, sizeof(compressed));
+    ASSERT_GT(compressed_len, 8u);
+    /* The gzip trailer is CRC-32 (little-endian) followed by ISIZE; corrupt
+     * the low byte of the CRC while leaving ISIZE intact. */
+    compressed[compressed_len - 8] ^= 0xff;
+
+    uint8_t output[64];
+    strm.next_in = compressed;
+    strm.avail_in = (unsigned int)compressed_len;
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+    EXPECT_NE(strstr(strm.msg ? strm.msg : "", "incorrect data check"), (char *)NULL);
+    EXPECT_EQ(strm.total_out, (uint32_t)strlen(kMessage));
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflate() on a gzip stream whose ISIZE trailer does not match the amount of
+ * data produced:
+ * - the CRC-32 check passes, so the failure is reported by the length check
+ *   with "incorrect length check"; this is a distinct error from the checksum
+ *   failure above. */
+TEST(inflate_api_errors, inflate_gzip_isize_mismatch) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, MAX_WBITS + 16), Z_OK);
+
+    uint8_t compressed[128];
+    size_t compressed_len = compress_gzip(compressed, sizeof(compressed));
+    ASSERT_GT(compressed_len, 8u);
+    /* Corrupt the low byte of the little-endian ISIZE field (last four bytes). */
+    compressed[compressed_len - 4] ^= 0xff;
+
+    uint8_t output[64];
+    strm.next_in = compressed;
+    strm.avail_in = (unsigned int)compressed_len;
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+    EXPECT_NE(strstr(strm.msg ? strm.msg : "", "incorrect length check"), (char *)NULL);
+    EXPECT_EQ(strm.total_out, (uint32_t)strlen(kMessage));
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflate() on a raw (unwrapped) stream with trailing bytes appended:
+ * - a valid raw stream ends with Z_STREAM_END; there is no wrapper, so no
+ *   Adler-32 or CRC-32 trailer exists and none is demanded;
+ * - the appended bytes are never examined: inflate() stops at the end-of-block
+ *   code and reports them as still-available input rather than as corrupt
+ *   data. This is what distinguishes raw mode from the wrapped cases above,
+ *   where the same trailing garbage produced "incorrect data check". */
+TEST(inflate_api_errors, inflate_raw_has_no_checksum_trailer) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+
+    uint8_t raw[128];
+    size_t raw_len = compress_raw(raw, sizeof(raw));
+    ASSERT_GT(raw_len, 0u);
+
+    uint8_t feed[160];
+    memcpy(feed, raw, raw_len);
+    /* Four bytes that would have corrupted an Adler-32 trailer. */
+    feed[raw_len] = 0xff; feed[raw_len + 1] = 0xff; feed[raw_len + 2] = 0xff; feed[raw_len + 3] = 0xff;
+
+    uint8_t output[64];
+    strm.next_in = feed;
+    strm.avail_in = (unsigned int)(raw_len + 4);
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_STREAM_END);
+    EXPECT_EQ(strm.total_out, (uint32_t)strlen(kMessage));
+    EXPECT_EQ(memcmp(output, kMessage, strlen(kMessage)), 0);
+    /* The garbage was left unconsumed. */
+    EXPECT_EQ(strm.avail_in, 4u);
+    EXPECT_EQ(strm.total_in, (uint64_t)raw_len);
     EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
 }
 
