@@ -208,10 +208,14 @@ static size_t gz_write(gz_state *state, void const *buf, size_t len) {
                 n = (unsigned)len;
             state->strm.avail_in = n;
             state->x.pos += n;
-            if (gz_comp(state, Z_NO_FLUSH) == -1)
+            if (gz_comp(state, Z_NO_FLUSH) == -1) {
+                state->strm.avail_in = 0;
+                state->strm.next_in = state->in;
                 return 0;
+            }
             len -= n;
         } while (len);
+        state->strm.next_in = state->in;
     }
 
     /* input was all buffered or compressed */
