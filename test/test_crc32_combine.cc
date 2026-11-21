@@ -16,7 +16,7 @@
    multmodp(), whose only loop exit is guarded by a set bit of the operation
    value. */
 TEST(crc32, combine_op_zero) {
-    EXPECT_EQ(PREFIX4(crc32_combine_op)(0x12345678u, 0x9abcdef0u, 0), 0);
+    EXPECT_EQ(PREFIX(crc32_combine_op)(0x12345678u, 0x9abcdef0u, 0), 0);
 }
 
 /* crc32_combine(crc1, crc2, len2) is crc32_combine_op() applied with the
@@ -26,6 +26,6 @@ TEST(crc32, combine_gen_op) {
     for (size_t i = 0; i < sizeof(lens) / sizeof(lens[0]); i++) {
         uint32_t combined = PREFIX4(crc32_combine)(0x12345678u, 0x9abcdef0u, lens[i]);
         uint32_t op = PREFIX4(crc32_combine_gen)(lens[i]);
-        EXPECT_EQ(PREFIX4(crc32_combine_op)(0x12345678u, 0x9abcdef0u, op), combined);
+        EXPECT_EQ(PREFIX(crc32_combine_op)(0x12345678u, 0x9abcdef0u, op), combined);
     }
 }
