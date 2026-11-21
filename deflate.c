@@ -544,6 +544,7 @@ int32_t Z_EXPORT PREFIX(deflateResetKeep)(PREFIX3(stream) *strm) {
         strm->adler = ADLER32_INITIAL_VALUE;
     s->last_flush = -2;
 
+    s->block_open = 0;
     s->gzhead = NULL; /* reset the gzip header */
 
     zng_tr_init(s);
