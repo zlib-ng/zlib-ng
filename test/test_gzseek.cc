@@ -62,3 +62,142 @@ TEST(gzip, seek) {
     PREFIX(gzclose)(file);
 #endif
 }
+
+/* gzseek() and gztell() with the widest offset type of this build */
+#if !defined(ZLIB_COMPAT)
+typedef z_off64_t seek_off_t;
+#  define SEEK_GZSEEK PREFIX(gzseek)
+#  define SEEK_GZTELL PREFIX(gztell)
+#elif defined(Z_LARGE64)
+typedef z_off64_t seek_off_t;
+#  define SEEK_GZSEEK PREFIX4(gzseek)
+#  define SEEK_GZTELL PREFIX4(gztell)
+#else
+typedef z_off_t seek_off_t;
+#  define SEEK_GZSEEK PREFIX(gzseek)
+#  define SEEK_GZTELL PREFIX(gztell)
+#endif
+#define SEEK_OFF_MAX ((seek_off_t)((((uint64_t)1 << (sizeof(seek_off_t) * 8 - 2)) - 1) * 2 + 1))
+
+static bool seek_uses_off64(void) {
+    return sizeof(seek_off_t) == sizeof(z_off64_t);
+}
+
+static void seek_write_raw(const char *path, const char *data) {
+    FILE *fp = fopen(path, "wb");
+    ASSERT_NE(fp, nullptr);
+    ASSERT_EQ(fwrite(data, 1, strlen(data), fp), strlen(data));
+    ASSERT_EQ(fclose(fp), 0);
+}
+
+TEST(gzip, seek_offset_overflow) {
+    if (!seek_uses_off64())
+        GTEST_SKIP() << "z_off_t is narrower than z_off64_t";
+
+    const seek_off_t off_max = SEEK_OFF_MAX;
+    const seek_off_t off_min = -off_max - 1;
+
+    seek_write_raw("seek_ovf.txt", "abcdef");
+    gzFile file = PREFIX(gzopen)("seek_ovf.txt", "rb");
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(SEEK_GZSEEK(file, off_min, SEEK_SET), -1);
+    EXPECT_EQ(SEEK_GZSEEK(file, off_max, SEEK_SET), off_max);
+    EXPECT_EQ(SEEK_GZSEEK(file, 1, SEEK_CUR), -1);
+    EXPECT_EQ(SEEK_GZTELL(file), off_max);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("seek_ovf.txt");
+
+#ifndef NO_GZCOMPRESS
+    file = PREFIX(gzopen)("seek_ovf.gz", "wb");
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(SEEK_GZSEEK(file, 1, SEEK_SET), 1);
+    EXPECT_EQ(SEEK_GZSEEK(file, off_max, SEEK_CUR), -1);
+    EXPECT_EQ(SEEK_GZSEEK(file, off_min, SEEK_CUR), -1);
+    EXPECT_EQ(SEEK_GZTELL(file), 1);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("seek_ovf.gz");
+#endif
+}
+
+TEST(gzip, seek_failure_keeps_position) {
+#ifdef NO_GZCOMPRESS
+    GTEST_SKIP() << "NO_GZCOMPRESS -- gz* functions cannot compress";
+#else
+    char data[1000];
+    for (int i = 0; i < 1000; i++)
+        data[i] = (char)('a' + i % 26);
+
+    /* a failed seek keeps the pending skip of a writer */
+    gzFile file = PREFIX(gzopen)("seek_fail.gz", "wb");
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(PREFIX(gzwrite)(file, data, 1), 1);
+    EXPECT_EQ(SEEK_GZSEEK(file, 100, SEEK_CUR), 101);
+    EXPECT_EQ(SEEK_GZSEEK(file, -200, SEEK_CUR), -1);
+    EXPECT_EQ(SEEK_GZTELL(file), 101);
+    EXPECT_EQ(PREFIX(gzwrite)(file, data, 1000), 1000);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+
+    /* and of a reader */
+    file = PREFIX(gzopen)("seek_fail.gz", "rb");
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(SEEK_GZSEEK(file, 100, SEEK_SET), 100);
+    EXPECT_EQ(SEEK_GZSEEK(file, -200, SEEK_CUR), -1);
+    EXPECT_EQ(SEEK_GZTELL(file), 100);
+    EXPECT_EQ(PREFIX(gzgetc)(file), 0);
+    EXPECT_EQ(SEEK_GZSEEK(file, 1, SEEK_SET), 1);
+    EXPECT_EQ(PREFIX(gzgetc)(file), 0);
+    EXPECT_EQ(SEEK_GZSEEK(file, 101, SEEK_SET), 101);
+    EXPECT_EQ(PREFIX(gzgetc)(file), 'a');
+
+    /* a seek before the start after gzungetc() at the start keeps the pushback */
+    EXPECT_EQ(PREFIX(gzrewind)(file), 0);
+    EXPECT_EQ(PREFIX(gzungetc)('x', file), 'x');
+    EXPECT_EQ(PREFIX(gzungetc)('y', file), 'y');
+    EXPECT_EQ(SEEK_GZSEEK(file, -1, SEEK_SET), -1);
+    EXPECT_EQ(SEEK_GZTELL(file), -2);
+    EXPECT_EQ(PREFIX(gzgetc)(file), 'y');
+    EXPECT_EQ(PREFIX(gzgetc)(file), 'x');
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("seek_fail.gz");
+#endif
+}
+
+TEST(gzip, seek_from_negative_position) {
+    const seek_off_t off_max = SEEK_OFF_MAX;
+
+    /* transparent read: one byte read, two pushed back (position -1) */
+    seek_write_raw("seek_neg.txt", "ab");
+    gzFile file = PREFIX(gzopen)("seek_neg.txt", "rb");
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(PREFIX(gzgetc)(file), 'a');
+    EXPECT_EQ(PREFIX(gzungetc)('a', file), 'a');
+    EXPECT_EQ(PREFIX(gzungetc)('x', file), 'x');
+    EXPECT_EQ(SEEK_GZTELL(file), -1);
+    if (seek_uses_off64())
+        EXPECT_EQ(SEEK_GZSEEK(file, off_max, SEEK_SET), -1);
+    EXPECT_EQ(SEEK_GZSEEK(file, 0, SEEK_CUR), -1);
+    EXPECT_EQ(SEEK_GZTELL(file), -1);
+    EXPECT_EQ(SEEK_GZSEEK(file, 2, SEEK_CUR), 1);
+    EXPECT_EQ(PREFIX(gzgetc)(file), 'b');
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("seek_neg.txt");
+
+#ifndef NO_GZCOMPRESS
+    /* gzip read: one byte pushed back at the start (position -1) */
+    file = PREFIX(gzopen)("seek_neg.gz", "wb");
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(PREFIX(gzwrite)(file, "ab", 2), 2);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+
+    file = PREFIX(gzopen)("seek_neg.gz", "rb");
+    ASSERT_NE(file, nullptr);
+    EXPECT_EQ(PREFIX(gzungetc)('x', file), 'x');
+    if (seek_uses_off64())
+        EXPECT_EQ(SEEK_GZSEEK(file, off_max, SEEK_SET), -1);
+    EXPECT_EQ(SEEK_GZTELL(file), -1);
+    EXPECT_EQ(SEEK_GZSEEK(file, 1, SEEK_CUR), 0);
+    EXPECT_EQ(PREFIX(gzgetc)(file), 'a');
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    remove("seek_neg.gz");
+#endif
+}
