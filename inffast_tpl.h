@@ -24,7 +24,7 @@
         strm->avail_in >= INFLATE_FAST_MIN_HAVE
         strm->avail_out >= INFLATE_FAST_MIN_LEFT
         start >= strm->avail_out
-        state->bits < 8
+        state->bits <= 32
 
    On return, state->mode is one of:
 
@@ -340,8 +340,8 @@ void Z_INTERNAL INFLATE_FAST(PREFIX3(stream) *strm, uint32_t start) {
         }
     } while (in < last && out < end);
 
-    /* return unused bytes (on entry, bits < 8, so in won't go too far back) */
-    len = bits >> 3;
+    /* return unused bytes, but no more than this call loaded from next_in */
+    len = MIN((unsigned)(bits >> 3), (unsigned)(in - strm->next_in));
     in -= len;
     bits -= (bits_t)(len << 3);
     hold &= (UINT64_C(1) << bits) - 1;
