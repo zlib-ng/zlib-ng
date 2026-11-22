@@ -422,6 +422,33 @@ TEST(deflate_api_errors, deflate_get_params_buffer_too_small) {
     EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
 }
 
+/* zng_deflateGetParams with a NULL value buffer but an adequate size:
+ * - reported as Z_BUF_ERROR, both as the return value and in the
+ *   per-parameter status, instead of writing the value through NULL;
+ * - entries with a usable buffer are still written, so one bad entry does not
+ *   suppress the others (the second parameter receives the strategy);
+ * - the stream is unaffected and ends cleanly. */
+TEST(deflate_api_errors, deflate_get_params_null_buf) {
+    PREFIX3(stream) strm;
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    int32_t level = -1;
+    int32_t strategy = -1;
+    zng_deflate_param_value params[2];
+    memset(params, 0, sizeof(params));
+    params[0].param = Z_DEFLATE_LEVEL;
+    params[0].buf = NULL; /* adequate size, no buffer to write to */
+    params[0].size = sizeof(int32_t);
+    params[1].param = Z_DEFLATE_STRATEGY;
+    params[1].buf = &strategy;
+    params[1].size = sizeof(strategy);
+    EXPECT_EQ(zng_deflateGetParams(&strm, params, 2), Z_BUF_ERROR);
+    EXPECT_EQ(params[0].status, Z_BUF_ERROR);
+    EXPECT_EQ(params[1].status, Z_OK);
+    EXPECT_EQ(strategy, Z_DEFAULT_STRATEGY);
+    EXPECT_EQ(level, -1);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
+
 /* zng_deflateGetParams with an unknown parameter id:
  * - rejected with Z_VERSION_ERROR, the code the API uses for unsupported
  *   parameters. */
@@ -833,6 +860,49 @@ TEST(deflate_api_errors, deflate_set_params_buffer_too_small) {
     EXPECT_EQ(zng_deflateSetParams(&strm, params, 1), Z_BUF_ERROR);
     EXPECT_EQ(params[0].status, Z_BUF_ERROR);
     EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
+
+/* zng_deflateSetParams with a NULL value buffer but an adequate size:
+ * - reported as Z_BUF_ERROR, both as the return value and in the
+ *   per-parameter status, instead of reading the requested value through NULL;
+ * - nothing is applied: the level stays at what the stream was initialized
+ *   with, which is verified by reading it back;
+ * - the stream remains usable and ends cleanly. */
+TEST(deflate_api_errors, deflate_set_params_null_buf) {
+    PREFIX3(stream) strm;
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    zng_deflate_param_value params[1];
+    memset(params, 0, sizeof(params));
+    params[0].param = Z_DEFLATE_LEVEL;
+    params[0].buf = NULL; /* adequate size, no buffer to read from */
+    params[0].size = sizeof(int32_t);
+    EXPECT_EQ(zng_deflateSetParams(&strm, params, 1), Z_BUF_ERROR);
+    EXPECT_EQ(params[0].status, Z_BUF_ERROR);
+
+    /* The rejected request must not have changed anything. */
+    int32_t level = -1;
+    zng_deflate_param_value readback[1];
+    memset(readback, 0, sizeof(readback));
+    readback[0].param = Z_DEFLATE_LEVEL;
+    readback[0].buf = &level;
+    readback[0].size = sizeof(level);
+    ASSERT_EQ(zng_deflateGetParams(&strm, readback, 1), Z_OK);
+    EXPECT_EQ(level, 6); /* Z_DEFAULT_COMPRESSION resolves to 6 */
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
+
+/* zng_deflateSetParams with a NULL stream and a NULL parameter array:
+ * - the buffer check runs before the stream check, so this combination reports
+ *   Z_BUF_ERROR rather than Z_STREAM_ERROR; the same precedence applies to
+ *   zng_deflateGetParams. Pinned here so that a future reordering of the two
+ *   checks is visible as a test failure rather than a silent API change. */
+TEST(deflate_api_errors, deflate_params_null_stream_and_array) {
+    EXPECT_EQ(zng_deflateSetParams(NULL, NULL, 1), Z_BUF_ERROR);
+    EXPECT_EQ(zng_deflateGetParams(NULL, NULL, 1), Z_BUF_ERROR);
+    /* With a count of zero there is no buffer to complain about, so the
+     * invalid stream is reported instead. */
+    EXPECT_EQ(zng_deflateSetParams(NULL, NULL, 0), Z_STREAM_ERROR);
+    EXPECT_EQ(zng_deflateGetParams(NULL, NULL, 0), Z_STREAM_ERROR);
 }
 
 /* zng_deflateSetParams with the same parameter listed twice:
