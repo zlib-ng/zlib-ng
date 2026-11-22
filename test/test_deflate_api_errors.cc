@@ -1360,8 +1360,12 @@ TEST(deflate_api_errors, deflate_init_recover_after_alloc_failure) {
 /* zng_deflateCopy when the copy's allocation fails:
  * - Z_MEM_ERROR is returned and no extra allocation leaks (the source's
  *   init allocation is the only one);
- * - as in upstream zlib, the destination is clobbered by the failed attempt
- *   (its state aliases the source's) and must not be used;
+ * - the destination is clobbered by the failed attempt: its fields, including
+ *   a state pointer that aliases the source's, are copied over before the
+ *   allocation is attempted;
+ * - ending that failed destination is still rejected with Z_STREAM_ERROR, so
+ *   the common "clean up after a failed copy" idiom cannot double-free the
+ *   source's buffers;
  * - the source stream is unaffected: it still compresses, ends with
  *   Z_DATA_ERROR (mid-stream), and releases exactly one allocation. */
 TEST(deflate_api_errors, deflate_copy_alloc_failure) {
@@ -1381,9 +1385,11 @@ TEST(deflate_api_errors, deflate_copy_alloc_failure) {
     /* The failed copy must not leak: only the one init allocation exists. */
     EXPECT_EQ(zone.allocs, 1);
     EXPECT_EQ(zone.frees, 0);
-    /* As in upstream zlib, dest is clobbered by the copy attempt (its state
-     * now aliases source's); it must simply not be used afterwards. The
-     * source stream is unaffected and still works. */
+    /* dest was clobbered before the allocation failed and now aliases source's
+     * state; ending it must be rejected so cleanup cannot double free. */
+    EXPECT_EQ(PREFIX(deflateEnd)(&dest), Z_STREAM_ERROR);
+
+    /* The source stream is unaffected and still works. */
     ASSERT_EQ(start_compression(&source), Z_OK);
     EXPECT_EQ(PREFIX(deflateEnd)(&source), Z_DATA_ERROR);
     EXPECT_EQ(zone.frees, 1);
