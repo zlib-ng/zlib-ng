@@ -1365,7 +1365,8 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
  * Checks whether buffer size is sufficient and whether this parameter is a duplicate.
  */
 static int32_t deflateSetParamPre(zng_deflate_param_value **out, size_t min_size, zng_deflate_param_value *param) {
-    int32_t buf_error = param->size < min_size;
+    /* A NULL buffer is as unusable as a too-small one. */
+    int32_t buf_error = param->buf == NULL || param->size < min_size;
 
     if (*out != NULL) {
         (*out)->status = Z_BUF_ERROR;
@@ -1472,21 +1473,23 @@ int32_t Z_EXPORT zng_deflateGetParams(zng_stream *strm, zng_deflate_param_value 
     s = strm->state;
 
     for (i = 0; i < count; i++) {
+        /* Nothing to write to without a usable buffer. */
+        int32_t buf_problem = params[i].buf == NULL || params[i].size < sizeof(int);
         switch (params[i].param) {
             case Z_DEFLATE_LEVEL:
-                if (params[i].size < sizeof(int))
+                if (buf_problem)
                     params[i].status = Z_BUF_ERROR;
                 else
                     *(int *)params[i].buf = s->level;
                 break;
             case Z_DEFLATE_STRATEGY:
-                if (params[i].size < sizeof(int))
+                if (buf_problem)
                     params[i].status = Z_BUF_ERROR;
                 else
                     *(int *)params[i].buf = s->strategy;
                 break;
             case Z_DEFLATE_REPRODUCIBLE:
-                if (params[i].size < sizeof(int))
+                if (buf_problem)
                     params[i].status = Z_BUF_ERROR;
                 else
                     *(int *)params[i].buf = s->reproducible;
