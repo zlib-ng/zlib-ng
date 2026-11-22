@@ -706,6 +706,193 @@ TEST(deflate_api_errors, deflate_reset_uninitialized_stream) {
     EXPECT_EQ(PREFIX(deflateResetKeep)(&strm), Z_STREAM_ERROR);
 }
 
+/* Preset dictionary and text whose compressed size depends on that dictionary
+ * being available to the compressor. */
+static const char kPresetDictionary[] =
+    "the quick brown fox jumps over the lazy dog. pack my box with five dozen "
+    "liquor jugs. sphinx of black quartz judge my vow. how vexingly quick daft "
+    "zebras jump!";
+static const char kMatchedText[] = "zebras jump! five dozen liquor jugs.";
+
+/* Compress kMatchedText with a raw stream primed by kPresetDictionary.
+ * Returns the number of compressed bytes written, or 0 on failure. */
+static size_t compress_matched_with_preset(uint8_t *buffer, size_t buffer_size) {
+    PREFIX3(stream) strm;
+    memset(&strm, 0, sizeof(strm));
+    if (PREFIX(deflateInit2)(&strm, Z_BEST_COMPRESSION, Z_DEFLATED, -MAX_WBITS,
+                             MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY) != Z_OK)
+        return 0;
+    if (PREFIX(deflateSetDictionary)(&strm, (const uint8_t *)kPresetDictionary,
+                                     (uint32_t)strlen(kPresetDictionary)) != Z_OK) {
+        PREFIX(deflateEnd)(&strm);
+        return 0;
+    }
+    strm.next_in = (z_const unsigned char *)kMatchedText;
+    strm.avail_in = (unsigned int)strlen(kMatchedText);
+    strm.next_out = buffer;
+    strm.avail_out = (unsigned int)buffer_size;
+    int32_t ret = PREFIX(deflate)(&strm, Z_FINISH);
+    size_t produced = (size_t)strm.total_out;
+    PREFIX(deflateEnd)(&strm);
+    return (ret == Z_STREAM_END) ? produced : 0;
+}
+
+/* Inflate a raw stream and check that the result matches kMatchedText exactly.
+ * With use_dictionary set the preset dictionary is supplied first, which is
+ * what a stream compressed against that context needs in order to resolve its
+ * back-references. */
+static bool inflate_matched_text(const uint8_t *compressed, size_t compressed_len, int use_dictionary) {
+    PREFIX3(stream) strm;
+    memset(&strm, 0, sizeof(strm));
+    if (PREFIX(inflateInit2)(&strm, -MAX_WBITS) != Z_OK)
+        return false;
+    if (use_dictionary &&
+        PREFIX(inflateSetDictionary)(&strm, (const uint8_t *)kPresetDictionary,
+                                     (uint32_t)strlen(kPresetDictionary)) != Z_OK) {
+        PREFIX(inflateEnd)(&strm);
+        return false;
+    }
+    uint8_t output[128];
+    strm.next_in = (z_const unsigned char *)compressed;
+    strm.avail_in = (unsigned int)compressed_len;
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    bool ok = PREFIX(inflate)(&strm, Z_FINISH) == Z_STREAM_END &&
+              strm.total_out == strlen(kMatchedText) &&
+              memcmp(output, kMatchedText, strlen(kMatchedText)) == 0;
+    PREFIX(inflateEnd)(&strm);
+    return ok;
+}
+
+/* deflateResetKeep() keeps the window that deflateSetDictionary() loaded while
+ * deflateReset() discards it. This is the only observable difference between
+ * the two: both clear the bit buffer, the counters and msg.
+ * - compressing kMatchedText against the preset dictionary yields far fewer
+ *   bytes than the text itself, which only holds if the compressor referenced
+ *   the dictionary;
+ * - after deflateResetKeep() the window is still reported by
+ *   deflateGetDictionary(), and re-compressing the same text stays small;
+ * - after deflateReset() the window is reported as empty and the same text
+ *   needs noticeably more bytes, because there is nothing left to reference;
+ * - the stream produced after deflateReset() is self-contained: it inflates
+ *   back to the original text without any dictionary, which shows that the
+ *   reset really removed all dependence on the preset.
+ *
+ * The kept-window output is not inflated back: its references reach into
+ * history from the earlier pass, beyond the preset dictionary. */
+TEST(deflate_api_errors, deflate_reset_keep_preserves_window) {
+    uint8_t reference[128];
+    size_t reference_len = compress_matched_with_preset(reference, sizeof(reference));
+    ASSERT_GT(reference_len, 0u);
+    /* Only possible if the compressor used the preset dictionary. */
+    ASSERT_LT(reference_len, strlen(kMatchedText));
+    ASSERT_TRUE(inflate_matched_text(reference, reference_len, 1));
+
+    /* deflateResetKeep(): window retained. */
+    size_t kept_len = 0;
+    {
+        PREFIX3(stream) strm;
+        ASSERT_EQ(init_deflate(&strm, -MAX_WBITS), Z_OK);
+        ASSERT_EQ(PREFIX(deflateSetDictionary)(&strm, (const uint8_t *)kPresetDictionary,
+                                                (uint32_t)strlen(kPresetDictionary)), Z_OK);
+        uint8_t first[128];
+        strm.next_in = (z_const unsigned char *)kMatchedText;
+        strm.avail_in = (unsigned int)strlen(kMatchedText);
+        strm.next_out = first;
+        strm.avail_out = (unsigned int)sizeof(first);
+        ASSERT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+
+        uint32_t loaded = 0;
+        ASSERT_EQ(PREFIX(deflateGetDictionary)(&strm, NULL, &loaded), Z_OK);
+        ASSERT_GT(loaded, 0u);
+
+        EXPECT_EQ(PREFIX(deflateResetKeep)(&strm), Z_OK);
+        uint32_t kept = 0;
+        EXPECT_EQ(PREFIX(deflateGetDictionary)(&strm, NULL, &kept), Z_OK);
+        EXPECT_EQ(kept, loaded);
+
+        strm.next_in = (z_const unsigned char *)kMatchedText;
+        strm.avail_in = (unsigned int)strlen(kMatchedText);
+        strm.next_out = first;
+        strm.avail_out = (unsigned int)sizeof(first);
+        ASSERT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+        kept_len = (size_t)strm.total_out;
+        /* Still short: the retained window is available as compression context. */
+        EXPECT_LT(kept_len, strlen(kMatchedText));
+        EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+    }
+
+    /* deflateReset(): window discarded. */
+    size_t dropped_len = 0;
+    {
+        PREFIX3(stream) strm;
+        ASSERT_EQ(init_deflate(&strm, -MAX_WBITS), Z_OK);
+        ASSERT_EQ(PREFIX(deflateSetDictionary)(&strm, (const uint8_t *)kPresetDictionary,
+                                                (uint32_t)strlen(kPresetDictionary)), Z_OK);
+        uint8_t first[128];
+        strm.next_in = (z_const unsigned char *)kMatchedText;
+        strm.avail_in = (unsigned int)strlen(kMatchedText);
+        strm.next_out = first;
+        strm.avail_out = (unsigned int)sizeof(first);
+        ASSERT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+
+        uint32_t loaded = 0;
+        ASSERT_EQ(PREFIX(deflateGetDictionary)(&strm, NULL, &loaded), Z_OK);
+        ASSERT_GT(loaded, 0u);
+
+        EXPECT_EQ(PREFIX(deflateReset)(&strm), Z_OK);
+        uint32_t dropped = 1;
+        EXPECT_EQ(PREFIX(deflateGetDictionary)(&strm, NULL, &dropped), Z_OK);
+        EXPECT_EQ(dropped, 0u);
+
+        strm.next_in = (z_const unsigned char *)kMatchedText;
+        strm.avail_in = (unsigned int)strlen(kMatchedText);
+        strm.next_out = first;
+        strm.avail_out = (unsigned int)sizeof(first);
+        ASSERT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+        dropped_len = (size_t)strm.total_out;
+        /* No dictionary needed: nothing in the stream refers to the preset. */
+        EXPECT_TRUE(inflate_matched_text(first, dropped_len, 0));
+        EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+    }
+
+    /* Keeping the window must give better compression than discarding it. The
+     * retained-window result can be shorter than the single-pass reference,
+     * because the earlier pass left additional history behind as well. */
+    EXPECT_GT(dropped_len, kept_len);
+}
+
+/* deflateResetKeep() on a live stream:
+ * - returns Z_OK and clears msg, data_type and both byte counters;
+ * - the stream stays usable for a fresh payload. */
+TEST(deflate_api_errors, deflate_reset_keep_clears_counters) {
+    PREFIX3(stream) strm;
+    uint8_t input[64];
+    uint8_t output[128];
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    memset(input, 'a', sizeof(input));
+    strm.next_in = input;
+    strm.avail_in = (unsigned int)sizeof(input);
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    ASSERT_EQ(PREFIX(deflate)(&strm, Z_NO_FLUSH), Z_OK);
+    ASSERT_GT(strm.total_out, 0u);
+
+    EXPECT_EQ(PREFIX(deflateResetKeep)(&strm), Z_OK);
+    EXPECT_EQ(strm.msg, (char *)NULL);
+    EXPECT_EQ(strm.data_type, Z_UNKNOWN);
+    EXPECT_EQ(strm.total_in, 0u);
+    EXPECT_EQ(strm.total_out, 0u);
+
+    strm.next_in = input;
+    strm.avail_in = (unsigned int)sizeof(input);
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    EXPECT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+    EXPECT_GT(strm.total_out, 0u);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
+
 /* ========================================================================== */
 /* zng_deflateSetDictionary                                                   */
 /* ========================================================================== */
