@@ -7,6 +7,7 @@
 #  include "zlib-ng.h"
 #endif
 
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -173,6 +174,25 @@ TEST(deflate_api_errors, compress_bound_sanity) {
     }
 }
 
+/* zng_compressBound with the largest length its parameter can hold:
+ * - callers size their output buffer from the result, so the bound must not
+ *   wrap around to a small value; it saturates at the maximum instead;
+ * - half of that maximum cannot saturate, so the arithmetic is exercised and
+ *   the bound still has to stay at or above the source length.
+ * The widest value differs per build: the compat signature takes an unsigned
+ * long, the native one a size_t. */
+TEST(deflate_api_errors, compress_bound_saturates_for_huge_source) {
+#ifdef ZLIB_COMPAT
+    const unsigned long huge = ULONG_MAX;
+#else
+    const size_t huge = (size_t)-1;
+#endif
+    EXPECT_GE((z_uintmax_t)PREFIX(compressBound)(huge), (z_uintmax_t)huge);
+
+    const z_uintmax_t half = (z_uintmax_t)huge / 2;
+    EXPECT_GE((z_uintmax_t)PREFIX(compressBound)(half), half);
+}
+
 /* ========================================================================== */
 /* zng_deflate                                                                */
 /* ========================================================================== */
@@ -258,6 +278,25 @@ TEST(deflate_api_errors, deflate_bound_null_stream) {
     EXPECT_GE(PREFIX(deflateBound)(NULL, 1024), 1024UL);
     PREFIX3(stream) strm = zeroed_stream();
     EXPECT_GE(PREFIX(deflateBound)(&strm, 1024), 1024UL);
+}
+
+/* zng_deflateBound with very large source lengths:
+ * - a broken stream falls back to the conservative bound, which must saturate
+ *   at the maximum instead of wrapping to a small value that a caller would go
+ *   on to allocate;
+ * - the size_t variant returns exactly the maximum for the maximum length;
+ * - on a live stream the computed bound stays at or above the requested length
+ *   for both the size_t and the unsigned long entry points. */
+TEST(deflate_api_errors, deflate_bound_huge_source) {
+    EXPECT_GE(PREFIX(deflateBound)(NULL, ULONG_MAX), ULONG_MAX);
+    EXPECT_EQ(PREFIX(deflateBound_z)(NULL, (size_t)-1), (size_t)-1);
+
+    PREFIX3(stream) strm;
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    const size_t half = (size_t)-1 / 2;
+    EXPECT_GE(PREFIX(deflateBound_z)(&strm, half), half);
+    EXPECT_GE(PREFIX(deflateBound)(&strm, ULONG_MAX), ULONG_MAX);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
 }
 
 /* ========================================================================== */
@@ -588,6 +627,34 @@ TEST(deflate_api_errors, deflate_init2_versioned_bad_args) {
                                     NULL, (int32_t)sizeof(strm)),
               Z_VERSION_ERROR);
 }
+
+/* The versioned entry points compare only the leading character of the version
+ * string plus the stream size, exactly as upstream zlib does:
+ * - a version whose first character differs from the library's is rejected with
+ *   Z_VERSION_ERROR by both zng_deflateInit_ and zng_deflateInit2_;
+ * - any other string is accepted on its own merit, so "1.0.0" passes while the
+ *   stream size stays correct, which is the documented compatibility rule
+ *   rather than a bug;
+ * - the library's own version with the right size is accepted and yields a
+ *   usable stream.
+ * This is compat-only: the native API has no versioned entry points. */
+TEST(deflate_api_errors, deflate_init_versioned_first_character_only) {
+    PREFIX3(stream) strm;
+    memset(&strm, 0, sizeof(strm));
+    EXPECT_EQ(PREFIX(deflateInit_)(&strm, Z_DEFAULT_COMPRESSION, "2.0.0", (int32_t)sizeof(strm)), Z_VERSION_ERROR);
+
+    memset(&strm, 0, sizeof(strm));
+    EXPECT_EQ(PREFIX(deflateInit2_)(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS, MAX_MEM_LEVEL,
+                                    Z_DEFAULT_STRATEGY, "2.0.0", (int32_t)sizeof(strm)), Z_VERSION_ERROR);
+
+    memset(&strm, 0, sizeof(strm));
+    EXPECT_EQ(PREFIX(deflateInit_)(&strm, Z_DEFAULT_COMPRESSION, "1.0.0", (int32_t)sizeof(strm)), Z_OK);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+
+    memset(&strm, 0, sizeof(strm));
+    EXPECT_EQ(PREFIX(deflateInit_)(&strm, Z_DEFAULT_COMPRESSION, ZLIB_VERSION, (int32_t)sizeof(strm)), Z_OK);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
 #endif /* ZLIB_COMPAT */
 
 /* ========================================================================== */
@@ -685,6 +752,22 @@ TEST(deflate_api_errors, deflate_prime_bits_out_of_range) {
     EXPECT_EQ(PREFIX(deflatePrime)(&strm, -1, 0xff), Z_BUF_ERROR);
     EXPECT_EQ(PREFIX(deflatePrime)(&strm, 65, 0xff), Z_BUF_ERROR);
     EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
+
+/* zng_deflatePrime accepts bit counts up to the width of its 64-bit bit buffer,
+ * which is wider than upstream zlib's 16-bit limit:
+ * - 0, 1, 8, 16 and 64 bits are all accepted with Z_OK on a fresh stream;
+ * - each stream still ends cleanly.
+ * Pinning the accepted range makes any future narrowing of it visible rather
+ * than silent. */
+TEST(deflate_api_errors, deflate_prime_bits_accepted_range) {
+    const int32_t bit_counts[] = { 0, 1, 8, 16, 64 };
+    for (size_t index = 0; index < sizeof(bit_counts) / sizeof(bit_counts[0]); index++) {
+        PREFIX3(stream) strm;
+        ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+        EXPECT_EQ(PREFIX(deflatePrime)(&strm, bit_counts[index], 0x5a5a5a5a), Z_OK);
+        EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+    }
 }
 
 /* ========================================================================== */
