@@ -54,6 +54,49 @@ static inline dfltcc_cc dfltcc_xpnd(PREFIX3(streamp) strm) {
     return cc;
 }
 
+/* Translate an Operation-Ending-Supplemental Code (OESC) reported by the
+   hardware into the message that software inflate() produces for the same
+   defect, so that callers see a single set of strings no matter which decoder
+   ran. The codes are defined in chapter 26 "DEFLATE CONVERSION CALL" of the
+   z/Architecture Principles of Operation (SA22-7832).
+
+   Only codes whose software equivalent is unambiguous are translated; the
+   bookkeeping codes (parameter block version, history length, compressed DHT
+   cache length), the codes that describe a defect without naming which tree it
+   belongs to, and the model-dependent FF code keep the generic text so that
+   nothing the hardware reported is lost. Support for codes other than 00 and FF
+   is model-dependent, in which case the generic text is what callers get. */
+static z_const char *dfltcc_inflate_oesc_msg(char *buf, int oesc) {
+    switch (oesc) {
+        case 0x11: /* BTYPE equal to 11 binary */
+            return "invalid block type";
+        case 0x12: /* stored block whose NLEN is not the complement of LEN */
+            return "invalid stored block lengths";
+        case 0x22: /* HLIT greater than 29 */
+        case 0x23: /* HDIST greater than 29 */
+            return "too many length or distance symbols";
+        case 0x24: /* code-length tree cannot describe a functional Huffman tree */
+            return "invalid code lengths set";
+        case 0x26: /* repeat used before any code length was defined */
+        case 0x2A: /* more code lengths than the DHT declares */
+            return "invalid bit length repeat";
+        case 0x28: /* no Huffman code assigned to the end-of-block symbol */
+            return "invalid code -- missing end-of-block";
+        case 0x2B: /* literal/length tree cannot describe a functional tree */
+            return "invalid literal/lengths set";
+        case 0x2D: /* distance tree cannot describe a functional tree */
+            return "invalid distances set";
+        case 0x31: /* no code for a literal or length, or reserved fixed length code */
+            return "invalid literal/length code";
+        case 0x32: /* no code for a distance, or reserved fixed distance code */
+            return "invalid distance code";
+        case 0x40: /* distance beyond the history available at that point */
+            return "invalid distance too far back";
+        default:
+            return oesc_msg(buf, oesc);
+    }
+}
+
 dfltcc_inflate_action Z_INTERNAL PREFIX(dfltcc_inflate)(PREFIX3(streamp) strm, int flush, int *ret) {
     struct inflate_state *state = (struct inflate_state *)strm->state;
     struct dfltcc_state *dfltcc_state = &state->arch.common;
@@ -99,8 +142,12 @@ dfltcc_inflate_action Z_INTERNAL PREFIX(dfltcc_inflate)(PREFIX3(streamp) strm, i
         cc = dfltcc_xpnd(strm);
     } while (cc == DFLTCC_CC_AGAIN);
 
-    /* Translate parameter block to stream */
-    strm->msg = oesc_msg(dfltcc_state->msg, param->oesc);
+    /* Translate parameter block to stream. Only report a message when the
+       hardware actually flagged an invalid input: assigning unconditionally
+       would erase a message set earlier during the same inflate() call, and
+       software inflate() likewise leaves strm->msg alone unless it errors. */
+    if (param->oesc != 0)
+        strm->msg = dfltcc_inflate_oesc_msg(dfltcc_state->msg, param->oesc);
     state->last = cc == DFLTCC_CC_OK;
     state->bits = param->sbb;
     if (state->wrap & 4)
