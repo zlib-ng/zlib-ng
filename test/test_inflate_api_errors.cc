@@ -1014,8 +1014,40 @@ TEST(inflate_api_errors, reset2_window_bits_rejected) {
 /* zng_inflateResetKeep / zng_inflateValidate / zng_inflateUndermine          */
 /* ========================================================================== */
 
+/* A preset dictionary and a message that compresses to almost nothing when the
+ * dictionary is available as context. Inflating the result therefore requires
+ * the dictionary to still be present in the window, which makes the difference
+ * between inflateReset() and inflateResetKeep() observable through the public
+ * API: the former drops the window, the latter keeps it. */
+static const char kPresetDictionary[] =
+    "the quick brown fox jumps over the lazy dog. pack my box with five dozen "
+    "liquor jugs. sphinx of black quartz judge my vow. how vexingly quick daft "
+    "zebras jump!";
+static const char kMatchedText[] = "zebras jump! five dozen liquor jugs.";
+
 /* Defined below with the corrupted-data tests; reused here for the gzip case. */
 static size_t compress_gzip(uint8_t *buffer, size_t buffer_size);
+
+/* Deflate kMatchedText as a raw stream with kPresetDictionary as context. */
+static size_t compress_matched_with_preset(uint8_t *buffer, size_t buffer_size) {
+    PREFIX3(stream) strm = zeroed_stream();
+    if (PREFIX(deflateInit2)(&strm, Z_BEST_COMPRESSION, Z_DEFLATED, -MAX_WBITS,
+                             MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY) != Z_OK)
+        return 0;
+    if (PREFIX(deflateSetDictionary)(&strm, (const uint8_t *)kPresetDictionary,
+                                     (uint32_t)strlen(kPresetDictionary)) != Z_OK) {
+        PREFIX(deflateEnd)(&strm);
+        return 0;
+    }
+    strm.next_in = (z_const unsigned char *)kMatchedText;
+    strm.avail_in = (unsigned int)strlen(kMatchedText);
+    strm.next_out = buffer;
+    strm.avail_out = (unsigned int)buffer_size;
+    int32_t ret = PREFIX(deflate)(&strm, Z_FINISH);
+    size_t produced = (size_t)strm.total_out;
+    PREFIX(deflateEnd)(&strm);
+    return (ret == Z_STREAM_END) ? produced : 0;
+}
 
 /* inflateResetKeep() parameter and effect checks:
  * - a NULL stream is rejected with Z_STREAM_ERROR;
@@ -1054,6 +1086,101 @@ TEST(inflate_api_errors, reset_keep_null_and_basic) {
     EXPECT_EQ(strm.total_out, (uint32_t)strlen(kMessage));
     EXPECT_EQ(memcmp(output, kMessage, strlen(kMessage)), 0);
     EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* The distinguishing behaviour between inflateReset() and inflateResetKeep():
+ * - a raw stream compressed against a preset dictionary only decodes while that
+ *   dictionary is still in the window;
+ * - as control, without any dictionary the back-reference has nothing to point
+ *   at and structural validation rejects the stream with Z_DATA_ERROR and
+ *   "invalid distance too far back" before producing any output;
+ * - inflateSetDictionary() loads the preset, reported by inflateGetDictionary();
+ * - after inflateResetKeep() the window is retained, so the stream decodes;
+ * - after inflateReset() the window is dropped (reported length 0) and the same
+ *   stream fails like the control. */
+TEST(inflate_api_errors, reset_keep_preserves_window_reset_discards_it) {
+    uint8_t raw[64];
+    size_t raw_len = compress_matched_with_preset(raw, sizeof(raw));
+    ASSERT_GT(raw_len, 0u);
+    /* Only possible if the compressor referenced the preset dictionary. */
+    ASSERT_LT(raw_len, strlen(kMatchedText));
+
+    /* Control: no dictionary loaded. */
+    {
+        PREFIX3(stream) strm = zeroed_stream();
+        ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+        uint8_t output[64];
+        strm.next_in = raw;
+        strm.avail_in = (unsigned int)raw_len;
+        strm.next_out = output;
+        strm.avail_out = (unsigned int)sizeof(output);
+        EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_DATA_ERROR);
+        EXPECT_NE(strstr(strm.msg ? strm.msg : "", "invalid distance too far back"), (char *)NULL);
+        EXPECT_EQ(strm.total_out, 0u);
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    }
+
+    /* inflateResetKeep() keeps the loaded dictionary. */
+    {
+        PREFIX3(stream) strm = zeroed_stream();
+        ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+        ASSERT_EQ(PREFIX(inflateSetDictionary)(&strm, (const uint8_t *)kPresetDictionary,
+                                                (uint32_t)strlen(kPresetDictionary)), Z_OK);
+        uint32_t loaded = 0;
+        ASSERT_EQ(PREFIX(inflateGetDictionary)(&strm, NULL, &loaded), Z_OK);
+        ASSERT_GT(loaded, 0u);
+
+        EXPECT_EQ(PREFIX(inflateResetKeep)(&strm), Z_OK);
+#ifdef S390_DFLTCC_INFLATE
+        /* DFLTCC keeps its window in the hardware parameter block, and
+         * inflateResetKeep() re-initializes that block, so the preset history is
+         * dropped even by ResetKeep. Window retention under DFLTCC is a larger
+         * question than this test should settle, and upstream already treats
+         * DFLTCC dictionary reporting as special (see test/example.c and
+         * test/test_dict.cc), so only the software semantics are asserted here.
+         * The error-message half of this test does run on DFLTCC. */
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+#else
+        uint32_t kept = 0;
+        EXPECT_EQ(PREFIX(inflateGetDictionary)(&strm, NULL, &kept), Z_OK);
+        EXPECT_EQ(kept, loaded);
+
+        uint8_t output[64];
+        strm.next_in = raw;
+        strm.avail_in = (unsigned int)raw_len;
+        strm.next_out = output;
+        strm.avail_out = (unsigned int)sizeof(output);
+        EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_STREAM_END);
+        EXPECT_EQ(strm.total_out, (uint32_t)strlen(kMatchedText));
+        EXPECT_EQ(memcmp(output, kMatchedText, strlen(kMatchedText)), 0);
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+#endif
+    }
+
+    /* inflateReset() discards it. */
+    {
+        PREFIX3(stream) strm = zeroed_stream();
+        ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+        ASSERT_EQ(PREFIX(inflateSetDictionary)(&strm, (const uint8_t *)kPresetDictionary,
+                                                (uint32_t)strlen(kPresetDictionary)), Z_OK);
+        uint32_t loaded = 0;
+        ASSERT_EQ(PREFIX(inflateGetDictionary)(&strm, NULL, &loaded), Z_OK);
+        ASSERT_GT(loaded, 0u);
+
+        EXPECT_EQ(PREFIX(inflateReset)(&strm), Z_OK);
+        uint32_t dropped = 1;
+        EXPECT_EQ(PREFIX(inflateGetDictionary)(&strm, NULL, &dropped), Z_OK);
+        EXPECT_EQ(dropped, 0u);
+
+        uint8_t output[64];
+        strm.next_in = raw;
+        strm.avail_in = (unsigned int)raw_len;
+        strm.next_out = output;
+        strm.avail_out = (unsigned int)sizeof(output);
+        EXPECT_EQ(PREFIX(inflate)(&strm, Z_FINISH), Z_DATA_ERROR);
+        EXPECT_NE(strstr(strm.msg ? strm.msg : "", "invalid distance too far back"), (char *)NULL);
+        EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+    }
 }
 
 /* inflateValidate() parameter and effect checks:
@@ -1379,6 +1506,27 @@ TEST(inflate_api_errors, inflate_raw_has_no_checksum_trailer) {
     /* The garbage was left unconsumed. */
     EXPECT_EQ(strm.avail_in, 4u);
     EXPECT_EQ(strm.total_in, (uint64_t)raw_len);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}
+
+/* inflate() on a raw stream whose block header names an undefined block type:
+ * - without any wrapper there is no checksum to catch corruption, so the only
+ *   thing that can reject the stream is structural validation;
+ * - BTYPE = 11 is reserved, giving Z_DATA_ERROR with "invalid block type". */
+TEST(inflate_api_errors, inflate_raw_invalid_block_type) {
+    PREFIX3(stream) strm = zeroed_stream();
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+
+    /* BFINAL = 1, BTYPE = 11 (reserved) in the first byte. */
+    uint8_t bad[] = {0x07, 0x00};
+    uint8_t output[64];
+    strm.next_in = bad;
+    strm.avail_in = (unsigned int)sizeof(bad);
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_DATA_ERROR);
+    EXPECT_NE(strstr(strm.msg ? strm.msg : "", "invalid block type"), (char *)NULL);
+    EXPECT_EQ(strm.total_out, 0u);
     EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
 }
 
