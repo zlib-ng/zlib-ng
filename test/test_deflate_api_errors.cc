@@ -7,6 +7,7 @@
 #  include "zlib-ng.h"
 #endif
 
+#include <limits.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -173,6 +174,25 @@ TEST(deflate_api_errors, compress_bound_sanity) {
     }
 }
 
+/* zng_compressBound with the largest length its parameter can hold:
+ * - callers size their output buffer from the result, so the bound must not
+ *   wrap around to a small value; it saturates at the maximum instead;
+ * - half of that maximum cannot saturate, so the arithmetic is exercised and
+ *   the bound still has to stay at or above the source length.
+ * The widest value differs per build: the compat signature takes an unsigned
+ * long, the native one a size_t. */
+TEST(deflate_api_errors, compress_bound_saturates_for_huge_source) {
+#ifdef ZLIB_COMPAT
+    const unsigned long huge = ULONG_MAX;
+#else
+    const size_t huge = (size_t)-1;
+#endif
+    EXPECT_GE((z_uintmax_t)PREFIX(compressBound)(huge), (z_uintmax_t)huge);
+
+    const z_uintmax_t half = (z_uintmax_t)huge / 2;
+    EXPECT_GE((z_uintmax_t)PREFIX(compressBound)(half), half);
+}
+
 /* ========================================================================== */
 /* zng_deflate                                                                */
 /* ========================================================================== */
@@ -258,6 +278,25 @@ TEST(deflate_api_errors, deflate_bound_null_stream) {
     EXPECT_GE(PREFIX(deflateBound)(NULL, 1024), 1024UL);
     PREFIX3(stream) strm = zeroed_stream();
     EXPECT_GE(PREFIX(deflateBound)(&strm, 1024), 1024UL);
+}
+
+/* zng_deflateBound with very large source lengths:
+ * - a broken stream falls back to the conservative bound, which must saturate
+ *   at the maximum instead of wrapping to a small value that a caller would go
+ *   on to allocate;
+ * - the size_t variant returns exactly the maximum for the maximum length;
+ * - on a live stream the computed bound stays at or above the requested length
+ *   for both the size_t and the unsigned long entry points. */
+TEST(deflate_api_errors, deflate_bound_huge_source) {
+    EXPECT_GE(PREFIX(deflateBound)(NULL, ULONG_MAX), ULONG_MAX);
+    EXPECT_EQ(PREFIX(deflateBound_z)(NULL, (size_t)-1), (size_t)-1);
+
+    PREFIX3(stream) strm;
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    const size_t half = (size_t)-1 / 2;
+    EXPECT_GE(PREFIX(deflateBound_z)(&strm, half), half);
+    EXPECT_GE(PREFIX(deflateBound)(&strm, ULONG_MAX), ULONG_MAX);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
 }
 
 /* ========================================================================== */
@@ -422,6 +461,33 @@ TEST(deflate_api_errors, deflate_get_params_buffer_too_small) {
     EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
 }
 
+/* zng_deflateGetParams with a NULL value buffer but an adequate size:
+ * - reported as Z_BUF_ERROR, both as the return value and in the
+ *   per-parameter status, instead of writing the value through NULL;
+ * - entries with a usable buffer are still written, so one bad entry does not
+ *   suppress the others (the second parameter receives the strategy);
+ * - the stream is unaffected and ends cleanly. */
+TEST(deflate_api_errors, deflate_get_params_null_buf) {
+    PREFIX3(stream) strm;
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    int32_t level = -1;
+    int32_t strategy = -1;
+    zng_deflate_param_value params[2];
+    memset(params, 0, sizeof(params));
+    params[0].param = Z_DEFLATE_LEVEL;
+    params[0].buf = NULL; /* adequate size, no buffer to write to */
+    params[0].size = sizeof(int32_t);
+    params[1].param = Z_DEFLATE_STRATEGY;
+    params[1].buf = &strategy;
+    params[1].size = sizeof(strategy);
+    EXPECT_EQ(zng_deflateGetParams(&strm, params, 2), Z_BUF_ERROR);
+    EXPECT_EQ(params[0].status, Z_BUF_ERROR);
+    EXPECT_EQ(params[1].status, Z_OK);
+    EXPECT_EQ(strategy, Z_DEFAULT_STRATEGY);
+    EXPECT_EQ(level, -1);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
+
 /* zng_deflateGetParams with an unknown parameter id:
  * - rejected with Z_VERSION_ERROR, the code the API uses for unsupported
  *   parameters. */
@@ -561,6 +627,34 @@ TEST(deflate_api_errors, deflate_init2_versioned_bad_args) {
                                     NULL, (int32_t)sizeof(strm)),
               Z_VERSION_ERROR);
 }
+
+/* The versioned entry points compare only the leading character of the version
+ * string plus the stream size, exactly as upstream zlib does:
+ * - a version whose first character differs from the library's is rejected with
+ *   Z_VERSION_ERROR by both zng_deflateInit_ and zng_deflateInit2_;
+ * - any other string is accepted on its own merit, so "1.0.0" passes while the
+ *   stream size stays correct, which is the documented compatibility rule
+ *   rather than a bug;
+ * - the library's own version with the right size is accepted and yields a
+ *   usable stream.
+ * This is compat-only: the native API has no versioned entry points. */
+TEST(deflate_api_errors, deflate_init_versioned_first_character_only) {
+    PREFIX3(stream) strm;
+    memset(&strm, 0, sizeof(strm));
+    EXPECT_EQ(PREFIX(deflateInit_)(&strm, Z_DEFAULT_COMPRESSION, "2.0.0", (int32_t)sizeof(strm)), Z_VERSION_ERROR);
+
+    memset(&strm, 0, sizeof(strm));
+    EXPECT_EQ(PREFIX(deflateInit2_)(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS, MAX_MEM_LEVEL,
+                                    Z_DEFAULT_STRATEGY, "2.0.0", (int32_t)sizeof(strm)), Z_VERSION_ERROR);
+
+    memset(&strm, 0, sizeof(strm));
+    EXPECT_EQ(PREFIX(deflateInit_)(&strm, Z_DEFAULT_COMPRESSION, "1.0.0", (int32_t)sizeof(strm)), Z_OK);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+
+    memset(&strm, 0, sizeof(strm));
+    EXPECT_EQ(PREFIX(deflateInit_)(&strm, Z_DEFAULT_COMPRESSION, ZLIB_VERSION, (int32_t)sizeof(strm)), Z_OK);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
 #endif /* ZLIB_COMPAT */
 
 /* ========================================================================== */
@@ -660,6 +754,22 @@ TEST(deflate_api_errors, deflate_prime_bits_out_of_range) {
     EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
 }
 
+/* zng_deflatePrime accepts bit counts up to the width of its 64-bit bit buffer,
+ * which is wider than upstream zlib's 16-bit limit:
+ * - 0, 1, 8, 16 and 64 bits are all accepted with Z_OK on a fresh stream;
+ * - each stream still ends cleanly.
+ * Pinning the accepted range makes any future narrowing of it visible rather
+ * than silent. */
+TEST(deflate_api_errors, deflate_prime_bits_accepted_range) {
+    const int32_t bit_counts[] = { 0, 1, 8, 16, 64 };
+    for (size_t index = 0; index < sizeof(bit_counts) / sizeof(bit_counts[0]); index++) {
+        PREFIX3(stream) strm;
+        ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+        EXPECT_EQ(PREFIX(deflatePrime)(&strm, bit_counts[index], 0x5a5a5a5a), Z_OK);
+        EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+    }
+}
+
 /* ========================================================================== */
 /* zng_deflateReset / zng_deflateResetKeep                                    */
 /* ========================================================================== */
@@ -677,6 +787,193 @@ TEST(deflate_api_errors, deflate_reset_uninitialized_stream) {
     PREFIX3(stream) strm = zeroed_stream();
     EXPECT_EQ(PREFIX(deflateReset)(&strm), Z_STREAM_ERROR);
     EXPECT_EQ(PREFIX(deflateResetKeep)(&strm), Z_STREAM_ERROR);
+}
+
+/* Preset dictionary and text whose compressed size depends on that dictionary
+ * being available to the compressor. */
+static const char kPresetDictionary[] =
+    "the quick brown fox jumps over the lazy dog. pack my box with five dozen "
+    "liquor jugs. sphinx of black quartz judge my vow. how vexingly quick daft "
+    "zebras jump!";
+static const char kMatchedText[] = "zebras jump! five dozen liquor jugs.";
+
+/* Compress kMatchedText with a raw stream primed by kPresetDictionary.
+ * Returns the number of compressed bytes written, or 0 on failure. */
+static size_t compress_matched_with_preset(uint8_t *buffer, size_t buffer_size) {
+    PREFIX3(stream) strm;
+    memset(&strm, 0, sizeof(strm));
+    if (PREFIX(deflateInit2)(&strm, Z_BEST_COMPRESSION, Z_DEFLATED, -MAX_WBITS,
+                             MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY) != Z_OK)
+        return 0;
+    if (PREFIX(deflateSetDictionary)(&strm, (const uint8_t *)kPresetDictionary,
+                                     (uint32_t)strlen(kPresetDictionary)) != Z_OK) {
+        PREFIX(deflateEnd)(&strm);
+        return 0;
+    }
+    strm.next_in = (z_const unsigned char *)kMatchedText;
+    strm.avail_in = (unsigned int)strlen(kMatchedText);
+    strm.next_out = buffer;
+    strm.avail_out = (unsigned int)buffer_size;
+    int32_t ret = PREFIX(deflate)(&strm, Z_FINISH);
+    size_t produced = (size_t)strm.total_out;
+    PREFIX(deflateEnd)(&strm);
+    return (ret == Z_STREAM_END) ? produced : 0;
+}
+
+/* Inflate a raw stream and check that the result matches kMatchedText exactly.
+ * With use_dictionary set the preset dictionary is supplied first, which is
+ * what a stream compressed against that context needs in order to resolve its
+ * back-references. */
+static bool inflate_matched_text(const uint8_t *compressed, size_t compressed_len, int use_dictionary) {
+    PREFIX3(stream) strm;
+    memset(&strm, 0, sizeof(strm));
+    if (PREFIX(inflateInit2)(&strm, -MAX_WBITS) != Z_OK)
+        return false;
+    if (use_dictionary &&
+        PREFIX(inflateSetDictionary)(&strm, (const uint8_t *)kPresetDictionary,
+                                     (uint32_t)strlen(kPresetDictionary)) != Z_OK) {
+        PREFIX(inflateEnd)(&strm);
+        return false;
+    }
+    uint8_t output[128];
+    strm.next_in = (z_const unsigned char *)compressed;
+    strm.avail_in = (unsigned int)compressed_len;
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    bool ok = PREFIX(inflate)(&strm, Z_FINISH) == Z_STREAM_END &&
+              strm.total_out == strlen(kMatchedText) &&
+              memcmp(output, kMatchedText, strlen(kMatchedText)) == 0;
+    PREFIX(inflateEnd)(&strm);
+    return ok;
+}
+
+/* deflateResetKeep() keeps the window that deflateSetDictionary() loaded while
+ * deflateReset() discards it. This is the only observable difference between
+ * the two: both clear the bit buffer, the counters and msg.
+ * - compressing kMatchedText against the preset dictionary yields far fewer
+ *   bytes than the text itself, which only holds if the compressor referenced
+ *   the dictionary;
+ * - after deflateResetKeep() the window is still reported by
+ *   deflateGetDictionary(), and re-compressing the same text stays small;
+ * - after deflateReset() the window is reported as empty and the same text
+ *   needs noticeably more bytes, because there is nothing left to reference;
+ * - the stream produced after deflateReset() is self-contained: it inflates
+ *   back to the original text without any dictionary, which shows that the
+ *   reset really removed all dependence on the preset.
+ *
+ * The kept-window output is not inflated back: its references reach into
+ * history from the earlier pass, beyond the preset dictionary. */
+TEST(deflate_api_errors, deflate_reset_keep_preserves_window) {
+    uint8_t reference[128];
+    size_t reference_len = compress_matched_with_preset(reference, sizeof(reference));
+    ASSERT_GT(reference_len, 0u);
+    /* Only possible if the compressor used the preset dictionary. */
+    ASSERT_LT(reference_len, strlen(kMatchedText));
+    ASSERT_TRUE(inflate_matched_text(reference, reference_len, 1));
+
+    /* deflateResetKeep(): window retained. */
+    size_t kept_len = 0;
+    {
+        PREFIX3(stream) strm;
+        ASSERT_EQ(init_deflate(&strm, -MAX_WBITS), Z_OK);
+        ASSERT_EQ(PREFIX(deflateSetDictionary)(&strm, (const uint8_t *)kPresetDictionary,
+                                                (uint32_t)strlen(kPresetDictionary)), Z_OK);
+        uint8_t first[128];
+        strm.next_in = (z_const unsigned char *)kMatchedText;
+        strm.avail_in = (unsigned int)strlen(kMatchedText);
+        strm.next_out = first;
+        strm.avail_out = (unsigned int)sizeof(first);
+        ASSERT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+
+        uint32_t loaded = 0;
+        ASSERT_EQ(PREFIX(deflateGetDictionary)(&strm, NULL, &loaded), Z_OK);
+        ASSERT_GT(loaded, 0u);
+
+        EXPECT_EQ(PREFIX(deflateResetKeep)(&strm), Z_OK);
+        uint32_t kept = 0;
+        EXPECT_EQ(PREFIX(deflateGetDictionary)(&strm, NULL, &kept), Z_OK);
+        EXPECT_EQ(kept, loaded);
+
+        strm.next_in = (z_const unsigned char *)kMatchedText;
+        strm.avail_in = (unsigned int)strlen(kMatchedText);
+        strm.next_out = first;
+        strm.avail_out = (unsigned int)sizeof(first);
+        ASSERT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+        kept_len = (size_t)strm.total_out;
+        /* Still short: the retained window is available as compression context. */
+        EXPECT_LT(kept_len, strlen(kMatchedText));
+        EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+    }
+
+    /* deflateReset(): window discarded. */
+    size_t dropped_len = 0;
+    {
+        PREFIX3(stream) strm;
+        ASSERT_EQ(init_deflate(&strm, -MAX_WBITS), Z_OK);
+        ASSERT_EQ(PREFIX(deflateSetDictionary)(&strm, (const uint8_t *)kPresetDictionary,
+                                                (uint32_t)strlen(kPresetDictionary)), Z_OK);
+        uint8_t first[128];
+        strm.next_in = (z_const unsigned char *)kMatchedText;
+        strm.avail_in = (unsigned int)strlen(kMatchedText);
+        strm.next_out = first;
+        strm.avail_out = (unsigned int)sizeof(first);
+        ASSERT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+
+        uint32_t loaded = 0;
+        ASSERT_EQ(PREFIX(deflateGetDictionary)(&strm, NULL, &loaded), Z_OK);
+        ASSERT_GT(loaded, 0u);
+
+        EXPECT_EQ(PREFIX(deflateReset)(&strm), Z_OK);
+        uint32_t dropped = 1;
+        EXPECT_EQ(PREFIX(deflateGetDictionary)(&strm, NULL, &dropped), Z_OK);
+        EXPECT_EQ(dropped, 0u);
+
+        strm.next_in = (z_const unsigned char *)kMatchedText;
+        strm.avail_in = (unsigned int)strlen(kMatchedText);
+        strm.next_out = first;
+        strm.avail_out = (unsigned int)sizeof(first);
+        ASSERT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+        dropped_len = (size_t)strm.total_out;
+        /* No dictionary needed: nothing in the stream refers to the preset. */
+        EXPECT_TRUE(inflate_matched_text(first, dropped_len, 0));
+        EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+    }
+
+    /* Keeping the window must give better compression than discarding it. The
+     * retained-window result can be shorter than the single-pass reference,
+     * because the earlier pass left additional history behind as well. */
+    EXPECT_GT(dropped_len, kept_len);
+}
+
+/* deflateResetKeep() on a live stream:
+ * - returns Z_OK and clears msg, data_type and both byte counters;
+ * - the stream stays usable for a fresh payload. */
+TEST(deflate_api_errors, deflate_reset_keep_clears_counters) {
+    PREFIX3(stream) strm;
+    uint8_t input[64];
+    uint8_t output[128];
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    memset(input, 'a', sizeof(input));
+    strm.next_in = input;
+    strm.avail_in = (unsigned int)sizeof(input);
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    ASSERT_EQ(PREFIX(deflate)(&strm, Z_NO_FLUSH), Z_OK);
+    ASSERT_GT(strm.total_out, 0u);
+
+    EXPECT_EQ(PREFIX(deflateResetKeep)(&strm), Z_OK);
+    EXPECT_EQ(strm.msg, (char *)NULL);
+    EXPECT_EQ(strm.data_type, Z_UNKNOWN);
+    EXPECT_EQ(strm.total_in, 0u);
+    EXPECT_EQ(strm.total_out, 0u);
+
+    strm.next_in = input;
+    strm.avail_in = (unsigned int)sizeof(input);
+    strm.next_out = output;
+    strm.avail_out = (unsigned int)sizeof(output);
+    EXPECT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END);
+    EXPECT_GT(strm.total_out, 0u);
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
 }
 
 /* ========================================================================== */
@@ -833,6 +1130,49 @@ TEST(deflate_api_errors, deflate_set_params_buffer_too_small) {
     EXPECT_EQ(zng_deflateSetParams(&strm, params, 1), Z_BUF_ERROR);
     EXPECT_EQ(params[0].status, Z_BUF_ERROR);
     EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
+
+/* zng_deflateSetParams with a NULL value buffer but an adequate size:
+ * - reported as Z_BUF_ERROR, both as the return value and in the
+ *   per-parameter status, instead of reading the requested value through NULL;
+ * - nothing is applied: the level stays at what the stream was initialized
+ *   with, which is verified by reading it back;
+ * - the stream remains usable and ends cleanly. */
+TEST(deflate_api_errors, deflate_set_params_null_buf) {
+    PREFIX3(stream) strm;
+    ASSERT_EQ(init_deflate(&strm, MAX_WBITS), Z_OK);
+    zng_deflate_param_value params[1];
+    memset(params, 0, sizeof(params));
+    params[0].param = Z_DEFLATE_LEVEL;
+    params[0].buf = NULL; /* adequate size, no buffer to read from */
+    params[0].size = sizeof(int32_t);
+    EXPECT_EQ(zng_deflateSetParams(&strm, params, 1), Z_BUF_ERROR);
+    EXPECT_EQ(params[0].status, Z_BUF_ERROR);
+
+    /* The rejected request must not have changed anything. */
+    int32_t level = -1;
+    zng_deflate_param_value readback[1];
+    memset(readback, 0, sizeof(readback));
+    readback[0].param = Z_DEFLATE_LEVEL;
+    readback[0].buf = &level;
+    readback[0].size = sizeof(level);
+    ASSERT_EQ(zng_deflateGetParams(&strm, readback, 1), Z_OK);
+    EXPECT_EQ(level, 6); /* Z_DEFAULT_COMPRESSION resolves to 6 */
+    EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+}
+
+/* zng_deflateSetParams with a NULL stream and a NULL parameter array:
+ * - the buffer check runs before the stream check, so this combination reports
+ *   Z_BUF_ERROR rather than Z_STREAM_ERROR; the same precedence applies to
+ *   zng_deflateGetParams. Pinned here so that a future reordering of the two
+ *   checks is visible as a test failure rather than a silent API change. */
+TEST(deflate_api_errors, deflate_params_null_stream_and_array) {
+    EXPECT_EQ(zng_deflateSetParams(NULL, NULL, 1), Z_BUF_ERROR);
+    EXPECT_EQ(zng_deflateGetParams(NULL, NULL, 1), Z_BUF_ERROR);
+    /* With a count of zero there is no buffer to complain about, so the
+     * invalid stream is reported instead. */
+    EXPECT_EQ(zng_deflateSetParams(NULL, NULL, 0), Z_STREAM_ERROR);
+    EXPECT_EQ(zng_deflateGetParams(NULL, NULL, 0), Z_STREAM_ERROR);
 }
 
 /* zng_deflateSetParams with the same parameter listed twice:
@@ -1020,8 +1360,12 @@ TEST(deflate_api_errors, deflate_init_recover_after_alloc_failure) {
 /* zng_deflateCopy when the copy's allocation fails:
  * - Z_MEM_ERROR is returned and no extra allocation leaks (the source's
  *   init allocation is the only one);
- * - as in upstream zlib, the destination is clobbered by the failed attempt
- *   (its state aliases the source's) and must not be used;
+ * - the destination is clobbered by the failed attempt: its fields, including
+ *   a state pointer that aliases the source's, are copied over before the
+ *   allocation is attempted;
+ * - ending that failed destination is still rejected with Z_STREAM_ERROR, so
+ *   the common "clean up after a failed copy" idiom cannot double-free the
+ *   source's buffers;
  * - the source stream is unaffected: it still compresses, ends with
  *   Z_DATA_ERROR (mid-stream), and releases exactly one allocation. */
 TEST(deflate_api_errors, deflate_copy_alloc_failure) {
@@ -1041,9 +1385,11 @@ TEST(deflate_api_errors, deflate_copy_alloc_failure) {
     /* The failed copy must not leak: only the one init allocation exists. */
     EXPECT_EQ(zone.allocs, 1);
     EXPECT_EQ(zone.frees, 0);
-    /* As in upstream zlib, dest is clobbered by the copy attempt (its state
-     * now aliases source's); it must simply not be used afterwards. The
-     * source stream is unaffected and still works. */
+    /* dest was clobbered before the allocation failed and now aliases source's
+     * state; ending it must be rejected so cleanup cannot double free. */
+    EXPECT_EQ(PREFIX(deflateEnd)(&dest), Z_STREAM_ERROR);
+
+    /* The source stream is unaffected and still works. */
     ASSERT_EQ(start_compression(&source), Z_OK);
     EXPECT_EQ(PREFIX(deflateEnd)(&source), Z_DATA_ERROR);
     EXPECT_EQ(zone.frees, 1);
