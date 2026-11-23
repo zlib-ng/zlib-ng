@@ -164,8 +164,10 @@ int32_t Z_EXPORT PREFIX(inflateBack)(PREFIX3(stream) *strm, PREFIX(in_func) in, 
     static const uint16_t order[19] = /* permutation of code lengths */
         {16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15};
 
-    /* Check that the strm exists and that the state was initialized */
-    if (strm == NULL || strm->state == NULL)
+    /* Check that the strm exists, that the state was initialized, and that
+       both callbacks are provided: a NULL callback is called through as soon
+       as input runs out or the window fills. */
+    if (strm == NULL || strm->state == NULL || in == NULL || out == NULL)
         return Z_STREAM_ERROR;
     state = (struct inflate_state *)strm->state;
 
