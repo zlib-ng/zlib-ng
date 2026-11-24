@@ -26,12 +26,6 @@ static unsigned char dist_code[DIST_CODE_LEN];
 static unsigned char length_code[STD_MAX_MATCH-STD_MIN_MATCH+1];
 /* length code for each normalized match length (0 == STD_MIN_MATCH) */
 
-static int base_length[LENGTH_CODES];
-/* First normalized length for each code (0 = STD_MIN_MATCH) */
-
-static int base_dist[D_CODES];
-/* First normalized distance for each code (0 = distance of 1) */
-
 
 static void tr_static_init(void) {
     int n;        /* iterates over tree elements */
@@ -45,7 +39,6 @@ static void tr_static_init(void) {
     /* Initialize the mapping length (0..255) -> length code (0..28) */
     length = 0;
     for (code = 0; code < LENGTH_CODES-1; code++) {
-        base_length[code] = length;
         for (n = 0; n < (1 << extra_lbits[code]); n++) {
             length_code[length++] = (unsigned char)code;
         }
@@ -59,7 +52,6 @@ static void tr_static_init(void) {
     /* Initialize the mapping dist (0..32K) -> dist code (0..29) */
     dist = 0;
     for (code = 0; code < 16; code++) {
-        base_dist[code] = dist;
         for (n = 0; n < (1 << extra_dbits[code]); n++) {
             dist_code[dist++] = (unsigned char)code;
         }
@@ -67,7 +59,6 @@ static void tr_static_init(void) {
     Assert(dist == 256, "tr_static_init: dist != 256");
     dist >>= 7; /* from now on, all distances are divided by 128 */
     for ( ; code < D_CODES; code++) {
-        base_dist[code] = dist << 7;
         for (n = 0; n < (1 << (extra_dbits[code]-7)); n++) {
             dist_code[256 + dist++] = (unsigned char)code;
         }
