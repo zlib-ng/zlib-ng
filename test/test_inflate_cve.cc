@@ -376,3 +376,31 @@ TEST(inflate, reset_restores_requested_window) {
     EXPECT_EQ(memcmp(src, dst, sizeof(src)), 0);
     EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
 }
+
+/* Bits from inflatePrime() did not come from next_in, so inflate_fast() must not hand them back
+ * as input bytes. Otherwise next_in ends up before the start of the input buffer. */
+TEST(inflate, primed_bits_skip_fast_path) {
+    PREFIX3(stream) strm;
+    /* Guard bytes before the input catch a next_in that moved back. */
+    uint8_t buf[8 + 16], dst[1024];
+    uint8_t *input = buf + 8;
+
+    memset(buf, 0xff, 8);
+    memset(input, 0, 16);
+
+    memset(&strm, 0, sizeof(strm));
+    ASSERT_EQ(PREFIX(inflateInit2)(&strm, -MAX_WBITS), Z_OK);
+    /* Fixed block with only an end-of-block code, then a last fixed block with only an
+     * end-of-block code, in 20 of the 32 primed bits. */
+    ASSERT_EQ(PREFIX(inflatePrime)(&strm, 16, 0x0c02), Z_OK);
+    ASSERT_EQ(PREFIX(inflatePrime)(&strm, 16, 0), Z_OK);
+    strm.next_in = input;
+    strm.avail_in = 16;
+    strm.next_out = dst;
+    strm.avail_out = sizeof(dst);
+    EXPECT_EQ(PREFIX(inflate)(&strm, Z_NO_FLUSH), Z_STREAM_END) << (strm.msg ? strm.msg : "");
+    EXPECT_GE(strm.next_in, input);
+    EXPECT_EQ(strm.next_in + strm.avail_in, input + 16);
+    EXPECT_EQ(strm.total_out, 0u);
+    EXPECT_EQ(PREFIX(inflateEnd)(&strm), Z_OK);
+}

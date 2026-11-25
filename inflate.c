@@ -940,8 +940,9 @@ int32_t Z_EXPORT PREFIX(inflate)(PREFIX3(stream) *strm, int32_t flush) {
             Z_FALLTHROUGH;
 
         case LEN:
-            /* use inflate_fast() if we have enough input and output */
-            if (have >= INFLATE_FAST_MIN_HAVE && left >= INFLATE_FAST_MIN_SAFE) {
+            /* use inflate_fast() if we have enough input and output, and fewer than eight bits are
+               buffered, since it returns every unused whole byte to next_in on exit */
+            if (have >= INFLATE_FAST_MIN_HAVE && left >= INFLATE_FAST_MIN_SAFE && bits < 8) {
                 RESTORE();
                 if (LIKELY(left >= INFLATE_FAST_MIN_LEFT))
                     FUNCTABLE_CALL(inflate_fast)(strm, out);
