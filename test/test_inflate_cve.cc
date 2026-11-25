@@ -379,7 +379,7 @@ TEST(inflate, reset_restores_requested_window) {
 
 /* Bits from inflatePrime() did not come from next_in, so inflate_fast() must not hand them back
  * as input bytes. Otherwise next_in ends up before the start of the input buffer. */
-TEST(inflate, primed_bits_skip_fast_path) {
+TEST(inflate, primed_bits_fast_path) {
     PREFIX3(stream) strm;
     /* Guard bytes before the input catch a next_in that moved back. */
     uint8_t buf[8 + 16], dst[1024];
