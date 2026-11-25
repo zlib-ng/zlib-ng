@@ -117,6 +117,9 @@ if(WITH_BENCHMARK_APPS)
     find_package(PNG QUIET)
 
     if(NOT PNG_FOUND)
+        # Keep libpng's own tests out of CTest, their programs are not built
+        set(PNG_TESTS OFF)
+
         FetchContent_Declare(PNG
             GIT_REPOSITORY https://github.com/glennrp/libpng.git
             ${ZNG_FetchContent_Declare_EXCLUDE_FROM_ALL})
