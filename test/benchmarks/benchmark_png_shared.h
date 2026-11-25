@@ -86,7 +86,7 @@ static void read_from_pngdat(png_structp png, png_bytep out, png_size_t bytes_to
     io->cur_pos += bytes_to_read;
 }
 
-static inline int decode_png(png_parse_dat *dat, png_bytepp out_bytes, size_t in_size, uint32_t &width, uint32_t &height) {
+static inline size_t decode_png(png_parse_dat *dat, png_bytepp out_bytes, size_t in_size, uint32_t &width, uint32_t &height) {
     png_structp png = NULL;
     png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 
