@@ -47,47 +47,38 @@ Z_FORCEINLINE static slide_word_t slide_swar_lt32k(slide_word_t v, slide_word_t 
     return t & ((ge - (ge >> 15)) | (v & SLIDE_SWAR_MSB));
 }
 
-/* Slide the hash table when sliding the window down.
- * fill_window slides by at most 32768, so larger test values fall through to the scalar loop.
+/* Slide the hash table when sliding the window down, two words at a time.
  * Kept out of line so Clang does not duplicate the loops at all three call sites. */
 Z_NOINLINE static void slide_hash_c_chain(Pos *table, uint32_t entries, Pos wsize) {
-    if (((uintptr_t)table & (sizeof(slide_word_t) - 1)) == 0) {
-        Pos *q = (Pos *)HINT_ALIGNED(table, sizeof(slide_word_t));
-        if (wsize == 32768) {
-            while (entries >= 2 * SLIDE_SWAR_LANES) {
-                slide_word_t v0 = slide_load(q);
-                slide_word_t v1 = slide_load(q + SLIDE_SWAR_LANES);
-                slide_store(q, slide_swar_32k(v0));
-                slide_store(q + SLIDE_SWAR_LANES, slide_swar_32k(v1));
-                q += 2 * SLIDE_SWAR_LANES;
-                entries -= 2 * SLIDE_SWAR_LANES;
-            }
-        } else if (wsize < 32768) {
-            slide_word_t sw = (slide_word_t)wsize * SLIDE_SWAR_REP;
-            while (entries >= 2 * SLIDE_SWAR_LANES) {
-                slide_word_t v0 = slide_load(q);
-                slide_word_t v1 = slide_load(q + SLIDE_SWAR_LANES);
-                slide_store(q, slide_swar_lt32k(v0, sw));
-                slide_store(q + SLIDE_SWAR_LANES, slide_swar_lt32k(v1, sw));
-                q += 2 * SLIDE_SWAR_LANES;
-                entries -= 2 * SLIDE_SWAR_LANES;
-            }
-        }
-        table = q;
-    }
+    Assert(((uintptr_t)table & (sizeof(slide_word_t) - 1)) == 0, "table must be word aligned");
+    Assert(entries > 0 && (entries % (2 * SLIDE_SWAR_LANES)) == 0, "hash table size err");
+    Assert(wsize <= 32768, "slide_len should not exceed 32768");
 
-    Pos *q = table;
-    for (uint32_t i = 0; i < entries; i++) {
-        Pos m = *q;
-        *q++ = (m >= wsize) ? m - wsize : 0;
+    Pos *q = (Pos *)HINT_ALIGNED(table, sizeof(slide_word_t));
+    if (wsize == 32768) {
+        do {
+            slide_word_t v0 = slide_load(q);
+            slide_word_t v1 = slide_load(q + SLIDE_SWAR_LANES);
+            slide_store(q, slide_swar_32k(v0));
+            slide_store(q + SLIDE_SWAR_LANES, slide_swar_32k(v1));
+            q += 2 * SLIDE_SWAR_LANES;
+            entries -= 2 * SLIDE_SWAR_LANES;
+        } while (entries > 0);
+    } else {
+        slide_word_t sw = (slide_word_t)wsize * SLIDE_SWAR_REP;
+        do {
+            slide_word_t v0 = slide_load(q);
+            slide_word_t v1 = slide_load(q + SLIDE_SWAR_LANES);
+            slide_store(q, slide_swar_lt32k(v0, sw));
+            slide_store(q + SLIDE_SWAR_LANES, slide_swar_lt32k(v1, sw));
+            q += 2 * SLIDE_SWAR_LANES;
+            entries -= 2 * SLIDE_SWAR_LANES;
+        } while (entries > 0);
     }
-    /* If entries is not on any hash chain, prev[entries] is garbage but
-     * its value will never be used.
-     */
 }
 
 Z_INTERNAL void slide_hash_c(deflate_state *s) {
-    Assert(s->slide_len <= UINT16_MAX, "slide_len should fit in uint16_t");
+    Assert(s->slide_len <= 32768, "slide_len should not exceed 32768");
     Pos slide = (Pos)s->slide_len;
 
     slide_hash_c_chain(s->head, HASH_SIZE, slide);
@@ -95,7 +86,7 @@ Z_INTERNAL void slide_hash_c(deflate_state *s) {
 }
 
 Z_INTERNAL void slide_hash_head_c(deflate_state *s) {
-    Assert(s->slide_len <= UINT16_MAX, "slide_len should fit in uint16_t");
+    Assert(s->slide_len <= 32768, "slide_len should not exceed 32768");
     Pos slide = (Pos)s->slide_len;
 
     slide_hash_c_chain(s->head, HASH_SIZE, slide);
