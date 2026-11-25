@@ -58,7 +58,7 @@ public:
 
         for (size_t i = 0; i < 10; ++i) {
             std::string test_fname = "test_pngs/" + std::to_string(i) + ".png";
-            FILE *in_img = fopen(test_fname.c_str(), "r");
+            FILE *in_img = fopen(test_fname.c_str(), "rb");
             if (in_img == NULL) {
                 for (size_t j = 0; j < i; ++j) {
                     if (files[j])
