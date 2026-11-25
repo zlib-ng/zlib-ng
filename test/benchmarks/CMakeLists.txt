@@ -103,6 +103,16 @@ add_test(NAME benchmark_zlib
 if(WITH_BENCHMARK_APPS)
     option(BUILD_ALT_BENCH "Link against alternative zlib implementation" OFF)
 
+    if(ZLIB_COMPAT AND NOT ZLIB_LIBRARY)
+        # Have libpng find the zlib-ng being built, so it needs no installed zlib
+        set(ZLIB_ROOT ${PROJECT_BINARY_DIR})
+        set(ZLIB_LIBRARY zlib-ng-static)
+        if(NOT TARGET ZLIB::ZLIB)
+            add_library(ZLIB::ZLIB INTERFACE IMPORTED)
+            target_link_libraries(ZLIB::ZLIB INTERFACE zlib-ng-static)
+        endif()
+    endif()
+
     # Search for libpng package
     find_package(PNG QUIET)
 
