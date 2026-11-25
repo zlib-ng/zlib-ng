@@ -66,8 +66,8 @@ public:
                 }
 
                 /* For proper cleanup */
-                for (size_t j = i; j < 10; ++j) {
-                    inpng[i] = { NULL, 0, 0 };
+                for (size_t j = 0; j < 10; ++j) {
+                    inpng[j] = { NULL, 0, 0 };
                 }
 
                 return;
