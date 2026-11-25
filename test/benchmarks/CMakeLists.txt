@@ -163,4 +163,7 @@ if(WITH_BENCHMARK_APPS)
     # otherwise it will resolve these things in the system provided dynamic
     # libraries (likely linked to stock zlib)
     target_link_libraries(benchmark_zlib_apps ${PNG_STATIC_LIBRARY} zlib-ng-static benchmark::benchmark)
+
+    add_test(NAME benchmark_zlib_apps
+        COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:benchmark_zlib_apps> "--benchmark_min_time=0")
 endif()
