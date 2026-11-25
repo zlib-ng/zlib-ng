@@ -32,13 +32,13 @@ static void slide_hash_run(slide_hash_func func, uint32_t wsize, Pos slide, bool
     for (uint32_t i = 0; i < wsize; i++)
         prev[i] = head_only ? (Pos)0xA55Au : (Pos)((i * 25173u) ^ 0x9E37u);
 
-    deflate_state s;
-    memset(&s, 0, sizeof(s));
-    s.head = head;
-    s.prev = prev;
-    s.w_size = wsize;
-    s.slide_len = slide;
-    func(&s);
+    deflate_state state;
+    memset(&state, 0, sizeof(state));
+    state.head = head;
+    state.prev = prev;
+    state.w_size = wsize;
+    state.slide_len = slide;
+    func(&state);
 
     for (uint32_t i = 0; i < HASH_SIZE; i++)
         ASSERT_EQ(head[i], slide_ref((Pos)(i * 40503u), slide));
@@ -53,10 +53,10 @@ static void slide_hash_run(slide_hash_func func, uint32_t wsize, Pos slide, bool
 
 static void slide_hash_check(slide_hash_func func, slide_hash_func head_func) {
     static const uint32_t wsizes[] = {512u, 4096u, MAX_TEST_WSIZE};
-    for (size_t k = 0; k < sizeof(wsizes) / sizeof(wsizes[0]); k++) {
-        slide_hash_run(func, wsizes[k], (Pos)wsizes[k], false);
+    for (size_t i = 0; i < sizeof(wsizes) / sizeof(wsizes[0]); i++) {
+        slide_hash_run(func, wsizes[i], (Pos)wsizes[i], false);
         if (head_func != nullptr)
-            slide_hash_run(head_func, wsizes[k], (Pos)wsizes[k], true);
+            slide_hash_run(head_func, wsizes[i], (Pos)wsizes[i], true);
     }
 }
 
@@ -75,9 +75,9 @@ TEST_SLIDE_HASH(c, slide_hash_c, slide_hash_head_c, 1)
 
 TEST(slide_hash, c_edge_cases) {
     static const Pos slides[] = {0, 1, 511, 28672, 32256, 32767, 32768};
-    for (size_t k = 0; k < sizeof(slides) / sizeof(slides[0]); k++) {
-        slide_hash_run(slide_hash_c, 512u, slides[k], false);
-        slide_hash_run(slide_hash_head_c, 512u, slides[k], true);
+    for (size_t i = 0; i < sizeof(slides) / sizeof(slides[0]); i++) {
+        slide_hash_run(slide_hash_c, 512u, slides[i], false);
+        slide_hash_run(slide_hash_head_c, 512u, slides[i], true);
     }
 }
 #endif
