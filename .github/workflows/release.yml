@@ -3,8 +3,11 @@ on:
   push:
     tags:
     - '*'
+permissions:
+  contents: read
+
 jobs:
-  release:
+  build:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
     strategy:
@@ -76,10 +79,7 @@ jobs:
       uses: actions/checkout@v7
       with:
         show-progress: 'false'
-
-    - name: Set environment variables
-      shell: bash
-      run:  echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_ENV
+        persist-credentials: false
 
     - name: Install Windows 11 SDK (ARM)
       if: matrix.name == 'Windows MSVC ARM' || matrix.name == 'Windows MSVC ARM Compat'
@@ -110,14 +110,55 @@ jobs:
       run: 7z a -tzip ../zlib-ng-${{ matrix.deploy-name }}.zip bin include lib ../LICENSE.md ../PORTING.md ../README.md
       working-directory: out
 
-    - name: Upload release (Windows)
-      uses: svenstaro/upload-release-action@v2
-      if: runner.os == 'Windows'
+    - name: Stage release package (Windows)
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
-        asset_name: zlib-ng-${{ matrix.deploy-name }}.zip
-        file: zlib-ng-${{ matrix.deploy-name }}.zip
-        tag: ${{env.tag}}
+        name: zlib-ng-package-${{ matrix.deploy-name }}
+        path: zlib-ng-${{ matrix.deploy-name }}.zip
+        if-no-files-found: error
+
+  publish:
+    # Keep publishing packages from the successful platforms if another build fails.
+    if: ${{ !cancelled() }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    steps:
+    - name: Download completed release packages
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        pattern: zlib-ng-package-*
+        merge-multiple: true
+        path: release-assets
+
+    - name: Check for release packages
+      id: packages
+      shell: bash
+      run: |
+        shopt -s nullglob
+        packages=(release-assets/zlib-ng-*.zip)
+        if (( ${#packages[@]} )); then
+          echo 'found=true' >> "$GITHUB_OUTPUT"
+        fi
+
+    - name: Attest release packages
+      if: steps.packages.outputs.found == 'true'
+      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+      with:
+        subject-path: release-assets/zlib-ng-*.zip
+
+    - name: Upload release packages
+      if: steps.packages.outputs.found == 'true'
+      uses: svenstaro/upload-release-action@29e53e917877a24fad85510ded594ab3c9ca12de # v2
+      with:
+        file: release-assets/zlib-ng-*.zip
+        file_glob: true
+        tag: ${{ github.ref_name }}
         repo_token: ${{ secrets.GITHUB_TOKEN }}
         overwrite: true
       env:
-        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
