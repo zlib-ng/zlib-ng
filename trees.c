@@ -729,7 +729,8 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
 
     /* Local pointers to avoid indirection */
     const unsigned int sym_next = s->sym_next;
-    unsigned char *sym_buf = s->sym_buf;
+    unsigned char * const sym_buf = s->sym_buf;
+    unsigned char * const pending_buf = s->pending_buf;
 
     /* Keep the bit writer state in registers across the entire loop */
     uint64_t bi_buf = s->bi_buf;
@@ -738,7 +739,7 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
 
     if (sym_next != 0) {
         do {
-            send_bits_flush(s, bi_buf, bi_valid, pending);
+            send_bits_flush_buf(pending_buf, bi_buf, bi_valid, pending);
 #if OPTIMAL_CMP >= 32
             uint32_t dist_lc = Z_U32_FROM_LE(zng_memread_4(&sym_buf[sx]));
             dist = dist_lc & 0xffff;
