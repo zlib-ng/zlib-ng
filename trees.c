@@ -720,7 +720,7 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, unsigned char *buf, uint32_
 /* ===========================================================================
  * Send the block data compressed using the given Huffman trees
  */
-static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
+Z_FORCEINLINE static void compress_block_impl(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
     /* ltree: literal tree */
     /* dtree: distance tree */
     unsigned dist;      /* distance of matched string */
@@ -796,6 +796,33 @@ static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data
     s->bi_buf = bi_buf;
     s->bi_valid = bi_valid;
 }
+
+#if defined(ARCH_X86) && defined(ARCH_64BIT) && !defined(ARCH_E2K) && \
+    !defined(__BMI2__) && !defined(DISABLE_RUNTIME_CPU_DETECTION) && \
+    Z_HAS_ATTRIBUTE(__target__) && \
+    ((defined(__GNUC__) && !defined(__clang__)) || \
+     (defined(__clang__) && __has_builtin(__builtin_cpu_supports) && \
+      (defined(__linux__) || defined(__APPLE__))))
+static Z_TARGET("bmi2") void compress_block_bmi2(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
+    compress_block_impl(s, ltree, dtree);
+}
+
+static void compress_block_generic(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
+    compress_block_impl(s, ltree, dtree);
+}
+
+static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
+    if (LIKELY(__builtin_cpu_supports("bmi2"))) {
+        compress_block_bmi2(s, ltree, dtree);
+        return;
+    }
+    compress_block_generic(s, ltree, dtree);
+}
+#else
+static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
+    compress_block_impl(s, ltree, dtree);
+}
+#endif
 
 /* ===========================================================================
  * Check if the data type is TEXT or BINARY, using the following algorithm:
