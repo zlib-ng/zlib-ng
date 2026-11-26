@@ -522,7 +522,7 @@ jobs:
             compiler: nvc
             cxx-compiler: nvc++
             cmake-args: -G Ninja -DWITH_NATIVE_INSTRUCTIONS=ON
-            packages: ninja-build nvhpc-26-3
+            packages: ninja-build nvhpc-26-11
             # Coverage disabled for NVHPC
 
           - name: Ubuntu Emscripten WASM32
