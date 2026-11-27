@@ -34,7 +34,7 @@ public:
     /* State in this circumstance will convey the compression level */
     void Bench(benchmark::State &state, uint8_t *img_buf, int32_t filters) {
         for (auto _ : state) {
-            encode_png((png_bytep)img_buf, &outpng, state.range(0), filters, IMWIDTH, IMHEIGHT);
+            encode_png((png_bytep)img_buf, &outpng, (int32_t)state.range(0), filters, IMWIDTH, IMHEIGHT);
             outpng.buf_rem = outpng.len;
             outpng.len = 0;
         }

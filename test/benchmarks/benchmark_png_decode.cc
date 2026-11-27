@@ -27,7 +27,7 @@ public:
     /* State in this circumstance will convey the compression level */
     void Bench(benchmark::State &state) {
         for (auto _ : state) {
-            int compress_lvl = state.range(0);
+            int compress_lvl = (int)state.range(0);
             png_parse_dat in = { inpng[compress_lvl].buf };
             uint32_t width, height;
             decode_png(&in, (png_bytepp)&output_img_buf, IMWIDTH * IMHEIGHT * 3, width, height);
@@ -58,7 +58,7 @@ public:
 
         for (size_t i = 0; i < 10; ++i) {
             std::string test_fname = "test_pngs/" + std::to_string(i) + ".png";
-            FILE *in_img = fopen(test_fname.c_str(), "r");
+            FILE *in_img = fopen(test_fname.c_str(), "rb");
             if (in_img == NULL) {
                 for (size_t j = 0; j < i; ++j) {
                     if (files[j])
@@ -66,8 +66,8 @@ public:
                 }
 
                 /* For proper cleanup */
-                for (size_t j = i; j < 10; ++j) {
-                    inpng[i] = { NULL, 0, 0 };
+                for (size_t j = 0; j < 10; ++j) {
+                    inpng[j] = { NULL, 0, 0 };
                 }
 
                 return;
@@ -93,7 +93,7 @@ public:
 
             size_t bytes_read = fread(raw_file, 1, num_bytes, in_file);
             if (bytes_read != num_bytes) {
-                fprintf(stderr, "couldn't read all of the bytes for file test_pngs/%lu.png", i);
+                fprintf(stderr, "couldn't read all of the bytes for file test_pngs/%zu.png", i);
                 abort();
             }
 

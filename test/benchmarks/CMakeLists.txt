@@ -103,10 +103,23 @@ add_test(NAME benchmark_zlib
 if(WITH_BENCHMARK_APPS)
     option(BUILD_ALT_BENCH "Link against alternative zlib implementation" OFF)
 
+    if(ZLIB_COMPAT AND NOT ZLIB_LIBRARY)
+        # Have libpng find the zlib-ng being built, so it needs no installed zlib
+        set(ZLIB_ROOT ${PROJECT_BINARY_DIR})
+        set(ZLIB_LIBRARY zlib-ng-static)
+        if(NOT TARGET ZLIB::ZLIB)
+            add_library(ZLIB::ZLIB INTERFACE IMPORTED)
+            target_link_libraries(ZLIB::ZLIB INTERFACE zlib-ng-static)
+        endif()
+    endif()
+
     # Search for libpng package
     find_package(PNG QUIET)
 
     if(NOT PNG_FOUND)
+        # Keep libpng's own tests out of CTest, their programs are not built
+        set(PNG_TESTS OFF)
+
         FetchContent_Declare(PNG
             GIT_REPOSITORY https://github.com/glennrp/libpng.git
             ${ZNG_FetchContent_Declare_EXCLUDE_FROM_ALL})
@@ -150,4 +163,7 @@ if(WITH_BENCHMARK_APPS)
     # otherwise it will resolve these things in the system provided dynamic
     # libraries (likely linked to stock zlib)
     target_link_libraries(benchmark_zlib_apps ${PNG_STATIC_LIBRARY} zlib-ng-static benchmark::benchmark)
+
+    add_test(NAME benchmark_zlib_apps
+        COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:benchmark_zlib_apps> "--benchmark_min_time=0")
 endif()
