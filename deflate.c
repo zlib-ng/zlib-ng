@@ -333,6 +333,17 @@ int32_t ZNG_CONDEXPORT PREFIX(deflateInit2)(PREFIX3(stream) *strm, int32_t level
 
     s->wrap = wrap;
     s->w_size = 1 << windowBits;
+    /* Longest match distance. A window slide keeps at least this much history before strstart. */
+    if (W_BUF_SIZE(s->w_size) >= 2 * s->w_size + MIN_LOOKAHEAD) {
+        /* The buffer fits two windows and the lookahead, so a slide keeps a whole window. The
+         * distance stops one byte short of it. The prev table is indexed by position modulo
+         * w_size, so the position w_size bytes back shares a slot with strstart. Inserting
+         * strstart overwrites the link of that position. */
+        s->max_dist = s->w_size - 1;
+    } else {
+        /* The buffer fits two windows only, so the lookahead takes its room from the kept window */
+        s->max_dist = s->w_size - MIN_LOOKAHEAD;
+    }
 
     s->high_water = 0;      /* nothing written to s->window yet */
 
@@ -1263,7 +1274,8 @@ void Z_INTERNAL PREFIX(fill_window)(deflate_state *s) {
             /* Slide as far as possible while keeping MAX_DIST bytes of history.
              * The slide is a multiple of w_size so prev slots keep their positions. */
             uint32_t slide_len = (s->strstart - MAX_DIST(s)) & ~W_MASK(s);
-            memcpy(window, window + slide_len, s->strstart + s->lookahead - slide_len);
+            /* Keeping a whole window can leave the live data longer than the slide */
+            memmove(window, window + slide_len, s->strstart + s->lookahead - slide_len);
             if (s->match_start >= slide_len) {
                 s->match_start -= slide_len;
             } else {
