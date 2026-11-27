@@ -210,17 +210,16 @@ jobs:
           ref: ${{ steps.refs.outputs.base_ref }}
           path: build-base
 
-      - name: Install packages
-        run: |
-          sudo apt-get -qq update
-          sudo apt-get -qq install -y cmake ninja-build abigail-tools
-          if [ -n "$PACKAGES" ]; then
-            # shellcheck disable=SC2086
-            sudo apt-get -qq install -y $PACKAGES
-          fi
-          if [ -n "$QEMU_BIN" ]; then
-            sudo apt-get -qq install -y qemu-user
-          fi
+    - name: Install packages (Ubuntu)
+      if: runner.os == 'Linux' && !contains(matrix.os, 'z15')
+      run: |
+        PACKAGES="cmake ninja-build abigail-tools $PACKAGES $QEMU_BIN"
+        for i in 1 2 3; do
+          sudo apt-get update && \
+          sudo apt-get install -y --allow-downgrades --no-install-recommends $PACKAGES && \
+          break
+          [ "$i" -lt 3 ] && sleep 10 || exit 1
+        done
 
       - name: Cache bloaty
         id: cache-bloaty

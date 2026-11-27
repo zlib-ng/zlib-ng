@@ -118,11 +118,13 @@ jobs:
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux'
       run: |
-        sudo apt-get update
-        sudo apt-get install -y --no-install-recommends ${{ matrix.packages }} \
-          abigail-tools \
-          diffoscope \
-          ninja-build
+        PACKAGES="abigail-tools diffoscope ninja-build ${{ matrix.packages }}"
+        for i in 1 2 3; do
+          sudo apt-get update && \
+          sudo apt-get install -y --allow-downgrades --no-install-recommends $PACKAGES && \
+          break
+          [ "$i" -lt 3 ] && sleep 10 || exit 1
+        done
 
     - name: Install packages (macOS)
       if: runner.os == 'macOS'

@@ -18,7 +18,14 @@ jobs:
         sudo sed -i 's#http://azure.archive.ubuntu.com/ubuntu/#mirror+file:/etc/apt/mirrors.txt#' /etc/apt/sources.list
 
     - name: Install packages (Ubuntu)
-      run: sudo apt-get install -y gcc-14
+      run: |
+        PACKAGES="gcc-14"
+        for i in 1 2 3; do
+          sudo apt-get update && \
+          sudo apt-get install -y --allow-downgrades --no-install-recommends $PACKAGES && \
+          break
+          [ "$i" -lt 3 ] && sleep 10 || exit 1
+        done
 
     - name: Generate project files
       run: |
@@ -62,7 +69,14 @@ jobs:
         show-progress: 'false'
 
     - name: Install packages (Ubuntu)
-      run: sudo apt-get install -y clang-tools
+      run: |
+        PACKAGES="clang-tools"
+        for i in 1 2 3; do
+          sudo apt-get update && \
+          sudo apt-get install -y --allow-downgrades --no-install-recommends $PACKAGES && \
+          break
+          [ "$i" -lt 3 ] && sleep 10 || exit 1
+        done
 
     - name: Generate project files
       run: |

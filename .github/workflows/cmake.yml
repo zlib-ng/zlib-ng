@@ -897,9 +897,13 @@ jobs:
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && !contains(matrix.os, 'z15')
       run: |
-        sudo apt-get update
-        sudo apt-get install -y --allow-downgrades --no-install-recommends \
-            ${{ matrix.packages || 'libgtest-dev libbenchmark-dev' }}
+        PACKAGES="${{ matrix.packages || 'libgtest-dev libbenchmark-dev' }}"
+        for i in 1 2 3; do
+          sudo apt-get update && \
+          sudo apt-get install -y --allow-downgrades --no-install-recommends $PACKAGES && \
+          break
+          [ "$i" -lt 3 ] && sleep 10 || exit 1
+        done
 
     - name: Update package cache (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages && !contains(matrix.os, 'z15') && steps.restore-apt-cache.outputs.cache-hit != 'true' && !contains(matrix.name, 'NVC')
