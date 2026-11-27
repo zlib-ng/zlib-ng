@@ -75,6 +75,8 @@ static int init_functable(void) {
     cpu_check_features(&cf);
     ft.force_init = &force_init_empty;
 
+    ft.compress_block = &compress_block_c;
+
     // Only use necessary generic functions when no suitable simd versions are available.
 #ifdef ADLER32_FALLBACK
     ft.adler32 = &adler32_c;
@@ -201,6 +203,7 @@ static int init_functable(void) {
         ft.longest_match_slow_knuth = &longest_match_slow_knuth_avx2;
         ft.longest_match_slow_roll = &longest_match_slow_roll_avx2;
 #  endif
+        ft.compress_block = &compress_block_bmi2;
         ft.slide_hash = &slide_hash_avx2;
         ft.slide_hash_head = &slide_hash_head_avx2;
     }
@@ -484,6 +487,7 @@ static int init_functable(void) {
     FUNCTABLE_VERIFY_ASSIGN(ft, adler32_copy);
     FUNCTABLE_VERIFY_ASSIGN(ft, chunkmemset_safe);
     FUNCTABLE_VERIFY_ASSIGN(ft, compare256);
+    FUNCTABLE_VERIFY_ASSIGN(ft, compress_block);
     FUNCTABLE_VERIFY_ASSIGN(ft, crc32);
     FUNCTABLE_VERIFY_ASSIGN(ft, crc32_copy);
     FUNCTABLE_VERIFY_ASSIGN(ft, inflate_fast);
@@ -529,6 +533,11 @@ static uint8_t* chunkmemset_safe_stub(uint8_t* out, uint8_t *from, size_t len, s
 static uint32_t compare256_stub(const uint8_t* src0, const uint8_t* src1) {
     FUNCTABLE_INIT_ABORT;
     return functable.compare256(src0, src1);
+}
+
+static void compress_block_stub(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
+    FUNCTABLE_INIT_ABORT;
+    functable.compress_block(s, ltree, dtree);
 }
 
 static uint32_t crc32_stub(uint32_t crc, const uint8_t* buf, size_t len) {
@@ -583,6 +592,7 @@ Z_INTERNAL struct functable_s functable = {
     adler32_copy_stub,
     chunkmemset_safe_stub,
     compare256_stub,
+    compress_block_stub,
     crc32_stub,
     crc32_copy_stub,
     inflate_fast_stub,

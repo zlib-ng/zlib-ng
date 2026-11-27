@@ -77,15 +77,12 @@ extern Z_INTERNAL const uint32_t dmask_extra[D_CODES];
  * 7 valid bits. The unconditional 8-byte store reaches up to 7 bytes past the logical
  * output position, which the pending buffer layout must reserve room for
  * (see PENDING_BUF_PAD in deflate.c). */
-#define send_bits_flush_buf(pending_buf, bi_buf, bi_valid, pending) do { \
+#define send_bits_flush(pending_buf, bi_buf, bi_valid, pending) do { \
     zng_memwrite_8((pending_buf) + (pending), Z_U64_TO_LE(bi_buf)); \
     pending += (bi_valid) >> 3; \
     bi_buf >>= ((bi_valid) & ~7U); \
     bi_valid &= 7; \
 } while (0)
-
-#define send_bits_flush(s, bi_buf, bi_valid, pending) \
-    send_bits_flush_buf((s)->pending_buf, bi_buf, bi_valid, pending)
 
 /* Send a code of the given tree. c and tree must not have side effects */
 #ifdef ZLIB_DEBUG

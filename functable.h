@@ -28,6 +28,7 @@ struct functable_s {
     uint32_t (* adler32_copy)             (uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
     uint8_t* (* chunkmemset_safe)         (uint8_t *out, uint8_t *from, size_t len, size_t left);
     uint32_t (* compare256)               (const uint8_t *src0, const uint8_t *src1);
+    void     (* compress_block)           (deflate_state *s, const ct_data *ltree, const ct_data *dtree);
     uint32_t (* crc32)                    (uint32_t crc, const uint8_t *buf, size_t len);
     uint32_t (* crc32_copy)               (uint32_t crc, uint8_t *dst, const uint8_t *src, size_t len);
     void     (* inflate_fast)             (PREFIX3(stream) *strm, uint32_t start);

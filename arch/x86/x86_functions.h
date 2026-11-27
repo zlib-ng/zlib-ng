@@ -67,6 +67,7 @@ uint32_t adler32_copy_sse42(uint32_t adler, uint8_t *dst, const uint8_t *src, si
 
 #ifdef X86_AVX2
 uint32_t adler32_avx2(uint32_t adler, const uint8_t *buf, size_t len);
+void     compress_block_bmi2(deflate_state *s, const ct_data *ltree, const ct_data *dtree);
 uint32_t adler32_copy_avx2(uint32_t adler, uint8_t *dst, const uint8_t *src, size_t len);
 uint8_t* chunkmemset_safe_avx2(uint8_t *out, uint8_t *from, size_t len, size_t left);
 uint32_t compare256_avx2(const uint8_t *src0, const uint8_t *src1);

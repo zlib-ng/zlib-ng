@@ -33,6 +33,8 @@
 #include "zbuild.h"
 #include "deflate.h"
 #include "deflate_p.h"
+#include "functable.h"
+#include "arch_functions.h"
 #include "trees.h"
 #include "trees_emit.h"
 #include "trees_tbl.h"
@@ -74,7 +76,6 @@ static void scan_tree        (deflate_state *s, ct_data *tree, int max_code);
 static void send_tree        (deflate_state *s, ct_data *tree, int max_code);
 static int  build_bl_tree    (deflate_state *s);
 static void send_all_trees   (deflate_state *s, int lcodes, int dcodes, int blcodes);
-static void compress_block   (deflate_state *s, const ct_data *ltree, const ct_data *dtree);
 static int  detect_data_type (deflate_state *s);
 
 /* ===========================================================================
@@ -692,12 +693,12 @@ void Z_INTERNAL zng_tr_flush_block(deflate_state *s, unsigned char *buf, uint32_
 
     } else if (static_lenb == opt_lenb) {
         zng_tr_emit_tree(s, STATIC_TREES, last);
-        compress_block(s, (const ct_data *)static_ltree, (const ct_data *)static_dtree);
+        FUNCTABLE_CALL(compress_block)(s, (const ct_data *)static_ltree, (const ct_data *)static_dtree);
         cmpr_bits_add(s, s->static_len);
     } else {
         zng_tr_emit_tree(s, DYN_TREES, last);
         send_all_trees(s, s->l_desc.max_code+1, s->d_desc.max_code+1, max_blindex+1);
-        compress_block(s, (const ct_data *)s->dyn_ltree, (const ct_data *)s->dyn_dtree);
+        FUNCTABLE_CALL(compress_block)(s, (const ct_data *)s->dyn_ltree, (const ct_data *)s->dyn_dtree);
         cmpr_bits_add(s, s->opt_len);
     }
     Assert(s->compressed_len == s->bits_sent, "bad compressed size");
@@ -739,7 +740,7 @@ Z_FORCEINLINE static void compress_block_impl(deflate_state *s, const ct_data *l
 
     if (sym_next != 0) {
         do {
-            send_bits_flush_buf(pending_buf, bi_buf, bi_valid, pending);
+            send_bits_flush(pending_buf, bi_buf, bi_valid, pending);
 #if OPTIMAL_CMP >= 32
             uint32_t dist_lc = Z_U32_FROM_LE(zng_memread_4(&sym_buf[sx]));
             dist = dist_lc & 0xffff;
@@ -797,29 +798,13 @@ Z_FORCEINLINE static void compress_block_impl(deflate_state *s, const ct_data *l
     s->bi_valid = bi_valid;
 }
 
-#if defined(ARCH_X86) && defined(ARCH_64BIT) && !defined(ARCH_E2K) && \
-    !defined(__BMI2__) && !defined(DISABLE_RUNTIME_CPU_DETECTION) && \
-    Z_HAS_ATTRIBUTE(__target__) && \
-    ((defined(__GNUC__) && !defined(__clang__)) || \
-     (defined(__clang__) && __has_builtin(__builtin_cpu_supports) && \
-      (defined(__linux__) || defined(__APPLE__))))
-static Z_TARGET("bmi2") void compress_block_bmi2(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
+Z_INTERNAL void compress_block_c(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
     compress_block_impl(s, ltree, dtree);
 }
 
-static void compress_block_generic(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
-    compress_block_impl(s, ltree, dtree);
-}
-
-static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
-    if (LIKELY(__builtin_cpu_supports("bmi2"))) {
-        compress_block_bmi2(s, ltree, dtree);
-        return;
-    }
-    compress_block_generic(s, ltree, dtree);
-}
-#else
-static void compress_block(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
+#if defined(X86_AVX2) && !defined(DISABLE_RUNTIME_CPU_DETECTION)
+/* Selected with the AVX2 tier, which already requires BMI2 (see functable.c). */
+Z_INTERNAL Z_TARGET("bmi2") void compress_block_bmi2(deflate_state *s, const ct_data *ltree, const ct_data *dtree) {
     compress_block_impl(s, ltree, dtree);
 }
 #endif

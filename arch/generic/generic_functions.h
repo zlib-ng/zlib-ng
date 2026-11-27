@@ -13,6 +13,7 @@ typedef uint32_t (*crc32_copy_func)(uint32_t crc, uint8_t *dst, const uint8_t *s
 typedef void     (*slide_hash_func)(deflate_state *s);
 
 uint32_t crc32_small(uint32_t crc, const uint8_t *buf, size_t len);
+void     compress_block_c(deflate_state *s, const ct_data *ltree, const ct_data *dtree);
 
 #ifdef ADLER32_FALLBACK
 uint32_t adler32_c(uint32_t adler, const uint8_t *buf, size_t len);
@@ -99,6 +100,9 @@ void     slide_hash_head_c(deflate_state *s);
 #    ifndef native_crc32_copy
 #      define native_crc32_copy crc32_copy_braid
 #    endif
+#  endif
+#  ifndef native_compress_block
+#    define native_compress_block compress_block_c
 #  endif
 #  ifdef SLIDE_HASH_FALLBACK
 #    ifndef native_slide_hash
