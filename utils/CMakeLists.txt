@@ -44,6 +44,7 @@ set(MAKEFIXED_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:makefixed> 
 # maketrees
 add_executable(maketrees maketrees.c ${PROJECT_SOURCE_DIR}/trees.c ${PROJECT_SOURCE_DIR}/zutil.c)
 configure_util_executable(maketrees)
+target_compile_definitions(maketrees PRIVATE DISABLE_RUNTIME_CPU_DETECTION)
 set(MAKETREES_COMMAND ${CMAKE_CROSSCOMPILING_EMULATOR} $<TARGET_FILE:maketrees> PARENT_SCOPE)
 
 # makecrct
