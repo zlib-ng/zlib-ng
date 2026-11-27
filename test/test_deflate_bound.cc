@@ -97,3 +97,48 @@ TEST_P(deflate_bound_variant, estimate) {
 }
 
 INSTANTIATE_TEST_SUITE_P(deflate_bound, deflate_bound_variant, testing::ValuesIn(tests));
+
+#ifndef TEST_STOCK_ZLIB
+/* deflate() writes only the low 16 bits of gzhead->extra_len, so deflateBound() counts only those */
+TEST(deflate_bound, gzip_extra_len) {
+    static const uint32_t extra_lens[] = {0xffff, 0x10000, 0xfffffffe, 0xffffffff};
+    static uint8_t extra[0xffff];
+    PREFIX3(stream) strm;
+    PREFIX(gz_header) header;
+    z_size_t bound, expected;
+    uint8_t *out;
+
+    memset(extra, 'e', sizeof(extra));
+    for (size_t i = 0; i < sizeof(extra_lens) / sizeof(extra_lens[0]); i++) {
+        memset(&header, 0, sizeof(header));
+        header.os = 3;
+        header.extra = extra;
+
+        /* the bound of the same header with the 16-bit length deflate() writes */
+        header.extra_len = extra_lens[i] & 0xffff;
+        memset(&strm, 0, sizeof(strm));
+        ASSERT_EQ(PREFIX(deflateInit2)(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS + 16, MAX_MEM_LEVEL,
+            Z_DEFAULT_STRATEGY), Z_OK);
+        ASSERT_EQ(PREFIX(deflateSetHeader)(&strm, &header), Z_OK);
+        expected = PREFIX(deflateBound)(&strm, 0);
+        EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+
+        header.extra_len = extra_lens[i];
+        memset(&strm, 0, sizeof(strm));
+        ASSERT_EQ(PREFIX(deflateInit2)(&strm, Z_DEFAULT_COMPRESSION, Z_DEFLATED, MAX_WBITS + 16, MAX_MEM_LEVEL,
+            Z_DEFAULT_STRATEGY), Z_OK);
+        ASSERT_EQ(PREFIX(deflateSetHeader)(&strm, &header), Z_OK);
+        bound = PREFIX(deflateBound)(&strm, 0);
+        EXPECT_EQ(bound, expected) << "extra_len: " << extra_lens[i];
+
+        /* one deflate(Z_FINISH) into deflateBound() bytes completes the stream */
+        out = (uint8_t *)malloc(bound);
+        ASSERT_TRUE(out != NULL);
+        strm.next_out = out;
+        strm.avail_out = (uint32_t)bound;
+        EXPECT_EQ(PREFIX(deflate)(&strm, Z_FINISH), Z_STREAM_END) << "extra_len: " << extra_lens[i];
+        EXPECT_EQ(PREFIX(deflateEnd)(&strm), Z_OK);
+        free(out);
+    }
+}
+#endif

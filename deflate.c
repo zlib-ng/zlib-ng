@@ -734,7 +734,7 @@ z_size_t Z_EXPORT PREFIX(deflateBound_z)(PREFIX3(stream) *strm, z_size_t sourceL
         if (s->gzhead != NULL) {            /* user-supplied gzip header */
             unsigned char *str;
             if (s->gzhead->extra != NULL) {
-                wraplen += 2 + s->gzhead->extra_len;
+                wraplen += 2 + (s->gzhead->extra_len & 0xffff);
             }
             str = s->gzhead->name;
             if (str != NULL) {
