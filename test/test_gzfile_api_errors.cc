@@ -1067,3 +1067,84 @@ TEST(gzfile_api_errors, setparams_direct_write) {
     EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
     remove("gzapi_err_setparams.gz");
 }
+
+#ifndef _WIN32
+/* Make both ends of a pipe non-blocking and fill it, so that the next write()
+ * to fds[1] fails with EAGAIN without writing anything. */
+static bool fill_pipe(int fds[2]) {
+    char fill[4096];
+    if (pipe(fds) != 0)
+        return false;
+    for (int i = 0; i < 2; i++)
+        if (fcntl(fds[i], F_SETFL, fcntl(fds[i], F_GETFL) | O_NONBLOCK) != 0)
+            return false;
+    memset(fill, 'f', sizeof(fill));
+    while (write(fds[1], fill, sizeof(fill)) > 0) {}
+    while (write(fds[1], fill, 1) > 0) {}
+    return true;
+}
+
+/* Read everything available from the non-blocking read end of a pipe. */
+static void drain_pipe(int fd) {
+    char buf[4096];
+    while (read(fd, buf, sizeof(buf)) > 0) {}
+}
+
+/* gzclose() after a failed direct gzwrite():
+ * - a write of at least the buffer size goes straight from the caller's
+ *   buffer; when write() fails, gzwrite() returns 0 with Z_ERRNO;
+ * - gzwrite() has returned, so the caller may free its buffer; gzclose() must
+ *   not write any of it to the file (here the pipe has room again by then). */
+TEST(gzfile_api_errors, write_failed_direct_close) {
+    int fds[2];
+    ASSERT_TRUE(fill_pipe(fds));
+    gzFile file = PREFIX(gzdopen)(fds[1], "wT");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzbuffer)(file, 8), Z_OK);
+
+    char *buf = (char *)malloc(100);
+    ASSERT_NE(buf, (char *)NULL);
+    memset(buf, 'a', 100);
+    EXPECT_EQ(PREFIX(gzwrite)(file, buf, 100), 0);
+    int errnum = Z_OK;
+    PREFIX(gzerror)(file, &errnum);
+    EXPECT_EQ(errnum, Z_ERRNO);
+    free(buf);
+
+    drain_pipe(fds[0]);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    char rest[16];
+    EXPECT_EQ(read(fds[0], rest, sizeof(rest)), 0);
+    close(fds[0]);
+}
+
+/* A small gzwrite() after a failed direct gzwrite() and gzclearerr():
+ * - the small write is buffered in the descriptor's own input buffer, never
+ *   at a position derived from the caller's earlier buffer;
+ * - only the small write reaches the file. */
+TEST(gzfile_api_errors, write_failed_direct_clearerr) {
+    int fds[2];
+    ASSERT_TRUE(fill_pipe(fds));
+    gzFile file = PREFIX(gzdopen)(fds[1], "wT");
+    ASSERT_NE(file, (gzFile)NULL);
+    EXPECT_EQ(PREFIX(gzbuffer)(file, 8), Z_OK);
+
+    char *buf = (char *)malloc(100);
+    ASSERT_NE(buf, (char *)NULL);
+    memset(buf, 'a', 100);
+    EXPECT_EQ(PREFIX(gzwrite)(file, buf, 100), 0);
+    free(buf);
+
+    PREFIX(gzclearerr)(file);
+    EXPECT_EQ(PREFIX(gzwrite)(file, "x", 1), 1);
+    drain_pipe(fds[0]);
+    EXPECT_EQ(PREFIX(gzclose)(file), Z_OK);
+    char rest[16];
+    ssize_t n = read(fds[0], rest, sizeof(rest));
+    EXPECT_EQ(n, 1);
+    if (n == 1) {
+        EXPECT_EQ(rest[0], 'x');
+    }
+    close(fds[0]);
+}
+#endif
