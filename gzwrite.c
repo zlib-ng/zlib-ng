@@ -374,6 +374,10 @@ z_int32_t Z_EXPORTVA PREFIX(gzvprintf)(gzFile file, const char *format, va_list 
        be state->size bytes available after the current contents */
     if (strm->avail_in == 0)
         strm->next_in = state->in;
+    else if (strm->next_in != state->in) {
+        memmove(state->in, strm->next_in, strm->avail_in);
+        strm->next_in = state->in;
+    }
     next = (char *)(state->in + (strm->next_in - state->in) + strm->avail_in);
     next[state->size - 1] = 0;
     len = vsnprintf(next, state->size, format, va);
