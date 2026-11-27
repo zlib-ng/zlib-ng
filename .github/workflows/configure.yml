@@ -355,8 +355,13 @@ jobs:
     - name: Install packages (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages
       run: |
-        sudo apt-get update
-        sudo apt-get install -y ${{ matrix.packages }}
+        PACKAGES="${{ matrix.packages }}"
+        for i in 1 2 3; do
+          sudo apt-get update && \
+          sudo apt-get install -y --allow-downgrades --no-install-recommends $PACKAGES && \
+          break
+          [ "$i" -lt 3 ] && sleep 10 || exit 1
+        done
 
     - name: Update package cache (Ubuntu)
       if: runner.os == 'Linux' && matrix.packages && steps.restore-apt-cache.outputs.cache-hit != 'true'
