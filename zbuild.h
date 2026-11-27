@@ -49,6 +49,14 @@
 #  endif
 #endif
 
+#ifndef Z_HAS_C_ATTRIBUTE
+#  if defined(__has_c_attribute)
+#    define Z_HAS_C_ATTRIBUTE(a) __has_c_attribute(a)
+#  else
+#    define Z_HAS_C_ATTRIBUTE(a) 0
+#  endif
+#endif
+
 #ifndef Z_FALLTHROUGH
 #  if Z_HAS_ATTRIBUTE(__fallthrough__) || (defined(__GNUC__) && (__GNUC__ >= 7))
 #    define Z_FALLTHROUGH __attribute__((__fallthrough__))
@@ -69,6 +77,43 @@
 #    define Z_UNREACHABLE() __builtin_unreachable()
 #  else
 #    define Z_UNREACHABLE()
+#  endif
+#endif
+
+#ifndef Z_MUSTTAIL
+#  if defined(__clang__)
+#    if __clang_major__ >= 17 && !defined(ARCH_WASM)
+#      define Z_MUSTTAIL [[clang::musttail]]
+#      define Z_MUSTTAIL2 [[clang::musttail]]
+#      if (defined(ARCH_M68K) || defined(ARCH_PARISC) || defined(ARCH_POWER) || defined(ARCH_SH) || defined(ARCH_SPARC)) && !defined(DISABLE_RUNTIME_CPU_DETECTION)
+#        define Z_MUSTTAIL_FT
+#      else
+#        define Z_MUSTTAIL_FT [[clang::musttail]]
+#      endif
+#    endif
+#  elif defined(__GNUC__)
+#    if Z_HAS_C_ATTRIBUTE(gnu::musttail)
+#      define Z_MUSTTAIL [[gnu::musttail]]
+#      if defined(ARCH_X86) && defined(ARCH_32BIT)
+#        define Z_MUSTTAIL2
+#      else
+#        define Z_MUSTTAIL2 [[gnu::musttail]]
+#      endif
+#      if (defined(ARCH_M68K) || defined(ARCH_PARISC) || defined(ARCH_POWER) || defined(ARCH_SH) || defined(ARCH_SPARC)) && !defined(DISABLE_RUNTIME_CPU_DETECTION)
+#        define Z_MUSTTAIL_FT
+#      else
+#        define Z_MUSTTAIL_FT [[gnu::musttail]]
+#      endif
+#    endif
+#  elif defined(_MSC_VER) && _MSC_VER >= 1950 && defined(NDEBUG) && !defined(ARCH_ARM)
+#    define Z_MUSTTAIL [[msvc::musttail]]
+#    define Z_MUSTTAIL2
+#    define Z_MUSTTAIL_FT [[msvc::musttail]]
+#  endif
+#  if !defined(Z_MUSTTAIL)
+#    define Z_MUSTTAIL
+#    define Z_MUSTTAIL2
+#    define Z_MUSTTAIL_FT
 #  endif
 #endif
 
