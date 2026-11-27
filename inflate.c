@@ -1427,8 +1427,8 @@ int32_t Z_EXPORT PREFIX(inflateCopy)(PREFIX3(stream) *dest, PREFIX3(stream) *sou
     /* copy state */
     memcpy(copy, state, sizeof(struct inflate_state));
     copy->strm = dest;
-    if (state->lencode >= state->codes && state->lencode <= state->codes + ENOUGH - 1) {
-        copy->lencode = copy->codes + (state->lencode - state->codes);
+    if (state->lencode == state->codes) {
+        copy->lencode = copy->codes;
         copy->distcode = copy->codes + (state->distcode - state->codes);
     }
     copy->next = copy->codes + (state->next - state->codes);
