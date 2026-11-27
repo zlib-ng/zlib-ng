@@ -655,10 +655,12 @@ int32_t Z_EXPORT PREFIX(deflateParams)(PREFIX3(stream) *strm, int32_t level, int
     int was_hashless = HASHLESS(s->level, s->strategy);
 
     /* Stale if the hash usage flipped (to/from huffman/rle/stored), the hash
-     * function changed at MIN_ROLL_LEVEL, or quick at level 1 left prev unmaintained. */
+     * function changed at MIN_ROLL_LEVEL, quick at level 1 left prev unmaintained,
+     * or a faster strategy left skipped prev slots before switching to deflate_slow. */
     int stale_chain = (hashless != was_hashless) ||
                       (level >= MIN_ROLL_LEVEL) != (s->level >= MIN_ROLL_LEVEL) ||
-                      (HAVE_QUICK_STRATEGY && s->level == 1 && level != 1);
+                      (HAVE_QUICK_STRATEGY && s->level == 1 && level != 1) ||
+                      (func != deflate_slow && configuration_table[level].func == deflate_slow);
 
     /* Rebuild the hash chains when fill_window is called. */
     if (stale_chain && !hashless) {
