@@ -137,6 +137,7 @@ if(WITH_GTEST)
             test_chunked.cc
             test_compress.cc
             test_compress_bound.cc
+            test_crc32_combine.cc
             test_cve-2003-0107.cc
             test_deflate_api_errors.cc
             test_deflate_bound.cc
